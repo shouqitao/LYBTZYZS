@@ -224,9 +224,9 @@ namespace LYBT.Desktop.Models.Prescriptions
         /// 应用模板到处方
         /// OpenSpec: optimize-entity-data-flow - PatientId通过MedicalCase获取
         /// </summary>
-        public PrescriptionDto ApplyToNewPrescription()
+        public PrescriptionDetailDto ApplyToNewPrescription()
         {
-            var prescription = new PrescriptionDto
+            var prescription = new PrescriptionDetailDto
             {
                 Id = Guid.NewGuid(),
                 // OpenSpec: PatientId已移除，通过MedicalCaseId关联获取
@@ -235,20 +235,20 @@ namespace LYBT.Desktop.Models.Prescriptions
                 Advice = Usage,
                 Remark = $"应用模板：{Name}\n{Remark}",
                 Status = CommonStatus.Disabled, // 草稿状态
-                Items = new List<PrescriptionItemDto>()
+                Items = new List<PrescriptionItemDetailDto>()
             };
 
             // 复制药材项目
             foreach (var templateItem in Items)
             {
-                prescription.Items.Add(new PrescriptionItemDto
+                prescription.Items.Add(new PrescriptionItemDetailDto
                 {
                     HerbId = templateItem.HerbId,
                     HerbName = templateItem.HerbName,
                     Dosage = templateItem.Dosage,
                     Unit = templateItem.Unit
 
-                    // Price = templateItem.EstimatedPrice, // 属性不存在：PrescriptionItemDto.Price
+                    // Price = templateItem.EstimatedPrice, // 属性不存在：PrescriptionItemDetailDto.Price
                     // Subtotal = templateItem.Dosage * templateItem.EstimatedPrice
                 });
             }

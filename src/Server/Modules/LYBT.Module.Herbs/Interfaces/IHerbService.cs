@@ -17,7 +17,7 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <param name="pageSize">每页数量</param>
         /// <param name="keyword">搜索关键字</param>
         /// <param name="category">分类筛选（可选）</param>
-        Task<Result<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
+        Task<Result<PagedResult<HerbDetailDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
 
         /// <summary>
         /// 分页查询药材列表（返回HerbListDto，用于列表视图）
@@ -28,17 +28,17 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <summary>
         /// 根据ID获取药材详情
         /// </summary>
-        Task<Result<HerbDto>> GetByIdAsync(Guid id);
+        Task<Result<HerbDetailDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建新药材
         /// </summary>
-        Task<Result<HerbDto>> CreateAsync(HerbInputDto dto);
+        Task<Result<HerbDetailDto>> CreateAsync(HerbInputDto dto);
 
         /// <summary>
         /// 更新药材信息
         /// </summary>
-        Task<Result<HerbDto>> UpdateAsync(Guid id, HerbInputDto dto);
+        Task<Result<HerbDetailDto>> UpdateAsync(Guid id, HerbInputDto dto);
 
         /// <summary>
         /// 删除药材（软删除）
@@ -48,12 +48,12 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <summary>
         /// 搜索药材 - 支持多条件搜索
         /// </summary>
-        Task<Result<List<HerbDto>>> SearchAsync(string keyword);
+        Task<Result<List<HerbDetailDto>>> SearchAsync(string keyword);
 
         /// <summary>
         /// 从Excel文件导入药材数据 (Issue #1166)
         /// </summary>
-        Task<Result<ImportResultDto<HerbDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null);
+        Task<Result<ImportResultDto<HerbDetailDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null);
 
         /// <summary>
         /// 导出药材数据到Excel (Issue #1166)
@@ -80,7 +80,7 @@ namespace LYBT.Module.Herbs.Interfaces
         /// Desktop层负责Excel生成，Server层返回JSON数据
         /// </summary>
         /// <param name="category">分类筛选（可选）</param>
-        Task<Result<List<HerbDto>>> GetAllForExportAsync(string? category = null);
+        Task<Result<List<HerbDetailDto>>> GetAllForExportAsync(string? category = null);
 
         /// <summary>
         /// 检查药材是否被处方引用（Epic #1962 Task 4.2）
@@ -100,12 +100,12 @@ namespace LYBT.Module.Herbs.Interfaces
         /// 切换药材状态（启用/禁用）
         /// </summary>
         /// <param name="id">药材ID</param>
-        Task<Result<HerbDto>> ToggleStatusAsync(Guid id);
+        Task<Result<HerbDetailDto>> ToggleStatusAsync(Guid id);
 
         /// <summary>
         /// 恢复软删除的药材
         /// </summary>
         /// <param name="id">药材ID</param>
-        Task<Result<HerbDto>> RestoreAsync(Guid id);
+        Task<Result<HerbDetailDto>> RestoreAsync(Guid id);
     }
 }

@@ -216,7 +216,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Assert
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             apiResponse.Data.Should().NotBeNull("医生A应该能查询到自己创建的未完成医案");
             apiResponse.Data!.Id.Should().Be(medicalCase.Id);
@@ -249,7 +249,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // 这里验证医生B不能看到医生A的医案
             if (response.IsSuccessStatusCode)
             {
-                var apiResponse = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDto>>();
+                var apiResponse = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDetailDto>>();
 
                 if (apiResponse?.Data != null)
                 {
@@ -278,7 +278,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         /// <summary>
         /// 医生A创建医案
         /// </summary>
-        private async Task<MedicalCaseDto> CreateMedicalCaseByDoctorAAsync()
+        private async Task<MedicalCaseDetailDto> CreateMedicalCaseByDoctorAAsync()
         {
             // 为测试创建独立的患者
             var newPatientId = Guid.NewGuid();
@@ -318,7 +318,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             }
 
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             return apiResponse.Data!;
         }
 

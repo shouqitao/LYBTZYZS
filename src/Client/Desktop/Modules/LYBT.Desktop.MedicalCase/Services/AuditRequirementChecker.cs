@@ -19,7 +19,7 @@ namespace LYBT.Desktop.MedicalCase.Services
         }
 
         /// <inheritdoc />
-        public bool IsAuditRequired(MedicalCaseDto medicalCase, Guid currentUserId)
+        public bool IsAuditRequired(MedicalCaseDetailDto medicalCase, Guid currentUserId)
         {
             if (medicalCase == null)
             {

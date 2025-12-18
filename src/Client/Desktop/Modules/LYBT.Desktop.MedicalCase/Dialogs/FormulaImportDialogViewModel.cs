@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Net.Http;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         private readonly IFormulaRepository _formulaRepository;
         private readonly ILogger<FormulaImportDialogViewModel> _logger;
-        private List<FormulaDto> _allFormulas = new();
+        private List<FormulaDetailDto> _allFormulas = new();
 
         #endregion
 
@@ -69,21 +69,21 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             }
         }
 
-        private ObservableCollection<FormulaDto> _filteredFormulas = new();
+        private ObservableCollection<FormulaDetailDto> _filteredFormulas = new();
         /// <summary>
         /// 筛选后的验方列表
         /// </summary>
-        public ObservableCollection<FormulaDto> FilteredFormulas
+        public ObservableCollection<FormulaDetailDto> FilteredFormulas
         {
             get => _filteredFormulas;
             set => SetProperty(ref _filteredFormulas, value);
         }
 
-        private FormulaDto? _selectedFormula;
+        private FormulaDetailDto? _selectedFormula;
         /// <summary>
         /// 选中的验方
         /// </summary>
-        public FormulaDto? SelectedFormula
+        public FormulaDetailDto? SelectedFormula
         {
             get => _selectedFormula;
             set
@@ -96,12 +96,12 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             }
         }
 
-        private FormulaDto? _selectedFormulaDetail;
+        private FormulaDetailDto? _selectedFormulaDetail;
         /// <summary>
         /// 选中验方的详情（用于FormulaViewControl预览）
         /// OpenSpec: extract-detail-controls Task 1.4
         /// </summary>
-        public FormulaDto? SelectedFormulaDetail
+        public FormulaDetailDto? SelectedFormulaDetail
         {
             get => _selectedFormulaDetail;
             set => SetProperty(ref _selectedFormulaDetail, value);
@@ -286,7 +286,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                     (f.Indications?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
-            FilteredFormulas = new ObservableCollection<FormulaDto>(filtered);
+            FilteredFormulas = new ObservableCollection<FormulaDetailDto>(filtered);
 
             // 更新状态消息
             if (_allFormulas.Count > 0)

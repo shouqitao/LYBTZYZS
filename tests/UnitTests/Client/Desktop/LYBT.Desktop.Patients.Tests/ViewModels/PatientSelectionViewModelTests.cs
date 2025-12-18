@@ -176,7 +176,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         public void SelectedPatient_ShouldClearSelectedPendingPatient()
         {
             // Arrange
-            var patient = new PatientDto { Id = Guid.NewGuid(), Name = "测试患者" };
+            var patient = new PatientDetailDto { Id = Guid.NewGuid(), Name = "测试患者" };
             var pendingCase = new PendingMedicalCaseDto
             {
                 PatientId = Guid.NewGuid(),
@@ -202,7 +202,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         public async Task SelectedPendingPatient_ShouldClearSelectedPatient()
         {
             // Arrange
-            var patient = new PatientDto { Id = Guid.NewGuid(), Name = "全部患者" };
+            var patient = new PatientDetailDto { Id = Guid.NewGuid(), Name = "全部患者" };
             var pendingCase = new PendingMedicalCaseDto
             {
                 PatientId = Guid.NewGuid(),
@@ -211,7 +211,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
 
             // Mock _patientRepositoryMock的GetByIdAsync返回null（模拟患者不在列表中）
             _patientRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((PatientDto?)null);
+                .ReturnsAsync((PatientDetailDto?)null);
 
             // 先设置SelectedPatient
             _viewModel.SelectedPatient = patient;
@@ -235,7 +235,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         public void CurrentPatient_ShouldAlwaysPointToSelectedPatient()
         {
             // Arrange
-            var patient = new PatientDto { Id = Guid.NewGuid(), Name = "测试患者" };
+            var patient = new PatientDetailDto { Id = Guid.NewGuid(), Name = "测试患者" };
 
             // Act: 从全部患者列表选择
             _viewModel.SelectedPatient = patient;

@@ -16,19 +16,19 @@ namespace LYBT.Desktop.Formula.Controls
         }
 
         /// <summary>
-        /// 验方详情数据（接受FormulaDto或其子类FormulaDetailDto）
-        /// OpenSpec: extract-detail-controls - 使用基类FormulaDto支持更广泛复用
+        /// 验方详情数据（接受FormulaDetailDto或其子类FormulaDetailDto）
+        /// OpenSpec: extract-detail-controls - 使用基类FormulaDetailDto支持更广泛复用
         /// </summary>
         public static readonly DependencyProperty FormulaProperty =
             DependencyProperty.Register(
                 nameof(Formula),
-                typeof(FormulaDto),
+                typeof(FormulaDetailDto),
                 typeof(FormulaViewControl),
                 new PropertyMetadata(null));
 
-        public FormulaDto? Formula
+        public FormulaDetailDto? Formula
         {
-            get => (FormulaDto?)GetValue(FormulaProperty);
+            get => (FormulaDetailDto?)GetValue(FormulaProperty);
             set => SetValue(FormulaProperty, value);
         }
 

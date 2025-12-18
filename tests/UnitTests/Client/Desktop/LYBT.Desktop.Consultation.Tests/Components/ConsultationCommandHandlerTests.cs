@@ -66,7 +66,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
         {
             // Arrange
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-            var mockConsultation = new ConsultationDto
+            var mockConsultation = new ConsultationDetailDto
             {
                 PresentIllness = "测试现病史",
                 TongueDiagnosis = "测试舌诊",
@@ -79,10 +79,10 @@ namespace LYBT.Desktop.Consultation.Tests.Components
             _commandHandler.ClearForm();
 
             // Assert - 验证4个核心字段被清空
-            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.PresentIllness), null), Times.Once);
-            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.TongueDiagnosis), null), Times.Once);
-            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.PulseDiagnosis), null), Times.Once);
-            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.TCMDiagnosis), string.Empty), Times.Once);
+            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDetailDto.PresentIllness), null), Times.Once);
+            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDetailDto.TongueDiagnosis), null), Times.Once);
+            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDetailDto.PulseDiagnosis), null), Times.Once);
+            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDetailDto.TCMDiagnosis), string.Empty), Times.Once);
         }
 
         // CompleteStep1Async_WithValidData_ShouldReturnTrue已移除 - 简化业务流程，移除Step概念

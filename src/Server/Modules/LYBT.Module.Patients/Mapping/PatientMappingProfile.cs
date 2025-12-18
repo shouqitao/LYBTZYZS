@@ -21,15 +21,15 @@ namespace LYBT.Module.Patients.Mapping
             // Patient -> PatientListDto (新)
             CreateMap<Patient, PatientListDto>();
 
-            // Patient -> PatientDetailDtoNew (新-简化版)
-            CreateMap<Patient, PatientDetailDtoNew>();
+            // Patient -> PatientDetailDto (扁平化详情DTO)
+            CreateMap<Patient, PatientDetailDto>();
 
             // ============================================
             // 旧DTO映射 (保持向后兼容，后续移除)
             // ============================================
 
-            // 患者实体 → PatientDto（API响应）
-            CreateMap<Patient, PatientDto>()
+            // 患者实体 → PatientDetailDto（API响应）
+            CreateMap<Patient, PatientDetailDto>()
                 // Issue #2240: Patient.Age是从BirthDate计算的只读属性，AutoMapper会自动复制其计算值到PatientDto.Age
                 .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
                 .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber))
@@ -54,8 +54,8 @@ namespace LYBT.Module.Patients.Mapping
                 // Epic #1934: MedicalHistory字段映射
                 .ForMember(dest => dest.MedicalHistory, opt => opt.MapFrom(src => src.MedicalHistory));
 
-            // PatientDto → Patient（用于更新）
-            CreateMap<PatientDto, Patient>()
+            // PatientDetailDto → Patient（用于更新）
+            CreateMap<PatientDetailDto, Patient>()
                 .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age是只读计算属性
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
@@ -70,8 +70,8 @@ namespace LYBT.Module.Patients.Mapping
                 .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-            // PatientInputDto → PatientDto（用于验证服务）
-            CreateMap<PatientInputDto, PatientDto>()
+            // PatientInputDto → PatientDetailDto（用于验证服务）
+            CreateMap<PatientInputDto, PatientDetailDto>()
                 .ForMember(dest => dest.Age, opt => opt.Ignore()) // Issue #2240: Age是只读计算属性，从BirthDate计算
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())

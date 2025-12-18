@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Contracts.Services
         /// 用途：初始化处方编辑器，提供药材选择列表
         /// </summary>
         /// <returns>所有药材DTO列表</returns>
-        Task<IEnumerable<HerbDto>> LoadAllHerbsAsync();
+        Task<IEnumerable<HerbDetailDto>> LoadAllHerbsAsync();
 
         /// <summary>
         /// 过滤药材（支持拼音码模糊匹配）
@@ -42,7 +42,7 @@ namespace LYBT.Desktop.Contracts.Services
         /// </summary>
         /// <param name="searchText">搜索文本（药材名称或拼音码）</param>
         /// <returns>匹配的药材列表</returns>
-        IEnumerable<HerbDto> FilterHerbs(string searchText);
+        IEnumerable<HerbDetailDto> FilterHerbs(string searchText);
 
         #endregion
 
@@ -66,7 +66,7 @@ namespace LYBT.Desktop.Contracts.Services
         /// 用途：验方导入对话框，提供验方选择列表
         /// </summary>
         /// <returns>所有验方DTO列表</returns>
-        Task<IEnumerable<FormulaDto>> LoadFormulasAsync();
+        Task<IEnumerable<FormulaDetailDto>> LoadFormulasAsync();
 
         /// <summary>
         /// 从验方导入处方数据（草稿构建）
@@ -75,7 +75,7 @@ namespace LYBT.Desktop.Contracts.Services
         /// </summary>
         /// <param name="formulaId">验方ID</param>
         /// <returns>处方数据DTO（包含从验方转换的处方项目）</returns>
-        Task<PrescriptionDto> ImportFormulaAsync(Guid formulaId);
+        Task<PrescriptionDetailDto> ImportFormulaAsync(Guid formulaId);
 
         #endregion
 
@@ -88,7 +88,7 @@ namespace LYBT.Desktop.Contracts.Services
         /// </summary>
         /// <param name="dto">处方创建DTO</param>
         /// <returns>处方数据DTO（草稿）</returns>
-        Task<PrescriptionDto> BuildPrescriptionDraftAsync(PrescriptionCreateDto dto);
+        Task<PrescriptionDetailDto> BuildPrescriptionDraftAsync(PrescriptionCreateDto dto);
 
         /// <summary>
         /// 验证处方数据完整性
@@ -96,7 +96,7 @@ namespace LYBT.Desktop.Contracts.Services
         /// </summary>
         /// <param name="prescription">处方数据DTO</param>
         /// <returns>验证是否通过</returns>
-        Task<bool> ValidatePrescriptionAsync(PrescriptionDto prescription);
+        Task<bool> ValidatePrescriptionAsync(PrescriptionDetailDto prescription);
 
         /// <summary>
         /// 计算处方总金额
@@ -129,7 +129,7 @@ namespace LYBT.Desktop.Contracts.Services
         /// <summary>
         /// 变更的处方数据
         /// </summary>
-        public PrescriptionDto? Prescription { get; set; }
+        public PrescriptionDetailDto? Prescription { get; set; }
 
         /// <summary>
         /// 变更类型（Created, Updated, Deleted）

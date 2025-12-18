@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Formula;
+﻿using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Formula.Interfaces
 {
@@ -13,15 +13,15 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// 当前配方数据
         /// Desktop层架构重构 Phase 3: 为Validator接口化提供数据支持
         /// &lt;/summary&gt;
-        FormulaDto? CurrentFormula { get; }
+        FormulaDetailDto? CurrentFormula { get; }
         /// <summary>
         /// 加载配方详情
         /// </summary>
-        Task<(bool success, FormulaDto? formula, string? errorMessage)> LoadFormulaAsync(Guid formulaId);
+        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> LoadFormulaAsync(Guid formulaId);
 
         /// <summary>
         /// 刷新配方数据
         /// </summary>
-        Task<(bool success, FormulaDto? formula, string? errorMessage)> RefreshFormulaAsync(Guid formulaId);
+        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> RefreshFormulaAsync(Guid formulaId);
     }
 }

@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Users.Tests.Components
         public void IsValid_WithValidData_ShouldReturnTrue()
         {
             // Arrange
-            var validUser = new UserDto
+            var validUser = new UserDetailDto
             {
                 Id = Guid.NewGuid(),
                 UserName = "testuser",
@@ -46,7 +46,7 @@ namespace LYBT.Desktop.Users.Tests.Components
                 Status = CommonStatus.Enabled
             };
             _mockDataManager.Setup(m => m.Current).Returns(validUser);
-            _mockValidationService.Setup(v => v.IsValid(It.IsAny<UserDto>(), out It.Ref<string>.IsAny))
+            _mockValidationService.Setup(v => v.IsValid(It.IsAny<UserDetailDto>(), out It.Ref<string>.IsAny))
                 .Returns(true);
 
             // Act
@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Users.Tests.Components
         public void IsValid_WithNullData_ShouldReturnFalse()
         {
             // Arrange
-            _mockDataManager.Setup(m => m.Current).Returns((UserDto?)null);
+            _mockDataManager.Setup(m => m.Current).Returns((UserDetailDto?)null);
 
             // Act
             var result = _validator.IsValid(out var errorMessage);
@@ -75,7 +75,7 @@ namespace LYBT.Desktop.Users.Tests.Components
         public void CanEditUser_WithValidData_ShouldReturnTrue()
         {
             // Arrange
-            var validUser = new UserDto
+            var validUser = new UserDetailDto
             {
                 Id = Guid.NewGuid(),
                 UserName = "testuser",

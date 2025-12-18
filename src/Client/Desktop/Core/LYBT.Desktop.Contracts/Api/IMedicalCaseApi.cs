@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// OpenSpec: fix-history-copy-all-patients - 添加includeAllDoctors参数
         /// </summary>
         [Refit.Get("/api/v1/medicalcases")]
-        Task<ApiResponse<PagedResult<MedicalCaseDto>>> GetMedicalCasesAsync(
+        Task<ApiResponse<PagedResult<MedicalCaseDetailDto>>> GetMedicalCasesAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null,
@@ -35,13 +35,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取医疗案例详情
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/{id}")]
-        Task<ApiResponse<MedicalCaseDto>> GetMedicalCaseByIdAsync(Guid id);
+        Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdAsync(Guid id);
 
         /// <summary>
         /// 根据患者ID获取医疗案例列表
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/by-patient/{patientId}")]
-        Task<ApiResponse<List<MedicalCaseDto>>> GetMedicalCasesByPatientIdAsync(Guid patientId);
+        Task<ApiResponse<List<MedicalCaseDetailDto>>> GetMedicalCasesByPatientIdAsync(Guid patientId);
 
         /// <summary>
         /// 获取待看诊医案列表（Status=Active）
@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// Issue #1592 - Phase 3
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/query")]
-        Task<ApiResponse<List<MedicalCaseDto>>> QueryMedicalCasesAsync(
+        Task<ApiResponse<List<MedicalCaseDetailDto>>> QueryMedicalCasesAsync(
             [Refit.Query] string? patientName = null,
             [Refit.Query] DateTime? startDate = null,
             [Refit.Query] DateTime? endDate = null,
@@ -77,20 +77,20 @@ namespace LYBT.Desktop.Contracts.Api
         /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
         [Refit.Post("/api/v1/medicalcases")]
-        Task<ApiResponse<MedicalCaseDto>> CreateMedicalCaseAsync([Refit.Body] MedicalCaseInputDto request);
+        Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseAsync([Refit.Body] MedicalCaseInputDto request);
 
         /// <summary>
         /// 创建完整的医疗案例（包含诊疗和可选处方）
         /// </summary>
         [Refit.Post("/api/v1/medicalcases/with-details")]
-        Task<ApiResponse<MedicalCaseDto>> CreateMedicalCaseWithDetailsAsync([Refit.Body] MedicalCaseWithDetailsCreateDto request);
+        Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseWithDetailsAsync([Refit.Body] MedicalCaseWithDetailsCreateDto request);
 
         /// <summary>
         /// 更新医案的诊断信息（聚合根方法）
         /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/consultation")]
-        Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, [Refit.Body] ConsultationInputDto request);
+        Task<ApiResponse<ConsultationDetailDto>> UpdateConsultationAsync(Guid medicalCaseId, [Refit.Body] ConsultationInputDto request);
 
         /// <summary>
         /// 删除医疗案例（软删除）
@@ -123,7 +123,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// Epic #1589 Phase 4 - 架构合规版本
         /// </summary>
         [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/prescription/import-formula/{formulaId}")]
-        Task<ApiResponse<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
+        Task<ApiResponse<PrescriptionDetailDto>> ImportFormulaIntoPrescriptionAsync(
             Guid medicalCaseId,
             Guid formulaId);
 
@@ -131,7 +131,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 为已存在的医案创建处方（Issue #1608补充）
         /// </summary>
         [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/prescription")]
-        Task<ApiResponse<PrescriptionDto>> CreatePrescriptionAsync(
+        Task<ApiResponse<PrescriptionDetailDto>> CreatePrescriptionAsync(
             Guid medicalCaseId,
             [Refit.Body] PrescriptionCreateDto request);
 
@@ -139,7 +139,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 更新医案的处方（Issue #1608补充）
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/prescription")]
-        Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(
+        Task<ApiResponse<PrescriptionDetailDto>> UpdatePrescriptionAsync(
             Guid medicalCaseId,
             [Refit.Body] PrescriptionUpdateDto request);
 
@@ -154,7 +154,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// Task 3.4 (#1661): RadioBox变化时自动保存
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/prescription-flag")]
-        Task<ApiResponse<MedicalCaseDto>> SetPrescriptionFlagAsync(
+        Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(
             Guid medicalCaseId,
             [Refit.Body] SetPrescriptionFlagRequest request);
 
@@ -170,7 +170,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <param name="doctorId">医生ID（当checkAllDoctors=false时使用）</param>
         /// <param name="checkAllDoctors">是否查询所有医生的未完成医案（用于多医生场景检测）</param>
         [Refit.Get("/api/v1/medicalcases/patient/{patientId}/unfinished")]
-        Task<ApiResponse<MedicalCaseDto>> GetUnfinishedCaseByPatientIdAsync(
+        Task<ApiResponse<MedicalCaseDetailDto>> GetUnfinishedCaseByPatientIdAsync(
             Guid patientId,
             [Refit.Query] Guid doctorId,
             [Refit.Query] bool checkAllDoctors = false);
@@ -189,7 +189,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 保存当前数据，设置状态为Draft，不触发完成验证
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}/draft")]
-        Task<ApiResponse<MedicalCaseDto>> SaveDraftAsync(
+        Task<ApiResponse<MedicalCaseDetailDto>> SaveDraftAsync(
             Guid id,
             [Refit.Body] ConsultationInputDto? request = null);
 
@@ -199,7 +199,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 设置状态为Cancelled，需要审计理由（非当天本人操作时）
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}/cancel")]
-        Task<ApiResponse<MedicalCaseDto>> CancelMedicalCaseAsync(
+        Task<ApiResponse<MedicalCaseDetailDto>> CancelMedicalCaseAsync(
             Guid id,
             [Refit.Body] CancelMedicalCaseRequestDto? request = null);
 
@@ -208,7 +208,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// Issue #2243: 修复SaveDraft和Complete功能
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}/status")]
-        Task<ApiResponse<MedicalCaseDto>> UpdateStatusAsync(
+        Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(
             Guid id,
             [Refit.Body] UpdateMedicalCaseStatusDto request);
 

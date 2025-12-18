@@ -31,9 +31,10 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 获取用户列表（分页）
+        /// OpenSpec: refactor-dto-simplification - 使用扁平化DTO
         /// </summary>
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<UserDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<UserListDto>>), 200)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> GetUsers(
             int page = 1,
@@ -54,35 +55,10 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取用户列表（分页，返回UserListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        [HttpGet("list")]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<UserListDto>>), 200)]
-        [ProducesResponseType(400)]
-        public async Task<IActionResult> GetUsersList(
-            int page = 1,
-            int pageSize = 20,
-            string? keyword = null,
-            UserRole? role = null,
-            CommonStatus? status = null)
-        {
-            try
-            {
-                var result = await _userService.GetPagedListAsync(page, pageSize, keyword, role, status);
-                return SuccessPaged(result.Data!, "查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取用户列表");
-            }
-        }
-
-        /// <summary>
         /// 获取当前登录用户信息
         /// </summary>
         [HttpGet("current")]
-        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(401)]
         public async Task<IActionResult> GetCurrentUser()
         {
@@ -101,7 +77,7 @@ namespace LYBT.WebAPI.Controllers
 
                     if (isSuperAdmin)
                     {
-                        var superAdminDto = new UserDto
+                        var superAdminDto = new UserDetailDto
                         {
                             Id = Guid.Empty,
                             UserName = username,
@@ -134,7 +110,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取单个用户
         /// </summary>
         [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetUser(Guid id)
         {
@@ -159,7 +135,7 @@ namespace LYBT.WebAPI.Controllers
         /// 创建用户
         /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<UserDto>), 201)]
+        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> CreateUser([FromBody] UserInputDto dto)
         {
@@ -172,7 +148,7 @@ namespace LYBT.WebAPI.Controllers
                     LogOperation("创建用户", dto, result.Data.Id);
                     return CreatedAtAction(nameof(GetUser),
                         new { id = result.Data.Id, version = "1" },
-                        ApiResponse<UserDto>.CreateSuccess(result.Data, "创建成功"));
+                        ApiResponse<UserDetailDto>.CreateSuccess(result.Data, "创建成功"));
                 }
 
                 return BusinessFail(result.ErrorMessage ?? "创建用户失败");
@@ -187,7 +163,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新用户
         /// </summary>
         [HttpPut("{id:guid}")]
-        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserInputDto dto)
         {
@@ -271,7 +247,7 @@ namespace LYBT.WebAPI.Controllers
         /// 修改个人资料
         /// </summary>
         [HttpPut("{id:guid}/profile")]
-        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto)
@@ -331,7 +307,7 @@ namespace LYBT.WebAPI.Controllers
         /// 切换用户状态（启用/禁用）
         /// </summary>
         [HttpPost("{id:guid}/toggle-status")]
-        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
@@ -358,7 +334,7 @@ namespace LYBT.WebAPI.Controllers
         /// 恢复已删除的用户
         /// </summary>
         [HttpPost("{id:guid}/restore")]
-        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)
         {

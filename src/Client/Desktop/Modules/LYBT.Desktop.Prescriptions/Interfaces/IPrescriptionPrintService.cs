@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Prescriptions.Interfaces
         /// </summary>
         /// <param name="prescription">处方信息</param>
         /// <returns>是否打印成功</returns>
-        Task<bool> PrintPrescriptionAsync(PrescriptionDto prescription);
+        Task<bool> PrintPrescriptionAsync(PrescriptionDetailDto prescription);
 
         /// <summary>
         /// 打印处方（带完整上下文）
@@ -26,13 +26,13 @@ namespace LYBT.Desktop.Prescriptions.Interfaces
         /// <param name="patient">患者信息</param>
         /// <param name="consultation">诊断信息（使用ConsultationInputDto以匹配ViewModel输出）</param>
         /// <returns>是否打印成功</returns>
-        Task<bool> PrintPrescriptionAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation);
+        Task<bool> PrintPrescriptionAsync(PrescriptionDetailDto prescription, PatientDetailDto? patient, ConsultationInputDto? consultation);
 
         /// <summary>
         /// 预览处方
         /// </summary>
         /// <param name="prescription">处方信息</param>
-        Task PreviewPrescriptionAsync(PrescriptionDto prescription);
+        Task PreviewPrescriptionAsync(PrescriptionDetailDto prescription);
 
         /// <summary>
         /// 预览处方（带完整上下文）
@@ -41,14 +41,14 @@ namespace LYBT.Desktop.Prescriptions.Interfaces
         /// <param name="prescription">处方信息</param>
         /// <param name="patient">患者信息</param>
         /// <param name="consultation">诊断信息（使用ConsultationInputDto以匹配ViewModel输出）</param>
-        Task PreviewPrescriptionAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation);
+        Task PreviewPrescriptionAsync(PrescriptionDetailDto prescription, PatientDetailDto? patient, ConsultationInputDto? consultation);
 
         /// <summary>
         /// 批量打印处方
         /// </summary>
         /// <param name="prescriptions">处方列表</param>
         /// <returns>成功打印的数量</returns>
-        Task<int> BatchPrintAsync(PrescriptionDto[] prescriptions);
+        Task<int> BatchPrintAsync(PrescriptionDetailDto[] prescriptions);
 
         /// <summary>
         /// 导出处方为PDF
@@ -56,7 +56,7 @@ namespace LYBT.Desktop.Prescriptions.Interfaces
         /// <param name="prescription">处方信息</param>
         /// <param name="filePath">保存路径</param>
         /// <returns>是否导出成功</returns>
-        Task<bool> ExportToPdfAsync(PrescriptionDto prescription, string filePath);
+        Task<bool> ExportToPdfAsync(PrescriptionDetailDto prescription, string filePath);
 
         /// <summary>
         /// 获取可用的打印机列表

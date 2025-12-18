@@ -15,25 +15,13 @@ namespace LYBT.Module.MedicalCases.Mapping
 
         public MedicalCaseMappingProfile()
         {
-            // ========== Response映射（保持兼容性） ==========
+            // ========== Response映射 ==========
 
-            // MedicalCase -> MedicalCaseDto
-            // OpenSpec: fix-history-copy-all-patients - 添加PrescriptionId和ConsultationId映射
-            // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
-            CreateMap<LYBT.Entities.MedicalCases.MedicalCase, MedicalCaseDto>()
-                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.CaseStatus))
-                .ForMember(dest => dest.PrescriptionId, opt => opt.MapFrom(src =>
-                    src.Prescription != null && !src.Prescription.IsDeleted ? src.Prescription.Id : (Guid?)null))
-                .ForMember(dest => dest.ConsultationId, opt => opt.MapFrom(src =>
-                    src.Consultation != null && !src.Consultation.IsDeleted ? src.Consultation.Id : (Guid?)null))
-                .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
-                .ForMember(dest => dest.PatientGender, opt => opt.Ignore())
-                .ForMember(dest => dest.PatientAge, opt => opt.Ignore())
-                .ForMember(dest => dest.Diagnosis, opt => opt.Ignore());
+            // OpenSpec: refactor-dto-simplification - MedicalCaseDto已删除，统一使用MedicalCaseDetailDto
 
             // MedicalCase -> MedicalCaseDetailDto (聚合DTO，包含嵌套的Consultation和Prescription)
             // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, DiagnosisResult, TreatmentPlan
-            // 注：继承自MedicalCaseDto，HasConsultation/HasPrescription是计算属性，需忽略
+            // OpenSpec: refactor-dto-simplification - 独立定义，不再继承MedicalCaseDto
             CreateMap<LYBT.Entities.MedicalCases.MedicalCase, MedicalCaseDetailDto>()
                 .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.CaseStatus))
                 .ForMember(dest => dest.ConsultationId, opt => opt.MapFrom(src =>
@@ -63,24 +51,6 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.PatientGender, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientAge, opt => opt.Ignore())
                 .ForMember(dest => dest.Diagnosis, opt => opt.Ignore());
-
-            // MedicalCase -> MedicalCaseDetailDtoNew (新-扁平化详情DTO)
-            CreateMap<LYBT.Entities.MedicalCases.MedicalCase, MedicalCaseDetailDtoNew>()
-                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.CaseStatus))
-                .ForMember(dest => dest.ConsultationId, opt => opt.MapFrom(src =>
-                    src.Consultation != null && !src.Consultation.IsDeleted ? src.Consultation.Id : (Guid?)null))
-                .ForMember(dest => dest.PrescriptionId, opt => opt.MapFrom(src =>
-                    src.Prescription != null && !src.Prescription.IsDeleted ? src.Prescription.Id : (Guid?)null))
-                .ForMember(dest => dest.HasConsultation, opt => opt.MapFrom(src =>
-                    src.Consultation != null && !src.Consultation.IsDeleted))
-                .ForMember(dest => dest.HasPrescription, opt => opt.MapFrom(src =>
-                    src.Prescription != null && !src.Prescription.IsDeleted))
-                // 以下字段需要Service层填充
-                .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
-                .ForMember(dest => dest.PatientGender, opt => opt.Ignore())
-                .ForMember(dest => dest.PatientAge, opt => opt.Ignore())
-                .ForMember(dest => dest.Diagnosis, opt => opt.Ignore())
-                .ForMember(dest => dest.PresentIllness, opt => opt.Ignore());
 
             // ========== Epic #1961: FluentValidation统一设计 ==========
 
@@ -190,8 +160,8 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.PrescriptionId, opt => opt.Ignore());
 
-            // Response映射: Consultation -> ConsultationDto (Shared层)
-            CreateMap<LYBT.Entities.Consultations.Consultation, ConsultationDto>()
+            // Response映射: Consultation -> ConsultationDetailDto (Shared层)
+            CreateMap<LYBT.Entities.Consultations.Consultation, ConsultationDetailDto>()
                 .ForMember(dest => dest.PatientId, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())

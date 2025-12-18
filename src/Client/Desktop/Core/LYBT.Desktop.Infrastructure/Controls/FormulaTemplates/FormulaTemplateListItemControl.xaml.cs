@@ -15,13 +15,13 @@ namespace LYBT.Desktop.Infrastructure.Controls.FormulaTemplates
         public static readonly DependencyProperty DataProperty =
             DependencyProperty.Register(
                 nameof(Data),
-                typeof(FormulaDto),
+                typeof(FormulaDetailDto),
                 typeof(FormulaTemplateListItemControl),
                 new PropertyMetadata(null));
 
-        public FormulaDto Data
+        public FormulaDetailDto Data
         {
-            get => (FormulaDto)GetValue(DataProperty);
+            get => (FormulaDetailDto)GetValue(DataProperty);
             set => SetValue(DataProperty, value);
         }
 

@@ -144,7 +144,7 @@ public class PatientItem : BindableBase
     /// 从PatientDto创建PatientItem
     /// Issue #2240: 直接传递BirthDate，Age自动计算
     /// </summary>
-    public static PatientItem FromDto(PatientDto dto)
+    public static PatientItem FromDto(PatientDetailDto dto)
     {
         return new PatientItem
         {
@@ -167,9 +167,9 @@ public class PatientItem : BindableBase
     /// 转换为PatientDto（用于API调用）
     /// Issue #2240: 直接传递BirthDate，不再从Age反算
     /// </summary>
-    public PatientDto ToDto()
+    public PatientDetailDto ToDto()
     {
-        return new PatientDto
+        return new PatientDetailDto
         {
             Id = Id,
             Name = Name,
@@ -191,7 +191,7 @@ public class PatientItem : BindableBase
     /// 从PatientDto更新当前项
     /// Issue #2240: 更新BirthDate，Age自动计算
     /// </summary>
-    public void UpdateFromDto(PatientDto dto)
+    public void UpdateFromDto(PatientDetailDto dto)
     {
         Id = dto.Id;
         Name = dto.Name;

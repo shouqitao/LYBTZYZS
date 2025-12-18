@@ -6,8 +6,8 @@ namespace LYBT.Desktop.Users.Models;
 
 /// <summary>
 /// 用户列表项UI模型 - 用于DataGrid/ListView显示
-/// 替代直接使用UserDto，实现Desktop层与Shared层的解耦
-/// 保持属性名与UserDto一致，确保XAML绑定兼容
+/// 替代直接使用UserDetailDto，实现Desktop层与Shared层的解耦
+/// 保持属性名与UserDetailDto一致，确保XAML绑定兼容
 /// </summary>
 public class UserItem : BindableBase
 {
@@ -117,9 +117,9 @@ public class UserItem : BindableBase
     }
 
     /// <summary>
-    /// 从UserDto创建UserItem
+    /// 从UserDetailDto创建UserItem
     /// </summary>
-    public static UserItem FromDto(UserDto dto)
+    public static UserItem FromDto(UserDetailDto dto)
     {
         return new UserItem
         {
@@ -129,8 +129,8 @@ public class UserItem : BindableBase
             Role = dto.Role,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
-            Department = null, // UserDto中没有此属性
-            Title = null, // UserDto中没有此属性
+            Department = null, // UserDetailDto中没有此属性
+            Title = null, // UserDetailDto中没有此属性
             PinYinCode = dto.PinYinCode,
             Status = dto.Status,
             CreateTime = dto.CreatedAt,
@@ -139,11 +139,11 @@ public class UserItem : BindableBase
     }
 
     /// <summary>
-    /// 转换为UserDto（用于API调用）
+    /// 转换为UserDetailDto（用于API调用）
     /// </summary>
-    public UserDto ToDto()
+    public UserDetailDto ToDto()
     {
-        return new UserDto
+        return new UserDetailDto
         {
             Id = Id,
             UserName = UserName,
@@ -151,18 +151,18 @@ public class UserItem : BindableBase
             Role = Role,
             Email = Email,
             PhoneNumber = PhoneNumber,
-            // Department 和 Title 在 UserDto 中不存在
+            // Department 和 Title 在 UserDetailDto 中不存在
             PinYinCode = PinYinCode,
             Status = Status,
             CreatedAt = CreateTime,
-            UpdatedAt = UpdateTime
+            UpdatedAt = UpdateTime ?? DateTime.MinValue
         };
     }
 
     /// <summary>
-    /// 从UserDto更新当前项
+    /// 从UserDetailDto更新当前项
     /// </summary>
-    public void UpdateFromDto(UserDto dto)
+    public void UpdateFromDto(UserDetailDto dto)
     {
         Id = dto.Id;
         UserName = dto.UserName;
@@ -170,8 +170,8 @@ public class UserItem : BindableBase
         Role = dto.Role;
         Email = dto.Email;
         PhoneNumber = dto.PhoneNumber;
-        Department = null; // UserDto中没有此属性
-        Title = null; // UserDto中没有此属性
+        Department = null; // UserDetailDto中没有此属性
+        Title = null; // UserDetailDto中没有此属性
         PinYinCode = dto.PinYinCode;
         Status = dto.Status;
         CreateTime = dto.CreatedAt;

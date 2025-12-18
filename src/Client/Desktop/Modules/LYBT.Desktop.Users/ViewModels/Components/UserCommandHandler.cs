@@ -25,9 +25,10 @@ namespace LYBT.Desktop.Users.ViewModels.Components
 
         /// <summary>
         /// 创建用户
+        /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
         /// </summary>
         /// <remarks>refactor-logging-system: 使用CorrelationId作用域确保端到端追踪</remarks>
-        public virtual async Task<(bool success, UserDto? user, string? errorMessage)> CreateAsync(UserInputDto createDto)
+        public virtual async Task<(bool success, UserDetailDto? user, string? errorMessage)> CreateAsync(UserInputDto createDto)
         {
             using var _ = CorrelationIdContext.BeginScope();
             try
@@ -50,7 +51,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// 更新用户
         /// </summary>
         /// <remarks>refactor-logging-system: 使用CorrelationId作用域确保端到端追踪</remarks>
-        public virtual async Task<(bool success, UserDto? user, string? errorMessage)> UpdateAsync(UserInputDto updateDto)
+        public virtual async Task<(bool success, UserDetailDto? user, string? errorMessage)> UpdateAsync(UserInputDto updateDto)
         {
             using var _ = CorrelationIdContext.BeginScope();
             try
@@ -108,7 +109,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// 根据ID获取用户
         /// </summary>
         /// <remarks>refactor-logging-system: 使用CorrelationId作用域确保端到端追踪</remarks>
-        public virtual async Task<(bool success, UserDto? user, string? errorMessage)> GetByIdAsync(Guid userId)
+        public virtual async Task<(bool success, UserDetailDto? user, string? errorMessage)> GetByIdAsync(Guid userId)
         {
             using var _ = CorrelationIdContext.BeginScope();
             try
@@ -137,7 +138,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// 分页查询用户
         /// </summary>
         /// <remarks>refactor-logging-system: 使用CorrelationId作用域确保端到端追踪</remarks>
-        public async Task<(bool success, PagedResult<UserDto>? data, string? errorMessage)> GetPagedAsync(
+        public async Task<(bool success, PagedResult<UserDetailDto>? data, string? errorMessage)> GetPagedAsync(
             int page, int pageSize, string? searchText = null)
         {
             using var _ = CorrelationIdContext.BeginScope();
@@ -186,7 +187,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 获取所有用户
         /// </summary>
-        public async Task<(bool success, List<UserDto>? users, string? errorMessage)> GetAllAsync()
+        public async Task<(bool success, List<UserDetailDto>? users, string? errorMessage)> GetAllAsync()
         {
             try
             {
@@ -207,7 +208,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 根据用户名获取用户
         /// </summary>
-        public async Task<(bool success, UserDto? user, string? errorMessage)> GetByUsernameAsync(string username)
+        public async Task<(bool success, UserDetailDto? user, string? errorMessage)> GetByUsernameAsync(string username)
         {
             try
             {
@@ -234,7 +235,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 搜索用户
         /// </summary>
-        public async Task<(bool success, List<UserDto>? users, string? errorMessage)> SearchAsync(string keyword)
+        public async Task<(bool success, List<UserDetailDto>? users, string? errorMessage)> SearchAsync(string keyword)
         {
             try
             {
@@ -255,7 +256,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 获取医生列表
         /// </summary>
-        public async Task<(bool success, List<UserDto>? doctors, string? errorMessage)> GetDoctorsAsync()
+        public async Task<(bool success, List<UserDetailDto>? doctors, string? errorMessage)> GetDoctorsAsync()
         {
             try
             {
@@ -280,7 +281,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 修改个人资料 (Issue #1891)
         /// </summary>
-        public async Task<(bool success, UserDto? user, string? errorMessage)> ChangeProfileAsync(
+        public async Task<(bool success, UserDetailDto? user, string? errorMessage)> ChangeProfileAsync(
             Guid userId, ChangeProfileDto dto)
         {
             try

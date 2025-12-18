@@ -10,18 +10,18 @@ namespace LYBT.Desktop.Herbs.Interfaces
     /// </summary>
     public interface IHerbRepository
     {
-        Task<PagedResult<HerbDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        Task<PagedResult<HerbDetailDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
         /// 获取草药列表（返回HerbListDto，用于列表视图）
         /// OpenSpec: optimize-entity-data-flow - 增量API方法
         /// </summary>
         Task<PagedResult<HerbListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
-        Task<HerbDto?> GetByIdAsync(Guid id);
-        Task<HerbDto> CreateAsync(HerbInputDto dto);
-        Task<HerbDto> UpdateAsync(HerbInputDto dto);
+        Task<HerbDetailDto?> GetByIdAsync(Guid id);
+        Task<HerbDetailDto> CreateAsync(HerbInputDto dto);
+        Task<HerbDetailDto> UpdateAsync(HerbInputDto dto);
         Task<bool> DeleteAsync(Guid id);
-        Task<List<HerbDto>> SearchAsync(string keyword);
+        Task<List<HerbDetailDto>> SearchAsync(string keyword);
 
         // ========== Epic #1962: 批量导入/导出功能 ==========
 
@@ -45,11 +45,11 @@ namespace LYBT.Desktop.Herbs.Interfaces
         /// <summary>
         /// 切换药材状态（启用/禁用）
         /// </summary>
-        Task<HerbDto?> ToggleStatusAsync(Guid id);
+        Task<HerbDetailDto?> ToggleStatusAsync(Guid id);
 
         /// <summary>
         /// 恢复已删除的药材
         /// </summary>
-        Task<HerbDto?> RestoreAsync(Guid id);
+        Task<HerbDetailDto?> RestoreAsync(Guid id);
     }
 }

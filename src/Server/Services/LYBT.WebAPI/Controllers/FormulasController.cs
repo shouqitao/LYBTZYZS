@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -35,7 +35,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "FormulasCache")]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaDetailDto>>), 200)]
         public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -103,7 +103,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方详情
         /// </summary>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
         {
             try
@@ -129,7 +129,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: implement-formula-copy-flow - 传递当前用户ID用于设置验方所有权
         /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> Add([FromBody] FormulaInputDto dto)
         {
             try
@@ -156,7 +156,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto dto)
         {
             try
@@ -300,7 +300,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取待校验的验方列表 (Issue #1349)
         /// </summary>
         [HttpGet("pending-validation")]
-        [ProducesResponseType(typeof(ApiResponse<List<FormulaDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<FormulaDetailDto>>), 200)]
         public async Task<IActionResult> GetPendingValidation()
         {
             try
@@ -363,7 +363,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/toggle-status")]
-        [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
@@ -393,7 +393,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/restore")]
-        [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)
         {

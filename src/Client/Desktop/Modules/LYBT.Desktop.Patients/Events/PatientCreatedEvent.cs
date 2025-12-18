@@ -7,7 +7,7 @@ namespace LYBT.Desktop.Patients.Events
     /// 患者创建事件 - CRUD统一模式
     /// 功能：在患者成功创建后发布此事件通知订阅者
     /// </summary>
-    public class PatientCreatedEvent : PubSubEvent<PatientDto>
+    public class PatientCreatedEvent : PubSubEvent<PatientDetailDto>
     {
     }
 }

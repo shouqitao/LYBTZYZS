@@ -13,7 +13,7 @@ namespace LYBT.Module.Consultations.Interfaces
         /// <summary>
         /// 根据ID获取诊疗详情
         /// </summary>
-        Task<Result<ConsultationDto>> GetByIdAsync(Guid id);
+        Task<Result<ConsultationDetailDto>> GetByIdAsync(Guid id);
 
         // ========== Write方法已移除（Issue #1600 Phase 1）==========
         // CreateAsync, UpdateAsync, DeleteAsync 已移除
@@ -22,7 +22,7 @@ namespace LYBT.Module.Consultations.Interfaces
         /// <summary>
         /// 根据医案ID获取诊疗记录列表
         /// </summary>
-        Task<Result<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+        Task<Result<List<ConsultationDetailDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
         // ========== Write方法已移除（Issue #1600 Phase 3）==========
         // CompleteStep1Async 已移除，迁移至IMedicalCaseService

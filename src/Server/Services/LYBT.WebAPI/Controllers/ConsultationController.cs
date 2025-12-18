@@ -34,7 +34,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取诊疗详情
         /// </summary>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ConsultationDetailDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -55,7 +55,7 @@ namespace LYBT.WebAPI.Controllers
         /// 根据医案ID获取诊疗记录列表
         /// </summary>
         [HttpGet("medicalcase/{medicalCaseId}")]
-        [ProducesResponseType(typeof(ApiResponse<List<ConsultationDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<ConsultationDetailDto>>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetByMedicalCaseId(Guid medicalCaseId)
         {

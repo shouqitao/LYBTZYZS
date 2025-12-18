@@ -480,9 +480,9 @@ public class LoginCoordinatorTests
 
     #region Helper Methods
 
-    private static UserDto CreateTestUser(UserRole role = UserRole.Doctor)
+    private static UserDetailDto CreateTestUser(UserRole role = UserRole.Doctor)
     {
-        return new UserDto
+        return new UserDetailDto
         {
             Id = Guid.NewGuid(),
             UserName = "testuser",
@@ -491,7 +491,7 @@ public class LoginCoordinatorTests
         };
     }
 
-    private static LoginResponse CreateLoginResponse(UserDto user)
+    private static LoginResponse CreateLoginResponse(UserDetailDto user)
     {
         return new LoginResponse
         {

@@ -11,7 +11,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <summary>
         /// 根据ID获取处方详情
         /// </summary>
-        Task<Result<PrescriptionDto>> GetByIdAsync(Guid id);
+        Task<Result<PrescriptionDetailDto>> GetByIdAsync(Guid id);
 
         // ========== Write方法已移除（Issue #1601 Phase 1）==========
         // CreateAsync, UpdateAsync, DeleteAsync, PhysicalDeleteAsync 已移除
@@ -20,7 +20,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <summary>
         /// 根据病例ID获取处方列表
         /// </summary>
-        Task<Result<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+        Task<Result<List<PrescriptionDetailDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
         // ========== Clone/Import方法已移除（Issue #1601 Phase 1）==========
         // CloneAsync, ClonePrescriptionAsync, ImportFormulaIntoPrescriptionAsync 已移除

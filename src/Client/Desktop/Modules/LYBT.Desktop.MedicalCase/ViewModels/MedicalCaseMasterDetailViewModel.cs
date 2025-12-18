@@ -74,13 +74,13 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
 
     #region OpenSpec: unify-herb-list-controls - 处方编辑属性
 
-    private ObservableCollection<HerbDto> _allHerbs = new();
+    private ObservableCollection<HerbDetailDto> _allHerbs = new();
     private ObservableCollection<PrescriptionItemViewModel> _herbItems = new();
 
     /// <summary>
     /// 所有药材列表 - 用于拼音自动补全
     /// </summary>
-    public ObservableCollection<HerbDto> AllHerbs
+    public ObservableCollection<HerbDetailDto> AllHerbs
     {
         get => _allHerbs;
         private set => SetProperty(ref _allHerbs, value);
@@ -335,7 +335,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
         {
             // 使用SearchAsync("")获取所有药材（无过滤条件）
             var herbs = await _herbRepository.SearchAsync(string.Empty);
-            AllHerbs = new ObservableCollection<HerbDto>(herbs);
+            AllHerbs = new ObservableCollection<HerbDetailDto>(herbs);
             Logger.LogDebug("加载药材列表完成: {Count}个", AllHerbs.Count);
         }
         catch (Exception ex)

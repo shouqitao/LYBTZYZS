@@ -34,7 +34,7 @@ namespace LYBT.Module.Formulas.Services
             _logger = logger;
         }
 
-        public async Task<Result<PagedResult<FormulaDto>>> GetPagedAsync(
+        public async Task<Result<PagedResult<FormulaDetailDto>>> GetPagedAsync(
             int page = 1,
             int pageSize = 20,
             string? keyword = null,
@@ -81,19 +81,19 @@ namespace LYBT.Module.Formulas.Services
                 // 注意: 当应用了角色过滤或分类过滤时，TotalCount需要更新
                 var needsRecalculateTotal = (!isAdmin && currentUserId.HasValue) || !string.IsNullOrWhiteSpace(category);
 
-                var dto = new PagedResult<FormulaDto>
+                var dto = new PagedResult<FormulaDetailDto>
                 {
-                    Items = _mapper.Map<List<FormulaDto>>(filteredList),
+                    Items = _mapper.Map<List<FormulaDetailDto>>(filteredList),
                     TotalCount = needsRecalculateTotal ? filteredList.Count : pagedResult.TotalCount,
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
                 };
-                return Result<PagedResult<FormulaDto>>.Success(dto);
+                return Result<PagedResult<FormulaDetailDto>>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取验方列表失败");
-                return Result<PagedResult<FormulaDto>>.Failure("获取验方列表失败");
+                return Result<PagedResult<FormulaDetailDto>>.Failure("获取验方列表失败");
             }
         }
 
@@ -151,26 +151,26 @@ namespace LYBT.Module.Formulas.Services
             }
         }
 
-        public async Task<Result<FormulaDto>> GetByIdAsync(Guid id)
+        public async Task<Result<FormulaDetailDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 // 使用优化后的查询方法，包含所有药材配伍
                 var entity = await _repository.GetByIdWithHerbsAsync(id);
                 if (entity == null)
-                    return Result<FormulaDto>.Failure("验方不存在");
+                    return Result<FormulaDetailDto>.Failure("验方不存在");
 
-                var dto = _mapper.Map<FormulaDto>(entity);
-                return Result<FormulaDto>.Success(dto);
+                var dto = _mapper.Map<FormulaDetailDto>(entity);
+                return Result<FormulaDetailDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取验方详情失败");
-                return Result<FormulaDto>.Failure("获取验方详情失败");
+                return Result<FormulaDetailDto>.Failure("获取验方详情失败");
             }
         }
 
-        public async Task<Result<FormulaDto>> CreateAsync(FormulaInputDto dto, Guid? creatorId = null)
+        public async Task<Result<FormulaDetailDto>> CreateAsync(FormulaInputDto dto, Guid? creatorId = null)
         {
             try
             {
@@ -205,24 +205,24 @@ namespace LYBT.Module.Formulas.Services
                 };
 
                 var result = await _repository.AddAsync(entity);
-                var resultDto = _mapper.Map<FormulaDto>(result);
-                return Result<FormulaDto>.Success(resultDto);
+                var resultDto = _mapper.Map<FormulaDetailDto>(result);
+                return Result<FormulaDetailDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "创建验方失败");
-                return Result<FormulaDto>.Failure("创建验方失败");
+                return Result<FormulaDetailDto>.Failure("创建验方失败");
             }
         }
 
-        public async Task<Result<FormulaDto>> UpdateAsync(Guid id, FormulaInputDto dto)
+        public async Task<Result<FormulaDetailDto>> UpdateAsync(Guid id, FormulaInputDto dto)
         {
             try
             {
                 // Issue #2014: 使用GetByIdWithHerbsAsync（包含Herbs集合）
                 var entity = await _repository.GetByIdWithHerbsAsync(id);
                 if (entity == null)
-                    return Result<FormulaDto>.Failure("验方不存在");
+                    return Result<FormulaDetailDto>.Failure("验方不存在");
 
                 // Issue #2014: 手动更新基础字段（包括新增的Indication）
                 entity.Name = dto.Name;
@@ -258,35 +258,35 @@ namespace LYBT.Module.Formulas.Services
                 }
 
                 var result = await _repository.UpdateAsync(entity);
-                var resultDto = _mapper.Map<FormulaDto>(result);
-                return Result<FormulaDto>.Success(resultDto);
+                var resultDto = _mapper.Map<FormulaDetailDto>(result);
+                return Result<FormulaDetailDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新验方失败");
-                return Result<FormulaDto>.Failure("更新验方失败");
+                return Result<FormulaDetailDto>.Failure("更新验方失败");
             }
         }
 
-        public async Task<Result<List<FormulaDto>>> SearchAsync(string keyword)
+        public async Task<Result<List<FormulaDetailDto>>> SearchAsync(string keyword)
         {
             try
             {
                 // 简化搜索逻辑 - 直接使用分页查询，取前100个结果
                 if (string.IsNullOrWhiteSpace(keyword))
                 {
-                    return Result<List<FormulaDto>>.Success(new List<FormulaDto>());
+                    return Result<List<FormulaDetailDto>>.Success(new List<FormulaDetailDto>());
                 }
 
                 var pagedResult = await _repository.GetPagedWithDetailsAsync(1, 100, keyword);
-                var formulaDtos = _mapper.Map<List<FormulaDto>>(pagedResult.Items);
+                var formulaDtos = _mapper.Map<List<FormulaDetailDto>>(pagedResult.Items);
 
-                return Result<List<FormulaDto>>.Success(formulaDtos);
+                return Result<List<FormulaDetailDto>>.Success(formulaDtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "搜索处方时发生错误，关键字：{Keyword}", keyword);
-                return Result<List<FormulaDto>>.Failure($"搜索处方失败：{ex.Message}");
+                return Result<List<FormulaDetailDto>>.Failure($"搜索处方失败：{ex.Message}");
             }
         }
 
@@ -383,7 +383,7 @@ namespace LYBT.Module.Formulas.Services
         /// 获取待验证的验方列表 (Issue #1349)
         /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
         /// </summary>
-        public async Task<Result<List<FormulaDto>>> GetPendingValidationFormulasAsync()
+        public async Task<Result<List<FormulaDetailDto>>> GetPendingValidationFormulasAsync()
         {
             try
             {
@@ -396,15 +396,15 @@ namespace LYBT.Module.Formulas.Services
                     .ToList();
 
                 // 映射为DTO
-                var formulaDtos = _mapper.Map<List<FormulaDto>>(pendingFormulas);
+                var formulaDtos = _mapper.Map<List<FormulaDetailDto>>(pendingFormulas);
 
                 _logger.LogInformation("查询到 {Count} 个待验证验方", formulaDtos.Count);
-                return Result<List<FormulaDto>>.Success(formulaDtos);
+                return Result<List<FormulaDetailDto>>.Success(formulaDtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取待验证验方列表失败");
-                return Result<List<FormulaDto>>.Failure("获取待验证验方列表失败");
+                return Result<List<FormulaDetailDto>>.Failure("获取待验证验方列表失败");
             }
         }
 
@@ -428,18 +428,18 @@ namespace LYBT.Module.Formulas.Services
             {
                 // 逐个导入验方
                 int index = 0;
-                foreach (var formulaDto in formulas)
+                foreach (var FormulaDetailDto in formulas)
                 {
                     index++;
                     try
                     {
-                        if (string.IsNullOrWhiteSpace(formulaDto.Name))
+                        if (string.IsNullOrWhiteSpace(FormulaDetailDto.Name))
                         {
                             result.FailureCount++;
                             result.FailedItems.Add(new FormulaImportErrorDto
                             {
                                 RowIndex = index,
-                                FormulaName = formulaDto.Name ?? string.Empty,
+                                FormulaName = FormulaDetailDto.Name ?? string.Empty,
                                 ErrorMessage = "验方名称不能为空"
                             });
                             continue;
@@ -448,12 +448,12 @@ namespace LYBT.Module.Formulas.Services
                         // 创建验方实体（从DTO映射）
                         var formula = new Formula
                         {
-                            Name = formulaDto.Name,
-                            Effect = formulaDto.Effect,
-                            Usage = formulaDto.Usage,
-                            Property = formulaDto.Property,
-                            IsShared = formulaDto.IsShared,
-                            Remark = formulaDto.Remark,
+                            Name = FormulaDetailDto.Name,
+                            Effect = FormulaDetailDto.Effect,
+                            Usage = FormulaDetailDto.Usage,
+                            Property = FormulaDetailDto.Property,
+                            IsShared = FormulaDetailDto.IsShared,
+                            Remark = FormulaDetailDto.Remark,
                             // Note: Indications, Contraindications, Preparation, Source exist in DTO but not in Entity
                             Status = CommonStatus.Enabled,
                             ValidationStatus = FormulaValidationStatus.Draft, // 导入的验方初始为Draft
@@ -462,7 +462,7 @@ namespace LYBT.Module.Formulas.Services
                         };
 
                         // 添加药材（从DTO列表）
-                        foreach (var herbDto in formulaDto.Herbs)
+                        foreach (var herbDto in FormulaDetailDto.Herbs)
                         {
                             // 尝试自动匹配药材
                             var matchedHerb = await TryMatchHerbAsync(herbDto.HerbName);
@@ -499,7 +499,7 @@ namespace LYBT.Module.Formulas.Services
                         }
 
                         var savedFormula = await _repository.AddAsync(formula);
-                        var formulaResultDto = _mapper.Map<FormulaDto>(savedFormula);
+                        var formulaResultDto = _mapper.Map<FormulaDetailDto>(savedFormula);
 
                         result.SuccessCount++;
                         result.SuccessfulIds.Add(savedFormula.Id);
@@ -511,11 +511,11 @@ namespace LYBT.Module.Formulas.Services
                         result.FailedItems.Add(new FormulaImportErrorDto
                         {
                             RowIndex = index,
-                            FormulaName = formulaDto.Name ?? string.Empty,
+                            FormulaName = FormulaDetailDto.Name ?? string.Empty,
                             ErrorMessage = $"导入失败：{ex.Message}",
                             ErrorDetails = ex.StackTrace
                         });
-                        _logger.LogError(ex, "导入验方 {FormulaName} 时发生错误", formulaDto.Name);
+                        _logger.LogError(ex, "导入验方 {FormulaName} 时发生错误", FormulaDetailDto.Name);
                     }
                 }
 
@@ -749,14 +749,14 @@ namespace LYBT.Module.Formulas.Services
         /// <summary>
         /// 切换验方状态（启用/禁用）
         /// </summary>
-        public async Task<Result<FormulaDto>> ToggleStatusAsync(Guid id)
+        public async Task<Result<FormulaDetailDto>> ToggleStatusAsync(Guid id)
         {
             try
             {
                 var entity = await _repository.GetByIdAsync(id);
                 if (entity == null)
                 {
-                    return Result<FormulaDto>.Failure("验方不存在");
+                    return Result<FormulaDetailDto>.Failure("验方不存在");
                 }
 
                 // 切换状态
@@ -766,23 +766,23 @@ namespace LYBT.Module.Formulas.Services
                 entity.UpdatedAt = DateTime.Now;
 
                 var result = await _repository.UpdateAsync(entity);
-                var dto = _mapper.Map<FormulaDto>(result);
+                var dto = _mapper.Map<FormulaDetailDto>(result);
 
                 _logger.LogInformation("验方状态已切换: {FormulaId}, 新状态: {Status}", id, entity.Status);
 
-                return Result<FormulaDto>.Success(dto);
+                return Result<FormulaDetailDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "切换验方状态失败: {FormulaId}", id);
-                return Result<FormulaDto>.Failure("切换验方状态失败");
+                return Result<FormulaDetailDto>.Failure("切换验方状态失败");
             }
         }
 
         /// <summary>
         /// 恢复软删除的验方
         /// </summary>
-        public async Task<Result<FormulaDto>> RestoreAsync(Guid id)
+        public async Task<Result<FormulaDetailDto>> RestoreAsync(Guid id)
         {
             try
             {
@@ -790,12 +790,12 @@ namespace LYBT.Module.Formulas.Services
                 var entity = await _repository.GetByIdIncludingDeletedAsync(id);
                 if (entity == null)
                 {
-                    return Result<FormulaDto>.Failure("验方不存在");
+                    return Result<FormulaDetailDto>.Failure("验方不存在");
                 }
 
                 if (!entity.IsDeleted)
                 {
-                    return Result<FormulaDto>.Failure("该验方未被删除，无需恢复");
+                    return Result<FormulaDetailDto>.Failure("该验方未被删除，无需恢复");
                 }
 
                 // 恢复软删除
@@ -803,16 +803,16 @@ namespace LYBT.Module.Formulas.Services
                 entity.UpdatedAt = DateTime.Now;
 
                 var result = await _repository.UpdateAsync(entity);
-                var dto = _mapper.Map<FormulaDto>(result);
+                var dto = _mapper.Map<FormulaDetailDto>(result);
 
                 _logger.LogInformation("验方已恢复: {FormulaId}, {FormulaName}", id, entity.Name);
 
-                return Result<FormulaDto>.Success(dto);
+                return Result<FormulaDetailDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "恢复验方失败: {FormulaId}", id);
-                return Result<FormulaDto>.Failure("恢复验方失败");
+                return Result<FormulaDetailDto>.Failure("恢复验方失败");
             }
         }
     }

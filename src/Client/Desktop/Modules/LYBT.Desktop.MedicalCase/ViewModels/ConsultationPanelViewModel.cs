@@ -150,7 +150,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 初始化面板（由父ViewModel调用）
         /// </summary>
-        public void Initialize(Guid medicalCaseId, ConsultationDto? existingConsultation = null)
+        public void Initialize(Guid medicalCaseId, ConsultationDetailDto? existingConsultation = null)
         {
             _medicalCaseId = medicalCaseId;
 
@@ -166,7 +166,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// 从DTO加载数据
         /// OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         /// </summary>
-        private void LoadFromDto(ConsultationDto dto)
+        private void LoadFromDto(ConsultationDetailDto dto)
         {
             PresentIllness = dto.PresentIllness ?? string.Empty;
             TCMDiagnosis = dto.TCMDiagnosis ?? string.Empty;

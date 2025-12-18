@@ -53,10 +53,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -72,9 +72,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -94,10 +94,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -114,9 +114,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -137,11 +137,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "归脾丸", PinYinCode = "guipiwan", Price = 25.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "归脾丸", PinYinCode = "guipiwan", Price = 25.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -163,10 +163,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -186,11 +186,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -211,11 +211,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -235,11 +235,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "归脾丸", PinYinCode = "guipiwan", Price = 25.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "归脾丸", PinYinCode = "guipiwan", Price = 25.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -258,10 +258,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "生黄芪", PinYinCode = "shenghuangqi", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "黄连", PinYinCode = "huanglian", Price = 20.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "生黄芪", PinYinCode = "shenghuangqi", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "黄连", PinYinCode = "huanglian", Price = 20.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -281,11 +281,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Price = 20.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "川芎", PinYinCode = "chuanxiong", Price = 18.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Price = 20.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "川芎", PinYinCode = "chuanxiong", Price = 18.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -304,9 +304,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -326,10 +326,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -348,9 +348,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -370,9 +370,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "生黄芪", PinYinCode = "shenghuangqi", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "生黄芪", PinYinCode = "shenghuangqi", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -392,9 +392,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "生黄芪", PinYinCode = "shenghuangqi", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "生黄芪", PinYinCode = "shenghuangqi", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -410,9 +410,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -432,10 +432,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Price = 20.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Price = 20.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -451,9 +451,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -469,9 +469,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -487,9 +487,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -505,9 +505,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = null, PinYinCode = "test", Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = null, PinYinCode = "test", Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -523,9 +523,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = null, Price = 15.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = null, Price = 15.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -556,7 +556,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            viewModel.AllHerbs = new ObservableCollection<HerbDto>();
+            viewModel.AllHerbs = new ObservableCollection<HerbDetailDto>();
 
             // Act
             viewModel.HerbName = "test";
@@ -574,11 +574,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "归脾丸", PinYinCode = "guipiwan", Price = 25.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归尾", PinYinCode = "dangguiwei", Price = 18.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "归脾丸", PinYinCode = "guipiwan", Price = 25.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -596,12 +596,12 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "丹参", PinYinCode = "danshen", Price = 12.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "丹参", PinYinCode = "danshen", Price = 12.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -625,13 +625,13 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange - 模拟真实场景：医生输入"dg"查找当归
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "丹参", PinYinCode = "danshen", Price = 12.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "杜仲", PinYinCode = "duzhong", Price = 18.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "丹参", PinYinCode = "danshen", Price = 12.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "杜仲", PinYinCode = "duzhong", Price = 18.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -648,11 +648,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange - 模拟用户逐字输入的场景
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>
+            var testHerbs = new ObservableCollection<HerbDetailDto>
             {
-                new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
-                new HerbDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m }
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", PinYinCode = "dangshen", Price = 20.0m },
+                new HerbDetailDto { Id = Guid.NewGuid(), Name = "大黄", PinYinCode = "dahuang", Price = 10.0m }
             };
             viewModel.AllHerbs = testHerbs;
 
@@ -685,10 +685,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange - 创建100个药材的数据集
             var viewModel = CreateViewModel();
-            var testHerbs = new ObservableCollection<HerbDto>();
+            var testHerbs = new ObservableCollection<HerbDetailDto>();
             for (int i = 0; i < 100; i++)
             {
-                testHerbs.Add(new HerbDto
+                testHerbs.Add(new HerbDetailDto
                 {
                     Id = Guid.NewGuid(),
                     Name = $"药材{i}",
@@ -697,7 +697,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
                 });
             }
             // 添加目标药材
-            testHerbs.Add(new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m });
+            testHerbs.Add(new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Price = 15.0m });
             viewModel.AllHerbs = testHerbs;
 
             // Act & Measure

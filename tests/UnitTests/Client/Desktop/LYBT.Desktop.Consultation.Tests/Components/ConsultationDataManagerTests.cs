@@ -35,7 +35,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
             var mockDetail = new MedicalCaseDetailDto
             {
                 Id = testId,
-                Consultation = new ConsultationDto
+                Consultation = new ConsultationDetailDto
                 {
                     // OpenSpec: refactor-diagnosis-fields - ChiefComplaint已移除
                     TCMDiagnosis = "测试诊断"
@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
             var mockDetail = new MedicalCaseDetailDto
             {
                 Id = testId,
-                Consultation = new ConsultationDto
+                Consultation = new ConsultationDetailDto
                 {
                     // OpenSpec: refactor-diagnosis-fields - ChiefComplaint已移除
                     TCMDiagnosis = "原始诊断"
@@ -70,10 +70,10 @@ namespace LYBT.Desktop.Consultation.Tests.Components
                 .ReturnsAsync(mockDetail);
             await _dataManager.InitializeAsync(testId);
 
-            _dataManager.UpdateField(nameof(ConsultationDto.TCMDiagnosis), "新诊断");
+            _dataManager.UpdateField(nameof(ConsultationDetailDto.TCMDiagnosis), "新诊断");
 
             _mockRepository.Setup(r => r.UpdateConsultationAsync(It.IsAny<Guid>(), It.IsAny<ConsultationInputDto>()))
-                .ReturnsAsync(new ConsultationDto());
+                .ReturnsAsync(new ConsultationDetailDto());
 
             // Act
             var result = await _dataManager.SaveAsync();
@@ -91,7 +91,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
             var mockDetail = new MedicalCaseDetailDto
             {
                 Id = testId,
-                Consultation = new ConsultationDto
+                Consultation = new ConsultationDetailDto
                 {
                     // OpenSpec: refactor-diagnosis-fields - ChiefComplaint已移除
                     TCMDiagnosis = "原始诊断"
@@ -102,7 +102,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
             await _dataManager.InitializeAsync(testId);
 
             // Act
-            _dataManager.UpdateField(nameof(ConsultationDto.TCMDiagnosis), "新诊断");
+            _dataManager.UpdateField(nameof(ConsultationDetailDto.TCMDiagnosis), "新诊断");
 
             // Assert
             _dataManager.HasChanges.Should().BeTrue();

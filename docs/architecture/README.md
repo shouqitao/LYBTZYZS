@@ -16,6 +16,7 @@
 | 文档 | 描述 | 适用场景 |
 |------|------|----------|
 | [命名规范](./naming-conventions.md) | 各层代码命名规则 | 新增代码、代码审查 |
+| [DTO架构规范](./dto-architecture-specification.md) | DTO分类、命名、继承策略 | DTO设计、API接口 |
 | [枚举使用规范](./enum-usage-guidelines.md) | 枚举分类和使用场景 | 枚举设计、状态管理 |
 | [Status vs IsDeleted](./status-vs-isdeleted.md) | 启用/禁用与软删除的区分 | 实体设计、状态字段 |
 
@@ -61,11 +62,15 @@ MedicalCase          MedicalCaseStatus (Draft/Active/Completed/Cancelled)
 ```
 用途           后缀              示例
 ─────────────────────────────────────
-查询返回       Dto               MedicalCaseDto
-创建请求       CreateDto         MedicalCaseCreateDto
-更新请求       UpdateDto         MedicalCaseUpdateDto
-列表项         ListItemDto       PatientListItemDto
+列表视图       ListDto           UserListDto, PatientListDto
+详情视图       DetailDto         UserDetailDto, PatientDetailDto
+创建/更新      InputDto          UserInputDto, PatientInputDto
+仅创建         CreateDto         PrescriptionCreateDto
+仅更新         UpdateDto         PrescriptionUpdateDto
+业务操作       {Operation}Dto    ChangePasswordDto
 ```
+
+> 详细规范请参阅 [DTO架构规范](./dto-architecture-specification.md)
 
 ## 相关文档
 

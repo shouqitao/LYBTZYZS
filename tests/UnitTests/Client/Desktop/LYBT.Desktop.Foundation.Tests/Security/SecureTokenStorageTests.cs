@@ -136,7 +136,7 @@ public class SecureTokenStorageTests : IDisposable
         {
             Token = "test_access_token_" + Guid.NewGuid().ToString("N"),
             RefreshToken = "test_refresh_token_" + Guid.NewGuid().ToString("N"),
-            User = new UserDto
+            User = new UserDetailDto
             {
                 Id = Guid.NewGuid(),
                 UserName = "test_user",

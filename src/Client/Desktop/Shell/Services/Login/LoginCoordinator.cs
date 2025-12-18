@@ -28,7 +28,7 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly object _stateLock = new();
 
     private LoginFlowState _currentState = LoginFlowState.NotLoggedIn;
-    private UserDto? _currentUser;
+    private UserDetailDto? _currentUser;
     private DateTime? _loginTime;
     private DateTime? _lastStateChangeTime;
     private int _loginAttemptCount;
@@ -75,7 +75,7 @@ public class LoginCoordinator : ILoginCoordinator
     }
 
     /// <inheritdoc />
-    public UserDto? CurrentUser
+    public UserDetailDto? CurrentUser
     {
         get
         {
@@ -221,7 +221,7 @@ public class LoginCoordinator : ILoginCoordinator
     }
 
     /// <inheritdoc />
-    public async Task HandleLoginSuccessAsync(UserDto user, DateTime tokenExpiresAt)
+    public async Task HandleLoginSuccessAsync(UserDetailDto user, DateTime tokenExpiresAt)
     {
         ArgumentNullException.ThrowIfNull(user);
 
@@ -312,7 +312,7 @@ public class LoginCoordinator : ILoginCoordinator
     /// <summary>
     /// 启动会话
     /// </summary>
-    private async Task StartSessionAsync(UserDto user, DateTime tokenExpiresAt)
+    private async Task StartSessionAsync(UserDetailDto user, DateTime tokenExpiresAt)
     {
         lock (_stateLock)
         {
@@ -329,7 +329,7 @@ public class LoginCoordinator : ILoginCoordinator
     /// <summary>
     /// 为用户加载所需模块
     /// </summary>
-    private async Task LoadModulesForUserAsync(UserDto user)
+    private async Task LoadModulesForUserAsync(UserDetailDto user)
     {
         bool isAdmin = user.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
                        user.Role == UserRole.Admin;
@@ -358,7 +358,7 @@ public class LoginCoordinator : ILoginCoordinator
     /// <summary>
     /// 导航到角色首页
     /// </summary>
-    private Task NavigateToRoleHomeAsync(UserDto user)
+    private Task NavigateToRoleHomeAsync(UserDetailDto user)
     {
         var roleName = user.Role.ToString();
 

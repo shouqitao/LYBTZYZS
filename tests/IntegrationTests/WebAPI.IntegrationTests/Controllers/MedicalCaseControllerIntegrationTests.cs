@@ -4,7 +4,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Contracts.MedicalCase;  // MedicalCaseDto
+using LYBT.Shared.Models.Contracts.MedicalCase;  // MedicalCaseDetailDto
 using LYBT.Tests.Common;
 using LYBT.Tests.Common.AssertionHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -138,12 +138,12 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            // Issue #2231: API返回MedicalCaseDto而不是MedicalCaseEntity
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            // Issue #2231: API返回MedicalCaseDetailDto而不是MedicalCaseEntity
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data!.PatientId.Should().Be(_testPatientId);
             apiResponse.Data.CaseStatus.Should().Be(MedicalCaseStatus.Active);
-            // MedicalCaseDto只有ConsultationId,没有Consultation导航属性
+            // MedicalCaseDetailDto只有ConsultationId,没有Consultation导航属性
             apiResponse.Data.ConsultationId.Should().NotBeNull();
         }
 
@@ -166,7 +166,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Assert
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             // Issue #2232: 验证DoctorId被正确设置为JWT Token中的NameIdentifier
             apiResponse.Data.Should().NotBeNull();
@@ -195,7 +195,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Assert
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             // Issue #2232: 验证DoctorName从Users表的RealName字段正确获取
             apiResponse.Data.Should().NotBeNull();
@@ -224,7 +224,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Assert
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             // Issue #2232: 验证PatientName从Patients表的Name字段正确获取
             apiResponse.Data.Should().NotBeNull();
@@ -321,9 +321,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data.Should().NotBeNull();
-            // Issue #2231: MedicalCaseDto不包含Consultation导航属性，仅验证ConsultationId
+            // Issue #2231: MedicalCaseDetailDto不包含Consultation导航属性，仅验证ConsultationId
         }
 
         [Fact]
@@ -370,9 +370,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data.Should().NotBeNull();
-            // Issue #2231: MedicalCaseDto不包含NeedsPrescription字段，跳过此断言
+            // Issue #2231: MedicalCaseDetailDto不包含NeedsPrescription字段，跳过此断言
         }
 
         [Fact]
@@ -523,7 +523,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
@@ -546,7 +546,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
@@ -565,7 +565,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Assert - API已简化，/status 端点允许直接完成
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
@@ -585,7 +585,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data!.Id.Should().Be(medicalCase.Id);
         }
 
@@ -647,7 +647,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Draft);
 
@@ -695,7 +695,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Draft);
 
             _output.WriteLine($"✅ SaveDraft幂等性验证通过");
@@ -724,7 +724,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
 
@@ -776,7 +776,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
 
             _output.WriteLine($"✅ Cancel带理由成功");
@@ -801,7 +801,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
 
             _output.WriteLine($"✅ Cancel对Draft状态成功");
@@ -1131,7 +1131,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         /// ⚠️ Issue #1669 Phase 6: 每次调用创建独立患者，避免"患者已有未完成病案"错误
         /// Issue #2231: 使用FixedDoctorId作为审计字段的用户ID
         /// </summary>
-        private async Task<MedicalCaseDto> CreateTestMedicalCaseAsync()
+        private async Task<MedicalCaseDetailDto> CreateTestMedicalCaseAsync()
         {
             // 为本次测试创建独立的患者（避免多个测试共享患者导致冲突）
             var newPatientId = Guid.NewGuid();
@@ -1176,14 +1176,14 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             return apiResponse.Data!;
         }
 
         /// <summary>
         /// 创建测试病案并完成辨证（Step 1完成）
         /// </summary>
-        private async Task<MedicalCaseDto> CreateTestMedicalCaseWithConsultationAsync()
+        private async Task<MedicalCaseDetailDto> CreateTestMedicalCaseWithConsultationAsync()
         {
             var medicalCase = await CreateTestMedicalCaseAsync();
 
@@ -1214,18 +1214,18 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // ⚠️ Issue #1669: 验证更新请求是否成功
             updateResponse.ShouldBeOk();
-            await updateResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            await updateResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             // 重新获取更新后的病案
             var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
-            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             return apiResponse.Data!;
         }
 
         /// <summary>
         /// 创建测试病案、辨证、标记需要处方（Ready for Prescription）
         /// </summary>
-        private async Task<MedicalCaseDto> CreateTestMedicalCaseReadyForPrescriptionAsync()
+        private async Task<MedicalCaseDetailDto> CreateTestMedicalCaseReadyForPrescriptionAsync()
         {
             var medicalCase = await CreateTestMedicalCaseWithConsultationAsync();
 
@@ -1236,18 +1236,18 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // ⚠️ Issue #1669: 验证标记请求是否成功
             flagResponse.ShouldBeOk();
-            await flagResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            await flagResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             // 重新获取更新后的病案
             var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
-            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             return apiResponse.Data!;
         }
 
         /// <summary>
         /// 创建测试病案并包含处方（完整流程）
         /// </summary>
-        private async Task<(MedicalCaseDto, PrescriptionEntity)> CreateTestMedicalCaseWithPrescriptionAsync()
+        private async Task<(MedicalCaseDetailDto, PrescriptionEntity)> CreateTestMedicalCaseWithPrescriptionAsync()
         {
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
@@ -1275,7 +1275,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // 重新获取病案（包含处方）
             var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
-            var updatedCase = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var updatedCase = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             return (updatedCase.Data!, prescription);
         }
@@ -1283,7 +1283,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         /// <summary>
         /// 创建并完成病案（完整流程 + 完成）
         /// </summary>
-        private async Task<MedicalCaseDto> CreateAndCompleteMedicalCaseAsync()
+        private async Task<MedicalCaseDetailDto> CreateAndCompleteMedicalCaseAsync()
         {
             var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
@@ -1293,11 +1293,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // ⚠️ Issue #1669: 验证完成请求是否成功
             completeResponse.ShouldBeOk();
-            await completeResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            await completeResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             // 重新获取完成后的病案
             var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
-            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             return apiResponse.Data!;
         }
 

@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// <summary>
         /// 当前用户
         /// </summary>
-        UserDto? CurrentUser { get; }
+        UserDetailDto? CurrentUser { get; }
 
         /// <summary>
         /// 当前用户ID
@@ -61,17 +61,17 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// <summary>
         /// 设置当前用户
         /// </summary>
-        void SetCurrentUser(UserDto user, string token);
+        void SetCurrentUser(UserDetailDto user, string token);
 
         /// <summary>
         /// 设置会话信息（支持刷新令牌）
         /// </summary>
-        void SetSession(UserDto user, string accessToken, string? refreshToken = null);
+        void SetSession(UserDetailDto user, string accessToken, string? refreshToken = null);
 
         /// <summary>
         /// 设置用户会话（SetSession 的别名，兼容性保留）
         /// </summary>
-        void SetUserSession(UserDto user, string token);
+        void SetUserSession(UserDetailDto user, string token);
 
         /// <summary>
         /// 更新访问令牌
@@ -141,7 +141,7 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// <summary>
         /// 构造函数
         /// </summary>
-        public SessionChangedEventArgs(bool isLoggedIn, UserDto? user = null)
+        public SessionChangedEventArgs(bool isLoggedIn, UserDetailDto? user = null)
         {
             IsLoggedIn = isLoggedIn;
             User = user;
@@ -155,6 +155,6 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// <summary>
         /// 用户信息
         /// </summary>
-        public UserDto? User { get; }
+        public UserDetailDto? User { get; }
     }
 }

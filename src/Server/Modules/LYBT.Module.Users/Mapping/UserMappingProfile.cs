@@ -27,8 +27,8 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.LastLoginTime, opt => opt.MapFrom(src => src.LastLoginTime))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
 
-            // 用户实体转UserDetailDtoNew（详情视图）
-            CreateMap<User, UserDetailDtoNew>()
+            // 用户实体转UserDetailDto（详情视图）
+            CreateMap<User, UserDetailDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
                 .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))
@@ -42,23 +42,10 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
 
-            // ==================== 旧DTO映射配置（保持向后兼容） ====================
+            // OpenSpec: dto-architecture-specification - UserDto别名已删除
+            // 统一使用UserDetailDto，移除冗余的UserDto映射配置
 
-            // 用户实体转UserDto（API响应和业务逻辑）
-            // Issue #1262: 显式映射所有字段，确保序列化成功
-            CreateMap<User, UserDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
-                .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))
-                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
-                .ForMember(dest => dest.LastLoginTime, opt => opt.MapFrom(src => src.LastLoginTime))
-                .ForMember(dest => dest.FailedLoginCount, opt => opt.MapFrom(src => src.FailedLoginCount))
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
+            // ==================== 输入DTO映射配置 ====================
 
             // UserInputDto转用户实体（创建和更新场景通用）
             // Issue #1911: 修复重复映射配置导致UserName丢失的问题

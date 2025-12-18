@@ -6,8 +6,8 @@ namespace LYBT.Desktop.Herbs.Models;
 
 /// <summary>
 /// 中药材列表项UI模型 - 用于DataGrid/ListView显示
-/// 替代直接使用HerbDto，实现Desktop层与Shared层的解耦
-/// 保持属性名与HerbDto一致，确保XAML绑定兼容
+/// 替代直接使用HerbDetailDto，实现Desktop层与Shared层的解耦
+/// 保持属性名与HerbDetailDto一致，确保XAML绑定兼容
 /// </summary>
 public class HerbItem : BindableBase
 {
@@ -175,28 +175,28 @@ public class HerbItem : BindableBase
     }
 
     /// <summary>
-    /// 从HerbDto创建HerbItem
+    /// 从HerbDetailDto创建HerbItem
     /// </summary>
-    public static HerbItem FromDto(HerbDto dto)
+    public static HerbItem FromDto(HerbDetailDto dto)
     {
         return new HerbItem
         {
             Id = dto.Id,
             Name = dto.Name,
             Pinyin = dto.PinYinCode,
-            Category = null, // HerbDto中没有此属性
-            Nature = null, // HerbDto中没有此属性
-            Meridian = null, // HerbDto中没有此属性
+            Category = null, // HerbDetailDto中没有此属性
+            Nature = null, // HerbDetailDto中没有此属性
+            Meridian = null, // HerbDetailDto中没有此属性
             Effect = dto.Effect,
-            Indication = null, // HerbDto中没有此属性
-            Contraindication = null, // HerbDto中没有此属性
-            DosageMin = 0, // HerbDto中没有此属性
-            DosageMax = 0, // HerbDto中没有此属性
+            Indication = null, // HerbDetailDto中没有此属性
+            Contraindication = null, // HerbDetailDto中没有此属性
+            DosageMin = 0, // HerbDetailDto中没有此属性
+            DosageMax = 0, // HerbDetailDto中没有此属性
             DosageUnit = dto.Unit,
             Usage = dto.Usage,
             UnitPrice = dto.Price,
             Specification = dto.Spec,
-            Manufacturer = null, // HerbDto中没有此属性
+            Manufacturer = null, // HerbDetailDto中没有此属性
             IsActive = dto.Status == CommonStatus.Enabled,
             // MVP阶段移除Stock属性
             Remark = dto.Remark,
@@ -206,11 +206,11 @@ public class HerbItem : BindableBase
     }
 
     /// <summary>
-    /// 转换为HerbDto（用于API调用）
+    /// 转换为HerbDetailDto（用于API调用）
     /// </summary>
-    public HerbDto ToDto()
+    public HerbDetailDto ToDto()
     {
-        return new HerbDto
+        return new HerbDetailDto
         {
             Id = Id,
             Name = Name,

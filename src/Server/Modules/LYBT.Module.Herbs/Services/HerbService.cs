@@ -34,13 +34,13 @@ namespace LYBT.Module.Herbs.Services
             _validator = validator;
         }
 
-        public async Task<Result<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+        public async Task<Result<PagedResult<HerbDetailDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
         {
             try
             {
                 // 修复：传递keyword参数到Repository进行数据库级别搜索
                 var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-                var dtos = _mapper.Map<List<HerbDto>>(pagedResult.Items);
+                var dtos = _mapper.Map<List<HerbDetailDto>>(pagedResult.Items);
 
                 // Issue #1164: 应用分类筛选（在DTO级别过滤）
                 if (!string.IsNullOrWhiteSpace(category))
@@ -51,19 +51,19 @@ namespace LYBT.Module.Herbs.Services
                     .ToList();
                 }
 
-                var dto = new PagedResult<HerbDto>
+                var dto = new PagedResult<HerbDetailDto>
                 {
                     Items = dtos,
                     TotalCount = !string.IsNullOrWhiteSpace(category) ? dtos.Count : pagedResult.TotalCount,
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
                 };
-                return Result<PagedResult<HerbDto>>.Success(dto);
+                return Result<PagedResult<HerbDetailDto>>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取药材列表失败");
-                return Result<PagedResult<HerbDto>>.Failure("获取药材列表失败");
+                return Result<PagedResult<HerbDetailDto>>.Failure("获取药材列表失败");
             }
         }
 
@@ -102,25 +102,25 @@ namespace LYBT.Module.Herbs.Services
             }
         }
 
-        public async Task<Result<HerbDto>> GetByIdAsync(Guid id)
+        public async Task<Result<HerbDetailDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 var entity = await _repository.GetByIdAsync(id);
                 if (entity == null)
-                    return Result<HerbDto>.Failure("药材不存在");
+                    return Result<HerbDetailDto>.Failure("药材不存在");
 
-                var dto = _mapper.Map<HerbDto>(entity);
-                return Result<HerbDto>.Success(dto);
+                var dto = _mapper.Map<HerbDetailDto>(entity);
+                return Result<HerbDetailDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取药材详情失败");
-                return Result<HerbDto>.Failure("获取药材详情失败");
+                return Result<HerbDetailDto>.Failure("获取药材详情失败");
             }
         }
 
-        public async Task<Result<HerbDto>> CreateAsync(HerbInputDto dto)
+        public async Task<Result<HerbDetailDto>> CreateAsync(HerbInputDto dto)
         {
             try
             {
@@ -130,28 +130,28 @@ namespace LYBT.Module.Herbs.Services
                 {
                     var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                     _logger.LogWarning("药材创建验证失败: {Errors}", string.Join("; ", errors));
-                    return Result<HerbDto>.Failure(errors);
+                    return Result<HerbDetailDto>.Failure(errors);
                 }
 
                 var entity = _mapper.Map<Herb>(dto);
                 var result = await _repository.AddAsync(entity);
-                var resultDto = _mapper.Map<HerbDto>(result);
-                return Result<HerbDto>.Success(resultDto);
+                var resultDto = _mapper.Map<HerbDetailDto>(result);
+                return Result<HerbDetailDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "创建药材失败");
-                return Result<HerbDto>.Failure("创建药材失败");
+                return Result<HerbDetailDto>.Failure("创建药材失败");
             }
         }
 
-        public async Task<Result<HerbDto>> UpdateAsync(Guid id, HerbInputDto dto)
+        public async Task<Result<HerbDetailDto>> UpdateAsync(Guid id, HerbInputDto dto)
         {
             try
             {
                 var entity = await _repository.GetByIdAsync(id);
                 if (entity == null)
-                    return Result<HerbDto>.Failure("药材不存在");
+                    return Result<HerbDetailDto>.Failure("药材不存在");
 
                 // FluentValidation 验证（Phase 1 Task 1.8）
                 var validationResult = await _validator.ValidateAsync(dto);
@@ -159,18 +159,18 @@ namespace LYBT.Module.Herbs.Services
                 {
                     var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                     _logger.LogWarning("药材更新验证失败: {HerbId}, {Errors}", id, string.Join("; ", errors));
-                    return Result<HerbDto>.Failure(errors);
+                    return Result<HerbDetailDto>.Failure(errors);
                 }
 
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);
-                var resultDto = _mapper.Map<HerbDto>(result);
-                return Result<HerbDto>.Success(resultDto);
+                var resultDto = _mapper.Map<HerbDetailDto>(result);
+                return Result<HerbDetailDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新药材失败");
-                return Result<HerbDto>.Failure("更新药材失败");
+                return Result<HerbDetailDto>.Failure("更新药材失败");
             }
         }
 
@@ -188,29 +188,29 @@ namespace LYBT.Module.Herbs.Services
             }
         }
 
-        public async Task<Result<List<HerbDto>>> SearchAsync(string keyword)
+        public async Task<Result<List<HerbDetailDto>>> SearchAsync(string keyword)
         {
             try
             {
                 var entities = await _repository.FindAsync(h =>
                     h.Name.Contains(keyword) ||
                     (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
-                var dtos = _mapper.Map<List<HerbDto>>(entities);
-                return Result<List<HerbDto>>.Success(dtos);
+                var dtos = _mapper.Map<List<HerbDetailDto>>(entities);
+                return Result<List<HerbDetailDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "搜索药材失败: {Keyword}", keyword);
-                return Result<List<HerbDto>>.Failure("搜索药材失败");
+                return Result<List<HerbDetailDto>>.Failure("搜索药材失败");
             }
         }
 
         /// <summary>
         /// 从Excel文件导入药材数据 (Issue #1166)
         /// </summary>
-        public async Task<Result<ImportResultDto<HerbDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
+        public async Task<Result<ImportResultDto<HerbDetailDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
         {
-            var result = new ImportResultDto<HerbDto>
+            var result = new ImportResultDto<HerbDetailDto>
             {
                 FileName = fileName,
                 ImportTime = DateTime.Now
@@ -227,7 +227,7 @@ namespace LYBT.Module.Herbs.Services
                 {
                     result.IsSuccess = false;
                     result.Message = "Excel文件中没有工作表";
-                    return Result<ImportResultDto<HerbDto>>.Failure("Excel文件格式错误");
+                    return Result<ImportResultDto<HerbDetailDto>>.Failure("Excel文件格式错误");
                 }
 
                 var rowCount = worksheet.Dimension?.Rows ?? 0;
@@ -235,7 +235,7 @@ namespace LYBT.Module.Herbs.Services
                 {
                     result.IsSuccess = false;
                     result.Message = "Excel文件中没有数据行";
-                    return Result<ImportResultDto<HerbDto>>.Success(result);
+                    return Result<ImportResultDto<HerbDetailDto>>.Success(result);
                 }
 
                 result.TotalCount = rowCount - 1;
@@ -302,7 +302,7 @@ namespace LYBT.Module.Herbs.Services
                         };
 
                         var savedHerb = await _repository.AddAsync(herb);
-                        var herbDto = _mapper.Map<HerbDto>(savedHerb);
+                        var herbDto = _mapper.Map<HerbDetailDto>(savedHerb);
 
                         result.SuccessCount++;
                         result.SuccessfulIds.Add(savedHerb.Id);
@@ -323,14 +323,14 @@ namespace LYBT.Module.Herbs.Services
                 result.IsSuccess = true;
                 result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
 
-                return Result<ImportResultDto<HerbDto>>.Success(result);
+                return Result<ImportResultDto<HerbDetailDto>>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "导入药材数据时发生错误");
                 result.IsSuccess = false;
                 result.Message = $"导入失败：{ex.Message}";
-                return Result<ImportResultDto<HerbDto>>.Failure($"导入失败：{ex.Message}");
+                return Result<ImportResultDto<HerbDetailDto>>.Failure($"导入失败：{ex.Message}");
             }
         }
 
@@ -344,7 +344,7 @@ namespace LYBT.Module.Herbs.Services
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
                 var herbs = await _repository.GetAllAsync();
-                var herbDtos = _mapper.Map<List<HerbDto>>(herbs);
+                var herbDtos = _mapper.Map<List<HerbDetailDto>>(herbs);
 
                 // 应用分类筛选
                 if (!string.IsNullOrWhiteSpace(category))
@@ -578,12 +578,12 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 获取所有药材数据用于导出（Epic #1962 Task 3.1）
         /// </summary>
-        public async Task<Result<List<HerbDto>>> GetAllForExportAsync(string? category = null)
+        public async Task<Result<List<HerbDetailDto>>> GetAllForExportAsync(string? category = null)
         {
             try
             {
                 var herbs = await _repository.GetAllAsync();
-                var herbDtos = _mapper.Map<List<HerbDto>>(herbs);
+                var herbDtos = _mapper.Map<List<HerbDetailDto>>(herbs);
 
                 // 应用分类筛选
                 if (!string.IsNullOrWhiteSpace(category))
@@ -597,12 +597,12 @@ namespace LYBT.Module.Herbs.Services
                 _logger.LogInformation("导出药材数据: 总数{Count}, 分类筛选{Category}",
                     herbDtos.Count, category ?? "无");
 
-                return Result<List<HerbDto>>.Success(herbDtos);
+                return Result<List<HerbDetailDto>>.Success(herbDtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取导出数据失败");
-                return Result<List<HerbDto>>.Failure($"获取导出数据失败: {ex.Message}");
+                return Result<List<HerbDetailDto>>.Failure($"获取导出数据失败: {ex.Message}");
             }
         }
 
@@ -685,14 +685,14 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 切换药材状态（启用/禁用）
         /// </summary>
-        public async Task<Result<HerbDto>> ToggleStatusAsync(Guid id)
+        public async Task<Result<HerbDetailDto>> ToggleStatusAsync(Guid id)
         {
             try
             {
                 var entity = await _repository.GetByIdAsync(id);
                 if (entity == null)
                 {
-                    return Result<HerbDto>.Failure("药材不存在");
+                    return Result<HerbDetailDto>.Failure("药材不存在");
                 }
 
                 // 切换状态
@@ -702,23 +702,23 @@ namespace LYBT.Module.Herbs.Services
                 entity.UpdatedAt = DateTime.Now;
 
                 var result = await _repository.UpdateAsync(entity);
-                var dto = _mapper.Map<HerbDto>(result);
+                var dto = _mapper.Map<HerbDetailDto>(result);
 
                 _logger.LogInformation("药材状态已切换: {HerbId}, 新状态: {Status}", id, entity.Status);
 
-                return Result<HerbDto>.Success(dto);
+                return Result<HerbDetailDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "切换药材状态失败: {HerbId}", id);
-                return Result<HerbDto>.Failure("切换药材状态失败");
+                return Result<HerbDetailDto>.Failure("切换药材状态失败");
             }
         }
 
         /// <summary>
         /// 恢复软删除的药材
         /// </summary>
-        public async Task<Result<HerbDto>> RestoreAsync(Guid id)
+        public async Task<Result<HerbDetailDto>> RestoreAsync(Guid id)
         {
             try
             {
@@ -726,12 +726,12 @@ namespace LYBT.Module.Herbs.Services
                 var entity = await _repository.GetByIdIncludingDeletedAsync(id);
                 if (entity == null)
                 {
-                    return Result<HerbDto>.Failure("药材不存在");
+                    return Result<HerbDetailDto>.Failure("药材不存在");
                 }
 
                 if (!entity.IsDeleted)
                 {
-                    return Result<HerbDto>.Failure("该药材未被删除，无需恢复");
+                    return Result<HerbDetailDto>.Failure("该药材未被删除，无需恢复");
                 }
 
                 // 恢复软删除
@@ -739,16 +739,16 @@ namespace LYBT.Module.Herbs.Services
                 entity.UpdatedAt = DateTime.Now;
 
                 var result = await _repository.UpdateAsync(entity);
-                var dto = _mapper.Map<HerbDto>(result);
+                var dto = _mapper.Map<HerbDetailDto>(result);
 
                 _logger.LogInformation("药材已恢复: {HerbId}, {HerbName}", id, entity.Name);
 
-                return Result<HerbDto>.Success(dto);
+                return Result<HerbDetailDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "恢复药材失败: {HerbId}", id);
-                return Result<HerbDto>.Failure("恢复药材失败");
+                return Result<HerbDetailDto>.Failure("恢复药材失败");
             }
         }
     }

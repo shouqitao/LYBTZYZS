@@ -8,7 +8,7 @@ namespace LYBT.Desktop.Consultation.Interfaces
     /// Desktop层架构重构 Phase 2: DataManager接口化重构
     /// 目的：消除具体类依赖，提升可测试性
     /// </summary>
-    public interface IConsultationDataManager : IDataManager<ConsultationDto>
+    public interface IConsultationDataManager : IDataManager<ConsultationDetailDto>
     {
         /// <summary>
         /// 医案ID（聚合根ID）
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Consultation.Interfaces
         /// <summary>
         /// 更新诊断信息
         /// </summary>
-        void UpdateConsultation(ConsultationDto consultation);
+        void UpdateConsultation(ConsultationDetailDto consultation);
 
         /// <summary>
         /// 更新单个字段

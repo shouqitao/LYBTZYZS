@@ -105,9 +105,9 @@ public class PendingQueueManager
     /// 为待看诊队列选中的患者加载完整信息
     /// Issue #1790: 从PatientSelectionViewModel提取
     /// </summary>
-    public async Task<PatientDto?> LoadPatientForPendingCaseAsync(
+    public async Task<PatientDetailDto?> LoadPatientForPendingCaseAsync(
         Guid patientId,
-        ObservableCollection<PatientDto> currentPatients)
+        ObservableCollection<PatientDetailDto> currentPatients)
     {
         try
         {
@@ -196,6 +196,6 @@ public class PendingQueueLoadedEventArgs : EventArgs
 /// </summary>
 public class PatientLoadedEventArgs : EventArgs
 {
-    public PatientDto Patient { get; set; } = null!;
+    public PatientDetailDto Patient { get; set; } = null!;
     public string Source { get; set; } = string.Empty;
 }

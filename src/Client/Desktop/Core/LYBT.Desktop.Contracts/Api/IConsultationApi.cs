@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取诊疗记录列表（支持分页和查询）
         /// </summary>
         [Refit.Get("/api/v1/consultations")]
-        Task<ApiResponse<PagedResult<ConsultationDto>>> GetConsultationsAsync(
+        Task<ApiResponse<PagedResult<ConsultationDetailDto>>> GetConsultationsAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null);
@@ -22,13 +22,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// 根据医案ID获取诊疗记录列表
         /// </summary>
         [Refit.Get("/api/v1/consultations/by-medicalcase/{medicalCaseId}")]
-        Task<ApiResponse<List<ConsultationDto>>> GetConsultationsByMedicalCaseIdAsync(Guid medicalCaseId);
+        Task<ApiResponse<List<ConsultationDetailDto>>> GetConsultationsByMedicalCaseIdAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 获取诊疗记录详情
         /// </summary>
         [Refit.Get("/api/v1/consultations/{id}")]
-        Task<ApiResponse<ConsultationDto>> GetConsultationByIdAsync(Guid id);
+        Task<ApiResponse<ConsultationDetailDto>> GetConsultationByIdAsync(Guid id);
 
         // ========== Write方法已删除（Issue #1606 Phase 1）==========
         // CreateConsultationAsync 已删除，请使用 POST /api/v1/medicalcases/with-details

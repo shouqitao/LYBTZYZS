@@ -120,7 +120,7 @@ namespace LYBT.Desktop.Foundation.Security
         /// <summary>
         /// 获取当前用户信息
         /// </summary>
-        public async Task<UserDto?> GetCurrentUserAsync()
+        public async Task<UserDetailDto?> GetCurrentUserAsync()
         {
             var loginResponse = await _tokenStorage.GetLoginResponseAsync();
             return loginResponse?.User;

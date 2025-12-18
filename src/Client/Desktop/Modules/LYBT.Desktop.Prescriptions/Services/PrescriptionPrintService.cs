@@ -44,7 +44,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 打印处方
         /// Issue #1794: 优化方法长度（39→20行），提取打印流程
         /// </summary>
-        public async Task<bool> PrintPrescriptionAsync(PrescriptionDto prescription)
+        public async Task<bool> PrintPrescriptionAsync(PrescriptionDetailDto prescription)
         {
             if (prescription == null)
                 throw new ArgumentNullException(nameof(prescription));
@@ -73,7 +73,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 准备打印文档
         /// OpenSpec: enhance-prescription-print - 使用FixedDocument
         /// </summary>
-        private async Task<FixedDocument> PreparePrintDocumentAsync(PrescriptionDto prescription)
+        private async Task<FixedDocument> PreparePrintDocumentAsync(PrescriptionDetailDto prescription)
         {
             var printDto = await MapToPrintDtoAsync(prescription, null, null);
             return BuildFixedDocument(printDto);
@@ -83,7 +83,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 准备打印文档（带完整上下文）
         /// OpenSpec: enhance-prescription-print - 使用FixedDocument
         /// </summary>
-        private async Task<FixedDocument> PreparePrintDocumentAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
+        private async Task<FixedDocument> PreparePrintDocumentAsync(PrescriptionDetailDto prescription, PatientDetailDto? patient, ConsultationInputDto? consultation)
         {
             var printDto = await MapToPrintDtoAsync(prescription, patient, consultation);
             return BuildFixedDocument(printDto);
@@ -109,7 +109,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <summary>
         /// 预览处方
         /// </summary>
-        public async Task PreviewPrescriptionAsync(PrescriptionDto prescription)
+        public async Task PreviewPrescriptionAsync(PrescriptionDetailDto prescription)
         {
             await PreviewPrescriptionAsync(prescription, null, null);
         }
@@ -118,7 +118,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 打印处方（带完整上下文）
         /// OpenSpec: print-prescription-slip
         /// </summary>
-        public async Task<bool> PrintPrescriptionAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
+        public async Task<bool> PrintPrescriptionAsync(PrescriptionDetailDto prescription, PatientDetailDto? patient, ConsultationInputDto? consultation)
         {
             if (prescription == null)
                 throw new ArgumentNullException(nameof(prescription));
@@ -147,7 +147,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 预览处方（带完整上下文）
         /// OpenSpec: enhance-prescription-print - 使用FixedDocument实现WYSIWYG预览
         /// </summary>
-        public async Task PreviewPrescriptionAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
+        public async Task PreviewPrescriptionAsync(PrescriptionDetailDto prescription, PatientDetailDto? patient, ConsultationInputDto? consultation)
         {
             if (prescription == null)
                 throw new ArgumentNullException(nameof(prescription));
@@ -483,7 +483,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <summary>
         /// 批量打印处方
         /// </summary>
-        public async Task<int> BatchPrintAsync(PrescriptionDto[] prescriptions)
+        public async Task<int> BatchPrintAsync(PrescriptionDetailDto[] prescriptions)
         {
             if (prescriptions == null || prescriptions.Length == 0)
                 throw new ArgumentException("处方列表不能为空", nameof(prescriptions));
@@ -517,7 +517,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 导出处方为PDF（MVP阶段：导出为XPS格式）
         /// OpenSpec: enhance-prescription-print - 使用FixedDocument导出
         /// </summary>
-        public async Task<bool> ExportToPdfAsync(PrescriptionDto prescription, string filePath)
+        public async Task<bool> ExportToPdfAsync(PrescriptionDetailDto prescription, string filePath)
         {
             if (prescription == null)
                 throw new ArgumentNullException(nameof(prescription));
@@ -615,7 +615,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <summary>
         /// 映射处方药品项到打印模型
         /// </summary>
-        private List<PrescriptionItemPrintModel> MapPrescriptionItems(IList<PrescriptionItemDto> items)
+        private List<PrescriptionItemPrintModel> MapPrescriptionItems(IList<PrescriptionItemDetailDto> items)
         {
             return items.Select((item, index) => new PrescriptionItemPrintModel
             {
@@ -650,18 +650,18 @@ namespace LYBT.Desktop.Prescriptions.Services
         }
 
         /// <summary>
-        /// 将PrescriptionDto映射到PrescriptionPrintModel（兼容旧调用）
+        /// 将PrescriptionDetailDto映射到PrescriptionPrintModel（兼容旧调用）
         /// </summary>
-        private Task<PrescriptionPrintModel> MapToPrintDtoAsync(PrescriptionDto prescription)
+        private Task<PrescriptionPrintModel> MapToPrintDtoAsync(PrescriptionDetailDto prescription)
         {
             return MapToPrintDtoAsync(prescription, null, null);
         }
 
         /// <summary>
-        /// 将PrescriptionDto映射到PrescriptionPrintModel（带完整上下文）
+        /// 将PrescriptionDetailDto映射到PrescriptionPrintModel（带完整上下文）
         /// OpenSpec: print-prescription-slip
         /// </summary>
-        private async Task<PrescriptionPrintModel> MapToPrintDtoAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
+        private async Task<PrescriptionPrintModel> MapToPrintDtoAsync(PrescriptionDetailDto prescription, PatientDetailDto? patient, ConsultationInputDto? consultation)
         {
             var printDto = new PrescriptionPrintModel();
 
@@ -691,7 +691,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 填充患者信息
         /// OpenSpec: print-prescription-slip - 从PatientDto获取患者信息
         /// </summary>
-        private static void PopulatePatientInfo(PrescriptionPrintModel printDto, PatientDto? patient)
+        private static void PopulatePatientInfo(PrescriptionPrintModel printDto, PatientDetailDto? patient)
         {
             if (patient != null)
             {
@@ -740,7 +740,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// OpenSpec: print-prescription-slip - 从ConsultationInputDto获取诊断信息
         /// OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         /// </summary>
-        private static void PopulateDiagnosisInfo(PrescriptionPrintModel printDto, PrescriptionDto prescription, ConsultationInputDto? consultation)
+        private static void PopulateDiagnosisInfo(PrescriptionPrintModel printDto, PrescriptionDetailDto prescription, ConsultationInputDto? consultation)
         {
             if (consultation != null)
             {
@@ -762,7 +762,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 填充处方详情
         /// OpenSpec: print-prescription-slip - 更新为模板格式
         /// </summary>
-        private void PopulatePrescriptionDetails(PrescriptionPrintModel printDto, PrescriptionDto prescription)
+        private void PopulatePrescriptionDetails(PrescriptionPrintModel printDto, PrescriptionDetailDto prescription)
         {
             printDto.Items = MapPrescriptionItems(prescription.Items);
             printDto.DosageCount = prescription.DosageCount;
@@ -777,7 +777,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 填充医生信息和可选信息
         /// Issue #1794: 从MapToPrintDtoAsync提取
         /// </summary>
-        private static void PopulateDoctorInfo(PrescriptionPrintModel printDto, PrescriptionDto prescription)
+        private static void PopulateDoctorInfo(PrescriptionPrintModel printDto, PrescriptionDetailDto prescription)
         {
             // TODO: 从IUserService获取
             printDto.DoctorName = "医生姓名";

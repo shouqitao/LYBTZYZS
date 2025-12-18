@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         public Guid PatientId { get; private set; }
 
         /// <summary>当前患者数据</summary>
-        public PatientDto? CurrentPatient { get; private set; }
+        public PatientDetailDto? CurrentPatient { get; private set; }
 
         /// <summary>是否为新患者</summary>
         public bool IsNewPatient { get; private set; } = true;
@@ -141,7 +141,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 // 转换为InputDto
                 var inputDto = ConvertToInputDto(CurrentPatient);
 
-                PatientDto? savedPatient;
+                PatientDetailDto? savedPatient;
                 if (IsNewPatient)
                 {
                     savedPatient = await _patientRepository.CreateAsync(inputDto);
@@ -241,7 +241,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// 转换为InputDto
         /// </summary>
         // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端管理
-        private PatientInputDto ConvertToInputDto(PatientDto patient)
+        private PatientInputDto ConvertToInputDto(PatientDetailDto patient)
         {
             return new PatientInputDto
             {

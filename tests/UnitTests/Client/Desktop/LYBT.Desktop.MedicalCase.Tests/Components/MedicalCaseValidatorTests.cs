@@ -49,8 +49,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         {
             // Arrange
             var medicalCase = CreateValidMedicalCaseDto();
-            var consultation = CreateValidConsultationDto();
-            var prescription = CreateValidPrescriptionDto();
+            var consultation = CreateValidConsultationDetailDto();
+            var prescription = CreateValidPrescriptionDetailDto();
 
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
             _mockDataManager.Setup(x => x.CurrentConsultation).Returns(consultation);
@@ -75,7 +75,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public async Task ValidateAsync_ShouldReturnInvalid_WhenMedicalCaseIsNull()
         {
             // Arrange
-            _mockDataManager.Setup(x => x.Current).Returns((MedicalCaseDto?)null);
+            _mockDataManager.Setup(x => x.Current).Returns((MedicalCaseDetailDto?)null);
 
             // Act
             var result = await _sut.ValidateAsync();
@@ -109,7 +109,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         {
             // Arrange
             var medicalCase = CreateValidMedicalCaseDto();
-            var consultation = CreateValidConsultationDto();
+            var consultation = CreateValidConsultationDetailDto();
 
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
             _mockDataManager.Setup(x => x.CurrentConsultation).Returns(consultation);
@@ -131,7 +131,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         {
             // Arrange
             var medicalCase = CreateValidMedicalCaseDto();
-            var prescription = CreateValidPrescriptionDto();
+            var prescription = CreateValidPrescriptionDetailDto();
 
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
             _mockDataManager.Setup(x => x.CurrentPrescription).Returns(prescription);
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         {
             // Arrange
             var medicalCase = CreateValidMedicalCaseDto();
-            var consultation = CreateValidConsultationDto();
+            var consultation = CreateValidConsultationDetailDto();
 
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
             _mockDataManager.Setup(x => x.CurrentConsultation).Returns(consultation);
@@ -179,7 +179,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public void IsValid_ShouldReturnFalse_WhenMedicalCaseIsNull()
         {
             // Arrange
-            _mockDataManager.Setup(x => x.Current).Returns((MedicalCaseDto?)null);
+            _mockDataManager.Setup(x => x.Current).Returns((MedicalCaseDetailDto?)null);
 
             // Act
             var result = _sut.IsValid(out var errorMessage);
@@ -225,9 +225,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
         #region Helper Methods
 
-        private MedicalCaseDto CreateValidMedicalCaseDto()
+        private MedicalCaseDetailDto CreateValidMedicalCaseDto()
         {
-            return new MedicalCaseDto
+            return new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 CaseNumber = "MC-2025-001",
@@ -240,9 +240,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             };
         }
 
-        private ConsultationDto CreateValidConsultationDto()
+        private ConsultationDetailDto CreateValidConsultationDetailDto()
         {
-            return new ConsultationDto
+            return new ConsultationDetailDto
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
@@ -256,9 +256,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             };
         }
 
-        private PrescriptionDto CreateValidPrescriptionDto()
+        private PrescriptionDetailDto CreateValidPrescriptionDetailDto()
         {
-            return new PrescriptionDto
+            return new PrescriptionDetailDto
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),

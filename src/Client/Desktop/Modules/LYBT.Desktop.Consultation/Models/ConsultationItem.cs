@@ -6,8 +6,8 @@ namespace LYBT.Desktop.Consultation.Models;
 
 /// <summary>
 /// 问诊列表项UI模型 - 用于DataGrid/ListView显示
-/// 替代直接使用ConsultationDto，实现Desktop层与Shared层的解耦
-/// 保持属性名与ConsultationDto一致，确保XAML绑定兼容
+/// 替代直接使用ConsultationDetailDto，实现Desktop层与Shared层的解耦
+/// 保持属性名与ConsultationDetailDto一致，确保XAML绑定兼容
 /// </summary>
 public class ConsultationItem : BindableBase
 {
@@ -196,9 +196,9 @@ public class ConsultationItem : BindableBase
     }
 
     /// <summary>
-    /// 从ConsultationDto创建ConsultationItem
+    /// 从ConsultationDetailDto创建ConsultationItem
     /// </summary>
-    public static ConsultationItem FromDto(ConsultationDto dto)
+    public static ConsultationItem FromDto(ConsultationDetailDto dto)
     {
         // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         return new ConsultationItem
@@ -207,19 +207,19 @@ public class ConsultationItem : BindableBase
             MedicalCaseId = dto.MedicalCaseId,
             PatientId = dto.PatientId,
             PatientName = dto.PatientName ?? string.Empty,
-            PatientGender = string.Empty, // ConsultationDto中没有此属性
-            PatientAge = null, // ConsultationDto中没有此属性
+            PatientGender = string.Empty, // ConsultationDetailDto中没有此属性
+            PatientAge = null, // ConsultationDetailDto中没有此属性
             ChiefComplaint = string.Empty, // 已从DTO移除，使用空值
             PresentIllness = dto.PresentIllness,
-            PastHistory = null, // ConsultationDto中没有此属性
-            PersonalHistory = null, // ConsultationDto中没有此属性
-            FamilyHistory = null, // ConsultationDto中没有此属性
-            AllergyHistory = null, // ConsultationDto中没有此属性
+            PastHistory = null, // ConsultationDetailDto中没有此属性
+            PersonalHistory = null, // ConsultationDetailDto中没有此属性
+            FamilyHistory = null, // ConsultationDetailDto中没有此属性
+            AllergyHistory = null, // ConsultationDetailDto中没有此属性
             FourDiagnosis = null, // 已从DTO移除
             TongueDiagnosis = dto.TongueDiagnosis,
             PulseDiagnosis = dto.PulseDiagnosis,
             TcmDiagnosis = dto.TCMDiagnosis,
-            Syndrome = null, // ConsultationDto中没有此属性
+            Syndrome = null, // ConsultationDetailDto中没有此属性
             TreatmentPrinciple = null, // 已从DTO移除
             Status = ConsultationStatus.InProgress,
             CreatedAt = dto.CreatedAt,
@@ -229,12 +229,12 @@ public class ConsultationItem : BindableBase
     }
 
     /// <summary>
-    /// 转换为ConsultationDto（用于API调用）
+    /// 转换为ConsultationDetailDto（用于API调用）
     /// </summary>
-    public ConsultationDto ToDto()
+    public ConsultationDetailDto ToDto()
     {
         // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-        return new ConsultationDto
+        return new ConsultationDetailDto
         {
             Id = Id,
             MedicalCaseId = MedicalCaseId,

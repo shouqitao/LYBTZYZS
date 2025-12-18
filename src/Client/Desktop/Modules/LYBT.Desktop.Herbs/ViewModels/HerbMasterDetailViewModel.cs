@@ -429,7 +429,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     Remark = EditRemark?.Trim()
                 };
 
-                HerbDto? result;
+                HerbDetailDto? result;
                 if (detail.IsNew)
                 {
                     Logger.LogInformation("创建药材: {HerbName}", dto.Name);

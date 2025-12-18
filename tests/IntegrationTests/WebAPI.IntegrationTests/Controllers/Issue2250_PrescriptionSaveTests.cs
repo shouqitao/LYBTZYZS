@@ -442,7 +442,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
         #region Helper Methods
 
-        private async Task<MedicalCaseDto> CreateTestMedicalCaseAsync()
+        private async Task<MedicalCaseDetailDto> CreateTestMedicalCaseAsync()
         {
             var newPatientId = Guid.NewGuid();
 
@@ -475,11 +475,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             }
 
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             return apiResponse.Data!;
         }
 
-        private async Task<MedicalCaseDto> CreateTestMedicalCaseWithConsultationAsync()
+        private async Task<MedicalCaseDetailDto> CreateTestMedicalCaseWithConsultationAsync()
         {
             var medicalCase = await CreateTestMedicalCaseAsync();
 
@@ -502,11 +502,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             updateResponse.ShouldBeOk();
 
             var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
-            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             return apiResponse.Data!;
         }
 
-        private async Task<MedicalCaseDto> CreateTestMedicalCaseReadyForPrescriptionAsync()
+        private async Task<MedicalCaseDetailDto> CreateTestMedicalCaseReadyForPrescriptionAsync()
         {
             var medicalCase = await CreateTestMedicalCaseWithConsultationAsync();
 
@@ -548,7 +548,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             }
 
             var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
-            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             return apiResponse.Data!;
         }
 

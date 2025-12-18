@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// <param name="user">用户信息</param>
         /// <param name="token">认证Token</param>
         /// <returns>保存任务</returns>
-        Task SaveSessionAsync(UserDto user, string token);
+        Task SaveSessionAsync(UserDetailDto user, string token);
 
         /// <summary>
         /// 从本地存储恢复用户会话
@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// 更新用户信息
         /// </summary>
         /// <param name="user">新的用户信息</param>
-        void UpdateUserInfo(UserDto user);
+        void UpdateUserInfo(UserDetailDto user);
 
         /// <summary>
         /// 延长会话时间
@@ -60,6 +60,6 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// <summary>
         /// 用户信息更新事件
         /// </summary>
-        event EventHandler<UserDto>? UserInfoUpdated;
+        event EventHandler<UserDetailDto>? UserInfoUpdated;
     }
 }

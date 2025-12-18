@@ -21,17 +21,11 @@ namespace LYBT.Module.Herbs.Mapping
             // Herb -> HerbListDto (新)
             CreateMap<Herb, HerbListDto>();
 
-            // Herb -> HerbDetailDtoNew (新-简化版)
-            CreateMap<Herb, HerbDetailDtoNew>();
-
-            // ============================================
-            // 旧DTO映射 (保持向后兼容，后续移除)
-            // ============================================
-
-            // Herb -> HerbDto
-            // Epic #1962: Category字段现已支持，移除Ignore
-            CreateMap<Herb, HerbDto>()
-                .ForMember(dest => dest.Properties, opt => opt.Ignore()); // Properties暂不支持
+            // Herb -> HerbDetailDto (扁平化详情DTO)
+            // OpenSpec: dto-architecture-specification - HerbDto已删除，统一使用HerbDetailDto
+            // 注：HerbDetailDto.Properties字段由Herb实体中不存在，需要忽略
+            CreateMap<Herb, HerbDetailDto>()
+                .ForMember(dest => dest.Properties, opt => opt.Ignore());
 
             // HerbInputDto -> Herb (Epic #1962: 统一创建/更新映射)
             // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由Service层管理

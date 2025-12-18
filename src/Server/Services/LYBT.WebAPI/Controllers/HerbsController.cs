@@ -35,7 +35,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "HerbsCache")]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<HerbDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<HerbDetailDto>>), 200)]
         public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -90,7 +90,7 @@ namespace LYBT.WebAPI.Controllers
         /// 根据ID获取药材详情
         /// </summary>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
         {
             try
@@ -114,7 +114,7 @@ namespace LYBT.WebAPI.Controllers
         /// 创建新药材
         /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         public async Task<IActionResult> Create([FromBody] HerbInputDto dto)
         {
             try
@@ -139,7 +139,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto)
         {
             try
@@ -199,7 +199,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost("import")]
         [RequestSizeLimit(10 * 1024 * 1024)]
-        [ProducesResponseType(typeof(ApiResponse<ImportResultDto<HerbDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ImportResultDto<HerbDetailDto>>), 200)]
         public async Task<IActionResult> Import(IFormFile file)
         {
             try
@@ -342,7 +342,7 @@ namespace LYBT.WebAPI.Controllers
         /// 导出药材数据（返回JSON列表，Desktop层负责Excel生成）
         /// </summary>
         [HttpGet("export-all")]
-        [ProducesResponseType(typeof(ApiResponse<List<HerbDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<HerbDetailDto>>), 200)]
         public async Task<IActionResult> GetAllForExport([FromQuery] string? category = null)
         {
             try
@@ -438,7 +438,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/toggle-status")]
-        [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
@@ -468,7 +468,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/restore")]
-        [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)
         {

@@ -14,7 +14,7 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// 病案数据管理器 - 聚合根模式实现
 /// 聚合根: 管理MedicalCase、Consultation、Prescription三个实体
 /// </summary>
-public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
+public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
 {
     private readonly IMedicalCaseRepository _repository;
     private readonly IMedicalCaseApi _api;
@@ -31,9 +31,9 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
 
     #region 属性
 
-    public virtual MedicalCaseDto? Current => _currentDetail;
-    public virtual ConsultationDto? CurrentConsultation => _currentDetail?.Consultation;
-    public virtual PrescriptionDto? CurrentPrescription => _currentDetail?.Prescription;
+    public virtual MedicalCaseDetailDto? Current => _currentDetail;
+    public virtual ConsultationDetailDto? CurrentConsultation => _currentDetail?.Consultation;
+    public virtual PrescriptionDetailDto? CurrentPrescription => _currentDetail?.Prescription;
 
     public virtual bool HasChanges => _currentDetail != null && _originalDetail != null &&
         (IsMedicalCaseChanged() || IsConsultationChanged() || IsPrescriptionChanged());
@@ -75,7 +75,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
             }
             if (IsPrescriptionChanged() && _currentDetail.Prescription != null)
             {
-                var updated = await _repository.UpdatePrescriptionAsync(_currentDetail.Id, _currentDetail.Prescription.ToUpdateDto());
+                var updated = await _repository.UpdatePrescriptionAsync(_currentDetail.Id, _currentDetail.Prescription.ToPrescriptionUpdateDto());
                 if (updated != null) _currentDetail.Prescription = updated;
             }
             _originalDetail = CloneMedicalCaseDetail(_currentDetail);
@@ -106,19 +106,19 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
 
     #region 简单CRUD方法
 
-    public virtual async Task<MedicalCaseDto?> GetByIdSimpleAsync(Guid id)
+    public virtual async Task<MedicalCaseDetailDto?> GetByIdSimpleAsync(Guid id)
     {
         try { return await _repository.GetByIdAsync(id); }
         catch (Exception ex) { _logger.LogError(ex, "获取病案失败: {Id}", id); return null; }
     }
 
-    public virtual async Task<MedicalCaseDto?> UpdateSimpleAsync(MedicalCaseInputDto dto)
+    public virtual async Task<MedicalCaseDetailDto?> UpdateSimpleAsync(MedicalCaseInputDto dto)
     {
         try { return await _repository.UpdateAsync(dto); }
         catch (Exception ex) { _logger.LogError(ex, "更新病案失败: {Id}", dto.Id); return null; }
     }
 
-    public virtual async Task<MedicalCaseDto?> CreateAsync(MedicalCaseInputDto dto)
+    public virtual async Task<MedicalCaseDetailDto?> CreateAsync(MedicalCaseInputDto dto)
     {
         try { var created = await _repository.CreateAsync(dto); _logger.LogInformation("医案创建成功: {Id}", created.Id); return created; }
         catch (Exception ex) { _logger.LogError(ex, "创建医案失败: PatientId={PatientId}", dto.PatientId); return null; }
@@ -130,7 +130,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
         catch (Exception ex) { _logger.LogError(ex, "获取医案详情失败: {Id}", id); return null; }
     }
 
-    public virtual async Task<PagedResult<MedicalCaseDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null)
+    public virtual async Task<PagedResult<MedicalCaseDetailDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null)
     {
         try { return await _repository.GetPagedAsync(page, pageSize, searchText); }
         catch (Exception ex) { _logger.LogError(ex, "分页获取医案失败: Page={Page}", page); return null; }
@@ -142,7 +142,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
         catch (Exception ex) { _logger.LogError(ex, "删除医案失败: {Id}", id); return false; }
     }
 
-    public virtual async Task<List<MedicalCaseDto>?> QueryAsync(string? patientName = null, DateTime? startDate = null, DateTime? endDate = null, string? diagnosisKeyword = null)
+    public virtual async Task<List<MedicalCaseDetailDto>?> QueryAsync(string? patientName = null, DateTime? startDate = null, DateTime? endDate = null, string? diagnosisKeyword = null)
     {
         try { return await _repository.QueryAsync(patientName, startDate, endDate, diagnosisKeyword); }
         catch (Exception ex) { _logger.LogError(ex, "查询医案失败"); return null; }
@@ -152,13 +152,13 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
 
     #region 业务命令方法（API-based）
 
-    public virtual async Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto request)
+    public virtual async Task<ApiResponse<ConsultationDetailDto>> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto request)
     {
         try { return await _api.UpdateConsultationAsync(medicalCaseId, request); }
         catch (Exception ex) { _logger.LogError(ex, "更新诊疗失败: {Id}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<ApiResponse<MedicalCaseDto>> SetPrescriptionFlagAsync(Guid medicalCaseId, SetPrescriptionFlagRequest request)
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(Guid medicalCaseId, SetPrescriptionFlagRequest request)
     {
         try { return await _api.SetPrescriptionFlagAsync(medicalCaseId, request); }
         catch (Exception ex) { _logger.LogError(ex, "设置处方标志失败: {Id}", medicalCaseId); throw; }
@@ -170,7 +170,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
         catch (Exception ex) { _logger.LogError(ex, "清空处方失败: {Id}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<ApiResponse<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId)
+    public virtual async Task<ApiResponse<PrescriptionDetailDto>> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId)
     {
         try { return await _api.ImportFormulaIntoPrescriptionAsync(medicalCaseId, formulaId); }
         catch (Exception ex) { _logger.LogError(ex, "配方导入失败: {Id}, FormulaId={FormulaId}", medicalCaseId, formulaId); throw; }
@@ -182,19 +182,19 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
         catch (Exception ex) { _logger.LogError(ex, "关闭病案失败: {Id}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
+    public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
     {
         try { return await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors); }
         catch (Exception ex) { _logger.LogError(ex, "获取未完成病案失败: PatientId={PatientId}", patientId); throw; }
     }
 
-    public virtual async Task<ApiResponse<PrescriptionDto>> CreatePrescriptionViaApiAsync(Guid medicalCaseId, PrescriptionCreateDto request)
+    public virtual async Task<ApiResponse<PrescriptionDetailDto>> CreatePrescriptionViaApiAsync(Guid medicalCaseId, PrescriptionCreateDto request)
     {
         try { return await _api.CreatePrescriptionAsync(medicalCaseId, request); }
         catch (Exception ex) { _logger.LogError(ex, "创建处方失败(API): {Id}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionViaApiAsync(Guid medicalCaseId, PrescriptionUpdateDto request)
+    public virtual async Task<ApiResponse<PrescriptionDetailDto>> UpdatePrescriptionViaApiAsync(Guid medicalCaseId, PrescriptionUpdateDto request)
     {
         try { return await _api.UpdatePrescriptionAsync(medicalCaseId, request); }
         catch (Exception ex) { _logger.LogError(ex, "更新处方失败(API): {Id}", medicalCaseId); throw; }
@@ -224,19 +224,19 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
         catch (Exception ex) { _logger.LogError(ex, "软删除医案失败: {Id}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<ApiResponse<MedicalCaseDto>> UpdateStatusAsync(Guid medicalCaseId, UpdateMedicalCaseStatusDto request)
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid medicalCaseId, UpdateMedicalCaseStatusDto request)
     {
         try { return await _api.UpdateStatusAsync(medicalCaseId, request); }
         catch (Exception ex) { _logger.LogError(ex, "更新状态失败: {Id}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<ApiResponse<MedicalCaseDto>> SaveDraftViaApiAsync(Guid medicalCaseId, ConsultationInputDto? consultationData = null)
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SaveDraftViaApiAsync(Guid medicalCaseId, ConsultationInputDto? consultationData = null)
     {
         try { return await _api.SaveDraftAsync(medicalCaseId, consultationData); }
         catch (Exception ex) { _logger.LogError(ex, "暂存医案失败(API): {Id}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<ApiResponse<MedicalCaseDto>> CancelMedicalCaseViaApiAsync(Guid medicalCaseId, string? reason = null)
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CancelMedicalCaseViaApiAsync(Guid medicalCaseId, string? reason = null)
     {
         try
         {
@@ -250,13 +250,13 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
 
     #region 聚合根专用方法
 
-    public void UpdateConsultation(ConsultationDto consultation)
+    public void UpdateConsultation(ConsultationDetailDto consultation)
     {
         if (_currentDetail == null) throw new InvalidOperationException("当前病案数据为空");
         _currentDetail.Consultation = consultation ?? throw new ArgumentNullException(nameof(consultation));
     }
 
-    public virtual async Task<PrescriptionDto?> CreatePrescriptionAsync(PrescriptionCreateDto createDto)
+    public virtual async Task<PrescriptionDetailDto?> CreatePrescriptionAsync(PrescriptionCreateDto createDto)
     {
         if (_currentDetail == null) return null;
         try
@@ -268,7 +268,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
         catch (Exception ex) { _logger.LogError(ex, "创建处方失败"); return null; }
     }
 
-    public void UpdatePrescription(PrescriptionDto prescription)
+    public void UpdatePrescription(PrescriptionDetailDto prescription)
     {
         if (_currentDetail == null) throw new InvalidOperationException("当前病案数据为空");
         _currentDetail.Prescription = prescription ?? throw new ArgumentNullException(nameof(prescription));
@@ -326,7 +326,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
     };
 
     // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-    private ConsultationDto CloneConsultation(ConsultationDto s) => new()
+    private ConsultationDetailDto CloneConsultation(ConsultationDetailDto s) => new()
     {
         Id = s.Id, MedicalCaseId = s.MedicalCaseId, PatientId = s.PatientId, UserId = s.UserId,
         PatientName = s.PatientName, DoctorName = s.DoctorName,
@@ -336,7 +336,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
     };
 
     // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
-    private PrescriptionDto ClonePrescription(PrescriptionDto s) => new()
+    private PrescriptionDetailDto ClonePrescription(PrescriptionDetailDto s) => new()
     {
         Id = s.Id, PrescriptionNumber = s.PrescriptionNumber, MedicalCaseId = s.MedicalCaseId,
         Indication = s.Indication, DosageCount = s.DosageCount,
@@ -347,7 +347,8 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
     };
 
     // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
-    private void UpdateMedicalCaseFields(MedicalCaseDetailDto target, MedicalCaseDto source)
+    // OpenSpec: refactor-dto-simplification - MedicalCaseDto已删除，统一使用MedicalCaseDetailDto
+    private void UpdateMedicalCaseFields(MedicalCaseDetailDto target, MedicalCaseDetailDto source)
     {
         target.CaseNumber = source.CaseNumber;
         target.PatientId = source.PatientId; target.PatientName = source.PatientName;

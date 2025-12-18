@@ -26,8 +26,8 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// 保存配方
         /// Issue #2149: 优化双重映射，直接接收InputDto以提升性能
         /// </summary>
-        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> SaveFormulaAsync(
-            FormulaDto currentFormula,
+        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> SaveFormulaAsync(
+            FormulaDetailDto currentFormula,
             string formulaName,
             string effect,
             string usage,
@@ -62,7 +62,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                 };
 
                 // OpenSpec: implement-formula-copy-flow - 根据Id判断新建或更新
-                FormulaDto resultFormula;
+                FormulaDetailDto resultFormula;
                 if (isNewFormula)
                 {
                     _logger.LogInformation("创建新验方: {Name}", formulaName);
@@ -90,7 +90,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 复制配方
         /// </summary>
-        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> CopyFormulaAsync(FormulaDto sourceFormula)
+        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> CopyFormulaAsync(FormulaDetailDto sourceFormula)
         {
             try
             {
@@ -175,7 +175,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 创建配方（Issue #1787: 支持基本创建操作）
         /// </summary>
-        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> CreateAsync(FormulaInputDto createDto)
+        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> CreateAsync(FormulaInputDto createDto)
         {
             try
             {
@@ -196,7 +196,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 更新配方（Issue #1787: 支持基本更新操作）
         /// </summary>
-        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> UpdateAsync(FormulaInputDto updateDto)
+        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> UpdateAsync(FormulaInputDto updateDto)
         {
             try
             {
@@ -221,7 +221,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 打印配方（占位实现）
         /// </summary>
-        public Task<(bool success, string? errorMessage)> PrintFormulaAsync(FormulaDto formula)
+        public Task<(bool success, string? errorMessage)> PrintFormulaAsync(FormulaDetailDto formula)
         {
             _logger.LogInformation("打印配方: {FormulaId} ({FormulaName})", formula.Id, formula.Name);
 
@@ -232,7 +232,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 分页查询配方（Issue #1787: 支持分页查询）
         /// </summary>
-        public async Task<(bool success, PagedResult<FormulaDto>? data, string? errorMessage)> GetPagedAsync(
+        public async Task<(bool success, PagedResult<FormulaDetailDto>? data, string? errorMessage)> GetPagedAsync(
             int page, int pageSize, string? searchText = null)
         {
             try
@@ -255,7 +255,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 根据ID获取配方（Issue #1787: 支持单个配方查询）
         /// </summary>
-        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> GetByIdAsync(Guid formulaId)
+        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> GetByIdAsync(Guid formulaId)
         {
             try
             {
@@ -293,7 +293,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 获取待校验的验方列表（Issue #1787: 支持FormulaValidationViewModel）
         /// </summary>
-        public async Task<(bool success, List<FormulaDto>? data, string? errorMessage)> GetPendingValidationFormulasAsync()
+        public async Task<(bool success, List<FormulaDetailDto>? data, string? errorMessage)> GetPendingValidationFormulasAsync()
         {
             try
             {

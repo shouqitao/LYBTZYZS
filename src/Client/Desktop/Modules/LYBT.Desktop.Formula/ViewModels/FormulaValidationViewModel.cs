@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Formula.ViewModels.Components;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -16,14 +16,14 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         private readonly FormulaCommandHandler _commandHandler;
 
-        private FormulaDto? _selectedFormula;
+        private FormulaDetailDto? _selectedFormula;
         private int _pendingFormulaCount;
         private int _totalUnvalidatedHerbsCount;
 
-        public ObservableCollection<FormulaDto> PendingFormulas { get; } = new();
+        public ObservableCollection<FormulaDetailDto> PendingFormulas { get; } = new();
         public ObservableCollection<FormulaHerbItemDto> HerbItems { get; } = new();
 
-        public FormulaDto? SelectedFormula
+        public FormulaDetailDto? SelectedFormula
         {
             get => _selectedFormula;
             set { if (SetProperty(ref _selectedFormula, value)) { LoadHerbItems(); RefreshCommandStates(); } }

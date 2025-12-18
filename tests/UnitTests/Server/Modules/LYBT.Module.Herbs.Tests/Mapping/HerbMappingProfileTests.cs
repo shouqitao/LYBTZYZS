@@ -60,8 +60,8 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             };
 
             // Act
-            // OpenSpec: refactor-dto-simplification - 使用HerbDetailDtoNew
-            var detailDto = _mapper.Map<HerbDetailDtoNew>(herb);
+            // OpenSpec: refactor-dto-simplification - 使用HerbDetailDto
+            var detailDto = _mapper.Map<HerbDetailDto>(herb);
 
             // Assert
             detailDto.Should().NotBeNull();
@@ -153,44 +153,6 @@ namespace LYBT.Module.Herbs.Tests.Mapping
         }
 
         [Fact]
-        public void Map_Herb_To_HerbDto_Should_Success()
-        {
-            // Arrange
-            var herb = new Herb
-            {
-                Id = Guid.NewGuid(),
-                Name = "甘草",
-                PinYinCode = "GC",
-                Origin = "内蒙古",
-                Spec = "统货",
-                Effect = "补脾益气，清热解毒",
-                Usage = "煎服，3-10g",
-                Price = 0.3m,
-                CostPrice = 0.2m,
-                Unit = "g",
-                Remark = "脾胃虚弱，咳嗽痰多",
-                Status = CommonStatus.Enabled
-            };
-
-            // Act
-            var dto = _mapper.Map<HerbDto>(herb);
-
-            // Assert
-            dto.Should().NotBeNull();
-            dto.Id.Should().Be(herb.Id);
-            dto.Name.Should().Be(herb.Name);
-            dto.PinYinCode.Should().Be(herb.PinYinCode);
-            dto.Origin.Should().Be(herb.Origin);
-            dto.Spec.Should().Be(herb.Spec);
-            dto.Effect.Should().Be(herb.Effect);
-            dto.Usage.Should().Be(herb.Usage);
-            dto.Price.Should().Be(herb.Price);
-            dto.CostPrice.Should().Be(herb.CostPrice);
-            dto.Unit.Should().Be(herb.Unit);
-            dto.Remark.Should().Be(herb.Remark);
-        }
-
-        [Fact]
         public void Map_HerbImportDto_To_Herb_Should_Success()
         {
             // Arrange
@@ -243,7 +205,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<HerbDto>(herb);
+            var dto = _mapper.Map<HerbDetailDto>(herb);
 
             // Assert
             dto.Should().NotBeNull();
@@ -272,8 +234,8 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             };
 
             // Act
-            // OpenSpec: refactor-dto-simplification - 使用HerbDetailDtoNew
-            var detailDto = _mapper.Map<HerbDetailDtoNew>(herb);
+            // OpenSpec: refactor-dto-simplification - 使用HerbDetailDto
+            var detailDto = _mapper.Map<HerbDetailDto>(herb);
 
             // Assert
             detailDto.Should().NotBeNull();
@@ -303,7 +265,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<HerbDto>(herb);
+            var dto = _mapper.Map<HerbDetailDto>(herb);
 
             // Assert
             dto.Should().NotBeNull();

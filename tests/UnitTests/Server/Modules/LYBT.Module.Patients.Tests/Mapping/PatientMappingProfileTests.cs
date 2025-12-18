@@ -43,7 +43,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
 
         #endregion
 
-        #region Patient -> PatientDto 映射测试
+        #region Patient -> PatientDetailDto 映射测试
 
         [Fact]
         public void Patient_To_PatientDto_ShouldMapCorrectly()
@@ -69,7 +69,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<PatientDto>(patient);
+            var dto = _mapper.Map<PatientDetailDto>(patient);
 
             // Assert
             dto.Should().NotBeNull();
@@ -101,7 +101,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<PatientDto>(patient);
+            var dto = _mapper.Map<PatientDetailDto>(patient);
 
             // Assert - Age 是计算属性，由 DTO 根据 BirthDate 自动计算
             dto.Age.Should().NotBeNull();
@@ -221,13 +221,13 @@ namespace LYBT.Module.Patients.Tests.Mapping
 
         #endregion
 
-        #region PatientDto -> Patient 映射测试
+        #region PatientDetailDto -> Patient 映射测试
 
         [Fact]
         public void PatientDto_To_Patient_ShouldMapCorrectly()
         {
             // Arrange
-            var patientDto = new PatientDto
+            var patientDto = new PatientDetailDto
             {
                 Id = Guid.NewGuid(),
                 Name = "DTO患者",
@@ -255,7 +255,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
 
         #endregion
 
-        #region PatientInputDto -> PatientDto 映射测试
+        #region PatientInputDto -> PatientDetailDto 映射测试
 
         [Fact]
         public void PatientCreateDto_To_PatientDto_ShouldMapCorrectly()
@@ -270,7 +270,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             };
 
             // Act
-            var patientDto = _mapper.Map<PatientDto>(createDto);
+            var patientDto = _mapper.Map<PatientDetailDto>(createDto);
 
             // Assert
             patientDto.Should().NotBeNull();
@@ -292,7 +292,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             };
 
             // Act
-            var patientDto = _mapper.Map<PatientDto>(createDto);
+            var patientDto = _mapper.Map<PatientDetailDto>(createDto);
 
             // Assert
             patientDto.PinYinCode.Should().BeNull(); // 系统生成
@@ -303,7 +303,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
 
         #endregion
 
-        #region PatientInputDto -> PatientDto 映射测试
+        #region PatientInputDto -> PatientDetailDto 映射测试
 
         [Fact]
         public void PatientUpdateDto_To_PatientDto_ShouldMapCorrectly()
@@ -317,7 +317,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             };
 
             // Act
-            var patientDto = _mapper.Map<PatientDto>(updateDto);
+            var patientDto = _mapper.Map<PatientDetailDto>(updateDto);
 
             // Assert
             patientDto.Should().NotBeNull();
@@ -347,7 +347,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<PatientDto>(patient);
+            var dto = _mapper.Map<PatientDetailDto>(patient);
 
             // Assert
             dto.Gender.Should().Be(gender);
@@ -364,7 +364,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             Patient? nullPatient = null;
 
             // Act
-            var dto = _mapper.Map<PatientDto>(nullPatient);
+            var dto = _mapper.Map<PatientDetailDto>(nullPatient);
 
             // Assert
             dto.Should().BeNull();
@@ -412,7 +412,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<PatientDto>(patient);
+            var dto = _mapper.Map<PatientDetailDto>(patient);
 
             // Assert
             dto.Should().NotBeNull();
@@ -441,7 +441,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<PatientDto>(patient);
+            var dto = _mapper.Map<PatientDetailDto>(patient);
 
             // Assert
             dto.Name.Should().Be("欧阳·修");

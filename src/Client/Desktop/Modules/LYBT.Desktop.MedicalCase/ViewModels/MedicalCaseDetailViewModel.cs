@@ -25,7 +25,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region 属性
 
-        private MedicalCaseDto? _medicalCase;
+        private MedicalCaseDetailDto? _medicalCase;
         private string _caseNumber = string.Empty;
         private string _patientName = string.Empty;
         // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
@@ -34,7 +34,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 医疗案例
         /// </summary>
-        public MedicalCaseDto? MedicalCase
+        public MedicalCaseDetailDto? MedicalCase
         {
             get => _medicalCase;
             set => SetProperty(ref _medicalCase, value);
@@ -458,7 +458,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             base.OnNavigatedTo(navigationContext);
 
-            if (navigationContext.Parameters.TryGetValue("MedicalCase", out MedicalCaseDto medicalCase))
+            if (navigationContext.Parameters.TryGetValue("MedicalCase", out MedicalCaseDetailDto medicalCase))
             {
                 LoadMedicalCase(medicalCase);
             }
@@ -469,7 +469,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// Issue #1423 RULE-4: 添加只读模式检测
         /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
         /// </summary>
-        private void LoadMedicalCase(MedicalCaseDto medicalCase)
+        private void LoadMedicalCase(MedicalCaseDetailDto medicalCase)
         {
             MedicalCase = medicalCase;
             CaseNumber = medicalCase.CaseNumber ?? string.Empty;

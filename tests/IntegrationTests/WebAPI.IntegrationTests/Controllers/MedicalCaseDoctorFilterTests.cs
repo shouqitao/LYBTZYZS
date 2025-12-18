@@ -174,7 +174,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Assert 1 - 医生A只能看到自己的医案A
             responseA.ShouldBeOk();
-            var apiResponseA = await responseA.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponseA = await responseA.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             apiResponseA.Data.Should().NotBeNull("医生A应该能查询到未完成医案");
             apiResponseA.Data!.Id.Should().Be(medicalCaseAId, "应该返回医生A创建的医案");
@@ -188,7 +188,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Assert 2 - 医生B只能看到自己的医案B
             responseB.ShouldBeOk();
-            var apiResponseB = await responseB.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponseB = await responseB.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
             apiResponseB.Data.Should().NotBeNull("医生B应该能查询到未完成医案");
             apiResponseB.Data!.Id.Should().Be(medicalCaseBId, "应该返回医生B创建的医案");
@@ -229,7 +229,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                var apiResponse = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDto>>();
+                var apiResponse = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDetailDto>>();
 
                 if (apiResponse?.Data != null)
                 {
@@ -372,7 +372,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         /// <summary>
         /// 使用指定的HttpClient创建医案
         /// </summary>
-        private async Task<MedicalCaseDto> CreateMedicalCaseAsync(HttpClient client, Guid patientId)
+        private async Task<MedicalCaseDetailDto> CreateMedicalCaseAsync(HttpClient client, Guid patientId)
         {
             var request = new
             {
@@ -389,7 +389,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             }
 
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             return apiResponse.Data!;
         }
 

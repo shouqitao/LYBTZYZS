@@ -30,7 +30,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseDto
+            var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 DoctorId = currentUserId,
@@ -50,7 +50,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseDto
+            var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 DoctorId = currentUserId,
@@ -75,7 +75,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
             // Arrange
             var ownerId = Guid.NewGuid();
             var currentUserId = Guid.NewGuid();  // 不同用户
-            var medicalCase = new MedicalCaseDto
+            var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 DoctorId = ownerId,
@@ -95,7 +95,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var ownerId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseDto
+            var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 DoctorId = ownerId,
@@ -119,7 +119,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseDto
+            var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 DoctorId = currentUserId,
@@ -139,7 +139,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseDto
+            var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 DoctorId = currentUserId,
@@ -159,7 +159,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseDto
+            var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 DoctorId = currentUserId,
@@ -183,7 +183,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange - Completed状态优先级最高
             var currentUserId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseDto
+            var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 DoctorId = currentUserId,  // 同一用户
@@ -204,7 +204,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
             // Arrange - 多重条件都触发
             var ownerId = Guid.NewGuid();
             var currentUserId = Guid.NewGuid();  // 不同用户
-            var medicalCase = new MedicalCaseDto
+            var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 DoctorId = ownerId,

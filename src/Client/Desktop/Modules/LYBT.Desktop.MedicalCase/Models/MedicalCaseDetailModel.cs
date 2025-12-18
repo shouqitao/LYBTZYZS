@@ -33,7 +33,7 @@ public class MedicalCaseDetailModel : BindableBase
     private int? _herbCount;
     private int? _doseCount;
     private string? _formulaSource;
-    private ObservableCollection<PrescriptionItemDto> _prescriptionItems = new();
+    private ObservableCollection<PrescriptionItemDetailDto> _prescriptionItems = new();
 
     // 审计信息
     private DateTime _createdAt;
@@ -174,7 +174,7 @@ public class MedicalCaseDetailModel : BindableBase
     }
 
     /// <summary>处方药材列表（只读）</summary>
-    public ObservableCollection<PrescriptionItemDto> PrescriptionItems
+    public ObservableCollection<PrescriptionItemDetailDto> PrescriptionItems
     {
         get => _prescriptionItems;
         set => SetProperty(ref _prescriptionItems, value);
@@ -260,7 +260,7 @@ public class MedicalCaseDetailModel : BindableBase
             // 填充处方药材列表
             if (dto.Prescription.Items != null)
             {
-                model.PrescriptionItems = new ObservableCollection<PrescriptionItemDto>(dto.Prescription.Items);
+                model.PrescriptionItems = new ObservableCollection<PrescriptionItemDetailDto>(dto.Prescription.Items);
             }
         }
 
@@ -316,7 +316,7 @@ public class MedicalCaseDetailModel : BindableBase
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt,
             DoctorName = DoctorName,
-            PrescriptionItems = new ObservableCollection<PrescriptionItemDto>(PrescriptionItems)
+            PrescriptionItems = new ObservableCollection<PrescriptionItemDetailDto>(PrescriptionItems)
         };
         return clone;
     }

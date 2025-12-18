@@ -14,7 +14,7 @@ namespace LYBT.Module.Patients.Interfaces
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        Task<Result<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        Task<Result<PagedResult<PatientDetailDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
         /// 分页查询患者列表（返回PatientListDto，用于列表视图）
@@ -25,17 +25,17 @@ namespace LYBT.Module.Patients.Interfaces
         /// <summary>
         /// 根据ID获取患者详情
         /// </summary>
-        Task<Result<PatientDto>> GetByIdAsync(Guid id);
+        Task<Result<PatientDetailDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建新患者
         /// </summary>
-        Task<Result<PatientDto>> CreateAsync(PatientInputDto dto);
+        Task<Result<PatientDetailDto>> CreateAsync(PatientInputDto dto);
 
         /// <summary>
         /// 更新患者信息
         /// </summary>
-        Task<Result<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto);
+        Task<Result<PatientDetailDto>> UpdateAsync(Guid id, PatientInputDto dto);
 
         /// <summary>
         /// 删除患者（软删除）
@@ -45,7 +45,7 @@ namespace LYBT.Module.Patients.Interfaces
         /// <summary>
         /// 搜索患者
         /// </summary>
-        Task<Result<List<PatientDto>>> SearchAsync(string keyword);
+        Task<Result<List<PatientDetailDto>>> SearchAsync(string keyword);
 
         /// <summary>
         /// 批量导入患者数据 (Epic #1934 FR-001)
@@ -100,6 +100,6 @@ namespace LYBT.Module.Patients.Interfaces
         /// 恢复软删除的患者
         /// </summary>
         /// <param name="id">患者ID</param>
-        Task<Result<PatientDto>> RestoreAsync(Guid id);
+        Task<Result<PatientDetailDto>> RestoreAsync(Guid id);
     }
 }

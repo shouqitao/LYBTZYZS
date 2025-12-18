@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Users.Repositories
     /// 用户数据仓储实现 - RepositoryBase统一架构
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class UserRepository : RepositoryBase<UserDto, UserInputDto, UserInputDto, IUserApi>, IUserRepository
+    public class UserRepository : RepositoryBase<UserDetailDto, UserInputDto, UserInputDto, IUserApi>, IUserRepository
     {
         public UserRepository(
             IUserApi userApi,
@@ -24,24 +24,24 @@ namespace LYBT.Desktop.Users.Repositories
         /// <summary>
         /// 获取所有用户（通过分页获取第一页的大量数据）
         /// </summary>
-        public async Task<List<UserDto>> GetAllAsync()
+        public async Task<List<UserDetailDto>> GetAllAsync()
         {
             try
             {
                 var pagedResult = await GetPagedAsync(1, 1000);
-                return pagedResult.Items ?? new List<UserDto>();
+                return pagedResult.Items ?? new List<UserDetailDto>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取所有用户失败");
-                return new List<UserDto>();
+                return new List<UserDetailDto>();
             }
         }
 
         /// <summary>
         /// 根据用户名获取用户
         /// </summary>
-        public async Task<UserDto> GetByUsernameAsync(string username)
+        public async Task<UserDetailDto> GetByUsernameAsync(string username)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Users.Repositories
         /// 获取所有医生用户（Desktop端本地筛选实现）
         /// Issue #1155 - 使用本地角色筛选替代不存在的Server API
         /// </summary>
-        public async Task<List<UserDto>> GetDoctorsAsync()
+        public async Task<List<UserDetailDto>> GetDoctorsAsync()
         {
             try
             {
@@ -73,7 +73,7 @@ namespace LYBT.Desktop.Users.Repositories
                 if (result?.Items == null)
                 {
                     _logger.LogWarning("获取用户列表失败或返回空");
-                    return new List<UserDto>();
+                    return new List<UserDetailDto>();
                 }
 
                 // Desktop端本地筛选：角色=医生 && 状态=启用
@@ -87,7 +87,7 @@ namespace LYBT.Desktop.Users.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取医生用户列表时发生异常");
-                return new List<UserDto>();
+                return new List<UserDetailDto>();
             }
         }
 
@@ -133,22 +133,22 @@ namespace LYBT.Desktop.Users.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<ApiResponse<UserDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<UserDetailDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetUserByIdAsync(id);
         }
 
-        protected override Task<ApiResponse<PagedResult<UserDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<UserDetailDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetUsersAsync(page, pageSize, keyword);
         }
 
-        protected override Task<ApiResponse<UserDto>> CallApiCreateAsync(UserInputDto dto)
+        protected override Task<ApiResponse<UserDetailDto>> CallApiCreateAsync(UserInputDto dto)
         {
             return _api.CreateUserAsync(dto);
         }
 
-        protected override Task<ApiResponse<UserDto>> CallApiUpdateAsync(Guid id, UserInputDto dto)
+        protected override Task<ApiResponse<UserDetailDto>> CallApiUpdateAsync(Guid id, UserInputDto dto)
         {
             return _api.UpdateUserAsync(id, dto);
         }
@@ -168,7 +168,7 @@ namespace LYBT.Desktop.Users.Repositories
         /// <summary>
         /// 修改个人资料 (Issue #1891)
         /// </summary>
-        public async Task<UserDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto)
+        public async Task<UserDetailDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto)
         {
             try
             {
@@ -284,7 +284,7 @@ namespace LYBT.Desktop.Users.Repositories
         /// <summary>
         /// 切换用户状态（启用/禁用）
         /// </summary>
-        public async Task<UserDto?> ToggleStatusAsync(Guid id)
+        public async Task<UserDetailDto?> ToggleStatusAsync(Guid id)
         {
             try
             {
@@ -310,7 +310,7 @@ namespace LYBT.Desktop.Users.Repositories
         /// <summary>
         /// 恢复已删除的用户
         /// </summary>
-        public async Task<UserDto?> RestoreAsync(Guid id)
+        public async Task<UserDetailDto?> RestoreAsync(Guid id)
         {
             try
             {

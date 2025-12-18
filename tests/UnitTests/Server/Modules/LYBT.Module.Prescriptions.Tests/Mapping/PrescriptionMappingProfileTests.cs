@@ -41,7 +41,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         }
 
         [Fact]
-        public void Map_Prescription_To_PrescriptionDto_Should_Success()
+        public void Map_Prescription_To_PrescriptionDetailDto_Should_Success()
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
@@ -58,7 +58,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<PrescriptionDto>(prescription);
+            var dto = _mapper.Map<PrescriptionDetailDto>(prescription);
 
             // Assert
             dto.Should().NotBeNull();
@@ -78,7 +78,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         }
 
         [Fact]
-        public void Map_Prescription_To_PrescriptionDetailDto_Should_Success()
+        public void Map_Prescription_To_PrescriptionDetailDto_WithDifferentData_Should_Success()
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
@@ -249,7 +249,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<PrescriptionDto>(prescription);
+            var dto = _mapper.Map<PrescriptionDetailDto>(prescription);
 
             // Assert
             dto.Should().NotBeNull();
@@ -304,7 +304,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<PrescriptionDto>(prescription);
+            var dto = _mapper.Map<PrescriptionDetailDto>(prescription);
 
             // Assert
             dto.Should().NotBeNull();

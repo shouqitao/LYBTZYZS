@@ -41,7 +41,7 @@ public class UnfinishedCaseHandler
     /// <param name="patientId">患者ID</param>
     /// <param name="doctorId">当前医生ID</param>
     /// <param name="checkAllDoctors">是否检查所有医生的未完成医案（默认true，用于多医生场景检测）</param>
-    public async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = true)
+    public async Task<MedicalCaseDetailDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = true)
     {
         try
         {
@@ -51,8 +51,8 @@ public class UnfinishedCaseHandler
                 _logger.LogInformation("缓存命中:PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
                     patientId, cachedMedicalCaseId);
 
-                // 缓存命中,返回一个包含ID的MedicalCaseDto
-                return new MedicalCaseDto { Id = cachedMedicalCaseId };
+                // 缓存命中,返回一个包含ID的MedicalCaseDetailDto
+                return new MedicalCaseDetailDto { Id = cachedMedicalCaseId };
             }
 
             // 2. 调用API查询
@@ -217,7 +217,7 @@ public class UnfinishedCaseHandler
 public class CaseCheckCompletedEventArgs : EventArgs
 {
     public Guid PatientId { get; set; }
-    public MedicalCaseDto? UnfinishedCase { get; set; }
+    public MedicalCaseDetailDto? UnfinishedCase { get; set; }
     public Guid CurrentDoctorId { get; set; }
 
     /// <summary>

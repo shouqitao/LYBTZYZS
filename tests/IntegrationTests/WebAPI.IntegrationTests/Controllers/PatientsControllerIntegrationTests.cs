@@ -107,7 +107,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResult<PatientDto>>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResult<PatientDetailDto>>>();
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
@@ -130,7 +130,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResult<PatientDto>>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResult<PatientDetailDto>>>();
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
@@ -167,7 +167,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PatientDto>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PatientDetailDto>>();
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
@@ -211,7 +211,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             // Arrange
             // Use inherited Client with authentication
-            var newPatient = new PatientDto
+            var newPatient = new PatientDetailDto
             {
                 Name = "王五",
                 PinYinCode = "ww",
@@ -230,7 +230,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PatientDto>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PatientDetailDto>>();
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
@@ -244,7 +244,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             // Arrange
             // Use inherited Client with authentication
-            var duplicatePatient = new PatientDto
+            var duplicatePatient = new PatientDetailDto
             {
                 Name = "重复患者",
                 PinYinCode = "cf",
@@ -261,7 +261,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PatientDto>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PatientDetailDto>>();
             result.Should().NotBeNull();
             result!.Success.Should().BeFalse();
             result.Message.Should().Contain("已存在");
@@ -272,7 +272,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             // Arrange
             var client = Factory.CreateClient();
-            var newPatient = new PatientDto
+            var newPatient = new PatientDetailDto
             {
                 Name = "测试患者",
                 Gender = Gender.Male,
@@ -296,7 +296,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             // Arrange
             // Use inherited Client with authentication
-            var updatedPatient = new PatientDto
+            var updatedPatient = new PatientDetailDto
             {
                 Id = _testPatient1Id,
                 Name = "张三(已更新)",
@@ -316,7 +316,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PatientDto>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PatientDetailDto>>();
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
@@ -330,7 +330,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange
             // Use inherited Client with authentication
             var nonExistingId = Guid.NewGuid();
-            var updatedPatient = new PatientDto
+            var updatedPatient = new PatientDetailDto
             {
                 Id = nonExistingId,
                 Name = "不存在的患者",
@@ -351,7 +351,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             // Arrange
             var client = Factory.CreateClient();
-            var updatedPatient = new PatientDto
+            var updatedPatient = new PatientDetailDto
             {
                 Id = _testPatient1Id,
                 Name = "测试更新",
@@ -436,7 +436,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResult<PatientDto>>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResult<PatientDetailDto>>>();
             result.Should().NotBeNull();
             result!.Data.Should().NotBeNull();
             result.Data!.Items.Should().NotBeEmpty();

@@ -184,7 +184,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 DosageCount = 3
             };
 
-            var createdPrescription = new PrescriptionDto
+            var createdPrescription = new PrescriptionDetailDto
             {
                 Id = Guid.NewGuid(),
                 Indication = createDto.Diagnosis,
@@ -224,7 +224,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             };
 
             _mockDataManager.Setup(x => x.CreatePrescriptionAsync(createDto))
-                .ReturnsAsync((PrescriptionDto?)null);
+                .ReturnsAsync((PrescriptionDetailDto?)null);
 
             // Act
             var result = await _sut.CreatePrescriptionAsync(createDto);
@@ -237,7 +237,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public async Task UpdatePrescriptionAsync_ShouldCallSave_WhenPrescriptionExists()
         {
             // Arrange
-            _mockDataManager.Setup(x => x.CurrentPrescription).Returns(new PrescriptionDto { Id = Guid.NewGuid() });
+            _mockDataManager.Setup(x => x.CurrentPrescription).Returns(new PrescriptionDetailDto { Id = Guid.NewGuid() });
             _mockValidator.Setup(x => x.IsValid(out It.Ref<string>.IsAny))
                 .Returns((out string error) => { error = string.Empty; return true; });
             _mockDataManager.Setup(x => x.SaveAsync()).ReturnsAsync(true);
@@ -254,7 +254,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public async Task UpdatePrescriptionAsync_ShouldReturnFalse_WhenPrescriptionIsNull()
         {
             // Arrange
-            _mockDataManager.Setup(x => x.CurrentPrescription).Returns((PrescriptionDto?)null);
+            _mockDataManager.Setup(x => x.CurrentPrescription).Returns((PrescriptionDetailDto?)null);
 
             // Act
             var result = await _sut.UpdatePrescriptionAsync();

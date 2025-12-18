@@ -37,12 +37,12 @@ namespace LYBT.Desktop.Consultation.Tests.Components
         {
             // Arrange
             // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint，TCMDiagnosis是唯一必填字段
-            var validConsultation = new ConsultationDto
+            var validConsultation = new ConsultationDetailDto
             {
                 TCMDiagnosis = "测试诊断"
             };
             _mockDataManager.Setup(m => m.Current).Returns(validConsultation);
-            _mockValidationService.Setup(v => v.IsValid(It.IsAny<ConsultationDto>(), out It.Ref<string>.IsAny))
+            _mockValidationService.Setup(v => v.IsValid(It.IsAny<ConsultationDetailDto>(), out It.Ref<string>.IsAny))
                 .Returns(true);
 
             // Act
@@ -57,7 +57,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
         public void IsValid_WithNullData_ShouldReturnFalse()
         {
             // Arrange
-            _mockDataManager.Setup(m => m.Current).Returns((ConsultationDto?)null);
+            _mockDataManager.Setup(m => m.Current).Returns((ConsultationDetailDto?)null);
 
             // Act
             var result = _validator.IsValid(out var errorMessage);
@@ -72,7 +72,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
         {
             // Arrange
             // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint，TCMDiagnosis是唯一必填字段
-            var validConsultation = new ConsultationDto
+            var validConsultation = new ConsultationDetailDto
             {
                 TCMDiagnosis = "测试诊断"
             };

@@ -56,8 +56,8 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     private Guid _medicalCaseId = Guid.Empty;
     public Guid MedicalCaseId { get => _medicalCaseId; set => SetProperty(ref _medicalCaseId, value); }
 
-    private PatientDto? _currentPatient;
-    public PatientDto? CurrentPatient { get => _currentPatient; set => SetProperty(ref _currentPatient, value); }
+    private PatientDetailDto? _currentPatient;
+    public PatientDetailDto? CurrentPatient { get => _currentPatient; set => SetProperty(ref _currentPatient, value); }
 
     private ConsultationPanelViewModel? _consultationPanelViewModel;
     public ConsultationPanelViewModel? ConsultationPanelViewModel { get => _consultationPanelViewModel; set => SetProperty(ref _consultationPanelViewModel, value); }
@@ -314,7 +314,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             }
 
             // 获取处方数据（从缓存或当前ViewModel构建）
-            var prescription = BuildPrescriptionDto();
+            var prescription = BuildPrescriptionDetailDto();
             if (prescription == null)
             {
                 await ShowErrorMessageAsync("没有可打印的处方数据");
@@ -343,7 +343,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     /// 构建处方DTO用于打印
     /// OpenSpec: print-prescription-slip
     /// </summary>
-    private PrescriptionDto? BuildPrescriptionDto()
+    private PrescriptionDetailDto? BuildPrescriptionDetailDto()
     {
         // 优先使用缓存的处方数据
         var cachedPrescription = _dataLoader.GetCachedPrescription();
@@ -360,7 +360,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         }
 
         // 转换药材项类型
-        var items = prescriptionData.Items.Select(item => new PrescriptionItemDto
+        var items = prescriptionData.Items.Select(item => new PrescriptionItemDetailDto
         {
             Id = item.Id ?? Guid.NewGuid(),
             HerbId = item.HerbId,
@@ -371,7 +371,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             DecocteMethod = item.DecocteMethod
         }).ToList();
 
-        return new PrescriptionDto
+        return new PrescriptionDetailDto
         {
             Id = prescriptionData.Id ?? Guid.NewGuid(),
             MedicalCaseId = MedicalCaseId,
@@ -414,7 +414,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     {
         base.OnNavigatedTo(navigationContext);
         MedicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
-        CurrentPatient = navigationContext.Parameters.GetValue<PatientDto>("CurrentPatient");
+        CurrentPatient = navigationContext.Parameters.GetValue<PatientDetailDto>("CurrentPatient");
         WorkspaceMode = navigationContext.Parameters.GetValue<WorkspaceMode>(MedicalCaseNavigationParameters.WorkspaceModeKey);
         var initialEditState = navigationContext.Parameters.GetValue<EditState>(MedicalCaseNavigationParameters.InitialEditStateKey);
         var editMode = navigationContext.Parameters.GetValue<string>("EditMode");

@@ -11,7 +11,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
     /// </summary>
     public interface IMedicalCaseRepository
     {
-        Task<PagedResult<MedicalCaseDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        Task<PagedResult<MedicalCaseDetailDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
         /// 获取医案列表（返回MedicalCaseListDto，用于列表视图）
@@ -23,17 +23,17 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// 获取医案分页列表（包含所有医生的数据）
         /// OpenSpec: fix-history-copy-all-patients - 用于历史医案复制查看全部患者功能
         /// </summary>
-        Task<PagedResult<MedicalCaseDto>> GetPagedIncludeAllDoctorsAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        Task<PagedResult<MedicalCaseDetailDto>> GetPagedIncludeAllDoctorsAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
-        Task<MedicalCaseDto?> GetByIdAsync(Guid id);
+        Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id);
         /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
-        Task<MedicalCaseDto> CreateAsync(MedicalCaseInputDto dto);
+        Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto);
         /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
-        Task<MedicalCaseDto> UpdateAsync(MedicalCaseInputDto dto);
+        Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto dto);
         Task<bool> DeleteAsync(Guid id);
-        Task<List<MedicalCaseDto>> GetByPatientIdAsync(Guid patientId);
+        Task<List<MedicalCaseDetailDto>> GetByPatientIdAsync(Guid patientId);
         /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto 和 PrescriptionInputDto</summary>
-        Task<MedicalCaseDto> CreateWithDetailsAsync(MedicalCaseInputDto caseDto,
+        Task<MedicalCaseDetailDto> CreateWithDetailsAsync(MedicalCaseInputDto caseDto,
             ConsultationInputDto consultationDto,
             PrescriptionInputDto? prescriptionDto = null);
         Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id);
@@ -45,13 +45,13 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <param name="medicalCaseId">医案ID</param>
         /// <param name="dto">诊断更新信息</param>
         /// <returns>更新后的诊断信息</returns>
-        Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto dto);
+        Task<ConsultationDetailDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto dto);
 
         /// <summary>
         /// 查询病案列表（支持多条件组合查询）
         /// Issue #1592 - Phase 3
         /// </summary>
-        Task<List<MedicalCaseDto>> QueryAsync(
+        Task<List<MedicalCaseDetailDto>> QueryAsync(
             string? patientName = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
@@ -71,17 +71,17 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// 从配方导入处方
         /// Epic #1589 Phase 4 - 架构合规版本
         /// </summary>
-        Task<PrescriptionDto> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId);
+        Task<PrescriptionDetailDto> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId);
 
         /// <summary>
         /// 为已存在的医案创建处方（Issue #1608补充）
         /// </summary>
-        Task<PrescriptionDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto);
+        Task<PrescriptionDetailDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto);
 
         /// <summary>
         /// 更新医案的处方（Issue #1608补充）
         /// </summary>
-        Task<PrescriptionDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto);
+        Task<PrescriptionDetailDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto);
 
         /// <summary>
         /// 删除医案的处方（Issue #1608补充）
@@ -99,7 +99,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（当checkAllDoctors=false时使用）</param>
         /// <param name="checkAllDoctors">是否查询所有医生的未完成医案（用于多医生场景检测）</param>
-        Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false);
+        Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false);
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）

@@ -48,9 +48,8 @@
             string policyName,
             params string[] roles)
         {
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy(policyName, policy =>
+            services.AddAuthorizationBuilder()
+                .AddPolicy(policyName, policy =>
                 {
                     policy.RequireAuthenticatedUser();
                     if (roles != null && roles.Length > 0)
@@ -58,7 +57,6 @@
                         policy.RequireRole(roles);
                     }
                 });
-            });
 
             return services;
         }

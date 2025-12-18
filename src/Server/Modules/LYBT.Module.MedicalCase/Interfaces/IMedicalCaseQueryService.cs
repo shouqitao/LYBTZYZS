@@ -59,14 +59,14 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="medicalCaseId">病案ID</param>
         /// <returns>辨证记录DTO列表</returns>
-        Task<List<ConsultationDto>> GetConsultationListAsync(Guid medicalCaseId);
+        Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 查询处方列表
         /// </summary>
         /// <param name="medicalCaseId">病案ID</param>
         /// <returns>处方DTO列表</returns>
-        Task<List<PrescriptionDto>> GetPrescriptionListAsync(Guid medicalCaseId);
+        Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）

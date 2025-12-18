@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Infrastructure.Services
     public class SessionManager : ISessionManager
     {
         private readonly IAuthenticationService _authService;
-        private UserDto? _cachedUser;
+        private UserDetailDto? _cachedUser;
         private string? _cachedToken;
         private string? _cachedRefreshToken;
 
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Infrastructure.Services
 
         public SessionManager(IAuthenticationService authService) => _authService = authService ?? throw new ArgumentNullException(nameof(authService));
 
-        public UserDto? CurrentUser { get { if (_cachedUser == null) _cachedUser = _authService.GetCurrentUserAsync().GetAwaiter().GetResult(); return _cachedUser; } }
+        public UserDetailDto? CurrentUser { get { if (_cachedUser == null) _cachedUser = _authService.GetCurrentUserAsync().GetAwaiter().GetResult(); return _cachedUser; } }
         public Guid? CurrentUserId => CurrentUser?.Id;
         public string? CurrentUserName => CurrentUser?.UserName;
         public bool IsAuthenticated => !string.IsNullOrEmpty(CurrentToken);
@@ -30,9 +30,9 @@ namespace LYBT.Desktop.Infrastructure.Services
         public string? AccessToken => CurrentToken;
         public string? RefreshToken => _cachedRefreshToken;
 
-        public void SetCurrentUser(UserDto user, string token) { _cachedUser = user ?? throw new ArgumentNullException(nameof(user)); _cachedToken = token ?? throw new ArgumentNullException(nameof(token)); }
+        public void SetCurrentUser(UserDetailDto user, string token) { _cachedUser = user ?? throw new ArgumentNullException(nameof(user)); _cachedToken = token ?? throw new ArgumentNullException(nameof(token)); }
 
-        public void SetSession(UserDto user, string accessToken, string? refreshToken = null)
+        public void SetSession(UserDetailDto user, string accessToken, string? refreshToken = null)
         {
             _cachedUser = user ?? throw new ArgumentNullException(nameof(user));
             _cachedToken = accessToken ?? throw new ArgumentNullException(nameof(accessToken));
@@ -40,7 +40,7 @@ namespace LYBT.Desktop.Infrastructure.Services
             SessionChanged?.Invoke(this, new SessionChangedEventArgs(true, user));
         }
 
-        public void SetUserSession(UserDto user, string token) => SetSession(user, token);
+        public void SetUserSession(UserDetailDto user, string token) => SetSession(user, token);
         public void UpdateAccessToken(string accessToken) => _cachedToken = accessToken ?? throw new ArgumentNullException(nameof(accessToken));
 
         public void ClearSession()

@@ -35,7 +35,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "PatientsCache")]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientDetailDto>>), 200)]
         public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -55,7 +55,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var entityPagedResult = entityResult.Data;
-                var patientDtos = _mapper.Map<List<PatientDto>>(entityPagedResult.Items);
+                var patientDtos = _mapper.Map<List<PatientDetailDto>>(entityPagedResult.Items);
 
                 foreach (var item in patientDtos)
                 {
@@ -66,7 +66,7 @@ namespace LYBT.WebAPI.Controllers
                     }
                 }
 
-                var dtoPagedResult = new PagedResult<PatientDto>
+                var dtoPagedResult = new PagedResult<PatientDetailDto>
                 {
                     Items = patientDtos,
                     TotalCount = entityPagedResult.TotalCount,
@@ -113,7 +113,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取患者详情
         /// </summary>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
         {
             try
@@ -127,7 +127,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var patientEntity = entityResult.Data;
-                var patientDto = _mapper.Map<PatientDto>(patientEntity);
+                var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
                 patientDto.Age = patientEntity.Age;
 
                 return Success(patientDto, "查询成功");
@@ -142,7 +142,7 @@ namespace LYBT.WebAPI.Controllers
         /// 新增患者
         /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> Add([FromBody] PatientInputDto dto)
         {
             try
@@ -154,7 +154,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var patientEntity = entityResult.Data;
-                var patientDto = _mapper.Map<PatientDto>(patientEntity);
+                var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
                 patientDto.Age = patientEntity.Age;
 
                 LogOperation("新增患者成功", patientDto, patientEntity.Id);
@@ -171,7 +171,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto)
         {
             try
@@ -192,7 +192,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var patientEntity = entityResult.Data;
-                var patientDto = _mapper.Map<PatientDto>(patientEntity);
+                var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
                 patientDto.Age = patientEntity.Age;
 
                 LogOperation("更新患者成功", patientDto, id);
@@ -347,7 +347,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/restore")]
-        [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)
         {

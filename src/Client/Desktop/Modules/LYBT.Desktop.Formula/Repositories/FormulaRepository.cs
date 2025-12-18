@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Formula.Repositories
     /// 验方数据仓储实现 - RepositoryBase统一架构
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class FormulaRepository : RepositoryBase<FormulaDto, FormulaInputDto, FormulaInputDto, IFormulaApi>, IFormulaRepository
+    public class FormulaRepository : RepositoryBase<FormulaDetailDto, FormulaInputDto, FormulaInputDto, IFormulaApi>, IFormulaRepository
     {
         public FormulaRepository(
             IFormulaApi formulaApi,
@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Formula.Repositories
         /// <summary>
         /// 克隆验方
         /// </summary>
-        public async Task<FormulaDto> CloneFormulaAsync(Guid formulaId)
+        public async Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId)
         {
             try
             {
@@ -40,12 +40,12 @@ namespace LYBT.Desktop.Formula.Repositories
         /// <summary>
         /// 获取待校验的验方列表 (Issue #1349)
         /// </summary>
-        public async Task<List<FormulaDto>> GetPendingValidationFormulasAsync()
+        public async Task<List<FormulaDetailDto>> GetPendingValidationFormulasAsync()
         {
             try
             {
                 var response = await _api.GetPendingValidationFormulasAsync();
-                return response.Data ?? new List<FormulaDto>();
+                return response.Data ?? new List<FormulaDetailDto>();
             }
             catch (Exception ex)
             {
@@ -74,12 +74,12 @@ namespace LYBT.Desktop.Formula.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<ApiResponse<FormulaDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<FormulaDetailDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetFormulaByIdAsync(id);
         }
 
-        protected override Task<ApiResponse<PagedResult<FormulaDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<FormulaDetailDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetFormulasAsync(page, pageSize, keyword);
         }
@@ -108,12 +108,12 @@ namespace LYBT.Desktop.Formula.Repositories
             }
         }
 
-        protected override Task<ApiResponse<FormulaDto>> CallApiCreateAsync(FormulaInputDto dto)
+        protected override Task<ApiResponse<FormulaDetailDto>> CallApiCreateAsync(FormulaInputDto dto)
         {
             return _api.CreateFormulaAsync(dto);
         }
 
-        protected override Task<ApiResponse<FormulaDto>> CallApiUpdateAsync(Guid id, FormulaInputDto dto)
+        protected override Task<ApiResponse<FormulaDetailDto>> CallApiUpdateAsync(Guid id, FormulaInputDto dto)
         {
             return _api.UpdateFormulaAsync(id, dto);
         }
@@ -135,7 +135,7 @@ namespace LYBT.Desktop.Formula.Repositories
         /// <summary>
         /// 切换验方状态（启用/禁用）
         /// </summary>
-        public async Task<FormulaDto?> ToggleStatusAsync(Guid id)
+        public async Task<FormulaDetailDto?> ToggleStatusAsync(Guid id)
         {
             try
             {
@@ -161,7 +161,7 @@ namespace LYBT.Desktop.Formula.Repositories
         /// <summary>
         /// 恢复已删除的验方
         /// </summary>
-        public async Task<FormulaDto?> RestoreAsync(Guid id)
+        public async Task<FormulaDetailDto?> RestoreAsync(Guid id)
         {
             try
             {

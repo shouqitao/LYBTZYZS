@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         private readonly ILogger<PrescriptionEditorService> _logger;
 
         // 缓存药材数据
-        private List<HerbDto>? _cachedHerbs;
+        private List<HerbDetailDto>? _cachedHerbs;
 
         #endregion
 
@@ -55,7 +55,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 1. 药材数据管理
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<HerbDto>> LoadAllHerbsAsync()
+        public async Task<IEnumerable<HerbDetailDto>> LoadAllHerbsAsync()
         {
             try
             {
@@ -78,29 +78,29 @@ namespace LYBT.Desktop.Prescriptions.Services
                 }
 
                 _logger.LogWarning("加载药材数据失败，返回空列表");
-                return Enumerable.Empty<HerbDto>();
+                return Enumerable.Empty<HerbDetailDto>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载药材数据时发生异常");
-                return Enumerable.Empty<HerbDto>();
+                return Enumerable.Empty<HerbDetailDto>();
             }
         }
 
         /// <inheritdoc/>
-        public IEnumerable<HerbDto> FilterHerbs(string searchText)
+        public IEnumerable<HerbDetailDto> FilterHerbs(string searchText)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(searchText))
                 {
-                    return _cachedHerbs ?? Enumerable.Empty<HerbDto>();
+                    return _cachedHerbs ?? Enumerable.Empty<HerbDetailDto>();
                 }
 
                 if (_cachedHerbs == null || _cachedHerbs.Count == 0)
                 {
                     _logger.LogWarning("药材数据未加载，过滤操作返回空结果");
-                    return Enumerable.Empty<HerbDto>();
+                    return Enumerable.Empty<HerbDetailDto>();
                 }
 
                 var searchLower = searchText.Trim().ToLower();
@@ -117,7 +117,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "过滤药材数据时发生异常");
-                return Enumerable.Empty<HerbDto>();
+                return Enumerable.Empty<HerbDetailDto>();
             }
         }
 
@@ -156,7 +156,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 3. 验方导入
 
         /// <inheritdoc/>
-        public Task<IEnumerable<FormulaDto>> LoadFormulasAsync()
+        public Task<IEnumerable<FormulaDetailDto>> LoadFormulasAsync()
         {
             try
             {
@@ -166,17 +166,17 @@ namespace LYBT.Desktop.Prescriptions.Services
                 // 由于当前没有IFormulaRepository注入，暂时返回空列表
                 // TODO: 添加IFormulaRepository依赖注入
                 _logger.LogWarning("IFormulaRepository未注入，返回空验方列表");
-                return Task.FromResult(Enumerable.Empty<FormulaDto>());
+                return Task.FromResult(Enumerable.Empty<FormulaDetailDto>());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载验方数据时发生异常");
-                return Task.FromResult(Enumerable.Empty<FormulaDto>());
+                return Task.FromResult(Enumerable.Empty<FormulaDetailDto>());
             }
         }
 
         /// <inheritdoc/>
-        public Task<PrescriptionDto> ImportFormulaAsync(Guid formulaId)
+        public Task<PrescriptionDetailDto> ImportFormulaAsync(Guid formulaId)
         {
             try
             {
@@ -185,13 +185,13 @@ namespace LYBT.Desktop.Prescriptions.Services
                 // TODO: 实现验方导入逻辑
                 // 1. 从IFormulaRepository加载验方详情
                 // 2. 将验方的FormulaItems转换为PrescriptionItemDto列表
-                // 3. 构建PrescriptionDto对象
+                // 3. 构建PrescriptionDetailDto对象
                 _logger.LogWarning("验方导入功能尚未实现，返回空处方");
 
-                return Task.FromResult(new PrescriptionDto
+                return Task.FromResult(new PrescriptionDetailDto
                 {
                     Id = Guid.NewGuid(),
-                    Items = new List<PrescriptionItemDto>()
+                    Items = new List<PrescriptionItemDetailDto>()
                 });
             }
             catch (Exception ex)
@@ -206,15 +206,15 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 4. 处方数据操作
 
         /// <inheritdoc/>
-        public async Task<PrescriptionDto> BuildPrescriptionDraftAsync(PrescriptionCreateDto dto)
+        public async Task<PrescriptionDetailDto> BuildPrescriptionDraftAsync(PrescriptionCreateDto dto)
         {
             try
             {
                 _logger.LogInformation("构建处方草稿");
 
-                // 将PrescriptionCreateDto转换为PrescriptionDto
+                // 将PrescriptionCreateDto转换为PrescriptionDetailDto
                 // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
-                var prescription = new PrescriptionDto
+                var prescription = new PrescriptionDetailDto
                 {
                     Id = Guid.NewGuid(),
                     // MedicalCaseId需要从上下文获取，此处暂设为Empty
@@ -225,7 +225,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                     Remark = dto.Remark,
                     FormulaSource = dto.FormulaSource,
                     Discount = 1.0m,
-                    Items = dto.Items.Select(item => new PrescriptionItemDto
+                    Items = dto.Items.Select(item => new PrescriptionItemDetailDto
                     {
                         Id = Guid.NewGuid(),
                         HerbId = item.HerbId,
@@ -250,7 +250,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         }
 
         /// <inheritdoc/>
-        public async Task<bool> ValidatePrescriptionAsync(PrescriptionDto prescription)
+        public async Task<bool> ValidatePrescriptionAsync(PrescriptionDetailDto prescription)
         {
             try
             {
@@ -332,7 +332,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <summary>
         /// 触发处方变更事件
         /// </summary>
-        protected virtual void OnPrescriptionChanged(PrescriptionDto? prescription, PrescriptionChangeType changeType)
+        protected virtual void OnPrescriptionChanged(PrescriptionDetailDto? prescription, PrescriptionChangeType changeType)
         {
             PrescriptionChanged?.Invoke(this, new PrescriptionChangedEventArgs
             {

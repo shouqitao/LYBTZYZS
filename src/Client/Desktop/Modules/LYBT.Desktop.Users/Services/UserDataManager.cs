@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Users.Services
     /// - 更新用户信息（UpdateAsync）
     /// - 变更检测
     /// </summary>
-    public class UserDataManager : IDataManager<UserDto>
+    public class UserDataManager : IDataManager<UserDetailDto>
     {
         #region 字段
 
@@ -23,8 +23,8 @@ namespace LYBT.Desktop.Users.Services
         private readonly ILogger<UserDataManager> _logger;
 
         // 用户数据
-        private UserDto? _originalUser;
-        private UserDto? _currentUser;
+        private UserDetailDto? _originalUser;
+        private UserDetailDto? _currentUser;
 
         #endregion
 
@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Users.Services
         /// <summary>
         /// 当前用户数据
         /// </summary>
-        public virtual UserDto? Current => _currentUser;
+        public virtual UserDetailDto? Current => _currentUser;
 
         /// <summary>
         /// 是否有未保存的更改
@@ -200,7 +200,7 @@ namespace LYBT.Desktop.Users.Services
         /// <summary>
         /// 更新用户数据
         /// </summary>
-        public void UpdateUser(UserDto user)
+        public void UpdateUser(UserDetailDto user)
         {
             if (user == null)
                 throw new ArgumentNullException(nameof(user));
@@ -280,9 +280,9 @@ namespace LYBT.Desktop.Users.Services
 
         #region 私有方法 - 深拷贝
 
-        private UserDto CloneUser(UserDto source)
+        private UserDetailDto CloneUser(UserDetailDto source)
         {
-            return new UserDto
+            return new UserDetailDto
             {
                 Id = source.Id,
                 UserName = source.UserName,

@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Patients.Repositories
     /// 患者数据仓储实现 - RepositoryBase统一架构
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class PatientRepository : RepositoryBase<PatientDto, PatientInputDto, PatientInputDto, IPatientApi>, IPatientRepository
+    public class PatientRepository : RepositoryBase<PatientDetailDto, PatientInputDto, PatientInputDto, IPatientApi>, IPatientRepository
     {
         public PatientRepository(
             IPatientApi patientApi,
@@ -24,28 +24,28 @@ namespace LYBT.Desktop.Patients.Repositories
         /// <summary>
         /// 获取所有患者（通过分页获取第一页的大量数据）
         /// </summary>
-        public async Task<List<PatientDto>> GetAllAsync()
+        public async Task<List<PatientDetailDto>> GetAllAsync()
         {
             try
             {
                 var pagedResult = await GetPagedAsync(1, 10000);
-                return pagedResult.Items ?? new List<PatientDto>();
+                return pagedResult.Items ?? new List<PatientDetailDto>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取所有患者失败");
-                return new List<PatientDto>();
+                return new List<PatientDetailDto>();
             }
         }
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<ApiResponse<PatientDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<PatientDetailDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetPatientByIdAsync(id);
         }
 
-        protected override Task<ApiResponse<PagedResult<PatientDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<PatientDetailDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetPatientsAsync(page, pageSize, keyword);
         }
@@ -74,12 +74,12 @@ namespace LYBT.Desktop.Patients.Repositories
             }
         }
 
-        protected override Task<ApiResponse<PatientDto>> CallApiCreateAsync(PatientInputDto dto)
+        protected override Task<ApiResponse<PatientDetailDto>> CallApiCreateAsync(PatientInputDto dto)
         {
             return _api.CreatePatientAsync(dto);
         }
 
-        protected override Task<ApiResponse<PatientDto>> CallApiUpdateAsync(Guid id, PatientInputDto dto)
+        protected override Task<ApiResponse<PatientDetailDto>> CallApiUpdateAsync(Guid id, PatientInputDto dto)
         {
             return _api.UpdatePatientAsync(id, dto);
         }
@@ -179,7 +179,7 @@ namespace LYBT.Desktop.Patients.Repositories
         /// 恢复已删除的患者
         /// 注：患者实体无Status字段，因此无ToggleStatus方法
         /// </summary>
-        public async Task<PatientDto?> RestoreAsync(Guid id)
+        public async Task<PatientDetailDto?> RestoreAsync(Guid id)
         {
             try
             {

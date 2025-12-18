@@ -15,25 +15,15 @@ namespace LYBT.Module.Users.Interfaces
         #region 查询操作
 
         /// <summary>
-        /// 分页获取用户列表（Issue #1162: 扩展支持角色和状态筛选）
+        /// 分页获取用户列表（返回UserListDto，用于列表视图）
+        /// OpenSpec: refactor-dto-simplification - 使用扁平化DTO
         /// </summary>
         /// <param name="page">页码（从1开始）</param>
         /// <param name="pageSize">每页数量</param>
         /// <param name="keyword">搜索关键字（可选，搜索用户名/邮箱/真实姓名）</param>
         /// <param name="role">角色筛选（可选）</param>
         /// <param name="status">状态筛选（可选）</param>
-        Task<Result<PagedResult<UserDto>>> GetPagedAsync(
-            int page = 1,
-            int pageSize = 20,
-            string? keyword = null,
-            UserRole? role = null,
-            CommonStatus? status = null);
-
-        /// <summary>
-        /// 分页获取用户列表（返回UserListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        Task<Result<PagedResult<UserListDto>>> GetPagedListAsync(
+        Task<Result<PagedResult<UserListDto>>> GetPagedAsync(
             int page = 1,
             int pageSize = 20,
             string? keyword = null,
@@ -43,13 +33,13 @@ namespace LYBT.Module.Users.Interfaces
         /// <summary>
         /// 根据ID获取用户详情
         /// </summary>
-        Task<Result<UserDto>> GetByIdAsync(Guid id);
+        Task<Result<UserDetailDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 搜索用户（返回所有匹配结果）
         /// </summary>
         /// <param name="keyword">搜索关键字</param>
-        Task<Result<List<UserDto>>> SearchAsync(string keyword);
+        Task<Result<List<UserListDto>>> SearchAsync(string keyword);
 
         #endregion
 
@@ -58,12 +48,12 @@ namespace LYBT.Module.Users.Interfaces
         /// <summary>
         /// 创建用户
         /// </summary>
-        Task<Result<UserDto>> CreateAsync(UserInputDto dto, CancellationToken cancellationToken = default);
+        Task<Result<UserDetailDto>> CreateAsync(UserInputDto dto, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 更新用户
         /// </summary>
-        Task<Result<UserDto>> UpdateAsync(Guid id, UserInputDto dto, CancellationToken cancellationToken = default);
+        Task<Result<UserDetailDto>> UpdateAsync(Guid id, UserInputDto dto, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 删除用户（软删除）
@@ -84,7 +74,7 @@ namespace LYBT.Module.Users.Interfaces
         /// <param name="userName">用户名</param>
         /// <param name="password">明文密码</param>
         /// <returns>验证成功返回用户信息，失败返回错误</returns>
-        Task<Result<UserDto>> ValidatePasswordAsync(string userName, string password);
+        Task<Result<UserDetailDto>> ValidatePasswordAsync(string userName, string password);
 
         /// <summary>
         /// 更改密码
@@ -96,7 +86,7 @@ namespace LYBT.Module.Users.Interfaces
         /// </summary>
         /// <param name="userId">用户ID</param>
         /// <param name="dto">个人资料DTO</param>
-        Task<Result<UserDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto);
+        Task<Result<UserDetailDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto);
 
         #endregion
 
@@ -106,12 +96,12 @@ namespace LYBT.Module.Users.Interfaces
         /// 切换用户状态（启用/禁用）
         /// </summary>
         /// <param name="id">用户ID</param>
-        Task<Result<UserDto>> ToggleStatusAsync(Guid id);
+        Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id);
 
         /// <summary>
         /// 恢复软删除的用户
         /// </summary>
         /// <param name="id">用户ID</param>
-        Task<Result<UserDto>> RestoreAsync(Guid id);
+        Task<Result<UserDetailDto>> RestoreAsync(Guid id);
     }
 }

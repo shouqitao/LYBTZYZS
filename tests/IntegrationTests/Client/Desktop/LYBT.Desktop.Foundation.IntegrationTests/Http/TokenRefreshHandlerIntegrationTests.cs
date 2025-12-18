@@ -373,9 +373,9 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
 
     #region Helper Methods
 
-    private static UserDto CreateTestUser()
+    private static UserDetailDto CreateTestUser()
     {
-        return new UserDto
+        return new UserDetailDto
         {
             Id = Guid.NewGuid(),
             UserName = "testuser",

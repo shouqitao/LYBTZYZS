@@ -32,7 +32,7 @@ namespace LYBT.Desktop.Users.Tests.Components
         {
             // Arrange
             var testId = Guid.NewGuid();
-            var mockUser = new UserDto
+            var mockUser = new UserDetailDto
             {
                 Id = testId,
                 UserName = "testuser",
@@ -56,7 +56,7 @@ namespace LYBT.Desktop.Users.Tests.Components
         {
             // Arrange
             var testId = Guid.NewGuid();
-            var mockUser = new UserDto
+            var mockUser = new UserDetailDto
             {
                 Id = testId,
                 UserName = "testuser",
@@ -69,7 +69,7 @@ namespace LYBT.Desktop.Users.Tests.Components
             await _dataManager.InitializeAsync(testId);
 
             // Modify user
-            var updatedUser = new UserDto
+            var updatedUser = new UserDetailDto
             {
                 Id = testId,
                 UserName = "testuser",
@@ -95,7 +95,7 @@ namespace LYBT.Desktop.Users.Tests.Components
         {
             // Arrange
             var testId = Guid.NewGuid();
-            var mockUser = new UserDto
+            var mockUser = new UserDetailDto
             {
                 Id = testId,
                 UserName = "testuser",
@@ -107,7 +107,7 @@ namespace LYBT.Desktop.Users.Tests.Components
                 .ReturnsAsync(mockUser);
             await _dataManager.InitializeAsync(testId);
 
-            var toggledUser = new UserDto
+            var toggledUser = new UserDetailDto
             {
                 Id = testId,
                 UserName = "testuser",

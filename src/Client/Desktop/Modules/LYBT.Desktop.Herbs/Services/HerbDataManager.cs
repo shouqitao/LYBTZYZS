@@ -11,10 +11,10 @@ namespace LYBT.Desktop.Herbs.Services
     {
         private readonly IHerbRepository _herbRepository;
         private readonly ILogger<HerbDataManager> _logger;
-        private HerbDto? _originalHerb;
-        private HerbDto? _currentHerb;
+        private HerbDetailDto? _originalHerb;
+        private HerbDetailDto? _currentHerb;
 
-        public virtual HerbDto? Current => _currentHerb;
+        public virtual HerbDetailDto? Current => _currentHerb;
         public virtual bool HasChanges => _currentHerb != null && _originalHerb != null && IsHerbChanged();
 
         public HerbDataManager(IHerbRepository herbRepository, ILogger<HerbDataManager> logger)
@@ -71,33 +71,33 @@ namespace LYBT.Desktop.Herbs.Services
             }
         }
 
-        public void UpdateHerb(HerbDto herb) { _currentHerb = herb ?? throw new ArgumentNullException(nameof(herb)); }
+        public void UpdateHerb(HerbDetailDto herb) { _currentHerb = herb ?? throw new ArgumentNullException(nameof(herb)); }
 
         public void CreateNew()
         {
-            _currentHerb = new HerbDto { Id = Guid.Empty, Name = string.Empty, Unit = "克", Price = 0m, Status = Shared.Models.Enums.CommonStatus.Enabled };
+            _currentHerb = new HerbDetailDto { Id = Guid.Empty, Name = string.Empty, Unit = "克", Price = 0m, Status = Shared.Models.Enums.CommonStatus.Enabled };
             _originalHerb = null;
         }
 
-        public virtual async Task<HerbDto?> GetByIdAsync(Guid herbId)
+        public virtual async Task<HerbDetailDto?> GetByIdAsync(Guid herbId)
         {
             try { _logger.LogDebug("获取药材: HerbId={HerbId}", herbId); var herb = await _herbRepository.GetByIdAsync(herbId); _logger.LogInformation("药材获取成功: HerbId={HerbId}", herbId); return herb; }
             catch (Exception ex) { _logger.LogError(ex, "获取药材失败: HerbId={HerbId}", herbId); throw; }
         }
 
-        public virtual async Task<HerbDto?> CreateAsync(HerbInputDto inputDto)
+        public virtual async Task<HerbDetailDto?> CreateAsync(HerbInputDto inputDto)
         {
             try { _logger.LogDebug("创建药材: HerbName={HerbName}", inputDto.Name); var herb = await _herbRepository.CreateAsync(inputDto); _logger.LogInformation("药材创建成功: HerbName={HerbName}", herb?.Name); return herb; }
             catch (Exception ex) { _logger.LogError(ex, "创建药材失败: HerbName={HerbName}", inputDto.Name); throw; }
         }
 
-        public virtual async Task<HerbDto?> UpdateAsync(HerbInputDto inputDto)
+        public virtual async Task<HerbDetailDto?> UpdateAsync(HerbInputDto inputDto)
         {
             try { _logger.LogDebug("更新药材: HerbName={HerbName}", inputDto.Name); var herb = await _herbRepository.UpdateAsync(inputDto); _logger.LogInformation("药材更新成功: HerbName={HerbName}", herb?.Name); return herb; }
             catch (Exception ex) { _logger.LogError(ex, "更新药材失败: HerbName={HerbName}", inputDto.Name); throw; }
         }
 
-        public virtual async Task<PagedResult<HerbDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchKeyword)
+        public virtual async Task<PagedResult<HerbDetailDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchKeyword)
         {
             try { _logger.LogDebug("分页获取药材: Page={Page}, Size={Size}, Keyword='{Keyword}'", pageNumber, pageSize, searchKeyword); var result = await _herbRepository.GetPagedAsync(pageNumber, pageSize, searchKeyword); _logger.LogInformation("药材列表获取成功: Count={Count}", result.TotalCount); return result; }
             catch (Exception ex) { _logger.LogError(ex, "分页获取药材失败"); throw; }
@@ -115,7 +115,7 @@ namespace LYBT.Desktop.Herbs.Services
              _currentHerb.CostPrice != _originalHerb.CostPrice || _currentHerb.Effect != _originalHerb.Effect || _currentHerb.Usage != _originalHerb.Usage ||
              _currentHerb.Remark != _originalHerb.Remark || _currentHerb.Status != _originalHerb.Status);
 
-        private HerbDto CloneHerb(HerbDto source) => new()
+        private HerbDetailDto CloneHerb(HerbDetailDto source) => new()
         {
             Id = source.Id, Name = source.Name, PinYinCode = source.PinYinCode, Origin = source.Origin, Spec = source.Spec, Unit = source.Unit,
             Price = source.Price, CostPrice = source.CostPrice, Effect = source.Effect, Usage = source.Usage, Remark = source.Remark,
@@ -123,7 +123,7 @@ namespace LYBT.Desktop.Herbs.Services
         };
 
         // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端管理
-        private HerbInputDto ToInputDto(HerbDto dto) => new()
+        private HerbInputDto ToInputDto(HerbDetailDto dto) => new()
         {
             Id = dto.Id == Guid.Empty ? null : dto.Id, Name = dto.Name, PinYinCode = dto.PinYinCode, Origin = dto.Origin, Spec = dto.Spec,
             Unit = dto.Unit, Price = dto.Price, CostPrice = dto.CostPrice, Effect = dto.Effect, Usage = dto.Usage

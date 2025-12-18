@@ -9,8 +9,8 @@ namespace LYBT.Desktop.Users.Interfaces
     /// </summary>
     public interface IUserRepository
     {
-        Task<List<UserDto>> GetAllAsync();
-        Task<PagedResult<UserDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        Task<List<UserDetailDto>> GetAllAsync();
+        Task<PagedResult<UserDetailDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
         /// 分页获取用户列表（返回UserListDto，用于列表视图）
@@ -18,20 +18,20 @@ namespace LYBT.Desktop.Users.Interfaces
         /// </summary>
         Task<PagedResult<UserListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
-        Task<UserDto?> GetByIdAsync(Guid id);
-        Task<UserDto> CreateAsync(UserInputDto user);
-        Task<UserDto> UpdateAsync(UserInputDto user);
+        Task<UserDetailDto?> GetByIdAsync(Guid id);
+        Task<UserDetailDto> CreateAsync(UserInputDto user);
+        Task<UserDetailDto> UpdateAsync(UserInputDto user);
         Task<bool> DeleteAsync(Guid id);
-        Task<UserDto> GetByUsernameAsync(string username);
-        Task<List<UserDto>> SearchAsync(string keyword);
-        Task<List<UserDto>> GetDoctorsAsync();
+        Task<UserDetailDto> GetByUsernameAsync(string username);
+        Task<List<UserDetailDto>> SearchAsync(string keyword);
+        Task<List<UserDetailDto>> GetDoctorsAsync();
 
         /// <summary>
         /// 修改个人资料 (Issue #1891)
         /// </summary>
         /// <param name="userId">用户ID</param>
         /// <param name="dto">个人资料DTO</param>
-        Task<UserDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto);
+        Task<UserDetailDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto);
 
         /// <summary>
         /// 修改密码 (Issue #1887-1892)
@@ -63,11 +63,11 @@ namespace LYBT.Desktop.Users.Interfaces
         /// <summary>
         /// 切换用户状态（启用/禁用）
         /// </summary>
-        Task<UserDto?> ToggleStatusAsync(Guid id);
+        Task<UserDetailDto?> ToggleStatusAsync(Guid id);
 
         /// <summary>
         /// 恢复已删除的用户
         /// </summary>
-        Task<UserDto?> RestoreAsync(Guid id);
+        Task<UserDetailDto?> RestoreAsync(Guid id);
     }
 }

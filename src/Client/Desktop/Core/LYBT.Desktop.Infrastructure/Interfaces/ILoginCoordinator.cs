@@ -21,7 +21,7 @@ public interface ILoginCoordinator
     /// <summary>
     /// 当前登录用户信息
     /// </summary>
-    UserDto? CurrentUser { get; }
+    UserDetailDto? CurrentUser { get; }
 
     /// <summary>
     /// 登录流程状态变更事件
@@ -60,7 +60,7 @@ public interface ILoginCoordinator
     /// </summary>
     /// <param name="user">登录用户信息</param>
     /// <param name="tokenExpiresAt">Token过期时间</param>
-    Task HandleLoginSuccessAsync(UserDto user, DateTime tokenExpiresAt);
+    Task HandleLoginSuccessAsync(UserDetailDto user, DateTime tokenExpiresAt);
 
     /// <summary>
     /// 执行登出流程
@@ -120,11 +120,11 @@ public class LoginFlowStateChangedEventArgs : EventArgs
 /// </summary>
 public class LoginSuccessEventArgs : EventArgs
 {
-    public UserDto User { get; }
+    public UserDetailDto User { get; }
     public DateTime TokenExpiresAt { get; }
     public bool IsAutoLogin { get; }
 
-    public LoginSuccessEventArgs(UserDto user, DateTime tokenExpiresAt, bool isAutoLogin = false)
+    public LoginSuccessEventArgs(UserDetailDto user, DateTime tokenExpiresAt, bool isAutoLogin = false)
     {
         User = user ?? throw new ArgumentNullException(nameof(user));
         TokenExpiresAt = tokenExpiresAt;
@@ -147,9 +147,9 @@ public record LoginResult
     public string? ErrorCode { get; init; }
 
     /// <summary>用户信息（成功时）</summary>
-    public UserDto? User { get; init; }
+    public UserDetailDto? User { get; init; }
 
-    public static LoginResult Succeeded(UserDto user) => new()
+    public static LoginResult Succeeded(UserDetailDto user) => new()
     {
         Success = true,
         User = user

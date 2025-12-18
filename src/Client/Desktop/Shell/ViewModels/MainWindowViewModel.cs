@@ -66,7 +66,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     private string _title = SystemConstants.SystemTitle;
-    private UserDto? _currentUser;
+    // OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
+    private UserDetailDto? _currentUser;
     private bool _isLoggedIn = false;
     private DateTime _currentTime = DateTime.Now;
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
@@ -82,7 +83,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     /// <summary>获取或设置当前登录用户</summary>
-    public UserDto? CurrentUser
+    public UserDetailDto? CurrentUser
     {
         get => _currentUser;
         set => SetProperty(ref _currentUser, value);

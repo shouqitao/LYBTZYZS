@@ -50,10 +50,10 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
     private Guid _medicalCaseFlowId;
     public Guid MedicalCaseFlowId { get => _medicalCaseFlowId; set => SetProperty(ref _medicalCaseFlowId, value); }
 
-    public ObservableCollection<PatientDto> Patients => _searchManager.Patients;
+    public ObservableCollection<PatientDetailDto> Patients => _searchManager.Patients;
 
-    private PatientDto? _selectedPatient;
-    public PatientDto? SelectedPatient
+    private PatientDetailDto? _selectedPatient;
+    public PatientDetailDto? SelectedPatient
     {
         get => _selectedPatient;
         set
@@ -111,8 +111,8 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         }
     }
 
-    private PatientDto? _currentPatient;
-    public PatientDto? CurrentPatient
+    private PatientDetailDto? _currentPatient;
+    public PatientDetailDto? CurrentPatient
     {
         get => _currentPatient;
         set { if (SetProperty(ref _currentPatient, value)) StartConsultationCommand.RaiseCanExecuteChanged(); }
@@ -133,7 +133,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
     public DelegateCommand SearchCommand { get; }
     public DelegateCommand NewPatientCommand { get; }
     public DelegateCommand SelectPatientCommand { get; }
-    public DelegateCommand<PatientDto> DoubleClickPatientCommand { get; }
+    public DelegateCommand<PatientDetailDto> DoubleClickPatientCommand { get; }
     public DelegateCommand PreviousPageCommand { get; }
     public DelegateCommand NextPageCommand { get; }
     public DelegateCommand BackToHomeCommand { get; }
@@ -174,7 +174,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync(), () => !IsBusy);
         NewPatientCommand = new DelegateCommand(ExecuteNewPatient);
         SelectPatientCommand = new DelegateCommand(ExecuteSelectPatient, () => SelectedPatient != null);
-        DoubleClickPatientCommand = new DelegateCommand<PatientDto>(ExecuteDoubleClickPatient);
+        DoubleClickPatientCommand = new DelegateCommand<PatientDetailDto>(ExecuteDoubleClickPatient);
         PreviousPageCommand = new DelegateCommand(async () => await ExecutePreviousPageAsync(), () => _searchManager.CanPreviousPage());
         NextPageCommand = new DelegateCommand(async () => await ExecuteNextPageAsync(), () => _searchManager.CanNextPage());
         BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
@@ -210,7 +210,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         {
             if (result.Result == ButtonResult.OK)
             {
-                var newPatient = result.Parameters.GetValue<PatientDto>("NewPatient");
+                var newPatient = result.Parameters.GetValue<PatientDetailDto>("NewPatient");
                 if (newPatient != null)
                 {
                     Logger.LogInformation("新建患者成功：{Name}", newPatient.Name);
@@ -231,7 +231,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         }
     }
 
-    private void ExecuteDoubleClickPatient(PatientDto? patient)
+    private void ExecuteDoubleClickPatient(PatientDetailDto? patient)
     {
         if (patient != null)
         {
@@ -413,7 +413,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
 
     private async Task LoadPendingCasesAsync() => await _pendingQueueManager.LoadPendingCasesAsync();
 
-    private void PublishPatientSelectedEvent(PatientDto patient, Guid? medicalCaseId = null)
+    private void PublishPatientSelectedEvent(PatientDetailDto patient, Guid? medicalCaseId = null)
     {
         var payload = new PatientSelectedPayload
         {
@@ -428,7 +428,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         NavigateToMedicalCase(patient, medicalCaseId);
     }
 
-    private void NavigateToMedicalCase(PatientDto patient, Guid? medicalCaseId)
+    private void NavigateToMedicalCase(PatientDetailDto patient, Guid? medicalCaseId)
     {
         var parameters = MedicalCaseNavigationParameters.ForClinical(patient.Id, medicalCaseId);
         parameters.Add("CurrentPatient", patient);
@@ -470,13 +470,13 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
     /// 患者创建事件处理
     /// OpenSpec: refactor-patient-selection Task 1.3 - 失效缓存
     /// </summary>
-    private void OnPatientCreated(PatientDto patient)
+    private void OnPatientCreated(PatientDetailDto patient)
     {
         Logger.LogDebug("患者创建事件：{PatientName}，失效搜索缓存", patient.Name);
         _searchManager.InvalidateCache();
     }
 
-    private void OnPatientUpdated(PatientDto patient)
+    private void OnPatientUpdated(PatientDetailDto patient)
     {
         // 更新本地状态
         if (CurrentPatient?.Id == patient.Id) CurrentPatient = patient;

@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
 
         // 所有药材列表（用于拼音码快速匹配）
-        private readonly ObservableCollection<HerbDto> _allHerbs = new();
+        private readonly ObservableCollection<HerbDetailDto> _allHerbs = new();
 
         public FormulaMasterDetailViewModel(
             IFormulaRepository formulaRepository,
@@ -109,7 +109,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 查看模式下的FormulaDto（供FormulaViewControl使用）
         /// </summary>
-        public FormulaDto? ViewFormulaDto => CurrentDetail?.ToDto();
+        public FormulaDetailDto? ViewFormulaDto => CurrentDetail?.ToDto();
 
         /// <summary>
         /// 编辑模式下的详情模型（供FormulaEditControl绑定）

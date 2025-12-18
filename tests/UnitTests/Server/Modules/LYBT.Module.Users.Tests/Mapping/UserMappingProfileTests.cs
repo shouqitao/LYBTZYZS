@@ -43,7 +43,7 @@ namespace LYBT.Module.Users.Tests.Mapping
 
         #endregion
 
-        #region User -> UserDto 映射测试
+        #region User -> UserDetailDto 映射测试
 
         [Fact]
         public void User_To_UserDto_ShouldMapCorrectly()
@@ -65,7 +65,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<UserDto>(user);
+            var dto = _mapper.Map<UserDetailDto>(user);
 
             // Assert
             dto.Should().NotBeNull();
@@ -98,7 +98,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<UserDto>(user);
+            var dto = _mapper.Map<UserDetailDto>(user);
 
             // Assert
             dto.Should().NotBeNull();
@@ -267,7 +267,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<UserDto>(user);
+            var dto = _mapper.Map<UserDetailDto>(user);
 
             // Assert
             dto.Role.Should().Be(role);
@@ -289,7 +289,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<UserDto>(user);
+            var dto = _mapper.Map<UserDetailDto>(user);
 
             // Assert
             dto.Status.Should().Be(status);
@@ -306,7 +306,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             User? nullUser = null;
 
             // Act
-            var dto = _mapper.Map<UserDto>(nullUser);
+            var dto = _mapper.Map<UserDetailDto>(nullUser);
 
             // Assert
             dto.Should().BeNull();
@@ -378,7 +378,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<UserDto>(user);
+            var dto = _mapper.Map<UserDetailDto>(user);
 
             // Assert
             dto.RealName.Should().Be("欧阳·修");

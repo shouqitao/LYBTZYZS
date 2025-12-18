@@ -19,7 +19,7 @@ namespace LYBT.Module.Formulas.Interfaces
         /// <param name="category">分类筛选（可选）</param>
         /// <param name="currentUserId">当前用户ID（用于角色过滤）</param>
         /// <param name="isAdmin">是否为Admin/SuperAdmin角色</param>
-        Task<Result<PagedResult<FormulaDto>>> GetPagedAsync(
+        Task<Result<PagedResult<FormulaDetailDto>>> GetPagedAsync(
             int page = 1,
             int pageSize = 20,
             string? keyword = null,
@@ -42,7 +42,7 @@ namespace LYBT.Module.Formulas.Interfaces
         /// <summary>
         /// 根据ID获取验方详情
         /// </summary>
-        Task<Result<FormulaDto>> GetByIdAsync(Guid id);
+        Task<Result<FormulaDetailDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建新验方
@@ -50,12 +50,12 @@ namespace LYBT.Module.Formulas.Interfaces
         /// </summary>
         /// <param name="dto">验方输入数据</param>
         /// <param name="creatorId">创建者用户ID（用于设置UserId字段）</param>
-        Task<Result<FormulaDto>> CreateAsync(FormulaInputDto dto, Guid? creatorId = null);
+        Task<Result<FormulaDetailDto>> CreateAsync(FormulaInputDto dto, Guid? creatorId = null);
 
         /// <summary>
         /// 更新验方信息
         /// </summary>
-        Task<Result<FormulaDto>> UpdateAsync(Guid id, FormulaInputDto dto);
+        Task<Result<FormulaDetailDto>> UpdateAsync(Guid id, FormulaInputDto dto);
 
         /// <summary>
         /// 删除验方（软删除）
@@ -65,7 +65,7 @@ namespace LYBT.Module.Formulas.Interfaces
         /// <summary>
         /// 搜索验方 - 支持多条件搜索
         /// </summary>
-        Task<Result<List<FormulaDto>>> SearchAsync(string keyword);
+        Task<Result<List<FormulaDetailDto>>> SearchAsync(string keyword);
 
         /// <summary>
         /// 从已解析的验方数据导入（Issue #1166, #1347, #1758）
@@ -96,7 +96,7 @@ namespace LYBT.Module.Formulas.Interfaces
         /// 获取待验证的验方列表 (Issue #1349)
         /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
         /// </summary>
-        Task<Result<List<FormulaDto>>> GetPendingValidationFormulasAsync();
+        Task<Result<List<FormulaDetailDto>>> GetPendingValidationFormulasAsync();
 
         // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法 ==========
 
@@ -104,12 +104,12 @@ namespace LYBT.Module.Formulas.Interfaces
         /// 切换验方状态（启用/禁用）
         /// </summary>
         /// <param name="id">验方ID</param>
-        Task<Result<FormulaDto>> ToggleStatusAsync(Guid id);
+        Task<Result<FormulaDetailDto>> ToggleStatusAsync(Guid id);
 
         /// <summary>
         /// 恢复软删除的验方
         /// </summary>
         /// <param name="id">验方ID</param>
-        Task<Result<FormulaDto>> RestoreAsync(Guid id);
+        Task<Result<FormulaDetailDto>> RestoreAsync(Guid id);
     }
 }

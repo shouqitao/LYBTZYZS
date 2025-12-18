@@ -74,7 +74,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 药材选中后的回调 - 更新价格相关属性
         /// </summary>
-        protected override void OnHerbSelected(HerbDto herb)
+        protected override void OnHerbSelected(HerbDetailDto herb)
         {
             // 通知UnitPrice属性变更
             RaisePropertyChanged(nameof(UnitPrice));

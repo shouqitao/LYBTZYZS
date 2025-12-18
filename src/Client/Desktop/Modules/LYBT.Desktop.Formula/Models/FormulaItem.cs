@@ -6,8 +6,8 @@ namespace LYBT.Desktop.Formula.Models;
 
 /// <summary>
 /// 验方列表项UI模型 - 用于DataGrid/ListView显示
-/// 替代直接使用FormulaDto，实现Desktop层与Shared层的解耦
-/// 保持属性名与FormulaDto一致，确保XAML绑定兼容
+/// 替代直接使用FormulaDetailDto，实现Desktop层与Shared层的解耦
+/// 保持属性名与FormulaDetailDto一致，确保XAML绑定兼容
 /// </summary>
 public class FormulaItem : BindableBase
 {
@@ -173,25 +173,25 @@ public class FormulaItem : BindableBase
     }
 
     /// <summary>
-    /// 从FormulaDto创建FormulaItem
+    /// 从FormulaDetailDto创建FormulaItem
     /// </summary>
-    public static FormulaItem FromDto(FormulaDto dto)
+    public static FormulaItem FromDto(FormulaDetailDto dto)
     {
         var item = new FormulaItem
         {
             Id = dto.Id,
             Name = dto.Name,
-            Pinyin = null, // FormulaDto中没有此属性
+            Pinyin = null, // FormulaDetailDto中没有此属性
             Category = dto.Category,
-            Source = null, // FormulaDto中没有此属性
-            Composition = null, // FormulaDto中没有此属性  
+            Source = null, // FormulaDetailDto中没有此属性
+            Composition = null, // FormulaDetailDto中没有此属性  
             Effect = dto.Effect,
-            Indication = null, // FormulaDto中没有此属性
+            Indication = null, // FormulaDetailDto中没有此属性
             Usage = dto.Usage,
-            Modification = null, // FormulaDto中没有此属性
-            Contraindication = null, // FormulaDto中没有此属性
-            Note = dto.Remark, // FormulaDto中是Remark
-            CreatedBy = null, // FormulaDto中没有此属性
+            Modification = null, // FormulaDetailDto中没有此属性
+            Contraindication = null, // FormulaDetailDto中没有此属性
+            Note = dto.Remark, // FormulaDetailDto中是Remark
+            CreatedBy = null, // FormulaDetailDto中没有此属性
             IsClassic = false, // 默认值
             IsPersonal = !dto.IsShared, // 根据IsShared推断
             IsActive = dto.Status == CommonStatus.Enabled,
@@ -210,17 +210,17 @@ public class FormulaItem : BindableBase
     }
 
     /// <summary>
-    /// 转换为FormulaDto（用于API调用）
+    /// 转换为FormulaDetailDto（用于API调用）
     /// </summary>
-    public FormulaDto ToDto()
+    public FormulaDetailDto ToDto()
     {
-        return new FormulaDto
+        return new FormulaDetailDto
         {
             Id = Id,
             Name = Name,
             Effect = Effect,
             Usage = Usage,
-            Property = null, // FormulaDto中的属性
+            Property = null, // FormulaDetailDto中的属性
             IsShared = !IsPersonal,
             Remark = Note,
             Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled,

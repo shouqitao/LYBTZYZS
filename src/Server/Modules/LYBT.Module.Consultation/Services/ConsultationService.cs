@@ -27,26 +27,26 @@ namespace LYBT.Module.Consultations.Services
             _logger = logger;
         }
 
-        public async Task<Result<ConsultationDto>> GetByIdAsync(Guid id)
+        public async Task<Result<ConsultationDetailDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 // 使用优化后的查询方法，包含所有关联数据
                 var entity = await _repository.GetByIdWithDetailsAsync(id);
                 if (entity == null)
-                    return Result<ConsultationDto>.Failure("诊疗记录不存在");
+                    return Result<ConsultationDetailDto>.Failure("诊疗记录不存在");
 
-                var dto = _mapper.Map<ConsultationDto>(entity);
+                var dto = _mapper.Map<ConsultationDetailDto>(entity);
                 // 确保PatientName和DoctorName从预加载的导航属性获取
                 dto.PatientName = entity.MedicalCase?.PatientName ?? string.Empty;
                 dto.DoctorName = entity.MedicalCase?.DoctorName ?? string.Empty;
 
-                return Result<ConsultationDto>.Success(dto);
+                return Result<ConsultationDetailDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取诊疗记录详情失败");
-                return Result<ConsultationDto>.Failure("获取诊疗记录详情失败");
+                return Result<ConsultationDetailDto>.Failure("获取诊疗记录详情失败");
             }
         }
 
@@ -54,7 +54,7 @@ namespace LYBT.Module.Consultations.Services
         // CreateAsync, UpdateAsync, DeleteAsync 已移除
         // 所有写操作必须通过MedicalCase聚合根进行
 
-        public async Task<Result<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        public async Task<Result<List<ConsultationDetailDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             try
             {
@@ -62,20 +62,20 @@ namespace LYBT.Module.Consultations.Services
                 var consultation = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
                 if (consultation == null)
                 {
-                    return Result<List<ConsultationDto>>.Success(new List<ConsultationDto>());
+                    return Result<List<ConsultationDetailDto>>.Success(new List<ConsultationDetailDto>());
                 }
 
-                var dto = _mapper.Map<ConsultationDto>(consultation);
+                var dto = _mapper.Map<ConsultationDetailDto>(consultation);
                 // 确保PatientName和DoctorName从预加载的导航属性获取
                 dto.PatientName = consultation.MedicalCase?.PatientName ?? string.Empty;
                 dto.DoctorName = consultation.MedicalCase?.DoctorName ?? string.Empty;
 
-                return Result<List<ConsultationDto>>.Success(new List<ConsultationDto> { dto });
+                return Result<List<ConsultationDetailDto>>.Success(new List<ConsultationDetailDto> { dto });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "根据医案ID获取诊疗记录失败");
-                return Result<List<ConsultationDto>>.Failure("获取诊疗记录失败");
+                return Result<List<ConsultationDetailDto>>.Failure("获取诊疗记录失败");
             }
         }
 

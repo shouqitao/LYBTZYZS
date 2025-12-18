@@ -1,14 +1,6 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using AutoMapper;
-using LYBT.Entities.Common;
-using LYBT.Entities.Consultations;
-using LYBT.Entities.Formulas;
-using LYBT.Entities.Herbs;
-using LYBT.Entities.Patients;
-using LYBT.Entities.Prescriptions;
-using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Authorization;

@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取验方列表（支持分页和查询）
         /// </summary>
         [Refit.Get("/api/v1/formulas")]
-        Task<ApiResponse<PagedResult<FormulaDto>>> GetFormulasAsync(
+        Task<ApiResponse<PagedResult<FormulaDetailDto>>> GetFormulasAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null);
@@ -32,19 +32,19 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取验方详情
         /// </summary>
         [Refit.Get("/api/v1/formulas/{id}")]
-        Task<ApiResponse<FormulaDto>> GetFormulaByIdAsync(Guid id);
+        Task<ApiResponse<FormulaDetailDto>> GetFormulaByIdAsync(Guid id);
 
         /// <summary>
         /// 创建验方
         /// </summary>
         [Refit.Post("/api/v1/formulas")]
-        Task<ApiResponse<FormulaDto>> CreateFormulaAsync([Refit.Body] FormulaInputDto request);
+        Task<ApiResponse<FormulaDetailDto>> CreateFormulaAsync([Refit.Body] FormulaInputDto request);
 
         /// <summary>
         /// 更新验方
         /// </summary>
         [Refit.Put("/api/v1/formulas/{id}")]
-        Task<ApiResponse<FormulaDto>> UpdateFormulaAsync(Guid id, [Refit.Body] FormulaInputDto request);
+        Task<ApiResponse<FormulaDetailDto>> UpdateFormulaAsync(Guid id, [Refit.Body] FormulaInputDto request);
 
         /// <summary>
         /// 删除验方
@@ -56,13 +56,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// 克隆验方
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/clone")]
-        Task<ApiResponse<FormulaDto>> CloneFormulaAsync(Guid id);
+        Task<ApiResponse<FormulaDetailDto>> CloneFormulaAsync(Guid id);
 
         /// <summary>
         /// 获取待校验的验方列表 (Issue #1349)
         /// </summary>
         [Refit.Get("/api/v1/formulas/pending-validation")]
-        Task<ApiResponse<List<FormulaDto>>> GetPendingValidationFormulasAsync();
+        Task<ApiResponse<List<FormulaDetailDto>>> GetPendingValidationFormulasAsync();
 
         /// <summary>
         /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
@@ -79,12 +79,12 @@ namespace LYBT.Desktop.Contracts.Api
         /// 切换验方状态（启用/禁用）
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/toggle-status")]
-        Task<ApiResponse<FormulaDto>> ToggleStatusAsync(Guid id);
+        Task<ApiResponse<FormulaDetailDto>> ToggleStatusAsync(Guid id);
 
         /// <summary>
         /// 恢复已删除的验方
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/restore")]
-        Task<ApiResponse<FormulaDto>> RestoreAsync(Guid id);
+        Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
     }
 }

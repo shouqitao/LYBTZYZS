@@ -192,10 +192,11 @@ namespace LYBT.Tests.Common.TestDataBuilders
 
     /// <summary>
     /// 测试用户数据构建器
+    /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
     /// </summary>
-    public class UserDtoBuilder : BaseTestDataBuilder<UserDto>
+    public class UserDetailDtoBuilder : BaseTestDataBuilder<UserDetailDto>
     {
-        public UserDtoBuilder()
+        public UserDetailDtoBuilder()
         {
         }
 
@@ -212,46 +213,46 @@ namespace LYBT.Tests.Common.TestDataBuilders
             _entity.UpdatedAt = DateTime.UtcNow;
         }
 
-        public UserDtoBuilder WithId(Guid id)
+        public UserDetailDtoBuilder WithId(Guid id)
         {
             _entity.Id = id;
             return this;
         }
 
-        public UserDtoBuilder WithUserName(string userName)
+        public UserDetailDtoBuilder WithUserName(string userName)
         {
             _entity.UserName = userName;
             return this;
         }
 
-        public UserDtoBuilder WithRealName(string realName)
+        public UserDetailDtoBuilder WithRealName(string realName)
         {
             _entity.RealName = realName;
             return this;
         }
 
-        public UserDtoBuilder WithRole(UserRole role)
+        public UserDetailDtoBuilder WithRole(UserRole role)
         {
             _entity.Role = role;
             return this;
         }
 
-        public UserDtoBuilder AsDoctor()
+        public UserDetailDtoBuilder AsDoctor()
         {
             return WithRole(UserRole.Doctor);
         }
 
-        public UserDtoBuilder AsAdmin()
+        public UserDetailDtoBuilder AsAdmin()
         {
             return WithRole(UserRole.Admin);
         }
 
-        public UserDtoBuilder AsPharmacist()
+        public UserDetailDtoBuilder AsPharmacist()
         {
             return WithRole(UserRole.Doctor); // Pharmacist角色已统一到Doctor
         }
 
-        public UserDtoBuilder Inactive()
+        public UserDetailDtoBuilder Inactive()
         {
             _entity.Status = CommonStatus.Disabled;
             return this;

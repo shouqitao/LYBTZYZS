@@ -21,6 +21,6 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// 3. 隔天修改必须审计 (CreatedAt.Date &lt; DateTime.Today)
         /// 其他情况: 当天本人修改进行中的医案，无需审计
         /// </remarks>
-        bool IsAuditRequired(MedicalCaseDto medicalCase, Guid currentUserId);
+        bool IsAuditRequired(MedicalCaseDetailDto medicalCase, Guid currentUserId);
     }
 }

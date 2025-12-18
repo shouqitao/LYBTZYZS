@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Foundation.Security
         /// <summary>
         /// 获取当前用户信息
         /// </summary>
-        Task<UserDto?> GetCurrentUserAsync();
+        Task<UserDetailDto?> GetCurrentUserAsync();
 
         /// <summary>
         /// 获取当前令牌

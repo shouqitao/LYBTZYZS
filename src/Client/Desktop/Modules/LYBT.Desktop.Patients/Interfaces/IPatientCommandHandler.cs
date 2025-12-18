@@ -84,12 +84,12 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// <summary>
         /// 创建患者
         /// </summary>
-        Task<CommandResult<PatientDto>> CreatePatientAsync(PatientInputDto inputDto);
+        Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto);
 
         /// <summary>
         /// 更新患者
         /// </summary>
-        Task<CommandResult<PatientDto>> UpdatePatientAsync(PatientInputDto inputDto);
+        Task<CommandResult<PatientDetailDto>> UpdatePatientAsync(PatientInputDto inputDto);
 
         /// <summary>
         /// 删除患者
@@ -112,17 +112,17 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// <summary>
         /// 搜索患者
         /// </summary>
-        Task<CommandResult<IEnumerable<PatientDto>>> SearchPatientsAsync(string keyword);
+        Task<CommandResult<IEnumerable<PatientDetailDto>>> SearchPatientsAsync(string keyword);
 
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        Task<CommandResult<PagedResult<PatientDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null);
+        Task<CommandResult<PagedResult<PatientDetailDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null);
 
         /// <summary>
         /// 根据ID获取患者（Issue #1788: 支持单个患者查询）
         /// </summary>
-        Task<CommandResult<PatientDto>> GetByIdAsync(Guid patientId);
+        Task<CommandResult<PatientDetailDto>> GetByIdAsync(Guid patientId);
 
         #endregion
     }

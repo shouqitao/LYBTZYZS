@@ -83,27 +83,4 @@ namespace LYBT.Shared.Models.Contracts.Common
         [JsonPropertyName("createdAtDisplay")]
         public string CreatedAtDisplay => CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
     }
-
-    /// <summary>
-    /// 审计日志查询请求DTO
-    /// OpenSpec: add-global-audit-system
-    /// </summary>
-    public class EntityAuditLogQueryDto
-    {
-        /// <summary>实体类型</summary>
-        [JsonPropertyName("entityType")]
-        public string EntityType { get; set; } = string.Empty;
-
-        /// <summary>实体ID</summary>
-        [JsonPropertyName("entityId")]
-        public Guid EntityId { get; set; }
-
-        /// <summary>页码（从1开始）</summary>
-        [JsonPropertyName("page")]
-        public int Page { get; set; } = 1;
-
-        /// <summary>每页大小</summary>
-        [JsonPropertyName("pageSize")]
-        public int PageSize { get; set; } = 20;
-    }
 }

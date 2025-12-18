@@ -24,12 +24,12 @@ public class MedicalCaseDataLoader
     /// <summary>
     /// 缓存的诊疗记录
     /// </summary>
-    public ConsultationDto? CachedConsultation { get; private set; }
+    public ConsultationDetailDto? CachedConsultation { get; private set; }
 
     /// <summary>
     /// 缓存的处方信息
     /// </summary>
-    public PrescriptionDto? CachedPrescription { get; private set; }
+    public PrescriptionDetailDto? CachedPrescription { get; private set; }
 
     /// <summary>
     /// 数据加载完成事件
@@ -119,7 +119,7 @@ public class MedicalCaseDataLoader
     /// <summary>
     /// 格式化患者信息为显示文本
     /// </summary>
-    public (string patientName, string patientInfo) FormatPatientInfo(PatientDto patient)
+    public (string patientName, string patientInfo) FormatPatientInfo(PatientDetailDto patient)
     {
         if (patient == null)
         {
@@ -149,7 +149,7 @@ public class MedicalCaseDataLoader
     /// <summary>
     /// 获取缓存的诊疗记录（如果存在）
     /// </summary>
-    public ConsultationDto? GetCachedConsultation()
+    public ConsultationDetailDto? GetCachedConsultation()
     {
         return CachedConsultation;
     }
@@ -157,7 +157,7 @@ public class MedicalCaseDataLoader
     /// <summary>
     /// 获取缓存的处方信息（如果存在）
     /// </summary>
-    public PrescriptionDto? GetCachedPrescription()
+    public PrescriptionDetailDto? GetCachedPrescription()
     {
         return CachedPrescription;
     }

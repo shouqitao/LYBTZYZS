@@ -44,7 +44,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     private string _patientName = string.Empty;
     private bool _isLoadingData;
     private bool _isInitialized;
-    private ObservableCollection<HerbDto> _allHerbs = new();
+    private ObservableCollection<HerbDetailDto> _allHerbs = new();
 
     #endregion
 
@@ -173,7 +173,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 
     #region 初始化
 
-    public async Task InitializeAsync(Guid medicalCaseId, Guid patientId, string patientName = "", PrescriptionDto? existingPrescription = null)
+    public async Task InitializeAsync(Guid medicalCaseId, Guid patientId, string patientName = "", PrescriptionDetailDto? existingPrescription = null)
     {
         _medicalCaseId = medicalCaseId;
         _patientId = patientId;
@@ -191,7 +191,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         HasUnsavedChanges = false;
     }
 
-    private void LoadFromDto(PrescriptionDto dto)
+    private void LoadFromDto(PrescriptionDetailDto dto)
     {
         _isLoadingData = true;
         try
@@ -475,7 +475,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         try
         {
             SetIsBusy(true, "正在导入验方...");
-            if (!parameters.TryGetValue<FormulaDto>("SelectedFormula", out var formula) || formula == null) return;
+            if (!parameters.TryGetValue<FormulaDetailDto>("SelectedFormula", out var formula) || formula == null) return;
             if (!parameters.TryGetValue<List<FormulaHerbItemDto>>("SelectedHerbs", out var herbs) || herbs?.Any() != true)
             { await ShowErrorMessageAsync("验方无药材信息"); return; }
 

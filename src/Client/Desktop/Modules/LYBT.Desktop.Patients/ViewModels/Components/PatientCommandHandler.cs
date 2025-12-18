@@ -115,7 +115,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// <summary>
         /// 创建患者
         /// </summary>
-        public async Task<CommandResult<PatientDto>> CreatePatientAsync(PatientInputDto inputDto)
+        public async Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto)
         {
             try
             {
@@ -123,19 +123,19 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
                 var patient = await _patientRepository.CreateAsync(inputDto);
                 _logger.LogInformation("患者创建成功: {PatientId}", patient.Id);
-                return CommandResult<PatientDto>.Success(patient);
+                return CommandResult<PatientDetailDto>.Success(patient);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "创建患者时发生异常: {PatientName}", inputDto.Name);
-                return CommandResult<PatientDto>.Failure("创建患者时发生系统错误");
+                return CommandResult<PatientDetailDto>.Failure("创建患者时发生系统错误");
             }
         }
 
         /// <summary>
         /// 更新患者
         /// </summary>
-        public async Task<CommandResult<PatientDto>> UpdatePatientAsync(PatientInputDto inputDto)
+        public async Task<CommandResult<PatientDetailDto>> UpdatePatientAsync(PatientInputDto inputDto)
         {
             try
             {
@@ -143,12 +143,12 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
                 var patient = await _patientRepository.UpdateAsync(inputDto);
                 _logger.LogInformation("患者更新成功: {PatientId}", patient.Id);
-                return CommandResult<PatientDto>.Success(patient);
+                return CommandResult<PatientDetailDto>.Success(patient);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新患者时发生异常: {PatientId}", inputDto.Id);
-                return CommandResult<PatientDto>.Failure("更新患者时发生系统错误");
+                return CommandResult<PatientDetailDto>.Failure("更新患者时发生系统错误");
             }
         }
 
@@ -324,7 +324,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// <summary>
         /// 搜索患者
         /// </summary>
-        public async Task<CommandResult<IEnumerable<PatientDto>>> SearchPatientsAsync(string keyword)
+        public async Task<CommandResult<IEnumerable<PatientDetailDto>>> SearchPatientsAsync(string keyword)
         {
             try
             {
@@ -332,19 +332,19 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
                 var patients = await _patientRepository.SearchAsync(keyword);
                 _logger.LogInformation("搜索患者成功，数量: {Count}", patients.Count);
-                return CommandResult<IEnumerable<PatientDto>>.Success(patients);
+                return CommandResult<IEnumerable<PatientDetailDto>>.Success(patients);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "搜索患者时发生异常：{Keyword}", keyword);
-                return CommandResult<IEnumerable<PatientDto>>.Failure("搜索患者时发生系统错误");
+                return CommandResult<IEnumerable<PatientDetailDto>>.Failure("搜索患者时发生系统错误");
             }
         }
 
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        public async Task<CommandResult<PagedResult<PatientDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null)
+        public async Task<CommandResult<PagedResult<PatientDetailDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null)
         {
             try
             {
@@ -352,19 +352,19 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
                 var result = await _patientRepository.GetPagedAsync(page, pageSize, keyword);
                 _logger.LogInformation("分页查询患者成功，数量: {Count}", result.Items.Count);
-                return CommandResult<PagedResult<PatientDto>>.Success(result);
+                return CommandResult<PagedResult<PatientDetailDto>>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "分页查询患者时发生异常");
-                return CommandResult<PagedResult<PatientDto>>.Failure("查询患者列表时发生系统错误");
+                return CommandResult<PagedResult<PatientDetailDto>>.Failure("查询患者列表时发生系统错误");
             }
         }
 
         /// <summary>
         /// 根据ID获取患者（Issue #1788: 支持单个患者查询）
         /// </summary>
-        public async Task<CommandResult<PatientDto>> GetByIdAsync(Guid patientId)
+        public async Task<CommandResult<PatientDetailDto>> GetByIdAsync(Guid patientId)
         {
             try
             {
@@ -375,16 +375,16 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 if (patient == null)
                 {
                     _logger.LogWarning("患者不存在：PatientId={PatientId}", patientId);
-                    return CommandResult<PatientDto>.Failure("患者不存在");
+                    return CommandResult<PatientDetailDto>.Failure("患者不存在");
                 }
 
                 _logger.LogInformation("查询患者成功：{PatientName}", patient.Name);
-                return CommandResult<PatientDto>.Success(patient);
+                return CommandResult<PatientDetailDto>.Success(patient);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "查询患者时发生异常：PatientId={PatientId}", patientId);
-                return CommandResult<PatientDto>.Failure("查询患者时发生系统错误");
+                return CommandResult<PatientDetailDto>.Failure("查询患者时发生系统错误");
             }
         }
 

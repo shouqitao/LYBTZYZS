@@ -322,7 +322,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             }
             response.EnsureSuccessStatusCode();
 
-            var result = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDto>>();
+            var result = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDetailDto>>();
             return result!.Data!.Id;
         }
 
@@ -418,7 +418,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             }
             response.EnsureSuccessStatusCode();
 
-            var result = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDto>>();
+            var result = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDetailDto>>();
             return (result!.Data!.Id, patientId);
         }
 

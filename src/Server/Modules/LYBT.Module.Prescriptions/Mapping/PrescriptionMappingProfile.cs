@@ -73,8 +73,8 @@ namespace LYBT.Module.Prescriptions.Mapping
             // 旧DTO映射 (保持向后兼容，后续移除)
             // ============================================
 
-            // Prescription -> PrescriptionDto
-            CreateMap<Prescription, PrescriptionDto>()
+            // Prescription -> PrescriptionDetailDto
+            CreateMap<Prescription, PrescriptionDetailDto>()
                 .ForMember(dest => dest.SingleDosePrice, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalWeight, opt => opt.Ignore())

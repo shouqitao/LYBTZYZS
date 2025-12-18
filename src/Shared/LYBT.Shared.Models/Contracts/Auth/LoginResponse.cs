@@ -6,7 +6,6 @@ namespace LYBT.Shared.Models.Contracts.Auth
 
     /// <summary>
     /// 登录成功返回响应 - 前后端共享API契约
-    /// UltraThink v2.0: 使用UserDto替代BaseUser
     /// </summary>
     public class LoginResponse
     {
@@ -17,7 +16,7 @@ namespace LYBT.Shared.Models.Contracts.Auth
 
         /// <summary>用户信息</summary>
         [DisplayName("用户信息")]
-        public UserDto User { get; set; } = new();
+        public UserDetailDto User { get; set; } = new();
 
         /// <summary>刷新令牌</summary>
         [DisplayName("刷新令牌")]

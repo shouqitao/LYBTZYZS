@@ -33,7 +33,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<UserDto>>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<UserDetailDto>>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Items.Should().NotBeEmpty();
             apiResponse.Data.CurrentPage.Should().Be(1);
@@ -53,7 +53,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<UserDto>>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<UserDetailDto>>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Items.Should().AllSatisfy(user => 
                 user.UserName.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase) ||
@@ -87,7 +87,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<UserDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<UserDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Id.Should().Be(adminUser.Id);
             apiResponse.Data.UserName.Should().Be(adminUser.UserName);
@@ -142,7 +142,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.Created);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<UserDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<UserDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.UserName.Should().Be(createUserDto.UserName);
             apiResponse.Data.RealName.Should().Be(createUserDto.RealName);
@@ -238,7 +238,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<UserDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<UserDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Id.Should().Be(user.Id);
             apiResponse.Data.RealName.Should().Be(updateUserDto.RealName);
@@ -431,7 +431,7 @@ namespace LYBT.IntegrationTests.Controllers
 
             // 验证用户已激活
             var getResponse = await Client.GetAsync($"/api/users/{user.Id}");
-            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<UserDto>();
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<UserDetailDto>();
             apiResponse.Data.IsActive.Should().BeTrue();
         }
 
@@ -450,7 +450,7 @@ namespace LYBT.IntegrationTests.Controllers
 
             // 验证用户已停用
             var getResponse = await Client.GetAsync($"/api/users/{user.Id}");
-            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<UserDto>();
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<UserDetailDto>();
             apiResponse.Data.IsActive.Should().BeFalse();
         }
 
@@ -458,25 +458,25 @@ namespace LYBT.IntegrationTests.Controllers
 
         #region Helper Methods
 
-        private async Task<UserDto> GetAdminUserAsync()
+        private async Task<UserDetailDto> GetAdminUserAsync()
         {
             var response = await Client.GetAsync("/api/users?searchKeyword=Admin");
             response.EnsureSuccessStatusCode();
             
             var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<UserDto>>>(content, 
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<UserDetailDto>>>(content, 
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             
             return apiResponse!.Data.Items.First(u => u.UserName == "admin");
         }
 
-        private async Task<UserDto> GetTestUserAsync(string userName)
+        private async Task<UserDetailDto> GetTestUserAsync(string userName)
         {
             var response = await Client.GetAsync($"/api/users?searchKeyword={userName}");
             response.EnsureSuccessStatusCode();
             
             var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<UserDto>>>(content, 
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<UserDetailDto>>>(content, 
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             
             return apiResponse!.Data.Items.First(u => u.UserName == userName);

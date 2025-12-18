@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using LYBT.Entities.Consultations;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Consultations.Mapping
 {
@@ -11,9 +11,9 @@ namespace LYBT.Module.Consultations.Mapping
     {
         public ConsultationMappingProfile()
         {
-            // Consultation -> ConsultationDto
+            // Consultation -> ConsultationDetailDto
             // Issue #1562 Phase 2: 已删除ConsultationStatus/StartTime/EndTime字段映射
-            CreateMap<LYBT.Entities.Consultations.Consultation, ConsultationDto>()
+            CreateMap<Consultation, ConsultationDetailDto>()
                 .ForMember(dest => dest.PatientId, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
@@ -25,7 +25,7 @@ namespace LYBT.Module.Consultations.Mapping
             // Issue #1562 Phase 2: 已删除ConsultationStatus/EndTime字段映射
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
             // OpenSpec: refactor-dto-simplification - PatientName/DoctorName已从InputDto移除
-            CreateMap<ConsultationInputDto, LYBT.Entities.Consultations.Consultation>()
+            CreateMap<ConsultationInputDto, Consultation>()
                 .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
                 .ForMember(dest => dest.PrescriptionEnabled, opt => opt.Ignore())
@@ -41,7 +41,7 @@ namespace LYBT.Module.Consultations.Mapping
 
             // Consultation -> ConsultationListDto
             // OpenSpec: refactor-dto-simplification - 列表视图最小字段集
-            CreateMap<LYBT.Entities.Consultations.Consultation, ConsultationListDto>()
+            CreateMap<Consultation, ConsultationListDto>()
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore());
         }

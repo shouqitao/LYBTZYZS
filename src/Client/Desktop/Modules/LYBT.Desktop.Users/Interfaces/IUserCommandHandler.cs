@@ -7,6 +7,7 @@ namespace LYBT.Desktop.Users.Interfaces
     /// 用户命令处理器接口
     /// Desktop层架构重构 Phase 1: 接口化重构
     /// 目的：消除具体类依赖，提升可测试性
+    /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
     /// </summary>
     public interface IUserCommandHandler
     {
@@ -15,12 +16,12 @@ namespace LYBT.Desktop.Users.Interfaces
         /// <summary>
         /// 创建用户
         /// </summary>
-        Task<(bool success, UserDto? user, string? errorMessage)> CreateAsync(UserInputDto createDto);
+        Task<(bool success, UserDetailDto? user, string? errorMessage)> CreateAsync(UserInputDto createDto);
 
         /// <summary>
         /// 更新用户
         /// </summary>
-        Task<(bool success, UserDto? user, string? errorMessage)> UpdateAsync(UserInputDto updateDto);
+        Task<(bool success, UserDetailDto? user, string? errorMessage)> UpdateAsync(UserInputDto updateDto);
 
         /// <summary>
         /// 删除用户
@@ -34,33 +35,33 @@ namespace LYBT.Desktop.Users.Interfaces
         /// <summary>
         /// 根据ID获取用户
         /// </summary>
-        Task<(bool success, UserDto? user, string? errorMessage)> GetByIdAsync(Guid userId);
+        Task<(bool success, UserDetailDto? user, string? errorMessage)> GetByIdAsync(Guid userId);
 
         /// <summary>
         /// 分页查询用户
         /// </summary>
-        Task<(bool success, PagedResult<UserDto>? data, string? errorMessage)> GetPagedAsync(
+        Task<(bool success, PagedResult<UserDetailDto>? data, string? errorMessage)> GetPagedAsync(
             int page, int pageSize, string? searchText = null);
 
         /// <summary>
         /// 获取所有用户
         /// </summary>
-        Task<(bool success, List<UserDto>? users, string? errorMessage)> GetAllAsync();
+        Task<(bool success, List<UserDetailDto>? users, string? errorMessage)> GetAllAsync();
 
         /// <summary>
         /// 根据用户名获取用户
         /// </summary>
-        Task<(bool success, UserDto? user, string? errorMessage)> GetByUsernameAsync(string username);
+        Task<(bool success, UserDetailDto? user, string? errorMessage)> GetByUsernameAsync(string username);
 
         /// <summary>
         /// 搜索用户
         /// </summary>
-        Task<(bool success, List<UserDto>? users, string? errorMessage)> SearchAsync(string keyword);
+        Task<(bool success, List<UserDetailDto>? users, string? errorMessage)> SearchAsync(string keyword);
 
         /// <summary>
         /// 获取医生列表
         /// </summary>
-        Task<(bool success, List<UserDto>? doctors, string? errorMessage)> GetDoctorsAsync();
+        Task<(bool success, List<UserDetailDto>? doctors, string? errorMessage)> GetDoctorsAsync();
 
         #endregion
 
@@ -69,7 +70,7 @@ namespace LYBT.Desktop.Users.Interfaces
         /// <summary>
         /// 修改个人资料 (Issue #1891)
         /// </summary>
-        Task<(bool success, UserDto? user, string? errorMessage)> ChangeProfileAsync(
+        Task<(bool success, UserDetailDto? user, string? errorMessage)> ChangeProfileAsync(
             Guid userId, ChangeProfileDto dto);
 
         #endregion

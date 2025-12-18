@@ -263,7 +263,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 DosageCount = 3
             };
 
-            var createdPrescription = new PrescriptionDto
+            var createdPrescription = new PrescriptionDetailDto
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = medicalCaseId,
@@ -391,7 +391,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 CaseStatus = (MedicalCaseStatus)CaseStatus.Active,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Consultation = new ConsultationDto
+                Consultation = new ConsultationDetailDto
                 {
                     Id = Guid.NewGuid(),
                     MedicalCaseId = medicalCaseId,
@@ -407,7 +407,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
-                Prescription = new PrescriptionDto
+                Prescription = new PrescriptionDetailDto
                 {
                     Id = Guid.NewGuid(),
                     PrescriptionNumber = "RX-2025-001",

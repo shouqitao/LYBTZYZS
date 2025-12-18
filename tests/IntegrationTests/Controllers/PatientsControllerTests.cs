@@ -33,7 +33,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<PatientDto>>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<PatientDetailDto>>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Items.Should().NotBeEmpty();
             apiResponse.Data.CurrentPage.Should().Be(1);
@@ -53,7 +53,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<PatientDto>>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<PatientDetailDto>>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Items.Should().AllSatisfy(patient => 
                 patient.Name.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase) ||
@@ -72,7 +72,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<PatientDto>>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<PatientDetailDto>>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Items.Should().AllSatisfy(patient => 
                 patient.Gender.Should().Be(Gender.Male));
@@ -95,7 +95,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PatientDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PatientDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Id.Should().Be(patient.Id);
             apiResponse.Data.Name.Should().Be(patient.Name);
@@ -140,7 +140,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.Created);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PatientDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PatientDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Name.Should().Be(createPatientDto.Name);
             apiResponse.Data.PhoneNumber.Should().Be(createPatientDto.PhoneNumber);
@@ -243,7 +243,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PatientDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PatientDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.Id.Should().Be(patient.Id);
             apiResponse.Data.Name.Should().Be(updatePatientDto.Name);
@@ -347,7 +347,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PatientDto>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PatientDetailDto>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data.PhoneNumber.Should().Be(patient.PhoneNumber);
         }
@@ -382,7 +382,7 @@ namespace LYBT.IntegrationTests.Controllers
             // Assert
             response.ShouldHaveStatusCode(HttpStatusCode.OK);
             
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<MedicalCaseDto>>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<MedicalCaseDetailDto>>();
             apiResponse.Data.Should().NotBeNull();
             // 初始历史记录应该为空
             apiResponse.Data.Items.Should().BeEmpty();
@@ -405,7 +405,7 @@ namespace LYBT.IntegrationTests.Controllers
 
         #region Helper Methods
 
-        private async Task<PatientDto> CreateTestPatientAsync(string name = "测试患者", string phoneNumber = "13800138000")
+        private async Task<PatientDetailDto> CreateTestPatientAsync(string name = "测试患者", string phoneNumber = "13800138000")
         {
             var createPatientDto = new PatientInputDto
             {
@@ -422,7 +422,7 @@ namespace LYBT.IntegrationTests.Controllers
             response.EnsureSuccessStatusCode();
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<PatientDto>>(responseContent, 
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<PatientDetailDto>>(responseContent, 
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             
             return apiResponse!.Data;

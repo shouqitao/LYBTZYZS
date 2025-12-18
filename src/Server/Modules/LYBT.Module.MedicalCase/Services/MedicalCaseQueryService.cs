@@ -173,19 +173,19 @@ namespace LYBT.Module.MedicalCases.Services
         /// 查询辨证记录列表
         /// Epic #1612: 返回病案的所有历史辨证记录
         /// </summary>
-        public async Task<List<ConsultationDto>> GetConsultationListAsync(Guid medicalCaseId)
+        public async Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId)
         {
             try
             {
                 var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
                 if (medicalCase?.Consultation == null)
                 {
-                    return new List<ConsultationDto>();
+                    return new List<ConsultationDetailDto>();
                 }
 
                 // 当前架构下只有一条Consultation（共享主键），直接映射
-                var dto = _mapper.Map<ConsultationDto>(medicalCase.Consultation);
-                return new List<ConsultationDto> { dto };
+                var dto = _mapper.Map<ConsultationDetailDto>(medicalCase.Consultation);
+                return new List<ConsultationDetailDto> { dto };
             }
             catch (Exception ex)
             {
@@ -198,19 +198,19 @@ namespace LYBT.Module.MedicalCases.Services
         /// 查询处方列表
         /// Epic #1612: 返回病案的所有历史处方记录
         /// </summary>
-        public async Task<List<PrescriptionDto>> GetPrescriptionListAsync(Guid medicalCaseId)
+        public async Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId)
         {
             try
             {
                 var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
                 if (medicalCase?.Prescription == null)
                 {
-                    return new List<PrescriptionDto>();
+                    return new List<PrescriptionDetailDto>();
                 }
 
                 // 当前架构下只有一条Prescription（一诊一方），直接映射
-                var dto = _mapper.Map<PrescriptionDto>(medicalCase.Prescription);
-                return new List<PrescriptionDto> { dto };
+                var dto = _mapper.Map<PrescriptionDetailDto>(medicalCase.Prescription);
+                return new List<PrescriptionDetailDto> { dto };
             }
             catch (Exception ex)
             {

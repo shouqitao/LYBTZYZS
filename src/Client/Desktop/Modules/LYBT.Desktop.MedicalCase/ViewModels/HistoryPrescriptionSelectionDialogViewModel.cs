@@ -19,8 +19,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private readonly IMedicalCaseRepository _medicalCaseRepository;
         private bool _isLoading;
-        private PrescriptionDto? _selectedPrescription;
-        private ObservableCollection<PrescriptionDto> _prescriptions = new();
+        private PrescriptionDetailDto? _selectedPrescription;
+        private ObservableCollection<PrescriptionDetailDto> _prescriptions = new();
         private Guid _patientId;
 
         #endregion
@@ -50,13 +50,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        public ObservableCollection<PrescriptionDto> Prescriptions
+        public ObservableCollection<PrescriptionDetailDto> Prescriptions
         {
             get => _prescriptions;
             private set => SetProperty(ref _prescriptions, value);
         }
 
-        public PrescriptionDto? SelectedPrescription
+        public PrescriptionDetailDto? SelectedPrescription
         {
             get => _selectedPrescription;
             set

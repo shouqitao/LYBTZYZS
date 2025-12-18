@@ -42,10 +42,10 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
 
         #endregion
 
-        #region MedicalCase -> MedicalCaseDto 映射测试
+        #region MedicalCase -> MedicalCaseDetailDto 映射测试
 
         [Fact]
-        public void MedicalCase_To_MedicalCaseDto_ShouldMapCorrectly()
+        public void MedicalCase_To_MedicalCaseDetailDto_ShouldMapCorrectly()
         {
             // Arrange
             var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
@@ -62,7 +62,7 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<MedicalCaseDto>(medicalCase);
+            var dto = _mapper.Map<MedicalCaseDetailDto>(medicalCase);
 
             // Assert
             dto.Should().NotBeNull();
@@ -77,7 +77,7 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
         }
 
         [Fact]
-        public void MedicalCase_To_MedicalCaseDto_WithNullRemark_ShouldMapCorrectly()
+        public void MedicalCase_To_MedicalCaseDetailDto_WithNullRemark_ShouldMapCorrectly()
         {
             // Arrange
             var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
@@ -92,7 +92,7 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<MedicalCaseDto>(medicalCase);
+            var dto = _mapper.Map<MedicalCaseDetailDto>(medicalCase);
 
             // Assert
             dto.Should().NotBeNull();
@@ -101,37 +101,6 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
 
         #endregion
 
-        #region MedicalCase -> MedicalCaseDetailDto 映射测试
-
-        [Fact]
-        public void MedicalCase_To_MedicalCaseDetailDto_ShouldMapCorrectly()
-        {
-            // Arrange
-            var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
-            {
-                Id = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                PatientName = "患者A",
-                DoctorId = Guid.NewGuid(),
-                DoctorName = "医生A",
-                ConsultationDate = DateTime.Now,
-                CaseStatus = MedicalCaseStatus.Active,
-                Remark = "详细备注"
-            };
-
-            // Act
-            var detailDto = _mapper.Map<MedicalCaseDetailDto>(medicalCase);
-
-            // Assert
-            detailDto.Should().NotBeNull();
-            detailDto.Id.Should().Be(medicalCase.Id);
-            detailDto.PatientId.Should().Be(medicalCase.PatientId);
-            detailDto.PatientName.Should().Be(medicalCase.PatientName);
-            detailDto.CaseStatus.Should().Be(medicalCase.CaseStatus);
-            detailDto.Remark.Should().Be(medicalCase.Remark);
-        }
-
-        #endregion
 
         #region MedicalCaseInputDto -> MedicalCase 映射测试（Epic #1961）
 
@@ -210,7 +179,7 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
         [InlineData(MedicalCaseStatus.Active)]
         [InlineData(MedicalCaseStatus.Completed)]
         // Issue #2242: Cancelled状态已废弃，移除测试用例
-        public void MedicalCase_To_MedicalCaseDto_ShouldMapAllStatuses(MedicalCaseStatus status)
+        public void MedicalCase_To_MedicalCaseDetailDto_ShouldMapAllStatuses(MedicalCaseStatus status)
         {
             // Arrange
             var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
@@ -224,7 +193,7 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<MedicalCaseDto>(medicalCase);
+            var dto = _mapper.Map<MedicalCaseDetailDto>(medicalCase);
 
             // Assert
             dto.CaseStatus.Should().Be(status);
@@ -241,7 +210,7 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
             LYBT.Entities.MedicalCases.MedicalCase? nullMedicalCase = null;
 
             // Act
-            var dto = _mapper.Map<MedicalCaseDto>(nullMedicalCase);
+            var dto = _mapper.Map<MedicalCaseDetailDto>(nullMedicalCase);
 
             // Assert
             dto.Should().BeNull();
@@ -267,7 +236,7 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<MedicalCaseDto>(medicalCase);
+            var dto = _mapper.Map<MedicalCaseDetailDto>(medicalCase);
 
             // Assert
             dto.PatientName.Should().Be("张三（男）");

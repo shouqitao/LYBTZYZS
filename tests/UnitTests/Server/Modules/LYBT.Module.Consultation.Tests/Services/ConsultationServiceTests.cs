@@ -62,7 +62,7 @@ namespace LYBT.UnitTests.Core.Services
                 }
             };
 
-            var consultationDto = new ConsultationDto
+            var consultationDto = new ConsultationDetailDto
             {
                 Id = consultation.Id,
                 MedicalCaseId = medicalCaseId,
@@ -74,7 +74,7 @@ namespace LYBT.UnitTests.Core.Services
 
             _repositoryMock.Setup(x => x.GetByMedicalCaseIdAsync(medicalCaseId))
                 .ReturnsAsync(consultation);
-            _mapperMock.Setup(x => x.Map<ConsultationDto>(consultation))
+            _mapperMock.Setup(x => x.Map<ConsultationDetailDto>(consultation))
                 .Returns(consultationDto);
 
             // Act
@@ -131,7 +131,7 @@ namespace LYBT.UnitTests.Core.Services
                 ChiefComplaint = "测试主诉"
             };
 
-            var consultationDto = new ConsultationDto
+            var consultationDto = new ConsultationDetailDto
             {
                 Id = consultation.Id,
                 ChiefComplaint = "测试主诉",
@@ -142,7 +142,7 @@ namespace LYBT.UnitTests.Core.Services
                 .Returns(consultation);
             _repositoryMock.Setup(x => x.AddAsync(It.IsAny<Consultation>()))
                 .ReturnsAsync(consultation);
-            _mapperMock.Setup(x => x.Map<ConsultationDto>(consultation))
+            _mapperMock.Setup(x => x.Map<ConsultationDetailDto>(consultation))
                 .Returns(consultationDto);
 
             // Act
@@ -176,7 +176,7 @@ namespace LYBT.UnitTests.Core.Services
                 }
             };
 
-            var consultationDto = new ConsultationDto
+            var consultationDto = new ConsultationDetailDto
             {
                 Id = consultationId,
                 ChiefComplaint = "测试主诉",
@@ -187,7 +187,7 @@ namespace LYBT.UnitTests.Core.Services
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
                 .ReturnsAsync(consultation);
-            _mapperMock.Setup(x => x.Map<ConsultationDto>(consultation))
+            _mapperMock.Setup(x => x.Map<ConsultationDetailDto>(consultation))
                 .Returns(consultationDto);
 
             // Act
@@ -249,7 +249,7 @@ namespace LYBT.UnitTests.Core.Services
                 TCMDiagnosis = "更新后的诊断"
             };
 
-            var resultDto = new ConsultationDto
+            var resultDto = new ConsultationDetailDto
             {
                 Id = consultationId,
                 ChiefComplaint = "更新后的主诉",
@@ -261,7 +261,7 @@ namespace LYBT.UnitTests.Core.Services
             _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Consultation>()))
                 .ReturnsAsync(updatedConsultation);
             _mapperMock.Setup(x => x.Map(updateDto, existingConsultation));
-            _mapperMock.Setup(x => x.Map<ConsultationDto>(updatedConsultation))
+            _mapperMock.Setup(x => x.Map<ConsultationDetailDto>(updatedConsultation))
                 .Returns(resultDto);
 
             // Act
@@ -333,9 +333,9 @@ namespace LYBT.UnitTests.Core.Services
                 }
             };
 
-            var consultationDtos = new List<ConsultationDto>
+            var consultationDtos = new List<ConsultationDetailDto>
             {
-                new ConsultationDto
+                new ConsultationDetailDto
                 {
                     Id = consultations[0].Id,
                     ChiefComplaint = "头痛发热",
@@ -345,7 +345,7 @@ namespace LYBT.UnitTests.Core.Services
 
             _repositoryMock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<Consultation, bool>>>()))
                 .ReturnsAsync(consultations);
-            _mapperMock.Setup(x => x.Map<List<ConsultationDto>>(consultations))
+            _mapperMock.Setup(x => x.Map<List<ConsultationDetailDto>>(consultations))
                 .Returns(consultationDtos);
 
             // Act
@@ -389,9 +389,9 @@ namespace LYBT.UnitTests.Core.Services
                 PageSize = 20
             };
 
-            var consultationDtos = new List<ConsultationDto>
+            var consultationDtos = new List<ConsultationDetailDto>
             {
-                new ConsultationDto
+                new ConsultationDetailDto
                 {
                     Id = consultations[0].Id,
                     ChiefComplaint = "测试主诉1",
@@ -402,7 +402,7 @@ namespace LYBT.UnitTests.Core.Services
 
             _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(1, 20, null))
                 .ReturnsAsync(pagedResult);
-            _mapperMock.Setup(x => x.Map<ConsultationDto>(It.IsAny<Consultation>()))
+            _mapperMock.Setup(x => x.Map<ConsultationDetailDto>(It.IsAny<Consultation>()))
                 .Returns((Consultation c) => consultationDtos.First(d => d.Id == c.Id));
 
             // Act
@@ -518,7 +518,7 @@ namespace LYBT.UnitTests.Core.Services
                 CreatedAt = DateTime.Today.AddHours(10)
             };
 
-            var resultDto = new ConsultationDto
+            var resultDto = new ConsultationDetailDto
             {
                 Id = consultationId,
                 ChiefComplaint = "更新后的主诉",
@@ -530,7 +530,7 @@ namespace LYBT.UnitTests.Core.Services
             _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Consultation>()))
                 .ReturnsAsync(updatedConsultation);
             _mapperMock.Setup(x => x.Map(updateDto, existingConsultation));
-            _mapperMock.Setup(x => x.Map<ConsultationDto>(updatedConsultation))
+            _mapperMock.Setup(x => x.Map<ConsultationDetailDto>(updatedConsultation))
                 .Returns(resultDto);
 
             // Act

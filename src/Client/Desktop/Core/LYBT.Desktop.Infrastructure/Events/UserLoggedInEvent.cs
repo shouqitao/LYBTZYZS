@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Infrastructure.Events
     /// </summary>
     public class UserLoggedInEventArgs
     {
-        public UserLoggedInEventArgs(UserDto user, string token)
+        public UserLoggedInEventArgs(UserDetailDto user, string token)
         {
             User = user;
             Token = token;
@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Infrastructure.Events
         /// <summary>
         /// 用户信息
         /// </summary>
-        public UserDto User { get; }
+        public UserDetailDto User { get; }
 
         /// <summary>
         /// 访问令牌

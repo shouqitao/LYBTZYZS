@@ -138,7 +138,7 @@ namespace LYBT.Desktop.Formula.Models
         }
 
         /// <summary>从DTO创建模型</summary>
-        public static FormulaDetailModel FromDto(FormulaDto dto)
+        public static FormulaDetailModel FromDto(FormulaDetailDto dto)
         {
             var model = new FormulaDetailModel
             {
@@ -176,9 +176,9 @@ namespace LYBT.Desktop.Formula.Models
         }
 
         /// <summary>转换为DTO</summary>
-        public FormulaDto ToDto()
+        public FormulaDetailDto ToDto()
         {
-            return new FormulaDto
+            return new FormulaDetailDto
             {
                 Id = Id,
                 Name = Name,

@@ -115,7 +115,7 @@ public class AuthenticationServiceTests
         {
             Token = "access_token",
             RefreshToken = "refresh_token",
-            User = new UserDto
+            User = new UserDetailDto
             {
                 Id = Guid.NewGuid(),
                 UserName = "test_user",
@@ -182,7 +182,7 @@ public class AuthenticationServiceTests
         {
             Token = "access_token",
             RefreshToken = "refresh_token",
-            User = new UserDto
+            User = new UserDetailDto
             {
                 Id = Guid.NewGuid(),
                 UserName = "test_user",
@@ -222,7 +222,7 @@ public class AuthenticationServiceTests
         {
             Token = "access_token",
             RefreshToken = "refresh_token",
-            User = new UserDto
+            User = new UserDetailDto
             {
                 Id = Guid.NewGuid(),
                 UserName = "test_user",
@@ -262,7 +262,7 @@ public class AuthenticationServiceTests
         {
             Token = "access_token",
             RefreshToken = "refresh_token",
-            User = new UserDto
+            User = new UserDetailDto
             {
                 Id = Guid.NewGuid(),
                 UserName = "test_user",

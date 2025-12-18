@@ -1,20 +1,19 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-    全局控件样式 (Issue #1484, OpenSpec: cleanup-ui-layer)
-    定义统一的控件外观，确保界面一致性
-
-    设计规范:
-    - 风格: 传统中医，简洁大气，原生WPF控件
-    - 目标分辨率: 1920x1080 (Full HD)，界面铺满，尽量避免滚动
-    - 最小支持: 1366x768
-    - 控件高度: 36px (标准) / 40px (大按钮)
+        全局控件样式 (Issue #1484, OpenSpec: cleanup-ui-layer)
+        定义统一的控件外观，确保界面一致性
+        
+        设计规范:
+        - 风格: 传统中医，简洁大气，原生WPF控件
+        - 目标分辨率: 1920x1080 (Full HD)，界面铺满，尽量避免滚动
+        - 最小支持: 1366x768
+        - 控件高度: 36px (标准) / 40px (大按钮)
     -->
 
-    <!-- ========== 按钮样式 (OpenSpec: optimize-module-list-ui - UI-025) ========== -->
+    <!--  ========== 按钮样式 (OpenSpec: optimize-module-list-ui - UI-025) ==========  -->
 
-    <!-- 主按钮 (Primary Button) - Fluent Design #0078D4 -->
+    <!--  主按钮 (Primary Button) - Fluent Design #0078D4  -->
     <Style x:Key="PrimaryButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
         <Setter Property="Foreground" Value="White" />
@@ -28,14 +27,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Margin="{TemplateBinding Padding}" />
+                    <Border
+                        x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                        <ContentPresenter
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -54,7 +55,7 @@
         </Setter>
     </Style>
 
-    <!-- 次级按钮 (Secondary Button) - Fluent Design -->
+    <!--  次级按钮 (Secondary Button) - Fluent Design  -->
     <Style x:Key="SecondaryButton" TargetType="Button">
         <Setter Property="Background" Value="White" />
         <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
@@ -69,14 +70,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Margin="{TemplateBinding Padding}" />
+                    <Border
+                        x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                        <ContentPresenter
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -95,7 +98,7 @@
         </Setter>
     </Style>
 
-    <!-- 危险按钮 (Danger Button) - #D32F2F, Hover: #B71C1C -->
+    <!--  危险按钮 (Danger Button) - #D32F2F, Hover: #B71C1C  -->
     <Style x:Key="DangerButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource DangerBrush}" />
         <Setter Property="Foreground" Value="White" />
@@ -109,14 +112,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Margin="{TemplateBinding Padding}" />
+                    <Border
+                        x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                        <ContentPresenter
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -135,9 +140,9 @@
         </Setter>
     </Style>
 
-    <!-- ========== 输入控件样式 ========== -->
+    <!--  ========== 输入控件样式 ==========  -->
 
-    <!-- 标准文本框 (Standard TextBox) -->
+    <!--  标准文本框 (Standard TextBox)  -->
     <Style x:Key="StandardTextBox" TargetType="TextBox">
         <Setter Property="Height" Value="36" />
         <Setter Property="Padding" Value="10,0" />
@@ -150,14 +155,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
-                        <ScrollViewer x:Name="PART_ContentHost"
-                                      VerticalAlignment="Center"
-                                      Margin="{TemplateBinding Padding}" />
+                    <Border
+                        x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="2">
+                        <ScrollViewer
+                            x:Name="PART_ContentHost"
+                            Margin="{TemplateBinding Padding}"
+                            VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
@@ -177,7 +184,7 @@
         </Setter>
     </Style>
 
-    <!-- 表单文本框 (Form TextBox) -->
+    <!--  表单文本框 (Form TextBox)  -->
     <Style x:Key="FormTextBox" TargetType="TextBox">
         <Setter Property="Padding" Value="10,8" />
         <Setter Property="FontSize" Value="13" />
@@ -191,16 +198,18 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4"
-                            SnapsToDevicePixels="True">
-                        <ScrollViewer x:Name="PART_ContentHost"
-                                      Focusable="False"
-                                      HorizontalScrollBarVisibility="Hidden"
-                                      VerticalScrollBarVisibility="Hidden" />
+                    <Border
+                        x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4"
+                        SnapsToDevicePixels="True">
+                        <ScrollViewer
+                            x:Name="PART_ContentHost"
+                            Focusable="False"
+                            HorizontalScrollBarVisibility="Hidden"
+                            VerticalScrollBarVisibility="Hidden" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -220,8 +229,11 @@
         </Setter>
     </Style>
 
-    <!-- 多行文本域 (Form TextArea) -->
-    <Style x:Key="FormTextArea" TargetType="TextBox" BasedOn="{StaticResource FormTextBox}">
+    <!--  多行文本域 (Form TextArea)  -->
+    <Style
+        x:Key="FormTextArea"
+        BasedOn="{StaticResource FormTextBox}"
+        TargetType="TextBox">
         <Setter Property="AcceptsReturn" Value="True" />
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="MinHeight" Value="80" />
@@ -229,35 +241,41 @@
         <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     </Style>
 
-    <!-- 搜索文本框 (Search TextBox) -->
-    <Style x:Key="SearchTextBox" TargetType="TextBox" BasedOn="{StaticResource StandardTextBox}">
+    <!--  搜索文本框 (Search TextBox)  -->
+    <Style
+        x:Key="SearchTextBox"
+        BasedOn="{StaticResource StandardTextBox}"
+        TargetType="TextBox">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
+                    <Border
+                        x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="2">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <!-- 搜索图标 -->
-                            <TextBlock Grid.Column="0"
-                                       Text=""
-                                       FontSize="16"
-                                       VerticalAlignment="Center"
-                                       Margin="10,0,5,0"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                            <!--  搜索图标  -->
+                            <TextBlock
+                                Grid.Column="0"
+                                Margin="10,0,5,0"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                Foreground="{StaticResource TextSecondaryBrush}"
+                                Text="" />
 
-                            <!-- 输入区域 -->
-                            <ScrollViewer Grid.Column="1"
-                                          x:Name="PART_ContentHost"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,10,0" />
+                            <!--  输入区域  -->
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Grid.Column="1"
+                                Margin="0,0,10,0"
+                                VerticalAlignment="Center" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -278,7 +296,7 @@
         </Setter>
     </Style>
 
-    <!-- 标准下拉框 (Standard ComboBox) -->
+    <!--  标准下拉框 (Standard ComboBox)  -->
     <Style x:Key="StandardComboBox" TargetType="ComboBox">
         <Setter Property="Height" Value="36" />
         <Setter Property="Padding" Value="10,0" />
@@ -290,9 +308,9 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
-    <!-- ========== DataGrid样式 ========== -->
+    <!--  ========== DataGrid样式 ==========  -->
 
-    <!-- 标准DataGrid (Standard DataGrid) -->
+    <!--  标准DataGrid (Standard DataGrid)  -->
     <Style x:Key="StandardDataGrid" TargetType="DataGrid">
         <Setter Property="AutoGenerateColumns" Value="False" />
         <Setter Property="CanUserAddRows" Value="False" />
@@ -315,7 +333,7 @@
         <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     </Style>
 
-    <!-- DataGrid列头样式 -->
+    <!--  DataGrid列头样式  -->
     <Style x:Key="StandardDataGridColumnHeader" TargetType="DataGridColumnHeader">
         <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
         <Setter Property="Foreground" Value="White" />
@@ -330,9 +348,9 @@
         <Setter Property="BorderThickness" Value="0,0,1,0" />
     </Style>
 
-    <!-- ========== 成功按钮样式 ========== -->
+    <!--  ========== 成功按钮样式 ==========  -->
 
-    <!-- 成功按钮 (Success Button) - #388E3C, Hover: #2E7D32 -->
+    <!--  成功按钮 (Success Button) - #388E3C, Hover: #2E7D32  -->
     <Style x:Key="SuccessButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
         <Setter Property="Foreground" Value="White" />
@@ -346,14 +364,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Margin="{TemplateBinding Padding}" />
+                    <Border
+                        x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                        <ContentPresenter
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -372,31 +392,61 @@
         </Setter>
     </Style>
 
-    <!-- ========== 兼容性别名 (Legacy Compatibility) ========== -->
+    <!--  ========== 兼容性别名 (Legacy Compatibility) ==========  -->
     <!--
-    以下别名用于兼容旧代码中的样式引用
-    新代码应使用新命名: PrimaryButton, SecondaryButton, DangerButton
+        以下别名用于兼容旧代码中的样式引用
+        新代码应使用新命名: PrimaryButton, SecondaryButton, DangerButton
     -->
 
-    <!-- 按钮样式别名 -->
-    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButton}" />
-    <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButton}" />
-    <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource DangerButton}" />
-    <Style x:Key="SuccessButtonStyle" TargetType="Button" BasedOn="{StaticResource SuccessButton}" />
+    <!--  按钮样式别名  -->
+    <Style
+        x:Key="PrimaryButtonStyle"
+        BasedOn="{StaticResource PrimaryButton}"
+        TargetType="Button" />
+    <Style
+        x:Key="SecondaryButtonStyle"
+        BasedOn="{StaticResource SecondaryButton}"
+        TargetType="Button" />
+    <Style
+        x:Key="DangerButtonStyle"
+        BasedOn="{StaticResource DangerButton}"
+        TargetType="Button" />
+    <Style
+        x:Key="SuccessButtonStyle"
+        BasedOn="{StaticResource SuccessButton}"
+        TargetType="Button" />
 
-    <!-- 输入控件样式别名 -->
-    <Style x:Key="StandardTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource StandardTextBox}" />
-    <Style x:Key="SearchTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource SearchTextBox}" />
-    <Style x:Key="FormTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource FormTextBox}" />
-    <Style x:Key="FormTextAreaStyle" TargetType="TextBox" BasedOn="{StaticResource FormTextArea}" />
-    <Style x:Key="StandardComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource StandardComboBox}" />
+    <!--  输入控件样式别名  -->
+    <Style
+        x:Key="StandardTextBoxStyle"
+        BasedOn="{StaticResource StandardTextBox}"
+        TargetType="TextBox" />
+    <Style
+        x:Key="SearchTextBoxStyle"
+        BasedOn="{StaticResource SearchTextBox}"
+        TargetType="TextBox" />
+    <Style
+        x:Key="FormTextBoxStyle"
+        BasedOn="{StaticResource FormTextBox}"
+        TargetType="TextBox" />
+    <Style
+        x:Key="FormTextAreaStyle"
+        BasedOn="{StaticResource FormTextArea}"
+        TargetType="TextBox" />
+    <Style
+        x:Key="StandardComboBoxStyle"
+        BasedOn="{StaticResource StandardComboBox}"
+        TargetType="ComboBox" />
 
-    <!-- DataGrid样式别名 -->
-    <Style x:Key="StandardDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource StandardDataGrid}" />
+    <!--  DataGrid样式别名  -->
+    <Style
+        x:Key="StandardDataGridStyle"
+        BasedOn="{StaticResource StandardDataGrid}"
+        TargetType="DataGrid" />
 
-    <!-- ========== 卡片与容器样式 ========== -->
+    <!--  ========== 卡片与容器样式 ==========  -->
 
-    <!-- 面板卡片样式 -->
+    <!--  面板卡片样式  -->
     <Style x:Key="PanelCard" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
@@ -404,7 +454,7 @@
         <Setter Property="CornerRadius" Value="8" />
     </Style>
 
-    <!-- 面板头部样式 -->
+    <!--  面板头部样式  -->
     <Style x:Key="PanelHeader" TargetType="Border">
         <Setter Property="Background" Value="#F8F9FA" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
@@ -412,7 +462,7 @@
         <Setter Property="Padding" Value="16,12" />
     </Style>
 
-    <!-- 操作栏样式 -->
+    <!--  操作栏样式  -->
     <Style x:Key="ActionBar" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
@@ -420,7 +470,7 @@
         <Setter Property="Height" Value="64" />
     </Style>
 
-    <!-- 信息栏样式 -->
+    <!--  信息栏样式  -->
     <Style x:Key="InfoBar" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}" />
         <Setter Property="BorderBrush" Value="#90CAF9" />
@@ -428,14 +478,14 @@
         <Setter Property="Height" Value="50" />
     </Style>
 
-    <!-- 分隔线样式 -->
+    <!--  分隔线样式  -->
     <Style x:Key="Divider" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource DividerBrush}" />
         <Setter Property="Height" Value="1" />
         <Setter Property="Margin" Value="0,12" />
     </Style>
 
-    <!-- 卡片样式 (带阴影) -->
+    <!--  卡片样式 (带阴影)  -->
     <Style x:Key="Card" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
@@ -454,9 +504,9 @@
         </Setter>
     </Style>
 
-    <!-- ========== 警告按钮样式 ========== -->
+    <!--  ========== 警告按钮样式 ==========  -->
 
-    <!-- 警告按钮 (Warning Button) - #F57C00, Hover: #E65100 -->
+    <!--  警告按钮 (Warning Button) - #F57C00, Hover: #E65100  -->
     <Style x:Key="WarningButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource WarningBrush}" />
         <Setter Property="Foreground" Value="White" />
@@ -470,14 +520,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Margin="{TemplateBinding Padding}" />
+                    <Border
+                        x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                        <ContentPresenter
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -496,7 +548,7 @@
         </Setter>
     </Style>
 
-    <!-- 轮廓按钮 (Outline Button) - Fluent Design -->
+    <!--  轮廓按钮 (Outline Button) - Fluent Design  -->
     <Style x:Key="OutlineButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
@@ -511,14 +563,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Margin="{TemplateBinding Padding}" />
+                    <Border
+                        x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                        <ContentPresenter
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -537,18 +591,42 @@
         </Setter>
     </Style>
 
-    <!-- ========== 更多兼容性别名 ========== -->
+    <!--  ========== 更多兼容性别名 ==========  -->
 
-    <!-- 卡片容器样式别名 -->
-    <Style x:Key="PanelCardStyle" TargetType="Border" BasedOn="{StaticResource PanelCard}" />
-    <Style x:Key="PanelHeaderStyle" TargetType="Border" BasedOn="{StaticResource PanelHeader}" />
-    <Style x:Key="ActionBarStyle" TargetType="Border" BasedOn="{StaticResource ActionBar}" />
-    <Style x:Key="InfoBarStyle" TargetType="Border" BasedOn="{StaticResource InfoBar}" />
-    <Style x:Key="DividerStyle" TargetType="Border" BasedOn="{StaticResource Divider}" />
-    <Style x:Key="CardStyle" TargetType="Border" BasedOn="{StaticResource Card}" />
+    <!--  卡片容器样式别名  -->
+    <Style
+        x:Key="PanelCardStyle"
+        BasedOn="{StaticResource PanelCard}"
+        TargetType="Border" />
+    <Style
+        x:Key="PanelHeaderStyle"
+        BasedOn="{StaticResource PanelHeader}"
+        TargetType="Border" />
+    <Style
+        x:Key="ActionBarStyle"
+        BasedOn="{StaticResource ActionBar}"
+        TargetType="Border" />
+    <Style
+        x:Key="InfoBarStyle"
+        BasedOn="{StaticResource InfoBar}"
+        TargetType="Border" />
+    <Style
+        x:Key="DividerStyle"
+        BasedOn="{StaticResource Divider}"
+        TargetType="Border" />
+    <Style
+        x:Key="CardStyle"
+        BasedOn="{StaticResource Card}"
+        TargetType="Border" />
 
-    <!-- 按钮样式别名(补充) -->
-    <Style x:Key="WarningButtonStyle" TargetType="Button" BasedOn="{StaticResource WarningButton}" />
-    <Style x:Key="OutlineButtonStyle" TargetType="Button" BasedOn="{StaticResource OutlineButton}" />
+    <!--  按钮样式别名(补充)  -->
+    <Style
+        x:Key="WarningButtonStyle"
+        BasedOn="{StaticResource WarningButton}"
+        TargetType="Button" />
+    <Style
+        x:Key="OutlineButtonStyle"
+        BasedOn="{StaticResource OutlineButton}"
+        TargetType="Button" />
 
 </ResourceDictionary>

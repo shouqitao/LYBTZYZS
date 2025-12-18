@@ -40,10 +40,10 @@ public class PrescriptionImportHandler
     /// <param name="allHerbs">所有可用药材</param>
     /// <returns>导入结果</returns>
     public FormulaImportResult ProcessFormulaImport(
-        FormulaDto formula,
+        FormulaDetailDto formula,
         List<FormulaHerbItemDto> herbs,
         ObservableCollection<PrescriptionHerbItemViewModel> existingHerbItems,
-        ObservableCollection<HerbDto> allHerbs)
+        ObservableCollection<HerbDetailDto> allHerbs)
     {
         if (formula == null || herbs == null || !herbs.Any())
         {

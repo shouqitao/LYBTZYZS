@@ -14,7 +14,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// Epic #1961: 使用统一的 MedicalCaseInputDto
     /// </summary>
-    public class MedicalCaseRepository : RepositoryBase<MedicalCaseDto, MedicalCaseInputDto, MedicalCaseInputDto, IMedicalCaseApi>, IMedicalCaseRepository
+    public class MedicalCaseRepository : RepositoryBase<MedicalCaseDetailDto, MedicalCaseInputDto, MedicalCaseInputDto, IMedicalCaseApi>, IMedicalCaseRepository
     {
         public MedicalCaseRepository(
             IMedicalCaseApi medicalCaseApi,
@@ -43,12 +43,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// <summary>
         /// 根据患者ID获取医疗案例列表
         /// </summary>
-        public async Task<List<MedicalCaseDto>> GetByPatientIdAsync(Guid patientId)
+        public async Task<List<MedicalCaseDetailDto>> GetByPatientIdAsync(Guid patientId)
         {
             try
             {
                 var response = await _api.GetMedicalCasesByPatientIdAsync(patientId);
-                return response.Data ?? new List<MedicalCaseDto>();
+                return response.Data ?? new List<MedicalCaseDetailDto>();
             }
             catch (Exception ex)
             {
@@ -61,7 +61,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// 创建完整的医疗案例（包含诊疗和可选处方）
         /// Epic #1961: 使用统一的 MedicalCaseInputDto 和 PrescriptionInputDto
         /// </summary>
-        public async Task<MedicalCaseDto> CreateWithDetailsAsync(
+        public async Task<MedicalCaseDetailDto> CreateWithDetailsAsync(
             MedicalCaseInputDto caseDto,
             ConsultationInputDto consultationDto,
             PrescriptionInputDto? prescriptionDto = null)
@@ -95,7 +95,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// 更新医案的诊断信息（聚合根方法）
         /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
         /// </summary>
-        public async Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto dto)
+        public async Task<ConsultationDetailDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto dto)
         {
             if (medicalCaseId == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
@@ -118,7 +118,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// 查询病案列表（支持多条件组合查询）
         /// Issue #1592 - Phase 3
         /// </summary>
-        public async Task<List<MedicalCaseDto>> QueryAsync(
+        public async Task<List<MedicalCaseDetailDto>> QueryAsync(
             string? patientName = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
@@ -130,7 +130,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                     patientName ?? "无", startDate, endDate, diagnosisKeyword ?? "无");
 
                 var response = await _api.QueryMedicalCasesAsync(patientName, startDate, endDate, diagnosisKeyword);
-                return response.Data ?? new List<MedicalCaseDto>();
+                return response.Data ?? new List<MedicalCaseDetailDto>();
             }
             catch (Exception ex)
             {
@@ -169,7 +169,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// 从配方导入处方
         /// Epic #1589 Phase 4 - 架构合规版本
         /// </summary>
-        public async Task<PrescriptionDto> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId)
+        public async Task<PrescriptionDetailDto> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId)
         {
             if (medicalCaseId == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
@@ -192,7 +192,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// <summary>
         /// 为已存在的医案创建处方(Issue #1608补充)
         /// </summary>
-        public async Task<PrescriptionDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto)
+        public async Task<PrescriptionDetailDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto)
         {
             if (medicalCaseId == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
@@ -211,7 +211,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        public async Task<PrescriptionDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto)
+        public async Task<PrescriptionDetailDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto)
         {
             var response = await _api.UpdatePrescriptionAsync(medicalCaseId, dto);
             return response.Data ?? throw new InvalidOperationException("更新处方失败,服务器未返回数据");
@@ -242,7 +242,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.4
         /// </summary>
-        public async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
+        public async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
         {
             if (patientId == Guid.Empty)
                 throw new ArgumentException("患者ID不能为空", nameof(patientId));
@@ -435,12 +435,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             return defaultMessage;
         }
 
-        protected override Task<ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<MedicalCaseDetailDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetMedicalCaseByIdAsync(id);
         }
 
-        protected override Task<ApiResponse<PagedResult<MedicalCaseDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<MedicalCaseDetailDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetMedicalCasesAsync(page, pageSize, keyword);
         }
@@ -474,15 +474,15 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// OpenSpec: fix-history-copy-all-patients - 用于历史医案复制查看全部患者功能
         /// 此方法绕过医生过滤，返回所有医生的医案数据
         /// </summary>
-        public async Task<PagedResult<MedicalCaseDto>> GetPagedIncludeAllDoctorsAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<PagedResult<MedicalCaseDetailDto>> GetPagedIncludeAllDoctorsAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
             try
             {
                 _logger.LogInformation("获取全部医生医案列表，page={Page}, pageSize={PageSize}", page, pageSize);
                 var response = await _api.GetMedicalCasesAsync(page, pageSize, keyword, includeAllDoctors: true);
-                return response.Data ?? new PagedResult<MedicalCaseDto>
+                return response.Data ?? new PagedResult<MedicalCaseDetailDto>
                 {
-                    Items = new List<MedicalCaseDto>(),
+                    Items = new List<MedicalCaseDetailDto>(),
                     TotalCount = 0,
                     CurrentPage = page,
                     PageSize = pageSize
@@ -495,12 +495,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        protected override Task<ApiResponse<MedicalCaseDto>> CallApiCreateAsync(MedicalCaseInputDto dto)
+        protected override Task<ApiResponse<MedicalCaseDetailDto>> CallApiCreateAsync(MedicalCaseInputDto dto)
         {
             return _api.CreateMedicalCaseAsync(dto);
         }
 
-        protected override Task<ApiResponse<MedicalCaseDto>> CallApiUpdateAsync(Guid id, MedicalCaseInputDto dto)
+        protected override Task<ApiResponse<MedicalCaseDetailDto>> CallApiUpdateAsync(Guid id, MedicalCaseInputDto dto)
         {
             // OpenSpec: clarify-cancel-consultation-logic
             // PUT /api/v1/medicalcases/{id} 端点在服务端已不存在

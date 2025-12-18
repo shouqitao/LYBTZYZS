@@ -77,7 +77,7 @@ namespace LYBT.Server.CompatibilityTests
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var userDto = JsonSerializer.Deserialize<UserDto>(content, new JsonSerializerOptions
+                var userDto = JsonSerializer.Deserialize<UserDetailDto>(content, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });

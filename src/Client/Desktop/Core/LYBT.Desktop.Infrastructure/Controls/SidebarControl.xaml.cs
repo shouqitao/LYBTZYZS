@@ -38,14 +38,17 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         #region CurrentUser - 当前用户信息
 
-        public UserDto? CurrentUser
+        /// <summary>
+        /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
+        /// </summary>
+        public UserDetailDto? CurrentUser
         {
-            get => (UserDto?)GetValue(CurrentUserProperty);
+            get => (UserDetailDto?)GetValue(CurrentUserProperty);
             set => SetValue(CurrentUserProperty, value);
         }
 
         public static readonly DependencyProperty CurrentUserProperty =
-            DependencyProperty.Register(nameof(CurrentUser), typeof(UserDto), typeof(SidebarControl),
+            DependencyProperty.Register(nameof(CurrentUser), typeof(UserDetailDto), typeof(SidebarControl),
                 new PropertyMetadata(null));
 
         #endregion

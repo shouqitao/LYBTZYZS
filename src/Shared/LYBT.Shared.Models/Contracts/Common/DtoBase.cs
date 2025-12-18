@@ -191,36 +191,4 @@ namespace LYBT.Shared.Models.Contracts.Common
     }
 
     #endregion 查询DTO基类 - UltraThink简化
-
-    #region 统计DTO基类 - UltraThink简化
-
-    /// <summary>
-    /// 统计DTO基类 - 提供通用统计字段和状态统计
-    /// UltraThink简化：合并基础统计和状态统计功能
-    /// </summary>
-    public abstract class StatisticsDto
-    {
-
-        /// <summary>总数</summary>
-        [DisplayName("总数")]
-        public int TotalCount { get; set; }
-
-        /// <summary>统计时间</summary>
-        [DisplayName("统计时间")]
-        public DateTime StatisticsTime { get; set; } = DateTime.Now;
-
-        /// <summary>启用数量</summary>
-        [DisplayName("启用数量")]
-        public int EnabledCount { get; set; }
-
-        /// <summary>禁用数量</summary>
-        [DisplayName("禁用数量")]
-        public int DisabledCount { get; set; }
-
-        /// <summary>已删除数量</summary>
-        [DisplayName("已删除数量")]
-        public int DeletedCount { get; set; }
-    }
-
-    #endregion 统计DTO基类 - UltraThink简化
 }

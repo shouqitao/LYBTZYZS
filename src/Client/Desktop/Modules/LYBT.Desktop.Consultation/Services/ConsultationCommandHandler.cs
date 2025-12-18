@@ -196,10 +196,10 @@ namespace LYBT.Desktop.Consultation.Services
 
                 // 清空所有字段
                 // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-                _dataManager.UpdateField(nameof(ConsultationDto.PresentIllness), null);
-                _dataManager.UpdateField(nameof(ConsultationDto.TongueDiagnosis), null);
-                _dataManager.UpdateField(nameof(ConsultationDto.PulseDiagnosis), null);
-                _dataManager.UpdateField(nameof(ConsultationDto.TCMDiagnosis), string.Empty);
+                _dataManager.UpdateField(nameof(ConsultationDetailDto.PresentIllness), null);
+                _dataManager.UpdateField(nameof(ConsultationDetailDto.TongueDiagnosis), null);
+                _dataManager.UpdateField(nameof(ConsultationDetailDto.PulseDiagnosis), null);
+                _dataManager.UpdateField(nameof(ConsultationDetailDto.TCMDiagnosis), string.Empty);
 
                 _logger.LogInformation("表单已清空");
             }

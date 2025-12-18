@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// 当前配方数据（实现IFormulaDataManager接口）
         /// Desktop层架构重构 Phase 3: 为Validator接口化提供数据支持
         /// </summary>
-        public FormulaDto? CurrentFormula { get; private set; }
+        public FormulaDetailDto? CurrentFormula { get; private set; }
 
         public FormulaDataManager(IFormulaRepository repository, ILogger<FormulaDataManager> logger)
         {
@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 加载配方详情
         /// </summary>
-        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> LoadFormulaAsync(Guid formulaId)
+        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> LoadFormulaAsync(Guid formulaId)
         {
             if (formulaId == Guid.Empty)
             {
@@ -64,7 +64,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 刷新配方数据
         /// </summary>
-        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> RefreshFormulaAsync(Guid formulaId)
+        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> RefreshFormulaAsync(Guid formulaId)
         {
             try
             {
@@ -273,7 +273,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 检查配方是否已加载
         /// </summary>
-        public bool IsFormulaLoaded(FormulaDto? formula)
+        public bool IsFormulaLoaded(FormulaDetailDto? formula)
         {
             return formula != null && formula.Id != Guid.Empty;
         }
@@ -281,7 +281,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 检查配方是否有药材
         /// </summary>
-        public bool HasHerbItems(FormulaDto? formula)
+        public bool HasHerbItems(FormulaDetailDto? formula)
         {
             return formula?.Herbs != null && formula.Herbs.Any();
         }
@@ -297,7 +297,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 创建配方数据快照（用于取消编辑时恢复）
         /// </summary>
-        public FormulaDataSnapshot CreateSnapshot(FormulaDto formula)
+        public FormulaDataSnapshot CreateSnapshot(FormulaDetailDto formula)
         {
             if (formula == null)
             {

@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private readonly IContainerProvider _containerProvider;
 
         private Guid _formulaId;
-        private FormulaDto? _formula;
+        private FormulaDetailDto? _formula;
         private bool _isEditMode;
         private string _formulaName = string.Empty;
         private string _effect = string.Empty;
@@ -33,11 +33,11 @@ namespace LYBT.Desktop.Formula.ViewModels
         private string _remark = string.Empty;
         private bool _isShared;
         private string _category = string.Empty;
-        private ObservableCollection<HerbDto> _allHerbs = new();
+        private ObservableCollection<HerbDetailDto> _allHerbs = new();
 
         public Guid FormulaId { get => _formulaId; set => SetProperty(ref _formulaId, value); }
 
-        public FormulaDto? Formula
+        public FormulaDetailDto? Formula
         {
             get => _formula;
             set { if (SetProperty(ref _formula, value)) LoadFormulaData(); }
@@ -100,7 +100,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public string StatusDisplay => Formula?.Status == CommonStatus.Enabled ? "正常" : "已禁用";
         public int HerbCount => HerbItems.Count(h => h.HerbId != Guid.Empty);
         public ObservableCollection<FormulaHerbItemViewModel> HerbItems { get; } = new();
-        public ObservableCollection<HerbDto> AllHerbs => _allHerbs;
+        public ObservableCollection<HerbDetailDto> AllHerbs => _allHerbs;
 
         public DelegateCommand LoadDataCommand { get; }
         public DelegateCommand EditCommand { get; }
@@ -156,7 +156,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             // OpenSpec: optimize-module-list-ui - 支持"复制为我的验方"预填充
             if (parameters.ContainsKey("CopyFromFormula"))
             {
-                var sourceFormula = parameters.GetValue<FormulaDto>("CopyFromFormula");
+                var sourceFormula = parameters.GetValue<FormulaDetailDto>("CopyFromFormula");
                 if (sourceFormula != null)
                 {
                     // 不设置FormulaId（保持Empty），表示新建模式
@@ -169,7 +169,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        private FormulaDto? _copyFromFormula;
+        private FormulaDetailDto? _copyFromFormula;
 
         protected override async Task InitializeAsync(NavigationParameters parameters)
         {
@@ -201,13 +201,13 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// 4. IsShared设为false（默认不共享）
         /// 5. 加载药材列表
         /// </remarks>
-        private void LoadFromCopySource(FormulaDto source)
+        private void LoadFromCopySource(FormulaDetailDto source)
         {
             Logger.LogInformation("从复制源加载验方数据: {SourceName} (ID: {SourceId})", source.Name, source.Id);
 
             // 创建新的Formula对象，Id为Empty表示新建
             // 注：Category是只读计算属性（基于Name自动计算），无需设置
-            Formula = new FormulaDto
+            Formula = new FormulaDetailDto
             {
                 Id = Guid.Empty,  // 新建模式
                 Name = $"{source.Name}(副本)",

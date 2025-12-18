@@ -100,7 +100,7 @@ public class AuthServiceTests : IDisposable
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!")
         };
 
-        var testUserDto = new UserDto
+        var testUserDto = new UserDetailDto
         {
             Id = userId,
             UserName = "testuser"
@@ -114,7 +114,7 @@ public class AuthServiceTests : IDisposable
 
         // Issue #1864: Mock IUserService.ValidatePasswordAsync
         _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDto>.Success(testUserDto));
+            .ReturnsAsync(Result<UserDetailDto>.Success(testUserDto));
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
@@ -136,7 +136,7 @@ public class AuthServiceTests : IDisposable
 
         // Issue #1864: Mock IUserService.ValidatePasswordAsync返回失败
         _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDto>.Failure("用户名或密码错误"));
+            .ReturnsAsync(Result<UserDetailDto>.Failure("用户名或密码错误"));
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
@@ -158,7 +158,7 @@ public class AuthServiceTests : IDisposable
 
         // Issue #1864: Mock IUserService.ValidatePasswordAsync返回失败
         _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDto>.Failure("用户名或密码错误"));
+            .ReturnsAsync(Result<UserDetailDto>.Failure("用户名或密码错误"));
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
@@ -227,7 +227,7 @@ public class AuthServiceTests : IDisposable
         await _dbContext.Users.AddAsync(testUser);
         await _dbContext.SaveChangesAsync();
 
-        var testUserDto = new UserDto
+        var testUserDto = new UserDetailDto
         {
             Id = userId,
             UserName = "testuser",
@@ -246,12 +246,12 @@ public class AuthServiceTests : IDisposable
 
         // Issue #1864: Mock IUserService.ValidatePasswordAsync for VerifyCredentialsAsync
         _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDto>.Success(testUserDto));
+            .ReturnsAsync(Result<UserDetailDto>.Success(testUserDto));
 
         _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync(testUser);
 
-        _mockMapper.Setup(x => x.Map<UserDto>(testUser))
+        _mockMapper.Setup(x => x.Map<UserDetailDto>(testUser))
             .Returns(testUserDto);
 
         _mockJwtService.Setup(x => x.GenerateToken(
@@ -285,7 +285,7 @@ public class AuthServiceTests : IDisposable
 
         // Issue #1864: Mock IUserService.ValidatePasswordAsync返回失败
         _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDto>.Failure("用户名或密码错误"));
+            .ReturnsAsync(Result<UserDetailDto>.Failure("用户名或密码错误"));
 
         // Act
         var result = await _sut.LoginAsync(request);
@@ -307,7 +307,7 @@ public class AuthServiceTests : IDisposable
 
         // Issue #1864: Mock IUserService.ValidatePasswordAsync返回失败
         _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDto>.Failure("用户名或密码错误"));
+            .ReturnsAsync(Result<UserDetailDto>.Failure("用户名或密码错误"));
 
         // Act
         var result = await _sut.LoginAsync(request);
@@ -421,7 +421,7 @@ public class AuthServiceTests : IDisposable
         await _dbContext.RefreshTokens.AddAsync(oldRefreshToken);
         await _dbContext.SaveChangesAsync();
 
-        var testUserDto = new UserDto
+        var testUserDto = new UserDetailDto
         {
             Id = userId,
             UserName = "testuser",
@@ -433,7 +433,7 @@ public class AuthServiceTests : IDisposable
         _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
             .ReturnsAsync(testUser);
 
-        _mockMapper.Setup(x => x.Map<UserDto>(testUser))
+        _mockMapper.Setup(x => x.Map<UserDetailDto>(testUser))
             .Returns(testUserDto);
 
         _mockJwtService.Setup(x => x.GenerateToken(
@@ -478,7 +478,7 @@ public class AuthServiceTests : IDisposable
         await _dbContext.Users.AddAsync(testUser);
         await _dbContext.SaveChangesAsync();
 
-        var testUserDto = new UserDto
+        var testUserDto = new UserDetailDto
         {
             Id = userId,
             UserName = "testuser",
@@ -495,12 +495,12 @@ public class AuthServiceTests : IDisposable
 
         // Issue #1864: Mock IUserService.ValidatePasswordAsync for VerifyCredentialsAsync
         _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDto>.Success(testUserDto));
+            .ReturnsAsync(Result<UserDetailDto>.Success(testUserDto));
 
         _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync(testUser);
 
-        _mockMapper.Setup(x => x.Map<UserDto>(testUser))
+        _mockMapper.Setup(x => x.Map<UserDetailDto>(testUser))
             .Returns(testUserDto);
 
         _mockJwtService.Setup(x => x.GenerateToken(

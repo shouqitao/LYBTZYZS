@@ -28,7 +28,7 @@ public class PrescriptionCalculator
     /// <param name="items">处方药材项列表</param>
     /// <param name="allHerbs">所有药材数据</param>
     /// <returns>单剂价格</returns>
-    public decimal CalculateSingleDosagePrice(List<PrescriptionItemDto> items, List<HerbDto> allHerbs)
+    public decimal CalculateSingleDosagePrice(List<PrescriptionItemDto> items, List<HerbDetailDto> allHerbs)
     {
         if (items == null || allHerbs == null)
         {
@@ -93,7 +93,7 @@ public class PrescriptionCalculator
     /// <param name="items">处方药材项列表</param>
     /// <param name="allHerbs">所有药材数据</param>
     /// <returns>包含价格信息的药材项列表</returns>
-    public List<PrescriptionItemInputDto> BuildItemsWithPrice(List<PrescriptionItemDto> items, List<HerbDto> allHerbs)
+    public List<PrescriptionItemInputDto> BuildItemsWithPrice(List<PrescriptionItemDto> items, List<HerbDetailDto> allHerbs)
     {
         if (items == null || allHerbs == null)
         {

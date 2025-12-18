@@ -36,22 +36,22 @@ namespace LYBT.Module.Prescriptions.Services
         }
 
 
-        public async Task<Result<PrescriptionDto>> GetByIdAsync(Guid id)
+        public async Task<Result<PrescriptionDetailDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 // 使用优化后的查询方法，包含处方项
                 var entity = await _repository.GetByIdWithDetailsAsync(id);
                 if (entity == null)
-                    return Result<PrescriptionDto>.Failure("处方不存在");
+                    return Result<PrescriptionDetailDto>.Failure("处方不存在");
 
-                var dto = _mapper.Map<PrescriptionDto>(entity);
-                return Result<PrescriptionDto>.Success(dto);
+                var dto = _mapper.Map<PrescriptionDetailDto>(entity);
+                return Result<PrescriptionDetailDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取处方详情失败");
-                return Result<PrescriptionDto>.Failure("获取处方详情失败");
+                return Result<PrescriptionDetailDto>.Failure("获取处方详情失败");
             }
         }
 
@@ -59,7 +59,7 @@ namespace LYBT.Module.Prescriptions.Services
         // CreateAsync, UpdateAsync, DeleteAsync, PhysicalDeleteAsync, CloneAsync, ClonePrescriptionAsync, ImportFormulaIntoPrescriptionAsync 已移除
         // 所有写操作必须通过MedicalCase聚合根进行
 
-        public async Task<Result<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        public async Task<Result<List<PrescriptionDetailDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             try
             {
@@ -67,14 +67,14 @@ namespace LYBT.Module.Prescriptions.Services
                 var prescriptions = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
 
                 // 转换为DTO
-                var prescriptionDtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
+                var prescriptionDtos = _mapper.Map<List<PrescriptionDetailDto>>(prescriptions);
 
-                return Result<List<PrescriptionDto>>.Success(prescriptionDtos);
+                return Result<List<PrescriptionDetailDto>>.Success(prescriptionDtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取病历相关处方时发生错误，病历ID：{MedicalCaseId}", medicalCaseId);
-                return Result<List<PrescriptionDto>>.Failure($"获取病历相关处方失败：{ex.Message}");
+                return Result<List<PrescriptionDetailDto>>.Failure($"获取病历相关处方失败：{ex.Message}");
             }
         }
 

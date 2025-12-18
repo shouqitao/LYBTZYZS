@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// <summary>
         /// 当前患者数据
         /// </summary>
-        PatientDto? CurrentPatient { get; }
+        PatientDetailDto? CurrentPatient { get; }
 
         /// <summary>
         /// 是否为新患者

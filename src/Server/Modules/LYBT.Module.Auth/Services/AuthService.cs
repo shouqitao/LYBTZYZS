@@ -136,7 +136,7 @@ namespace LYBT.Module.Auth.Services
                 if (userEntity == null)
                     return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound);
 
-                var userDto = _mapper.Map<UserDto>(userEntity);
+                var userDto = _mapper.Map<UserDetailDto>(userEntity);
 
                 // 确定用户类型（SuperAdmin特殊处理UserType）
                 string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
@@ -359,7 +359,7 @@ namespace LYBT.Module.Auth.Services
                 if (userEntity == null)
                     return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound);
 
-                var userDto = _mapper.Map<UserDto>(userEntity);
+                var userDto = _mapper.Map<UserDetailDto>(userEntity);
 
                 // 确定用户类型（SuperAdmin特殊处理UserType）
                 string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";

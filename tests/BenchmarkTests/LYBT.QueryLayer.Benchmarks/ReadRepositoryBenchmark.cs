@@ -45,7 +45,7 @@ namespace LYBT.QueryLayer.Benchmarks
             // 设置AutoMapper
             var mapperConfig = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<User, UserDto>();
+                cfg.CreateMap<User, UserDetailDto>();
             });
             _mapper = mapperConfig.CreateMapper();
 
@@ -239,7 +239,7 @@ namespace LYBT.QueryLayer.Benchmarks
     /// <summary>
     /// 测试用DTO
     /// </summary>
-    internal class UserDto
+    internal class UserDetailDto
     {
         public Guid Id { get; set; }
         public string UserName { get; set; } = string.Empty;

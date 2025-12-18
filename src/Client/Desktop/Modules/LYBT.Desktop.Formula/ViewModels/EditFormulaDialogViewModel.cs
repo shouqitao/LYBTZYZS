@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         private readonly FormulaCommandHandler _commandHandler;
         private readonly IContainerProvider _containerProvider;
-        private readonly ObservableCollection<HerbDto> _allHerbs = new();
+        private readonly ObservableCollection<HerbDetailDto> _allHerbs = new();
 
         private Guid? _formulaId;
         private string _formulaName = string.Empty;
@@ -49,7 +49,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand<FormulaHerbItemViewModel> DeleteHerbCommand { get; }
         public DelegateCommand<FormulaHerbItemViewModel> DosageCompletedCommand { get; }
-        public DelegateCommand<HerbDto> HerbSelectedCommand { get; }
+        public DelegateCommand<HerbDetailDto> HerbSelectedCommand { get; }
         public DelegateCommand AddNewRowCommand { get; }
 
         public EditFormulaDialogViewModel(
@@ -70,7 +70,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             CancelCommand = new DelegateCommand(() => RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel)));
             DeleteHerbCommand = new DelegateCommand<FormulaHerbItemViewModel>(DeleteHerb);
             DosageCompletedCommand = new DelegateCommand<FormulaHerbItemViewModel>(OnDosageCompleted);
-            HerbSelectedCommand = new DelegateCommand<HerbDto>(OnHerbSelected);
+            HerbSelectedCommand = new DelegateCommand<HerbDetailDto>(OnHerbSelected);
             AddNewRowCommand = new DelegateCommand(AddNewRow);
 
             PropertyChanged += (s, e) => SaveCommand.RaiseCanExecuteChanged();
@@ -168,7 +168,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             catch (Exception ex) { Logger.LogError(ex, "添加新行时发生异常"); }
         }
 
-        private void OnHerbSelected(HerbDto? selectedHerb)
+        private void OnHerbSelected(HerbDetailDto? selectedHerb)
         {
             if (selectedHerb == null) return;
             try

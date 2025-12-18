@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取处方列表（支持分页和查询）
         /// </summary>
         [Refit.Get("/api/v1/prescriptions")]
-        Task<ApiResponse<PagedResult<PrescriptionDto>>> GetPrescriptionsAsync(
+        Task<ApiResponse<PagedResult<PrescriptionDetailDto>>> GetPrescriptionsAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null);
@@ -22,13 +22,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取处方详情
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/{id}")]
-        Task<ApiResponse<PrescriptionDto>> GetPrescriptionByIdAsync(Guid id);
+        Task<ApiResponse<PrescriptionDetailDto>> GetPrescriptionByIdAsync(Guid id);
 
         /// <summary>
         /// 根据医案ID获取处方列表
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/medicalcase/{medicalCaseId}")]
-        Task<ApiResponse<List<PrescriptionDto>>> GetPrescriptionsByMedicalCaseIdAsync(Guid medicalCaseId);
+        Task<ApiResponse<List<PrescriptionDetailDto>>> GetPrescriptionsByMedicalCaseIdAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)

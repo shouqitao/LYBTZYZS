@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Consultation.Services
     /// - 保存诊断信息（UpdateConsultationAsync）
     /// - 变更检测
     /// </summary>
-    public class ConsultationDataManager : IDataManager<ConsultationDto>
+    public class ConsultationDataManager : IDataManager<ConsultationDetailDto>
     {
         #region 字段
 
@@ -23,8 +23,8 @@ namespace LYBT.Desktop.Consultation.Services
         private readonly ILogger<ConsultationDataManager> _logger;
 
         // 诊断数据
-        private ConsultationDto? _originalConsultation;
-        private ConsultationDto? _currentConsultation;
+        private ConsultationDetailDto? _originalConsultation;
+        private ConsultationDetailDto? _currentConsultation;
         private Guid _medicalCaseId = Guid.Empty;
 
         #endregion
@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 当前诊断数据
         /// </summary>
-        public virtual ConsultationDto? Current => _currentConsultation;
+        public virtual ConsultationDetailDto? Current => _currentConsultation;
 
         /// <summary>
         /// 医案ID（聚合根ID）
@@ -187,7 +187,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 更新诊断字段数据
         /// </summary>
-        public void UpdateConsultation(ConsultationDto consultation)
+        public void UpdateConsultation(ConsultationDetailDto consultation)
         {
             if (consultation == null)
                 throw new ArgumentNullException(nameof(consultation));
@@ -206,16 +206,16 @@ namespace LYBT.Desktop.Consultation.Services
             switch (fieldName)
             {
                 // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-                case nameof(ConsultationDto.PresentIllness):
+                case nameof(ConsultationDetailDto.PresentIllness):
                     _currentConsultation.PresentIllness = value;
                     break;
-                case nameof(ConsultationDto.TongueDiagnosis):
+                case nameof(ConsultationDetailDto.TongueDiagnosis):
                     _currentConsultation.TongueDiagnosis = value;
                     break;
-                case nameof(ConsultationDto.PulseDiagnosis):
+                case nameof(ConsultationDetailDto.PulseDiagnosis):
                     _currentConsultation.PulseDiagnosis = value;
                     break;
-                case nameof(ConsultationDto.TCMDiagnosis):
+                case nameof(ConsultationDetailDto.TCMDiagnosis):
                     _currentConsultation.TCMDiagnosis = value ?? string.Empty;
                     break;
                 default:
@@ -246,10 +246,10 @@ namespace LYBT.Desktop.Consultation.Services
 
         #region 私有方法 - 深拷贝
 
-        private ConsultationDto CloneConsultation(ConsultationDto source)
+        private ConsultationDetailDto CloneConsultation(ConsultationDetailDto source)
         {
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-            return new ConsultationDto
+            return new ConsultationDetailDto
             {
                 Id = source.Id,
                 MedicalCaseId = source.MedicalCaseId,

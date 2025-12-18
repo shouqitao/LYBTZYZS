@@ -151,7 +151,7 @@ namespace LYBT.IntegrationTests.Api
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             
             var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<ApiResponse<MedicalCaseDto>>(responseContent);
+            var result = JsonConvert.DeserializeObject<ApiResponse<MedicalCaseDetailDto>>(responseContent);
             
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
@@ -213,8 +213,8 @@ namespace LYBT.IntegrationTests.Api
             var createJson = JsonConvert.SerializeObject(createDto);
             var createContent = new StringContent(createJson, Encoding.UTF8, "application/json");
             var createResponse = await _client.PostAsync("/api/medical-cases/with-details", createContent);
-            
-            var createResult = JsonConvert.DeserializeObject<ApiResponse<MedicalCaseDto>>(
+
+            var createResult = JsonConvert.DeserializeObject<ApiResponse<MedicalCaseDetailDto>>(
                 await createResponse.Content.ReadAsStringAsync());
             var createdId = createResult!.Data!.Id;
 
@@ -278,7 +278,7 @@ namespace LYBT.IntegrationTests.Api
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             
             var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<MedicalCaseDto>>>(responseContent);
+            var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<MedicalCaseDetailDto>>>(responseContent);
             
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
@@ -400,8 +400,8 @@ namespace LYBT.IntegrationTests.Api
             var json = JsonConvert.SerializeObject(createDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var createResponse = await _client.PostAsync("/api/medical-cases", content);
-            
-            var createResult = JsonConvert.DeserializeObject<ApiResponse<MedicalCaseDto>>(
+
+            var createResult = JsonConvert.DeserializeObject<ApiResponse<MedicalCaseDetailDto>>(
                 await createResponse.Content.ReadAsStringAsync());
             var createdId = createResult!.Data!.Id;
 

@@ -11,27 +11,27 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
     /// Desktop层架构重构 Phase 2: DataManager接口化重构
     /// 目的：消除具体类依赖，提升可测试性
     /// </summary>
-    public interface IMedicalCaseDataManager : IDataManager<MedicalCaseDto>
+    public interface IMedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
     {
         /// <summary>
         /// 当前诊疗数据（来自聚合根导航属性）
         /// </summary>
-        ConsultationDto? CurrentConsultation { get; }
+        ConsultationDetailDto? CurrentConsultation { get; }
 
         /// <summary>
         /// 当前处方数据（来自聚合根导航属性）
         /// </summary>
-        PrescriptionDto? CurrentPrescription { get; }
+        PrescriptionDetailDto? CurrentPrescription { get; }
 
         /// <summary>
         /// 创建处方
         /// </summary>
-        Task<PrescriptionDto?> CreatePrescriptionAsync(PrescriptionCreateDto createDto);
+        Task<PrescriptionDetailDto?> CreatePrescriptionAsync(PrescriptionCreateDto createDto);
 
         /// <summary>
         /// 更新诊疗信息
         /// </summary>
-        Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto request);
+        Task<ApiResponse<ConsultationDetailDto>> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto request);
 
         /// <summary>
         /// 删除处方
@@ -41,6 +41,6 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <summary>
         /// 分页查询病案列表
         /// </summary>
-        Task<PagedResult<MedicalCaseDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null);
+        Task<PagedResult<MedicalCaseDetailDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null);
     }
 }

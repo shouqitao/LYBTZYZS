@@ -52,7 +52,7 @@ public class AuthenticationIntegrationTests
         var serviceProvider = CreateServiceProvider();
         var authService = serviceProvider.GetRequiredService<IAuthenticationService>();
 
-        var testUser = new UserDto
+        var testUser = new UserDetailDto
         {
             Id = Guid.NewGuid(),
             UserName = "testuser",
@@ -129,7 +129,7 @@ public class AuthenticationIntegrationTests
         var serviceProvider1 = CreateServiceProvider();
         var tokenStorage1 = serviceProvider1.GetRequiredService<ITokenStorage>();
 
-        var testUser = new UserDto
+        var testUser = new UserDetailDto
         {
             Id = Guid.NewGuid(),
             UserName = "testuser",
@@ -171,7 +171,7 @@ public class AuthenticationIntegrationTests
         var tokenStorage = serviceProvider.GetRequiredService<ITokenStorage>();
         var mockAuthApi = serviceProvider.GetRequiredService<IAuthApi>();
 
-        var testUser = new UserDto
+        var testUser = new UserDetailDto
         {
             Id = Guid.NewGuid(),
             UserName = "testuser",
@@ -267,7 +267,7 @@ public class AuthenticationIntegrationTests
         var serviceProvider = CreateServiceProvider();
         var tokenStorage = serviceProvider.GetRequiredService<ITokenStorage>();
 
-        var testUser = new UserDto
+        var testUser = new UserDetailDto
         {
             Id = Guid.NewGuid(),
             UserName = "olduser",

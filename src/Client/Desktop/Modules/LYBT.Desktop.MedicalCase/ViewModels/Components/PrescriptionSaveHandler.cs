@@ -53,7 +53,7 @@ public class PrescriptionSaveHandler
                 return PrescriptionSaveResult.Empty();
             }
 
-            PrescriptionDto? result;
+            PrescriptionDetailDto? result;
             if (context.PrescriptionId.HasValue)
             {
                 // 更新现有处方
@@ -122,7 +122,7 @@ public class PrescriptionSaveHandler
                 return PrescriptionSaveResult.Empty();
             }
 
-            PrescriptionDto? result;
+            PrescriptionDetailDto? result;
             if (context.PrescriptionId.HasValue)
             {
                 // 更新现有处方

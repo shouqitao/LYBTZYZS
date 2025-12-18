@@ -39,7 +39,7 @@ namespace LYBT.Module.Consultations.Tests.Mapping
 
         /* // 暂时注释掉，等待Consultation聚合根重构完成
         [Fact]
-        public void Map_Consultation_To_ConsultationDto_Should_Success()
+        public void Map_Consultation_To_ConsultationDetailDto_Should_Success()
         {
             // Arrange
             var consultation = new LYBT.Entities.Consultation.Consultation
@@ -56,7 +56,7 @@ namespace LYBT.Module.Consultations.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<ConsultationDto>(consultation);
+            var dto = _mapper.Map<ConsultationDetailDto>(consultation);
 
             // Assert
             dto.Should().NotBeNull();
@@ -189,7 +189,7 @@ namespace LYBT.Module.Consultations.Tests.Mapping
             };
 
             // Act
-            var dto = _mapper.Map<ConsultationDto>(consultation);
+            var dto = _mapper.Map<ConsultationDetailDto>(consultation);
 
             // Assert
             dto.Should().NotBeNull();

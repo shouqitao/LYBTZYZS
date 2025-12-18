@@ -158,7 +158,7 @@ namespace LYBT.Desktop.PatientSelector.IntegrationTests
             }
 
             createResponse.ShouldBeOk();
-            var apiResponse = await createResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            var apiResponse = await createResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             var medicalCase = apiResponse.Data!;
 
             _output.WriteLine($"创建的医案ID: {medicalCase.Id}");
@@ -199,7 +199,7 @@ namespace LYBT.Desktop.PatientSelector.IntegrationTests
 
             var firstResponse = await Client.PostAsJsonAsync("/api/v1/medicalcases", createRequest);
             firstResponse.ShouldBeOk();
-            var firstCase = (await firstResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>()).Data!;
+            var firstCase = (await firstResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>()).Data!;
             _output.WriteLine($"第一个医案ID: {firstCase.Id}");
 
             // Act - 尝试为同一患者创建第二个医案
@@ -214,7 +214,7 @@ namespace LYBT.Desktop.PatientSelector.IntegrationTests
             if (secondResponse.IsSuccessStatusCode)
             {
                 // 如果成功，应该返回的是同一个医案
-                var secondCase = (await secondResponse.Content.ReadFromJsonAsync<LYBT.Tests.Common.AssertionHelpers.ApiResponse<MedicalCaseDto>>())?.Data;
+                var secondCase = (await secondResponse.Content.ReadFromJsonAsync<LYBT.Tests.Common.AssertionHelpers.ApiResponse<MedicalCaseDetailDto>>())?.Data;
                 secondCase?.Id.Should().Be(firstCase.Id, "同一患者的未完成医案不应重复创建");
             }
             else
@@ -280,13 +280,13 @@ namespace LYBT.Desktop.PatientSelector.IntegrationTests
             };
             var createResponse = await Client.PostAsJsonAsync("/api/v1/medicalcases", createRequest);
             createResponse.ShouldBeOk();
-            var medicalCase = (await createResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>()).Data!;
+            var medicalCase = (await createResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>()).Data!;
             _output.WriteLine($"Step 3: 创建医案成功 ID={medicalCase.Id}");
 
             // Act Step 4: 获取医案详情
             var detailResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
             detailResponse.ShouldBeOk();
-            var detailCase = (await detailResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>()).Data!;
+            var detailCase = (await detailResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>()).Data!;
             _output.WriteLine($"Step 4: 获取医案详情成功");
 
             // Assert - 验证完整流程
@@ -314,13 +314,13 @@ namespace LYBT.Desktop.PatientSelector.IntegrationTests
             };
             var createResponse = await Client.PostAsJsonAsync("/api/v1/medicalcases", createRequest);
             createResponse.ShouldBeOk();
-            var medicalCase = (await createResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>()).Data!;
+            var medicalCase = (await createResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>()).Data!;
             _output.WriteLine($"已创建医案 ID={medicalCase.Id}");
 
             // Act - 查询该患者的未完成医案
             var unfinishedResponse = await Client.GetAsync($"/api/v1/medicalcases/patient/{patientId}/unfinished");
             unfinishedResponse.ShouldBeOk();
-            var unfinishedCase = (await unfinishedResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>()).Data;
+            var unfinishedCase = (await unfinishedResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>()).Data;
 
             // Assert
             unfinishedCase.Should().NotBeNull("应该找到未完成的医案");
@@ -346,7 +346,7 @@ namespace LYBT.Desktop.PatientSelector.IntegrationTests
             };
             var createResponse = await Client.PostAsJsonAsync("/api/v1/medicalcases", createRequest);
             createResponse.ShouldBeOk();
-            var medicalCase = (await createResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>()).Data!;
+            var medicalCase = (await createResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>()).Data!;
 
             // Act - 检查是否可编辑
             var canEditResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/can-edit");

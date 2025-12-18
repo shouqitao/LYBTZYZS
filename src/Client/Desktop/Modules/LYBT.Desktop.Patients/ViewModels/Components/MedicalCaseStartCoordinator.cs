@@ -67,7 +67,7 @@ public class MedicalCaseStartCoordinator
     /// </summary>
     /// <param name="patientId">患者ID</param>
     /// <returns>未完成医案信息，null表示可以直接开始新医案</returns>
-    public async Task<MedicalCaseDto?> CheckUnfinishedCaseAsync(Guid patientId)
+    public async Task<MedicalCaseDetailDto?> CheckUnfinishedCaseAsync(Guid patientId)
     {
         var doctorId = _sessionManager.CurrentUser?.Id ?? Guid.Empty;
 
@@ -85,7 +85,7 @@ public class MedicalCaseStartCoordinator
     /// <summary>
     /// 判断是否为其他医生的挂起医案
     /// </summary>
-    public bool IsOtherDoctorCase(MedicalCaseDto? unfinishedCase)
+    public bool IsOtherDoctorCase(MedicalCaseDetailDto? unfinishedCase)
     {
         if (unfinishedCase == null) return false;
 
@@ -97,7 +97,7 @@ public class MedicalCaseStartCoordinator
     /// <summary>
     /// 获取其他医生名称
     /// </summary>
-    public string GetOtherDoctorName(MedicalCaseDto unfinishedCase)
+    public string GetOtherDoctorName(MedicalCaseDetailDto unfinishedCase)
     {
         return !string.IsNullOrEmpty(unfinishedCase.DoctorName)
             ? unfinishedCase.DoctorName
@@ -107,7 +107,7 @@ public class MedicalCaseStartCoordinator
     /// <summary>
     /// 继续现有医案
     /// </summary>
-    public Task<StartResultData> ContinueExistingCaseAsync(PatientDto patient, Guid medicalCaseId)
+    public Task<StartResultData> ContinueExistingCaseAsync(PatientDetailDto patient, Guid medicalCaseId)
     {
         _logger.LogInformation("继续看诊，患者：{PatientName}，MedicalCaseId: {MedicalCaseId}",
             patient.Name, medicalCaseId);
@@ -122,7 +122,7 @@ public class MedicalCaseStartCoordinator
     /// <summary>
     /// 关闭旧医案并创建新医案
     /// </summary>
-    public async Task<StartResultData> CloseAndCreateNewAsync(PatientDto patient, Guid oldMedicalCaseId)
+    public async Task<StartResultData> CloseAndCreateNewAsync(PatientDetailDto patient, Guid oldMedicalCaseId)
     {
         try
         {
@@ -158,7 +158,7 @@ public class MedicalCaseStartCoordinator
     /// <summary>
     /// 仅关闭旧医案（不创建新医案）
     /// </summary>
-    public async Task<StartResultData> CloseOnlyAsync(PatientDto patient, Guid oldMedicalCaseId)
+    public async Task<StartResultData> CloseOnlyAsync(PatientDetailDto patient, Guid oldMedicalCaseId)
     {
         try
         {
@@ -200,7 +200,7 @@ public class MedicalCaseStartCoordinator
     /// <param name="refreshPendingQueueCallback">刷新待诊队列回调（仅关闭时调用）</param>
     public async Task<StartResultData> HandleUserChoiceAsync(
         int choice,
-        PatientDto patient,
+        PatientDetailDto patient,
         Guid unfinishedCaseId,
         Func<Task>? refreshPendingQueueCallback = null)
     {

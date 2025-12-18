@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private readonly ConsultationDataManager _dataManager;
         private readonly ConsultationCommandHandler _commandHandler;
 
-        private PatientDto? _currentPatient;
+        private PatientDetailDto? _currentPatient;
         private Guid _medicalCaseId = Guid.Empty;
         private string _chiefComplaint = string.Empty;
         private string _presentIllness = string.Empty;
@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private bool _prescriptionEnabled = true;
         private string _validationMessage = string.Empty;
 
-        public PatientDto? CurrentPatient { get => _currentPatient; set => SetProperty(ref _currentPatient, value); }
+        public PatientDetailDto? CurrentPatient { get => _currentPatient; set => SetProperty(ref _currentPatient, value); }
         public Guid MedicalCaseId { get => _medicalCaseId; set => SetProperty(ref _medicalCaseId, value); }
 
         public string ChiefComplaint { get => _chiefComplaint; set { if (SetProperty(ref _chiefComplaint, value)) RaisePropertyChanged(nameof(HasChiefComplaint)); } }
@@ -141,7 +141,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     await _dataManager.InitializeAsync(medicalCaseId);
                     if (_dataManager.Current != null) SyncFromDataManager();
                 }
-                var currentPatient = navigationContext.Parameters.GetValue<PatientDto>("CurrentPatient");
+                var currentPatient = navigationContext.Parameters.GetValue<PatientDetailDto>("CurrentPatient");
                 if (currentPatient != null) CurrentPatient = currentPatient;
             }
             catch (Exception ex) { Logger.LogError(ex, "导航到ConsultationFormView时发生异常"); }
@@ -161,10 +161,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private void SyncToDataManager()
         {
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-            _dataManager.UpdateField(nameof(ConsultationDto.PresentIllness), PresentIllness);
-            _dataManager.UpdateField(nameof(ConsultationDto.TongueDiagnosis), TongueDiagnosis);
-            _dataManager.UpdateField(nameof(ConsultationDto.PulseDiagnosis), PulseDiagnosis);
-            _dataManager.UpdateField(nameof(ConsultationDto.TCMDiagnosis), TCMDiagnosis);
+            _dataManager.UpdateField(nameof(ConsultationDetailDto.PresentIllness), PresentIllness);
+            _dataManager.UpdateField(nameof(ConsultationDetailDto.TongueDiagnosis), TongueDiagnosis);
+            _dataManager.UpdateField(nameof(ConsultationDetailDto.PulseDiagnosis), PulseDiagnosis);
+            _dataManager.UpdateField(nameof(ConsultationDetailDto.TCMDiagnosis), TCMDiagnosis);
         }
     }
 }

@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Formula.Interfaces
@@ -14,8 +14,8 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// 保存配方
         /// Issue #2149: 优化双重映射，直接接收InputDto以提升性能
         /// </summary>
-        Task<(bool success, FormulaDto? formula, string? errorMessage)> SaveFormulaAsync(
-            FormulaDto currentFormula,
+        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> SaveFormulaAsync(
+            FormulaDetailDto currentFormula,
             string formulaName,
             string effect,
             string usage,
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// <summary>
         /// 复制配方
         /// </summary>
-        Task<(bool success, FormulaDto? formula, string? errorMessage)> CopyFormulaAsync(FormulaDto sourceFormula);
+        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> CopyFormulaAsync(FormulaDetailDto sourceFormula);
 
         /// <summary>
         /// 删除配方
@@ -43,28 +43,28 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// <summary>
         /// 创建配方（Issue #1787: 支持基本创建操作）
         /// </summary>
-        Task<(bool success, FormulaDto? formula, string? errorMessage)> CreateAsync(FormulaInputDto createDto);
+        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> CreateAsync(FormulaInputDto createDto);
 
         /// <summary>
         /// 更新配方（Issue #1787: 支持基本更新操作）
         /// </summary>
-        Task<(bool success, FormulaDto? formula, string? errorMessage)> UpdateAsync(FormulaInputDto updateDto);
+        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> UpdateAsync(FormulaInputDto updateDto);
 
         /// <summary>
         /// 打印配方
         /// </summary>
-        Task<(bool success, string? errorMessage)> PrintFormulaAsync(FormulaDto formula);
+        Task<(bool success, string? errorMessage)> PrintFormulaAsync(FormulaDetailDto formula);
 
         /// <summary>
         /// 分页查询配方（Issue #1787: 支持分页查询）
         /// </summary>
-        Task<(bool success, PagedResult<FormulaDto>? data, string? errorMessage)> GetPagedAsync(
+        Task<(bool success, PagedResult<FormulaDetailDto>? data, string? errorMessage)> GetPagedAsync(
             int page, int pageSize, string? searchText = null);
 
         /// <summary>
         /// 根据ID获取配方（Issue #1787: 支持单个配方查询）
         /// </summary>
-        Task<(bool success, FormulaDto? formula, string? errorMessage)> GetByIdAsync(Guid formulaId);
+        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> GetByIdAsync(Guid formulaId);
 
         /// <summary>
         /// 查看使用历史
@@ -74,7 +74,7 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// <summary>
         /// 获取待校验的验方列表（Issue #1787: 支持FormulaValidationViewModel）
         /// </summary>
-        Task<(bool success, List<FormulaDto>? data, string? errorMessage)> GetPendingValidationFormulasAsync();
+        Task<(bool success, List<FormulaDetailDto>? data, string? errorMessage)> GetPendingValidationFormulasAsync();
 
         /// <summary>
         /// 验证验方药材 - 手动绑定药材到系统药材库（Issue #1787: 支持FormulaValidationViewModel）

@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Herbs.Repositories
     /// 药材数据仓储实现 - RepositoryBase统一架构
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class HerbRepository : RepositoryBase<HerbDto, HerbInputDto, HerbInputDto, IHerbApi>, IHerbRepository
+    public class HerbRepository : RepositoryBase<HerbDetailDto, HerbInputDto, HerbInputDto, IHerbApi>, IHerbRepository
     {
         public HerbRepository(
             IHerbApi herbApi,
@@ -24,13 +24,13 @@ namespace LYBT.Desktop.Herbs.Repositories
         /// <summary>
         /// 获取所有草药列表（不分页，用于兼容旧代码）
         /// </summary>
-        public async Task<List<HerbDto>> GetAllAsync()
+        public async Task<List<HerbDetailDto>> GetAllAsync()
         {
             try
             {
                 // 获取第一页，大页数
                 var pagedResult = await GetPagedAsync(1, 1000);
-                return pagedResult.Items ?? new List<HerbDto>();
+                return pagedResult.Items ?? new List<HerbDetailDto>();
             }
             catch (Exception ex)
             {
@@ -41,12 +41,12 @@ namespace LYBT.Desktop.Herbs.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<ApiResponse<HerbDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<HerbDetailDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetHerbByIdAsync(id);
         }
 
-        protected override Task<ApiResponse<PagedResult<HerbDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<HerbDetailDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             // 使用统一的GetHerbsAsync接口，支持关键词缓存
             _logger.LogInformation("=== API调用（带缓存搜索） === GetHerbsAsync(Page={Page}, Size={Size}, Keyword='{Keyword}')", page, pageSize, keyword);
@@ -77,12 +77,12 @@ namespace LYBT.Desktop.Herbs.Repositories
             }
         }
 
-        protected override Task<ApiResponse<HerbDto>> CallApiCreateAsync(HerbInputDto dto)
+        protected override Task<ApiResponse<HerbDetailDto>> CallApiCreateAsync(HerbInputDto dto)
         {
             return _api.CreateHerbAsync(dto);
         }
 
-        protected override Task<ApiResponse<HerbDto>> CallApiUpdateAsync(Guid id, HerbInputDto dto)
+        protected override Task<ApiResponse<HerbDetailDto>> CallApiUpdateAsync(Guid id, HerbInputDto dto)
         {
             return _api.UpdateHerbAsync(id, dto);
         }
@@ -192,7 +192,7 @@ namespace LYBT.Desktop.Herbs.Repositories
         /// <summary>
         /// 切换药材状态（启用/禁用）
         /// </summary>
-        public async Task<HerbDto?> ToggleStatusAsync(Guid id)
+        public async Task<HerbDetailDto?> ToggleStatusAsync(Guid id)
         {
             try
             {
@@ -218,7 +218,7 @@ namespace LYBT.Desktop.Herbs.Repositories
         /// <summary>
         /// 恢复已删除的药材
         /// </summary>
-        public async Task<HerbDto?> RestoreAsync(Guid id)
+        public async Task<HerbDetailDto?> RestoreAsync(Guid id)
         {
             try
             {
