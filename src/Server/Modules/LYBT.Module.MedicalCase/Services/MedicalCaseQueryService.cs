@@ -303,5 +303,93 @@ namespace LYBT.Module.MedicalCases.Services
             }
         }
 
+
+        /// <summary>
+        /// 跨医案搜索（支持多条件组合查询）
+        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
+        /// </summary>
+        public async Task<PagedResult<MedicalCaseDetailDto>> SearchMedicalCasesAsync(
+            string? patientName = null,
+            string? diagnosisKeyword = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            int page = 1,
+            int pageSize = 20)
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "跨医案搜索: PatientName={PatientName}, DiagnosisKeyword={DiagnosisKeyword}, StartDate={StartDate}, EndDate={EndDate}, Page={Page}, PageSize={PageSize}",
+                    patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+
+                // 使用Repository的QueryAsync方法获取实体（已包含Include预加载）
+                var entities = await _repository.QueryAsync(patientName, startDate, endDate, diagnosisKeyword);
+
+                // 按创建时间倒序排列
+                var orderedEntities = entities.OrderByDescending(e => e.CreatedAt).ToList();
+
+                // 分页处理
+                var totalCount = orderedEntities.Count;
+                var pagedEntities = orderedEntities
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // 映射为DTO（包含嵌套Consultation/Prescription）
+                var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(pagedEntities);
+
+                _logger.LogInformation("跨医案搜索完成: TotalCount={TotalCount}, ReturnedCount={ReturnedCount}",
+                    totalCount, dtos.Count);
+
+                return new PagedResult<MedicalCaseDetailDto>(dtos, totalCount, page, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "跨医案搜索失败");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 获取患者最近医案列表
+        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-016)
+        /// 用于处方编辑器历史处方参考
+        /// </summary>
+        public async Task<List<MedicalCaseDetailDto>> GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5)
+        {
+            try
+            {
+                _logger.LogInformation("获取患者最近医案: PatientId={PatientId}, Count={Count}", patientId, count);
+
+                // 获取患者所有医案
+                var entities = await _repository.GetByPatientIdAsync(patientId);
+
+                if (entities == null || !entities.Any())
+                {
+                    _logger.LogInformation("患者无历史医案: PatientId={PatientId}", patientId);
+                    return new List<MedicalCaseDetailDto>();
+                }
+
+                // 按创建时间倒序，取前count条
+                var recentEntities = entities
+                    .OrderByDescending(e => e.CreatedAt)
+                    .Take(count)
+                    .ToList();
+
+                // 映射为DTO（包含嵌套Consultation/Prescription）
+                var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(recentEntities);
+
+                _logger.LogInformation("获取患者最近医案完成: PatientId={PatientId}, ReturnedCount={ReturnedCount}",
+                    patientId, dtos.Count);
+
+                return dtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者最近医案失败: PatientId={PatientId}", patientId);
+                throw;
+            }
+        }
+
     }
 }

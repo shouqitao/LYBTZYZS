@@ -218,11 +218,8 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
         catch (Exception ex) { _logger.LogError(ex, "删除医案失败: {Id}", medicalCaseId); return new ApiResponse { Success = false, Message = $"删除失败: {ex.Message}" }; }
     }
 
-    public virtual async Task<ApiResponse<ApiResponse>> SoftDeleteMedicalCaseAsync(Guid medicalCaseId)
-    {
-        try { return await _api.SoftDeleteMedicalCaseAsync(medicalCaseId); }
-        catch (Exception ex) { _logger.LogError(ex, "软删除医案失败: {Id}", medicalCaseId); throw; }
-    }
+    // ========== SoftDeleteMedicalCaseAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
+    // Server端点DELETE /api/v1/medicalcases/{id}/soft 不存在，使用DeleteMedicalCaseAsync代替
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid medicalCaseId, MedicalCaseStatusInputDto request)
     {

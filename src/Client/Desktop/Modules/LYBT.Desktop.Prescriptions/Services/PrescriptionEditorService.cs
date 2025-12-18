@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Contracts.Api; // Issue #1606 Phase 3: 改用IPrescriptionApi
+﻿using LYBT.Desktop.Contracts.Api; // OpenSpec: consolidate-medicalcase-queries - 改用IMedicalCaseApi
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Prescriptions.Services
     {
         #region 依赖注入
 
-        private readonly IPrescriptionApi _prescriptionApi; // Issue #1606 Phase 3: 改用IPrescriptionApi（只读）
+        private readonly IMedicalCaseApi _medicalCaseApi; // OpenSpec: consolidate-medicalcase-queries - 改用IMedicalCaseApi
         private readonly IHerbRepository _herbRepository;
         private readonly ILogger<PrescriptionEditorService> _logger;
 
@@ -41,11 +41,11 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 构造函数
 
         public PrescriptionEditorService(
-            IPrescriptionApi prescriptionApi, // Issue #1606 Phase 3: 改用IPrescriptionApi
+            IMedicalCaseApi medicalCaseApi, // OpenSpec: consolidate-medicalcase-queries - 改用IMedicalCaseApi
             IHerbRepository herbRepository,
             ILogger<PrescriptionEditorService> logger)
         {
-            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi)); // Issue #1606 Phase 3
+            _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi)); // OpenSpec: consolidate-medicalcase-queries
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -132,12 +132,33 @@ namespace LYBT.Desktop.Prescriptions.Services
             {
                 _logger.LogInformation("加载患者{PatientId}的最近{Limit}条处方记录", patientId, limit);
 
-                // Issue #1606 Phase 3: 改用IPrescriptionApi（只读）
-                var response = await _prescriptionApi.GetPatientRecentPrescriptionsAsync(patientId, limit);
-                var prescriptions = response?.Data;
-                if (prescriptions != null && prescriptions.Any())
+                // OpenSpec: consolidate-medicalcase-queries - 改用IMedicalCaseApi.GetPatientRecentMedicalCasesAsync
+                var response = await _medicalCaseApi.GetPatientRecentMedicalCasesAsync(patientId, limit);
+                var medicalCases = response?.Data;
+                if (medicalCases != null && medicalCases.Any())
                 {
-                    _logger.LogInformation("成功加载{Count}条历史处方", prescriptions.Count);
+                    // 将MedicalCaseDetailDto转换为PrescriptionSearchResultDto
+                    var prescriptions = medicalCases
+                        .Where(mc => mc.Prescription != null)
+                        .Select(mc => new PrescriptionSearchResultDto
+                        {
+                            Id = mc.Prescription!.Id,
+                            PrescriptionNumber = mc.Prescription.PrescriptionNumber,
+                            CreatedAt = mc.Prescription.CreatedAt,
+                            PatientId = mc.PatientId,
+                            PatientName = mc.PatientName,
+                            TCMDiagnosis = mc.Consultation?.TCMDiagnosis,
+                            DosageCount = mc.Prescription.DosageCount,
+                            Advice = mc.Prescription.Advice,
+                            FormulaSource = mc.Prescription.FormulaSource,
+                            Remark = mc.Prescription.Remark,
+                            HerbCount = mc.Prescription.Items?.Count ?? 0,
+                            Items = mc.Prescription.Items ?? new List<PrescriptionItemDto>()
+                        })
+                        .ToList();
+
+                    _logger.LogInformation("成功加载{Count}条历史处方（从{TotalCount}个医案）",
+                        prescriptions.Count, medicalCases.Count);
                     return prescriptions;
                 }
 

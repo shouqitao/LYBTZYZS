@@ -1287,6 +1287,89 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+
+        /// <summary>
+        /// 跨医案搜索
+        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
+        /// 支持按患者名称、诊断关键词等条件查询
+        /// </summary>
+        /// <param name="patientName">患者名称（模糊匹配）</param>
+        /// <param name="diagnosisKeyword">诊断关键词</param>
+        /// <param name="startDate">开始日期</param>
+        /// <param name="endDate">结束日期</param>
+        /// <param name="page">页码（从1开始，默认1）</param>
+        /// <param name="pageSize">每页大小（默认20，最大100）</param>
+        /// <returns>分页结果（含嵌套Consultation/Prescription）</returns>
+        [HttpGet("search")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseDetailDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseDetailDto>>), 400)]
+        public async Task<IActionResult> SearchMedicalCases(
+            [FromQuery] string? patientName = null,
+            [FromQuery] string? diagnosisKeyword = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                if (page <= 0 || pageSize <= 0 || pageSize > 100)
+                {
+                    return BadRequest(ApiResponse<PagedResult<MedicalCaseDetailDto>>.CreateFail(
+                        "页码和页大小参数无效（页码>0，页大小1-100）"));
+                }
+
+                var result = await _queryService.SearchMedicalCasesAsync(
+                    patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+
+                return Ok(ApiResponse<PagedResult<MedicalCaseDetailDto>>.CreateSuccess(result, "搜索成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "跨医案搜索",
+                    new { patientName, diagnosisKeyword, startDate, endDate, page, pageSize });
+            }
+        }
+
+        /// <summary>
+        /// 获取患者最近医案
+        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-016)
+        /// 用于处方编辑器历史处方参考
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <param name="count">返回数量（默认5）</param>
+        /// <returns>最近医案列表（按创建时间倒序，含完整Prescription数据）</returns>
+        [HttpGet("patient/{patientId}/recent")]
+        [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 404)]
+        public async Task<IActionResult> GetPatientRecentMedicalCases(
+            Guid patientId,
+            [FromQuery] int count = 5)
+        {
+            try
+            {
+                if (patientId == Guid.Empty)
+                {
+                    return BadRequest(ApiResponse<List<MedicalCaseDetailDto>>.CreateFail("患者ID无效"));
+                }
+
+                if (count <= 0 || count > 50)
+                {
+                    return BadRequest(ApiResponse<List<MedicalCaseDetailDto>>.CreateFail(
+                        "返回数量参数无效（1-50）"));
+                }
+
+                var result = await _queryService.GetPatientRecentMedicalCasesAsync(patientId, count);
+
+                return Ok(ApiResponse<List<MedicalCaseDetailDto>>.CreateSuccess(result, "查询成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "获取患者最近医案",
+                    new { patientId, count });
+            }
+        }
+
         /// <summary>
         /// 获取病案列表（分页，返回MedicalCaseListDto，用于列表视图）
         /// OpenSpec: optimize-entity-data-flow - 增量API方法

@@ -66,6 +66,31 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] DateTime? endDate = null,
             [Refit.Query] string? diagnosisKeyword = null);
 
+
+        /// <summary>
+        /// 跨医案搜索（分页版）
+        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
+        /// 支持按患者名称、诊断关键词等条件查询，返回分页结果
+        /// </summary>
+        [Refit.Get("/api/v1/medicalcases/search")]
+        Task<ApiResponse<PagedResult<MedicalCaseDetailDto>>> SearchMedicalCasesAsync(
+            [Refit.Query] string? patientName = null,
+            [Refit.Query] string? diagnosisKeyword = null,
+            [Refit.Query] DateTime? startDate = null,
+            [Refit.Query] DateTime? endDate = null,
+            [Refit.Query] int page = 1,
+            [Refit.Query] int pageSize = 20);
+
+        /// <summary>
+        /// 获取患者最近医案列表
+        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-016)
+        /// 用于处方编辑器历史处方参考
+        /// </summary>
+        [Refit.Get("/api/v1/medicalcases/patient/{patientId}/recent")]
+        Task<ApiResponse<List<MedicalCaseDetailDto>>> GetPatientRecentMedicalCasesAsync(
+            Guid patientId,
+            [Refit.Query] int count = 5);
+
         /// <summary>
         /// 获取完整的医疗案例（包含所有关联数据）
         /// </summary>
@@ -79,11 +104,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Post("/api/v1/medicalcases")]
         Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseAsync([Refit.Body] MedicalCaseInputDto request);
 
-        /// <summary>
-        /// 创建完整的医疗案例（包含诊疗和可选处方）
-        /// </summary>
-        [Refit.Post("/api/v1/medicalcases/with-details")]
-        Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseWithDetailsAsync([Refit.Body] MedicalCaseCreateInputDto request);
+        // ========== CreateMedicalCaseWithDetailsAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
+        // Server端点POST /api/v1/medicalcases/with-details 不存在，且无调用者
 
         /// <summary>
         /// 更新医案的诊断信息（聚合根方法）
@@ -100,12 +122,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Delete("/api/v1/medicalcases/{id}")]
         Task<Refit.IApiResponse> DeleteMedicalCaseAsync(Guid id);
 
-        /// <summary>
-        /// 软删除医疗案例（标记为删除）
-        /// Issue #1606 Phase 3 - 修复PrescriptionEditorViewModel软删除调用
-        /// </summary>
-        [Refit.Delete("/api/v1/medicalcases/{id}/soft")]
-        Task<ApiResponse<ApiResponse>> SoftDeleteMedicalCaseAsync(Guid id);
+        // ========== SoftDeleteMedicalCaseAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
+        // Server端点DELETE /api/v1/medicalcases/{id}/soft 不存在，且无调用者
 
         // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
 

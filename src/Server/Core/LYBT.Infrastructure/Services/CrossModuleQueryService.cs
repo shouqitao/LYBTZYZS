@@ -60,70 +60,9 @@ public class CrossModuleQueryService : ICrossModuleQueryService
 
     #endregion
 
-    #region 医案查询
-
-    /// <inheritdoc />
-    public async Task<MedicalCaseBasicDto?> GetMedicalCaseBasicInfoAsync(Guid medicalCaseId)
-    {
-        return await _context.MedicalCases
-            .AsNoTracking()
-            .Where(mc => mc.Id == medicalCaseId && !mc.IsDeleted)
-            .Select(mc => new MedicalCaseBasicDto
-            {
-                Id = mc.Id,
-                PatientId = mc.PatientId,
-                Status = mc.CaseStatus,
-                CreatedAt = mc.CreatedAt,
-                // 关联诊断信息 - 使用子查询
-                TCMDiagnosis = _context.Consultations
-                    .Where(c => c.Id == mc.Id)
-                    .Select(c => c.TCMDiagnosis)
-                    .FirstOrDefault()
-            })
-            .FirstOrDefaultAsync();
-    }
-
-    /// <inheritdoc />
-    public async Task<Dictionary<Guid, MedicalCaseBasicDto>> GetMedicalCasesBasicInfoAsync(
-        IEnumerable<Guid> medicalCaseIds)
-    {
-        var ids = medicalCaseIds.ToList();
-        if (ids.Count == 0)
-            return new Dictionary<Guid, MedicalCaseBasicDto>();
-
-        // 批量查询医案 - 分两步避免复杂Join
-        var medicalCases = await _context.MedicalCases
-            .AsNoTracking()
-            .Where(mc => ids.Contains(mc.Id) && !mc.IsDeleted)
-            .Select(mc => new MedicalCaseBasicDto
-            {
-                Id = mc.Id,
-                PatientId = mc.PatientId,
-                Status = mc.CaseStatus,
-                CreatedAt = mc.CreatedAt
-            })
-            .ToListAsync();
-
-        // 批量查询关联诊断 - 第二次数据库查询
-        var consultations = await _context.Consultations
-            .AsNoTracking()
-            .Where(c => ids.Contains(c.Id))
-            .Select(c => new { c.Id, c.TCMDiagnosis })
-            .ToDictionaryAsync(c => c.Id, c => c.TCMDiagnosis);
-
-        // 合并诊断信息 - 内存操作
-        foreach (var mc in medicalCases)
-        {
-            if (consultations.TryGetValue(mc.Id, out var diagnosis))
-            {
-                mc.TCMDiagnosis = diagnosis;
-            }
-        }
-
-        return medicalCases.ToDictionary(mc => mc.Id);
-    }
-
-    #endregion
+    // ========== 医案查询方法已删除（OpenSpec: consolidate-medicalcase-queries）==========
+    // GetMedicalCaseBasicInfoAsync 已删除 - 请使用 MedicalCaseQueryService
+    // GetMedicalCasesBasicInfoAsync 已删除 - 请使用 MedicalCaseQueryService
 
     #region 药材查询
 

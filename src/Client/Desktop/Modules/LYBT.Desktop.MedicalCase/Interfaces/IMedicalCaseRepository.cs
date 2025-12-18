@@ -32,10 +32,10 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto dto);
         Task<bool> DeleteAsync(Guid id);
         Task<List<MedicalCaseDetailDto>> GetByPatientIdAsync(Guid patientId);
-        /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto 和 PrescriptionInputDto</summary>
-        Task<MedicalCaseDetailDto> CreateWithDetailsAsync(MedicalCaseInputDto caseDto,
-            ConsultationInputDto consultationDto,
-            PrescriptionInputDto? prescriptionDto = null);
+
+        // ========== CreateWithDetailsAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
+        // Server端点POST /api/v1/medicalcases/with-details 不存在，且无调用者
+
         Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id);
 
         /// <summary>

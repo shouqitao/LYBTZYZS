@@ -26,25 +26,8 @@ namespace LYBT.Module.Prescriptions.Interfaces
         // CloneAsync, ClonePrescriptionAsync, ImportFormulaIntoPrescriptionAsync 已移除
         // 所有写操作必须通过MedicalCase聚合根进行
 
-        /// <summary>
-        /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
-        /// </summary>
-        /// <param name="patientName">患者姓名关键字（可空）</param>
-        /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
-        /// <returns>处方搜索结果列表</returns>
-        Task<Result<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
-            string? patientName = null,
-            string? symptomKeyword = null);
-
-        /// <summary>
-        /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
-        /// 按日期倒序排列，包含诊断信息
-        /// </summary>
-        /// <param name="patientId">患者ID</param>
-        /// <param name="count">返回数量（默认5条）</param>
-        /// <returns>患者最近处方列表</returns>
-        Task<Result<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
-            Guid patientId,
-            int count = 5);
+        // ========== 跨医案查询方法已迁移（OpenSpec: consolidate-medicalcase-queries）==========
+        // SearchPrescriptionsAsync 已删除 - 请使用 GET /api/v1/medicalcases/search
+        // GetPatientRecentPrescriptionsAsync 已删除 - 请使用 GET /api/v1/medicalcases/patient/{patientId}/recent
     }
 }

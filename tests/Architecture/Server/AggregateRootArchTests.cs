@@ -27,59 +27,30 @@ public class AggregateRootArchTests
 
     /// <summary>
     /// AR-001: 聚合根模式验证 - MedicalCase作为聚合根
-    /// 禁止Consultation/Prescription的Write Controller端点
+    /// OpenSpec: consolidate-medicalcase-queries - 已删除ConsultationController和PrescriptionsController
+    /// 所有医案相关写操作统一通过MedicalCaseController
     /// </summary>
     [Fact]
     public void AR001_MedicalCase_Should_Be_Aggregate_Root()
     {
-        // 1. 验证ConsultationController只有查询方法（无POST/PUT/DELETE）
+        // 1. 验证ConsultationController和PrescriptionsController已被删除（聚合根模式）
         var consultationController = Types.InAssemblies(ServerAssemblies)
             .That()
             .HaveName("ConsultationController")
             .GetTypes()
             .FirstOrDefault();
 
-        Assert.NotNull(consultationController);
+        Assert.Null(consultationController); // 应该已被删除
 
-        var consultationMethods = consultationController.GetMethods(
-            System.Reflection.BindingFlags.Public |
-            System.Reflection.BindingFlags.Instance |
-            System.Reflection.BindingFlags.DeclaredOnly);
-
-        var consultationWriteMethods = consultationMethods.Where(m =>
-            m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPostAttribute), false).Any() ||
-            m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPutAttribute), false).Any() ||
-            m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpDeleteAttribute), false).Any() ||
-            m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPatchAttribute), false).Any()
-        ).ToList();
-
-        Assert.Empty(consultationWriteMethods);
-
-        // 2. 验证PrescriptionsController只有查询方法（无POST/PUT/DELETE）
         var prescriptionsController = Types.InAssemblies(ServerAssemblies)
             .That()
             .HaveName("PrescriptionsController")
             .GetTypes()
             .FirstOrDefault();
 
-        if (prescriptionsController != null)
-        {
-            var prescriptionMethods = prescriptionsController.GetMethods(
-                System.Reflection.BindingFlags.Public |
-                System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.DeclaredOnly);
+        Assert.Null(prescriptionsController); // 应该已被删除
 
-            var prescriptionWriteMethods = prescriptionMethods.Where(m =>
-                m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPostAttribute), false).Any() ||
-                m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPutAttribute), false).Any() ||
-                m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpDeleteAttribute), false).Any() ||
-                m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPatchAttribute), false).Any()
-            ).ToList();
-
-            Assert.Empty(prescriptionWriteMethods);
-        }
-
-        // 3. 验证MedicalCaseController存在Write方法（作为聚合根入口）
+        // 2. 验证MedicalCaseController存在且包含Write方法（作为聚合根唯一入口）
         var medicalCaseController = Types.InAssemblies(ServerAssemblies)
             .That()
             .HaveName("MedicalCaseController")

@@ -57,39 +57,8 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        /// <summary>
-        /// 创建完整的医疗案例（包含诊疗和可选处方）
-        /// Epic #1961: 使用统一的 MedicalCaseInputDto 和 PrescriptionInputDto
-        /// </summary>
-        public async Task<MedicalCaseDetailDto> CreateWithDetailsAsync(
-            MedicalCaseInputDto caseDto,
-            ConsultationInputDto consultationDto,
-            PrescriptionInputDto? prescriptionDto = null)
-        {
-            if (caseDto == null)
-                throw new ArgumentNullException(nameof(caseDto));
-            if (consultationDto == null)
-                throw new ArgumentNullException(nameof(consultationDto));
-
-            try
-            {
-                // 构造完整请求DTO
-                var request = new MedicalCaseCreateInputDto
-                {
-                    MedicalCase = caseDto,
-                    Consultation = consultationDto,
-                    Prescription = prescriptionDto
-                };
-
-                var response = await _api.CreateMedicalCaseWithDetailsAsync(request);
-                return response.Data ?? throw new InvalidOperationException("创建完整医疗案例失败，服务器未返回数据");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建完整医疗案例失败");
-                throw;
-            }
-        }
+        // ========== CreateWithDetailsAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
+        // Server端点POST /api/v1/medicalcases/with-details 不存在，且无调用者
 
         /// <summary>
         /// 更新医案的诊断信息（聚合根方法）

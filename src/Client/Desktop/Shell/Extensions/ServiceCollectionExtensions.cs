@@ -271,11 +271,9 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IAuthApi>(r => RestService.For<IAuthApi>(r.Resolve<HttpClient>(), refitSettings));
             containerRegistry.RegisterSingleton<IPatientApi>(r => RestService.For<IPatientApi>(r.Resolve<HttpClient>(), refitSettings));
             containerRegistry.RegisterSingleton<IUserApi>(r => RestService.For<IUserApi>(r.Resolve<HttpClient>(), refitSettings));
-            containerRegistry.RegisterSingleton<IConsultationApi>(r => RestService.For<IConsultationApi>(r.Resolve<HttpClient>(), refitSettings));
             containerRegistry.RegisterSingleton<IHerbApi>(r => RestService.For<IHerbApi>(r.Resolve<HttpClient>(), refitSettings));
             containerRegistry.RegisterSingleton<IFormulaApi>(r => RestService.For<IFormulaApi>(r.Resolve<HttpClient>(), refitSettings));
             containerRegistry.RegisterSingleton<IMedicalCaseApi>(r => RestService.For<IMedicalCaseApi>(r.Resolve<HttpClient>(), refitSettings));
-            containerRegistry.RegisterSingleton<IPrescriptionApi>(r => RestService.For<IPrescriptionApi>(r.Resolve<HttpClient>(), refitSettings));
         }
 
         /// <summary>注册Foundation层服务</summary>

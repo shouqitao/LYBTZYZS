@@ -87,6 +87,36 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 获取所有待看诊队列（管理员专用）
         /// </summary>
         /// <returns>待诊队列列表</returns>
+
+        /// <summary>
+        /// 跨医案搜索（支持多条件组合查询）
+        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
+        /// </summary>
+        /// <param name="patientName">患者姓名关键字（模糊匹配）</param>
+        /// <param name="diagnosisKeyword">诊断关键字（搜索TCMDiagnosis）</param>
+        /// <param name="startDate">开始日期</param>
+        /// <param name="endDate">结束日期</param>
+        /// <param name="page">页码（从1开始）</param>
+        /// <param name="pageSize">每页大小</param>
+        /// <returns>分页结果（含嵌套Consultation/Prescription）</returns>
+        Task<PagedResult<MedicalCaseDetailDto>> SearchMedicalCasesAsync(
+            string? patientName = null,
+            string? diagnosisKeyword = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            int page = 1,
+            int pageSize = 20);
+
+        /// <summary>
+        /// 获取患者最近医案列表
+        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-016)
+        /// 用于处方编辑器历史处方参考
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <param name="count">返回数量（默认5）</param>
+        /// <returns>最近医案列表（按创建时间倒序，含完整Prescription数据）</returns>
+        Task<List<MedicalCaseDetailDto>> GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5);
+
         Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync();
     }
 }

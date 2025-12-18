@@ -33,23 +33,9 @@ public interface ICrossModuleQueryService
 
     #endregion
 
-    #region 医案查询
-
-    /// <summary>
-    /// 获取医案基本信息（包含患者ID、诊断摘要）
-    /// </summary>
-    /// <param name="medicalCaseId">医案ID</param>
-    /// <returns>医案基本信息DTO，包含关联的TCMDiagnosis</returns>
-    Task<MedicalCaseBasicDto?> GetMedicalCaseBasicInfoAsync(Guid medicalCaseId);
-
-    /// <summary>
-    /// 批量获取医案基本信息
-    /// </summary>
-    /// <param name="medicalCaseIds">医案ID集合</param>
-    /// <returns>医案ID到基本信息的字典，包含关联的TCMDiagnosis</returns>
-    Task<Dictionary<Guid, MedicalCaseBasicDto>> GetMedicalCasesBasicInfoAsync(IEnumerable<Guid> medicalCaseIds);
-
-    #endregion
+    // ========== 医案查询方法已删除（OpenSpec: consolidate-medicalcase-queries）==========
+    // GetMedicalCaseBasicInfoAsync 已删除 - 请使用 MedicalCaseQueryService
+    // GetMedicalCasesBasicInfoAsync 已删除 - 请使用 MedicalCaseQueryService
 
     #region 药材查询
 
