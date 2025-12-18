@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Master-Detail布局重构 (OpenSpec: refactor-master-detail-layout) - 2025-12-18 [已归档]
+
+**状态**: ✅ 100%完成，已归档
+
+**Phase 1-1.5: 基础架构控件**
+- 创建MasterDetailLayout通用控件（左右分割布局、GridSplitter可调节）
+- 创建SearchBox、DetailToolbar、EmptyState、LoadingOverlay、DataGridToolbar控件
+- 创建IMasterDetailViewModel接口和MasterDetailViewModelBase基类
+
+**Phase 2-5: 模块重构**
+- Patients: PatientMasterDetailView/ViewModel
+- Users: UserMasterDetailView/ViewModel
+- Herbs: HerbMasterDetailView/ViewModel
+- Formula: FormulaMasterDetailView/ViewModel
+
+**Phase 6: 清理**
+- 删除15+个废弃Management组件（View+ViewModel+Tests）
+- 更新模块注册，MasterDetail视图作为默认
+
+**技术成果**:
+- 统一基础数据管理为Master-Detail模式
+- 减少代码冗余，提升用户体验
+
+---
+
 #### 实体数据流优化 (OpenSpec: optimize-entity-data-flow) - 2025-12-18
 
 **Phase 1: MasterDetail完整性验证 (已完成)**
