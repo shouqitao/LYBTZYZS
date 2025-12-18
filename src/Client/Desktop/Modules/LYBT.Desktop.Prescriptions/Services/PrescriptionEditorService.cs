@@ -191,7 +191,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 return Task.FromResult(new PrescriptionDetailDto
                 {
                     Id = Guid.NewGuid(),
-                    Items = new List<PrescriptionItemDetailDto>()
+                    Items = new List<PrescriptionItemDto>()
                 });
             }
             catch (Exception ex)
@@ -206,26 +206,26 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 4. 处方数据操作
 
         /// <inheritdoc/>
-        public async Task<PrescriptionDetailDto> BuildPrescriptionDraftAsync(PrescriptionCreateDto dto)
+        public async Task<PrescriptionDetailDto> BuildPrescriptionDraftAsync(PrescriptionInputDto dto)
         {
             try
             {
                 _logger.LogInformation("构建处方草稿");
 
-                // 将PrescriptionCreateDto转换为PrescriptionDetailDto
+                // 将PrescriptionInputDto转换为PrescriptionDetailDto
                 // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
                 var prescription = new PrescriptionDetailDto
                 {
                     Id = Guid.NewGuid(),
                     // MedicalCaseId需要从上下文获取，此处暂设为Empty
                     MedicalCaseId = Guid.Empty,
-                    DosageCount = dto.Quantity,
+                    DosageCount = dto.DosageCount,
                     Usage = dto.Usage,
                     Advice = dto.Advice,
                     Remark = dto.Remark,
                     FormulaSource = dto.FormulaSource,
                     Discount = 1.0m,
-                    Items = dto.Items.Select(item => new PrescriptionItemDetailDto
+                    Items = dto.Items.Select(item => new PrescriptionItemDto
                     {
                         Id = Guid.NewGuid(),
                         HerbId = item.HerbId,

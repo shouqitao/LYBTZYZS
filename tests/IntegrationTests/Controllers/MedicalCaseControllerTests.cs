@@ -115,7 +115,7 @@ namespace LYBT.IntegrationTests.Api
         public async Task CreateWithDetails_ShouldCreateCompleteAggregate()
         {
             // Arrange
-            var createDto = new MedicalCaseWithDetailsCreateDto
+            var createDto = new MedicalCaseCreateInputDto
             {
                 MedicalCase = new MedicalCaseInputDto
                 {
@@ -131,7 +131,7 @@ namespace LYBT.IntegrationTests.Api
                     Diagnosis = "风寒感冒",
                     TreatmentPlan = "疏风散寒"
                 },
-                Prescription = new PrescriptionCreateDto
+                Prescription = new PrescriptionInputDto
                 {
                     Type = "中药饮片",
                     DosageCount = 7,
@@ -163,7 +163,7 @@ namespace LYBT.IntegrationTests.Api
         public async Task CreateWithDetails_WithoutPrescription_ShouldSucceed()
         {
             // Arrange
-            var createDto = new MedicalCaseWithDetailsCreateDto
+            var createDto = new MedicalCaseCreateInputDto
             {
                 MedicalCase = new MedicalCaseInputDto
                 {
@@ -196,7 +196,7 @@ namespace LYBT.IntegrationTests.Api
         public async Task GetByIdWithDetails_ShouldReturnCompleteAggregate()
         {
             // Arrange - 先创建一个医疗案例
-            var createDto = new MedicalCaseWithDetailsCreateDto
+            var createDto = new MedicalCaseCreateInputDto
             {
                 MedicalCase = new MedicalCaseInputDto
                 {
@@ -355,7 +355,7 @@ namespace LYBT.IntegrationTests.Api
         public async Task ServerError_ShouldReturnFriendlyMessage()
         {
             // Arrange - 创建会导致服务器错误的请求
-            var createDto = new MedicalCaseWithDetailsCreateDto
+            var createDto = new MedicalCaseCreateInputDto
             {
                 MedicalCase = new MedicalCaseInputDto
                 {

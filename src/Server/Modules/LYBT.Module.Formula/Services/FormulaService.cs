@@ -414,9 +414,9 @@ namespace LYBT.Module.Formulas.Services
         /// </summary>
         /// <param name="formulas">已解析的验方列表（由Client端从Excel解析）</param>
         /// <param name="fileName">原始文件名（用于日志记录）</param>
-        public async Task<Result<FormulaImportResultDto>> ImportFromDataAsync(List<FormulaImportDto> formulas, string? fileName = null)
+        public async Task<Result<FormulaBatchImportResultDto>> ImportFromDataAsync(List<FormulaImportItemDto> formulas, string? fileName = null)
         {
-            var result = new FormulaImportResultDto
+            var result = new FormulaBatchImportResultDto
             {
                 FileName = fileName,
                 ImportTime = DateTime.Now,
@@ -428,18 +428,18 @@ namespace LYBT.Module.Formulas.Services
             {
                 // 逐个导入验方
                 int index = 0;
-                foreach (var FormulaDetailDto in formulas)
+                foreach (var formulaImportItem in formulas)
                 {
                     index++;
                     try
                     {
-                        if (string.IsNullOrWhiteSpace(FormulaDetailDto.Name))
+                        if (string.IsNullOrWhiteSpace(formulaImportItem.Name))
                         {
                             result.FailureCount++;
                             result.FailedItems.Add(new FormulaImportErrorDto
                             {
                                 RowIndex = index,
-                                FormulaName = FormulaDetailDto.Name ?? string.Empty,
+                                FormulaName = formulaImportItem.Name ?? string.Empty,
                                 ErrorMessage = "验方名称不能为空"
                             });
                             continue;
@@ -448,12 +448,12 @@ namespace LYBT.Module.Formulas.Services
                         // 创建验方实体（从DTO映射）
                         var formula = new Formula
                         {
-                            Name = FormulaDetailDto.Name,
-                            Effect = FormulaDetailDto.Effect,
-                            Usage = FormulaDetailDto.Usage,
-                            Property = FormulaDetailDto.Property,
-                            IsShared = FormulaDetailDto.IsShared,
-                            Remark = FormulaDetailDto.Remark,
+                            Name = formulaImportItem.Name,
+                            Effect = formulaImportItem.Effect,
+                            Usage = formulaImportItem.Usage,
+                            Property = formulaImportItem.Property,
+                            IsShared = formulaImportItem.IsShared,
+                            Remark = formulaImportItem.Remark,
                             // Note: Indications, Contraindications, Preparation, Source exist in DTO but not in Entity
                             Status = CommonStatus.Enabled,
                             ValidationStatus = FormulaValidationStatus.Draft, // 导入的验方初始为Draft
@@ -462,7 +462,7 @@ namespace LYBT.Module.Formulas.Services
                         };
 
                         // 添加药材（从DTO列表）
-                        foreach (var herbDto in FormulaDetailDto.Herbs)
+                        foreach (var herbDto in formulaImportItem.Herbs)
                         {
                             // 尝试自动匹配药材
                             var matchedHerb = await TryMatchHerbAsync(herbDto.HerbName);
@@ -511,11 +511,11 @@ namespace LYBT.Module.Formulas.Services
                         result.FailedItems.Add(new FormulaImportErrorDto
                         {
                             RowIndex = index,
-                            FormulaName = FormulaDetailDto.Name ?? string.Empty,
+                            FormulaName = formulaImportItem.Name ?? string.Empty,
                             ErrorMessage = $"导入失败：{ex.Message}",
                             ErrorDetails = ex.StackTrace
                         });
-                        _logger.LogError(ex, "导入验方 {FormulaName} 时发生错误", FormulaDetailDto.Name);
+                        _logger.LogError(ex, "导入验方 {FormulaName} 时发生错误", formulaImportItem.Name);
                     }
                 }
 
@@ -523,7 +523,7 @@ namespace LYBT.Module.Formulas.Services
                 result.IsSuccess = true;
                 result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条，药材匹配 {result.MatchedHerbsCount} 个，未匹配 {result.UnmatchedHerbsCount} 个";
 
-                return Result<FormulaImportResultDto>.Success(result);
+                return Result<FormulaBatchImportResultDto>.Success(result);
             }
             catch (Exception ex)
             {
@@ -531,7 +531,7 @@ namespace LYBT.Module.Formulas.Services
                 result.EndTime = DateTime.Now;
                 result.IsSuccess = false;
                 result.Message = $"导入失败：{ex.Message}";
-                return Result<FormulaImportResultDto>.Failure($"导入失败：{ex.Message}");
+                return Result<FormulaBatchImportResultDto>.Failure($"导入失败：{ex.Message}");
             }
         }
 

@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方中药材导入DTO
     /// </summary>
-    public class FormulaHerbImportDto
+    public class FormulaHerbImportItemDto
     {
 
         [Required(ErrorMessage = "中药材名称不能为空")]

@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方导入DTO - 支持从老系统批量导入验方数据
     /// </summary>
-    public class FormulaImportDto
+    public class FormulaImportItemDto
     {
 
         [Required(ErrorMessage = "验方名称不能为空")]
@@ -55,7 +55,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         [Required(ErrorMessage = "必须包含至少一味中药材")]
         [DisplayName("中药材组成")]
-        public List<FormulaHerbImportDto> Herbs { get; set; } = new();
+        public List<FormulaHerbImportItemDto> Herbs { get; set; } = new();
 
         /// <summary>原系统ID（用于数据迁移）</summary>
         [DisplayName("原系统ID")]

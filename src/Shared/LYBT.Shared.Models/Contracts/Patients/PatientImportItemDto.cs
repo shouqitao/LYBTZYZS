@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Shared.Models.Contracts.Patients
 {
     /// <summary>
-    /// 患者导入DTO
+    /// 患者导入行项DTO - 批量导入中的单行数据
     /// </summary>
-    public class PatientImportDto
+    public class PatientImportItemDto
     {
 
         /// <summary>姓名</summary>

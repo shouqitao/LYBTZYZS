@@ -176,7 +176,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public async Task CreatePrescriptionAsync_ShouldCreateAndReturnTrue_WhenSuccessful()
         {
             // Arrange
-            var createDto = new PrescriptionCreateDto
+            var createDto = new PrescriptionInputDto
             {
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
@@ -210,14 +210,14 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeFalse();
-            _mockDataManager.Verify(x => x.CreatePrescriptionAsync(It.IsAny<PrescriptionCreateDto>()), Times.Never);
+            _mockDataManager.Verify(x => x.CreatePrescriptionAsync(It.IsAny<PrescriptionInputDto>()), Times.Never);
         }
 
         [Fact]
         public async Task CreatePrescriptionAsync_ShouldReturnFalse_WhenCreationFails()
         {
             // Arrange
-            var createDto = new PrescriptionCreateDto
+            var createDto = new PrescriptionInputDto
             {
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid()

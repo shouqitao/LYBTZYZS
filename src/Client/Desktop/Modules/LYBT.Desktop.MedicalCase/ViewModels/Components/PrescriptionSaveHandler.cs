@@ -57,7 +57,7 @@ public class PrescriptionSaveHandler
             if (context.PrescriptionId.HasValue)
             {
                 // 更新现有处方
-                var updateRequest = new PrescriptionUpdateDto
+                var updateRequest = new PrescriptionInputDto
                 {
                     DosageCount = context.DosageCount,
                     Usage = context.Usage,
@@ -69,9 +69,9 @@ public class PrescriptionSaveHandler
             {
                 // 创建新处方
                 // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId已移除，通过MedicalCaseId关联获取
-                var createRequest = new PrescriptionCreateDto
+                var createRequest = new PrescriptionInputDto
                 {
-                    Quantity = context.DosageCount,
+                    DosageCount = context.DosageCount,
                     Usage = context.Usage,
                     Items = context.Items
                 };
@@ -126,7 +126,7 @@ public class PrescriptionSaveHandler
             if (context.PrescriptionId.HasValue)
             {
                 // 更新现有处方
-                var updateRequest = new PrescriptionUpdateDto
+                var updateRequest = new PrescriptionInputDto
                 {
                     DosageCount = context.DosageCount,
                     Usage = context.Usage,
@@ -138,9 +138,9 @@ public class PrescriptionSaveHandler
             {
                 // 创建新处方
                 // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId已移除，通过MedicalCaseId关联获取
-                var createRequest = new PrescriptionCreateDto
+                var createRequest = new PrescriptionInputDto
                 {
-                    Quantity = context.DosageCount,
+                    DosageCount = context.DosageCount,
                     Usage = context.Usage,
                     Items = context.Items
                 };

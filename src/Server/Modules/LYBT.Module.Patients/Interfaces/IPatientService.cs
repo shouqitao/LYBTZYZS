@@ -54,7 +54,7 @@ namespace LYBT.Module.Patients.Interfaces
         /// <param name="stream">Excel文件流</param>
         /// <param name="fileName">文件名（可选，用于日志记录）</param>
         /// <returns>批量导入结果，包含成功/失败/跳过数量和详细失败信息</returns>
-        Task<Result<BatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null);
+        Task<Result<PatientBatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null);
 
         /// <summary>
         /// 导出患者导入模板 (Epic #1934 FR-002)

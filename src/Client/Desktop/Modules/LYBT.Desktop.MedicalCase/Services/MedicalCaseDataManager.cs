@@ -75,7 +75,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
             }
             if (IsPrescriptionChanged() && _currentDetail.Prescription != null)
             {
-                var updated = await _repository.UpdatePrescriptionAsync(_currentDetail.Id, _currentDetail.Prescription.ToPrescriptionUpdateDto());
+                var updated = await _repository.UpdatePrescriptionAsync(_currentDetail.Id, _currentDetail.Prescription.ToPrescriptionInputDto());
                 if (updated != null) _currentDetail.Prescription = updated;
             }
             _originalDetail = CloneMedicalCaseDetail(_currentDetail);
@@ -188,13 +188,13 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
         catch (Exception ex) { _logger.LogError(ex, "获取未完成病案失败: PatientId={PatientId}", patientId); throw; }
     }
 
-    public virtual async Task<ApiResponse<PrescriptionDetailDto>> CreatePrescriptionViaApiAsync(Guid medicalCaseId, PrescriptionCreateDto request)
+    public virtual async Task<ApiResponse<PrescriptionDetailDto>> CreatePrescriptionViaApiAsync(Guid medicalCaseId, PrescriptionInputDto request)
     {
         try { return await _api.CreatePrescriptionAsync(medicalCaseId, request); }
         catch (Exception ex) { _logger.LogError(ex, "创建处方失败(API): {Id}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<ApiResponse<PrescriptionDetailDto>> UpdatePrescriptionViaApiAsync(Guid medicalCaseId, PrescriptionUpdateDto request)
+    public virtual async Task<ApiResponse<PrescriptionDetailDto>> UpdatePrescriptionViaApiAsync(Guid medicalCaseId, PrescriptionInputDto request)
     {
         try { return await _api.UpdatePrescriptionAsync(medicalCaseId, request); }
         catch (Exception ex) { _logger.LogError(ex, "更新处方失败(API): {Id}", medicalCaseId); throw; }
@@ -224,7 +224,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
         catch (Exception ex) { _logger.LogError(ex, "软删除医案失败: {Id}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid medicalCaseId, UpdateMedicalCaseStatusDto request)
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid medicalCaseId, MedicalCaseStatusInputDto request)
     {
         try { return await _api.UpdateStatusAsync(medicalCaseId, request); }
         catch (Exception ex) { _logger.LogError(ex, "更新状态失败: {Id}", medicalCaseId); throw; }
@@ -256,7 +256,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
         _currentDetail.Consultation = consultation ?? throw new ArgumentNullException(nameof(consultation));
     }
 
-    public virtual async Task<PrescriptionDetailDto?> CreatePrescriptionAsync(PrescriptionCreateDto createDto)
+    public virtual async Task<PrescriptionDetailDto?> CreatePrescriptionAsync(PrescriptionInputDto createDto)
     {
         if (_currentDetail == null) return null;
         try

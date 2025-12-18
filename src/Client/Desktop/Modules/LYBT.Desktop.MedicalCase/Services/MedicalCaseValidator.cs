@@ -80,7 +80,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 // 验证处方数据(如果存在)
                 if (_dataManager.CurrentPrescription != null)
                 {
-                    var prescriptionResult = await _validationService.ValidateAsync(_dataManager.CurrentPrescription.ToUpdateDto());
+                    var prescriptionResult = await _validationService.ValidateAsync(_dataManager.CurrentPrescription.ToPrescriptionInputDto());
                     if (!prescriptionResult.IsValid)
                     {
                         errors.AddRange(prescriptionResult.Errors);
@@ -138,7 +138,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 // 验证处方数据(如果存在)
                 if (_dataManager.CurrentPrescription != null)
                 {
-                    if (!_validationService.IsValid(_dataManager.CurrentPrescription.ToUpdateDto(), out var prescriptionError))
+                    if (!_validationService.IsValid(_dataManager.CurrentPrescription.ToPrescriptionInputDto(), out var prescriptionError))
                     {
                         errorMessage = prescriptionError;
                         return false;

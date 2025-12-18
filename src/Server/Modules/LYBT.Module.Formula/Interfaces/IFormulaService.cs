@@ -70,9 +70,9 @@ namespace LYBT.Module.Formulas.Interfaces
         /// <summary>
         /// 从已解析的验方数据导入（Issue #1166, #1347, #1758）
         /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
-        /// 返回FormulaImportResultDto包含药材匹配统计
+        /// 返回FormulaBatchImportResultDto包含药材匹配统计
         /// </summary>
-        Task<Result<FormulaImportResultDto>> ImportFromDataAsync(List<FormulaImportDto> formulas, string? fileName = null);
+        Task<Result<FormulaBatchImportResultDto>> ImportFromDataAsync(List<FormulaImportItemDto> formulas, string? fileName = null);
 
         /// <summary>
         /// 导出验方数据到Excel (Issue #1166)

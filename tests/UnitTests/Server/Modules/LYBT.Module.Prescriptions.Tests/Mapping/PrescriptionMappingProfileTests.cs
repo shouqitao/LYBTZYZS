@@ -145,16 +145,16 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         }
 
         [Fact]
-        public void Map_PrescriptionCreateDto_To_Prescription_Should_Success()
+        public void Map_PrescriptionInputDto_Create_To_Prescription_Should_Success()
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId/ConsultationId已移除，通过MedicalCaseId关联获取
-            var createDto = new PrescriptionCreateDto
+            var createDto = new PrescriptionInputDto
             {
                 Diagnosis = "脾胃虚弱",
-                Quantity = 5,
+                DosageCount = 5,
                 Usage = "水煎服",
-                TotalAmount = 125.50m,
+                TotalPrice = 125.50m,
                 FormulaSource = "新方剂",
                 Advice = "温服",
                 Remark = "调理脾胃"
@@ -165,7 +165,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
 
             // Assert
             prescription.Should().NotBeNull();
-            prescription.DosageCount.Should().Be(createDto.Quantity);
+            prescription.DosageCount.Should().Be(createDto.DosageCount);
 
             // 验证忽略字段 - BaseEntity.Id 有默认初始化为 Guid.NewGuid()
             prescription.Id.Should().NotBe(Guid.Empty);
@@ -203,11 +203,11 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         }
 
         [Fact]
-        public void Map_PrescriptionEditDto_To_Prescription_Should_Success()
+        public void Map_PrescriptionInputDto_Update_To_Prescription_Should_Success()
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
-            var editDto = new PrescriptionEditDto
+            var editDto = new PrescriptionInputDto
             {
                 Id = Guid.NewGuid(),
                 Diagnosis = "修改后的诊断",
@@ -314,15 +314,15 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         }
 
         [Fact]
-        public void Map_PrescriptionCreateDto_With_MinimalData_Should_Success()
+        public void Map_PrescriptionInputDto_With_MinimalData_Should_Success()
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId已移除，Quantity替代DosageCount
-            var createDto = new PrescriptionCreateDto
+            var createDto = new PrescriptionInputDto
             {
                 Diagnosis = "最简诊断",
-                Quantity = 1,
-                TotalAmount = 10.0m
+                DosageCount = 1,
+                TotalPrice = 10.0m
             };
 
             // Act
@@ -330,7 +330,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
 
             // Assert
             prescription.Should().NotBeNull();
-            prescription.DosageCount.Should().Be(createDto.Quantity);
+            prescription.DosageCount.Should().Be(createDto.DosageCount);
         }
     }
 }

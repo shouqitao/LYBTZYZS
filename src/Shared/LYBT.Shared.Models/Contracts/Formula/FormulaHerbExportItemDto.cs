@@ -5,7 +5,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方中药材导出DTO
     /// </summary>
-    public class FormulaHerbExportDto
+    public class FormulaHerbExportItemDto
     {
 
         [DisplayName("中药材ID")]

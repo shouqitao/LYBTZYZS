@@ -239,8 +239,8 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost("import")]
         [RequestSizeLimit(10 * 1024 * 1024)]
-        [ProducesResponseType(typeof(ApiResponse<BatchImportResultDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<BatchImportResultDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PatientBatchImportResultDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<PatientBatchImportResultDto>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Import(IFormFile file)
         {
             try

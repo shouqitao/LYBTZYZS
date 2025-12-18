@@ -178,7 +178,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// <summary>
         /// 选中医案的处方药材列表（用于复制）
         /// </summary>
-        public List<PrescriptionItemDetailDto> SelectedPrescriptionItems { get; private set; } = new();
+        public List<PrescriptionItemDto> SelectedPrescriptionItems { get; private set; } = new();
 
         // ========== UX改进：查看模式相关属性 ==========
 
@@ -498,7 +498,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             if (SelectedCase == null)
             {
                 SelectedCaseDetail = null;
-                SelectedPrescriptionItems = new List<PrescriptionItemDetailDto>();
+                SelectedPrescriptionItems = new List<PrescriptionItemDto>();
                 return;
             }
 
@@ -517,7 +517,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 }
                 else
                 {
-                    SelectedPrescriptionItems = new List<PrescriptionItemDetailDto>();
+                    SelectedPrescriptionItems = new List<PrescriptionItemDto>();
                 }
 
                 ConfirmCommand.RaiseCanExecuteChanged();
@@ -525,7 +525,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             catch (Exception ex)
             {
                 SelectedCaseDetail = null;
-                SelectedPrescriptionItems = new List<PrescriptionItemDetailDto>();
+                SelectedPrescriptionItems = new List<PrescriptionItemDto>();
                 _logger.LogError(ex, "加载医案详情失败，医案ID: {CaseId}", SelectedCase.Id);
             }
             finally

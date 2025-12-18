@@ -264,7 +264,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDetailDto>), 422)]
         public async Task<IActionResult> CreatePrescription(
             Guid id,
-            [FromBody] PrescriptionCreateDto request)
+            [FromBody] PrescriptionInputDto request)
         {
             try
             {
@@ -303,7 +303,7 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> UpdatePrescription(
             Guid id,
             Guid prescriptionId,
-            [FromBody] PrescriptionEditDto request)
+            [FromBody] PrescriptionInputDto request)
         {
             try
             {
@@ -394,7 +394,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDetailDto>), 422)]
         public async Task<IActionResult> CreatePrescriptionSimple(
             Guid id,
-            [FromBody] PrescriptionCreateDto request)
+            [FromBody] PrescriptionInputDto request)
         {
             try
             {
@@ -431,7 +431,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDetailDto>), 403)]
         public async Task<IActionResult> UpdatePrescriptionSimple(
             Guid id,
-            [FromBody] PrescriptionUpdateDto request)
+            [FromBody] PrescriptionInputDto request)
         {
             try
             {
@@ -446,8 +446,8 @@ namespace LYBT.WebAPI.Controllers
 
                 var prescriptionId = medicalCase.Prescription.Id;
 
-                // PrescriptionUpdateDto已经包含正确的属性，直接转换为PrescriptionEditDto
-                var editDto = new PrescriptionEditDto
+                // PrescriptionInputDto已经包含正确的属性，直接转换为PrescriptionInputDto
+                var editDto = new PrescriptionInputDto
                 {
                     Id = prescriptionId,
                     DosageCount = request.DosageCount,
@@ -507,7 +507,7 @@ namespace LYBT.WebAPI.Controllers
                 FormulaSource = entity.FormulaSource,
                 ReferencedFormulas = entity.ReferencedFormulas,
                 Remark = entity.Remark,
-                Items = entity.Items?.Select(item => new PrescriptionItemDetailDto
+                Items = entity.Items?.Select(item => new PrescriptionItemDto
                 {
                     Id = item.Id,
                     HerbId = item.HerbId,
@@ -519,7 +519,7 @@ namespace LYBT.WebAPI.Controllers
                     Usage = item.Usage,
                     Remark = item.Remark,
                     DecocteMethod = item.DecocteMethod
-                }).ToList() ?? new List<PrescriptionItemDetailDto>(),
+                }).ToList() ?? new List<PrescriptionItemDto>(),
                 SingleDosePrice = entity.Items?.Sum(x => x.Amount) ?? 0,
                 TotalPrice = (entity.Items?.Sum(x => x.Amount) ?? 0) * entity.DosageCount * entity.Discount,
                 TotalWeight = entity.Items?.Sum(x => x.Dosage) ?? 0,
@@ -680,7 +680,7 @@ namespace LYBT.WebAPI.Controllers
                     FormulaSource = entity.Prescription.FormulaSource,
                     ReferencedFormulas = entity.Prescription.ReferencedFormulas,
                     Remark = entity.Prescription.Remark,
-                    Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDetailDto
+                    Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
                     {
                         Id = item.Id,
                         HerbId = item.HerbId,
@@ -694,7 +694,7 @@ namespace LYBT.WebAPI.Controllers
                         Usage = item.Usage,
                         Remark = item.Remark,
                         DecocteMethod = item.DecocteMethod
-                    }).ToList() ?? new List<PrescriptionItemDetailDto>(),
+                    }).ToList() ?? new List<PrescriptionItemDto>(),
                     SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0,
                     TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount,
                     TotalWeight = entity.Prescription.Items?.Sum(x => x.Dosage) ?? 0,
@@ -1045,7 +1045,7 @@ namespace LYBT.WebAPI.Controllers
                         FormulaSource = entity.Prescription.FormulaSource,
                         ReferencedFormulas = entity.Prescription.ReferencedFormulas,
                         Remark = entity.Prescription.Remark,
-                        Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDetailDto
+                        Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
                         {
                             Id = item.Id,
                             HerbId = item.HerbId,
@@ -1059,7 +1059,7 @@ namespace LYBT.WebAPI.Controllers
                             Usage = item.Usage,
                             Remark = item.Remark,
                             DecocteMethod = item.DecocteMethod
-                        }).ToList() ?? new List<PrescriptionItemDetailDto>(),
+                        }).ToList() ?? new List<PrescriptionItemDto>(),
                         // 计算属性（Entity没有这些字段，需要在映射时计算）
                         SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0, // 单剂价格=所有药材小计之和
                         TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount, // 总价=单剂×帖数×折扣

@@ -589,7 +589,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     return;
                 }
 
-                var request = new UserBatchImportRequestDto { Users = users, Strategy = DuplicateStrategy.Skip };
+                var request = new UserBatchImportInputDto { Users = users, Strategy = DuplicateStrategy.Skip };
                 var result = await _userRepository.BatchImportAsync(request);
                 if (result == null)
                 {

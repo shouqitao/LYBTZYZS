@@ -246,7 +246,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// ConsultationPanel不提供处方数据，返回null
         /// </summary>
         /// <returns>null（处方数据由PrescriptionPanel提供）</returns>
-        public PrescriptionAggregateDto? GetPrescriptionData() => null;
+        public PrescriptionAggregateInputDto? GetPrescriptionData() => null;
 
         #endregion
 

@@ -50,7 +50,7 @@ namespace LYBT.Shared.Validators.MedicalCase
 
             // 处方信息：有值时使用嵌套验证器
             RuleFor(x => x.Prescription)
-                .SetValidator(new PrescriptionAggregateDtoValidator()!)
+                .SetValidator(new PrescriptionAggregateInputDtoValidator()!)
                 .When(x => x.Prescription != null);
         }
     }

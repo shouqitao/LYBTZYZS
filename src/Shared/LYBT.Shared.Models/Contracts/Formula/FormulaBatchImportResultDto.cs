@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 批量导入结果DTO - 继承自通用导入结果基类
     /// </summary>
-    public class FormulaImportResultDto : ImportResultDto
+    public class FormulaBatchImportResultDto : ImportResultDto
     {
         /// <summary>导入批次号（兼容别名）</summary>
         [DisplayName("导入批次号")]

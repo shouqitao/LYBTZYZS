@@ -144,7 +144,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var detail = CreateMedicalCaseDetail(medicalCaseId);
             _mockRepository.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(detail);
-            _mockRepository.Setup(x => x.UpdatePrescriptionAsync(It.IsAny<Guid>(), It.IsAny<PrescriptionUpdateDto>()))
+            _mockRepository.Setup(x => x.UpdatePrescriptionAsync(It.IsAny<Guid>(), It.IsAny<PrescriptionInputDto>()))
                 .ReturnsAsync(detail.Prescription);
 
             await _sut.InitializeAsync(medicalCaseId);
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
-            _mockRepository.Verify(x => x.UpdatePrescriptionAsync(medicalCaseId, It.IsAny<PrescriptionUpdateDto>()), Times.Once);
+            _mockRepository.Verify(x => x.UpdatePrescriptionAsync(medicalCaseId, It.IsAny<PrescriptionInputDto>()), Times.Once);
         }
 
         [Fact]
@@ -255,7 +255,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockRepository.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(detail);
 
-            var createDto = new PrescriptionCreateDto
+            var createDto = new PrescriptionInputDto
             {
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),

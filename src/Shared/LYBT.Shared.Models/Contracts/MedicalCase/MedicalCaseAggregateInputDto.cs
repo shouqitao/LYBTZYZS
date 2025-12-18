@@ -49,6 +49,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         /// 处方信息（嵌套）
         /// </summary>
         [DisplayName("处方信息")]
-        public PrescriptionAggregateDto? Prescription { get; set; }
+        public PrescriptionAggregateInputDto? Prescription { get; set; }
     }
 }

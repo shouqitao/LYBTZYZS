@@ -60,7 +60,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 .ReturnsAsync(new ValidationResult());
             _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<ConsultationInputDto>()))
                 .ReturnsAsync(new ValidationResult());
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<PrescriptionUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<PrescriptionInputDto>()))
                 .ReturnsAsync(new ValidationResult());
 
             // Act
@@ -138,14 +138,14 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult());
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<PrescriptionUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<PrescriptionInputDto>()))
                 .ReturnsAsync(new ValidationResult());
 
             // Act
             await _sut.ValidateAsync();
 
             // Assert
-            _mockValidationService.Verify(x => x.ValidateAsync(It.IsAny<PrescriptionUpdateDto>()), Times.Once);
+            _mockValidationService.Verify(x => x.ValidateAsync(It.IsAny<PrescriptionInputDto>()), Times.Once);
         }
 
         #endregion

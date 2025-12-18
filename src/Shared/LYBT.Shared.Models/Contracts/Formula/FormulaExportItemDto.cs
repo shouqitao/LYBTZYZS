@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方导出DTO - 支持验方数据导出
     /// </summary>
-    public class FormulaExportDto
+    public class FormulaExportItemDto
     {
 
         [DisplayName("验方ID")]
@@ -49,7 +49,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public CommonStatus Status { get; set; }
 
         [DisplayName("中药材组成")]
-        public List<FormulaHerbExportDto> Herbs { get; set; } = new();
+        public List<FormulaHerbExportItemDto> Herbs { get; set; } = new();
 
         [DisplayName("药材总数")]
         public int HerbCount { get; set; }

@@ -153,10 +153,10 @@ namespace LYBT.Module.Herbs.Tests.Mapping
         }
 
         [Fact]
-        public void Map_HerbImportDto_To_Herb_Should_Success()
+        public void Map_HerbImportItemDto_To_Herb_Should_Success()
         {
             // Arrange
-            var importDto = new HerbImportDto
+            var importDto = new HerbImportItemDto
             {
                 Name = "川芎",
                 Origin = "四川",
@@ -340,10 +340,10 @@ namespace LYBT.Module.Herbs.Tests.Mapping
         }
 
         [Fact]
-        public void Map_HerbImportDto_With_MinimalData_Should_Success()
+        public void Map_HerbImportItemDto_With_MinimalData_Should_Success()
         {
             // Arrange
-            var importDto = new HerbImportDto
+            var importDto = new HerbImportItemDto
             {
                 Name = "最简药材",
                 Price = 0.1m,

@@ -236,7 +236,7 @@ namespace LYBT.Desktop.MedicalCase.Services
         /// </summary>
         /// <param name="createDto">处方创建DTO</param>
         /// <returns>是否创建成功</returns>
-        public async Task<bool> CreatePrescriptionAsync(PrescriptionCreateDto createDto)
+        public async Task<bool> CreatePrescriptionAsync(PrescriptionInputDto createDto)
         {
             try
             {

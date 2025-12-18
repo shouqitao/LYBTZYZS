@@ -34,7 +34,7 @@ namespace LYBT.Module.Prescriptions
             services.AddScoped<IPrescriptionNumberService, PrescriptionNumberService>();
 
             // 注册验证器 - 自动注册所有Validator
-            services.AddValidatorsFromAssemblyContaining<PrescriptionCreateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<PrescriptionInputDtoValidator>();
 
             // OpenSpec: add-global-audit-system - 审计服务
             services.AddScoped<IAuditService<Prescription>, EntityAuditService<Prescription>>();

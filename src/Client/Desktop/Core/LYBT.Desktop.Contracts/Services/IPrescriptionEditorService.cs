@@ -88,7 +88,7 @@ namespace LYBT.Desktop.Contracts.Services
         /// </summary>
         /// <param name="dto">处方创建DTO</param>
         /// <returns>处方数据DTO（草稿）</returns>
-        Task<PrescriptionDetailDto> BuildPrescriptionDraftAsync(PrescriptionCreateDto dto);
+        Task<PrescriptionDetailDto> BuildPrescriptionDraftAsync(PrescriptionInputDto dto);
 
         /// <summary>
         /// 验证处方数据完整性

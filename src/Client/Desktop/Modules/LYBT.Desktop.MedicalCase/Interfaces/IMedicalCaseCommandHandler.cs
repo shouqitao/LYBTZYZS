@@ -42,7 +42,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// </summary>
         /// <param name="createDto">处方创建DTO</param>
         /// <returns>是否创建成功</returns>
-        Task<bool> CreatePrescriptionAsync(PrescriptionCreateDto createDto);
+        Task<bool> CreatePrescriptionAsync(PrescriptionInputDto createDto);
 
         /// <summary>
         /// 更新处方（实际通过Save实现）

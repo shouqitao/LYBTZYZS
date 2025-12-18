@@ -305,7 +305,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<Prescription?> CreatePrescriptionAsync(
             Guid medicalCaseId,
-            PrescriptionCreateDto request)
+            PrescriptionInputDto request)
         {
             const int maxRetries = 3;
             for (int attempt = 1; attempt <= maxRetries; attempt++)
@@ -406,7 +406,7 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<Prescription?> UpdatePrescriptionAsync(
             Guid medicalCaseId,
             Guid prescriptionId,
-            PrescriptionEditDto request,
+            PrescriptionInputDto request,
             Guid currentUserId,
             bool isAdmin = false)
         {

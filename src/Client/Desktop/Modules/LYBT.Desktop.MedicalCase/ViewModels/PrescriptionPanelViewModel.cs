@@ -304,15 +304,15 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     /// 获取处方数据
     /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.3)
     /// </summary>
-    /// <returns>处方聚合DTO</returns>
-    public PrescriptionAggregateDto? GetPrescriptionData()
+    /// <returns>处方聚合输入DTO</returns>
+    public PrescriptionAggregateInputDto? GetPrescriptionData()
     {
         var items = _itemHandler.CollectPrescriptionItems(HerbItems);
 
         // 如果没有有效药材项，返回表示不需要处方的DTO
         if (items.Count == 0)
         {
-            return new PrescriptionAggregateDto
+            return new PrescriptionAggregateInputDto
             {
                 NeedsPrescription = false,
                 DosageCount = DosageCount,
@@ -325,7 +325,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             };
         }
 
-        return new PrescriptionAggregateDto
+        return new PrescriptionAggregateInputDto
         {
             NeedsPrescription = true,
             DosageCount = DosageCount,

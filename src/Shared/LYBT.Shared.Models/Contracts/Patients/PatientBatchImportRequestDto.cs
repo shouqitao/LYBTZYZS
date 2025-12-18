@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// 患者批量导入请求DTO
     /// Issue #2004 Task 2.11: Desktop主导批量导入模式
     /// </summary>
-    public class PatientBatchImportRequestDto
+    public class PatientBatchImportInputDto
     {
         /// <summary>患者DTO列表（≤10000条）</summary>
         public List<PatientInputDto> Patients { get; set; } = new();

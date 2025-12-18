@@ -264,7 +264,7 @@ namespace LYBT.Desktop.Users.Repositories
         /// 批量导入用户 (Issue #2003 Task 2.10)
         /// Desktop主导模式：接收Desktop解析好的DTO列表，调用Server API
         /// </summary>
-        public async Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportRequestDto request)
+        public async Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportInputDto request)
         {
             try
             {

@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// 批量导入结果DTO
     /// FR-001: 批量导入患者数据的返回结果
     /// </summary>
-    public class BatchImportResultDto
+    public class PatientBatchImportResultDto
     {
         /// <summary>成功导入的患者数量</summary>
         [DisplayName("成功数量")]

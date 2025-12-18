@@ -483,7 +483,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     return;
                 }
 
-                var request = new PatientBatchImportRequestDto
+                var request = new PatientBatchImportInputDto
                 {
                     Patients = patients,
                     Strategy = DuplicateStrategy.Skip

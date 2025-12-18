@@ -5,7 +5,7 @@ using LYBT.Shared.Models.Constants;
 namespace LYBT.Shared.Models.Contracts.Prescriptions
 {
     /// <summary>
-    /// 处方聚合DTO - 作为MedicalCaseAggregateInputDto的嵌套结构
+    /// 处方聚合输入DTO - 作为MedicalCaseAggregateInputDto的嵌套结构
     /// OpenSpec: refactor-medicalcase-aggregate-crud (PERSIST-002)
     /// </summary>
     /// <remarks>
@@ -14,7 +14,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// 2. 当NeedsPrescription=false时，不创建空的处方记录
     /// 3. Items为空且NeedsPrescription=true时视为无效状态
     /// </remarks>
-    public class PrescriptionAggregateDto
+    public class PrescriptionAggregateInputDto
     {
         /// <summary>
         /// 是否需要开处方

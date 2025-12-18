@@ -74,7 +74,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             try
             {
                 // 构造完整请求DTO
-                var request = new MedicalCaseWithDetailsCreateDto
+                var request = new MedicalCaseCreateInputDto
                 {
                     MedicalCase = caseDto,
                     Consultation = consultationDto,
@@ -192,7 +192,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// <summary>
         /// 为已存在的医案创建处方(Issue #1608补充)
         /// </summary>
-        public async Task<PrescriptionDetailDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto)
+        public async Task<PrescriptionDetailDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionInputDto dto)
         {
             if (medicalCaseId == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
@@ -211,7 +211,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        public async Task<PrescriptionDetailDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto)
+        public async Task<PrescriptionDetailDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionInputDto dto)
         {
             var response = await _api.UpdatePrescriptionAsync(medicalCaseId, dto);
             return response.Data ?? throw new InvalidOperationException("更新处方失败,服务器未返回数据");

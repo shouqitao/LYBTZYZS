@@ -77,7 +77,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// Note: Server端需要实现对应的 POST /api/v1/users/batch-import endpoint
         /// </summary>
         [Refit.Post("/api/v1/users/batch-import")]
-        Task<ApiResponse<UserBatchImportResultDto>> BatchImportAsync([Refit.Body] UserBatchImportRequestDto request);
+        Task<ApiResponse<UserBatchImportResultDto>> BatchImportAsync([Refit.Body] UserBatchImportInputDto request);
 
         // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
 

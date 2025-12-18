@@ -252,7 +252,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var medicalCaseId = Guid.NewGuid();
             var patientId = Guid.NewGuid();
             var doctorId = Guid.NewGuid();
-            var request = new PrescriptionCreateDto
+            var request = new PrescriptionInputDto
             {
                 Items = new List<PrescriptionItemInputDto>()
             };
@@ -302,7 +302,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            var request = new PrescriptionCreateDto();
+            var request = new PrescriptionInputDto();
 
             var existingPrescription = new PrescriptionEntity
             {

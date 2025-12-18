@@ -5,10 +5,9 @@ namespace LYBT.Shared.Models.Contracts.Herbs
 {
 
     /// <summary>
-    /// 中药材导入DTO - 前后端共享API契约
-    /// 用于批量导入中药材档案的请求模型
+    /// 中药材导入行项DTO - 批量导入中的单行数据
     /// </summary>
-    public class HerbImportDto
+    public class HerbImportItemDto
     {
 
         /// <summary>药材名称</summary>

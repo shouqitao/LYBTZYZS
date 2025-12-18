@@ -615,7 +615,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <summary>
         /// 映射处方药品项到打印模型
         /// </summary>
-        private List<PrescriptionItemPrintModel> MapPrescriptionItems(IList<PrescriptionItemDetailDto> items)
+        private List<PrescriptionItemPrintModel> MapPrescriptionItems(IList<PrescriptionItemDto> items)
         {
             return items.Select((item, index) => new PrescriptionItemPrintModel
             {

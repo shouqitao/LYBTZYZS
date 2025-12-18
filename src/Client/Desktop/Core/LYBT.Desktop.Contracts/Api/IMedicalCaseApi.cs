@@ -83,7 +83,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 创建完整的医疗案例（包含诊疗和可选处方）
         /// </summary>
         [Refit.Post("/api/v1/medicalcases/with-details")]
-        Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseWithDetailsAsync([Refit.Body] MedicalCaseWithDetailsCreateDto request);
+        Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseWithDetailsAsync([Refit.Body] MedicalCaseCreateInputDto request);
 
         /// <summary>
         /// 更新医案的诊断信息（聚合根方法）
@@ -133,7 +133,7 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/prescription")]
         Task<ApiResponse<PrescriptionDetailDto>> CreatePrescriptionAsync(
             Guid medicalCaseId,
-            [Refit.Body] PrescriptionCreateDto request);
+            [Refit.Body] PrescriptionInputDto request);
 
         /// <summary>
         /// 更新医案的处方（Issue #1608补充）
@@ -141,7 +141,7 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/prescription")]
         Task<ApiResponse<PrescriptionDetailDto>> UpdatePrescriptionAsync(
             Guid medicalCaseId,
-            [Refit.Body] PrescriptionUpdateDto request);
+            [Refit.Body] PrescriptionInputDto request);
 
         /// <summary>
         /// 删除医案的处方（Issue #1608补充）
@@ -210,7 +210,7 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Put("/api/v1/medicalcases/{id}/status")]
         Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(
             Guid id,
-            [Refit.Body] UpdateMedicalCaseStatusDto request);
+            [Refit.Body] MedicalCaseStatusInputDto request);
 
         /// <summary>
         /// 获取当前用户对指定医案的权限

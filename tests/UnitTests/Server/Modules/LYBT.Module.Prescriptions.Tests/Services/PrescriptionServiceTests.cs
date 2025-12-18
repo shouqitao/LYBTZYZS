@@ -211,7 +211,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         public async Task CreateAsync_WithValidData_ShouldReturnSuccess()
         {
             // Arrange
-            var createDto = new PrescriptionCreateDto
+            var createDto = new PrescriptionInputDto
             {
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
@@ -265,7 +265,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             // Arrange
             var prescriptionId = Guid.NewGuid();
-            var updateDto = new PrescriptionUpdateDto
+            var updateDto = new PrescriptionInputDto
             {
                 Advice = "避风寒，多休息",
                 Discount = 0.9m,
@@ -306,7 +306,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             // Arrange
             var nonExistentId = Guid.NewGuid();
-            var updateDto = new PrescriptionUpdateDto
+            var updateDto = new PrescriptionInputDto
             {
                 Advice = "测试医嘱",
                 Discount = 0.9m
@@ -911,7 +911,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
                 CreatedAt = DateTime.Today.AddHours(10) // 今天创建
             };
 
-            var updateDto = new PrescriptionUpdateDto
+            var updateDto = new PrescriptionInputDto
             {
                 Advice = "更新后的医嘱",
                 Discount = 0.9m,
@@ -956,7 +956,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
                 CreatedAt = DateTime.Today.AddDays(-1).AddHours(10) // 昨天创建
             };
 
-            var updateDto = new PrescriptionUpdateDto
+            var updateDto = new PrescriptionInputDto
             {
                 Advice = "尝试更新的医嘱",
                 Discount = 0.9m

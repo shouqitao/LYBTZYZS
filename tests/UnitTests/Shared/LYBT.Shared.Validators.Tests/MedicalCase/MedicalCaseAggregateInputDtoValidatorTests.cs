@@ -122,7 +122,7 @@ public class MedicalCaseAggregateInputDtoValidatorTests
         var dto = new MedicalCaseAggregateInputDto
         {
             Id = Guid.NewGuid(),
-            Prescription = new PrescriptionAggregateDto
+            Prescription = new PrescriptionAggregateInputDto
             {
                 NeedsPrescription = true,
                 DosageCount = 7,
@@ -153,7 +153,7 @@ public class MedicalCaseAggregateInputDtoValidatorTests
                 UserId = Guid.NewGuid(),
                 TCMDiagnosis = "测试诊断"  // OpenSpec: refactor-diagnosis-fields
             },
-            Prescription = new PrescriptionAggregateDto
+            Prescription = new PrescriptionAggregateInputDto
             {
                 NeedsPrescription = false,
                 Items = new List<PrescriptionItemInputDto>() // 空列表但NeedsPrescription=false
@@ -221,7 +221,7 @@ public class MedicalCaseAggregateInputDtoValidatorTests
                 PresentIllness = "头痛三天",  // OpenSpec: refactor-diagnosis-fields
                 TCMDiagnosis = "肝阳上亢"
             },
-            Prescription = new PrescriptionAggregateDto
+            Prescription = new PrescriptionAggregateInputDto
             {
                 NeedsPrescription = true,
                 DosageCount = 7,

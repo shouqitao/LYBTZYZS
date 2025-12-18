@@ -261,7 +261,7 @@ public class MedicalCaseLifecycleHandler
                 medicalCaseId, newStatus);
 
             // Issue #2243: 使用专用的状态更新API
-            var request = new UpdateMedicalCaseStatusDto
+            var request = new MedicalCaseStatusInputDto
             {
                 Status = newStatus,
                 StatusChangeReason = null // 可选的状态变更原因

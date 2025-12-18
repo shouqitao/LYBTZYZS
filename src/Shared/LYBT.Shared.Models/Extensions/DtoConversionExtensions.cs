@@ -52,17 +52,19 @@ public static class DtoConversionExtensions
     #region Prescription转换
 
     /// <summary>
-    /// PrescriptionDetailDto转换为PrescriptionUpdateDto（用于Repository更新）
+    /// PrescriptionDetailDto转换为PrescriptionInputDto（用于Repository更新）
     /// </summary>
-    public static PrescriptionUpdateDto ToPrescriptionUpdateDto(this PrescriptionDetailDto dto)
+    public static PrescriptionInputDto ToPrescriptionInputDto(this PrescriptionDetailDto dto)
     {
-        return new PrescriptionUpdateDto
+        return new PrescriptionInputDto
         {
-            PrescriptionNumber = dto.PrescriptionNumber,
-            Diagnosis = dto.Indication ?? string.Empty,
+            Id = dto.Id,
+            Diagnosis = dto.Diagnosis,
+            Indication = dto.Indication,
             Advice = dto.Advice,
             Remark = dto.Remark,
             Discount = dto.Discount,
+            TotalPrice = dto.TotalPrice,
             DosageCount = dto.DosageCount,
             Usage = dto.Usage,
             Items = dto.Items?.Select(item => new PrescriptionItemInputDto
@@ -78,37 +80,6 @@ public static class DtoConversionExtensions
                 DecocteMethod = item.DecocteMethod,
                 Remark = item.Remark
             }).ToList()
-        };
-    }
-
-    /// <summary>
-    /// PrescriptionDetailDto转换为PrescriptionEditDto（用于更新）
-    /// </summary>
-    public static PrescriptionEditDto ToUpdateDto(this PrescriptionDetailDto dto)
-    {
-        return new PrescriptionEditDto
-        {
-            Id = dto.Id,
-            Diagnosis = dto.Indication,
-            DosageCount = dto.DosageCount,
-            Usage = dto.Usage,
-            Advice = dto.Advice,
-            TotalPrice = dto.TotalPrice,
-            Discount = dto.Discount,
-            Remark = dto.Remark,
-            Items = dto.Items?.Select(item => new PrescriptionItemInputDto
-            {
-                Id = item.Id,
-                HerbId = item.HerbId,
-                HerbName = item.HerbName,
-                Unit = item.Unit,
-                Dosage = item.Dosage,
-                UnitPrice = item.UnitPrice,
-                Subtotal = item.Subtotal,
-                Usage = item.Usage,
-                DecocteMethod = item.DecocteMethod,
-                Remark = item.Remark
-            }).ToList() ?? new List<PrescriptionItemInputDto>()
         };
     }
 

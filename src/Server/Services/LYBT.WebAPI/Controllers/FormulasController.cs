@@ -214,8 +214,8 @@ namespace LYBT.WebAPI.Controllers
         /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
         /// </summary>
         [HttpPost("import")]
-        [ProducesResponseType(typeof(ApiResponse<FormulaImportResultDto>), 200)]
-        public async Task<IActionResult> Import([FromBody] ImportFormulasDataRequest request)
+        [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
+        public async Task<IActionResult> Import([FromBody] FormulaBatchImportInputDto request)
         {
             try
             {

@@ -301,7 +301,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-import")]
         [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportRequestDto request)
+        public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request)
         {
             try
             {
@@ -396,7 +396,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-check-reference")]
         [ProducesResponseType(typeof(ApiResponse<List<HerbReferenceCheckDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchCheckReference([FromBody] BatchCheckReferenceRequestDto request)
+        public async Task<IActionResult> BatchCheckReference([FromBody] HerbBatchCheckReferenceInputDto request)
         {
             try
             {

@@ -5,9 +5,9 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Shared.Models.Contracts.MedicalCase
 {
     /// <summary>
-    /// 更新医案状态DTO
+    /// 医案状态输入DTO
     /// </summary>
-    public class UpdateMedicalCaseStatusDto
+    public class MedicalCaseStatusInputDto
     {
         [Required(ErrorMessage = "状态不能为空")]
         [DisplayName("状态")]

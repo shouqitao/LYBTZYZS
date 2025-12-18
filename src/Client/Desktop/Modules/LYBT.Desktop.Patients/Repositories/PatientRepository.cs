@@ -102,7 +102,7 @@ namespace LYBT.Desktop.Patients.Repositories
         /// 批量导入患者数据 (Issue #2004 Task 2.11)
         /// Desktop主导模式：接收Desktop解析好的DTO列表，调用Server API
         /// </summary>
-        public async Task<BatchImportResultDto?> BatchImportAsync(PatientBatchImportRequestDto request)
+        public async Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request)
         {
             try
             {

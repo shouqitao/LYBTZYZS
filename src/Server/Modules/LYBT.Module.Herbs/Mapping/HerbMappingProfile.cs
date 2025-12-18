@@ -41,8 +41,8 @@ namespace LYBT.Module.Herbs.Mapping
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-            // HerbImportDto -> Herb (保留用于向后兼容)
-            CreateMap<HerbImportDto, Herb>()
+            // HerbImportItemDto -> Herb (批量导入行项映射)
+            CreateMap<HerbImportItemDto, Herb>()
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.Usage, opt => opt.Ignore())
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())

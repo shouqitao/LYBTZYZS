@@ -235,20 +235,20 @@ namespace LYBT.Desktop.Models.Prescriptions
                 Advice = Usage,
                 Remark = $"应用模板：{Name}\n{Remark}",
                 Status = CommonStatus.Disabled, // 草稿状态
-                Items = new List<PrescriptionItemDetailDto>()
+                Items = new List<PrescriptionItemDto>()
             };
 
             // 复制药材项目
             foreach (var templateItem in Items)
             {
-                prescription.Items.Add(new PrescriptionItemDetailDto
+                prescription.Items.Add(new PrescriptionItemDto
                 {
                     HerbId = templateItem.HerbId,
                     HerbName = templateItem.HerbName,
                     Dosage = templateItem.Dosage,
                     Unit = templateItem.Unit
 
-                    // Price = templateItem.EstimatedPrice, // 属性不存在：PrescriptionItemDetailDto.Price
+                    // Price = templateItem.EstimatedPrice, // 属性不存在：PrescriptionItemDto.Price
                     // Subtotal = templateItem.Dosage * templateItem.EstimatedPrice
                 });
             }

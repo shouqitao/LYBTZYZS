@@ -403,7 +403,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案、辨证、标记需要处方
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
-            var request = new PrescriptionCreateDto
+            var request = new PrescriptionInputDto
             {
                 PatientId = medicalCase.PatientId,
                 DoctorId = medicalCase.DoctorId,
@@ -437,7 +437,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案并已有处方
             var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            var request = new PrescriptionCreateDto
+            var request = new PrescriptionInputDto
             {
                 PatientId = medicalCase.PatientId,
                 DoctorId = medicalCase.DoctorId,
@@ -463,7 +463,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案和处方
             var (medicalCase, prescription) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            var request = new PrescriptionEditDto
+            var request = new PrescriptionInputDto
             {
                 Id = prescription.Id,
                 PatientId = medicalCase.PatientId,
@@ -888,7 +888,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     ChiefComplaint = "头痛三天",
                     TCMDiagnosis = "肝阳上亢"
                 },
-                Prescription = new PrescriptionAggregateDto
+                Prescription = new PrescriptionAggregateInputDto
                 {
                     NeedsPrescription = false,
                     Items = new List<PrescriptionItemInputDto>()
@@ -931,7 +931,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     TCMDiagnosis = "肝阳上亢",
                     TreatmentPrinciple = "平肝潜阳"
                 },
-                Prescription = new PrescriptionAggregateDto
+                Prescription = new PrescriptionAggregateInputDto
                 {
                     NeedsPrescription = true,
                     DosageCount = 7,
@@ -1095,7 +1095,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     ChiefComplaint = "更新后的主诉",
                     TCMDiagnosis = "更新后的诊断"
                 },
-                Prescription = new PrescriptionAggregateDto
+                Prescription = new PrescriptionAggregateInputDto
                 {
                     NeedsPrescription = true,
                     DosageCount = 14, // 更新剂数
@@ -1251,7 +1251,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
-            var prescriptionRequest = new PrescriptionCreateDto
+            var prescriptionRequest = new PrescriptionInputDto
             {
                 PatientId = medicalCase.PatientId,
                 DoctorId = medicalCase.DoctorId,

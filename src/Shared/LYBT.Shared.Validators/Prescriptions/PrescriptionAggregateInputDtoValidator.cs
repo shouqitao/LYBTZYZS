@@ -5,7 +5,7 @@ using LYBT.Shared.Validators.Common;
 namespace LYBT.Shared.Validators.Prescriptions
 {
     /// <summary>
-    /// 处方聚合DTO验证器
+    /// 处方聚合输入DTO验证器
     /// OpenSpec: refactor-medicalcase-aggregate-crud (PERSIST-002)
     /// </summary>
     /// <remarks>
@@ -14,9 +14,9 @@ namespace LYBT.Shared.Validators.Prescriptions
     /// 2. DosageCount必须在有效范围内
     /// 3. Items中的每个项目使用嵌套验证器
     /// </remarks>
-    public class PrescriptionAggregateDtoValidator : AbstractValidator<PrescriptionAggregateDto>
+    public class PrescriptionAggregateInputDtoValidator : AbstractValidator<PrescriptionAggregateInputDto>
     {
-        public PrescriptionAggregateDtoValidator()
+        public PrescriptionAggregateInputDtoValidator()
         {
             // ========== 基础字段验证 ==========
 

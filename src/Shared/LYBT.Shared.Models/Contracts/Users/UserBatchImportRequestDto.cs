@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// 用户批量导入请求DTO
     /// Issue #2003 Task 2.10: Desktop主导批量导入模式
     /// </summary>
-    public class UserBatchImportRequestDto
+    public class UserBatchImportInputDto
     {
         /// <summary>用户DTO列表（≤10000条）</summary>
         public List<UserInputDto> Users { get; set; } = new();

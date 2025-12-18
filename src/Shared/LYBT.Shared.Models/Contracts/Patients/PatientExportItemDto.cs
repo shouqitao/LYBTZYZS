@@ -3,9 +3,9 @@ using System.ComponentModel;
 namespace LYBT.Shared.Models.Contracts.Patients
 {
     /// <summary>
-    /// 患者导出DTO
+    /// 患者导出行项DTO - 批量导出中的单行数据
     /// </summary>
-    public class PatientExportDto
+    public class PatientExportItemDto
     {
 
         /// <summary>患者编号</summary>

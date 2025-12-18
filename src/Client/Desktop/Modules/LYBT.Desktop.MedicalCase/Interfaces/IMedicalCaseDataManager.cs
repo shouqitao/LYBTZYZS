@@ -26,7 +26,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <summary>
         /// 创建处方
         /// </summary>
-        Task<PrescriptionDetailDto?> CreatePrescriptionAsync(PrescriptionCreateDto createDto);
+        Task<PrescriptionDetailDto?> CreatePrescriptionAsync(PrescriptionInputDto createDto);
 
         /// <summary>
         /// 更新诊疗信息

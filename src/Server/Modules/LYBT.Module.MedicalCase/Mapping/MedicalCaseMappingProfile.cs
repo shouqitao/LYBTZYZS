@@ -96,9 +96,9 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-            // Request映射: PrescriptionCreateDto -> Prescription (Shared层)
+            // Request映射: PrescriptionInputDto -> Prescription (Shared层)
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
-            CreateMap<PrescriptionCreateDto, LYBT.Entities.Prescriptions.Prescription>()
+            CreateMap<PrescriptionInputDto, LYBT.Entities.Prescriptions.Prescription>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintVersion, opt => opt.Ignore())
@@ -119,10 +119,10 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-            // Request映射: PrescriptionEditDto -> Prescription (Shared层)
+            // Request映射: PrescriptionInputDto -> Prescription (Shared层)
             // 注意：Items需要在Service层手动处理（删除旧项，添加新项），不能通过AutoMapper直接映射
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
-            CreateMap<PrescriptionEditDto, LYBT.Entities.Prescriptions.Prescription>()
+            CreateMap<PrescriptionInputDto, LYBT.Entities.Prescriptions.Prescription>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintVersion, opt => opt.Ignore())

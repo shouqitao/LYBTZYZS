@@ -45,7 +45,7 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// </summary>
         /// <param name="request">批量导入请求（包含患者列表和重复处理策略）</param>
         /// <returns>导入结果</returns>
-        Task<BatchImportResultDto?> BatchImportAsync(PatientBatchImportRequestDto request);
+        Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request);
 
         /// <summary>
         /// 下载患者导入模板 (Epic #1934 FR-002)

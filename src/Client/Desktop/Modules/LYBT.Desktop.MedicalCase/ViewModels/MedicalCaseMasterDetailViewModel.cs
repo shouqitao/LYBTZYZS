@@ -185,7 +185,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
                 Id = detail.Id,
                 Remark = detail.Remark,
                 Consultation = detail.ToConsultationInputDto(),
-                Prescription = new PrescriptionAggregateDto
+                Prescription = new PrescriptionAggregateInputDto
                 {
                     NeedsPrescription = HerbItems.Any(x => x.HerbId != Guid.Empty),
                     DosageCount = detail.DoseCount ?? 7,

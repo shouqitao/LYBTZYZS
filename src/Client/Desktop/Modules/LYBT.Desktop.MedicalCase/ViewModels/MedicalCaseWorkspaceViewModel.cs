@@ -360,7 +360,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         }
 
         // 转换药材项类型
-        var items = prescriptionData.Items.Select(item => new PrescriptionItemDetailDto
+        var items = prescriptionData.Items.Select(item => new PrescriptionItemDto
         {
             Id = item.Id ?? Guid.NewGuid(),
             HerbId = item.HerbId,

@@ -6,16 +6,16 @@ using Xunit;
 namespace LYBT.Shared.Validators.Tests.Prescriptions;
 
 /// <summary>
-/// PrescriptionAggregateDtoValidator 单元测试
+/// PrescriptionAggregateInputDtoValidator 单元测试
 /// OpenSpec: refactor-medicalcase-aggregate-crud (PERSIST-002)
 /// </summary>
-public class PrescriptionAggregateDtoValidatorTests
+public class PrescriptionAggregateInputDtoValidatorTests
 {
-    private readonly PrescriptionAggregateDtoValidator _validator;
+    private readonly PrescriptionAggregateInputDtoValidator _validator;
 
-    public PrescriptionAggregateDtoValidatorTests()
+    public PrescriptionAggregateInputDtoValidatorTests()
     {
-        _validator = new PrescriptionAggregateDtoValidator();
+        _validator = new PrescriptionAggregateInputDtoValidator();
     }
 
     #region 基础字段验证
@@ -24,7 +24,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithValidData_PassesValidation()
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = true,
             DosageCount = 7,
@@ -48,7 +48,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithInvalidDosageCount_FailsValidation(int dosageCount)
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = dosageCount,
@@ -69,7 +69,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithValidDosageCount_PassesValidation(int dosageCount)
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = dosageCount,
@@ -89,7 +89,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithInvalidDiscount_FailsValidation(double discount)
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = 7,
@@ -110,7 +110,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithValidDiscount_PassesValidation(double discount)
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = 7,
@@ -132,7 +132,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithUsageTooLong_FailsValidation()
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = 7,
@@ -150,7 +150,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithAdviceTooLong_FailsValidation()
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = 7,
@@ -168,7 +168,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithFormulaSourceTooLong_FailsValidation()
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = 7,
@@ -186,7 +186,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithValidOptionalFields_PassesValidation()
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = 7,
@@ -210,7 +210,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WhenNeedsPrescriptionTrue_WithEmptyItems_FailsValidation()
     {
         // Arrange - PERSIST-002: NeedsPrescription=true时必须有Items
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = true,
             DosageCount = 7,
@@ -229,7 +229,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WhenNeedsPrescriptionTrue_WithInvalidItems_FailsValidation()
     {
         // Arrange - 有Items但HerbId为空
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = true,
             DosageCount = 7,
@@ -244,14 +244,14 @@ public class PrescriptionAggregateDtoValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Items)
-            .WithErrorMessage("处方必须包含至少一项有效药材（药材ID和剂量不能为空）");
+            .WithErrorMessage("处方必须包含至少一项有效药材（药材ID和数量不能为空）");
     }
 
     [Fact]
     public void Validate_WhenNeedsPrescriptionTrue_WithZeroDosageItem_FailsValidation()
     {
         // Arrange - 有Items但Dosage为0
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = true,
             DosageCount = 7,
@@ -272,7 +272,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WhenNeedsPrescriptionFalse_WithEmptyItems_PassesValidation()
     {
         // Arrange - PERSIST-001: 不开处方时空Items应该通过
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = 7,
@@ -290,7 +290,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WhenNeedsPrescriptionFalse_WithNullItems_PassesValidation()
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = false,
             DosageCount = 7,
@@ -312,7 +312,7 @@ public class PrescriptionAggregateDtoValidatorTests
     public void Validate_WithValidItems_PassesValidation()
     {
         // Arrange
-        var dto = new PrescriptionAggregateDto
+        var dto = new PrescriptionAggregateInputDto
         {
             NeedsPrescription = true,
             DosageCount = 7,

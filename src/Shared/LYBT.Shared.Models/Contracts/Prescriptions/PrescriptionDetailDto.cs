@@ -83,7 +83,7 @@ public class PrescriptionDetailDto
 
     /// <summary>处方项目列表</summary>
     [DisplayName("处方项目")]
-    public List<PrescriptionItemDetailDto> Items { get; set; } = new();
+    public List<PrescriptionItemDto> Items { get; set; } = new();
 
     // 运行时计算的警告信息
 

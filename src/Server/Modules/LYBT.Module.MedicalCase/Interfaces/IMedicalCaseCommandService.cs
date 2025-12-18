@@ -58,7 +58,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <returns>创建的处方实体</returns>
         Task<Prescription?> CreatePrescriptionAsync(
             Guid medicalCaseId,
-            PrescriptionCreateDto request);
+            PrescriptionInputDto request);
 
         /// <summary>
         /// 更新处方（三步流程Step 3b）
@@ -72,7 +72,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<Prescription?> UpdatePrescriptionAsync(
             Guid medicalCaseId,
             Guid prescriptionId,
-            PrescriptionEditDto request,
+            PrescriptionInputDto request,
             Guid currentUserId,
             bool isAdmin = false);
 

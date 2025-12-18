@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// Note: Server端需要实现对应的 POST /api/v1/patients/batch-import endpoint
         /// </summary>
         [Refit.Post("/api/v1/patients/batch-import")]
-        Task<ApiResponse<BatchImportResultDto>> BatchImportAsync([Refit.Body] PatientBatchImportRequestDto request);
+        Task<ApiResponse<PatientBatchImportResultDto>> BatchImportAsync([Refit.Body] PatientBatchImportInputDto request);
 
         /// <summary>
         /// 下载患者导入模板 (Epic #1934 FR-002)

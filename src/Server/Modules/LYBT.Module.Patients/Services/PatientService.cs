@@ -251,9 +251,9 @@ namespace LYBT.Module.Patients.Services
         /// 批量导入患者数据 (Epic #1934 FR-001)
         /// 实现BR-002失败恢复机制：部分成功模式 + 详细失败信息
         /// </summary>
-        public async Task<Result<BatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null)
+        public async Task<Result<PatientBatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null)
         {
-            var result = new BatchImportResultDto
+            var result = new PatientBatchImportResultDto
             {
                 ImportTime = DateTime.Now
             };
@@ -268,19 +268,19 @@ namespace LYBT.Module.Patients.Services
 
                 if (worksheet == null)
                 {
-                    return Result<BatchImportResultDto>.Failure("Excel文件中没有工作表");
+                    return Result<PatientBatchImportResultDto>.Failure("Excel文件中没有工作表");
                 }
 
                 var rowCount = worksheet.Dimension?.Rows ?? 0;
                 if (rowCount <= 1)
                 {
-                    return Result<BatchImportResultDto>.Success(result);
+                    return Result<PatientBatchImportResultDto>.Success(result);
                 }
 
                 // BR-003: 限制最大导入行数
                 if (rowCount > 1000)
                 {
-                    return Result<BatchImportResultDto>.Failure($"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
+                    return Result<PatientBatchImportResultDto>.Failure($"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
                 }
 
                 var patientsToCreate = new List<Patient>();
@@ -364,12 +364,12 @@ namespace LYBT.Module.Patients.Services
                     result.SuccessCount = savedPatients.Count();
                 }
 
-                return Result<BatchImportResultDto>.Success(result);
+                return Result<PatientBatchImportResultDto>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "批量导入患者数据失败");
-                return Result<BatchImportResultDto>.Failure($"导入失败: {ex.Message}");
+                return Result<PatientBatchImportResultDto>.Failure($"导入失败: {ex.Message}");
             }
         }
 
