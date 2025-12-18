@@ -3,9 +3,10 @@ using System.ComponentModel;
 namespace LYBT.Shared.Models.Contracts.Formula
 {
     /// <summary>
-    /// 导入错误信息DTO
+    /// 方剂导入失败详情DTO
+    /// OpenSpec: optimize-batch-operations - DTO命名标准化
     /// </summary>
-    public class FormulaImportErrorDto
+    public class FormulaImportFailureDto
     {
 
         [DisplayName("行号")]

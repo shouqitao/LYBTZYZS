@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <OutputPath>$(SolutionDir)BIN\Tests\$(Configuration)\$(TargetFramework)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
+    <ProjectReference Include="..\..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+  </ItemGroup>
+
+</Project>

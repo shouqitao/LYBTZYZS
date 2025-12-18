@@ -102,8 +102,9 @@ namespace LYBT.Desktop.Patients.Interfaces
 
         /// <summary>
         /// 批量删除患者
+        /// OpenSpec: optimize-batch-operations Phase 2 - 返回BatchOperationResultDto
         /// </summary>
-        Task<CommandResult<bool>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds);
+        Task<CommandResult<BatchOperationResultDto>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds);
 
         #endregion
 

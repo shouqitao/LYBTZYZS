@@ -202,6 +202,33 @@ namespace LYBT.Desktop.Patients.Repositories
             }
         }
 
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <inheritdoc/>
+        public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+        {
+            try
+            {
+                _logger.LogInformation("批量删除患者：{Count}个", ids.Count);
+                var response = await _api.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("批量删除患者失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("批量删除患者完成：成功{SuccessCount}，失败{FailureCount}",
+                    response.Data.SuccessCount, response.Data.FailureCount);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量删除患者时发生异常");
+                return null;
+            }
+        }
+
         #endregion
     }
 }

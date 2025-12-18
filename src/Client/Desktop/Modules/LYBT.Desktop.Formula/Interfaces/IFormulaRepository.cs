@@ -44,5 +44,22 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// 恢复已删除的验方
         /// </summary>
         Task<FormulaDetailDto?> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除验方
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 批量启用验方
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 批量禁用验方
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids);
     }
 }

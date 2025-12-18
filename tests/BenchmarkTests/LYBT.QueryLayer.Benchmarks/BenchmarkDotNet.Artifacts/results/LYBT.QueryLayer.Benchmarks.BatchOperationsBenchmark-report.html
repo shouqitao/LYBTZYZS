@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>LYBT.QueryLayer.Benchmarks.BatchOperationsBenchmark-20251218-205730</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, Windows 10 (10.0.19044.6691/21H2/November2021Update)
+Intel Core i7-7700 CPU 3.60GHz (Kaby Lake), 1 CPU, 8 logical and 4 physical cores
+.NET SDK 8.0.414
+  [Host]     : .NET 8.0.22 (8.0.2225.52707), X64 RyuJIT AVX2
+  Job-LCABIO : .NET 8.0.22 (8.0.2225.52707), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>IterationCount=5  WarmupCount=2  
+</code></pre>
+
+<table>
+<thead><tr><th>Method            </th><th>BatchSize</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>Delete_Batch_Pattern</td><td>5</td><td>182.6 &mu;s</td><td>36.92 &mu;s</td><td>5.71 &mu;s</td><td>0.11</td><td>0.02</td><td>7.8125</td><td>-</td><td>32.15 KB</td><td>0.07</td>
+</tr><tr><td>Disable_Batch_Pattern</td><td>5</td><td>209.4 &mu;s</td><td>23.63 &mu;s</td><td>6.14 &mu;s</td><td>0.13</td><td>0.02</td><td>7.8125</td><td>-</td><td>32.93 KB</td><td>0.07</td>
+</tr><tr><td>Delete_N_Plus_1_Pattern</td><td>5</td><td>1,631.1 &mu;s</td><td>851.62 &mu;s</td><td>221.16 &mu;s</td><td>1.02</td><td>0.18</td><td>113.2813</td><td>-</td><td>472.21 KB</td><td>1.00</td>
+</tr><tr><td>Disable_N_Plus_1_Pattern</td><td>5</td><td>1,639.5 &mu;s</td><td>905.38 &mu;s</td><td>235.13 &mu;s</td><td>1.02</td><td>0.19</td><td>113.2813</td><td>-</td><td>471.72 KB</td><td>1.00</td>
+</tr><tr><td>Delete_Batch_Pattern</td><td>10</td><td>188.0 &mu;s</td><td>40.11 &mu;s</td><td>10.42 &mu;s</td><td>0.12</td><td>0.02</td><td>8.3008</td><td>-</td><td>35.51 KB</td><td>0.07</td>
+</tr><tr><td>Disable_Batch_Pattern</td><td>10</td><td>222.9 &mu;s</td><td>44.21 &mu;s</td><td>6.84 &mu;s</td><td>0.14</td><td>0.02</td><td>8.7891</td><td>-</td><td>36.43 KB</td><td>0.07</td>
+</tr><tr><td>Disable_N_Plus_1_Pattern</td><td>10</td><td>1,438.9 &mu;s</td><td>329.66 &mu;s</td><td>85.61 &mu;s</td><td>0.89</td><td>0.12</td><td>125.0000</td><td>-</td><td>516.29 KB</td><td>1.00</td>
+</tr><tr><td>Delete_N_Plus_1_Pattern</td><td>10</td><td>1,636.8 &mu;s</td><td>894.06 &mu;s</td><td>232.18 &mu;s</td><td>1.02</td><td>0.18</td><td>125.0000</td><td>-</td><td>517.62 KB</td><td>1.00</td>
+</tr><tr><td>Delete_Batch_Pattern</td><td>20</td><td>239.9 &mu;s</td><td>40.22 &mu;s</td><td>10.45 &mu;s</td><td>0.09</td><td>0.01</td><td>10.7422</td><td>-</td><td>44.12 KB</td><td>0.07</td>
+</tr><tr><td>Disable_Batch_Pattern</td><td>20</td><td>329.3 &mu;s</td><td>219.64 &mu;s</td><td>33.99 &mu;s</td><td>0.13</td><td>0.02</td><td>10.7422</td><td>-</td><td>45.07 KB</td><td>0.07</td>
+</tr><tr><td>Disable_N_Plus_1_Pattern</td><td>20</td><td>2,633.9 &mu;s</td><td>2,569.46 &mu;s</td><td>667.28 &mu;s</td><td>1.00</td><td>0.27</td><td>140.6250</td><td>7.8125</td><td>605.55 KB</td><td>0.99</td>
+</tr><tr><td>Delete_N_Plus_1_Pattern</td><td>20</td><td>2,681.6 &mu;s</td><td>3,199.35 &mu;s</td><td>495.10 &mu;s</td><td>1.02</td><td>0.22</td><td>140.6250</td><td>-</td><td>608.94 KB</td><td>1.00</td>
+</tr><tr><td>Delete_Batch_Pattern</td><td>50</td><td>317.6 &mu;s</td><td>89.76 &mu;s</td><td>13.89 &mu;s</td><td>0.08</td><td>0.01</td><td>15.6250</td><td>-</td><td>67.48 KB</td><td>0.08</td>
+</tr><tr><td>Disable_Batch_Pattern</td><td>50</td><td>456.5 &mu;s</td><td>93.60 &mu;s</td><td>24.31 &mu;s</td><td>0.11</td><td>0.01</td><td>16.6016</td><td>-</td><td>68.21 KB</td><td>0.08</td>
+</tr><tr><td>Disable_N_Plus_1_Pattern</td><td>50</td><td>3,673.5 &mu;s</td><td>523.95 &mu;s</td><td>136.07 &mu;s</td><td>0.90</td><td>0.08</td><td>210.9375</td><td>31.2500</td><td>869.87 KB</td><td>0.99</td>
+</tr><tr><td>Delete_N_Plus_1_Pattern</td><td>50</td><td>4,120.0 &mu;s</td><td>2,315.92 &mu;s</td><td>358.39 &mu;s</td><td>1.01</td><td>0.11</td><td>203.1250</td><td>15.6250</td><td>880.24 KB</td><td>1.00</td>
+</tr></tbody></table>
+</body>
+</html>

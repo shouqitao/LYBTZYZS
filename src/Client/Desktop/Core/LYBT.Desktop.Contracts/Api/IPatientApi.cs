@@ -85,5 +85,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/patients/{id}/restore")]
         Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除患者
+        /// </summary>
+        [Refit.Post("/api/v1/patients/batch-delete")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
     }
 }

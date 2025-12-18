@@ -417,5 +417,93 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException(ex, "恢复验方", id);
             }
         }
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除验方
+        /// </summary>
+        [HttpPost("batch-delete")]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        {
+            try
+            {
+                if (dto.Ids == null || dto.Ids.Count == 0)
+                    return ValidationFail("请至少选择一个方剂");
+
+                var result = await _service.BatchDeleteAsync(dto.Ids);
+                if (!result.IsSuccess || result.Data == null)
+                    return BusinessFail(result.ErrorMessage ?? "批量删除失败");
+
+                LogOperation("批量删除方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+                return Success(result.Data, result.Data.Message);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "批量删除方剂", new { Ids = dto.Ids });
+            }
+        }
+
+        /// <summary>
+        /// 批量启用方剂
+        /// </summary>
+        [HttpPost("batch-enable")]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
+        {
+            try
+            {
+                if (dto.Ids == null || dto.Ids.Count == 0)
+                {
+                    return ValidationFail("请至少选择一个方剂");
+                }
+
+                var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "批量启用失败");
+                }
+
+                LogOperation("批量启用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+                return Success(result.Data, result.Data.Message);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "批量启用方剂");
+            }
+        }
+
+        /// <summary>
+        /// 批量禁用方剂
+        /// </summary>
+        [HttpPost("batch-disable")]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
+        {
+            try
+            {
+                if (dto.Ids == null || dto.Ids.Count == 0)
+                {
+                    return ValidationFail("请至少选择一个方剂");
+                }
+
+                var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
+                }
+
+                LogOperation("批量禁用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+                return Success(result.Data, result.Data.Message);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "批量禁用方剂");
+            }
+        }
     }
 }

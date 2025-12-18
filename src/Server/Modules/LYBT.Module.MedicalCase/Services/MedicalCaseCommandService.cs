@@ -849,5 +849,61 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         #endregion
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <inheritdoc />
+        public async Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            var result = new LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                SuccessCount = 0,
+                FailureCount = 0
+            };
+
+            foreach (var id in ids)
+            {
+                try
+                {
+                    var entity = await _repository.GetByIdAsync(id);
+                    if (entity == null)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new LYBT.Shared.Models.Contracts.Common.BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "医案不存在"
+                        });
+                        continue;
+                    }
+
+                    entity.IsDeleted = true;
+                    entity.UpdatedAt = DateTime.Now;
+                    await _repository.UpdateAsync(entity);
+
+                    result.SuccessCount++;
+                    result.SuccessfulIds.Add(id);
+                    _logger.LogInformation("批量删除 - 医案已删除: {MedicalCaseId}", id);
+                }
+                catch (Exception ex)
+                {
+                    result.FailureCount++;
+                    result.FailedIds.Add(id);
+                    result.FailedItems.Add(new LYBT.Shared.Models.Contracts.Common.BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = ex.Message
+                    });
+                    _logger.LogError(ex, "批量删除 - 删除医案失败: {MedicalCaseId}", id);
+                }
+            }
+
+            result.IsSuccess = result.SuccessCount > 0;
+            result.Message = $"批量删除完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
+
+            return LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>.Success(result);
+        }
     }
 }

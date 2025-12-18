@@ -270,8 +270,9 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
         /// <summary>
         /// 批量删除患者
+        /// OpenSpec: optimize-batch-operations Phase 2 - 使用单次批量API调用
         /// </summary>
-        public async Task<CommandResult<bool>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds)
+        public async Task<CommandResult<BatchOperationResultDto>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds)
         {
             try
             {
@@ -280,40 +281,32 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
                 if (!ids.Any())
                 {
-                    return CommandResult<bool>.Failure("没有选择要删除的患者");
+                    return CommandResult<BatchOperationResultDto>.Failure("没有选择要删除的患者");
                 }
 
-                int successCount = 0;
-                int failureCount = 0;
-
-                foreach (var id in ids)
+                // OpenSpec: optimize-batch-operations - 使用单次批量API调用替代N+1模式
+                var result = await _patientRepository.BatchDeleteAsync(ids);
+                if (result == null)
                 {
-                    try
-                    {
-                        await _patientRepository.DeleteAsync(id);
-                        successCount++;
-                    }
-                    catch
-                    {
-                        failureCount++;
-                    }
+                    return CommandResult<BatchOperationResultDto>.Failure("批量删除患者失败");
                 }
 
-                if (failureCount == 0)
+                if (result.FailureCount == 0)
                 {
                     _logger.LogInformation("批量删除患者成功，数量: {Count}", ids.Count);
-                    return CommandResult<bool>.Success(true);
                 }
                 else
                 {
-                    _logger.LogWarning("批量删除患者部分失败：成功 {SuccessCount} 个，失败 {FailureCount} 个", successCount, failureCount);
-                    return CommandResult<bool>.Failure($"批量删除完成：成功 {successCount} 个，失败 {failureCount} 个");
+                    _logger.LogWarning("批量删除患者部分失败：成功 {SuccessCount} 个，失败 {FailureCount} 个",
+                        result.SuccessCount, result.FailureCount);
                 }
+
+                return CommandResult<BatchOperationResultDto>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "批量删除患者时发生异常");
-                return CommandResult<bool>.Failure("批量删除患者时发生系统错误");
+                return CommandResult<BatchOperationResultDto>.Failure("批量删除患者时发生系统错误");
             }
         }
 

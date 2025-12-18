@@ -3,11 +3,12 @@ using System.ComponentModel;
 namespace LYBT.Shared.Models.Contracts.Patients
 {
     /// <summary>
-    /// 导入失败详情DTO
+    /// 患者导入失败详情DTO
     /// BR-002: 失败恢复机制的核心数据结构
     /// 包含原始行号、失败原因、修复建议和数据快照
+    /// OpenSpec: optimize-batch-operations - DTO命名标准化
     /// </summary>
-    public class ImportFailureDetailDto
+    public class PatientImportFailureDto
     {
         /// <summary>Excel原始行号（从2开始，第1行为标题）</summary>
         [DisplayName("行号")]

@@ -101,6 +101,38 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             }
         }
 
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <inheritdoc />
+        public virtual async Task<(bool success, BatchOperationResultDto? result, string? errorMessage)> BatchDeleteAsync(List<Guid> userIds)
+        {
+            using var _ = CorrelationIdContext.BeginScope();
+            try
+            {
+                _logger.LogInformation("批量删除用户：{Count} 个", userIds.Count);
+
+                var result = await _repository.BatchDeleteAsync(userIds);
+
+                if (result != null)
+                {
+                    _logger.LogInformation("批量删除用户完成：成功 {Success} 个，失败 {Failure} 个",
+                        result.SuccessCount, result.FailureCount);
+                    return (true, result, null);
+                }
+                else
+                {
+                    _logger.LogWarning("批量删除用户失败");
+                    return (false, null, "批量删除用户失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量删除用户时发生异常");
+                return (false, null, "批量删除用户时发生系统错误");
+            }
+        }
+
         #endregion
 
         #region 查询操作

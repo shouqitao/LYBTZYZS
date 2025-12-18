@@ -528,7 +528,7 @@ namespace LYBT.Module.Herbs.Services
 
                                 case DuplicateStrategy.Error:
                                     result.FailureCount++;
-                                    result.Failures.Add(new HerbImportFailureDetailDto
+                                    result.Failures.Add(new HerbImportFailureDto
                                     {
                                         RowNumber = rowNumber,
                                         HerbName = dto.Name,
@@ -552,7 +552,7 @@ namespace LYBT.Module.Herbs.Services
                     catch (Exception ex)
                     {
                         result.FailureCount++;
-                        result.Failures.Add(new HerbImportFailureDetailDto
+                        result.Failures.Add(new HerbImportFailureDto
                         {
                             RowNumber = rowNumber,
                             HerbName = dto.Name,
@@ -750,6 +750,120 @@ namespace LYBT.Module.Herbs.Services
                 _logger.LogError(ex, "恢复药材失败: {HerbId}", id);
                 return Result<HerbDetailDto>.Failure("恢复药材失败");
             }
+        }
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量更新药材状态
+        /// </summary>
+        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status)
+        {
+            var statusText = status == CommonStatus.Enabled ? "启用" : "禁用";
+
+            var result = new BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                SuccessCount = 0,
+                FailureCount = 0
+            };
+
+            foreach (var id in ids)
+            {
+                try
+                {
+                    var entity = await _repository.GetByIdAsync(id);
+                    if (entity == null || entity.IsDeleted)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "药材不存在或已删除"
+                        });
+                        continue;
+                    }
+
+                    entity.Status = status;
+                    entity.UpdatedAt = DateTime.Now;
+                    await _repository.UpdateAsync(entity);
+
+                    result.SuccessCount++;
+                    result.SuccessfulIds.Add(id);
+                    _logger.LogInformation("批量{StatusText} - 药材状态已更新: {HerbId}, {HerbName}", statusText, id, entity.Name);
+                }
+                catch (Exception ex)
+                {
+                    result.FailureCount++;
+                    result.FailedIds.Add(id);
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = ex.Message
+                    });
+                    _logger.LogError(ex, "批量{StatusText} - 更新药材状态失败: {HerbId}", statusText, id);
+                }
+            }
+
+            result.IsSuccess = result.SuccessCount > 0;
+            result.Message = $"批量{statusText}完成：成功 {result.SuccessCount} 个，失败 {result.FailureCount} 个";
+
+            return Result<BatchOperationResultDto>.Success(result);
+        }
+
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            var result = new BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                SuccessCount = 0,
+                FailureCount = 0
+            };
+
+            foreach (var id in ids)
+            {
+                try
+                {
+                    var entity = await _repository.GetByIdAsync(id);
+                    if (entity == null)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "药材不存在"
+                        });
+                        continue;
+                    }
+
+                    // 软删除
+                    entity.IsDeleted = true;
+                    entity.UpdatedAt = DateTime.Now;
+                    await _repository.UpdateAsync(entity);
+
+                    result.SuccessCount++;
+                    result.SuccessfulIds.Add(id);
+                    _logger.LogInformation("批量删除 - 药材已删除: {HerbId}, {HerbName}", id, entity.Name);
+                }
+                catch (Exception ex)
+                {
+                    result.FailureCount++;
+                    result.FailedIds.Add(id);
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = ex.Message
+                    });
+                    _logger.LogError(ex, "批量删除 - 删除药材失败: {HerbId}", id);
+                }
+            }
+
+            result.IsSuccess = result.SuccessCount > 0;
+            result.Message = $"批量删除完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
+
+            return Result<BatchOperationResultDto>.Success(result);
         }
     }
 }

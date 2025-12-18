@@ -32,8 +32,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("成功的验方列表")]
         public List<FormulaDetailDto> SuccessfulFormulas { get; set; } = new();
 
-        /// <summary>失败的记录</summary>
-        [DisplayName("失败的记录")]
-        public List<FormulaImportErrorDto> FailedItems { get; set; } = new();
+        /// <summary>失败详情列表（验方特定类型）</summary>
+        [DisplayName("失败详情")]
+        public List<FormulaImportFailureDto> Failures { get; set; } = new();
     }
 }

@@ -64,5 +64,12 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// 注：患者实体无Status字段，因此无ToggleStatus方法
         /// </summary>
         Task<PatientDetailDto?> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除患者
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids);
     }
 }

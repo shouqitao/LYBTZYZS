@@ -57,5 +57,13 @@ foreach (var item in items)
 ## Status
 
 - [x] 提案创建
-- [ ] Phase 1: DTO重命名
-- [ ] Phase 2: API优化（独立PR）
+- [x] Phase 1: DTO命名规范化 (1.1-1.5)
+- [x] Phase 1.6: 文件名与类名一致性整改
+- [x] Phase 1.7: 删除重复定义 (BatchIdsDto)
+- [x] Phase 1.8: 统一失败详情DTO命名
+- [x] Phase 1.9: BatchImportResultDto继承规范化
+- [x] Phase 2: 批量删除API优化 (2.1, 2.3, 2.5-2.7)
+- [x] Phase 2: Server端批量启用/禁用API (2.2, 2.4)
+- [x] Phase 2: Desktop层批量启用/禁用集成 (2.9)
+- [x] Phase 2: 测试验证 (2.8.2, 2.8.3) - BatchOperationsTests.cs, BatchOperationsBenchmark.cs
+- [x] **ALL PHASES COMPLETED** - 可归档

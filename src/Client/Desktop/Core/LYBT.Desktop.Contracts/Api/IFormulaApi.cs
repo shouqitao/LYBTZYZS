@@ -86,5 +86,25 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/restore")]
         Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除验方
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/batch-delete")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 批量启用验方
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/batch-enable")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 批量禁用验方
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/batch-disable")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
     }
 }

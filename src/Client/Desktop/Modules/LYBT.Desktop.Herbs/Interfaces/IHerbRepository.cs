@@ -51,5 +51,22 @@ namespace LYBT.Desktop.Herbs.Interfaces
         /// 恢复已删除的药材
         /// </summary>
         Task<HerbDetailDto?> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除药材
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 批量启用药材
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 批量禁用药材
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids);
     }
 }

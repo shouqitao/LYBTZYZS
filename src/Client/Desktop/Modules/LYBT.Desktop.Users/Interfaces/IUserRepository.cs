@@ -69,5 +69,22 @@ namespace LYBT.Desktop.Users.Interfaces
         /// 恢复已删除的用户
         /// </summary>
         Task<UserDetailDto?> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除用户
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 批量启用用户
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 批量禁用用户
+        /// </summary>
+        Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids);
     }
 }

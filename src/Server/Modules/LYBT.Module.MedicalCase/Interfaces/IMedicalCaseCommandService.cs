@@ -110,5 +110,13 @@ namespace LYBT.Module.MedicalCases.Interfaces
             MedicalCaseAggregateInputDto request,
             Guid currentUserId,
             bool isAdmin = false);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除医案
+        /// </summary>
+        /// <param name="ids">医案ID列表</param>
+        Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
     }
 }

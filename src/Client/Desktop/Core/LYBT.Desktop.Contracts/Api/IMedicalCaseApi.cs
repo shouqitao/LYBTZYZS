@@ -247,5 +247,13 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<MedicalCaseDetailDto>> SaveAggregateAsync(
             Guid id,
             [Refit.Body] MedicalCaseAggregateInputDto request);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除医案
+        /// </summary>
+        [Refit.Post("/api/v1/medicalcases/batch-delete")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
     }
 }

@@ -101,5 +101,12 @@ namespace LYBT.Module.Patients.Interfaces
         /// </summary>
         /// <param name="id">患者ID</param>
         Task<Result<PatientDetailDto>> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除患者
+        /// </summary>
+        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
     }
 }

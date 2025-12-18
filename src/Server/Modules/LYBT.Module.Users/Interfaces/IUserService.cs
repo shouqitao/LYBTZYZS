@@ -2,6 +2,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+// OpenSpec: optimize-batch-operations Phase 2
 
 namespace LYBT.Module.Users.Interfaces
 {
@@ -103,5 +104,22 @@ namespace LYBT.Module.Users.Interfaces
         /// </summary>
         /// <param name="id">用户ID</param>
         Task<Result<UserDetailDto>> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除用户
+        /// </summary>
+        /// <param name="ids">要删除的用户ID列表</param>
+        /// <param name="currentUserId">当前操作用户ID（不能删除自己）</param>
+        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null);
+
+        /// <summary>
+        /// 批量更新用户状态
+        /// </summary>
+        /// <param name="ids">用户ID列表</param>
+        /// <param name="status">目标状态</param>
+        /// <param name="currentUserId">当前操作用户ID（不能修改自己的状态）</param>
+        Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null);
     }
 }

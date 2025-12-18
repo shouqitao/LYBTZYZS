@@ -242,5 +242,87 @@ namespace LYBT.Desktop.Herbs.Repositories
         }
 
         #endregion
+
+        #region OpenSpec: optimize-batch-operations Phase 2 - 批量操作
+
+        /// <inheritdoc />
+        public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+        {
+            try
+            {
+                _logger.LogInformation("批量删除药材：{Count} 个", ids.Count);
+                var request = new BatchDeleteInputDto { Ids = ids };
+                var response = await _api.BatchDeleteAsync(request);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("批量删除药材失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("批量删除药材完成：成功 {Success} 个，失败 {Failure} 个",
+                    response.Data.SuccessCount, response.Data.FailureCount);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量删除药材时发生异常");
+                return null;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
+        {
+            try
+            {
+                _logger.LogInformation("批量启用药材：{Count} 个", ids.Count);
+                var request = new BatchDeleteInputDto { Ids = ids };
+                var response = await _api.BatchEnableAsync(request);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("批量启用药材失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("批量启用药材完成：成功 {Success} 个，失败 {Failure} 个",
+                    response.Data.SuccessCount, response.Data.FailureCount);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量启用药材时发生异常");
+                return null;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
+        {
+            try
+            {
+                _logger.LogInformation("批量禁用药材：{Count} 个", ids.Count);
+                var request = new BatchDeleteInputDto { Ids = ids };
+                var response = await _api.BatchDisableAsync(request);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("批量禁用药材失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("批量禁用药材完成：成功 {Success} 个，失败 {Failure} 个",
+                    response.Data.SuccessCount, response.Data.FailureCount);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量禁用药材时发生异常");
+                return null;
+            }
+        }
+
+        #endregion
     }
 }

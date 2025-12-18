@@ -28,6 +28,12 @@ namespace LYBT.Desktop.Users.Interfaces
         /// </summary>
         Task<(bool success, string? errorMessage)> DeleteAsync(Guid userId);
 
+        /// <summary>
+        /// 批量删除用户
+        /// OpenSpec: optimize-batch-operations Phase 2
+        /// </summary>
+        Task<(bool success, BatchOperationResultDto? result, string? errorMessage)> BatchDeleteAsync(List<Guid> userIds);
+
         #endregion
 
         #region 查询操作

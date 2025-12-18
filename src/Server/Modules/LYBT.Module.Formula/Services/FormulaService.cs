@@ -436,7 +436,7 @@ namespace LYBT.Module.Formulas.Services
                         if (string.IsNullOrWhiteSpace(formulaImportItem.Name))
                         {
                             result.FailureCount++;
-                            result.FailedItems.Add(new FormulaImportErrorDto
+                            result.Failures.Add(new FormulaImportFailureDto
                             {
                                 RowIndex = index,
                                 FormulaName = formulaImportItem.Name ?? string.Empty,
@@ -508,7 +508,7 @@ namespace LYBT.Module.Formulas.Services
                     catch (Exception ex)
                     {
                         result.FailureCount++;
-                        result.FailedItems.Add(new FormulaImportErrorDto
+                        result.Failures.Add(new FormulaImportFailureDto
                         {
                             RowIndex = index,
                             FormulaName = formulaImportItem.Name ?? string.Empty,
@@ -814,6 +814,125 @@ namespace LYBT.Module.Formulas.Services
                 _logger.LogError(ex, "恢复验方失败: {FormulaId}", id);
                 return Result<FormulaDetailDto>.Failure("恢复验方失败");
             }
+        }
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除验方
+        /// </summary>
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            var result = new BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                SuccessCount = 0,
+                FailureCount = 0
+            };
+
+            foreach (var id in ids)
+            {
+                try
+                {
+                    var entity = await _repository.GetByIdAsync(id);
+                    if (entity == null)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "方剂不存在"
+                        });
+                        continue;
+                    }
+
+                    // 软删除
+                    entity.IsDeleted = true;
+                    entity.UpdatedAt = DateTime.Now;
+                    await _repository.UpdateAsync(entity);
+
+                    result.SuccessCount++;
+                    result.SuccessfulIds.Add(id);
+                    _logger.LogInformation("批量删除 - 方剂已删除: {FormulaId}, {FormulaName}", id, entity.Name);
+                }
+                catch (Exception ex)
+                {
+                    result.FailureCount++;
+                    result.FailedIds.Add(id);
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = ex.Message
+                    });
+                    _logger.LogError(ex, "批量删除 - 删除方剂失败: {FormulaId}", id);
+                }
+            }
+
+            result.IsSuccess = result.SuccessCount > 0;
+            result.Message = $"批量删除完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
+
+            return Result<BatchOperationResultDto>.Success(result);
+        }
+
+        /// <summary>
+        /// 批量更新方剂状态
+        /// </summary>
+        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status)
+        {
+            var result = new BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                SuccessCount = 0,
+                FailureCount = 0
+            };
+
+            var statusText = status == CommonStatus.Enabled ? "启用" : "禁用";
+
+            foreach (var id in ids)
+            {
+                try
+                {
+                    var formula = await _repository.GetByIdAsync(id);
+                    if (formula == null || formula.IsDeleted)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "方剂不存在"
+                        });
+                        continue;
+                    }
+
+                    formula.Status = status;
+                    formula.UpdatedAt = DateTime.Now;
+                    await _repository.UpdateAsync(formula);
+
+                    result.SuccessCount++;
+                    result.SuccessfulIds.Add(id);
+                    _logger.LogInformation("批量{StatusText} - 方剂状态已更新: {FormulaId}, {FormulaName}", statusText, id, formula.Name);
+                }
+                catch (Exception ex)
+                {
+                    result.FailureCount++;
+                    result.FailedIds.Add(id);
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = ex.Message
+                    });
+                    _logger.LogError(ex, "批量{StatusText} - 更新方剂状态失败: {FormulaId}", statusText, id);
+                }
+            }
+
+            await _repository.SaveChangesAsync();
+
+            result.IsSuccess = result.SuccessCount > 0;
+            result.Message = $"批量{statusText}完成: 成功 {result.SuccessCount} 个, 失败 {result.FailureCount} 个";
+
+            return Result<BatchOperationResultDto>.Success(result);
         }
     }
 }

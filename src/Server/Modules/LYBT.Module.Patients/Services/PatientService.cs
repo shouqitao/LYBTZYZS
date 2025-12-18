@@ -301,7 +301,7 @@ namespace LYBT.Module.Patients.Services
                             // 记录验证失败详情
                             result.FailureCount++;
                             var firstError = validationResult.Errors.First();
-                            result.Failures.Add(new ImportFailureDetailDto
+                            result.Failures.Add(new PatientImportFailureDto
                             {
                                 OriginalRowNumber = row,
                                 FailureReason = firstError.ErrorMessage,
@@ -320,7 +320,7 @@ namespace LYBT.Module.Patients.Services
                             if (existing != null)
                             {
                                 result.SkippedCount++;
-                                result.Failures.Add(new ImportFailureDetailDto
+                                result.Failures.Add(new PatientImportFailureDto
                                 {
                                     OriginalRowNumber = row,
                                     FailureReason = "手机号已存在",
@@ -345,7 +345,7 @@ namespace LYBT.Module.Patients.Services
                     {
                         _logger.LogError(ex, $"处理第{row}行数据时发生异常");
                         result.FailureCount++;
-                        result.Failures.Add(new ImportFailureDetailDto
+                        result.Failures.Add(new PatientImportFailureDto
                         {
                             OriginalRowNumber = row,
                             FailureReason = $"数据解析异常: {ex.Message}",
@@ -729,6 +729,63 @@ namespace LYBT.Module.Patients.Services
                 _logger.LogError(ex, "恢复患者失败: {PatientId}", id);
                 return Result<PatientDetailDto>.Failure("恢复患者失败");
             }
+        }
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <inheritdoc/>
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            var result = new BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                SuccessCount = 0,
+                FailureCount = 0
+            };
+
+            foreach (var id in ids)
+            {
+                try
+                {
+                    var entity = await _repository.GetByIdAsync(id);
+                    if (entity == null)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "患者不存在"
+                        });
+                        continue;
+                    }
+
+                    // 软删除
+                    entity.IsDeleted = true;
+                    entity.UpdatedAt = DateTime.Now;
+                    await _repository.UpdateAsync(entity);
+
+                    result.SuccessCount++;
+                    result.SuccessfulIds.Add(id);
+                    _logger.LogInformation("批量删除 - 患者已删除: {PatientId}, {PatientName}", id, entity.Name);
+                }
+                catch (Exception ex)
+                {
+                    result.FailureCount++;
+                    result.FailedIds.Add(id);
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = ex.Message
+                    });
+                    _logger.LogError(ex, "批量删除 - 删除患者失败: {PatientId}", id);
+                }
+            }
+
+            result.IsSuccess = result.SuccessCount > 0;
+            result.Message = $"批量删除完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
+
+            return Result<BatchOperationResultDto>.Success(result);
         }
     }
 }

@@ -88,5 +88,25 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/herbs/{id}/restore")]
         Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除药材（软删除）
+        /// </summary>
+        [Refit.Post("/api/v1/herbs/batch-delete")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 批量启用药材
+        /// </summary>
+        [Refit.Post("/api/v1/herbs/batch-enable")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 批量禁用药材
+        /// </summary>
+        [Refit.Post("/api/v1/herbs/batch-disable")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
     }
 }

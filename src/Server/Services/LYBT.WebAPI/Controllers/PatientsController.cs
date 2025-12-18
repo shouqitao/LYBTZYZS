@@ -372,5 +372,37 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException(ex, "恢复患者", id);
             }
         }
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除患者
+        /// </summary>
+        [HttpPost("batch-delete")]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        {
+            try
+            {
+                if (dto.Ids == null || dto.Ids.Count == 0)
+                {
+                    return ValidationFail("请至少选择一个患者");
+                }
+
+                var result = await _service.BatchDeleteAsync(dto.Ids);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "批量删除失败");
+                }
+
+                LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+                return Success(result.Data, result.Data.Message);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "批量删除患者", new { Ids = dto.Ids });
+            }
+        }
     }
 }

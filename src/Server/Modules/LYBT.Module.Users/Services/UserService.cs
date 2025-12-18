@@ -653,5 +653,151 @@ namespace LYBT.Module.Users.Services
                 return Result<UserDetailDto>.Failure("恢复用户失败");
             }
         }
+
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <inheritdoc />
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null)
+        {
+            var result = new BatchOperationResultDto
+            {
+                TotalCount = ids.Count
+            };
+
+            if (ids.Count == 0)
+            {
+                return Result<BatchOperationResultDto>.Failure("请至少选择一个用户");
+            }
+
+            try
+            {
+                var currentRole = GetCurrentUserRole();
+
+                foreach (var id in ids)
+                {
+                    // 不能删除自己
+                    if (currentUserId.HasValue && id == currentUserId.Value)
+                    {
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "不能删除自己"
+                        });
+                        result.FailureCount++;
+                        continue;
+                    }
+
+                    var user = await _repository.GetByIdAsync(id);
+                    if (user == null)
+                    {
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "用户不存在"
+                        });
+                        result.FailureCount++;
+                        continue;
+                    }
+
+                    // 权限检查
+                    var permissionCheck = await CanDeleteUserAsync(id, user.Role);
+                    if (!permissionCheck.IsSuccess)
+                    {
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Name = user.UserName,
+                            Reason = permissionCheck.Message ?? "无权限删除"
+                        });
+                        result.FailureCount++;
+                        continue;
+                    }
+
+                    // 执行删除
+                    var deleteResult = await _repository.DeleteAsync(id);
+                    if (deleteResult)
+                    {
+                        result.SuccessCount++;
+                        _logger.LogInformation("批量删除用户成功: {UserId}, {UserName}", id, user.UserName);
+                    }
+                    else
+                    {
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Name = user.UserName,
+                            Reason = "删除操作失败"
+                        });
+                        result.FailureCount++;
+                    }
+                }
+
+                _logger.LogInformation("批量删除用户完成: 总数={Total}, 成功={Success}, 失败={Failure}",
+                    result.TotalCount, result.SuccessCount, result.FailureCount);
+
+                return Result<BatchOperationResultDto>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量删除用户失败");
+                return Result<BatchOperationResultDto>.Failure("批量删除用户失败: " + ex.Message);
+            }
+        }
+
+
+        /// <inheritdoc />
+        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null)
+        {
+            var successCount = 0;
+            var failedCount = 0;
+            var failedItems = new List<string>();
+            var statusText = status == CommonStatus.Enabled ? "启用" : "禁用";
+
+            try
+            {
+                foreach (var id in ids)
+                {
+                    // 不能修改自己的状态
+                    if (currentUserId.HasValue && id == currentUserId.Value)
+                    {
+                        failedCount++;
+                        failedItems.Add($"不能{statusText}当前登录用户");
+                        continue;
+                    }
+
+                    var user = await _repository.GetByIdAsync(id);
+                    if (user == null || user.IsDeleted)
+                    {
+                        failedCount++;
+                        failedItems.Add($"用户不存在: {id}");
+                        continue;
+                    }
+
+                    user.Status = status;
+                    user.UpdatedAt = DateTime.Now;
+                    await _repository.UpdateAsync(user);
+                    successCount++;
+                }
+
+                await _repository.SaveChangesAsync();
+
+                return Result<BatchOperationResultDto>.Success(new BatchOperationResultDto
+                {
+                    SuccessCount = successCount,
+                    FailureCount = failedCount,
+                    FailedItems = failedItems.Select(msg => new BatchOperationFailureItem
+                    {
+                        Reason = msg
+                    }).ToList(),
+                    Message = $"批量{statusText}完成: 成功 {successCount} 个, 失败 {failedCount} 个"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量更新用户状态失败");
+                return Result<BatchOperationResultDto>.Failure($"批量{statusText}失败: " + ex.Message);
+            }
+        }
     }
 }

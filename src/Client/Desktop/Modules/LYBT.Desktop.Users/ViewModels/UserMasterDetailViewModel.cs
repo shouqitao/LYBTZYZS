@@ -427,40 +427,50 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (items == null || items.Count == 0) return;
 
-            var successCount = 0;
-            var failureCount = 0;
-            var failedItems = new List<string>();
             var currentUser = SessionManager?.CurrentUser;
+            var ids = items
+                .Where(item => currentUser == null || item.Id != currentUser.Id)
+                .Select(item => item.Id)
+                .ToList();
 
-            foreach (var item in items)
+            // 检查是否有不能删除的项目（当前登录用户）
+            var skippedCount = items.Count - ids.Count;
+
+            if (ids.Count == 0)
             {
-                try
-                {
-                    if (currentUser != null && item.Id == currentUser.Id)
-                    {
-                        failureCount++;
-                        failedItems.Add($"{item.RealName ?? item.UserName}（不能删除当前登录用户）");
-                        continue;
-                    }
-
-                    var result = await _commandHandler.DeleteAsync(item.Id);
-                    if (result.success) successCount++;
-                    else { failureCount++; failedItems.Add($"{item.RealName ?? item.UserName}（{result.errorMessage}）"); }
-                }
-                catch { failureCount++; failedItems.Add(item.RealName ?? item.UserName); }
+                await ShowWarningMessageAsync("所选用户均为当前登录用户，无法删除");
+                return;
             }
 
-            var message = $"批量删除完成！\n成功：{successCount}个\n失败：{failureCount}个";
-            if (failureCount > 0 && failedItems.Count > 0)
+            // OpenSpec: optimize-batch-operations Phase 2 - 使用单次批量API调用
+            var (success, result, errorMessage) = await _commandHandler.BatchDeleteAsync(ids);
+
+            if (!success || result == null)
             {
-                message += $"\n\n失败的用户：\n{string.Join("、", failedItems.Take(5))}";
-                if (failedItems.Count > 5) message += $"等{failedItems.Count}个";
+                await ShowErrorMessageAsync(errorMessage ?? "批量删除失败");
+                return;
             }
 
-            if (failureCount > 0) await ShowWarningMessageAsync(message);
-            else await ShowSuccessMessageAsync(message);
+            // 构建结果消息
+            var message = result.Message;
+            if (skippedCount > 0)
+            {
+                message += $"\n（已跳过{skippedCount}个当前登录用户）";
+            }
 
-            if (successCount > 0) await RefreshAsync();
+            if (result.FailureCount > 0 && result.FailedItems.Count > 0)
+            {
+                var failedNames = result.FailedItems.Take(5).Select(f => $"{f.Name ?? f.Id.ToString()}（{f.Reason}）");
+                message += $"\n\n失败的用户：\n{string.Join("、", failedNames)}";
+                if (result.FailedItems.Count > 5) message += $"等{result.FailedItems.Count}个";
+                await ShowWarningMessageAsync(message);
+            }
+            else
+            {
+                await ShowSuccessMessageAsync(message);
+            }
+
+            if (result.SuccessCount > 0) await RefreshAsync();
         }
 
         #endregion

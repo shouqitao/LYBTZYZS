@@ -1,38 +1,26 @@
+using System.ComponentModel;
+using LYBT.Shared.Models.Contracts.Common;
+
 namespace LYBT.Shared.Models.Contracts.Users
 {
     /// <summary>
-    /// 用户批量导入结果DTO
+    /// 用户批量导入结果DTO - 继承自通用导入结果基类
     /// Issue #2003 Task 2.10: Desktop主导批量导入模式
+    /// OpenSpec: optimize-batch-operations - DTO继承规范化
     /// </summary>
-    public class UserBatchImportResultDto
+    public class UserBatchImportResultDto : ImportResultDto
     {
-        /// <summary>成功导入数量</summary>
-        public int SuccessCount { get; set; }
-
-        /// <summary>失败数量</summary>
-        public int FailureCount { get; set; }
-
-        /// <summary>跳过数量（重复且策略为Skip）</summary>
-        public int SkippedCount { get; set; }
-
-        /// <summary>失败详情列表</summary>
-        public List<UserImportFailureDetailDto> Failures { get; set; } = new();
-
-        /// <summary>导入时间</summary>
-        public DateTime ImportTime { get; set; }
-
-        /// <summary>总数量</summary>
-        public int TotalCount => SuccessCount + FailureCount + SkippedCount;
-
-        /// <summary>成功率</summary>
-        public decimal SuccessRate => TotalCount > 0 ? (decimal)SuccessCount / TotalCount * 100 : 0;
+        /// <summary>失败详情列表（用户特定类型）</summary>
+        [DisplayName("失败详情")]
+        public List<UserImportFailureDto> Failures { get; set; } = new();
     }
 
     /// <summary>
     /// 用户导入失败详情DTO
     /// Issue #2003 Task 2.10
+    /// OpenSpec: optimize-batch-operations - DTO命名标准化
     /// </summary>
-    public class UserImportFailureDetailDto
+    public class UserImportFailureDto
     {
         /// <summary>原始行号（Excel行号，从1开始）</summary>
         public int OriginalRowNumber { get; set; }

@@ -107,5 +107,20 @@ namespace LYBT.Module.Herbs.Interfaces
         /// </summary>
         /// <param name="id">药材ID</param>
         Task<Result<HerbDetailDto>> RestoreAsync(Guid id);
+
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量更新药材状态
+        /// </summary>
+        /// <param name="ids">药材ID列表</param>
+        /// <param name="status">目标状态</param>
+        Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status);
+
+        /// <summary>
+        /// 批量删除药材（软删除）
+        /// </summary>
+        /// <param name="ids">药材ID列表</param>
+        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
     }
 }

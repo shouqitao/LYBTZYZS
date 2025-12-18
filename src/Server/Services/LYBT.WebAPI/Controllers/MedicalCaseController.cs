@@ -796,6 +796,38 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+
+        /// <summary>
+        /// 批量删除医案
+        /// </summary>
+        [HttpPost("batch-delete")]
+        [ProducesResponseType(typeof(ApiResponse<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> BatchDelete([FromBody] LYBT.Shared.Models.Contracts.Common.BatchDeleteInputDto dto)
+        {
+            try
+            {
+                if (dto.Ids == null || dto.Ids.Count == 0)
+                {
+                    return ValidationFail("请至少选择一个医案");
+                }
+
+                var result = await _commandService.BatchDeleteAsync(dto.Ids);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "批量删除失败");
+                }
+
+                LogOperation("批量删除医案", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+                return Success(result.Data, result.Data.Message);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "批量删除医案", new { Ids = dto.Ids });
+            }
+        }
+
         /// <summary>
         /// 关闭病案（直接标记为Completed）
         /// Epic #1676 Phase 4 Task 4.1
