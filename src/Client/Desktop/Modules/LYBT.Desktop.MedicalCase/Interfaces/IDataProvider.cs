@@ -25,6 +25,6 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// 获取处方数据（药材项、剂数、用法等）
         /// </summary>
         /// <returns>处方聚合输入DTO，无数据时返回null</returns>
-        PrescriptionAggregateInputDto? GetPrescriptionData();
+        PrescriptionInputDto? GetPrescriptionData();
     }
 }

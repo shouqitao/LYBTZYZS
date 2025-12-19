@@ -45,15 +45,14 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
+            // OpenSpec: simplify-medicalcase-dataflow - Indication/FormulaSource已移除
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                Indication = "清热解毒",
                 DosageCount = 7,
                 Discount = 0.8m,
                 Advice = "饭后服用",
-                FormulaSource = "逍遥散",
                 Remark = "温服"
             };
 
@@ -64,11 +63,9 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Id.Should().Be(prescription.Id);
             dto.MedicalCaseId.Should().Be(prescription.MedicalCaseId);
-            dto.Indication.Should().Be(prescription.Indication);
             dto.DosageCount.Should().Be(prescription.DosageCount);
             dto.Discount.Should().Be(prescription.Discount);
             dto.Advice.Should().Be(prescription.Advice);
-            dto.FormulaSource.Should().Be(prescription.FormulaSource);
             dto.Remark.Should().Be(prescription.Remark);
 
             // 验证计算属性被忽略
@@ -82,15 +79,14 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
+            // OpenSpec: simplify-medicalcase-dataflow - Indication/FormulaSource已移除
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                Indication = "温中健脾",
                 DosageCount = 14,
                 Discount = 0.9m,
                 Advice = "温服",
-                FormulaSource = "四君子汤",
                 Remark = "体质虚寒者适用"
             };
 
@@ -101,11 +97,9 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             detailDto.Should().NotBeNull();
             detailDto.Id.Should().Be(prescription.Id);
             detailDto.MedicalCaseId.Should().Be(prescription.MedicalCaseId);
-            detailDto.Indication.Should().Be(prescription.Indication);
             detailDto.DosageCount.Should().Be(prescription.DosageCount);
             detailDto.Discount.Should().Be(prescription.Discount);
             detailDto.Advice.Should().Be(prescription.Advice);
-            detailDto.FormulaSource.Should().Be(prescription.FormulaSource);
             detailDto.Remark.Should().Be(prescription.Remark);
 
             // 验证计算属性被忽略
@@ -149,13 +143,12 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId/ConsultationId已移除，通过MedicalCaseId关联获取
+            // OpenSpec: simplify-medicalcase-dataflow - Diagnosis/FormulaSource已移除
             var createDto = new PrescriptionInputDto
             {
-                Diagnosis = "脾胃虚弱",
                 DosageCount = 5,
                 Usage = "水煎服",
                 TotalPrice = 125.50m,
-                FormulaSource = "新方剂",
                 Advice = "温服",
                 Remark = "调理脾胃"
             };
@@ -207,10 +200,10 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
+            // OpenSpec: simplify-medicalcase-dataflow - Diagnosis已移除
             var editDto = new PrescriptionInputDto
             {
                 Id = Guid.NewGuid(),
-                Diagnosis = "修改后的诊断",
                 DosageCount = 10,
                 TotalPrice = 200.0m,
                 Discount = 0.85m,
@@ -237,13 +230,12 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
+            // OpenSpec: simplify-medicalcase-dataflow - Indication/FormulaSource已移除
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                Indication = null,
                 Advice = null,
-                FormulaSource = null,
                 Remark = null,
                 DosageCount = 1
             };
@@ -255,9 +247,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Id.Should().Be(prescription.Id);
             dto.MedicalCaseId.Should().Be(prescription.MedicalCaseId);
-            dto.Indication.Should().BeNull();
             dto.Advice.Should().BeNull();
-            dto.FormulaSource.Should().BeNull();
             dto.Remark.Should().BeNull();
             dto.DosageCount.Should().Be(prescription.DosageCount);
         }
@@ -294,13 +284,14 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
+            // OpenSpec: simplify-medicalcase-dataflow - Indication已移除
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
                 Discount = 0.5m, // 5折
                 DosageCount = 20,
-                Indication = "长期调理处方"
+                Remark = "长期调理处方"
             };
 
             // Act
@@ -310,7 +301,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Discount.Should().Be(0.5m);
             dto.DosageCount.Should().Be(20);
-            dto.Indication.Should().Be("长期调理处方");
+            dto.Remark.Should().Be("长期调理处方");
         }
 
         [Fact]
@@ -318,9 +309,9 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         {
             // Arrange
             // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId已移除，Quantity替代DosageCount
+            // OpenSpec: simplify-medicalcase-dataflow - Diagnosis已移除
             var createDto = new PrescriptionInputDto
             {
-                Diagnosis = "最简诊断",
                 DosageCount = 1,
                 TotalPrice = 10.0m
             };

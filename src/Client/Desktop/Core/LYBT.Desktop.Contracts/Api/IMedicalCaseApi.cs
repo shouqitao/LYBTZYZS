@@ -259,12 +259,12 @@ namespace LYBT.Desktop.Contracts.Api
         /// 简化前端保存逻辑，减少API调用次数
         /// </summary>
         /// <param name="id">医案ID</param>
-        /// <param name="request">聚合输入DTO（包含诊断和处方数据）</param>
+        /// <param name="request">统一输入DTO（包含诊断和处方数据）</param>
         /// <returns>更新后的医案详情</returns>
         [Refit.Put("/api/v1/medicalcases/{id}/aggregate")]
-        Task<ApiResponse<MedicalCaseDetailDto>> SaveAggregateAsync(
+        Task<ApiResponse<MedicalCaseDetailDto>> SaveAsync(
             Guid id,
-            [Refit.Body] MedicalCaseAggregateInputDto request);
+            [Refit.Body] MedicalCaseInputDto request);
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 

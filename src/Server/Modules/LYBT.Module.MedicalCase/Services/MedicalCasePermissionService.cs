@@ -44,10 +44,11 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 医生权限检查
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             if (role == UserRole.Doctor)
             {
                 // 检查是否是创建者
-                var isOwner = medicalCase.DoctorId == userId;
+                var isOwner = medicalCase.UserId == userId;
                 if (!isOwner)
                 {
                     _logger.LogDebug("权限检查: 医生 {UserId} 不是医案 {MedicalCaseId} 的创建者",
@@ -55,13 +56,22 @@ namespace LYBT.Module.MedicalCases.Services
                     return false;
                 }
 
-                // 检查医案状态
-                var isEditable = medicalCase.CaseStatus == MedicalCaseStatus.Draft
-                              || medicalCase.CaseStatus == MedicalCaseStatus.Active;
+                // 检查锁定状态 - 使用IsLocked属性统一判断
+                // IsLocked = CompletedAt有值 || 创建日期不是今天
+                if (medicalCase.IsLocked)
+                {
+                    _logger.LogDebug("权限检查: 医生 {UserId} 无法编辑已锁定的医案 {MedicalCaseId}, " +
+                        "CompletedAt: {CompletedAt}, CreatedAt: {CreatedAt}",
+                        userId, medicalCase.Id, medicalCase.CompletedAt, medicalCase.CreatedAt);
+                    return false;
+                }
+
+                // 检查医案状态 - 活跃状态才能编辑
+                var isEditable = medicalCase.IsActive;
 
                 if (!isEditable)
                 {
-                    _logger.LogDebug("权限检查: 医生 {UserId} 无法编辑已完成的医案 {MedicalCaseId}, 状态: {Status}",
+                    _logger.LogDebug("权限检查: 医生 {UserId} 无法编辑非活跃的医案 {MedicalCaseId}, 状态: {Status}",
                         userId, medicalCase.Id, medicalCase.CaseStatus);
                 }
 
@@ -109,14 +119,15 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 检查是否需要提供修改原因
-        /// 已完成(Completed)医案修改时必须提供原因
+        /// OpenSpec: simplify-medicalcase-dataflow - 使用IsLocked判断
+        /// 已锁定（CompletedAt有值或非当天创建）医案修改时必须提供原因
         /// </summary>
         public bool RequiresEditReason(MedicalCase medicalCase)
         {
             if (medicalCase == null) return false;
 
-            // 已完成医案修改需要原因
-            return medicalCase.CaseStatus == MedicalCaseStatus.Completed;
+            // 已锁定医案修改需要原因（管理员修改时）
+            return medicalCase.IsLocked;
         }
 
         /// <summary>
@@ -155,6 +166,7 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 获取权限拒绝原因
+        /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, 使用IsLocked判断
         /// </summary>
         private string GetDenialReason(Guid userId, UserRole role, MedicalCase medicalCase)
         {
@@ -163,12 +175,20 @@ namespace LYBT.Module.MedicalCases.Services
 
             if (role == UserRole.Doctor)
             {
-                var isOwner = medicalCase.DoctorId == userId;
+                var isOwner = medicalCase.UserId == userId;
                 if (!isOwner)
                     return "您不是该医案的创建者，无权编辑";
 
-                if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
-                    return "该医案已完成，医生无法编辑已完成的医案";
+                if (medicalCase.IsLocked)
+                {
+                    if (medicalCase.CompletedAt.HasValue)
+                        return "该医案已完成，医生无法编辑已完成的医案";
+                    else
+                        return "该医案已超过当天编辑时间，医生无法编辑";
+                }
+
+                if (!medicalCase.IsActive)
+                    return "该医案当前状态不允许编辑";
             }
 
             return "权限不足";

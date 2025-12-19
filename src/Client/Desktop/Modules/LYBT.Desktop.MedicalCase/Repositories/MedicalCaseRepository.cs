@@ -233,8 +233,8 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("找到未完成医案,MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, DoctorId: {DoctorId}",
-                    response.Data.Id, response.Data.CaseStatus, response.Data.DoctorId);
+                _logger.LogInformation("找到未完成医案,MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, UserId: {UserId}",
+                    response.Data.Id, response.Data.CaseStatus, response.Data.UserId);
 
                 return response.Data;
             }
@@ -327,7 +327,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
         /// 简化前端保存逻辑，减少API调用次数
         /// </summary>
-        public async Task<MedicalCaseDetailDto> SaveAggregateAsync(Guid medicalCaseId, MedicalCaseAggregateInputDto dto)
+        public async Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto)
         {
             if (medicalCaseId == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
@@ -344,7 +344,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                 // 确保DTO的ID与参数一致
                 dto.Id = medicalCaseId;
 
-                var response = await _api.SaveAggregateAsync(medicalCaseId, dto);
+                var response = await _api.SaveAsync(medicalCaseId, dto);
 
                 if (response.Success && response.Data != null)
                 {

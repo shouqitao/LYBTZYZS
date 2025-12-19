@@ -124,6 +124,6 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <param name="medicalCaseId">医案ID</param>
         /// <param name="dto">聚合输入DTO（包含诊断和处方数据）</param>
         /// <returns>更新后的医案详情</returns>
-        Task<MedicalCaseDetailDto> SaveAggregateAsync(Guid medicalCaseId, MedicalCaseAggregateInputDto dto);
+        Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto);
     }
 }

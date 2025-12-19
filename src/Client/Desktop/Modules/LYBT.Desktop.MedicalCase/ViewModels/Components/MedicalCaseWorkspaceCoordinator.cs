@@ -53,7 +53,7 @@ public class MedicalCaseWorkspaceCoordinator
     /// <param name="remark">医案备注</param>
     /// <param name="editReason">编辑原因（审计用）</param>
     /// <returns>保存结果</returns>
-    public async Task<AggregateSaveResult> SaveAggregateAsync(
+    public async Task<AggregateSaveResult> SaveAsync(
         Guid medicalCaseId,
         IDataProvider? consultationProvider,
         IDataProvider? prescriptionProvider,
@@ -69,7 +69,7 @@ public class MedicalCaseWorkspaceCoordinator
             var prescriptionData = prescriptionProvider?.GetPrescriptionData();
 
             // 构建聚合DTO
-            var aggregateDto = new MedicalCaseAggregateInputDto
+            var aggregateDto = new MedicalCaseInputDto
             {
                 Id = medicalCaseId,
                 Remark = remark,
@@ -79,7 +79,7 @@ public class MedicalCaseWorkspaceCoordinator
             };
 
             // 调用聚合保存API（单次调用）
-            var result = await _repository.SaveAggregateAsync(medicalCaseId, aggregateDto);
+            var result = await _repository.SaveAsync(medicalCaseId, aggregateDto);
 
             _logger.LogInformation("聚合保存成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
@@ -96,14 +96,14 @@ public class MedicalCaseWorkspaceCoordinator
     /// 暂存医案（使用聚合保存）
     /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.4)
     /// </summary>
-    public async Task<LifecycleResult> SaveDraftWithAggregateAsync(
+    public async Task<LifecycleResult> SaveDraftAsync(
         Guid medicalCaseId,
         IDataProvider? consultationProvider,
         IDataProvider? prescriptionProvider,
         string? remark = null)
     {
         // 先聚合保存数据
-        var saveResult = await SaveAggregateAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark);
+        var saveResult = await SaveAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark);
         if (!saveResult.IsSuccess)
         {
             return new LifecycleResult(false, saveResult.ErrorMessage);
@@ -124,7 +124,7 @@ public class MedicalCaseWorkspaceCoordinator
     /// 完成医案（使用聚合保存）
     /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.4)
     /// </summary>
-    public async Task<LifecycleResult> CompleteWithAggregateAsync(
+    public async Task<LifecycleResult> CompleteAsync(
         Guid medicalCaseId,
         IDataProvider? consultationProvider,
         IDataProvider? prescriptionProvider,
@@ -146,7 +146,7 @@ public class MedicalCaseWorkspaceCoordinator
         }
 
         // 聚合保存数据
-        var saveResult = await SaveAggregateAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark);
+        var saveResult = await SaveAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark);
         if (!saveResult.IsSuccess)
         {
             return new LifecycleResult(false, saveResult.ErrorMessage);
@@ -167,7 +167,7 @@ public class MedicalCaseWorkspaceCoordinator
     /// 取消医案（使用聚合保存后取消）
     /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.2)
     /// </summary>
-    public async Task<LifecycleResult> CancelWithAggregateAsync(
+    public async Task<LifecycleResult> CancelAsync(
         Guid medicalCaseId,
         IDataProvider? consultationProvider,
         IDataProvider? prescriptionProvider,
@@ -176,7 +176,7 @@ public class MedicalCaseWorkspaceCoordinator
         // 取消前先聚合保存数据（供审计）
         try
         {
-            await SaveAggregateAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark);
+            await SaveAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark);
             _logger.LogDebug("取消前数据已保存（聚合模式，供审计）");
         }
         catch (Exception saveEx)

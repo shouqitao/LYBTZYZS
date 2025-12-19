@@ -253,11 +253,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockRepository.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(detail);
 
-            // OpenSpec: unify-medicalcase-input-dto - PrescriptionInputDto仅需MedicalCaseId，PatientId/DoctorId已移除
+            // OpenSpec: simplify-medicalcase-dataflow - PrescriptionInputDto仅需MedicalCaseId，Diagnosis/Indication已移除
             var createDto = new PrescriptionInputDto
             {
                 MedicalCaseId = medicalCaseId,
-                Diagnosis = "风寒感冒",
                 DosageCount = 3
             };
 
@@ -265,7 +264,6 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = medicalCaseId,
-                Indication = createDto.Diagnosis,
                 DosageCount = createDto.DosageCount
             };
 
@@ -372,7 +370,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
         /// <summary>
         /// 创建测试用MedicalCaseDetailDto
-        /// OpenSpec: unify-medicalcase-input-dto - 更新字段以匹配当前DTO结构
+        /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, ConsultationDate删除
         /// </summary>
         private MedicalCaseDetailDto CreateMedicalCaseDetail(Guid medicalCaseId)
         {
@@ -388,9 +386,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 PatientName = "张三",
                 PatientGender = "男",
                 PatientAge = 30,
-                DoctorId = doctorId,
+                UserId = doctorId,  // OpenSpec: DoctorId→UserId
                 DoctorName = "李医生",
-                ConsultationDate = DateTime.Now,
+                // ConsultationDate已删除，用CreatedAt代替
                 CaseStatus = (MedicalCaseStatus)CaseStatus.Active,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -413,8 +411,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                     Id = Guid.NewGuid(),
                     PrescriptionNumber = "RX-2025-001",
                     MedicalCaseId = medicalCaseId,
-                    // PatientId, UserId已从PrescriptionDetailDto移除
-                    Indication = "风寒感冒",
+                    // PatientId, UserId, Indication已从PrescriptionDetailDto移除（Indication打印时从Consultation.TCMDiagnosis获取）
                     DosageCount = 3,
                     Usage = "水煎服，每日一剂",
                     Discount = 1.0m,

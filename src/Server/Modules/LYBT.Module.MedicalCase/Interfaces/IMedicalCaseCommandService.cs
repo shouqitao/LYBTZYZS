@@ -98,16 +98,17 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<bool> DeleteAsync(Guid id);
 
         /// <summary>
-        /// 保存医案聚合根（统一保存Consultation和Prescription）
-        /// OpenSpec: refactor-medicalcase-aggregate-crud (PERSIST-001, PERSIST-002)
-        /// 在单个事务中同时保存诊断和处方数据
+        /// 统一保存医案（支持创建和更新）
+        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - 统一SaveAsync
+        /// - Id为null时：创建新MedicalCase（含Consultation，可选Prescription）
+        /// - Id有值时：更新现有MedicalCase（含Consultation和Prescription）
         /// </summary>
-        /// <param name="request">医案聚合输入DTO</param>
+        /// <param name="request">统一输入DTO（Id=null创建，Id有值更新）</param>
         /// <param name="currentUserId">当前操作用户ID</param>
         /// <param name="isAdmin">是否管理员</param>
-        /// <returns>更新后的病案实体（包含Consultation和Prescription）</returns>
-        Task<MedicalCase?> SaveAggregateAsync(
-            MedicalCaseAggregateInputDto request,
+        /// <returns>保存后的病案实体（包含Consultation和Prescription）</returns>
+        Task<MedicalCase?> SaveAsync(
+            MedicalCaseInputDto request,
             Guid currentUserId,
             bool isAdmin = false);
 

@@ -197,7 +197,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         try
         {
             _prescriptionId = dto.Id;
-            TreatmentMethod = dto.Indication ?? string.Empty;
+            TreatmentMethod = string.Empty; // Indication已删除，打印时从Consultation.TCMDiagnosis获取
             TreatmentPrinciple = dto.Advice ?? string.Empty;
             ReferencedFormulas = dto.ReferencedFormulas ?? string.Empty;
             Remark = dto.Remark ?? string.Empty;
@@ -305,19 +305,18 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.3)
     /// </summary>
     /// <returns>处方聚合输入DTO</returns>
-    public PrescriptionAggregateInputDto? GetPrescriptionData()
+    public PrescriptionInputDto? GetPrescriptionData()
     {
         var items = _itemHandler.CollectPrescriptionItems(HerbItems);
 
         // 如果没有有效药材项，返回表示不需要处方的DTO
         if (items.Count == 0)
         {
-            return new PrescriptionAggregateInputDto
+            return new PrescriptionInputDto
             {
                 NeedsPrescription = false,
                 DosageCount = DosageCount,
                 Usage = Usage,
-                Indication = TreatmentMethod,
                 Advice = TreatmentPrinciple,
                 ReferencedFormulas = ReferencedFormulas,
                 Remark = Remark,
@@ -325,12 +324,11 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             };
         }
 
-        return new PrescriptionAggregateInputDto
+        return new PrescriptionInputDto
         {
             NeedsPrescription = true,
             DosageCount = DosageCount,
             Usage = Usage,
-            Indication = TreatmentMethod,
             Advice = TreatmentPrinciple,
             ReferencedFormulas = ReferencedFormulas,
             Remark = Remark,

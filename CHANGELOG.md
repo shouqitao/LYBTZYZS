@@ -9,6 +9,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 简化MedicalCase数据流 (OpenSpec: simplify-medicalcase-dataflow) - 2025-12-19 [已归档]
+
+**状态**: ✅ Phase 0-5完成，已归档
+
+**问题背景**:
+- MedicalCase实体存在冗余字段(ConsultationDate与CreatedAt重复)
+- DoctorId命名不统一(应为UserId)
+- Prescription实体的Indication/FormulaSource字段与Consultation重复
+- MedicalCaseAggregateInputDto和PrescriptionAggregateInputDto增加维护复杂度
+- 权限判断逻辑分散在Entity和Service中
+
+**实施内容**:
+
+**Phase 0: 实体字段优化 + 权限逻辑统一**
+- MedicalCase: 删除ConsultationDate(用CreatedAt)，DoctorId→UserId，新增CaseNumber/CompletedAt
+- MedicalCase: 删除CanEdit()方法，新增IsActive/IsCompleted计算属性，更新IsLocked逻辑
+- Prescription: 删除Indication/FormulaSource，新增Usage字段
+- 权限逻辑统一到MedicalCasePermissionService
+
+**Phase 1: DTO重构**
+- 扩展MedicalCaseInputDto添加Consultation/Prescription/EditReason字段
+- 删除MedicalCaseAggregateInputDto和PrescriptionAggregateInputDto
+- 删除对应的Validator
+
+**Phase 2: Server端业务逻辑重构**
+- 统一SaveAggregateAsync → SaveAsync
+- POST端点支持创建时包含Consultation/Prescription
+
+**Phase 3: Client端适配**
+- IMedicalCaseApi/Repository/ViewModels方法重命名
+- 去除Aggregate后缀
+
+**Phase 4: 测试验证**
+- Server模块: 324测试全部通过 (Auth 81, Herbs 33, MedicalCase 41, Patients 54, Users 31, Prescriptions 34, WebAPI 50)
+- Desktop模块: 449测试全部通过 (MedicalCase 228, Consultation 8, Foundation 57, Shell 156)
+
+**Phase 5: 清理与文档**
+- 编译验证: 0错误0警告
+- 更新CHANGELOG，归档提案
+
+**变更文件**:
+- `src/Server/Domain/LYBT.Entities/MedicalCases/MedicalCase.cs`
+- `src/Server/Domain/LYBT.Entities/Prescriptions/Prescription.cs`
+- `src/Shared/LYBT.Shared.Models/Contracts/MedicalCase/*.cs`
+- `src/Shared/LYBT.Shared.Models/Contracts/Prescriptions/*.cs`
+- `src/Server/Modules/LYBT.Module.MedicalCase/Services/*.cs`
+- `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/**/*.cs`
+
+---
+
 #### 统一MedicalCase InputDTO (OpenSpec: unify-medicalcase-input-dto) - 2025-12-19 [已归档]
 
 **状态**: ✅ Phase 1-6完成，已归档 (commit: 0215518ab)

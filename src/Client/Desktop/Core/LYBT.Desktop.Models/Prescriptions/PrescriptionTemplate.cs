@@ -223,6 +223,7 @@ namespace LYBT.Desktop.Models.Prescriptions
         /// <summary>
         /// 应用模板到处方
         /// OpenSpec: optimize-entity-data-flow - PatientId通过MedicalCase获取
+        /// OpenSpec: simplify-medicalcase-dataflow - Indication已删除，通过ReferencedFormulas记录来源
         /// </summary>
         public PrescriptionDetailDto ApplyToNewPrescription()
         {
@@ -230,10 +231,11 @@ namespace LYBT.Desktop.Models.Prescriptions
             {
                 Id = Guid.NewGuid(),
                 // OpenSpec: PatientId已移除，通过MedicalCaseId关联获取
-                Indication = Diagnosis,
+                // OpenSpec: simplify-medicalcase-dataflow - Indication已删除，打印时从Consultation.TCMDiagnosis获取
+                ReferencedFormulas = Name, // 记录模板来源
                 DosageCount = DosageCount,
                 Advice = Usage,
-                Remark = $"应用模板：{Name}\n{Remark}",
+                Remark = $"应用模板：{Name}\n适用诊断：{Diagnosis}\n{Remark}",
                 Status = CommonStatus.Disabled, // 草稿状态
                 Items = new List<PrescriptionItemDto>()
             };

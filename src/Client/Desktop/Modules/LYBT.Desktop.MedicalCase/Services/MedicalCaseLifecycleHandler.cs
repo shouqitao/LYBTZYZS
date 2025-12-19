@@ -54,14 +54,14 @@ public class MedicalCaseLifecycleHandler
             {
                 Id = null, // 创建操作：Id为null
                 PatientId = patientId,
-                DoctorId = _sessionManager.CurrentUser.Id,
-                VisitDate = DateTime.Now, // 就诊日期默认为当前时间
+                UserId = _sessionManager.CurrentUser.Id,
                 Remark = null // 初始创建无备注
                 // 注意：Status字段由Service层管理，InputDto不包含
+                // 注意：VisitDate已删除，使用BaseEntity.CreatedAt代替
             };
 
-            _logger.LogInformation(" 准备调用API创建MedicalCase，PatientId: {PatientId}, DoctorId: {DoctorId}, VisitDate: {VisitDate}",
-                createDto.PatientId, createDto.DoctorId, createDto.VisitDate);
+            _logger.LogInformation(" 准备调用API创建MedicalCase，PatientId: {PatientId}, UserId: {UserId}",
+                createDto.PatientId, createDto.UserId);
 
             // 使用DataManager创建MedicalCase
             var createdDto = await _dataManager.CreateAsync(createDto);

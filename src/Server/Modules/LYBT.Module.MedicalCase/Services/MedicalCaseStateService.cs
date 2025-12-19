@@ -351,6 +351,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// 克隆医案实体用于审计比较
         /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
         /// </summary>
+        // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, ConsultationDate移除
         private static MedicalCase CloneMedicalCaseForAudit(MedicalCase source)
         {
             return new MedicalCase
@@ -358,9 +359,8 @@ namespace LYBT.Module.MedicalCases.Services
                 Id = source.Id,
                 PatientId = source.PatientId,
                 PatientName = source.PatientName,
-                DoctorId = source.DoctorId,
+                UserId = source.UserId,
                 DoctorName = source.DoctorName,
-                ConsultationDate = source.ConsultationDate,
                 CaseStatus = source.CaseStatus,
                 Remark = source.Remark,
                 NeedsPrescription = source.NeedsPrescription,

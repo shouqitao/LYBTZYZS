@@ -55,8 +55,9 @@ namespace LYBT.Module.MedicalCases.Services
             // 管理员权限 - 可以编辑所有医案
             if (isAdmin) return true;
 
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             // 非创建者无权编辑
-            if (medicalCase.DoctorId != currentUserId) return false;
+            if (medicalCase.UserId != currentUserId) return false;
 
             // OpenSpec: refactor-medicalcase-management
             // 医生只能编辑自己的Draft/Active状态医案
@@ -98,8 +99,9 @@ namespace LYBT.Module.MedicalCases.Services
         /// <returns>是否为当天本人创建</returns>
         public static bool IsSameDayByCreator(MedicalCase medicalCase, Guid operatorId)
         {
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             // 检查是否为创建者
-            if (medicalCase.DoctorId != operatorId) return false;
+            if (medicalCase.UserId != operatorId) return false;
 
             // 检查是否为当天创建
             var today = DateTime.Today;

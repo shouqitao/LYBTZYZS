@@ -30,10 +30,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
-                DoctorId = currentUserId,
+                UserId = currentUserId,
                 CaseStatus = MedicalCaseStatus.Completed,
                 CreatedAt = DateTime.Now  // 今天创建
             };
@@ -50,10 +51,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
-                DoctorId = currentUserId,
+                UserId = currentUserId,
                 CaseStatus = MedicalCaseStatus.Draft,
                 CreatedAt = DateTime.Now  // 今天创建
             };
@@ -75,10 +77,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
             // Arrange
             var ownerId = Guid.NewGuid();
             var currentUserId = Guid.NewGuid();  // 不同用户
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
-                DoctorId = ownerId,
+                UserId = ownerId,
                 CaseStatus = MedicalCaseStatus.Draft,
                 CreatedAt = DateTime.Now  // 今天创建
             };
@@ -95,10 +98,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var ownerId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
-                DoctorId = ownerId,
+                UserId = ownerId,
                 CaseStatus = MedicalCaseStatus.Draft,
                 CreatedAt = DateTime.Now  // 今天创建
             };
@@ -119,10 +123,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
-                DoctorId = currentUserId,
+                UserId = currentUserId,
                 CaseStatus = MedicalCaseStatus.Draft,
                 CreatedAt = DateTime.Today.AddDays(-1)  // 昨天创建
             };
@@ -139,10 +144,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
-                DoctorId = currentUserId,
+                UserId = currentUserId,
                 CaseStatus = MedicalCaseStatus.Draft,
                 CreatedAt = DateTime.Today  // 今天创建
             };
@@ -159,10 +165,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange
             var currentUserId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
-                DoctorId = currentUserId,
+                UserId = currentUserId,
                 CaseStatus = MedicalCaseStatus.Draft,
                 CreatedAt = DateTime.Today.AddDays(-30)  // 一个月前创建
             };
@@ -183,10 +190,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
         {
             // Arrange - Completed状态优先级最高
             var currentUserId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
-                DoctorId = currentUserId,  // 同一用户
+                UserId = currentUserId,  // 同一用户
                 CaseStatus = MedicalCaseStatus.Completed,
                 CreatedAt = DateTime.Now  // 今天创建
             };
@@ -204,10 +212,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Services
             // Arrange - 多重条件都触发
             var ownerId = Guid.NewGuid();
             var currentUserId = Guid.NewGuid();  // 不同用户
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
-                DoctorId = ownerId,
+                UserId = ownerId,
                 CaseStatus = MedicalCaseStatus.Draft,
                 CreatedAt = DateTime.Today.AddDays(-1)  // 昨天创建
             };

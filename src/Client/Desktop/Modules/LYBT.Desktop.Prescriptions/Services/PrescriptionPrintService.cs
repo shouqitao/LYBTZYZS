@@ -739,6 +739,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 填充四诊信息
         /// OpenSpec: print-prescription-slip - 从ConsultationInputDto获取诊断信息
         /// OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
+        /// OpenSpec: simplify-medicalcase-dataflow - Indication已删除，从Consultation获取TCMDiagnosis
         /// </summary>
         private static void PopulateDiagnosisInfo(PrescriptionPrintModel printDto, PrescriptionDetailDto prescription, ConsultationInputDto? consultation)
         {
@@ -747,14 +748,14 @@ namespace LYBT.Desktop.Prescriptions.Services
                 printDto.PresentIllness = consultation.PresentIllness;
                 printDto.TongueDiagnosis = consultation.TongueDiagnosis;
                 printDto.PulseDiagnosis = consultation.PulseDiagnosis;
-                printDto.TCMDiagnosis = consultation.TCMDiagnosis ?? prescription.Indication;
+                printDto.TCMDiagnosis = consultation.TCMDiagnosis; // OpenSpec: simplify-medicalcase-dataflow - 从Consultation获取
             }
             else
             {
                 printDto.PresentIllness = null;
                 printDto.TongueDiagnosis = null;
                 printDto.PulseDiagnosis = null;
-                printDto.TCMDiagnosis = prescription.Indication;
+                printDto.TCMDiagnosis = null; // OpenSpec: simplify-medicalcase-dataflow - Indication已删除
             }
         }
 
@@ -776,6 +777,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <summary>
         /// 填充医生信息和可选信息
         /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// OpenSpec: simplify-medicalcase-dataflow - FormulaSource重命名为ReferencedFormulas
         /// </summary>
         private static void PopulateDoctorInfo(PrescriptionPrintModel printDto, PrescriptionDetailDto prescription)
         {
@@ -784,7 +786,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             printDto.PrescriptionDate = DateTime.Now;
             printDto.PrescriptionNumber = prescription.Id.ToString("N").Substring(0, 8).ToUpper();
             printDto.Advice = prescription.Advice;
-            printDto.FormulaSource = prescription.FormulaSource;
+            printDto.FormulaSource = prescription.ReferencedFormulas; // OpenSpec: simplify-medicalcase-dataflow
         }
 
         /// <summary>

@@ -83,7 +83,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 Id = Guid.NewGuid(),
                 PatientId = patientId,
                 PatientName = "张三",
-                DoctorId = doctorId,
+                UserId = doctorId,
                 DoctorName = "李医生",
                 CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity { Id = Guid.NewGuid() }
@@ -98,7 +98,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result!.PatientId.Should().Be(patientId);
-            result.DoctorId.Should().Be(doctorId);
+            result.UserId.Should().Be(doctorId);
             result.PatientName.Should().Be("张三");
             result.DoctorName.Should().Be("李医生");
             result.CaseStatus.Should().Be(MedicalCaseStatus.Active);
@@ -151,9 +151,10 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - ChiefComplaint已移除，使用PresentIllness
             var request = new ConsultationInputDto
             {
-                ChiefComplaint = "头痛",
+                PresentIllness = "头痛",
                 TCMDiagnosis = "风寒感冒"
             };
 
@@ -183,15 +184,19 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         }
 
         [Fact]
-        public async Task UpdateConsultationAsync_WhenStatusNotActive_ShouldThrowInvalidOperationException()
+        public async Task UpdateConsultationAsync_WhenStatusNotActive_ShouldThrowUnauthorizedAccessException()
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
             var request = new ConsultationInputDto();
 
+            // OpenSpec: simplify-medicalcase-dataflow - 测试非管理员不能编辑已完成医案
+            // UserId设为当前用户，确保不会因为"非创建者"而被拒绝
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
+                UserId = doctorId,
                 CaseStatus = MedicalCaseStatus.Completed,
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
@@ -199,9 +204,9 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _service.UpdateConsultationAsync(medicalCaseId, request, Guid.NewGuid(), isAdmin: true));
+            // Act & Assert - 非管理员无法编辑已完成医案，抛出UnauthorizedAccessException
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(
+                () => _service.UpdateConsultationAsync(medicalCaseId, request, doctorId, isAdmin: false));
         }
 
         #endregion
@@ -215,6 +220,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var medicalCaseId = Guid.NewGuid();
             var needsPrescription = true;
 
+            // OpenSpec: simplify-medicalcase-dataflow - PrescriptionEnabled已从Consultation移至MedicalCase.NeedsPrescription
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
@@ -222,8 +228,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 NeedsPrescription = false,
                 Consultation = new ConsultationEntity
                 {
-                    Id = medicalCaseId,
-                    PrescriptionEnabled = false
+                    Id = medicalCaseId
                 }
             };
 
@@ -261,7 +266,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             {
                 Id = medicalCaseId,
                 PatientId = patientId,
-                DoctorId = doctorId,
+                UserId = doctorId,
                 CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = true,
                 Prescription = null,
@@ -272,12 +277,11 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 }
             };
 
+            // OpenSpec: simplify-medicalcase-dataflow - PatientId/UserId已从Prescription移除，通过MedicalCase获取
             var prescription = new PrescriptionEntity
             {
                 Id = Guid.NewGuid(),
-                MedicalCaseId = medicalCaseId,
-                PatientId = patientId,
-                UserId = doctorId
+                MedicalCaseId = medicalCaseId
             };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))

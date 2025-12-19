@@ -119,11 +119,12 @@ namespace LYBT.Module.MedicalCases.Services
             if (before == null)
             {
                 // 创建操作 - 只记录新值
+                // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
                 var newValues = new Dictionary<string, object?>
                 {
                     ["PatientId"] = after.PatientId,
                     ["PatientName"] = after.PatientName,
-                    ["DoctorId"] = after.DoctorId,
+                    ["UserId"] = after.UserId,
                     ["DoctorName"] = after.DoctorName,
                     ["CaseStatus"] = after.CaseStatus.ToString(),
                     ["Remark"] = after.Remark
@@ -142,14 +143,14 @@ namespace LYBT.Module.MedicalCases.Services
             var newValuesDict = new Dictionary<string, object?>();
 
             // 检查各字段变更
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, ConsultationDate移除
             CompareField("PatientId", before.PatientId, after.PatientId, changedFields, oldValues, newValuesDict);
             CompareField("PatientName", before.PatientName, after.PatientName, changedFields, oldValues, newValuesDict);
-            CompareField("DoctorId", before.DoctorId, after.DoctorId, changedFields, oldValues, newValuesDict);
+            CompareField("UserId", before.UserId, after.UserId, changedFields, oldValues, newValuesDict);
             CompareField("DoctorName", before.DoctorName, after.DoctorName, changedFields, oldValues, newValuesDict);
             CompareField("CaseStatus", before.CaseStatus.ToString(), after.CaseStatus.ToString(), changedFields, oldValues, newValuesDict);
             CompareField("Remark", before.Remark, after.Remark, changedFields, oldValues, newValuesDict);
             CompareField("NeedsPrescription", before.NeedsPrescription, after.NeedsPrescription, changedFields, oldValues, newValuesDict);
-            CompareField("ConsultationDate", before.ConsultationDate, after.ConsultationDate, changedFields, oldValues, newValuesDict);
             CompareField("IsDeleted", before.IsDeleted, after.IsDeleted, changedFields, oldValues, newValuesDict);
 
             if (changedFields.Count == 0)

@@ -22,6 +22,7 @@ namespace LYBT.Module.Prescriptions.Mapping
                 .ForMember(dest => dest.Status, opt => opt.Ignore()); // 实体无此字段
 
             // Prescription -> PrescriptionDetailDto
+            // OpenSpec: simplify-medicalcase-dataflow - Indication/FormulaSource/Diagnosis已从实体和DTO删除
             CreateMap<Prescription, PrescriptionDetailDto>()
                 .ForMember(dest => dest.SingleDosePrice, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore())
@@ -29,8 +30,6 @@ namespace LYBT.Module.Prescriptions.Mapping
                 .ForMember(dest => dest.DuplicateWarning, opt => opt.Ignore())
                 .ForMember(dest => dest.MissingDrugWarning, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
-                .ForMember(dest => dest.Usage, opt => opt.Ignore())
-                .ForMember(dest => dest.Diagnosis, opt => opt.Ignore()) // 实体无此字段
                 .ForMember(dest => dest.Items, opt => opt.Ignore()); // 单独映射子项
 
             // PrescriptionItem -> PrescriptionItemDto
@@ -46,18 +45,15 @@ namespace LYBT.Module.Prescriptions.Mapping
             // ============================================
 
             // PrescriptionInputDto -> Prescription (统一输入)
-            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
+            // OpenSpec: simplify-medicalcase-dataflow - Indication/FormulaSource已从实体删除
             CreateMap<PrescriptionInputDto, Prescription>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // Id由系统生成或更新时保留
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore()) // 由Service设置
-                .ForMember(dest => dest.Indication, opt => opt.Ignore())
-                .ForMember(dest => dest.ReferencedFormulas, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.LastPrintedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintCount, opt => opt.Ignore())
                 .ForMember(dest => dest.IsPrinted, opt => opt.Ignore())
                 .ForMember(dest => dest.PrescriptionNumber, opt => opt.Ignore())
-                .ForMember(dest => dest.FormulaSource, opt => opt.Ignore())
                 .ForMember(dest => dest.Items, opt => opt.Ignore()) // Items单独处理
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintLogs, opt => opt.Ignore())

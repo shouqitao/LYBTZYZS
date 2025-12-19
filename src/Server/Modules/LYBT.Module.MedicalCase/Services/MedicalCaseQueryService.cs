@@ -91,9 +91,10 @@ namespace LYBT.Module.MedicalCases.Services
 
                 // OpenSpec: optimize-module-list-ui - 角色过滤
                 // 非管理员只能看到自己创建的医案
+                // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
                 if (!isAdmin && currentDoctorId.HasValue)
                 {
-                    filteredItems = filteredItems.Where(m => m.DoctorId == currentDoctorId.Value);
+                    filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
                     _logger.LogDebug("应用角色过滤，DoctorId: {DoctorId}", currentDoctorId.Value);
                 }
 
@@ -147,9 +148,10 @@ namespace LYBT.Module.MedicalCases.Services
                         (m.Consultation != null && m.Consultation.TCMDiagnosis != null && m.Consultation.TCMDiagnosis.Contains(keyword)));
                 }
 
+                // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
                 if (!isAdmin && currentDoctorId.HasValue)
                 {
-                    filteredItems = filteredItems.Where(m => m.DoctorId == currentDoctorId.Value);
+                    filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
                 }
 
                 var dtos = _mapper.Map<List<MedicalCaseListDto>>(filteredItems.ToList());
@@ -236,8 +238,8 @@ namespace LYBT.Module.MedicalCases.Services
 
                 if (result != null)
                 {
-                    _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, DoctorId: {DoctorId}",
-                        result.Id, result.CaseStatus, result.DoctorId);
+                    _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, UserId: {UserId}",
+                        result.Id, result.CaseStatus, result.UserId);
                 }
                 else
                 {

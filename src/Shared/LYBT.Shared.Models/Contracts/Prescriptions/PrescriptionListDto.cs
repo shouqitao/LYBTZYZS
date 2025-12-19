@@ -21,9 +21,7 @@ public class PrescriptionListDto
     [DisplayName("医疗案例ID")]
     public Guid MedicalCaseId { get; set; }
 
-    /// <summary>主治</summary>
-    [DisplayName("主治")]
-    public string? Indication { get; set; }
+    // OpenSpec: simplify-medicalcase-dataflow - Indication已从Prescription移除，打印时从Consultation.TCMDiagnosis获取
 
     /// <summary>剂数</summary>
     [DisplayName("剂数")]

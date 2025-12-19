@@ -57,17 +57,20 @@ namespace LYBT.Module.MedicalCases.Mapping
             // MedicalCaseInputDto -> MedicalCase (统一创建/更新)
             // 注意：MedicalCaseInputDto 是扁平化 DTO，部分字段应映射到 Consultation 实体
             // 此配置仅映射 MedicalCase 实体字段，Consultation 字段由 Service 层处理
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, ConsultationDate/VisitDate删除
             CreateMap<MedicalCaseInputDto, LYBT.Entities.MedicalCases.MedicalCase>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // Service层生成
                 .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.PatientId))
-                .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.DoctorId))
-                .ForMember(dest => dest.ConsultationDate, opt => opt.MapFrom(src => src.VisitDate))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
                 .ForMember(dest => dest.Remark, opt => opt.MapFrom(src => src.Remark))
+                // ConsultationDate已删除，使用CreatedAt代替
                 // 以下字段由 Service 层管理
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
                 .ForMember(dest => dest.CaseStatus, opt => opt.Ignore())
                 .ForMember(dest => dest.NeedsPrescription, opt => opt.Ignore())
+                .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
+                .ForMember(dest => dest.CompletedAt, opt => opt.Ignore())
                 // 导航属性
                 .ForMember(dest => dest.Consultation, opt => opt.Ignore())
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore())
@@ -97,31 +100,8 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
             // Request映射: PrescriptionInputDto -> Prescription (Shared层)
-            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
-            CreateMap<PrescriptionInputDto, LYBT.Entities.Prescriptions.Prescription>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
-                .ForMember(dest => dest.PrintVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.LastPrintedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.PrintCount, opt => opt.Ignore())
-                .ForMember(dest => dest.IsPrinted, opt => opt.Ignore())
-                .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
-                .ForMember(dest => dest.PrintLogs, opt => opt.Ignore())
-                .ForMember(dest => dest.Indication, opt => opt.Ignore())
-                .ForMember(dest => dest.Discount, opt => opt.Ignore())
-                .ForMember(dest => dest.ReferencedFormulas, opt => opt.Ignore())
-                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items))
-                // BaseEntity 审计字段
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
-
-            // Request映射: PrescriptionInputDto -> Prescription (Shared层)
             // 注意：Items需要在Service层手动处理（删除旧项，添加新项），不能通过AutoMapper直接映射
-            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
+            // OpenSpec: simplify-medicalcase-dataflow - Indication/FormulaSource已从实体删除
             CreateMap<PrescriptionInputDto, LYBT.Entities.Prescriptions.Prescription>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
@@ -132,9 +112,7 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintLogs, opt => opt.Ignore())
                 .ForMember(dest => dest.PrescriptionNumber, opt => opt.Ignore())
-                .ForMember(dest => dest.Indication, opt => opt.Ignore())
-                .ForMember(dest => dest.FormulaSource, opt => opt.Ignore())
-                .ForMember(dest => dest.ReferencedFormulas, opt => opt.Ignore())
+                // Indication/FormulaSource已从实体删除
                 .ForMember(dest => dest.Items, opt => opt.Ignore()) // Items需在Service层手动处理
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())

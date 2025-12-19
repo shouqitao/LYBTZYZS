@@ -19,7 +19,7 @@ public class MedicalCaseDetailModel : BindableBase
     private Guid _id;
     private Guid _patientId;
     private string _patientName = string.Empty;
-    private DateTime _consultationDate;
+    // ConsultationDate已删除，使用CreatedAt代替
     private MedicalCaseStatus _status = MedicalCaseStatus.Draft;
     private string? _remark;
 
@@ -32,7 +32,7 @@ public class MedicalCaseDetailModel : BindableBase
     // 处方摘要（只读）
     private int? _herbCount;
     private int? _doseCount;
-    private string? _formulaSource;
+    private string? _referencedFormulas;
     private ObservableCollection<PrescriptionItemDto> _prescriptionItems = new();
 
     // 审计信息
@@ -61,12 +61,9 @@ public class MedicalCaseDetailModel : BindableBase
         set => SetProperty(ref _patientName, value);
     }
 
-    /// <summary>就诊日期</summary>
-    public DateTime ConsultationDate
-    {
-        get => _consultationDate;
-        set => SetProperty(ref _consultationDate, value);
-    }
+    // ConsultationDate属性已删除，使用CreatedAt代替
+    /// <summary>就诊日期（使用CreatedAt）</summary>
+    public DateTime ConsultationDate => CreatedAt;
 
     /// <summary>状态</summary>
     public MedicalCaseStatus Status
@@ -148,12 +145,16 @@ public class MedicalCaseDetailModel : BindableBase
         set => SetProperty(ref _doseCount, value);
     }
 
-    /// <summary>来源（自拟方/验方名）</summary>
-    public string? FormulaSource
+    /// <summary>引用验方（验方名称列表，逗号分隔）</summary>
+    /// <remarks>OpenSpec: simplify-medicalcase-dataflow - FormulaSource重命名为ReferencedFormulas</remarks>
+    public string? ReferencedFormulas
     {
-        get => _formulaSource;
-        set => SetProperty(ref _formulaSource, value);
+        get => _referencedFormulas;
+        set => SetProperty(ref _referencedFormulas, value);
     }
+
+    /// <summary>来源显示（兼容旧代码）</summary>
+    public string? FormulaSource => ReferencedFormulas;
 
     /// <summary>处方摘要（格式化显示）</summary>
     public string PrescriptionSummary
@@ -226,6 +227,7 @@ public class MedicalCaseDetailModel : BindableBase
     #region 工厂方法
 
     /// <summary>从MedicalCaseDetailDto创建模型</summary>
+    /// <remarks>OpenSpec: simplify-medicalcase-dataflow - ConsultationDate删除，使用CreatedAt</remarks>
     public static MedicalCaseDetailModel FromDto(MedicalCaseDetailDto dto)
     {
         var model = new MedicalCaseDetailModel
@@ -233,7 +235,7 @@ public class MedicalCaseDetailModel : BindableBase
             Id = dto.Id,
             PatientId = dto.PatientId,
             PatientName = dto.PatientName ?? string.Empty,
-            ConsultationDate = dto.ConsultationDate,
+            // ConsultationDate已删除，使用CreatedAt代替
             Status = dto.CaseStatus,
             Remark = dto.Remark,
             CreatedAt = dto.CreatedAt,
@@ -255,7 +257,7 @@ public class MedicalCaseDetailModel : BindableBase
         {
             model.HerbCount = dto.Prescription.Items?.Count ?? 0;
             model.DoseCount = dto.Prescription.DosageCount;
-            model.FormulaSource = dto.Prescription.FormulaSource ?? "自拟方";
+            model.ReferencedFormulas = dto.Prescription.ReferencedFormulas ?? "自拟方";
 
             // 填充处方药材列表
             if (dto.Prescription.Items != null)
@@ -296,6 +298,7 @@ public class MedicalCaseDetailModel : BindableBase
     }
 
     /// <summary>克隆模型</summary>
+    /// <remarks>OpenSpec: simplify-medicalcase-dataflow - ConsultationDate删除</remarks>
     public MedicalCaseDetailModel Clone()
     {
         var clone = new MedicalCaseDetailModel
@@ -303,7 +306,7 @@ public class MedicalCaseDetailModel : BindableBase
             Id = Id,
             PatientId = PatientId,
             PatientName = PatientName,
-            ConsultationDate = ConsultationDate,
+            // ConsultationDate已删除，使用CreatedAt代替
             Status = Status,
             Remark = Remark,
             PresentIllness = PresentIllness,
@@ -312,7 +315,7 @@ public class MedicalCaseDetailModel : BindableBase
             TCMDiagnosis = TCMDiagnosis,
             HerbCount = HerbCount,
             DoseCount = DoseCount,
-            FormulaSource = FormulaSource,
+            ReferencedFormulas = ReferencedFormulas,
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt,
             DoctorName = DoctorName,

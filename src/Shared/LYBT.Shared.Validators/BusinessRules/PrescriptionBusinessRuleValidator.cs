@@ -50,25 +50,23 @@ namespace LYBT.Shared.Validators.BusinessRules
 
         /// <summary>
         /// 验证基本输入信息
+        /// OpenSpec: simplify-medicalcase-dataflow - Indication/FormulaSource已删除
         /// </summary>
         private Task<ValidationResult> ValidateBasicInputAsync(PrescriptionInputDto input)
         {
-            // 主治验证
-            if (!string.IsNullOrEmpty(input.Indication) && input.Indication.Length > 500)
+            // Indication已删除 - 打印时从Consultation.TCMDiagnosis获取
+            // FormulaSource已删除 - 与ReferencedFormulas功能重复
+
+            // 引用验方验证
+            if (!string.IsNullOrEmpty(input.ReferencedFormulas) && input.ReferencedFormulas.Length > 500)
             {
-                return Task.FromResult(Failure("主治长度不能超过500个字符"));
+                return Task.FromResult(Failure("引用验方长度不能超过500个字符"));
             }
 
             // 医嘱验证
             if (!string.IsNullOrEmpty(input.Advice) && input.Advice.Length > 500)
             {
                 return Task.FromResult(Failure("医嘱长度不能超过500个字符"));
-            }
-
-            // 验方来源验证
-            if (!string.IsNullOrEmpty(input.FormulaSource) && input.FormulaSource.Length > 200)
-            {
-                return Task.FromResult(Failure("验方来源长度不能超过200个字符"));
             }
 
             // 备注验证

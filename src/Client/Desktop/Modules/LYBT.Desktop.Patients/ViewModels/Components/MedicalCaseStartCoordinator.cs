@@ -90,8 +90,8 @@ public class MedicalCaseStartCoordinator
         if (unfinishedCase == null) return false;
 
         var currentDoctorId = _sessionManager.CurrentUser?.Id ?? Guid.Empty;
-        return unfinishedCase.DoctorId != Guid.Empty &&
-               unfinishedCase.DoctorId != currentDoctorId;
+        return unfinishedCase.UserId != Guid.Empty &&
+               unfinishedCase.UserId != currentDoctorId;
     }
 
     /// <summary>

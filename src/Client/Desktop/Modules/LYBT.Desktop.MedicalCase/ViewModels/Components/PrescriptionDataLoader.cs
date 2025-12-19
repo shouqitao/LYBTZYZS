@@ -183,7 +183,7 @@ public class PrescriptionDataLoader
             // 过滤掉当前医案，只显示其他历史医案
             var historyCases = cases
                 .Where(c => c.Id != currentMedicalCaseId)
-                .OrderByDescending(c => c.ConsultationDate);
+                .OrderByDescending(c => c.CreatedAt);
 
             foreach (var caseItem in historyCases)
             {

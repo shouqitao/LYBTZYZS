@@ -16,15 +16,13 @@ namespace LYBT.Shared.Validators.Prescriptions
                 .NotEmpty().WithMessage("医疗案例ID不能为空")
                 .When(x => !x.Id.HasValue);
 
-            // 诊断验证
-            RuleFor(x => x.Diagnosis)
-                .MaximumLength(500).WithMessage("诊断长度不能超过500个字符")
-                .When(x => !string.IsNullOrEmpty(x.Diagnosis));
+            // Diagnosis验证已删除 - 冗余字段
+            // Indication验证已删除 - 打印时从Consultation.TCMDiagnosis获取
 
-            // 主治验证
-            RuleFor(x => x.Indication)
-                .MaximumLength(500).WithMessage("主治长度不能超过500个字符")
-                .When(x => !string.IsNullOrEmpty(x.Indication));
+            // 引用验方验证
+            RuleFor(x => x.ReferencedFormulas)
+                .MaximumLength(500).WithMessage("引用验方长度不能超过500个字符")
+                .When(x => !string.IsNullOrEmpty(x.ReferencedFormulas));
 
             // 医嘱验证
             RuleFor(x => x.Advice)

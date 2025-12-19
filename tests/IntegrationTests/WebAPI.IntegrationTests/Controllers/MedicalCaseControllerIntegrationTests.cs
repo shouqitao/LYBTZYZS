@@ -121,10 +121,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange
             _output.WriteLine($"🔍 使用测试患者ID: {_testPatientId}");
 
+            // OpenSpec: simplify-medicalcase-dataflow - VisitDate已删除，用CreatedAt代替
             var request = new
             {
-                PatientId = _testPatientId,
-                VisitDate = DateTime.Now
+                PatientId = _testPatientId
             };
 
             // Act
@@ -148,17 +148,18 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         }
 
         /// <summary>
-        /// Issue #2232 Task 4.1.1: 验证DoctorId正确设置
-        /// 测试目标: 验证创建医案时,DoctorId从JWT Token的NameIdentifier中正确设置
+        /// Issue #2232 Task 4.1.1: 验证UserId正确设置
+        /// OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
+        /// 测试目标: 验证创建医案时,UserId从JWT Token的NameIdentifier中正确设置
         /// </summary>
         [Fact]
-        public async Task CreateMedicalCase_ShouldSetDoctorId_WhenCalled()
+        public async Task CreateMedicalCase_ShouldSetUserId_WhenCalled()
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - VisitDate已删除
             var request = new
             {
-                PatientId = _testPatientId,
-                VisitDate = DateTime.Now
+                PatientId = _testPatientId
             };
 
             // Act
@@ -168,12 +169,13 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             response.ShouldBeOk();
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
 
-            // Issue #2232: 验证DoctorId被正确设置为JWT Token中的NameIdentifier
+            // Issue #2232: 验证UserId被正确设置为JWT Token中的NameIdentifier
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
             apiResponse.Data.Should().NotBeNull();
-            apiResponse.Data!.DoctorId.Should().Be(FixedDoctorId);
-            apiResponse.Data.DoctorId.Should().NotBe(Guid.Empty);
+            apiResponse.Data!.UserId.Should().Be(FixedDoctorId);
+            apiResponse.Data.UserId.Should().NotBe(Guid.Empty);
 
-            _output.WriteLine($"✅ DoctorId正确设置: {apiResponse.Data.DoctorId}");
+            _output.WriteLine($"✅ UserId正确设置: {apiResponse.Data.UserId}");
         }
 
         /// <summary>
@@ -184,10 +186,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         public async Task CreateMedicalCase_ShouldSetDoctorName_FromUserTable()
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - VisitDate已删除
             var request = new
             {
-                PatientId = _testPatientId,
-                VisitDate = DateTime.Now
+                PatientId = _testPatientId
             };
 
             // Act
@@ -213,10 +215,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         public async Task CreateMedicalCase_ShouldSetPatientName_FromPatientTable()
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - VisitDate已删除
             var request = new
             {
-                PatientId = _testPatientId,
-                VisitDate = DateTime.Now
+                PatientId = _testPatientId
             };
 
             // Act
@@ -244,10 +246,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         public async Task CreateMedicalCase_ShouldThrowException_WhenGuidEmpty()
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - VisitDate已删除
             var request = new
             {
-                PatientId = Guid.Empty, // 使用空GUID
-                VisitDate = DateTime.Now
+                PatientId = Guid.Empty // 使用空GUID
             };
 
             // Act
@@ -272,17 +274,16 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             // Arrange - 先创建一个病案（使用测试基类中已存在的患者）
             // Issue #2231: 使用_testPatientId而非Guid.NewGuid()，确保患者存在
+            // OpenSpec: simplify-medicalcase-dataflow - VisitDate已删除
             var firstRequest = new
             {
-                PatientId = _testPatientId,
-                VisitDate = DateTime.Now
+                PatientId = _testPatientId
             };
             await Client.PostAsJsonAsync("/api/v1/medicalcases", firstRequest);
 
             var secondRequest = new
             {
-                PatientId = _testPatientId,
-                VisitDate = DateTime.Now
+                PatientId = _testPatientId
             };
 
             // Act - 尝试为同一患者再创建病案
@@ -403,10 +404,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案、辨证、标记需要处方
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
             var request = new PrescriptionInputDto
             {
                 PatientId = medicalCase.PatientId,
-                DoctorId = medicalCase.DoctorId,
+                UserId = medicalCase.UserId,
                 Items = new List<PrescriptionItemInputDto>
                 {
                     new PrescriptionItemInputDto
@@ -437,10 +439,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案并已有处方
             var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
             var request = new PrescriptionInputDto
             {
                 PatientId = medicalCase.PatientId,
-                DoctorId = medicalCase.DoctorId,
+                UserId = medicalCase.UserId,
                 Items = new List<PrescriptionItemInputDto>()
             };
 
@@ -463,11 +466,12 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案和处方
             var (medicalCase, prescription) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
             var request = new PrescriptionInputDto
             {
                 Id = prescription.Id,
                 PatientId = medicalCase.PatientId,
-                UserId = medicalCase.DoctorId,
+                UserId = medicalCase.UserId,
                 Items = new List<PrescriptionItemInputDto>
                 {
                     new() { HerbId = Guid.NewGuid(), HerbName = "测试中药", Quantity = 6 }
@@ -879,7 +883,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建Active状态的病案
             var medicalCase = await CreateTestMedicalCaseAsync();
 
-            var request = new MedicalCaseAggregateInputDto
+            var request = new MedicalCaseInputDto
             {
                 Id = medicalCase.Id,
                 Remark = "仅诊断无处方测试",
@@ -888,7 +892,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     ChiefComplaint = "头痛三天",
                     TCMDiagnosis = "肝阳上亢"
                 },
-                Prescription = new PrescriptionAggregateInputDto
+                Prescription = new PrescriptionInputDto
                 {
                     NeedsPrescription = false,
                     Items = new List<PrescriptionItemInputDto>()
@@ -921,7 +925,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建Active状态的病案
             var medicalCase = await CreateTestMedicalCaseAsync();
 
-            var request = new MedicalCaseAggregateInputDto
+            var request = new MedicalCaseInputDto
             {
                 Id = medicalCase.Id,
                 Remark = "完整保存测试",
@@ -931,7 +935,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     TCMDiagnosis = "肝阳上亢",
                     TreatmentPrinciple = "平肝潜阳"
                 },
-                Prescription = new PrescriptionAggregateInputDto
+                Prescription = new PrescriptionInputDto
                 {
                     NeedsPrescription = true,
                     DosageCount = 7,
@@ -971,7 +975,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var medicalCase = await CreateTestMedicalCaseAsync();
             var wrongId = Guid.NewGuid();
 
-            var request = new MedicalCaseAggregateInputDto
+            var request = new MedicalCaseInputDto
             {
                 Id = wrongId, // 与URL中的ID不匹配
                 Consultation = new ConsultationInputDto
@@ -1001,7 +1005,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建并完成病案
             var medicalCase = await CreateAndCompleteMedicalCaseAsync();
 
-            var request = new MedicalCaseAggregateInputDto
+            var request = new MedicalCaseInputDto
             {
                 Id = medicalCase.Id,
                 Consultation = new ConsultationInputDto
@@ -1031,7 +1035,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange
             var nonExistingId = Guid.NewGuid();
 
-            var request = new MedicalCaseAggregateInputDto
+            var request = new MedicalCaseInputDto
             {
                 Id = nonExistingId,
                 Consultation = new ConsultationInputDto
@@ -1061,7 +1065,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案
             var medicalCase = await CreateTestMedicalCaseAsync();
 
-            var request = new MedicalCaseAggregateInputDto
+            var request = new MedicalCaseInputDto
             {
                 Id = Guid.Empty // 空ID与URL中的ID不匹配
             };
@@ -1087,7 +1091,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案并创建处方
             var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            var request = new MedicalCaseAggregateInputDto
+            var request = new MedicalCaseInputDto
             {
                 Id = medicalCase.Id,
                 Consultation = new ConsultationInputDto
@@ -1095,7 +1099,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     ChiefComplaint = "更新后的主诉",
                     TCMDiagnosis = "更新后的诊断"
                 },
-                Prescription = new PrescriptionAggregateInputDto
+                Prescription = new PrescriptionInputDto
                 {
                     NeedsPrescription = true,
                     DosageCount = 14, // 更新剂数
@@ -1157,10 +1161,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 _output.WriteLine($"✅ 患者实体已创建: PatientId={newPatientId}, SavedEntities={saveResult}");
             }
 
+            // OpenSpec: simplify-medicalcase-dataflow - VisitDate已删除
             var request = new
             {
-                PatientId = newPatientId,
-                VisitDate = DateTime.Now
+                PatientId = newPatientId
             };
 
             var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", request);
@@ -1251,10 +1255,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
             var prescriptionRequest = new PrescriptionInputDto
             {
                 PatientId = medicalCase.PatientId,
-                DoctorId = medicalCase.DoctorId,
+                UserId = medicalCase.UserId,
                 Items = new List<PrescriptionItemInputDto>
                 {
                     new PrescriptionItemInputDto

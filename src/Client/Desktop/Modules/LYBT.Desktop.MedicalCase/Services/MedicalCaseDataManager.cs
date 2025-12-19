@@ -285,7 +285,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
     // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
     private bool IsMedicalCaseChanged() => _currentDetail != null && _originalDetail != null &&
         (_currentDetail.CaseNumber != _originalDetail.CaseNumber ||
-         _currentDetail.PatientId != _originalDetail.PatientId || _currentDetail.DoctorId != _originalDetail.DoctorId ||
+         _currentDetail.PatientId != _originalDetail.PatientId || _currentDetail.UserId != _originalDetail.UserId ||
          _currentDetail.CaseStatus != _originalDetail.CaseStatus || _currentDetail.Remark != _originalDetail.Remark);
 
     // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
@@ -302,7 +302,7 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
     {
         if (_currentDetail?.Prescription == null || _originalDetail?.Prescription == null) return false;
         var c = _currentDetail.Prescription; var o = _originalDetail.Prescription;
-        return c.Indication != o.Indication || c.DosageCount != o.DosageCount || c.Usage != o.Usage ||
+        return c.DosageCount != o.DosageCount || c.Usage != o.Usage ||
                c.Discount != o.Discount || c.Advice != o.Advice || c.Remark != o.Remark;
     }
 
@@ -315,8 +315,8 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
     {
         Id = s.Id, CaseNumber = s.CaseNumber, PatientId = s.PatientId,
         PatientName = s.PatientName, PatientGender = s.PatientGender, PatientAge = s.PatientAge,
-        DoctorId = s.DoctorId, DoctorName = s.DoctorName, ConsultationId = s.ConsultationId,
-        PrescriptionId = s.PrescriptionId, ConsultationDate = s.ConsultationDate, CaseStatus = s.CaseStatus,
+        UserId = s.UserId, DoctorName = s.DoctorName, ConsultationId = s.ConsultationId,
+        PrescriptionId = s.PrescriptionId, CaseStatus = s.CaseStatus,
         Remark = s.Remark, CreatedAt = s.CreatedAt, UpdatedAt = s.UpdatedAt,
         Consultation = s.Consultation != null ? CloneConsultation(s.Consultation) : null,
         Prescription = s.Prescription != null ? ClonePrescription(s.Prescription) : null
@@ -336,8 +336,8 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
     private PrescriptionDetailDto ClonePrescription(PrescriptionDetailDto s) => new()
     {
         Id = s.Id, PrescriptionNumber = s.PrescriptionNumber, MedicalCaseId = s.MedicalCaseId,
-        Indication = s.Indication, DosageCount = s.DosageCount,
-        Usage = s.Usage, Discount = s.Discount, Advice = s.Advice, FormulaSource = s.FormulaSource,
+        DosageCount = s.DosageCount,
+        Usage = s.Usage, Discount = s.Discount, Advice = s.Advice,
         ReferencedFormulas = s.ReferencedFormulas, Remark = s.Remark, SingleDosePrice = s.SingleDosePrice,
         TotalPrice = s.TotalPrice, TotalWeight = s.TotalWeight, Status = s.Status,
         CreatedAt = s.CreatedAt, UpdatedAt = s.UpdatedAt, Items = s.Items
@@ -350,9 +350,9 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
         target.CaseNumber = source.CaseNumber;
         target.PatientId = source.PatientId; target.PatientName = source.PatientName;
         target.PatientGender = source.PatientGender; target.PatientAge = source.PatientAge;
-        target.DoctorId = source.DoctorId; target.DoctorName = source.DoctorName;
+        target.UserId = source.UserId; target.DoctorName = source.DoctorName;
         target.ConsultationId = source.ConsultationId; target.PrescriptionId = source.PrescriptionId;
-        target.ConsultationDate = source.ConsultationDate; target.CaseStatus = source.CaseStatus;
+        target.CaseStatus = source.CaseStatus;
         target.Remark = source.Remark; target.UpdatedAt = source.UpdatedAt;
     }
 

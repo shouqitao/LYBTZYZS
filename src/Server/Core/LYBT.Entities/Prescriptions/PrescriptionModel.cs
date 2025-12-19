@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
@@ -7,38 +7,24 @@ namespace LYBT.Entities.Prescriptions
 {
 
     /// <summary>
-    /// 处方实体 - UltraThink v2.0架构简化版
-    /// 合并了原BasePrescription和PrescriptionModel
-    /// 价格计算在DTO层处理，实体只存储基础数据和折扣信息
-    /// 作为MedicalCase的可选组成部分（一对零或一关系）
+    /// 处方实体
+    /// OpenSpec: simplify-medicalcase-dataflow
+    /// 作为MedicalCase的可选组成部分（1:0..1关系）
     /// </summary>
     [Table("Prescriptions")]
     public class Prescription : BaseEntity
     {
-        // Id字段继承自BaseEntity
-
         /// <summary>医疗案例ID（外键）</summary>
         [Required]
         [DisplayName("医疗案例ID")]
         public Guid MedicalCaseId { get; set; }
 
         /// <summary>
-        /// 处方编号（格式：RX-YYYYMMDD-NNNN，例如：RX-20251021-0001）
-        /// 可为空以兼容旧数据，新建处方时自动生成
-        /// Issue #1551: 处方自动编号功能
+        /// 处方编号（格式：RX-YYYYMMDD-NNNN）
         /// </summary>
         [StringLength(20)]
         [DisplayName("处方编号")]
         public string? PrescriptionNumber { get; set; }
-
-        // PatientId和UserId已移除，通过MedicalCase获取
-        // OpenSpec: optimize-entity-data-flow - 删除冗余字段
-        // 审计字段（CreatedBy等）继承自BaseEntity
-
-        /// <summary>主治（适应症/主要症状描述）</summary>
-        [StringLength(500)]
-        [DisplayName("主治")]
-        public string? Indication { get; set; }
 
         /// <summary>处方帖数</summary>
         [DisplayName("处方帖数")]
@@ -49,18 +35,18 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("折扣")]
         public decimal Discount { get; set; } = 1.0m;
 
+        /// <summary>处方用法（如"每日一剂，水煎服"）</summary>
+        [StringLength(500)]
+        [DisplayName("处方用法")]
+        public string? Usage { get; set; }
+
         /// <summary>医嘱</summary>
         [StringLength(500)]
         [DisplayName("医嘱")]
         public string? Advice { get; set; }
 
-        /// <summary>验方来源（自动填写：调用验方时自动根据验方名称填写，多个验方用逗号分隔）</summary>
-        [StringLength(200)]
-        [DisplayName("验方来源")]
-        public string? FormulaSource { get; set; }
-
         /// <summary>
-        /// 引用的验方名称列表，逗号分隔 (Issue #1365 ENTRY-7)
+        /// 引用的验方名称列表，逗号分隔
         /// 用于记录从哪些验方导入了药材，例如："逍遥散,六味地黄丸"
         /// </summary>
         [StringLength(500)]
@@ -71,6 +57,9 @@ namespace LYBT.Entities.Prescriptions
         [StringLength(500)]
         [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        // Indication已删除，打印时从Consultation.TCMDiagnosis获取
+        // FormulaSource已删除，与ReferencedFormulas功能重复
 
         // 打印版本管理字段
 

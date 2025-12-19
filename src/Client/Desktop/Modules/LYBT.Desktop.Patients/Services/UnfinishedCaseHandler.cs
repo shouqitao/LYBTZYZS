@@ -68,9 +68,9 @@ public class UnfinishedCaseHandler
                 _pendingCaseCache[patientId] = unfinishedCase.Id;
 
                 // 判断是否是其他医生的医案
-                var isOtherDoctorCase = unfinishedCase.DoctorId != doctorId;
+                var isOtherDoctorCase = unfinishedCase.UserId != doctorId;
                 _logger.LogInformation("找到未完成医案,MedicalCaseId={MedicalCaseId}, DoctorId={CaseDoctorId}, DoctorName={DoctorName}, IsOtherDoctor={IsOtherDoctor}",
-                    unfinishedCase.Id, unfinishedCase.DoctorId, unfinishedCase.DoctorName ?? "未知", isOtherDoctorCase);
+                    unfinishedCase.Id, unfinishedCase.UserId, unfinishedCase.DoctorName ?? "未知", isOtherDoctorCase);
             }
             else
             {
@@ -223,7 +223,7 @@ public class CaseCheckCompletedEventArgs : EventArgs
     /// <summary>
     /// 是否是其他医生的未完成医案
     /// </summary>
-    public bool IsOtherDoctorCase => UnfinishedCase != null && UnfinishedCase.DoctorId != CurrentDoctorId;
+    public bool IsOtherDoctorCase => UnfinishedCase != null && UnfinishedCase.UserId != CurrentDoctorId;
 
     /// <summary>
     /// 其他医生的名称（如果是其他医生的医案）

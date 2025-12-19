@@ -219,7 +219,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             SetIsBusy(true, "正在保存...");
             // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合保存
             // OpenSpec: refactor-diagnosis-fields - 移除SyncRemarkToPanel调用
-            var result = await _coordinator.SaveAggregateAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark, EditReason);
+            var result = await _coordinator.SaveAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark, EditReason);
             if (result.IsSuccess) { if (IsHistoricalEditMode && !string.IsNullOrWhiteSpace(EditReason)) Logger.LogInformation("历史修改保存，原因: {EditReason}", EditReason); await ShowSuccessMessageAsync("保存成功"); }
             else await ShowErrorMessageAsync(result.ErrorMessage ?? "保存失败");
         }
@@ -246,14 +246,14 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     private async Task SaveDraftOnlyAsync()
     {
         // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合暂存
-        try { SetIsBusy(true, "正在保存..."); await _coordinator.SaveDraftWithAggregateAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark); }
+        try { SetIsBusy(true, "正在保存..."); await _coordinator.SaveDraftAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark); }
         finally { SetIsBusy(false); }
     }
 
     private async Task CancelCaseOnlyAsync()
     {
         // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合取消
-        try { SetIsBusy(true, "正在处理..."); await _coordinator.CancelWithAggregateAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark); }
+        try { SetIsBusy(true, "正在处理..."); await _coordinator.CancelAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark); }
         finally { SetIsBusy(false); }
     }
 
@@ -269,7 +269,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             }
             SetIsBusy(true, WorkspaceMode == WorkspaceMode.Management ? "正在保存..." : "正在暂存...");
             // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合暂存
-            var result = await _coordinator.SaveDraftWithAggregateAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark);
+            var result = await _coordinator.SaveDraftAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark);
             if (result.IsSuccess) { _editModeStateMachine.EnterReadOnlyMode(); await ShowSuccessMessageAsync(WorkspaceMode == WorkspaceMode.Management ? "保存成功" : "医案已暂存，可随时点击'修改医案'继续编辑"); }
             else await ShowErrorMessageAsync(result.ErrorMessage ?? "保存失败");
         }
@@ -377,7 +377,6 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             MedicalCaseId = MedicalCaseId,
             DosageCount = prescriptionData.DosageCount,
             Usage = prescriptionData.Usage,
-            Indication = prescriptionData.Indication,
             Advice = prescriptionData.Advice,
             ReferencedFormulas = prescriptionData.ReferencedFormulas,
             Remark = prescriptionData.Remark,
@@ -391,7 +390,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         {
             SetIsBusy(true, "正在完成看诊...");
             // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合完成
-            var result = await _coordinator.CompleteWithAggregateAsync(
+            var result = await _coordinator.CompleteAsync(
                 MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(),
                 GetConsultationValidator(), GetPrescriptionValidator(), Remark, IsPrescriptionEnabled);
             if (result.IsSuccess)
@@ -434,7 +433,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         var currentUserRole = SessionManager?.CurrentUser?.Role;
         var isAdmin = currentUserRole == Shared.Models.Enums.UserRole.Admin || currentUserRole == Shared.Models.Enums.UserRole.SuperAdmin;
         var currentUserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
-        var isOwner = medicalCase.DoctorId == currentUserId;
+        var isOwner = medicalCase.UserId == currentUserId;
         var isCompleted = medicalCase.CaseStatus == Shared.Models.Enums.MedicalCaseStatus.Completed;
         var preferEditing = initialEditState == EditState.Editing || isHistoricalEdit;
         _editModeStateMachine.DetermineFromContext(WorkspaceMode, isCompleted, isOwner, isAdmin, preferEditing);

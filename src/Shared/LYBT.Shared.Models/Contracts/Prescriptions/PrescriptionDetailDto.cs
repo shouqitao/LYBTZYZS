@@ -21,19 +21,11 @@ public class PrescriptionDetailDto
     [DisplayName("医疗案例ID")]
     public Guid MedicalCaseId { get; set; }
 
-    /// <summary>主治</summary>
-    [DisplayName("主治")]
-    public string? Indication { get; set; }
-
-    /// <summary>诊断</summary>
-    [DisplayName("诊断")]
-    public string? Diagnosis { get; set; }
-
     /// <summary>剂数</summary>
     [DisplayName("剂数")]
     public int DosageCount { get; set; }
 
-    /// <summary>用法</summary>
+    /// <summary>处方用法（如"每日一剂，水煎服"）</summary>
     [DisplayName("用法")]
     public string? Usage { get; set; }
 
@@ -41,13 +33,13 @@ public class PrescriptionDetailDto
     [DisplayName("医嘱")]
     public string? Advice { get; set; }
 
-    /// <summary>验方来源</summary>
-    [DisplayName("验方来源")]
-    public string? FormulaSource { get; set; }
-
     /// <summary>引用的验方名称列表，逗号分隔</summary>
     [DisplayName("引用验方")]
     public string? ReferencedFormulas { get; set; }
+
+    // Indication已删除，打印时从Consultation.TCMDiagnosis获取
+    // FormulaSource已删除，与ReferencedFormulas功能重复
+    // Diagnosis已删除，冗余字段
 
     /// <summary>备注</summary>
     [DisplayName("备注")]

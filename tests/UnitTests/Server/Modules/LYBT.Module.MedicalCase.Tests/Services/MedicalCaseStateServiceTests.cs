@@ -252,16 +252,18 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             // Arrange
             var medicalCaseId = Guid.NewGuid();
             var operatorId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - ChiefComplaint已移除，使用PresentIllness
             var request = new ConsultationInputDto
             {
-                ChiefComplaint = "头痛",
+                PresentIllness = "头痛",
                 TCMDiagnosis = "风寒感冒"
             };
 
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                DoctorId = operatorId,
+                UserId = operatorId,
                 CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
@@ -289,10 +291,11 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var medicalCaseId = Guid.NewGuid();
             var operatorId = Guid.NewGuid();
 
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                DoctorId = operatorId,
+                UserId = operatorId,
                 CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
@@ -323,10 +326,11 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var operatorId = Guid.NewGuid();
             var reason = "患者取消就诊";
 
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                DoctorId = operatorId,
+                UserId = operatorId,
                 CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
@@ -352,10 +356,11 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var medicalCaseId = Guid.NewGuid();
             var operatorId = Guid.NewGuid();
 
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                DoctorId = operatorId,
+                UserId = operatorId,
                 CaseStatus = MedicalCaseStatus.Completed,
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };

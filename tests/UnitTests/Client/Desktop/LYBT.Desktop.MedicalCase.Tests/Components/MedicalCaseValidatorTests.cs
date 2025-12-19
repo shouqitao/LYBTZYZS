@@ -201,10 +201,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var medicalCase = CreateValidMedicalCaseDto();
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
 
-            // OpenSpec: unify-medicalcase-input-dto - 使用有效字段（ChiefComplaint已移至Consultation）
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var errors = new[]
             {
-                new ValidationFailure("DoctorId", "医生ID不能为空"),
+                new ValidationFailure("UserId", "医生ID不能为空"),
                 new ValidationFailure("PatientId", "患者ID不能为空")
             };
 
@@ -212,11 +212,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 .ReturnsAsync(new ValidationResult(errors));
 
             // Act
-            var result = await _sut.ValidatePropertyAsync("DoctorId");
+            var result = await _sut.ValidatePropertyAsync("UserId");
 
             // Assert
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle(e => e.PropertyName == "DoctorId");
+            result.Errors.Should().ContainSingle(e => e.PropertyName == "UserId");
             result.Errors.Should().NotContain(e => e.PropertyName == "PatientId");
         }
 
@@ -229,7 +229,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
         /// <summary>
         /// 创建有效的MedicalCaseDetailDto测试数据
-        /// OpenSpec: unify-medicalcase-input-dto - ChiefComplaint已移至Consultation，使用Diagnosis
+        /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
         /// </summary>
         private MedicalCaseDetailDto CreateValidMedicalCaseDto()
         {
@@ -239,7 +239,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 CaseNumber = "MC-2025-001",
                 Diagnosis = "感冒发热", // ChiefComplaint已移至Consultation
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),  // OpenSpec: DoctorId→UserId
                 CaseStatus = (MedicalCaseStatus)CaseStatus.Active,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -269,7 +269,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
         /// <summary>
         /// 创建有效的PrescriptionDetailDto测试数据
-        /// OpenSpec: unify-medicalcase-input-dto - PatientId, UserId已从PrescriptionDetailDto移除
+        /// OpenSpec: simplify-medicalcase-dataflow - PatientId, UserId, Indication已从PrescriptionDetailDto移除
         /// </summary>
         private PrescriptionDetailDto CreateValidPrescriptionDetailDto()
         {
@@ -277,8 +277,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                // PatientId, UserId已移除
-                Indication = "风寒感冒",
+                // PatientId, UserId, Indication已移除（Indication打印时从Consultation.TCMDiagnosis获取）
                 DosageCount = 3,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow

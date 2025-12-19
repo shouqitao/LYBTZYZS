@@ -48,16 +48,17 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
         public void MedicalCase_To_MedicalCaseDetailDto_ShouldMapCorrectly()
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, ConsultationDate删除
             var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 PatientName = "张三",
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 DoctorName = "李医生",
-                ConsultationDate = DateTime.Now,
                 CaseStatus = MedicalCaseStatus.Active,
                 Remark = "测试备注",
+                CaseNumber = "MC-20251219-001",
                 CreatedAt = DateTime.Now.AddDays(-1)
             };
 
@@ -69,23 +70,25 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
             dto.Id.Should().Be(medicalCase.Id);
             dto.PatientId.Should().Be(medicalCase.PatientId);
             dto.PatientName.Should().Be(medicalCase.PatientName);
-            dto.DoctorId.Should().Be(medicalCase.DoctorId);
+            dto.UserId.Should().Be(medicalCase.UserId);
             dto.DoctorName.Should().Be(medicalCase.DoctorName);
-            dto.ConsultationDate.Should().Be(medicalCase.ConsultationDate);
             dto.CaseStatus.Should().Be(medicalCase.CaseStatus);
             dto.Remark.Should().Be(medicalCase.Remark);
+            // CaseNumber由MappingProfile配置为Ignore，在Service层填充
+            dto.CaseNumber.Should().BeNull();
         }
 
         [Fact]
         public void MedicalCase_To_MedicalCaseDetailDto_WithNullRemark_ShouldMapCorrectly()
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 PatientName = "患者",
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 DoctorName = "医生",
                 CaseStatus = MedicalCaseStatus.Active,
                 Remark = null
@@ -102,19 +105,18 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
         #endregion
 
 
-        #region MedicalCaseInputDto -> MedicalCase 映射测试（Epic #1961）
+        #region MedicalCaseInputDto -> MedicalCase 映射测试（Epic #1961, OpenSpec: simplify-medicalcase-dataflow）
 
         [Fact]
         public void MedicalCaseInputDto_To_MedicalCase_ShouldMapCorrectly()
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, VisitDate删除
             var inputDto = new MedicalCaseInputDto
             {
                 Id = null, // 创建场景：Id为null
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                VisitDate = DateTime.Now,
-                ChiefComplaint = "主诉内容",
+                UserId = Guid.NewGuid(),
                 Remark = "备注信息"
             };
 
@@ -124,8 +126,7 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
             // Assert
             medicalCase.Should().NotBeNull();
             medicalCase.PatientId.Should().Be(inputDto.PatientId);
-            medicalCase.DoctorId.Should().Be(inputDto.DoctorId);
-            medicalCase.ConsultationDate.Should().Be(inputDto.VisitDate);
+            medicalCase.UserId.Should().Be(inputDto.UserId);
             medicalCase.Remark.Should().Be(inputDto.Remark);
         }
 
@@ -133,12 +134,12 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
         public void MedicalCaseInputDto_To_MedicalCase_ShouldIgnoreIdAndNavigationProperties()
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, VisitDate删除
             var inputDto = new MedicalCaseInputDto
             {
                 Id = Guid.NewGuid(), // 更新场景：提供Id但应被忽略
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                VisitDate = DateTime.Now
+                UserId = Guid.NewGuid()
             };
 
             // Act
@@ -156,11 +157,11 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
         public void MedicalCaseInputDto_WithMinimalData_ShouldMapSuccessfully()
         {
             // Arrange - 只提供必填字段
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, VisitDate删除
             var inputDto = new MedicalCaseInputDto
             {
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                VisitDate = DateTime.Now
+                UserId = Guid.NewGuid()
             };
 
             // Act
@@ -182,12 +183,13 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
         public void MedicalCase_To_MedicalCaseDetailDto_ShouldMapAllStatuses(MedicalCaseStatus status)
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 PatientName = "患者",
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 DoctorName = "医生",
                 CaseStatus = status
             };
@@ -224,12 +226,13 @@ namespace LYBT.Module.MedicalCases.Tests.Mapping
         public void MedicalCase_WithSpecialCharacters_ShouldMapCorrectly()
         {
             // Arrange
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 PatientName = "张三（男）",
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 DoctorName = "李医生/主治医师",
                 CaseStatus = MedicalCaseStatus.Active,
                 Remark = "患者体质偏寒，建议温服；忌食生冷/辛辣\n注意：复诊时间待定"

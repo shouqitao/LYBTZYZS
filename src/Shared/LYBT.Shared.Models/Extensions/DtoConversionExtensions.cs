@@ -14,7 +14,7 @@ public static class DtoConversionExtensions
 
     /// <summary>
     /// MedicalCaseDetailDto转换为MedicalCaseInputDto
-    /// OpenSpec: unify-medicalcase-input-dto - 仅转换核心字段
+    /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, VisitDate/ConsultationDate删除
     /// </summary>
     public static MedicalCaseInputDto ToInputDto(this MedicalCaseDetailDto dto)
     {
@@ -22,8 +22,8 @@ public static class DtoConversionExtensions
         {
             Id = dto.Id,
             PatientId = dto.PatientId,
-            DoctorId = dto.DoctorId,
-            VisitDate = dto.ConsultationDate,
+            UserId = dto.UserId,
+            // VisitDate/ConsultationDate已删除，使用CreatedAt代替
             Remark = dto.Remark
         };
     }
@@ -52,15 +52,16 @@ public static class DtoConversionExtensions
 
     /// <summary>
     /// PrescriptionDetailDto转换为PrescriptionInputDto（用于Repository更新）
+    /// OpenSpec: simplify-medicalcase-dataflow - Diagnosis/Indication已删除
     /// </summary>
     public static PrescriptionInputDto ToPrescriptionInputDto(this PrescriptionDetailDto dto)
     {
         return new PrescriptionInputDto
         {
             Id = dto.Id,
-            Diagnosis = dto.Diagnosis,
-            Indication = dto.Indication,
+            // Diagnosis/Indication已删除
             Advice = dto.Advice,
+            ReferencedFormulas = dto.ReferencedFormulas,
             Remark = dto.Remark,
             Discount = dto.Discount,
             TotalPrice = dto.TotalPrice,

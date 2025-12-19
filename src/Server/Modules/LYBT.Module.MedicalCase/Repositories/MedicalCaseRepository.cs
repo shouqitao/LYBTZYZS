@@ -145,8 +145,9 @@ namespace LYBT.Module.MedicalCases.Repositories
 
         /// <summary>
         /// 根据医生ID获取病案列表（简化版）
+        /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
         /// </summary>
-        
+
 
         /// <summary>
         /// 更新医案（Issue #1571 - 级联删除关联数据）
@@ -284,10 +285,11 @@ namespace LYBT.Module.MedicalCases.Repositories
         {
             // Epic #2210 Phase 3: 按医生ID过滤，实现多医生数据隔离
             // Bug Fix: 包含Draft和Active两种未完成状态，暂存后的医案应显示在待诊队列
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var result = await _dbSet
                 .Where(m => !m.IsDeleted
                     && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active)
-                    && m.DoctorId == doctorId)
+                    && m.UserId == doctorId)
                 .Join(
                     _context.Set<Patient>(),
                     m => m.PatientId,
@@ -424,10 +426,11 @@ namespace LYBT.Module.MedicalCases.Repositories
                 .Where(m => m.PatientId == patientId && m.CaseStatus != MedicalCaseStatus.Completed);
 
             // Epic #2210 Task 3.1.1: Q4医生筛选链 - 仅当doctorId有效时添加筛选条件
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             if (doctorId != Guid.Empty)
             {
                 _logger?.LogInformation("[诊断] 添加医生ID过滤条件，DoctorId: {DoctorId}", doctorId);
-                query = query.Where(m => m.DoctorId == doctorId);
+                query = query.Where(m => m.UserId == doctorId);
             }
             else
             {
@@ -444,8 +447,8 @@ namespace LYBT.Module.MedicalCases.Repositories
 
             if (result != null)
             {
-                _logger?.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, DoctorId: {DoctorId}",
-                    result.Id, result.CaseStatus, result.DoctorId);
+                _logger?.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, UserId: {UserId}",
+                    result.Id, result.CaseStatus, result.UserId);
             }
             else
             {

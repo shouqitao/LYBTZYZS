@@ -5,8 +5,8 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Shared.Models.Contracts.Prescriptions;
 
 /// <summary>
-/// 处方输入DTO - 统一创建和编辑
-/// OpenSpec: refactor-dto-simplification - 扁平化设计，遵循InputDto设计原则
+/// 处方输入DTO - 统一创建、编辑和聚合保存
+/// OpenSpec: refactor-dto-simplification, simplify-medicalcase-dataflow
 /// </summary>
 /// <remarks>
 /// InputDto设计原则：
@@ -14,6 +14,11 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions;
 /// - 排除计算字段（SingleDosePrice/TotalWeight由Service计算）
 /// - 排除状态字段（Status通过专用API修改）
 /// - Id可空：null=创建，有值=更新
+///
+/// 使用场景：
+/// - 独立创建处方：MedicalCaseId必填
+/// - 作为MedicalCaseInputDto嵌套：MedicalCaseId从父对象推导
+/// - 不需要处方：NeedsPrescription=false
 /// </remarks>
 public class PrescriptionInputDto
 {
@@ -21,20 +26,20 @@ public class PrescriptionInputDto
     [DisplayName("处方ID")]
     public Guid? Id { get; set; }
 
-    /// <summary>医疗案例ID（必填）</summary>
-    [Required(ErrorMessage = "医疗案例ID不能为空")]
+    /// <summary>医疗案例ID（独立调用时必填，嵌套调用时从父对象推导）</summary>
     [DisplayName("医疗案例ID")]
     public Guid MedicalCaseId { get; set; }
 
-    /// <summary>诊断</summary>
-    [StringLength(500, ErrorMessage = "诊断长度不能超过500个字符")]
-    [DisplayName("诊断")]
-    public string? Diagnosis { get; set; }
+    /// <summary>
+    /// 是否需要开处方
+    /// OpenSpec: simplify-medicalcase-dataflow - 从PrescriptionAggregateInputDto迁移
+    /// 当NeedsPrescription=false时，不创建空的处方记录
+    /// </summary>
+    [DisplayName("是否开处方")]
+    public bool NeedsPrescription { get; set; } = true;
 
-    /// <summary>主治</summary>
-    [StringLength(500, ErrorMessage = "主治长度不能超过500个字符")]
-    [DisplayName("主治")]
-    public string? Indication { get; set; }
+    // Diagnosis已删除 - 冗余字段
+    // Indication已删除 - 打印时从Consultation.TCMDiagnosis获取
 
     /// <summary>剂数</summary>
     [Range(1, 100, ErrorMessage = "剂数必须在1-100之间")]
@@ -51,10 +56,12 @@ public class PrescriptionInputDto
     [DisplayName("医嘱")]
     public string? Advice { get; set; }
 
-    /// <summary>验方来源</summary>
-    [StringLength(200, ErrorMessage = "验方来源长度不能超过200个字符")]
-    [DisplayName("验方来源")]
-    public string? FormulaSource { get; set; }
+    // FormulaSource已删除 - 与ReferencedFormulas功能重复
+
+    /// <summary>引用的验方名称列表，逗号分隔</summary>
+    [StringLength(500, ErrorMessage = "引用验方名称长度不能超过500个字符")]
+    [DisplayName("引用验方")]
+    public string? ReferencedFormulas { get; set; }
 
     /// <summary>折扣（0-1之间）</summary>
     [Range(0, 1, ErrorMessage = "折扣必须在0-1之间")]

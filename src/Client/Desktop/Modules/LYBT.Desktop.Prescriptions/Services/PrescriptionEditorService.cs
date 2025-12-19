@@ -150,7 +150,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                             TCMDiagnosis = mc.Consultation?.TCMDiagnosis,
                             DosageCount = mc.Prescription.DosageCount,
                             Advice = mc.Prescription.Advice,
-                            FormulaSource = mc.Prescription.FormulaSource,
+                            FormulaSource = mc.Prescription.ReferencedFormulas, // OpenSpec: simplify-medicalcase-dataflow
                             Remark = mc.Prescription.Remark,
                             HerbCount = mc.Prescription.Items?.Count ?? 0,
                             Items = mc.Prescription.Items ?? new List<PrescriptionItemDto>()
@@ -235,6 +235,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
                 // 将PrescriptionInputDto转换为PrescriptionDetailDto
                 // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
+                // OpenSpec: simplify-medicalcase-dataflow - FormulaSource重命名为ReferencedFormulas
                 var prescription = new PrescriptionDetailDto
                 {
                     Id = Guid.NewGuid(),
@@ -244,7 +245,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                     Usage = dto.Usage,
                     Advice = dto.Advice,
                     Remark = dto.Remark,
-                    FormulaSource = dto.FormulaSource,
+                    ReferencedFormulas = dto.ReferencedFormulas, // OpenSpec: simplify-medicalcase-dataflow
                     Discount = 1.0m,
                     Items = dto.Items.Select(item => new PrescriptionItemDto
                     {

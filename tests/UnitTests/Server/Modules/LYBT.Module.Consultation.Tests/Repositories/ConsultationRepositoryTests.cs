@@ -42,7 +42,7 @@ public class ConsultationRepositoryTests : IDisposable
         {
             Id = consultationId,  // 共享主键
             PatientId = Guid.NewGuid(),
-            DoctorId = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
             CreatedBy = Guid.NewGuid(),
             PatientName = "测试患者",
             DoctorName = "测试医生"
@@ -93,7 +93,7 @@ public class ConsultationRepositoryTests : IDisposable
         {
             Id = medicalCaseId,
             PatientId = Guid.NewGuid(),
-            DoctorId = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
             CreatedBy = Guid.NewGuid(),
             PatientName = "患者A",
             DoctorName = "医生A"
@@ -130,7 +130,7 @@ public class ConsultationRepositoryTests : IDisposable
         {
             Id = Guid.NewGuid(),
             PatientId = patientId,
-            DoctorId = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
             CreatedBy = Guid.NewGuid(),
             PatientName = "患者B",
             DoctorName = "医生B"
@@ -153,7 +153,7 @@ public class ConsultationRepositoryTests : IDisposable
         {
             Id = Guid.NewGuid(),
             PatientId = patientId,
-            DoctorId = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
             CreatedBy = Guid.NewGuid(),
             PatientName = "患者B",
             DoctorName = "医生B"
@@ -193,7 +193,7 @@ public class ConsultationRepositoryTests : IDisposable
         {
             Id = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
-            DoctorId = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
             CreatedBy = Guid.NewGuid(),
             PatientName = "患者C",
             DoctorName = "医生C"
@@ -230,7 +230,7 @@ public class ConsultationRepositoryTests : IDisposable
         {
             Id = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
-            DoctorId = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
             CreatedBy = Guid.NewGuid(),
             PatientName = "张三",
             DoctorName = "李医生"
@@ -248,7 +248,7 @@ public class ConsultationRepositoryTests : IDisposable
         {
             Id = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
-            DoctorId = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
             CreatedBy = Guid.NewGuid(),
             PatientName = "李四",
             DoctorName = "王医生"
@@ -285,7 +285,7 @@ public class ConsultationRepositoryTests : IDisposable
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 CreatedBy = Guid.NewGuid(),
                 PatientName = $"患者{i}",
                 DoctorName = "医生"

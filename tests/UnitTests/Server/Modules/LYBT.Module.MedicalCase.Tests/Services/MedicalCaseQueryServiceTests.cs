@@ -167,11 +167,12 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             // Arrange
             var patientId = Guid.NewGuid();
             var doctorId = Guid.NewGuid();
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseEntity
             {
                 Id = Guid.NewGuid(),
                 PatientId = patientId,
-                DoctorId = doctorId,
+                UserId = doctorId,
                 CaseStatus = MedicalCaseStatus.Active
             };
 

@@ -35,10 +35,10 @@ namespace LYBT.Desktop.MedicalCase.Services
             }
 
             // 规则2：非本人修改必须审计
-            if (medicalCase.DoctorId != currentUserId)
+            if (medicalCase.UserId != currentUserId)
             {
-                _logger.LogDebug("需要审计: 医案 {CaseNumber} 的医生 {DoctorId} 与当前用户 {CurrentUserId} 不同",
-                    medicalCase.CaseNumber, medicalCase.DoctorId, currentUserId);
+                _logger.LogDebug("需要审计: 医案 {CaseNumber} 的医生 {UserId} 与当前用户 {CurrentUserId} 不同",
+                    medicalCase.CaseNumber, medicalCase.UserId, currentUserId);
                 return true;
             }
 

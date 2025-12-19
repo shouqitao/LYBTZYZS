@@ -160,7 +160,7 @@ public class MedicalCaseItem : BindableBase
 
     /// <summary>
     /// 转换为MedicalCaseDetailDto（用于API调用）
-    /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, DiagnosisResult, TreatmentPlan
+    /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, ConsultationDate删除
     /// </summary>
     public MedicalCaseDetailDto ToDto()
     {
@@ -169,11 +169,11 @@ public class MedicalCaseItem : BindableBase
             Id = Id,
             PatientId = PatientId,
             PatientName = PatientName,
-            DoctorId = Guid.Empty, // 需要从其他地方获取
+            UserId = Guid.Empty, // 需要从其他地方获取
             DoctorName = string.Empty, // 需要从其他地方获取
             ConsultationId = ConsultationId,
             PrescriptionId = PrescriptionId,
-            ConsultationDate = CreatedAt,
+            // ConsultationDate已删除，使用CreatedAt代替
             CaseStatus = Status,
             PresentIllness = PresentIllness,
             CreatedAt = CreatedAt,

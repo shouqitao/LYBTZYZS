@@ -330,7 +330,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 // 按就诊时间倒序排列，只显示已完成且有处方的医案
                 _currentPatientCases = cases
                     .Where(c => c.CaseStatus == MedicalCaseStatus.Completed && c.PrescriptionId.HasValue)
-                    .OrderByDescending(c => c.ConsultationDate)
+                    .OrderByDescending(c => c.CreatedAt)
                     .ToList();
 
                 // 初始状态：当前患者模式
@@ -394,7 +394,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 // 筛选已完成且有处方的医案
                 _allCases = allItems
                     .Where(c => c.CaseStatus == MedicalCaseStatus.Completed && c.PrescriptionId.HasValue)
-                    .OrderByDescending(c => c.ConsultationDate)
+                    .OrderByDescending(c => c.CreatedAt)
                     .ToList();
 
                 FilteredCases = new ObservableCollection<MedicalCaseDetailDto>(_allCases);
@@ -468,13 +468,13 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             // 时间区间筛选 - 起始日期
             if (StartDate.HasValue)
             {
-                filtered = filtered.Where(c => c.ConsultationDate >= StartDate.Value.Date);
+                filtered = filtered.Where(c => c.CreatedAt >= StartDate.Value.Date);
             }
 
             // 时间区间筛选 - 结束日期
             if (EndDate.HasValue)
             {
-                filtered = filtered.Where(c => c.ConsultationDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1));
+                filtered = filtered.Where(c => c.CreatedAt <= EndDate.Value.Date.AddDays(1).AddTicks(-1));
             }
 
             // 当前患者模式且未展开全部时，只显示前5条

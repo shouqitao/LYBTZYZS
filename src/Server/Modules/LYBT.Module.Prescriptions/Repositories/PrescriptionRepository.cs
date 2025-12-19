@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Prescriptions;
+using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Prescriptions.Interfaces;
@@ -20,7 +20,7 @@ namespace LYBT.Module.Prescriptions.Repositories
     /// </remarks>
     internal class PrescriptionRepository : BaseReadRepository<Prescription>, IPrescriptionRepository
     {
-        public PrescriptionRepository(AppDbContext context, ILogger<PrescriptionRepository> logger) 
+        public PrescriptionRepository(AppDbContext context, ILogger<PrescriptionRepository> logger)
             : base(context, logger)
         {
         }
@@ -41,6 +41,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// 获取分页列表（包含关联数据）
         /// 优化：预加载Items信息，避免N+1查询
         /// Phase 2: Repository层简化（Epic #1725）- 使用BaseRepository辅助方法
+        /// OpenSpec: simplify-medicalcase-dataflow - 移除Indication字段，FormulaSource改为ReferencedFormulas
         /// </summary>
         public async Task<PagedResult<Prescription>> GetPagedWithDetailsAsync(
             int pageNumber,
@@ -53,11 +54,11 @@ namespace LYBT.Module.Prescriptions.Repositories
                 .Where(p => !p.IsDeleted);
 
             // 关键字搜索
+            // OpenSpec: simplify-medicalcase-dataflow - 移除Indication字段，FormulaSource改为ReferencedFormulas
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 query = query.Where(p =>
-                    (p.Indication != null && p.Indication.Contains(keyword)) ||
-                    (p.FormulaSource != null && p.FormulaSource.Contains(keyword)) ||
+                    (p.ReferencedFormulas != null && p.ReferencedFormulas.Contains(keyword)) ||
                     p.Items.Any(i => i.HerbName.Contains(keyword)));
             }
 

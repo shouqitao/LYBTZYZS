@@ -33,17 +33,19 @@ public class MedicalCaseListDto
     [DisplayName("患者年龄")]
     public int? PatientAge { get; set; }
 
-    /// <summary>医生ID</summary>
+    /// <summary>医生ID - 重命名自DoctorId</summary>
     [DisplayName("医生ID")]
-    public Guid DoctorId { get; set; }
+    public Guid UserId { get; set; }
 
     /// <summary>医生姓名</summary>
     [DisplayName("医生姓名")]
     public string DoctorName { get; set; } = string.Empty;
 
-    /// <summary>诊疗时间</summary>
-    [DisplayName("诊疗时间")]
-    public DateTime ConsultationDate { get; set; }
+    /// <summary>完成时间（用于锁定判断）</summary>
+    [DisplayName("完成时间")]
+    public DateTime? CompletedAt { get; set; }
+
+    // ConsultationDate已删除，用CreatedAt代替
 
     /// <summary>案例状态</summary>
     [DisplayName("案例状态")]

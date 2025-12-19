@@ -179,19 +179,20 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
         try
         {
             // OpenSpec: unify-herb-list-controls + refactor-medicalcase-management
-            // 使用SaveAggregateAsync一次性保存诊断和处方
-            var aggregateDto = new MedicalCaseAggregateInputDto
+            // 使用SaveAsync一次性保存诊断和处方
+            var aggregateDto = new MedicalCaseInputDto
             {
                 Id = detail.Id,
                 Remark = detail.Remark,
                 Consultation = detail.ToConsultationInputDto(),
-                Prescription = new PrescriptionAggregateInputDto
+                Prescription = new PrescriptionInputDto
                 {
-                    NeedsPrescription = HerbItems.Any(x => x.HerbId != Guid.Empty),
+                    // Bug Fix: 过滤条件必须同时检查HerbId和Dosage，避免空行或未完成填写的行触发验证错误
+                    NeedsPrescription = HerbItems.Any(x => x.HerbId != Guid.Empty && x.Dosage > 0),
                     DosageCount = detail.DoseCount ?? 7,
-                    FormulaSource = detail.FormulaSource,
+                    ReferencedFormulas = detail.ReferencedFormulas,
                     Items = HerbItems
-                        .Where(x => x.HerbId != Guid.Empty)
+                        .Where(x => x.HerbId != Guid.Empty && x.Dosage > 0)
                         .Select(x => new PrescriptionItemInputDto
                         {
                             HerbId = x.HerbId,
@@ -206,7 +207,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
                 }
             };
 
-            await _repository.SaveAggregateAsync(detail.Id, aggregateDto);
+            await _repository.SaveAsync(detail.Id, aggregateDto);
 
             // 更新DetailModel的处方数据
             detail.HerbCount = aggregateDto.Prescription.Items.Count;
@@ -453,11 +454,12 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
 
     /// <summary>
     /// 收集处方数据用于保存
+    /// Bug Fix: 过滤条件必须同时检查HerbId和Dosage
     /// </summary>
     private List<PrescriptionItemDto> CollectPrescriptionItems()
     {
         return HerbItems
-            .Where(x => x.HerbId != Guid.Empty)
+            .Where(x => x.HerbId != Guid.Empty && x.Dosage > 0)
             .Select(x => new PrescriptionItemDto
             {
                 HerbId = x.HerbId,

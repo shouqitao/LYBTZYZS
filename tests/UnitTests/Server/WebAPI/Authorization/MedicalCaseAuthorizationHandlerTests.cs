@@ -302,7 +302,7 @@ public class MedicalCaseAuthorizationHandlerTests
         return new MedicalCase
         {
             Id = Guid.NewGuid(),
-            DoctorId = doctorId,
+            UserId = doctorId,
             CaseStatus = status,
             PatientId = Guid.NewGuid()
         };

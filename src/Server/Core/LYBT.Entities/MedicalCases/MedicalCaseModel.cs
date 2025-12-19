@@ -10,107 +10,96 @@ namespace LYBT.Entities.MedicalCases
 {
 
     /// <summary>
-    /// 医疗案例实体 - 根据20250920文档要求重构
-    /// 作为聚合根，管理完整诊疗流程
-    /// 一病案一诊断，一病案至多一处方
-    /// 继承BaseEntity实现审计字段自动化
+    /// 医案实体 - 聚合根
+    /// OpenSpec: simplify-medicalcase-dataflow
+    /// 管理完整诊疗流程：一病案一诊断，一病案至多一处方
     /// </summary>
     [Table("MedicalCases")]
     public class MedicalCase : BaseEntity
     {
-
-        // Id字段继承自BaseEntity
+        // ========== 跨聚合引用 (仅ID，符合DDD原则) ==========
 
         /// <summary>患者ID</summary>
         [Required]
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
 
-        /// <summary>患者姓名（显示用）</summary>
+        /// <summary>患者姓名（冗余-读优化）</summary>
         [Required]
         [StringLength(50)]
         [DisplayName("患者姓名")]
         public string PatientName { get; set; } = string.Empty;
 
-        /// <summary>医生ID（主治医生）</summary>
+        /// <summary>医生ID（主治医生）- 重命名自DoctorId</summary>
         [Required]
         [DisplayName("医生ID")]
-        public Guid DoctorId { get; set; }
+        public Guid UserId { get; set; }
 
-        /// <summary>医生姓名（显示用）</summary>
+        /// <summary>医生姓名（冗余-读优化）</summary>
         [Required]
         [StringLength(50)]
         [DisplayName("医生姓名")]
         public string DoctorName { get; set; } = string.Empty;
 
-        // 审计字段（CreatedAt、CreatedBy等）继承自BaseEntity
+        // ========== 业务字段 ==========
 
-        /// <summary>诊疗时间（兼容旧字段）</summary>
-        [DisplayName("诊疗时间")]
-        public DateTime ConsultationDate { get; set; } = DateTime.UtcNow;
+        /// <summary>医案编号（业务编号，如MC20251219001）</summary>
+        [StringLength(50)]
+        [DisplayName("医案编号")]
+        public string? CaseNumber { get; set; }
 
-        /// <summary>业务流程状态（原Status字段重命名）</summary>
+        /// <summary>业务流程状态</summary>
         [DisplayName("医案状态")]
         public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Active;
 
         /// <summary>
-        /// 是否需要开处方（Epic #2175 BF-002动态流程控制）
-        /// null: 未标记（用户还未做Step 2决策）
+        /// 是否需要开处方
+        /// null: 未标记（用户还未做决策）
         /// true: 需要开处方
         /// false: 不需要开处方
         /// </summary>
         [DisplayName("是否需要开处方")]
         public bool? NeedsPrescription { get; set; }
 
+        /// <summary>完成时间（用于锁定判断）</summary>
+        [DisplayName("完成时间")]
+        public DateTime? CompletedAt { get; set; }
+
         /// <summary>备注</summary>
         [StringLength(500)]
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        // RowVersion、IsDeleted等字段继承自BaseEntity
+        // ConsultationDate已删除，用BaseEntity.CreatedAt代替
 
-        // 导航属性 - 根据文档要求：1:1关系
+        // ========== 同聚合导航属性 ==========
 
-        /// <summary>诊疗记录（导航属性）- 一个医疗案例对应一次诊疗 (1:1关系)</summary>
-        [DisplayName("诊疗记录")]
+        /// <summary>诊断记录（1:1关系）</summary>
+        [DisplayName("诊断记录")]
         public virtual Consultation? Consultation { get; set; }
 
-        /// <summary>处方信息（导航属性）- 一个医疗案例至多一张处方 (0..1关系)</summary>
+        /// <summary>处方信息（1:0..1关系）</summary>
         [DisplayName("处方信息")]
         public virtual Prescription? Prescription { get; set; }
 
-        // 业务方法
+        // ========== 计算属性 ==========
 
         /// <summary>
-        /// 判断病历是否可以编辑
+        /// 是否已锁定
+        /// 锁定条件：已完成 或 非当天创建
         /// </summary>
-        /// <param name="isAdmin">是否管理员</param>
-        /// <param name="currentUserId">当前用户ID</param>
-        /// <returns>是否可以编辑</returns>
-        /// <summary>
-        /// 判断病历是否可以编辑 - 简化版本
-        /// 核心业务规则：当天可改、过期锁定
-        /// </summary>
-        /// <param name="isAdmin">是否管理员</param>
-        /// <param name="currentUserId">当前用户ID</param>
-        /// <returns>是否可以编辑</returns>
-        public bool CanEdit(bool isAdmin, Guid? currentUserId = null)
-        {
-            // 管理员可以编辑所有病历
-            if (isAdmin) return true;
-
-            // 简化逻辑：创建者当天可编辑
-            if (currentUserId.HasValue && DoctorId == currentUserId.Value)
-            {
-                return CreatedAt.Date == DateTime.Today;
-            }
-
-            return false;
-        }
+        public bool IsLocked => CompletedAt.HasValue || CreatedAt.Date < DateTime.Today;
 
         /// <summary>
-        /// 判断病历是否已锁定（过了当天0点）
+        /// 是否活跃（可编辑状态）
         /// </summary>
-        public bool IsLocked => CreatedAt.Date < DateTime.Today;
+        public bool IsActive => CaseStatus == MedicalCaseStatus.Draft || CaseStatus == MedicalCaseStatus.Active;
+
+        /// <summary>
+        /// 是否已完成
+        /// </summary>
+        public bool IsCompleted => CaseStatus == MedicalCaseStatus.Completed;
+
+        // CanEdit()方法已删除，权限判断移到MedicalCasePermissionService
     }
 }

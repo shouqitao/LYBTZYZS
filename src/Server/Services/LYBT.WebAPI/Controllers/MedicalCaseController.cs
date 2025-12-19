@@ -59,12 +59,12 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 创建新病案
-        /// Epic #1612 - AR-001: 通过聚合根创建
-        /// Issue #2212: 提取当前医生ID并传递给Service层
-        /// Epic #2210 Phase 3 P0 Bug修复: Entity→DTO映射避免枚举转换错误
+        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - 统一使用SaveAsync
+        /// - 支持创建时同时包含Consultation和Prescription数据
+        /// - Id=null时创建新医案
         /// optimize-api-permissions: 只有Doctor可以创建新病案，Admin不能创建
         /// </summary>
-        /// <param name="request">创建请求</param>
+        /// <param name="dto">创建请求（Id应为null）</param>
         [HttpPost]
         [Authorize(Roles = "Doctor")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
@@ -76,10 +76,14 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                // Issue #2212: 获取当前医生ID
+                // 获取当前医生ID
                 var (doctorId, _, _) = GetOperator();
 
-                var entity = await _commandService.CreateAsync(dto.PatientId, dto.VisitDate, doctorId);
+                // 确保Id为null以触发创建逻辑
+                dto.Id = null;
+
+                // OpenSpec: simplify-medicalcase-dataflow - 统一使用SaveAsync
+                var entity = await _commandService.SaveAsync(dto, doctorId, isAdmin: false);
 
                 if (entity == null)
                     return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("患者不存在"));
@@ -87,22 +91,8 @@ namespace LYBT.WebAPI.Controllers
                 _logger.LogInformation("病案创建成功，ID: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
                     entity.Id, entity.DoctorName, entity.PatientName);
 
-                // Epic #2210 Phase 3 P0 Bug修复: Entity → MedicalCaseDetailDto 映射
-                var responseDto = new MedicalCaseDetailDto
-                {
-                    Id = entity.Id,
-                    PatientId = entity.PatientId,
-                    PatientName = entity.PatientName,
-                    DoctorId = entity.DoctorId,
-                    DoctorName = entity.DoctorName,
-                    ConsultationDate = entity.ConsultationDate,
-                    CaseStatus = entity.CaseStatus,
-                    Remark = entity.Remark,
-                    Diagnosis = entity.Consultation?.TCMDiagnosis,
-                    CreatedAt = entity.CreatedAt,
-                    // Issue #2231: 添加ConsultationId字段（共享主键，值等于MedicalCase.Id）
-                    ConsultationId = entity.Id
-                };
+                // Entity → MedicalCaseDetailDto 映射
+                var responseDto = MapToMedicalCaseDetailDto(entity);
 
                 return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(responseDto, "病案创建成功"));
             }
@@ -173,7 +163,7 @@ namespace LYBT.WebAPI.Controllers
                     Id = result.Consultation.Id,
                     MedicalCaseId = result.Id,
                     PatientId = result.PatientId,
-                    UserId = result.DoctorId,
+                    UserId = result.UserId,
                     PresentIllness = result.Consultation.PresentIllness,
                     TongueDiagnosis = result.Consultation.TongueDiagnosis,
                     PulseDiagnosis = result.Consultation.PulseDiagnosis,
@@ -500,11 +490,13 @@ namespace LYBT.WebAPI.Controllers
                 MedicalCaseId = medicalCaseId,
                 // OpenSpec: PatientId/UserId已移除，客户端通过MedicalCaseId获取
                 PrescriptionNumber = entity.PrescriptionNumber,
-                Indication = entity.Indication,
+                // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
+                // Indication = entity.Indication,
                 DosageCount = entity.DosageCount,
                 Discount = entity.Discount,
                 Advice = entity.Advice,
-                FormulaSource = entity.FormulaSource,
+                // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
+                // FormulaSource = entity.FormulaSource,
                 ReferencedFormulas = entity.ReferencedFormulas,
                 Remark = entity.Remark,
                 Items = entity.Items?.Select(item => new PrescriptionItemDto
@@ -539,9 +531,10 @@ namespace LYBT.WebAPI.Controllers
                 Id = entity.Id,
                 PatientId = entity.PatientId,
                 PatientName = entity.PatientName,
-                DoctorId = entity.DoctorId,
+                UserId = entity.UserId,
                 DoctorName = entity.DoctorName,
-                ConsultationDate = entity.ConsultationDate,
+                // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
+                // ConsultationDate = entity.CreatedAt,
                 CaseStatus = entity.CaseStatus,
                 Remark = entity.Remark,
                 Diagnosis = entity.Consultation?.TCMDiagnosis,
@@ -571,7 +564,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
         public async Task<IActionResult> SaveAggregate(
             Guid id,
-            [FromBody] MedicalCaseAggregateInputDto request)
+            [FromBody] MedicalCaseInputDto request)
         {
             try
             {
@@ -598,7 +591,7 @@ namespace LYBT.WebAPI.Controllers
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 // 调用聚合保存服务
-                var result = await _commandService.SaveAggregateAsync(request, operatorId, isAdmin);
+                var result = await _commandService.SaveAsync(request, operatorId, isAdmin);
 
                 if (result == null)
                 {
@@ -638,9 +631,10 @@ namespace LYBT.WebAPI.Controllers
                 Id = entity.Id,
                 PatientId = entity.PatientId,
                 PatientName = entity.PatientName,
-                DoctorId = entity.DoctorId,
+                UserId = entity.UserId,
                 DoctorName = entity.DoctorName,
-                ConsultationDate = entity.ConsultationDate,
+                // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
+                // ConsultationDate = entity.CreatedAt,
                 CaseStatus = entity.CaseStatus,
                 Remark = entity.Remark,
                 Diagnosis = entity.Consultation?.TCMDiagnosis,
@@ -655,7 +649,7 @@ namespace LYBT.WebAPI.Controllers
                     Id = entity.Consultation.Id,
                     MedicalCaseId = entity.Id,
                     PatientId = entity.PatientId,
-                    UserId = entity.DoctorId,
+                    UserId = entity.UserId,
                     PatientName = entity.PatientName,
                     DoctorName = entity.DoctorName,
                     PresentIllness = entity.Consultation.PresentIllness,
@@ -673,11 +667,13 @@ namespace LYBT.WebAPI.Controllers
                     Id = entity.Prescription.Id,
                     MedicalCaseId = entity.Id,
                     PrescriptionNumber = entity.Prescription.PrescriptionNumber,
-                    Indication = entity.Prescription.Indication,
+                    // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
+                    // Indication = entity.Prescription.Indication,
                     DosageCount = entity.Prescription.DosageCount,
                     Discount = entity.Prescription.Discount,
                     Advice = entity.Prescription.Advice,
-                    FormulaSource = entity.Prescription.FormulaSource,
+                    // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
+                    // FormulaSource = entity.Prescription.FormulaSource,
                     ReferencedFormulas = entity.Prescription.ReferencedFormulas,
                     Remark = entity.Prescription.Remark,
                     Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
@@ -1034,9 +1030,10 @@ namespace LYBT.WebAPI.Controllers
                     Id = entity.Id,
                     PatientId = entity.PatientId,
                     PatientName = entity.PatientName,
-                    DoctorId = entity.DoctorId,
+                    UserId = entity.UserId,
                     DoctorName = entity.DoctorName,
-                    ConsultationDate = entity.ConsultationDate,
+                    // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除，使用CreatedAt
+                    // ConsultationDate = entity.CreatedAt,
                     CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis,
@@ -1051,7 +1048,7 @@ namespace LYBT.WebAPI.Controllers
                         Id = entity.Consultation.Id,
                         MedicalCaseId = entity.Id, // 使用医案ID（共享主键）
                         PatientId = entity.PatientId,
-                        UserId = entity.DoctorId,
+                        UserId = entity.UserId,
                         PatientName = entity.PatientName,
                         DoctorName = entity.DoctorName,
                         PresentIllness = entity.Consultation.PresentIllness,
@@ -1069,12 +1066,14 @@ namespace LYBT.WebAPI.Controllers
                         Id = entity.Prescription.Id,
                         MedicalCaseId = entity.Id,
                         PrescriptionNumber = entity.Prescription.PrescriptionNumber,
-                        Indication = entity.Prescription.Indication,
+                        // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
+                    // Indication = entity.Prescription.Indication,
                         DosageCount = entity.Prescription.DosageCount,
                         Usage = null, // 实体没有Usage字段，使用null
                         Discount = entity.Prescription.Discount,
                         Advice = entity.Prescription.Advice,
-                        FormulaSource = entity.Prescription.FormulaSource,
+                        // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
+                    // FormulaSource = entity.Prescription.FormulaSource,
                         ReferencedFormulas = entity.Prescription.ReferencedFormulas,
                         Remark = entity.Prescription.Remark,
                         Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
@@ -1258,9 +1257,10 @@ namespace LYBT.WebAPI.Controllers
                     Id = entity.Id,
                     PatientId = entity.PatientId,
                     PatientName = entity.PatientName,
-                    DoctorId = entity.DoctorId,
+                    UserId = entity.UserId,
                     DoctorName = entity.DoctorName,
-                    ConsultationDate = entity.ConsultationDate,
+                    // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除，使用CreatedAt
+                    // ConsultationDate = entity.CreatedAt,
                     CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis, // 关联查询诊断信息
@@ -1547,9 +1547,10 @@ namespace LYBT.WebAPI.Controllers
                     Id = entity.Id,
                     PatientId = entity.PatientId,
                     PatientName = entity.PatientName,
-                    DoctorId = entity.DoctorId,
+                    UserId = entity.UserId,
                     DoctorName = entity.DoctorName,
-                    ConsultationDate = entity.ConsultationDate,
+                    // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除，使用CreatedAt
+                    // ConsultationDate = entity.CreatedAt,
                     CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis,
@@ -1633,9 +1634,10 @@ namespace LYBT.WebAPI.Controllers
                     Id = entityResult.Id,
                     PatientId = entityResult.PatientId,
                     PatientName = entityResult.PatientName,
-                    DoctorId = entityResult.DoctorId,
+                    UserId = entityResult.UserId,
                     DoctorName = entityResult.DoctorName,
-                    ConsultationDate = entityResult.ConsultationDate,
+                    // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
+                    // ConsultationDate = entityResult.CreatedAt,
                     CaseStatus = entityResult.CaseStatus,
                     Remark = entityResult.Remark,
                     Diagnosis = entityResult.Consultation?.TCMDiagnosis,

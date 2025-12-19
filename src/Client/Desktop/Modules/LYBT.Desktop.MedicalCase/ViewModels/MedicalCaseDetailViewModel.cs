@@ -226,10 +226,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 {
                     Id = MedicalCase.Id,
                     PatientId = MedicalCase.PatientId,
-                    DoctorId = MedicalCase.DoctorId,
-                    VisitDate = MedicalCase.ConsultationDate, // 使用原有就诊日期
+                    UserId = MedicalCase.UserId,
                     Remark = MedicalCase.Remark
                     // 注意：ChiefComplaint已移除，诊断信息通过Consultation管理
+                    // 注意：VisitDate已删除，使用BaseEntity.CreatedAt代替
                 };
 
                 // Issue #1783: 使用DataManager更新

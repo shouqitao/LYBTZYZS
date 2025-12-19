@@ -62,10 +62,11 @@ public class MedicalCaseAuthorizationHandler
         }
         else
         {
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             _logger.LogWarning(
                 "授权失败: UserId={UserId}, Role={Role}, Operation={Operation}, ResourceId={ResourceId}, " +
-                "MedicalCaseDoctorId={DoctorId}, CaseStatus={CaseStatus}",
-                userId, role, requirement.Name, resource.Id, resource.DoctorId, resource.CaseStatus);
+                "MedicalCaseUserId={MedicalCaseUserId}, CaseStatus={CaseStatus}",
+                userId, role, requirement.Name, resource.Id, resource.UserId, resource.CaseStatus);
         }
 
         return Task.CompletedTask;

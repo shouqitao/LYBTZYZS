@@ -1,22 +1,27 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using LYBT.Shared.Models.Constants;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Shared.Models.Contracts.MedicalCase
 {
     /// <summary>
-    /// 病案输入DTO - 统一创建和更新
+    /// 病案输入DTO - 统一创建、更新和聚合保存
     /// </summary>
     /// <remarks>
-    /// OpenSpec: unify-medicalcase-input-dto
+    /// OpenSpec: unify-medicalcase-input-dto, simplify-medicalcase-dataflow
     ///
     /// 设计理念：
-    /// 1. 仅包含创建/更新医案的核心字段
+    /// 1. 统一创建/更新/聚合保存场景，替代原MedicalCaseAggregateInputDto
     /// 2. 使用nullable Guid? Id字段区分创建（Id=null）和更新（Id有值）
-    /// 3. 诊断字段应使用ConsultationInputDto通过聚合保存API提交
+    /// 3. 嵌套Consultation/Prescription支持单次事务保存
     /// 4. 所有验证规则由MedicalCaseInputDtoValidator统一管理
     ///
-    /// 相关OpenSpec:
-    /// - unify-medicalcase-input-dto: 简化InputDto，移除未使用的诊断字段
-    /// - consolidate-medicalcase-queries: 整合医案查询到聚合根模式
+    /// 使用场景：
+    /// - 创建医案：Id=null, PatientId必填, UserId必填
+    /// - 更新医案：Id有值, 可选更新Consultation/Prescription
+    /// - 聚合保存：Id有值, 同时保存诊断和处方（支持"仅诊断无处方"场景）
     /// </remarks>
     public class MedicalCaseInputDto
     {
@@ -27,28 +32,47 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public Guid? Id { get; set; }
 
         /// <summary>
-        /// 患者ID
+        /// 患者ID（创建时必填）
         /// </summary>
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
 
         /// <summary>
         /// 医生ID（可选，Server端可自动填充当前用户）
+        /// OpenSpec: simplify-medicalcase-dataflow - 重命名自DoctorId
         /// </summary>
         [DisplayName("医生ID")]
-        public Guid DoctorId { get; set; }
-
-        /// <summary>
-        /// 就诊日期
-        /// </summary>
-        [DisplayName("就诊日期")]
-        public DateTime VisitDate { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// 备注
         /// </summary>
         [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        /// <summary>
+        /// 编辑原因（审计用途，非当天本人修改时必填）
+        /// OpenSpec: simplify-medicalcase-dataflow - 从MedicalCaseAggregateInputDto迁移
+        /// </summary>
+        [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "编辑原因长度不能超过{1}个字符")]
+        [DisplayName("编辑原因")]
+        public string? EditReason { get; set; }
+
+        /// <summary>
+        /// 诊断信息（嵌套，可选）
+        /// OpenSpec: simplify-medicalcase-dataflow - 支持聚合保存
+        /// </summary>
+        [DisplayName("诊断信息")]
+        public ConsultationInputDto? Consultation { get; set; }
+
+        /// <summary>
+        /// 处方信息（嵌套，可选）
+        /// OpenSpec: simplify-medicalcase-dataflow - 支持聚合保存
+        /// </summary>
+        [DisplayName("处方信息")]
+        public PrescriptionInputDto? Prescription { get; set; }
+
+        // VisitDate已删除，用BaseEntity.CreatedAt代替
     }
 
     /// <summary>

@@ -176,18 +176,16 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public async Task CreatePrescriptionAsync_ShouldCreateAndReturnTrue_WhenSuccessful()
         {
             // Arrange
-            // OpenSpec: unify-medicalcase-input-dto - PrescriptionInputDto仅需MedicalCaseId
+            // OpenSpec: simplify-medicalcase-dataflow - PrescriptionInputDto仅需MedicalCaseId，Diagnosis/Indication已移除
             var createDto = new PrescriptionInputDto
             {
                 MedicalCaseId = Guid.NewGuid(),
-                Diagnosis = "风寒感冒",
                 DosageCount = 3
             };
 
             var createdPrescription = new PrescriptionDetailDto
             {
                 Id = Guid.NewGuid(),
-                Indication = createDto.Diagnosis,
                 DosageCount = createDto.DosageCount
             };
 

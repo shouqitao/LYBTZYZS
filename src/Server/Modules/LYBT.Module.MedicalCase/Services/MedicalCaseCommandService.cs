@@ -98,15 +98,15 @@ namespace LYBT.Module.MedicalCases.Services
                 }
 
                 // 创建MedicalCase实体
+                // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
                 var medicalCase = new MedicalCase
                 {
                     Id = Guid.NewGuid(),
                     PatientId = patientId,
                     PatientName = patient.Name,
-                    ConsultationDate = visitDate,
                     CaseStatus = MedicalCaseStatus.Active,
                     NeedsPrescription = false, // 默认值，用户可后续修改
-                    DoctorId = doctorId,
+                    UserId = doctorId,
                     DoctorName = doctor.RealName,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
@@ -149,6 +149,175 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
+        /// 从InputDto创建医案（统一SaveAsync的创建分支）
+        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - 统一创建/更新
+        /// </summary>
+        /// <param name="request">统一输入DTO</param>
+        /// <param name="currentUserId">当前操作用户ID（如果DTO未提供UserId则使用此值）</param>
+        /// <param name="isAdmin">是否管理员</param>
+        /// <returns>创建的病案实体</returns>
+        private async Task<MedicalCase?> CreateFromInputDtoAsync(
+            MedicalCaseInputDto request,
+            Guid currentUserId,
+            bool isAdmin = false)
+        {
+            try
+            {
+                // 确定医生ID：优先使用DTO中的UserId（非空），否则使用currentUserId
+                var doctorId = request.UserId != Guid.Empty ? request.UserId : currentUserId;
+
+                _logger.LogInformation("开始创建病案(InputDto方式)，PatientId: {PatientId}, UserId: {UserId}",
+                    request.PatientId, doctorId);
+
+                // 参数验证：doctorId不能为Guid.Empty
+                if (doctorId == Guid.Empty)
+                {
+                    _logger.LogWarning("UserId不能为空Guid");
+                    throw new ArgumentException("UserId不能为空", nameof(request));
+                }
+
+                // 查询Patient获取PatientName
+                var patient = await _patientRepository.GetByIdAsync(request.PatientId);
+                if (patient == null)
+                {
+                    _logger.LogWarning("患者不存在，PatientId: {PatientId}", request.PatientId);
+                    throw new InvalidOperationException($"患者不存在，PatientId: {request.PatientId}");
+                }
+
+                // 查询User获取DoctorName
+                var doctor = await _userRepository.GetByIdAsync(doctorId);
+                if (doctor == null)
+                {
+                    _logger.LogWarning("医生不存在，UserId: {UserId}", doctorId);
+                    throw new InvalidOperationException($"医生不存在，UserId: {doctorId}");
+                }
+
+                // 业务规则验证：BR-001（单患者仅一条未完成病案）
+                var existingActiveCases = await _repository.GetByPatientIdAsync(request.PatientId);
+                if (!MedicalCaseRules.CanCreateNewCase(existingActiveCases))
+                {
+                    if (MedicalCaseRules.HasActiveCase(existingActiveCases))
+                    {
+                        var activeCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
+                        _logger.LogWarning("患者已有进行中的医案，PatientId: {PatientId}, ActiveCaseId: {CaseId}",
+                            request.PatientId, activeCase?.Id);
+                        throw new InvalidOperationException("该患者已有进行中的医案，请先完成现有医案");
+                    }
+                    else if (MedicalCaseRules.HasDraftCase(existingActiveCases))
+                    {
+                        var draftCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Draft);
+                        _logger.LogWarning("患者已有暂存的医案，PatientId: {PatientId}, DraftCaseId: {CaseId}",
+                            request.PatientId, draftCase?.Id);
+                        throw new InvalidOperationException("该患者已有暂存的医案，请先处理现有医案（继续或关闭）");
+                    }
+                }
+
+                // 创建MedicalCase实体
+                var medicalCase = new MedicalCase
+                {
+                    Id = Guid.NewGuid(),
+                    PatientId = request.PatientId,
+                    PatientName = patient.Name,
+                    CaseStatus = MedicalCaseStatus.Active,
+                    NeedsPrescription = request.Prescription?.NeedsPrescription ?? false,
+                    UserId = doctorId,
+                    DoctorName = doctor.RealName,
+                    Remark = request.Remark,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+
+                // 创建Consultation（聚合根模式：共享主键）
+                var consultation = new Consultation
+                {
+                    Id = medicalCase.Id,
+                    MedicalCase = medicalCase,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+
+                // 如果DTO中提供了诊断数据，填充Consultation字段
+                if (request.Consultation != null)
+                {
+                    consultation.PresentIllness = request.Consultation.PresentIllness;
+                    consultation.TongueDiagnosis = request.Consultation.TongueDiagnosis;
+                    consultation.PulseDiagnosis = request.Consultation.PulseDiagnosis;
+                    consultation.TCMDiagnosis = request.Consultation.TCMDiagnosis;
+                }
+
+                medicalCase.Consultation = consultation;
+
+                // 如果DTO中提供了处方数据且需要开处方，创建Prescription
+                if (request.Prescription != null && request.Prescription.NeedsPrescription)
+                {
+                    var prescription = new Prescription
+                    {
+                        Id = Guid.NewGuid(),
+                        MedicalCaseId = medicalCase.Id,
+                        DosageCount = request.Prescription.DosageCount,
+                        Usage = request.Prescription.Usage,
+                        Advice = request.Prescription.Advice,
+                        ReferencedFormulas = request.Prescription.ReferencedFormulas,
+                        Discount = request.Prescription.Discount,
+                        // TotalPrice由Items计算，不直接存储
+                        Remark = request.Prescription.Remark,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        Items = new List<LYBT.Entities.Prescriptions.PrescriptionItem>()
+                    };
+
+                    // 添加处方项
+                    if (request.Prescription.Items != null)
+                    {
+                        foreach (var itemDto in request.Prescription.Items)
+                        {
+                            var item = new LYBT.Entities.Prescriptions.PrescriptionItem
+                            {
+                                Id = Guid.NewGuid(),
+                                PrescriptionId = prescription.Id,
+                                HerbId = itemDto.HerbId,
+                                HerbName = itemDto.HerbName ?? string.Empty,
+                                Dosage = itemDto.Dosage,
+                                Unit = itemDto.Unit,
+                                UnitPrice = itemDto.UnitPrice,
+                                Usage = request.Prescription.Usage,
+                                Remark = itemDto.Remark,
+                                DecocteMethod = itemDto.DecocteMethod
+                            };
+                            prescription.Items.Add(item);
+                        }
+                    }
+
+                    medicalCase.Prescription = prescription;
+                    _logger.LogInformation("已创建处方，PrescriptionId: {PrescriptionId}, Items: {ItemCount}",
+                        prescription.Id, prescription.Items.Count);
+                }
+
+                // EF Core会级联保存Consultation和Prescription
+                var result = await _repository.AddAsync(medicalCase);
+
+                _logger.LogInformation("病案创建成功(InputDto方式)，MedicalCaseId: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
+                    result.Id, medicalCase.DoctorName, medicalCase.PatientName);
+
+                // 记录创建审计日志
+                await _auditService.LogAsync(
+                    before: null,
+                    after: result,
+                    operatorId: doctorId,
+                    operatorName: doctor.RealName,
+                    role: doctor.Role,
+                    operationType: AuditOperationType.Create);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建病案失败(InputDto方式)，PatientId: {PatientId}", request.PatientId);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 更新辨证信息（三步流程Step 1）
         /// Epic #1612: 通过聚合根协调Consultation更新
         /// 业务规则：AR-001（聚合根约束）、BF-002（三步流程）
@@ -178,10 +347,11 @@ namespace LYBT.Module.MedicalCases.Services
                 // MedicalCaseRules.CanEdit已完整处理：
                 // - 管理员可以编辑所有状态的医案
                 // - 医生只能编辑自己的Draft/Active状态医案
+                // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
                 if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
                 {
                     var reason = isAdmin ? "权限不足" :
-                        (medicalCase.DoctorId != currentUserId ? "非创建医生" :
+                        (medicalCase.UserId != currentUserId ? "非创建医生" :
                         $"医案状态为{medicalCase.CaseStatus}");
                     _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}, Reason: {Reason}",
                         medicalCaseId, currentUserId, reason);
@@ -576,28 +746,38 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 保存医案聚合根（统一保存Consultation和Prescription）
-        /// OpenSpec: refactor-medicalcase-aggregate-crud (PERSIST-001, PERSIST-002)
-        /// 在单个事务中同时保存诊断和处方数据
+        /// 统一保存医案（支持创建和更新）
+        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - 统一SaveAsync
+        /// - Id为null时：创建新MedicalCase
+        /// - Id有值时：更新现有MedicalCase
+        /// - 在单个事务中同时保存诊断和处方数据
         /// </summary>
-        public async Task<MedicalCase?> SaveAggregateAsync(
-            MedicalCaseAggregateInputDto request,
+        public async Task<MedicalCase?> SaveAsync(
+            MedicalCaseInputDto request,
             Guid currentUserId,
             bool isAdmin = false)
         {
+            // OpenSpec: simplify-medicalcase-dataflow - 统一创建/更新逻辑
+            // Id为null时创建，有值时更新
+            if (!request.Id.HasValue)
+            {
+                return await CreateFromInputDtoAsync(request, currentUserId, isAdmin);
+            }
+            var medicalCaseId = request.Id.Value;
+
             const int maxRetries = 3;
             for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
                 try
                 {
                     _logger.LogInformation("开始保存医案聚合根，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
-                        request.Id, attempt);
+                        medicalCaseId, attempt);
 
                     // 获取聚合根（使用Fresh版本确保获取最新RowVersion，解决并发问题）
-                    var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(request.Id);
+                    var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
                     if (medicalCase == null)
                     {
-                        _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", request.Id);
+                        _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                         return null;
                     }
 
@@ -608,13 +788,14 @@ namespace LYBT.Module.MedicalCases.Services
                     // MedicalCaseRules.CanEdit已完整处理：
                     // - 管理员可以编辑所有状态的医案
                     // - 医生只能编辑自己的Draft/Active状态医案
+                    // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
                     if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
                     {
                         var reason = isAdmin ? "权限不足" :
-                            (medicalCase.DoctorId != currentUserId ? "非创建医生" :
+                            (medicalCase.UserId != currentUserId ? "非创建医生" :
                             $"医案状态为{medicalCase.CaseStatus}");
                         _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}, Reason: {Reason}",
-                            request.Id, currentUserId, reason);
+                            medicalCaseId, currentUserId, reason);
                         throw new UnauthorizedAccessException($"无权限编辑此病案：{reason}");
                     }
 
@@ -636,7 +817,7 @@ namespace LYBT.Module.MedicalCases.Services
                         consultation.TCMDiagnosis = request.Consultation.TCMDiagnosis;
                         consultation.UpdatedAt = DateTime.Now;
 
-                        _logger.LogInformation("已更新诊断信息，MedicalCaseId: {MedicalCaseId}", request.Id);
+                        _logger.LogInformation("已更新诊断信息，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     }
 
                     // PERSIST-002: 更新Prescription（处方部分）
@@ -656,10 +837,10 @@ namespace LYBT.Module.MedicalCases.Services
                                 var prescription = new Prescription
                                 {
                                     Id = Guid.NewGuid(),
-                                    MedicalCaseId = request.Id,
+                                    MedicalCaseId = medicalCaseId,
                                     DosageCount = request.Prescription.DosageCount,
                                     Advice = request.Prescription.Advice,
-                                    FormulaSource = request.Prescription.FormulaSource,
+                                    ReferencedFormulas = request.Prescription.ReferencedFormulas,
                                     Discount = request.Prescription.Discount,
                                     CreatedAt = DateTime.Now,
                                     UpdatedAt = DateTime.Now,
@@ -690,7 +871,7 @@ namespace LYBT.Module.MedicalCases.Services
 
                                 medicalCase.Prescription = prescription;
                                 _logger.LogInformation("已创建处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}, Items: {ItemCount}",
-                                    request.Id, prescription.Id, prescription.Items.Count);
+                                    medicalCaseId, prescription.Id, prescription.Items.Count);
                             }
                             else
                             {
@@ -698,7 +879,7 @@ namespace LYBT.Module.MedicalCases.Services
                                 var prescription = medicalCase.Prescription;
                                 prescription.DosageCount = request.Prescription.DosageCount;
                                 prescription.Advice = request.Prescription.Advice;
-                                prescription.FormulaSource = request.Prescription.FormulaSource;
+                                prescription.ReferencedFormulas = request.Prescription.ReferencedFormulas;
                                 prescription.Discount = request.Prescription.Discount;
                                 prescription.UpdatedAt = DateTime.Now;
 
@@ -726,7 +907,7 @@ namespace LYBT.Module.MedicalCases.Services
                                 }
 
                                 _logger.LogInformation("已更新处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}, Items: {ItemCount}",
-                                    request.Id, prescription.Id, prescription.Items.Count);
+                                    medicalCaseId, prescription.Id, prescription.Items.Count);
                             }
                         }
                         else
@@ -737,7 +918,7 @@ namespace LYBT.Module.MedicalCases.Services
                                 medicalCase.Prescription.IsDeleted = true;
                                 medicalCase.Prescription.UpdatedAt = DateTime.Now;
                                 _logger.LogInformation("已软删除处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
-                                    request.Id, medicalCase.Prescription.Id);
+                                    medicalCaseId, medicalCase.Prescription.Id);
                             }
                         }
                     }
@@ -745,7 +926,7 @@ namespace LYBT.Module.MedicalCases.Services
                     // 通过聚合根保存（EF Core会级联保存Consultation和Prescription）
                     var result = await _repository.UpdateAsync(medicalCase);
 
-                    _logger.LogInformation("医案聚合根保存成功，MedicalCaseId: {MedicalCaseId}", request.Id);
+                    _logger.LogInformation("医案聚合根保存成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
                     // 记录更新审计日志
                     var operatorInfo = await GetOperatorInfoAsync(currentUserId, isAdmin);
@@ -763,7 +944,7 @@ namespace LYBT.Module.MedicalCases.Services
                 {
                     // 并发冲突（EF Core原生异常），重试
                     _logger.LogWarning(ex, "保存医案聚合根遇到EF并发冲突，准备重试，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
-                        request.Id, attempt);
+                        medicalCaseId, attempt);
                     await Task.Delay(100 * attempt); // 递增延迟
                     continue;
                 }
@@ -771,18 +952,18 @@ namespace LYBT.Module.MedicalCases.Services
                 {
                     // 并发冲突（Repository层封装的异常），重试
                     _logger.LogWarning("保存医案聚合根遇到并发冲突，准备重试，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
-                        request.Id, attempt);
+                        medicalCaseId, attempt);
                     await Task.Delay(100 * attempt); // 递增延迟
                     continue;
                 }
                 catch (Exception ex) when (ex is not UnauthorizedAccessException)
                 {
-                    _logger.LogError(ex, "保存医案聚合根失败，MedicalCaseId: {MedicalCaseId}", request.Id);
+                    _logger.LogError(ex, "保存医案聚合根失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     throw;
                 }
             }
 
-            _logger.LogError("保存医案聚合根失败，已达最大重试次数，MedicalCaseId: {MedicalCaseId}", request.Id);
+            _logger.LogError("保存医案聚合根失败，已达最大重试次数，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
             throw new InvalidOperationException("保存失败，请稍后重试");
         }
 
@@ -792,6 +973,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// 克隆医案实体用于审计比较
         /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
         /// </summary>
+        // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, ConsultationDate移除
         private static MedicalCase CloneMedicalCaseForAudit(MedicalCase source)
         {
             return new MedicalCase
@@ -799,9 +981,8 @@ namespace LYBT.Module.MedicalCases.Services
                 Id = source.Id,
                 PatientId = source.PatientId,
                 PatientName = source.PatientName,
-                DoctorId = source.DoctorId,
+                UserId = source.UserId,
                 DoctorName = source.DoctorName,
-                ConsultationDate = source.ConsultationDate,
                 CaseStatus = source.CaseStatus,
                 Remark = source.Remark,
                 NeedsPrescription = source.NeedsPrescription,
