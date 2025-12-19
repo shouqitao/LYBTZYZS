@@ -186,15 +186,92 @@ public class PatientItem
 
 ## 优先级
 
-P2 - 技术债务清理，不影响功能
+P1 - 技术债务清理，影响后续维护难度
 
-## 实施策略
+## 新发现问题（扩展）
 
-1. **Phase 0**: DTO层PatientGender类型统一（优先，影响最小）
-2. **Phase 1-2**: PatientItem/MedicalCaseItem的Gender类型统一
-3. **Phase 3-4**: HerbItem/FormulaItem的Status类型统一
-4. **Phase 5**: 验证与测试
-5. **(待定)**: 命名统一（影响范围大，需单独评估）
+### 3. 药材项命名不一致
+
+| 概念 | Server Entity | Shared DTO | Desktop UI Model |
+|------|---------------|------------|------------------|
+| 经验方药材项 | `FormulaHerbItem` | `FormulaHerbItemDto` | `FormulaHerbItem` |
+| 处方药材项 | `PrescriptionItem` | `PrescriptionItemDto` | `PrescriptionHerbItemViewModel` |
+
+**问题**：同一概念（处方中的药材项）命名不统一，Server用`PrescriptionItem`，Desktop用`PrescriptionHerbItemViewModel`。
+
+### 4. 药材项字段命名不一致
+
+| 类 | Desktop属性 | DTO属性 |
+|------|-------------|---------|
+| FormulaHerbItem | `Sequence` | `SortOrder` |
+
+**问题**：Desktop用`Sequence`，DTO用`SortOrder`，需要在FromDto/ToDto中手动映射。
+
+### 5. 前端Item定义位置散乱
+
+| Item | 当前位置 |
+|------|----------|
+| FormulaItem + FormulaHerbItem | `LYBT.Desktop.Formula/Models/FormulaItem.cs` (同一文件) |
+| PatientItem | `LYBT.Desktop.Patients/Models/` |
+| HerbItem | `LYBT.Desktop.Herbs/Models/` |
+| UserItem | `LYBT.Desktop.Users/Models/` |
+| MedicalCaseItem | `LYBT.Desktop.MedicalCase/Models/` |
+| TodayPatientItem | `Shell/Models/` |
+
+**对比Server**：所有Entity集中在`LYBT.Entities/`，按领域分子目录。
+
+**问题**：
+1. Item类散落在各模块，难以统一管理
+2. FormulaHerbItem和FormulaItem在同一文件，应拆分
+3. 与Server的组织方式不对齐
+
+## 实施策略（完整版）
+
+### 分支策略
+```
+master
+  └── feature/unify-frontend-backend-types
+        ├── Phase 0-5: 类型统一（合并点1）
+        ├── Phase 6-7: 命名统一（合并点2）
+        └── Phase 8-9: 结构优化（Post-Release）
+```
+
+### 阶段划分
+
+| 阶段 | 内容 | 风险 | 预估工时 |
+|------|------|------|----------|
+| **Phase 0** | DTO层PatientGender类型统一 | Low | 0.5h |
+| **Phase 1** | PatientItem Gender类型统一 | Low | 1h |
+| **Phase 2** | MedicalCaseItem PatientGender类型统一 | Low | 0.5h |
+| **Phase 3** | HerbItem Status类型统一 | Medium | 1h |
+| **Phase 4** | FormulaItem Status/CreatedBy类型统一 | Medium | 1h |
+| **Phase 5** | 中间验证测试 | - | 1h |
+| **Phase 6** | UI Model命名统一 | High | 2h |
+| **Phase 7** | FormulaHerbItem Sequence→SortOrder | Low | 0.5h |
+| **Phase 8** | Item定义集中化 (Post-Release) | High | 3h |
+| **Phase 9** | 最终验证归档 | - | 1h |
+
+### 每阶段完成标准
+1. 编译验证通过 (0 errors, 0 warnings)
+2. 相关单元测试通过
+3. 提交到feature分支
+4. 可选：合并回master
+
+## 验收标准（更新版）
+
+### 核心标准（Phase 0-5必须）
+- [ ] 所有UI Model枚举属性使用枚举类型
+- [ ] FromDto/ToDto不再需要ToString()/Parse转换
+- [ ] 编译0错误0警告
+- [ ] 所有测试通过
+
+### 扩展标准（Phase 6-7）
+- [ ] UI Model属性命名与DTO一致
+- [ ] 药材项字段命名统一
+
+### 结构标准（Phase 8）
+- [ ] Item定义集中到LYBT.Desktop.Models/Items/
+- [ ] FormulaHerbItem独立文件
 
 ## 相关Issue
 
