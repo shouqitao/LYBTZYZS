@@ -11,6 +11,24 @@
 
 ### Changed - 变更
 
+#### 🏥 诊断字段精简（OpenSpec refactor-diagnosis-fields + consultation-field-alignment）
+
+**诊断模块字段重构**
+- 移除5个技术债务字段：ChiefComplaint(主诉), FourDiagnosis(四诊), TreatmentPrinciple(治疗原则), MedicalAdvice(医嘱), Remark(备注)
+- 保留4个核心诊断字段：PresentIllness(现病史), TongueDiagnosis(舌诊), PulseDiagnosis(脉诊), TCMDiagnosis(中医诊断)
+- 删除Consultation.PrescriptionEnabled字段，处方开关统一使用MedicalCase.NeedsPrescription
+- 清理ConsultationItem 10个Desktop层技术债务字段
+- 统一命名规范：TcmDiagnosis → TCMDiagnosis
+
+**数据库迁移**
+- `20251217052007_RemoveConsultationDiagnosisFields` - 移除5个诊断字段
+- `20251219011610_RemoveConsultationPrescriptionEnabled` - 移除处方开关字段
+
+**影响模块**
+- Server: Consultation, MedicalCase模块
+- Desktop: Desktop.Consultation, Desktop.MedicalCase模块
+- Shared: ConsultationDtos
+
 #### 🖥️ Shell布局优化（OpenSpec remove-statusbar-relocate-status）
 
 **状态栏移除与状态信息重布局**
