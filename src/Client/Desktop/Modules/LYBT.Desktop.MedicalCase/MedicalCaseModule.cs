@@ -70,7 +70,8 @@ namespace LYBT.Desktop.MedicalCase
             // 注册视图模型 - MVP核心功能
             // Issue #1549: MedicalCaseEntryViewModel已删除（由MedicalCaseFlowView的4步流程替代）
             // Epic #1583: PatientSelectionViewModel已移至PatientsModule（三区域布局）
-            containerRegistry.Register<ViewModels.PrescriptionItemViewModel>();  // Epic #2175 BF-002 Task 3.5: 处方药材项ViewModel
+            // OpenSpec: unify-frontend-backend-types Phase 8 - PrescriptionItemViewModel已合并到PrescriptionHerbItem
+            // PrescriptionHerbItem是Item类，由PrescriptionItemHandler通过new创建，不需要DI注册
             // OpenSpec: refactor-medicalcase-ui - 废弃注册已清理
 
             // Epic #2210 Phase 4: 4:6统一工作区视图模型

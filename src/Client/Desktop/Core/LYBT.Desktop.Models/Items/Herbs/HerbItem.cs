@@ -1,8 +1,8 @@
-﻿using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Herbs.Models;
+namespace LYBT.Desktop.Models.Items.Herbs;
 
 /// <summary>
 /// 中药材列表项UI模型 - 用于DataGrid/ListView显示
@@ -25,11 +25,15 @@ public class HerbItem : BindableBase
         set => SetProperty(ref _name, value);
     }
 
-    private string? _pinyin;
-    public string? Pinyin
+    /// <summary>
+    /// 拼音码 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为PinYinCode，与DTO保持一致
+    /// </summary>
+    private string? _pinYinCode;
+    public string? PinYinCode
     {
-        get => _pinyin;
-        set => SetProperty(ref _pinyin, value);
+        get => _pinYinCode;
+        set => SetProperty(ref _pinYinCode, value);
     }
 
     private string? _category;
@@ -88,11 +92,15 @@ public class HerbItem : BindableBase
         set => SetProperty(ref _dosageMax, value);
     }
 
-    private string? _dosageUnit;
-    public string? DosageUnit
+    /// <summary>
+    /// 单位 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为Unit，与DTO保持一致
+    /// </summary>
+    private string? _unit;
+    public string? Unit
     {
-        get => _dosageUnit;
-        set => SetProperty(ref _dosageUnit, value);
+        get => _unit;
+        set => SetProperty(ref _unit, value);
     }
 
     private string? _usage; // 用法
@@ -102,18 +110,26 @@ public class HerbItem : BindableBase
         set => SetProperty(ref _usage, value);
     }
 
-    private decimal _unitPrice;
-    public decimal UnitPrice
+    /// <summary>
+    /// 单价 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为Price，与DTO保持一致
+    /// </summary>
+    private decimal _price;
+    public decimal Price
     {
-        get => _unitPrice;
-        set => SetProperty(ref _unitPrice, value);
+        get => _price;
+        set => SetProperty(ref _price, value);
     }
 
-    private string? _specification; // 规格
-    public string? Specification
+    /// <summary>
+    /// 规格 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为Spec，与DTO保持一致
+    /// </summary>
+    private string? _spec;
+    public string? Spec
     {
-        get => _specification;
-        set => SetProperty(ref _specification, value);
+        get => _spec;
+        set => SetProperty(ref _spec, value);
     }
 
     private string? _manufacturer; // 生产厂家
@@ -123,12 +139,30 @@ public class HerbItem : BindableBase
         set => SetProperty(ref _manufacturer, value);
     }
 
-    private bool _isActive = true;
-    public bool IsActive
+    /// <summary>
+    /// 状态 - OpenSpec: unify-frontend-backend-types Phase 3
+    /// 统一使用CommonStatus枚举，与DTO保持一致
+    /// </summary>
+    private CommonStatus _status = CommonStatus.Enabled;
+    public CommonStatus Status
     {
-        get => _isActive;
-        set => SetProperty(ref _isActive, value);
+        get => _status;
+        set
+        {
+            if (SetProperty(ref _status, value))
+            {
+                RaisePropertyChanged(nameof(IsActive));
+                RaisePropertyChanged(nameof(StatusText));
+                RaisePropertyChanged(nameof(StatusColor));
+                RaisePropertyChanged(nameof(IsAvailable));
+            }
+        }
     }
+
+    /// <summary>
+    /// 是否启用（向后兼容计算属性）- OpenSpec: unify-frontend-backend-types Phase 3
+    /// </summary>
+    public bool IsActive => Status == CommonStatus.Enabled;
 
     // MVP阶段不实现库存管理，已移除Stock属性
 
@@ -176,6 +210,7 @@ public class HerbItem : BindableBase
 
     /// <summary>
     /// 从HerbDetailDto创建HerbItem
+    /// OpenSpec: unify-frontend-backend-types Phase 3 - Status直接使用枚举
     /// </summary>
     public static HerbItem FromDto(HerbDetailDto dto)
     {
@@ -183,7 +218,7 @@ public class HerbItem : BindableBase
         {
             Id = dto.Id,
             Name = dto.Name,
-            Pinyin = dto.PinYinCode,
+            PinYinCode = dto.PinYinCode, // OpenSpec: unify-frontend-backend-types - 直接映射
             Category = null, // HerbDetailDto中没有此属性
             Nature = null, // HerbDetailDto中没有此属性
             Meridian = null, // HerbDetailDto中没有此属性
@@ -192,12 +227,12 @@ public class HerbItem : BindableBase
             Contraindication = null, // HerbDetailDto中没有此属性
             DosageMin = 0, // HerbDetailDto中没有此属性
             DosageMax = 0, // HerbDetailDto中没有此属性
-            DosageUnit = dto.Unit,
+            Unit = dto.Unit, // OpenSpec: unify-frontend-backend-types - 直接映射
             Usage = dto.Usage,
-            UnitPrice = dto.Price,
-            Specification = dto.Spec,
+            Price = dto.Price, // OpenSpec: unify-frontend-backend-types - 直接映射
+            Spec = dto.Spec, // OpenSpec: unify-frontend-backend-types - 直接映射
             Manufacturer = null, // HerbDetailDto中没有此属性
-            IsActive = dto.Status == CommonStatus.Enabled,
+            Status = dto.Status, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
             // MVP阶段移除Stock属性
             Remark = dto.Remark,
             CreatedAt = dto.CreatedAt,
@@ -207,6 +242,7 @@ public class HerbItem : BindableBase
 
     /// <summary>
     /// 转换为HerbDetailDto（用于API调用）
+    /// OpenSpec: unify-frontend-backend-types Phase 3 - Status直接使用枚举
     /// </summary>
     public HerbDetailDto ToDto()
     {
@@ -214,15 +250,15 @@ public class HerbItem : BindableBase
         {
             Id = Id,
             Name = Name,
-            PinYinCode = Pinyin,
+            PinYinCode = PinYinCode, // OpenSpec: unify-frontend-backend-types - 直接映射
             Origin = null, // HerbItem中没有此属性
-            Spec = Specification,
-            Unit = DosageUnit ?? "克",
-            Price = UnitPrice,
+            Spec = Spec, // OpenSpec: unify-frontend-backend-types - 直接映射
+            Unit = Unit ?? "克", // OpenSpec: unify-frontend-backend-types - 直接映射
+            Price = Price, // OpenSpec: unify-frontend-backend-types - 直接映射
             CostPrice = null, // HerbItem中没有此属性
             Effect = Effect,
             Usage = Usage,
-            Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled,
+            Status = Status, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
             Remark = Remark,
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt
@@ -230,36 +266,46 @@ public class HerbItem : BindableBase
     }
 
     /// <summary>
-    /// 状态显示文本
+    /// 状态显示文本 - OpenSpec: unify-frontend-backend-types Phase 3
     /// </summary>
-    public string StatusText => IsActive ? "启用" : "停用";
+    public string StatusText => Status switch
+    {
+        CommonStatus.Enabled => "启用",
+        CommonStatus.Disabled => "停用",
+        _ => "未知"
+    };
 
     /// <summary>
-    /// 状态颜色
+    /// 状态颜色 - OpenSpec: unify-frontend-backend-types Phase 3
     /// </summary>
-    public string StatusColor => IsActive ? "#4CAF50" : "#F44336";
+    public string StatusColor => Status switch
+    {
+        CommonStatus.Enabled => "#4CAF50",
+        CommonStatus.Disabled => "#F44336",
+        _ => "#757575"
+    };
 
     // MVP阶段已移除库存相关属性：StockStatus, StockColor
 
     /// <summary>
-    /// 推荐剂量范围文本
+    /// 推荐剂量范围文本 - OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public string DosageRangeText => $"{DosageMin}-{DosageMax}{DosageUnit}";
+    public string DosageRangeText => $"{DosageMin}-{DosageMax}{Unit}";
 
     /// <summary>
-    /// 显示文本（用于ComboBox等）
+    /// 显示文本（用于ComboBox等）- OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public string DisplayText => $"{Name}({Pinyin}) - {Category}";
+    public string DisplayText => $"{Name}({PinYinCode}) - {Category}";
 
     /// <summary>
-    /// 搜索文本（用于快速搜索）
+    /// 搜索文本（用于快速搜索）- OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public string SearchText => $"{Name} {Pinyin} {Category} {Effect}";
+    public string SearchText => $"{Name} {PinYinCode} {Category} {Effect}";
 
     /// <summary>
-    /// 价格显示文本
+    /// 价格显示文本 - OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public string PriceText => $"¥{UnitPrice:F2}/{DosageUnit}";
+    public string PriceText => $"¥{Price:F2}/{Unit}";
 
     /// <summary>
     /// 是否可用（仅基于启用状态，MVP阶段不考虑库存）
@@ -278,7 +324,7 @@ public class HerbItem : BindableBase
         CurrentDosage >= DosageMin && CurrentDosage <= DosageMax;
 
     /// <summary>
-    /// 计算小计金额
+    /// 计算小计金额 - OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public decimal CalculateSubtotal() => CurrentDosage * UnitPrice;
+    public decimal CalculateSubtotal() => CurrentDosage * Price;
 }

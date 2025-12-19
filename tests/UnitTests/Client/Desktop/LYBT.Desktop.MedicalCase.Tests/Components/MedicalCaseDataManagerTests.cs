@@ -406,7 +406,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 Diagnosis = "风寒感冒", // ChiefComplaint已移至Consultation，MedicalCase使用Diagnosis
                 PatientId = patientId,
                 PatientName = "张三",
-                PatientGender = "男",
+                PatientGender = Gender.Male, // OpenSpec: unify-frontend-backend-types - string→Gender enum
                 PatientAge = 30,
                 UserId = doctorId,  // OpenSpec: DoctorId→UserId
                 DoctorName = "李医生",

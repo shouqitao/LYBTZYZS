@@ -1,8 +1,8 @@
-﻿using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Modules.MedicalCase.Models;
+namespace LYBT.Desktop.Models.Items.MedicalCases;
 
 /// <summary>
 /// 病历列表项UI模型 - 用于DataGrid/ListView显示
@@ -32,12 +32,32 @@ public class MedicalCaseItem : BindableBase
         set => SetProperty(ref _patientName, value);
     }
 
-    private string _patientGender = string.Empty;
-    public string PatientGender
+    /// <summary>
+    /// 患者性别 - OpenSpec: unify-frontend-backend-types Phase 2
+    /// 统一使用Gender枚举，与DTO保持一致
+    /// </summary>
+    private Gender _patientGender;
+    public Gender PatientGender
     {
         get => _patientGender;
-        set => SetProperty(ref _patientGender, value);
+        set
+        {
+            if (SetProperty(ref _patientGender, value))
+            {
+                RaisePropertyChanged(nameof(PatientGenderDisplay));
+            }
+        }
     }
+
+    /// <summary>
+    /// 患者性别显示文本（用于UI绑定）- OpenSpec: unify-frontend-backend-types Phase 2
+    /// </summary>
+    public string PatientGenderDisplay => PatientGender switch
+    {
+        Gender.Male => "男",
+        Gender.Female => "女",
+        _ => "未知"
+    };
 
     private int? _patientAge;
     public int? PatientAge
@@ -70,11 +90,15 @@ public class MedicalCaseItem : BindableBase
         set => SetProperty(ref _diagnosis, value);
     }
 
-    private MedicalCaseStatus _status;
-    public MedicalCaseStatus Status
+    /// <summary>
+    /// 医案状态 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为CaseStatus，与DTO保持一致
+    /// </summary>
+    private MedicalCaseStatus _caseStatus;
+    public MedicalCaseStatus CaseStatus
     {
-        get => _status;
-        set => SetProperty(ref _status, value);
+        get => _caseStatus;
+        set => SetProperty(ref _caseStatus, value);
     }
 
     private Guid? _consultationId;
@@ -136,6 +160,7 @@ public class MedicalCaseItem : BindableBase
     /// <summary>
     /// 从MedicalCaseDetailDto创建MedicalCaseItem
     /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, DiagnosisResult, TreatmentPlan
+    /// OpenSpec: unify-frontend-backend-types Phase 2 - PatientGender使用枚举
     /// </summary>
     public static MedicalCaseItem FromDto(MedicalCaseDetailDto dto)
     {
@@ -144,12 +169,12 @@ public class MedicalCaseItem : BindableBase
             Id = dto.Id,
             PatientId = dto.PatientId,
             PatientName = dto.PatientName ?? string.Empty,
-            PatientGender = "未知", // DTO中没有此属性，使用默认值
-            PatientAge = null, // DTO中没有此属性
-            CaseNumber = dto.Id.ToString().Substring(0, 8).ToUpper(), // 使用ID前8位作为案例编号
+            PatientGender = dto.PatientGender, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
+            PatientAge = dto.PatientAge,
+            CaseNumber = dto.CaseNumber ?? dto.Id.ToString().Substring(0, 8).ToUpper(), // 优先使用CaseNumber
             PresentIllness = dto.PresentIllness,
-            Diagnosis = dto.Consultation?.TCMDiagnosis, // 从Consultation获取中医诊断
-            Status = dto.CaseStatus,
+            Diagnosis = dto.Diagnosis ?? dto.Consultation?.TCMDiagnosis, // 优先使用Diagnosis字段
+            CaseStatus = dto.CaseStatus, // OpenSpec: unify-frontend-backend-types - 直接映射
             ConsultationId = dto.ConsultationId,
             PrescriptionId = dto.PrescriptionId,
             CreatedAt = dto.CreatedAt,
@@ -161,6 +186,7 @@ public class MedicalCaseItem : BindableBase
     /// <summary>
     /// 转换为MedicalCaseDetailDto（用于API调用）
     /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, ConsultationDate删除
+    /// OpenSpec: unify-frontend-backend-types Phase 2 - PatientGender使用枚举
     /// </summary>
     public MedicalCaseDetailDto ToDto()
     {
@@ -169,13 +195,17 @@ public class MedicalCaseItem : BindableBase
             Id = Id,
             PatientId = PatientId,
             PatientName = PatientName,
+            PatientGender = PatientGender, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
+            PatientAge = PatientAge,
             UserId = Guid.Empty, // 需要从其他地方获取
             DoctorName = string.Empty, // 需要从其他地方获取
+            CaseNumber = CaseNumber,
             ConsultationId = ConsultationId,
             PrescriptionId = PrescriptionId,
             // ConsultationDate已删除，使用CreatedAt代替
-            CaseStatus = Status,
+            CaseStatus = CaseStatus, // OpenSpec: unify-frontend-backend-types - 直接映射
             PresentIllness = PresentIllness,
+            Diagnosis = Diagnosis,
             CreatedAt = CreatedAt,
             UpdatedAt = CompletedAt ?? DateTime.Now,
             Remark = CompletionReason
@@ -185,18 +215,19 @@ public class MedicalCaseItem : BindableBase
     /// <summary>
     /// 从MedicalCaseDetailDto更新当前项
     /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, DiagnosisResult, TreatmentPlan
+    /// OpenSpec: unify-frontend-backend-types Phase 2 - PatientGender使用枚举
     /// </summary>
     public void UpdateFromDto(MedicalCaseDetailDto dto)
     {
         Id = dto.Id;
         PatientId = dto.PatientId;
         PatientName = dto.PatientName ?? string.Empty;
-        PatientGender = "未知"; // DTO中没有此属性，使用默认值
-        PatientAge = null; // DTO中没有此属性
-        CaseNumber = dto.Id.ToString().Substring(0, 8).ToUpper(); // 使用ID前8位作为案例编号
+        PatientGender = dto.PatientGender; // OpenSpec: unify-frontend-backend-types - 直接使用枚举
+        PatientAge = dto.PatientAge;
+        CaseNumber = dto.CaseNumber ?? dto.Id.ToString().Substring(0, 8).ToUpper(); // 优先使用CaseNumber
         PresentIllness = dto.PresentIllness;
-        Diagnosis = dto.Consultation?.TCMDiagnosis; // 从Consultation获取中医诊断
-        Status = dto.CaseStatus;
+        Diagnosis = dto.Diagnosis ?? dto.Consultation?.TCMDiagnosis; // 优先使用Diagnosis字段
+        CaseStatus = dto.CaseStatus; // OpenSpec: unify-frontend-backend-types - 直接映射
         ConsultationId = dto.ConsultationId;
         PrescriptionId = dto.PrescriptionId;
         CreatedAt = dto.CreatedAt;
@@ -205,9 +236,9 @@ public class MedicalCaseItem : BindableBase
     }
 
     /// <summary>
-    /// 状态显示文本 - Issue #2242简化版
+    /// 状态显示文本 - OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public string StatusText => Status switch
+    public string StatusText => CaseStatus switch
     {
         MedicalCaseStatus.Draft => "暂存",
         MedicalCaseStatus.Active => "进行中",
@@ -216,9 +247,9 @@ public class MedicalCaseItem : BindableBase
     };
 
     /// <summary>
-    /// 状态颜色（用于UI绑定）- Issue #2242简化版
+    /// 状态颜色（用于UI绑定）- OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public string StatusColor => Status switch
+    public string StatusColor => CaseStatus switch
     {
         MedicalCaseStatus.Draft => "#FFC107",      // 暂存：橙色
         MedicalCaseStatus.Active => "#4CAF50",     // 进行中：绿色
@@ -227,14 +258,14 @@ public class MedicalCaseItem : BindableBase
     };
 
     /// <summary>
-    /// 是否为活动状态
+    /// 是否为活动状态 - OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public bool IsActive => Status == MedicalCaseStatus.Active;
+    public bool IsActive => CaseStatus == MedicalCaseStatus.Active;
 
     /// <summary>
-    /// 是否已完成 - Epic #1612修正版
+    /// 是否已完成 - OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public bool IsCompleted => Status == MedicalCaseStatus.Completed;
+    public bool IsCompleted => CaseStatus == MedicalCaseStatus.Completed;
 
     /// <summary>
     /// 是否可编辑

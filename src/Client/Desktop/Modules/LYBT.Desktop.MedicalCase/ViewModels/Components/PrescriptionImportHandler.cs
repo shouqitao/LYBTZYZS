@@ -1,4 +1,5 @@
 using LYBT.Desktop.MedicalCase.ViewModels;
+using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -42,7 +43,7 @@ public class PrescriptionImportHandler
     public FormulaImportResult ProcessFormulaImport(
         FormulaDetailDto formula,
         List<FormulaHerbItemDto> herbs,
-        ObservableCollection<PrescriptionHerbItemViewModel> existingHerbItems,
+        ObservableCollection<PrescriptionHerbItem> existingHerbItems,
         ObservableCollection<HerbDetailDto> allHerbs)
     {
         if (formula == null || herbs == null || !herbs.Any())
@@ -117,7 +118,7 @@ public class PrescriptionImportHandler
     /// <returns>复制结果</returns>
     public HistoryCopyResult ProcessHistoryCopy(
         List<PrescriptionItemDto> historyItems,
-        ObservableCollection<PrescriptionHerbItemViewModel> existingHerbItems)
+        ObservableCollection<PrescriptionHerbItem> existingHerbItems)
     {
         if (historyItems == null || !historyItems.Any())
         {
@@ -180,9 +181,9 @@ public class PrescriptionImportHandler
     /// <param name="createHerbItem">创建药材项的工厂方法</param>
     /// <returns>实际添加的数量</returns>
     public int AddHerbItemsToCollection(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
         List<HerbItemToAdd> itemsToAdd,
-        Func<PrescriptionHerbItemViewModel> createHerbItem)
+        Func<PrescriptionHerbItem> createHerbItem)
     {
         int addedCount = 0;
         foreach (var item in itemsToAdd)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using LYBT.Desktop.Models.Items.Patients;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Modules.Patients.Models;

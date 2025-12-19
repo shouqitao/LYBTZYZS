@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Desktop.MedicalCase.ViewModels;
+using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Shared.Models.Contracts.Herbs;
 using System.Collections.ObjectModel;
 using Xunit;
@@ -7,8 +7,9 @@ using Xunit;
 namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
 {
     /// <summary>
-    /// PrescriptionItemViewModel单元测试
+    /// PrescriptionHerbItem单元测试
     /// Epic #2175 BF-002 Phase 4 Task 4.1: 拼音过滤算法单元测试
+    /// OpenSpec: unify-frontend-backend-types Phase 8.4 - 类型重命名
     ///
     /// 测试覆盖范围：
     /// 1. GetMatchScore - 7级智能评分算法测试
@@ -17,13 +18,12 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
     /// 4. 边界条件和异常处理测试
     ///
     /// 注意：精确匹配时返回空列表（Bug修复：防止用户选择后Popup一直显示）
-    /// OpenSpec: unify-medicalcase-input-dto - 更新为无参构造函数
     /// </summary>
-    public class PrescriptionItemViewModelTests
+    public class PrescriptionHerbItemTests
     {
-        private static PrescriptionItemViewModel CreateViewModel()
+        private static PrescriptionHerbItem CreateViewModel()
         {
-            return new PrescriptionItemViewModel();
+            return new PrescriptionHerbItem();
         }
 
         #region GetMatchScore测试 - Level 1: 名称完全匹配 (100分)

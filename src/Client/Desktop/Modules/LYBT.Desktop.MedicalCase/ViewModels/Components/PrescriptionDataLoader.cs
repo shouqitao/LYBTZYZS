@@ -1,6 +1,7 @@
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -97,7 +98,7 @@ public class PrescriptionDataLoader
     /// <param name="herbItems">药材项集合</param>
     /// <param name="allHerbs">所有药材列表</param>
     public void InjectHerbsToItems(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
         ObservableCollection<HerbDetailDto> allHerbs)
     {
         foreach (var item in herbItems)

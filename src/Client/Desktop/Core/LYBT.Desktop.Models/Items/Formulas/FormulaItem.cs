@@ -1,8 +1,8 @@
-﻿using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Formula.Models;
+namespace LYBT.Desktop.Models.Items.Formulas;
 
 /// <summary>
 /// 验方列表项UI模型 - 用于DataGrid/ListView显示
@@ -60,12 +60,16 @@ public class FormulaItem : BindableBase
         set => SetProperty(ref _effect, value);
     } // 功效
 
-    private string? _indication;
-    public string? Indication
+    /// <summary>
+    /// 主治 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为Indications，与DTO保持一致
+    /// </summary>
+    private string? _indications;
+    public string? Indications
     {
-        get => _indication;
-        set => SetProperty(ref _indication, value);
-    } // 主治
+        get => _indications;
+        set => SetProperty(ref _indications, value);
+    }
 
     private string? _usage;
     public string? Usage
@@ -81,22 +85,34 @@ public class FormulaItem : BindableBase
         set => SetProperty(ref _modification, value);
     } // 加减
 
-    private string? _contraindication;
-    public string? Contraindication
+    /// <summary>
+    /// 禁忌 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为Contraindications，与DTO保持一致
+    /// </summary>
+    private string? _contraindications;
+    public string? Contraindications
     {
-        get => _contraindication;
-        set => SetProperty(ref _contraindication, value);
-    } // 禁忌
+        get => _contraindications;
+        set => SetProperty(ref _contraindications, value);
+    }
 
-    private string? _note;
-    public string? Note
+    /// <summary>
+    /// 注意事项/备注 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为Remark，与DTO保持一致
+    /// </summary>
+    private string? _remark;
+    public string? Remark
     {
-        get => _note;
-        set => SetProperty(ref _note, value);
-    } // 注意事项
+        get => _remark;
+        set => SetProperty(ref _remark, value);
+    }
 
-    private string? _createdBy;
-    public string? CreatedBy
+    /// <summary>
+    /// 创建者ID - OpenSpec: unify-frontend-backend-types Phase 4
+    /// 统一使用Guid?，与DTO保持一致
+    /// </summary>
+    private Guid? _createdBy;
+    public Guid? CreatedBy
     {
         get => _createdBy;
         set => SetProperty(ref _createdBy, value);
@@ -116,12 +132,30 @@ public class FormulaItem : BindableBase
         set => SetProperty(ref _isPersonal, value);
     } // 是否个人验方
 
-    private bool _isActive = true;
-    public bool IsActive
+    /// <summary>
+    /// 状态 - OpenSpec: unify-frontend-backend-types Phase 4
+    /// 统一使用CommonStatus枚举，与DTO保持一致
+    /// </summary>
+    private CommonStatus _status = CommonStatus.Enabled;
+    public CommonStatus Status
     {
-        get => _isActive;
-        set => SetProperty(ref _isActive, value);
+        get => _status;
+        set
+        {
+            if (SetProperty(ref _status, value))
+            {
+                RaisePropertyChanged(nameof(IsActive));
+                RaisePropertyChanged(nameof(StatusText));
+                RaisePropertyChanged(nameof(StatusColor));
+                RaisePropertyChanged(nameof(IsAvailable));
+            }
+        }
     }
+
+    /// <summary>
+    /// 是否启用（向后兼容计算属性）- OpenSpec: unify-frontend-backend-types Phase 4
+    /// </summary>
+    public bool IsActive => Status == CommonStatus.Enabled;
 
     private int _usageCount;
     public int UsageCount
@@ -174,6 +208,7 @@ public class FormulaItem : BindableBase
 
     /// <summary>
     /// 从FormulaDetailDto创建FormulaItem
+    /// OpenSpec: unify-frontend-backend-types Phase 4 - Status/CreatedBy直接使用
     /// </summary>
     public static FormulaItem FromDto(FormulaDetailDto dto)
     {
@@ -184,17 +219,17 @@ public class FormulaItem : BindableBase
             Pinyin = null, // FormulaDetailDto中没有此属性
             Category = dto.Category,
             Source = null, // FormulaDetailDto中没有此属性
-            Composition = null, // FormulaDetailDto中没有此属性  
+            Composition = null, // FormulaDetailDto中没有此属性
             Effect = dto.Effect,
-            Indication = null, // FormulaDetailDto中没有此属性
+            Indications = null, // FormulaDetailDto中没有此属性
             Usage = dto.Usage,
             Modification = null, // FormulaDetailDto中没有此属性
-            Contraindication = null, // FormulaDetailDto中没有此属性
-            Note = dto.Remark, // FormulaDetailDto中是Remark
-            CreatedBy = null, // FormulaDetailDto中没有此属性
+            Contraindications = null, // FormulaDetailDto中没有此属性
+            Remark = dto.Remark, // OpenSpec: unify-frontend-backend-types - 直接映射
+            CreatedBy = dto.CreatedBy, // OpenSpec: unify-frontend-backend-types - 直接使用Guid?
             IsClassic = false, // 默认值
             IsPersonal = !dto.IsShared, // 根据IsShared推断
-            IsActive = dto.Status == CommonStatus.Enabled,
+            Status = dto.Status, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
             UsageCount = 0, // 默认值
             CreatedAt = dto.CreatedAt,
             UpdatedAt = dto.UpdatedAt
@@ -211,6 +246,7 @@ public class FormulaItem : BindableBase
 
     /// <summary>
     /// 转换为FormulaDetailDto（用于API调用）
+    /// OpenSpec: unify-frontend-backend-types Phase 4 - Status直接使用枚举
     /// </summary>
     public FormulaDetailDto ToDto()
     {
@@ -222,8 +258,8 @@ public class FormulaItem : BindableBase
             Usage = Usage,
             Property = null, // FormulaDetailDto中的属性
             IsShared = !IsPersonal,
-            Remark = Note,
-            Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled,
+            Remark = Remark, // OpenSpec: unify-frontend-backend-types - 直接映射
+            Status = Status, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt,
             Herbs = Herbs.Select(h => h.ToDto()).ToList()
@@ -257,14 +293,24 @@ public class FormulaItem : BindableBase
     }
 
     /// <summary>
-    /// 状态文本
+    /// 状态显示文本 - OpenSpec: unify-frontend-backend-types Phase 4
     /// </summary>
-    public string StatusText => IsActive ? "启用" : "停用";
+    public string StatusText => Status switch
+    {
+        CommonStatus.Enabled => "启用",
+        CommonStatus.Disabled => "停用",
+        _ => "未知"
+    };
 
     /// <summary>
-    /// 状态颜色
+    /// 状态颜色 - OpenSpec: unify-frontend-backend-types Phase 4
     /// </summary>
-    public string StatusColor => IsActive ? "#4CAF50" : "#F44336";
+    public string StatusColor => Status switch
+    {
+        CommonStatus.Enabled => "#4CAF50",
+        CommonStatus.Disabled => "#F44336",
+        _ => "#757575"
+    };
 
     /// <summary>
     /// 药材数量
@@ -292,9 +338,9 @@ public class FormulaItem : BindableBase
     public string DisplayText => $"{Name}({TypeText}) - {Category}";
 
     /// <summary>
-    /// 搜索文本
+    /// 搜索文本 - OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public string SearchText => $"{Name} {Pinyin} {Category} {Effect} {Indication}";
+    public string SearchText => $"{Name} {Pinyin} {Category} {Effect} {Indications}";
 
     /// <summary>
     /// 是否可用
@@ -302,9 +348,9 @@ public class FormulaItem : BindableBase
     public bool IsAvailable => IsActive;
 
     /// <summary>
-    /// 是否有禁忌
+    /// 是否有禁忌 - OpenSpec: unify-frontend-backend-types Phase 6
     /// </summary>
-    public bool HasContraindication => !string.IsNullOrWhiteSpace(Contraindication);
+    public bool HasContraindication => !string.IsNullOrWhiteSpace(Contraindications);
 
     /// <summary>
     /// 是否有加减
@@ -338,90 +384,4 @@ public class FormulaItem : BindableBase
             return "#9E9E9E";
         }
     }
-}
-
-/// <summary>
-/// 验方中的药材项
-/// 支持延迟绑定：HerbId可空
-/// </summary>
-public class FormulaHerbItem : BindableBase
-{
-    private Guid? _herbId;
-    public Guid? HerbId
-    {
-        get => _herbId;
-        set => SetProperty(ref _herbId, value);
-    }
-
-    private string _herbName = string.Empty;
-    public string HerbName
-    {
-        get => _herbName;
-        set => SetProperty(ref _herbName, value);
-    }
-
-    private int _dosage;
-    public int Dosage
-    {
-        get => _dosage;
-        set => SetProperty(ref _dosage, value);
-    }
-
-    private string _unit = string.Empty;
-    public string Unit
-    {
-        get => _unit;
-        set => SetProperty(ref _unit, value);
-    }
-
-    private string? _usage;
-    public string? Usage
-    {
-        get => _usage;
-        set => SetProperty(ref _usage, value);
-    }
-
-    private int _sequence;
-    public int Sequence
-    {
-        get => _sequence;
-        set => SetProperty(ref _sequence, value);
-    }
-
-    /// <summary>
-    /// 从FormulaHerbItemDto创建
-    /// </summary>
-    public static FormulaHerbItem FromDto(FormulaHerbItemDto dto)
-    {
-        return new FormulaHerbItem
-        {
-            HerbId = dto.HerbId,
-            HerbName = dto.HerbName,
-            Dosage = dto.Dosage,
-            Unit = dto.Unit,
-            Usage = dto.Usage,
-            Sequence = dto.SortOrder // FormulaHerbItemDto 中是 SortOrder
-        };
-    }
-
-    /// <summary>
-    /// 转换为DTO
-    /// </summary>
-    public FormulaHerbItemDto ToDto()
-    {
-        return new FormulaHerbItemDto
-        {
-            HerbId = HerbId,
-            HerbName = HerbName,
-            Dosage = Dosage,
-            Unit = Unit,
-            Usage = Usage,
-            SortOrder = Sequence // FormulaHerbItemDto 中是 SortOrder
-        };
-    }
-
-    /// <summary>
-    /// 显示文本
-    /// </summary>
-    public string DisplayText => $"{HerbName} {Dosage}{Unit}";
 }

@@ -464,9 +464,9 @@
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
-                            <!-- 性别 -->
+                            <!-- 性别 - OpenSpec: unify-frontend-backend-types Phase 1 -->
                             <DataGridTextColumn Header="性别"
-                                              Binding="{Binding Gender}"
+                                              Binding="{Binding GenderDisplay}"
                                               Width="60">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">

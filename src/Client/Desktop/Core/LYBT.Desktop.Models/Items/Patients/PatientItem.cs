@@ -1,8 +1,8 @@
-﻿using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Modules.Patients.Models;
+namespace LYBT.Desktop.Models.Items.Patients;
 
 /// <summary>
 /// 患者列表项UI模型 - 用于DataGrid/ListView显示
@@ -25,12 +25,32 @@ public class PatientItem : BindableBase
         set => SetProperty(ref _name, value);
     }
 
-    private string _gender = string.Empty;
-    public string Gender
+    /// <summary>
+    /// 性别 - OpenSpec: unify-frontend-backend-types Phase 1
+    /// 统一使用Gender枚举，与DTO保持一致
+    /// </summary>
+    private Gender _gender;
+    public Gender Gender
     {
         get => _gender;
-        set => SetProperty(ref _gender, value);
+        set
+        {
+            if (SetProperty(ref _gender, value))
+            {
+                RaisePropertyChanged(nameof(GenderDisplay));
+            }
+        }
     }
+
+    /// <summary>
+    /// 性别显示文本（用于UI绑定）- OpenSpec: unify-frontend-backend-types Phase 1
+    /// </summary>
+    public string GenderDisplay => Gender switch
+    {
+        Gender.Male => "男",
+        Gender.Female => "女",
+        _ => "未知"
+    };
 
     private DateTime? _birthDate;
     /// <summary>
@@ -84,11 +104,15 @@ public class PatientItem : BindableBase
         set => SetProperty(ref _address, value);
     }
 
-    private string? _idCard;
-    public string? IdCard
+    /// <summary>
+    /// 身份证号 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为IdNumber，与DTO保持一致
+    /// </summary>
+    private string? _idNumber;
+    public string? IdNumber
     {
-        get => _idCard;
-        set => SetProperty(ref _idCard, value);
+        get => _idNumber;
+        set => SetProperty(ref _idNumber, value);
     }
 
     private string? _medicalHistory;
@@ -112,11 +136,15 @@ public class PatientItem : BindableBase
         set => SetProperty(ref _createdAt, value);
     }
 
-    private DateTime? _lastVisitDate;
-    public DateTime? LastVisitDate
+    /// <summary>
+    /// 最后就诊时间 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为LastVisitTime，与DTO保持一致
+    /// </summary>
+    private DateTime? _lastVisitTime;
+    public DateTime? LastVisitTime
     {
-        get => _lastVisitDate;
-        set => SetProperty(ref _lastVisitDate, value);
+        get => _lastVisitTime;
+        set => SetProperty(ref _lastVisitTime, value);
     }
 
     private int _visitCount;
@@ -143,6 +171,7 @@ public class PatientItem : BindableBase
     /// <summary>
     /// 从PatientDto创建PatientItem
     /// Issue #2240: 直接传递BirthDate，Age自动计算
+    /// OpenSpec: unify-frontend-backend-types Phase 1 - Gender直接使用枚举
     /// </summary>
     public static PatientItem FromDto(PatientDetailDto dto)
     {
@@ -150,15 +179,15 @@ public class PatientItem : BindableBase
         {
             Id = dto.Id,
             Name = dto.Name,
-            Gender = dto.Gender.ToString(), // 枚举转字符串
+            Gender = dto.Gender, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
             BirthDate = dto.BirthDate, // Issue #2240: 存储BirthDate，Age自动计算
             PhoneNumber = dto.PhoneNumber ?? string.Empty,
             Address = dto.Address,
-            IdCard = dto.IdNumber, // PatientDto中是IdNumber
+            IdNumber = dto.IdNumber, // OpenSpec: unify-frontend-backend-types - 直接映射
             MedicalHistory = null, // PatientDto中没有此属性，将来扩展
             AllergyHistory = dto.AllergyHistory,
-            CreatedAt = dto.CreatedAt, // PatientDto中是CreateTime
-            LastVisitDate = dto.LastVisitTime, // PatientDto中是LastVisitTime
+            CreatedAt = dto.CreatedAt,
+            LastVisitTime = dto.LastVisitTime, // OpenSpec: unify-frontend-backend-types - 直接映射
             VisitCount = dto.VisitCount
         };
     }
@@ -166,6 +195,7 @@ public class PatientItem : BindableBase
     /// <summary>
     /// 转换为PatientDto（用于API调用）
     /// Issue #2240: 直接传递BirthDate，不再从Age反算
+    /// OpenSpec: unify-frontend-backend-types Phase 1 - Gender直接使用枚举
     /// </summary>
     public PatientDetailDto ToDto()
     {
@@ -173,16 +203,16 @@ public class PatientItem : BindableBase
         {
             Id = Id,
             Name = Name,
-            Gender = Enum.Parse<Gender>(Gender), // 字符串转枚举
+            Gender = Gender, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
             BirthDate = BirthDate, // Issue #2240: 直接传递BirthDate，Age在PatientDto中也是计算属性
             PhoneNumber = PhoneNumber,
             Address = Address,
-            IdNumber = IdCard, // PatientItem的IdCard对应PatientDto的IdNumber
+            IdNumber = IdNumber, // OpenSpec: unify-frontend-backend-types - 直接映射
             AllergyHistory = AllergyHistory,
             Status = CommonStatus.Enabled, // 默认启用状态
             CreatedAt = CreatedAt,
             UpdatedAt = DateTime.Now,
-            LastVisitTime = LastVisitDate,
+            LastVisitTime = LastVisitTime, // OpenSpec: unify-frontend-backend-types - 直接映射
             VisitCount = VisitCount
         };
     }
@@ -190,27 +220,29 @@ public class PatientItem : BindableBase
     /// <summary>
     /// 从PatientDto更新当前项
     /// Issue #2240: 更新BirthDate，Age自动计算
+    /// OpenSpec: unify-frontend-backend-types Phase 1 - Gender直接使用枚举
     /// </summary>
     public void UpdateFromDto(PatientDetailDto dto)
     {
         Id = dto.Id;
         Name = dto.Name;
-        Gender = dto.Gender.ToString(); // 枚举转字符串
+        Gender = dto.Gender; // OpenSpec: unify-frontend-backend-types - 直接使用枚举
         BirthDate = dto.BirthDate; // Issue #2240: 更新BirthDate，Age自动计算
         PhoneNumber = dto.PhoneNumber ?? string.Empty;
         Address = dto.Address;
-        IdCard = dto.IdNumber; // PatientDto中是IdNumber
+        IdNumber = dto.IdNumber; // OpenSpec: unify-frontend-backend-types - 直接映射
         MedicalHistory = null; // PatientDto中没有此属性，将来扩展
         AllergyHistory = dto.AllergyHistory;
-        CreatedAt = dto.CreatedAt; // PatientDto中是CreateTime
-        LastVisitDate = dto.LastVisitTime; // PatientDto中是LastVisitTime
+        CreatedAt = dto.CreatedAt;
+        LastVisitTime = dto.LastVisitTime; // OpenSpec: unify-frontend-backend-types - 直接映射
         VisitCount = dto.VisitCount;
     }
 
     /// <summary>
     /// 显示文本（用于ComboBox等）
+    /// OpenSpec: unify-frontend-backend-types Phase 1 - 使用GenderDisplay替代Gender
     /// </summary>
-    public string DisplayText => $"{Name} ({Gender}/{Age}岁)";
+    public string DisplayText => $"{Name} ({GenderDisplay}/{Age}岁)";
 
     /// <summary>
     /// 是否为新患者（30天内首次就诊）

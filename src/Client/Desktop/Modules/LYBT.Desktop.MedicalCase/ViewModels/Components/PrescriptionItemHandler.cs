@@ -1,3 +1,4 @@
+using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
@@ -50,11 +51,11 @@ public class PrescriptionItemHandler
     /// <param name="allHerbs">所有药材列表（用于下拉选择）</param>
     /// <param name="onItemChanged">项变化回调（HerbId或ItemTotal变化时触发）</param>
     /// <returns>新创建的药材项</returns>
-    public PrescriptionHerbItemViewModel CreateHerbItem(
+    public PrescriptionHerbItem CreateHerbItem(
         ObservableCollection<HerbDetailDto> allHerbs,
-        Action<PrescriptionHerbItemViewModel, string>? onItemChanged = null)
+        Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
-        var item = new PrescriptionHerbItemViewModel
+        var item = new PrescriptionHerbItem
         {
             AllHerbs = allHerbs
         };
@@ -64,8 +65,8 @@ public class PrescriptionItemHandler
         {
             item.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(PrescriptionHerbItemViewModel.ItemTotal) ||
-                    e.PropertyName == nameof(PrescriptionHerbItemViewModel.HerbId))
+                if (e.PropertyName == nameof(PrescriptionHerbItem.ItemTotal) ||
+                    e.PropertyName == nameof(PrescriptionHerbItem.HerbId))
                 {
                     onItemChanged(item, e.PropertyName);
                 }
@@ -82,10 +83,10 @@ public class PrescriptionItemHandler
     /// <param name="allHerbs">所有药材列表</param>
     /// <param name="onItemChanged">项变化回调</param>
     /// <returns>药材项ViewModel</returns>
-    public PrescriptionHerbItemViewModel CreateHerbItemFromDto(
+    public PrescriptionHerbItem CreateHerbItemFromDto(
         PrescriptionItemDto itemDto,
         ObservableCollection<HerbDetailDto> allHerbs,
-        Action<PrescriptionHerbItemViewModel, string>? onItemChanged = null)
+        Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         var item = CreateHerbItem(allHerbs, onItemChanged);
 
@@ -110,9 +111,9 @@ public class PrescriptionItemHandler
     /// <param name="allHerbs">所有药材列表</param>
     /// <param name="onItemChanged">项变化回调</param>
     public void AddDefaultHerbItems(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
         ObservableCollection<HerbDetailDto> allHerbs,
-        Action<PrescriptionHerbItemViewModel, string>? onItemChanged = null)
+        Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         // 初始化8个空槽位（2行4列）
         for (int i = 0; i < InitialSlotCount; i++)
@@ -136,9 +137,9 @@ public class PrescriptionItemHandler
     /// <param name="allHerbs">所有药材列表</param>
     /// <param name="onItemChanged">项变化回调</param>
     public void EnsureMinimumBlankRows(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
         ObservableCollection<HerbDetailDto> allHerbs,
-        Action<PrescriptionHerbItemViewModel, string>? onItemChanged = null)
+        Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         // 统计空槽位数量（未选择药材的槽位）
         var blankSlots = herbItems.Count(h => h.HerbId == Guid.Empty);
@@ -170,9 +171,9 @@ public class PrescriptionItemHandler
     /// <param name="allHerbs">所有药材列表</param>
     /// <param name="onItemChanged">项变化回调</param>
     public void CompactHerbItems(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
         ObservableCollection<HerbDetailDto> allHerbs,
-        Action<PrescriptionHerbItemViewModel, string>? onItemChanged = null)
+        Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         // 提取所有非空药材项（保持相对顺序）
         var nonEmptyItems = herbItems.Where(h => h.HerbId != Guid.Empty).ToList();
@@ -203,9 +204,9 @@ public class PrescriptionItemHandler
     /// <param name="allHerbs">所有药材列表</param>
     /// <param name="onItemChanged">项变化回调</param>
     public void AddNewRow(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
         ObservableCollection<HerbDetailDto> allHerbs,
-        Action<PrescriptionHerbItemViewModel, string>? onItemChanged = null)
+        Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         for (int i = 0; i < 4; i++)
         {
@@ -224,10 +225,10 @@ public class PrescriptionItemHandler
     /// <param name="allHerbs">所有药材列表</param>
     /// <param name="onItemChanged">项变化回调</param>
     public void AddAfter(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
-        PrescriptionHerbItemViewModel afterItem,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
+        PrescriptionHerbItem afterItem,
         ObservableCollection<HerbDetailDto> allHerbs,
-        Action<PrescriptionHerbItemViewModel, string>? onItemChanged = null)
+        Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         var index = herbItems.IndexOf(afterItem);
         if (index >= 0)
@@ -247,10 +248,10 @@ public class PrescriptionItemHandler
     /// <param name="onItemChanged">项变化回调</param>
     /// <returns>是否成功删除</returns>
     public bool DeleteHerbItem(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
-        PrescriptionHerbItemViewModel itemToDelete,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
+        PrescriptionHerbItem itemToDelete,
         ObservableCollection<HerbDetailDto> allHerbs,
-        Action<PrescriptionHerbItemViewModel, string>? onItemChanged = null)
+        Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         if (itemToDelete == null)
         {
@@ -279,7 +280,7 @@ public class PrescriptionItemHandler
     /// <param name="herbItems">药材项集合</param>
     /// <returns>处方药材DTO列表</returns>
     public List<PrescriptionItemInputDto> CollectPrescriptionItems(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems)
+        ObservableCollection<PrescriptionHerbItem> herbItems)
     {
         var items = new List<PrescriptionItemInputDto>();
 
