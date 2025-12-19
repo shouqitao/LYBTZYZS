@@ -78,7 +78,7 @@ public static class DtoConversionExtensions
                 Usage = item.Usage,
                 DecocteMethod = item.DecocteMethod,
                 Remark = item.Remark
-            }).ToList()
+            }).ToList() ?? []
         };
     }
 

@@ -263,15 +263,9 @@ namespace LYBT.Module.MedicalCases.Services
                 }
 
                 // 更新NeedsPrescription标志
+                // OpenSpec: consultation-field-alignment - 处方标志统一在MedicalCase管理
                 medicalCase.NeedsPrescription = needsPrescription;
                 medicalCase.UpdatedAt = DateTime.Now;
-
-                // 同步更新Consultation.PrescriptionEnabled（兼容旧逻辑）
-                if (medicalCase.Consultation != null)
-                {
-                    medicalCase.Consultation.PrescriptionEnabled = needsPrescription;
-                    medicalCase.Consultation.UpdatedAt = DateTime.Now;
-                }
 
                 // 保存
                 var result = await _repository.UpdateAsync(medicalCase);
@@ -646,16 +640,11 @@ namespace LYBT.Module.MedicalCases.Services
                     }
 
                     // PERSIST-002: 更新Prescription（处方部分）
+                    // OpenSpec: consultation-field-alignment - 处方标志统一在MedicalCase管理
                     if (request.Prescription != null)
                     {
                         // 更新NeedsPrescription标志
                         medicalCase.NeedsPrescription = request.Prescription.NeedsPrescription;
-
-                        // 同步更新Consultation.PrescriptionEnabled（兼容旧逻辑）
-                        if (medicalCase.Consultation != null)
-                        {
-                            medicalCase.Consultation.PrescriptionEnabled = request.Prescription.NeedsPrescription;
-                        }
 
                         if (request.Prescription.NeedsPrescription)
                         {

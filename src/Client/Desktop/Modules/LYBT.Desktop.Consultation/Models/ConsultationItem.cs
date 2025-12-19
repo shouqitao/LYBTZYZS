@@ -1,5 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Contracts.Consultation;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Consultation.Models;
@@ -8,13 +7,20 @@ namespace LYBT.Desktop.Consultation.Models;
 /// 问诊列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用ConsultationDetailDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与ConsultationDetailDto一致，确保XAML绑定兼容
+///
+/// OpenSpec: consultation-field-alignment - 清理技术债务
+/// 移除不属于Consultation实体的字段：
+/// - Patient相关字段(Gender/Age/History等) → 应从Patient实体获取
+/// - Syndrome → 已废弃
+/// - Status/CompletedAt/PrescriptionId → 无后端对应
 /// </summary>
 public class ConsultationItem : BindableBase
 {
-    private Guid _id = Guid.Empty;
+    #region 基础标识字段
 
+    private Guid _id = Guid.Empty;
     /// <summary>
-    /// 问诊记录ID
+    /// 问诊记录ID（等于MedicalCaseId，共享主键）
     /// </summary>
     public Guid Id
     {
@@ -23,7 +29,6 @@ public class ConsultationItem : BindableBase
     }
 
     private Guid _medicalCaseId = Guid.Empty;
-
     /// <summary>
     /// 关联的病历ID
     /// </summary>
@@ -34,86 +39,67 @@ public class ConsultationItem : BindableBase
     }
 
     private Guid _patientId = Guid.Empty;
+    /// <summary>
+    /// 患者ID
+    /// </summary>
     public Guid PatientId
     {
         get => _patientId;
         set => SetProperty(ref _patientId, value);
     }
 
+    private Guid _userId = Guid.Empty;
+    /// <summary>
+    /// 医生用户ID
+    /// </summary>
+    public Guid UserId
+    {
+        get => _userId;
+        set => SetProperty(ref _userId, value);
+    }
+
+    #endregion
+
+    #region 展示字段
+
     private string _patientName = string.Empty;
+    /// <summary>
+    /// 患者姓名（展示用）
+    /// </summary>
     public string PatientName
     {
         get => _patientName;
         set => SetProperty(ref _patientName, value);
     }
 
-    private string _patientGender = string.Empty;
-    public string PatientGender
+    private string _doctorName = string.Empty;
+    /// <summary>
+    /// 医生姓名（展示用）
+    /// </summary>
+    public string DoctorName
     {
-        get => _patientGender;
-        set => SetProperty(ref _patientGender, value);
+        get => _doctorName;
+        set => SetProperty(ref _doctorName, value);
     }
 
-    private int? _patientAge;
-    public int? PatientAge
-    {
-        get => _patientAge;
-        set => SetProperty(ref _patientAge, value);
-    }
+    #endregion
 
-    private string _chiefComplaint = string.Empty;
-    public string ChiefComplaint
-    {
-        get => _chiefComplaint;
-        set => SetProperty(ref _chiefComplaint, value);
-    }
+    #region 诊断核心字段
 
     private string? _presentIllness;
+    /// <summary>
+    /// 现病史
+    /// </summary>
     public string? PresentIllness
     {
         get => _presentIllness;
         set => SetProperty(ref _presentIllness, value);
     }
 
-    private string? _pastHistory;
-    public string? PastHistory
-    {
-        get => _pastHistory;
-        set => SetProperty(ref _pastHistory, value);
-    }
-
-    private string? _personalHistory;
-    public string? PersonalHistory
-    {
-        get => _personalHistory;
-        set => SetProperty(ref _personalHistory, value);
-    }
-
-    private string? _familyHistory;
-    public string? FamilyHistory
-    {
-        get => _familyHistory;
-        set => SetProperty(ref _familyHistory, value);
-    }
-
-    private string? _allergyHistory;
-    public string? AllergyHistory
-    {
-        get => _allergyHistory;
-        set => SetProperty(ref _allergyHistory, value);
-    }
-
-    // 中医四诊（重构版）
-    private string? _fourDiagnosis;
-    /// <summary>四诊（合并望闻问切）</summary>
-    public string? FourDiagnosis
-    {
-        get => _fourDiagnosis;
-        set => SetProperty(ref _fourDiagnosis, value);
-    }
-
     private string? _tongueDiagnosis;
-    /// <summary>舌诊</summary>
+    /// <summary>
+    /// 舌诊
+    /// </summary>
     public string? TongueDiagnosis
     {
         get => _tongueDiagnosis;
@@ -121,7 +107,9 @@ public class ConsultationItem : BindableBase
     }
 
     private string? _pulseDiagnosis;
-    /// <summary>脉诊</summary>
+    /// <summary>
+    /// 脉诊
+    /// </summary>
     public string? PulseDiagnosis
     {
         get => _pulseDiagnosis;
@@ -129,58 +117,47 @@ public class ConsultationItem : BindableBase
     }
 
     private string? _tcmDiagnosis;
-    public string? TcmDiagnosis
+    /// <summary>
+    /// 中医诊断（必填）
+    /// 注：属性名保持TcmDiagnosis以兼容现有XAML绑定，Phase 2将统一为TCMDiagnosis
+    /// </summary>
+    public string? TCMDiagnosis
     {
         get => _tcmDiagnosis;
         set => SetProperty(ref _tcmDiagnosis, value);
-    } // 中医诊断
-
-    private string? _syndrome;
-    public string? Syndrome
-    {
-        get => _syndrome;
-        set => SetProperty(ref _syndrome, value);
-    } // 证型
-
-    private string? _treatmentPrinciple;
-    public string? TreatmentPrinciple
-    {
-        get => _treatmentPrinciple;
-        set => SetProperty(ref _treatmentPrinciple, value);
-    } // 治则
-
-    private ConsultationStatus _status = ConsultationStatus.Pending;
-    public ConsultationStatus Status
-    {
-        get => _status;
-        set => SetProperty(ref _status, value);
     }
 
+    #endregion
+
+    #region 审计字段
+
     private DateTime _createdAt = DateTime.Now;
+    /// <summary>
+    /// 创建时间
+    /// </summary>
     public DateTime CreatedAt
     {
         get => _createdAt;
         set => SetProperty(ref _createdAt, value);
     }
 
-    private DateTime? _completedAt;
-    public DateTime? CompletedAt
-    {
-        get => _completedAt;
-        set => SetProperty(ref _completedAt, value);
-    }
-
-    private Guid? _prescriptionId;
-    public Guid? PrescriptionId
-    {
-        get => _prescriptionId;
-        set => SetProperty(ref _prescriptionId, value);
-    }
-
-    private bool _isSelected = false;
-
+    private DateTime? _updatedAt;
     /// <summary>
-    /// 是否选中
+    /// 更新时间
+    /// </summary>
+    public DateTime? UpdatedAt
+    {
+        get => _updatedAt;
+        set => SetProperty(ref _updatedAt, value);
+    }
+
+    #endregion
+
+    #region UI状态字段
+
+    private bool _isSelected;
+    /// <summary>
+    /// 是否选中（UI状态）
     /// </summary>
     public bool IsSelected
     {
@@ -188,43 +165,55 @@ public class ConsultationItem : BindableBase
         set => SetProperty(ref _isSelected, value);
     }
 
-    private bool _isExpanded = false;
+    private bool _isExpanded;
+    /// <summary>
+    /// 是否展开（UI状态）
+    /// </summary>
     public bool IsExpanded
     {
         get => _isExpanded;
         set => SetProperty(ref _isExpanded, value);
     }
 
+    #endregion
+
+    #region 计算属性
+
+    /// <summary>
+    /// 诊断是否完整（仅检查中医诊断必填）
+    /// </summary>
+    public bool IsDiagnosisComplete =>
+        !string.IsNullOrWhiteSpace(TCMDiagnosis);
+
+    /// <summary>
+    /// 显示文本
+    /// </summary>
+    public string DisplayText =>
+        $"{PatientName} - {TCMDiagnosis ?? "未诊断"}";
+
+    #endregion
+
+    #region 转换方法
+
     /// <summary>
     /// 从ConsultationDetailDto创建ConsultationItem
     /// </summary>
     public static ConsultationItem FromDto(ConsultationDetailDto dto)
     {
-        // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         return new ConsultationItem
         {
             Id = dto.Id,
             MedicalCaseId = dto.MedicalCaseId,
             PatientId = dto.PatientId,
+            UserId = dto.UserId,
             PatientName = dto.PatientName ?? string.Empty,
-            PatientGender = string.Empty, // ConsultationDetailDto中没有此属性
-            PatientAge = null, // ConsultationDetailDto中没有此属性
-            ChiefComplaint = string.Empty, // 已从DTO移除，使用空值
+            DoctorName = dto.DoctorName ?? string.Empty,
             PresentIllness = dto.PresentIllness,
-            PastHistory = null, // ConsultationDetailDto中没有此属性
-            PersonalHistory = null, // ConsultationDetailDto中没有此属性
-            FamilyHistory = null, // ConsultationDetailDto中没有此属性
-            AllergyHistory = null, // ConsultationDetailDto中没有此属性
-            FourDiagnosis = null, // 已从DTO移除
             TongueDiagnosis = dto.TongueDiagnosis,
             PulseDiagnosis = dto.PulseDiagnosis,
-            TcmDiagnosis = dto.TCMDiagnosis,
-            Syndrome = null, // ConsultationDetailDto中没有此属性
-            TreatmentPrinciple = null, // 已从DTO移除
-            Status = ConsultationStatus.InProgress,
+            TCMDiagnosis = dto.TCMDiagnosis,
             CreatedAt = dto.CreatedAt,
-            CompletedAt = null,
-            PrescriptionId = null
+            UpdatedAt = dto.UpdatedAt
         };
     }
 
@@ -233,101 +222,40 @@ public class ConsultationItem : BindableBase
     /// </summary>
     public ConsultationDetailDto ToDto()
     {
-        // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         return new ConsultationDetailDto
         {
             Id = Id,
             MedicalCaseId = MedicalCaseId,
             PatientId = PatientId,
+            UserId = UserId,
             PatientName = PatientName,
-            DoctorName = string.Empty,
-            UserId = Guid.Empty,
+            DoctorName = DoctorName,
             PresentIllness = PresentIllness,
             TongueDiagnosis = TongueDiagnosis,
             PulseDiagnosis = PulseDiagnosis,
-            TCMDiagnosis = TcmDiagnosis,
+            TCMDiagnosis = TCMDiagnosis,
             CreatedAt = CreatedAt,
-            UpdatedAt = DateTime.Now
+            UpdatedAt = UpdatedAt
         };
     }
 
     /// <summary>
-    /// 状态显示文本
+    /// 转换为ConsultationInputDto（用于保存）
     /// </summary>
-    public string StatusText => Status switch
+    public ConsultationInputDto ToInputDto()
     {
-        ConsultationStatus.InProgress => "进行中",
-        ConsultationStatus.Completed => "已完成",
-        ConsultationStatus.Cancelled => "已取消",
-        _ => "未知"
-    };
-
-    /// <summary>
-    /// 状态颜色
-    /// </summary>
-    public string StatusColor => Status switch
-    {
-        ConsultationStatus.InProgress => "#2196F3",
-        ConsultationStatus.Completed => "#4CAF50",
-        ConsultationStatus.Cancelled => "#F44336",
-        _ => "#757575"
-    };
-
-    /// <summary>
-    /// 是否进行中
-    /// </summary>
-    public bool IsInProgress => Status == ConsultationStatus.InProgress;
-
-    /// <summary>
-    /// 是否已完成
-    /// </summary>
-    public bool IsCompleted => Status == ConsultationStatus.Completed;
-
-    /// <summary>
-    /// 是否可编辑
-    /// </summary>
-    public bool CanEdit => IsInProgress;
-
-    /// <summary>
-    /// 是否可开处方
-    /// </summary>
-    public bool CanCreatePrescription => IsInProgress && !PrescriptionId.HasValue;
-
-    /// <summary>
-    /// 四诊是否完整
-    /// </summary>
-    public bool IsFourDiagnosisComplete =>
-        !string.IsNullOrWhiteSpace(FourDiagnosis);
-
-    /// <summary>
-    /// 诊断是否完整
-    /// </summary>
-    public bool IsDiagnosisComplete =>
-        !string.IsNullOrWhiteSpace(TcmDiagnosis) &&
-        !string.IsNullOrWhiteSpace(Syndrome) &&
-        !string.IsNullOrWhiteSpace(TreatmentPrinciple);
-
-    /// <summary>
-    /// 显示文本
-    /// </summary>
-    public string DisplayText => $"{PatientName} - {ChiefComplaint} ({StatusText})";
-
-    /// <summary>
-    /// 问诊时长（分钟）
-    /// </summary>
-    public int? DurationMinutes
-    {
-        get
+        return new ConsultationInputDto
         {
-            if (CompletedAt.HasValue)
-            {
-                return (int)(CompletedAt.Value - CreatedAt).TotalMinutes;
-            }
-            else if (IsInProgress)
-            {
-                return (int)(DateTime.Now - CreatedAt).TotalMinutes;
-            }
-            return null;
-        }
+            Id = Id,
+            MedicalCaseId = MedicalCaseId,
+            PatientId = PatientId,
+            UserId = UserId,
+            PresentIllness = PresentIllness,
+            TongueDiagnosis = TongueDiagnosis,
+            PulseDiagnosis = PulseDiagnosis,
+            TCMDiagnosis = TCMDiagnosis
+        };
     }
+
+    #endregion
 }

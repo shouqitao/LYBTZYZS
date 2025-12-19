@@ -45,12 +45,8 @@ namespace LYBT.Entities.Consultations
         [DisplayName("中医辨证")]
         public string? TCMDiagnosis { get; set; }
 
-        /// <summary>
-        /// 处方开关（true=开处方，false=不开处方）
-        /// 注：与MedicalCase.NeedsPrescription同步，保留用于兼容
-        /// </summary>
-        [DisplayName("处方开关")]
-        public bool PrescriptionEnabled { get; set; } = true;
+        // OpenSpec: consultation-field-alignment - PrescriptionEnabled已移除
+        // 处方开关统一使用MedicalCase.NeedsPrescription
 
         // RowVersion、IsDeleted等字段继承自BaseEntity
 

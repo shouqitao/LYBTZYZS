@@ -367,7 +367,8 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
                 "Dosage" => "用量",
                 "Contraindications" => "禁忌",
                 "Notes" => "备注",
-                "ChiefComplaint" => "主诉",
+                // OpenSpec: refactor-diagnosis-fields - ChiefComplaint已从Consultation移除，保留映射用于查看历史审计记录
+                "ChiefComplaint" => "主诉（已弃用）",
                 "PresentIllness" => "现病史",
                 "PastHistory" => "既往史",
                 "Diagnosis" => "诊断",

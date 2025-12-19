@@ -579,7 +579,8 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     private void OnChildViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         // 监听影响CanComplete的属性变化
-        if (e.PropertyName is "ChiefComplaint" or "TCMDiagnosis" or "ItemCount")
+        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint，仅监听TCMDiagnosis
+        if (e.PropertyName is "TCMDiagnosis" or "ItemCount")
         {
             UpdateCanComplete();
         }

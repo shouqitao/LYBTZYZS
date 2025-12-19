@@ -5,6 +5,9 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <!-- OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, TreatmentPrinciple, FourDiagnosis字段 -->
+    <!-- 保留4个核心字段: PresentIllness, TongueDiagnosis, PulseDiagnosis, TCMDiagnosis -->
+
     <UserControl.Resources>
         <!--  分组标题样式  -->
         <Style x:Key="GroupHeaderStyle" TargetType="TextBlock">
@@ -56,21 +59,21 @@
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <Grid Margin="20">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />  
+                <RowDefinition Height="Auto" />
                 <!--  Row 0: 标题  -->
-                <RowDefinition Height="Auto" />  
-                <!--  Row 1: 步骤完成时间提示（新增）  -->
-                <RowDefinition Height="Auto" />  
+                <RowDefinition Height="Auto" />
+                <!--  Row 1: 步骤完成时间提示  -->
+                <RowDefinition Height="Auto" />
                 <!--  Row 2: 基本诊断信息  -->
-                <RowDefinition Height="Auto" />  
-                <!--  Row 3: 处方单选框（新增）  -->
-                <RowDefinition Height="Auto" />  
-                <!--  Row 4: 四诊合参  -->
-                <RowDefinition Height="Auto" />  
+                <RowDefinition Height="Auto" />
+                <!--  Row 3: 处方单选框  -->
+                <RowDefinition Height="Auto" />
+                <!--  Row 4: 舌诊脉诊  -->
+                <RowDefinition Height="Auto" />
                 <!--  Row 5: 备注  -->
-                <RowDefinition Height="Auto" />  
+                <RowDefinition Height="Auto" />
                 <!--  Row 6: 辅助操作  -->
-                <RowDefinition Height="Auto" />  
+                <RowDefinition Height="Auto" />
                 <!--  Row 7: 提示信息  -->
             </Grid.RowDefinitions>
 
@@ -83,7 +86,7 @@
                 Foreground="#2E86AB"
                 Text="诊断录入（Consultation）" />
 
-            <!--  Row 1: 步骤完成时间提示（新增，Issue #1590）  -->
+            <!--  Row 1: 步骤完成时间提示（Issue #1590）  -->
             <TextBlock
                 Grid.Row="1"
                 Margin="0,0,0,10"
@@ -103,12 +106,10 @@
                 CornerRadius="5">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />  
+                        <RowDefinition Height="Auto" />
                         <!--  分组标题  -->
-                        <RowDefinition Height="Auto" />  
-                        <!--  主诉 + 现病史  -->
-                        <RowDefinition Height="Auto" />  
-                        <!--  中医诊断 + 治疗原则  -->
+                        <RowDefinition Height="Auto" />
+                        <!--  现病史 + 中医诊断  -->
                     </Grid.RowDefinitions>
 
                     <!--  分组标题  -->
@@ -117,71 +118,40 @@
                         Style="{StaticResource GroupHeaderStyle}"
                         Text="基本诊断信息" />
 
-                    <!--  Row 1: 主诉 + 现病史（2列）  -->
+                    <!--  Row 1: 现病史 + 中医诊断（2列）  -->
                     <Grid Grid.Row="1" Margin="0,10,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="20" />  
+                            <ColumnDefinition Width="20" />
                             <!--  间距  -->
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!--  左列：主诉（必填）  -->
+                        <!--  左列：现病史  -->
                         <StackPanel Grid.Column="0">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="主诉" />
-                                <TextBlock Style="{StaticResource RequiredMarkStyle}" Text="*" />
-                            </StackPanel>
-                            <TextBox
-                                Height="80"
-                                Style="{StaticResource MultiLineTextBoxStyle}"
-                                Text="{Binding ChiefComplaint, UpdateSourceTrigger=PropertyChanged}" />
-                        </StackPanel>
-
-                        <!--  右列：现病史  -->
-                        <StackPanel Grid.Column="2">
                             <TextBlock Style="{StaticResource FieldLabelStyle}" Text="现病史" />
                             <TextBox
-                                Height="80"
+                                Height="100"
                                 Style="{StaticResource MultiLineTextBoxStyle}"
                                 Text="{Binding PresentIllness, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
-                    </Grid>
 
-                    <!--  Row 2: 中医诊断 + 治疗原则（2列）  -->
-                    <Grid Grid.Row="2" Margin="0,15,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="20" />  
-                            <!--  间距  -->
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <!--  左列：中医诊断（必填）  -->
-                        <StackPanel Grid.Column="0">
+                        <!--  右列：中医诊断（必填）  -->
+                        <StackPanel Grid.Column="2">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Style="{StaticResource FieldLabelStyle}" Text="中医诊断" />
                                 <TextBlock Style="{StaticResource RequiredMarkStyle}" Text="*" />
                             </StackPanel>
                             <TextBox
-                                Height="80"
+                                Height="100"
                                 Style="{StaticResource MultiLineTextBoxStyle}"
                                 Text="{Binding TCMDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
-                        </StackPanel>
-
-                        <!--  右列：治疗原则  -->
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="治疗原则" />
-                            <TextBox
-                                Height="80"
-                                Style="{StaticResource MultiLineTextBoxStyle}"
-                                Text="{Binding TreatmentPrinciple, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                     </Grid>
                 </Grid>
             </Border>
 
-            <!--  Row 3: 处方单选框（新增，Issue #1590）  -->
+            <!--  Row 3: 处方单选框（Issue #1590）  -->
             <Border
                 Grid.Row="3"
                 Margin="0,0,0,20"
@@ -210,7 +180,7 @@
                 </StackPanel>
             </Border>
 
-            <!--  Row 4: 四诊合参（2列布局）  -->
+            <!--  Row 4: 舌诊脉诊（2列布局）  -->
             <Border
                 Grid.Row="4"
                 Margin="0,0,0,20"
@@ -220,11 +190,9 @@
                 CornerRadius="5">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />  
+                        <RowDefinition Height="Auto" />
                         <!--  分组标题  -->
-                        <RowDefinition Height="Auto" />  
-                        <!--  四诊  -->
-                        <RowDefinition Height="Auto" />  
+                        <RowDefinition Height="Auto" />
                         <!--  舌诊 + 脉诊  -->
                     </Grid.RowDefinitions>
 
@@ -232,22 +200,13 @@
                     <TextBlock
                         Grid.Row="0"
                         Style="{StaticResource GroupHeaderStyle}"
-                        Text="四诊合参" />
+                        Text="望闻问切" />
 
-                    <!--  Row 1: 四诊（合并望闻问切）  -->
-                    <StackPanel Grid.Row="1" Margin="0,10,0,0">
-                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="四诊（望诊、闻诊、问诊、切诊）" />
-                        <TextBox
-                            Height="100"
-                            Style="{StaticResource MultiLineTextBoxStyle}"
-                            Text="{Binding FourDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
-
-                    <!--  Row 2: 舌诊 + 脉诊（2列）  -->
-                    <Grid Grid.Row="2" Margin="0,15,0,0">
+                    <!--  舌诊 + 脉诊（2列）  -->
+                    <Grid Grid.Row="1" Margin="0,10,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="20" />  
+                            <ColumnDefinition Width="20" />
                             <!--  间距  -->
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
@@ -256,7 +215,7 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Style="{StaticResource FieldLabelStyle}" Text="舌诊（舌质、舌苔）" />
                             <TextBox
-                                Height="70"
+                                Height="80"
                                 Style="{StaticResource MultiLineTextBoxStyle}"
                                 Text="{Binding TongueDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
@@ -265,7 +224,7 @@
                         <StackPanel Grid.Column="2">
                             <TextBlock Style="{StaticResource FieldLabelStyle}" Text="脉诊（脉象描述）" />
                             <TextBox
-                                Height="70"
+                                Height="80"
                                 Style="{StaticResource MultiLineTextBoxStyle}"
                                 Text="{Binding PulseDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
@@ -282,19 +241,17 @@
                     Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 
-            <!--  Row 6: 辅助操作（新增完成Step1按钮，Issue #1590；新增保存草稿按钮，Issue #1594）  -->
+            <!--  Row 6: 辅助操作（Issue #1590, Issue #1594）  -->
             <StackPanel
                 Grid.Row="6"
                 Margin="0,0,0,20"
                 Orientation="Horizontal">
-                <!--  Issue #1562: ImportFromHistoryCommand已删除（未实现的扩展功能）  -->
                 <Button
                     Margin="0,0,10,0"
                     Background="#4CAF50"
                     Command="{Binding CompleteStep1Command}"
                     Content="完成Step1"
                     Style="{StaticResource ActionButtonStyle}" />
-                <!--  Issue #1594: 新增保存草稿按钮  -->
                 <Button
                     Margin="0,0,10,0"
                     Background="#2196F3"

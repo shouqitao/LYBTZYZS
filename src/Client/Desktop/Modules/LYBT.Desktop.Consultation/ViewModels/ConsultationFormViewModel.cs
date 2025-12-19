@@ -22,11 +22,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private PatientDetailDto? _currentPatient;
         private Guid _medicalCaseId = Guid.Empty;
-        private string _chiefComplaint = string.Empty;
+        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, TreatmentPrinciple, FourDiagnosis
         private string _presentIllness = string.Empty;
         private string _tcmDiagnosis = string.Empty;
-        private string _treatmentPrinciple = string.Empty;
-        private string _fourDiagnosis = string.Empty;
         private string _tongueDiagnosis = string.Empty;
         private string _pulseDiagnosis = string.Empty;
         private string _remark = string.Empty;
@@ -36,11 +34,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public PatientDetailDto? CurrentPatient { get => _currentPatient; set => SetProperty(ref _currentPatient, value); }
         public Guid MedicalCaseId { get => _medicalCaseId; set => SetProperty(ref _medicalCaseId, value); }
 
-        public string ChiefComplaint { get => _chiefComplaint; set { if (SetProperty(ref _chiefComplaint, value)) RaisePropertyChanged(nameof(HasChiefComplaint)); } }
+        // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         public string PresentIllness { get => _presentIllness; set => SetProperty(ref _presentIllness, value); }
         public string TCMDiagnosis { get => _tcmDiagnosis; set { if (SetProperty(ref _tcmDiagnosis, value)) RaisePropertyChanged(nameof(HasTCMDiagnosis)); } }
-        public string TreatmentPrinciple { get => _treatmentPrinciple; set => SetProperty(ref _treatmentPrinciple, value); }
-        public string FourDiagnosis { get => _fourDiagnosis; set => SetProperty(ref _fourDiagnosis, value); }
         public string TongueDiagnosis { get => _tongueDiagnosis; set => SetProperty(ref _tongueDiagnosis, value); }
         public string PulseDiagnosis { get => _pulseDiagnosis; set => SetProperty(ref _pulseDiagnosis, value); }
         public string Remark { get => _remark; set => SetProperty(ref _remark, value); }
@@ -48,7 +44,6 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public bool PrescriptionEnabled { get => _prescriptionEnabled; set { if (SetProperty(ref _prescriptionEnabled, value)) RaisePropertyChanged(nameof(PrescriptionDisabled)); } }
         public bool PrescriptionDisabled { get => !_prescriptionEnabled; set { if (value) PrescriptionEnabled = false; } }
 
-        public bool HasChiefComplaint => !string.IsNullOrWhiteSpace(ChiefComplaint);
         public bool HasTCMDiagnosis => !string.IsNullOrWhiteSpace(TCMDiagnosis);
         public string ValidationMessage { get => _validationMessage; private set => SetProperty(ref _validationMessage, value); }
 
@@ -76,8 +71,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public bool Validate()
         {
+            // OpenSpec: refactor-diagnosis-fields - 仅验证TCMDiagnosis必填
             var errors = new List<string>();
-            if (string.IsNullOrWhiteSpace(ChiefComplaint)) errors.Add("主诉不能为空");
             if (string.IsNullOrWhiteSpace(TCMDiagnosis)) errors.Add("中医诊断不能为空");
             if (errors.Any()) { ValidationMessage = string.Join("；", errors); return false; }
             ValidationMessage = string.Empty; return true;

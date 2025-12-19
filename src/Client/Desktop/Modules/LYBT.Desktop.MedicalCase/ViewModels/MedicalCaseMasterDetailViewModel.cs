@@ -287,13 +287,13 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
                 else
                 {
                     failureCount++;
-                    failedItems.Add(item.PatientName ?? item.CaseNumber);
+                    failedItems.Add(item.PatientName ?? item.CaseNumber ?? "未知");
                 }
             }
             catch
             {
                 failureCount++;
-                failedItems.Add(item.PatientName ?? item.CaseNumber);
+                failedItems.Add(item.PatientName ?? item.CaseNumber ?? "未知");
             }
         }
 

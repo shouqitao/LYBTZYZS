@@ -1,7 +1,7 @@
 # DTO架构重构任务清单
 
 > 创建日期: 2025-12-18
-> 更新日期: 2025-12-18
+> 更新日期: 2025-12-19
 > 状态: 已完成
 > 规范文档: [docs/architecture/dto-architecture-specification.md](../architecture/dto-architecture-specification.md)
 
@@ -113,6 +113,7 @@
 - [x] DTO扁平化+无用DTO清理 (删除65个文件)
 - [x] Phase 9: Edit/Update DTO标准化重构
 - [x] Phase 10: 批量操作DTO命名规范化 (15个DTO重命名)
+- [x] Phase 11: Consultation字段对齐与技术债务清理
 
 ---
 
@@ -129,6 +130,7 @@
 | 2025-12-18 | Phase 9开始：Edit/Update DTO标准化重构 |
 | 2025-12-18 | Phase 9完成：InputDto标准化重命名（3个DTO类重命名） |
 | 2025-12-18 | Phase 10完成：批量操作DTO命名规范化（15个DTO重命名） |
+| 2025-12-19 | Phase 11完成：Consultation字段对齐与技术债务清理 |
 
 ---
 
@@ -299,3 +301,82 @@
 
 - **编译结果**: 0 errors, 5 warnings (均为pre-existing nullable警告)
 - **测试结果**: User 31/31, Herb 33/33 通过; Patient/Formula有预存测试问题(与本次重构无关)
+
+---
+
+## Phase 11: Consultation字段对齐与技术债务清理 [已完成]
+
+> 目标: 清理Consultation/ConsultationItem字段不对齐问题，删除技术债务字段
+> 完成日期: 2025-12-19
+> OpenSpec提案: `consultation-field-alignment`
+> 数据库迁移: `20251219011610_RemoveConsultationPrescriptionEnabled`
+
+### 问题背景
+
+Consultation实体和Desktop层ConsultationItem存在严重字段不对齐：
+1. ConsultationItem包含10个技术债务字段(Entity/DTO中不存在)
+2. 命名不一致: TcmDiagnosis vs TCMDiagnosis
+3. PrescriptionEnabled字段应属于MedicalCase而非Consultation
+
+### 11.1 删除ConsultationItem技术债务字段 (10个) [已完成]
+
+| 删除的字段 | 说明 |
+|------------|------|
+| `PatientGender` | Entity中不存在 |
+| `PatientAge` | Entity中不存在 |
+| `PastHistory` | 已移除的诊断字段 |
+| `PersonalHistory` | 已移除的诊断字段 |
+| `FamilyHistory` | 已移除的诊断字段 |
+| `AllergyHistory` | 已移除的诊断字段 |
+| `Syndrome` | 已移除的诊断字段 |
+| `Status` | Entity使用不同状态管理 |
+| `CompletedAt` | Entity中不存在 |
+| `PrescriptionId` | Entity中不存在 |
+
+**修改文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Consultation/Models/ConsultationItem.cs`
+
+### 11.2 统一命名 TcmDiagnosis → TCMDiagnosis [已完成]
+
+| 位置 | 变更 |
+|------|------|
+| `ConsultationItem.cs` | `TcmDiagnosis` → `TCMDiagnosis` |
+| `FromDto()` | 更新属性映射 |
+| `ToDto()` | 更新属性映射 |
+| `ToInputDto()` | 更新属性映射 |
+
+### 11.3 移除Consultation.PrescriptionEnabled字段 [已完成]
+
+**原因**: 处方开关应属于MedicalCase聚合根，不应在Consultation中定义
+
+| 变更文件 | 操作 |
+|----------|------|
+| `ConsultationModel.cs` | 删除PrescriptionEnabled属性 |
+| `MedicalCaseCommandService.cs` | 删除同步PrescriptionEnabled的逻辑(2处) |
+| `ConsultationMappingProfile.cs` | 删除PrescriptionEnabled映射Ignore |
+| `MedicalCaseMappingProfile.cs` | 删除PrescriptionEnabled映射Ignore |
+
+**已确认**: MedicalCase.NeedsPrescription字段已存在(Line 63)，作为处方开关的唯一定义位置
+
+### 11.4 数据库迁移 [已完成]
+
+迁移文件: `20251219011610_RemoveConsultationPrescriptionEnabled.cs`
+
+```csharp
+// Up: 删除列
+migrationBuilder.DropColumn(
+    name: "PrescriptionEnabled",
+    table: "Consultations");
+
+// Down: 恢复列
+migrationBuilder.AddColumn<bool>(
+    name: "PrescriptionEnabled",
+    table: "Consultations",
+    type: "bit",
+    nullable: false,
+    defaultValue: false);
+```
+
+### 11.5 编译验证 [已完成]
+
+- **编译结果**: 0 errors, 0 warnings
+- **迁移生成**: 成功

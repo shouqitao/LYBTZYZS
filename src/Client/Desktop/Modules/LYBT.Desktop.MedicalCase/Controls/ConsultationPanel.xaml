@@ -8,61 +8,31 @@
     <!--
         Epic #2210 Phase 4: 诊断面板UserControl
         OpenSpec: refactor-medicalcase-ui - UI重构版本
-        用于MedicalCaseWorkspaceView的左侧40%区域
-        
-        设计变更:
-        - 移除多余边框，使用留白分隔
-        - 操作按钮固定在面板底部
-        - 应用统一样式资源
-        - 输入框使用Height="*"填满可用空间
-    -->
+        OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, FourDiagnosis, TreatmentPrinciple字段
 
-    <!--  OpenSpec: cleanup-ui-layer - 使用全局样式系统，移除MedicalCaseStyles.xaml引用  -->
+        保留4个核心字段: PresentIllness, TongueDiagnosis, PulseDiagnosis, TCMDiagnosis
+
+        新布局:
+        - Row 0: 现病史
+        - Row 1: 舌诊 + 脉诊 (并排)
+        - Row 2: 中医诊断 (必填)
+        - Row 3: 处方选项
+    -->
 
     <Grid Margin="0,0,8,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <!--  主诉  -->
-            <RowDefinition Height="*" />
             <!--  现病史  -->
             <RowDefinition Height="Auto" />
-            <!--  四诊合参 (固定高度)  -->
+            <!--  舌诊 + 脉诊 (固定高度)  -->
             <RowDefinition Height="*" />
             <!--  中医诊断  -->
-            <RowDefinition Height="*" />
-            <!--  治疗原则  -->
             <RowDefinition Height="Auto" />
             <!--  处方选项  -->
         </Grid.RowDefinitions>
 
-        <!--  Row 0: 主诉（必填）  -->
+        <!--  Row 0: 现病史  -->
         <Grid Grid.Row="0" Margin="0,0,0,4">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <StackPanel
-                Grid.Row="0"
-                Margin="0,0,0,2"
-                Orientation="Horizontal">
-                <TextBlock
-                    Margin="0"
-                    Style="{StaticResource FieldLabelStyle}"
-                    Text="主诉" />
-                <TextBlock Style="{StaticResource RequiredMarkStyle}" />
-            </StackPanel>
-            <TextBox
-                Grid.Row="1"
-                MinHeight="50"
-                AcceptsReturn="True"
-                Style="{StaticResource FormTextAreaStyle}"
-                Text="{Binding ChiefComplaint, UpdateSourceTrigger=PropertyChanged}"
-                TextWrapping="Wrap"
-                VerticalScrollBarVisibility="Auto" />
-        </Grid>
-
-        <!--  Row 1: 现病史  -->
-        <Grid Grid.Row="1" Margin="0,0,0,4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -74,7 +44,7 @@
                 Text="现病史" />
             <TextBox
                 Grid.Row="1"
-                MinHeight="50"
+                MinHeight="80"
                 AcceptsReturn="True"
                 Style="{StaticResource FormTextAreaStyle}"
                 Text="{Binding PresentIllness, UpdateSourceTrigger=PropertyChanged}"
@@ -82,19 +52,19 @@
                 VerticalScrollBarVisibility="Auto" />
         </Grid>
 
-        <!--  Row 2: 四诊合参（新布局：四诊 + 舌诊/脉诊）  -->
+        <!--  Row 1: 舌诊 + 脉诊（并排）  -->
         <Grid
-            Grid.Row="2"
-            Height="260"
+            Grid.Row="1"
+            Height="100"
             Margin="0,0,0,4">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="6" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-            <!--  四诊（合并望闻问切）  -->
-            <Grid Grid.Row="0">
+            <!--  舌诊  -->
+            <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -103,70 +73,39 @@
                     Grid.Row="0"
                     Margin="0,0,0,2"
                     Style="{StaticResource FieldLabelStyle}"
-                    Text="四诊" />
+                    Text="舌诊" />
                 <TextBox
                     Grid.Row="1"
                     AcceptsReturn="True"
                     Style="{StaticResource FormTextAreaStyle}"
-                    Text="{Binding FourDiagnosis, UpdateSourceTrigger=PropertyChanged}"
+                    Text="{Binding TongueDiagnosis, UpdateSourceTrigger=PropertyChanged}"
                     TextWrapping="Wrap"
                     VerticalScrollBarVisibility="Auto" />
             </Grid>
 
-            <!--  舌诊 + 脉诊（并排）  -->
-            <Grid Grid.Row="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <!--  舌诊  -->
-                <Grid Grid.Column="0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        Grid.Row="0"
-                        Margin="0,0,0,2"
-                        Style="{StaticResource FieldLabelStyle}"
-                        Text="舌诊" />
-                    <TextBox
-                        Grid.Row="1"
-                        Height="60"
-                        AcceptsReturn="True"
-                        Style="{StaticResource FormTextAreaStyle}"
-                        Text="{Binding TongueDiagnosis, UpdateSourceTrigger=PropertyChanged}"
-                        TextWrapping="Wrap"
-                        VerticalScrollBarVisibility="Auto" />
-                </Grid>
-
-                <!--  脉诊  -->
-                <Grid Grid.Column="2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        Grid.Row="0"
-                        Margin="0,0,0,2"
-                        Style="{StaticResource FieldLabelStyle}"
-                        Text="脉诊" />
-                    <TextBox
-                        Grid.Row="1"
-                        Height="60"
-                        AcceptsReturn="True"
-                        Style="{StaticResource FormTextAreaStyle}"
-                        Text="{Binding PulseDiagnosis, UpdateSourceTrigger=PropertyChanged}"
-                        TextWrapping="Wrap"
-                        VerticalScrollBarVisibility="Auto" />
-                </Grid>
+            <!--  脉诊  -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="0"
+                    Margin="0,0,0,2"
+                    Style="{StaticResource FieldLabelStyle}"
+                    Text="脉诊" />
+                <TextBox
+                    Grid.Row="1"
+                    AcceptsReturn="True"
+                    Style="{StaticResource FormTextAreaStyle}"
+                    Text="{Binding PulseDiagnosis, UpdateSourceTrigger=PropertyChanged}"
+                    TextWrapping="Wrap"
+                    VerticalScrollBarVisibility="Auto" />
             </Grid>
         </Grid>
 
-        <!--  Row 3: 中医诊断（必填）  -->
-        <Grid Grid.Row="3" Margin="0,0,0,4">
+        <!--  Row 2: 中医诊断（必填）  -->
+        <Grid Grid.Row="2" Margin="0,0,0,4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -183,7 +122,7 @@
             </StackPanel>
             <TextBox
                 Grid.Row="1"
-                MinHeight="50"
+                MinHeight="80"
                 AcceptsReturn="True"
                 Style="{StaticResource FormTextAreaStyle}"
                 Text="{Binding TCMDiagnosis, UpdateSourceTrigger=PropertyChanged}"
@@ -191,30 +130,9 @@
                 VerticalScrollBarVisibility="Auto" />
         </Grid>
 
-        <!--  Row 4: 治疗原则  -->
-        <Grid Grid.Row="4" Margin="0,0,0,4">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <TextBlock
-                Grid.Row="0"
-                Margin="0,0,0,2"
-                Style="{StaticResource FieldLabelStyle}"
-                Text="治疗原则" />
-            <TextBox
-                Grid.Row="1"
-                MinHeight="40"
-                AcceptsReturn="True"
-                Style="{StaticResource FormTextAreaStyle}"
-                Text="{Binding TreatmentPrinciple, UpdateSourceTrigger=PropertyChanged}"
-                TextWrapping="Wrap"
-                VerticalScrollBarVisibility="Auto" />
-        </Grid>
-
-        <!--  Row 5: 处方选项  -->
+        <!--  Row 3: 处方选项  -->
         <Border
-            Grid.Row="5"
+            Grid.Row="3"
             Padding="12,6"
             Background="{StaticResource BackgroundBrush}"
             CornerRadius="4">

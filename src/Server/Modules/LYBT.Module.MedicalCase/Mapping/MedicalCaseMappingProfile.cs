@@ -84,10 +84,10 @@ namespace LYBT.Module.MedicalCases.Mapping
             // Request映射: ConsultationInputDto -> Consultation (Shared层)
             // Issue #2231: Consultation使用共享主键，必须忽略Id相关字段以避免EF Core键修改错误
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
+            // OpenSpec: consultation-field-alignment - PrescriptionEnabled已移除
             CreateMap<ConsultationInputDto, LYBT.Entities.Consultations.Consultation>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())  // 共享主键，不可修改
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())  // 导航属性，不可修改
-                .ForMember(dest => dest.PrescriptionEnabled, opt => opt.Ignore())
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
