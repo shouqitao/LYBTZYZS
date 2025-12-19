@@ -176,10 +176,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public async Task CreatePrescriptionAsync_ShouldCreateAndReturnTrue_WhenSuccessful()
         {
             // Arrange
+            // OpenSpec: unify-medicalcase-input-dto - PrescriptionInputDto仅需MedicalCaseId
             var createDto = new PrescriptionInputDto
             {
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                MedicalCaseId = Guid.NewGuid(),
                 Diagnosis = "风寒感冒",
                 DosageCount = 3
             };
@@ -217,10 +217,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public async Task CreatePrescriptionAsync_ShouldReturnFalse_WhenCreationFails()
         {
             // Arrange
+            // OpenSpec: unify-medicalcase-input-dto - PrescriptionInputDto仅需MedicalCaseId
             var createDto = new PrescriptionInputDto
             {
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid()
+                MedicalCaseId = Guid.NewGuid()
             };
 
             _mockDataManager.Setup(x => x.CreatePrescriptionAsync(createDto))
@@ -293,10 +293,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
-            // Issue #1799: 导航目标已更新为MedicalCaseManagementView
+            // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
             _mockRegionManager.Verify(x => x.RequestNavigate(
                 "ContentRegion",
-                "MedicalCaseManagementView",
+                "MedicalCaseMasterDetailView",
                 It.Is<NavigationParameters>(p => p.ContainsKey("PatientId"))),
                 Times.Once);
         }
@@ -309,10 +309,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
-            // Issue #1799: 导航目标已更新为MedicalCaseManagementView
+            // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
             _mockRegionManager.Verify(x => x.RequestNavigate(
                 "ContentRegion",
-                "MedicalCaseManagementView"),
+                "MedicalCaseMasterDetailView"),
                 Times.Once);
         }
 

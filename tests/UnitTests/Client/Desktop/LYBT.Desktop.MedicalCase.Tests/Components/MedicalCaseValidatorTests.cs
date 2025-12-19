@@ -92,7 +92,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var medicalCase = CreateValidMedicalCaseDto();
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
 
-            var validationError = new ValidationFailure("ChiefComplaint", "主诉不能为空");
+            // OpenSpec: unify-medicalcase-input-dto - 使用PatientId字段（ChiefComplaint已移至Consultation）
+            var validationError = new ValidationFailure("PatientId", "患者ID不能为空");
             _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult(new[] { validationError }));
 
@@ -101,7 +102,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.PropertyName == "ChiefComplaint");
+            result.Errors.Should().Contain(e => e.PropertyName == "PatientId");
         }
 
         [Fact]
@@ -200,9 +201,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var medicalCase = CreateValidMedicalCaseDto();
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
 
+            // OpenSpec: unify-medicalcase-input-dto - 使用有效字段（ChiefComplaint已移至Consultation）
             var errors = new[]
             {
-                new ValidationFailure("ChiefComplaint", "主诉不能为空"),
+                new ValidationFailure("DoctorId", "医生ID不能为空"),
                 new ValidationFailure("PatientId", "患者ID不能为空")
             };
 
@@ -210,11 +212,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 .ReturnsAsync(new ValidationResult(errors));
 
             // Act
-            var result = await _sut.ValidatePropertyAsync("ChiefComplaint");
+            var result = await _sut.ValidatePropertyAsync("DoctorId");
 
             // Assert
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle(e => e.PropertyName == "ChiefComplaint");
+            result.Errors.Should().ContainSingle(e => e.PropertyName == "DoctorId");
             result.Errors.Should().NotContain(e => e.PropertyName == "PatientId");
         }
 
@@ -225,13 +227,17 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
         #region Helper Methods
 
+        /// <summary>
+        /// 创建有效的MedicalCaseDetailDto测试数据
+        /// OpenSpec: unify-medicalcase-input-dto - ChiefComplaint已移至Consultation，使用Diagnosis
+        /// </summary>
         private MedicalCaseDetailDto CreateValidMedicalCaseDto()
         {
             return new MedicalCaseDetailDto
             {
                 Id = Guid.NewGuid(),
                 CaseNumber = "MC-2025-001",
-                ChiefComplaint = "感冒发热",
+                Diagnosis = "感冒发热", // ChiefComplaint已移至Consultation
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
                 CaseStatus = (MedicalCaseStatus)CaseStatus.Active,
@@ -240,6 +246,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             };
         }
 
+        /// <summary>
+        /// 创建有效的ConsultationDetailDto测试数据
+        /// OpenSpec: unify-medicalcase-input-dto - ChiefComplaint, TreatmentPrinciple已从ConsultationDetailDto移除
+        /// </summary>
         private ConsultationDetailDto CreateValidConsultationDetailDto()
         {
             return new ConsultationDetailDto
@@ -248,22 +258,26 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 MedicalCaseId = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                ChiefComplaint = "感冒发热",
+                PresentIllness = "现病史记录", // 替代ChiefComplaint
                 TCMDiagnosis = "风寒感冒",
-                TreatmentPrinciple = "辛温解表",
+                TongueDiagnosis = "舌淡苔白",
+                PulseDiagnosis = "脉浮紧",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
         }
 
+        /// <summary>
+        /// 创建有效的PrescriptionDetailDto测试数据
+        /// OpenSpec: unify-medicalcase-input-dto - PatientId, UserId已从PrescriptionDetailDto移除
+        /// </summary>
         private PrescriptionDetailDto CreateValidPrescriptionDetailDto()
         {
             return new PrescriptionDetailDto
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
+                // PatientId, UserId已移除
                 Indication = "风寒感冒",
                 DosageCount = 3,
                 CreatedAt = DateTime.UtcNow,

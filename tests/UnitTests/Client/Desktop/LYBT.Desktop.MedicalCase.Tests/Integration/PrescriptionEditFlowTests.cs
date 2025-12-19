@@ -15,9 +15,9 @@ public class PrescriptionEditFlowTests
 {
     #region Test Data
 
-    private static ObservableCollection<HerbDto> CreateHerbCatalog()
+    private static ObservableCollection<HerbDetailDto> CreateHerbCatalog()
     {
-        return new ObservableCollection<HerbDto>
+        return new ObservableCollection<HerbDetailDto>
         {
             new() { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g", Price = 0.5m },
             new() { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Unit = "g", Price = 0.8m },
@@ -48,21 +48,21 @@ public class PrescriptionEditFlowTests
         item1.HerbName = "dg"; // 输入拼音码
         item1.FilteredHerbs.Should().Contain(h => h.Name == "当归", "应能通过拼音码找到当归");
         item1.SelectedHerb = item1.FilteredHerbs.First(h => h.Name == "当归");
-        item1.Dosage = 10m;
+        item1.Dosage = 10;
         herbItems.Add(item1);
 
         // Act - Step 2: 添加黄芪 15g (0.8元/g = 12元)
         var item2 = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
         item2.HerbName = "hq";
         item2.SelectedHerb = item2.FilteredHerbs.First(h => h.Name == "黄芪");
-        item2.Dosage = 15m;
+        item2.Dosage = 15;
         herbItems.Add(item2);
 
         // Act - Step 3: 添加甘草 6g (0.2元/g = 1.2元)
         var item3 = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
         item3.HerbName = "gc";
         item3.SelectedHerb = item3.FilteredHerbs.First(h => h.Name == "甘草");
-        item3.Dosage = 6m;
+        item3.Dosage = 6;
         herbItems.Add(item3);
 
         // Assert - 验证各项小计
@@ -85,11 +85,11 @@ public class PrescriptionEditFlowTests
         var herbCatalog = CreateHerbCatalog();
         var item = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
         item.SelectedHerb = herbCatalog.First(h => h.Name == "当归");
-        item.Dosage = 10m;
+        item.Dosage = 10;
         var initialTotal = item.ItemTotal;
 
         // Act - 修改剂量
-        item.Dosage = 20m;
+        item.Dosage = 20;
 
         // Assert
         initialTotal.Should().Be(5m, "初始小计应为 10g x 0.5元/g = 5元");
@@ -106,7 +106,7 @@ public class PrescriptionEditFlowTests
         var herbCatalog = CreateHerbCatalog();
         var item = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
         item.SelectedHerb = herbCatalog.First(h => h.Name == "当归"); // 0.5元/g
-        item.Dosage = 10m;
+        item.Dosage = 10;
         var initialTotal = item.ItemTotal;
 
         // Act - 更换为黄芪 (0.8元/g)
@@ -174,11 +174,11 @@ public class PrescriptionEditFlowTests
         item.SelectedHerb = herbCatalog.First();
 
         // Act - 设置有效剂量
-        item.Dosage = 10m;
+        item.Dosage = 10;
         var isValidAfterNormalDosage = item.IsDosageValid;
 
         // Act - 设置超大剂量
-        item.Dosage = 600m;
+        item.Dosage = 600;
         var isValidAfterLargeDosage = item.IsDosageValid;
 
         // Assert
@@ -209,11 +209,11 @@ public class PrescriptionEditFlowTests
 
         // Act - 填充第一个槽位
         herbItems[0].SelectedHerb = herbCatalog.First(h => h.Name == "当归");
-        herbItems[0].Dosage = 10m;
+        herbItems[0].Dosage = 10;
 
         // Act - 填充第二个槽位
         herbItems[1].SelectedHerb = herbCatalog.First(h => h.Name == "黄芪");
-        herbItems[1].Dosage = 15m;
+        herbItems[1].Dosage = 15;
 
         // Assert - 验证已填充项有价格，空项价格为0
         herbItems[0].ItemTotal.Should().Be(5m);

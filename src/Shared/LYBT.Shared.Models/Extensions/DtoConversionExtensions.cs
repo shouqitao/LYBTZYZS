@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Extensions;
 
 /// <summary>
 /// DTO转换扩展方法 - 响应DTO到输入DTO的转换
-/// OpenSpec: refactor-dto-simplification - 保留必要的转换方法
+/// OpenSpec: unify-medicalcase-input-dto - 简化MedicalCaseInputDto转换
 /// </summary>
 public static class DtoConversionExtensions
 {
@@ -14,10 +14,11 @@ public static class DtoConversionExtensions
 
     /// <summary>
     /// MedicalCaseDetailDto转换为MedicalCaseInputDto
+    /// OpenSpec: unify-medicalcase-input-dto - 仅转换核心字段
     /// </summary>
     public static MedicalCaseInputDto ToInputDto(this MedicalCaseDetailDto dto)
     {
-        var inputDto = new MedicalCaseInputDto
+        return new MedicalCaseInputDto
         {
             Id = dto.Id,
             PatientId = dto.PatientId,
@@ -25,8 +26,6 @@ public static class DtoConversionExtensions
             VisitDate = dto.ConsultationDate,
             Remark = dto.Remark
         };
-        inputDto.PresentIllnessHistory = dto.PresentIllness;
-        return inputDto;
     }
 
     #endregion

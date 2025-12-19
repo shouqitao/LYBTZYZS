@@ -1,9 +1,6 @@
 using FluentAssertions;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
-using Microsoft.Extensions.Logging;
-using Moq;
-using Prism.Events;
 using System.Collections.ObjectModel;
 using Xunit;
 
@@ -20,30 +17,13 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
     /// 4. 边界条件和异常处理测试
     ///
     /// 注意：精确匹配时返回空列表（Bug修复：防止用户选择后Popup一直显示）
+    /// OpenSpec: unify-medicalcase-input-dto - 更新为无参构造函数
     /// </summary>
     public class PrescriptionItemViewModelTests
     {
-        private readonly Mock<IEventAggregator> _eventAggregatorMock;
-        private readonly Mock<ILoggerFactory> _loggerFactoryMock;
-        private readonly Mock<ILogger<PrescriptionItemViewModel>> _loggerMock;
-
-        public PrescriptionItemViewModelTests()
+        private static PrescriptionItemViewModel CreateViewModel()
         {
-            _eventAggregatorMock = new Mock<IEventAggregator>();
-            _loggerFactoryMock = new Mock<ILoggerFactory>();
-            _loggerMock = new Mock<ILogger<PrescriptionItemViewModel>>();
-
-            _loggerFactoryMock
-                .Setup(x => x.CreateLogger(It.IsAny<string>()))
-                .Returns(_loggerMock.Object);
-        }
-
-        private PrescriptionItemViewModel CreateViewModel()
-        {
-            return new PrescriptionItemViewModel(
-                _eventAggregatorMock.Object,
-                _loggerFactoryMock.Object
-            );
+            return new PrescriptionItemViewModel();
         }
 
         #region GetMatchScore测试 - Level 1: 名称完全匹配 (100分)

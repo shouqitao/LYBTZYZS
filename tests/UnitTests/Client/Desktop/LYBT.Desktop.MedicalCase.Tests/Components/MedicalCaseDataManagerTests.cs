@@ -100,9 +100,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             await _sut.InitializeAsync(medicalCaseId);
 
             // 修改数据触发变更
-            // 注意: MedicalCaseDetailDto使用new关键字隐藏了ChiefComplaint属性，
-            // 必须cast到正确类型才能修改派生类属性
-            ((MedicalCaseDetailDto)_sut.Current!).ChiefComplaint = "新的主诉";
+            // OpenSpec: unify-medicalcase-input-dto - Diagnosis不在变更检测范围，使用Remark
+            _sut.Current!.Remark = "修改后的备注";
 
             // Act
             var result = await _sut.SaveAsync();
@@ -221,23 +220,22 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var medicalCaseId = Guid.NewGuid();
             var originalDetail = CreateMedicalCaseDetail(medicalCaseId);
             var reloadedDetail = CreateMedicalCaseDetail(medicalCaseId);
-            reloadedDetail.ChiefComplaint = "重新加载后的主诉";
+            // OpenSpec: unify-medicalcase-input-dto - ChiefComplaint已移至Consultation，使用Diagnosis
+            reloadedDetail.Diagnosis = "重新加载后的诊断";
 
             _mockRepository.SetupSequence(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(originalDetail)
                 .ReturnsAsync(reloadedDetail);
 
             await _sut.InitializeAsync(medicalCaseId);
-            // 注意: MedicalCaseDetailDto使用new关键字隐藏了ChiefComplaint属性，
-            // 必须cast到正确类型才能访问派生类属性
-            var originalComplaint = ((MedicalCaseDetailDto)_sut.Current!).ChiefComplaint;
+            var originalDiagnosis = _sut.Current!.Diagnosis;
 
             // Act
             await _sut.ReloadAsync();
 
             // Assert
-            ((MedicalCaseDetailDto)_sut.Current!).ChiefComplaint.Should().Be("重新加载后的主诉");
-            ((MedicalCaseDetailDto)_sut.Current).ChiefComplaint.Should().NotBe(originalComplaint);
+            _sut.Current!.Diagnosis.Should().Be("重新加载后的诊断");
+            _sut.Current.Diagnosis.Should().NotBe(originalDiagnosis);
         }
 
         #endregion
@@ -255,10 +253,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockRepository.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(detail);
 
+            // OpenSpec: unify-medicalcase-input-dto - PrescriptionInputDto仅需MedicalCaseId，PatientId/DoctorId已移除
             var createDto = new PrescriptionInputDto
             {
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
                 Diagnosis = "风寒感冒",
                 DosageCount = 3
             };
@@ -343,7 +341,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             await _sut.InitializeAsync(medicalCaseId);
 
             // Act
-            _sut.CurrentConsultation!.ChiefComplaint = "新的主诉内容";
+            // OpenSpec: unify-medicalcase-input-dto - ChiefComplaint已移除，使用TCMDiagnosis
+            _sut.CurrentConsultation!.TCMDiagnosis = "新的中医诊断内容";
 
             // Assert
             _sut.HasChanges.Should().BeTrue();
@@ -371,6 +370,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
         #region Helper Methods
 
+        /// <summary>
+        /// 创建测试用MedicalCaseDetailDto
+        /// OpenSpec: unify-medicalcase-input-dto - 更新字段以匹配当前DTO结构
+        /// </summary>
         private MedicalCaseDetailDto CreateMedicalCaseDetail(Guid medicalCaseId)
         {
             var patientId = Guid.NewGuid();
@@ -380,7 +383,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             {
                 Id = medicalCaseId,
                 CaseNumber = "MC-2025-001",
-                ChiefComplaint = "感冒发热",
+                Diagnosis = "风寒感冒", // ChiefComplaint已移至Consultation，MedicalCase使用Diagnosis
                 PatientId = patientId,
                 PatientName = "张三",
                 PatientGender = "男",
@@ -397,13 +400,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                     MedicalCaseId = medicalCaseId,
                     PatientId = patientId,
                     UserId = doctorId,
-                    ChiefComplaint = "感冒发热",
+                    // ChiefComplaint, FourDiagnosis, TreatmentPrinciple已从ConsultationDetailDto移除
                     PresentIllness = "现病史",
-                    FourDiagnosis = "四诊记录",
                     TongueDiagnosis = "舌诊",
                     PulseDiagnosis = "脉诊",
                     TCMDiagnosis = "风寒感冒",
-                    TreatmentPrinciple = "辛温解表",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
@@ -412,8 +413,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                     Id = Guid.NewGuid(),
                     PrescriptionNumber = "RX-2025-001",
                     MedicalCaseId = medicalCaseId,
-                    PatientId = patientId,
-                    UserId = doctorId,
+                    // PatientId, UserId已从PrescriptionDetailDto移除
                     Indication = "风寒感冒",
                     DosageCount = 3,
                     Usage = "水煎服，每日一剂",

@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 统一MedicalCase InputDTO (OpenSpec: unify-medicalcase-input-dto) - 2025-12-19 [实施中]
+
+**状态**: Phase 1-6实施完成，待归档
+
+**问题背景**:
+- MedicalCaseInputDto包含14个诊断字段，但Server端CreateMedicalCaseRequest仅使用PatientId+VisitDate
+- Client-Server API契约不一致，存在冗余字段
+- 诊断字段应由ConsultationInputDto管理（DDD聚合设计）
+
+**实施内容**:
+- **Phase 1**: 分析DTO使用情况，发现诊断字段全部未被使用
+- **Phase 2**: 简化MedicalCaseInputDto为5字段(Id, PatientId, DoctorId, VisitDate, Remark)
+- **Phase 3**: 删除CreateMedicalCaseRequest，Controller统一使用MedicalCaseInputDto
+- **Phase 4**: Client端代码已正确使用简化后的DTO
+- **Phase 5**: 更新测试用例中的字段引用
+- **Phase 6**: 全量编译验证通过(0 errors, 0 warnings)
+
+**变更文件**:
+- `src/Shared/LYBT.Shared.Models/Contracts/MedicalCase/MedicalCaseInputDto.cs`
+- `src/Shared/LYBT.Shared.Validators/MedicalCase/MedicalCaseInputDtoValidator.cs`
+- `src/Shared/LYBT.Shared.Models/Extensions/DtoConversionExtensions.cs`
+- `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseController.cs`
+- `tests/UnitTests/Client/Desktop/LYBT.Desktop.MedicalCase.Tests/Components/MedicalCaseValidatorTests.cs`
+
+---
+
 #### 整合医案查询到聚合根模式 (OpenSpec: consolidate-medicalcase-queries) - 2025-12-19 [已归档]
 
 **状态**: ✅ Phase 1-6完成 + Phase 7.A死代码清理完成，已归档

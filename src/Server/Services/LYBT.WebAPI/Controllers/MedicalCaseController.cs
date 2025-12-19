@@ -72,14 +72,14 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
         public async Task<IActionResult> CreateMedicalCase(
-            [FromBody] CreateMedicalCaseRequest request)
+            [FromBody] MedicalCaseInputDto dto)
         {
             try
             {
                 // Issue #2212: 获取当前医生ID
                 var (doctorId, _, _) = GetOperator();
 
-                var entity = await _commandService.CreateAsync(request.PatientId, request.VisitDate, doctorId);
+                var entity = await _commandService.CreateAsync(dto.PatientId, dto.VisitDate, doctorId);
 
                 if (entity == null)
                     return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("患者不存在"));
@@ -88,7 +88,7 @@ namespace LYBT.WebAPI.Controllers
                     entity.Id, entity.DoctorName, entity.PatientName);
 
                 // Epic #2210 Phase 3 P0 Bug修复: Entity → MedicalCaseDetailDto 映射
-                var dto = new MedicalCaseDetailDto
+                var responseDto = new MedicalCaseDetailDto
                 {
                     Id = entity.Id,
                     PatientId = entity.PatientId,
@@ -104,7 +104,7 @@ namespace LYBT.WebAPI.Controllers
                     ConsultationId = entity.Id
                 };
 
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "病案创建成功"));
+                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(responseDto, "病案创建成功"));
             }
             catch (ArgumentException ex)
             {
@@ -127,7 +127,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "创建病案", request);
+                return HandleException(ex, "创建病案", dto);
             }
         }
 
@@ -1654,19 +1654,7 @@ namespace LYBT.WebAPI.Controllers
     }
 
     // ========== Request DTOs ==========
-
-    /// <summary>
-    /// 创建病案请求
-    /// </summary>
-    public class CreateMedicalCaseRequest
-    {
-        /// <summary>患者ID</summary>
-        public Guid PatientId { get; set; }
-
-        /// <summary>就诊日期</summary>
-        public DateTime VisitDate { get; set; }
-    }
-
+    // CreateMedicalCaseRequest 已移至 LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseInputDto
     // SetPrescriptionFlagRequest 已移至 LYBT.Shared.Models.Contracts.MedicalCase
 
     /// <summary>

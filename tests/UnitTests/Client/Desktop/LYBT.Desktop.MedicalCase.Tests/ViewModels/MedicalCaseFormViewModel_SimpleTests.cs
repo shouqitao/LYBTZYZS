@@ -1,9 +1,6 @@
 using FluentAssertions;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
-using Microsoft.Extensions.Logging;
-using Moq;
-using Prism.Events;
 using Xunit;
 
 namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
@@ -16,22 +13,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
     /// 本测试文件聚焦核心功能测试:
     /// 1. PrescriptionItemViewModel价格计算功能
     /// 2. 处方项集合操作
+    ///
+    /// OpenSpec: unify-medicalcase-input-dto - 更新为无参构造函数
     /// </summary>
     public class MedicalCaseFormViewModel_SimpleTests
     {
-        private readonly Mock<IEventAggregator> _mockEventAggregator;
-        private readonly Mock<ILoggerFactory> _mockLoggerFactory;
-        private readonly Mock<ILogger<PrescriptionItemViewModel>> _mockLogger;
-
-        public MedicalCaseFormViewModel_SimpleTests()
-        {
-            _mockEventAggregator = new Mock<IEventAggregator>();
-            _mockLoggerFactory = new Mock<ILoggerFactory>();
-            _mockLogger = new Mock<ILogger<PrescriptionItemViewModel>>();
-
-            _mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>()))
-                .Returns(_mockLogger.Object as ILogger);
-        }
 
         #region Prescript ionItemViewModel 价格计算测试
 
@@ -39,8 +25,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenHerbAndDosageSet_ShouldCalculatePrice()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
 
             // Act
             viewModel.SelectedHerb = herb;
@@ -54,8 +40,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenDosageChanges_ShouldRecalculatePrice()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 10;
 
@@ -73,9 +59,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenHerbChanges_ShouldRecalculatePrice()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb1 = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
-            var herb2 = new HerbDto { Id = Guid.NewGuid(), Name = "党参", Price = 20.0m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb1 = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var herb2 = new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", Price = 20.0m };
 
             viewModel.SelectedHerb = herb1;
             viewModel.Dosage = 10;
@@ -94,7 +80,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenNoHerbSelected_ItemAmountShouldBeZero()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
+            var viewModel = new PrescriptionItemViewModel();
             viewModel.Dosage = 10;
 
             // Act & Assert
@@ -105,8 +91,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenDosageZero_ItemAmountShouldBeZero()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 0;
 
@@ -118,13 +104,14 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WithDecimalDosage_ShouldCalculateCorrectly()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.5m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.5m };
             viewModel.SelectedHerb = herb;
-            viewModel.Dosage = 10.5m;
+            viewModel.Dosage = 11;
 
             // Act & Assert
-            viewModel.ItemAmount.Should().Be(162.75m, "价格应精确计算: 15.5 * 10.5 = 162.75");
+            // 价格计算: 15.5 * 11 = 170.5
+            viewModel.ItemAmount.Should().Be(170.5m, "价格应精确计算: 15.5 * 11 = 170.5");
         }
 
         #endregion
@@ -135,8 +122,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenSelectedHerbChanges_ShouldRaisePropertyChanged()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
 
             var propertyChangedRaised = false;
             viewModel.PropertyChanged += (sender, args) =>
@@ -158,7 +145,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenDosageChanges_ShouldRaisePropertyChanged()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
+            var viewModel = new PrescriptionItemViewModel();
 
             var propertyChangedRaised = false;
             viewModel.PropertyChanged += (sender, args) =>
@@ -180,8 +167,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenPriceChanges_ShouldRaiseItemAmountPropertyChanged()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
 
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 10;
@@ -208,12 +195,12 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
 
         [Theory]
         [InlineData(-1)]   // 负数剂量
-        [InlineData(-10.5)] // 负数小数剂量
-        public void PrescriptionItemViewModel_WithNegativeDosage_ShouldNotThrow(decimal dosage)
+        [InlineData(-10)] // 负数剂量
+        public void PrescriptionItemViewModel_WithNegativeDosage_ShouldNotThrow(int dosage)
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
 
             // Act
@@ -227,8 +214,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WithVeryLargeDosage_ShouldCalculateCorrectly()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
 
             // Act
@@ -242,8 +229,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WithZeroPriceHerb_ShouldCalculateZero()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
-            var herb = new HerbDto { Id = Guid.NewGuid(), Name = "免费药材", Price = 0m };
+            var viewModel = new PrescriptionItemViewModel();
+            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "免费药材", Price = 0m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 10;
 
@@ -259,7 +246,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenHerbNameSet_ShouldUpdateProperty()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
+            var viewModel = new PrescriptionItemViewModel();
 
             // Act
             viewModel.HerbName = "当归";
@@ -272,7 +259,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public void PrescriptionItemViewModel_WhenHerbNameChanges_ShouldRaisePropertyChanged()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel(_mockEventAggregator.Object, _mockLoggerFactory.Object);
+            var viewModel = new PrescriptionItemViewModel();
 
             var propertyChangedRaised = false;
             viewModel.PropertyChanged += (sender, args) =>

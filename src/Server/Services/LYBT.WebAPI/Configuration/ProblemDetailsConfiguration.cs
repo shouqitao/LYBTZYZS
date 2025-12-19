@@ -1,5 +1,4 @@
-using LYBT.WebAPI.Middleware;
-using Microsoft.AspNetCore.Diagnostics;
+﻿using LYBT.WebAPI.Middleware;
 
 namespace LYBT.WebAPI.Configuration;
 

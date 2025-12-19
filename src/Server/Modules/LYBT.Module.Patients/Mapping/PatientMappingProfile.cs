@@ -15,20 +15,14 @@ namespace LYBT.Module.Patients.Mapping
         public PatientMappingProfile()
         {
             // ============================================
-            // 新简化DTO映射 (OpenSpec: refactor-dto-simplification)
+            // DTO映射 (OpenSpec: refactor-dto-simplification)
             // ============================================
 
-            // Patient -> PatientListDto (新)
+            // Patient -> PatientListDto
             CreateMap<Patient, PatientListDto>();
 
-            // Patient -> PatientDetailDto (扁平化详情DTO)
-            CreateMap<Patient, PatientDetailDto>();
-
-            // ============================================
-            // 旧DTO映射 (保持向后兼容，后续移除)
-            // ============================================
-
             // 患者实体 → PatientDetailDto（API响应）
+            // OpenSpec: unify-medicalcase-input-dto - 合并重复映射配置
             CreateMap<Patient, PatientDetailDto>()
                 // Issue #2240: Patient.Age是从BirthDate计算的只读属性，AutoMapper会自动复制其计算值到PatientDto.Age
                 .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
@@ -77,6 +71,8 @@ namespace LYBT.Module.Patients.Mapping
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
                 .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore()) // OpenSpec: unify-medicalcase-input-dto - 状态字段
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore()) // OpenSpec: unify-medicalcase-input-dto - 审计字段
                 // 忽略时间戳字段（从 TimestampDto 继承）
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())

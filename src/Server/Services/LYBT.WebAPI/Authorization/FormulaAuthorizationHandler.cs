@@ -1,9 +1,8 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using LYBT.Entities.Formulas;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.Extensions.Logging;
 
 namespace LYBT.WebAPI.Authorization;
 

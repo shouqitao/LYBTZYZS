@@ -135,7 +135,7 @@ public class PrescriptionHerbItemViewModelTests
         viewModel.SelectedHerb = herb;
 
         // Act
-        viewModel.Dosage = 10m;
+        viewModel.Dosage = 10;
 
         // Assert
         viewModel.ItemTotal.Should().Be(5m, "因为 10g x 0.5元/g = 5元");
@@ -149,7 +149,7 @@ public class PrescriptionHerbItemViewModelTests
     {
         // Arrange
         var viewModel = new PrescriptionHerbItemViewModel();
-        viewModel.Dosage = 20m;
+        viewModel.Dosage = 20;
 
         // Act
         var herb = CreateTestHerb(price: 0.3m);
@@ -169,11 +169,11 @@ public class PrescriptionHerbItemViewModelTests
         var viewModel = new PrescriptionHerbItemViewModel();
         var herb = CreateTestHerb(price: 0.8m);
         viewModel.SelectedHerb = herb;
-        viewModel.Dosage = 10m;
+        viewModel.Dosage = 10;
         var initialTotal = viewModel.ItemTotal;
 
         // Act
-        viewModel.Dosage = 15m;
+        viewModel.Dosage = 15;
 
         // Assert
         initialTotal.Should().Be(8m, "初始小计应为 10g x 0.8元/g = 8元");
@@ -188,7 +188,7 @@ public class PrescriptionHerbItemViewModelTests
     {
         // Arrange
         var viewModel = new PrescriptionHerbItemViewModel();
-        viewModel.Dosage = 10m;
+        viewModel.Dosage = 10;
 
         // Act
         viewModel.SetLoadedUnitPrice(2.0m);
@@ -205,55 +205,57 @@ public class PrescriptionHerbItemViewModelTests
     /// 测试：有效剂量范围内IsDosageValid为true
     /// </summary>
     [Theory]
-    [InlineData(0.1)]
     [InlineData(1)]
     [InlineData(10)]
     [InlineData(100)]
     [InlineData(500)]
-    public void IsDosageValid_WhenDosageInRange_ShouldBeTrue(decimal dosage)
+    public void IsDosageValid_WhenDosageInRange_ShouldBeTrue(int dosage)
     {
         // Arrange
         var viewModel = new PrescriptionHerbItemViewModel();
+        viewModel.SelectedHerb = CreateTestHerb(); // 需要先选择药材才能触发验证
 
         // Act
         viewModel.Dosage = dosage;
 
         // Assert
-        viewModel.IsDosageValid.Should().BeTrue($"因为{dosage}g在有效范围0.1-500之内");
+        viewModel.IsDosageValid.Should().BeTrue($"因为{dosage}g在有效范围1-500之内");
         viewModel.DosageValidationMessage.Should().BeEmpty();
     }
 
     /// <summary>
-    /// 测试：剂量小于0.1时验证失败
+    /// 测试：剂量小于1时验证失败
     /// 注意：不测试dosage=0的情况，因为默认值为0，SetProperty不会触发OnDosageChanged
     /// </summary>
     [Theory]
-    [InlineData(0.05)]
     [InlineData(-1)]
-    public void IsDosageValid_WhenDosageTooSmall_ShouldBeFalse(decimal dosage)
+    [InlineData(-10)]
+    public void IsDosageValid_WhenDosageTooSmall_ShouldBeFalse(int dosage)
     {
         // Arrange
         var viewModel = new PrescriptionHerbItemViewModel();
+        viewModel.SelectedHerb = CreateTestHerb(); // 需要先选择药材才能触发验证
 
         // Act
         viewModel.Dosage = dosage;
 
         // Assert
-        viewModel.IsDosageValid.Should().BeFalse($"因为{dosage}g小于最小剂量0.1g");
-        viewModel.DosageValidationMessage.Should().Contain("0.1");
+        viewModel.IsDosageValid.Should().BeFalse($"因为{dosage}g小于最小剂量1g");
+        viewModel.DosageValidationMessage.Should().Contain("1");
     }
 
     /// <summary>
     /// 测试：剂量大于500时验证失败
     /// </summary>
     [Theory]
-    [InlineData(500.1)]
+    [InlineData(501)]
     [InlineData(600)]
     [InlineData(1000)]
-    public void IsDosageValid_WhenDosageTooLarge_ShouldBeFalse(decimal dosage)
+    public void IsDosageValid_WhenDosageTooLarge_ShouldBeFalse(int dosage)
     {
         // Arrange
         var viewModel = new PrescriptionHerbItemViewModel();
+        viewModel.SelectedHerb = CreateTestHerb(); // 需要先选择药材才能触发验证
 
         // Act
         viewModel.Dosage = dosage;
@@ -307,7 +309,7 @@ public class PrescriptionHerbItemViewModelTests
         };
 
         // Act
-        viewModel.Dosage = 10m;
+        viewModel.Dosage = 10;
 
         // Assert
         itemTotalChanged.Should().BeTrue("因为剂量变更后应通知ItemTotal变更");
@@ -321,7 +323,8 @@ public class PrescriptionHerbItemViewModelTests
     {
         // Arrange
         var viewModel = new PrescriptionHerbItemViewModel();
-        viewModel.Dosage = 10m; // 先设置有效剂量
+        viewModel.SelectedHerb = CreateTestHerb(); // 需要先选择药材才能触发验证
+        viewModel.Dosage = 10; // 先设置有效剂量（IsDosageValid = true）
 
         var isDosageValidChanged = false;
         viewModel.PropertyChanged += (s, e) =>
@@ -331,7 +334,7 @@ public class PrescriptionHerbItemViewModelTests
         };
 
         // Act
-        viewModel.Dosage = 0; // 设置无效剂量
+        viewModel.Dosage = -1; // 设置无效剂量（触发IsDosageValid从true变为false）
 
         // Assert
         isDosageValidChanged.Should().BeTrue("因为剂量从有效变为无效应通知IsDosageValid变更");

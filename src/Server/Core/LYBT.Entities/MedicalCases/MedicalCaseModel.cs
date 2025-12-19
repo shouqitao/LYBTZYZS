@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
+using LYBT.Entities.Consultations;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
@@ -72,7 +73,7 @@ namespace LYBT.Entities.MedicalCases
 
         /// <summary>诊疗记录（导航属性）- 一个医疗案例对应一次诊疗 (1:1关系)</summary>
         [DisplayName("诊疗记录")]
-        public virtual LYBT.Entities.Consultations.Consultation? Consultation { get; set; }
+        public virtual Consultation? Consultation { get; set; }
 
         /// <summary>处方信息（导航属性）- 一个医疗案例至多一张处方 (0..1关系)</summary>
         [DisplayName("处方信息")]

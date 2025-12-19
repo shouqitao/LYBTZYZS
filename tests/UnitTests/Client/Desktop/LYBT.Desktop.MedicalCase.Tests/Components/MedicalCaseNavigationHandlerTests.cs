@@ -104,7 +104,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             _mockRegionManager.Verify(
-                x => x.RequestNavigate("ContentRegion", "MedicalCaseManagementView"),
+                x => x.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView"),
                 Times.Once);
         }
 
@@ -136,7 +136,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             saveCalled.Should().BeTrue();
             isEditingSet.Should().BeTrue();
             _mockRegionManager.Verify(
-                x => x.RequestNavigate("ContentRegion", "MedicalCaseManagementView"),
+                x => x.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView"),
                 Times.Once);
         }
 
@@ -164,7 +164,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             // Assert
             saveCalled.Should().BeFalse();
             _mockRegionManager.Verify(
-                x => x.RequestNavigate("ContentRegion", "MedicalCaseManagementView"),
+                x => x.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView"),
                 Times.Once);
         }
 
