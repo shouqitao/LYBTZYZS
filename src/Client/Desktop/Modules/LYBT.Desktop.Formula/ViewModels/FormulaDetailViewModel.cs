@@ -491,7 +491,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private FormulaHerbItemViewModel CreateBlankHerbItem() => new()
         {
-            HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g", AllHerbs = _allHerbs
+            HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty, AllHerbs = _allHerbs
         };
 
         private void RefreshDisplayProperties()

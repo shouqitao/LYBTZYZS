@@ -178,7 +178,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     currentItem.HerbId = selectedHerb.Id;
                     currentItem.HerbName = selectedHerb.Name ?? string.Empty;
-                    currentItem.Unit = selectedHerb.Unit ?? "g";
+                    currentItem.Unit = selectedHerb.Unit ?? string.Empty;
                 }
             }
             catch (Exception ex) { Logger.LogError(ex, "药材选择处理时发生异常"); _ = ShowErrorMessageAsync("处理药材选择失败"); }
@@ -190,7 +190,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             while (blankSlots < 4) { HerbItems.Add(CreateBlankHerbItem()); blankSlots++; }
         }
 
-        private FormulaHerbItemViewModel CreateBlankHerbItem() => new() { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g", AllHerbs = _allHerbs };
+        private FormulaHerbItemViewModel CreateBlankHerbItem() => new() { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty, AllHerbs = _allHerbs };
 
         private async Task LoadAllHerbsAsync()
         {

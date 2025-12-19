@@ -21,7 +21,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         [StringLength(10, ErrorMessage = "单位不能超过10个字符")]
         [DisplayName("单位")]
-        public string Unit { get; set; } = "g";
+        public string Unit { get; set; } = string.Empty;
 
         [StringLength(50, ErrorMessage = "炮制方法不能超过50个字符")]
         [DisplayName("炮制方法")]

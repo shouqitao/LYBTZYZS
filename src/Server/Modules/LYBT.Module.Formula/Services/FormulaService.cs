@@ -424,7 +424,7 @@ namespace LYBT.Module.Formulas.Services
                                 OriginalHerbName = herbDto.HerbName, // 保存原始名称
                                 IsValidated = matchedHerb != null, // 成功匹配则标记为已验证
                                 Dosage = (int)herbDto.Dosage, // DTO是decimal，实体是int
-                                Unit = herbDto.Unit ?? "g",
+                                Unit = herbDto.Unit ?? string.Empty,
                                 Usage = herbDto.Usage,
                                 ProcessingMethod = herbDto.Preparation // DTO的Preparation映射到ProcessingMethod
                                 // Note: SortOrder exists in DTO but not in Entity

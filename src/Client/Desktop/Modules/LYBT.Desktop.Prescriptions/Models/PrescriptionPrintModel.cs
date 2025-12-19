@@ -103,7 +103,7 @@ namespace LYBT.Desktop.Prescriptions.Models
         /// <summary>剂量</summary>
         public decimal Dosage { get; set; }
         /// <summary>单位</summary>
-        public string Unit { get; set; } = "g";
+        public string Unit { get; set; } = string.Empty;
         /// <summary>煎法</summary>
         public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
 

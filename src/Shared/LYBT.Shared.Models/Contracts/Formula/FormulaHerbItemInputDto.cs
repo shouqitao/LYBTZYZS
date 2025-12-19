@@ -30,11 +30,11 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("用量")]
         public int Dosage { get; set; }
 
-        /// <summary>单位（必填，默认"g"）⭐ Issue #2014新增</summary>
+        /// <summary>单位（必填，从药材库加载）⭐ Issue #2014新增</summary>
         [Required(ErrorMessage = "单位不能为空")]
         [StringLength(10, ErrorMessage = "单位最多10个字符")]
         [DisplayName("单位")]
-        public string Unit { get; set; } = "g";
+        public string Unit { get; set; } = string.Empty;
 
         /// <summary>炮制方法（可选）</summary>
         [StringLength(50, ErrorMessage = "炮制方法最多50个字符")]

@@ -351,7 +351,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                         HerbId = herb.HerbId ?? Guid.Empty,
                         HerbName = herb.HerbName ?? string.Empty,
                         Dosage = herb.Dosage,
-                        Unit = herb.Unit ?? "g",
+                        Unit = herb.Unit ?? string.Empty,
                         Remark = herb.ProcessingMethod,
                         DecocteMethod = herb.DecocteMethod,
                         AllHerbs = _allHerbs  // 注入药材列表用于快速匹配
@@ -362,7 +362,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             // 确保至少有一个空行用于输入
             if (EditHerbItems.Count == 0)
             {
-                EditHerbItems.Add(new FormulaHerbItemViewModel { Unit = "g", AllHerbs = _allHerbs });
+                EditHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty, AllHerbs = _allHerbs });
             }
 
             RaisePropertyChanged(nameof(HerbCount));
@@ -471,7 +471,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private void ExecuteAddHerb()
         {
-            EditHerbItems.Add(new FormulaHerbItemViewModel { Unit = "g", AllHerbs = _allHerbs });
+            EditHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty, AllHerbs = _allHerbs });
             RaisePropertyChanged(nameof(HerbCount));
         }
 

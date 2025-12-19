@@ -86,10 +86,10 @@ public class HerbSelectionManager
         {
             var newRow = new SimpleItemRow
             {
-                Item1 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" },
-                Item2 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" },
-                Item3 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" },
-                Item4 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" }
+                Item1 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty },
+                Item2 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty },
+                Item3 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty },
+                Item4 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty }
             };
 
             ItemRows.Add(newRow);
@@ -219,10 +219,10 @@ public class HerbSelectionManager
             {
                 var newRow = new SimpleItemRow
                 {
-                    Item1 = items.ElementAtOrDefault(i * 4) ?? new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" },
-                    Item2 = items.ElementAtOrDefault(i * 4 + 1) ?? new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" },
-                    Item3 = items.ElementAtOrDefault(i * 4 + 2) ?? new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" },
-                    Item4 = items.ElementAtOrDefault(i * 4 + 3) ?? new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" }
+                    Item1 = items.ElementAtOrDefault(i * 4) ?? new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty },
+                    Item2 = items.ElementAtOrDefault(i * 4 + 1) ?? new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty },
+                    Item3 = items.ElementAtOrDefault(i * 4 + 2) ?? new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty },
+                    Item4 = items.ElementAtOrDefault(i * 4 + 3) ?? new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = string.Empty }
                 };
 
                 ItemRows.Add(newRow);
