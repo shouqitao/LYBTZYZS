@@ -296,9 +296,9 @@ DELETE /api/{resource}/{id}      # 删除
 | 规范 | 说明 |
 |------|------|
 | [project-architecture](specs/project-architecture/spec.md) | 三层架构定义、项目命名规范、依赖方向约束 |
-| [server-layer-architecture](specs/server-layer-architecture/spec.md) | Server层(13项目)详细架构、CQRS/三层模式选择 |
-| [shared-layer-architecture](specs/shared-layer-architecture/spec.md) | Shared层(4项目)职责、DTO继承层次规范 |
-| [client-layer-architecture](specs/client-layer-architecture/spec.md) | Client层(16项目)架构、MVVM模式、模块注册 |
+| [server-layer-architecture](specs/server-layer-architecture/spec.md) | Server层详细架构、CQRS/三层模式选择 |
+| [shared-layer-architecture](specs/shared-layer-architecture/spec.md) | Shared层职责、DTO继承层次规范 |
+| [client-layer-architecture](specs/client-layer-architecture/spec.md) | Client层架构、MVVM模式、模块注册 |
 
 ### 模式与约定规范
 
@@ -313,18 +313,31 @@ DELETE /api/{resource}/{id}      # 删除
 | [client-api-conventions](specs/client-api-conventions/spec.md) | 客户端API调用约定、Refit接口 |
 | [ui-style-conventions](specs/ui-style-conventions/spec.md) | UI样式约定、主题规范 |
 | [module-communication](specs/module-communication/spec.md) | 模块间通信、ICrossModuleQueryService |
+| [error-handling](specs/error-handling/spec.md) | 错误处理规范、异常类型定义 |
+| [logging-infrastructure](specs/logging-infrastructure/spec.md) | 日志基础设施、日志级别规范 |
 
 ### 功能规范
 
 | 规范 | 说明 |
 |------|------|
 | [authentication](specs/authentication/spec.md) | JWT认证、登录流程 |
+| [api-authorization](specs/api-authorization/spec.md) | API授权、权限控制 |
 | [global-audit](specs/global-audit/spec.md) | 全局审计日志规范 |
+| [user-management](specs/user-management/spec.md) | 用户管理功能规范 |
 | [medicalcase-edit-modes](specs/medicalcase-edit-modes/spec.md) | 医案编辑模式(新建/编辑/只读) |
 | [medicalcase-lifecycle](specs/medicalcase-lifecycle/spec.md) | 医案生命周期状态流转 |
 | [medicalcase-ui-layout](specs/medicalcase-ui-layout/spec.md) | 医案工作区UI布局 |
 | [login-credential-handling](specs/login-credential-handling/spec.md) | 登录凭据处理 |
+| [login-ui](specs/login-ui/spec.md) | 登录界面UI规范 |
 | [herb-card-control](specs/herb-card-control/spec.md) | 药材卡片控件规范 |
+| [formula-copy-flow](specs/formula-copy-flow/spec.md) | 经验方复制流程规范 |
+
+### UI规范
+
+| 规范 | 说明 |
+|------|------|
+| [shell-layout](specs/shell-layout/spec.md) | Shell布局规范 |
+| [desktop-detail-views](specs/desktop-detail-views/spec.md) | 桌面端详情视图规范 |
 
 ### 文档规范
 
@@ -337,6 +350,11 @@ DELETE /api/{resource}/{id}      # 删除
 | 规范 | 说明 |
 |------|------|
 | [webapi-cleanup](specs/webapi-cleanup/spec.md) | WebAPI清理和重构 |
+| [repository-cleanup](specs/repository-cleanup/spec.md) | Repository层清理规范 |
+| [service-cleanup](specs/service-cleanup/spec.md) | Service层清理规范 |
+| [dto-cleanup](specs/dto-cleanup/spec.md) | DTO清理规范 |
+| [desktop-structure-cleanup](specs/desktop-structure-cleanup/spec.md) | Desktop结构清理规范 |
+| [service-permission-separation](specs/service-permission-separation/spec.md) | Service权限分离规范 |
 
 ---
 

@@ -33,18 +33,15 @@ LYBT.Desktop.Shell/
 │   ├── HomeViewModel.cs                        # 首页视图模型（快速操作、统计信息）
 │   └── PlaceholderViewModels.cs                # 占位符视图模型
 │
-├── Dialogs/                                    # 对话框系统（3个标准对话框）
+├── Dialogs/                                    # 对话框系统（2个标准对话框）
 │   ├── Views/                                  # 对话框视图
 │   │   ├── ConfirmationDialog.xaml             # 确认对话框（是/否选择）
 │   │   ├── ConfirmationDialog.xaml.cs          # 确认对话框后台代码
-│   │   ├── ErrorDetailsDialog.xaml             # 错误详情对话框（异常信息展示）
-│   │   ├── ErrorDetailsDialog.xaml.cs          # 错误详情对话框后台代码
-│   │   ├── InformationDialog.xaml              # 信息对话框（通知提示）
-│   │   └── InformationDialog.xaml.cs           # 信息对话框后台代码
+│   │   ├── EntityAuditLogDialog.xaml           # 审计日志对话框
+│   │   └── EntityAuditLogDialog.xaml.cs        # 审计日志对话框后台代码
 │   └── ViewModels/                             # 对话框视图模型
 │       ├── ConfirmationDialogViewModel.cs      # 确认对话框视图模型（IDialogAware实现）
-│       ├── ErrorDetailsDialogViewModel.cs      # 错误详情对话框视图模型
-│       └── InformationDialogViewModel.cs       # 信息对话框视图模型
+│       └── EntityAuditLogDialogViewModel.cs    # 审计日志对话框视图模型
 │
 ├── Extensions/                                 # 扩展方法（2个扩展类）
 │   ├── ServiceCollectionExtensions.cs          # 服务注册扩展（批量服务注册）
@@ -170,8 +167,7 @@ public partial class App : PrismApplication
 
         // 3. 注册对话框（Prism对话框服务）
         containerRegistry.RegisterDialog<ConfirmationDialog, ConfirmationDialogViewModel>();
-        containerRegistry.RegisterDialog<ErrorDetailsDialog, ErrorDetailsDialogViewModel>();
-        containerRegistry.RegisterDialog<InformationDialog, InformationDialogViewModel>();
+        containerRegistry.RegisterDialog<EntityAuditLogDialog, EntityAuditLogDialogViewModel>();
 
         // 4. 注册导航视图
         containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
@@ -342,12 +338,11 @@ public partial class App : PrismApplication
         var parameters = new DialogParameters
         {
             { "title", "应用程序错误" },
-            { "message", exception?.Message ?? "未知错误" },
-            { "details", exception?.StackTrace ?? "" }
+            { "message", exception?.Message ?? "未知错误" }
         };
 
         Container.Resolve<IDialogService>()
-            .ShowDialog("ErrorDetailsDialog", parameters, null);
+            .ShowDialog("ConfirmationDialog", parameters, null);
     }
 }
 ```
@@ -851,91 +846,6 @@ public class ConfirmationDialogViewModel : BindableBase, IDialogAware
 }
 ```
 
-#### ErrorDetailsDialogViewModel.cs - 错误详情对话框
-
-```csharp
-/// <summary>
-/// 错误详情对话框视图模型
-/// 用于显示异常信息和堆栈跟踪
-/// </summary>
-public class ErrorDetailsDialogViewModel : BindableBase, IDialogAware
-{
-    public string Title { get; set; } = "错误详情";
-    public event Action<IDialogResult> RequestClose;
-
-    private string _message;
-    /// <summary>
-    /// 错误消息
-    /// </summary>
-    public string Message
-    {
-        get => _message;
-        set => SetProperty(ref _message, value);
-    }
-
-    private string _details;
-    /// <summary>
-    /// 错误详情（堆栈跟踪）
-    /// </summary>
-    public string Details
-    {
-        get => _details;
-        set => SetProperty(ref _details, value);
-    }
-
-    private bool _isDetailsVisible;
-    /// <summary>
-    /// 是否显示详情
-    /// </summary>
-    public bool IsDetailsVisible
-    {
-        get => _isDetailsVisible;
-        set => SetProperty(ref _isDetailsVisible, value);
-    }
-
-    public DelegateCommand CloseCommand { get; }
-    public DelegateCommand ToggleDetailsCommand { get; }
-    public DelegateCommand CopyToClipboardCommand { get; }
-
-    public ErrorDetailsDialogViewModel()
-    {
-        CloseCommand = new DelegateCommand(ExecuteClose);
-        ToggleDetailsCommand = new DelegateCommand(ExecuteToggleDetails);
-        CopyToClipboardCommand = new DelegateCommand(ExecuteCopyToClipboard);
-    }
-
-    private void ExecuteClose()
-    {
-        RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
-    }
-
-    private void ExecuteToggleDetails()
-    {
-        IsDetailsVisible = !IsDetailsVisible;
-    }
-
-    private void ExecuteCopyToClipboard()
-    {
-        var fullMessage = $"{Message}\n\n详细信息：\n{Details}";
-        Clipboard.SetText(fullMessage);
-    }
-
-    public bool CanCloseDialog() => true;
-    public void OnDialogClosed() { }
-
-    public void OnDialogOpened(IDialogParameters parameters)
-    {
-        Message = parameters.GetValue<string>("message");
-        Details = parameters.GetValue<string>("details") ?? "";
-
-        if (parameters.ContainsKey("title"))
-        {
-            Title = parameters.GetValue<string>("title");
-        }
-    }
-}
-```
-
 ### 4. 配置管理
 
 #### appsettings.json - 应用配置文件
@@ -1191,21 +1101,20 @@ public class PatientsManagementViewModel : BindableBase
                             { "message", "患者档案已成功删除。" },
                             { "title", "操作成功" }
                         };
-                        _dialogService.ShowDialog("InformationDialog", successParams, null);
+                        _dialogService.ShowDialog("ConfirmationDialog", successParams, null);
 
                         // 步骤4：刷新患者列表
                         await RefreshPatientListAsync();
                     }
                     catch (Exception ex)
                     {
-                        // 步骤5：显示错误详情对话框
+                        // 步骤5：显示错误对话框
                         var errorParams = new DialogParameters
                         {
                             { "message", $"删除患者失败：{ex.Message}" },
-                            { "details", ex.StackTrace },
                             { "title", "删除失败" }
                         };
-                        _dialogService.ShowDialog("ErrorDetailsDialog", errorParams, null);
+                        _dialogService.ShowDialog("ConfirmationDialog", errorParams, null);
                     }
                 }
                 else
@@ -1543,8 +1452,7 @@ _regionManager.RequestNavigate("ContentRegion", "PatientsManagement"); // 可能
 ```csharp
 //  正确：在App.xaml.cs中注册
 containerRegistry.RegisterDialog<ConfirmationDialog, ConfirmationDialogViewModel>();
-containerRegistry.RegisterDialog<ErrorDetailsDialog, ErrorDetailsDialogViewModel>();
-containerRegistry.RegisterDialog<InformationDialog, InformationDialogViewModel>();
+containerRegistry.RegisterDialog<EntityAuditLogDialog, EntityAuditLogDialogViewModel>();
 ```
 
 **对话框调用规范**：
