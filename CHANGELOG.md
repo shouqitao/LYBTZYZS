@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+#### 药材单位自动加载修复 (OpenSpec: fix-herb-unit-auto-load) - 2025-12-19
+
+**问题**: 创建经验方/处方时，空白药材行的单位硬编码为"g"，与药材库定义的单位（如"克"、"条"、"枚"）不一致。
+
+**修复内容**:
+- DTO默认值: FormulaHerbItemInputDto/FormulaHerbImportItemDto Unit改为string.Empty
+- Desktop Formula: 3个ViewModel的空行创建逻辑修复
+- Desktop MedicalCase: HerbSelectionManager 8处空行创建修复
+- Desktop Prescriptions: PrescriptionPrintModel打印模板同步修复
+- Server Formula: FormulaService导入时不再fallback到"g"
+
+**行为变化**:
+- 空白药材行: 单位字段为空（不再显示"g"）
+- 选择药材后: 单位自动从药材库加载
+- 打印时: 显示实际存储的单位值
+
+**Spec更新**: herb-card-control (ADDED: Herb Unit Auto-Load requirement)
+
 ### Changed
 
 #### 统一前后端实体类型 (OpenSpec: unify-frontend-backend-types) - 2025-12-19
