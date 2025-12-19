@@ -49,6 +49,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Desktop层代码复用优化 (OpenSpec: optimize-desktop-code-reuse) - 2025-12-20
+
+**背景**: Desktop层存在组件分类混乱、代码重复、基类体系不完善等问题。
+
+**优化内容**:
+
+**Phase 1 - 组件存放位置统一**:
+- Formula模块: FormulaCommandHandler/DataManager/Validator从ViewModels/Components/迁移至Services/
+- 建立分类标准: Services/放业务逻辑组件，ViewModels/Components/仅放UI辅助组件
+
+**Phase 2 - 基类体系完善**:
+- 新增CommandHandlerBase: 统一命令注册/执行/异常处理框架
+- 新增ComponentValidatorBase: 统一验证模板方法与错误处理
+- 位置: Infrastructure/Components/
+
+**Phase 3 - 模块边界文档化**:
+- Prescriptions模块: 明确定位为"服务库模式"(Service Library)
+- Consultation模块: 明确定位为"组件模式"(MedicalCase Step 2)
+
+**净效果**: 新增2个基类，规范化组件目录结构
+
+**Spec更新**: desktop-code-patterns (NEW)
+
 #### 统一前后端实体类型 (OpenSpec: unify-frontend-backend-types) - 2025-12-19
 
 **状态**: ✅ 全部完成 (Phase 0-8)
