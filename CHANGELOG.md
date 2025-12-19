@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+#### Desktop未使用代码清理 (OpenSpec: cleanup-desktop-unused-code) - 2025-12-19
+
+**背景**: Desktop层经过多次迭代开发，积累了未使用的代码，增加维护成本。
+
+**删除内容**:
+- Shell Dialogs: ErrorDetailsDialog, InformationDialog (未注册未使用)
+- MedicalCase Services: MedicalCaseStatusPresenter, MedicalCaseEventCoordinator (未注册)
+- Users组件: IUserDataManager, UserDataManager, UserValidator (未注册无引用)
+- 对应测试文件: UserDataManagerTests, UserValidatorTests
+
+**评估保留**:
+- UnfinishedCaseDialog: WPF Window模式功能正常，避免Pre-Release重构风险
+- IDataProvider: 被PrescriptionPanelViewModel和ConsultationPanelViewModel广泛使用
+
+**净效果**: 删除13个文件，减少1575行代码
+
+**Spec更新**: desktop-structure-cleanup (ADDED: Unused Code Cleanup Policy)
+
 ### Fixed
 
 #### 药材单位自动加载修复 (OpenSpec: fix-herb-unit-auto-load) - 2025-12-19
