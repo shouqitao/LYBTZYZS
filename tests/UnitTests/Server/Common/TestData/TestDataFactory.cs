@@ -73,22 +73,20 @@ public static class TestDataFactory
 
     /// <summary>
     /// 创建测试处方
+    /// OpenSpec: simplify-medicalcase-dataflow - Prescription作为MedicalCase的子实体
     /// </summary>
-    public static Prescription CreatePrescription(Guid? id = null, Guid? patientId = null, Guid? doctorId = null)
+    public static Prescription CreatePrescription(Guid? id = null, Guid? medicalCaseId = null)
     {
-        var doctor = doctorId ?? Guid.NewGuid();
-        var patient = patientId ?? Guid.NewGuid();
+        var mcId = medicalCaseId ?? Guid.NewGuid();
 
         return new Prescription
         {
             Id = id ?? Guid.NewGuid(),
-            PatientId = patient,
-            DoctorId = doctor,
-            PrescriptionNumber = $"CF{DateTime.Now:yyyyMMdd}{new Random().Next(1000, 9999)}",
-            Diagnosis = $"诊断描述_{Guid.NewGuid():N}",
-            Symptoms = $"症状描述_{Guid.NewGuid():N}",
-            Principle = $"治法方解_{Guid.NewGuid():N}",
-            TotalAmount = (decimal)(new Random().NextDouble() * 500 + 50),
+            MedicalCaseId = mcId,
+            PrescriptionNumber = $"RX-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}",
+            DosageCount = 7,
+            Usage = "每日一剂，水煎服",
+            Advice = "忌辛辣生冷",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -106,44 +104,29 @@ public static class TestDataFactory
         {
             Id = id ?? Guid.NewGuid(),
             PatientId = patient,
-            DoctorId = doctor,
+            PatientName = "测试患者",
+            UserId = doctor,
+            DoctorName = "测试医生",
             CaseNumber = $"YZ{DateTime.Now:yyyyMMdd}{new Random().Next(1000, 9999)}",
-            Title = $"医案标题_{Guid.NewGuid():N}",
-            ChiefComplaint = $"主诉描述_{Guid.NewGuid():N}",
-            PresentIllness = $"现病史_{Guid.NewGuid():N}",
-            PastHistory = $"既往史_{Guid.NewGuid():N}",
-            PersonalHistory = $"个人史_{Guid.NewGuid():N}",
-            FamilyHistory = $"家族史_{Guid.NewGuid():N}",
-            CaseStatus = MedicalCaseStatus.InProgress,
+            CaseStatus = MedicalCaseStatus.Active,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
     }
 
     /// <summary>
-    /// 创建测试会诊记录
+    /// 创建测试诊疗记录
+    /// OpenSpec: simplify-medicalcase-dataflow - Consultation与MedicalCase共享主键
     /// </summary>
-    public static Consultation CreateConsultation(Guid? id = null, Guid? medicalCaseId = null, Guid? doctorId = null)
+    public static Consultation CreateConsultation(Guid? id = null)
     {
-        var doctor = doctorId ?? Guid.NewGuid();
-        var medicalCase = medicalCaseId ?? Guid.NewGuid();
-
         return new Consultation
         {
             Id = id ?? Guid.NewGuid(),
-            MedicalCaseId = medicalCase,
-            DoctorId = doctor,
-            ConsultationDate = DateTime.UtcNow,
-            Type = ConsultationType.Initial,
-            Pulse = $"脉象：平和_{Guid.NewGuid():N}",
-            Tongue = $"舌象：淡红，薄白苔_{Guid.NewGuid():N}",
-            FourDiagnosis = $"四诊：精神可，面色润泽，语声清晰，呼吸平稳，食欲良好，睡眠正常_{Guid.NewGuid():N}",
-            TongueDiagnosis = $"舌诊：舌淡红，苔薄白_{Guid.NewGuid():N}",
-            PulseDiagnosis = $"脉诊：脉象平和_{Guid.NewGuid():N}",
-            Diagnosis = $"中医诊断：气血两虚_{Guid.NewGuid():N}",
-            SyndromeDifferentiation = $"辨证：心脾两虚_{Guid.NewGuid():N}",
-            TreatmentPrinciple = $"治法：益气养血_{Guid.NewGuid():N}",
-            Notes = $"备注：{Guid.NewGuid():N}",
+            PresentIllness = $"现病史_{Guid.NewGuid():N}",
+            TongueDiagnosis = "舌淡红，苔薄白",
+            PulseDiagnosis = "脉象平和",
+            TCMDiagnosis = "气血两虚",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -208,11 +191,10 @@ public static class TestDataFactory
     /// </summary>
     public static List<Prescription> CreatePrescriptions(int count)
     {
-        var patients = CreatePatients(count);
-        var doctors = CreateUsers(count, UserRole.Doctor);
+        var medicalCases = CreateMedicalCases(count);
 
         return Enumerable.Range(1, count)
-            .Select(i => CreatePrescription(null, patients[i-1].Id, doctors[i-1].Id))
+            .Select(i => CreatePrescription(null, medicalCases[i-1].Id))
             .ToList();
     }
 
@@ -230,15 +212,15 @@ public static class TestDataFactory
     }
 
     /// <summary>
-    /// 创建会诊记录列表
+    /// 创建诊疗记录列表
+    /// 注意：Consultation与MedicalCase使用共享主键
     /// </summary>
     public static List<Consultation> CreateConsultations(int count)
     {
         var medicalCases = CreateMedicalCases(count);
-        var doctors = CreateUsers(count, UserRole.Doctor);
 
         return Enumerable.Range(1, count)
-            .Select(i => CreateConsultation(null, medicalCases[i-1].Id, doctors[i-1].Id))
+            .Select(i => CreateConsultation(medicalCases[i-1].Id))
             .ToList();
     }
 

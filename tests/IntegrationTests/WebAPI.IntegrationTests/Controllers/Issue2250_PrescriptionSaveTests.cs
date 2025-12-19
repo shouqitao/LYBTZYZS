@@ -108,10 +108,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
             _output.WriteLine($"医案创建成功: {medicalCase.Id}");
 
-            var request = new PrescriptionCreateDto
+            var request = new PrescriptionInputDto
             {
-                PatientId = medicalCase.PatientId,
-                DoctorId = medicalCase.DoctorId,
+                MedicalCaseId = medicalCase.Id,
                 DosageCount = 7,
                 Items = new List<PrescriptionItemInputDto>() // 空Items
             };
@@ -145,10 +144,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
             _output.WriteLine($"医案创建成功: {medicalCase.Id}");
 
-            var request = new PrescriptionCreateDto
+            var request = new PrescriptionInputDto
             {
-                PatientId = medicalCase.PatientId,
-                DoctorId = medicalCase.DoctorId,
+                MedicalCaseId = medicalCase.Id,
                 DosageCount = 7,
                 Advice = "水煎服",
                 Items = new List<PrescriptionItemInputDto>
@@ -157,12 +155,15 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     {
                         HerbId = _testHerbId,
                         HerbName = "甘草",
-                        Quantity = 10
+                        Dosage = 10,
+                        Unit = "g",
+                        DecocteMethod = DecocteMethod.Default,
+                        UnitPrice = 0.5m
                     }
                 }
             };
 
-            _output.WriteLine($"请求: PatientId={request.PatientId}, Items数量={request.Items.Count}");
+            _output.WriteLine($"请求: MedicalCaseId={request.MedicalCaseId}, Items数量={request.Items.Count}");
 
             // Act
             var response = await Client.PostAsJsonAsync(
@@ -192,10 +193,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
-            var request = new PrescriptionCreateDto
+            var request = new PrescriptionInputDto
             {
-                PatientId = medicalCase.PatientId,
-                DoctorId = medicalCase.DoctorId,
+                MedicalCaseId = medicalCase.Id,
                 DosageCount = 7,
                 Items = new List<PrescriptionItemInputDto>
                 {
@@ -203,7 +203,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     {
                         HerbId = _testHerbId,
                         HerbName = "甘草",
-                        Quantity = 10
+                        Dosage = 10,
+                        Unit = "g",
+                        DecocteMethod = DecocteMethod.Default,
+                        UnitPrice = 0.5m
                     }
                 }
             };
@@ -239,7 +242,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             prescriptionItems.Should().HaveCount(1, "应该有1个药材项");
             prescriptionItems[0].HerbId.Should().Be(_testHerbId);
-            prescriptionItems[0].Quantity.Should().Be(10);
+            prescriptionItems[0].Dosage.Should().Be(10);
 
             _output.WriteLine("Items持久化验证通过");
         }
@@ -254,10 +257,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建医案和处方
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
-            var createRequest = new PrescriptionCreateDto
+            var createRequest = new PrescriptionInputDto
             {
-                PatientId = medicalCase.PatientId,
-                DoctorId = medicalCase.DoctorId,
+                MedicalCaseId = medicalCase.Id,
                 DosageCount = 7,
                 Items = new List<PrescriptionItemInputDto>
                 {
@@ -265,7 +267,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     {
                         HerbId = _testHerbId,
                         HerbName = "甘草",
-                        Quantity = 10
+                        Dosage = 10,
+                        Unit = "g",
+                        DecocteMethod = DecocteMethod.Default,
+                        UnitPrice = 0.5m
                     }
                 }
             };
@@ -287,11 +292,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             _output.WriteLine($"初始处方创建成功: {prescriptionId}");
 
             // Act - 更新处方
-            var updateRequest = new PrescriptionEditDto
+            var updateRequest = new PrescriptionInputDto
             {
                 Id = prescriptionId,
-                PatientId = medicalCase.PatientId,
-                UserId = medicalCase.DoctorId,
+                MedicalCaseId = medicalCase.Id,
                 DosageCount = 14,
                 Items = new List<PrescriptionItemInputDto>
                 {
@@ -299,7 +303,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     {
                         HerbId = _testHerbId,
                         HerbName = "甘草",
-                        Quantity = 15
+                        Dosage = 15
                     }
                 }
             };
@@ -335,7 +339,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 .ToList();
 
             updatedItems.Should().HaveCount(1);
-            updatedItems[0].Quantity.Should().Be(15);
+            updatedItems[0].Dosage.Should().Be(15);
 
             _output.WriteLine("更新后Items验证通过");
         }
@@ -352,14 +356,13 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             _output.WriteLine($"医案创建成功: {medicalCase.Id}");
 
             // Step 1: 创建处方
-            var createRequest = new PrescriptionCreateDto
+            var createRequest = new PrescriptionInputDto
             {
-                PatientId = medicalCase.PatientId,
-                DoctorId = medicalCase.DoctorId,
+                MedicalCaseId = medicalCase.Id,
                 DosageCount = 7,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Quantity = 10 }
+                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Dosage = 10, Unit = "g", DecocteMethod = DecocteMethod.Default, UnitPrice = 0.5m }
                 }
             };
 
@@ -382,15 +385,14 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             _output.WriteLine($"Step1 处方创建成功: {prescriptionId}");
 
             // Step 2: 第一次更新
-            var updateRequest1 = new PrescriptionEditDto
+            var updateRequest1 = new PrescriptionInputDto
             {
                 Id = prescriptionId,
-                PatientId = medicalCase.PatientId,
-                UserId = medicalCase.DoctorId,
+                MedicalCaseId = medicalCase.Id,
                 DosageCount = 14,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Quantity = 15 }
+                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Dosage = 15, Unit = "g", DecocteMethod = DecocteMethod.Default, UnitPrice = 0.5m }
                 }
             };
 
@@ -410,15 +412,14 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             _output.WriteLine("Step2 更新成功");
 
             // Step 3: 第二次更新（连续操作）
-            var updateRequest2 = new PrescriptionEditDto
+            var updateRequest2 = new PrescriptionInputDto
             {
                 Id = prescriptionId,
-                PatientId = medicalCase.PatientId,
-                UserId = medicalCase.DoctorId,
+                MedicalCaseId = medicalCase.Id,
                 DosageCount = 21,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Quantity = 20 }
+                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Dosage = 20, Unit = "g", DecocteMethod = DecocteMethod.Default, UnitPrice = 0.5m }
                 }
             };
 
@@ -485,7 +486,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var consultationRequest = new ConsultationInputDto
             {
-                ChiefComplaint = "头痛",
+                PresentIllness = "头痛",
                 TCMDiagnosis = "风寒感冒"
             };
 

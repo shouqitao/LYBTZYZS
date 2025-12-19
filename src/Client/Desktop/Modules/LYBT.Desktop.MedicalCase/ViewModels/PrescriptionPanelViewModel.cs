@@ -283,7 +283,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         MedicalCaseId = _medicalCaseId,
         PrescriptionId = _prescriptionId,
         PatientId = _patientId,
-        DoctorId = SessionManager?.CurrentUserId ?? Guid.Empty,
+        UserId = SessionManager?.CurrentUserId ?? Guid.Empty,
         DosageCount = DosageCount,
         Usage = Usage,
         Items = _itemHandler.CollectPrescriptionItems(HerbItems),

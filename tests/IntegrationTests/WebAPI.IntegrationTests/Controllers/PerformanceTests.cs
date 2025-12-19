@@ -351,7 +351,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Diagnosis = "性能测试诊断",
                 Advice = "每日一剂",
                 PatientId = patientId,
-                DoctorId = TestUserId,
+                UserId = TestUserId,
                 Items = new[]
                 {
                     new { HerbId = herbId, HerbName = "甘草", Quantity = 10.0m, Unit = "g" }

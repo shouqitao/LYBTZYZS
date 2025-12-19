@@ -407,10 +407,9 @@ public class CrossModuleQueryServiceTests : IDisposable
             Id = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
             PatientName = "测试患者",
-            DoctorId = doctorId,
+            UserId = doctorId,
             DoctorName = "测试医生",
             CaseStatus = MedicalCaseStatus.Active,
-            ConsultationDate = DateTime.Now,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
             CreatedBy = doctorId, // 必填审计字段

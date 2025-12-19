@@ -310,7 +310,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             {
                 PatientId = medicalCase.PatientId,  // Issue #2231: ConsultationInputDtoValidator requires PatientId
                 UserId = FixedDoctorId,              // Issue #2231: ConsultationInputDtoValidator requires UserId
-                ChiefComplaint = "头痛",
+                PresentIllness = "头痛",
                 TCMDiagnosis = "风寒感冒"
             };
 
@@ -337,7 +337,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             {
                 PatientId = medicalCase.PatientId,  // Issue #2231: ConsultationInputDtoValidator requires PatientId
                 UserId = FixedDoctorId,              // Issue #2231: ConsultationInputDtoValidator requires UserId
-                ChiefComplaint = "测试"
+                PresentIllness = "测试"
             };
 
             // Act
@@ -404,18 +404,20 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案、辨证、标记需要处方
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
+            // OpenSpec: simplify-medicalcase-dataflow - 使用MedicalCaseId
             var request = new PrescriptionInputDto
             {
-                PatientId = medicalCase.PatientId,
-                UserId = medicalCase.UserId,
+                MedicalCaseId = medicalCase.Id,
                 Items = new List<PrescriptionItemInputDto>
                 {
                     new PrescriptionItemInputDto
                     {
                         HerbId = Guid.NewGuid(),
                         HerbName = "测试中药",
-                        Quantity = 10
+                        Dosage = 10,
+                        Unit = "g",
+                        DecocteMethod = DecocteMethod.Default,
+                        UnitPrice = 0.5m
                     }
                 }
             };
@@ -439,11 +441,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案并已有处方
             var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
+            // OpenSpec: simplify-medicalcase-dataflow - 使用MedicalCaseId代替PatientId/UserId
             var request = new PrescriptionInputDto
             {
-                PatientId = medicalCase.PatientId,
-                UserId = medicalCase.UserId,
+                MedicalCaseId = medicalCase.Id,
                 Items = new List<PrescriptionItemInputDto>()
             };
 
@@ -466,15 +467,14 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案和处方
             var (medicalCase, prescription) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
+            // OpenSpec: simplify-medicalcase-dataflow - 使用MedicalCaseId代替PatientId/UserId
             var request = new PrescriptionInputDto
             {
                 Id = prescription.Id,
-                PatientId = medicalCase.PatientId,
-                UserId = medicalCase.UserId,
+                MedicalCaseId = medicalCase.Id,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new() { HerbId = Guid.NewGuid(), HerbName = "测试中药", Quantity = 6 }
+                    new() { HerbId = Guid.NewGuid(), HerbName = "测试中药", Dosage = 6, Unit = "g", DecocteMethod = DecocteMethod.Default, UnitPrice = 0.5m }
                 }
             };
 
@@ -889,7 +889,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Remark = "仅诊断无处方测试",
                 Consultation = new ConsultationInputDto
                 {
-                    ChiefComplaint = "头痛三天",
+                    PresentIllness = "头痛三天",
                     TCMDiagnosis = "肝阳上亢"
                 },
                 Prescription = new PrescriptionInputDto
@@ -931,9 +931,8 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Remark = "完整保存测试",
                 Consultation = new ConsultationInputDto
                 {
-                    ChiefComplaint = "头痛三天",
-                    TCMDiagnosis = "肝阳上亢",
-                    TreatmentPrinciple = "平肝潜阳"
+                    PresentIllness = "头痛三天",
+                    TCMDiagnosis = "肝阳上亢"
                 },
                 Prescription = new PrescriptionInputDto
                 {
@@ -943,8 +942,8 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     Advice = "忌辛辣",
                     Items = new List<PrescriptionItemInputDto>
                     {
-                        new() { HerbId = Guid.NewGuid(), HerbName = "天麻", Quantity = 15 },
-                        new() { HerbId = Guid.NewGuid(), HerbName = "钩藤", Quantity = 10 }
+                        new() { HerbId = Guid.NewGuid(), HerbName = "天麻", Dosage = 15, Unit = "g", DecocteMethod = DecocteMethod.Default, UnitPrice = 1.2m },
+                        new() { HerbId = Guid.NewGuid(), HerbName = "钩藤", Dosage = 10, Unit = "g", DecocteMethod = DecocteMethod.LaterAdd, UnitPrice = 0.8m }
                     }
                 }
             };
@@ -980,7 +979,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Id = wrongId, // 与URL中的ID不匹配
                 Consultation = new ConsultationInputDto
                 {
-                    ChiefComplaint = "测试"
+                    PresentIllness = "测试"
                 }
             };
 
@@ -1010,7 +1009,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Id = medicalCase.Id,
                 Consultation = new ConsultationInputDto
                 {
-                    ChiefComplaint = "尝试修改已完成病案"
+                    PresentIllness = "尝试修改已完成病案"
                 }
             };
 
@@ -1040,7 +1039,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Id = nonExistingId,
                 Consultation = new ConsultationInputDto
                 {
-                    ChiefComplaint = "测试"
+                    PresentIllness = "测试"
                 }
             };
 
@@ -1096,7 +1095,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Id = medicalCase.Id,
                 Consultation = new ConsultationInputDto
                 {
-                    ChiefComplaint = "更新后的主诉",
+                    PresentIllness = "更新后的主诉",
                     TCMDiagnosis = "更新后的诊断"
                 },
                 Prescription = new PrescriptionInputDto
@@ -1105,9 +1104,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     DosageCount = 14, // 更新剂数
                     Items = new List<PrescriptionItemInputDto>
                     {
-                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材1", Quantity = 20 },
-                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材2", Quantity = 15 },
-                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材3", Quantity = 10 }
+                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材1", Dosage = 20, Unit = "g", DecocteMethod = DecocteMethod.Default, UnitPrice = 1.0m },
+                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材2", Dosage = 15, Unit = "g", DecocteMethod = DecocteMethod.FirstDecoct, UnitPrice = 0.8m },
+                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材3", Dosage = 10, Unit = "g", DecocteMethod = DecocteMethod.LaterAdd, UnitPrice = 0.6m }
                     }
                 }
             };
@@ -1198,7 +1197,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 MedicalCaseId = null,  // 不设置MedicalCaseId，通过URL路由传递
                 PatientId = null,  // 不设置PatientId，从MedicalCase获取
                 UserId = null,  // 不设置UserId，从MedicalCase获取
-                ChiefComplaint = "头痛",
+                PresentIllness = "头痛",
                 TCMDiagnosis = "风寒感冒"
             };
 
@@ -1213,7 +1212,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 _output.WriteLine($"❌ 更新辨证失败 - 状态码: {updateResponse.StatusCode}");
                 _output.WriteLine($"❌ 错误响应: {errorContent}");
                 _output.WriteLine($"❌ MedicalCaseId: {medicalCase.Id}");
-                _output.WriteLine($"❌ 请求内容: ChiefComplaint={consultationRequest.ChiefComplaint}, TCMDiagnosis={consultationRequest.TCMDiagnosis}");
+                _output.WriteLine($"❌ 请求内容: PresentIllness={consultationRequest.PresentIllness}, TCMDiagnosis={consultationRequest.TCMDiagnosis}");
             }
 
             // ⚠️ Issue #1669: 验证更新请求是否成功
@@ -1255,18 +1254,20 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId已重命名为UserId
+            // OpenSpec: simplify-medicalcase-dataflow - 使用MedicalCaseId代替PatientId/UserId
             var prescriptionRequest = new PrescriptionInputDto
             {
-                PatientId = medicalCase.PatientId,
-                UserId = medicalCase.UserId,
+                MedicalCaseId = medicalCase.Id,
                 Items = new List<PrescriptionItemInputDto>
                 {
                     new PrescriptionItemInputDto
                     {
                         HerbId = Guid.NewGuid(),
                         HerbName = "测试中药",
-                        Quantity = 10
+                        Dosage = 10,
+                        Unit = "g",
+                        DecocteMethod = DecocteMethod.Default,
+                        UnitPrice = 0.5m
                     }
                 }
             };

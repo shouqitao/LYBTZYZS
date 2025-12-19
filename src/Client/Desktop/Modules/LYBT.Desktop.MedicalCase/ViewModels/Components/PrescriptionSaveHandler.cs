@@ -171,7 +171,7 @@ public class PrescriptionSaveContext
     public Guid MedicalCaseId { get; init; }
     public Guid? PrescriptionId { get; init; }
     public Guid PatientId { get; init; }
-    public Guid DoctorId { get; init; }
+    public Guid UserId { get; init; }
     public int DosageCount { get; init; }
     public string Usage { get; init; } = string.Empty;
     public List<PrescriptionItemInputDto> Items { get; init; } = new();

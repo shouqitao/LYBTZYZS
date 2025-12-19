@@ -120,7 +120,7 @@ namespace LYBT.IntegrationTests.Api
                 MedicalCase = new MedicalCaseInputDto
                 {
                     PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    UserId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                     VisitDate = DateTime.Now, // Epic #1961: 必填字段
                     Remark = "集成测试医疗案例"
                 },
@@ -261,7 +261,7 @@ namespace LYBT.IntegrationTests.Api
                 var createDto = new MedicalCaseInputDto
                 {
                     PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    UserId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                     VisitDate = DateTime.Now, // Epic #1961: 必填字段
                     Remark = $"测试案例{i}"
                 };
@@ -301,7 +301,7 @@ namespace LYBT.IntegrationTests.Api
             var createDto = new MedicalCaseInputDto
             {
                 PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                UserId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                 VisitDate = DateTime.Now // Epic #1961: 必填字段
             };
 
@@ -326,7 +326,7 @@ namespace LYBT.IntegrationTests.Api
             var createDto = new MedicalCaseInputDto
             {
                 PatientId = Guid.Empty, // 无效的PatientId
-                DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                UserId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                 VisitDate = DateTime.Now // Epic #1961: 必填字段
             };
 
@@ -360,7 +360,7 @@ namespace LYBT.IntegrationTests.Api
                 MedicalCase = new MedicalCaseInputDto
                 {
                     PatientId = Guid.NewGuid(), // 不存在的患者ID
-                    DoctorId = Guid.NewGuid()   // 不存在的医生ID
+                    UserId = Guid.NewGuid()   // 不存在的医生ID
                 },
                 Consultation = new ConsultationInputDto()
             };
@@ -393,7 +393,7 @@ namespace LYBT.IntegrationTests.Api
             var createDto = new MedicalCaseInputDto
             {
                 PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                UserId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                 VisitDate = DateTime.Now // Epic #1961: 必填字段
             };
 

@@ -157,7 +157,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             // Arrange - 医生A创建医案
             var medicalCase = await CreateMedicalCaseByDoctorAAsync();
-            _output.WriteLine($"医生A创建的医案ID: {medicalCase.Id}, DoctorId: {medicalCase.DoctorId}");
+            _output.WriteLine($"医生A创建的医案ID: {medicalCase.Id}, UserId: {medicalCase.UserId}");
 
             // Act - 医生A检查是否可编辑（使用医生A的Client）
             var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/permissions");
@@ -181,7 +181,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             // Arrange - 医生A创建医案
             var medicalCase = await CreateMedicalCaseByDoctorAAsync();
-            _output.WriteLine($"医生A创建的医案ID: {medicalCase.Id}, DoctorId: {medicalCase.DoctorId}");
+            _output.WriteLine($"医生A创建的医案ID: {medicalCase.Id}, UserId: {medicalCase.UserId}");
 
             // Act - 医生B检查是否可编辑（使用医生B的Client）
             var response = await _doctorBClient!.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/permissions");
@@ -220,7 +220,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             apiResponse.Data.Should().NotBeNull("医生A应该能查询到自己创建的未完成医案");
             apiResponse.Data!.Id.Should().Be(medicalCase.Id);
-            apiResponse.Data.DoctorId.Should().Be(DoctorAId);
+            apiResponse.Data.UserId.Should().Be(DoctorAId);
 
             _output.WriteLine($"医生A成功获取未完成医案: {apiResponse.Data.Id}");
         }
@@ -254,7 +254,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 if (apiResponse?.Data != null)
                 {
                     // 如果返回了数据，验证不是医生A的医案
-                    apiResponse.Data.DoctorId.Should().NotBe(DoctorAId, "医生B不应该看到医生A的医案");
+                    apiResponse.Data.UserId.Should().NotBe(DoctorAId, "医生B不应该看到医生A的医案");
                 }
                 else
                 {

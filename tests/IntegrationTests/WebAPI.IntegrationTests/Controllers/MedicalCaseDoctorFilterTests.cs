@@ -178,10 +178,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             apiResponseA.Data.Should().NotBeNull("医生A应该能查询到未完成医案");
             apiResponseA.Data!.Id.Should().Be(medicalCaseAId, "应该返回医生A创建的医案");
-            apiResponseA.Data.DoctorId.Should().Be(DoctorAId, "返回的医案应该属于医生A");
+            apiResponseA.Data.UserId.Should().Be(DoctorAId, "返回的医案应该属于医生A");
             apiResponseA.Data.Id.Should().NotBe(medicalCaseBId, "不应该返回医生B的医案");
 
-            _output.WriteLine($"医生A查询结果: 医案ID={apiResponseA.Data.Id}, DoctorId={apiResponseA.Data.DoctorId}");
+            _output.WriteLine($"医生A查询结果: 医案ID={apiResponseA.Data.Id}, UserId={apiResponseA.Data.UserId}");
 
             // Act 2 - 医生B查询该患者的未完成医案
             var responseB = await _doctorBClient!.GetAsync($"/api/v1/medicalcases/patient/{sharedPatientId}/unfinished");
@@ -192,10 +192,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             apiResponseB.Data.Should().NotBeNull("医生B应该能查询到未完成医案");
             apiResponseB.Data!.Id.Should().Be(medicalCaseBId, "应该返回医生B创建的医案");
-            apiResponseB.Data.DoctorId.Should().Be(DoctorBId, "返回的医案应该属于医生B");
+            apiResponseB.Data.UserId.Should().Be(DoctorBId, "返回的医案应该属于医生B");
             apiResponseB.Data.Id.Should().NotBe(medicalCaseAId, "不应该返回医生A的医案");
 
-            _output.WriteLine($"医生B查询结果: 医案ID={apiResponseB.Data.Id}, DoctorId={apiResponseB.Data.DoctorId}");
+            _output.WriteLine($"医生B查询结果: 医案ID={apiResponseB.Data.Id}, UserId={apiResponseB.Data.UserId}");
             _output.WriteLine("验证通过: 同一患者有两个医生的医案时，各自只能看到自己的医案");
         }
 
@@ -216,7 +216,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Step 1: 只有医生A为共享患者创建医案
             var medicalCaseA = await CreateMedicalCaseAsync(Client, sharedPatientId);
-            _output.WriteLine($"医生A创建的医案ID: {medicalCaseA.Id}, DoctorId: {medicalCaseA.DoctorId}");
+            _output.WriteLine($"医生A创建的医案ID: {medicalCaseA.Id}, UserId: {medicalCaseA.UserId}");
 
             // Act - 医生B查询该患者的未完成医案
             var response = await _doctorBClient!.GetAsync($"/api/v1/medicalcases/patient/{sharedPatientId}/unfinished");
@@ -234,7 +234,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 if (apiResponse?.Data != null)
                 {
                     // 如果返回了数据，验证不是医生A的医案
-                    apiResponse.Data.DoctorId.Should().NotBe(DoctorAId, "医生B不应该看到医生A的医案");
+                    apiResponse.Data.UserId.Should().NotBe(DoctorAId, "医生B不应该看到医生A的医案");
                     _output.WriteLine("警告: 医生B获取到了数据，但不是医生A的医案");
                 }
                 else
@@ -290,9 +290,8 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     Id = caseAId,
                     PatientId = patientId,
                     PatientName = patientName,
-                    DoctorId = DoctorAId,
+                    UserId = DoctorAId,
                     DoctorName = "医生A",
-                    ConsultationDate = DateTime.Now.AddDays(-1),
                     CaseStatus = LYBT.Shared.Models.Enums.MedicalCaseStatus.Active,
                     CreatedAt = DateTime.Now.AddDays(-1),
                     UpdatedAt = DateTime.Now.AddDays(-1),
@@ -316,9 +315,8 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     Id = caseBId,
                     PatientId = patientId,
                     PatientName = patientName,
-                    DoctorId = DoctorBId,
+                    UserId = DoctorBId,
                     DoctorName = "医生B",
-                    ConsultationDate = DateTime.Now,
                     CaseStatus = LYBT.Shared.Models.Enums.MedicalCaseStatus.Active,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,

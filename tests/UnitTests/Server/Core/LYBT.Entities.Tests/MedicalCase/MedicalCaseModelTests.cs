@@ -43,7 +43,7 @@ namespace LYBT.UnitTests.Core.Entities
             var doctorId = Guid.Parse("11111111-1111-1111-1111-111111111111");
             var medicalCase = new MedicalCase
             {
-                DoctorId = doctorId,
+                UserId = doctorId,
                 CreatedAt = DateTime.UtcNow.AddHours(-1) // 1小时前创建
             };
 
@@ -70,12 +70,12 @@ namespace LYBT.UnitTests.Core.Entities
             // Arrange
             var medicalCase = new MedicalCase
             {
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow.AddDays(-2) // 2天前创建
             };
 
             // Act
-            var result = medicalCase.CanEdit(false, medicalCase.DoctorId.ToString());
+            var result = medicalCase.CanEdit(false, medicalCase.UserId.ToString());
 
             // Assert
             result.Should().BeFalse("医疗案例超过24小时后不能编辑");
@@ -153,7 +153,7 @@ namespace LYBT.UnitTests.Core.Entities
 
             // Act & Assert
             medicalCase.PatientId.Should().Be(Guid.Empty, "PatientId必须由外部设置");
-            medicalCase.DoctorId.Should().Be(Guid.Empty, "DoctorId必须由外部设置");
+            medicalCase.UserId.Should().Be(Guid.Empty, "UserId必须由外部设置");
         }
 
         [Fact]
