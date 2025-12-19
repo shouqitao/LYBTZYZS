@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using LYBT.Desktop.Formula.ViewModels.Components;
+using LYBT.Desktop.Formula.Services;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;

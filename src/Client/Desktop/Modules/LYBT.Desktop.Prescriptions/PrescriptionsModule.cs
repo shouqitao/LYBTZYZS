@@ -7,9 +7,18 @@ using Prism.Modularity;
 namespace LYBT.Desktop.Prescriptions
 {
     /// <summary>
-    /// 处方管理模块 - 精简版
+    /// 处方管理模块 - 服务库模式
     /// OpenSpec: refactor-prescription-module-consolidation - 删除所有未使用的对话框
-    /// 模块职责: 只提供处方相关服务，UI功能已迁移到MedicalCase模块
+    /// OpenSpec: optimize-desktop-code-reuse Phase 3 - 模块边界评估
+    ///
+    /// 模块定位: 纯服务库（Service Library）
+    /// - 不包含任何UI视图/ViewModel
+    /// - 仅提供处方相关服务给其他模块使用
+    /// - UI功能已完全迁移到MedicalCase模块
+    ///
+    /// 提供服务:
+    /// - IPrescriptionPrintService: 处方打印服务
+    /// - IPrescriptionEditorService: 处方编辑器服务
     /// </summary>
     [Module(ModuleName = nameof(PrescriptionsModule))]
     [ModuleDependency("HerbsModule")] // 处方依赖药材

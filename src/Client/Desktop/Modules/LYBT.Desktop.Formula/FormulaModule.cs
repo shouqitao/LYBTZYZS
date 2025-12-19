@@ -25,10 +25,11 @@ namespace LYBT.Desktop.Formula
             containerRegistry.RegisterSingleton<IFormulaRepository, FormulaRepository>();
 
             // Issue #1787: 注册Formula模块组件化组件（Epic #1773 Component-Based架构）
-            containerRegistry.Register<IFormulaDataManager, ViewModels.Components.FormulaDataManager>();
-            containerRegistry.Register<IFormulaCommandHandler, ViewModels.Components.FormulaCommandHandler>();
-            containerRegistry.Register<ViewModels.Components.FormulaValidator>();
-            containerRegistry.Register<ViewModels.Components.FormulaCalculator>();
+            // OpenSpec: optimize-desktop-code-reuse Phase 1 - 业务组件迁移至Services/
+            containerRegistry.Register<IFormulaDataManager, Services.FormulaDataManager>();
+            containerRegistry.Register<IFormulaCommandHandler, Services.FormulaCommandHandler>();
+            containerRegistry.Register<Services.FormulaValidator>();
+            containerRegistry.Register<ViewModels.Components.FormulaCalculator>(); // UI辅助组件保留在ViewModels/Components/
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.FormulaDetailViewModel>();

@@ -12,7 +12,7 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Formula.Repositories;
-using LYBT.Desktop.Formula.ViewModels.Components;
+using LYBT.Desktop.Formula.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Http;

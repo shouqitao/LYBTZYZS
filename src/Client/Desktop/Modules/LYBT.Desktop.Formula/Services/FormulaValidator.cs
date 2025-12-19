@@ -1,6 +1,7 @@
-﻿using LYBT.Shared.Components;
+﻿using LYBT.Desktop.Formula.ViewModels;
+using LYBT.Shared.Components;
 
-namespace LYBT.Desktop.Formula.ViewModels.Components
+namespace LYBT.Desktop.Formula.Services
 {
     /// <summary>
     /// 配方验证器 - 组件化架构实现

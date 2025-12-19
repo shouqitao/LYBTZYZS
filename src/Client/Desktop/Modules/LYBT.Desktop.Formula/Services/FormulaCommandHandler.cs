@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Formula.ViewModels.Components
+namespace LYBT.Desktop.Formula.Services
 {
     /// <summary>
     /// 配方命令处理器 - 组件化架构实现
