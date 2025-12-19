@@ -25,9 +25,9 @@ public class MedicalCaseListDto
     [DisplayName("患者姓名")]
     public string PatientName { get; set; } = string.Empty;
 
-    /// <summary>患者性别</summary>
+    /// <summary>患者性别 - OpenSpec: unify-frontend-backend-types Phase 0</summary>
     [DisplayName("患者性别")]
-    public string? PatientGender { get; set; }
+    public Gender PatientGender { get; set; }
 
     /// <summary>患者年龄</summary>
     [DisplayName("患者年龄")]

@@ -1,3 +1,4 @@
+using LYBT.Desktop.Models.Items.Prescriptions;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 
@@ -32,7 +33,7 @@ public class PrescriptionValidator
     /// </summary>
     /// <param name="herbItems">药材项集合</param>
     /// <returns>验证结果，包含是否有重复和重复药材名称</returns>
-    public DuplicateHerbsCheckResult CheckDuplicateHerbs(ObservableCollection<PrescriptionHerbItemViewModel> herbItems)
+    public DuplicateHerbsCheckResult CheckDuplicateHerbs(ObservableCollection<PrescriptionHerbItem> herbItems)
     {
         if (herbItems == null || herbItems.Count == 0)
         {
@@ -79,7 +80,7 @@ public class PrescriptionValidator
     /// </summary>
     /// <param name="herbItems">药材项集合</param>
     /// <returns>是否有效</returns>
-    public bool ValidateHasItems(ObservableCollection<PrescriptionHerbItemViewModel> herbItems)
+    public bool ValidateHasItems(ObservableCollection<PrescriptionHerbItem> herbItems)
     {
         if (herbItems == null)
         {
@@ -106,7 +107,7 @@ public class PrescriptionValidator
     /// <param name="dosageCount">剂数</param>
     /// <returns>验证结果</returns>
     public PrescriptionValidationResult Validate(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
         int dosageCount)
     {
         var errors = new List<string>();

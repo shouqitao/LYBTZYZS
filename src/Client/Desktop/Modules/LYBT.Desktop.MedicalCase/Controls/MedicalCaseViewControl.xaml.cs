@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using LYBT.Desktop.Models.Items.MedicalCases;
 using LYBT.Desktop.Modules.MedicalCase.Models;
 
 namespace LYBT.Desktop.MedicalCase.Controls;

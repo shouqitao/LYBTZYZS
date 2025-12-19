@@ -1,8 +1,8 @@
-﻿using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Users.Models;
+namespace LYBT.Desktop.Models.Items.Users;
 
 /// <summary>
 /// 用户列表项UI模型 - 用于DataGrid/ListView显示
@@ -81,18 +81,26 @@ public class UserItem : BindableBase
         set => SetProperty(ref _status, value);
     }
 
-    private DateTime _createTime;
-    public DateTime CreateTime
+    /// <summary>
+    /// 创建时间 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为CreatedAt，与DTO保持一致
+    /// </summary>
+    private DateTime _createdAt;
+    public DateTime CreatedAt
     {
-        get => _createTime;
-        set => SetProperty(ref _createTime, value);
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
     }
 
-    private DateTime? _updateTime;
-    public DateTime? UpdateTime
+    /// <summary>
+    /// 更新时间 - OpenSpec: unify-frontend-backend-types Phase 6
+    /// 统一命名为UpdatedAt，与DTO保持一致
+    /// </summary>
+    private DateTime? _updatedAt;
+    public DateTime? UpdatedAt
     {
-        get => _updateTime;
-        set => SetProperty(ref _updateTime, value);
+        get => _updatedAt;
+        set => SetProperty(ref _updatedAt, value);
     }
 
     private bool _isSelected;
@@ -118,6 +126,7 @@ public class UserItem : BindableBase
 
     /// <summary>
     /// 从UserDetailDto创建UserItem
+    /// OpenSpec: unify-frontend-backend-types Phase 6 - 时间字段命名统一
     /// </summary>
     public static UserItem FromDto(UserDetailDto dto)
     {
@@ -133,13 +142,14 @@ public class UserItem : BindableBase
             Title = null, // UserDetailDto中没有此属性
             PinYinCode = dto.PinYinCode,
             Status = dto.Status,
-            CreateTime = dto.CreatedAt,
-            UpdateTime = dto.UpdatedAt
+            CreatedAt = dto.CreatedAt, // OpenSpec: unify-frontend-backend-types - 直接映射
+            UpdatedAt = dto.UpdatedAt  // OpenSpec: unify-frontend-backend-types - 直接映射
         };
     }
 
     /// <summary>
     /// 转换为UserDetailDto（用于API调用）
+    /// OpenSpec: unify-frontend-backend-types Phase 6 - 时间字段命名统一
     /// </summary>
     public UserDetailDto ToDto()
     {
@@ -154,13 +164,14 @@ public class UserItem : BindableBase
             // Department 和 Title 在 UserDetailDto 中不存在
             PinYinCode = PinYinCode,
             Status = Status,
-            CreatedAt = CreateTime,
-            UpdatedAt = UpdateTime ?? DateTime.MinValue
+            CreatedAt = CreatedAt, // OpenSpec: unify-frontend-backend-types - 直接映射
+            UpdatedAt = UpdatedAt ?? DateTime.MinValue // OpenSpec: unify-frontend-backend-types - 直接映射
         };
     }
 
     /// <summary>
     /// 从UserDetailDto更新当前项
+    /// OpenSpec: unify-frontend-backend-types Phase 6 - 时间字段命名统一
     /// </summary>
     public void UpdateFromDto(UserDetailDto dto)
     {
@@ -174,8 +185,8 @@ public class UserItem : BindableBase
         Title = null; // UserDetailDto中没有此属性
         PinYinCode = dto.PinYinCode;
         Status = dto.Status;
-        CreateTime = dto.CreatedAt;
-        UpdateTime = dto.UpdatedAt;
+        CreatedAt = dto.CreatedAt; // OpenSpec: unify-frontend-backend-types - 直接映射
+        UpdatedAt = dto.UpdatedAt; // OpenSpec: unify-frontend-backend-types - 直接映射
     }
 
     /// <summary>

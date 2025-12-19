@@ -4,6 +4,7 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
+using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -98,7 +99,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 
     #region 药材和警告属性
 
-    public ObservableCollection<PrescriptionHerbItemViewModel> HerbItems { get; } = new();
+    public ObservableCollection<PrescriptionHerbItem> HerbItems { get; } = new();
 
     private bool _isDuplicateHerbsWarningVisible;
     public bool IsDuplicateHerbsWarningVisible { get => _isDuplicateHerbsWarningVisible; set => SetProperty(ref _isDuplicateHerbsWarningVisible, value); }
@@ -123,8 +124,8 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     public DelegateCommand AddRowCommand { get; }
     public DelegateCommand SaveDraftCommand { get; }
     public DelegateCommand DeletePrescriptionCommand { get; }
-    public DelegateCommand<PrescriptionHerbItemViewModel> DeleteHerbCommand { get; }
-    public DelegateCommand<PrescriptionHerbItemViewModel> DosageCompletedCommand { get; }
+    public DelegateCommand<PrescriptionHerbItem> DeleteHerbCommand { get; }
+    public DelegateCommand<PrescriptionHerbItem> DosageCompletedCommand { get; }
     public DelegateCommand AddNewRowCommand { get; }
     public DelegateCommand OpenFormulaImportDialogCommand { get; }
     public DelegateCommand OpenHistoryCopyDialogCommand { get; }
@@ -158,8 +159,8 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         AddRowCommand = new DelegateCommand(ExecuteAddRow);
         SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft);
         DeletePrescriptionCommand = new DelegateCommand(ExecuteDeletePrescription);
-        DeleteHerbCommand = new DelegateCommand<PrescriptionHerbItemViewModel>(ExecuteDeleteHerb);
-        DosageCompletedCommand = new DelegateCommand<PrescriptionHerbItemViewModel>(ExecuteDosageCompleted);
+        DeleteHerbCommand = new DelegateCommand<PrescriptionHerbItem>(ExecuteDeleteHerb);
+        DosageCompletedCommand = new DelegateCommand<PrescriptionHerbItem>(ExecuteDosageCompleted);
         AddNewRowCommand = new DelegateCommand(() => _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged));
         OpenFormulaImportDialogCommand = new DelegateCommand(ExecuteOpenFormulaImportDialog);
         OpenHistoryCopyDialogCommand = new DelegateCommand(ExecuteOpenHistoryCopyDialog);
@@ -227,13 +228,13 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         finally { _isLoadingData = false; }
     }
 
-    private void OnHerbItemChanged(PrescriptionHerbItemViewModel item, string propertyName)
+    private void OnHerbItemChanged(PrescriptionHerbItem item, string propertyName)
     {
         if (_isLoadingData) return;
         CalculatePrices();
         UpdateItemCount();
         CheckDuplicateHerbs();
-        if (propertyName == nameof(PrescriptionHerbItemViewModel.HerbId))
+        if (propertyName == nameof(PrescriptionHerbItem.HerbId))
             _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged);
         NotifyDataChanged();
     }
@@ -343,7 +344,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 
     private void ExecuteAddRow() => _itemHandler.AddNewRow(HerbItems, _allHerbs, OnHerbItemChanged);
 
-    private void ExecuteDeleteHerb(PrescriptionHerbItemViewModel? item)
+    private void ExecuteDeleteHerb(PrescriptionHerbItem? item)
     {
         if (item == null) return;
         _itemHandler.DeleteHerbItem(HerbItems, item, _allHerbs, OnHerbItemChanged);
@@ -352,7 +353,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         CheckDuplicateHerbs();
     }
 
-    private void ExecuteDosageCompleted(PrescriptionHerbItemViewModel? item)
+    private void ExecuteDosageCompleted(PrescriptionHerbItem? item)
     {
         if (item == null) return;
         CheckDuplicateHerbs();

@@ -1,6 +1,8 @@
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.Models.Items.MedicalCases;
+using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Modules.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -51,8 +53,8 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
         // AddCommand将被隐藏，不在工具栏显示
 
         // OpenSpec: unify-herb-list-controls - 处方编辑命令
-        DeleteHerbCommand = new DelegateCommand<PrescriptionItemViewModel>(OnDeleteHerb);
-        DosageCompletedCommand = new DelegateCommand<PrescriptionItemViewModel>(OnDosageCompleted);
+        DeleteHerbCommand = new DelegateCommand<PrescriptionHerbItem>(OnDeleteHerb);
+        DosageCompletedCommand = new DelegateCommand<PrescriptionHerbItem>(OnDosageCompleted);
         AddNewRowCommand = new DelegateCommand(OnAddNewRow);
     }
 
@@ -75,7 +77,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     #region OpenSpec: unify-herb-list-controls - 处方编辑属性
 
     private ObservableCollection<HerbDetailDto> _allHerbs = new();
-    private ObservableCollection<PrescriptionItemViewModel> _herbItems = new();
+    private ObservableCollection<PrescriptionHerbItem> _herbItems = new();
 
     /// <summary>
     /// 所有药材列表 - 用于拼音自动补全
@@ -89,7 +91,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     /// <summary>
     /// 处方药材编辑列表 - 用于HerbListEditor
     /// </summary>
-    public ObservableCollection<PrescriptionItemViewModel> HerbItems
+    public ObservableCollection<PrescriptionHerbItem> HerbItems
     {
         get => _herbItems;
         private set => SetProperty(ref _herbItems, value);
@@ -103,12 +105,12 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     /// <summary>
     /// 删除药材命令
     /// </summary>
-    public DelegateCommand<PrescriptionItemViewModel> DeleteHerbCommand { get; }
+    public DelegateCommand<PrescriptionHerbItem> DeleteHerbCommand { get; }
 
     /// <summary>
     /// 剂量输入完成命令
     /// </summary>
-    public DelegateCommand<PrescriptionItemViewModel> DosageCompletedCommand { get; }
+    public DelegateCommand<PrescriptionHerbItem> DosageCompletedCommand { get; }
 
     /// <summary>
     /// 添加新行命令
@@ -355,12 +357,12 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     {
         HerbItems.Clear();
 
-        // 从PrescriptionItems转换为PrescriptionItemViewModel
+        // 从PrescriptionItems转换为PrescriptionHerbItem
         if (detail.PrescriptionItems != null)
         {
             foreach (var dto in detail.PrescriptionItems)
             {
-                var vm = CreatePrescriptionItemViewModel();
+                var vm = CreatePrescriptionHerbItem();
                 vm.HerbId = dto.HerbId;
                 vm.HerbName = dto.HerbName ?? string.Empty;
                 vm.Dosage = dto.Dosage;
@@ -384,9 +386,9 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     /// <summary>
     /// 创建处方条目ViewModel
     /// </summary>
-    private PrescriptionItemViewModel CreatePrescriptionItemViewModel()
+    private PrescriptionHerbItem CreatePrescriptionHerbItem()
     {
-        var vm = new PrescriptionItemViewModel
+        var vm = new PrescriptionHerbItem
         {
             AllHerbs = AllHerbs
         };
@@ -398,14 +400,14 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     /// </summary>
     private void AddEmptyRow()
     {
-        var emptyVm = CreatePrescriptionItemViewModel();
+        var emptyVm = CreatePrescriptionHerbItem();
         HerbItems.Add(emptyVm);
     }
 
     /// <summary>
     /// 删除药材
     /// </summary>
-    private void OnDeleteHerb(PrescriptionItemViewModel? item)
+    private void OnDeleteHerb(PrescriptionHerbItem? item)
     {
         if (item == null) return;
 
@@ -427,7 +429,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     /// <summary>
     /// 剂量输入完成 - 自动添加新行
     /// </summary>
-    private void OnDosageCompleted(PrescriptionItemViewModel? item)
+    private void OnDosageCompleted(PrescriptionHerbItem? item)
     {
         if (item == null || item.HerbId == Guid.Empty) return;
 

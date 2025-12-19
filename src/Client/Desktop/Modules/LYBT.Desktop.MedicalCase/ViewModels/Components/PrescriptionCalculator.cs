@@ -1,3 +1,4 @@
+using LYBT.Desktop.Models.Items.Prescriptions;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 
@@ -33,7 +34,7 @@ public class PrescriptionCalculator
     /// </summary>
     /// <param name="herbItems">药材项集合</param>
     /// <returns>单剂价格</returns>
-    public decimal CalculateSingleDosagePrice(ObservableCollection<PrescriptionHerbItemViewModel> herbItems)
+    public decimal CalculateSingleDosagePrice(ObservableCollection<PrescriptionHerbItem> herbItems)
     {
         if (herbItems == null || herbItems.Count == 0)
         {
@@ -64,7 +65,7 @@ public class PrescriptionCalculator
     /// <param name="dosageCount">剂数</param>
     /// <returns>价格计算结果</returns>
     public PriceCalculationResult CalculatePrices(
-        ObservableCollection<PrescriptionHerbItemViewModel> herbItems,
+        ObservableCollection<PrescriptionHerbItem> herbItems,
         int dosageCount)
     {
         var singleDosagePrice = CalculateSingleDosagePrice(herbItems);
@@ -86,7 +87,7 @@ public class PrescriptionCalculator
     /// </summary>
     /// <param name="herbItems">药材项集合</param>
     /// <returns>有效药材数量</returns>
-    public int CalculateItemCount(ObservableCollection<PrescriptionHerbItemViewModel> herbItems)
+    public int CalculateItemCount(ObservableCollection<PrescriptionHerbItem> herbItems)
     {
         if (herbItems == null)
         {

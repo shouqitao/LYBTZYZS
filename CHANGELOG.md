@@ -9,6 +9,91 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 统一前后端实体类型 (OpenSpec: unify-frontend-backend-types) - 2025-12-19
+
+**状态**: ✅ 全部完成 (Phase 0-8)
+
+**问题背景**:
+- Desktop UI Model与Shared DTO之间存在类型不一致
+- Gender属性使用string而非枚举，导致FromDto/ToDto需要转换
+- Status属性使用bool IsActive而非CommonStatus枚举
+- FormulaItem.CreatedBy使用string?而非Guid?
+- FormulaHerbItem.Sequence命名与DTO的SortOrder不一致
+- UI Model属性命名与DTO不一致（如IdCard vs IdNumber）
+- Item类分散在各模块Models目录中，缺乏统一管理
+
+**实施内容**:
+
+**Phase 0: DTO层PatientGender类型统一**
+- MedicalCaseDetailDto.PatientGender: string? → Gender enum
+- MedicalCaseListDto.PatientGender: string? → Gender enum
+
+**Phase 1: PatientItem Gender类型统一**
+- Gender属性从string改为Gender枚举
+- 添加GenderDisplay计算属性用于UI显示
+- 更新PatientViewControl/PatientMasterDetailView/PatientSelectionView XAML绑定
+
+**Phase 2: MedicalCaseItem PatientGender类型统一**
+- PatientGender属性从string改为Gender枚举
+- 添加PatientGenderDisplay计算属性
+
+**Phase 3: HerbItem Status类型统一**
+- IsActive: bool → Status: CommonStatus
+- 添加IsActive计算属性（向后兼容）
+- StatusText/StatusColor改为switch表达式
+
+**Phase 4: FormulaItem Status/CreatedBy类型统一**
+- IsActive: bool → Status: CommonStatus
+- CreatedBy: string? → Guid?
+- 添加IsActive计算属性（向后兼容）
+
+**Phase 6: UI Model命名统一**
+- UserItem: CreateTime→CreatedAt, UpdateTime→UpdatedAt
+- PatientItem: IdCard→IdNumber, LastVisitDate→LastVisitTime
+- HerbItem: Pinyin→PinYinCode, DosageUnit→Unit, UnitPrice→Price, Specification→Spec
+- FormulaItem: Indication→Indications, Contraindication→Contraindications, Note→Remark
+- MedicalCaseItem: Status→CaseStatus
+- 所有Item的FromDto/ToDto/UpdateFromDto方法已更新，直接映射无命名转换
+
+**Phase 7: FormulaHerbItem命名统一**
+- Sequence → SortOrder（与DTO一致）
+
+**Phase 8: 前端Item定义集中化**
+- 在LYBT.Desktop.Models创建Items/集中目录
+- 迁移7个Item类到统一位置:
+  - FormulaItem → Items/Formulas/ (LYBT.Desktop.Models.Items.Formulas)
+  - FormulaHerbItem → Items/Formulas/ (从FormulaItem.cs拆分为独立文件)
+  - PatientItem → Items/Patients/ (LYBT.Desktop.Models.Items.Patients)
+  - HerbItem → Items/Herbs/ (LYBT.Desktop.Models.Items.Herbs)
+  - UserItem → Items/Users/ (LYBT.Desktop.Models.Items.Users)
+  - MedicalCaseItem → Items/MedicalCases/ (LYBT.Desktop.Models.Items.MedicalCases)
+  - ConsultationItem → Items/Consultations/ (LYBT.Desktop.Models.Items.Consultations)
+- 更新所有引用和命名空间
+- 删除6个旧Item文件
+
+**Phase 8.4: 处方Item标准化**
+- 合并PrescriptionItemViewModel和PrescriptionHerbItemViewModel为统一的PrescriptionHerbItem
+- 迁移到LYBT.Desktop.Models/Items/Prescriptions/PrescriptionHerbItem.cs
+- 命名空间: LYBT.Desktop.Models.Items.Prescriptions
+- 添加向后兼容方法: SetLoadedUnitPrice(), ItemAmount属性(ItemTotal别名)
+- 更新所有引用文件（7个Components + 2个ViewModels）
+- 删除旧ViewModel文件
+- 更新MedicalCaseModule.cs移除废弃的DI注册
+
+**Phase 9: 最终验证**
+- 编译验证: 0错误, 0警告
+- 单元测试: 228/228 MedicalCase测试全部通过
+- 测试文件更新: 修复PrescriptionHerbItem类名引用
+
+**验证结果**:
+- 编译通过: 0错误, 0警告
+- 类型转换代码已消除，FromDto/ToDto直接赋值
+- 属性命名与DTO完全一致，消除命名转换代码
+- Item类集中管理，便于维护和查找
+- 处方Item类型统一，消除PrescriptionItemViewModel/PrescriptionHerbItemViewModel二义性
+
+---
+
 #### Post-Release Cleanup: DTO架构统一与API优化 - 2025-12-19 [已归档]
 
 **状态**: ✅ 全部完成

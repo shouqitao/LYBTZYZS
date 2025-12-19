@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Models.Items.Formulas;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;

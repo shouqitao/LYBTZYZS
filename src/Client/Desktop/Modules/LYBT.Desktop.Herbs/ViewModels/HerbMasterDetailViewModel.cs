@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Models.Items.Herbs;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Services;
 using LYBT.Desktop.Infrastructure.Interfaces;

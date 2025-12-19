@@ -1,31 +1,30 @@
 using FluentAssertions;
-using LYBT.Desktop.MedicalCase.ViewModels;
+using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Xunit;
 
 namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
 {
     /// <summary>
-    /// MedicalCaseFormViewModel简化单元测试
+    /// PrescriptionHerbItem简化单元测试
     /// Epic #2175 BF-002 Phase 4 Task 4.2: ViewModel单元测试
+    /// OpenSpec: unify-frontend-backend-types Phase 8.4 - 类型重命名
     ///
     /// 注意：完整测试因依赖复杂度较高暂时简化
     /// 本测试文件聚焦核心功能测试:
-    /// 1. PrescriptionItemViewModel价格计算功能
+    /// 1. PrescriptionHerbItem价格计算功能
     /// 2. 处方项集合操作
-    ///
-    /// OpenSpec: unify-medicalcase-input-dto - 更新为无参构造函数
     /// </summary>
-    public class MedicalCaseFormViewModel_SimpleTests
+    public class PrescriptionHerbItem_SimpleTests
     {
 
         #region Prescript ionItemViewModel 价格计算测试
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenHerbAndDosageSet_ShouldCalculatePrice()
+        public void PrescriptionHerbItem_WhenHerbAndDosageSet_ShouldCalculatePrice()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
 
             // Act
@@ -37,10 +36,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenDosageChanges_ShouldRecalculatePrice()
+        public void PrescriptionHerbItem_WhenDosageChanges_ShouldRecalculatePrice()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 10;
@@ -56,10 +55,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenHerbChanges_ShouldRecalculatePrice()
+        public void PrescriptionHerbItem_WhenHerbChanges_ShouldRecalculatePrice()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb1 = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             var herb2 = new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", Price = 20.0m };
 
@@ -77,10 +76,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenNoHerbSelected_ItemAmountShouldBeZero()
+        public void PrescriptionHerbItem_WhenNoHerbSelected_ItemAmountShouldBeZero()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             viewModel.Dosage = 10;
 
             // Act & Assert
@@ -88,10 +87,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenDosageZero_ItemAmountShouldBeZero()
+        public void PrescriptionHerbItem_WhenDosageZero_ItemAmountShouldBeZero()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 0;
@@ -101,10 +100,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WithDecimalDosage_ShouldCalculateCorrectly()
+        public void PrescriptionHerbItem_WithDecimalDosage_ShouldCalculateCorrectly()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.5m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 11;
@@ -119,10 +118,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         #region Property Change Notification测试
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenSelectedHerbChanges_ShouldRaisePropertyChanged()
+        public void PrescriptionHerbItem_WhenSelectedHerbChanges_ShouldRaisePropertyChanged()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
 
             var propertyChangedRaised = false;
@@ -142,10 +141,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenDosageChanges_ShouldRaisePropertyChanged()
+        public void PrescriptionHerbItem_WhenDosageChanges_ShouldRaisePropertyChanged()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
 
             var propertyChangedRaised = false;
             viewModel.PropertyChanged += (sender, args) =>
@@ -164,10 +163,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenPriceChanges_ShouldRaiseItemAmountPropertyChanged()
+        public void PrescriptionHerbItem_WhenPriceChanges_ShouldRaiseItemTotalPropertyChanged()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
 
             viewModel.SelectedHerb = herb;
@@ -176,7 +175,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
             var totalPriceChangedRaised = false;
             viewModel.PropertyChanged += (sender, args) =>
             {
-                if (args.PropertyName == nameof(viewModel.ItemAmount))
+                // OpenSpec: unify-frontend-backend-types Phase 8.4
+                // PrescriptionHerbItem使用ItemTotal作为主属性，ItemAmount是别名
+                if (args.PropertyName == nameof(viewModel.ItemTotal))
                 {
                     totalPriceChangedRaised = true;
                 }
@@ -186,7 +187,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
             viewModel.Dosage = 20;
 
             // Assert
-            totalPriceChangedRaised.Should().BeTrue("剂量变化应触发ItemAmount的PropertyChanged事件");
+            totalPriceChangedRaised.Should().BeTrue("剂量变化应触发ItemTotal的PropertyChanged事件");
         }
 
         #endregion
@@ -196,10 +197,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         [Theory]
         [InlineData(-1)]   // 负数剂量
         [InlineData(-10)] // 负数剂量
-        public void PrescriptionItemViewModel_WithNegativeDosage_ShouldNotThrow(int dosage)
+        public void PrescriptionHerbItem_WithNegativeDosage_ShouldNotThrow(int dosage)
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
 
@@ -211,10 +212,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WithVeryLargeDosage_ShouldCalculateCorrectly()
+        public void PrescriptionHerbItem_WithVeryLargeDosage_ShouldCalculateCorrectly()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
 
@@ -226,10 +227,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WithZeroPriceHerb_ShouldCalculateZero()
+        public void PrescriptionHerbItem_WithZeroPriceHerb_ShouldCalculateZero()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
             var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "免费药材", Price = 0m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 10;
@@ -243,10 +244,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         #region HerbName和拼音过滤测试
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenHerbNameSet_ShouldUpdateProperty()
+        public void PrescriptionHerbItem_WhenHerbNameSet_ShouldUpdateProperty()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
 
             // Act
             viewModel.HerbName = "当归";
@@ -256,10 +257,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         }
 
         [Fact]
-        public void PrescriptionItemViewModel_WhenHerbNameChanges_ShouldRaisePropertyChanged()
+        public void PrescriptionHerbItem_WhenHerbNameChanges_ShouldRaisePropertyChanged()
         {
             // Arrange
-            var viewModel = new PrescriptionItemViewModel();
+            var viewModel = new PrescriptionHerbItem();
 
             var propertyChangedRaised = false;
             viewModel.PropertyChanged += (sender, args) =>

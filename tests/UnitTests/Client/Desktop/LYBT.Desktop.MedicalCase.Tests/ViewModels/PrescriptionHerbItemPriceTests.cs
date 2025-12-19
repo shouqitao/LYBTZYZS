@@ -1,17 +1,18 @@
 using System.Collections.ObjectModel;
 using FluentAssertions;
-using LYBT.Desktop.MedicalCase.ViewModels;
+using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Xunit;
 
 namespace LYBT.Desktop.MedicalCase.Tests.ViewModels;
 
 /// <summary>
-/// PrescriptionHerbItemViewModel 单元测试
+/// PrescriptionHerbItem 单元测试
 /// Issue: unify-herb-card-control - Phase 4 Task 4.1
+/// OpenSpec: unify-frontend-backend-types Phase 8.4 - 类型重命名
 /// 测试价格计算和剂量验证功能
 /// </summary>
-public class PrescriptionHerbItemViewModelTests
+public class PrescriptionHerbItemPriceTests
 {
     #region Test Data
 
@@ -48,7 +49,7 @@ public class PrescriptionHerbItemViewModelTests
     public void UnitPrice_ByDefault_ShouldBeZero()
     {
         // Arrange & Act
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
 
         // Assert
         viewModel.UnitPrice.Should().Be(0m, "因为默认未选择药材时单价应为0");
@@ -61,7 +62,7 @@ public class PrescriptionHerbItemViewModelTests
     public void UnitPrice_WhenHerbSelected_ShouldReturnHerbPrice()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         var herb = CreateTestHerb(price: 0.75m);
 
         // Act
@@ -78,7 +79,7 @@ public class PrescriptionHerbItemViewModelTests
     public void SetLoadedUnitPrice_ShouldSetPriceWithoutSelectedHerb()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
 
         // Act
         viewModel.SetLoadedUnitPrice(1.2m);
@@ -94,7 +95,7 @@ public class PrescriptionHerbItemViewModelTests
     public void UnitPrice_WhenBothLoaded_ShouldPreferSelectedHerbPrice()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         viewModel.SetLoadedUnitPrice(1.0m);
 
         var herb = CreateTestHerb(price: 0.5m);
@@ -117,7 +118,7 @@ public class PrescriptionHerbItemViewModelTests
     public void ItemTotal_ByDefault_ShouldBeZero()
     {
         // Arrange & Act
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
 
         // Assert
         viewModel.ItemTotal.Should().Be(0m, "因为默认剂量和单价都为0");
@@ -130,7 +131,7 @@ public class PrescriptionHerbItemViewModelTests
     public void ItemTotal_ShouldBeCalculatedCorrectly()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         var herb = CreateTestHerb(price: 0.5m);
         viewModel.SelectedHerb = herb;
 
@@ -148,7 +149,7 @@ public class PrescriptionHerbItemViewModelTests
     public void ItemTotal_WhenHerbSelected_ShouldRecalculate()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         viewModel.Dosage = 20;
 
         // Act
@@ -166,7 +167,7 @@ public class PrescriptionHerbItemViewModelTests
     public void ItemTotal_WhenDosageChanged_ShouldRecalculate()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         var herb = CreateTestHerb(price: 0.8m);
         viewModel.SelectedHerb = herb;
         viewModel.Dosage = 10;
@@ -187,7 +188,7 @@ public class PrescriptionHerbItemViewModelTests
     public void ItemTotal_WhenLoadedUnitPriceSet_ShouldRecalculate()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         viewModel.Dosage = 10;
 
         // Act
@@ -212,7 +213,7 @@ public class PrescriptionHerbItemViewModelTests
     public void IsDosageValid_WhenDosageInRange_ShouldBeTrue(int dosage)
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         viewModel.SelectedHerb = CreateTestHerb(); // 需要先选择药材才能触发验证
 
         // Act
@@ -233,7 +234,7 @@ public class PrescriptionHerbItemViewModelTests
     public void IsDosageValid_WhenDosageTooSmall_ShouldBeFalse(int dosage)
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         viewModel.SelectedHerb = CreateTestHerb(); // 需要先选择药材才能触发验证
 
         // Act
@@ -254,7 +255,7 @@ public class PrescriptionHerbItemViewModelTests
     public void IsDosageValid_WhenDosageTooLarge_ShouldBeFalse(int dosage)
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         viewModel.SelectedHerb = CreateTestHerb(); // 需要先选择药材才能触发验证
 
         // Act
@@ -276,7 +277,7 @@ public class PrescriptionHerbItemViewModelTests
     public void UnitPrice_WhenHerbSelected_ShouldRaisePropertyChanged()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         var unitPriceChanged = false;
         viewModel.PropertyChanged += (s, e) =>
         {
@@ -298,7 +299,7 @@ public class PrescriptionHerbItemViewModelTests
     public void ItemTotal_WhenChanged_ShouldRaisePropertyChanged()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         viewModel.SelectedHerb = CreateTestHerb(price: 1m);
 
         var itemTotalChanged = false;
@@ -322,7 +323,7 @@ public class PrescriptionHerbItemViewModelTests
     public void IsDosageValid_WhenChanged_ShouldRaisePropertyChanged()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         viewModel.SelectedHerb = CreateTestHerb(); // 需要先选择药材才能触发验证
         viewModel.Dosage = 10; // 先设置有效剂量（IsDosageValid = true）
 
@@ -351,7 +352,7 @@ public class PrescriptionHerbItemViewModelTests
     public void FilterHerbs_ShouldWorkFromBaseClass()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         viewModel.AllHerbs = CreateTestHerbs();
 
         // Act
@@ -369,7 +370,7 @@ public class PrescriptionHerbItemViewModelTests
     public void SelectedHerb_ShouldAutoFillFromBaseClass()
     {
         // Arrange
-        var viewModel = new PrescriptionHerbItemViewModel();
+        var viewModel = new PrescriptionHerbItem();
         var herb = CreateTestHerb();
 
         // Act

@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using FluentAssertions;
-using LYBT.Desktop.MedicalCase.ViewModels;
+using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Xunit;
 
@@ -9,6 +9,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Integration;
 /// <summary>
 /// 处方编辑流程集成测试
 /// Issue: unify-herb-card-control - Phase 4 Task 4.2
+/// OpenSpec: unify-frontend-backend-types Phase 8.4 - 类型重命名
 /// 验证处方药材添加、价格计算、剂量修改的完整流程
 /// </summary>
 public class PrescriptionEditFlowTests
@@ -41,10 +42,10 @@ public class PrescriptionEditFlowTests
     {
         // Arrange - 准备药材目录
         var herbCatalog = CreateHerbCatalog();
-        var herbItems = new List<PrescriptionHerbItemViewModel>();
+        var herbItems = new List<PrescriptionHerbItem>();
 
         // Act - Step 1: 添加当归 10g (0.5元/g = 5元)
-        var item1 = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
+        var item1 = new PrescriptionHerbItem { AllHerbs = herbCatalog };
         item1.HerbName = "dg"; // 输入拼音码
         item1.FilteredHerbs.Should().Contain(h => h.Name == "当归", "应能通过拼音码找到当归");
         item1.SelectedHerb = item1.FilteredHerbs.First(h => h.Name == "当归");
@@ -52,14 +53,14 @@ public class PrescriptionEditFlowTests
         herbItems.Add(item1);
 
         // Act - Step 2: 添加黄芪 15g (0.8元/g = 12元)
-        var item2 = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
+        var item2 = new PrescriptionHerbItem { AllHerbs = herbCatalog };
         item2.HerbName = "hq";
         item2.SelectedHerb = item2.FilteredHerbs.First(h => h.Name == "黄芪");
         item2.Dosage = 15;
         herbItems.Add(item2);
 
         // Act - Step 3: 添加甘草 6g (0.2元/g = 1.2元)
-        var item3 = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
+        var item3 = new PrescriptionHerbItem { AllHerbs = herbCatalog };
         item3.HerbName = "gc";
         item3.SelectedHerb = item3.FilteredHerbs.First(h => h.Name == "甘草");
         item3.Dosage = 6;
@@ -83,7 +84,7 @@ public class PrescriptionEditFlowTests
     {
         // Arrange
         var herbCatalog = CreateHerbCatalog();
-        var item = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
+        var item = new PrescriptionHerbItem { AllHerbs = herbCatalog };
         item.SelectedHerb = herbCatalog.First(h => h.Name == "当归");
         item.Dosage = 10;
         var initialTotal = item.ItemTotal;
@@ -104,7 +105,7 @@ public class PrescriptionEditFlowTests
     {
         // Arrange
         var herbCatalog = CreateHerbCatalog();
-        var item = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
+        var item = new PrescriptionHerbItem { AllHerbs = herbCatalog };
         item.SelectedHerb = herbCatalog.First(h => h.Name == "当归"); // 0.5元/g
         item.Dosage = 10;
         var initialTotal = item.ItemTotal;
@@ -130,7 +131,7 @@ public class PrescriptionEditFlowTests
     {
         // Arrange
         var herbCatalog = CreateHerbCatalog();
-        var item = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
+        var item = new PrescriptionHerbItem { AllHerbs = herbCatalog };
 
         // Act - 输入 "dg" 应匹配当归(danggui)
         item.HerbName = "dg";
@@ -149,7 +150,7 @@ public class PrescriptionEditFlowTests
     {
         // Arrange
         var herbCatalog = CreateHerbCatalog();
-        var item = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
+        var item = new PrescriptionHerbItem { AllHerbs = herbCatalog };
 
         // Act - 输入中文名前缀
         item.HerbName = "当";
@@ -170,7 +171,7 @@ public class PrescriptionEditFlowTests
     {
         // Arrange
         var herbCatalog = CreateHerbCatalog();
-        var item = new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog };
+        var item = new PrescriptionHerbItem { AllHerbs = herbCatalog };
         item.SelectedHerb = herbCatalog.First();
 
         // Act - 设置有效剂量
@@ -199,12 +200,12 @@ public class PrescriptionEditFlowTests
     {
         // Arrange
         var herbCatalog = CreateHerbCatalog();
-        var herbItems = new ObservableCollection<PrescriptionHerbItemViewModel>();
+        var herbItems = new ObservableCollection<PrescriptionHerbItem>();
 
         // 模拟N+1行原则：始终保持4个空槽位
         for (int i = 0; i < 4; i++)
         {
-            herbItems.Add(new PrescriptionHerbItemViewModel { AllHerbs = herbCatalog });
+            herbItems.Add(new PrescriptionHerbItem { AllHerbs = herbCatalog });
         }
 
         // Act - 填充第一个槽位
