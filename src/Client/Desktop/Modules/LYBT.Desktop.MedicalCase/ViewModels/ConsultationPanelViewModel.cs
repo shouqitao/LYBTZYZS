@@ -3,6 +3,7 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -194,7 +195,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-                var request = new ConsultationInputDto
+                // OpenSpec: simplify-medicalcase-api - 通过聚合保存处理诊断更新
+                var consultationInput = new ConsultationInputDto
                 {
                     PresentIllness = PresentIllness,
                     TCMDiagnosis = TCMDiagnosis,
@@ -202,9 +204,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     PulseDiagnosis = PulseDiagnosis
                 };
 
-                var result = await _medicalCaseRepository.UpdateConsultationAsync(_medicalCaseId, request);
+                var medicalCaseInput = new MedicalCaseInputDto
+                {
+                    Id = _medicalCaseId,
+                    Consultation = consultationInput
+                };
 
-                if (result != null)
+                var result = await _medicalCaseRepository.SaveAsync(_medicalCaseId, medicalCaseInput);
+
+                if (result?.Consultation != null)
                 {
                     Logger.LogInformation("诊断数据保存成功");
                     return true;

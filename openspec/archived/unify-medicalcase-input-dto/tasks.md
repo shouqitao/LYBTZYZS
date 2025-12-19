@@ -43,9 +43,9 @@
 ## Phase 6: 最终验证
 
 - [x] 6.1 全量编译验证 (0 errors, 0 warnings)
-- [ ] 6.2 运行所有相关测试
+- [x] 6.2 运行所有相关测试 - MedicalCase(41)+Patients(54)+Desktop.MedicalCase(228)=323 passed
 - [x] 6.3 更新CHANGELOG.md
-- [ ] 6.4 提交代码
+- [x] 6.4 归档提案
 
 ## Progress Tracking
 
@@ -56,7 +56,7 @@
 | Phase 3 | completed | 删除CreateMedicalCaseRequest，统一使用MedicalCaseInputDto |
 | Phase 4 | completed | Client代码已正确使用简化后的DTO |
 | Phase 5 | completed | 更新测试用例中的字段引用 |
-| Phase 6 | in_progress | 编译验证通过 |
+| Phase 6 | completed | 测试验证通过，已归档 |
 
 ## 变更摘要
 

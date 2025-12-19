@@ -1,5 +1,6 @@
 using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Consultation.Services
@@ -7,6 +8,7 @@ namespace LYBT.Desktop.Consultation.Services
     /// <summary>
     /// 诊断验证器
     /// Issue #1779: Consultation模块组件化改造
+    /// OpenSpec: simplify-medicalcase-api - 使用IMedicalCaseDataManager聚合根管理器
     ///
     /// 职责:
     /// - 诊断数据验证（必填字段）
@@ -18,7 +20,7 @@ namespace LYBT.Desktop.Consultation.Services
         #region 字段
 
         private readonly IValidationService _validationService;
-        private readonly ConsultationDataManager _dataManager;
+        private readonly IMedicalCaseDataManager _dataManager;
         private readonly ILogger<ConsultationValidator> _logger;
 
         #endregion
@@ -27,7 +29,7 @@ namespace LYBT.Desktop.Consultation.Services
 
         public ConsultationValidator(
             IValidationService validationService,
-            ConsultationDataManager dataManager,
+            IMedicalCaseDataManager dataManager,
             ILogger<ConsultationValidator> logger)
         {
             _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -41,6 +43,7 @@ namespace LYBT.Desktop.Consultation.Services
 
         /// <summary>
         /// 异步验证诊断数据
+        /// OpenSpec: simplify-medicalcase-api - 通过聚合根的CurrentConsultation获取数据
         /// </summary>
         public async Task<ValidationResult> ValidateAsync()
         {
@@ -51,14 +54,15 @@ namespace LYBT.Desktop.Consultation.Services
                 var errors = new List<ValidationFailure>();
 
                 // 验证诊断基本信息
-                if (_dataManager.Current == null)
+                var consultation = _dataManager.CurrentConsultation;
+                if (consultation == null)
                 {
                     errors.Add(new ValidationFailure("Consultation", "诊断数据不能为空"));
                     return new ValidationResult(errors);
                 }
 
                 // 使用 FluentValidation 验证
-                var consultationResult = await _validationService.ValidateAsync(_dataManager.Current);
+                var consultationResult = await _validationService.ValidateAsync(consultation);
                 if (!consultationResult.IsValid)
                 {
                     errors.AddRange(consultationResult.Errors);
@@ -81,6 +85,7 @@ namespace LYBT.Desktop.Consultation.Services
 
         /// <summary>
         /// 同步验证诊断数据
+        /// OpenSpec: simplify-medicalcase-api - 通过聚合根的CurrentConsultation获取数据
         /// </summary>
         public virtual bool IsValid(out string errorMessage)
         {
@@ -89,14 +94,15 @@ namespace LYBT.Desktop.Consultation.Services
                 _logger.LogDebug("开始同步验证诊断数据");
 
                 // 验证诊断基本信息
-                if (_dataManager.Current == null)
+                var consultation = _dataManager.CurrentConsultation;
+                if (consultation == null)
                 {
                     errorMessage = "诊断数据不能为空";
                     return false;
                 }
 
                 // 使用 ValidationService 同步验证
-                if (!_validationService.IsValid(_dataManager.Current, out var validationError))
+                if (!_validationService.IsValid(consultation, out var validationError))
                 {
                     errorMessage = validationError;
                     return false;
@@ -116,6 +122,7 @@ namespace LYBT.Desktop.Consultation.Services
 
         /// <summary>
         /// 验证特定属性
+        /// OpenSpec: simplify-medicalcase-api - 通过聚合根的CurrentConsultation获取数据
         /// </summary>
         public async Task<ValidationResult> ValidatePropertyAsync(string propertyName)
         {
@@ -123,7 +130,7 @@ namespace LYBT.Desktop.Consultation.Services
             {
                 _logger.LogDebug("开始验证属性: {PropertyName}", propertyName);
 
-                if (_dataManager.Current == null)
+                if (_dataManager.CurrentConsultation == null)
                 {
                     return new ValidationResult(new[]
                     {
@@ -165,11 +172,13 @@ namespace LYBT.Desktop.Consultation.Services
         #region 专用验证方法
 
         /// <summary>
-        /// 验证是否可以完成Step1（必填字段：主诉、中医诊断）
+        /// 验证是否可以完成Step1（必填字段：中医诊断）
+        /// OpenSpec: simplify-medicalcase-api - 通过聚合根的CurrentConsultation获取数据
         /// </summary>
         public virtual bool CanCompleteStep1(out string errorMessage)
         {
-            if (_dataManager.Current == null)
+            var consultation = _dataManager.CurrentConsultation;
+            if (consultation == null)
             {
                 errorMessage = "诊断数据不能为空";
                 return false;
@@ -177,7 +186,7 @@ namespace LYBT.Desktop.Consultation.Services
 
             // 检查必填字段
             // OpenSpec: refactor-diagnosis-fields - 只需验证TCMDiagnosis
-            if (string.IsNullOrWhiteSpace(_dataManager.Current.TCMDiagnosis))
+            if (string.IsNullOrWhiteSpace(consultation.TCMDiagnosis))
             {
                 errorMessage = "中医诊断不能为空";
                 return false;
@@ -189,19 +198,21 @@ namespace LYBT.Desktop.Consultation.Services
 
         /// <summary>
         /// 验证表单数据（简化版，用于UI）
+        /// OpenSpec: simplify-medicalcase-api - 通过聚合根的CurrentConsultation获取数据
         /// </summary>
         public bool ValidateForm(out List<string> errors)
         {
             errors = new List<string>();
 
-            if (_dataManager.Current == null)
+            var consultation = _dataManager.CurrentConsultation;
+            if (consultation == null)
             {
                 errors.Add("诊断数据不能为空");
                 return false;
             }
 
             // OpenSpec: refactor-diagnosis-fields - 只需验证TCMDiagnosis
-            if (string.IsNullOrWhiteSpace(_dataManager.Current.TCMDiagnosis))
+            if (string.IsNullOrWhiteSpace(consultation.TCMDiagnosis))
             {
                 errors.Add("中医诊断不能为空");
             }

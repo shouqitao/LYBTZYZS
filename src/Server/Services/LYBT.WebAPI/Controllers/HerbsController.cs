@@ -35,7 +35,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "HerbsCache")]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<HerbDetailDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<HerbListDto>>), 200)]
         public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -51,34 +51,6 @@ namespace LYBT.WebAPI.Controllers
 
                 var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category);
                 return Success(result.Data!, "查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取药材列表", new { page, pageSize, keyword, category });
-            }
-        }
-
-        /// <summary>
-        /// 获取药材列表（分页，返回HerbListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        [HttpGet("list")]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<HerbListDto>>), 200)]
-        public async Task<IActionResult> GetHerbsList(
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] string? keyword = null,
-            [FromQuery] string? category = null)
-        {
-            try
-            {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
-                }
-
-                var result = await _herbService.GetPagedListAsync(page, pageSize, keyword, category);
-                return HandlePagedResult(result, "查询成功");
             }
             catch (Exception ex)
             {

@@ -34,13 +34,13 @@ namespace LYBT.Module.Herbs.Services
             _validator = validator;
         }
 
-        public async Task<Result<PagedResult<HerbDetailDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+        public async Task<Result<PagedResult<HerbListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
         {
             try
             {
                 // 修复：传递keyword参数到Repository进行数据库级别搜索
                 var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-                var dtos = _mapper.Map<List<HerbDetailDto>>(pagedResult.Items);
+                var dtos = _mapper.Map<List<HerbListDto>>(pagedResult.Items);
 
                 // Issue #1164: 应用分类筛选（在DTO级别过滤）
                 if (!string.IsNullOrWhiteSpace(category))
@@ -51,49 +51,14 @@ namespace LYBT.Module.Herbs.Services
                     .ToList();
                 }
 
-                var dto = new PagedResult<HerbDetailDto>
+                var dto = new PagedResult<HerbListDto>
                 {
                     Items = dtos,
                     TotalCount = !string.IsNullOrWhiteSpace(category) ? dtos.Count : pagedResult.TotalCount,
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
                 };
-                return Result<PagedResult<HerbDetailDto>>.Success(dto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取药材列表失败");
-                return Result<PagedResult<HerbDetailDto>>.Failure("获取药材列表失败");
-            }
-        }
-
-        /// <summary>
-        /// 分页查询药材列表（返回HerbListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        public async Task<Result<PagedResult<HerbListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
-        {
-            try
-            {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-                var dtos = _mapper.Map<List<HerbListDto>>(pagedResult.Items);
-
-                if (!string.IsNullOrWhiteSpace(category))
-                {
-                    dtos = dtos.Where(h =>
-                        !string.IsNullOrEmpty(h.Category) &&
-                        h.Category.Contains(category, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-                }
-
-                var result = new PagedResult<HerbListDto>
-                {
-                    Items = dtos,
-                    TotalCount = !string.IsNullOrWhiteSpace(category) ? dtos.Count : pagedResult.TotalCount,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-                return Result<PagedResult<HerbListDto>>.Success(result);
+                return Result<PagedResult<HerbListDto>>.Success(dto);
             }
             catch (Exception ex)
             {

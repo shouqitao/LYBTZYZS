@@ -17,13 +17,7 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <param name="pageSize">每页数量</param>
         /// <param name="keyword">搜索关键字</param>
         /// <param name="category">分类筛选（可选）</param>
-        Task<Result<PagedResult<HerbDetailDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
-
-        /// <summary>
-        /// 分页查询药材列表（返回HerbListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        Task<Result<PagedResult<HerbListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
+        Task<Result<PagedResult<HerbListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
 
         /// <summary>
         /// 根据ID获取药材详情

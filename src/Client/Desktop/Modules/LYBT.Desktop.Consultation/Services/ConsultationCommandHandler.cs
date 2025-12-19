@@ -1,6 +1,5 @@
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
 
@@ -9,10 +8,11 @@ namespace LYBT.Desktop.Consultation.Services
     /// <summary>
     /// 诊断命令处理器 - 业务逻辑协调者
     /// Issue #1779: Consultation模块组件化改造
+    /// OpenSpec: simplify-medicalcase-api - 使用IMedicalCaseDataManager聚合根管理器
     ///
     /// 职责:
     /// - 协调DataManager和Validator执行业务操作
-    /// - 保存命令（保存草稿、完成Step1）
+    /// - 保存命令（保存草稿）
     /// - 清空表单命令
     /// - 导航命令
     /// </summary>
@@ -20,9 +20,8 @@ namespace LYBT.Desktop.Consultation.Services
     {
         #region 字段
 
-        private readonly ConsultationDataManager _dataManager;
+        private readonly IMedicalCaseDataManager _dataManager;
         private readonly ConsultationValidator _validator;
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly ILogger<ConsultationCommandHandler> _logger;
         private readonly IRegionManager _regionManager;
         private readonly Dictionary<string, Func<object?, Task<bool>>> _commands;
@@ -33,15 +32,13 @@ namespace LYBT.Desktop.Consultation.Services
         #region 构造函数
 
         public ConsultationCommandHandler(
-            ConsultationDataManager dataManager,
+            IMedicalCaseDataManager dataManager,
             ConsultationValidator validator,
-            IMedicalCaseRepository medicalCaseRepository,
             ILogger<ConsultationCommandHandler> logger,
             IRegionManager regionManager)
         {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
 
@@ -132,6 +129,7 @@ namespace LYBT.Desktop.Consultation.Services
 
         /// <summary>
         /// 保存诊断数据（带验证）
+        /// OpenSpec: simplify-medicalcase-api - 通过聚合根保存
         /// </summary>
         public async Task<bool> SaveAsync(bool validate = true)
         {
@@ -159,6 +157,7 @@ namespace LYBT.Desktop.Consultation.Services
 
         /// <summary>
         /// 重新加载诊断数据
+        /// OpenSpec: simplify-medicalcase-api - 通过聚合根重新加载
         /// </summary>
         public async Task<bool> ReloadAsync()
         {
@@ -181,6 +180,7 @@ namespace LYBT.Desktop.Consultation.Services
 
         /// <summary>
         /// 清空表单
+        /// OpenSpec: simplify-medicalcase-api - 直接修改聚合根的CurrentConsultation属性
         /// </summary>
         public void ClearForm()
         {
@@ -188,18 +188,19 @@ namespace LYBT.Desktop.Consultation.Services
             {
                 _logger.LogInformation("执行清空表单");
 
-                if (_dataManager.Current == null)
+                var consultation = _dataManager.CurrentConsultation;
+                if (consultation == null)
                 {
                     _logger.LogWarning("当前诊断数据为空，无法清空");
                     return;
                 }
 
-                // 清空所有字段
+                // 清空所有字段 - 直接修改属性
                 // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-                _dataManager.UpdateField(nameof(ConsultationDetailDto.PresentIllness), null);
-                _dataManager.UpdateField(nameof(ConsultationDetailDto.TongueDiagnosis), null);
-                _dataManager.UpdateField(nameof(ConsultationDetailDto.PulseDiagnosis), null);
-                _dataManager.UpdateField(nameof(ConsultationDetailDto.TCMDiagnosis), string.Empty);
+                consultation.PresentIllness = null;
+                consultation.TongueDiagnosis = null;
+                consultation.PulseDiagnosis = null;
+                consultation.TCMDiagnosis = string.Empty;
 
                 _logger.LogInformation("表单已清空");
             }
@@ -209,10 +210,9 @@ namespace LYBT.Desktop.Consultation.Services
             }
         }
 
-        // CompleteStep1Async已移除 - 简化业务流程，移除Step概念
-
         /// <summary>
         /// 保存草稿
+        /// OpenSpec: simplify-medicalcase-api - 通过聚合根保存
         /// </summary>
         public async Task<bool> SaveDraftAsync()
         {
@@ -220,8 +220,7 @@ namespace LYBT.Desktop.Consultation.Services
             {
                 _logger.LogInformation("开始保存诊断草稿");
 
-                // 调用现有的SaveAsync()方法保存数据
-                // 注意：不调用CompleteStep1API，不更新Step1CompletedAt
+                // 通过聚合根保存数据
                 return await _dataManager.SaveAsync();
             }
             catch (Exception ex)
@@ -232,8 +231,5 @@ namespace LYBT.Desktop.Consultation.Services
         }
 
         #endregion
-
-        // [已移除] NavigateToPrescriptionEditorAsync - PrescriptionEditorView已删除，处方编辑通过MedicalCaseWorkspaceView完成
-        // OpenSpec: refactor-viewmodel-layer - 死代码清理
     }
 }

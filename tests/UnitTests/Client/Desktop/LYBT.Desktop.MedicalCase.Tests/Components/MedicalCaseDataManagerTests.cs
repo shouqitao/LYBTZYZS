@@ -94,7 +94,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var detail = CreateMedicalCaseDetail(medicalCaseId);
             _mockRepository.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(detail);
-            _mockRepository.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseInputDto>()))
+            // OpenSpec: simplify-medicalcase-api - 使用聚合保存SaveAsync
+            _mockRepository.Setup(x => x.SaveAsync(medicalCaseId, It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(detail);
 
             await _sut.InitializeAsync(medicalCaseId);
@@ -108,7 +109,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
-            _mockRepository.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseInputDto>()), Times.Once);
+            // OpenSpec: simplify-medicalcase-api - 验证调用聚合保存方法
+            _mockRepository.Verify(x => x.SaveAsync(medicalCaseId, It.IsAny<MedicalCaseInputDto>()), Times.Once);
         }
 
         [Fact]
@@ -119,8 +121,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var detail = CreateMedicalCaseDetail(medicalCaseId);
             _mockRepository.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(detail);
-            _mockRepository.Setup(x => x.UpdateConsultationAsync(It.IsAny<Guid>(), It.IsAny<ConsultationInputDto>()))
-                .ReturnsAsync(detail.Consultation);
+            // OpenSpec: simplify-medicalcase-api - 使用聚合保存SaveAsync
+            _mockRepository.Setup(x => x.SaveAsync(medicalCaseId, It.IsAny<MedicalCaseInputDto>()))
+                .ReturnsAsync(detail);
 
             await _sut.InitializeAsync(medicalCaseId);
 
@@ -132,7 +135,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
-            _mockRepository.Verify(x => x.UpdateConsultationAsync(medicalCaseId, It.IsAny<ConsultationInputDto>()), Times.Once);
+            // OpenSpec: simplify-medicalcase-api - 验证调用聚合保存方法（含Consultation）
+            _mockRepository.Verify(x => x.SaveAsync(medicalCaseId, It.Is<MedicalCaseInputDto>(dto =>
+                dto.Consultation != null && dto.Consultation.TCMDiagnosis == "新的中医诊断")), Times.Once);
         }
 
         [Fact]
@@ -143,8 +148,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var detail = CreateMedicalCaseDetail(medicalCaseId);
             _mockRepository.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(detail);
-            _mockRepository.Setup(x => x.UpdatePrescriptionAsync(It.IsAny<Guid>(), It.IsAny<PrescriptionInputDto>()))
-                .ReturnsAsync(detail.Prescription);
+            // OpenSpec: simplify-medicalcase-api - 使用聚合保存SaveAsync
+            _mockRepository.Setup(x => x.SaveAsync(medicalCaseId, It.IsAny<MedicalCaseInputDto>()))
+                .ReturnsAsync(detail);
 
             await _sut.InitializeAsync(medicalCaseId);
 
@@ -156,7 +162,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
-            _mockRepository.Verify(x => x.UpdatePrescriptionAsync(medicalCaseId, It.IsAny<PrescriptionInputDto>()), Times.Once);
+            // OpenSpec: simplify-medicalcase-api - 验证调用聚合保存方法（含Prescription）
+            _mockRepository.Verify(x => x.SaveAsync(medicalCaseId, It.Is<MedicalCaseInputDto>(dto =>
+                dto.Prescription != null && dto.Prescription.DosageCount == 7)), Times.Once);
         }
 
         [Fact]
@@ -267,8 +275,14 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 DosageCount = createDto.DosageCount
             };
 
-            _mockRepository.Setup(x => x.CreatePrescriptionAsync(medicalCaseId, createDto))
-                .ReturnsAsync(createdPrescription);
+            // OpenSpec: simplify-medicalcase-api - 通过SaveAsync创建处方
+            var updatedDetail = CreateMedicalCaseDetail(medicalCaseId);
+            updatedDetail.Prescription = createdPrescription;
+            updatedDetail.PrescriptionId = createdPrescription.Id;
+
+            _mockRepository.Setup(x => x.SaveAsync(medicalCaseId, It.Is<MedicalCaseInputDto>(dto =>
+                dto.NeedsPrescription == true && dto.Prescription != null)))
+                .ReturnsAsync(updatedDetail);
 
             await _sut.InitializeAsync(medicalCaseId);
 
@@ -290,8 +304,15 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var detail = CreateMedicalCaseDetail(medicalCaseId);
             _mockRepository.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(detail);
-            _mockRepository.Setup(x => x.DeletePrescriptionAsync(medicalCaseId))
-                .Returns(Task.CompletedTask);
+
+            // OpenSpec: simplify-medicalcase-api - 通过SaveAsync删除处方
+            var updatedDetail = CreateMedicalCaseDetail(medicalCaseId);
+            updatedDetail.Prescription = null;
+            updatedDetail.PrescriptionId = null;
+
+            _mockRepository.Setup(x => x.SaveAsync(medicalCaseId, It.Is<MedicalCaseInputDto>(dto =>
+                dto.NeedsPrescription == false && dto.Prescription == null)))
+                .ReturnsAsync(updatedDetail);
 
             await _sut.InitializeAsync(medicalCaseId);
 
@@ -301,7 +322,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             // Assert
             result.Should().BeTrue();
             _sut.CurrentPrescription.Should().BeNull();
-            _mockRepository.Verify(x => x.DeletePrescriptionAsync(medicalCaseId), Times.Once);
+            _mockRepository.Verify(x => x.SaveAsync(medicalCaseId, It.Is<MedicalCaseInputDto>(dto =>
+                dto.NeedsPrescription == false && dto.Prescription == null)), Times.Once);
         }
 
         #endregion

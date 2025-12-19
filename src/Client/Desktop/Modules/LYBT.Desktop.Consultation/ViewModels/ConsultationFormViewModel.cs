@@ -13,11 +13,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
 {
     /// <summary>
     /// 诊断表单ViewModel - 填写诊断信息
-    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.4) - 移除ISaveable，使用内部保存方法
+    /// OpenSpec: simplify-medicalcase-api - 使用IMedicalCaseDataManager聚合根管理器
     /// </summary>
     public class ConsultationFormViewModel : UnifiedViewModelBase, IValidatable
     {
-        private readonly ConsultationDataManager _dataManager;
+        private readonly IMedicalCaseDataManager _dataManager;
         private readonly ConsultationCommandHandler _commandHandler;
 
         private PatientDetailDto? _currentPatient;
@@ -52,7 +52,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public DelegateCommand SaveDraftCommand { get; }
 
         public ConsultationFormViewModel(
-            ConsultationDataManager dataManager,
+            IMedicalCaseDataManager dataManager,
             ConsultationCommandHandler commandHandler,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -80,7 +80,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         /// <summary>
         /// 保存诊断数据
-        /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.4) - 内部方法，供命令使用
+        /// OpenSpec: simplify-medicalcase-api - 通过聚合根保存
         /// </summary>
         private async Task<bool> SaveAsync()
         {
@@ -132,9 +132,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 if (medicalCaseId != Guid.Empty)
                 {
                     MedicalCaseId = medicalCaseId;
-                    _dataManager.MedicalCaseId = medicalCaseId;
+                    // OpenSpec: simplify-medicalcase-api - 通过聚合根初始化
                     await _dataManager.InitializeAsync(medicalCaseId);
-                    if (_dataManager.Current != null) SyncFromDataManager();
+                    if (_dataManager.CurrentConsultation != null) SyncFromDataManager();
                 }
                 var currentPatient = navigationContext.Parameters.GetValue<PatientDetailDto>("CurrentPatient");
                 if (currentPatient != null) CurrentPatient = currentPatient;
@@ -142,24 +142,34 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex) { Logger.LogError(ex, "导航到ConsultationFormView时发生异常"); }
         }
 
+        /// <summary>
+        /// 从聚合根DataManager同步数据到ViewModel
+        /// OpenSpec: simplify-medicalcase-api
+        /// </summary>
         private void SyncFromDataManager()
         {
-            if (_dataManager.Current == null) return;
-            var c = _dataManager.Current;
+            var consultation = _dataManager.CurrentConsultation;
+            if (consultation == null) return;
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-            PresentIllness = c.PresentIllness ?? string.Empty;
-            TongueDiagnosis = c.TongueDiagnosis ?? string.Empty;
-            PulseDiagnosis = c.PulseDiagnosis ?? string.Empty;
-            TCMDiagnosis = c.TCMDiagnosis ?? string.Empty;
+            PresentIllness = consultation.PresentIllness ?? string.Empty;
+            TongueDiagnosis = consultation.TongueDiagnosis ?? string.Empty;
+            PulseDiagnosis = consultation.PulseDiagnosis ?? string.Empty;
+            TCMDiagnosis = consultation.TCMDiagnosis ?? string.Empty;
         }
 
+        /// <summary>
+        /// 从ViewModel同步数据到聚合根DataManager
+        /// OpenSpec: simplify-medicalcase-api - 直接修改CurrentConsultation属性
+        /// </summary>
         private void SyncToDataManager()
         {
+            var consultation = _dataManager.CurrentConsultation;
+            if (consultation == null) return;
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-            _dataManager.UpdateField(nameof(ConsultationDetailDto.PresentIllness), PresentIllness);
-            _dataManager.UpdateField(nameof(ConsultationDetailDto.TongueDiagnosis), TongueDiagnosis);
-            _dataManager.UpdateField(nameof(ConsultationDetailDto.PulseDiagnosis), PulseDiagnosis);
-            _dataManager.UpdateField(nameof(ConsultationDetailDto.TCMDiagnosis), TCMDiagnosis);
+            consultation.PresentIllness = PresentIllness;
+            consultation.TongueDiagnosis = TongueDiagnosis;
+            consultation.PulseDiagnosis = PulseDiagnosis;
+            consultation.TCMDiagnosis = TCMDiagnosis;
         }
     }
 }

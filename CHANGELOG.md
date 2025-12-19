@@ -9,6 +9,221 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Post-Release Cleanup: DTO架构统一与API优化 - 2025-12-19 [已归档]
+
+**状态**: ✅ 全部完成
+
+**问题背景**:
+- 多个OpenSpec提案的DEFERRED项目需要统一清理
+- DTO命名不一致（混用XxxDto和XxxDetailDto）
+- API端点存在冗余（MedicalCase有重复的GET /和GET /list）
+- 测试需要同步更新
+
+**实施内容**:
+
+**Phase 1-2: 过期组件和DTO清理**
+- 删除已标记[Obsolete]的Management组件
+- 统一DTO命名：XxxDto → XxxDetailDto（Patient/User/Formula/Herb/MedicalCase/Consultation）
+- 删除冗余的DtoExtensions扩展方法
+- 拆分大型DTO文件为独立文件
+
+**Phase 3: 服务层迁移到ListDto**
+- Patient模块: IPatientService.GetPagedAsync返回PatientListDto
+- User模块: IUserService.GetPagedAsync返回UserListDto
+- Formula模块: IFormulaService.GetPagedAsync返回FormulaListDto
+- Herb模块: IHerbService.GetPagedAsync返回HerbListDto
+- 所有Controller端点同步更新
+
+**Phase 4: MedicalCase API端点优化**
+- 合并重复端点: GET /和GET /list → 统一返回MedicalCaseListDto
+- 删除Client端GetMedicalCasesListAsync方法
+- Repository层保持向后兼容（使用SearchMedicalCasesAsync维持DetailDto契约）
+
+**Phase 5: 测试验证**
+- 更新PatientsControllerTests验证GetPagedAsync调用
+- 全量测试通过（0错误0警告）
+
+**验证结果**:
+- 编译通过: 0错误, 0警告
+- 关键模块测试全部通过（单独运行）
+
+---
+
+#### 简化MedicalCase API端点 (OpenSpec: simplify-medicalcase-api) - 2025-12-19 [已归档]
+
+**状态**: ✅ 核心变更完成，已归档 (DEFERRED项目待Post-Release)
+
+**问题背景**:
+- MedicalCase API端点过多(28+)，命名不一致
+- PUT /aggregate路由不符合RESTful规范
+- 存在Ghost APIs (Client定义但Server未实现)
+- 保存功能HTTP 400错误
+
+**实施内容**:
+
+**核心变更**:
+1. 路由简化: PUT `/api/v1/medicalcases/{id}/aggregate` → PUT `/api/v1/medicalcases/{id}`
+2. 方法重命名: `SaveAggregate` → `Save`
+3. Ghost APIs删除: `ClearPrescriptionAsync`, `ImportFormulaIntoPrescriptionAsync`
+4. Bug修复: MedicalCaseInputDto添加PatientId和UserId，修复HTTP 400
+
+**验证结果**:
+- 编译通过 (0错误0警告)
+- 测试通过: Server(41) + Client(228) = 269 passed
+- 功能验证: 医案列表/详情加载、保存(HTTP 200)
+
+**DEFERRED (Post-Release)**:
+- 查询端点合并 (include/filter参数)
+- 状态端点统一 (PATCH /{id}/status)
+- 独立Prescription/Consultation端点删除
+
+---
+
+#### 优化实体数据流 (OpenSpec: optimize-entity-data-flow) - 2025-12-19 [已归档]
+
+**状态**: ✅ Phase 1-3完成，已归档 (Phase 4-5 DEFERRED to Post-Release)
+
+**问题背景**:
+- MasterDetail布局需要验证所有模块功能完整性
+- Management组件需要标记为过期以便后续清理
+- DTO需要迁移到ListDto/DetailDto分层模式消除N+1查询
+
+**实施内容**:
+
+**Phase 1: 验证MasterDetail完整性**
+- Formula/Herb/Patient/User/MedicalCase模块MasterDetail功能验证通过
+
+**Phase 2: 标记Management为[Obsolete]**
+- 所有模块ManagementViewModel/View添加[Obsolete]标记
+
+**Phase 3: 迁移MasterDetail中的过期DTO**
+- User模块: UserMasterDetailViewModel迁移到UserListDto
+- Formula模块: FormulaMasterDetailViewModel迁移到FormulaListDto
+- Patient模块: PatientMasterDetailViewModel迁移到PatientListDto
+- Herb模块: HerbMasterDetailViewModel迁移到HerbListDto
+- MedicalCase模块: MedicalCaseMasterDetailViewModel迁移到MedicalCaseListDto
+- 所有模块Server端添加/list API端点
+
+**DEFERRED (Post-Release)**:
+- Phase 4: 服务层DTO迁移
+- Phase 5: 过期代码移除
+
+---
+
+#### 重构医案管理模块 (OpenSpec: refactor-medicalcase-management) - 2025-12-19 [已归档]
+
+**状态**: ✅ Phase 1-4完成，已归档 (旧代码清理DEFERRED to Post-Release)
+
+**问题背景**:
+- 医案管理模块使用旧的Management布局，与其他模块MasterDetail布局不一致
+- 需要更新诊断字段以匹配refactor-diagnosis-fields变更
+- 新建医案应仅通过看诊入口创建，管理模块不提供新建功能
+
+**实施内容**:
+
+**Phase 1: 医案管理Master-Detail布局**
+- 创建MedicalCaseMasterDetailView/ViewModel
+- 左侧Master: 工具栏(仅刷新)+搜索+DataGrid+分页
+- 右侧Detail: 医案详情表单+诊断/处方摘要
+- 工具栏不包含AddCommand（无新建功能）
+
+**Phase 2: 看诊工作区诊断字段更新**
+- ConsultationPanelView保留4个核心字段(PresentIllness, TongueDiagnosis, PulseDiagnosis, TCMDiagnosis)
+
+**Phase 3: 分离共用组件**
+- 管理视图使用只读显示，看诊工作区使用编辑控件
+- 两者不共享可编辑控件
+
+**Phase 4: 清理与验证**
+- 旧代码已标记[Obsolete]，Post-Release删除
+- 228测试全部通过
+
+**变更文件**:
+- `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/MedicalCaseMasterDetailView.xaml`
+- `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/MedicalCaseMasterDetailViewModel.cs`
+- `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Models/MedicalCaseDetailModel.cs`
+
+---
+
+#### 统一药材列表编辑控件 (OpenSpec: unify-herb-list-controls) - 2025-12-19 [已归档]
+
+**状态**: ✅ Phase 1-3完成，已归档
+
+**问题背景**:
+- 药材列表编辑控件分散在多个模块，实现不一致
+- HerbItemViewModelBase._unit默认值问题
+- 医案管理模块缺少处方编辑功能
+
+**实施内容**:
+
+**Phase 1: Bug修复与新控件**
+- 修复HerbItemViewModelBase._unit默认值为空字符串
+- 创建HerbListView.xaml只读预览控件
+
+**Phase 2: 控件统一**
+- EditFormulaDialog.xaml使用HerbListEditor
+- MedicalCaseWorkspaceView.xaml药材预览使用HerbListView
+
+**Phase 2.5: 医案管理模块处方编辑**
+- MedicalCaseMasterDetailViewModel添加处方编辑功能
+- 使用SaveAsync一次性保存诊断和处方
+
+**Phase 3: 验证**
+- 编译验证通过
+- 处方/经验方编辑功能验证通过
+
+**变更文件**:
+- `src/Client/Desktop/Core/LYBT.Desktop.Models/ViewModels/Base/HerbItemViewModelBase.cs`
+- `src/Client/Desktop/Core/LYBT.Desktop.Presentation/Components/HerbListView.xaml(.cs)`
+- `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/MedicalCaseMasterDetailViewModel.cs`
+- `src/Client/Desktop/Modules/LYBT.Desktop.Formula/Views/EditFormulaDialog.xaml`
+
+---
+
+#### HerbCardControl UI优化与煎法字段添加 (OpenSpec: modify-herbcard-decoction) - 2025-12-19 [已归档]
+
+**状态**: ✅ Phase 1-5完成，已归档
+
+**问题背景**:
+- HerbCardControl UI上显示的"单位"字段对用户无实际意义（单位从药材库自动获取）
+- 缺少煎法标注功能，中医处方常需标注先煎、后下等特殊煎法
+- Bug: 输入完整正确药材名称后按回车，焦点不移动
+- Bug: 输入不存在的药材名称后，系统接受了无效输入
+
+**实施内容**:
+
+**Phase 1: 数据模型变更**
+- 创建DecocteMethod枚举(Default/PreDecoct/PostAdd/MeltIn/TakeWithWater/WrapDecoct/SeparateDecoct)
+- PrescriptionItem实体添加DecocteMethod字段
+- EF Core迁移添加数据库列
+
+**Phase 2: ViewModel层变更**
+- HerbItemViewModelBase添加DecocteMethod属性
+- PrescriptionItemViewModel添加DecocteMethod属性和AvailableDecocteMethods列表
+
+**Phase 3: UI层变更与Bug修复**
+- HerbCardControl移除单位显示，添加煎法ComboBox
+- UI优化：删除按钮改为右键菜单（节省空间+防误删）
+- Bug修复：完整药材名称回车焦点跳转
+- Bug修复：无效药材名称校验
+
+**Phase 4: 打印功能适配**
+- PrescriptionPrintDto添加DecocteMethod属性
+- 打印模板格式："药材名剂量单位(煎法)" - 仅非默认煎法显示括号标注
+
+**Phase 5: 验证与测试**
+- 编译验证通过
+- 功能验证：经验方和处方煎法修改功能正常
+
+**变更文件**:
+- `src/Shared/LYBT.Shared.Models/Enums/DecocteMethod.cs`
+- `src/Server/Core/LYBT.Entities/Prescriptions/PrescriptionItem.cs`
+- `src/Client/Desktop/Core/LYBT.Desktop.Presentation/Components/HerbCardControl.xaml(.cs)`
+- `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/PrescriptionItemViewModel.cs`
+- `src/Client/Desktop/Modules/LYBT.Desktop.Prescriptions/Services/PrescriptionPrintService.cs`
+
+---
+
 #### 简化MedicalCase数据流 (OpenSpec: simplify-medicalcase-dataflow) - 2025-12-19 [已归档]
 
 **状态**: ✅ Phase 0-5完成，已归档

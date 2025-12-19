@@ -1,10 +1,10 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LYBT.Desktop.Consultation.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
+using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Consultation.Tests.Components
@@ -12,35 +12,31 @@ namespace LYBT.Desktop.Consultation.Tests.Components
     /// <summary>
     /// ConsultationCommandHandler 单元测试
     /// Issue #1779: Consultation模块组件化测试
+    /// OpenSpec: simplify-medicalcase-api - 使用IMedicalCaseDataManager
     /// </summary>
     public class ConsultationCommandHandlerTests
     {
-        private readonly Mock<ConsultationDataManager> _mockDataManager;
+        private readonly Mock<IMedicalCaseDataManager> _mockDataManager;
         private readonly Mock<ConsultationValidator> _mockValidator;
-        private readonly Mock<IMedicalCaseRepository> _mockRepository;
         private readonly Mock<ILogger<ConsultationCommandHandler>> _mockLogger;
         private readonly Mock<IRegionManager> _mockRegionManager;
         private readonly ConsultationCommandHandler _commandHandler;
 
         public ConsultationCommandHandlerTests()
         {
-            _mockDataManager = new Mock<ConsultationDataManager>(
-                Mock.Of<IMedicalCaseRepository>(),
-                Mock.Of<ILogger<ConsultationDataManager>>());
+            _mockDataManager = new Mock<IMedicalCaseDataManager>();
 
             _mockValidator = new Mock<ConsultationValidator>(
-                Mock.Of<LYBT.Desktop.Infrastructure.Interfaces.Components.IValidationService>(),
+                Mock.Of<IValidationService>(),
                 _mockDataManager.Object,
                 Mock.Of<ILogger<ConsultationValidator>>());
 
-            _mockRepository = new Mock<IMedicalCaseRepository>();
             _mockLogger = new Mock<ILogger<ConsultationCommandHandler>>();
             _mockRegionManager = new Mock<IRegionManager>();
 
             _commandHandler = new ConsultationCommandHandler(
                 _mockDataManager.Object,
                 _mockValidator.Object,
-                _mockRepository.Object,
                 _mockLogger.Object,
                 _mockRegionManager.Object);
         }
@@ -66,6 +62,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
         {
             // Arrange
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
+            // OpenSpec: simplify-medicalcase-api - 使用CurrentConsultation属性
             var mockConsultation = new ConsultationDetailDto
             {
                 PresentIllness = "测试现病史",
@@ -73,18 +70,16 @@ namespace LYBT.Desktop.Consultation.Tests.Components
                 PulseDiagnosis = "测试脉诊",
                 TCMDiagnosis = "测试诊断"
             };
-            _mockDataManager.Setup(m => m.Current).Returns(mockConsultation);
+            _mockDataManager.Setup(m => m.CurrentConsultation).Returns(mockConsultation);
 
             // Act
             _commandHandler.ClearForm();
 
-            // Assert - 验证4个核心字段被清空
-            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDetailDto.PresentIllness), null), Times.Once);
-            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDetailDto.TongueDiagnosis), null), Times.Once);
-            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDetailDto.PulseDiagnosis), null), Times.Once);
-            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDetailDto.TCMDiagnosis), string.Empty), Times.Once);
+            // Assert - 验证4个核心字段被清空（直接修改属性而非调用UpdateField）
+            mockConsultation.PresentIllness.Should().BeNull();
+            mockConsultation.TongueDiagnosis.Should().BeNull();
+            mockConsultation.PulseDiagnosis.Should().BeNull();
+            mockConsultation.TCMDiagnosis.Should().BeEmpty();
         }
-
-        // CompleteStep1Async_WithValidData_ShouldReturnTrue已移除 - 简化业务流程，移除Step概念
     }
 }

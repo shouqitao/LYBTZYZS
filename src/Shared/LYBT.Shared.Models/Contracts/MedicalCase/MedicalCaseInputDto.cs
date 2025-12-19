@@ -72,6 +72,14 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("处方信息")]
         public PrescriptionInputDto? Prescription { get; set; }
 
+        /// <summary>
+        /// 是否开处方标志
+        /// OpenSpec: simplify-medicalcase-api - 用于聚合保存时控制处方创建/删除
+        /// 当设置为false且Prescription为null时，触发处方软删除
+        /// </summary>
+        [DisplayName("是否开处方")]
+        public bool? NeedsPrescription { get; set; }
+
         // VisitDate已删除，用BaseEntity.CreatedAt代替
     }
 

@@ -38,14 +38,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
 
         Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id);
 
-        /// <summary>
-        /// 更新医案的诊断信息（聚合根方法）
-        /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
-        /// </summary>
-        /// <param name="medicalCaseId">医案ID</param>
-        /// <param name="dto">诊断更新信息</param>
-        /// <returns>更新后的诊断信息</returns>
-        Task<ConsultationDetailDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto dto);
+        // OpenSpec: simplify-medicalcase-api - UpdateConsultationAsync已删除
+        // 诊断更新通过聚合保存 SaveAsync 处理
 
         /// <summary>
         /// 查询病案列表（支持多条件组合查询）
@@ -61,32 +55,14 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
 
         // CompleteStep1Async和ResetConsultationStepsAsync已移除 - 简化业务流程，移除Step概念
 
-        /// <summary>
-        /// 清空处方内容（保留处方框架）
-        /// Epic #1589 Phase 4 - 架构合规版本
-        /// </summary>
-        Task ClearPrescriptionAsync(Guid medicalCaseId);
+        // OpenSpec: simplify-medicalcase-api - Ghost APIs已删除
+        // - ClearPrescriptionAsync: Server端从未实现
+        // - ImportFormulaIntoPrescriptionAsync: Server端从未实现
 
-        /// <summary>
-        /// 从配方导入处方
-        /// Epic #1589 Phase 4 - 架构合规版本
-        /// </summary>
-        Task<PrescriptionDetailDto> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId);
-
-        /// <summary>
-        /// 为已存在的医案创建处方（Issue #1608补充）
-        /// </summary>
-        Task<PrescriptionDetailDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionInputDto dto);
-
-        /// <summary>
-        /// 更新医案的处方（Issue #1608补充）
-        /// </summary>
-        Task<PrescriptionDetailDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionInputDto dto);
-
-        /// <summary>
-        /// 删除医案的处方（Issue #1608补充）
-        /// </summary>
-        Task DeletePrescriptionAsync(Guid medicalCaseId);
+        // OpenSpec: simplify-medicalcase-api - 独立Prescription CRUD接口已删除
+        // - CreatePrescriptionAsync: 通过SaveAsync创建
+        // - UpdatePrescriptionAsync: 通过SaveAsync更新
+        // - DeletePrescriptionAsync: 通过SaveAsync设置NeedsPrescription=false触发
 
         // ========== Epic #1676 Phase 4 Task 4.4 - Desktop端新增方法 ==========
 

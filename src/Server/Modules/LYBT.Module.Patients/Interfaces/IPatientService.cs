@@ -14,7 +14,7 @@ namespace LYBT.Module.Patients.Interfaces
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        Task<Result<PagedResult<PatientDetailDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
         /// 分页查询患者列表（返回PatientListDto，用于列表视图）

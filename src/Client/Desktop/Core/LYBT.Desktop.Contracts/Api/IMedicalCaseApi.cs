@@ -13,23 +13,17 @@ namespace LYBT.Desktop.Contracts.Api
         /// <summary>
         /// 获取医疗案例列表（支持分页和查询）
         /// OpenSpec: fix-history-copy-all-patients - 添加includeAllDoctors参数
+        /// OpenSpec: post-release-cleanup - 统一返回MedicalCaseListDto
         /// </summary>
         [Refit.Get("/api/v1/medicalcases")]
-        Task<ApiResponse<PagedResult<MedicalCaseDetailDto>>> GetMedicalCasesAsync(
+        Task<ApiResponse<PagedResult<MedicalCaseListDto>>> GetMedicalCasesAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null,
             [Refit.Query] bool includeAllDoctors = false);
 
-        /// <summary>
-        /// 获取医疗案例列表（返回MedicalCaseListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        [Refit.Get("/api/v1/medicalcases/list")]
-        Task<ApiResponse<PagedResult<MedicalCaseListDto>>> GetMedicalCasesListAsync(
-            [Refit.Query] int page = 1,
-            [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? keyword = null);
+        // OpenSpec: post-release-cleanup - GetMedicalCasesListAsync已合并到GetMedicalCasesAsync
+        // 原GET /list端点已删除
 
         /// <summary>
         /// 获取医疗案例详情
@@ -107,12 +101,8 @@ namespace LYBT.Desktop.Contracts.Api
         // ========== CreateMedicalCaseWithDetailsAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
         // Server端点POST /api/v1/medicalcases/with-details 不存在，且无调用者
 
-        /// <summary>
-        /// 更新医案的诊断信息（聚合根方法）
-        /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
-        /// </summary>
-        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/consultation")]
-        Task<ApiResponse<ConsultationDetailDto>> UpdateConsultationAsync(Guid medicalCaseId, [Refit.Body] ConsultationInputDto request);
+        // OpenSpec: simplify-medicalcase-api - UpdateConsultationAsync已删除
+        // 诊断更新通过聚合保存 SaveAsync 处理
 
         /// <summary>
         /// 删除医疗案例（软删除）
@@ -129,43 +119,14 @@ namespace LYBT.Desktop.Contracts.Api
 
         // CompleteStep1Async和ResetConsultationStepsAsync已移除 - 简化业务流程，移除Step概念
 
-        /// <summary>
-        /// 清空处方内容（保留处方框架）
-        /// Epic #1589 Phase 4 - 架构合规版本
-        /// </summary>
-        [Refit.Delete("/api/v1/medicalcases/{medicalCaseId}/prescription/clear")]
-        Task<ApiResponse> ClearPrescriptionAsync(Guid medicalCaseId);
+        // OpenSpec: simplify-medicalcase-api - Ghost APIs已删除
+        // - ClearPrescriptionAsync: Server端从未实现
+        // - ImportFormulaIntoPrescriptionAsync: Server端从未实现
 
-        /// <summary>
-        /// 从配方导入处方
-        /// Epic #1589 Phase 4 - 架构合规版本
-        /// </summary>
-        [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/prescription/import-formula/{formulaId}")]
-        Task<ApiResponse<PrescriptionDetailDto>> ImportFormulaIntoPrescriptionAsync(
-            Guid medicalCaseId,
-            Guid formulaId);
-
-        /// <summary>
-        /// 为已存在的医案创建处方（Issue #1608补充）
-        /// </summary>
-        [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/prescription")]
-        Task<ApiResponse<PrescriptionDetailDto>> CreatePrescriptionAsync(
-            Guid medicalCaseId,
-            [Refit.Body] PrescriptionInputDto request);
-
-        /// <summary>
-        /// 更新医案的处方（Issue #1608补充）
-        /// </summary>
-        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/prescription")]
-        Task<ApiResponse<PrescriptionDetailDto>> UpdatePrescriptionAsync(
-            Guid medicalCaseId,
-            [Refit.Body] PrescriptionInputDto request);
-
-        /// <summary>
-        /// 删除医案的处方（Issue #1608补充）
-        /// </summary>
-        [Refit.Delete("/api/v1/medicalcases/{medicalCaseId}/prescription")]
-        Task<ApiResponse> DeletePrescriptionAsync(Guid medicalCaseId);
+        // OpenSpec: simplify-medicalcase-api - 独立Prescription CRUD接口已删除
+        // - CreatePrescriptionAsync: 通过SaveAsync创建
+        // - UpdatePrescriptionAsync: 通过SaveAsync更新
+        // - DeletePrescriptionAsync: 通过SaveAsync设置NeedsPrescription=false触发
 
         /// <summary>
         /// 标记是否开处方
@@ -261,7 +222,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <param name="id">医案ID</param>
         /// <param name="request">统一输入DTO（包含诊断和处方数据）</param>
         /// <returns>更新后的医案详情</returns>
-        [Refit.Put("/api/v1/medicalcases/{id}/aggregate")]
+        [Refit.Put("/api/v1/medicalcases/{id}")]
         Task<ApiResponse<MedicalCaseDetailDto>> SaveAsync(
             Guid id,
             [Refit.Body] MedicalCaseInputDto request);

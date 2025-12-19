@@ -1,6 +1,7 @@
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -40,6 +41,7 @@ public class PrescriptionSaveHandler
 
     /// <summary>
     /// 保存处方（带事件发布）
+    /// OpenSpec: simplify-medicalcase-api - 通过聚合保存处理
     /// </summary>
     /// <param name="context">保存上下文</param>
     /// <returns>保存结果</returns>
@@ -53,32 +55,25 @@ public class PrescriptionSaveHandler
                 return PrescriptionSaveResult.Empty();
             }
 
-            PrescriptionDetailDto? result;
-            if (context.PrescriptionId.HasValue)
+            // OpenSpec: simplify-medicalcase-api - 通过聚合保存处理处方创建/更新
+            var prescriptionInput = new PrescriptionInputDto
             {
-                // 更新现有处方
-                var updateRequest = new PrescriptionInputDto
-                {
-                    DosageCount = context.DosageCount,
-                    Usage = context.Usage,
-                    Items = context.Items
-                };
-                result = await _medicalCaseRepository.UpdatePrescriptionAsync(context.MedicalCaseId, updateRequest);
-            }
-            else
-            {
-                // 创建新处方
-                // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId已移除，通过MedicalCaseId关联获取
-                var createRequest = new PrescriptionInputDto
-                {
-                    DosageCount = context.DosageCount,
-                    Usage = context.Usage,
-                    Items = context.Items
-                };
-                result = await _medicalCaseRepository.CreatePrescriptionAsync(context.MedicalCaseId, createRequest);
-            }
+                Id = context.PrescriptionId,
+                DosageCount = context.DosageCount,
+                Usage = context.Usage,
+                Items = context.Items
+            };
 
-            if (result != null)
+            var medicalCaseInput = new MedicalCaseInputDto
+            {
+                Id = context.MedicalCaseId,
+                NeedsPrescription = true,
+                Prescription = prescriptionInput
+            };
+
+            var result = await _medicalCaseRepository.SaveAsync(context.MedicalCaseId, medicalCaseInput);
+
+            if (result?.Prescription != null)
             {
                 _logger.LogInformation("处方数据保存成功");
 
@@ -86,12 +81,12 @@ public class PrescriptionSaveHandler
                 _eventAggregator.GetEvent<PrescriptionCompletedEvent>()
                     .Publish(new PrescriptionCompletedPayload
                     {
-                        PrescriptionId = result.Id,
+                        PrescriptionId = result.Prescription.Id,
                         TotalItems = context.Items.Count,
                         TotalAmount = context.TotalPrice
                     });
 
-                return PrescriptionSaveResult.Success(result.Id);
+                return PrescriptionSaveResult.Success(result.Prescription.Id);
             }
 
             _logger.LogWarning("处方数据保存失败");
@@ -106,6 +101,7 @@ public class PrescriptionSaveHandler
 
     /// <summary>
     /// 静默保存处方（不发布事件，不显示错误）
+    /// OpenSpec: simplify-medicalcase-api - 通过聚合保存处理
     /// </summary>
     /// <param name="context">保存上下文</param>
     /// <returns>保存结果</returns>
@@ -122,39 +118,33 @@ public class PrescriptionSaveHandler
                 return PrescriptionSaveResult.Empty();
             }
 
-            PrescriptionDetailDto? result;
-            if (context.PrescriptionId.HasValue)
+            // OpenSpec: simplify-medicalcase-api - 通过聚合保存处理处方创建/更新
+            var prescriptionInput = new PrescriptionInputDto
             {
-                // 更新现有处方
-                var updateRequest = new PrescriptionInputDto
-                {
-                    DosageCount = context.DosageCount,
-                    Usage = context.Usage,
-                    Items = context.Items
-                };
-                result = await _medicalCaseRepository.UpdatePrescriptionAsync(context.MedicalCaseId, updateRequest);
-            }
-            else
-            {
-                // 创建新处方
-                // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId已移除，通过MedicalCaseId关联获取
-                var createRequest = new PrescriptionInputDto
-                {
-                    DosageCount = context.DosageCount,
-                    Usage = context.Usage,
-                    Items = context.Items
-                };
-                _logger.LogInformation("[处方诊断] 准备调用CreatePrescriptionAsync，MedicalCaseId: {MedicalCaseId}, Items: {Count}",
-                    context.MedicalCaseId, context.Items.Count);
-                result = await _medicalCaseRepository.CreatePrescriptionAsync(context.MedicalCaseId, createRequest);
-                _logger.LogInformation("[处方诊断] CreatePrescriptionAsync返回: {Result}", result != null ? $"成功,Id={result.Id}" : "null");
-            }
+                Id = context.PrescriptionId,
+                DosageCount = context.DosageCount,
+                Usage = context.Usage,
+                Items = context.Items
+            };
 
-            if (result != null)
+            var medicalCaseInput = new MedicalCaseInputDto
             {
-                _logger.LogInformation("[处方诊断] 处方数据静默保存成功，PrescriptionId: {PrescriptionId}", result.Id);
+                Id = context.MedicalCaseId,
+                NeedsPrescription = true,
+                Prescription = prescriptionInput
+            };
+
+            _logger.LogInformation("[处方诊断] 准备调用SaveAsync，MedicalCaseId: {MedicalCaseId}, Items: {Count}",
+                context.MedicalCaseId, context.Items.Count);
+
+            var result = await _medicalCaseRepository.SaveAsync(context.MedicalCaseId, medicalCaseInput);
+            _logger.LogInformation("[处方诊断] SaveAsync返回: {Result}", result?.Prescription != null ? $"成功,Id={result.Prescription.Id}" : "null");
+
+            if (result?.Prescription != null)
+            {
+                _logger.LogInformation("[处方诊断] 处方数据静默保存成功，PrescriptionId: {PrescriptionId}", result.Prescription.Id);
                 // 静默保存不发布PrescriptionCompletedEvent
-                return PrescriptionSaveResult.Success(result.Id);
+                return PrescriptionSaveResult.Success(result.Prescription.Id);
             }
 
             _logger.LogWarning("[处方诊断] 处方数据静默保存失败：API返回null");

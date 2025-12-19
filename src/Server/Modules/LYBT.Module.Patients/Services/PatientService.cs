@@ -34,7 +34,7 @@ namespace LYBT.Module.Patients.Services
             _validator = validator;
         }
 
-        public async Task<Result<PagedResult<PatientDetailDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
             try
             {
@@ -42,7 +42,7 @@ namespace LYBT.Module.Patients.Services
                 // IRepository<T>统一接口：GetPagedAsync(page, pageSize, keyword)
                 var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
 
-                var items = _mapper.Map<List<PatientDetailDto>>(pagedResult.Items);
+                var items = _mapper.Map<List<PatientListDto>>(pagedResult.Items);
 
                 // 确保Age属性正确计算（从实体的计算属性复制到DTO）
                 foreach (var item in items)
@@ -54,19 +54,19 @@ namespace LYBT.Module.Patients.Services
                     }
                 }
 
-                var dto = new PagedResult<PatientDetailDto>
+                var dto = new PagedResult<PatientListDto>
                 {
                     Items = items,
                     TotalCount = pagedResult.TotalCount,
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
                 };
-                return Result<PagedResult<PatientDetailDto>>.Success(dto);
+                return Result<PagedResult<PatientListDto>>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取患者列表失败，关键字：{Keyword}", keyword);
-                return Result<PagedResult<PatientDetailDto>>.Failure("获取患者列表失败");
+                return Result<PagedResult<PatientListDto>>.Failure("获取患者列表失败");
             }
         }
 

@@ -180,9 +180,12 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
         {
             // OpenSpec: unify-herb-list-controls + refactor-medicalcase-management
             // 使用SaveAsync一次性保存诊断和处方
+            // Bug Fix: 添加PatientId和UserId，修复保存时HTTP 400验证错误
             var aggregateDto = new MedicalCaseInputDto
             {
                 Id = detail.Id,
+                PatientId = detail.PatientId,
+                UserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
                 Remark = detail.Remark,
                 Consultation = detail.ToConsultationInputDto(),
                 Prescription = new PrescriptionInputDto

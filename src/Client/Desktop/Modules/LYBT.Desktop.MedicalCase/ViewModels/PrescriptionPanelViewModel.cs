@@ -381,7 +381,16 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             if (!_prescriptionId.HasValue) { await ShowErrorMessageAsync("当前没有处方可删除"); return; }
             if (!await ShowConfirmationAsync("确定要删除当前处方吗？此操作不可恢复！", "删除处方")) return;
             SetIsBusy(true, "正在删除...");
-            await _medicalCaseRepository.DeletePrescriptionAsync(_medicalCaseId);
+
+            // OpenSpec: simplify-medicalcase-api - 通过聚合保存设置NeedsPrescription=false触发删除
+            var inputDto = new MedicalCaseInputDto
+            {
+                Id = _medicalCaseId,
+                NeedsPrescription = false,
+                Prescription = null
+            };
+            await _medicalCaseRepository.SaveAsync(_medicalCaseId, inputDto);
+
             ResetPrescription();
             await ShowSuccessMessageAsync("处方已删除");
         }

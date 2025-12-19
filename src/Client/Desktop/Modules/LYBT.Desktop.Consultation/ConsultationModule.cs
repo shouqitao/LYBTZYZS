@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Consultation
 
             // Issue #1784: 注册Services（Epic #1773 Component-Based架构）
             // OpenSpec: standardize-module-structure - Components重命名为Services
-            containerRegistry.Register<Services.ConsultationDataManager>();
+            // OpenSpec: simplify-medicalcase-api - ConsultationDataManager已删除，使用IMedicalCaseDataManager
             containerRegistry.Register<Services.ConsultationCommandHandler>();
             containerRegistry.Register<Services.ConsultationValidator>();
 

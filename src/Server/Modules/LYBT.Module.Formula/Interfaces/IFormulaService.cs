@@ -20,19 +20,7 @@ namespace LYBT.Module.Formulas.Interfaces
         /// <param name="category">分类筛选（可选）</param>
         /// <param name="currentUserId">当前用户ID（用于角色过滤）</param>
         /// <param name="isAdmin">是否为Admin/SuperAdmin角色</param>
-        Task<Result<PagedResult<FormulaDetailDto>>> GetPagedAsync(
-            int page = 1,
-            int pageSize = 20,
-            string? keyword = null,
-            string? category = null,
-            Guid? currentUserId = null,
-            bool isAdmin = false);
-
-        /// <summary>
-        /// 分页查询验方列表（返回FormulaListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        Task<Result<PagedResult<FormulaListDto>>> GetPagedListAsync(
+        Task<Result<PagedResult<FormulaListDto>>> GetPagedAsync(
             int page = 1,
             int pageSize = 20,
             string? keyword = null,

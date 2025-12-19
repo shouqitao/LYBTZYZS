@@ -35,7 +35,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "PatientsCache")]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientDetailDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientListDto>>), 200)]
         public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -48,33 +48,13 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var entityResult = await _service.GetPagedEntityAsync(page, pageSize, keyword);
-                if (!entityResult.IsSuccess || entityResult.Data == null)
+                var result = await _service.GetPagedAsync(page, pageSize, keyword);
+                if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail(entityResult.ErrorMessage ?? "查询失败");
+                    return BusinessFail(result.ErrorMessage ?? "查询失败");
                 }
 
-                var entityPagedResult = entityResult.Data;
-                var patientDtos = _mapper.Map<List<PatientDetailDto>>(entityPagedResult.Items);
-
-                foreach (var item in patientDtos)
-                {
-                    var entity = entityPagedResult.Items.FirstOrDefault(e => e.Id == item.Id);
-                    if (entity != null)
-                    {
-                        item.Age = entity.Age;
-                    }
-                }
-
-                var dtoPagedResult = new PagedResult<PatientDetailDto>
-                {
-                    Items = patientDtos,
-                    TotalCount = entityPagedResult.TotalCount,
-                    CurrentPage = entityPagedResult.CurrentPage,
-                    PageSize = entityPagedResult.PageSize
-                };
-
-                return SuccessPaged(dtoPagedResult, "查询成功");
+                return SuccessPaged(result.Data, "查询成功");
             }
             catch (Exception ex)
             {

@@ -179,5 +179,14 @@
   - Client: MedicalCaseRepository.GetPagedListAsync()
   - Client: MedicalCaseMasterDetailViewModel<MedicalCaseListDto, MedicalCaseDetailModel>
   - 消除了N+1查询问题
-- [ ] Phase 4: 服务层迁移 (P2 - 可选优化)
-- [ ] Phase 5: 过期代码移除 (P3 - v2.0)
+- [ ] Phase 4: 服务层迁移 (P2 - DEFERRED to Post-Release)
+- [ ] Phase 5: 过期代码移除 (P3 - DEFERRED to v2.0)
+
+## 归档说明 (2025-12-19)
+
+Pre-Release目标已全部完成：
+- Phase 1: MasterDetail功能验证 ✅
+- Phase 2: Management组件标记[Obsolete] ✅
+- Phase 3: 所有模块DTO迁移到ListDto ✅ (User/Formula/Patient/Herb/MedicalCase)
+
+Post-Release任务DEFERRED，将在v2.0版本中作为独立提案处理。

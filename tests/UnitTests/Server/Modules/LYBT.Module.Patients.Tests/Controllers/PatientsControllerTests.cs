@@ -12,7 +12,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Common;
 using LYBT.Tests.Common;
-using LYBT.Entities.Patients;
 using FluentAssertions;
 using Xunit;
 
@@ -89,7 +88,8 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequestResult.StatusCode.Should().Be(400);
 
-            _mockService.Verify(s => s.GetPagedEntityAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+            // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
+            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
         }
 
         [Fact]
@@ -105,7 +105,8 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequestResult.StatusCode.Should().Be(400);
 
-            _mockService.Verify(s => s.GetPagedEntityAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+            // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
+            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
         }
 
         [Fact]
@@ -121,7 +122,8 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequestResult.StatusCode.Should().Be(400);
 
-            _mockService.Verify(s => s.GetPagedEntityAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+            // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
+            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
         }
 
         #endregion
@@ -136,44 +138,46 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var pageSize = 20;
             var keyword = "测试";
 
-            var mockEntityResult = Result<PagedResult<Patient>>.Success(new PagedResult<Patient>
+            // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
+            var mockResult = Result<PagedResult<PatientListDto>>.Success(new PagedResult<PatientListDto>
             {
-                Items = new List<Patient>(),
+                Items = new List<PatientListDto>(),
                 TotalCount = 0,
                 CurrentPage = pageNumber,
                 PageSize = pageSize
             });
 
-            _mockService.Setup(s => s.GetPagedEntityAsync(pageNumber, pageSize, keyword))
-                       .ReturnsAsync(mockEntityResult);
+            _mockService.Setup(s => s.GetPagedAsync(pageNumber, pageSize, keyword))
+                       .ReturnsAsync(mockResult);
 
             // Act
             await _controller.GetList(pageNumber, pageSize, keyword);
 
             // Assert
-            _mockService.Verify(s => s.GetPagedEntityAsync(pageNumber, pageSize, keyword), Times.Once);
+            _mockService.Verify(s => s.GetPagedAsync(pageNumber, pageSize, keyword), Times.Once);
         }
 
         [Fact]
         public async Task GetList_WithDefaultParameters_ShouldCallServiceWithDefaults()
         {
+            // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
             // Arrange
-            var mockEntityResult = Result<PagedResult<Patient>>.Success(new PagedResult<Patient>
+            var mockResult = Result<PagedResult<PatientListDto>>.Success(new PagedResult<PatientListDto>
             {
-                Items = new List<Patient>(),
+                Items = new List<PatientListDto>(),
                 TotalCount = 0,
                 CurrentPage = 1,
                 PageSize = 20
             });
 
-            _mockService.Setup(s => s.GetPagedEntityAsync(1, 20, null))
-                       .ReturnsAsync(mockEntityResult);
+            _mockService.Setup(s => s.GetPagedAsync(1, 20, null))
+                       .ReturnsAsync(mockResult);
 
             // Act
             await _controller.GetList();
 
             // Assert
-            _mockService.Verify(s => s.GetPagedEntityAsync(1, 20, null), Times.Once);
+            _mockService.Verify(s => s.GetPagedAsync(1, 20, null), Times.Once);
         }
 
         #endregion

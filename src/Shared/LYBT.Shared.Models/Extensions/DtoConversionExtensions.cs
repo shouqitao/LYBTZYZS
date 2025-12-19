@@ -15,6 +15,7 @@ public static class DtoConversionExtensions
     /// <summary>
     /// MedicalCaseDetailDto转换为MedicalCaseInputDto
     /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, VisitDate/ConsultationDate删除
+    /// OpenSpec: simplify-medicalcase-api - 包含Consultation和Prescription用于聚合保存
     /// </summary>
     public static MedicalCaseInputDto ToInputDto(this MedicalCaseDetailDto dto)
     {
@@ -24,7 +25,9 @@ public static class DtoConversionExtensions
             PatientId = dto.PatientId,
             UserId = dto.UserId,
             // VisitDate/ConsultationDate已删除，使用CreatedAt代替
-            Remark = dto.Remark
+            Remark = dto.Remark,
+            Consultation = dto.Consultation?.ToInputDto(),
+            Prescription = dto.Prescription?.ToPrescriptionInputDto()
         };
     }
 
