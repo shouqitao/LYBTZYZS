@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using LYBT.Desktop.Foundation.Logging;
 using LYBT.Desktop.Infrastructure.Http;
-using LYBT.Desktop.Infrastructure.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Localization;
 

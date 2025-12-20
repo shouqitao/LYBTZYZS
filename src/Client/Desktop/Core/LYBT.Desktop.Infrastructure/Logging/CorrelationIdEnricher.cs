@@ -1,3 +1,4 @@
+using LYBT.Desktop.Foundation.Logging;
 using Serilog.Core;
 using Serilog.Events;
 

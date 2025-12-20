@@ -1,5 +1,5 @@
 using System.Net.Http;
-using LYBT.Desktop.Infrastructure.Logging;
+using LYBT.Desktop.Foundation.Logging;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
 

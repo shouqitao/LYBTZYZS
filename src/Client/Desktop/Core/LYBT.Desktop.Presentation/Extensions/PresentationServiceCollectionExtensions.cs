@@ -1,5 +1,4 @@
 ﻿using LYBT.Desktop.Presentation.Notifications;
-using LYBT.Desktop.Presentation.Theming;
 using LYBT.Desktop.Presentation.UserExperience;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,9 +24,6 @@ namespace LYBT.Desktop.Presentation.Extensions
 
             // 异常处理服务 - optimize-desktop-core: 统一使用Shared.ExceptionHandling
             services.AddSingleton<IDesktopExceptionHandler, DesktopExceptionHandler>();
-
-            // 主题服务
-            services.AddSingleton<IThemeService, ThemeService>();
 
             // 用户体验服务
             services.AddSingleton<IUserExperienceService, UserExperienceService>();

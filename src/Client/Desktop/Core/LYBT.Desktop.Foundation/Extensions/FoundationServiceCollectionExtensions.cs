@@ -30,11 +30,6 @@ namespace LYBT.Desktop.Foundation.Extensions
             // 配置服务
             services.AddSingleton<ConfigurationService>();
 
-            // 注意：DiagnosticService是静态工具类，无需注册
-
-            // 安全服务
-            services.AddSingleton<SecurityService>();
-
             // 启动优化服务
             services.AddSingleton<IStartupOptimizationService, StartupOptimizationService>();
 
