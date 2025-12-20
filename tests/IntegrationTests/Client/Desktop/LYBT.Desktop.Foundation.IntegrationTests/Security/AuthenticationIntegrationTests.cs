@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Foundation.IntegrationTests.Security;
 /// Issue #1907: 更新为内存存储模式（医疗系统安全要求）
 ///
 /// 集成测试特点：
-/// - 使用真实的SecureTokenStorage（内存存储，Session级别）
+/// - 使用真实的TokenStorageService（内存存储，Session级别）
 /// - 使用真实的LocalTokenValidator（真实JWT验证）
 /// - 仅Mock Server API（IAuthApi）
 /// - 测试组件协同工作
@@ -91,11 +91,11 @@ public class AuthenticationIntegrationTests
         loginResult.Data!.Token.Should().NotBeNullOrEmpty();
 
         // Act 2: 保存Token到内存
-        var tokenStorage = serviceProvider.GetRequiredService<ITokenStorage>();
-        await tokenStorage.SaveTokenAsync(loginResponse);
+        var tokenStorage = serviceProvider.GetRequiredService<ITokenStorageService>();
+        await tokenStorage.SaveAuthenticationAsync(loginResponse, rememberMe: false);
 
         // Act 3: 同会话内从内存加载Token
-        var loadedResponse = await tokenStorage.LoadTokenAsync();
+        var loadedResponse = await tokenStorage.GetLoginResponseAsync();
 
         // Assert 2: Token在同会话内应该可以恢复
         loadedResponse.Should().NotBeNull("同会话内应该成功读取Token");
@@ -127,7 +127,7 @@ public class AuthenticationIntegrationTests
     {
         // Arrange - 第一个服务提供者
         var serviceProvider1 = CreateServiceProvider();
-        var tokenStorage1 = serviceProvider1.GetRequiredService<ITokenStorage>();
+        var tokenStorage1 = serviceProvider1.GetRequiredService<ITokenStorageService>();
 
         var testUser = new UserDetailDto
         {
@@ -145,16 +145,16 @@ public class AuthenticationIntegrationTests
         };
 
         // Act 1: 在第一个服务提供者中保存Token
-        await tokenStorage1.SaveTokenAsync(loginResponse);
-        var loaded1 = await tokenStorage1.LoadTokenAsync();
+        await tokenStorage1.SaveAuthenticationAsync(loginResponse, rememberMe: false);
+        var loaded1 = await tokenStorage1.GetLoginResponseAsync();
         loaded1.Should().NotBeNull("第一个实例应该能读取Token");
 
         // Act 2: 创建新的服务提供者（模拟应用重启）
         var serviceProvider2 = CreateServiceProvider();
-        var tokenStorage2 = serviceProvider2.GetRequiredService<ITokenStorage>();
+        var tokenStorage2 = serviceProvider2.GetRequiredService<ITokenStorageService>();
 
         // Act 3: 尝试从新服务提供者加载Token
-        var loaded2 = await tokenStorage2.LoadTokenAsync();
+        var loaded2 = await tokenStorage2.GetLoginResponseAsync();
 
         // Assert: 新服务提供者不应该能读取到Token（内存隔离）
         loaded2.Should().BeNull("新ServiceProvider实例不应该共享Token（内存存储隔离）");
@@ -168,7 +168,7 @@ public class AuthenticationIntegrationTests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var tokenStorage = serviceProvider.GetRequiredService<ITokenStorage>();
+        var tokenStorage = serviceProvider.GetRequiredService<ITokenStorageService>();
         var mockAuthApi = serviceProvider.GetRequiredService<IAuthApi>();
 
         var testUser = new UserDetailDto
@@ -197,7 +197,7 @@ public class AuthenticationIntegrationTests
         };
 
         // 保存过期的Token
-        await tokenStorage.SaveTokenAsync(oldLoginResponse);
+        await tokenStorage.SaveAuthenticationAsync(oldLoginResponse, rememberMe: false);
 
         // 创建新Token（刷新后）
         var newToken = GenerateValidToken(testUser.Id, testUser.UserName, testUser.Role.ToString());
@@ -220,7 +220,7 @@ public class AuthenticationIntegrationTests
             }));
 
         // Act: 检查Token是否过期 (通过TokenValidator)
-        var loadedOldToken = await tokenStorage.LoadTokenAsync();
+        var loadedOldToken = await tokenStorage.GetLoginResponseAsync();
         var tokenValidator = serviceProvider.GetRequiredService<ITokenValidator>();
         var oldTokenValidation = await tokenValidator.ValidateTokenAsync(loadedOldToken!.Token);
 
@@ -242,7 +242,7 @@ public class AuthenticationIntegrationTests
         refreshResult.Data.RefreshToken.Should().Be(newRefreshToken);
 
         // Act: 保存新Token
-        await tokenStorage.SaveTokenAsync(refreshResult.Data);
+        await tokenStorage.SaveAuthenticationAsync(refreshResult.Data, rememberMe: false);
 
         // Act: 验证新Token (重用前面的tokenValidator)
         var validationResult = await tokenValidator.ValidateTokenAsync(refreshResult.Data.Token);
@@ -265,7 +265,7 @@ public class AuthenticationIntegrationTests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var tokenStorage = serviceProvider.GetRequiredService<ITokenStorage>();
+        var tokenStorage = serviceProvider.GetRequiredService<ITokenStorageService>();
 
         var testUser = new UserDetailDto
         {
@@ -292,10 +292,10 @@ public class AuthenticationIntegrationTests
         };
 
         // 保存过期Token
-        await tokenStorage.SaveTokenAsync(oldLoginResponse);
+        await tokenStorage.SaveAuthenticationAsync(oldLoginResponse, rememberMe: false);
 
         // 验证Token已保存
-        var loadedToken = await tokenStorage.LoadTokenAsync();
+        var loadedToken = await tokenStorage.GetLoginResponseAsync();
         loadedToken.Should().NotBeNull("Token应该已保存到内存");
 
         // Act 1: 检查Token是否过期
@@ -306,10 +306,10 @@ public class AuthenticationIntegrationTests
         oldTokenValidation.IsValid.Should().BeFalse("旧Token应该已过期");
 
         // Act 2: 清理过期Token
-        await tokenStorage.ClearTokenAsync();
+        await tokenStorage.ClearAuthenticationAsync();
 
         // Assert 2: Token已从内存清除
-        var clearedToken = await tokenStorage.LoadTokenAsync();
+        var clearedToken = await tokenStorage.GetLoginResponseAsync();
         clearedToken.Should().BeNull("清理后Token应该为null");
 
         // Act 3: 验证登出状态
@@ -319,62 +319,6 @@ public class AuthenticationIntegrationTests
         // Assert 3: 用户应该处于未登录状态
         isLoggedIn.Should().BeFalse("清理后用户应该处于未登录状态，需要重新登录");
     }
-
-    #region Helper Classes
-
-    /// <summary>
-    /// TokenStorageService适配器 - 用于集成测试
-    /// 实现ITokenStorageService接口,内部使用SecureTokenStorage
-    /// </summary>
-    private class TokenStorageServiceAdapter : ITokenStorageService
-    {
-        private readonly ITokenStorage _tokenStorage;
-
-        public TokenStorageServiceAdapter(ITokenStorage tokenStorage)
-        {
-            _tokenStorage = tokenStorage;
-        }
-
-        public async Task SaveAuthenticationAsync(LoginResponse loginResponse, bool rememberMe)
-        {
-            await _tokenStorage.SaveTokenAsync(loginResponse);
-        }
-
-        public async Task<string?> GetTokenAsync()
-        {
-            var loginResponse = await _tokenStorage.LoadTokenAsync();
-            return loginResponse?.Token;
-        }
-
-        public async Task<string?> GetRefreshTokenAsync()
-        {
-            var loginResponse = await _tokenStorage.LoadTokenAsync();
-            return loginResponse?.RefreshToken;
-        }
-
-        public async Task<LoginResponse?> GetLoginResponseAsync()
-        {
-            return await _tokenStorage.LoadTokenAsync();
-        }
-
-        public async Task ClearAuthenticationAsync()
-        {
-            await _tokenStorage.ClearTokenAsync();
-        }
-
-        public async Task<bool> IsTokenExpiredAsync()
-        {
-            var loginResponse = await _tokenStorage.LoadTokenAsync();
-            if (loginResponse == null)
-            {
-                return true;
-            }
-
-            return loginResponse.ExpiresAt < DateTime.UtcNow;
-        }
-    }
-
-    #endregion
 
     #region Helper Methods
 
@@ -406,13 +350,8 @@ public class AuthenticationIntegrationTests
         services.AddSingleton(mockAuthApi);
 
         // 真实实现（集成测试的核心）
-        services.AddSingleton<ITokenStorage, SecureTokenStorage>();
+        services.AddSingleton<ITokenStorageService, TokenStorageService>();
         services.AddSingleton<ITokenValidator, LocalTokenValidator>();
-
-        // 使用适配器连接ITokenStorage和ITokenStorageService
-        services.AddSingleton<ITokenStorageService>(sp =>
-            new TokenStorageServiceAdapter(sp.GetRequiredService<ITokenStorage>()));
-
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
 
         return services.BuildServiceProvider();

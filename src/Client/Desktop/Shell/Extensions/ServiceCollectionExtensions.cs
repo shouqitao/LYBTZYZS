@@ -36,7 +36,6 @@ using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Desktop.Prescriptions;
 using LYBT.Desktop.Prescriptions.Services;
 using LYBT.Desktop.Infrastructure.Services.Notifications;
-using LYBT.Desktop.Infrastructure.Services.UserExperience;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.Services.Diagnostics;
@@ -117,8 +116,6 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterInfrastructureLoggers(IContainerRegistry containerRegistry)
         {
             RegisterLogger<MainWindowServicesFacade>(containerRegistry);
-            RegisterLogger<StandardErrorHandler>(containerRegistry);
-            RegisterLogger<KeyboardShortcutService>(containerRegistry);
             RegisterLogger<RoleNavigationService>(containerRegistry);
             RegisterLogger<ActiveConsultationService>(containerRegistry);
             RegisterLogger<ApplicationTickService>(containerRegistry);
@@ -135,7 +132,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<TokenStorageService>(containerRegistry);
             RegisterLogger<UsernameStorageService>(containerRegistry);
             RegisterLogger<SecureCredentialStorage>(containerRegistry);
-            RegisterLogger<SecureTokenStorage>(containerRegistry);
             RegisterLogger<LocalTokenValidator>(containerRegistry);
             RegisterLogger<ModuleLoadingService>(containerRegistry);
             RegisterLogger<StartupOptimizationService>(containerRegistry);
@@ -278,7 +274,6 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
             containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
-            containerRegistry.RegisterSingleton<ITokenStorage, SecureTokenStorage>();
             containerRegistry.RegisterSingleton<ITokenValidator, LocalTokenValidator>();
             containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();
             containerRegistry.RegisterSingleton<ISecureCredentialStorage, SecureCredentialStorage>();
@@ -320,20 +315,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IValidationService, ValidationService>();
             containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();
             containerRegistry.RegisterSingleton<IMainWindowServicesFacade, MainWindowServicesFacade>();
-            containerRegistry.RegisterSingleton<IStandardErrorHandler, StandardErrorHandler>();
-            containerRegistry.RegisterSingleton<IKeyboardShortcutService, KeyboardShortcutService>();
-            containerRegistry.RegisterSingleton<IFeatureToggleService, FeatureToggleService>();
             containerRegistry.RegisterSingleton<IPrescriptionSettingsService, PrescriptionSettingsService>(); // OpenSpec: enhance-duplicate-herb-dialog
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>(); // OpenSpec: print-prescription-slip
             containerRegistry.RegisterSingleton<IRoleNavigationService, RoleNavigationService>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
-            containerRegistry.RegisterSingleton<IUserExperienceService>(resolver =>
-            {
-                var logger = resolver.Resolve<ILogger<UserExperienceService>>();
-                var notificationService = resolver.Resolve<INotificationService>();
-                var tickService = resolver.Resolve<IApplicationTickService>();
-                return new UserExperienceService(logger, notificationService, tickService);
-            });
         }
 
         /// <summary>注册全局命令和模块管理服务</summary>

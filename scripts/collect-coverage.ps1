@@ -95,6 +95,8 @@ foreach ($project in $testProjects) {
     $testCommand = @(
         "test"
         $project
+        "--settings"
+        "tests/.runsettings"
         "--collect:XPlat Code Coverage"
         "--results-directory"
         $projectOutputDir

@@ -1,6 +1,4 @@
-﻿using LYBT.Desktop.Foundation.Caching;
-using LYBT.Desktop.Foundation.Configuration;
-using LYBT.Desktop.Foundation.HealthCheck;
+﻿using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Performance;
@@ -24,12 +22,6 @@ namespace LYBT.Desktop.Foundation.Extensions
         /// <returns>服务集合</returns>
         public static IServiceCollection AddDesktopFoundation(this IServiceCollection services, IConfiguration configuration)
         {
-            // 缓存服务
-            services.AddSingleton<CacheService>();
-
-            // 配置服务
-            services.AddSingleton<ConfigurationService>();
-
             // 启动优化服务
             services.AddSingleton<IStartupOptimizationService, StartupOptimizationService>();
 
