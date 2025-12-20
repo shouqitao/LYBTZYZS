@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### 统一日志系统项目 (OpenSpec: unify-logging-system) - 2025-12-20
+
+**背景**: Server和Desktop层各自实现了日志组件，存在代码重复和HttpContext耦合问题。
+
+**新增LYBT.Shared.Logging项目**:
+
+核心抽象:
+- `ICorrelationIdProvider` - CorrelationId提供者接口，解耦HttpContext依赖
+- `AsyncLocalCorrelationIdProvider` - 基于AsyncLocal的Desktop实现
+
+敏感数据脱敏:
+- `SensitiveDataMasker` - 敏感数据脱敏工具类
+- `SensitiveDataDestructuringPolicy` - Serilog解构策略
+- `SensitiveDataAttribute/SensitiveDataType/MaskingMode` - 脱敏标记
+
+日志管理:
+- `LoggingLevelManager` - 动态日志级别管理
+- `DebugModeInfo` - 调试模式信息
+
+Enrichers:
+- `CorrelationIdEnricher` - 统一的CorrelationId日志富集器
+
+扩展方法:
+- `LoggerConfigurationExtensions` - Serilog配置扩展
+- `ServiceCollectionExtensions` - DI注册扩展
+
+**适配器**:
+- `HttpContextCorrelationIdProvider` (Server端) - 桥接HttpContext
+- `FoundationCorrelationIdProvider` (Desktop端) - 桥接Foundation层
+
+**向后兼容**: 旧组件标记为[Obsolete]，未直接删除
+
 ### Changed
 
 #### Desktop Core层无用代码清理 (OpenSpec: cleanup-desktop-core-unused) - 2025-12-20
