@@ -1,26 +1,23 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using LYBT.Entities.Attributes;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace LYBT.Infrastructure.Logging;
+namespace LYBT.Shared.Logging.Masking;
 
 /// <summary>
 /// Serilog敏感数据脱敏策略
 /// 自动对标记了[SensitiveData]的属性进行脱敏处理
 /// </summary>
-/// <remarks>
-/// 已废弃：请使用 LYBT.Shared.Logging.Masking.SensitiveDataDestructuringPolicy
-/// 此类保留用于向后兼容，使用LYBT.Entities.Attributes.SensitiveDataAttribute
-/// 新代码应使用 LYBT.Shared.Logging.Masking 命名空间中的组件
-/// </remarks>
-[Obsolete("使用 LYBT.Shared.Logging.Masking.SensitiveDataDestructuringPolicy")]
 public class SensitiveDataDestructuringPolicy : IDestructuringPolicy
 {
     /// <summary>
     /// 尝试解构对象，对敏感字段进行脱敏
     /// </summary>
-    public bool TryDestructure(object value, ILogEventPropertyValueFactory propertyValueFactory, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out LogEventPropertyValue? result)
+    public bool TryDestructure(
+        object value,
+        ILogEventPropertyValueFactory propertyValueFactory,
+        [NotNullWhen(true)] out LogEventPropertyValue? result)
     {
         result = null;
 

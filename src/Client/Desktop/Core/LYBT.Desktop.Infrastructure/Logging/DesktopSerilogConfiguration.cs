@@ -1,4 +1,7 @@
 using System.IO;
+using LYBT.Shared.Logging.Abstractions;
+using LYBT.Shared.Logging.Extensions;
+using LYBT.Shared.Logging.Masking;
 using Serilog;
 using Serilog.Events;
 
@@ -6,7 +9,7 @@ namespace LYBT.Desktop.Infrastructure.Logging;
 
 /// <summary>
 /// 客户端Serilog配置
-/// refactor-logging-system: 为WPF客户端配置结构化日志
+/// 为WPF客户端配置结构化日志，使用共享日志组件
 /// </summary>
 public static class DesktopSerilogConfiguration
 {
@@ -24,6 +27,17 @@ public static class DesktopSerilogConfiguration
     public static string LogFilePath => Path.Combine(LogBasePath, "lybt-desktop-.log");
 
     /// <summary>
+    /// CorrelationId提供者（单例）
+    /// </summary>
+    private static readonly Lazy<ICorrelationIdProvider> _correlationIdProvider =
+        new(() => new FoundationCorrelationIdProvider());
+
+    /// <summary>
+    /// 获取CorrelationId提供者
+    /// </summary>
+    public static ICorrelationIdProvider CorrelationIdProvider => _correlationIdProvider.Value;
+
+    /// <summary>
     /// 配置Serilog日志
     /// </summary>
     /// <param name="minimumLevel">最低日志级别，默认Information</param>
@@ -38,11 +52,11 @@ public static class DesktopSerilogConfiguration
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .MinimumLevel.Override("System", LogEventLevel.Warning)
             .MinimumLevel.Override("Prism", LogEventLevel.Warning)
-            .Enrich.FromLogContext()
-            .Enrich.WithMachineName()
-            .Enrich.WithThreadId()
+            // 使用共享日志配置
+            .UseSharedLogging(CorrelationIdProvider)
             .Enrich.WithProperty("Application", "LYBT.Desktop")
-            .Enrich.With<CorrelationIdEnricher>()
+            // 敏感数据脱敏
+            .Destructure.With<SensitiveDataDestructuringPolicy>()
             .WriteTo.Console(
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{CorrelationId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
             .WriteTo.File(

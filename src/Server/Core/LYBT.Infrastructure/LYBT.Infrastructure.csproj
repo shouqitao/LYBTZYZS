@@ -44,6 +44,8 @@
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<!-- consolidate-exception-handling: 统一异常处理 -->
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
+		<!-- unify-logging-system: 统一日志系统 -->
+		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Logging\LYBT.Shared.Logging.csproj" />
 	</ItemGroup>
 
 </Project>

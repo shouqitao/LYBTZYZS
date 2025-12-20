@@ -6,8 +6,14 @@ namespace LYBT.Desktop.Infrastructure.Logging;
 
 /// <summary>
 /// 客户端CorrelationId日志Enricher
-/// refactor-logging-system: 自动将当前CorrelationId添加到所有日志事件
+/// 自动将当前CorrelationId添加到所有日志事件
 /// </summary>
+/// <remarks>
+/// 已废弃：请使用 LYBT.Shared.Logging.Enrichers.CorrelationIdEnricher
+/// 配合 FoundationCorrelationIdProvider 使用
+/// 此类保留用于向后兼容
+/// </remarks>
+[Obsolete("使用 LYBT.Shared.Logging.Enrichers.CorrelationIdEnricher 配合 FoundationCorrelationIdProvider")]
 public class CorrelationIdEnricher : ILogEventEnricher
 {
     /// <summary>

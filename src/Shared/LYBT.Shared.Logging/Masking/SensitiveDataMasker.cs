@@ -4,19 +4,13 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using LYBT.Entities.Attributes;
 
-namespace LYBT.Infrastructure.Logging;
+namespace LYBT.Shared.Logging.Masking;
 
 /// <summary>
 /// 敏感数据脱敏处理器
+/// 统一的敏感数据脱敏入口，整合属性级和文本级脱敏
 /// </summary>
-/// <remarks>
-/// 已废弃：请使用 LYBT.Shared.Logging.Masking.SensitiveDataMasker
-/// 此类保留用于向后兼容，使用LYBT.Entities.Attributes.SensitiveDataAttribute
-/// 新代码应使用 LYBT.Shared.Logging.Masking 命名空间中的组件
-/// </remarks>
-[Obsolete("使用 LYBT.Shared.Logging.Masking.SensitiveDataMasker")]
 public static partial class SensitiveDataMasker
 {
     #region 文本脱敏正则模式

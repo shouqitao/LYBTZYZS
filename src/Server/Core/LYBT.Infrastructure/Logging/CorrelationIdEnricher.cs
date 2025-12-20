@@ -5,15 +5,15 @@ using Serilog.Events;
 namespace LYBT.Infrastructure.Logging;
 
 /// <summary>
-/// CorrelationId日志富集器
-/// refactor-logging-system: 从HttpContext获取CorrelationId并添加到日志上下文
+/// CorrelationId日志富集器（Server端专用）
+/// 从HttpContext获取CorrelationId并添加到日志上下文
 /// </summary>
 /// <remarks>
-/// 此Enricher作为LogContext.PushProperty的补充机制:
-/// - 中间件使用LogContext.PushProperty在请求作用域内注入CorrelationId
-/// - 此Enricher用于LogContext未生效的场景(如后台任务、非HTTP上下文)
-/// - 优先从LogContext获取(由中间件注入),其次从HttpContext.Items获取
+/// 注意：建议使用共享组件 LYBT.Shared.Logging.Enrichers.CorrelationIdEnricher
+/// 配合 HttpContextCorrelationIdProvider 使用
+/// 此类保留用于向后兼容
 /// </remarks>
+[Obsolete("使用 LYBT.Shared.Logging.Enrichers.CorrelationIdEnricher 配合 HttpContextCorrelationIdProvider")]
 public class CorrelationIdEnricher : ILogEventEnricher
 {
     /// <summary>
@@ -89,6 +89,7 @@ public class CorrelationIdEnricher : ILogEventEnricher
 /// <summary>
 /// CorrelationId Enricher扩展方法
 /// </summary>
+[Obsolete("使用 LYBT.Infrastructure.Logging.SerilogExtensions.WithHttpContextCorrelationId")]
 public static class CorrelationIdEnricherExtensions
 {
     /// <summary>
@@ -102,6 +103,8 @@ public static class CorrelationIdEnricherExtensions
         IHttpContextAccessor httpContextAccessor)
     {
         ArgumentNullException.ThrowIfNull(enrichmentConfiguration);
+#pragma warning disable CS0618 // 允许使用废弃的类型
         return enrichmentConfiguration.With(new CorrelationIdEnricher(httpContextAccessor));
+#pragma warning restore CS0618
     }
 }
