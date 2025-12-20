@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Desktop Core层架构优化 (OpenSpec: optimize-desktop-core) - 2025-12-20
+
+**背景**: Desktop Core层(5个项目)存在代码重复、职责混乱、组织问题，需要统一架构。
+
+**P0级代码重复消除**:
+- 删除UnifiedErrorHandlingService，统一使用IDesktopExceptionHandler
+- 删除ITokenManager，Token由ITokenStorageService管理
+- 删除MappingService/IMappingService，统一使用SimpleMapper
+- 删除冗余ErrorHandling目录(ErrorContext/ErrorHandlingService/IExceptionHandler)
+
+**P1级职责澄清**:
+- 移除ISessionManager的Token属性，职责分离更清晰
+- 删除未使用的IUserSessionManager接口
+- 明确会话管理层级：Foundation(认证API) → Infrastructure(内存状态)
+
+**P2级组织优化**:
+- 删除未使用的Controls子目录(Auth/Authentication/ErrorHandling/FormulaTemplates)
+- Item模型命名一致性验证通过
+
+**净效果**: 净删除约1,700行冗余代码，创建desktop-core-cleanup规范(8个需求项)
+
 #### 异常处理架构统一 (OpenSpec: consolidate-exception-handling) - 2025-12-20
 
 **背景**: 异常处理分散在多个项目(Foundation/Exceptions、Models/Errors、Infrastructure/Errors等)，缺乏统一架构。
