@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Desktop工具类统一项目 (OpenSpec: consolidate-shared-utilities) - 2025-12-21
+
+**背景**: Desktop层的工具类分散在多个项目中，需要统一管理并解决ValidationConstants循环依赖问题。
+
+**新增LYBT.Desktop.Utilities项目**:
+
+工具类迁移(7个):
+- `ConfigurationExtensions` - IConfiguration扩展方法
+- `SystemConstants` - 系统常量定义
+- `ExcelHelper` - NPOI Excel操作封装
+- `ProblemDetailsResponse` - RFC 7807错误响应模型
+- `RetryPolicyExtensions` - Polly重试/熔断策略
+- `ClientErrorMessageMapper` - 客户端错误消息映射
+- `DesktopSerilogConfiguration` - Desktop日志配置
+- `SensitiveInfoFilter` - 敏感信息过滤器
+
+**ValidationConstants移至Primitives**:
+- 解决Models→Validators循环依赖
+- 新增常量: CodeMaxLength, UsageMaxLength, DiagnosisMaxLength, FourDiagnosisMaxLength
+- 命名空间: `LYBT.Shared.Primitives.Validation`
+
+**清理未使用代码**:
+- 删除SimpleMapper.cs (无引用)
+- 删除重复的ValidationConstants文件
+
 #### 统一日志系统项目 (OpenSpec: unify-logging-system) - 2025-12-20
 
 **背景**: Server和Desktop层各自实现了日志组件，存在代码重复和HttpContext耦合问题。
