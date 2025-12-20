@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### 异常处理架构统一 (OpenSpec: consolidate-exception-handling) - 2025-12-20
+
+**背景**: 异常处理分散在多个项目(Foundation/Exceptions、Models/Errors、Infrastructure/Errors等)，缺乏统一架构。
+
+**核心变更**:
+- 创建三层架构: Primitives(零依赖) → Models → ExceptionHandling
+- 实现ErrorCode 5位数分区设计(0xxxx-7xxxx按模块)
+- 引入EC别名模式解决属性/枚举名称冲突
+- 实现RFC 7807 ProblemDetails工厂
+- 统一Server端异常处理器到共享库
+
+**新增项目**:
+- LYBT.Shared.Primitives: 零依赖基础层(ErrorCode枚举)
+- LYBT.Shared.ExceptionHandling: 统一异常处理层
+- LYBT.Shared.ExceptionHandling.Tests: 100个单元测试
+
+**删除冗余代码**(12+文件):
+- Foundation/Exceptions目录(5个文件)
+- Models/Errors目录(2个文件)
+- Infrastructure/Errors目录(2个文件)
+- WebAPI/ExceptionHandlers目录(2个文件)
+- Desktop.Models/Exceptions目录(1个文件)
+
+**净效果**: 净删除约847行代码，统一异常处理架构
+
 ### Added
 
 #### 集成测试覆盖补充 (OpenSpec: optimize-integration-tests) - 2025-12-20
