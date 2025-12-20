@@ -59,6 +59,15 @@ Presentation项目 (2个):
 
 **净效果**: 净删除约1,700行冗余代码，创建desktop-core-cleanup规范(8个需求项)
 
+**项目结构整合 (Phase 2)** - 2025-12-20:
+- 删除LYBT.Desktop.Presentation项目，内容完全合并到Infrastructure
+- 迁移UI组件: HerbCardControl, HerbListEditor, HerbListView → Infrastructure.Controls
+- 迁移服务: NotificationService, UserExperienceService → Infrastructure.Services
+- 迁移接口: 17个接口从Infrastructure.Interfaces → Contracts.Services
+- 创建IHerbItemEditable接口(Shared.Components)解决控件与ViewModel循环依赖
+- 删除过时的PatientSelector测试项目
+- 项目数从5个减少到4个: Contracts, Foundation, Infrastructure, Models
+
 #### 异常处理架构统一 (OpenSpec: consolidate-exception-handling) - 2025-12-20
 
 **背景**: 异常处理分散在多个项目(Foundation/Exceptions、Models/Errors、Infrastructure/Errors等)，缺乏统一架构。
