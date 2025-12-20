@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Desktop Core层无用代码清理 (OpenSpec: cleanup-desktop-core-unused) - 2025-12-20
+
+**背景**: Desktop Core层(Foundation/Infrastructure/Models/Presentation)累积了大量从未被使用的代码。
+
+**删除的文件** (12个):
+
+Foundation项目 (5个):
+- Commands/CommandFactory.cs - 命令工厂，从未被实例化
+- Diagnostics/DiagnosticService.cs - 诊断服务，静态方法从未被调用
+- Security/SecurityService.cs - 安全服务，从未被DI注册
+- Api/Managers/IUnifiedApiClientManager.cs - 接口无实现
+- Repositories/BaseApiRepository.cs - 仓库基类从未被继承
+
+Infrastructure项目 (4个):
+- Components/CommandHandlerBase.cs - 命令处理器基类从未被继承
+- Components/ComponentValidatorBase.cs - 验证器基类从未被继承
+- Services/Navigation/EnhancedNavigationService.cs - 导航服务从未使用
+- Logging/CorrelationIdContext.cs - Foundation版本的冗余包装器
+
+Presentation项目 (2个):
+- Theming/ThemeService.cs - 主题服务，注册但从未注入
+- Navigation/INavigationService.cs - 导航接口，定义但无消费者
+
+**代码统一**:
+- CorrelationIdContext引用统一使用Foundation.Logging版本
+- 清理DI注册中对已删除服务的引用
+
+**净效果**: 净删除约900行无用代码
+
 #### Desktop Core层架构优化 (OpenSpec: optimize-desktop-core) - 2025-12-20
 
 **背景**: Desktop Core层(5个项目)存在代码重复、职责混乱、组织问题，需要统一架构。
