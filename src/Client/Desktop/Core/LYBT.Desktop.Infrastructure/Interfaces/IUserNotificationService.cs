@@ -4,6 +4,7 @@
     /// 用户通知服务接口 - UltraThink架构
     /// 提供简单的消息提示和用户交互对话框功能
     /// Issue #840: 从 IErrorHandlingService 重命名以消除与 Services.ErrorHandling.IErrorHandlingService 的命名冲突
+    /// optimize-desktop-core: 移除RegisterGlobalExceptionHandlers，由IDesktopExceptionHandler统一处理
     /// </summary>
     public interface IUserNotificationService
     {
@@ -36,10 +37,5 @@
         /// 显示确认对话框
         /// </summary>
         Task<bool> ShowConfirmAsync(string message, string? title = null);
-
-        /// <summary>
-        /// 注册全局异常处理器
-        /// </summary>
-        void RegisterGlobalExceptionHandlers();
     }
 }

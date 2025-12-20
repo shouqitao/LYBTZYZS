@@ -87,14 +87,5 @@ namespace LYBT.Desktop.Infrastructure.Services
 
             return Task.FromResult(result == MessageBoxResult.Yes);
         }
-
-        /// <summary>
-        /// 注册全局异常处理器
-        /// 注: 此实现为空,实际的全局异常处理由 Services.ErrorHandling.UnifiedErrorHandlingService 负责
-        /// </summary>
-        public void RegisterGlobalExceptionHandlers()
-        {
-            // 空实现 - 全局异常处理由 UnifiedErrorHandlingService 负责
-        }
     }
 }

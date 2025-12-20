@@ -503,7 +503,7 @@ public partial class App : PrismApplication
 public class MainWindowViewModel : BindableBase
 {
     private readonly IRegionManager _regionManager;
-    private readonly IUserSessionManager _sessionManager;
+    private readonly ISessionManager _sessionManager;
     private readonly IEventAggregator _eventAggregator;
     private readonly IDialogService _dialogService;
     private readonly ILogger<MainWindowViewModel> _logger;
@@ -560,7 +560,7 @@ public class MainWindowViewModel : BindableBase
 
     public MainWindowViewModel(
         IRegionManager regionManager,
-        IUserSessionManager sessionManager,
+        ISessionManager sessionManager,
         IEventAggregator eventAggregator,
         IDialogService dialogService,
         ILogger<MainWindowViewModel> logger)
@@ -1400,7 +1400,7 @@ protected override IModuleCatalog CreateModuleCatalog()
 //  正确：使用合适的生命周期
 containerRegistry.RegisterSingleton<IDialogService, DialogService>();      // 单例
 containerRegistry.Register<IPatientService, PatientService>();            // 瞬态
-containerRegistry.RegisterScoped<IUserSessionManager, UserSessionManager>(); // 作用域
+containerRegistry.RegisterScoped<ISessionManager, SessionManager>(); // 作用域
 
 //  错误：所有服务都注册为单例
 containerRegistry.RegisterSingleton<IPatientService, PatientService>(); // 可能导致状态污染
@@ -1635,7 +1635,7 @@ private void ShowErrorDialog(Exception ex)
 public class MainWindowViewModelTests
 {
     private Mock<IRegionManager> _regionManagerMock;
-    private Mock<IUserSessionManager> _sessionManagerMock;
+    private Mock<ISessionManager> _sessionManagerMock;
     private Mock<IEventAggregator> _eventAggregatorMock;
     private MainWindowViewModel _viewModel;
 
@@ -1643,7 +1643,7 @@ public class MainWindowViewModelTests
     public void SetUp()
     {
         _regionManagerMock = new Mock<IRegionManager>();
-        _sessionManagerMock = new Mock<IUserSessionManager>();
+        _sessionManagerMock = new Mock<ISessionManager>();
         _eventAggregatorMock = new Mock<IEventAggregator>();
 
         _viewModel = new MainWindowViewModel(

@@ -65,6 +65,92 @@ public class DesktopExceptionHandler : IDesktopExceptionHandler
         };
     }
 
+    #region 全局异常处理
+
+    private bool _isRegistered;
+
+    /// <inheritdoc/>
+    public void RegisterGlobalExceptionHandlers()
+    {
+        if (_isRegistered) return;
+
+        try
+        {
+            _logger.LogInformation("注册全局异常处理器");
+
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+
+            _isRegistered = true;
+            _logger.LogInformation("全局异常处理器注册完成");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "注册全局异常处理器失败");
+        }
+    }
+
+    /// <inheritdoc/>
+    public void UnregisterGlobalExceptionHandlers()
+    {
+        if (!_isRegistered) return;
+
+        try
+        {
+            AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
+            TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
+
+            _isRegistered = false;
+            _logger.LogInformation("全局异常处理器已注销");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "注销全局异常处理器失败");
+        }
+    }
+
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            if (e.ExceptionObject is Exception exception)
+            {
+                _logger.LogCritical(
+                    exception,
+                    "应用程序域未处理异常 - 类型: {ExceptionType}, 是否终止: {IsTerminating}",
+                    exception.GetType().FullName,
+                    e.IsTerminating);
+
+                _ = Task.Run(() => HandleExceptionAsync(exception, "AppDomain未处理异常"));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, "处理应用程序域未处理异常时发生错误");
+        }
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        try
+        {
+            _logger.LogError(
+                e.Exception,
+                "未观察到的任务异常 - 类型: {ExceptionType}, 内部异常数: {InnerExceptionCount}",
+                e.Exception?.GetType().FullName,
+                e.Exception?.InnerExceptions?.Count ?? 0);
+
+            _ = Task.Run(() => HandleExceptionAsync(e.Exception!, "TaskScheduler未观察异常"));
+            e.SetObserved();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, "处理未观察任务异常时发生错误");
+        }
+    }
+
+    #endregion
+
     private void LogExceptionInternal(Exception exception, string methodName, string? context)
     {
         var logLevel = DetermineLogLevel(exception);

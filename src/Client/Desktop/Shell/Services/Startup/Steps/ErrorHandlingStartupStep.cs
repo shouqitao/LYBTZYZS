@@ -1,6 +1,6 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Localization;
-using LYBT.Desktop.Presentation.Notifications;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Startup.Steps;
@@ -8,17 +8,18 @@ namespace LYBT.Desktop.Shell.Services.Startup.Steps;
 /// <summary>
 /// 错误处理初始化步骤
 /// 注册全局异常处理器
+/// optimize-desktop-core: 统一使用Shared.ExceptionHandling
 /// </summary>
 public class ErrorHandlingStartupStep : IStartupStep
 {
-    private readonly IErrorHandlingService _errorHandlingService;
+    private readonly IDesktopExceptionHandler _exceptionHandler;
     private readonly ILogger<ErrorHandlingStartupStep> _logger;
 
     public ErrorHandlingStartupStep(
-        IErrorHandlingService errorHandlingService,
+        IDesktopExceptionHandler exceptionHandler,
         ILogger<ErrorHandlingStartupStep> logger)
     {
-        _errorHandlingService = errorHandlingService ?? throw new ArgumentNullException(nameof(errorHandlingService));
+        _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -38,7 +39,7 @@ public class ErrorHandlingStartupStep : IStartupStep
 
         try
         {
-            _errorHandlingService.RegisterGlobalExceptionHandlers();
+            _exceptionHandler.RegisterGlobalExceptionHandlers();
             _logger.LogInformation("全局异常处理器注册完成");
 
             return Task.FromResult(StartupStepResult.Succeeded(TimeSpan.Zero));

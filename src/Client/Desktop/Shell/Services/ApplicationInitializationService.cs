@@ -1,5 +1,5 @@
 ﻿using LYBT.Desktop.Foundation.Performance;
-using LYBT.Desktop.Presentation.Notifications;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.Logging;
 using Prism.Modularity;
 
@@ -34,23 +34,24 @@ namespace LYBT.Desktop.Shell.Services
 
     /// <summary>
     /// 应用程序初始化服务实现
+    /// optimize-desktop-core: 使用IDesktopExceptionHandler统一异常处理
     /// </summary>
     public class ApplicationInitializationService : IApplicationInitializationService
     {
-        private readonly IErrorHandlingService _errorHandlingService;
+        private readonly IDesktopExceptionHandler _exceptionHandler;
         private readonly IStartupOptimizationService _startupOptimizationService;
         private readonly IModuleManager _moduleManager;
         private readonly IModuleCatalog _moduleCatalog;
         private readonly ILogger<ApplicationInitializationService> _logger;
 
         public ApplicationInitializationService(
-            IErrorHandlingService errorHandlingService,
+            IDesktopExceptionHandler exceptionHandler,
             IStartupOptimizationService startupOptimizationService,
             IModuleManager moduleManager,
             IModuleCatalog moduleCatalog,
             ILogger<ApplicationInitializationService> logger)
         {
-            _errorHandlingService = errorHandlingService ?? throw new ArgumentNullException(nameof(errorHandlingService));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
             _startupOptimizationService = startupOptimizationService ?? throw new ArgumentNullException(nameof(startupOptimizationService));
             _moduleManager = moduleManager ?? throw new ArgumentNullException(nameof(moduleManager));
             _moduleCatalog = moduleCatalog ?? throw new ArgumentNullException(nameof(moduleCatalog));
@@ -86,13 +87,14 @@ namespace LYBT.Desktop.Shell.Services
 
         /// <summary>
         /// 初始化错误处理
+        /// optimize-desktop-core: 使用IDesktopExceptionHandler
         /// </summary>
         public void InitializeErrorHandling()
         {
             try
             {
                 _logger.LogDebug("初始化全局错误处理");
-                _errorHandlingService.RegisterGlobalExceptionHandlers();
+                _exceptionHandler.RegisterGlobalExceptionHandlers();
                 _logger.LogInformation("全局错误处理初始化成功");
             }
             catch (Exception ex)

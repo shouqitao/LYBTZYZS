@@ -17,8 +17,6 @@ LYBT.Desktop.Models/
 │   └── ProblemDetails.cs         # RFC 7807标准错误响应
 ├── Mappers/
 │   └── SimpleMapper.cs           # 简单对象映射器
-├── Mapping/
-│   └── MappingService.cs         # 映射服务
 ├── Prescriptions/
 │   └── PrescriptionTemplate.cs   # 处方模板模型
 └── ViewModels/Base/

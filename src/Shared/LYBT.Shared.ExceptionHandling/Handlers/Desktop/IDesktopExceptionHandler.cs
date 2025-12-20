@@ -33,6 +33,21 @@ public interface IDesktopExceptionHandler
     /// </summary>
     bool CanRetry(Exception exception);
 
+    #region 全局异常处理
+
+    /// <summary>
+    /// 注册全局异常处理器（AppDomain.UnhandledException, TaskScheduler.UnobservedTaskException）
+    /// optimize-desktop-core: 统一全局异常处理入口
+    /// </summary>
+    void RegisterGlobalExceptionHandlers();
+
+    /// <summary>
+    /// 注销全局异常处理器
+    /// </summary>
+    void UnregisterGlobalExceptionHandlers();
+
+    #endregion
+
     #region ServiceResult支持（从IExceptionHandler合并）
 
     /// <summary>

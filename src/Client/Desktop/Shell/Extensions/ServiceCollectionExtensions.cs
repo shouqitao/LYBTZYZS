@@ -48,6 +48,7 @@ using LYBT.Desktop.Shell.Services.Startup;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
 using LYBT.Desktop.Users;
 using LYBT.Desktop.Users.Repositories;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.Desktop.Users.ViewModels.Components;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -146,7 +147,7 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterPresentationAndShellLoggers(IContainerRegistry containerRegistry)
         {
             RegisterLogger<NotificationService>(containerRegistry);
-            RegisterLogger<UnifiedErrorHandlingService>(containerRegistry);
+            RegisterLogger<DesktopExceptionHandler>(containerRegistry);
             RegisterLogger<App>(containerRegistry);
             RegisterLogger<ApplicationInitializationService>(containerRegistry);
             RegisterLogger<ApplicationBootstrapper>(containerRegistry);
@@ -297,7 +298,7 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterPresentationServices(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<INotificationService, NotificationService>();
-            containerRegistry.RegisterSingleton<IErrorHandlingService, UnifiedErrorHandlingService>();
+            containerRegistry.RegisterSingleton<IDesktopExceptionHandler, DesktopExceptionHandler>();
             containerRegistry.RegisterSingleton<NavigationManager>();
             containerRegistry.RegisterSingleton<MenuManager>();
         }

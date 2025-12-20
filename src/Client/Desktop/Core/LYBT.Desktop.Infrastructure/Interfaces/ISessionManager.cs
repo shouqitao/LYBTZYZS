@@ -7,6 +7,7 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
     /// 会话管理器接口 - UltraThink架构（功能完整版）
     /// 合并 Foundation.Session.ISessionManager 的功能，消除重复定义
     /// Issue #1194 Phase 2: 扩展功能，支持 CurrentUserId、RefreshToken 等
+    /// optimize-desktop-core: 移除Token相关属性，Token由ITokenStorageService管理
     /// </summary>
     public interface ISessionManager
     {
@@ -39,23 +40,6 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// </summary>
         bool IsLoggedIn { get; }
 
-        // ==================== Token 属性 ====================
-
-        /// <summary>
-        /// 当前Token（访问令牌）
-        /// </summary>
-        string? CurrentToken { get; }
-
-        /// <summary>
-        /// 访问令牌（CurrentToken 的别名）
-        /// </summary>
-        string? AccessToken { get; }
-
-        /// <summary>
-        /// 刷新令牌
-        /// </summary>
-        string? RefreshToken { get; }
-
         // ==================== 会话管理方法 ====================
 
         /// <summary>
@@ -72,11 +56,6 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// 设置用户会话（SetSession 的别名，兼容性保留）
         /// </summary>
         void SetUserSession(UserDetailDto user, string token);
-
-        /// <summary>
-        /// 更新访问令牌
-        /// </summary>
-        void UpdateAccessToken(string accessToken);
 
         /// <summary>
         /// 清除会话

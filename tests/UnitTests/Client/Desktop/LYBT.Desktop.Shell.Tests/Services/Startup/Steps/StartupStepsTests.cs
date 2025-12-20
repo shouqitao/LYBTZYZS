@@ -3,9 +3,9 @@ using FluentAssertions;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Performance;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Presentation.Notifications;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Modularity;
@@ -14,6 +14,7 @@ namespace LYBT.Desktop.Shell.Tests.Services.Startup.Steps;
 
 /// <summary>
 /// 启动步骤单元测试
+/// optimize-desktop-core: 更新为使用IDesktopExceptionHandler
 /// </summary>
 public class StartupStepsTests
 {
@@ -21,16 +22,16 @@ public class StartupStepsTests
 
     public class ErrorHandlingStartupStepTests
     {
-        private readonly Mock<IErrorHandlingService> _errorHandlingServiceMock;
+        private readonly Mock<IDesktopExceptionHandler> _exceptionHandlerMock;
         private readonly Mock<ILogger<ErrorHandlingStartupStep>> _loggerMock;
         private readonly ErrorHandlingStartupStep _sut;
 
         public ErrorHandlingStartupStepTests()
         {
-            _errorHandlingServiceMock = new Mock<IErrorHandlingService>();
+            _exceptionHandlerMock = new Mock<IDesktopExceptionHandler>();
             _loggerMock = new Mock<ILogger<ErrorHandlingStartupStep>>();
             _sut = new ErrorHandlingStartupStep(
-                _errorHandlingServiceMock.Object,
+                _exceptionHandlerMock.Object,
                 _loggerMock.Object);
         }
 
@@ -50,14 +51,14 @@ public class StartupStepsTests
 
             // Assert
             result.Success.Should().BeTrue();
-            _errorHandlingServiceMock.Verify(s => s.RegisterGlobalExceptionHandlers(), Times.Once);
+            _exceptionHandlerMock.Verify(s => s.RegisterGlobalExceptionHandlers(), Times.Once);
         }
 
         [Fact]
         public async Task ExecuteAsync_WhenServiceThrows_ShouldReturnFailed()
         {
             // Arrange
-            _errorHandlingServiceMock
+            _exceptionHandlerMock
                 .Setup(s => s.RegisterGlobalExceptionHandlers())
                 .Throws(new InvalidOperationException("Test error"));
 
