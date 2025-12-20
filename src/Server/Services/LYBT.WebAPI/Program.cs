@@ -9,7 +9,8 @@
 using System.Text;
 using LYBT.WebAPI.Extensions;
 using LYBT.Shared.Utilities.Security;
-using LYBT.Infrastructure.Logging;
+using LYBT.Shared.Logging.Management;
+using LYBT.Shared.Logging.Extensions;
 using Serilog;
 using Serilog.Events;
 using DotNetEnv;

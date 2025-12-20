@@ -7,25 +7,25 @@ TBD - created by archiving change refactor-logging-system. Update Purpose after 
 
 Server端和Client端 **SHALL** 通过`LYBT.Shared.Logging`共享项目使用Serilog作为统一的结构化日志框架。
 
-> **变更说明**: 将Serilog依赖和配置统一到LYBT.Shared.Logging项目
+> **变更说明**: 删除过时组件，完成向共享项目的完全迁移
 
 **项目结构**:
-- `LYBT.Shared.Logging`项目集中管理所有Serilog依赖
+- `LYBT.Shared.Logging`项目集中管理所有Serilog依赖和组件
 - Server端通过`LYBT.Infrastructure`引用共享项目
 - Client端通过`LYBT.Desktop.Infrastructure`引用共享项目
 - WebAPI保留Serilog.AspNetCore和Serilog.Sinks.MSSqlServer直接引用
 
-**共享配置**:
-- 通用Enrichers配置(CorrelationId, MachineName, ThreadId)
-- 统一输出格式模板
-- 敏感数据脱敏策略
+**组件清理**:
+- LYBT.Infrastructure.Logging中的过时组件 **SHALL** 被删除
+- LYBT.Desktop.Infrastructure.Logging中的过时组件 **SHALL** 被删除
+- 所有代码 **SHALL** 直接使用LYBT.Shared.Logging中的组件
 
-#### Scenario: 共享日志项目依赖
-- **WHEN** 配置日志系统
-- **THEN** Serilog核心依赖 **SHALL** 在LYBT.Shared.Logging中统一管理
-- **AND** LYBT.Infrastructure **SHALL** 引用LYBT.Shared.Logging
-- **AND** LYBT.Desktop.Infrastructure **SHALL** 引用LYBT.Shared.Logging
-- **AND** Serilog包 **SHALL NOT** 在Infrastructure项目中重复引用
+#### Scenario: 共享日志项目完全迁移
+- **WHEN** 使用日志组件
+- **THEN** SensitiveDataMasker **SHALL** 从LYBT.Shared.Logging.Masking引用
+- **AND** LoggingLevelManager **SHALL** 从LYBT.Shared.Logging.Management引用
+- **AND** CorrelationIdEnricher **SHALL** 从LYBT.Shared.Logging.Enrichers引用
+- **AND** 过时组件 **SHALL NOT** 存在于Infrastructure项目中
 
 ---
 
@@ -33,19 +33,18 @@ Server端和Client端 **SHALL** 通过`LYBT.Shared.Logging`共享项目使用Ser
 
 所有请求 **SHALL** 通过统一的CorrelationIdEnricher实现端到端追踪。
 
-> **变更说明**: CorrelationIdEnricher统一到共享项目,使用接口解耦HttpContext依赖
+> **变更说明**: 删除过时的CorrelationIdEnricher实现
 
 **接口抽象**:
 - `ICorrelationIdProvider`接口定义获取/设置CorrelationId的方法
 - Server端使用`HttpContextCorrelationIdProvider`实现
-- Desktop端使用`AsyncLocalCorrelationIdProvider`实现
+- Desktop端使用`FoundationCorrelationIdProvider`实现
 
-#### Scenario: CorrelationId提供者注入
+#### Scenario: CorrelationIdEnricher统一实现
 - **WHEN** 配置日志Enricher
-- **THEN** CorrelationIdEnricher **SHALL** 通过ICorrelationIdProvider获取CorrelationId
-- **AND** Server端 **SHALL** 注册HttpContextCorrelationIdProvider
-- **AND** Desktop端 **SHALL** 注册AsyncLocalCorrelationIdProvider
-- **AND** CorrelationIdEnricher **SHALL** 在LYBT.Shared.Logging中定义
+- **THEN** CorrelationIdEnricher **SHALL** 来自LYBT.Shared.Logging.Enrichers
+- **AND** LYBT.Infrastructure.Logging.CorrelationIdEnricher **SHALL NOT** 存在
+- **AND** LYBT.Desktop.Infrastructure.Logging.CorrelationIdEnricher **SHALL NOT** 存在
 
 ---
 
@@ -126,30 +125,20 @@ Server端和Client端 **SHALL** 通过`LYBT.Shared.Logging`共享项目使用Ser
 
 ### Requirement: LOG-006 异常日志规范
 
-异常处理 SHALL 记录完整的结构化日志。
+异常处理 **SHALL** 记录完整的结构化日志。
 
-**异常日志必含信息**:
-- CorrelationId: 请求追踪ID
-- ExceptionType: 异常类型名
-- Message: 异常消息
-- StackTrace: 完整堆栈(通过{Exception}模板)
-- RequestPath: 请求路径(Server端)
-- RequestMethod: 请求方法(Server端)
+> **变更说明**: 删除过时的GlobalExceptionHandler
 
-#### Scenario: Server端全局异常日志
-- **WHEN** GlobalExceptionHandler捕获异常
-- **THEN** SHALL 使用LogError记录
-- **AND** SHALL 包含结构化异常详情
-- **AND** 业务异常(AppException) SHALL 记录为Warning
-- **AND** 系统异常 SHALL 记录为Error
+**异常处理器**:
+- `BusinessExceptionHandler` - 处理AppException及其子类
+- `SystemExceptionHandler` - 兜底处理所有未被处理的系统异常
 
-#### Scenario: Client端异常日志
-- **WHEN** StandardExceptionHandler处理异常
-- **THEN** SHALL 使用LogError记录
-- **AND** SHALL 包含CorrelationId
-- **AND** SHALL 包含操作上下文信息
-
----
+#### Scenario: 异常处理器统一
+- **WHEN** 配置异常处理
+- **THEN** **SHALL** 使用BusinessExceptionHandler和SystemExceptionHandler
+- **AND** GlobalExceptionHandler **SHALL NOT** 存在
+- **AND** 业务异常(AppException) **SHALL** 由BusinessExceptionHandler处理
+- **AND** 系统异常 **SHALL** 由SystemExceptionHandler处理
 
 ### Requirement: LOG-007 日志分级存储
 

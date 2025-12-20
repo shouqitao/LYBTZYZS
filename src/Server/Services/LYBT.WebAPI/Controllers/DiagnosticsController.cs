@@ -1,5 +1,5 @@
 using Asp.Versioning;
-using LYBT.Infrastructure.Logging;
+using LYBT.Shared.Logging.Management;
 using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

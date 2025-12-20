@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LYBT.Entities.Attributes;
-using LYBT.Infrastructure.Logging;
+using SharedMasking = LYBT.Shared.Logging.Masking;
 
 namespace LYBT.Infrastructure.Serialization;
 
@@ -137,8 +137,11 @@ public class SensitiveDataJsonConverter<T> : JsonConverter<T> where T : class
                 var sensitiveAttr = property.GetCustomAttribute<SensitiveDataAttribute>();
                 if (sensitiveAttr != null && propValue is string strValue)
                 {
-                    // 对敏感字符串进行脱敏
-                    var maskedValue = SensitiveDataMasker.Mask(strValue, sensitiveAttr.MaskingMode, sensitiveAttr.DataType);
+                    // 对敏感字符串进行脱敏 - 转换枚举类型（两个命名空间的枚举值一致）
+                    var maskedValue = SharedMasking.SensitiveDataMasker.Mask(
+                        strValue,
+                        (SharedMasking.MaskingMode)(int)sensitiveAttr.MaskingMode,
+                        (SharedMasking.SensitiveDataType)(int)sensitiveAttr.DataType);
                     writer.WriteString(propertyName, maskedValue);
                 }
                 else if (propValue == null)

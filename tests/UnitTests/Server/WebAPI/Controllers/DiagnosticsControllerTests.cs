@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using FluentAssertions;
-using LYBT.Infrastructure.Logging;
+using LYBT.Shared.Logging.Management;
 using LYBT.WebAPI.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
