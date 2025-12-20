@@ -41,7 +41,35 @@ Enrichers:
 
 **向后兼容**: 旧组件标记为[Obsolete]，未直接删除
 
+#### 覆盖率基础设施 (OpenSpec: coverage-driven-cleanup) - 2025-12-20
+
+**背景**: 建立代码覆盖率收集基础设施，为质量提升提供数据支撑。
+
+**配置变更**:
+- 配置coverlet.collector到全部36个测试项目
+- 优化tests/.runsettings排除规则(排除生成代码/迁移/测试项目)
+- 创建docs/testing/coverage-baseline.md基准文档
+
+**覆盖率基准**:
+- 行覆盖率: 15.4%
+- 分支覆盖率: 12.9%
+- 方法覆盖率: 11.5%
+- 覆盖行数: 2,992 / 19,321
+
+**死代码检查**: 通过Roslyn分析器(IDE0051/IDE0052)扫描，确认无未使用的私有成员
+
 ### Changed
+
+#### Desktop核心层清理 (OpenSpec: optimize-desktop-core) - 2025-12-20
+
+**背景**: 清理Desktop核心层未使用的死代码文件，减少代码库复杂度。
+
+**删除的组件**:
+- Foundation层: CacheService, ConfigurationService, PollyExtensions, ServiceExceptionExtensions, ServiceHandlerExtensions, VisibilityHelper, SecureTokenStorage
+- Infrastructure层: VirtualizedDataGrid, VirtualizedListView, ZeroToVisibilityConverter, RepositoryContainerRegistryExtensions, 多个未使用Event类
+- Services: FeatureToggleService, KeyboardShortcutService, StandardErrorHandler, UserExperienceService
+
+**净效果**: 删除30+文件，减少1253行代码
 
 #### 清理过时日志组件 (OpenSpec: cleanup-obsolete-code) - 2025-12-20
 
