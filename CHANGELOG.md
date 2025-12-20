@@ -180,6 +180,30 @@ Presentation项目 (2个):
 
 **净效果**: 净删除约847行代码，统一异常处理架构
 
+#### 代码质量标准建立 (OpenSpec: consolidate-code-quality) - 2025-12-20
+
+**背景**: 基于Visual Studio Code Metrics分析，识别7个高圈复杂度方法(CC>20)及EF迁移目录混乱问题。
+
+**Phase 1 - 高复杂度代码重构**:
+- PatientImportExecutor.ImportWorker_RunWorkerCompleted (CC 30→15): 消除反射模式，创建ImportResult记录类型
+- MedicalCaseRepository.UpdateAsync (CC 28→12): 提取4个辅助方法处理处方实体状态
+- ExcelHelper (CC 25+22→10): SetCellValue用switch表达式，ConvertValue提取5个辅助方法
+- MedicalCaseCommandService.SaveAsync (CC 23→10): 提取10+辅助方法分离创建/更新/处方逻辑
+
+**Phase 2 - EF迁移目录整合**:
+- 统一迁移目录: Data/Migrations/ → Migrations/
+- 移动5个迁移文件并更新命名空间
+- 删除冗余的Data/Migrations/目录
+
+**新增规范** (openspec/specs/code-quality/spec.md):
+- CQ-001: 圈复杂度标准 (CC < 20)
+- CQ-002: EF迁移目录规范 (单一目录)
+- CQ-003: 代码度量报告 (定期执行)
+
+**额外修复**: 添加缺失的DecocteMethodToVisibilityConverter转换器
+
+**净效果**: 重构4个核心方法，CC均降至15以下，统一迁移目录
+
 ### Added
 
 #### 集成测试覆盖补充 (OpenSpec: optimize-integration-tests) - 2025-12-20
