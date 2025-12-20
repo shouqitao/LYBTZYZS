@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Constants;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Primitives.Validation;
 
 namespace LYBT.Shared.Models.Contracts.Patients
 {

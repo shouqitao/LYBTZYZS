@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Validators.Common
+namespace LYBT.Shared.Primitives.Validation
 {
     /// <summary>
     /// 验证常量类 - 统一管理所有验证规则
@@ -13,6 +13,8 @@ namespace LYBT.Shared.Validators.Common
     /// - 设计文档：docs/explanation/fluentvalidation-unified-design.md
     /// - 任务文档：docs/tasks/fluentvalidation-unified-tasks.md
     /// - GitHub Epic：Issue #1961
+    ///
+    /// OpenSpec: consolidate-shared-utilities - 移至Primitives作为基础层
     /// </remarks>
     public static class ValidationConstants
     {
@@ -67,6 +69,26 @@ namespace LYBT.Shared.Validators.Common
         /// 处方编号最大长度
         /// </summary>
         public const int PrescriptionNumberMaxLength = 50;
+
+        /// <summary>
+        /// 代码字段最大长度（如拼音码、五笔码、分类码）
+        /// </summary>
+        public const int CodeMaxLength = 50;
+
+        /// <summary>
+        /// 用法说明最大长度
+        /// </summary>
+        public const int UsageMaxLength = 200;
+
+        /// <summary>
+        /// 诊断最大长度（如中医诊断、舌诊、脉诊）
+        /// </summary>
+        public const int DiagnosisMaxLength = 500;
+
+        /// <summary>
+        /// 四诊最大长度（现病史、望闻问切综合）
+        /// </summary>
+        public const int FourDiagnosisMaxLength = 2000;
 
         #endregion
 

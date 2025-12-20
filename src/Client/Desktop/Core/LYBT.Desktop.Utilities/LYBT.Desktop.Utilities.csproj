@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!-- Assembly Information -->
+    <AssemblyTitle>LYBT.Desktop.Utilities</AssemblyTitle>
+    <AssemblyDescription>凌隐宝堂中医诊所系统 - Desktop专用工具库 | 配置、Excel、日志、安全 | OpenSpec consolidate-shared-utilities</AssemblyDescription>
+    <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
+    <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
+    <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0-utilities</InformationalVersion>
+
+    <!-- Package Information -->
+    <PackageId>LYBT.Desktop.Utilities</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>LYBT开发团队</Authors>
+    <PackageDescription>LYBT Desktop专用工具库 - 配置扩展、Excel操作、日志配置、安全过滤</PackageDescription>
+    <PackageTags>WPF;Utilities;Desktop;中医;诊所;工具</PackageTags>
+  </PropertyGroup>
+
+  <!-- Excel Support -->
+  <ItemGroup Label="Excel">
+    <PackageReference Include="NPOI" />
+  </ItemGroup>
+
+  <!-- HTTP/Retry Support -->
+  <ItemGroup Label="Http">
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+  </ItemGroup>
+
+  <!-- Logging Support -->
+  <ItemGroup Label="Logging">
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Enrichers.Environment" />
+    <PackageReference Include="Serilog.Enrichers.Thread" />
+  </ItemGroup>
+
+  <!-- Configuration -->
+  <ItemGroup Label="Configuration">
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <!-- Project References -->
+  <ItemGroup Label="Shared Libraries">
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Logging\LYBT.Shared.Logging.csproj" />
+  </ItemGroup>
+
+</Project>
