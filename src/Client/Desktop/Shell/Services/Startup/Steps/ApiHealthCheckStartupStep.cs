@@ -1,5 +1,6 @@
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Startup.Steps;
@@ -56,7 +57,7 @@ public class ApiHealthCheckStartupStep : IStartupStep
         catch (Exception ex)
         {
             _logger.LogError(ex, "API健康检查失败");
-            return StartupStepResult.Failed($"API健康检查失败: {ex.Message}", ex);
+            return StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("API健康检查", ex), ex);
         }
     }
 }

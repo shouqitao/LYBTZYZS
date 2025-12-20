@@ -1,6 +1,6 @@
 ﻿using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.WebAPI.Configuration;
-using LYBT.WebAPI.ExceptionHandlers;
 
 namespace LYBT.WebAPI.Extensions;
 

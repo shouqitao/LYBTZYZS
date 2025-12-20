@@ -198,7 +198,7 @@ public class MedicalCaseDataManager : IMedicalCaseDataManager
                 ? new ApiResponse { Success = true, Message = "医案已取消" }
                 : new ApiResponse { Success = false, Message = $"删除失败: {response.ReasonPhrase}" };
         }
-        catch (Exception ex) { _logger.LogError(ex, "删除医案失败: {Id}", medicalCaseId); return new ApiResponse { Success = false, Message = $"删除失败: {ex.Message}" }; }
+        catch (Exception ex) { _logger.LogError(ex, "删除医案失败: {Id}", medicalCaseId); return new ApiResponse { Success = false, Message = Infrastructure.Localization.ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex) }; }
     }
 
     // ========== SoftDeleteMedicalCaseAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========

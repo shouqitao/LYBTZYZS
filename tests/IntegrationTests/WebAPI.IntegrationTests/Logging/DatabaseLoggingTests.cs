@@ -36,7 +36,7 @@ public class DatabaseLoggingTests : IntegrationTestBase
     #region SystemLog实体模型测试
 
     [Fact]
-    public async Task SystemLog_Entity_ShouldHaveCorrectSchema()
+    public Task SystemLog_Entity_ShouldHaveCorrectSchema()
     {
         // Arrange
         _output.WriteLine("测试场景: 验证SystemLog实体模型正确配置");
@@ -62,6 +62,7 @@ public class DatabaseLoggingTests : IntegrationTestBase
         properties.Should().Contain("CorrelationId", "应包含CorrelationId列");
 
         _output.WriteLine("SystemLog实体模型验证通过");
+        return Task.CompletedTask;
     }
 
     [Fact]
@@ -217,9 +218,10 @@ public class DatabaseLoggingTests : IntegrationTestBase
         const int errorRetentionDays = int.MaxValue;
 
         _output.WriteLine($"Warning级别日志保留天数: {warningRetentionDays}");
-        _output.WriteLine($"Error级别日志保留: 永久");
+        _output.WriteLine($"Error级别日志保留天数: {errorRetentionDays} (永久)");
 
         warningRetentionDays.Should().Be(90, "Warning日志应保留90天");
+        errorRetentionDays.Should().Be(int.MaxValue, "Error日志应永久保留");
         _output.WriteLine("日志保留策略配置验证通过");
     }
 

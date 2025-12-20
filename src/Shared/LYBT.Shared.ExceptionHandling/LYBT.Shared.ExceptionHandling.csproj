@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>LYBT.Shared.ExceptionHandling</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ASP.NET Core 依赖 -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+
+    <!-- FluentValidation 依赖（用于类型检测） -->
+    <PackageReference Include="FluentValidation" />
+
+    <!-- EF Core 依赖（用于类型检测） -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+
+    <!-- 配置依赖 -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+
+  <!--
+    consolidate-exception-handling: 异常处理层
+    依赖 Models（ServiceResult）和 Primitives（ErrorCode）
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\LYBT.Shared.Primitives\LYBT.Shared.Primitives.csproj" />
+  </ItemGroup>
+
+</Project>

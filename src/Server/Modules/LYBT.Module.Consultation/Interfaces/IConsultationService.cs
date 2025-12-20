@@ -1,5 +1,4 @@
-﻿using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Consultation;
+﻿using LYBT.Shared.Models.Contracts.Consultation;
 
 namespace LYBT.Module.Consultations.Interfaces
 {
@@ -13,7 +12,8 @@ namespace LYBT.Module.Consultations.Interfaces
         /// <summary>
         /// 根据ID获取诊疗详情
         /// </summary>
-        Task<Result<ConsultationDetailDto>> GetByIdAsync(Guid id);
+        /// <exception cref="LYBT.Shared.Models.Exceptions.NotFoundException">诊疗记录不存在时抛出</exception>
+        Task<ConsultationDetailDto> GetByIdAsync(Guid id);
 
         // ========== Write方法已移除（Issue #1600 Phase 1）==========
         // CreateAsync, UpdateAsync, DeleteAsync 已移除
@@ -22,7 +22,8 @@ namespace LYBT.Module.Consultations.Interfaces
         /// <summary>
         /// 根据医案ID获取诊疗记录列表
         /// </summary>
-        Task<Result<List<ConsultationDetailDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+        /// <returns>诊疗记录列表，如果没有记录则返回空列表</returns>
+        Task<List<ConsultationDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
         // ========== Write方法已移除（Issue #1600 Phase 3）==========
         // CompleteStep1Async 已移除，迁移至IMedicalCaseService

@@ -1,5 +1,6 @@
 using LYBT.Desktop.Foundation.Performance;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Startup.Steps;
@@ -45,7 +46,7 @@ public class WarmupStartupStep : IStartupStep
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "应用预热失败，但不影响主流程");
-            return StartupStepResult.Failed($"应用预热失败: {ex.Message}", ex);
+            return StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("应用预热", ex), ex);
         }
     }
 }

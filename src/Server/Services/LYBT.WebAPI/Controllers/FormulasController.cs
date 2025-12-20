@@ -42,27 +42,21 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? keyword = null,
             [FromQuery] string? category = null)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
             {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
-                }
-
-                // optimize-api-permissions: 获取当前用户信息用于角色过滤
-                var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-
-                var result = await _service.GetPagedAsync(
-                    page, pageSize, keyword, category,
-                    currentUserId: operatorId,
-                    isAdmin: isAdmin);
-                return HandlePagedResult(result, "查询成功");
+                return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取验方列表", new { page, pageSize, keyword, category });
-            }
+
+            // optimize-api-permissions: 获取当前用户信息用于角色过滤
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+
+            var result = await _service.GetPagedAsync(
+                page, pageSize, keyword, category,
+                currentUserId: operatorId,
+                isAdmin: isAdmin);
+            return HandlePagedResult(result, "查询成功");
         }
 
         /// <summary>
@@ -72,22 +66,16 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            try
-            {
-                if (ValidateGuid(id, "验方ID") is { } error) return error;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (ValidateGuid(id, "验方ID") is { } error) return error;
 
-                var result = await _service.GetByIdAsync(id);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return NotFound(result.ErrorMessage ?? "验方不存在");
-                }
-
-                return Success(result.Data, "查询成功");
-            }
-            catch (Exception ex)
+            var result = await _service.GetByIdAsync(id);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "获取验方详情", id);
+                return NotFound(result.ErrorMessage ?? "验方不存在");
             }
+
+            return Success(result.Data, "查询成功");
         }
 
         /// <summary>
@@ -98,23 +86,17 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> Add([FromBody] FormulaInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // OpenSpec: implement-formula-copy-flow - 获取当前用户ID并传递给服务
+            var (operatorId, _, _) = GetOperator();
+            var result = await _service.CreateAsync(dto, operatorId);
+            if (!result.IsSuccess || result.Data == null)
             {
-                // OpenSpec: implement-formula-copy-flow - 获取当前用户ID并传递给服务
-                var (operatorId, _, _) = GetOperator();
-                var result = await _service.CreateAsync(dto, operatorId);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "新增验方失败");
-                }
+                return BusinessFail(result.ErrorMessage ?? "新增验方失败");
+            }
 
-                LogOperation("新增验方成功", result.Data, result.Data.Id);
-                return Success(result.Data, "验方创建成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "新增验方", dto);
-            }
+            LogOperation("新增验方成功", result.Data, result.Data.Id);
+            return Success(result.Data, "验方创建成功");
         }
 
         /// <summary>
@@ -125,25 +107,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto dto)
         {
-            try
-            {
-                // 使用统一的所有权检查方法
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
+            if (ownershipError != null) return ownershipError;
 
-                var result = await _service.UpdateAsync(id, dto);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "更新验方失败");
-                }
-
-                LogOperation("更新验方成功", result.Data, id);
-                return Success(result.Data, "验方更新成功");
-            }
-            catch (Exception ex)
+            var result = await _service.UpdateAsync(id, dto);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "更新验方", new { id, dto });
+                return BusinessFail(result.ErrorMessage ?? "更新验方失败");
             }
+
+            LogOperation("更新验方成功", result.Data, id);
+            return Success(result.Data, "验方更新成功");
         }
 
         /// <summary>
@@ -154,25 +130,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            try
-            {
-                // 使用统一的所有权检查方法
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
+            if (ownershipError != null) return ownershipError;
 
-                var result = await _service.DeleteAsync(id);
-                if (!result.IsSuccess)
-                {
-                    return NotFound("验方不存在");
-                }
-
-                LogOperation("删除验方成功", null, id);
-                return Success("删除成功");
-            }
-            catch (Exception ex)
+            var result = await _service.DeleteAsync(id);
+            if (!result.IsSuccess)
             {
-                return HandleException(ex, "删除验方", new { Id = id });
+                return NotFound("验方不存在");
             }
+
+            LogOperation("删除验方成功", null, id);
+            return Success("删除成功");
         }
 
         /// <summary>
@@ -183,30 +153,24 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
         public async Task<IActionResult> Import([FromBody] FormulaBatchImportInputDto request)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (request == null || request.Formulas == null || !request.Formulas.Any())
             {
-                if (request == null || request.Formulas == null || !request.Formulas.Any())
-                {
-                    return ValidationFail("导入数据不能为空");
-                }
-
-                var result = await _service.ImportFromDataAsync(request.Formulas, request.FileName);
-
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "导入失败");
-                }
-
-                LogOperation("批量导入验方",
-                    new { FileName = request.FileName, TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
-                    null);
-
-                return Success(result.Data, result.Data.Message);
+                return ValidationFail("导入数据不能为空");
             }
-            catch (Exception ex)
+
+            var result = await _service.ImportFromDataAsync(request.Formulas, request.FileName);
+
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "批量导入验方", new { FileName = request?.FileName });
+                return BusinessFail(result.ErrorMessage ?? "导入失败");
             }
+
+            LogOperation("批量导入验方",
+                new { FileName = request.FileName, TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
+                null);
+
+            return Success(result.Data, result.Data.Message);
         }
 
         /// <summary>
@@ -217,24 +181,17 @@ namespace LYBT.WebAPI.Controllers
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         public async Task<IActionResult> Export([FromQuery] string? category = null)
         {
-            try
-            {
-                var stream = await _service.ExportAsync(category);
-                var fileName = string.IsNullOrWhiteSpace(category)
-                    ? $"验方数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
-                    : $"验方数据_{category}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var stream = await _service.ExportAsync(category);
+            var fileName = string.IsNullOrWhiteSpace(category)
+                ? $"验方数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                : $"验方数据_{category}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
-                LogOperation("导出验方数据", new { Category = category, FileName = fileName }, null);
+            LogOperation("导出验方数据", new { Category = category, FileName = fileName }, null);
 
-                return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    fileName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出验方数据失败，分类筛选：{Category}", category);
-                return StatusCode(500);
-            }
+            return File(stream,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
         }
 
         /// <summary>
@@ -246,20 +203,13 @@ namespace LYBT.WebAPI.Controllers
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         public IActionResult ExportTemplate()
         {
-            try
-            {
-                var stream = _service.GenerateImportTemplate();
-                var fileName = $"验方导入模板_{DateTime.Now:yyyyMMdd}.xlsx";
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var stream = _service.GenerateImportTemplate();
+            var fileName = $"验方导入模板_{DateTime.Now:yyyyMMdd}.xlsx";
 
-                return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    fileName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "生成验方导入模板失败");
-                return StatusCode(500);
-            }
+            return File(stream,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
         }
 
         /// <summary>
@@ -269,21 +219,15 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<List<FormulaDetailDto>>), 200)]
         public async Task<IActionResult> GetPendingValidation()
         {
-            try
-            {
-                var result = await _service.GetPendingValidationFormulasAsync();
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var result = await _service.GetPendingValidationFormulasAsync();
 
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "获取待校验验方列表失败");
-                }
-
-                return Success(result.Data, $"查询成功，共{result.Data.Count}个待校验验方");
-            }
-            catch (Exception ex)
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "获取待校验验方列表", null);
+                return BusinessFail(result.ErrorMessage ?? "获取待校验验方列表失败");
             }
+
+            return Success(result.Data, $"查询成功，共{result.Data.Count}个待校验验方");
         }
 
         /// <summary>
@@ -297,29 +241,23 @@ namespace LYBT.WebAPI.Controllers
             Guid herbItemId,
             [FromBody] Guid selectedHerbId)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (ValidateGuid(formulaId, "验方ID") is { } error1) return error1;
+            if (ValidateGuid(herbItemId, "药材项ID") is { } error2) return error2;
+            if (ValidateGuid(selectedHerbId, "系统药材ID") is { } error3) return error3;
+
+            var result = await _service.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
+
+            if (!result.IsSuccess)
             {
-                if (ValidateGuid(formulaId, "验方ID") is { } error1) return error1;
-                if (ValidateGuid(herbItemId, "药材项ID") is { } error2) return error2;
-                if (ValidateGuid(selectedHerbId, "系统药材ID") is { } error3) return error3;
-
-                var result = await _service.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
-
-                if (!result.IsSuccess)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "验证药材失败");
-                }
-
-                LogOperation("验证验方药材",
-                    new { FormulaId = formulaId, HerbItemId = herbItemId, SelectedHerbId = selectedHerbId },
-                    formulaId);
-
-                return Success(result.Message ?? "药材验证成功");
+                return BusinessFail(result.ErrorMessage ?? "验证药材失败");
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "验证验方药材", new { formulaId, herbItemId, selectedHerbId });
-            }
+
+            LogOperation("验证验方药材",
+                new { FormulaId = formulaId, HerbItemId = herbItemId, SelectedHerbId = selectedHerbId },
+                formulaId);
+
+            return Success(result.Message ?? "药材验证成功");
         }
 
         // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复端点 ==========
@@ -333,25 +271,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
-            try
-            {
-                // 使用统一的所有权检查方法
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
+            if (ownershipError != null) return ownershipError;
 
-                var result = await _service.ToggleStatusAsync(id);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "状态切换失败");
-                }
-
-                LogOperation("切换验方状态", new { NewStatus = result.Data.Status }, id);
-                return Success(result.Data, $"验方已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
-            }
-            catch (Exception ex)
+            var result = await _service.ToggleStatusAsync(id);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "切换验方状态", id);
+                return BusinessFail(result.ErrorMessage ?? "状态切换失败");
             }
+
+            LogOperation("切换验方状态", new { NewStatus = result.Data.Status }, id);
+            return Success(result.Data, $"验方已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
 
         /// <summary>
@@ -363,25 +295,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)
         {
-            try
-            {
-                // 使用统一的所有权检查方法
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
+            if (ownershipError != null) return ownershipError;
 
-                var result = await _service.RestoreAsync(id);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "恢复失败");
-                }
-
-                LogOperation("恢复验方", null, id);
-                return Success(result.Data, "验方已恢复");
-            }
-            catch (Exception ex)
+            var result = await _service.RestoreAsync(id);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "恢复验方", id);
+                return BusinessFail(result.ErrorMessage ?? "恢复失败");
             }
+
+            LogOperation("恢复验方", null, id);
+            return Success(result.Data, "验方已恢复");
         }
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
@@ -394,22 +320,16 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
         {
-            try
-            {
-                if (dto.Ids == null || dto.Ids.Count == 0)
-                    return ValidationFail("请至少选择一个方剂");
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (dto.Ids == null || dto.Ids.Count == 0)
+                return ValidationFail("请至少选择一个方剂");
 
-                var result = await _service.BatchDeleteAsync(dto.Ids);
-                if (!result.IsSuccess || result.Data == null)
-                    return BusinessFail(result.ErrorMessage ?? "批量删除失败");
+            var result = await _service.BatchDeleteAsync(dto.Ids);
+            if (!result.IsSuccess || result.Data == null)
+                return BusinessFail(result.ErrorMessage ?? "批量删除失败");
 
-                LogOperation("批量删除方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-                return Success(result.Data, result.Data.Message);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "批量删除方剂", new { Ids = dto.Ids });
-            }
+            LogOperation("批量删除方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+            return Success(result.Data, result.Data.Message);
         }
 
         /// <summary>
@@ -420,26 +340,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (dto.Ids == null || dto.Ids.Count == 0)
             {
-                if (dto.Ids == null || dto.Ids.Count == 0)
-                {
-                    return ValidationFail("请至少选择一个方剂");
-                }
-
-                var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "批量启用失败");
-                }
-
-                LogOperation("批量启用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-                return Success(result.Data, result.Data.Message);
+                return ValidationFail("请至少选择一个方剂");
             }
-            catch (Exception ex)
+
+            var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "批量启用方剂");
+                return BusinessFail(result.ErrorMessage ?? "批量启用失败");
             }
+
+            LogOperation("批量启用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+            return Success(result.Data, result.Data.Message);
         }
 
         /// <summary>
@@ -450,26 +364,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (dto.Ids == null || dto.Ids.Count == 0)
             {
-                if (dto.Ids == null || dto.Ids.Count == 0)
-                {
-                    return ValidationFail("请至少选择一个方剂");
-                }
-
-                var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
-                }
-
-                LogOperation("批量禁用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-                return Success(result.Data, result.Data.Message);
+                return ValidationFail("请至少选择一个方剂");
             }
-            catch (Exception ex)
+
+            var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "批量禁用方剂");
+                return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
             }
+
+            LogOperation("批量禁用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+            return Success(result.Data, result.Data.Message);
         }
     }
 }

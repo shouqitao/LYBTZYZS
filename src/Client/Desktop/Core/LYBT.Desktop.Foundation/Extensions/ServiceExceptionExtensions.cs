@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Foundation.Exceptions;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
@@ -6,6 +6,7 @@ namespace LYBT.Desktop.Foundation.Extensions;
 
 /// <summary>
 /// Service异常处理扩展方法 - DT-006技术债务修复
+/// consolidate-exception-handling: 更新为使用 IDesktopExceptionHandler
 /// 简化Service类中的异常处理调用
 /// </summary>
 public static class ServiceExceptionExtensions
@@ -19,25 +20,13 @@ public static class ServiceExceptionExtensions
     /// <param name="methodName">方法名称（用于日志记录）</param>
     /// <param name="context">操作上下文（可选）</param>
     /// <returns>操作结果</returns>
-    public static async Task<ServiceResult<T>> ExecuteSafelyAsync<T>(
+    public static Task<ServiceResult<T>> ExecuteSafelyAsync<T>(
         this Func<Task<ServiceResult<T>>> operation,
-        Exceptions.IExceptionHandler exceptionHandler,
+        IDesktopExceptionHandler exceptionHandler,
         string methodName,
         string? context = null)
     {
-        try
-        {
-            return await operation();
-        }
-        catch (Exception ex)
-        {
-            if (exceptionHandler is StandardExceptionHandler standardHandler)
-            {
-                return standardHandler.HandleException<T>(ex, methodName, context);
-            }
-            // 回退到默认处理
-            return ServiceResult<T>.Failure("操作失败，请稍后重试");
-        }
+        return exceptionHandler.SafeExecuteAsync(operation, methodName, context);
     }
 
     /// <summary>
@@ -48,25 +37,13 @@ public static class ServiceExceptionExtensions
     /// <param name="methodName">方法名称（用于日志记录）</param>
     /// <param name="context">操作上下文（可选）</param>
     /// <returns>操作结果</returns>
-    public static async Task<ServiceResult> ExecuteSafelyAsync(
+    public static Task<ServiceResult> ExecuteSafelyAsync(
         this Func<Task<ServiceResult>> operation,
-        Exceptions.IExceptionHandler exceptionHandler,
+        IDesktopExceptionHandler exceptionHandler,
         string methodName,
         string? context = null)
     {
-        try
-        {
-            return await operation();
-        }
-        catch (Exception ex)
-        {
-            if (exceptionHandler is StandardExceptionHandler standardHandler)
-            {
-                return standardHandler.HandleException(ex, methodName, context);
-            }
-            // 回退到默认处理
-            return ServiceResult.Failure("操作失败，请稍后重试");
-        }
+        return exceptionHandler.SafeExecuteAsync(operation, methodName, context);
     }
 
     /// <summary>
@@ -80,7 +57,7 @@ public static class ServiceExceptionExtensions
     /// <returns>操作结果</returns>
     public static ServiceResult<T> ExecuteSafely<T>(
         this Func<ServiceResult<T>> operation,
-        Exceptions.IExceptionHandler exceptionHandler,
+        IDesktopExceptionHandler exceptionHandler,
         string methodName,
         string? context = null)
     {
@@ -90,12 +67,7 @@ public static class ServiceExceptionExtensions
         }
         catch (Exception ex)
         {
-            if (exceptionHandler is StandardExceptionHandler standardHandler)
-            {
-                return standardHandler.HandleException<T>(ex, methodName, context);
-            }
-            // 回退到默认处理
-            return ServiceResult<T>.Failure("操作失败，请稍后重试");
+            return exceptionHandler.HandleException<T>(ex, methodName, context);
         }
     }
 
@@ -109,7 +81,7 @@ public static class ServiceExceptionExtensions
     /// <returns>操作结果</returns>
     public static ServiceResult ExecuteSafely(
         this Func<ServiceResult> operation,
-        Exceptions.IExceptionHandler exceptionHandler,
+        IDesktopExceptionHandler exceptionHandler,
         string methodName,
         string? context = null)
     {
@@ -119,12 +91,7 @@ public static class ServiceExceptionExtensions
         }
         catch (Exception ex)
         {
-            if (exceptionHandler is StandardExceptionHandler standardHandler)
-            {
-                return standardHandler.HandleException(ex, methodName, context);
-            }
-            // 回退到默认处理
-            return ServiceResult.Failure("操作失败，请稍后重试");
+            return exceptionHandler.HandleExceptionWithResult(ex, methodName, context);
         }
     }
 
@@ -145,8 +112,8 @@ public static class ServiceExceptionExtensions
         string methodName,
         string? context = null)
     {
-        var exceptionHandler = new StandardExceptionHandler(
-            (ILogger<StandardExceptionHandler>)logger);
+        var exceptionHandler = new DesktopExceptionHandler(
+            (ILogger<DesktopExceptionHandler>)logger);
 
         return await operation.ExecuteSafelyAsync(exceptionHandler, methodName, context);
     }
@@ -167,8 +134,8 @@ public static class ServiceExceptionExtensions
         string methodName,
         string? context = null)
     {
-        var exceptionHandler = new StandardExceptionHandler(
-            (ILogger<StandardExceptionHandler>)logger);
+        var exceptionHandler = new DesktopExceptionHandler(
+            (ILogger<DesktopExceptionHandler>)logger);
 
         return await operation.ExecuteSafelyAsync(exceptionHandler, methodName, context);
     }

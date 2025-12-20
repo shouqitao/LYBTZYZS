@@ -62,7 +62,7 @@ namespace LYBT.Desktop.Foundation.Security
             catch (Exception ex)
             {
                 _logger.LogError(ex, "登录失败");
-                return ServiceResult<LoginResponse>.Failure($"登录失败: {ex.Message}");
+                return ServiceResult<LoginResponse>.Failure("登录失败，请稍后重试");
             }
         }
 
@@ -177,7 +177,7 @@ namespace LYBT.Desktop.Foundation.Security
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Token验证发生异常");
-                return ServiceResult<ValidateTokenResponse>.Failure($"Token验证失败: {ex.Message}");
+                return ServiceResult<ValidateTokenResponse>.Failure("Token验证失败，请稍后重试");
             }
         }
 
@@ -272,7 +272,7 @@ namespace LYBT.Desktop.Foundation.Security
             catch (Exception ex)
             {
                 _logger.LogError(ex, "修改系统管理员密码时发生异常");
-                return ServiceResult<bool>.Failure($"修改密码失败: {ex.Message}");
+                return ServiceResult<bool>.Failure("修改密码失败，请稍后重试");
             }
         }
 

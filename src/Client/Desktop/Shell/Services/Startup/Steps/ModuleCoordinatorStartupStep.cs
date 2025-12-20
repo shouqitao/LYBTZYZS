@@ -1,4 +1,5 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 using Prism.Modularity;
 
@@ -46,7 +47,7 @@ public class ModuleCoordinatorStartupStep : IStartupStep
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "模块协调器初始化失败，但不影响主流程");
-            return Task.FromResult(StartupStepResult.Failed($"模块协调器初始化失败: {ex.Message}", ex));
+            return Task.FromResult(StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("模块协调器初始化", ex), ex));
         }
     }
 

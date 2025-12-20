@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Errors;
 using LYBT.Infrastructure.Services;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

@@ -1,3 +1,4 @@
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Lifecycle;
@@ -95,7 +96,7 @@ public class ApplicationLifecycle : IApplicationLifecycle
                 _currentState = previousState;
             }
 
-            RecordTransition(previousState, targetState, startTime, false, ex.Message);
+            RecordTransition(previousState, targetState, startTime, false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("状态转换", ex));
             return false;
         }
     }

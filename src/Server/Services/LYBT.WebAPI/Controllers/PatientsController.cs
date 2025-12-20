@@ -41,25 +41,19 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
             {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
-                }
-
-                var result = await _service.GetPagedAsync(page, pageSize, keyword);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "查询失败");
-                }
-
-                return SuccessPaged(result.Data, "查询成功");
+                return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
             }
-            catch (Exception ex)
+
+            var result = await _service.GetPagedAsync(page, pageSize, keyword);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "获取患者列表", new { page, pageSize, keyword });
+                return BusinessFail(result.ErrorMessage ?? "查询失败");
             }
+
+            return SuccessPaged(result.Data, "查询成功");
         }
 
         /// <summary>
@@ -73,20 +67,14 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
             {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
-                }
+                return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
+            }
 
-                var result = await _service.GetPagedListAsync(page, pageSize, keyword);
-                return HandlePagedResult(result, "查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取患者列表", new { page, pageSize, keyword });
-            }
+            var result = await _service.GetPagedListAsync(page, pageSize, keyword);
+            return HandlePagedResult(result, "查询成功");
         }
 
         /// <summary>
@@ -96,26 +84,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (ValidateGuid(id, "患者ID") is { } error) return error;
+
+            var entityResult = await _service.GetByIdEntityAsync(id);
+            if (!entityResult.IsSuccess || entityResult.Data == null)
             {
-                if (ValidateGuid(id, "患者ID") is { } error) return error;
-
-                var entityResult = await _service.GetByIdEntityAsync(id);
-                if (!entityResult.IsSuccess || entityResult.Data == null)
-                {
-                    return NotFound(entityResult.ErrorMessage ?? "患者不存在");
-                }
-
-                var patientEntity = entityResult.Data;
-                var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
-                patientDto.Age = patientEntity.Age;
-
-                return Success(patientDto, "查询成功");
+                return NotFound(entityResult.ErrorMessage ?? "患者不存在");
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取患者详情", id);
-            }
+
+            var patientEntity = entityResult.Data;
+            var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
+            patientDto.Age = patientEntity.Age;
+
+            return Success(patientDto, "查询成功");
         }
 
         /// <summary>
@@ -125,25 +107,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> Add([FromBody] PatientInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var entityResult = await _service.CreateEntityAsync(dto);
+            if (!entityResult.IsSuccess || entityResult.Data == null)
             {
-                var entityResult = await _service.CreateEntityAsync(dto);
-                if (!entityResult.IsSuccess || entityResult.Data == null)
-                {
-                    return ValidationFail(entityResult.ErrorMessage ?? "新增患者失败");
-                }
-
-                var patientEntity = entityResult.Data;
-                var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
-                patientDto.Age = patientEntity.Age;
-
-                LogOperation("新增患者成功", patientDto, patientEntity.Id);
-                return Success(patientDto, "患者创建成功");
+                return ValidationFail(entityResult.ErrorMessage ?? "新增患者失败");
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "新增患者", dto);
-            }
+
+            var patientEntity = entityResult.Data;
+            var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
+            patientDto.Age = patientEntity.Age;
+
+            LogOperation("新增患者成功", patientDto, patientEntity.Id);
+            return Success(patientDto, "患者创建成功");
         }
 
         /// <summary>
@@ -154,34 +130,28 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto)
         {
-            try
-            {
-                // 使用统一的所有权检查方法（DTO版本）
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
-                    id, _service.GetByIdAsync, "患者");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法（DTO版本）
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
+                id, _service.GetByIdAsync, "患者");
+            if (ownershipError != null) return ownershipError;
 
-                var entityResult = await _service.UpdateEntityAsync(id, dto);
-                if (!entityResult.IsSuccess || entityResult.Data == null)
+            var entityResult = await _service.UpdateEntityAsync(id, dto);
+            if (!entityResult.IsSuccess || entityResult.Data == null)
+            {
+                if (entityResult.ErrorMessage?.Contains("不存在") == true)
                 {
-                    if (entityResult.ErrorMessage?.Contains("不存在") == true)
-                    {
-                        return NotFound(entityResult.ErrorMessage);
-                    }
-                    return ValidationFail(entityResult.ErrorMessage ?? "更新患者失败");
+                    return NotFound(entityResult.ErrorMessage);
                 }
-
-                var patientEntity = entityResult.Data;
-                var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
-                patientDto.Age = patientEntity.Age;
-
-                LogOperation("更新患者成功", patientDto, id);
-                return Success(patientDto, "患者更新成功");
+                return ValidationFail(entityResult.ErrorMessage ?? "更新患者失败");
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "更新患者", new { id, dto });
-            }
+
+            var patientEntity = entityResult.Data;
+            var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
+            patientDto.Age = patientEntity.Age;
+
+            LogOperation("更新患者成功", patientDto, id);
+            return Success(patientDto, "患者更新成功");
         }
 
         /// <summary>
@@ -192,26 +162,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            try
-            {
-                // 使用统一的所有权检查方法（DTO版本）
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
-                    id, _service.GetByIdAsync, "患者");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法（DTO版本）
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
+                id, _service.GetByIdAsync, "患者");
+            if (ownershipError != null) return ownershipError;
 
-                var result = await _service.DeleteAsync(id);
-                if (!result.IsSuccess)
-                {
-                    return NotFound("患者不存在");
-                }
-
-                LogOperation("删除患者成功", null, id);
-                return Success(true, "删除成功");
-            }
-            catch (Exception ex)
+            var result = await _service.DeleteAsync(id);
+            if (!result.IsSuccess)
             {
-                return HandleException(ex, "删除患者", id);
+                return NotFound("患者不存在");
             }
+
+            LogOperation("删除患者成功", null, id);
+            return Success(true, "删除成功");
         }
 
         /// <summary>
@@ -223,42 +187,36 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientBatchImportResultDto>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Import(IFormFile file)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (file == null || file.Length == 0)
             {
-                if (file == null || file.Length == 0)
-                {
-                    return ValidationFail("文件不能为空");
-                }
-
-                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (extension != ".xlsx")
-                {
-                    return ValidationFail("仅支持.xlsx格式的Excel文件");
-                }
-
-                if (file.Length > 10 * 1024 * 1024)
-                {
-                    return ValidationFail("文件大小不能超过10MB");
-                }
-
-                using var stream = file.OpenReadStream();
-                var result = await _service.BatchImportAsync(stream, file.FileName);
-
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "导入失败");
-                }
-
-                LogOperation("批量导入患者",
-                    new { FileName = file.FileName, SuccessCount = result.Data.SuccessCount, FailureCount = result.Data.FailureCount, SkippedCount = result.Data.SkippedCount },
-                    null);
-
-                return Success(result.Data);
+                return ValidationFail("文件不能为空");
             }
-            catch (Exception ex)
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (extension != ".xlsx")
             {
-                return HandleException(ex, "批量导入患者", new { FileName = file?.FileName });
+                return ValidationFail("仅支持.xlsx格式的Excel文件");
             }
+
+            if (file.Length > 10 * 1024 * 1024)
+            {
+                return ValidationFail("文件大小不能超过10MB");
+            }
+
+            using var stream = file.OpenReadStream();
+            var result = await _service.BatchImportAsync(stream, file.FileName);
+
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return BusinessFail(result.ErrorMessage ?? "导入失败");
+            }
+
+            LogOperation("批量导入患者",
+                new { FileName = file.FileName, SuccessCount = result.Data.SuccessCount, FailureCount = result.Data.FailureCount, SkippedCount = result.Data.SkippedCount },
+                null);
+
+            return Success(result.Data);
         }
 
         /// <summary>
@@ -270,25 +228,18 @@ namespace LYBT.WebAPI.Controllers
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         public async Task<IActionResult> ExportTemplate()
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var config = new ExportTemplateDto
             {
-                var config = new ExportTemplateDto
-                {
-                    IncludeSampleData = true,
-                    SampleRowCount = 3
-                };
-                var stream = await _service.ExportTemplateAsync(config);
-                var fileName = $"患者导入模板_{DateTime.Now:yyyyMMdd}.xlsx";
+                IncludeSampleData = true,
+                SampleRowCount = 3
+            };
+            var stream = await _service.ExportTemplateAsync(config);
+            var fileName = $"患者导入模板_{DateTime.Now:yyyyMMdd}.xlsx";
 
-                return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    fileName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "生成患者导入模板失败");
-                return StatusCode(500);
-            }
+            return File(stream,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
         }
 
         /// <summary>
@@ -299,24 +250,17 @@ namespace LYBT.WebAPI.Controllers
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         public async Task<IActionResult> ExportPatients([FromQuery] string? keyword = null)
         {
-            try
-            {
-                var stream = await _service.ExportPatientsAsync(keyword);
-                var fileName = string.IsNullOrWhiteSpace(keyword)
-                    ? $"患者数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
-                    : $"患者数据_{keyword}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var stream = await _service.ExportPatientsAsync(keyword);
+            var fileName = string.IsNullOrWhiteSpace(keyword)
+                ? $"患者数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                : $"患者数据_{keyword}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
-                LogOperation("导出患者数据", new { Keyword = keyword }, null);
+            LogOperation("导出患者数据", new { Keyword = keyword }, null);
 
-                return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    fileName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出患者数据失败，关键词：{Keyword}", keyword);
-                return StatusCode(500);
-            }
+            return File(stream,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
         }
 
         // ========== OpenSpec: optimize-module-list-ui - 恢复端点 ==========
@@ -331,26 +275,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)
         {
-            try
-            {
-                // 使用统一的所有权检查方法（DTO版本）
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
-                    id, _service.GetByIdAsync, "患者");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法（DTO版本）
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
+                id, _service.GetByIdAsync, "患者");
+            if (ownershipError != null) return ownershipError;
 
-                var result = await _service.RestoreAsync(id);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "恢复失败");
-                }
-
-                LogOperation("恢复患者", null, id);
-                return Success(result.Data, "患者已恢复");
-            }
-            catch (Exception ex)
+            var result = await _service.RestoreAsync(id);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "恢复患者", id);
+                return BusinessFail(result.ErrorMessage ?? "恢复失败");
             }
+
+            LogOperation("恢复患者", null, id);
+            return Success(result.Data, "患者已恢复");
         }
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
@@ -363,26 +301,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (dto.Ids == null || dto.Ids.Count == 0)
             {
-                if (dto.Ids == null || dto.Ids.Count == 0)
-                {
-                    return ValidationFail("请至少选择一个患者");
-                }
-
-                var result = await _service.BatchDeleteAsync(dto.Ids);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "批量删除失败");
-                }
-
-                LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-                return Success(result.Data, result.Data.Message);
+                return ValidationFail("请至少选择一个患者");
             }
-            catch (Exception ex)
+
+            var result = await _service.BatchDeleteAsync(dto.Ids);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "批量删除患者", new { Ids = dto.Ids });
+                return BusinessFail(result.ErrorMessage ?? "批量删除失败");
             }
+
+            LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+            return Success(result.Data, result.Data.Message);
         }
     }
 }

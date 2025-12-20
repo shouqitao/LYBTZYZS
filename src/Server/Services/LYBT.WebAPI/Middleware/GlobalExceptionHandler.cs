@@ -1,5 +1,5 @@
 ﻿using LYBT.Infrastructure.Logging;
-using LYBT.Shared.Models.Exceptions;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -139,7 +139,7 @@ namespace LYBT.WebAPI.Middleware
                     problemDetails.Extensions["errorCode"] = "VALIDATION_FAILED";
                     break;
 
-                case Shared.Models.Exceptions.ValidationException validationException:
+                case ValidationException validationException:
                     problemDetails.Status = StatusCodes.Status400BadRequest;
                     problemDetails.Title = "验证失败";
                     problemDetails.Detail = validationException.UserMessage ?? validationException.Message;

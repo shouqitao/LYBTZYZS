@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Startup;
@@ -178,7 +179,7 @@ public class StartupPipeline : IStartupPipeline
 
             return StartupPipelineResult.Failed(
                 "Unknown",
-                ex.Message,
+                ClientErrorMessageMapper.GetSafeOperationFailureMessage("启动", ex),
                 _totalStopwatch?.Elapsed ?? TimeSpan.Zero,
                 new Dictionary<string, StartupStepResult>(_stepResults));
         }
@@ -257,7 +258,7 @@ public class StartupPipeline : IStartupPipeline
         {
             stepStopwatch.Stop();
             _logger.LogError(ex, "步骤 {StepName} 执行异常", step.Name);
-            return StartupStepResult.Failed(ex.Message, ex, stepStopwatch.Elapsed);
+            return StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("执行步骤", ex), ex, stepStopwatch.Elapsed);
         }
     }
 

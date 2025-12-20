@@ -1,5 +1,6 @@
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.Items.MedicalCases;
 using LYBT.Desktop.Models.Items.Prescriptions;
@@ -225,7 +226,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
         catch (Exception ex)
         {
             Logger.LogError(ex, "保存医案失败: {MedicalCaseId}", detail.Id);
-            await ShowErrorMessageAsync($"保存失败: {ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
             return false;
         }
     }
@@ -253,7 +254,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
         catch (Exception ex)
         {
             Logger.LogError(ex, "删除医案失败: {MedicalCaseId}", detail.Id);
-            await ShowErrorMessageAsync($"删除失败: {ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex));
             return false;
         }
     }

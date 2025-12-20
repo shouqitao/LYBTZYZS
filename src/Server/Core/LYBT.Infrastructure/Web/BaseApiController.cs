@@ -312,22 +312,8 @@ namespace LYBT.Infrastructure.Web
             return response;
         }
 
-        /// <summary>
-        /// 处理异常
-        /// </summary>
-        protected IActionResult HandleException(Exception ex, string operation, object? context = null)
-        {
-            if (context != null)
-            {
-                var sanitizedContext = SensitiveDataMasker.SerializeWithSanitization(context);
-                _logger?.LogError(ex, "{Operation}失败，上下文：{Context}", operation, sanitizedContext);
-            }
-            else
-            {
-                _logger?.LogError(ex, "{Operation}失败", operation);
-            }
-            return Error($"{operation}失败: {ex.Message}");
-        }
+        // consolidate-exception-handling: HandleException方法已删除
+        // 异常处理由BusinessExceptionHandler和SystemExceptionHandler统一负责
 
         #endregion
 

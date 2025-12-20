@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -121,7 +122,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 }
                 else { await ShowErrorMessageAsync("未找到患者信息"); }
             }
-            catch (Exception ex) { Logger.LogError(ex, "加载患者数据失败"); await ShowErrorMessageAsync($"加载患者数据失败：{ex.Message}"); }
+            catch (Exception ex) { Logger.LogError(ex, "加载患者数据失败"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载患者数据", ex)); }
             finally { IsLoading = false; StatusMessage = string.Empty; }
         }
 
@@ -136,7 +137,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (result != null) NavigateBack("ContentRegion", new NavigationParameters { { "RefreshList", true } });
                 else await ShowErrorMessageAsync(PatientId == Guid.Empty ? "创建患者失败" : "更新患者失败");
             }
-            catch (Exception ex) { Logger.LogError(ex, "保存患者失败"); await ShowErrorMessageAsync($"保存患者失败：{ex.Message}"); }
+            catch (Exception ex) { Logger.LogError(ex, "保存患者失败"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存患者", ex)); }
             finally { IsLoading = false; StatusMessage = string.Empty; }
         }
     }

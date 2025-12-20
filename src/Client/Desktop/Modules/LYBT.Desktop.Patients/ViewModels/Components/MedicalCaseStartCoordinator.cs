@@ -1,4 +1,5 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -150,7 +151,7 @@ public class MedicalCaseStartCoordinator
             return new StartResultData
             {
                 Result = StartResult.Error,
-                ErrorMessage = $"新建医案失败：{ex.Message}"
+                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("新建医案", ex)
             };
         }
     }
@@ -186,7 +187,7 @@ public class MedicalCaseStartCoordinator
             return new StartResultData
             {
                 Result = StartResult.Error,
-                ErrorMessage = $"关闭医案失败：{ex.Message}"
+                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("关闭医案", ex)
             };
         }
     }

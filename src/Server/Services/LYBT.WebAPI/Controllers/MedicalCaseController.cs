@@ -73,51 +73,26 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> CreateMedicalCase(
             [FromBody] MedicalCaseInputDto dto)
         {
-            try
-            {
-                // 获取当前医生ID
-                var (doctorId, _, _) = GetOperator();
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 获取当前医生ID
+            var (doctorId, _, _) = GetOperator();
 
-                // 确保Id为null以触发创建逻辑
-                dto.Id = null;
+            // 确保Id为null以触发创建逻辑
+            dto.Id = null;
 
-                // OpenSpec: simplify-medicalcase-dataflow - 统一使用SaveAsync
-                var entity = await _commandService.SaveAsync(dto, doctorId, isAdmin: false);
+            // OpenSpec: simplify-medicalcase-dataflow - 统一使用SaveAsync
+            var entity = await _commandService.SaveAsync(dto, doctorId, isAdmin: false);
 
-                if (entity == null)
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("患者不存在"));
+            if (entity == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("患者不存在"));
 
-                _logger.LogInformation("病案创建成功，ID: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
-                    entity.Id, entity.DoctorName, entity.PatientName);
+            _logger.LogInformation("病案创建成功，ID: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
+                entity.Id, entity.DoctorName, entity.PatientName);
 
-                // Entity → MedicalCaseDetailDto 映射
-                var responseDto = MapToMedicalCaseDetailDto(entity);
+            // Entity → MedicalCaseDetailDto 映射
+            var responseDto = MapToMedicalCaseDetailDto(entity);
 
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(responseDto, "病案创建成功"));
-            }
-            catch (ArgumentException ex)
-            {
-                // DoctorId参数验证失败
-                _logger.LogWarning(ex, "创建病案失败：参数验证失败");
-                return BadRequest(ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
-            }
-            catch (InvalidOperationException ex)
-            {
-                // BR-001: 单个患者只能有一个Active病案
-                _logger.LogWarning(ex, "创建病案失败：业务规则验证失败");
-                return UnprocessableEntity(ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
-            }
-            catch (DbUpdateException dbEx)
-            {
-                // 数据库约束错误 - 提取详细错误信息以便诊断
-                var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
-                _logger.LogError(dbEx, "创建病案失败：数据库约束错误 - {InnerMessage}", innerMessage);
-                return BadRequest(ApiResponse<MedicalCaseDetailDto>.CreateFail($"数据库错误: {innerMessage}"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "创建病案", dto);
-            }
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(responseDto, "病案创建成功"));
         }
 
         // OpenSpec: simplify-medicalcase-api - UpdateConsultation已删除
@@ -137,47 +112,35 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] SetPrescriptionFlagRequest request)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // refactor-authorization-system: 资源级授权检查
+            var medicalCase = await _queryService.GetByIdAsync(id);
+            if (medicalCase == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+
+            var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
+            if (!authResult.Succeeded)
             {
-                // refactor-authorization-system: 资源级授权检查
-                var medicalCase = await _queryService.GetByIdAsync(id);
-                if (medicalCase == null)
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
-
-                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
-                if (!authResult.Succeeded)
-                {
-                    _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
-                    return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail("无权编辑此病案"));
-                }
-
-                // Epic #1731: 获取当前用户信息
-                var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-
-                var result = await _commandService.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
-                if (result == null)
-                {
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
-                }
-
-                // Entity → DTO映射
-                var dto = MapToMedicalCaseDetailDto(result);
-
-                _logger.LogInformation("处方标记更新成功，MedicalCaseId: {Id}, NeedsPrescription: {Flag}",
-                    id, request.NeedsPrescription);
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "处方标记更新成功"));
+                _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
+                return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail("无权编辑此病案"));
             }
-            catch (InvalidOperationException ex)
+
+            // Epic #1731: 获取当前用户信息
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+            var result = await _commandService.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
+            if (result == null)
             {
-                // AR-003: 已有处方时不能再标记为需要开处方
-                _logger.LogWarning(ex, "处方标记更新失败：业务规则验证失败");
-                return UnprocessableEntity(ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "更新处方标记", new { id, request });
-            }
+
+            // Entity → DTO映射
+            var dto = MapToMedicalCaseDetailDto(result);
+
+            _logger.LogInformation("处方标记更新成功，MedicalCaseId: {Id}, NeedsPrescription: {Flag}",
+                id, request.NeedsPrescription);
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "处方标记更新成功"));
         }
 
         // OpenSpec: simplify-medicalcase-api - 独立Prescription CRUD端点已删除
@@ -272,58 +235,42 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] MedicalCaseInputDto request)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 验证请求ID与路由ID一致
+            if (request.Id != id)
             {
-                // 验证请求ID与路由ID一致
-                if (request.Id != id)
-                {
-                    return BadRequest(ApiResponse<MedicalCaseDetailDto>.CreateFail("请求ID与路由ID不一致"));
-                }
-
-                // 资源级授权检查
-                var medicalCase = await _queryService.GetByIdAsync(id);
-                if (medicalCase == null)
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
-
-                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
-                if (!authResult.Succeeded)
-                {
-                    _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
-                    return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail("无权编辑此病案"));
-                }
-
-                // 获取当前用户信息
-                var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-
-                // 调用聚合保存服务
-                var result = await _commandService.SaveAsync(request, operatorId, isAdmin);
-
-                if (result == null)
-                {
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
-                }
-
-                // Entity → MedicalCaseDetailDto 映射
-                var detailDto = MapToMedicalCaseDetailDto(result);
-
-                _logger.LogInformation("医案聚合保存成功，MedicalCaseId: {MedicalCaseId}", id);
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(detailDto, "保存成功"));
+                return BadRequest(ApiResponse<MedicalCaseDetailDto>.CreateFail("请求ID与路由ID不一致"));
             }
-            catch (UnauthorizedAccessException ex)
+
+            // 资源级授权检查
+            var medicalCase = await _queryService.GetByIdAsync(id);
+            if (medicalCase == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+
+            var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
+            if (!authResult.Succeeded)
             {
-                _logger.LogWarning(ex, "聚合保存失败：权限不足");
-                return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
+                _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
+                return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail("无权编辑此病案"));
             }
-            catch (InvalidOperationException ex)
+
+            // 获取当前用户信息
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+            // 调用聚合保存服务
+            var result = await _commandService.SaveAsync(request, operatorId, isAdmin);
+
+            if (result == null)
             {
-                _logger.LogWarning(ex, "聚合保存失败：业务规则验证失败");
-                return UnprocessableEntity(ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "保存医案聚合", new { id, request });
-            }
+
+            // Entity → MedicalCaseDetailDto 映射
+            var detailDto = MapToMedicalCaseDetailDto(result);
+
+            _logger.LogInformation("医案聚合保存成功，MedicalCaseId: {MedicalCaseId}", id);
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(detailDto, "保存成功"));
         }
 
         /// <summary>
@@ -421,30 +368,18 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] UpdateStatusRequest request)
         {
-            try
-            {
-                var result = await _stateService.UpdateStatusAsync(id, request.Status);
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var result = await _stateService.UpdateStatusAsync(id, request.Status);
 
-                if (result == null)
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+            if (result == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
 
-                // Entity → DTO映射
-                var dto = MapToMedicalCaseDto(result);
+            // Entity → DTO映射
+            var dto = MapToMedicalCaseDto(result);
 
-                _logger.LogInformation("病案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}",
-                    id, request.Status);
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "状态更新成功"));
-            }
-            catch (InvalidOperationException ex)
-            {
-                // 状态转换不合法
-                _logger.LogWarning(ex, "状态更新失败：状态转换不合法");
-                return UnprocessableEntity(ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "更新病案状态", new { id, request });
-            }
+            _logger.LogInformation("病案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}",
+                id, request.Status);
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "状态更新成功"));
         }
 
         /// <summary>
@@ -472,30 +407,23 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 403)]
         public async Task<ActionResult> DeleteMedicalCase(Guid id)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // refactor-authorization-system: 资源级授权检查
+            var medicalCase = await _queryService.GetByIdAsync(id);
+            if (medicalCase == null)
+                return NotFound(ApiResponse.CreateFail("病案不存在"));
+
+            var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Delete);
+            if (!authResult.Succeeded)
             {
-                // refactor-authorization-system: 资源级授权检查
-                var medicalCase = await _queryService.GetByIdAsync(id);
-                if (medicalCase == null)
-                    return NotFound(ApiResponse.CreateFail("病案不存在"));
-
-                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Delete);
-                if (!authResult.Succeeded)
-                {
-                    _logger.LogWarning("授权失败: 用户无权删除病案 {MedicalCaseId}", id);
-                    return StatusCode(403, ApiResponse.CreateFail("无权删除此病案"));
-                }
-
-                var result = await _commandService.DeleteAsync(id);
-
-                _logger.LogInformation("病案已软删除，MedicalCaseId: {Id}", id);
-                return NoContent();
+                _logger.LogWarning("授权失败: 用户无权删除病案 {MedicalCaseId}", id);
+                return StatusCode(403, ApiResponse.CreateFail("无权删除此病案"));
             }
-            catch (Exception ex)
-            {
-                HandleException(ex, "删除病案", new { id });
-                throw;
-            }
+
+            var result = await _commandService.DeleteAsync(id);
+
+            _logger.LogInformation("病案已软删除，MedicalCaseId: {Id}", id);
+            return NoContent();
         }
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
@@ -508,26 +436,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] LYBT.Shared.Models.Contracts.Common.BatchDeleteInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (dto.Ids == null || dto.Ids.Count == 0)
             {
-                if (dto.Ids == null || dto.Ids.Count == 0)
-                {
-                    return ValidationFail("请至少选择一个医案");
-                }
-
-                var result = await _commandService.BatchDeleteAsync(dto.Ids);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "批量删除失败");
-                }
-
-                LogOperation("批量删除医案", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-                return Success(result.Data, result.Data.Message);
+                return ValidationFail("请至少选择一个医案");
             }
-            catch (Exception ex)
+
+            var result = await _commandService.BatchDeleteAsync(dto.Ids);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "批量删除医案", new { Ids = dto.Ids });
+                return BusinessFail(result.ErrorMessage ?? "批量删除失败");
             }
+
+            LogOperation("批量删除医案", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+            return Success(result.Data, result.Data.Message);
         }
 
         /// <summary>
@@ -540,20 +462,14 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> CloseMedicalCase(Guid id)
         {
-            try
-            {
-                var result = await _stateService.CloseCaseAsync(id);
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var result = await _stateService.CloseCaseAsync(id);
 
-                if (!result)
-                    return NotFound(ApiResponse.CreateFail("病案不存在"));
+            if (!result)
+                return NotFound(ApiResponse.CreateFail("病案不存在"));
 
-                _logger.LogInformation("病案关闭，MedicalCaseId: {Id}", id);
-                return Ok(ApiResponse.CreateSuccess("病案已关闭"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "关闭病案", new { id });
-            }
+            _logger.LogInformation("病案关闭，MedicalCaseId: {Id}", id);
+            return Ok(ApiResponse.CreateSuccess("病案已关闭"));
         }
 
         /// <summary>
@@ -571,49 +487,33 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] ConsultationInputDto? request = null)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // refactor-authorization-system: 资源级授权检查
+            var medicalCase = await _queryService.GetByIdAsync(id);
+            if (medicalCase == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+
+            var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
+            if (!authResult.Succeeded)
             {
-                // refactor-authorization-system: 资源级授权检查
-                var medicalCase = await _queryService.GetByIdAsync(id);
-                if (medicalCase == null)
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
-
-                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
-                if (!authResult.Succeeded)
-                {
-                    _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
-                    return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail("无权编辑此病案"));
-                }
-
-                var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-
-                var result = await _stateService.SaveDraftAsync(id, request, operatorId, isAdmin);
-                if (result == null)
-                {
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
-                }
-
-                // Entity → DTO映射
-                var dto = MapToMedicalCaseDto(result);
-
-                _logger.LogInformation("病案暂存成功，MedicalCaseId: {Id}", id);
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "病案已暂存"));
+                _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
+                return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail("无权编辑此病案"));
             }
-            catch (UnauthorizedAccessException ex)
+
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+            var result = await _stateService.SaveDraftAsync(id, request, operatorId, isAdmin);
+            if (result == null)
             {
-                _logger.LogWarning(ex, "暂存病案失败：权限不足");
-                return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
             }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "暂存病案失败：业务规则验证失败");
-                return UnprocessableEntity(ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "暂存病案", new { id });
-            }
+
+            // Entity → DTO映射
+            var dto = MapToMedicalCaseDto(result);
+
+            _logger.LogInformation("病案暂存成功，MedicalCaseId: {Id}", id);
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "病案已暂存"));
         }
 
         /// <summary>
@@ -631,49 +531,33 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] CancelMedicalCaseRequest? request = null)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // refactor-authorization-system: 资源级授权检查
+            var medicalCase = await _queryService.GetByIdAsync(id);
+            if (medicalCase == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+
+            var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
+            if (!authResult.Succeeded)
             {
-                // refactor-authorization-system: 资源级授权检查
-                var medicalCase = await _queryService.GetByIdAsync(id);
-                if (medicalCase == null)
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
-
-                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
-                if (!authResult.Succeeded)
-                {
-                    _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
-                    return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail("无权编辑此病案"));
-                }
-
-                var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-
-                var result = await _stateService.CancelAsync(id, operatorId, isAdmin, request?.Reason);
-                if (result == null)
-                {
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
-                }
-
-                // Entity → DTO映射
-                var dto = MapToMedicalCaseDto(result);
-
-                _logger.LogInformation("病案取消成功，MedicalCaseId: {Id}", id);
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "病案已取消"));
+                _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
+                return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail("无权编辑此病案"));
             }
-            catch (UnauthorizedAccessException ex)
+
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+            var result = await _stateService.CancelAsync(id, operatorId, isAdmin, request?.Reason);
+            if (result == null)
             {
-                _logger.LogWarning(ex, "取消病案失败：权限不足");
-                return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
             }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "取消病案失败：业务规则验证失败");
-                return UnprocessableEntity(ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "取消病案", new { id });
-            }
+
+            // Entity → DTO映射
+            var dto = MapToMedicalCaseDto(result);
+
+            _logger.LogInformation("病案取消成功，MedicalCaseId: {Id}", id);
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "病案已取消"));
         }
 
         // ========== Read Layer（读操作，独立查询）==========
@@ -687,22 +571,16 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            try
-            {
-                var result = await _queryService.GetByIdAsync(id);
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var result = await _queryService.GetByIdAsync(id);
 
-                if (result == null)
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+            if (result == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
 
-                // Entity → DTO映射
-                var dto = MapToMedicalCaseDto(result);
+            // Entity → DTO映射
+            var dto = MapToMedicalCaseDto(result);
 
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "查询成功"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取病案详情", new { id });
-            }
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "查询成功"));
         }
 
         /// <summary>
@@ -722,97 +600,91 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         public async Task<IActionResult> GetMedicalCaseByIdWithDetails(Guid id)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var entity = await _queryService.GetByIdAsync(id);
+
+            if (entity == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+
+            // Entity → MedicalCaseDetailDto 映射
+            var detailDto = new MedicalCaseDetailDto
             {
-                var entity = await _queryService.GetByIdAsync(id);
+                // 基础字段（继承自MedicalCaseDto）
+                Id = entity.Id,
+                PatientId = entity.PatientId,
+                PatientName = entity.PatientName,
+                UserId = entity.UserId,
+                DoctorName = entity.DoctorName,
+                // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除，使用CreatedAt
+                // ConsultationDate = entity.CreatedAt,
+                CaseStatus = entity.CaseStatus,
+                Remark = entity.Remark,
+                Diagnosis = entity.Consultation?.TCMDiagnosis,
+                CreatedAt = entity.CreatedAt,
 
-                if (entity == null)
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+                // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
+                PresentIllness = entity.Consultation?.PresentIllness,
 
-                // Entity → MedicalCaseDetailDto 映射
-                var detailDto = new MedicalCaseDetailDto
+                // 关联数据 - OpenSpec: refactor-diagnosis-fields 精简为4个核心字段
+                Consultation = entity.Consultation != null ? new ConsultationDetailDto
                 {
-                    // 基础字段（继承自MedicalCaseDto）
-                    Id = entity.Id,
+                    Id = entity.Consultation.Id,
+                    MedicalCaseId = entity.Id, // 使用医案ID（共享主键）
                     PatientId = entity.PatientId,
-                    PatientName = entity.PatientName,
                     UserId = entity.UserId,
+                    PatientName = entity.PatientName,
                     DoctorName = entity.DoctorName,
-                    // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除，使用CreatedAt
-                    // ConsultationDate = entity.CreatedAt,
-                    CaseStatus = entity.CaseStatus,
-                    Remark = entity.Remark,
-                    Diagnosis = entity.Consultation?.TCMDiagnosis,
-                    CreatedAt = entity.CreatedAt,
+                    PresentIllness = entity.Consultation.PresentIllness,
+                    TongueDiagnosis = entity.Consultation.TongueDiagnosis,
+                    PulseDiagnosis = entity.Consultation.PulseDiagnosis,
+                    TCMDiagnosis = entity.Consultation.TCMDiagnosis,
+                    // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
+                    CreatedAt = entity.Consultation.CreatedAt,
+                    UpdatedAt = entity.Consultation.UpdatedAt
+                } : null,
 
-                    // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
-                    PresentIllness = entity.Consultation?.PresentIllness,
-
-                    // 关联数据 - OpenSpec: refactor-diagnosis-fields 精简为4个核心字段
-                    Consultation = entity.Consultation != null ? new ConsultationDetailDto
+                // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
+                Prescription = entity.Prescription != null ? new PrescriptionDetailDto
+                {
+                    Id = entity.Prescription.Id,
+                    MedicalCaseId = entity.Id,
+                    PrescriptionNumber = entity.Prescription.PrescriptionNumber,
+                    // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
+                    // Indication = entity.Prescription.Indication,
+                    DosageCount = entity.Prescription.DosageCount,
+                    Usage = null, // 实体没有Usage字段，使用null
+                    Discount = entity.Prescription.Discount,
+                    Advice = entity.Prescription.Advice,
+                    // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
+                    // FormulaSource = entity.Prescription.FormulaSource,
+                    ReferencedFormulas = entity.Prescription.ReferencedFormulas,
+                    Remark = entity.Prescription.Remark,
+                    Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
                     {
-                        Id = entity.Consultation.Id,
-                        MedicalCaseId = entity.Id, // 使用医案ID（共享主键）
-                        PatientId = entity.PatientId,
-                        UserId = entity.UserId,
-                        PatientName = entity.PatientName,
-                        DoctorName = entity.DoctorName,
-                        PresentIllness = entity.Consultation.PresentIllness,
-                        TongueDiagnosis = entity.Consultation.TongueDiagnosis,
-                        PulseDiagnosis = entity.Consultation.PulseDiagnosis,
-                        TCMDiagnosis = entity.Consultation.TCMDiagnosis,
-                        // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
-                        CreatedAt = entity.Consultation.CreatedAt,
-                        UpdatedAt = entity.Consultation.UpdatedAt
-                    } : null,
+                        Id = item.Id,
+                        HerbId = item.HerbId,
+                        HerbName = item.HerbName,
+                        Dosage = item.Dosage,
+                        Unit = item.Unit,
+                        UnitPrice = item.UnitPrice,
+                        TotalPrice = item.Amount, // Entity用Amount（计算属性），DTO用TotalPrice
+                        TotalWeight = item.Dosage, // 总重量=用量
+                        Subtotal = item.Amount, // Entity用Amount，DTO用Subtotal
+                        Usage = item.Usage,
+                        Remark = item.Remark,
+                        DecocteMethod = item.DecocteMethod
+                    }).ToList() ?? new List<PrescriptionItemDto>(),
+                    // 计算属性（Entity没有这些字段，需要在映射时计算）
+                    SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0, // 单剂价格=所有药材小计之和
+                    TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount, // 总价=单剂×帖数×折扣
+                    TotalWeight = entity.Prescription.Items?.Sum(x => x.Dosage) ?? 0, // 总重量=所有药材用量之和
+                    Status = CommonStatus.Enabled, // 子实体状态由聚合根MedicalCase控制
+                    CreatedAt = entity.Prescription.CreatedAt,
+                    UpdatedAt = entity.Prescription.UpdatedAt
+                } : null
+            };
 
-                    // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
-                    Prescription = entity.Prescription != null ? new PrescriptionDetailDto
-                    {
-                        Id = entity.Prescription.Id,
-                        MedicalCaseId = entity.Id,
-                        PrescriptionNumber = entity.Prescription.PrescriptionNumber,
-                        // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
-                        // Indication = entity.Prescription.Indication,
-                        DosageCount = entity.Prescription.DosageCount,
-                        Usage = null, // 实体没有Usage字段，使用null
-                        Discount = entity.Prescription.Discount,
-                        Advice = entity.Prescription.Advice,
-                        // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
-                        // FormulaSource = entity.Prescription.FormulaSource,
-                        ReferencedFormulas = entity.Prescription.ReferencedFormulas,
-                        Remark = entity.Prescription.Remark,
-                        Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
-                        {
-                            Id = item.Id,
-                            HerbId = item.HerbId,
-                            HerbName = item.HerbName,
-                            Dosage = item.Dosage,
-                            Unit = item.Unit,
-                            UnitPrice = item.UnitPrice,
-                            TotalPrice = item.Amount, // Entity用Amount（计算属性），DTO用TotalPrice
-                            TotalWeight = item.Dosage, // 总重量=用量
-                            Subtotal = item.Amount, // Entity用Amount，DTO用Subtotal
-                            Usage = item.Usage,
-                            Remark = item.Remark,
-                            DecocteMethod = item.DecocteMethod
-                        }).ToList() ?? new List<PrescriptionItemDto>(),
-                        // 计算属性（Entity没有这些字段，需要在映射时计算）
-                        SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0, // 单剂价格=所有药材小计之和
-                        TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount, // 总价=单剂×帖数×折扣
-                        TotalWeight = entity.Prescription.Items?.Sum(x => x.Dosage) ?? 0, // 总重量=所有药材用量之和
-                        Status = CommonStatus.Enabled, // 子实体状态由聚合根MedicalCase控制
-                        CreatedAt = entity.Prescription.CreatedAt,
-                        UpdatedAt = entity.Prescription.UpdatedAt
-                    } : null
-                };
-
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(detailDto, "查询成功"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取病案详情（含关联数据）", new { id });
-            }
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(detailDto, "查询成功"));
         }
 
         /// <summary>
@@ -827,28 +699,22 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCasePermissionDto>), 404)]
         public async Task<IActionResult> GetPermissions(Guid id)
         {
-            try
-            {
-                var entity = await _queryService.GetByIdAsync(id);
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var entity = await _queryService.GetByIdAsync(id);
 
-                if (entity == null)
-                    return NotFound(ApiResponse<MedicalCasePermissionDto>.CreateFail("病案不存在"));
+            if (entity == null)
+                return NotFound(ApiResponse<MedicalCasePermissionDto>.CreateFail("病案不存在"));
 
-                // 获取当前用户信息
-                var (userId, _, role) = GetOperator();
+            // 获取当前用户信息
+            var (userId, _, role) = GetOperator();
 
-                // 获取权限详情
-                var permissions = _permissionService.GetPermissions(userId, role, entity);
+            // 获取权限详情
+            var permissions = _permissionService.GetPermissions(userId, role, entity);
 
-                _logger.LogDebug("权限查询: 用户 {UserId}({Role}) 对医案 {MedicalCaseId} 的权限: CanEdit={CanEdit}, CanDelete={CanDelete}",
-                    userId, role, id, permissions.CanEdit, permissions.CanDelete);
+            _logger.LogDebug("权限查询: 用户 {UserId}({Role}) 对医案 {MedicalCaseId} 的权限: CanEdit={CanEdit}, CanDelete={CanDelete}",
+                userId, role, id, permissions.CanEdit, permissions.CanDelete);
 
-                return Ok(ApiResponse<MedicalCasePermissionDto>.CreateSuccess(permissions, "查询成功"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取病案权限", new { id });
-            }
+            return Ok(ApiResponse<MedicalCasePermissionDto>.CreateSuccess(permissions, "查询成功"));
         }
 
         /// <summary>
@@ -868,56 +734,50 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 验证医案是否存在
+            var entity = await _queryService.GetByIdAsync(id);
+            if (entity == null)
+                return NotFound(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateFail("病案不存在"));
+
+            // 参数验证
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
             {
-                // 验证医案是否存在
-                var entity = await _queryService.GetByIdAsync(id);
-                if (entity == null)
-                    return NotFound(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateFail("病案不存在"));
-
-                // 参数验证
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return BadRequest(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateFail(
-                        "页码和页大小参数无效（页码>0，页大小1-100）"));
-                }
-
-                // 获取审计日志
-                var (logs, totalCount) = await _auditService.GetLogsPagedAsync(id, page, pageSize);
-
-                // Entity → DTO 映射
-                var logDtos = logs.Select(log => new MedicalCaseAuditLogDto
-                {
-                    Id = log.Id,
-                    MedicalCaseId = log.MedicalCaseId,
-                    OperatorId = log.OperatorId,
-                    OperatorName = log.OperatorName,
-                    OperatorRole = log.OperatorRole,
-                    OperationType = log.OperationType,
-                    ChangedFields = log.ChangedFields,
-                    OldValues = log.OldValues,
-                    NewValues = log.NewValues,
-                    Reason = log.Reason,
-                    CreatedAt = log.CreatedAt
-                }).ToList();
-
-                var result = new MedicalCaseAuditLogPagedResultDto
-                {
-                    Logs = logDtos,
-                    TotalCount = totalCount,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-
-                _logger.LogDebug("审计日志查询: 医案 {MedicalCaseId}, 第 {Page} 页, 共 {TotalCount} 条",
-                    id, page, totalCount);
-
-                return Ok(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateSuccess(result, "查询成功"));
+                return BadRequest(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateFail(
+                    "页码和页大小参数无效（页码>0，页大小1-100）"));
             }
-            catch (Exception ex)
+
+            // 获取审计日志
+            var (logs, totalCount) = await _auditService.GetLogsPagedAsync(id, page, pageSize);
+
+            // Entity → DTO 映射
+            var logDtos = logs.Select(log => new MedicalCaseAuditLogDto
             {
-                return HandleException(ex, "获取审计日志", new { id, page, pageSize });
-            }
+                Id = log.Id,
+                MedicalCaseId = log.MedicalCaseId,
+                OperatorId = log.OperatorId,
+                OperatorName = log.OperatorName,
+                OperatorRole = log.OperatorRole,
+                OperationType = log.OperationType,
+                ChangedFields = log.ChangedFields,
+                OldValues = log.OldValues,
+                NewValues = log.NewValues,
+                Reason = log.Reason,
+                CreatedAt = log.CreatedAt
+            }).ToList();
+
+            var result = new MedicalCaseAuditLogPagedResultDto
+            {
+                Logs = logDtos,
+                TotalCount = totalCount,
+                CurrentPage = page,
+                PageSize = pageSize
+            };
+
+            _logger.LogDebug("审计日志查询: 医案 {MedicalCaseId}, 第 {Page} 页, 共 {TotalCount} 条",
+                id, page, totalCount);
+
+            return Ok(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateSuccess(result, "查询成功"));
         }
 
         /// <summary>
@@ -938,33 +798,26 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] bool includeAllDoctors = false,
             [FromQuery] string? keyword = null)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
             {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return BadRequest(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateFail(
-                        "页码和页大小参数无效（页码>0，页大小1-100）"));
-                }
-
-                // OpenSpec: optimize-module-list-ui - 获取当前用户信息用于角色过滤
-                // OpenSpec: fix-history-copy-all-patients - includeAllDoctors=true时跳过医生过滤
-                var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
-
-                // OpenSpec: post-release-cleanup - 直接使用GetListDtoAsync返回MedicalCaseListDto
-                var result = await _queryService.GetListDtoAsync(
-                    status, patientId, page, pageSize,
-                    currentDoctorId: operatorId,
-                    isAdmin: isAdmin,
-                    keyword: keyword);
-
-                return Ok(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateSuccess(result, "查询成功"));
+                return BadRequest(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateFail(
+                    "页码和页大小参数无效（页码>0，页大小1-100）"));
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取病案列表",
-                    new { status, patientId, page, pageSize });
-            }
+
+            // OpenSpec: optimize-module-list-ui - 获取当前用户信息用于角色过滤
+            // OpenSpec: fix-history-copy-all-patients - includeAllDoctors=true时跳过医生过滤
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
+
+            // OpenSpec: post-release-cleanup - 直接使用GetListDtoAsync返回MedicalCaseListDto
+            var result = await _queryService.GetListDtoAsync(
+                status, patientId, page, pageSize,
+                currentDoctorId: operatorId,
+                isAdmin: isAdmin,
+                keyword: keyword);
+
+            return Ok(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateSuccess(result, "查询成功"));
         }
 
 
@@ -991,24 +844,17 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
             {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return BadRequest(ApiResponse<PagedResult<MedicalCaseDetailDto>>.CreateFail(
-                        "页码和页大小参数无效（页码>0，页大小1-100）"));
-                }
-
-                var result = await _queryService.SearchMedicalCasesAsync(
-                    patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
-
-                return Ok(ApiResponse<PagedResult<MedicalCaseDetailDto>>.CreateSuccess(result, "搜索成功"));
+                return BadRequest(ApiResponse<PagedResult<MedicalCaseDetailDto>>.CreateFail(
+                    "页码和页大小参数无效（页码>0，页大小1-100）"));
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "跨医案搜索",
-                    new { patientName, diagnosisKeyword, startDate, endDate, page, pageSize });
-            }
+
+            var result = await _queryService.SearchMedicalCasesAsync(
+                patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+
+            return Ok(ApiResponse<PagedResult<MedicalCaseDetailDto>>.CreateSuccess(result, "搜索成功"));
         }
 
         /// <summary>
@@ -1026,28 +872,21 @@ namespace LYBT.WebAPI.Controllers
             Guid patientId,
             [FromQuery] int count = 5)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (patientId == Guid.Empty)
             {
-                if (patientId == Guid.Empty)
-                {
-                    return BadRequest(ApiResponse<List<MedicalCaseDetailDto>>.CreateFail("患者ID无效"));
-                }
-
-                if (count <= 0 || count > 50)
-                {
-                    return BadRequest(ApiResponse<List<MedicalCaseDetailDto>>.CreateFail(
-                        "返回数量参数无效（1-50）"));
-                }
-
-                var result = await _queryService.GetPatientRecentMedicalCasesAsync(patientId, count);
-
-                return Ok(ApiResponse<List<MedicalCaseDetailDto>>.CreateSuccess(result, "查询成功"));
+                return BadRequest(ApiResponse<List<MedicalCaseDetailDto>>.CreateFail("患者ID无效"));
             }
-            catch (Exception ex)
+
+            if (count <= 0 || count > 50)
             {
-                return HandleException(ex, "获取患者最近医案",
-                    new { patientId, count });
+                return BadRequest(ApiResponse<List<MedicalCaseDetailDto>>.CreateFail(
+                    "返回数量参数无效（1-50）"));
             }
+
+            var result = await _queryService.GetPatientRecentMedicalCasesAsync(patientId, count);
+
+            return Ok(ApiResponse<List<MedicalCaseDetailDto>>.CreateSuccess(result, "查询成功"));
         }
 
         // OpenSpec: post-release-cleanup - GetMedicalCasesList已合并到GetList
@@ -1062,17 +901,10 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetConsultationList(
             Guid medicalCaseId)
         {
-            try
-            {
-                var result = await _queryService.GetConsultationListAsync(medicalCaseId);
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var result = await _queryService.GetConsultationListAsync(medicalCaseId);
 
-                return Ok(ApiResponse<List<ConsultationDetailDto>>.CreateSuccess(result, "查询成功"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取辨证记录列表",
-                    new { medicalCaseId });
-            }
+            return Ok(ApiResponse<List<ConsultationDetailDto>>.CreateSuccess(result, "查询成功"));
         }
 
         /// <summary>
@@ -1084,17 +916,10 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetPrescriptionList(
             Guid medicalCaseId)
         {
-            try
-            {
-                var result = await _queryService.GetPrescriptionListAsync(medicalCaseId);
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var result = await _queryService.GetPrescriptionListAsync(medicalCaseId);
 
-                return Ok(ApiResponse<List<PrescriptionDetailDto>>.CreateSuccess(result, "查询成功"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取处方列表",
-                    new { medicalCaseId });
-            }
+            return Ok(ApiResponse<List<PrescriptionDetailDto>>.CreateSuccess(result, "查询成功"));
         }
 
         /// <summary>
@@ -1117,48 +942,36 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 403)]
         public async Task<IActionResult> GetPendingCases()
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // UnauthorizedAccessException由SystemExceptionHandler转换为401响应
+            var (operatorId, operatorName, operatorRole) = GetOperator();
+
+            List<PendingMedicalCaseDto> result;
+            // Issue #2241: 根据角色判断查询范围，使用UserRole枚举比较
+            if (operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin)
             {
-                List<PendingMedicalCaseDto> result;
-                try
-                {
-                    var (operatorId, operatorName, operatorRole) = GetOperator();
-
-                    // Issue #2241: 根据角色判断查询范围，使用UserRole枚举比较
-                    if (operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin)
-                    {
-                        // 管理员查询所有待诊医案
-                        _logger.LogInformation("管理员查询全部待诊队列，OperatorId: {OperatorId}, Role: {Role}",
-                            operatorId, operatorRole);
-                        result = await _queryService.GetAllPendingCasesAsync();
-                    }
-                    else if (operatorRole == UserRole.Doctor)
-                    {
-                        // 医生只查询自己的待诊医案
-                        _logger.LogInformation("医生查询自己的待诊队列，DoctorId: {DoctorId}",
-                            operatorId);
-                        result = await _queryService.GetPendingCasesAsync(operatorId);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("无权限的用户尝试查询待诊队列，OperatorId: {OperatorId}, Role: {Role}",
-                            operatorId, operatorRole);
-                        return Forbid();
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return Unauthorized(ApiResponse<List<PendingMedicalCaseDto>>.CreateFail("未登录或用户信息无效"));
-                }
-
-                _logger.LogInformation("待诊队列查询成功，Count: {Count}", result.Count);
-
-                return Ok(ApiResponse<List<PendingMedicalCaseDto>>.CreateSuccess(result, "查询成功"));
+                // 管理员查询所有待诊医案
+                _logger.LogInformation("管理员查询全部待诊队列，OperatorId: {OperatorId}, Role: {Role}",
+                    operatorId, operatorRole);
+                result = await _queryService.GetAllPendingCasesAsync();
             }
-            catch (Exception ex)
+            else if (operatorRole == UserRole.Doctor)
             {
-                return HandleException(ex, "获取待诊队列", null);
+                // 医生只查询自己的待诊医案
+                _logger.LogInformation("医生查询自己的待诊队列，DoctorId: {DoctorId}",
+                    operatorId);
+                result = await _queryService.GetPendingCasesAsync(operatorId);
             }
+            else
+            {
+                _logger.LogWarning("无权限的用户尝试查询待诊队列，OperatorId: {OperatorId}, Role: {Role}",
+                    operatorId, operatorRole);
+                return Forbid();
+            }
+
+            _logger.LogInformation("待诊队列查询成功，Count: {Count}", result.Count);
+
+            return Ok(ApiResponse<List<PendingMedicalCaseDto>>.CreateSuccess(result, "查询成功"));
         }
 
         /// <summary>
@@ -1172,46 +985,40 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 200)]
         public async Task<IActionResult> GetMedicalCasesByPatientId(Guid patientId)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 复用GetListAsync，设置patientId筛选，不分页（取大量数据）
+            var entityResult = await _queryService.GetListAsync(
+                status: null,
+                patientId: patientId,
+                page: 1,
+                pageSize: 1000, // 取全部历史医案
+                currentDoctorId: null,
+                isAdmin: true); // 历史查询不限制医生
+
+            // Entity → DTO映射
+            // HasConsultation/HasPrescription是计算属性，只需设置ConsultationId/PrescriptionId
+            var dtoItems = entityResult.Items.Select(entity => new MedicalCaseDetailDto
             {
-                // 复用GetListAsync，设置patientId筛选，不分页（取大量数据）
-                var entityResult = await _queryService.GetListAsync(
-                    status: null,
-                    patientId: patientId,
-                    page: 1,
-                    pageSize: 1000, // 取全部历史医案
-                    currentDoctorId: null,
-                    isAdmin: true); // 历史查询不限制医生
+                Id = entity.Id,
+                PatientId = entity.PatientId,
+                PatientName = entity.PatientName,
+                UserId = entity.UserId,
+                DoctorName = entity.DoctorName,
+                // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除，使用CreatedAt
+                // ConsultationDate = entity.CreatedAt,
+                CaseStatus = entity.CaseStatus,
+                Remark = entity.Remark,
+                Diagnosis = entity.Consultation?.TCMDiagnosis,
+                CreatedAt = entity.CreatedAt,
+                // 设置ID字段，计算属性HasConsultation/HasPrescription会自动计算
+                ConsultationId = entity.Consultation != null ? entity.Id : null,
+                PrescriptionId = (entity.Prescription != null && !entity.Prescription.IsDeleted) ? entity.Prescription.Id : null
+            }).ToList();
 
-                // Entity → DTO映射
-                // HasConsultation/HasPrescription是计算属性，只需设置ConsultationId/PrescriptionId
-                var dtoItems = entityResult.Items.Select(entity => new MedicalCaseDetailDto
-                {
-                    Id = entity.Id,
-                    PatientId = entity.PatientId,
-                    PatientName = entity.PatientName,
-                    UserId = entity.UserId,
-                    DoctorName = entity.DoctorName,
-                    // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除，使用CreatedAt
-                    // ConsultationDate = entity.CreatedAt,
-                    CaseStatus = entity.CaseStatus,
-                    Remark = entity.Remark,
-                    Diagnosis = entity.Consultation?.TCMDiagnosis,
-                    CreatedAt = entity.CreatedAt,
-                    // 设置ID字段，计算属性HasConsultation/HasPrescription会自动计算
-                    ConsultationId = entity.Consultation != null ? entity.Id : null,
-                    PrescriptionId = (entity.Prescription != null && !entity.Prescription.IsDeleted) ? entity.Prescription.Id : null
-                }).ToList();
+            _logger.LogInformation("根据患者ID查询医案列表，PatientId: {PatientId}, Count: {Count}",
+                patientId, dtoItems.Count);
 
-                _logger.LogInformation("根据患者ID查询医案列表，PatientId: {PatientId}, Count: {Count}",
-                    patientId, dtoItems.Count);
-
-                return Ok(ApiResponse<List<MedicalCaseDetailDto>>.CreateSuccess(dtoItems, "查询成功"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "根据患者ID获取医案列表", new { patientId });
-            }
+            return Ok(ApiResponse<List<MedicalCaseDetailDto>>.CreateSuccess(dtoItems, "查询成功"));
         }
 
         [HttpGet("patient/{patientId}/unfinished")]
@@ -1224,76 +1031,63 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] Guid? doctorId = null,
             [FromQuery] bool checkAllDoctors = false)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // UnauthorizedAccessException由SystemExceptionHandler转换为401响应
+            // Epic #2210 Task 3.1.3: Q4医生筛选链 - 提取当前医生ID
+            // OpenSpec: multi-doctor-unfinished-case - 支持查询所有医生的未完成医案
+            var (operatorId, operatorName, operatorRole) = GetOperator();
+
+            Guid currentDoctorId;
+            // 如果checkAllDoctors=true，查询所有医生的未完成医案（用于多医生场景检测）
+            if (checkAllDoctors)
             {
-                // Epic #2210 Task 3.1.3: Q4医生筛选链 - 提取当前医生ID
-                // OpenSpec: multi-doctor-unfinished-case - 支持查询所有医生的未完成医案
-                Guid currentDoctorId;
-                try
-                {
-                    var (operatorId, operatorName, operatorRole) = GetOperator();
-
-                    // 如果checkAllDoctors=true，查询所有医生的未完成医案（用于多医生场景检测）
-                    if (checkAllDoctors)
-                    {
-                        _logger.LogInformation("查询所有医生的未完成医案，PatientId: {PatientId}", patientId);
-                        currentDoctorId = Guid.Empty; // Repository会跳过医生ID过滤
-                    }
-                    // 如果未传递doctorId，使用当前登录医生ID
-                    else if (doctorId == null || doctorId == Guid.Empty)
-                    {
-                        // Issue #2241: 验证当前用户是医生角色，使用UserRole枚举比较
-                        if (operatorRole != UserRole.Doctor)
-                        {
-                            _logger.LogWarning("非医生用户尝试查询未完成医案，OperatorId: {OperatorId}, Role: {Role}",
-                                operatorId, operatorRole);
-                            return Forbid();
-                        }
-                        currentDoctorId = operatorId;
-                    }
-                    else
-                    {
-                        // 传递了doctorId（管理员扩展），直接使用
-                        currentDoctorId = doctorId.Value;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return Unauthorized(ApiResponse<MedicalCaseDetailDto>.CreateFail("未登录或用户信息无效"));
-                }
-
-                var entityResult = await _queryService.GetUnfinishedCaseByPatientIdAsync(patientId, currentDoctorId);
-
-                if (entityResult == null)
-                {
-                    _logger.LogDebug("未找到患者的未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
-                        patientId, currentDoctorId);
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("未找到该患者的未完成医案"));
-                }
-
-                // Epic #2210 Phase 3 P0 Bug修复: Entity → DTO映射
-                var dtoResult = new MedicalCaseDetailDto
-                {
-                    Id = entityResult.Id,
-                    PatientId = entityResult.PatientId,
-                    PatientName = entityResult.PatientName,
-                    UserId = entityResult.UserId,
-                    DoctorName = entityResult.DoctorName,
-                    // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
-                    // ConsultationDate = entityResult.CreatedAt,
-                    CaseStatus = entityResult.CaseStatus,
-                    Remark = entityResult.Remark,
-                    Diagnosis = entityResult.Consultation?.TCMDiagnosis,
-                    CreatedAt = entityResult.CreatedAt
-                };
-
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dtoResult, "查询成功"));
+                _logger.LogInformation("查询所有医生的未完成医案，PatientId: {PatientId}", patientId);
+                currentDoctorId = Guid.Empty; // Repository会跳过医生ID过滤
             }
-            catch (Exception ex)
+            // 如果未传递doctorId，使用当前登录医生ID
+            else if (doctorId == null || doctorId == Guid.Empty)
             {
-                return HandleException(ex, "获取患者未完成医案",
-                    new { patientId, doctorId });
+                // Issue #2241: 验证当前用户是医生角色，使用UserRole枚举比较
+                if (operatorRole != UserRole.Doctor)
+                {
+                    _logger.LogWarning("非医生用户尝试查询未完成医案，OperatorId: {OperatorId}, Role: {Role}",
+                        operatorId, operatorRole);
+                    return Forbid();
+                }
+                currentDoctorId = operatorId;
             }
+            else
+            {
+                // 传递了doctorId（管理员扩展），直接使用
+                currentDoctorId = doctorId.Value;
+            }
+
+            var entityResult = await _queryService.GetUnfinishedCaseByPatientIdAsync(patientId, currentDoctorId);
+
+            if (entityResult == null)
+            {
+                _logger.LogDebug("未找到患者的未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                    patientId, currentDoctorId);
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("未找到该患者的未完成医案"));
+            }
+
+            // Epic #2210 Phase 3 P0 Bug修复: Entity → DTO映射
+            var dtoResult = new MedicalCaseDetailDto
+            {
+                Id = entityResult.Id,
+                PatientId = entityResult.PatientId,
+                PatientName = entityResult.PatientName,
+                UserId = entityResult.UserId,
+                DoctorName = entityResult.DoctorName,
+                // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
+                // ConsultationDate = entityResult.CreatedAt,
+                CaseStatus = entityResult.CaseStatus,
+                Remark = entityResult.Remark,
+                Diagnosis = entityResult.Consultation?.TCMDiagnosis,
+                CreatedAt = entityResult.CreatedAt
+            };
+
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dtoResult, "查询成功"));
         }
 
     }

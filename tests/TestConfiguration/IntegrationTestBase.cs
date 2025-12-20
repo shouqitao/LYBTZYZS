@@ -132,7 +132,7 @@ namespace LYBT.Tests.Common
         }
 
         /// <summary>
-        /// 配置内存数据库
+        /// 配置SQL Server真实数据库 - 集成测试使用真实数据库
         /// </summary>
         protected virtual void ConfigureInMemoryDatabase(IServiceCollection services)
         {
@@ -144,24 +144,30 @@ namespace LYBT.Tests.Common
                 services.Remove(descriptor);
             }
 
-            //  Issue #1669 Phase 6-7: 使用固定数据库名和共享DatabaseRoot，禁用RowVersion
-            // 确保测试中创建的数据与API请求时访问的数据在同一数据库实例
+            // 集成测试使用真实SQL Server数据库(LYBTDB)
+            // 配置来源: TestConfiguration/appsettings.Test.json
+            var connectionString = "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=30;Command Timeout=30;Application Name=LYBT.IntegrationTests";
+
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
-                options.UseInMemoryDatabase(TestDatabaseName, _sharedDatabaseRoot);
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.CommandTimeout(30);
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                        errorNumbersToAdd: null);
+                });
                 options.EnableSensitiveDataLogging();
                 options.EnableServiceProviderCaching();
-
-                //  Issue #1669 Phase 7: InMemory数据库对RowVersion支持有限，导致DbUpdateConcurrencyException
-                // 解决方案：在测试环境中移除RowVersion的IsConcurrencyToken配置
-                options.ReplaceService<Microsoft.EntityFrameworkCore.Infrastructure.IModelCustomizer, TestModelCustomizer>();
             });
 
-            // 构建服务提供器并创建数据库
+            // 构建服务提供器并验证数据库连接
             var sp = services.BuildServiceProvider();
             using (var scope = sp.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                // 确保数据库存在(不删除现有数据)
                 db.Database.EnsureCreated();
                 SeedTestData(db);
             }

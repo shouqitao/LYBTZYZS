@@ -1,5 +1,6 @@
 using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Components
@@ -51,7 +52,7 @@ namespace LYBT.Desktop.Infrastructure.Components
             catch (Exception ex)
             {
                 Logger.LogError(ex, "{ValidatorName} 验证过程发生错误", GetType().Name);
-                return CreateErrorResult($"验证过程发生错误: {ex.Message}");
+                return CreateErrorResult(ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证", ex));
             }
         }
 
@@ -80,7 +81,7 @@ namespace LYBT.Desktop.Infrastructure.Components
             catch (Exception ex)
             {
                 Logger.LogError(ex, "{ValidatorName} 同步验证过程发生错误", GetType().Name);
-                errorMessage = $"验证过程发生错误: {ex.Message}";
+                errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证", ex);
                 return false;
             }
         }

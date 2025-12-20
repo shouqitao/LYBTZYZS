@@ -6,6 +6,7 @@ using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -124,7 +125,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                     else { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = $"WebAPI 连接失败: {_applicationStateService.ConnectionStatus}"; }
                 });
             }
-            catch (Exception ex) { await Application.Current.Dispatcher.InvokeAsync(() => { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = $"加载API状态失败: {ex.Message}"; }); }
+            catch (Exception ex) { Logger.LogError(ex, "加载API状态失败"); await Application.Current.Dispatcher.InvokeAsync(() => { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = "加载API状态失败，请稍后重试"; }); }
         }
 
         private async Task TryAutoLoginWithTokenAsync()
@@ -197,7 +198,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "登录过程中发生错误");
-                ErrorMessage = "登录失败：" + ex.Message;
+                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex);
                 Password = string.Empty;
             }
             finally { IsLoading = false; StatusMessage = string.Empty; }
@@ -253,7 +254,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ApiStatus = ApiHealthStatus.Unhealthy;
-                    ApiStatusMessage = $"连接检查失败: {ex.Message}";
+                    ApiStatusMessage = "连接检查失败，请稍后重试";
                 });
             }
         }

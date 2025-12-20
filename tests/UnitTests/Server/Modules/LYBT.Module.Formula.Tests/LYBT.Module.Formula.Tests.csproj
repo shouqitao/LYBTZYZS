@@ -19,7 +19,7 @@
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <!-- SQLite InMemory由Directory.Build.props提供 -->
   </ItemGroup>
 
   <ItemGroup>

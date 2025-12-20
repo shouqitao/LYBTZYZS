@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -136,7 +137,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 }
                 else { await ShowErrorMessageAsync("未找到药材信息"); }
             }
-            catch (Exception ex) { Logger.LogError(ex, "加载药材数据失败"); await ShowErrorMessageAsync($"加载药材数据失败：{ex.Message}"); }
+            catch (Exception ex) { Logger.LogError(ex, "加载药材数据失败"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载药材数据", ex)); }
             finally { IsLoading = false; StatusMessage = string.Empty; }
         }
 
@@ -174,7 +175,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 if (result != null) NavigateBack("ContentRegion", new NavigationParameters { { "RefreshList", true } });
                 else await ShowErrorMessageAsync("创建药材失败");
             }
-            catch (Exception ex) { Logger.LogError(ex, "创建药材异常"); await ShowErrorMessageAsync($"创建药材失败：{ex.Message}"); }
+            catch (Exception ex) { Logger.LogError(ex, "创建药材异常"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建药材", ex)); }
         }
 
         private async Task UpdateHerbAsync()
@@ -192,7 +193,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 if (result != null) NavigateBack("ContentRegion", new NavigationParameters { { "RefreshList", true } });
                 else await ShowErrorMessageAsync("更新药材失败");
             }
-            catch (Exception ex) { Logger.LogError(ex, "更新药材异常"); await ShowErrorMessageAsync($"更新药材失败：{ex.Message}"); }
+            catch (Exception ex) { Logger.LogError(ex, "更新药材异常"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新药材", ex)); }
         }
 
         private bool CanSubmit() => !IsReadOnly && !IsLoading && !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Unit) && !HasErrors;

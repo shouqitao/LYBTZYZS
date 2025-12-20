@@ -19,9 +19,7 @@
     </PackageReference>
     <PackageReference Include="FluentAssertions"  />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"  />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"  />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"  />
-    <PackageReference Include="Microsoft.Data.Sqlite"  />
+    <!-- SQLite InMemory由Directory.Build.props提供 -->
     <PackageReference Include="Bogus"  />
     <PackageReference Include="Moq"  />
     <PackageReference Include="AutoMapper"  />

@@ -136,18 +136,18 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         #region 硬编码密码修复验证测试
 
         [Fact]
-        public async Task ApplicationStartup_ShouldValidatePasswordConfiguration()
+        public void ApplicationStartup_ShouldValidatePasswordConfiguration()
         {
             // 这个测试验证硬编码密码修复是否生效
             // 如果配置文件缺少密码配置，应用应该启动失败
-            
+
             _output.WriteLine("📝 测试场景: 验证硬编码密码修复");
 
             // 验证配置存在性
             using (var scope = ServiceProvider.CreateScope())
             {
                 var configuration = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
-                
+
                 var sysAdminPassword = configuration["Lybt:DefaultPasswords:SysAdminPassword"];
                 var newUserPassword = configuration["Lybt:DefaultPasswords:NewUserPassword"];
                 var systemAdminEmail = configuration["Lybt:SystemAdmin:Email"];
@@ -155,10 +155,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 // 验证密码配置存在
                 sysAdminPassword.Should().NotBeNullOrEmpty("系统管理员密码配置应该存在");
                 sysAdminPassword.Should().NotBe("LybtAdmin2025@SecurePass!", "不应该使用硬编码默认密码");
-                
+
                 newUserPassword.Should().NotBeNullOrEmpty("新用户密码配置应该存在");
                 newUserPassword.Should().NotBe("Lybt2025@TempPass!", "不应该使用硬编码默认密码");
-                
+
                 systemAdminEmail.Should().NotBeNullOrEmpty("系统管理员邮箱配置应该存在");
 
                 _output.WriteLine("✅ 密码配置验证通过");
@@ -255,7 +255,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         #region 数据隔离基础测试
 
         [Fact]
-        public async Task DifferentDoctors_ShouldHaveDifferentTokens()
+        public void DifferentDoctors_ShouldHaveDifferentTokens()
         {
             // Arrange
             _output.WriteLine("📝 测试场景: 不同医生应该有不同的Token");
@@ -590,7 +590,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             shouqitaoResult.Data!.Should().HaveCount(1, "shouqitao应该只看到自己的1个医案");
             shouqitaoResult.Data!.First().MedicalCaseId.Should().Be(shouqitaoCaseId, "应该是shouqitao的医案");
 
-            _output.WriteLine($"   ✅ shouqitao查询结果: {shouqitaoResult.Data.Count}个医案（正确）");
+            _output.WriteLine($"   ✅ shouqitao查询结果: {shouqitaoResult.Data!.Count}个医案（正确）");
 
             // Act - jjr查询
             _output.WriteLine("   jjr查询挂起医案...");
@@ -606,7 +606,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             jjrResult.Data!.Should().HaveCount(1, "jjr应该只看到自己的1个医案");
             jjrResult.Data!.First().MedicalCaseId.Should().Be(jjrCaseId, "应该是jjr的医案");
 
-            _output.WriteLine($"   ✅ jjr查询结果: {jjrResult.Data.Count}个医案（正确）");
+            _output.WriteLine($"   ✅ jjr查询结果: {jjrResult.Data!.Count}个医案（正确）");
             _output.WriteLine("✅ 场景3完成: 数据隔离验证成功，每个医生只能看到自己的医案");
         }
 
@@ -710,7 +710,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             caseIds.Should().Contain(shouqitaoCaseId, "应该包含shouqitao的医案");
             caseIds.Should().Contain(jjrCaseId, "应该包含jjr的医案");
 
-            _output.WriteLine($"   ✅ SysAdmin查询结果: {result.Data.Count}个医案");
+            _output.WriteLine($"   ✅ SysAdmin查询结果: {result.Data!.Count}个医案");
             _output.WriteLine($"   包含shouqitao的医案: {caseIds.Contains(shouqitaoCaseId)}");
             _output.WriteLine($"   包含jjr的医案: {caseIds.Contains(jjrCaseId)}");
             _output.WriteLine("✅ 场景4完成: SysAdmin能看到所有医生的医案");

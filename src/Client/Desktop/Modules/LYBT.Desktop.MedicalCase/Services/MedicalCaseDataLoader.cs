@@ -1,4 +1,5 @@
 // MedicalCaseDataManager now in same namespace (Services)
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -102,7 +103,7 @@ public class MedicalCaseDataLoader
         catch (Exception ex)
         {
             _logger.LogError(ex, "加载医案数据失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-            var errorMsg = $"加载医案数据失败：{ex.Message}";
+            var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载医案数据", ex);
 
             // 触发事件
             DataLoaded?.Invoke(this, new DataLoadedEventArgs

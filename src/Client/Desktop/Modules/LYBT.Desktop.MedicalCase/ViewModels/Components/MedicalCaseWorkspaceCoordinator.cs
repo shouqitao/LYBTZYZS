@@ -1,3 +1,4 @@
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -88,7 +89,7 @@ public class MedicalCaseWorkspaceCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "聚合保存失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-            return AggregateSaveResult.Failed($"保存失败: {ex.Message}");
+            return AggregateSaveResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
         }
     }
 

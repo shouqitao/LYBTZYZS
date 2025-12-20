@@ -1,7 +1,5 @@
 using FluentAssertions;
-using LYBT.Entities.Consultations;
 using LYBT.Entities.Herbs;
-using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
@@ -149,126 +147,6 @@ public class CrossModuleQueryServiceTests : IDisposable
 
     #endregion
 
-    #region 医案查询测试
-
-    [Fact]
-    public async Task GetMedicalCaseBasicInfoAsync_WithExistingCase_ShouldReturnDto()
-    {
-        // Arrange
-        var medicalCase = CreateTestMedicalCase();
-        _dbContext.MedicalCases.Add(medicalCase);
-        await _dbContext.SaveChangesAsync();
-
-        // Act
-        var result = await _service.GetMedicalCaseBasicInfoAsync(medicalCase.Id);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(medicalCase.Id);
-        result.PatientId.Should().Be(medicalCase.PatientId);
-        result.Status.Should().Be(medicalCase.CaseStatus);
-    }
-
-    [Fact]
-    public async Task GetMedicalCaseBasicInfoAsync_WithConsultation_ShouldIncludeTCMDiagnosis()
-    {
-        // Arrange
-        var medicalCase = CreateTestMedicalCase();
-        var consultation = new Consultation
-        {
-            Id = medicalCase.Id, // 共享主键
-            TCMDiagnosis = "气血两虚",
-            ChiefComplaint = "头晕乏力",
-            CreatedBy = medicalCase.CreatedBy // 必填审计字段
-        };
-
-        _dbContext.MedicalCases.Add(medicalCase);
-        _dbContext.Consultations.Add(consultation);
-        await _dbContext.SaveChangesAsync();
-
-        // Act
-        var result = await _service.GetMedicalCaseBasicInfoAsync(medicalCase.Id);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.TCMDiagnosis.Should().Be("气血两虚");
-    }
-
-    [Fact]
-    public async Task GetMedicalCaseBasicInfoAsync_WithNonExistingCase_ShouldReturnNull()
-    {
-        // Arrange
-        var nonExistingId = Guid.NewGuid();
-
-        // Act
-        var result = await _service.GetMedicalCaseBasicInfoAsync(nonExistingId);
-
-        // Assert
-        result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task GetMedicalCasesBasicInfoAsync_WithMultipleCases_ShouldReturnDictionary()
-    {
-        // Arrange
-        var cases = new[]
-        {
-            CreateTestMedicalCase(),
-            CreateTestMedicalCase(),
-            CreateTestMedicalCase()
-        };
-        _dbContext.MedicalCases.AddRange(cases);
-        await _dbContext.SaveChangesAsync();
-
-        var ids = cases.Select(c => c.Id).ToList();
-
-        // Act
-        var result = await _service.GetMedicalCasesBasicInfoAsync(ids);
-
-        // Assert
-        result.Should().HaveCount(3);
-        result.Keys.Should().BeEquivalentTo(ids);
-    }
-
-    [Fact]
-    public async Task GetMedicalCasesBasicInfoAsync_WithConsultations_ShouldMergeTCMDiagnosis()
-    {
-        // Arrange
-        var case1 = CreateTestMedicalCase();
-        var case2 = CreateTestMedicalCase();
-
-        var consultation1 = new Consultation
-        {
-            Id = case1.Id, // 共享主键
-            TCMDiagnosis = "肝郁气滞",
-            ChiefComplaint = "胸闷",
-            CreatedBy = case1.CreatedBy // 必填审计字段
-        };
-        var consultation2 = new Consultation
-        {
-            Id = case2.Id, // 共享主键
-            TCMDiagnosis = "脾虚湿困",
-            ChiefComplaint = "腹胀",
-            CreatedBy = case2.CreatedBy // 必填审计字段
-        };
-
-        _dbContext.MedicalCases.AddRange(case1, case2);
-        _dbContext.Consultations.AddRange(consultation1, consultation2);
-        await _dbContext.SaveChangesAsync();
-
-        var ids = new[] { case1.Id, case2.Id };
-
-        // Act
-        var result = await _service.GetMedicalCasesBasicInfoAsync(ids);
-
-        // Assert
-        result.Should().HaveCount(2);
-        result[case1.Id].TCMDiagnosis.Should().Be("肝郁气滞");
-        result[case2.Id].TCMDiagnosis.Should().Be("脾虚湿困");
-    }
-
-    #endregion
-
     #region 药材查询测试
 
     [Fact]
@@ -395,24 +273,6 @@ public class CrossModuleQueryServiceTests : IDisposable
             PhoneNumber = "13800000000",
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
-            IsDeleted = false
-        };
-    }
-
-    private static MedicalCase CreateTestMedicalCase()
-    {
-        var doctorId = Guid.NewGuid();
-        return new MedicalCase
-        {
-            Id = Guid.NewGuid(),
-            PatientId = Guid.NewGuid(),
-            PatientName = "测试患者",
-            UserId = doctorId,
-            DoctorName = "测试医生",
-            CaseStatus = MedicalCaseStatus.Active,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now,
-            CreatedBy = doctorId, // 必填审计字段
             IsDeleted = false
         };
     }

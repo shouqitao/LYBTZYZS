@@ -49,14 +49,14 @@ public class ApiHealthCheckService : IApiHealthCheckService
             LastErrorMessage = $"连接超时({timeout}ms)";
             return ApiHealthStatus.Unhealthy;
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
-            LastErrorMessage = $"网络连接失败: {ex.Message}";
+            LastErrorMessage = "网络连接失败，请稍后重试";
             return ApiHealthStatus.Unhealthy;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            LastErrorMessage = $"未知错误: {ex.Message}";
+            LastErrorMessage = "健康检查失败，请稍后重试";
             return ApiHealthStatus.Unhealthy;
         }
     }

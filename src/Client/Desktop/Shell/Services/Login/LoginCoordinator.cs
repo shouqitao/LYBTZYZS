@@ -4,6 +4,7 @@ using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -155,7 +156,7 @@ public class LoginCoordinator : ILoginCoordinator
         {
             _logger.LogError(ex, "登录流程异常 [用户: {Username}]", username);
             TransitionTo(LoginFlowState.NotLoggedIn);
-            return LoginResult.Failed($"登录失败: {ex.Message}");
+            return LoginResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
         }
     }
 

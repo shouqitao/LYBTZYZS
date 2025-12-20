@@ -6,6 +6,7 @@ using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.HealthCheck;
@@ -354,7 +355,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "退出登录时发生异常");
-            await ShowErrorMessageAsync($"退出登录失败:{ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("退出登录", ex));
         }
     }
 
@@ -385,7 +386,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private async Task CheckLoginStatusAsync()
     {
         try { _navigationManager.ShowLoginDialog(); }
-        catch (Exception ex) { await ShowErrorMessageAsync($"初始化登录界面失败:{ex.Message}"); _navigationManager.ShowLoginDialog(); }
+        catch (Exception ex) { await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("初始化登录界面", ex)); _navigationManager.ShowLoginDialog(); }
     }
 
     /// <summary>

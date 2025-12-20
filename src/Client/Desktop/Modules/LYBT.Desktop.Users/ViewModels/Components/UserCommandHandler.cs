@@ -1,4 +1,5 @@
 ﻿using LYBT.Desktop.Foundation.Logging;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -386,7 +387,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "CommandHandler: 重置密码异常, UserId: {UserId}", userId);
-                return (false, $"重置密码异常: {ex.Message}", null);
+                return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("重置密码", ex), null);
             }
         }
 

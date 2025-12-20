@@ -1,7 +1,7 @@
 using AutoMapper;
 using LYBT.Module.Prescriptions.Interfaces;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Services
@@ -31,47 +31,32 @@ namespace LYBT.Module.Prescriptions.Services
             _logger = logger;
         }
 
-
-        public async Task<Result<PrescriptionDetailDto>> GetByIdAsync(Guid id)
+        /// <inheritdoc/>
+        public async Task<PrescriptionDetailDto> GetByIdAsync(Guid id)
         {
-            try
-            {
-                // 使用优化后的查询方法，包含处方项
-                var entity = await _repository.GetByIdWithDetailsAsync(id);
-                if (entity == null)
-                    return Result<PrescriptionDetailDto>.Failure("处方不存在");
+            _logger.LogDebug("获取处方详情: {Id}", id);
 
-                var dto = _mapper.Map<PrescriptionDetailDto>(entity);
-                return Result<PrescriptionDetailDto>.Success(dto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取处方详情失败");
-                return Result<PrescriptionDetailDto>.Failure("获取处方详情失败");
-            }
+            // 使用优化后的查询方法，包含处方项
+            var entity = await _repository.GetByIdWithDetailsAsync(id)
+                ?? throw NotFoundException.Prescription(id);
+
+            return _mapper.Map<PrescriptionDetailDto>(entity);
         }
 
         // ========== Write方法已移除（Issue #1601 Phase 1）==========
         // CreateAsync, UpdateAsync, DeleteAsync, PhysicalDeleteAsync, CloneAsync, ClonePrescriptionAsync, ImportFormulaIntoPrescriptionAsync 已移除
         // 所有写操作必须通过MedicalCase聚合根进行
 
-        public async Task<Result<List<PrescriptionDetailDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        /// <inheritdoc/>
+        public async Task<List<PrescriptionDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
-            try
-            {
-                // 使用优化后的查询方法，直接查询并包含Items集合
-                var prescriptions = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
+            _logger.LogDebug("根据医案ID获取处方列表: {MedicalCaseId}", medicalCaseId);
 
-                // 转换为DTO
-                var prescriptionDtos = _mapper.Map<List<PrescriptionDetailDto>>(prescriptions);
+            // 使用优化后的查询方法，直接查询并包含Items集合
+            var prescriptions = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
 
-                return Result<List<PrescriptionDetailDto>>.Success(prescriptionDtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取病历相关处方时发生错误，病历ID：{MedicalCaseId}", medicalCaseId);
-                return Result<List<PrescriptionDetailDto>>.Failure($"获取病历相关处方失败：{ex.Message}");
-            }
+            // 转换为DTO
+            return _mapper.Map<List<PrescriptionDetailDto>>(prescriptions);
         }
 
         /// <summary>

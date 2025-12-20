@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services
@@ -28,7 +29,7 @@ namespace LYBT.Desktop.Infrastructure.Services
                 _logger.LogDebug("验证 {TypeName}: {IsValid}, 错误数: {ErrorCount}", typeof(T).Name, result.IsValid, result.Errors.Count);
                 return result;
             }
-            catch (Exception ex) { _logger.LogError(ex, "验证 {TypeName} 时发生错误", typeof(T).Name); return new ValidationResult(new[] { new ValidationFailure(typeof(T).Name, $"验证过程发生错误: {ex.Message}") }); }
+            catch (Exception ex) { _logger.LogError(ex, "验证 {TypeName} 时发生错误", typeof(T).Name); return new ValidationResult(new[] { new ValidationFailure(typeof(T).Name, ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证", ex)) }); }
         }
 
         public ValidationResult Validate<T>(T dto) where T : class
@@ -42,7 +43,7 @@ namespace LYBT.Desktop.Infrastructure.Services
                 _logger.LogDebug("验证 {TypeName}: {IsValid}, 错误数: {ErrorCount}", typeof(T).Name, result.IsValid, result.Errors.Count);
                 return result;
             }
-            catch (Exception ex) { _logger.LogError(ex, "验证 {TypeName} 时发生错误", typeof(T).Name); return new ValidationResult(new[] { new ValidationFailure(typeof(T).Name, $"验证过程发生错误: {ex.Message}") }); }
+            catch (Exception ex) { _logger.LogError(ex, "验证 {TypeName} 时发生错误", typeof(T).Name); return new ValidationResult(new[] { new ValidationFailure(typeof(T).Name, ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证", ex)) }); }
         }
 
         public bool IsValid<T>(T dto, out string errorMessage) where T : class
@@ -56,7 +57,7 @@ namespace LYBT.Desktop.Infrastructure.Services
                 errorMessage = string.Join("; ", result.Errors.Select(e => e.ErrorMessage));
                 return false;
             }
-            catch (Exception ex) { _logger.LogError(ex, "快速验证 {TypeName} 时发生错误", typeof(T).Name); errorMessage = $"验证过程发生错误: {ex.Message}"; return false; }
+            catch (Exception ex) { _logger.LogError(ex, "快速验证 {TypeName} 时发生错误", typeof(T).Name); errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证", ex); return false; }
         }
     }
 }

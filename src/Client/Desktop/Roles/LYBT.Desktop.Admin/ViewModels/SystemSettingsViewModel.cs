@@ -1,5 +1,6 @@
 using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -149,7 +150,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存系统设置失败");
-                await ShowErrorMessageAsync($"保存系统设置失败：{ex.Message}");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存系统设置", ex));
             }
             finally
             {
@@ -189,7 +190,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "重置系统设置失败");
-                await ShowErrorMessageAsync($"重置系统设置失败：{ex.Message}");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("重置系统设置", ex));
             }
             finally
             {
@@ -221,7 +222,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "选择备份路径失败");
-                await ShowErrorMessageAsync($"选择备份路径失败：{ex.Message}");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("选择备份路径", ex));
             }
         }
 

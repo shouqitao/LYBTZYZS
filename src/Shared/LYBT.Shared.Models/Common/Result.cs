@@ -1,4 +1,6 @@
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Primitives.ErrorCodes;
+using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Shared.Models.Common;
 
@@ -68,6 +70,12 @@ public class Result<T>
     public AuthErrorCode? ErrorCode { get; set; }
 
     /// <summary>
+    /// 通用错误码（用于所有模块的结构化错误处理）
+    /// consolidate-exception-handling: 支持模块化错误码分区
+    /// </summary>
+    public GenericErrorCode? ModuleErrorCode { get; set; }
+
+    /// <summary>
     /// 创建成功结果
     /// </summary>
     /// <param name="data">返回的数据对象</param>
@@ -112,7 +120,7 @@ public class Result<T>
     }
 
     /// <summary>
-    /// 创建失败结果（带错误码）
+    /// 创建失败结果（带认证错误码）
     /// Issue #1864: 支持结构化错误处理
     /// </summary>
     /// <param name="errorCode">认证错误码</param>
@@ -125,6 +133,25 @@ public class Result<T>
         {
             IsSuccess = false,
             ErrorCode = errorCode,
+            ErrorMessage = message,
+            Errors = new List<string> { message }
+        };
+    }
+
+    /// <summary>
+    /// 创建失败结果（带通用错误码）
+    /// consolidate-exception-handling: 支持模块化错误码
+    /// </summary>
+    /// <param name="errorCode">通用错误码</param>
+    /// <param name="errorMessage">可选的错误消息，默认使用错误码对应的消息</param>
+    /// <returns>失败的Result对象</returns>
+    public static Result<T> Failure(GenericErrorCode errorCode, string? errorMessage = null)
+    {
+        var message = errorMessage ?? GetErrorCodeMessage(errorCode);
+        return new Result<T>
+        {
+            IsSuccess = false,
+            ModuleErrorCode = errorCode,
             ErrorMessage = message,
             Errors = new List<string> { message }
         };
@@ -156,6 +183,13 @@ public class Result<T>
             _ => "未知错误"
         };
     }
+
+    /// <summary>
+    /// 获取通用错误码对应的默认消息
+    /// consolidate-exception-handling: 使用集中的ErrorMessages映射
+    /// </summary>
+    private static string GetErrorCodeMessage(GenericErrorCode errorCode)
+        => ErrorMessages.GetUserMessage(errorCode);
 
     /// <summary>
     /// 从异常创建失败结果
@@ -213,6 +247,12 @@ public class Result
     public List<string>? Errors { get; set; }
 
     /// <summary>
+    /// 通用错误码（用于所有模块的结构化错误处理）
+    /// consolidate-exception-handling: 支持模块化错误码分区
+    /// </summary>
+    public GenericErrorCode? ModuleErrorCode { get; set; }
+
+    /// <summary>
     /// 消息属性（兼容性）
     /// </summary>
     public string? Message => ErrorMessage;
@@ -253,6 +293,32 @@ public class Result
             ErrorMessage = string.Join("; ", errors)
         };
     }
+
+    /// <summary>
+    /// 创建失败结果（带通用错误码）
+    /// consolidate-exception-handling: 支持模块化错误码
+    /// </summary>
+    /// <param name="errorCode">通用错误码</param>
+    /// <param name="errorMessage">可选的错误消息，默认使用错误码对应的消息</param>
+    /// <returns>失败的Result对象</returns>
+    public static Result Failure(GenericErrorCode errorCode, string? errorMessage = null)
+    {
+        var message = errorMessage ?? GetErrorCodeMessage(errorCode);
+        return new Result
+        {
+            IsSuccess = false,
+            ModuleErrorCode = errorCode,
+            ErrorMessage = message,
+            Errors = new List<string> { message }
+        };
+    }
+
+    /// <summary>
+    /// 获取通用错误码对应的默认消息
+    /// consolidate-exception-handling: 使用集中的ErrorMessages映射
+    /// </summary>
+    private static string GetErrorCodeMessage(GenericErrorCode errorCode)
+        => ErrorMessages.GetUserMessage(errorCode);
 
     /// <summary>
     /// 从异常创建失败结果

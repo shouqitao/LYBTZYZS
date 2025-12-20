@@ -114,30 +114,20 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Fact]
-        public async Task GetPagedAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task GetPagedAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var exception = new Exception("数据库错误");
             _repositoryMock
                 .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _userService.GetPagedAsync(1, 20, null);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _userService.GetPagedAsync(1, 20, null));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("获取用户列表失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("获取用户列表失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         [Fact]
@@ -217,9 +207,10 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Fact]
-        public async Task GetByIdAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task GetByIdAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var userId = Guid.NewGuid();
             var exception = new Exception("数据库错误");
 
@@ -227,22 +218,11 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.GetByIdAsync(userId))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _userService.GetByIdAsync(userId);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _userService.GetByIdAsync(userId));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("获取用户详情失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("获取用户详情失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion
@@ -293,9 +273,10 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Fact]
-        public async Task CreateAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task CreateAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var createDto = new UserInputDto
             {
                 UserName = "newuser",
@@ -309,22 +290,11 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.AddAsync(It.IsAny<User>()))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _userService.CreateAsync(createDto);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _userService.CreateAsync(createDto));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("创建用户失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("创建用户失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion
@@ -407,9 +377,10 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Fact]
-        public async Task UpdateAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task UpdateAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var userId = Guid.NewGuid();
             var existingUser = CreateTestUser(userId);
             var updateDto = new UserInputDto
@@ -427,22 +398,11 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.UpdateAsync(It.IsAny<User>()))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _userService.UpdateAsync(userId, updateDto);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _userService.UpdateAsync(userId, updateDto));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("更新用户失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("更新用户失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion
@@ -525,9 +485,10 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Fact]
-        public async Task DeleteAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task DeleteAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var userId = Guid.NewGuid();
             var targetUser = new User
             {
@@ -553,22 +514,11 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.DeleteAsync(userId))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _userService.DeleteAsync(userId);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _userService.DeleteAsync(userId));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("删除用户失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("删除用户失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion

@@ -37,9 +37,9 @@ public class HerbItemViewModelBaseTests
 
     #region Test Data
 
-    private static ObservableCollection<HerbDto> CreateTestHerbs()
+    private static ObservableCollection<HerbListDto> CreateTestHerbs()
     {
-        return new ObservableCollection<HerbDto>
+        return new ObservableCollection<HerbListDto>
         {
             new() { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g", Price = 0.5m },
             new() { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Unit = "g", Price = 0.8m },
@@ -226,7 +226,7 @@ public class HerbItemViewModelBaseTests
     {
         // Arrange
         var viewModel = new TestHerbItemViewModel();
-        var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g" };
+        var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g" };
 
         // Act
         viewModel.SelectedHerb = herb;
@@ -243,7 +243,7 @@ public class HerbItemViewModelBaseTests
     {
         // Arrange
         var viewModel = new TestHerbItemViewModel();
-        var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g" };
+        var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g" };
 
         // Act
         viewModel.SelectedHerb = herb;
@@ -260,7 +260,7 @@ public class HerbItemViewModelBaseTests
     {
         // Arrange
         var viewModel = new TestHerbItemViewModel();
-        var herb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "克" };
+        var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "克" };
 
         // Act
         viewModel.SelectedHerb = herb;
@@ -277,7 +277,7 @@ public class HerbItemViewModelBaseTests
     {
         // Arrange
         var viewModel = new TestHerbItemViewModel();
-        viewModel.SelectedHerb = new HerbDto { Id = Guid.NewGuid(), Name = "当归", Unit = "g" };
+        viewModel.SelectedHerb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Unit = "g" };
 
         // Act
         var act = () => viewModel.SelectedHerb = null;

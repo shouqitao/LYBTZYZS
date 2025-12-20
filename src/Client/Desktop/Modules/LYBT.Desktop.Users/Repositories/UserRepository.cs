@@ -1,4 +1,5 @@
 ﻿using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -218,7 +219,7 @@ namespace LYBT.Desktop.Users.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "修改密码时发生异常: UserId={UserId}", userId);
-                return ServiceResult.Failure($"修改密码失败: {ex.Message}");
+                return ServiceResult.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex));
             }
         }
 
@@ -251,7 +252,7 @@ namespace LYBT.Desktop.Users.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Repository: 调用重置密码API异常, UserId: {UserId}", userId);
-                return ServiceResult<ResetPasswordResponseDto>.Failure($"重置密码异常: {ex.Message}");
+                return ServiceResult<ResetPasswordResponseDto>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("重置密码", ex));
             }
         }
 

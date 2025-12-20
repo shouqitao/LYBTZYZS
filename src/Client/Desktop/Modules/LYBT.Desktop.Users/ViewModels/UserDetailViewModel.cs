@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;
@@ -99,7 +100,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (result.success && result.user != null) { UserName = result.user.UserName; RealName = result.user.RealName; PhoneNumber = result.user.PhoneNumber; Email = result.user.Email; SelectedRole = result.user.Role; Status = result.user.Status; }
                 else await ShowErrorMessageAsync(result.errorMessage ?? "未找到用户信息");
             }
-            catch (Exception ex) { Logger.LogError(ex, "加载用户数据失败"); await ShowErrorMessageAsync($"加载用户数据失败：{ex.Message}"); }
+            catch (Exception ex) { Logger.LogError(ex, "加载用户数据失败"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载用户数据", ex)); }
             finally { IsLoading = false; StatusMessage = string.Empty; }
         }
 

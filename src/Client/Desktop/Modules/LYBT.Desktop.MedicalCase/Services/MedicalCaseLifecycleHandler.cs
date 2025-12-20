@@ -1,5 +1,6 @@
 ﻿// MedicalCaseDataManager now in same namespace (Services)
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -87,7 +88,7 @@ public class MedicalCaseLifecycleHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, " 创建MedicalCase失败，PatientId: {PatientId}", patientId);
-            var errorMsg = $"创建医案失败：{ex.Message}";
+            var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建医案", ex);
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs
@@ -135,7 +136,7 @@ public class MedicalCaseLifecycleHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "暂存医案失败");
-            var errorMsg = $"暂存失败：{ex.Message}";
+            var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("暂存", ex);
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs
@@ -187,7 +188,7 @@ public class MedicalCaseLifecycleHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "取消医案失败");
-            var errorMsg = $"取消失败：{ex.Message}";
+            var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("取消", ex);
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs
@@ -234,7 +235,7 @@ public class MedicalCaseLifecycleHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "完成病案失败");
-            var errorMsg = $"完成失败：{ex.Message}";
+            var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("完成", ex);
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs
@@ -281,7 +282,7 @@ public class MedicalCaseLifecycleHandler
         {
             _logger.LogError(ex, "更新MedicalCase状态失败，MedicalCaseId: {MedicalCaseId}, 目标状态: {NewStatus}",
                 medicalCaseId, newStatus);
-            return (false, $"更新状态失败：{ex.Message}");
+            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新状态", ex));
         }
     }
 

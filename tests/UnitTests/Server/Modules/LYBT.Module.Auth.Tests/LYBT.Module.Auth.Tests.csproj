@@ -18,8 +18,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions"  />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"  />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"  />
+    <!-- SQLite InMemory由Directory.Build.props提供，优于EF Core InMemory -->
     <!-- Removed conflicting packages - provided by dependencies -->
     <PackageReference Include="Bogus"  />
     <PackageReference Include="AutoMapper"  />

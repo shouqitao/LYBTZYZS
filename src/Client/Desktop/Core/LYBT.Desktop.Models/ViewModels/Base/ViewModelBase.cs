@@ -1,8 +1,13 @@
 using System.Collections;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Reactive.Disposables;
 using System.Windows;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Desktop.Infrastructure.Logging;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
@@ -108,6 +113,200 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         private void HandleOperationCancellation(string? operationName) { StatusMessage = $"{operationName ?? "操作"}已取消"; Logger.LogInformation("{Operation}已取消", operationName ?? "操作"); }
         private void HandleOperationFailure(Exception ex, string? operationName) { StatusMessage = $"{operationName ?? "操作"}失败"; HandleError(ex, operationName); }
 
+        #region SafeExecuteAsync - HTTP状态码感知的安全执行
+
+        /// <summary>
+        /// 安全执行异步操作（带HTTP状态码特殊处理）
+        /// ERR-009: ViewModel安全执行模式 - 统一异常处理入口
+        /// </summary>
+        /// <typeparam name="T">返回值类型</typeparam>
+        /// <param name="action">要执行的异步操作</param>
+        /// <param name="operationName">操作名称（用于日志和状态提示）</param>
+        /// <param name="fallbackValue">异常时的回退值</param>
+        /// <param name="onError">错误回调（可选）</param>
+        /// <returns>操作结果或回退值</returns>
+        protected async Task<T?> SafeExecuteAsync<T>(
+            Func<Task<T>> action,
+            string operationName,
+            T? fallbackValue = default,
+            Action<Exception>? onError = null)
+        {
+            try
+            {
+                IsBusy = true;
+                ClearError();
+                return await action().ConfigureAwait(false);
+            }
+            catch (ApiException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                await HandleUnauthorizedAsync(operationName);
+                return fallbackValue;
+            }
+            catch (ApiException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                await HandleConflictAsync(operationName);
+                return fallbackValue;
+            }
+            catch (ApiException ex) when (ex.StatusCode == HttpStatusCode.GatewayTimeout ||
+                                          ex.StatusCode == HttpStatusCode.ServiceUnavailable)
+            {
+                await HandleServiceUnavailableAsync(operationName);
+                return fallbackValue;
+            }
+            catch (ApiException ex)
+            {
+                await HandleApiExceptionAsync(ex, operationName);
+                onError?.Invoke(ex);
+                return fallbackValue;
+            }
+            catch (TaskCanceledException)
+            {
+                HandleOperationCancellation(operationName);
+                return fallbackValue;
+            }
+            catch (Exception ex)
+            {
+                HandleError(ex, operationName);
+                onError?.Invoke(ex);
+                return fallbackValue;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        /// <summary>
+        /// 安全执行无返回值的异步操作（带HTTP状态码特殊处理）
+        /// </summary>
+        protected async Task SafeExecuteAsync(
+            Func<Task> action,
+            string operationName,
+            Action<Exception>? onError = null)
+        {
+            await SafeExecuteAsync(async () =>
+            {
+                await action().ConfigureAwait(false);
+                return true;
+            }, operationName, false, onError);
+        }
+
+        /// <summary>
+        /// 处理API异常
+        /// Phase 4.4: 添加CorrelationId追踪
+        /// </summary>
+        protected virtual async Task HandleApiExceptionAsync(ApiException ex, string operationName)
+        {
+            var correlationId = CorrelationIdContext.CurrentOrNew;
+            var trackingCode = ClientErrorMessageMapper.GetShortTrackingCode();
+
+            Logger.LogWarning(ex, "API请求失败: {Operation}, StatusCode: {StatusCode}, CorrelationId: {CorrelationId}",
+                operationName, ex.StatusCode, correlationId);
+
+            var userMessage = ClientErrorMessageMapper.GetUserMessageFromStatusCode((int)ex.StatusCode);
+            var messageWithTracking = $"{userMessage} (追踪码: {trackingCode})";
+
+            ErrorMessage = messageWithTracking;
+            StatusMessage = $"{operationName}失败";
+
+            await ShowErrorNotificationAsync(messageWithTracking);
+        }
+
+        /// <summary>
+        /// 处理401未授权响应 - 清除会话并导航到登录页
+        /// ERR-010: 401 Unauthorized处理
+        /// </summary>
+        protected virtual async Task HandleUnauthorizedAsync(string operationName)
+        {
+            Logger.LogWarning("会话已过期或未授权: {Operation}", operationName);
+
+            var loginCoordinator = GetService<ILoginCoordinator>();
+            if (loginCoordinator != null)
+            {
+                await RunOnUIThreadAsync(async () =>
+                {
+                    await loginCoordinator.LogoutAsync();
+                });
+            }
+
+            ErrorMessage = "登录已过期，请重新登录";
+            StatusMessage = string.Empty;
+        }
+
+        /// <summary>
+        /// 处理409冲突响应 - 提示数据已被修改
+        /// ERR-010: 409 Conflict处理
+        /// </summary>
+        protected virtual async Task HandleConflictAsync(string operationName)
+        {
+            Logger.LogWarning("数据冲突: {Operation}", operationName);
+
+            var notificationService = GetService<IUserNotificationService>();
+            if (notificationService != null)
+            {
+                var shouldRefresh = await notificationService.ShowConfirmAsync(
+                    "数据冲突",
+                    "数据已被其他用户修改，是否刷新获取最新数据？");
+
+                if (shouldRefresh)
+                {
+                    await OnConflictRefreshRequestedAsync();
+                }
+            }
+
+            ErrorMessage = "数据已被修改，请刷新后重试";
+            StatusMessage = string.Empty;
+        }
+
+        /// <summary>
+        /// 处理504网关超时或503服务不可用
+        /// ERR-010: 504 Gateway Timeout处理
+        /// </summary>
+        protected virtual async Task HandleServiceUnavailableAsync(string operationName)
+        {
+            Logger.LogWarning("服务暂时不可用: {Operation}", operationName);
+
+            ErrorMessage = "服务暂时不可用，请稍后重试";
+            StatusMessage = string.Empty;
+
+            await ShowErrorNotificationAsync("服务暂时不可用，请稍后重试");
+        }
+
+        /// <summary>
+        /// 当冲突后用户选择刷新时调用 - 子类可重写以执行数据刷新
+        /// </summary>
+        protected virtual Task OnConflictRefreshRequestedAsync() => Task.CompletedTask;
+
+        /// <summary>
+        /// 显示错误通知（如果IUserNotificationService可用）
+        /// </summary>
+        private async Task ShowErrorNotificationAsync(string message)
+        {
+            var notificationService = GetService<IUserNotificationService>();
+            if (notificationService != null)
+            {
+                await notificationService.ShowErrorAsync(message);
+            }
+        }
+
+        /// <summary>
+        /// 获取服务实例 - 子类可重写以提供自定义服务解析
+        /// </summary>
+        protected virtual T? GetService<T>() where T : class => null;
+
+        /// <summary>
+        /// 在UI线程上异步执行操作
+        /// </summary>
+        protected Task RunOnUIThreadAsync(Func<Task> action)
+        {
+            if (Application.Current?.Dispatcher == null)
+                return action();
+
+            return Application.Current.Dispatcher.InvokeAsync(action).Task;
+        }
+
+        #endregion
+
         /// <summary>安全执行同步操作</summary>
         protected void ExecuteSafely(Action action, string? operationName = null)
         {
@@ -116,11 +315,26 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             finally { IsBusy = false; }
         }
 
-        /// <summary>处理错误</summary>
-        protected virtual void HandleError(Exception ex, string? context = null) { Logger.LogError(ex, "错误发生在: {Context}", context ?? "未知操作"); ErrorMessage = GetUserFriendlyMessage(ex); HasError = true; }
+        /// <summary>
+        /// 处理错误
+        /// Phase 4.4: 添加CorrelationId追踪，日志包含追踪码
+        /// </summary>
+        protected virtual void HandleError(Exception ex, string? context = null)
+        {
+            var correlationId = CorrelationIdContext.CurrentOrNew;
+            var trackingCode = ClientErrorMessageMapper.GetShortTrackingCode();
+
+            // 日志包含完整CorrelationId
+            Logger.LogError(ex, "错误发生在: {Context}, CorrelationId: {CorrelationId}", context ?? "未知操作", correlationId);
+
+            // 用户消息包含短追踪码
+            var baseMessage = GetUserFriendlyMessage(ex);
+            ErrorMessage = $"{baseMessage} (追踪码: {trackingCode})";
+            HasError = true;
+        }
 
         /// <summary>获取友好的错误消息</summary>
-        protected virtual string GetUserFriendlyMessage(Exception ex) => ex switch { ValidationException => "输入数据验证失败", UnauthorizedAccessException => "权限不足", TimeoutException => "操作超时", TaskCanceledException => "操作已取消", _ => "操作失败，请重试" };
+        protected virtual string GetUserFriendlyMessage(Exception ex) => ex switch { System.ComponentModel.DataAnnotations.ValidationException => "输入数据验证失败", UnauthorizedAccessException => "权限不足", TimeoutException => "操作超时", TaskCanceledException => "操作已取消", _ => "操作失败，请重试" };
 
         protected void ClearError() { ErrorMessage = string.Empty; HasError = false; }
 

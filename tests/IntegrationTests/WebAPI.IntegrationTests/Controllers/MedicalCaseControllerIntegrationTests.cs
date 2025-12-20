@@ -943,7 +943,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     Items = new List<PrescriptionItemInputDto>
                     {
                         new() { HerbId = Guid.NewGuid(), HerbName = "天麻", Dosage = 15, Unit = "g", DecocteMethod = DecocteMethod.Default, UnitPrice = 1.2m },
-                        new() { HerbId = Guid.NewGuid(), HerbName = "钩藤", Dosage = 10, Unit = "g", DecocteMethod = DecocteMethod.LaterAdd, UnitPrice = 0.8m }
+                        new() { HerbId = Guid.NewGuid(), HerbName = "钩藤", Dosage = 10, Unit = "g", DecocteMethod = DecocteMethod.PostAdd, UnitPrice = 0.8m }
                     }
                 }
             };
@@ -1105,8 +1105,8 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     Items = new List<PrescriptionItemInputDto>
                     {
                         new() { HerbId = Guid.NewGuid(), HerbName = "新药材1", Dosage = 20, Unit = "g", DecocteMethod = DecocteMethod.Default, UnitPrice = 1.0m },
-                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材2", Dosage = 15, Unit = "g", DecocteMethod = DecocteMethod.FirstDecoct, UnitPrice = 0.8m },
-                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材3", Dosage = 10, Unit = "g", DecocteMethod = DecocteMethod.LaterAdd, UnitPrice = 0.6m }
+                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材2", Dosage = 15, Unit = "g", DecocteMethod = DecocteMethod.PreDecoct, UnitPrice = 0.8m },
+                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材3", Dosage = 10, Unit = "g", DecocteMethod = DecocteMethod.PostAdd, UnitPrice = 0.6m }
                     }
                 }
             };

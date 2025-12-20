@@ -3,6 +3,7 @@ using System.Net.Http;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -274,7 +275,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "开始看诊失败");
-            await ShowErrorMessageAsync($"开始看诊失败：{ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("开始看诊", ex));
         }
         finally
         {
@@ -320,11 +321,11 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         }
         catch (HttpRequestException ex)
         {
-            await ShowErrorMessageAsync($"刷新待诊队列失败：网络错误 - {ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("刷新待诊队列", ex));
         }
         catch (Exception ex)
         {
-            await ShowErrorMessageAsync($"刷新待诊队列失败：{ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("刷新待诊队列", ex));
         }
         finally
         {

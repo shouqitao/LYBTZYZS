@@ -1,6 +1,7 @@
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
@@ -273,7 +274,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         catch (Exception ex)
         {
             Logger.LogError(ex, "保存处方数据异常");
-            await ShowErrorMessageAsync($"保存失败：{ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
             return false;
         }
     }
@@ -370,7 +371,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         catch (Exception ex)
         {
             Logger.LogError(ex, "保存草稿失败");
-            await ShowErrorMessageAsync($"保存失败：{ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
         }
         finally { SetIsBusy(false); }
     }
@@ -398,7 +399,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         catch (Exception ex)
         {
             Logger.LogError(ex, "删除处方失败");
-            await ShowErrorMessageAsync($"删除失败：{ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex));
         }
         finally { SetIsBusy(false); }
     }
@@ -519,7 +520,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         catch (Exception ex)
         {
             Logger.LogError(ex, "处理验方导入结果异常");
-            await ShowErrorMessageAsync($"导入失败：{ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入", ex));
         }
         finally { SetIsBusy(false); }
     }
@@ -554,7 +555,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         catch (Exception ex)
         {
             Logger.LogError(ex, "处理历史复制结果异常");
-            await ShowErrorMessageAsync($"复制失败：{ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("复制", ex));
         }
         finally { SetIsBusy(false); }
     }

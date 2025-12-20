@@ -73,8 +73,8 @@ namespace LYBT.Module.Formulas.Tests.Services
                 IsShared = false,
                 Herbs = new List<FormulaHerbItemInputDto>
                 {
-                    new() { HerbId = herbId1, Quantity = 9, SortOrder = 1 },
-                    new() { HerbId = herbId2, Quantity = 9, SortOrder = 2 }
+                    new() { HerbId = herbId1, HerbName = "桂枝", Unit = "g", Dosage = 9, SortOrder = 1 },
+                    new() { HerbId = herbId2, HerbName = "白芍", Unit = "g", Dosage = 9, SortOrder = 2 }
                 }
             };
 
@@ -104,7 +104,7 @@ namespace LYBT.Module.Formulas.Tests.Services
         }
 
         [Fact]
-        public async Task CreateAsync_WithException_ShouldReturnFailure()
+        public async Task CreateAsync_WithException_ShouldThrowException()
         {
             // Arrange
             var createDto = new FormulaInputDto
@@ -114,20 +114,17 @@ namespace LYBT.Module.Formulas.Tests.Services
                 Usage = "测试用法",
                 Herbs = new List<FormulaHerbItemInputDto>
                 {
-                    new() { HerbId = Guid.NewGuid(), Quantity = 10, SortOrder = 1 }
+                    new() { HerbId = Guid.NewGuid(), HerbName = "测试药材", Unit = "g", Dosage = 10, SortOrder = 1 }
                 }
             };
 
             _repositoryMock.Setup(x => x.AddAsync(It.IsAny<FormulaEntity>()))
                 .ThrowsAsync(new Exception("Database error"));
 
-            // Act
-            var result = await _formulaService.CreateAsync(createDto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("创建验方失败");
+            // Act & Assert
+            // consolidate-exception-handling: 异常现在由全局处理器处理，服务层不再捕获
+            var act = () => _formulaService.CreateAsync(createDto);
+            await act.Should().ThrowAsync<Exception>().WithMessage("Database error");
         }
 
         #endregion
@@ -332,7 +329,7 @@ namespace LYBT.Module.Formulas.Tests.Services
                 Usage = "温服，日三次",
                 Herbs = new List<FormulaHerbItemInputDto>
                 {
-                    new() { HerbId = Guid.NewGuid(), Quantity = 9, SortOrder = 1 }
+                    new() { HerbId = Guid.NewGuid(), HerbName = "柴胡", Unit = "g", Dosage = 9, SortOrder = 1 }
                 }
             };
 
@@ -502,19 +499,16 @@ namespace LYBT.Module.Formulas.Tests.Services
         }
 
         [Fact]
-        public async Task GetPendingValidationFormulasAsync_WithException_ShouldReturnFailure()
+        public async Task GetPendingValidationFormulasAsync_WithException_ShouldThrowException()
         {
             // Arrange
             _repositoryMock.Setup(x => x.GetAllAsync())
                 .ThrowsAsync(new Exception("Database error"));
 
-            // Act
-            var result = await _formulaService.GetPendingValidationFormulasAsync();
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("获取待验证验方列表失败");
+            // Act & Assert
+            // consolidate-exception-handling: 异常现在由全局处理器处理，服务层不再捕获
+            var act = () => _formulaService.GetPendingValidationFormulasAsync();
+            await act.Should().ThrowAsync<Exception>().WithMessage("Database error");
         }
 
         #endregion
@@ -541,14 +535,14 @@ namespace LYBT.Module.Formulas.Tests.Services
                         Id = herbItemId,
                         HerbName = "未验证药材",
                         IsValidated = false,
-                        Quantity = 10
+                        Dosage = 10
                     },
                     new()
                     {
                         Id = Guid.NewGuid(),
                         HerbName = "其他药材",
                         IsValidated = false,
-                        Quantity = 5
+                        Dosage = 5
                     }
                 }
             };
@@ -618,21 +612,21 @@ namespace LYBT.Module.Formulas.Tests.Services
                         Id = herbItemId,
                         HerbName = "最后一个未验证药材",
                         IsValidated = false,
-                        Quantity = 10
+                        Dosage = 10
                     },
                     new()
                     {
                         Id = Guid.NewGuid(),
                         HerbName = "已验证药材1",
                         IsValidated = true,
-                        Quantity = 5
+                        Dosage = 5
                     },
                     new()
                     {
                         Id = Guid.NewGuid(),
                         HerbName = "已验证药材2",
                         IsValidated = true,
-                        Quantity = 8
+                        Dosage = 8
                     }
                 }
             };
@@ -811,7 +805,7 @@ namespace LYBT.Module.Formulas.Tests.Services
                         HerbId = Guid.NewGuid(),
                         HerbName = "人参",
                         IsValidated = true, // 已经验证过
-                        Quantity = 10
+                        Dosage = 10
                     }
                 }
             };

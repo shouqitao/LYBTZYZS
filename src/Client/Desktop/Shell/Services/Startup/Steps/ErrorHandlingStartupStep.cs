@@ -1,4 +1,5 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Presentation.Notifications;
 using Microsoft.Extensions.Logging;
 
@@ -45,7 +46,7 @@ public class ErrorHandlingStartupStep : IStartupStep
         catch (Exception ex)
         {
             _logger.LogError(ex, "注册全局异常处理器失败");
-            return Task.FromResult(StartupStepResult.Failed($"注册全局异常处理器失败: {ex.Message}", ex));
+            return Task.FromResult(StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("注册全局异常处理器", ex), ex));
         }
     }
 }

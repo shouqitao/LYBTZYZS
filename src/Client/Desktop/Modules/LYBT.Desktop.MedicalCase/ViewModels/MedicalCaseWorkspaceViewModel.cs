@@ -1,5 +1,6 @@
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
@@ -223,7 +224,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             if (result.IsSuccess) { if (IsHistoricalEditMode && !string.IsNullOrWhiteSpace(EditReason)) Logger.LogInformation("历史修改保存，原因: {EditReason}", EditReason); await ShowSuccessMessageAsync("保存成功"); }
             else await ShowErrorMessageAsync(result.ErrorMessage ?? "保存失败");
         }
-        catch (Exception ex) { Logger.LogError(ex, "保存医案数据失败"); await ShowErrorMessageAsync($"保存失败：{ex.Message}"); }
+        catch (Exception ex) { Logger.LogError(ex, "保存医案数据失败"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex)); }
         finally { SetIsBusy(false); }
     }
 
@@ -273,7 +274,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             if (result.IsSuccess) { _editModeStateMachine.EnterReadOnlyMode(); await ShowSuccessMessageAsync(WorkspaceMode == WorkspaceMode.Management ? "保存成功" : "医案已暂存，可随时点击'修改医案'继续编辑"); }
             else await ShowErrorMessageAsync(result.ErrorMessage ?? "保存失败");
         }
-        catch (Exception ex) { Logger.LogError(ex, "保存医案失败"); await ShowErrorMessageAsync($"保存失败：{ex.Message}"); }
+        catch (Exception ex) { Logger.LogError(ex, "保存医案失败"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex)); }
         finally { SetIsBusy(false); }
     }
 
@@ -331,7 +332,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "打印处方笺失败");
-            await ShowErrorMessageAsync($"打印失败：{ex.Message}");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("打印", ex));
         }
         finally
         {
@@ -401,7 +402,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             }
             else await ShowErrorMessageAsync(result.ErrorMessage ?? "完成失败");
         }
-        catch (Exception ex) { Logger.LogError(ex, "完成看诊失败"); await ShowErrorMessageAsync($"完成失败：{ex.Message}"); }
+        catch (Exception ex) { Logger.LogError(ex, "完成看诊失败"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("完成看诊", ex)); }
         finally { SetIsBusy(false); }
     }
 
@@ -455,7 +456,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
                 if (!result.success) { await ShowErrorMessageAsync("创建医案失败，请重试"); return; }
                 MedicalCaseId = result.medicalCaseId;
             }
-            catch (Exception ex) { await ShowErrorMessageAsync($"创建医案失败：{ex.Message}"); }
+            catch (Exception ex) { Logger.LogError(ex, "创建医案失败"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建医案", ex)); }
             finally { SetIsBusy(false); }
         }
     }
@@ -475,7 +476,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             if (hasConsultation) IsPrescriptionEnabled = true;
             Remark = result.detail?.Remark ?? string.Empty;
         }
-        catch (Exception ex) { await ShowErrorMessageAsync($"加载医案数据失败：{ex.Message}"); }
+        catch (Exception ex) { Logger.LogError(ex, "加载医案数据失败"); await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载医案数据", ex)); }
         finally { SetIsBusy(false); }
     }
 

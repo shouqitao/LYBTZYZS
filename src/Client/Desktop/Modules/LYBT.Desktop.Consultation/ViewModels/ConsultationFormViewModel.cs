@@ -1,5 +1,6 @@
 using LYBT.Desktop.Consultation.Services;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -93,7 +94,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 if (success) return true;
                 ValidationMessage = "保存失败，请检查数据有效性"; return false;
             }
-            catch (Exception ex) { ValidationMessage = $"保存失败：{ex.Message}"; return false; }
+            catch (Exception ex) { ValidationMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex); return false; }
         }
 
         private (bool isValid, string errorMessage) ValidatePrerequisites()
@@ -119,7 +120,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 if (saved) await ShowSuccessMessageAsync("诊断草稿已保存！");
                 else await ShowErrorMessageAsync($"保存草稿失败：{ValidationMessage}");
             }
-            catch (Exception ex) { await ShowErrorMessageAsync($"保存草稿失败：{ex.Message}"); }
+            catch (Exception ex) { await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存草稿", ex)); }
             finally { SetIsBusy(false); }
         }
 

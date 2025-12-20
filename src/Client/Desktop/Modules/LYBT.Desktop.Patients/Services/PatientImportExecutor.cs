@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Data;
 using System.Windows;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using Microsoft.Extensions.Logging;
@@ -131,7 +132,7 @@ public class PatientImportExecutor : IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "导入过程中发生严重错误");
-            e.Result = CreateImportResult(successCount, failCount, skipCount, errors, ex.Message);
+            e.Result = CreateImportResult(successCount, failCount, skipCount, errors, ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入患者", ex));
         }
     }
 
@@ -175,7 +176,7 @@ public class PatientImportExecutor : IDisposable
         }
         catch (Exception ex)
         {
-            var error = $"第{rowIndex + 2}行 ({currentName})：处理数据时发生异常 - {ex.Message}";
+            var error = $"第{rowIndex + 2}行 ({currentName})：处理数据时发生异常 - {ClientErrorMessageMapper.GetSafeOperationFailureMessage("处理导入行", ex)}";
             _logger.LogError(ex, $"处理第{rowIndex + 2}行数据时发生错误: {currentName}");
             return ImportRowResult.CreateFail(error);
         }

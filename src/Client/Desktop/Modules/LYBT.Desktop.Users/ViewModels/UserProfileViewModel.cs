@@ -1,4 +1,5 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;
@@ -177,7 +178,7 @@ namespace LYBT.Desktop.Users.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "打开个人资料页面时发生异常");
-                ErrorMessage = $"加载失败: {ex.Message}";
+                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载", ex);
             }
         }
 
@@ -225,7 +226,7 @@ namespace LYBT.Desktop.Users.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载用户资料时发生异常");
-                ErrorMessage = $"加载失败: {ex.Message}";
+                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载", ex);
             }
             finally
             {
@@ -327,7 +328,7 @@ namespace LYBT.Desktop.Users.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存个人资料时发生异常");
-                ValidationError = $"保存失败: {ex.Message}";
+                ValidationError = ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex);
                 HasValidationError = true;
             }
             finally

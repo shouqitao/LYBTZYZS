@@ -66,7 +66,8 @@ public class StartupStepsTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("Test error");
+            // ERR-012: 异常消息安全化 - 错误消息不应包含原始异常信息，应使用安全的用户友好消息
+            result.ErrorMessage.Should().Contain("注册全局异常处理器失败");
         }
 
         [Fact]
@@ -202,7 +203,8 @@ public class StartupStepsTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("Test error");
+            // ERR-012: 异常消息安全化 - 错误消息不应包含原始异常信息，应使用安全的用户友好消息
+            result.ErrorMessage.Should().Contain("核心服务初始化失败");
         }
 
         [Fact]
@@ -290,7 +292,8 @@ public class StartupStepsTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("Connection refused");
+            // ERR-012: 异常消息安全化 - 错误消息不应包含原始异常信息，应使用安全的用户友好消息
+            result.ErrorMessage.Should().Contain("API健康检查失败");
         }
 
         [Fact]
@@ -361,7 +364,8 @@ public class StartupStepsTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("Warmup error");
+            // ERR-012: 异常消息安全化 - 错误消息不应包含原始异常信息，应使用安全的用户友好消息
+            result.ErrorMessage.Should().Contain("应用预热失败");
         }
 
         [Fact]

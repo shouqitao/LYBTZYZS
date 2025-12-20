@@ -1,9 +1,12 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using AutoMapper;
 using FluentValidation;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Infrastructure.Services
 {
@@ -251,6 +254,7 @@ namespace LYBT.Infrastructure.Services
 
         /// <summary>
         /// 执行操作并统一处理异常
+        /// consolidate-exception-handling: 增强错误码支持
         /// </summary>
         /// <typeparam name="TResult">返回结果类型</typeparam>
         /// <param name="operation">异步操作</param>
@@ -265,15 +269,30 @@ namespace LYBT.Infrastructure.Services
                 var result = await operation();
                 return Result<TResult>.Success(result);
             }
+            catch (AppException ex) when (ex.TypedErrorCode.HasValue)
+            {
+                // 已知业务异常，使用结构化错误码
+                _logger.LogWarning(ex, "{Operation} 业务异常 - ErrorCode: {ErrorCode}",
+                    operationName, ex.TypedErrorCode.Value.ToFormattedString());
+                return Result<TResult>.Failure(ex.TypedErrorCode.Value, ex.UserMessage ?? ex.Message);
+            }
+            catch (AppException ex)
+            {
+                // 业务异常，无错误码
+                _logger.LogWarning(ex, "{Operation} 业务异常", operationName);
+                return Result<TResult>.Failure(ex.UserMessage ?? ex.Message);
+            }
             catch (Exception ex)
             {
+                // 未知异常，使用通用错误码
                 _logger.LogError(ex, "{Operation} 失败", operationName);
-                return Result<TResult>.Failure($"{operationName}失败");
+                return Result<TResult>.Failure(EC.InternalError, $"{operationName}失败");
             }
         }
 
         /// <summary>
         /// 执行无返回值操作并统一处理异常
+        /// consolidate-exception-handling: 增强错误码支持
         /// </summary>
         /// <param name="operation">异步操作</param>
         /// <param name="operationName">操作名称（用于日志）</param>
@@ -287,10 +306,24 @@ namespace LYBT.Infrastructure.Services
                 await operation();
                 return Result.Success();
             }
+            catch (AppException ex) when (ex.TypedErrorCode.HasValue)
+            {
+                // 已知业务异常，使用结构化错误码
+                _logger.LogWarning(ex, "{Operation} 业务异常 - ErrorCode: {ErrorCode}",
+                    operationName, ex.TypedErrorCode.Value.ToFormattedString());
+                return Result.Failure(ex.TypedErrorCode.Value, ex.UserMessage ?? ex.Message);
+            }
+            catch (AppException ex)
+            {
+                // 业务异常，无错误码
+                _logger.LogWarning(ex, "{Operation} 业务异常", operationName);
+                return Result.Failure(ex.UserMessage ?? ex.Message);
+            }
             catch (Exception ex)
             {
+                // 未知异常，使用通用错误码
                 _logger.LogError(ex, "{Operation} 失败", operationName);
-                return Result.Failure($"{operationName}失败");
+                return Result.Failure(EC.InternalError, $"{operationName}失败");
             }
         }
 

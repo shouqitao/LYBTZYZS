@@ -1,5 +1,6 @@
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -224,7 +225,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存诊断数据异常");
-                await ShowErrorMessageAsync($"保存失败：{ex.Message}");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
                 return false;
             }
         }
@@ -279,7 +280,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存草稿失败");
-                await ShowErrorMessageAsync($"保存失败：{ex.Message}");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
             }
             finally
             {
@@ -323,7 +324,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "确认诊断失败");
-                await ShowErrorMessageAsync($"确认失败：{ex.Message}");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("确认诊断", ex));
             }
             finally
             {

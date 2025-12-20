@@ -227,7 +227,8 @@ public class CustomControlArchTests
         var allowedNonControls = new[]
         {
             "SystemTimeProvider",  // 辅助类
-            "VirtualizedDataGridViewModel"  // ViewModel
+            "VirtualizedDataGridViewModel",  // ViewModel
+            "BadgeType"  // 徽章类型枚举
         };
 
         var actualViolations = result.FailingTypes?

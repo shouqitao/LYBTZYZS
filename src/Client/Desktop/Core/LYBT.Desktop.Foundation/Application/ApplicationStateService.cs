@@ -114,7 +114,7 @@ namespace LYBT.Desktop.Foundation.Application
             {
                 _logger.LogError(ex, "API健康检查发生异常: {ApiBaseUrl}", _apiBaseUrl);
                 IsApiHealthy = false;
-                ConnectionStatus = $"健康检查异常: {ex.Message}";
+                ConnectionStatus = "健康检查失败，请稍后重试";
                 LastHealthCheckTime = DateTime.Now;
                 return false;
             }

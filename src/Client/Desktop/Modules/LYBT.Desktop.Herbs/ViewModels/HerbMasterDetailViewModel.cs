@@ -5,6 +5,7 @@ using LYBT.Desktop.Models.Items.Herbs;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Services;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -468,7 +469,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存药材失败");
-                await ShowErrorMessageAsync($"保存药材失败: {ex.Message}");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存药材", ex));
                 return false;
             }
         }
@@ -484,7 +485,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "删除药材失败: {HerbId}", detail.Id);
-                await ShowErrorMessageAsync($"删除药材失败: {ex.Message}");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除药材", ex));
                 return false;
             }
         }

@@ -48,59 +48,53 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 验证实体类型
+            var validEntityTypes = new[] { "Patient", "Prescription", "Herb", "Formula", "User", "Consultation" };
+            if (!validEntityTypes.Contains(entityType, StringComparer.OrdinalIgnoreCase))
             {
-                // 验证实体类型
-                var validEntityTypes = new[] { "Patient", "Prescription", "Herb", "Formula", "User", "Consultation" };
-                if (!validEntityTypes.Contains(entityType, StringComparer.OrdinalIgnoreCase))
-                {
-                    return ValidationFail(
-                        $"不支持的实体类型: {entityType}。支持的类型: {string.Join(", ", validEntityTypes)}");
-                }
-
-                // 验证分页参数
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
-                }
-
-                // 查询审计日志
-                var query = _dbContext.EntityAuditLogs
-                    .Where(l => l.EntityType.ToLower() == entityType.ToLower() && l.EntityId == entityId)
-                    .OrderByDescending(l => l.CreatedAt);
-
-                var totalCount = await query.CountAsync();
-
-                var logs = await query
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
-
-                // 映射到DTO
-                var logDtos = logs.Select(l => new EntityAuditLogDto
-                {
-                    Id = l.Id,
-                    EntityType = l.EntityType,
-                    EntityId = l.EntityId,
-                    OperatorId = l.OperatorId,
-                    OperatorName = l.OperatorName,
-                    OperatorRole = l.OperatorRole,
-                    OperationType = l.OperationType,
-                    ChangedFields = l.ChangedFields,
-                    OldValues = l.OldValues,
-                    NewValues = l.NewValues,
-                    Reason = l.Reason,
-                    CreatedAt = l.CreatedAt
-                }).ToList();
-
-                var result = new PagedResult<EntityAuditLogDto>(logDtos, totalCount, page, pageSize);
-
-                return Success(result, "查询成功");
+                return ValidationFail(
+                    $"不支持的实体类型: {entityType}。支持的类型: {string.Join(", ", validEntityTypes)}");
             }
-            catch (Exception ex)
+
+            // 验证分页参数
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
             {
-                return HandleException(ex, "获取审计日志", new { entityType, entityId });
+                return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
             }
+
+            // 查询审计日志
+            var query = _dbContext.EntityAuditLogs
+                .Where(l => l.EntityType.ToLower() == entityType.ToLower() && l.EntityId == entityId)
+                .OrderByDescending(l => l.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var logs = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // 映射到DTO
+            var logDtos = logs.Select(l => new EntityAuditLogDto
+            {
+                Id = l.Id,
+                EntityType = l.EntityType,
+                EntityId = l.EntityId,
+                OperatorId = l.OperatorId,
+                OperatorName = l.OperatorName,
+                OperatorRole = l.OperatorRole,
+                OperationType = l.OperationType,
+                ChangedFields = l.ChangedFields,
+                OldValues = l.OldValues,
+                NewValues = l.NewValues,
+                Reason = l.Reason,
+                CreatedAt = l.CreatedAt
+            }).ToList();
+
+            var result = new PagedResult<EntityAuditLogDto>(logDtos, totalCount, page, pageSize);
+
+            return Success(result, "查询成功");
         }
 
         /// <summary>

@@ -61,38 +61,25 @@ public class HealthController : BaseApiController
     [Authorize]  // 详细健康检查需要认证
     public async Task<IActionResult> GetDetailedHealth()
     {
-        try
+        // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+        // 执行数据库连接检查
+        var dbCheck = await CheckDatabase();
+
+        var overallStatus = dbCheck.Status == "Healthy" ? "Healthy" : "Degraded";
+
+        var response = new
         {
-            // 执行数据库连接检查
-            var dbCheck = await CheckDatabase();
-
-            var overallStatus = dbCheck.Status == "Healthy" ? "Healthy" : "Degraded";
-
-            var response = new
+            status = overallStatus,
+            timestamp = DateTime.UtcNow,
+            database = new
             {
-                status = overallStatus,
-                timestamp = DateTime.UtcNow,
-                database = new
-                {
-                    status = dbCheck.Status,
-                    duration = dbCheck.Duration
-                }
-            };
+                status = dbCheck.Status,
+                duration = dbCheck.Duration
+            }
+        };
 
-            var statusCode = overallStatus == "Degraded" ? 503 : 200;
-            return StatusCode(statusCode, response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Health check failed");
-
-            return StatusCode(503, new
-            {
-                status = "Unhealthy",
-                timestamp = DateTime.UtcNow,
-                error = "Health check execution failed"
-            });
-        }
+        var statusCode = overallStatus == "Degraded" ? 503 : 200;
+        return StatusCode(statusCode, response);
     }
 
     private async Task<HealthCheck> CheckDatabase()

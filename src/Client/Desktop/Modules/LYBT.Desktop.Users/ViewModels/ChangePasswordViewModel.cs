@@ -1,6 +1,7 @@
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -152,7 +153,7 @@ namespace LYBT.Desktop.Users.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载修改密码页面时发生异常");
-                ErrorMessage = $"加载失败: {ex.Message}";
+                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载", ex);
             }
         }
 
@@ -277,7 +278,7 @@ namespace LYBT.Desktop.Users.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "修改密码时发生异常");
-                ValidationError = $"修改密码失败: {ex.Message}";
+                ValidationError = ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex);
                 HasValidationError = true;
             }
             finally

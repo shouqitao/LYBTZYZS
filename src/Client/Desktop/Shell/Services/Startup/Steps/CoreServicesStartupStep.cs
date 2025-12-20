@@ -1,4 +1,5 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Startup.Steps;
@@ -44,7 +45,7 @@ public class CoreServicesStartupStep : IStartupStep
         catch (Exception ex)
         {
             _logger.LogError(ex, "核心服务初始化失败");
-            return StartupStepResult.Failed($"核心服务初始化失败: {ex.Message}", ex);
+            return StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("核心服务初始化", ex), ex);
         }
     }
 }

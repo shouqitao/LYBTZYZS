@@ -1,5 +1,6 @@
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -95,7 +96,7 @@ public class PrescriptionSaveHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "保存处方数据异常");
-            return PrescriptionSaveResult.Failed(ex.Message);
+            return PrescriptionSaveResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
         }
     }
 
@@ -154,7 +155,7 @@ public class PrescriptionSaveHandler
         {
             // 静默保存不显示错误，只记录日志
             _logger.LogWarning(ex, "静默保存处方数据异常（不阻止后续操作）");
-            return PrescriptionSaveResult.Failed(ex.Message);
+            return PrescriptionSaveResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
         }
     }
 

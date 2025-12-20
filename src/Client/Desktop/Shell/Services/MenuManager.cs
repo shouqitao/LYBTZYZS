@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 
@@ -113,14 +114,14 @@ public class MenuManager
     private async Task ExecuteQuickAddPatientAsync()
     {
         try { _navigationManager.NavigateToAddPatient(); await _userNotificationService.ShowSuccessAsync("已切换到患者管理页面，准备添加新患者"); }
-        catch (Exception ex) { await _userNotificationService.ShowErrorAsync($"快速添加患者失败:{ex.Message}"); }
+        catch (Exception ex) { await _userNotificationService.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("快速添加患者", ex)); }
     }
 
     /// <summary>快速开始诊疗(Ctrl+Shift+C)</summary>
     private async Task ExecuteQuickStartConsultationAsync()
     {
         try { _navigationManager.NavigateToMedicalCaseFlow(); await _userNotificationService.ShowSuccessAsync("已开始诊疗流程，请选择患者"); }
-        catch (Exception ex) { await _userNotificationService.ShowErrorAsync($"快速开始诊疗失败:{ex.Message}"); }
+        catch (Exception ex) { await _userNotificationService.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("快速开始诊疗", ex)); }
     }
 
     /// <summary>显示帮助信息 (F1)</summary>
@@ -159,7 +160,7 @@ public class MenuManager
         }
         catch (Exception ex)
         {
-            await _userNotificationService.ShowErrorAsync($"主题切换失败:{ex.Message}");
+            await _userNotificationService.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("主题切换", ex));
         }
     }
 

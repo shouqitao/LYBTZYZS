@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Helpers;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Patients.Services
@@ -78,7 +79,7 @@ namespace LYBT.Desktop.Patients.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "解析Excel文件失败: {FilePath}", filePath);
-                throw new InvalidOperationException($"解析Excel文件失败: {ex.Message}", ex);
+                throw new InvalidOperationException(ClientErrorMessageMapper.GetSafeOperationFailureMessage("解析Excel文件", ex), ex);
             }
         }
 

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>LYBT.Shared.Primitives</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    consolidate-exception-handling: 最底层基础类型项目
+    包含 ErrorCode、ErrorCategory、ErrorMessages 等基础定义
+    零依赖，被 Models 和 ExceptionHandling 引用
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Annotations" />
+  </ItemGroup>
+
+</Project>

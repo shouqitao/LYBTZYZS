@@ -1,5 +1,5 @@
-using LYBT.Shared.Models.Exceptions;
-using LYBT.WebAPI.ExceptionHandlers;
+using LYBT.Shared.ExceptionHandling.Exceptions;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;

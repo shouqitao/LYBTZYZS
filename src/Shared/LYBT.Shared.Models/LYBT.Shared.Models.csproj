@@ -19,6 +19,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- consolidate-exception-handling: Result类需要使用ErrorCode枚举（来自Primitives） -->
+    <ProjectReference Include="..\LYBT.Shared.Primitives\LYBT.Shared.Primitives.csproj" />
+  </ItemGroup>
+
   <!-- 这是API契约共享库，只包含前后端API交互需要的模型 -->
 
 </Project>

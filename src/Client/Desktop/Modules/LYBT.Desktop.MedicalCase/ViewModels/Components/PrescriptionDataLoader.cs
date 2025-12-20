@@ -1,6 +1,7 @@
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -197,7 +198,7 @@ public class PrescriptionDataLoader
         catch (Exception ex)
         {
             _logger.LogError(ex, "加载历史处方失败");
-            return LoadHistoryResult.Failed(ex.Message);
+            return LoadHistoryResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载历史处方", ex));
         }
     }
 

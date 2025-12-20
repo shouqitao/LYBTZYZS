@@ -1,3 +1,4 @@
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Patients.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -76,7 +77,7 @@ public class PatientSelectionCommandExecutor
         catch (Exception ex)
         {
             _logger.LogError(ex, "搜索患者失败");
-            await _showErrorMessage($"搜索失败：{ex.Message}");
+            await _showErrorMessage(ClientErrorMessageMapper.GetSafeOperationFailureMessage("搜索", ex));
             return false;
         }
         finally
@@ -101,7 +102,7 @@ public class PatientSelectionCommandExecutor
         catch (Exception ex)
         {
             _logger.LogError(ex, "加载上一页失败");
-            await _showErrorMessage($"加载失败：{ex.Message}");
+            await _showErrorMessage(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载", ex));
         }
         finally
         {
@@ -125,7 +126,7 @@ public class PatientSelectionCommandExecutor
         catch (Exception ex)
         {
             _logger.LogError(ex, "加载下一页失败");
-            await _showErrorMessage($"加载失败：{ex.Message}");
+            await _showErrorMessage(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载", ex));
         }
         finally
         {
@@ -159,7 +160,7 @@ public class PatientSelectionCommandExecutor
         {
             stopwatch.Stop();
             _logger.LogError(ex, "加载患者列表失败，耗时={ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
-            await _showErrorMessage($"加载患者列表失败：{ex.Message}");
+            await _showErrorMessage(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载患者列表", ex));
         }
         finally
         {

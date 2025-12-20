@@ -35,16 +35,9 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<MedicalCase?> GetByIdAsync(Guid id)
         {
-            try
-            {
-                var result = await _repository.GetByIdWithDetailsAsync(id);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取病案详情失败，MedicalCaseId: {Id}", id);
-                throw;
-            }
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            var result = await _repository.GetByIdWithDetailsAsync(id);
+            return result;
         }
 
         /// <summary>
@@ -61,56 +54,49 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false,
             string? keyword = null)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            // TODO: Repository需要扩展支持status和patientId过滤的分页方法
+            // 当前使用GetPagedWithDetailsAsync作为临时实现
+            var result = await _repository.GetPagedWithDetailsAsync(page, pageSize);
+
+            // 临时过滤逻辑（后续应在Repository层实现）
+            var filteredItems = result.Items.AsQueryable();
+
+            if (status.HasValue)
             {
-                // TODO: Repository需要扩展支持status和patientId过滤的分页方法
-                // 当前使用GetPagedWithDetailsAsync作为临时实现
-                var result = await _repository.GetPagedWithDetailsAsync(page, pageSize);
-
-                // 临时过滤逻辑（后续应在Repository层实现）
-                var filteredItems = result.Items.AsQueryable();
-
-                if (status.HasValue)
-                {
-                    filteredItems = filteredItems.Where(m => m.CaseStatus == status.Value);
-                }
-
-                if (patientId.HasValue)
-                {
-                    filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
-                }
-
-                // OpenSpec: refactor-medicalcase-management - 关键字过滤
-                // 支持按患者姓名或中医诊断搜索
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    filteredItems = filteredItems.Where(m =>
-                        (m.PatientName != null && m.PatientName.Contains(keyword)) ||
-                        (m.Consultation != null && m.Consultation.TCMDiagnosis != null && m.Consultation.TCMDiagnosis.Contains(keyword)));
-                }
-
-                // OpenSpec: optimize-module-list-ui - 角色过滤
-                // 非管理员只能看到自己创建的医案
-                // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
-                if (!isAdmin && currentDoctorId.HasValue)
-                {
-                    filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
-                    _logger.LogDebug("应用角色过滤，DoctorId: {DoctorId}", currentDoctorId.Value);
-                }
-
-                return new PagedResult<MedicalCase>
-                {
-                    Items = filteredItems.ToList(),
-                    TotalCount = filteredItems.Count(),
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
+                filteredItems = filteredItems.Where(m => m.CaseStatus == status.Value);
             }
-            catch (Exception ex)
+
+            if (patientId.HasValue)
             {
-                _logger.LogError(ex, "查询病案列表失败");
-                throw;
+                filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
             }
+
+            // OpenSpec: refactor-medicalcase-management - 关键字过滤
+            // 支持按患者姓名或中医诊断搜索
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                filteredItems = filteredItems.Where(m =>
+                    (m.PatientName != null && m.PatientName.Contains(keyword)) ||
+                    (m.Consultation != null && m.Consultation.TCMDiagnosis != null && m.Consultation.TCMDiagnosis.Contains(keyword)));
+            }
+
+            // OpenSpec: optimize-module-list-ui - 角色过滤
+            // 非管理员只能看到自己创建的医案
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
+            if (!isAdmin && currentDoctorId.HasValue)
+            {
+                filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
+                _logger.LogDebug("应用角色过滤，DoctorId: {DoctorId}", currentDoctorId.Value);
+            }
+
+            return new PagedResult<MedicalCase>
+            {
+                Items = filteredItems.ToList(),
+                TotalCount = filteredItems.Count(),
+                CurrentPage = page,
+                PageSize = pageSize
+            };
         }
 
         /// <summary>
@@ -126,49 +112,42 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false,
             string? keyword = null)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            var result = await _repository.GetPagedWithDetailsAsync(page, pageSize);
+            var filteredItems = result.Items.AsQueryable();
+
+            if (status.HasValue)
             {
-                var result = await _repository.GetPagedWithDetailsAsync(page, pageSize);
-                var filteredItems = result.Items.AsQueryable();
-
-                if (status.HasValue)
-                {
-                    filteredItems = filteredItems.Where(m => m.CaseStatus == status.Value);
-                }
-
-                if (patientId.HasValue)
-                {
-                    filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
-                }
-
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    filteredItems = filteredItems.Where(m =>
-                        (m.PatientName != null && m.PatientName.Contains(keyword)) ||
-                        (m.Consultation != null && m.Consultation.TCMDiagnosis != null && m.Consultation.TCMDiagnosis.Contains(keyword)));
-                }
-
-                // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
-                if (!isAdmin && currentDoctorId.HasValue)
-                {
-                    filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
-                }
-
-                var dtos = _mapper.Map<List<MedicalCaseListDto>>(filteredItems.ToList());
-
-                return new PagedResult<MedicalCaseListDto>
-                {
-                    Items = dtos,
-                    TotalCount = dtos.Count,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
+                filteredItems = filteredItems.Where(m => m.CaseStatus == status.Value);
             }
-            catch (Exception ex)
+
+            if (patientId.HasValue)
             {
-                _logger.LogError(ex, "查询病案列表失败");
-                throw;
+                filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
             }
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                filteredItems = filteredItems.Where(m =>
+                    (m.PatientName != null && m.PatientName.Contains(keyword)) ||
+                    (m.Consultation != null && m.Consultation.TCMDiagnosis != null && m.Consultation.TCMDiagnosis.Contains(keyword)));
+            }
+
+            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
+            if (!isAdmin && currentDoctorId.HasValue)
+            {
+                filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
+            }
+
+            var dtos = _mapper.Map<List<MedicalCaseListDto>>(filteredItems.ToList());
+
+            return new PagedResult<MedicalCaseListDto>
+            {
+                Items = dtos,
+                TotalCount = dtos.Count,
+                CurrentPage = page,
+                PageSize = pageSize
+            };
         }
 
         /// <summary>
@@ -177,23 +156,16 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            if (medicalCase?.Consultation == null)
             {
-                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
-                if (medicalCase?.Consultation == null)
-                {
-                    return new List<ConsultationDetailDto>();
-                }
+                return new List<ConsultationDetailDto>();
+            }
 
-                // 当前架构下只有一条Consultation（共享主键），直接映射
-                var dto = _mapper.Map<ConsultationDetailDto>(medicalCase.Consultation);
-                return new List<ConsultationDetailDto> { dto };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "查询辨证记录失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                throw;
-            }
+            // 当前架构下只有一条Consultation（共享主键），直接映射
+            var dto = _mapper.Map<ConsultationDetailDto>(medicalCase.Consultation);
+            return new List<ConsultationDetailDto> { dto };
         }
 
         /// <summary>
@@ -202,23 +174,16 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            if (medicalCase?.Prescription == null)
             {
-                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
-                if (medicalCase?.Prescription == null)
-                {
-                    return new List<PrescriptionDetailDto>();
-                }
+                return new List<PrescriptionDetailDto>();
+            }
 
-                // 当前架构下只有一条Prescription（一诊一方），直接映射
-                var dto = _mapper.Map<PrescriptionDetailDto>(medicalCase.Prescription);
-                return new List<PrescriptionDetailDto> { dto };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "查询处方列表失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                throw;
-            }
+            // 当前架构下只有一条Prescription（一诊一方），直接映射
+            var dto = _mapper.Map<PrescriptionDetailDto>(medicalCase.Prescription);
+            return new List<PrescriptionDetailDto> { dto };
         }
 
         /// <summary>
@@ -228,33 +193,25 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            _logger.LogInformation("查询患者未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                patientId, doctorId);
+
+            // Epic #2210 Task 3.1.2: 直接传递doctorId到Repository，无额外业务逻辑
+            var result = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
+
+            if (result != null)
             {
-                _logger.LogInformation("查询患者未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
-                    patientId, doctorId);
-
-                // Epic #2210 Task 3.1.2: 直接传递doctorId到Repository，无额外业务逻辑
-                var result = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
-
-                if (result != null)
-                {
-                    _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, UserId: {UserId}",
-                        result.Id, result.CaseStatus, result.UserId);
-                }
-                else
-                {
-                    _logger.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
-                        patientId, doctorId);
-                }
-
-                return result;
+                _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, UserId: {UserId}",
+                    result.Id, result.CaseStatus, result.UserId);
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError(ex, "查询患者未完成医案失败，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                _logger.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
                     patientId, doctorId);
-                throw;
             }
+
+            return result;
         }
 
         /// <summary>
@@ -263,23 +220,16 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId)
         {
-            try
-            {
-                _logger.LogInformation("获取待看诊队列，DoctorId: {DoctorId}", doctorId);
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            _logger.LogInformation("获取待看诊队列，DoctorId: {DoctorId}", doctorId);
 
-                // Epic #2210: 直接委托给Repository，传递doctorId进行数据隔离
-                var result = await _repository.GetPendingCasesAsync(doctorId);
+            // Epic #2210: 直接委托给Repository，传递doctorId进行数据隔离
+            var result = await _repository.GetPendingCasesAsync(doctorId);
 
-                _logger.LogInformation("待看诊队列查询完成，DoctorId: {DoctorId}, Count: {Count}",
-                    doctorId, result.Count);
+            _logger.LogInformation("待看诊队列查询完成，DoctorId: {DoctorId}, Count: {Count}",
+                doctorId, result.Count);
 
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取待看诊队列失败，DoctorId: {DoctorId}", doctorId);
-                throw;
-            }
+            return result;
         }
 
         /// <summary>
@@ -288,21 +238,14 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
         {
-            try
-            {
-                _logger.LogInformation("获取所有待看诊队列（管理员）");
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            _logger.LogInformation("获取所有待看诊队列（管理员）");
 
-                var result = await _repository.GetAllPendingCasesAsync();
+            var result = await _repository.GetAllPendingCasesAsync();
 
-                _logger.LogInformation("待看诊队列查询完成（管理员），Count: {Count}", result.Count);
+            _logger.LogInformation("待看诊队列查询完成（管理员），Count: {Count}", result.Count);
 
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取所有待看诊队列失败（管理员）");
-                throw;
-            }
+            return result;
         }
 
 
@@ -318,38 +261,31 @@ namespace LYBT.Module.MedicalCases.Services
             int page = 1,
             int pageSize = 20)
         {
-            try
-            {
-                _logger.LogInformation(
-                    "跨医案搜索: PatientName={PatientName}, DiagnosisKeyword={DiagnosisKeyword}, StartDate={StartDate}, EndDate={EndDate}, Page={Page}, PageSize={PageSize}",
-                    patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            _logger.LogInformation(
+                "跨医案搜索: PatientName={PatientName}, DiagnosisKeyword={DiagnosisKeyword}, StartDate={StartDate}, EndDate={EndDate}, Page={Page}, PageSize={PageSize}",
+                patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
 
-                // 使用Repository的QueryAsync方法获取实体（已包含Include预加载）
-                var entities = await _repository.QueryAsync(patientName, startDate, endDate, diagnosisKeyword);
+            // 使用Repository的QueryAsync方法获取实体（已包含Include预加载）
+            var entities = await _repository.QueryAsync(patientName, startDate, endDate, diagnosisKeyword);
 
-                // 按创建时间倒序排列
-                var orderedEntities = entities.OrderByDescending(e => e.CreatedAt).ToList();
+            // 按创建时间倒序排列
+            var orderedEntities = entities.OrderByDescending(e => e.CreatedAt).ToList();
 
-                // 分页处理
-                var totalCount = orderedEntities.Count;
-                var pagedEntities = orderedEntities
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
+            // 分页处理
+            var totalCount = orderedEntities.Count;
+            var pagedEntities = orderedEntities
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-                // 映射为DTO（包含嵌套Consultation/Prescription）
-                var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(pagedEntities);
+            // 映射为DTO（包含嵌套Consultation/Prescription）
+            var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(pagedEntities);
 
-                _logger.LogInformation("跨医案搜索完成: TotalCount={TotalCount}, ReturnedCount={ReturnedCount}",
-                    totalCount, dtos.Count);
+            _logger.LogInformation("跨医案搜索完成: TotalCount={TotalCount}, ReturnedCount={ReturnedCount}",
+                totalCount, dtos.Count);
 
-                return new PagedResult<MedicalCaseDetailDto>(dtos, totalCount, page, pageSize);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "跨医案搜索失败");
-                throw;
-            }
+            return new PagedResult<MedicalCaseDetailDto>(dtos, totalCount, page, pageSize);
         }
 
         /// <summary>
@@ -359,38 +295,31 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<List<MedicalCaseDetailDto>> GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
+            _logger.LogInformation("获取患者最近医案: PatientId={PatientId}, Count={Count}", patientId, count);
+
+            // 获取患者所有医案
+            var entities = await _repository.GetByPatientIdAsync(patientId);
+
+            if (entities == null || !entities.Any())
             {
-                _logger.LogInformation("获取患者最近医案: PatientId={PatientId}, Count={Count}", patientId, count);
-
-                // 获取患者所有医案
-                var entities = await _repository.GetByPatientIdAsync(patientId);
-
-                if (entities == null || !entities.Any())
-                {
-                    _logger.LogInformation("患者无历史医案: PatientId={PatientId}", patientId);
-                    return new List<MedicalCaseDetailDto>();
-                }
-
-                // 按创建时间倒序，取前count条
-                var recentEntities = entities
-                    .OrderByDescending(e => e.CreatedAt)
-                    .Take(count)
-                    .ToList();
-
-                // 映射为DTO（包含嵌套Consultation/Prescription）
-                var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(recentEntities);
-
-                _logger.LogInformation("获取患者最近医案完成: PatientId={PatientId}, ReturnedCount={ReturnedCount}",
-                    patientId, dtos.Count);
-
-                return dtos;
+                _logger.LogInformation("患者无历史医案: PatientId={PatientId}", patientId);
+                return new List<MedicalCaseDetailDto>();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取患者最近医案失败: PatientId={PatientId}", patientId);
-                throw;
-            }
+
+            // 按创建时间倒序，取前count条
+            var recentEntities = entities
+                .OrderByDescending(e => e.CreatedAt)
+                .Take(count)
+                .ToList();
+
+            // 映射为DTO（包含嵌套Consultation/Prescription）
+            var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(recentEntities);
+
+            _logger.LogInformation("获取患者最近医案完成: PatientId={PatientId}, ReturnedCount={ReturnedCount}",
+                patientId, dtos.Count);
+
+            return dtos;
         }
 
     }

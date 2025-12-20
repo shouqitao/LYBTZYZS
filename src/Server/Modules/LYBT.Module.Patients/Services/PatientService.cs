@@ -36,38 +36,30 @@ namespace LYBT.Module.Patients.Services
 
         public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
+            // Bug #1587修复：支持关键字搜索（姓名/拼音码/手机号）
+            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
+
+            var items = _mapper.Map<List<PatientListDto>>(pagedResult.Items);
+
+            // 确保Age属性正确计算（从实体的计算属性复制到DTO）
+            foreach (var item in items)
             {
-                // Bug #1587修复：支持关键字搜索（姓名/拼音码/手机号）
-                // IRepository<T>统一接口：GetPagedAsync(page, pageSize, keyword)
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-
-                var items = _mapper.Map<List<PatientListDto>>(pagedResult.Items);
-
-                // 确保Age属性正确计算（从实体的计算属性复制到DTO）
-                foreach (var item in items)
+                var entity = pagedResult.Items.FirstOrDefault(e => e.Id == item.Id);
+                if (entity != null)
                 {
-                    var entity = pagedResult.Items.FirstOrDefault(e => e.Id == item.Id);
-                    if (entity != null)
-                    {
-                        item.Age = entity.Age;
-                    }
+                    item.Age = entity.Age;
                 }
+            }
 
-                var dto = new PagedResult<PatientListDto>
-                {
-                    Items = items,
-                    TotalCount = pagedResult.TotalCount,
-                    CurrentPage = pagedResult.CurrentPage,
-                    PageSize = pagedResult.PageSize
-                };
-                return Result<PagedResult<PatientListDto>>.Success(dto);
-            }
-            catch (Exception ex)
+            var dto = new PagedResult<PatientListDto>
             {
-                _logger.LogError(ex, "获取患者列表失败，关键字：{Keyword}", keyword);
-                return Result<PagedResult<PatientListDto>>.Failure("获取患者列表失败");
-            }
+                Items = items,
+                TotalCount = pagedResult.TotalCount,
+                CurrentPage = pagedResult.CurrentPage,
+                PageSize = pagedResult.PageSize
+            };
+            return Result<PagedResult<PatientListDto>>.Success(dto);
         }
 
         /// <summary>
@@ -76,180 +68,138 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<Result<PagedResult<PatientListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
-            try
-            {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-                var dtos = _mapper.Map<List<PatientListDto>>(pagedResult.Items);
+            // eliminate-service-catch-return: 移除冗余try-catch
+            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
+            var dtos = _mapper.Map<List<PatientListDto>>(pagedResult.Items);
 
-                // 确保Age属性正确计算
-                foreach (var dto in dtos)
+            // 确保Age属性正确计算
+            foreach (var dto in dtos)
+            {
+                var entity = pagedResult.Items.FirstOrDefault(e => e.Id == dto.Id);
+                if (entity != null)
                 {
-                    var entity = pagedResult.Items.FirstOrDefault(e => e.Id == dto.Id);
-                    if (entity != null)
-                    {
-                        dto.Age = entity.Age;
-                    }
+                    dto.Age = entity.Age;
                 }
+            }
 
-                var result = new PagedResult<PatientListDto>
-                {
-                    Items = dtos,
-                    TotalCount = pagedResult.TotalCount,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-                return Result<PagedResult<PatientListDto>>.Success(result);
-            }
-            catch (Exception ex)
+            var result = new PagedResult<PatientListDto>
             {
-                _logger.LogError(ex, "获取患者列表失败，关键字：{Keyword}", keyword);
-                return Result<PagedResult<PatientListDto>>.Failure("获取患者列表失败");
-            }
+                Items = dtos,
+                TotalCount = pagedResult.TotalCount,
+                CurrentPage = page,
+                PageSize = pageSize
+            };
+            return Result<PagedResult<PatientListDto>>.Success(result);
         }
 
         public async Task<Result<PatientDetailDto>> GetByIdAsync(Guid id)
         {
-            try
-            {
-                var entity = await _repository.GetByIdAsync(id);
-                if (entity == null)
-                    return Result<PatientDetailDto>.Failure("患者不存在");
+            // eliminate-service-catch-return: 业务逻辑检查保留在外部，无需ExecuteAsync包装
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null)
+                return Result<PatientDetailDto>.Failure("患者不存在");
 
-                var dto = _mapper.Map<PatientDetailDto>(entity);
+            var dto = _mapper.Map<PatientDetailDto>(entity);
+            // 确保Age属性正确计算（从实体的计算属性复制到DTO）
+            dto.Age = entity.Age;
 
-                // 确保Age属性正确计算（从实体的计算属性复制到DTO）
-                dto.Age = entity.Age;
-
-                return Result<PatientDetailDto>.Success(dto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取患者详情失败");
-                return Result<PatientDetailDto>.Failure("获取患者详情失败");
-            }
+            return Result<PatientDetailDto>.Success(dto);
         }
 
         public async Task<Result<PatientDetailDto>> CreateAsync(PatientInputDto dto)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch，保留业务验证
+            // FluentValidation 验证（Phase 1 Task 1.7）
+            var validationResult = await _validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
             {
-                // FluentValidation 验证（Phase 1 Task 1.7）
-                var validationResult = await _validator.ValidateAsync(dto);
-                if (!validationResult.IsValid)
-                {
-                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    _logger.LogWarning("患者创建验证失败: {Errors}", string.Join("; ", errors));
-                    return Result<PatientDetailDto>.Failure(errors);
-                }
-
-                var entity = _mapper.Map<Patient>(dto);
-
-                // 生成拼音码（基于姓名）
-                entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
-
-                var result = await _repository.AddAsync(entity);
-                var resultDto = _mapper.Map<PatientDetailDto>(result);
-
-                // 确保Age属性正确计算
-                resultDto.Age = result.Age;
-
-                return Result<PatientDetailDto>.Success(resultDto);
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                _logger.LogWarning("患者创建验证失败: {Errors}", string.Join("; ", errors));
+                return Result<PatientDetailDto>.Failure(errors);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建患者失败");
-                return Result<PatientDetailDto>.Failure("创建患者失败");
-            }
+
+            var entity = _mapper.Map<Patient>(dto);
+
+            // 生成拼音码（基于姓名）
+            entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
+
+            var result = await _repository.AddAsync(entity);
+            var resultDto = _mapper.Map<PatientDetailDto>(result);
+
+            // 确保Age属性正确计算
+            resultDto.Age = result.Age;
+
+            return Result<PatientDetailDto>.Success(resultDto);
         }
 
         public async Task<Result<PatientDetailDto>> UpdateAsync(Guid id, PatientInputDto dto)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch，保留业务逻辑检查
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null)
+                return Result<PatientDetailDto>.Failure("患者不存在");
+
+            // FluentValidation 验证（Phase 1 Task 1.7）
+            var validationResult = await _validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
             {
-                var entity = await _repository.GetByIdAsync(id);
-                if (entity == null)
-                    return Result<PatientDetailDto>.Failure("患者不存在");
-
-                // FluentValidation 验证（Phase 1 Task 1.7）
-                var validationResult = await _validator.ValidateAsync(dto);
-                if (!validationResult.IsValid)
-                {
-                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    _logger.LogWarning("患者更新验证失败: {PatientId}, {Errors}", id, string.Join("; ", errors));
-                    return Result<PatientDetailDto>.Failure(errors);
-                }
-
-                // 保存旧的姓名用于检测变化
-                var oldName = entity.Name;
-
-                _mapper.Map(dto, entity);
-
-                // 更新拼音码（仅当姓名发生变化时）
-                if (entity.Name != oldName)
-                {
-                    entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
-                    _logger.LogDebug("患者姓名变化，重新生成拼音码: {OldName} -> {NewName}, PinYin: {PinYin}",
-                        oldName, entity.Name, entity.PinYinCode);
-                }
-
-                var result = await _repository.UpdateAsync(entity);
-                var resultDto = _mapper.Map<PatientDetailDto>(result);
-
-                // 确保Age属性正确计算
-                resultDto.Age = result.Age;
-
-                return Result<PatientDetailDto>.Success(resultDto);
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                _logger.LogWarning("患者更新验证失败: {PatientId}, {Errors}", id, string.Join("; ", errors));
+                return Result<PatientDetailDto>.Failure(errors);
             }
-            catch (Exception ex)
+
+            // 保存旧的姓名用于检测变化
+            var oldName = entity.Name;
+
+            _mapper.Map(dto, entity);
+
+            // 更新拼音码（仅当姓名发生变化时）
+            if (entity.Name != oldName)
             {
-                _logger.LogError(ex, "更新患者失败");
-                return Result<PatientDetailDto>.Failure("更新患者失败");
+                entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
+                _logger.LogDebug("患者姓名变化，重新生成拼音码: {OldName} -> {NewName}, PinYin: {PinYin}",
+                    oldName, entity.Name, entity.PinYinCode);
             }
+
+            var result = await _repository.UpdateAsync(entity);
+            var resultDto = _mapper.Map<PatientDetailDto>(result);
+
+            // 确保Age属性正确计算
+            resultDto.Age = result.Age;
+
+            return Result<PatientDetailDto>.Success(resultDto);
         }
 
         public async Task<Result<List<PatientDetailDto>>> SearchAsync(string keyword)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch，修复ERR-012违规(ex.Message)
+            // 如果关键字为空，返回空列表
+            if (string.IsNullOrWhiteSpace(keyword))
             {
-                // 如果关键字为空，返回空列表
-                if (string.IsNullOrWhiteSpace(keyword))
-                {
-                    return Result<List<PatientDetailDto>>.Success(new List<PatientDetailDto>());
-                }
-
-                // Task 2.1: 优化搜索逻辑 - 使用Repository的GetPagedAsync方法避免全量加载
-                // 搜索前100条匹配关键字的患者（姓名、电话或身份证号）
-                var searchResult = await _repository.GetPagedAsync(1, 100, keyword);
-
-                // 转换为DTO
-                var patientDtos = _mapper.Map<List<PatientDetailDto>>(searchResult.Items);
-
-                return Result<List<PatientDetailDto>>.Success(patientDtos);
+                return Result<List<PatientDetailDto>>.Success(new List<PatientDetailDto>());
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "搜索患者时发生错误，关键字：{Keyword}", keyword);
-                return Result<List<PatientDetailDto>>.Failure($"搜索患者失败：{ex.Message}");
-            }
+
+            // Task 2.1: 优化搜索逻辑 - 使用Repository的GetPagedAsync方法避免全量加载
+            // 搜索前100条匹配关键字的患者（姓名、电话或身份证号）
+            var searchResult = await _repository.GetPagedAsync(1, 100, keyword);
+
+            // 转换为DTO
+            var patientDtos = _mapper.Map<List<PatientDetailDto>>(searchResult.Items);
+
+            return Result<List<PatientDetailDto>>.Success(patientDtos);
         }
 
         public async Task<Result> DeleteAsync(Guid id)
         {
-            try
-            {
-                var result = await _repository.DeleteAsync(id);
-                return result ? Result.Success() : Result.Failure("删除失败");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除患者失败");
-                return Result.Failure("删除患者失败");
-            }
+            // eliminate-service-catch-return: 移除冗余try-catch
+            var result = await _repository.DeleteAsync(id);
+            return result ? Result.Success() : Result.Failure("删除失败");
         }
 
         /// <summary>
         /// 批量导入患者数据 (Epic #1934 FR-001)
         /// 实现BR-002失败恢复机制：部分成功模式 + 详细失败信息
+        /// eliminate-service-catch-return: 移除外层try-catch，保留行级错误隔离
         /// </summary>
         public async Task<Result<PatientBatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null)
         {
@@ -258,119 +208,113 @@ namespace LYBT.Module.Patients.Services
                 ImportTime = DateTime.Now
             };
 
-            try
+            // 设置EPPlus许可证上下文（非商业用途）
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            using var package = new ExcelPackage(stream);
+            var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+
+            if (worksheet == null)
             {
-                // 设置EPPlus许可证上下文（非商业用途）
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                return Result<PatientBatchImportResultDto>.Failure("Excel文件中没有工作表");
+            }
 
-                using var package = new ExcelPackage(stream);
-                var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+            var rowCount = worksheet.Dimension?.Rows ?? 0;
+            if (rowCount <= 1)
+            {
+                return Result<PatientBatchImportResultDto>.Success(result);
+            }
 
-                if (worksheet == null)
+            // BR-003: 限制最大导入行数
+            if (rowCount > 1000)
+            {
+                return Result<PatientBatchImportResultDto>.Failure($"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
+            }
+
+            var patientsToCreate = new List<Patient>();
+
+            // 从第2行开始读取数据（第1行是表头）
+            for (int row = 2; row <= rowCount; row++)
+            {
+                try
                 {
-                    return Result<PatientBatchImportResultDto>.Failure("Excel文件中没有工作表");
-                }
+                    // 解析Excel行数据到PatientInputDto
+                    var inputDto = ParseExcelRow(worksheet, row);
 
-                var rowCount = worksheet.Dimension?.Rows ?? 0;
-                if (rowCount <= 1)
-                {
-                    return Result<PatientBatchImportResultDto>.Success(result);
-                }
+                    // FluentValidation验证
+                    var validationResult = await _validator.ValidateAsync(inputDto);
 
-                // BR-003: 限制最大导入行数
-                if (rowCount > 1000)
-                {
-                    return Result<PatientBatchImportResultDto>.Failure($"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
-                }
-
-                var patientsToCreate = new List<Patient>();
-
-                // 从第2行开始读取数据（第1行是表头）
-                for (int row = 2; row <= rowCount; row++)
-                {
-                    try
+                    if (!validationResult.IsValid)
                     {
-                        // 解析Excel行数据到PatientInputDto
-                        var inputDto = ParseExcelRow(worksheet, row);
-
-                        // FluentValidation验证
-                        var validationResult = await _validator.ValidateAsync(inputDto);
-
-                        if (!validationResult.IsValid)
+                        // 记录验证失败详情
+                        result.FailureCount++;
+                        var firstError = validationResult.Errors.First();
+                        result.Failures.Add(new PatientImportFailureDto
                         {
-                            // 记录验证失败详情
-                            result.FailureCount++;
-                            var firstError = validationResult.Errors.First();
+                            OriginalRowNumber = row,
+                            FailureReason = firstError.ErrorMessage,
+                            FieldName = firstError.PropertyName,
+                            OriginalValue = GetFieldValue(inputDto, firstError.PropertyName),
+                            SuggestedFix = GenerateSuggestedFix(firstError.PropertyName, firstError.ErrorMessage),
+                            DataSnapshot = inputDto
+                        });
+                        continue;
+                    }
+
+                    // BR-004: 检查手机号重复
+                    if (!string.IsNullOrEmpty(inputDto.PhoneNumber))
+                    {
+                        var existing = await _repository.GetByPhoneNumberAsync(inputDto.PhoneNumber);
+                        if (existing != null)
+                        {
+                            result.SkippedCount++;
                             result.Failures.Add(new PatientImportFailureDto
                             {
                                 OriginalRowNumber = row,
-                                FailureReason = firstError.ErrorMessage,
-                                FieldName = firstError.PropertyName,
-                                OriginalValue = GetFieldValue(inputDto, firstError.PropertyName),
-                                SuggestedFix = GenerateSuggestedFix(firstError.PropertyName, firstError.ErrorMessage),
+                                FailureReason = "手机号已存在",
+                                FieldName = "PhoneNumber",
+                                OriginalValue = inputDto.PhoneNumber,
+                                SuggestedFix = "修改手机号或跳过该记录",
                                 DataSnapshot = inputDto
                             });
                             continue;
                         }
-
-                        // BR-004: 检查手机号重复
-                        if (!string.IsNullOrEmpty(inputDto.PhoneNumber))
-                        {
-                            var existing = await _repository.GetByPhoneNumberAsync(inputDto.PhoneNumber);
-                            if (existing != null)
-                            {
-                                result.SkippedCount++;
-                                result.Failures.Add(new PatientImportFailureDto
-                                {
-                                    OriginalRowNumber = row,
-                                    FailureReason = "手机号已存在",
-                                    FieldName = "PhoneNumber",
-                                    OriginalValue = inputDto.PhoneNumber,
-                                    SuggestedFix = "修改手机号或跳过该记录",
-                                    DataSnapshot = inputDto
-                                });
-                                continue;
-                            }
-                        }
-
-                        // 映射到Patient实体
-                        var patient = _mapper.Map<Patient>(inputDto);
-
-                        // 生成拼音码（Task 2.6）
-                        patient.PinYinCode = PinYinHelper.GetPinYinCode(patient.Name);
-
-                        patientsToCreate.Add(patient);
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"处理第{row}行数据时发生异常");
-                        result.FailureCount++;
-                        result.Failures.Add(new PatientImportFailureDto
-                        {
-                            OriginalRowNumber = row,
-                            FailureReason = $"数据解析异常: {ex.Message}",
-                            FieldName = "Unknown",
-                            OriginalValue = string.Empty,
-                            SuggestedFix = "检查该行数据格式是否正确",
-                            DataSnapshot = new PatientInputDto()
-                        });
-                    }
+
+                    // 映射到Patient实体
+                    var patient = _mapper.Map<Patient>(inputDto);
+
+                    // 生成拼音码（Task 2.6）
+                    patient.PinYinCode = PinYinHelper.GetPinYinCode(patient.Name);
+
+                    patientsToCreate.Add(patient);
                 }
-
-                // 批量保存患者
-                if (patientsToCreate.Count > 0)
+                catch (Exception ex)
                 {
-                    var savedPatients = await _repository.AddRangeAsync(patientsToCreate);
-                    result.SuccessCount = savedPatients.Count();
+                    // 行级错误隔离：单行解析失败不影响其他行
+                    // ERR-012: 使用安全消息替代ex.Message
+                    _logger.LogError(ex, "处理第{Row}行数据时发生异常", row);
+                    result.FailureCount++;
+                    result.Failures.Add(new PatientImportFailureDto
+                    {
+                        OriginalRowNumber = row,
+                        FailureReason = "数据解析异常",
+                        FieldName = "Unknown",
+                        OriginalValue = string.Empty,
+                        SuggestedFix = "检查该行数据格式是否正确",
+                        DataSnapshot = new PatientInputDto()
+                    });
                 }
+            }
 
-                return Result<PatientBatchImportResultDto>.Success(result);
-            }
-            catch (Exception ex)
+            // 批量保存患者
+            if (patientsToCreate.Count > 0)
             {
-                _logger.LogError(ex, "批量导入患者数据失败");
-                return Result<PatientBatchImportResultDto>.Failure($"导入失败: {ex.Message}");
+                var savedPatients = await _repository.AddRangeAsync(patientsToCreate);
+                result.SuccessCount = savedPatients.Count();
             }
+
+            return Result<PatientBatchImportResultDto>.Success(result);
         }
 
         /// <summary>
@@ -573,17 +517,9 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<Result<PagedResult<Patient>>> GetPagedEntityAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
-            try
-            {
-                // 直接返回Repository查询结果，不进行DTO映射
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-                return Result<PagedResult<Patient>>.Success(pagedResult);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取患者实体列表失败，关键字：{Keyword}", keyword);
-                return Result<PagedResult<Patient>>.Failure("获取患者列表失败");
-            }
+            // eliminate-service-catch-return: 移除冗余try-catch
+            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
+            return Result<PagedResult<Patient>>.Success(pagedResult);
         }
 
         /// <summary>
@@ -592,19 +528,12 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<Result<Patient>> GetByIdEntityAsync(Guid id)
         {
-            try
-            {
-                var entity = await _repository.GetByIdAsync(id);
-                if (entity == null)
-                    return Result<Patient>.Failure("患者不存在");
+            // eliminate-service-catch-return: 移除冗余try-catch，保留业务检查
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null)
+                return Result<Patient>.Failure("患者不存在");
 
-                return Result<Patient>.Success(entity);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取患者实体详情失败");
-                return Result<Patient>.Failure("获取患者详情失败");
-            }
+            return Result<Patient>.Success(entity);
         }
 
         /// <summary>
@@ -613,40 +542,33 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<Result<Patient>> CreateEntityAsync(PatientInputDto dto)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch，保留业务验证
+            // FluentValidation 验证
+            var validationResult = await _validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
             {
-                // FluentValidation 验证
-                var validationResult = await _validator.ValidateAsync(dto);
-                if (!validationResult.IsValid)
-                {
-                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    _logger.LogWarning("患者创建验证失败: {Errors}", string.Join("; ", errors));
-                    return Result<Patient>.Failure(errors);
-                }
-
-                // Issue #2245 Fix: 检查手机号唯一性(防止重复)
-                if (!string.IsNullOrEmpty(dto.PhoneNumber))
-                {
-                    var existingPatient = await _repository.GetByPhoneNumberAsync(dto.PhoneNumber);
-                    if (existingPatient != null && !existingPatient.IsDeleted)
-                    {
-                        return Result<Patient>.Failure($"手机号 {dto.PhoneNumber} 已存在");
-                    }
-                }
-
-                var entity = _mapper.Map<Patient>(dto);
-
-                // 生成拼音码（基于姓名）
-                entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
-
-                var result = await _repository.AddAsync(entity);
-                return Result<Patient>.Success(result);
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                _logger.LogWarning("患者创建验证失败: {Errors}", string.Join("; ", errors));
+                return Result<Patient>.Failure(errors);
             }
-            catch (Exception ex)
+
+            // Issue #2245 Fix: 检查手机号唯一性(防止重复)
+            if (!string.IsNullOrEmpty(dto.PhoneNumber))
             {
-                _logger.LogError(ex, "创建患者实体失败");
-                return Result<Patient>.Failure("创建患者失败");
+                var existingPatient = await _repository.GetByPhoneNumberAsync(dto.PhoneNumber);
+                if (existingPatient != null && !existingPatient.IsDeleted)
+                {
+                    return Result<Patient>.Failure($"手机号 {dto.PhoneNumber} 已存在");
+                }
             }
+
+            var entity = _mapper.Map<Patient>(dto);
+
+            // 生成拼音码（基于姓名）
+            entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
+
+            var result = await _repository.AddAsync(entity);
+            return Result<Patient>.Success(result);
         }
 
         /// <summary>
@@ -655,43 +577,36 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<Result<Patient>> UpdateEntityAsync(Guid id, PatientInputDto dto)
         {
-            try
+            // eliminate-service-catch-return: 移除冗余try-catch，保留业务逻辑检查
+            // Issue #2245 Fix: 检查实体存在性(包括软删除状态)
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null || entity.IsDeleted)
+                return Result<Patient>.Failure("患者不存在");
+
+            // FluentValidation 验证
+            var validationResult = await _validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
             {
-                // Issue #2245 Fix: 检查实体存在性(包括软删除状态)
-                var entity = await _repository.GetByIdAsync(id);
-                if (entity == null || entity.IsDeleted)
-                    return Result<Patient>.Failure("患者不存在");
-
-                // FluentValidation 验证
-                var validationResult = await _validator.ValidateAsync(dto);
-                if (!validationResult.IsValid)
-                {
-                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    _logger.LogWarning("患者更新验证失败: {PatientId}, {Errors}", id, string.Join("; ", errors));
-                    return Result<Patient>.Failure(errors);
-                }
-
-                // 保存旧的姓名用于检测变化
-                var oldName = entity.Name;
-
-                _mapper.Map(dto, entity);
-
-                // 更新拼音码（仅当姓名发生变化时）
-                if (entity.Name != oldName)
-                {
-                    entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
-                    _logger.LogDebug("患者姓名变化，重新生成拼音码: {OldName} -> {NewName}, PinYin: {PinYin}",
-                        oldName, entity.Name, entity.PinYinCode);
-                }
-
-                var result = await _repository.UpdateAsync(entity);
-                return Result<Patient>.Success(result);
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                _logger.LogWarning("患者更新验证失败: {PatientId}, {Errors}", id, string.Join("; ", errors));
+                return Result<Patient>.Failure(errors);
             }
-            catch (Exception ex)
+
+            // 保存旧的姓名用于检测变化
+            var oldName = entity.Name;
+
+            _mapper.Map(dto, entity);
+
+            // 更新拼音码（仅当姓名发生变化时）
+            if (entity.Name != oldName)
             {
-                _logger.LogError(ex, "更新患者实体失败");
-                return Result<Patient>.Failure("更新患者失败");
+                entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
+                _logger.LogDebug("患者姓名变化，重新生成拼音码: {OldName} -> {NewName}, PinYin: {PinYin}",
+                    oldName, entity.Name, entity.PinYinCode);
             }
+
+            var result = await _repository.UpdateAsync(entity);
+            return Result<Patient>.Success(result);
         }
 
         #endregion
@@ -703,37 +618,33 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<Result<PatientDetailDto>> RestoreAsync(Guid id)
         {
-            try
-            {
-                var entity = await _repository.GetByIdIncludingDeletedAsync(id);
-                if (entity == null)
-                    return Result<PatientDetailDto>.Failure("患者不存在");
+            // eliminate-service-catch-return: 移除冗余try-catch，保留业务逻辑检查
+            var entity = await _repository.GetByIdIncludingDeletedAsync(id);
+            if (entity == null)
+                return Result<PatientDetailDto>.Failure("患者不存在");
 
-                if (!entity.IsDeleted)
-                    return Result<PatientDetailDto>.Failure("该患者未被删除，无需恢复");
+            if (!entity.IsDeleted)
+                return Result<PatientDetailDto>.Failure("该患者未被删除，无需恢复");
 
-                entity.IsDeleted = false;
-                entity.UpdatedAt = DateTime.Now;
+            entity.IsDeleted = false;
+            entity.UpdatedAt = DateTime.Now;
 
-                var result = await _repository.UpdateAsync(entity);
-                var dto = _mapper.Map<PatientDetailDto>(result);
+            var result = await _repository.UpdateAsync(entity);
+            var dto = _mapper.Map<PatientDetailDto>(result);
 
-                // 确保Age属性正确计算
-                dto.Age = result.Age;
+            // 确保Age属性正确计算
+            dto.Age = result.Age;
 
-                _logger.LogInformation("患者已恢复: {PatientId}, {PatientName}", id, entity.Name);
-                return Result<PatientDetailDto>.Success(dto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "恢复患者失败: {PatientId}", id);
-                return Result<PatientDetailDto>.Failure("恢复患者失败");
-            }
+            _logger.LogInformation("患者已恢复: {PatientId}, {PatientName}", id, entity.Name);
+            return Result<PatientDetailDto>.Success(dto);
         }
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// eliminate-service-catch-return: 保留项级错误隔离，修复ERR-012违规
+        /// </remarks>
         public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
         {
             var result = new BatchOperationResultDto
@@ -771,12 +682,14 @@ namespace LYBT.Module.Patients.Services
                 }
                 catch (Exception ex)
                 {
+                    // 项级错误隔离：单项失败不影响其他项
+                    // ERR-012: 使用安全消息替代ex.Message
                     result.FailureCount++;
                     result.FailedIds.Add(id);
                     result.FailedItems.Add(new BatchOperationFailureItem
                     {
                         Id = id,
-                        Reason = ex.Message
+                        Reason = "删除操作失败"
                     });
                     _logger.LogError(ex, "批量删除 - 删除患者失败: {PatientId}", id);
                 }

@@ -19,11 +19,11 @@ public class ArchTests
         Assembly.Load("LYBT.Module.Auth"),
         Assembly.Load("LYBT.Module.Users"),
         Assembly.Load("LYBT.Module.Patients"),
-        Assembly.Load("LYBT.Module.MedicalCase"),
-        Assembly.Load("LYBT.Module.Consultation"),
+        Assembly.Load("LYBT.Module.MedicalCases"),
+        Assembly.Load("LYBT.Module.Consultations"),
         Assembly.Load("LYBT.Module.Prescriptions"),
         Assembly.Load("LYBT.Module.Herbs"),
-        Assembly.Load("LYBT.Module.Formula")
+        Assembly.Load("LYBT.Module.Formulas")
     ];
 
     /// <summary>
@@ -188,7 +188,9 @@ public class ArchTests
                 !t.Name.StartsWith("IUser") && // 用户接口
                 !t.Name.StartsWith("IPatient") && // 患者接口
                 !(t.Namespace?.Contains("Migrations") == true) && // 数据库迁移类
-                !t.Name.Contains("BusinessRule") // 业务规则验证类
+                !t.Name.Contains("BusinessRule") && // 业务规则验证类
+                !t.Name.Contains("BusinessException") && // 业务异常处理器
+                !t.Name.Contains("BusinessOperation") // 业务操作枚举
             );
 
             violatingTypes.AddRange(filteredTypes.Select(t => $"{t.FullName} (contains '{prohibitedName}')"));

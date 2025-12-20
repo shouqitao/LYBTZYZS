@@ -165,7 +165,7 @@ namespace LYBT.Desktop.Foundation.Security
                 return Task.FromResult(new TokenValidationResult
                 {
                     IsValid = false,
-                    ErrorMessage = $"Token验证失败: {ex.Message}"
+                    ErrorMessage = "Token验证失败，请稍后重试"
                 });
             }
         }

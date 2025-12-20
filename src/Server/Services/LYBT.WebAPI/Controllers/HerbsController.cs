@@ -42,20 +42,14 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? keyword = null,
             [FromQuery] string? category = null)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
             {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
-                }
+                return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
+            }
 
-                var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category);
-                return Success(result.Data!, "查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "获取药材列表", new { page, pageSize, keyword, category });
-            }
+            var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category);
+            return Success(result.Data!, "查询成功");
         }
 
         /// <summary>
@@ -65,21 +59,15 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            try
-            {
-                if (ValidateGuid(id, "药材ID") is { } error) return error;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-                var result = await _herbService.GetByIdAsync(id);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return NotFound(result.ErrorMessage ?? "药材不存在");
-                }
-                return Success(result.Data, "查询成功");
-            }
-            catch (Exception ex)
+            var result = await _herbService.GetByIdAsync(id);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "获取药材详情", id);
+                return NotFound(result.ErrorMessage ?? "药材不存在");
             }
+            return Success(result.Data, "查询成功");
         }
 
         /// <summary>
@@ -89,21 +77,15 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         public async Task<IActionResult> Create([FromBody] HerbInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var result = await _herbService.CreateAsync(dto);
+            if (result.IsSuccess && result.Data != null)
             {
-                var result = await _herbService.CreateAsync(dto);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("创建药材", result.Data, result.Data.Id);
-                    return Success(result.Data, "药材创建成功");
-                }
+                LogOperation("创建药材", result.Data, result.Data.Id);
+                return Success(result.Data, "药材创建成功");
+            }
 
-                return BusinessFail(result.ErrorMessage ?? "创建药材失败");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "创建药材", dto);
-            }
+            return BusinessFail(result.ErrorMessage ?? "创建药材失败");
         }
 
         /// <summary>
@@ -114,27 +96,21 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+            if (ownershipError != null) return ownershipError;
+
+            dto.Id = id;
+
+            var result = await _herbService.UpdateAsync(id, dto);
+            if (result.IsSuccess && result.Data != null)
             {
-                // 使用统一的所有权检查方法
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
-                if (ownershipError != null) return ownershipError;
-
-                dto.Id = id;
-
-                var result = await _herbService.UpdateAsync(id, dto);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("更新药材信息", result.Data, id);
-                    return Success(result.Data, "药材信息更新成功");
-                }
-
-                return BusinessFail(result.ErrorMessage ?? "更新药材信息失败");
+                LogOperation("更新药材信息", result.Data, id);
+                return Success(result.Data, "药材信息更新成功");
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "更新药材信息", new { id, dto });
-            }
+
+            return BusinessFail(result.ErrorMessage ?? "更新药材信息失败");
         }
 
         /// <summary>
@@ -145,25 +121,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            try
-            {
-                // 使用统一的所有权检查方法
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+            if (ownershipError != null) return ownershipError;
 
-                var result = await _herbService.DeleteAsync(id);
-                if (!result.IsSuccess)
-                {
-                    return NotFound(result.ErrorMessage ?? "药材不存在");
-                }
-
-                LogOperation("删除药材", null, id);
-                return Success("删除成功");
-            }
-            catch (Exception ex)
+            var result = await _herbService.DeleteAsync(id);
+            if (!result.IsSuccess)
             {
-                return HandleException(ex, "删除药材", id);
+                return NotFound(result.ErrorMessage ?? "药材不存在");
             }
+
+            LogOperation("删除药材", null, id);
+            return Success("删除成功");
         }
 
         /// <summary>
@@ -174,42 +144,36 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<ImportResultDto<HerbDetailDto>>), 200)]
         public async Task<IActionResult> Import(IFormFile file)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (file == null || file.Length == 0)
             {
-                if (file == null || file.Length == 0)
-                {
-                    return ValidationFail("文件不能为空");
-                }
-
-                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (extension != ".xlsx")
-                {
-                    return ValidationFail("仅支持.xlsx格式的Excel文件");
-                }
-
-                if (file.Length > 10 * 1024 * 1024)
-                {
-                    return ValidationFail("文件大小不能超过10MB");
-                }
-
-                using var stream = file.OpenReadStream();
-                var result = await _herbService.ImportFromExcelAsync(stream, file.FileName);
-
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "导入失败", ApiErrorCodes.DATASAVEFAILED);
-                }
-
-                LogOperation("批量导入药材",
-                    new { FileName = file.FileName, TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
-                    null);
-
-                return Success(result.Data, result.Data.Message);
+                return ValidationFail("文件不能为空");
             }
-            catch (Exception ex)
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (extension != ".xlsx")
             {
-                return HandleException(ex, "批量导入药材", new { FileName = file?.FileName });
+                return ValidationFail("仅支持.xlsx格式的Excel文件");
             }
+
+            if (file.Length > 10 * 1024 * 1024)
+            {
+                return ValidationFail("文件大小不能超过10MB");
+            }
+
+            using var stream = file.OpenReadStream();
+            var result = await _herbService.ImportFromExcelAsync(stream, file.FileName);
+
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return BusinessFail(result.ErrorMessage ?? "导入失败", ApiErrorCodes.DATASAVEFAILED);
+            }
+
+            LogOperation("批量导入药材",
+                new { FileName = file.FileName, TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
+                null);
+
+            return Success(result.Data, result.Data.Message);
         }
 
         /// <summary>
@@ -220,24 +184,17 @@ namespace LYBT.WebAPI.Controllers
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         public async Task<IActionResult> Export([FromQuery] string? category = null)
         {
-            try
-            {
-                var stream = await _herbService.ExportAsync(category);
-                var fileName = string.IsNullOrWhiteSpace(category)
-                    ? $"药材数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
-                    : $"药材数据_{category}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var stream = await _herbService.ExportAsync(category);
+            var fileName = string.IsNullOrWhiteSpace(category)
+                ? $"药材数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                : $"药材数据_{category}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
-                LogOperation("导出药材数据", new { Category = category, FileName = fileName }, null);
+            LogOperation("导出药材数据", new { Category = category, FileName = fileName }, null);
 
-                return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    fileName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出药材数据失败，分类筛选：{Category}", category);
-                return StatusCode(500);
-            }
+            return File(stream,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
         }
 
         /// <summary>
@@ -249,20 +206,13 @@ namespace LYBT.WebAPI.Controllers
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         public IActionResult ExportTemplate()
         {
-            try
-            {
-                var stream = _herbService.GenerateImportTemplate();
-                var fileName = $"药材导入模板_{DateTime.Now:yyyyMMdd}.xlsx";
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var stream = _herbService.GenerateImportTemplate();
+            var fileName = $"药材导入模板_{DateTime.Now:yyyyMMdd}.xlsx";
 
-                return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    fileName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "生成药材导入模板失败");
-                return StatusCode(500);
-            }
+            return File(stream,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
         }
 
         // ========== Epic #1962: 批量导入/导出和引用检查端点 ==========
@@ -275,39 +225,33 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (request.Herbs == null || request.Herbs.Count == 0)
             {
-                if (request.Herbs == null || request.Herbs.Count == 0)
-                {
-                    return ValidationFail("药材列表不能为空");
-                }
-
-                if (request.Herbs.Count > 10000)
-                {
-                    return ValidationFail("批量导入最多支持10000条记录");
-                }
-
-                var result = await _herbService.BatchImportAsync(request.Herbs, request.Strategy);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("批量导入药材（Epic #1962）",
-                        new {
-                            TotalCount = result.Data.TotalCount,
-                            SuccessCount = result.Data.SuccessCount,
-                            FailureCount = result.Data.FailureCount,
-                            SkippedCount = result.Data.SkippedCount,
-                            Strategy = request.Strategy.ToString()
-                        },
-                        null);
-                }
-
-                return Success(result.Data!, $"批量导入完成: 成功{result.Data?.SuccessCount ?? 0}条");
+                return ValidationFail("药材列表不能为空");
             }
-            catch (Exception ex)
+
+            if (request.Herbs.Count > 10000)
             {
-                return HandleException(ex, "批量导入药材", new { HerbCount = request.Herbs?.Count, Strategy = request.Strategy });
+                return ValidationFail("批量导入最多支持10000条记录");
             }
+
+            var result = await _herbService.BatchImportAsync(request.Herbs, request.Strategy);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                LogOperation("批量导入药材（Epic #1962）",
+                    new {
+                        TotalCount = result.Data.TotalCount,
+                        SuccessCount = result.Data.SuccessCount,
+                        FailureCount = result.Data.FailureCount,
+                        SkippedCount = result.Data.SkippedCount,
+                        Strategy = request.Strategy.ToString()
+                    },
+                    null);
+            }
+
+            return Success(result.Data!, $"批量导入完成: 成功{result.Data?.SuccessCount ?? 0}条");
         }
 
         /// <summary>
@@ -317,23 +261,17 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<List<HerbDetailDto>>), 200)]
         public async Task<IActionResult> GetAllForExport([FromQuery] string? category = null)
         {
-            try
-            {
-                var result = await _herbService.GetAllForExportAsync(category);
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            var result = await _herbService.GetAllForExportAsync(category);
 
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("导出药材数据（Epic #1962）",
-                        new { Category = category, Count = result.Data.Count },
-                        null);
-                }
-
-                return Success(result.Data!, "导出数据查询成功");
-            }
-            catch (Exception ex)
+            if (result.IsSuccess && result.Data != null)
             {
-                return HandleException(ex, "获取导出数据", new { Category = category });
+                LogOperation("导出药材数据（Epic #1962）",
+                    new { Category = category, Count = result.Data.Count },
+                    null);
             }
+
+            return Success(result.Data!, "导出数据查询成功");
         }
 
         /// <summary>
@@ -345,21 +283,15 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> CheckReference(Guid id)
         {
-            try
-            {
-                if (ValidateGuid(id, "药材ID") is { } error) return error;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-                var result = await _herbService.CheckReferenceAsync(id);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "引用检查失败");
-                }
-                return Success(result.Data, "引用检查完成");
-            }
-            catch (Exception ex)
+            var result = await _herbService.CheckReferenceAsync(id);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "检查药材引用", id);
+                return BusinessFail(result.ErrorMessage ?? "引用检查失败");
             }
+            return Success(result.Data, "引用检查完成");
         }
 
         /// <summary>
@@ -370,37 +302,31 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchCheckReference([FromBody] HerbBatchCheckReferenceInputDto request)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (request.HerbIds == null || request.HerbIds.Count == 0)
             {
-                if (request.HerbIds == null || request.HerbIds.Count == 0)
-                {
-                    return ValidationFail("药材ID列表不能为空");
-                }
-
-                if (request.HerbIds.Count > 100)
-                {
-                    return ValidationFail("批量检查最多支持100条记录");
-                }
-
-                var result = await _herbService.BatchCheckReferenceAsync(request.HerbIds);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("批量检查药材引用（Epic #1962）",
-                        new { Count = result.Data.Count },
-                        null);
-                }
-
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "批量引用检查失败");
-                }
-                return Success(result.Data, "批量引用检查完成");
+                return ValidationFail("药材ID列表不能为空");
             }
-            catch (Exception ex)
+
+            if (request.HerbIds.Count > 100)
             {
-                return HandleException(ex, "批量检查药材引用", new { Count = request.HerbIds?.Count });
+                return ValidationFail("批量检查最多支持100条记录");
             }
+
+            var result = await _herbService.BatchCheckReferenceAsync(request.HerbIds);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                LogOperation("批量检查药材引用（Epic #1962）",
+                    new { Count = result.Data.Count },
+                    null);
+            }
+
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return BusinessFail(result.ErrorMessage ?? "批量引用检查失败");
+            }
+            return Success(result.Data, "批量引用检查完成");
         }
 
         // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复端点 ==========
@@ -414,25 +340,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
-            try
-            {
-                // 使用统一的所有权检查方法
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+            if (ownershipError != null) return ownershipError;
 
-                var result = await _herbService.ToggleStatusAsync(id);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "状态切换失败");
-                }
-
-                LogOperation("切换药材状态", new { NewStatus = result.Data.Status }, id);
-                return Success(result.Data, $"药材已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
-            }
-            catch (Exception ex)
+            var result = await _herbService.ToggleStatusAsync(id);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "切换药材状态", id);
+                return BusinessFail(result.ErrorMessage ?? "状态切换失败");
             }
+
+            LogOperation("切换药材状态", new { NewStatus = result.Data.Status }, id);
+            return Success(result.Data, $"药材已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
 
         /// <summary>
@@ -444,25 +364,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)
         {
-            try
-            {
-                // 使用统一的所有权检查方法
-                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
-                if (ownershipError != null) return ownershipError;
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // 使用统一的所有权检查方法
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+            if (ownershipError != null) return ownershipError;
 
-                var result = await _herbService.RestoreAsync(id);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "恢复失败");
-                }
-
-                LogOperation("恢复药材", null, id);
-                return Success(result.Data, "药材已恢复");
-            }
-            catch (Exception ex)
+            var result = await _herbService.RestoreAsync(id);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "恢复药材", id);
+                return BusinessFail(result.ErrorMessage ?? "恢复失败");
             }
+
+            LogOperation("恢复药材", null, id);
+            return Success(result.Data, "药材已恢复");
         }
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
@@ -475,26 +389,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (dto.Ids == null || dto.Ids.Count == 0)
             {
-                if (dto.Ids == null || dto.Ids.Count == 0)
-                {
-                    return ValidationFail("请至少选择一个药材");
-                }
-
-                var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "批量启用失败");
-                }
-
-                LogOperation("批量启用药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-                return Success(result.Data, result.Data.Message);
+                return ValidationFail("请至少选择一个药材");
             }
-            catch (Exception ex)
+
+            var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "批量启用药材");
+                return BusinessFail(result.ErrorMessage ?? "批量启用失败");
             }
+
+            LogOperation("批量启用药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+            return Success(result.Data, result.Data.Message);
         }
 
         /// <summary>
@@ -505,26 +413,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (dto.Ids == null || dto.Ids.Count == 0)
             {
-                if (dto.Ids == null || dto.Ids.Count == 0)
-                {
-                    return ValidationFail("请至少选择一个药材");
-                }
-
-                var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
-                }
-
-                LogOperation("批量禁用药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-                return Success(result.Data, result.Data.Message);
+                return ValidationFail("请至少选择一个药材");
             }
-            catch (Exception ex)
+
+            var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "批量禁用药材");
+                return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
             }
+
+            LogOperation("批量禁用药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+            return Success(result.Data, result.Data.Message);
         }
 
         [HttpPost("batch-delete")]
@@ -532,26 +434,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
         {
-            try
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (dto.Ids == null || dto.Ids.Count == 0)
             {
-                if (dto.Ids == null || dto.Ids.Count == 0)
-                {
-                    return ValidationFail("请至少选择一个药材");
-                }
-
-                var result = await _herbService.BatchDeleteAsync(dto.Ids);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail(result.ErrorMessage ?? "批量删除失败");
-                }
-
-                LogOperation("批量删除药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-                return Success(result.Data, result.Data.Message);
+                return ValidationFail("请至少选择一个药材");
             }
-            catch (Exception ex)
+
+            var result = await _herbService.BatchDeleteAsync(dto.Ids);
+            if (!result.IsSuccess || result.Data == null)
             {
-                return HandleException(ex, "批量删除药材", new { Ids = dto.Ids });
+                return BusinessFail(result.ErrorMessage ?? "批量删除失败");
             }
+
+            LogOperation("批量删除药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+            return Success(result.Data, result.Data.Message);
         }
     }
 }

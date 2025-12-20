@@ -81,30 +81,20 @@ namespace LYBT.Module.Patients.Tests.Services
         }
 
         [Fact]
-        public async Task GetPagedAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task GetPagedAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var exception = new Exception("数据库错误");
             _repositoryMock
                 .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _patientService.GetPagedAsync(1, 20, null);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _patientService.GetPagedAsync(1, 20, null));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("获取患者列表失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("获取患者列表失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         [Fact]
@@ -184,9 +174,10 @@ namespace LYBT.Module.Patients.Tests.Services
         }
 
         [Fact]
-        public async Task GetByIdAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task GetByIdAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var patientId = Guid.NewGuid();
             var exception = new Exception("数据库错误");
 
@@ -194,22 +185,11 @@ namespace LYBT.Module.Patients.Tests.Services
                 .Setup(x => x.GetByIdAsync(patientId))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _patientService.GetByIdAsync(patientId);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _patientService.GetByIdAsync(patientId));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("获取患者详情失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("获取患者详情失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion
@@ -265,9 +245,10 @@ namespace LYBT.Module.Patients.Tests.Services
         }
 
         [Fact]
-        public async Task CreateAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task CreateAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var createDto = new PatientInputDto
             {
                 Name = "张三",
@@ -281,22 +262,11 @@ namespace LYBT.Module.Patients.Tests.Services
                 .Setup(x => x.AddAsync(It.IsAny<Patient>()))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _patientService.CreateAsync(createDto);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _patientService.CreateAsync(createDto));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("创建患者失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("创建患者失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion
@@ -383,9 +353,10 @@ namespace LYBT.Module.Patients.Tests.Services
         }
 
         [Fact]
-        public async Task UpdateAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task UpdateAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var patientId = Guid.NewGuid();
             var existingPatient = CreateTestPatient(patientId);
             var updateDto = new PatientInputDto
@@ -403,22 +374,11 @@ namespace LYBT.Module.Patients.Tests.Services
                 .Setup(x => x.UpdateAsync(It.IsAny<Patient>()))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _patientService.UpdateAsync(patientId, updateDto);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _patientService.UpdateAsync(patientId, updateDto));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("更新患者失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("更新患者失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion
@@ -523,9 +483,10 @@ namespace LYBT.Module.Patients.Tests.Services
         }
 
         [Fact]
-        public async Task SearchAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task SearchAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var keyword = "张";
             var exception = new Exception("数据库错误");
 
@@ -533,24 +494,11 @@ namespace LYBT.Module.Patients.Tests.Services
                 .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _patientService.SearchAsync(keyword);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _patientService.SearchAsync(keyword));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("搜索患者失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) =>
-                        v.ToString()!.Contains("搜索患者时发生错误") &&
-                        v.ToString()!.Contains(keyword)),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion
@@ -597,9 +545,10 @@ namespace LYBT.Module.Patients.Tests.Services
         }
 
         [Fact]
-        public async Task DeleteAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task DeleteAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var patientId = Guid.NewGuid();
             var exception = new Exception("数据库错误");
 
@@ -607,22 +556,11 @@ namespace LYBT.Module.Patients.Tests.Services
                 .Setup(x => x.DeleteAsync(patientId))
                 .ThrowsAsync(exception);
 
-            // Act
-            var result = await _patientService.DeleteAsync(patientId);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _patientService.DeleteAsync(patientId));
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("删除患者失败");
-
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("删除患者失败")),
-                    exception,
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion

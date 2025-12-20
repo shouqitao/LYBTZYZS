@@ -1,5 +1,6 @@
 using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
@@ -97,7 +98,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 _logger.LogError(ex, "病案聚合根验证过程发生错误");
                 return new ValidationResult(new[]
                 {
-                    new ValidationFailure("Validation", $"验证过程发生错误: {ex.Message}")
+                    new ValidationFailure("Validation", ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证", ex))
                 });
             }
         }
@@ -152,7 +153,7 @@ namespace LYBT.Desktop.MedicalCase.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "病案聚合根同步验证过程发生错误");
-                errorMessage = $"验证过程发生错误: {ex.Message}";
+                errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证", ex);
                 return false;
             }
         }
@@ -189,7 +190,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 _logger.LogError(ex, "验证属性失败: {PropertyName}", propertyName);
                 return new ValidationResult(new[]
                 {
-                    new ValidationFailure(propertyName, $"验证过程发生错误: {ex.Message}")
+                    new ValidationFailure(propertyName, ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证", ex))
                 });
             }
         }

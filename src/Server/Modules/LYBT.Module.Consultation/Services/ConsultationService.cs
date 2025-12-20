@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Module.Consultations.Interfaces;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Consultations.Services
@@ -27,56 +27,45 @@ namespace LYBT.Module.Consultations.Services
             _logger = logger;
         }
 
-        public async Task<Result<ConsultationDetailDto>> GetByIdAsync(Guid id)
+        /// <inheritdoc/>
+        public async Task<ConsultationDetailDto> GetByIdAsync(Guid id)
         {
-            try
-            {
-                // 使用优化后的查询方法，包含所有关联数据
-                var entity = await _repository.GetByIdWithDetailsAsync(id);
-                if (entity == null)
-                    return Result<ConsultationDetailDto>.Failure("诊疗记录不存在");
+            _logger.LogDebug("获取诊疗记录详情: {Id}", id);
 
-                var dto = _mapper.Map<ConsultationDetailDto>(entity);
-                // 确保PatientName和DoctorName从预加载的导航属性获取
-                dto.PatientName = entity.MedicalCase?.PatientName ?? string.Empty;
-                dto.DoctorName = entity.MedicalCase?.DoctorName ?? string.Empty;
+            // 使用优化后的查询方法，包含所有关联数据
+            var entity = await _repository.GetByIdWithDetailsAsync(id)
+                ?? throw NotFoundException.Consultation(id);
 
-                return Result<ConsultationDetailDto>.Success(dto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取诊疗记录详情失败");
-                return Result<ConsultationDetailDto>.Failure("获取诊疗记录详情失败");
-            }
+            var dto = _mapper.Map<ConsultationDetailDto>(entity);
+            // 确保PatientName和DoctorName从预加载的导航属性获取
+            dto.PatientName = entity.MedicalCase?.PatientName ?? string.Empty;
+            dto.DoctorName = entity.MedicalCase?.DoctorName ?? string.Empty;
+
+            return dto;
         }
 
         // ========== Write方法已移除（Issue #1600 Phase 1）==========
         // CreateAsync, UpdateAsync, DeleteAsync 已移除
         // 所有写操作必须通过MedicalCase聚合根进行
 
-        public async Task<Result<List<ConsultationDetailDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        /// <inheritdoc/>
+        public async Task<List<ConsultationDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
-            try
-            {
-                // 使用优化后的查询方法，直接从数据库获取相关记录
-                var consultation = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
-                if (consultation == null)
-                {
-                    return Result<List<ConsultationDetailDto>>.Success(new List<ConsultationDetailDto>());
-                }
+            _logger.LogDebug("根据医案ID获取诊疗记录: {MedicalCaseId}", medicalCaseId);
 
-                var dto = _mapper.Map<ConsultationDetailDto>(consultation);
-                // 确保PatientName和DoctorName从预加载的导航属性获取
-                dto.PatientName = consultation.MedicalCase?.PatientName ?? string.Empty;
-                dto.DoctorName = consultation.MedicalCase?.DoctorName ?? string.Empty;
-
-                return Result<List<ConsultationDetailDto>>.Success(new List<ConsultationDetailDto> { dto });
-            }
-            catch (Exception ex)
+            // 使用优化后的查询方法，直接从数据库获取相关记录
+            var consultation = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
+            if (consultation == null)
             {
-                _logger.LogError(ex, "根据医案ID获取诊疗记录失败");
-                return Result<List<ConsultationDetailDto>>.Failure("获取诊疗记录失败");
+                return new List<ConsultationDetailDto>();
             }
+
+            var dto = _mapper.Map<ConsultationDetailDto>(consultation);
+            // 确保PatientName和DoctorName从预加载的导航属性获取
+            dto.PatientName = consultation.MedicalCase?.PatientName ?? string.Empty;
+            dto.DoctorName = consultation.MedicalCase?.DoctorName ?? string.Empty;
+
+            return new List<ConsultationDetailDto> { dto };
         }
 
         // ========== Write方法已全部移除（Issue #1600 Phase 3）==========

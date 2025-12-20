@@ -4,6 +4,7 @@ using LYBT.Desktop.Models.Items.Formulas;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -257,7 +258,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存验方失败: {FormulaName}", detail.Name);
-                await ShowErrorMessageAsync($"保存验方失败: {ex.Message}");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存验方", ex));
                 return false;
             }
         }

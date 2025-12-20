@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
@@ -48,7 +49,7 @@ public class NavigationManager
     public void NavigateToControlExamples()
     {
         try { _regionManager.RequestNavigate(RegionNames.ContentRegion, "ControlExamplesView"); }
-        catch (Exception ex) { throw new InvalidOperationException($"打开控件示例页面失败: {ex.Message}", ex); }
+        catch (Exception ex) { throw new InvalidOperationException(ClientErrorMessageMapper.GetSafeOperationFailureMessage("打开控件示例页面", ex), ex); }
     }
 
     /// <summary>快速导航到患者管理并触发新增</summary>

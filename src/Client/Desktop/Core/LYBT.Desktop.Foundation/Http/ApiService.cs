@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Exceptions;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -261,7 +261,12 @@ namespace LYBT.Desktop.Foundation.Http
             catch (JsonException ex)
             {
                 _logger?.LogError(ex, $"JSON反序列化失败: {content}");
-                throw new ApiException(response.StatusCode, "响应格式错误", "GET", content, ex);
+                // consolidate-exception-handling: 使用新的ApiException构造函数
+                throw new ApiException($"响应格式错误: {ex.Message}", ex)
+                {
+                    StatusCode = response.StatusCode,
+                    ResponseContent = content
+                };
             }
         }
 
