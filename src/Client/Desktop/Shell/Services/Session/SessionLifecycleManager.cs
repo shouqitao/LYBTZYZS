@@ -1,5 +1,5 @@
 using LYBT.Desktop.Foundation.Security;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
@@ -308,7 +308,7 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
     /// <summary>
     /// 用户活动会话即将过期处理
     /// </summary>
-    private void OnUserActivitySessionExpiring(object? sender, Infrastructure.Interfaces.SessionExpiringEventArgs e)
+    private void OnUserActivitySessionExpiring(object? sender, Contracts.Services.SessionExpiringEventArgs e)
     {
         _logger.LogDebug("用户不活跃，会话即将过期，剩余时间: {RemainingTime}", e.RemainingTime);
         SessionExpiring?.Invoke(this, new SessionExpiringWarningEventArgs(e.RemainingTime, dueToInactivity: true));

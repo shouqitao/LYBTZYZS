@@ -1,9 +1,9 @@
-﻿using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Foundation.Security;
 
 namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
-    /// 主窗口服务门面接口 - Phase 3.4: 移除对话框服务,仅保留认证服务
+    /// 主窗口服务门面接口
     /// </summary>
     public interface IMainWindowServicesFacade
     {

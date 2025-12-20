@@ -1,104 +1,196 @@
 # Tasks: optimize-desktop-core
 
-## Status: Draft
+## Phase 1: 接口迁移到Contracts (约2小时)
 
-## Phase 1: P0级消除重复 (0/12)
+### Task 1.1: 创建Contracts目录结构
+- [ ] 在Contracts项目中创建 `Services/` 目录
+- [ ] 在Contracts项目中创建 `Components/` 目录
 
-### 1.1 异常处理统一 (0/4)
+### Task 1.2: 迁移Infrastructure.Interfaces到Contracts.Services
+- [ ] 复制 `IActiveConsultationService.cs` → `Contracts/Services/`
+- [ ] 复制 `IApplicationTickService.cs` → `Contracts/Services/`
+- [ ] 复制 `IClinicSettingsService.cs` → `Contracts/Services/`
+- [ ] 复制 `ICommonDialogService.cs` → `Contracts/Services/`
+- [ ] 复制 `ICustomDialogAware.cs` → `Contracts/Services/`
+- [ ] 复制 `IFeatureToggleService.cs` → `Contracts/Services/`
+- [ ] 复制 `IKeyboardShortcutService.cs` → `Contracts/Services/`
+- [ ] 复制 `ILoginCoordinator.cs` → `Contracts/Services/`
+- [ ] 复制 `IMainWindowServicesFacade.cs` → `Contracts/Services/`
+- [ ] 复制 `IPermissionService.cs` → `Contracts/Services/`
+- [ ] 复制 `IPrescriptionSettingsService.cs` → `Contracts/Services/`
+- [ ] 复制 `IRoleNavigationService.cs` → `Contracts/Services/`
+- [ ] 复制 `ISessionManager.cs` → `Contracts/Services/`
+- [ ] 复制 `IStartupPipeline.cs` → `Contracts/Services/`
+- [ ] 复制 `IUserActivityTracker.cs` → `Contracts/Services/`
+- [ ] 复制 `IUserNotificationService.cs` → `Contracts/Services/`
+- [ ] 更新所有文件的命名空间为 `LYBT.Desktop.Contracts.Services`
 
-- [ ] 1.1.1 在Shared.ExceptionHandling创建IDesktopExceptionHandler接口
-- [ ] 1.1.2 创建DesktopExceptionHandler实现（适配WPF环境）
-- [ ] 1.1.3 删除Infrastructure/Services/ErrorHandling/目录
-- [ ] 1.1.4 删除Presentation/Notifications/UnifiedErrorHandlingService.cs
+### Task 1.3: 迁移Infrastructure.Interfaces.Components到Contracts.Components
+- [ ] 复制 `ICommandHandler.cs` → `Contracts/Components/`
+- [ ] 复制 `IComponentValidator.cs` → `Contracts/Components/`
+- [ ] 复制 `IDataManager.cs` → `Contracts/Components/`
+- [ ] 复制 `IValidationService.cs` → `Contracts/Components/`
+- [ ] 更新所有文件的命名空间为 `LYBT.Desktop.Contracts.Components`
 
-### 1.2 Token管理统一 (0/4)
+### Task 1.4: 更新Contracts.csproj
+- [ ] 添加必要的包引用(如果接口依赖特定类型)
+- [ ] 确保项目编译通过
 
-- [ ] 1.2.1 删除Infrastructure/Interfaces/ITokenManager.cs
-- [ ] 1.2.2 更新所有ITokenManager引用改用ITokenLifecycleService
-- [ ] 1.2.3 简化ISessionManager移除Token相关属性
-- [ ] 1.2.4 更新SessionManager实现
+### Task 1.5: 批量替换using语句
+- [ ] 替换所有 `using LYBT.Desktop.Infrastructure.Interfaces;` → `using LYBT.Desktop.Contracts.Services;`
+- [ ] 替换所有 `using LYBT.Desktop.Infrastructure.Interfaces.Components;` → `using LYBT.Desktop.Contracts.Components;`
 
-### 1.3 映射器统一 (0/4)
+### Task 1.6: 删除原接口目录
+- [ ] 删除 `Infrastructure/Interfaces/` 目录
+- [ ] 验证编译通过
 
-- [ ] 1.3.1 删除Models/Mapping/MappingService.cs
-- [ ] 1.3.2 删除Models/Mapping/IMappingService.cs
-- [ ] 1.3.3 更新所有MappingService引用改用SimpleMapper
-- [ ] 1.3.4 验证编译通过
-
----
-
-## Phase 2: P1级澄清职责 (0/12)
-
-### 2.1 会话管理职责划分 (0/4)
-
-- [ ] 2.1.1 删除Infrastructure/Interfaces/IUserSessionManager.cs（合并到ISessionManager）
-- [ ] 2.1.2 更新ISessionManager定义（仅保留会话状态）
-- [ ] 2.1.3 更新SessionManager实现
-- [ ] 2.1.4 更新所有引用点
-
-### 2.2 ViewModel基类简化 (0/4)
-
-- [ ] 2.2.1 创建新的简化版ViewModelBase（~150行）
-- [ ] 2.2.2 创建ListViewModelBase<T>
-- [ ] 2.2.3 创建DetailViewModelBase
-- [ ] 2.2.4 迁移HTTP状态码处理到ApiExceptionHandler
-
-### 2.3 接口位置调整 (0/4)
-
-- [ ] 2.3.1 将IUserNotificationService移至Presentation
-- [ ] 2.3.2 将ILoginCoordinator移至Foundation
-- [ ] 2.3.3 更新模块注册
-- [ ] 2.3.4 验证编译通过
-
----
-
-## Phase 3: P2级组织优化 (0/8)
-
-### 3.1 控件分离 (0/4)
-
-- [ ] 3.1.1 创建Infrastructure/Controls/Common/目录
-- [ ] 3.1.2 移动通用控件到Common目录
-- [ ] 3.1.3 识别并迁移业务控件到对应模块
-- [ ] 3.1.4 更新XAML命名空间引用
-
-### 3.2 Item模型命名规范 (0/4)
-
-- [ ] 3.2.1 审计现有Item模型命名
-- [ ] 3.2.2 创建Item模型命名规范文档
-- [ ] 3.2.3 重命名不符合规范的模型
-- [ ] 3.2.4 更新所有引用
+### Task 1.7: Phase 1验证
+- [ ] `dotnet build LYBT.All.sln` 成功
+- [ ] 无命名空间错误
+- [ ] 提交代码: `git commit -m "refactor(Contracts): 迁移接口定义到Contracts层"`
 
 ---
 
-## Phase 4: 验证与文档 (0/4)
+## Phase 2: Presentation合并到Infrastructure (约1.5小时)
 
-- [ ] 4.1 全解决方案编译验证
-- [ ] 4.2 运行单元测试
-- [ ] 4.3 更新DESKTOP_ARCHITECTURE_STANDARD.md
-- [ ] 4.4 更新client-layer-architecture spec
+### Task 2.1: 创建Infrastructure目标目录
+- [ ] 创建 `Infrastructure/Controls/Components/` 目录
+- [ ] 创建 `Infrastructure/Services/Notifications/` 目录
+- [ ] 创建 `Infrastructure/Services/UserExperience/` 目录
+
+### Task 2.2: 迁移Presentation.Components
+- [ ] 移动 `HerbCardControl.xaml` → `Infrastructure/Controls/Components/`
+- [ ] 移动 `HerbCardControl.xaml.cs` → `Infrastructure/Controls/Components/`
+- [ ] 移动 `HerbListEditor.xaml` → `Infrastructure/Controls/Components/`
+- [ ] 移动 `HerbListEditor.xaml.cs` → `Infrastructure/Controls/Components/`
+- [ ] 移动 `HerbListView.xaml` → `Infrastructure/Controls/Components/`
+- [ ] 移动 `HerbListView.xaml.cs` → `Infrastructure/Controls/Components/`
+- [ ] 更新命名空间为 `LYBT.Desktop.Infrastructure.Controls.Components`
+- [ ] 更新XAML的 `x:Class` 属性
+
+### Task 2.3: 迁移Presentation.Notifications
+- [ ] 移动 `INotificationService.cs` → `Infrastructure/Services/Notifications/`
+- [ ] 移动 `NotificationService.cs` → `Infrastructure/Services/Notifications/`
+- [ ] 更新命名空间为 `LYBT.Desktop.Infrastructure.Services.Notifications`
+
+### Task 2.4: 迁移Presentation.UserExperience
+- [ ] 移动 `UserExperienceService.cs` → `Infrastructure/Services/UserExperience/`
+- [ ] 更新命名空间为 `LYBT.Desktop.Infrastructure.Services.UserExperience`
+
+### Task 2.5: 迁移Presentation.Theming
+- [ ] 移动 `MedicalCaseStyles.xaml` → `Infrastructure/Themes/`
+- [ ] 更新资源字典引用路径
+
+### Task 2.6: 批量替换Presentation命名空间
+- [ ] 替换 `LYBT.Desktop.Presentation.Components` → `LYBT.Desktop.Infrastructure.Controls.Components`
+- [ ] 替换 `LYBT.Desktop.Presentation.Notifications` → `LYBT.Desktop.Infrastructure.Services.Notifications`
+- [ ] 替换 `LYBT.Desktop.Presentation.UserExperience` → `LYBT.Desktop.Infrastructure.Services.UserExperience`
+- [ ] 替换 `LYBT.Desktop.Presentation.Theming` → `LYBT.Desktop.Infrastructure.Themes`
+
+### Task 2.7: 更新XAML命名空间声明
+- [ ] 更新所有引用Presentation.Components的XAML文件
+- [ ] 更新xmlns声明从 `assembly=LYBT.Desktop.Presentation` → `assembly=LYBT.Desktop.Infrastructure`
+
+### Task 2.8: Phase 2验证
+- [ ] `dotnet build LYBT.All.sln` 成功
+- [ ] 无XAML解析错误
+- [ ] 提交代码: `git commit -m "refactor(Infrastructure): 合并Presentation内容到Infrastructure"`
 
 ---
 
-## Summary
+## Phase 3: Models依赖解耦 (约1小时)
 
-| Phase | 任务数 | 完成数 | 状态 |
-|-------|--------|--------|------|
-| Phase 1: P0级消除重复 | 12 | 0 | Pending |
-| Phase 2: P1级澄清职责 | 12 | 0 | Pending |
-| Phase 3: P2级组织优化 | 8 | 0 | Pending |
-| Phase 4: 验证与文档 | 4 | 0 | Pending |
-| **Total** | **36** | **0** | **0%** |
+### Task 3.1: 创建IErrorMessageMapper接口
+- [ ] 在Contracts.Services中创建 `IErrorMessageMapper.cs`
+- [ ] 定义 `GetUserFriendlyMessage(Exception)` 方法
+- [ ] 定义 `GetShortTrackingCode()` 方法
+
+### Task 3.2: 修改ViewModelBase
+- [ ] 将 `ClientErrorMessageMapper` 静态调用改为接口调用
+- [ ] 添加 `protected virtual IErrorMessageMapper? GetErrorMessageMapper()` 方法
+- [ ] 更新 `HandleError` 方法使用接口
+
+### Task 3.3: 创建ErrorMessageMapper实现
+- [ ] 在Infrastructure.Localization中确保 `ClientErrorMessageMapper` 实现 `IErrorMessageMapper`
+- [ ] 或创建适配器类
+
+### Task 3.4: 更新Models.csproj
+- [ ] 移除对 `LYBT.Desktop.Infrastructure` 的项目引用
+- [ ] 添加对 `LYBT.Desktop.Foundation` 的项目引用(如需要)
+- [ ] 保留对 `LYBT.Desktop.Contracts` 的项目引用
+
+### Task 3.5: 修复编译错误
+- [ ] 解决Models中任何对Infrastructure的直接依赖
+- [ ] 将必要的类型移动到Contracts或Foundation
+
+### Task 3.6: Phase 3验证
+- [ ] `dotnet build LYBT.All.sln` 成功
+- [ ] Models不再依赖Infrastructure
+- [ ] 提交代码: `git commit -m "refactor(Models): 解耦对Infrastructure的依赖"`
 
 ---
 
-## Dependencies
+## Phase 4: 清理和删除Presentation项目 (约30分钟)
 
-- Phase 2依赖Phase 1完成
-- Phase 3可与Phase 2并行
-- Phase 4依赖所有Phase完成
+### Task 4.1: 更新解决方案文件
+- [ ] 从 `LYBT.All.sln` 移除 `LYBT.Desktop.Presentation` 项目
 
-## Notes
+### Task 4.2: 更新项目引用
+- [ ] 从所有引用Presentation的项目中移除引用
+- [ ] Shell.csproj
+- [ ] 各Module的csproj
 
-- 每个子Phase完成后验证编译
-- 保持git提交粒度适中（每个子Phase一个提交）
-- 如遇阻塞问题及时记录
+### Task 4.3: 删除Presentation项目
+- [ ] 删除 `src/Client/Desktop/Core/LYBT.Desktop.Presentation/` 目录
+
+### Task 4.4: 最终验证
+- [ ] `dotnet build LYBT.All.sln` 成功
+- [ ] `dotnet test` 所有测试通过
+- [ ] 应用程序启动正常
+
+### Task 4.5: 最终提交
+- [ ] 提交代码: `git commit -m "refactor(Core): 删除Presentation项目，完成Core层优化"`
+
+---
+
+## 验收标准
+
+### 功能验收
+- [ ] 药材卡片(HerbCard)控件正常显示
+- [ ] 药材列表(HerbList)控件正常工作
+- [ ] 通知服务正常弹出消息
+- [ ] 登录流程正常
+- [ ] 所有业务模块功能正常
+
+### 代码质量验收
+- [ ] 无编译警告(除已知忽略项)
+- [ ] 依赖方向正确(Models不依赖Infrastructure)
+- [ ] 命名空间整洁一致
+- [ ] 项目结构清晰
+
+### 文档验收
+- [ ] 更新各项目的README.md
+- [ ] 更新CHANGELOG.md
+
+---
+
+## 估算工时
+
+| Phase | 任务 | 估算 |
+|-------|------|------|
+| Phase 1 | 接口迁移 | 2小时 |
+| Phase 2 | Presentation合并 | 1.5小时 |
+| Phase 3 | Models解耦 | 1小时 |
+| Phase 4 | 清理删除 | 0.5小时 |
+| **总计** | | **5小时** |
+
+---
+
+## 风险与缓解
+
+| 风险 | 概率 | 影响 | 缓解措施 |
+|------|------|------|----------|
+| 循环依赖 | 中 | 高 | 每个Phase后验证编译 |
+| XAML解析失败 | 中 | 中 | 逐个文件迁移，立即验证 |
+| 运行时错误 | 低 | 高 | DI注册验证，启动测试 |
+| 遗漏引用 | 中 | 低 | 全局搜索命名空间 |

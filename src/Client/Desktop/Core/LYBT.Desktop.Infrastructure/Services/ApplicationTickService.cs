@@ -1,5 +1,5 @@
 using System.Windows.Threading;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services;

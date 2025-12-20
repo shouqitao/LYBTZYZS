@@ -6,6 +6,7 @@ using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
@@ -39,7 +40,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         IEventAggregator eventAggregator,
         IMainWindowServicesFacade servicesFacade,
         ILoggerFactory loggerFactory,
-        LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService userNotificationService,
+        IUserNotificationService userNotificationService,
         IHealthCheckCoordinator healthCheckCoordinator,
         NavigationManager navigationManager,
         MenuManager menuManager,

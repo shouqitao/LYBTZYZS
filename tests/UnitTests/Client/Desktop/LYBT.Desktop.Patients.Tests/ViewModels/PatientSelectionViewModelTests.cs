@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Patients.Interfaces;

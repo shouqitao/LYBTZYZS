@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Events;
 using LYBT.Desktop.Patients.Interfaces;

@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using Microsoft.Win32;
 using System.Windows;
 

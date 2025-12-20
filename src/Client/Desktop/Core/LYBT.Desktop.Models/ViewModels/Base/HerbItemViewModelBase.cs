@@ -11,8 +11,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
     /// 药材项基类 - 封装药材选择、剂量输入和拼音码过滤的共享逻辑
     /// Issue: unify-herb-card-control - 统一经验方和处方的药材编辑体验
     /// OpenSpec: unify-herb-list-controls - 修复Unit默认值
+    /// OpenSpec: optimize-desktop-core - 实现IHerbItemEditable接口解耦UI控件依赖
     /// </summary>
-    public abstract class HerbItemViewModelBase : BindableBase, IHerbItem
+    public abstract class HerbItemViewModelBase : BindableBase, IHerbItemEditable
     {
         #region 字段
 

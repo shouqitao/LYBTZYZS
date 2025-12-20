@@ -1,6 +1,5 @@
 using System.Windows.Input;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services;

@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Net.Http;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.MedicalCase.Models;

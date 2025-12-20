@@ -1,5 +1,5 @@
 using LYBT.Desktop.Foundation.Performance;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 

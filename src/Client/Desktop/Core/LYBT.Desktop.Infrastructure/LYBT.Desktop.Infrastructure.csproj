@@ -57,6 +57,8 @@
 
   <!-- Project References -->
   <ItemGroup Label="Shared Libraries">
+    <!-- OpenSpec: optimize-desktop-core - 添加Components引用支持IHerbItemEditable -->
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Components\LYBT.Shared.Components.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />

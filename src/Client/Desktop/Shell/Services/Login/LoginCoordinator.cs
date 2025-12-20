@@ -3,7 +3,6 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Shell.Services.Session;

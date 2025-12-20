@@ -8,6 +8,8 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
     /// <remarks>
     /// 提供诊所相关的配置访问，配置存储在appsettings.json的ClinicSettings节点中。
     /// 支持配置热更新，修改配置文件后无需重启应用。
+    ///
+    /// 注意：此接口保留在Infrastructure中，因为依赖Infrastructure.Configuration.ClinicSettings
     /// </remarks>
     public interface IClinicSettingsService
     {

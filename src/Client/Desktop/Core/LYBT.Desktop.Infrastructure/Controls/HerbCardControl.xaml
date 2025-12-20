@@ -1,0 +1,157 @@
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.HerbCardControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:LYBT.Desktop.Infrastructure.Controls"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+             xmlns:enums="clr-namespace:LYBT.Shared.Models.Enums;assembly=LYBT.Shared.Models"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d"
+             d:DesignHeight="40" d:DesignWidth="220">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+        <ObjectDataProvider x:Key="DecocteMethodValues"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="enums:DecocteMethod"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </UserControl.Resources>
+
+    <!-- 单行布局: 药材名 + 剂量 + 煎法 (右键菜单删除) -->
+    <Border BorderBrush="#E0E0E0"
+            BorderThickness="1"
+            CornerRadius="4"
+            Background="White"
+            Margin="2"
+            Padding="6,4">
+        <!-- 右键菜单：编辑模式下可删除药材 -->
+        <Border.ContextMenu>
+            <ContextMenu x:Name="HerbContextMenu">
+                <MenuItem Header="删除药材"
+                          Click="OnDeleteMenuItemClick"
+                          Foreground="#DC3545">
+                    <MenuItem.Icon>
+                        <TextBlock Text="×" FontWeight="Bold" Foreground="#DC3545"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </ContextMenu>
+        </Border.ContextMenu>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>      <!-- 药材名称 -->
+                <ColumnDefinition Width="Auto"/>   <!-- 剂量区域 -->
+                <ColumnDefinition Width="Auto"/>   <!-- 煎法选择 -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Column 0: 药材名称输入框 -->
+            <TextBox x:Name="HerbNameTextBox"
+                     Grid.Column="0"
+                     Text="{Binding HerbName, UpdateSourceTrigger=PropertyChanged}"
+                     PreviewKeyDown="OnTextBoxPreviewKeyDown"
+                     TextChanged="OnTextBoxTextChanged"
+                     GotFocus="OnTextBoxGotFocus"
+                     LostFocus="OnTextBoxLostFocus"
+                     IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                     FontSize="13"
+                     Height="28"
+                     MinWidth="60"
+                     Padding="4,2"
+                     VerticalContentAlignment="Center"/>
+
+            <!-- Column 1: 剂量输入框 (单位隐藏，打印时显示) -->
+            <TextBox x:Name="DosageTextBox"
+                     Grid.Column="1"
+                     Width="42"
+                     Height="28"
+                     Text="{Binding Dosage, UpdateSourceTrigger=PropertyChanged, StringFormat=F1}"
+                     PreviewKeyDown="OnDosageKeyDown"
+                     GotFocus="OnDosageGotFocus"
+                     IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                     FontSize="12"
+                     Margin="6,0,0,0"
+                     Padding="2"
+                     VerticalContentAlignment="Center"
+                     HorizontalContentAlignment="Right"/>
+
+            <!-- Column 2: 煎法下拉选择器 -->
+            <ComboBox x:Name="DecocteMethodComboBox"
+                      Grid.Column="2"
+                      Width="56"
+                      Height="28"
+                      Margin="6,0,0,0"
+                      ItemsSource="{Binding Source={StaticResource DecocteMethodValues}}"
+                      SelectedItem="{Binding DecocteMethod, Mode=TwoWay}"
+                      IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                      FontSize="11"
+                      Padding="4,2"
+                      HorizontalContentAlignment="Center"
+                      VerticalContentAlignment="Center">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- 建议列表Popup (挂在药材名称输入框下方) -->
+            <Popup x:Name="SuggestionsPopup"
+                   PlacementTarget="{Binding ElementName=HerbNameTextBox}"
+                   Placement="Bottom"
+                   StaysOpen="True"
+                   AllowsTransparency="True"
+                   PopupAnimation="Slide">
+                <Border Background="White"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="1"
+                        MaxHeight="200"
+                        MinWidth="{Binding ActualWidth, ElementName=HerbNameTextBox}">
+                    <ListBox x:Name="SuggestionsListBox"
+                             ItemsSource="{Binding FilteredHerbs}"
+                             DisplayMemberPath="Name"
+                             PreviewMouseDown="OnListBoxPreviewMouseDown"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             Focusable="False"
+                             IsHitTestVisible="True">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="8,4"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#F0F0F0"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#E3F2FD"/>
+                                        <Setter Property="Foreground" Value="Black"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </Border>
+            </Popup>
+
+            <!-- 价格显示区域 (可选，通过ShowPrice控制，放在剂量后面) -->
+            <StackPanel x:Name="PricePanel"
+                       Grid.Column="1"
+                       Orientation="Horizontal"
+                       VerticalAlignment="Center"
+                       Margin="60,0,0,0"
+                       Visibility="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=ShowPrice, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="¥"
+                          VerticalAlignment="Center"
+                          FontSize="11"
+                          Foreground="#666"/>
+                <TextBlock Text="{Binding UnitPrice, StringFormat=F2}"
+                          VerticalAlignment="Center"
+                          FontSize="11"
+                          Foreground="#2196F3"
+                          FontWeight="SemiBold"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

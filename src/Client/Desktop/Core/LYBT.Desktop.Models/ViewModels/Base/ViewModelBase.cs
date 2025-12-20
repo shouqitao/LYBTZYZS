@@ -5,7 +5,7 @@ using System.Net;
 using System.Reactive.Disposables;
 using System.Windows;
 using LYBT.Desktop.Foundation.Logging;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;

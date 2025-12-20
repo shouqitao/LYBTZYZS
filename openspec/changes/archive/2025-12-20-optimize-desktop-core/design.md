@@ -1,289 +1,280 @@
-# Design: optimize-desktop-core
+# Design Document: optimize-desktop-core
 
-## 架构决策
+## 技术设计
 
-### 1. 异常处理统一方案
+### 1. 依赖关系变更
 
-**决策**: 删除Desktop层异常处理实现，统一使用Shared.ExceptionHandling
+#### 当前依赖图
 
-**当前状态**:
-```
-Desktop.Infrastructure/Services/ErrorHandling/
-├── ErrorHandlingService.cs (280行)
-└── IErrorHandlingService.cs
-
-Desktop.Presentation/Notifications/
-├── UnifiedErrorHandlingService.cs (240行)
-└── IUnifiedErrorHandlingService.cs
-```
-
-**目标状态**:
-```
-Shared.ExceptionHandling/
-├── Exceptions/           (已有)
-├── ProblemDetails/       (已有)
-└── Services/             (新增)
-    ├── IExceptionHandlingService.cs
-    └── DesktopExceptionHandler.cs
+```mermaid
+graph TD
+    Contracts --> Shared.Models
+    Foundation --> Contracts
+    Foundation --> Shared.*
+    Infrastructure --> Foundation
+    Infrastructure --> Shared.*
+    Models --> Infrastructure
+    Models --> Contracts
+    Models --> Shared.*
+    Presentation --> Foundation
+    Presentation --> Infrastructure
+    Presentation --> Models
+    Presentation --> Contracts
+    Presentation --> Shared.*
 ```
 
-**变更细节**:
-- Desktop层添加对Shared.ExceptionHandling的引用
-- 创建DesktopExceptionHandler适配WPF环境
-- 删除两个重复实现
+#### 目标依赖图
 
----
-
-### 2. Token管理统一方案
-
-**决策**: 删除Infrastructure.ITokenManager，保留Foundation层完整Token体系
-
-**当前状态**:
-```
-Foundation/Security/
-├── ITokenStorage.cs
-├── ITokenStorageService.cs
-├── ITokenValidator.cs
-├── ITokenLifecycleService.cs  ← 保留此接口
-├── SecureTokenStorage.cs
-├── TokenStorageService.cs
-└── TokenLifecycleService.cs
-
-Infrastructure/Interfaces/
-├── ITokenManager.cs           ← 删除(与上面重复)
-└── ISessionManager.cs         ← 简化(移除Token职责)
+```mermaid
+graph TD
+    Contracts --> Shared.Models
+    Foundation --> Contracts
+    Foundation --> Shared.*
+    Infrastructure --> Foundation
+    Infrastructure --> Shared.*
+    Models --> Contracts
+    Models --> Foundation
+    Models --> Shared.*
+    
+    subgraph 删除
+        Presentation
+    end
 ```
 
-**目标状态**:
-```
-Foundation/Security/
-├── ITokenLifecycleService.cs  (主接口)
-│   ├── bool IsTokenValid { get; }
-│   ├── DateTime? TokenExpiration { get; }
-│   ├── Task<string?> RefreshTokenAsync()
-│   └── void SetToken(string token)
-├── ITokenStorage.cs           (存储抽象)
-└── ITokenValidator.cs         (验证抽象)
+### 2. 命名空间映射
 
-Infrastructure/Interfaces/
-└── ISessionManager.cs         (仅会话状态)
-    ├── UserDetailDto? CurrentUser { get; }
-    ├── bool IsAuthenticated { get; }
-    └── void SetCurrentUser(UserDetailDto user)
-    // 删除: CurrentToken, AccessToken, RefreshToken
-```
+#### Phase 1: 接口迁移
 
----
+| 原命名空间 | 新命名空间 |
+|-----------|-----------|
+| LYBT.Desktop.Infrastructure.Interfaces | LYBT.Desktop.Contracts.Services |
+| LYBT.Desktop.Infrastructure.Interfaces.Components | LYBT.Desktop.Contracts.Components |
 
-### 3. 映射器统一方案
+#### Phase 2: Presentation合并
 
-**决策**: 保留SimpleMapper，删除MappingService，AutoMapper作为可选
+| 原命名空间 | 新命名空间 |
+|-----------|-----------|
+| LYBT.Desktop.Presentation.Components | LYBT.Desktop.Infrastructure.Controls.Components |
+| LYBT.Desktop.Presentation.Notifications | LYBT.Desktop.Infrastructure.Services.Notifications |
+| LYBT.Desktop.Presentation.UserExperience | LYBT.Desktop.Infrastructure.Services.UserExperience |
+| LYBT.Desktop.Presentation.Theming | LYBT.Desktop.Infrastructure.Themes |
 
-**当前状态**:
-```
-Models/Mappers/SimpleMapper.cs     (JSON序列化方式)
-Models/Mapping/MappingService.cs   (反射方式)
-Presentation引用AutoMapper         (依赖注入方式)
-```
+### 3. 接口迁移详细设计
 
-**目标状态**:
-```
-Models/Mappers/SimpleMapper.cs     (保留-简单场景)
-[删除] MappingService.cs
-Presentation/AutoMapper            (保留-复杂场景)
-```
+#### 3.1 迁移到Contracts.Services的接口
 
-**使用规范**:
-- 简单DTO转换 → SimpleMapper
-- 复杂映射规则 → AutoMapper Profile
+这些接口被多个模块引用，应该在Contracts层定义:
 
----
-
-### 4. 会话管理职责划分
-
-**决策**: 明确三层职责，减少接口重叠
-
-```
-Foundation.IAuthenticationService (API调用)
-├── LoginAsync(credentials) → LoginResponse
-├── LogoutAsync()
-├── RefreshTokenAsync() → RefreshTokenResponse
-└── ChangePasswordAsync(...)
-
-Foundation.ITokenLifecycleService (Token管理)
-├── IsTokenValid
-├── TokenExpiration
-├── RefreshTokenAsync()
-└── SetToken(token)
-
-Infrastructure.ISessionManager (内存状态)
-├── CurrentUser
-├── IsAuthenticated
-├── SetCurrentUser(user)
-├── ClearSession()
-└── HasPermission(role)
-// 删除Token相关属性，委托给ITokenLifecycleService
-```
-
----
-
-### 5. ViewModel基类简化
-
-**决策**: 4层→2层继承，抽离HTTP处理
-
-**当前状态**:
-```
-BindableBase (Prism)
-└── ViewModelBase (407行, 40+成员)
-    └── UnifiedViewModelBase
-        └── UnifiedListViewModelBase
-```
-
-**目标状态**:
-```
-BindableBase (Prism)
-└── ViewModelBase (简化版, ~150行)
-    ├── IsLoading, IsBusy, HasError
-    ├── ErrorMessage, SuccessMessage
-    ├── ExecuteSafelyAsync<T>()  (不含HTTP处理)
-    └── Dispose()
-    │
-    ├── ListViewModelBase<T>
-    │   ├── Items: ObservableCollection<T>
-    │   ├── CurrentPage, TotalPages
-    │   └── LoadCommand, RefreshCommand
-    │
-    └── DetailViewModelBase
-        ├── IsEditMode
-        ├── SaveCommand, CancelCommand
-        └── ValidateAsync()
-```
-
-**HTTP状态码处理迁移**:
 ```csharp
-// 从ViewModelBase移除，改为扩展方法或服务
-public static class ApiExceptionHandler
+// Contracts/Services/IUserNotificationService.cs
+namespace LYBT.Desktop.Contracts.Services;
+
+public interface IUserNotificationService
 {
-    public static async Task HandleApiExceptionAsync(
-        ApiException ex,
-        IExceptionHandlingService handler,
-        string operationName)
+    Task ShowErrorAsync(string message);
+    Task ShowSuccessAsync(string message);
+    Task<bool> ShowConfirmAsync(string title, string message);
+}
+
+// Contracts/Services/ILoginCoordinator.cs
+namespace LYBT.Desktop.Contracts.Services;
+
+public interface ILoginCoordinator
+{
+    Task LogoutAsync();
+    Task<bool> LoginAsync(string username, string password);
+}
+```
+
+#### 3.2 迁移到Contracts.Components的接口
+
+组件级别的接口，用于ViewModel组件化设计:
+
+```csharp
+// Contracts/Components/ICommandHandler.cs
+namespace LYBT.Desktop.Contracts.Components;
+
+public interface ICommandHandler<TCommand>
+{
+    Task HandleAsync(TCommand command);
+}
+
+// Contracts/Components/IDataManager.cs
+namespace LYBT.Desktop.Contracts.Components;
+
+public interface IDataManager<TItem>
+{
+    Task LoadAsync();
+    Task SaveAsync(TItem item);
+}
+```
+
+### 4. ViewModelBase依赖解耦设计
+
+#### 当前问题
+
+ViewModelBase依赖Infrastructure中的具体类:
+- `ClientErrorMessageMapper` (Infrastructure.Localization)
+- `ILoginCoordinator` (Infrastructure.Interfaces)
+- `IUserNotificationService` (Infrastructure.Interfaces)
+
+#### 解决方案
+
+1. 将`ClientErrorMessageMapper`的接口抽取到Contracts:
+
+```csharp
+// Contracts/Services/IErrorMessageMapper.cs
+namespace LYBT.Desktop.Contracts.Services;
+
+public interface IErrorMessageMapper
+{
+    string GetUserFriendlyMessage(Exception ex);
+    string GetShortTrackingCode();
+}
+```
+
+2. ViewModelBase改为依赖接口:
+
+```csharp
+// Models/ViewModels/Base/ViewModelBase.cs
+public abstract class ViewModelBase : BindableBase, IDisposable, INotifyDataErrorInfo
+{
+    // 通过DI注入获取服务
+    protected virtual IErrorMessageMapper? GetErrorMessageMapper() => null;
+    protected virtual IUserNotificationService? GetNotificationService() => null;
+    protected virtual ILoginCoordinator? GetLoginCoordinator() => null;
+    
+    protected virtual void HandleError(Exception ex, string? context = null)
     {
-        // HTTP状态码处理逻辑
+        var mapper = GetErrorMessageMapper();
+        var trackingCode = mapper?.GetShortTrackingCode() ?? "UNKNOWN";
+        var baseMessage = mapper?.GetUserFriendlyMessage(ex) ?? "操作失败";
+        ErrorMessage = $"{baseMessage} (追踪码: {trackingCode})";
     }
 }
 ```
 
----
+3. 具体实现类需要在Shell层提供服务解析:
 
-### 6. 接口位置调整
-
-| 接口 | 当前位置 | 目标位置 | 原因 |
-|------|---------|---------|------|
-| ITokenManager | Infrastructure | 删除 | 与Foundation重复 |
-| IUserSessionManager | Infrastructure | 删除 | 与ISessionManager合并 |
-| IUserNotificationService | Infrastructure | Presentation | 通知是UI概念 |
-| ILoginCoordinator | Infrastructure | Foundation | 登录是业务基础 |
-
----
-
-### 7. 控件分离方案
-
-**当前**: Infrastructure/Controls/有30+控件
-
-**目标**:
-```
-Infrastructure/Controls/Common/     (通用控件)
-├── LoadingOverlay.xaml
-├── SearchBox.xaml
-├── EmptyState.xaml
-├── StatusBadge.xaml
-└── VirtualizedDataGrid.xaml
-
-各业务模块/Controls/                (业务控件)
-├── MedicalCase/Controls/
-│   └── ConsultationPanel.xaml
-├── Prescriptions/Controls/
-│   └── PrescriptionEditor.xaml
-└── ...
-```
-
-**迁移清单**:
-- LoginControl → Auth模块
-- FormulaTemplateListItemControl → Formula模块
-- 其他业务特定控件 → 对应模块
-
----
-
-### 8. Item模型命名规范
-
-**规范**:
-- `{Entity}Item` = UI列表项模型，包含显示属性
-- `{Entity}Dto` = API传输对象(在Shared层)
-- `{Entity}ViewModel` = 带行为的视图模型
-
-**示例**:
 ```csharp
-// Shared层 - 数据传输
-public class PatientDto { ... }
-
-// Desktop.Models层 - 列表项(无行为)
-public class PatientItem
+// Shell层的ViewModel基类扩展
+public abstract class ShellViewModelBase : ViewModelBase
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string DisplayAge { get; }  // 计算属性
-}
-
-// Desktop.Modules层 - 带行为
-public class PatientItemViewModel : ViewModelBase
-{
-    public DelegateCommand EditCommand { get; }
+    private readonly IServiceProvider _serviceProvider;
+    
+    protected override IErrorMessageMapper? GetErrorMessageMapper() 
+        => _serviceProvider.GetService<IErrorMessageMapper>();
 }
 ```
 
----
+### 5. UI组件迁移设计
 
-## 依赖关系变更
+#### HerbCard系列控件
 
-### 变更前
-```
-Contracts ← Foundation ← Infrastructure ← Models ← Presentation
-                              ↑
-                         (重复功能)
-```
+迁移到 `Infrastructure.Controls.Components`:
 
-### 变更后
 ```
-Shared.ExceptionHandling
-           ↓
-Contracts ← Foundation ← Infrastructure ← Models ← Presentation
-                              ↓
-                         (职责清晰)
+Infrastructure/Controls/Components/
+├── HerbCardControl.xaml      # 药材卡片控件
+├── HerbCardControl.xaml.cs
+├── HerbListEditor.xaml       # 药材列表编辑器
+├── HerbListEditor.xaml.cs
+├── HerbListView.xaml         # 药材列表视图
+└── HerbListView.xaml.cs
 ```
 
----
+#### 命名空间声明更新
 
-## 风险评估
+```xml
+<!-- 旧的XAML命名空间声明 -->
+xmlns:presentation="clr-namespace:LYBT.Desktop.Presentation.Components;assembly=LYBT.Desktop.Presentation"
 
-### 高风险操作
-1. 删除ITokenManager后更新所有引用
-2. ViewModel基类简化后验证所有子类
+<!-- 新的XAML命名空间声明 -->
+xmlns:components="clr-namespace:LYBT.Desktop.Infrastructure.Controls.Components;assembly=LYBT.Desktop.Infrastructure"
+```
 
-### 缓解措施
-- 每个Phase独立完成并验证编译
-- 保持接口方法签名兼容
-- 利用IDE重构工具批量更新引用
+### 6. 批量替换策略
 
----
+#### 使用PowerShell脚本批量替换
 
-## 测试策略
+```powershell
+# Phase 1: 接口命名空间替换
+Get-ChildItem -Path "src/Client/Desktop" -Recurse -Include "*.cs" | ForEach-Object {
+    $content = Get-Content $_.FullName -Raw
+    $content = $content -replace 'using LYBT\.Desktop\.Infrastructure\.Interfaces;', 'using LYBT.Desktop.Contracts.Services;'
+    $content = $content -replace 'using LYBT\.Desktop\.Infrastructure\.Interfaces\.Components;', 'using LYBT.Desktop.Contracts.Components;'
+    Set-Content -Path $_.FullName -Value $content
+}
 
-1. **编译验证**: 每个Phase后确保全解决方案编译通过
-2. **单元测试**: 运行现有测试套件
-3. **冒烟测试**: 手动验证登录/主要功能流程
+# Phase 2: Presentation命名空间替换
+Get-ChildItem -Path "src/Client/Desktop" -Recurse -Include "*.cs","*.xaml" | ForEach-Object {
+    $content = Get-Content $_.FullName -Raw
+    $content = $content -replace 'LYBT\.Desktop\.Presentation\.Components', 'LYBT.Desktop.Infrastructure.Controls.Components'
+    $content = $content -replace 'LYBT\.Desktop\.Presentation\.Notifications', 'LYBT.Desktop.Infrastructure.Services.Notifications'
+    $content = $content -replace 'LYBT\.Desktop\.Presentation\.UserExperience', 'LYBT.Desktop.Infrastructure.Services.UserExperience'
+    Set-Content -Path $_.FullName -Value $content
+}
+```
 
----
+### 7. csproj引用调整
 
-**Created**: 2025-12-20
-**Author**: Claude Code
+#### Infrastructure.csproj变更
+
+```xml
+<!-- 移除 -->
+<ItemGroup>
+  <ProjectReference Include="..\LYBT.Desktop.Presentation\LYBT.Desktop.Presentation.csproj" />
+</ItemGroup>
+
+<!-- 保留 -->
+<ItemGroup>
+  <ProjectReference Include="..\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
+  <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+</ItemGroup>
+```
+
+#### Models.csproj变更
+
+```xml
+<!-- 移除 -->
+<ItemGroup>
+  <ProjectReference Include="..\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+</ItemGroup>
+
+<!-- 新增/保留 -->
+<ItemGroup>
+  <ProjectReference Include="..\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
+  <ProjectReference Include="..\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
+</ItemGroup>
+```
+
+### 8. 编译顺序
+
+变更后的编译顺序:
+
+```
+1. LYBT.Shared.* (无变化)
+2. LYBT.Desktop.Contracts (扩展后)
+3. LYBT.Desktop.Foundation (无变化)
+4. LYBT.Desktop.Infrastructure (扩展后)
+5. LYBT.Desktop.Models (依赖调整后)
+6. LYBT.Desktop.Shell
+7. LYBT.Desktop.Modules.*
+```
+
+### 9. 验证清单
+
+#### 每个Phase完成后验证
+
+- [ ] `dotnet build LYBT.All.sln` 编译成功
+- [ ] 无循环依赖错误
+- [ ] 无命名空间解析错误
+- [ ] 单元测试通过
+
+#### 最终验证
+
+- [ ] 完整编译通过
+- [ ] 所有单元测试通过
+- [ ] UI组件(HerbCard等)功能正常
+- [ ] 通知服务功能正常
+- [ ] 登录流程正常

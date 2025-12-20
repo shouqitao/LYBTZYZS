@@ -1,5 +1,5 @@
 using LYBT.Desktop.Herbs.Interfaces;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.Items.MedicalCases;

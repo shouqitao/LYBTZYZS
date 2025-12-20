@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {

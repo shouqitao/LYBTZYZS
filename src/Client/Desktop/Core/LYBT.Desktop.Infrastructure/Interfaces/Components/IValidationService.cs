@@ -1,4 +1,4 @@
-﻿using FluentValidation.Results;
+using FluentValidation.Results;
 
 namespace LYBT.Desktop.Infrastructure.Interfaces.Components
 {
@@ -15,6 +15,8 @@ namespace LYBT.Desktop.Infrastructure.Interfaces.Components
     /// - 泛型设计：支持任意DTO类型验证
     /// - 异步优先：支持异步验证规则
     /// - 依赖注入：通过DI容器获取对应的Validator
+    ///
+    /// 注意：此接口保留在Infrastructure中，因为依赖FluentValidation.Results
     /// </summary>
     public interface IValidationService
     {

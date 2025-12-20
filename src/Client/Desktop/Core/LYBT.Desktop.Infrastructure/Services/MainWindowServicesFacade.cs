@@ -1,11 +1,11 @@
-﻿using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
-    /// 主窗口服务门面实现 - Phase 3.4: 移除对话框服务
+    /// 主窗口服务门面实现
     /// </summary>
     public class MainWindowServicesFacade : IMainWindowServicesFacade
     {

@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.Logging;

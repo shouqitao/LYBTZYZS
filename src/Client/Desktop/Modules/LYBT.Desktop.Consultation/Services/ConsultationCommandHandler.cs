@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Interfaces.Components;
+using LYBT.Desktop.Contracts.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;

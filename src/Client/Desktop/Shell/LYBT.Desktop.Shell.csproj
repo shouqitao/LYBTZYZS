@@ -80,7 +80,6 @@
   <ItemGroup Label="Core Infrastructure - 简化三层架构">
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
-    <ProjectReference Include="..\Core\LYBT.Desktop.Presentation\LYBT.Desktop.Presentation.csproj" />
     <ProjectReference Include="..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
     <ProjectReference Include="..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
 

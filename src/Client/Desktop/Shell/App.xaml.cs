@@ -7,7 +7,7 @@ using LYBT.Desktop.Formula;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Herbs;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Logging;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;

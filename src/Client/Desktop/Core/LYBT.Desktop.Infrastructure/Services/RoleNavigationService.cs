@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;

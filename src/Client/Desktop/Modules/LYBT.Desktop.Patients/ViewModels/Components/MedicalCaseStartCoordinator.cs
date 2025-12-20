@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;

@@ -1,4 +1,4 @@
-﻿using FluentValidation.Results;
+using FluentValidation.Results;
 
 namespace LYBT.Desktop.Infrastructure.Interfaces.Components
 {
@@ -15,6 +15,8 @@ namespace LYBT.Desktop.Infrastructure.Interfaces.Components
     /// - 依赖倒置：依赖IValidationService抽象
     /// - 单一职责：仅负责验证逻辑
     /// - 异步优先：支持异步验证规则
+    ///
+    /// 注意：此接口保留在Infrastructure中，因为依赖FluentValidation.Results
     /// </summary>
     public interface IComponentValidator
     {

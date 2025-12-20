@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Api; // IMedicalCaseApi
-using LYBT.Desktop.Infrastructure.Interfaces; // ISessionManager
+using LYBT.Desktop.Contracts.Services; // ISessionManager
 using LYBT.Desktop.Patients.ViewModels.Components; // PatientCommandHandler
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
