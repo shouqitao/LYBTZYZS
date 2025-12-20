@@ -28,9 +28,10 @@ public static class DesktopSerilogConfiguration
 
     /// <summary>
     /// CorrelationId提供者（单例）
+    /// 使用基于Activity API的实现，支持W3C TraceContext标准
     /// </summary>
     private static readonly Lazy<ICorrelationIdProvider> _correlationIdProvider =
-        new(() => new FoundationCorrelationIdProvider());
+        new(() => new ActivityCorrelationIdProvider());
 
     /// <summary>
     /// 获取CorrelationId提供者

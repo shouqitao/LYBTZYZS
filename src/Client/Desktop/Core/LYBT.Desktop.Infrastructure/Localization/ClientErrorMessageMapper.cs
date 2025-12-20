@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using LYBT.Desktop.Foundation.Logging;
+using LYBT.Shared.Logging;
 using LYBT.Desktop.Infrastructure.Http;
 
 namespace LYBT.Desktop.Infrastructure.Localization;
@@ -348,7 +348,7 @@ public static class ClientErrorMessageMapper
     /// <returns>8位短追踪码</returns>
     public static string GetShortTrackingCode()
     {
-        var correlationId = CorrelationIdContext.CurrentOrNew;
+        var correlationId = TraceContext.TraceIdOrNew;
         // 取CorrelationId的前8位作为短追踪码
         return correlationId.Length >= 8 ? correlationId[..8].ToUpperInvariant() : correlationId.ToUpperInvariant();
     }
@@ -359,7 +359,7 @@ public static class ClientErrorMessageMapper
     /// <returns>完整追踪码</returns>
     public static string GetFullTrackingCode()
     {
-        return CorrelationIdContext.CurrentOrNew;
+        return TraceContext.TraceIdOrNew;
     }
 
     #endregion

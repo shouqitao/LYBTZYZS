@@ -35,6 +35,15 @@ public class AsyncLocalCorrelationIdProvider : ICorrelationIdProvider
     }
 
     /// <summary>
+    /// 获取当前CorrelationId，如果不存在则生成新的并设置
+    /// </summary>
+    /// <returns>当前或新生成的CorrelationId</returns>
+    public string GetOrNew()
+    {
+        return _correlationId.Value ?? GenerateAndSet();
+    }
+
+    /// <summary>
     /// 清除当前CorrelationId
     /// </summary>
     public void Clear()

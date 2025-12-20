@@ -123,7 +123,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<ActiveConsultationService>(containerRegistry);
             RegisterLogger<ApplicationTickService>(containerRegistry);
             RegisterLogger<UserActivityTracker>(containerRegistry);
-            RegisterLogger<CorrelationIdDelegatingHandler>(containerRegistry);
         }
 
         /// <summary>注册Foundation层Logger</summary>
@@ -222,7 +221,7 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>注册HTTP相关服务</summary>
-        /// <remarks>refactor-logging-system: 添加CorrelationIdDelegatingHandler实现端到端追踪</remarks>
+        /// <remarks>adopt-activity-api-tracing: HttpClient自动传播W3C TraceContext，无需自定义Handler</remarks>
         private static void RegisterHttpServices(IContainerRegistry containerRegistry, IConfiguration config)
         {
             var apiBaseUrl = config["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
@@ -239,10 +238,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 catch { /* 启动阶段可能尚未注册 */ }
                 return new TokenRefreshHandler(tokenStorage, configuration, logger, userActivityState);
             });
-            containerRegistry.RegisterSingleton<CorrelationIdDelegatingHandler>(resolver =>
-                new CorrelationIdDelegatingHandler(resolver.Resolve<ILogger<CorrelationIdDelegatingHandler>>()));
 
-            // Handler链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → CorrelationIdDelegatingHandler → HttpClient
+            // Handler链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → HttpClient
+            // 注: HttpClient自动传播W3C TraceContext (traceparent header)
             containerRegistry.RegisterSingleton<HttpClient>(resolver =>
             {
                 var httpHandler = new HttpClientHandler();
@@ -253,10 +251,8 @@ namespace LYBT.Desktop.Shell.Extensions
                 tokenRefreshHandler.InnerHandler = httpHandler;
                 var authHandler = resolver.Resolve<AuthorizationMessageHandler>();
                 authHandler.InnerHandler = tokenRefreshHandler;
-                var correlationIdHandler = resolver.Resolve<CorrelationIdDelegatingHandler>();
-                correlationIdHandler.InnerHandler = authHandler;
 
-                return new HttpClient(correlationIdHandler) { BaseAddress = new Uri(apiBaseUrl), Timeout = TimeSpan.FromSeconds(30) };
+                return new HttpClient(authHandler) { BaseAddress = new Uri(apiBaseUrl), Timeout = TimeSpan.FromSeconds(30) };
             });
 
             // Refit客户端共享HttpClient实例 - 配置JSON序列化以支持枚举字符串转换

@@ -1,5 +1,4 @@
-﻿using LYBT.Desktop.Foundation.Logging;
-using LYBT.Desktop.Infrastructure.Localization;
+﻿using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -28,10 +27,8 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// 创建用户
         /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
         /// </summary>
-        /// <remarks>refactor-logging-system: 使用CorrelationId作用域确保端到端追踪</remarks>
         public virtual async Task<(bool success, UserDetailDto? user, string? errorMessage)> CreateAsync(UserInputDto createDto)
         {
-            using var _ = CorrelationIdContext.BeginScope();
             try
             {
                 _logger.LogInformation("创建用户: {Username}", createDto.UserName);
@@ -51,10 +48,8 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 更新用户
         /// </summary>
-        /// <remarks>refactor-logging-system: 使用CorrelationId作用域确保端到端追踪</remarks>
         public virtual async Task<(bool success, UserDetailDto? user, string? errorMessage)> UpdateAsync(UserInputDto updateDto)
         {
-            using var _ = CorrelationIdContext.BeginScope();
             try
             {
                 _logger.LogInformation("更新用户: {UserId}", updateDto.Id);
@@ -74,10 +69,8 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 删除用户
         /// </summary>
-        /// <remarks>refactor-logging-system: 使用CorrelationId作用域确保端到端追踪</remarks>
         public virtual async Task<(bool success, string? errorMessage)> DeleteAsync(Guid userId)
         {
-            using var _ = CorrelationIdContext.BeginScope();
             try
             {
                 _logger.LogInformation("删除用户: {UserId}", userId);
@@ -108,7 +101,6 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <inheritdoc />
         public virtual async Task<(bool success, BatchOperationResultDto? result, string? errorMessage)> BatchDeleteAsync(List<Guid> userIds)
         {
-            using var _ = CorrelationIdContext.BeginScope();
             try
             {
                 _logger.LogInformation("批量删除用户：{Count} 个", userIds.Count);
@@ -141,10 +133,8 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 根据ID获取用户
         /// </summary>
-        /// <remarks>refactor-logging-system: 使用CorrelationId作用域确保端到端追踪</remarks>
         public virtual async Task<(bool success, UserDetailDto? user, string? errorMessage)> GetByIdAsync(Guid userId)
         {
-            using var _ = CorrelationIdContext.BeginScope();
             try
             {
                 _logger.LogInformation("开始查询用户: UserId={UserId}", userId);
@@ -170,11 +160,9 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 分页查询用户
         /// </summary>
-        /// <remarks>refactor-logging-system: 使用CorrelationId作用域确保端到端追踪</remarks>
         public async Task<(bool success, PagedResult<UserDetailDto>? data, string? errorMessage)> GetPagedAsync(
             int page, int pageSize, string? searchText = null)
         {
-            using var _ = CorrelationIdContext.BeginScope();
             try
             {
                 _logger.LogInformation("分页查询用户: Page={Page}, PageSize={PageSize}, SearchText={SearchText}",
@@ -199,7 +187,6 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         public async Task<(bool success, PagedResult<UserListDto>? data, string? errorMessage)> GetPagedListAsync(
             int page, int pageSize, string? searchText = null)
         {
-            using var _ = CorrelationIdContext.BeginScope();
             try
             {
                 _logger.LogInformation("分页查询用户列表: Page={Page}, PageSize={PageSize}, SearchText={SearchText}",

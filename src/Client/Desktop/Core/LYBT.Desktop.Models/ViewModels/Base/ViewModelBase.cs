@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Reactive.Disposables;
 using System.Windows;
-using LYBT.Desktop.Foundation.Logging;
+using LYBT.Shared.Logging;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Shared.ExceptionHandling.Exceptions;
@@ -197,7 +197,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected virtual async Task HandleApiExceptionAsync(ApiException ex, string operationName)
         {
-            var correlationId = CorrelationIdContext.CurrentOrNew;
+            var correlationId = TraceContext.TraceIdOrNew;
             var trackingCode = ClientErrorMessageMapper.GetShortTrackingCode();
 
             Logger.LogWarning(ex, "API请求失败: {Operation}, StatusCode: {StatusCode}, CorrelationId: {CorrelationId}",
@@ -321,7 +321,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected virtual void HandleError(Exception ex, string? context = null)
         {
-            var correlationId = CorrelationIdContext.CurrentOrNew;
+            var correlationId = TraceContext.TraceIdOrNew;
             var trackingCode = ClientErrorMessageMapper.GetShortTrackingCode();
 
             // 日志包含完整CorrelationId
