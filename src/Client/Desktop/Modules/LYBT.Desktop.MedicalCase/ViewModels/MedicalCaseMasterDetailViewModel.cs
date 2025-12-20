@@ -1,8 +1,8 @@
-using LYBT.Desktop.Herbs.Interfaces;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.Models.Items.MedicalCases;
 using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Modules.MedicalCase.Models;
@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels;
 
@@ -203,7 +202,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
                         {
                             HerbId = x.HerbId,
                             HerbName = x.HerbName,
-                            Dosage = (int)x.Dosage,
+                            Dosage = x.Dosage,
                             Unit = x.Unit,
                             UnitPrice = x.UnitPrice,
                             Subtotal = x.ItemAmount,

@@ -1,6 +1,6 @@
-using Asp.Versioning;
-using LYBT.Shared.Logging.Management;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
+using LYBT.Shared.Logging.Management;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog.Events;

@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Users.Interfaces
         /// <param name="request">重置密码请求数据</param>
         /// <returns>包含新密码的响应结果</returns>
         Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(
-            Guid userId, 
+            Guid userId,
             ResetPasswordRequestDto request);
 
         /// <summary>

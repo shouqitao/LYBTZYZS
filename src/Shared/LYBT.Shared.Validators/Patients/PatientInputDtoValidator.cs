@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using LYBT.Shared.Models.Constants;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Validators.Patients
 {

@@ -1,7 +1,5 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.MedicalCase.Interfaces
 {

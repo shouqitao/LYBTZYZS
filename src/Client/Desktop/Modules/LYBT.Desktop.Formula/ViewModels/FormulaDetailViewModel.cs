@@ -1,9 +1,8 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.Formula.Services;
-using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;

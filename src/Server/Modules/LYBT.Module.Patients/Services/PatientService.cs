@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Patients.Interfaces;
@@ -6,10 +7,9 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
-using FluentValidation;
-using LYBT.Shared.Utilities.Text;
 
 namespace LYBT.Module.Patients.Services
 {

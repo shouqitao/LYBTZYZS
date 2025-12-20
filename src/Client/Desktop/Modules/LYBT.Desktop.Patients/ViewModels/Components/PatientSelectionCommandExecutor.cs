@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Localization;
+﻿using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Patients.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -64,7 +64,7 @@ public class PatientSelectionCommandExecutor
         {
             _setBusy(true, "正在搜索患者...");
             var success = await _searchManager.ExecuteSearchAsync(keyword);
-            
+
             if (!success)
             {
                 await _showErrorMessage("搜索失败");
@@ -140,17 +140,17 @@ public class PatientSelectionCommandExecutor
     public async Task LoadInitialAsync()
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        
+
         try
         {
             _setBusy(true, "正在加载患者列表...");
             await _searchManager.LoadInitialPatientsAsync();
             SyncPaginationState();
-            
+
             stopwatch.Stop();
-            _logger.LogInformation("患者列表加载完成: 数量={Count}, 耗时={ElapsedMs}ms", 
+            _logger.LogInformation("患者列表加载完成: 数量={Count}, 耗时={ElapsedMs}ms",
                 _searchManager.TotalCount, stopwatch.ElapsedMilliseconds);
-            
+
             if (stopwatch.ElapsedMilliseconds > 500)
             {
                 _logger.LogWarning("患者列表加载耗时过长: {ElapsedMs}ms > 500ms阈值", stopwatch.ElapsedMilliseconds);

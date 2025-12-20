@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Prescriptions;
@@ -186,7 +186,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             prescriptionItem.Should().NotBeNull();
             prescriptionItem.HerbId.Should().Be(createDto.HerbId);
             prescriptionItem.HerbName.Should().Be(createDto.HerbName);
-            prescriptionItem.Dosage.Should().Be((int)createDto.Dosage);
+            prescriptionItem.Dosage.Should().Be(createDto.Dosage);
             prescriptionItem.Unit.Should().Be(createDto.Unit);
             prescriptionItem.UnitPrice.Should().Be(createDto.UnitPrice);
             prescriptionItem.Remark.Should().Be(createDto.Remark);

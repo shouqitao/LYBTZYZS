@@ -1,6 +1,5 @@
+﻿using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.HealthCheck;
-using LYBT.Desktop.Contracts.Services;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.HealthCheck;

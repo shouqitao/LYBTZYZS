@@ -1,10 +1,7 @@
-﻿using System.Linq.Expressions;
-using LYBT.Entities.Patients;
+﻿using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

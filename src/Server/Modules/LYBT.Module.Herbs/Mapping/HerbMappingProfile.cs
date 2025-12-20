@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Shared.Models.Contracts.Herbs;
 
@@ -31,7 +31,7 @@ namespace LYBT.Module.Herbs.Mapping
             // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由Service层管理
             CreateMap<HerbInputDto, Herb>()
                 .ForMember(dest => dest.Status, opt => opt.Ignore()) // Status通过专用API修改
-                // BaseEntity 审计字段（Service层自动设置）
+                                                                     // BaseEntity 审计字段（Service层自动设置）
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
@@ -48,7 +48,7 @@ namespace LYBT.Module.Herbs.Mapping
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())
                 .ForMember(dest => dest.CostPrice, opt => opt.Ignore())
                 .ForMember(dest => dest.Category, opt => opt.Ignore()) // HerbImportDto没有Category字段
-                // BaseEntity 审计字段
+                                                                       // BaseEntity 审计字段
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())

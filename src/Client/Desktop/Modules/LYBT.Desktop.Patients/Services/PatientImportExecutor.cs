@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Data;
 using System.Windows;
 using LYBT.Desktop.Infrastructure.Localization;
@@ -204,31 +204,9 @@ public class PatientImportExecutor : IDisposable
     /// 创建导入结果对象
     /// Issue #1789: 从ImportWorker_DoWork提取，封装结果创建逻辑
     /// </summary>
-    private static object CreateImportResult(int successCount, int failCount, int skipCount, List<string> errors, string? errorMessage = null)
+    private static ImportResult CreateImportResult(int successCount, int failCount, int skipCount, List<string> errors, string? errorMessage = null)
     {
-        var result = new
-        {
-            SuccessCount = successCount,
-            FailCount = failCount,
-            SkipCount = skipCount,
-            Errors = errors,
-            TotalProcessed = successCount + failCount + skipCount
-        };
-
-        if (errorMessage != null)
-        {
-            return new
-            {
-                result.SuccessCount,
-                result.FailCount,
-                result.SkipCount,
-                Error = errorMessage,
-                result.Errors,
-                result.TotalProcessed
-            };
-        }
-
-        return result;
+        return new ImportResult(successCount, failCount, skipCount, errors, errorMessage);
     }
 
     /// <summary>
@@ -255,6 +233,83 @@ public class PatientImportExecutor : IDisposable
         public static ImportRowResult CreateSkip() => new(false, false, true, null);
     }
 
+
+    /// <summary>
+    /// 批量导入结果
+    /// consolidate-code-quality: 替代匿名对象，消除反射
+    /// </summary>
+    private sealed record ImportResult(
+        int SuccessCount,
+        int FailCount,
+        int SkipCount,
+        List<string> Errors,
+        string? Error = null)
+    {
+        public int TotalProcessed => SuccessCount + FailCount + SkipCount;
+
+        /// <summary>
+        /// 获取导入结果的消息类型和标题
+        /// </summary>
+        public (string Title, MessageBoxImage MessageType) GetDisplayInfo()
+        {
+            return (SuccessCount, FailCount) switch
+            {
+                ( > 0, 0) => ("导入成功", MessageBoxImage.Information),
+                ( > 0, > 0) => ("导入部分成功", MessageBoxImage.Warning),
+                (0, > 0) => ("导入失败", MessageBoxImage.Error),
+                _ => ("导入结果", MessageBoxImage.Information)
+            };
+        }
+
+        /// <summary>
+        /// 构建详细的结果消息
+        /// </summary>
+        public string BuildMessage()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("患者数据导入完成！");
+            sb.AppendLine();
+            sb.AppendLine($"总计处理：{TotalProcessed} 条");
+            sb.AppendLine($"成功导入：{SuccessCount} 条");
+
+            if (FailCount > 0)
+                sb.AppendLine($"导入失败：{FailCount} 条");
+            if (SkipCount > 0)
+                sb.AppendLine($"跳过空行：{SkipCount} 条");
+
+            AppendErrorDetails(sb);
+            AppendGeneralError(sb);
+
+            return sb.ToString();
+        }
+
+        private void AppendErrorDetails(System.Text.StringBuilder sb)
+        {
+            if (Errors.Count == 0) return;
+
+            sb.AppendLine();
+            sb.AppendLine("失败详情：");
+            const int maxErrorsToShow = 5;
+            foreach (var error in Errors.Take(maxErrorsToShow))
+            {
+                sb.AppendLine($"• {error}");
+            }
+
+            if (Errors.Count > maxErrorsToShow)
+            {
+                sb.AppendLine($"• ...还有{Errors.Count - maxErrorsToShow}个错误，请查看日志获取详细信息");
+            }
+        }
+
+        private void AppendGeneralError(System.Text.StringBuilder sb)
+        {
+            if (string.IsNullOrEmpty(Error)) return;
+
+            sb.AppendLine();
+            sb.AppendLine($"其他错误：{Error}");
+        }
+    }
+
     /// <summary>
     /// 进度变化处理
     /// Issue #1790: 从PatientImportWizardViewModel提取
@@ -279,109 +334,67 @@ public class PatientImportExecutor : IDisposable
 
         if (e.Cancelled)
         {
-            ImportCompleted?.Invoke(this, new ImportCompletedEventArgs
-            {
-                Cancelled = true,
-                Message = "导入操作已取消\n已处理的数据未被保存。",
-                Title = "导入取消",
-                MessageType = MessageBoxImage.Information
-            });
+            RaiseImportCancelled();
+            return;
         }
-        else if (e.Error != null)
+
+        if (e.Error != null)
         {
-            ImportCompleted?.Invoke(this, new ImportCompletedEventArgs
-            {
-                Error = e.Error,
-                Message = $"导入过程中发生严重错误:\n{e.Error.Message}\n\n请检查Excel文件格式是否正确，或联系技术支持。",
-                Title = "导入错误",
-                MessageType = MessageBoxImage.Error
-            });
+            RaiseImportError(e.Error);
+            return;
         }
-        else if (e.Result is { } result)
+
+        if (e.Result is ImportResult result)
         {
-            var successCount = (int)(result.GetType().GetProperty("SuccessCount")?.GetValue(result) ?? 0);
-            var failCount = (int)(result.GetType().GetProperty("FailCount")?.GetValue(result) ?? 0);
-            var skipCount = (int)(result.GetType().GetProperty("SkipCount")?.GetValue(result) ?? 0);
-            var totalProcessed = (int)(result.GetType().GetProperty("TotalProcessed")?.GetValue(result) ?? 0);
-            var errors = result.GetType().GetProperty("Errors")?.GetValue(result) as List<string> ?? new List<string>();
-            var generalError = result.GetType().GetProperty("Error")?.GetValue(result) as string;
-
-            // 构建详细的结果消息
-            var messageBuilder = new System.Text.StringBuilder();
-            messageBuilder.AppendLine("患者数据导入完成！");
-            messageBuilder.AppendLine();
-            messageBuilder.AppendLine($"总计处理：{totalProcessed} 条");
-            messageBuilder.AppendLine($"成功导入：{successCount} 条");
-            if (failCount > 0)
-                messageBuilder.AppendLine($"导入失败：{failCount} 条");
-            if (skipCount > 0)
-                messageBuilder.AppendLine($"跳过空行：{skipCount} 条");
-
-            // 如果有具体错误，显示前几个错误详情
-            if (errors.Count > 0)
-            {
-                messageBuilder.AppendLine();
-                messageBuilder.AppendLine("失败详情：");
-                var errorCount = Math.Min(5, errors.Count); // 最多显示5个错误
-                for (int i = 0; i < errorCount; i++)
-                {
-                    messageBuilder.AppendLine($"• {errors[i]}");
-                }
-
-                if (errors.Count > 5)
-                {
-                    messageBuilder.AppendLine($"• ...还有{errors.Count - 5}个错误，请查看日志获取详细信息");
-                }
-            }
-
-            if (!string.IsNullOrEmpty(generalError))
-            {
-                messageBuilder.AppendLine();
-                messageBuilder.AppendLine($"其他错误：{generalError}");
-            }
-
-            var message = messageBuilder.ToString();
-
-            // 根据结果选择对话框类型
-            MessageBoxImage messageType;
-            string title;
-
-            if (successCount > 0 && failCount == 0)
-            {
-                // 完全成功
-                messageType = MessageBoxImage.Information;
-                title = "导入成功";
-            }
-            else if (successCount > 0 && failCount > 0)
-            {
-                // 部分成功
-                messageType = MessageBoxImage.Warning;
-                title = "导入部分成功";
-            }
-            else if (successCount == 0 && failCount > 0)
-            {
-                // 完全失败
-                messageType = MessageBoxImage.Error;
-                title = "导入失败";
-            }
-            else
-            {
-                // 异常情况
-                messageType = MessageBoxImage.Information;
-                title = "导入结果";
-            }
-
-            ImportCompleted?.Invoke(this, new ImportCompletedEventArgs
-            {
-                SuccessCount = successCount,
-                FailCount = failCount,
-                SkipCount = skipCount,
-                TotalProcessed = totalProcessed,
-                Message = message,
-                Title = title,
-                MessageType = messageType
-            });
+            RaiseImportCompleted(result);
         }
+    }
+
+    /// <summary>
+    /// 触发导入取消事件
+    /// </summary>
+    private void RaiseImportCancelled()
+    {
+        ImportCompleted?.Invoke(this, new ImportCompletedEventArgs
+        {
+            Cancelled = true,
+            Message = "导入操作已取消\n已处理的数据未被保存。",
+            Title = "导入取消",
+            MessageType = MessageBoxImage.Information
+        });
+    }
+
+    /// <summary>
+    /// 触发导入错误事件
+    /// </summary>
+    private void RaiseImportError(Exception error)
+    {
+        ImportCompleted?.Invoke(this, new ImportCompletedEventArgs
+        {
+            Error = error,
+            Message = $"导入过程中发生严重错误:\n{error.Message}\n\n请检查Excel文件格式是否正确，或联系技术支持。",
+            Title = "导入错误",
+            MessageType = MessageBoxImage.Error
+        });
+    }
+
+    /// <summary>
+    /// 触发导入完成事件
+    /// </summary>
+    private void RaiseImportCompleted(ImportResult result)
+    {
+        var (title, messageType) = result.GetDisplayInfo();
+
+        ImportCompleted?.Invoke(this, new ImportCompletedEventArgs
+        {
+            SuccessCount = result.SuccessCount,
+            FailCount = result.FailCount,
+            SkipCount = result.SkipCount,
+            TotalProcessed = result.TotalProcessed,
+            Message = result.BuildMessage(),
+            Title = title,
+            MessageType = messageType
+        });
     }
 
     public void Dispose()

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Module.Consultations.Interfaces;
-using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.ExceptionHandling.Exceptions;
+using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Consultations.Services

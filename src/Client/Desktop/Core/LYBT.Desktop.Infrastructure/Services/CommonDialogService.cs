@@ -1,6 +1,6 @@
+﻿using System.Windows;
 using LYBT.Desktop.Contracts.Services;
 using Microsoft.Win32;
-using System.Windows;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {

@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Data.Migrations
+namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251219064351_OpenSpec_SimplifyMedicalCaseDataflow_AddMissingColumns")]
-    partial class OpenSpec_SimplifyMedicalCaseDataflow_AddMissingColumns
+    [Migration("20251205063859_Issue1864_AddTokenReplayDetection")]
+    partial class Issue1864_AddTokenReplayDetection
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -370,6 +370,14 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AuscultationOlfaction")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ChiefComplaint")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -379,18 +387,37 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Inquiry")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Inspection")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("PresentIllness")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                    b.Property<string>("MedicalAdvice")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
-                    b.Property<string>("PulseDiagnosis")
+                    b.Property<string>("Palpation")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("PrescriptionEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PresentIllness")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Remark")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -401,7 +428,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("TongueDiagnosis")
+                    b.Property<string>("TreatmentPrinciple")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -503,14 +530,6 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DecocteMethod")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Dosage")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
-
                     b.Property<Guid>("FormulaId")
                         .HasColumnType("uniqueidentifier");
 
@@ -532,6 +551,11 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.Property<string>("ProcessingMethod")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.Property<string>("Remark")
                         .HasMaxLength(200)
@@ -647,14 +671,10 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("CaseNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<int>("CaseStatus")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("CompletedAt")
+                    b.Property<DateTime>("ConsultationDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
@@ -664,6 +684,9 @@ namespace LYBT.Infrastructure.Data.Migrations
 
                     b.Property<Guid?>("CreatedBy")
                         .IsRequired()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DoctorId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("DoctorName")
@@ -701,10 +724,6 @@ namespace LYBT.Infrastructure.Data.Migrations
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DoctorId");
 
                     b.HasKey("Id");
 
@@ -757,15 +776,9 @@ namespace LYBT.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalCaseId", "CreatedAt")
-                        .IsDescending(false, true)
-                        .HasDatabaseName("IX_MedicalCaseAuditLogs_MedicalCaseId_CreatedAt");
+                    b.HasIndex("MedicalCaseId");
 
-                    b.HasIndex("OperatorId", "CreatedAt")
-                        .IsDescending(false, true)
-                        .HasDatabaseName("IX_MedicalCaseAuditLogs_OperatorId_CreatedAt");
-
-                    b.ToTable("MedicalCaseAuditLogs", (string)null);
+                    b.ToTable("MedicalCaseAuditLogs");
                 });
 
             modelBuilder.Entity("LYBT.Entities.Patients.Patient", b =>
@@ -898,6 +911,14 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.Property<int>("DosageCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("FormulaSource")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Indication")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -910,6 +931,9 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("MedicalCaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PrescriptionNumber")
@@ -941,9 +965,8 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Usage")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -960,12 +983,6 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DecocteMethod")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Dosage")
-                        .HasColumnType("int");
-
                     b.Property<Guid>("HerbId")
                         .HasColumnType("uniqueidentifier");
 
@@ -976,6 +993,9 @@ namespace LYBT.Infrastructure.Data.Migrations
 
                     b.Property<Guid>("PrescriptionId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.Property<string>("Remark")
                         .HasMaxLength(200)
@@ -1199,7 +1219,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.HasOne("LYBT.Entities.MedicalCases.MedicalCase", "MedicalCase")
                         .WithMany()
                         .HasForeignKey("MedicalCaseId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("MedicalCase");

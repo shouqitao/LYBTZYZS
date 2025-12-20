@@ -2,9 +2,7 @@
 using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.Repositories

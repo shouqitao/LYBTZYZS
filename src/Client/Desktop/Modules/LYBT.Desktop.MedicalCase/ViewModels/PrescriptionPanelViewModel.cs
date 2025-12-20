@@ -1,6 +1,6 @@
-using LYBT.Desktop.Herbs.Interfaces;
-using LYBT.Desktop.Infrastructure.Events;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -17,7 +17,6 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels;
 

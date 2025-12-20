@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Data.Migrations
+namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20251013084244_Issue1262_RenameUsernameToUserName")]

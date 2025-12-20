@@ -1,6 +1,6 @@
-using FluentAssertions;
-using LYBT.Desktop.Foundation.Security;
+﻿using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Shell.Services.Session;
 using Microsoft.Extensions.Logging;
 using Moq;

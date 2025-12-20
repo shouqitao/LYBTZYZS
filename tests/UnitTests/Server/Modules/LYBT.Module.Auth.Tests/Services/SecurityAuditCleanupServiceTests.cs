@@ -1,11 +1,10 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Entities.Auth;
 using LYBT.Infrastructure.Data;
 using LYBT.WebAPI.BackgroundServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Services;

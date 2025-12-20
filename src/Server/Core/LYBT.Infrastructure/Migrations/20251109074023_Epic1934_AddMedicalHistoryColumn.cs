@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Data.Migrations
+namespace LYBT.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class Epic1934_AddMedicalHistoryColumn : Migration

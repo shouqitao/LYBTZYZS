@@ -1,8 +1,7 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using FluentAssertions;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Performance;
-using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
 using LYBT.Shared.ExceptionHandling.Handlers;

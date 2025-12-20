@@ -1,5 +1,4 @@
-﻿using System.Net.Http;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Contracts.Api

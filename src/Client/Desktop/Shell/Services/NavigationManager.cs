@@ -2,7 +2,6 @@
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Shell.Services;

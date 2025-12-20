@@ -260,34 +260,27 @@ namespace LYBT.Desktop.Infrastructure.Helpers
                 return;
             }
 
-            var type = value.GetType();
-            if (type == typeof(string))
+            // consolidate-code-quality: 使用switch表达式替代if-else链
+            switch (value)
             {
-                cell.SetCellValue(value.ToString() ?? string.Empty);
-            }
-            else if (type == typeof(DateTime) || type == typeof(DateTime?))
-            {
-                cell.SetCellValue(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss"));
-            }
-            else if (type == typeof(bool) || type == typeof(bool?))
-            {
-                cell.SetCellValue(value.ToString() ?? string.Empty);
-            }
-            else if (type == typeof(decimal) || type == typeof(decimal?) ||
-                       type == typeof(double) || type == typeof(double?) ||
-                       type == typeof(float) || type == typeof(float?))
-            {
-                cell.SetCellValue(Convert.ToDouble(value));
-            }
-            else if (type == typeof(int) || type == typeof(int?) ||
-                       type == typeof(long) || type == typeof(long?) ||
-                       type == typeof(short) || type == typeof(short?))
-            {
-                cell.SetCellValue(Convert.ToDouble(value));
-            }
-            else
-            {
-                cell.SetCellValue(value.ToString() ?? string.Empty);
+                case string s:
+                    cell.SetCellValue(s);
+                    break;
+                case DateTime dt:
+                    cell.SetCellValue(dt.ToString("yyyy-MM-dd HH:mm:ss"));
+                    break;
+                case bool b:
+                    cell.SetCellValue(b.ToString());
+                    break;
+                case decimal or double or float:
+                    cell.SetCellValue(Convert.ToDouble(value));
+                    break;
+                case int or long or short:
+                    cell.SetCellValue(Convert.ToDouble(value));
+                    break;
+                default:
+                    cell.SetCellValue(value.ToString() ?? string.Empty);
+                    break;
             }
         }
 
@@ -477,7 +470,7 @@ namespace LYBT.Desktop.Infrastructure.Helpers
                 for (int i = 0; i < properties.Count; i++)
                 {
                     ICell cell = headerRow.CreateCell(i);
-                    
+
                     // 获取列标题（优先使用Display特性）
                     string columnHeader = GetColumnHeader(properties[i]);
                     cell.SetCellValue(columnHeader);
@@ -604,81 +597,102 @@ namespace LYBT.Desktop.Infrastructure.Helpers
         /// </summary>
         private static object? ConvertValueToPropertyType(object value, Type targetType)
         {
-            if (value == null)
-            {
-                return null;
-            }
+            if (value == null) return null;
 
-            // 处理 Nullable 类型
             Type underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
             // 空字符串处理
             if (value is string str && string.IsNullOrWhiteSpace(str))
             {
-                if (targetType.IsValueType && Nullable.GetUnderlyingType(targetType) == null)
-                {
-                    return Activator.CreateInstance(targetType); // 返回值类型的默认值
-                }
-                return null;
+                return GetDefaultForEmptyString(targetType);
             }
 
             // 直接类型匹配
-            if (underlyingType.IsInstanceOfType(value))
-            {
-                return value;
-            }
+            if (underlyingType.IsInstanceOfType(value)) return value;
 
-            // 字符串到枚举的转换
-            if (underlyingType.IsEnum)
-            {
-                string enumString = value.ToString() ?? string.Empty;
-                if (Enum.IsDefined(underlyingType, enumString))
-                {
-                    return Enum.Parse(underlyingType, enumString);
-                }
-                // 尝试按整数值解析
-                if (int.TryParse(enumString, out int enumValue))
-                {
-                    return Enum.ToObject(underlyingType, enumValue);
-                }
-                return null;
-            }
-
-            // DateTime 特殊处理
-            if (underlyingType == typeof(DateTime))
-            {
-                if (value is double doubleValue)
-                {
-                    return DateTime.FromOADate(doubleValue);
-                }
-                if (DateTime.TryParse(value.ToString(), out DateTime dateValue))
-                {
-                    return dateValue;
-                }
-            }
-
-            // Boolean 特殊处理
-            if (underlyingType == typeof(bool))
-            {
-                string boolString = value.ToString()?.Trim().ToLower() ?? string.Empty;
-                if (boolString == "true" || boolString == "是" || boolString == "1")
-                {
-                    return true;
-                }
-                if (boolString == "false" || boolString == "否" || boolString == "0")
-                {
-                    return false;
-                }
-                if (bool.TryParse(boolString, out bool boolValue))
-                {
-                    return boolValue;
-                }
-            }
+            // consolidate-code-quality: 类型特定转换
+            if (underlyingType.IsEnum) return ConvertToEnum(value, underlyingType);
+            if (underlyingType == typeof(DateTime)) return ConvertToDateTime(value);
+            if (underlyingType == typeof(bool)) return ConvertToBoolean(value);
 
             // 通用类型转换
+            return TryConvertGeneric(value, underlyingType);
+        }
+
+        /// <summary>
+        /// 获取空字符串的默认值
+        /// </summary>
+        private static object? GetDefaultForEmptyString(Type targetType)
+        {
+            if (targetType.IsValueType && Nullable.GetUnderlyingType(targetType) == null)
+            {
+                return Activator.CreateInstance(targetType);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 转换为枚举类型
+        /// </summary>
+        private static object? ConvertToEnum(object value, Type enumType)
+        {
+            string enumString = value.ToString() ?? string.Empty;
+
+            if (Enum.IsDefined(enumType, enumString))
+            {
+                return Enum.Parse(enumType, enumString);
+            }
+
+            if (int.TryParse(enumString, out int enumValue))
+            {
+                return Enum.ToObject(enumType, enumValue);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 转换为DateTime
+        /// </summary>
+        private static object? ConvertToDateTime(object value)
+        {
+            if (value is double doubleValue)
+            {
+                return DateTime.FromOADate(doubleValue);
+            }
+
+            if (DateTime.TryParse(value.ToString(), out DateTime dateValue))
+            {
+                return dateValue;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 转换为Boolean (支持中文是/否)
+        /// </summary>
+        private static object? ConvertToBoolean(object value)
+        {
+            string boolString = value.ToString()?.Trim().ToLower() ?? string.Empty;
+
+            return boolString switch
+            {
+                "true" or "是" or "1" => true,
+                "false" or "否" or "0" => false,
+                _ when bool.TryParse(boolString, out bool result) => result,
+                _ => null
+            };
+        }
+
+        /// <summary>
+        /// 通用类型转换
+        /// </summary>
+        private static object? TryConvertGeneric(object value, Type targetType)
+        {
             try
             {
-                return Convert.ChangeType(value, underlyingType);
+                return Convert.ChangeType(value, targetType);
             }
             catch
             {

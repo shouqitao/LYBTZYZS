@@ -1,3 +1,4 @@
+﻿using System.Net.Http;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Foundation.Security;
@@ -7,7 +8,6 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using System.Net.Http;
 
 namespace LYBT.Desktop.Foundation.Tests.Security;
 

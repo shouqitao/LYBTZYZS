@@ -97,9 +97,7 @@ namespace LYBT.Desktop.Infrastructure.Converters
 
         public object?[] ConvertBack(object value, Type[] targetTypes, object? parameter, CultureInfo culture)
         {
-#pragma warning disable CS8603 // Possible null reference return
             return null!;
-#pragma warning restore CS8603
             throw new NotImplementedException();
         }
 

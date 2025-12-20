@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using AutoMapper;
 using FluentValidation;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Services;
@@ -7,12 +8,11 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Text;
 using LYBT.Shared.Utilities.Security;
+using LYBT.Shared.Utilities.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Security.Claims;
 
 namespace LYBT.Module.Users.Services
 {

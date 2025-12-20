@@ -1,5 +1,5 @@
+﻿using System.Net;
 using FluentAssertions;
-using LYBT.Entities.Auth;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Models;
 using LYBT.Module.Auth.Services;
@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Net;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Services;

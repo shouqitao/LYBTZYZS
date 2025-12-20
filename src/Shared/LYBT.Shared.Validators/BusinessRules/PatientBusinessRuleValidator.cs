@@ -1,7 +1,7 @@
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using Microsoft.Extensions.Logging;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Shared.Validators.BusinessRules
 {
@@ -142,7 +142,7 @@ namespace LYBT.Shared.Validators.BusinessRules
 
         #region 辅助方法
 
-  
+
         /// <summary>
         /// 验证手机号格式
         /// </summary>

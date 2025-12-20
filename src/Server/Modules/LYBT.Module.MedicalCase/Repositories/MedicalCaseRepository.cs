@@ -159,109 +159,135 @@ namespace LYBT.Module.MedicalCases.Repositories
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            //  Issue #1669 Phase 7: 检查entity的跟踪状态
-            // Service层通过GetByIdWithDetailsAsync获取的entity是tracked
-            // 其他场景可能传入detached entity
+            // Issue #1669 Phase 7: 记录初始状态
             var entry = _context.Entry(entity);
             _logger?.LogInformation(" [诊断] UpdateAsync开始 - MedicalCaseId: {Id}, EntryState: {State}, HasPrescription: {HasPrescription}",
                 entity.Id, entry.State, entity.Prescription != null);
 
-            if (entity.Prescription != null)
-            {
-                var prescriptionEntry = _context.Entry(entity.Prescription);
-                _logger?.LogInformation(" [诊断] Prescription状态 - PrescriptionId: {Id}, State: {State}",
-                    entity.Prescription.Id, prescriptionEntry.State);
+            // 修复Prescription及Items的实体状态
+            await FixPrescriptionEntityStatesAsync(entity);
 
-                //  Issue #1669 Phase 7 + Issue #2250: 修复Prescription及其Items状态错误
-                // 如果Prescription是新创建的（State=Modified但在数据库中不存在），将其改为Added
-                if (prescriptionEntry.State == EntityState.Modified)
-                {
-                    var existsInDb = await _context.Set<Prescription>()
-                        .AnyAsync(p => p.Id == entity.Prescription.Id);
+            // 获取或加载已存在的实体
+            var existingEntity = await GetOrLoadExistingEntityAsync(entity);
 
-                    if (!existsInDb)
-                    {
-                        _logger?.LogInformation(" [修复] 检测到新Prescription被错误标记为Modified，改为Added");
-                        prescriptionEntry.State = EntityState.Added;
-
-                        // Issue #2250: 同时修复PrescriptionItem的状态
-                        // PrescriptionItem不继承BaseEntity，没有RowVersion，需要单独处理
-                        if (entity.Prescription.Items != null && entity.Prescription.Items.Any())
-                        {
-                            foreach (var item in entity.Prescription.Items)
-                            {
-                                var itemEntry = _context.Entry(item);
-                                if (itemEntry.State == EntityState.Modified)
-                                {
-                                    _logger?.LogInformation(" [修复] 检测到新PrescriptionItem被错误标记为Modified，改为Added - ItemId: {ItemId}",
-                                        item.Id);
-                                    itemEntry.State = EntityState.Added;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Issue #2250 Phase 3: Prescription已存在，但Items可能是更新时新添加的
-                        // 当Service调用Items.Clear()后添加新Items时，这些新Items会被错误标记为Modified
-                        // 需要检查每个Item是否真实存在于数据库中
-                        if (entity.Prescription.Items != null && entity.Prescription.Items.Any())
-                        {
-                            foreach (var item in entity.Prescription.Items)
-                            {
-                                var itemEntry = _context.Entry(item);
-                                if (itemEntry.State == EntityState.Modified)
-                                {
-                                    // 检查此Item是否存在于数据库
-                                    var itemExistsInDb = await _context.Set<PrescriptionItem>()
-                                        .AnyAsync(pi => pi.Id == item.Id);
-
-                                    if (!itemExistsInDb)
-                                    {
-                                        _logger?.LogInformation(" [修复] 检测到更新时新添加的PrescriptionItem被错误标记为Modified，改为Added - ItemId: {ItemId}",
-                                            item.Id);
-                                        itemEntry.State = EntityState.Added;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            MedicalCase? existingEntity;
-
-            if (entry.State == EntityState.Detached)
-            {
-                // Detached场景：查询existingEntity并使用SetValues复制属性
-                existingEntity = await _dbSet
-                    .Include(m => m.Consultation)
-                    .Include(m => m.Prescription)
-                    .FirstOrDefaultAsync(m => m.Id == entity.Id);
-
-                if (existingEntity == null)
-                    throw new InvalidOperationException($"医案 {entity.Id} 不存在");
-
-                // 复制属性值到已跟踪的existingEntity
-                _context.Entry(existingEntity).CurrentValues.SetValues(entity);
-            }
-            else
-            {
-                // Tracked场景：entity本身就是existingEntity（Service层场景）
-                // 无需查询，entity的导航属性已通过GetByIdWithDetailsAsync加载
-                existingEntity = entity;
-                // RowVersion同步已由BaseRepository.SaveChangesAsync()全局处理（Issue #2250）
-            }
-
-            // Issue #2242 修正：完成医案时保留关联数据（Consultation、Prescription）
-            // 这些数据需要供历史医案查询功能使用
-            // 只有当医案被软删除（IsDeleted=true）时，关联数据才会被级联清理
+            // Issue #2242: 完成医案时保留关联数据供历史查询
             if (entity.CaseStatus == MedicalCaseStatus.Completed)
             {
                 _logger?.LogInformation("医案状态变更为Completed，保留关联数据供历史查询，MedicalCaseId: {MedicalCaseId}", entity.Id);
             }
 
-            //  Issue #1669 Phase 7: SaveChanges前诊断 - 记录所有tracked entities状态
+            // 诊断日志
+            LogTrackedEntitiesState();
+
+            await SaveChangesAsync();
+            return existingEntity;
+        }
+
+
+        /// <summary>
+        /// 修复Prescription及PrescriptionItems的实体状态
+        /// consolidate-code-quality: 从UpdateAsync提取，降低圈复杂度
+        /// </summary>
+        private async Task FixPrescriptionEntityStatesAsync(MedicalCase entity)
+        {
+            if (entity.Prescription == null) return;
+
+            var prescriptionEntry = _context.Entry(entity.Prescription);
+            _logger?.LogInformation(" [诊断] Prescription状态 - PrescriptionId: {Id}, State: {State}",
+                entity.Prescription.Id, prescriptionEntry.State);
+
+            if (prescriptionEntry.State != EntityState.Modified) return;
+
+            var prescriptionExistsInDb = await _context.Set<Prescription>()
+                .AnyAsync(p => p.Id == entity.Prescription.Id);
+
+            if (!prescriptionExistsInDb)
+            {
+                _logger?.LogInformation(" [修复] 检测到新Prescription被错误标记为Modified，改为Added");
+                prescriptionEntry.State = EntityState.Added;
+                FixNewPrescriptionItemsState(entity.Prescription);
+            }
+            else
+            {
+                await FixExistingPrescriptionItemsStateAsync(entity.Prescription);
+            }
+        }
+
+        /// <summary>
+        /// 修复新Prescription的Items状态(全部改为Added)
+        /// </summary>
+        private void FixNewPrescriptionItemsState(Prescription prescription)
+        {
+            if (prescription.Items == null || !prescription.Items.Any()) return;
+
+            foreach (var item in prescription.Items)
+            {
+                var itemEntry = _context.Entry(item);
+                if (itemEntry.State == EntityState.Modified)
+                {
+                    _logger?.LogInformation(" [修复] 检测到新PrescriptionItem被错误标记为Modified，改为Added - ItemId: {ItemId}", item.Id);
+                    itemEntry.State = EntityState.Added;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 修复已存在Prescription的Items状态(检查每个Item是否存在)
+        /// Issue #2250 Phase 3: 更新时新添加的Items需改为Added
+        /// </summary>
+        private async Task FixExistingPrescriptionItemsStateAsync(Prescription prescription)
+        {
+            if (prescription.Items == null || !prescription.Items.Any()) return;
+
+            foreach (var item in prescription.Items)
+            {
+                var itemEntry = _context.Entry(item);
+                if (itemEntry.State != EntityState.Modified) continue;
+
+                var itemExistsInDb = await _context.Set<PrescriptionItem>()
+                    .AnyAsync(pi => pi.Id == item.Id);
+
+                if (!itemExistsInDb)
+                {
+                    _logger?.LogInformation(" [修复] 检测到更新时新添加的PrescriptionItem被错误标记为Modified，改为Added - ItemId: {ItemId}", item.Id);
+                    itemEntry.State = EntityState.Added;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取或加载已存在的医案实体
+        /// consolidate-code-quality: 处理Detached vs Tracked场景
+        /// </summary>
+        private async Task<MedicalCase> GetOrLoadExistingEntityAsync(MedicalCase entity)
+        {
+            var entry = _context.Entry(entity);
+
+            if (entry.State != EntityState.Detached)
+            {
+                // Tracked场景：entity本身就是existingEntity（Service层场景）
+                return entity;
+            }
+
+            // Detached场景：查询existingEntity并使用SetValues复制属性
+            var existingEntity = await _dbSet
+                .Include(m => m.Consultation)
+                .Include(m => m.Prescription)
+                .FirstOrDefaultAsync(m => m.Id == entity.Id);
+
+            if (existingEntity == null)
+                throw new InvalidOperationException($"医案 {entity.Id} 不存在");
+
+            // 复制属性值到已跟踪的existingEntity
+            _context.Entry(existingEntity).CurrentValues.SetValues(entity);
+            return existingEntity;
+        }
+
+        /// <summary>
+        /// 记录ChangeTracker中所有实体状态（诊断用）
+        /// </summary>
+        private void LogTrackedEntitiesState()
+        {
             _logger?.LogInformation(" [诊断] SaveChangesAsync前 - ChangeTracker状态:");
             foreach (var trackedEntry in _context.ChangeTracker.Entries())
             {
@@ -271,9 +297,6 @@ namespace LYBT.Module.MedicalCases.Repositories
                 _logger?.LogInformation("   - {EntityType} (Id: {EntityId}): State={State}",
                     entityType, entityId, trackedEntry.State);
             }
-
-            await SaveChangesAsync();
-            return existingEntity;
         }
 
         /// <summary>

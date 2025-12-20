@@ -1,7 +1,7 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
-using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Localization;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

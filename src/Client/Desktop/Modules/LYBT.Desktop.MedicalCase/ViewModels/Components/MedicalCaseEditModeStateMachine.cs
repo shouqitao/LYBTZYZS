@@ -1,6 +1,6 @@
+﻿using System.Windows.Media;
 using LYBT.Desktop.MedicalCase.Models;
 using Prism.Mvvm;
-using System.Windows.Media;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 

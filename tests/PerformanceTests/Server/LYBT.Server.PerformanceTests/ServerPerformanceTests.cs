@@ -1,8 +1,8 @@
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using LYBT.Entities.Users;
-using LYBT.Entities.Patients;
 using LYBT.Entities.Herbs;
+using LYBT.Entities.Patients;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +16,6 @@ namespace LYBT.Server.PerformanceTests
     /// 注意：此测试使用InMemory数据库，测试EF Core基础性能
     /// 实际SQL Server性能可能有差异
     /// </summary>
-#pragma warning disable CA1001 // 使用GlobalCleanup释放资源，无需实现IDisposable
     [MemoryDiagnoser]
     [SimpleJob(warmupCount: 3, iterationCount: 10)]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]

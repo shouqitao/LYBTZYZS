@@ -1,10 +1,9 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using LYBT.Entities.MedicalCases;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.Extensions.Logging;
 
 namespace LYBT.WebAPI.Authorization;
 

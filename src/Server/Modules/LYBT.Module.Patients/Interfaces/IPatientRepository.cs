@@ -1,6 +1,4 @@
 ﻿using LYBT.Entities.Patients;
-using LYBT.Infrastructure.Data;
-using LYBT.Module.Patients.Repositories;
 using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Patients.Interfaces
@@ -9,51 +7,51 @@ namespace LYBT.Module.Patients.Interfaces
     /// 病人仓储接口 - 优化版，包含查询优化方法
     /// </summary>
     /// <summary>
-/// 患者仓储接口 - 继承IRepository<Patient>标准接口
-/// Task 1.2: PatientRepository重构，适配新的简化Repository设计
-/// </summary>
-/// <remarks>
-/// 设计原则：
-/// - ⭐ 继承BaseRepository：复用11个标准CRUD方法
-/// - ⭐ 业务扩展：实现患者特定的业务查询方法
-/// - ⭐ 接口隔离：职责单一，符合ISP原则
-///
-/// 特定业务方法说明：
-/// - GetByNameAsync: 根据姓名模糊查询患者
-/// - ExistsAsync: 检查患者姓名唯一性（支持排除ID）
-/// - GetByPhoneNumberAsync: 手机号重复检查（Epic #1934 BR-004）
-/// </remarks>
-public interface IPatientRepository : IRepository<Patient>
-{
-    /// <summary>
-    /// 根据姓名获取患者（支持模糊匹配）
+    /// 患者仓储接口 - 继承IRepository<Patient>标准接口
+    /// Task 1.2: PatientRepository重构，适配新的简化Repository设计
     /// </summary>
-    /// <param name="name">患者姓名</param>
-    /// <returns>患者列表，不存在返回空列表</returns>
-    Task<List<Patient>> GetByNameAsync(string name);
+    /// <remarks>
+    /// 设计原则：
+    /// - ⭐ 继承BaseRepository：复用11个标准CRUD方法
+    /// - ⭐ 业务扩展：实现患者特定的业务查询方法
+    /// - ⭐ 接口隔离：职责单一，符合ISP原则
+    ///
+    /// 特定业务方法说明：
+    /// - GetByNameAsync: 根据姓名模糊查询患者
+    /// - ExistsAsync: 检查患者姓名唯一性（支持排除ID）
+    /// - GetByPhoneNumberAsync: 手机号重复检查（Epic #1934 BR-004）
+    /// </remarks>
+    public interface IPatientRepository : IRepository<Patient>
+    {
+        /// <summary>
+        /// 根据姓名获取患者（支持模糊匹配）
+        /// </summary>
+        /// <param name="name">患者姓名</param>
+        /// <returns>患者列表，不存在返回空列表</returns>
+        Task<List<Patient>> GetByNameAsync(string name);
 
-    /// <summary>
-    /// 检查患者姓名是否已存在
-    /// </summary>
-    /// <param name="name">患者姓名</param>
-    /// <param name="excludeId">排除的患者ID（用于更新时检查）</param>
-    /// <returns>存在返回true，否则返回false</returns>
-    Task<bool> ExistsAsync(string name, Guid? excludeId = null);
+        /// <summary>
+        /// 检查患者姓名是否已存在
+        /// </summary>
+        /// <param name="name">患者姓名</param>
+        /// <param name="excludeId">排除的患者ID（用于更新时检查）</param>
+        /// <returns>存在返回true，否则返回false</returns>
+        Task<bool> ExistsAsync(string name, Guid? excludeId = null);
 
-    /// <summary>
-    /// 根据手机号查询患者（Epic #1934 BR-004重复检查）
-    /// </summary>
-    /// <param name="phoneNumber">手机号</param>
-    /// <returns>患者对象，不存在返回null</returns>
-    Task<Patient?> GetByPhoneNumberAsync(string phoneNumber);
+        /// <summary>
+        /// 根据手机号查询患者（Epic #1934 BR-004重复检查）
+        /// </summary>
+        /// <param name="phoneNumber">手机号</param>
+        /// <returns>患者对象，不存在返回null</returns>
+        Task<Patient?> GetByPhoneNumberAsync(string phoneNumber);
 
-    // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
+        // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
 
-    /// <summary>
-    /// 根据ID获取实体（包括已软删除的）
-    /// 用于Restore操作时获取已删除的实体
-    /// </summary>
-    /// <param name="id">实体ID</param>
-    Task<Patient?> GetByIdIncludingDeletedAsync(Guid id);
-}
+        /// <summary>
+        /// 根据ID获取实体（包括已软删除的）
+        /// 用于Restore操作时获取已删除的实体
+        /// </summary>
+        /// <param name="id">实体ID</param>
+        Task<Patient?> GetByIdIncludingDeletedAsync(Guid id);
+    }
 }

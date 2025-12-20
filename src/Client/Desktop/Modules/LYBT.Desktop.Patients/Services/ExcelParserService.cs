@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.IO;
 using System.Text.RegularExpressions;
 using LYBT.Desktop.Contracts.Models;
@@ -108,7 +108,7 @@ namespace LYBT.Desktop.Patients.Services
             {
                 ValidateColumns(dataTable, errors, warnings);
                 ValidateRows(dataTable, errors, warnings, result);
-                
+
                 result.IsValid = errors.Count == 0 && result.ValidRowCount > 0;
                 AddSummaryMessages(result, warnings);
             }

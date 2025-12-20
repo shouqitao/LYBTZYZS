@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Shell.Dialogs.ViewModels;
 using LYBT.Shared.Models.Contracts.Common;
@@ -8,7 +8,6 @@ using Moq;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using Xunit;
 
 namespace LYBT.Desktop.Shell.Tests.Dialogs;
 

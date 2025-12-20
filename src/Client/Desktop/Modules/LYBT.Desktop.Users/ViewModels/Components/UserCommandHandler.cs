@@ -346,7 +346,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <param name="newPassword">新密码（明文）</param>
         /// <returns>成功标志、错误信息、重置响应数据</returns>
         public async Task<(bool success, string? errorMessage, ResetPasswordResponseDto? response)> ResetPasswordAsync(
-            Guid userId, 
+            Guid userId,
             string newPassword)
         {
             try
@@ -366,7 +366,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
                 }
                 else
                 {
-                    _logger.LogWarning("CommandHandler: 重置密码失败, UserId: {UserId}, Message: {Message}", 
+                    _logger.LogWarning("CommandHandler: 重置密码失败, UserId: {UserId}, Message: {Message}",
                         userId, result.Message);
                     return (false, result.Message, null);
                 }

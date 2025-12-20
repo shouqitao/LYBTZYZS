@@ -1,6 +1,6 @@
-using LYBT.Shared.ExceptionHandling.Handlers;
-using Microsoft.Extensions.Hosting;
+﻿using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;

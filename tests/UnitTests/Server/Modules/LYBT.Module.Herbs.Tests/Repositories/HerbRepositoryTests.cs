@@ -3,7 +3,6 @@ using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 

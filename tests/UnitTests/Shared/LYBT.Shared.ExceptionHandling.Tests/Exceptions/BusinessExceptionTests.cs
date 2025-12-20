@@ -1,6 +1,6 @@
-using FluentAssertions;
-using LYBT.Shared.Primitives.ErrorCodes;
+﻿using FluentAssertions;
 using LYBT.Shared.ExceptionHandling.Exceptions;
+using LYBT.Shared.Primitives.ErrorCodes;
 using Xunit;
 using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 

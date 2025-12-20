@@ -73,7 +73,7 @@ namespace LYBT.Module.Patients.Mapping
                 .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore()) // OpenSpec: unify-medicalcase-input-dto - 状态字段
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore()) // OpenSpec: unify-medicalcase-input-dto - 审计字段
-                // 忽略时间戳字段（从 TimestampDto 继承）
+                                                                        // 忽略时间戳字段（从 TimestampDto 继承）
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())

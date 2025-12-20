@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using LYBT.Shared.Logging.Abstractions;
 using LYBT.Shared.Logging.Extensions;
 using LYBT.Shared.Logging.Masking;

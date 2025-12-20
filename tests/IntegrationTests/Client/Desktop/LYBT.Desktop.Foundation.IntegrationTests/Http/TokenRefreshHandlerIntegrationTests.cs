@@ -1,3 +1,9 @@
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Http;
@@ -10,12 +16,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text;
 
 namespace LYBT.Desktop.Foundation.IntegrationTests.Http;
 

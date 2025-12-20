@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Common

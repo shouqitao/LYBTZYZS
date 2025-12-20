@@ -1,3 +1,6 @@
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Foundation.Security;
@@ -8,11 +11,8 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using NSubstitute;
 
 namespace LYBT.Desktop.Foundation.IntegrationTests.Security;
 

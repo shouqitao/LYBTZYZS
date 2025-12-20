@@ -1,13 +1,12 @@
-using System.Collections;
+﻿using System.Collections;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Reactive.Disposables;
 using System.Windows;
-using LYBT.Shared.Logging;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Shared.ExceptionHandling.Exceptions;
+using LYBT.Shared.Logging;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;

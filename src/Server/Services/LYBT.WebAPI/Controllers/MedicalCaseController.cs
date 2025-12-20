@@ -11,7 +11,6 @@ using LYBT.Shared.Models.Enums;
 using LYBT.WebAPI.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.WebAPI.Controllers
 {

@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Data.Migrations
+namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251205063859_Issue1864_AddTokenReplayDetection")]
-    partial class Issue1864_AddTokenReplayDetection
+    [Migration("20251108043416_Issue1909_MigrateToThreeRoleSystem_v2")]
+    partial class Issue1909_MigrateToThreeRoleSystem_v2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -105,9 +105,6 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Jti")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -117,8 +114,8 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ReplacedByToken")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("datetime2");
@@ -128,8 +125,8 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("RevokedReason")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -138,8 +135,8 @@ namespace LYBT.Infrastructure.Data.Migrations
 
                     b.Property<string>("Token")
                         .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -150,12 +147,9 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.Property<int>("UsageCount")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("UsedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("UserAgent")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -166,9 +160,6 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("FamilyId")
-                        .HasDatabaseName("IX_RefreshTokens_FamilyId");
 
                     b.HasIndex("Token")
                         .IsUnique();
@@ -239,67 +230,6 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.ToTable("SecurityAuditLogs", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Entities.Common.EntityAuditLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ChangedFields")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("EntityType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("NewValues")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldValues")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("OperationType")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("OperatorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("OperatorName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("OperatorRole")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt")
-                        .IsDescending()
-                        .HasDatabaseName("IX_EntityAuditLogs_CreatedAt");
-
-                    b.HasIndex("OperatorId", "CreatedAt")
-                        .IsDescending(false, true)
-                        .HasDatabaseName("IX_EntityAuditLogs_OperatorId_CreatedAt");
-
-                    b.HasIndex("EntityType", "EntityId", "CreatedAt")
-                        .IsDescending(false, false, true)
-                        .HasDatabaseName("IX_EntityAuditLogs_EntityType_EntityId_CreatedAt");
-
-                    b.ToTable("EntityAuditLogs", (string)null);
-                });
-
             modelBuilder.Entity("LYBT.Entities.Common.SystemLog", b =>
                 {
                     b.Property<int>("Id")
@@ -307,10 +237,6 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CorrelationId")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
 
                     b.Property<string>("Exception")
                         .HasColumnType("nvarchar(max)");
@@ -350,22 +276,10 @@ namespace LYBT.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CorrelationId")
-                        .HasDatabaseName("IX_SystemLogs_CorrelationId");
-
-                    b.HasIndex("Level")
-                        .HasDatabaseName("IX_SystemLogs_Level");
-
-                    b.HasIndex("Timestamp")
-                        .HasDatabaseName("IX_SystemLogs_Timestamp");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("IX_SystemLogs_UserId");
-
                     b.ToTable("SystemLogs", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Entities.Consultations.Consultation", b =>
+            modelBuilder.Entity("LYBT.Entities.Consultation.Consultation", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -379,9 +293,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("CreatedBy")
                         .IsRequired()
@@ -396,13 +308,11 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<string>("MedicalAdvice")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Palpation")
                         .HasMaxLength(500)
@@ -424,6 +334,18 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("Step1CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Step2CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Step3CompletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("TCMDiagnosis")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -443,7 +365,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.ToTable("Consultations", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Entities.Formulas.Formula", b =>
+            modelBuilder.Entity("LYBT.Entities.Formula.Formula", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -454,9 +376,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -468,14 +388,8 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.Property<int>("FormulaType")
                         .HasColumnType("int");
 
-                    b.Property<string>("Indication")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsShared")
                         .ValueGeneratedOnAdd()
@@ -524,7 +438,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.ToTable("Formulas", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Entities.Formulas.FormulaHerbItem", b =>
+            modelBuilder.Entity("LYBT.Entities.Formula.FormulaHerbItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -587,18 +501,12 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Category")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<decimal?>("CostPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -608,9 +516,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -665,22 +571,17 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.ToTable("Herbs", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Entities.MedicalCases.MedicalCase", b =>
+            modelBuilder.Entity("LYBT.Entities.MedicalCase.MedicalCase", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CaseStatus")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("ConsultationDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("CreatedBy")
                         .IsRequired()
@@ -695,12 +596,12 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NeedsPrescription")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
-
-                    b.Property<bool?>("NeedsPrescription")
-                        .HasColumnType("bit");
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
@@ -719,6 +620,10 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -730,55 +635,9 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.HasIndex("PatientId")
                         .IsUnique()
                         .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
-                        .HasFilter("[CaseStatus] = 1 AND [IsDeleted] = 0");
+                        .HasFilter("[Status] = 'Active'");
 
                     b.ToTable("MedicalCases", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Entities.MedicalCases.MedicalCaseAuditLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ChangedFields")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("MedicalCaseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("NewValues")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldValues")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("OperationType")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("OperatorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("OperatorName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("OperatorRole")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MedicalCaseId");
-
-                    b.ToTable("MedicalCaseAuditLogs");
                 });
 
             modelBuilder.Entity("LYBT.Entities.Patients.Patient", b =>
@@ -802,9 +661,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -830,22 +687,17 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("IdType")
+                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastVisitTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("MaritalStatus")
                         .HasColumnType("int");
-
-                    b.Property<string>("MedicalHistory")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -857,8 +709,8 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("PinYinCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -896,9 +748,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("CreatedBy")
                         .IsRequired()
@@ -920,9 +770,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsPrinted")
                         .HasColumnType("bit");
@@ -958,6 +806,9 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1092,9 +943,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -1107,9 +956,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastLoginTime")
                         .HasColumnType("datetime2");
@@ -1187,20 +1034,20 @@ namespace LYBT.Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("LYBT.Entities.Consultations.Consultation", b =>
+            modelBuilder.Entity("LYBT.Entities.Consultation.Consultation", b =>
                 {
-                    b.HasOne("LYBT.Entities.MedicalCases.MedicalCase", "MedicalCase")
+                    b.HasOne("LYBT.Entities.MedicalCase.MedicalCase", "MedicalCase")
                         .WithOne("Consultation")
-                        .HasForeignKey("LYBT.Entities.Consultations.Consultation", "Id")
+                        .HasForeignKey("LYBT.Entities.Consultation.Consultation", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("MedicalCase");
                 });
 
-            modelBuilder.Entity("LYBT.Entities.Formulas.FormulaHerbItem", b =>
+            modelBuilder.Entity("LYBT.Entities.Formula.FormulaHerbItem", b =>
                 {
-                    b.HasOne("LYBT.Entities.Formulas.Formula", "Formula")
+                    b.HasOne("LYBT.Entities.Formula.Formula", "Formula")
                         .WithMany("Herbs")
                         .HasForeignKey("FormulaId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1214,20 +1061,9 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.Navigation("Formula");
                 });
 
-            modelBuilder.Entity("LYBT.Entities.MedicalCases.MedicalCaseAuditLog", b =>
-                {
-                    b.HasOne("LYBT.Entities.MedicalCases.MedicalCase", "MedicalCase")
-                        .WithMany()
-                        .HasForeignKey("MedicalCaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MedicalCase");
-                });
-
             modelBuilder.Entity("LYBT.Entities.Prescriptions.Prescription", b =>
                 {
-                    b.HasOne("LYBT.Entities.MedicalCases.MedicalCase", "MedicalCase")
+                    b.HasOne("LYBT.Entities.MedicalCase.MedicalCase", "MedicalCase")
                         .WithOne("Prescription")
                         .HasForeignKey("LYBT.Entities.Prescriptions.Prescription", "MedicalCaseId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1256,12 +1092,12 @@ namespace LYBT.Infrastructure.Data.Migrations
                     b.Navigation("Prescription");
                 });
 
-            modelBuilder.Entity("LYBT.Entities.Formulas.Formula", b =>
+            modelBuilder.Entity("LYBT.Entities.Formula.Formula", b =>
                 {
                     b.Navigation("Herbs");
                 });
 
-            modelBuilder.Entity("LYBT.Entities.MedicalCases.MedicalCase", b =>
+            modelBuilder.Entity("LYBT.Entities.MedicalCase.MedicalCase", b =>
                 {
                     b.Navigation("Consultation");
 

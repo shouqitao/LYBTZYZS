@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
@@ -70,7 +70,7 @@ namespace LYBT.Module.Prescriptions.Mapping
             CreateMap<PrescriptionItemInputDto, PrescriptionItem>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // Id由系统生成或更新时保留
                 .ForMember(dest => dest.PrescriptionId, opt => opt.Ignore()) // 由Service设置
-                .ForMember(dest => dest.Dosage, opt => opt.MapFrom(src => (int)src.Dosage));
+                .ForMember(dest => dest.Dosage, opt => opt.MapFrom(src => src.Dosage));
         }
     }
 }

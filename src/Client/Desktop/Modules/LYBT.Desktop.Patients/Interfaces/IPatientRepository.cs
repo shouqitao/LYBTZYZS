@@ -1,6 +1,5 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using System.IO;
 
 namespace LYBT.Desktop.Patients.Interfaces
 {

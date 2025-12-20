@@ -1,13 +1,11 @@
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.Clinical;
+using LYBT.Desktop.Contracts.Services;
 // [已删除] using LYBT.Desktop.Consultation; - 模块已废弃，功能已迁移到MedicalCase模块
 using LYBT.Desktop.Formula;
-using LYBT.Desktop.Foundation.Application;
-using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Herbs;
-using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Logging;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;

@@ -1,13 +1,11 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
-using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
-using LYBT.Desktop.Models.Items.Users;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.ViewModels.Components;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;

@@ -1,5 +1,5 @@
+﻿using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
-using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Shared.Validators.BusinessRules
 {

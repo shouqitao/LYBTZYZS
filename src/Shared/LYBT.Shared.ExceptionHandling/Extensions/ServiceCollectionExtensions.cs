@@ -1,6 +1,5 @@
-using LYBT.Shared.ExceptionHandling.Handlers;
+﻿using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.Shared.ExceptionHandling.Mappers;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Shared.ExceptionHandling.Extensions;

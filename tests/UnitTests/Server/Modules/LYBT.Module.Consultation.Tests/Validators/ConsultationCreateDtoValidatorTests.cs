@@ -23,10 +23,10 @@ public class ConsultationInputDtoValidatorTests
     {
         // Arrange
         // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
-            var dto = new ConsultationInputDto
-            {
-                TCMDiagnosis = "外感风寒" // 唯一必填字段
-            };
+        var dto = new ConsultationInputDto
+        {
+            TCMDiagnosis = "外感风寒" // 唯一必填字段
+        };
 
         // Act
         var result = _validator.TestValidate(dto);
@@ -44,10 +44,10 @@ public class ConsultationInputDtoValidatorTests
     {
         // Arrange
         // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
-            var dto = new ConsultationInputDto
-            {
-                TCMDiagnosis = "测试诊断"
-            };
+        var dto = new ConsultationInputDto
+        {
+            TCMDiagnosis = "测试诊断"
+        };
 
         // Act
         var result = _validator.TestValidate(dto);

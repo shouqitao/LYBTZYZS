@@ -1,9 +1,8 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.Models.Items.Formulas;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Herbs.Interfaces;
-using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;

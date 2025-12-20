@@ -1,8 +1,8 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using LYBT.Shared.Logging;
 using LYBT.Desktop.Infrastructure.Http;
+using LYBT.Shared.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Localization;
 

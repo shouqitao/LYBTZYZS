@@ -1,12 +1,12 @@
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using FluentAssertions;
 using LYBT.Desktop.Foundation.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace LYBT.Desktop.Foundation.Tests.Security;
 
@@ -33,7 +33,7 @@ public class LocalTokenValidatorTests
         _configuration["Lybt:Jwt:SecretKey"].Returns(SecretKey);
         _configuration["Lybt:Jwt:Issuer"].Returns(Issuer);
         _configuration["Lybt:Jwt:Audience"].Returns(Audience);
-        
+
         // 正确配置 GetValue 方法 - 使用 GetSection mock
         var clockSkewSection = Substitute.For<IConfigurationSection>();
         clockSkewSection.Value.Returns("300");

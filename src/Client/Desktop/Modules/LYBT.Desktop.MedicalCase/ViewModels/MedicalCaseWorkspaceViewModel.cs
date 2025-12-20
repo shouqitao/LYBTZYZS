@@ -1,5 +1,6 @@
-using LYBT.Desktop.Infrastructure.Events;
+﻿using System.Windows.Media;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -8,17 +9,13 @@ using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Prescriptions.Interfaces;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using System.Windows;
-using System.Windows.Media;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels;
 
@@ -239,9 +236,9 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     // OpenSpec: refactor-diagnosis-fields - 移除SyncRemarkToPanel方法，MedicalCaseRemark已从ConsultationPanelViewModel移除
 
     // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 迁移到IDataProvider
-    private IDataProvider? GetConsultationProvider() => ConsultationPanelViewModel as IDataProvider;
-    private IDataProvider? GetPrescriptionProvider() => PrescriptionPanelViewModel as IDataProvider;
-    private IValidatable? GetConsultationValidator() => ConsultationPanelViewModel as IValidatable;
+    private IDataProvider? GetConsultationProvider() => ConsultationPanelViewModel;
+    private IDataProvider? GetPrescriptionProvider() => PrescriptionPanelViewModel;
+    private IValidatable? GetConsultationValidator() => ConsultationPanelViewModel;
     private IValidatable? GetPrescriptionValidator() => PrescriptionPanelViewModel as IValidatable;
 
     private async Task SaveDraftOnlyAsync()

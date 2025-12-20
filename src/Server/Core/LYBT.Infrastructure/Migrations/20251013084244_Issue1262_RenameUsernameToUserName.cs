@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Data.Migrations
+namespace LYBT.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class Issue1262_RenameUsernameToUserName : Migration

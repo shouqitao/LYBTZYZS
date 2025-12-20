@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
@@ -24,7 +24,7 @@ namespace LYBT.Infrastructure.Repositories;
 /// - 使用EF Core LINQ实现查询逻辑
 /// - 构造函数注入AppDbContext和ILogger
 /// </remarks>
-public abstract class BaseReadRepository<TEntity> : IReadRepository<TEntity> 
+public abstract class BaseReadRepository<TEntity> : IReadRepository<TEntity>
     where TEntity : BaseEntity
 {
     /// <summary>

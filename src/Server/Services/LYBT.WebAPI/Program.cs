@@ -7,13 +7,13 @@
 /// refactor-logging-system: 实现Serilog两阶段初始化(Bootstrap + Final Logger)
 /// </summary>
 using System.Text;
-using LYBT.WebAPI.Extensions;
-using LYBT.Shared.Utilities.Security;
-using LYBT.Shared.Logging.Management;
+using DotNetEnv;
 using LYBT.Shared.Logging.Extensions;
+using LYBT.Shared.Logging.Management;
+using LYBT.Shared.Utilities.Security;
+using LYBT.WebAPI.Extensions;
 using Serilog;
 using Serilog.Events;
-using DotNetEnv;
 
 /// <summary>
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
@@ -97,10 +97,10 @@ public class Program
             builder.Services.AddSingleton(LoggingLevelManager);
 
             Log.Information("已切换到Final Logger，配置加载完成");
-            
+
             // 验证默认密码配置（所有环境）
             ValidateDefaultPasswordConfiguration(builder.Configuration);
-            
+
             builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
 
             // 生产环境配置验证

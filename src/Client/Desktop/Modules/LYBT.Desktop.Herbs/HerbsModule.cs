@@ -1,6 +1,6 @@
-﻿using LYBT.Desktop.Herbs.Services; // Epic #1773: 添加Services命名空间
-using LYBT.Desktop.Herbs.Interfaces;
+﻿using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Herbs.Repositories;
+using LYBT.Desktop.Herbs.Services; // Epic #1773: 添加Services命名空间
 using Prism.Ioc;
 using Prism.Modularity;
 

@@ -1,5 +1,4 @@
-using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Contracts.Components;
+﻿using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;

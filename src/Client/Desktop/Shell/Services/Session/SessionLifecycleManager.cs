@@ -1,5 +1,5 @@
+﻿using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
-using LYBT.Desktop.Contracts.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 

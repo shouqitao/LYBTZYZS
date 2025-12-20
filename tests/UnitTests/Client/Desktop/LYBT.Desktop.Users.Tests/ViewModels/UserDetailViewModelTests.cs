@@ -1,8 +1,7 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Desktop.Users.ViewModels.Components;
-using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Moq;

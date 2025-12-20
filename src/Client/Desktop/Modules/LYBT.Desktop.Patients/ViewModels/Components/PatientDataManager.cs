@@ -1,9 +1,6 @@
-﻿using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Patients.Interfaces;
+﻿using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
-using Prism.Regions;
 
 namespace LYBT.Desktop.Patients.ViewModels.Components
 {

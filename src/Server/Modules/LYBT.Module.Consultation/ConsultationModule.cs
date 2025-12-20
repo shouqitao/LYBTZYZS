@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using LYBT.Entities.Consultations;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Consultations.Interfaces;

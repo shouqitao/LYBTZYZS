@@ -227,15 +227,15 @@ namespace LYBT.Desktop.Users.Repositories
         /// 管理员重置用户密码 (Issue #1911)
         /// </summary>
         public async Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(
-            Guid userId, 
+            Guid userId,
             ResetPasswordRequestDto request)
         {
             try
             {
                 _logger.LogDebug("Repository: 调用重置密码API, UserId: {UserId}", userId);
-                
+
                 var apiResponse = await _api.ResetPasswordAsync(userId, request);
-                
+
                 if (apiResponse.Success && apiResponse.Data != null)
                 {
                     _logger.LogInformation("Repository: 重置密码成功, UserId: {UserId}", userId);
@@ -243,7 +243,7 @@ namespace LYBT.Desktop.Users.Repositories
                 }
                 else
                 {
-                    _logger.LogWarning("Repository: 重置密码失败, UserId: {UserId}, Message: {Message}", 
+                    _logger.LogWarning("Repository: 重置密码失败, UserId: {UserId}, Message: {Message}",
                         userId, apiResponse.Message);
                     return ServiceResult<ResetPasswordResponseDto>.Failure(
                         apiResponse.Message ?? "重置密码失败");

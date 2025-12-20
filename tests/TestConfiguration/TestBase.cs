@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
+using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using LYBT.Infrastructure.Data;
 
 namespace LYBT.Tests.Common
 {

@@ -1,3 +1,4 @@
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -5,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Services.Dialogs;
-using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -115,7 +115,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 // 调用Repository获取患者的所有医案
                 var allMedicalCases = await _medicalCaseRepository.GetByPatientIdAsync(_patientId);
-                
+
                 // 筛选已完成的医案
                 var medicalCases = allMedicalCases?.Where(mc => mc.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed).ToList();
 

@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-using LYBT.Desktop.Herbs.Interfaces;
+﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Localization;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;

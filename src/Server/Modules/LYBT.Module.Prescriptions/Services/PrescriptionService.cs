@@ -1,7 +1,7 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Module.Prescriptions.Interfaces;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.ExceptionHandling.Exceptions;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Services

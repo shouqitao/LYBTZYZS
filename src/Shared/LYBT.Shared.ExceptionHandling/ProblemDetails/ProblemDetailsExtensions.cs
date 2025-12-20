@@ -1,5 +1,5 @@
+﻿using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.AspNetCore.Http;
 using ProblemDetailsModel = Microsoft.AspNetCore.Mvc.ProblemDetails;
 

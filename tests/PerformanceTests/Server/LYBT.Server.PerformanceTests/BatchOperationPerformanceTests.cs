@@ -1,4 +1,4 @@
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
@@ -22,7 +22,6 @@ namespace LYBT.Server.PerformanceTests
     /// - 批量删除1000条 < 5秒
     /// - 分页查询（10000条数据，每页100条）< 1秒
     /// </remarks>
-#pragma warning disable CA1001 // 使用GlobalCleanup释放资源，无需实现IDisposable
     [MemoryDiagnoser]
     [SimpleJob(warmupCount: 3, iterationCount: 10)]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
@@ -190,7 +189,7 @@ namespace LYBT.Server.PerformanceTests
             var entitiesToDelete = await _context.Herbs
                 .Where(h => !h.IsDeleted && ids.Contains(h.Id))
                 .ToListAsync();
-            
+
             foreach (var entity in entitiesToDelete)
             {
                 entity.IsDeleted = true;
@@ -260,5 +259,4 @@ namespace LYBT.Server.PerformanceTests
             _context?.Dispose();
         }
     }
-#pragma warning restore CA1001
 }

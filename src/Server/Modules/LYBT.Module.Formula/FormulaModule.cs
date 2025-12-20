@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Formulas.Interfaces;

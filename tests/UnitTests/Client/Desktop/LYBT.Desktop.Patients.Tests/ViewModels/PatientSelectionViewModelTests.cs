@@ -1,10 +1,9 @@
-using System.Collections.ObjectModel;
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.MedicalCase.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels;
@@ -320,19 +319,19 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
             var method = typeof(PatientSelectionViewModel).GetMethod(
                 "ShowSuccessMessageAsync",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
+
             method.Should().NotBeNull("ShowSuccessMessageAsync方法应存在");
-            
+
             // 异步调用方法（不等待完成，只验证不抛异常）
             var task = method!.Invoke(_viewModel, new object[] { testMessage }) as Task;
-            
+
             // Assert: 验证StatusBar属性被正确设置
             // 等待一小段时间确保StatusBar属性被设置
             System.Threading.Thread.Sleep(50);
-            
+
             _viewModel.StatusBarMessage.Should().Be(testMessage, "StatusBarMessage应设置为成功消息");
             _viewModel.StatusBarIsError.Should().BeFalse("StatusBarIsError应为false（成功消息）");
-            
+
             // 验证任务不抛异常
             task.Should().NotBeNull("ShowSuccessMessageAsync应返回Task");
         }

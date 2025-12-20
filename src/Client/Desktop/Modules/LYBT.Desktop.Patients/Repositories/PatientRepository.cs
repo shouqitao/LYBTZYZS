@@ -4,7 +4,6 @@ using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
-using System.IO;
 
 namespace LYBT.Desktop.Patients.Repositories
 {

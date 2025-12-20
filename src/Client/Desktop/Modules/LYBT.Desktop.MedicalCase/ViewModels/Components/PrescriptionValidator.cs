@@ -1,6 +1,6 @@
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Models.Items.Prescriptions;
 using Microsoft.Extensions.Logging;
-using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 

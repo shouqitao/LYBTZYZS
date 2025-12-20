@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -241,7 +241,8 @@ namespace LYBT.WebAPI.Controllers
             if (result.IsSuccess && result.Data != null)
             {
                 LogOperation("批量导入药材（Epic #1962）",
-                    new {
+                    new
+                    {
                         TotalCount = result.Data.TotalCount,
                         SuccessCount = result.Data.SuccessCount,
                         FailureCount = result.Data.FailureCount,

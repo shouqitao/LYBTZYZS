@@ -1,7 +1,6 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using LYBT.Desktop.Foundation.Http; // OpenSpec: add-global-audit-system - IApiService
-using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;

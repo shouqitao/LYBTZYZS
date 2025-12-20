@@ -1,18 +1,16 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using Moq;
+﻿using Asp.Versioning;
 using AutoMapper;
-using Asp.Versioning;
-using LYBT.WebAPI.Controllers;
+using FluentAssertions;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Patients.Services;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Common;
 using LYBT.Tests.Common;
-using FluentAssertions;
+using LYBT.WebAPI.Controllers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
 using Xunit;
 
 namespace LYBT.Module.Patients.Tests.Controllers

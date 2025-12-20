@@ -20,7 +20,7 @@ namespace LYBT.Module.Consultations.Repositories
     /// </remarks>
     internal class ConsultationRepository : BaseReadRepository<Consultation>, IConsultationRepository
     {
-        public ConsultationRepository(AppDbContext context, ILogger<ConsultationRepository> logger) 
+        public ConsultationRepository(AppDbContext context, ILogger<ConsultationRepository> logger)
             : base(context, logger)
         {
         }

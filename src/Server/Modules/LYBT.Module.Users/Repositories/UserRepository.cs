@@ -2,7 +2,6 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Users.Interfaces;
-using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -62,8 +61,8 @@ namespace LYBT.Module.Users.Repositories
 
             return await _dbSet
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => 
-                    (u.UserName == username || u.Email == username) && 
+                .FirstOrDefaultAsync(u =>
+                    (u.UserName == username || u.Email == username) &&
                     !u.IsDeleted);
         }
 

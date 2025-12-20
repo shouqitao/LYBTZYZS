@@ -128,7 +128,7 @@ namespace LYBT.Module.Formulas.Services
                 {
                     HerbId = h.HerbId,
                     HerbName = h.HerbName,
-                    Dosage = (int)h.Dosage, // decimal → int
+                    Dosage = h.Dosage, // decimal → int
                     Unit = h.Unit,
                     ProcessingMethod = h.ProcessingMethod ?? h.Preparation, // 优先使用ProcessingMethod，回退到Preparation
                     Usage = h.Usage,
@@ -173,7 +173,7 @@ namespace LYBT.Module.Formulas.Services
                     {
                         HerbId = h.HerbId,
                         HerbName = h.HerbName,
-                        Dosage = (int)h.Dosage, // decimal → int
+                        Dosage = h.Dosage, // decimal → int
                         Unit = h.Unit,
                         ProcessingMethod = h.ProcessingMethod ?? h.Preparation, // 优先使用ProcessingMethod
                         Usage = h.Usage,
@@ -365,7 +365,7 @@ namespace LYBT.Module.Formulas.Services
                             HerbName = herbDto.HerbName,
                             OriginalHerbName = herbDto.HerbName, // 保存原始名称
                             IsValidated = matchedHerb != null, // 成功匹配则标记为已验证
-                            Dosage = (int)herbDto.Dosage, // DTO是decimal，实体是int
+                            Dosage = herbDto.Dosage, // DTO是decimal，实体是int
                             Unit = herbDto.Unit ?? string.Empty,
                             Usage = herbDto.Usage,
                             ProcessingMethod = herbDto.Preparation // DTO的Preparation映射到ProcessingMethod

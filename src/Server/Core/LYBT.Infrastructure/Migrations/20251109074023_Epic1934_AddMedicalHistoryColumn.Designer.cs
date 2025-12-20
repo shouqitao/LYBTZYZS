@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Data.Migrations
+namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251108043416_Issue1909_MigrateToThreeRoleSystem_v2")]
-    partial class Issue1909_MigrateToThreeRoleSystem_v2
+    [Migration("20251109074023_Epic1934_AddMedicalHistoryColumn")]
+    partial class Epic1934_AddMedicalHistoryColumn
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -698,6 +698,10 @@ namespace LYBT.Infrastructure.Data.Migrations
 
                     b.Property<int>("MaritalStatus")
                         .HasColumnType("int");
+
+                    b.Property<string>("MedicalHistory")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Name")
                         .IsRequired()

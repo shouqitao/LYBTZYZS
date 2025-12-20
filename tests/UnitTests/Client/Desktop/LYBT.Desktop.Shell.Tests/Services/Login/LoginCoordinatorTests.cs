@@ -1,8 +1,7 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
-using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Shell.Services.Login;
 using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Shared.Models.Contracts.Auth;

@@ -91,7 +91,7 @@ namespace LYBT.Module.MedicalCases.Mapping
             CreateMap<ConsultationInputDto, LYBT.Entities.Consultations.Consultation>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())  // 共享主键，不可修改
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())  // 导航属性，不可修改
-                // BaseEntity 审计字段
+                                                                           // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
@@ -114,7 +114,7 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.PrescriptionNumber, opt => opt.Ignore())
                 // Indication/FormulaSource已从实体删除
                 .ForMember(dest => dest.Items, opt => opt.Ignore()) // Items需在Service层手动处理
-                // BaseEntity 审计字段
+                                                                    // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())

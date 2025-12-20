@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using FluentValidation;
-using FluentValidation.Results;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
