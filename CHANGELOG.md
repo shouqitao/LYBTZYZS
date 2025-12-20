@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### 集成测试覆盖补充 (OpenSpec: optimize-integration-tests) - 2025-12-20
+
+**背景**: WebAPI集成测试存在覆盖缺口，FormulasController(15端点)、HerbsController(18端点)、HealthController(3端点)缺少测试。
+
+**新增测试**:
+- FormulasControllerIntegrationTests: 覆盖15个API端点，30+测试方法
+- HerbsControllerIntegrationTests: 覆盖18个API端点，30+测试方法
+- HealthCheckIntegrationTests: 覆盖3个健康检查端点，12个测试方法
+- UsersControllerIntegrationTests: 使用当前框架重写
+
+**基础设施优化**:
+- 集成测试数据库从InMemory改为真实SQL Server(LYBTDB)
+- 统一使用IntegrationTestBase基类
+- 修复编译警告(DatabaseLoggingTests、PendingMedicalCaseTests)
+
+**净效果**: 新增72+测试方法，覆盖36个API端点
+
+### Removed
+
+#### 单元测试过度设计清理 (OpenSpec: optimize-integration-tests) - 2025-12-20
+
+**背景**: 单元测试存在大量重复基类和未使用的测试基础设施。
+
+**删除内容**:
+- BaseServiceTest.cs: 5个模块中重复的基类(~645行)
+- InMemoryConfiguration.cs: 5个模块中重复的配置(~1275行)
+- 未使用测试基类: BaseControllerTest、BaseRepositoryTest、BaseSqliteRepositoryTest(~260行)
+- 未使用辅助类: TestHelper.cs、TestDataFactory.cs(~355行)
+- _archived目录: 遗留的旧测试存档(~300行)
+- CrossModuleQueryServiceTests: 6个测试未实现方法的无效测试(~120行)
+- .bak备份文件: 3个过时的备份文件
+
+**净效果**: 清理约2800行冗余/过度设计代码
+
 ### Removed
 
 #### Desktop未使用代码清理 (OpenSpec: cleanup-desktop-unused-code) - 2025-12-19
