@@ -43,6 +43,31 @@ Enrichers:
 
 ### Changed
 
+#### 清理过时日志组件 (OpenSpec: cleanup-obsolete-code) - 2025-12-20
+
+**背景**: 统一日志系统(unify-logging-system)完成后，旧的[Obsolete]组件需要清理。
+
+**删除的Server端组件**:
+- `LYBT.Infrastructure/Logging/CorrelationIdEnricher.cs` - 已迁移到Shared.Logging
+- `LYBT.Infrastructure/Logging/LoggingLevelManager.cs` - 已迁移到Shared.Logging
+- `LYBT.Infrastructure/Logging/SensitiveDataMasker.cs` - 已迁移到Shared.Logging
+- `LYBT.Infrastructure/Logging/SensitiveDataDestructuringPolicy.cs` - 已迁移到Shared.Logging
+
+**删除的Desktop端组件**:
+- `LYBT.Desktop.Infrastructure/Logging/CorrelationIdEnricher.cs` - 已迁移到Shared.Logging
+
+**删除的异常处理组件**:
+- `LYBT.WebAPI/Middleware/GlobalExceptionHandler.cs` - 已由Shared.ExceptionHandling替代
+
+**更新的引用**:
+- `BaseApiController.cs` → 使用 `LYBT.Shared.Logging.Masking`
+- `SensitiveDataJsonConverterFactory.cs` → 使用命名空间别名解决枚举冲突
+- `Program.cs` → 使用 `LYBT.Shared.Logging.Management/Extensions`
+- `DiagnosticsController.cs` → 使用 `LYBT.Shared.Logging.Management`
+- `DiagnosticsControllerTests.cs` → 使用共享组件
+
+**代码统计**: -859行冗余代码
+
 #### Desktop Core层无用代码清理 (OpenSpec: cleanup-desktop-core-unused) - 2025-12-20
 
 **背景**: Desktop Core层(Foundation/Infrastructure/Models/Presentation)累积了大量从未被使用的代码。
