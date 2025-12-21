@@ -9,6 +9,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### 测试覆盖优化项目 (OpenSpec: optimize-integration-tests) - 2025-12-21
+
+**背景**: 测试存在覆盖缺口、遗留代码和过度设计问题。
+
+**优化工作**:
+- 新增FormulasControllerIntegrationTests: 覆盖15个API端点, 30+测试方法
+- 新增HerbsControllerIntegrationTests: 覆盖18个API端点, 30+测试方法
+- 新增HealthCheckIntegrationTests: 覆盖3个健康检查端点, 12个测试方法
+- 清理~2800行冗余/过度设计代码
+
+**清理工作**:
+- 删除5个模块中重复的BaseServiceTest (~645行)
+- 删除5个模块中重复的InMemoryConfiguration (~1275行)
+- 删除未使用测试基类和辅助类 (~615行)
+- 删除3个.bak备份文件
+
+#### 统一前后端实体类型与命名 (OpenSpec: unify-frontend-backend-types) - 2025-12-21
+
+**背景**: Desktop UI Model与Shared DTO之间存在类型不一致(枚举转字符串、bool替代枚举)和命名不一致问题。
+
+**类型统一**:
+- PatientItem.Gender: string -> Gender enum
+- MedicalCaseItem.PatientGender: string -> Gender enum
+- HerbItem.IsActive: bool -> Status: CommonStatus enum
+- FormulaItem.IsActive: bool -> Status: CommonStatus enum
+- FormulaItem.CreatedBy: string? -> Guid?
+
+**命名统一**:
+- UserItem: CreateTime->CreatedAt, UpdateTime->UpdatedAt
+- PatientItem: IdCard->IdNumber, LastVisitDate->LastVisitTime
+- HerbItem: Pinyin->PinYinCode, DosageUnit->Unit, UnitPrice->Price
+- FormulaItem: Indication->Indications, Contraindication->Contraindications
+- MedicalCaseItem: Status->CaseStatus
+- FormulaHerbItem: Sequence->SortOrder
+
+**结构优化**:
+- 创建LYBT.Desktop.Models项目集中管理所有Item类
+- Item定义从各模块迁移到统一位置
+- 合并PrescriptionItemViewModel为PrescriptionHerbItem
+
+**影响模块**: 全部Desktop模块
+
 #### WPF转换器统一架构 (OpenSpec: consolidate-wpf-converters) - 2025-12-21
 
 **背景**: Desktop层的WPF转换器分散在多个项目中,存在大量重复定义,需要统一管理。

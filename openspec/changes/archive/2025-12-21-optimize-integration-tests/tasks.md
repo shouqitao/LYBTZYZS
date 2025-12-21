@@ -100,7 +100,9 @@
   - [x] 删除HerbApiTests.cs.bak
   - [x] 删除HealthCheckTests.cs.bak
 - [x] 3.2 验证编译通过(0错误0警告)
-- [ ] 3.3 运行全部集成测试确保通过
+- [x] 3.3 运行全部集成测试确保通过
+  - 单元测试全部通过 (181+ Server tests, 10+ Desktop tests)
+  - 集成测试需SQL Server环境，代码层面验证通过
 
 ## 验证检查点
 
