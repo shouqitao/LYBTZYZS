@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### DDD聚合边界优化 (OpenSpec: refactor-server-ddd-aggregates) - 2025-12-21
+
+**背景**: Server端实体存在双向导航属性，违反DDD跨聚合引用原则，可能导致循环引用。
+
+**重构工作**:
+- 删除Consultation.MedicalCase和Prescription.MedicalCase反向导航属性
+- EF Core配置改用HasOne<T>()泛型语法（无导航属性参数）
+- ConsultationRepository使用子查询替代Include跨聚合加载
+- 新增GetMedicalCaseInfoAsync辅助方法用于只读跨聚合查询
+
+**设计原则**:
+- 聚合内实体: 只有聚合根到子实体的单向导航
+- 跨聚合引用: 仅使用ID，禁止导航属性
+- 共享主键: Consultation.Id == MedicalCase.Id
+
+**附带修复**:
+- 移除tests/Directory.Build.props重复的coverlet.collector定义(NU1504警告)
+
 #### Desktop层Core净化重构 (OpenSpec: optimize-desktop-core) - 2025-12-21
 
 **背景**: Desktop层Core项目(LYBT.Desktop.Models)包含大量业务代码，违反三层对齐架构原则。
