@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### WPF转换器统一架构 (OpenSpec: consolidate-wpf-converters) - 2025-12-21
+
+**背景**: Desktop层的WPF转换器分散在多个项目中,存在大量重复定义,需要统一管理。
+
+**新增Infrastructure/Converters/Converters.xaml**:
+- 创建统一转换器资源字典,集中管理所有IValueConverter
+- 通过App.xaml -> UnifiedComponents.xaml -> Converters.xaml链提供全局访问
+
+**转换器清单(15个)**:
+- 布尔转换: BooleanToVisibilityConverter, InverseBooleanToVisibilityConverter, InverseBooleanConverter
+- 空值转换: NullToVisibilityConverter, InverseNullToVisibilityConverter
+- 枚举转换: EnumDescriptionConverter
+- API状态: ApiHealthStatusToColorConverter, ApiHealthStatusToTextConverter
+- 字符处理: FirstCharConverter
+- 数值转换: BoolToDoubleConverter
+- 专用转换: DecocteMethodToVisibilityConverter, ImagePathConverter, MedicalCaseStatusToColorConverter, MedicalCaseStatusToTextConverter, PrescriptionStatusToColorConverter
+
+**清理工作**:
+- 删除Shell层重复转换器(3个): ApiHealthStatusToColorConverter, ApiHealthStatusToTextConverter, FirstCharConverter
+- 删除MedicalCase模块重复转换器(1个): InvertedBoolConverter
+- 清理45+个XAML文件的本地转换器定义
+
+**影响模块**: Shell, Users, Patients, MedicalCase, Herbs, Formula, Infrastructure
+
 #### Desktop工具类统一项目 (OpenSpec: consolidate-shared-utilities) - 2025-12-21
 
 **背景**: Desktop层的工具类分散在多个项目中，需要统一管理并解决ValidationConstants循环依赖问题。
