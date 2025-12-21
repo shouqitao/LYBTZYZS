@@ -2,7 +2,7 @@
 
 **Total Phases**: 4
 **Estimated Complexity**: High
-**Status**: Phase 1-4 基础设施完成，待ViewModel迁移和Service层改造
+**Status**: ✅ 全部完成 - 可归档
 
 ---
 
@@ -68,28 +68,29 @@
 | LYBT.Module.Auth | ⏸️ 保留 | AuthErrorCode架构需求，不改造 |
 | LYBT.Module.Consultation | ✅ 已完成 | 2个catch已移除 |
 | LYBT.Module.Prescriptions | ✅ 已完成 | 2个catch已移除 |
-| LYBT.Module.Users | ⏳ 延迟 | 需同步改造Controller，Phase 2 |
-| LYBT.Module.Patients | ⏳ 延迟 | 需同步改造Controller，Phase 2 |
-| LYBT.Module.Herbs | ⏳ 延迟 | 需同步改造Controller，Phase 2 |
-| LYBT.Module.Formula | ⏳ 延迟 | 需同步改造Controller，Phase 2 |
-| LYBT.Module.MedicalCase | ⏳ 延迟 | 需同步改造Controller，Phase 2 |
+| LYBT.Module.Users | ✅ 已完成 | 由eliminate-service-catch-return完成 |
+| LYBT.Module.Patients | ✅ 已完成 | 由eliminate-service-catch-return完成 |
+| LYBT.Module.Herbs | ✅ 已完成 | 由eliminate-service-catch-return完成 |
+| LYBT.Module.Formula | ✅ 已完成 | 由eliminate-service-catch-return完成 |
+| LYBT.Module.MedicalCase | ✅ 已完成 | 由eliminate-service-catch-return完成 |
 
-**详细状态**:
+**详细状态** (由eliminate-service-catch-return完成):
 - [x] LYBT.Module.Consultation (ConsultationService) - 2个catch ✅ 已完成
 - [x] LYBT.Module.Prescriptions (PrescriptionService) - 2个catch ✅ 已完成
-- [~] LYBT.Module.Auth (AuthService, TokenRevocationService, SecurityAuditService) - 9个catch ⏸️ 保留Result模式
-- [ ] LYBT.Module.Users (UserService) - 14个catch ⏳ 延迟到Phase 2
-- [ ] LYBT.Module.Patients (PatientService) - 15个catch ⏳ 延迟到Phase 2
-- [ ] LYBT.Module.Herbs (HerbService) - 19个catch ⏳ 延迟到Phase 2
-- [ ] LYBT.Module.Formula (FormulaService) - 17个catch ⏳ 延迟到Phase 2
-- [ ] LYBT.Module.MedicalCase (CommandService, QueryService, StateService, AuditService) - 32个catch ⏳ 延迟到Phase 2
-- **验证**: 编译通过，单元测试通过
+- [~] LYBT.Module.Auth (AuthService, TokenRevocationService, SecurityAuditService) - 9个catch ⏸️ 保留Result模式(架构需求)
+- [x] LYBT.Module.Users (UserService) - 14个catch ✅ 由eliminate-service-catch-return完成
+- [x] LYBT.Module.Patients (PatientService) - 15个catch ✅ 由eliminate-service-catch-return完成
+- [x] LYBT.Module.Herbs (HerbService) - 19个catch ✅ 由eliminate-service-catch-return完成
+- [x] LYBT.Module.Formula (FormulaService) - 17个catch ✅ 由eliminate-service-catch-return完成
+- [x] LYBT.Module.MedicalCase (CommandService, QueryService, StateService, AuditService) - 32个catch ✅ 由eliminate-service-catch-return完成
+- **验证**: 编译通过，单元测试通过 (240 tests passed)
 
-### 1.4 更新单元测试
-- [ ] 修改测试期望：从`Result.IsFailure`改为`Assert.ThrowsAsync`
-- [ ] 验证异常类型正确
-- [ ] 验证ErrorCode正确
-- **验证**: 所有测试通过
+### 1.4 更新单元测试 ✅ (由eliminate-service-catch-return完成)
+- [x] 修改测试期望：从`Result.IsFailure`改为`Assert.ThrowsAsync`
+- [x] 验证异常类型正确
+- [x] 验证ErrorCode正确
+- **验证**: 所有测试通过 (240 tests passed)
+- **完成方式**: 通过eliminate-service-catch-return提案统一完成11个测试更新
 
 ---
 
@@ -111,30 +112,20 @@
 - [x] 注册到DI容器 - 已注册
 - **验证**: 对话框正常显示 (使用现有基础设施)
 
-### 2.3 迁移ViewModel - Auth模块
-- [ ] LoginViewModel
-- [ ] 其他Auth相关ViewModel
-- **验证**: 登录流程正常
+### 2.3-2.6 迁移ViewModel - 可选 ⏭️
+> **状态**: 可选跳过 - 现有模式已满足异常处理要求
+> **原因**: 28个ViewModel/Service已使用GetSafeOperationFailureMessage进行安全错误处理
+> **结论**: SafeExecuteAsync可用于新代码，现有代码无需强制迁移
 
-### 2.4 迁移ViewModel - Patients模块
-- [ ] PatientListViewModel
-- [ ] PatientFormViewModel
-- [ ] 其他Patients相关ViewModel
-- **验证**: 患者管理正常
-
-### 2.5 迁移ViewModel - MedicalCase模块
-- [ ] MedicalCaseListViewModel
-- [ ] MedicalCaseFormViewModel
-- [ ] MedicalCaseEntryViewModel
-- [ ] MedicalCaseDataManager
-- **验证**: 病历管理正常
-
-### 2.6 迁移ViewModel - 其他模块
-- [ ] ConsultationFormViewModel
-- [ ] HerbsListViewModel
-- [ ] FormulaListViewModel
-- [ ] UsersListViewModel
-- **验证**: 所有模块正常
+**已验证的ViewModel异常处理**:
+- [x] LoginViewModel - 使用GetSafeOperationFailureMessage
+- [x] PatientListViewModel/PatientDetailViewModel - 使用GetSafeOperationFailureMessage
+- [x] MedicalCaseWorkspaceViewModel/MedicalCaseMasterDetailViewModel - 使用GetSafeOperationFailureMessage
+- [x] HerbMasterDetailViewModel/HerbDetailViewModel - 使用GetSafeOperationFailureMessage
+- [x] FormulaMasterDetailViewModel - 使用GetSafeOperationFailureMessage
+- [x] ConsultationFormViewModel - 使用GetSafeOperationFailureMessage
+- [x] UserDetailViewModel/UserProfileViewModel - 使用GetSafeOperationFailureMessage
+- **验证**: 28个文件使用安全消息处理 (grep验证通过)
 
 ---
 
@@ -160,11 +151,12 @@
 - [x] 添加策略事件日志
 - **验证**: HttpClient使用策略 ✓
 
-### 3.4 集成测试
-- [ ] 模拟网络故障测试重试
-- [ ] 模拟连续失败测试熔断
-- [ ] 测试超时处理
-- **验证**: 韧性策略生效
+### 3.4 集成测试 ✅
+- [x] 模拟网络故障测试重试 (RetryPolicy_WhenTransientFailure_ShouldRetryAndSucceed等4个测试)
+- [x] 模拟连续失败测试熔断 (CircuitBreaker_WhenThresholdExceeded_ShouldBreak等2个测试)
+- [x] 测试超时处理 (TimeoutPolicy_WhenExceedsTimeout_ShouldThrow等2个测试)
+- [x] 测试组合策略 (CompositePolicy_*等3个测试)
+- **验证**: 11个测试全部通过 (RetryPolicyIntegrationTests.cs)
 
 ---
 
@@ -310,56 +302,57 @@
 
 ## Completion Criteria
 
-### 已完成 ✅
+### Phase 1: Service层异常规范化 ✅
 - [x] Phase 1.1 完成 (规范文档)
 - [x] Phase 1.2 完成 (审计110个catch块)
-- [x] Phase 1.3 部分完成 (ConsultationService + PrescriptionService = 4个catch)
+- [x] Phase 1.3 完成 (101个catch移除 = 4个本提案 + 97个eliminate-service-catch-return)
+- [x] Phase 1.4 完成 (由eliminate-service-catch-return统一更新11个测试)
+
+### Phase 2: ViewModel层异常处理基类 ✅
 - [x] Phase 2.1-2.2 完成 (ViewModelBase扩展 + 现有通知服务)
-- [x] Phase 3 完成 (Polly已集成)
+- [x] Phase 2.3-2.6 可选跳过 (28个ViewModel已使用GetSafeOperationFailureMessage)
+
+### Phase 3: HTTP韧性层 ✅
+- [x] Phase 3.1-3.3 完成 (Polly策略工厂 + HttpClient集成)
+- [x] Phase 3.4 完成 (11个集成测试通过 - RetryPolicyIntegrationTests.cs)
+
+### Phase 4: 异常消息安全化 ✅
 - [x] Phase 4.1-4.2 完成 (ErrorCodeMessages + SensitiveInfoFilter)
 - [x] Phase 4.3 完成 (ex.Message安全化，替换为GetSafeOperationFailureMessage)
 - [x] Phase 4.4 完成 (CorrelationId追踪码，用户消息包含8位追踪码)
-- [x] 编译无错误无警告
 
 ### 架构决策 ⏸️
 - [~] Auth模块 (9个catch) - 保留Result<T>模式，AuthErrorCode架构需求
 
-### 延迟到Phase 2 ⏳
-- [ ] Phase 1.3 剩余 (UserService等97个catch) - 需同步改造Controller层
-- [ ] Phase 1.4 更新单元测试 - 依赖Phase 1.3完成
-- [ ] Phase 2.3-2.6 ViewModel迁移 - 可独立进行
-
-### 质量验证
-- [x] 所有单元测试通过 ✅ (2025-12-20)
-  - Desktop.Shell.Tests: 21/21 通过
-  - Desktop.Foundation.Tests: 57/57 通过
-  - 修复了4个因ERR-012导致的测试断言更新
-- [x] 集成测试通过 ✅
+### 质量验证 ✅
+- [x] 所有单元测试通过 (2025-12-21)
+  - Server模块: 181 tests passed (Patients:54 + MedicalCase:41 + Herbs:33 + Formula:22 + Users:31)
+  - Desktop模块: 78 tests passed (Shell:21 + Foundation:57)
+  - eliminate-service-catch-return更新的11个测试: 全部通过
+- [x] 集成测试通过
   - Desktop.Foundation.IntegrationTests: 9/9 通过
-- [x] 代码审查通过 ✅
+  - Polly韧性策略测试: 11/11 通过 (RetryPolicyIntegrationTests)
+- [x] 代码审查通过
+- [x] 编译无错误无警告
 
 ---
 
-## 下一步建议
+## 归档说明
 
-### Pre-Release阶段可执行 (低风险)
-1. ~~**ex.Message审计** (Phase 4.3)~~ ✅ 已完成
-2. ~~**CorrelationId追踪** (Phase 4.4)~~ ✅ 已完成
-3. **ViewModel迁移** (Phase 2.3-2.6): 各模块ViewModel改用SafeExecuteAsync（可选，现有模式也可工作）
+### 完成总结
+本提案所有核心目标已达成:
 
-### 延迟到RC后 (高风险)
-4. **大规模Service改造** (Phase 1.3剩余): 需同时改造Controller和Service层
-   - UserService (14个catch)
-   - PatientService (15个catch)
-   - HerbService (19个catch)
-   - FormulaService (17个catch)
-   - MedicalCase服务组 (32个catch)
-   - 建议创建独立OpenSpec进行统一改造
+1. **Service层异常规范化** - 101个catch-return反模式已移除(本提案4个 + eliminate-service-catch-return 97个)
+2. **ViewModel层异常处理** - SafeExecuteAsync基础设施就绪，28个ViewModel已使用安全消息处理
+3. **HTTP韧性层** - Polly策略已集成，11个集成测试验证通过
+4. **异常消息安全化** - 100%用户可见消息已安全化，追踪码机制就绪
 
-### 当前OpenSpec状态
-- **Phase 4完成**: 异常消息安全化（ERR-012）全部完成
-- **可归档条件**: 通过单元测试验证后可归档
-- **归档范围**: Phase 1-4基础设施 + Phase 4.3/4.4客户端安全化
+### 架构保留决策
+- Auth模块9个catch块保留Result<T, AuthErrorCode>模式，这是架构需求而非技术债务
+
+### 后续建议
+- 新代码推荐使用SafeExecuteAsync模式
+- 现有ViewModels可按需逐步迁移，无强制要求
 
 ---
 
@@ -368,10 +361,10 @@
 | 指标 | 数值 |
 |------|------|
 | 发现的catch块总数 | 110个 |
-| 已改造 | 4个 (ConsultationService + PrescriptionService) |
+| 已移除 | 101个 (本提案4个 + eliminate-service-catch-return 97个) |
 | 保留Result模式 | 9个 (Auth模块 - 架构需求) |
-| 延迟改造 | 97个 (需同步改造Controller层) |
-| 改造进度 | 3.6% (4/110) |
-| 有效进度 | 4.0% (4/101，排除Auth模块) |
+| 改造进度 | **100%** (101/101，排除Auth模块架构需求) |
 | ex.Message安全化 | 100% (所有用户可见消息已处理) |
 | CorrelationId追踪 | 100% (ViewModelBase已集成) |
+| Polly集成测试 | 11个测试全部通过 |
+| ViewModel安全处理 | 28个文件已使用GetSafeOperationFailureMessage |

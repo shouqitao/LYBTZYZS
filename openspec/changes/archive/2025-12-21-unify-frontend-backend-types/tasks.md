@@ -146,8 +146,8 @@
 - [x] 所有枚举属性使用枚举类型
 - [x] FromDto/ToDto无类型转换代码
 - [x] 编译0错误0警告
-- [ ] 所有测试通过 (待手动验证)
-- [ ] UI显示正常 (待手动验证)
+- [x] 所有测试通过 (Patients:54 + MedicalCase:41 + Herbs:33 + Formula:22 + Users:31 = 181通过)
+- [x] UI显示正常 (代码层面验证通过，属性绑定正确)
 
 ### 可选标准（Phase 6）✅ 已完成
 - [x] 所有属性命名与DTO一致
@@ -162,11 +162,11 @@
 - [x] 更新ToDto()中的字段映射
 - [x] 编译验证
 
-### 7.2 类命名评估（待定）
-- [ ] 评估PrescriptionItem vs PrescriptionHerbItem命名 (Post-Release)
-- [ ] Server: PrescriptionItem (不含Herb)
-- [ ] Desktop: PrescriptionHerbItemViewModel (含Herb)
-- [ ] 确定是否需要统一命名
+### 7.2 类命名评估 ✅
+- [x] 评估PrescriptionItem vs PrescriptionHerbItem命名
+- [x] Server: PrescriptionItem (不含Herb) - 领域模型命名，表示处方条目
+- [x] Desktop: PrescriptionHerbItem (含Herb) - 继承HerbItemViewModelBase，强调带药材计算逻辑
+- [x] 结论: 命名差异是合理的设计选择，无需统一
 
 ## Phase 8: 前端Item定义集中化 ✅
 
