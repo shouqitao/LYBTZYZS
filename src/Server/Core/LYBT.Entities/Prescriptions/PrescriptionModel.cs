@@ -87,12 +87,9 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("处方项目")]
         public virtual ICollection<PrescriptionItem> Items { get; set; } = new List<PrescriptionItem>();
 
-        // 导航属性
-
-        /// <summary>
-        /// 所属医疗案例
-        /// </summary>
-        public virtual MedicalCases.MedicalCase? MedicalCase { get; set; }
+        // MedicalCase导航属性已移除 - OpenSpec: refactor-server-ddd-aggregates
+        // Prescription作为MedicalCase聚合的内部实体，不应有反向导航
+        // 需要MedicalCase信息时，通过MedicalCaseId查询或使用Query Service
 
         /// <summary>
         /// 打印日志记录

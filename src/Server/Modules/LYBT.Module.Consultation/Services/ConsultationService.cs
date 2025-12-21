@@ -32,14 +32,16 @@ namespace LYBT.Module.Consultations.Services
         {
             _logger.LogDebug("获取诊疗记录详情: {Id}", id);
 
-            // 使用优化后的查询方法，包含所有关联数据
+            // 使用优化后的查询方法
             var entity = await _repository.GetByIdWithDetailsAsync(id)
                 ?? throw NotFoundException.Consultation(id);
 
             var dto = _mapper.Map<ConsultationDetailDto>(entity);
-            // 确保PatientName和DoctorName从预加载的导航属性获取
-            dto.PatientName = entity.MedicalCase?.PatientName ?? string.Empty;
-            dto.DoctorName = entity.MedicalCase?.DoctorName ?? string.Empty;
+
+            // OpenSpec: refactor-server-ddd-aggregates - 通过共享主键查询MedicalCase获取PatientName/DoctorName
+            var medicalCaseInfo = await _repository.GetMedicalCaseInfoAsync(id);
+            dto.PatientName = medicalCaseInfo?.PatientName ?? string.Empty;
+            dto.DoctorName = medicalCaseInfo?.DoctorName ?? string.Empty;
 
             return dto;
         }
@@ -61,9 +63,11 @@ namespace LYBT.Module.Consultations.Services
             }
 
             var dto = _mapper.Map<ConsultationDetailDto>(consultation);
-            // 确保PatientName和DoctorName从预加载的导航属性获取
-            dto.PatientName = consultation.MedicalCase?.PatientName ?? string.Empty;
-            dto.DoctorName = consultation.MedicalCase?.DoctorName ?? string.Empty;
+
+            // OpenSpec: refactor-server-ddd-aggregates - 通过共享主键查询MedicalCase获取PatientName/DoctorName
+            var medicalCaseInfo = await _repository.GetMedicalCaseInfoAsync(medicalCaseId);
+            dto.PatientName = medicalCaseInfo?.PatientName ?? string.Empty;
+            dto.DoctorName = medicalCaseInfo?.DoctorName ?? string.Empty;
 
             return new List<ConsultationDetailDto> { dto };
         }

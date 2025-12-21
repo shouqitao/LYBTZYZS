@@ -55,7 +55,7 @@ namespace LYBT.Module.Prescriptions.Mapping
                 .ForMember(dest => dest.IsPrinted, opt => opt.Ignore())
                 .ForMember(dest => dest.PrescriptionNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.Items, opt => opt.Ignore()) // Items单独处理
-                .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
+                // OpenSpec: refactor-server-ddd-aggregates - MedicalCase导航属性已移除
                 .ForMember(dest => dest.PrintLogs, opt => opt.Ignore())
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())

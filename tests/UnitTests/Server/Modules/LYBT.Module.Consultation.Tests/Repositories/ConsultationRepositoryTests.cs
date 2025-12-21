@@ -48,12 +48,13 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "测试医生"
         };
 
+        // OpenSpec: refactor-server-ddd-aggregates - Consultation不再有MedicalCase导航属性
+        // 使用共享主键关联，先添加MedicalCase，再添加Consultation
         var consultation = new LYBT.Entities.Consultations.Consultation
         {
-            Id = consultationId,
+            Id = consultationId,  // 共享主键
             TCMDiagnosis = "外感风寒",
-            CreatedBy = Guid.NewGuid(),
-            MedicalCase = medicalCase
+            CreatedBy = Guid.NewGuid()
         };
 
         _context.MedicalCases.Add(medicalCase);
@@ -67,8 +68,7 @@ public class ConsultationRepositoryTests : IDisposable
         result.Should().NotBeNull();
         result.Id.Should().Be(consultationId);
         result.TCMDiagnosis.Should().Be("外感风寒");
-        result.MedicalCase.Should().NotBeNull();
-        result.MedicalCase.PatientName.Should().Be("测试患者");
+        // MedicalCase信息现在通过GetMedicalCaseInfoAsync方法单独获取
     }
 
     [Fact]
@@ -99,12 +99,12 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "医生A"
         };
 
+        // OpenSpec: refactor-server-ddd-aggregates - 使用共享主键关联
         var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCaseId,  // 共享主键
             TCMDiagnosis = "咳嗽",
-            CreatedBy = Guid.NewGuid(),
-            MedicalCase = medicalCase
+            CreatedBy = Guid.NewGuid()
         };
 
         _context.MedicalCases.Add(medicalCase);
@@ -136,12 +136,12 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "医生B"
         };
 
+        // OpenSpec: refactor-server-ddd-aggregates - 使用共享主键关联
         var consultation1 = new LYBT.Entities.Consultations.Consultation
         {
-            Id = medicalCase1.Id,
+            Id = medicalCase1.Id,  // 共享主键
             TCMDiagnosis = "诊断1",
-            CreatedBy = Guid.NewGuid(),
-            MedicalCase = medicalCase1
+            CreatedBy = Guid.NewGuid()
         };
 
         // 稍后插入以确保CreatedAt更晚
@@ -159,12 +159,12 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "医生B"
         };
 
+        // OpenSpec: refactor-server-ddd-aggregates - 使用共享主键关联
         var consultation2 = new LYBT.Entities.Consultations.Consultation
         {
-            Id = medicalCase2.Id,
+            Id = medicalCase2.Id,  // 共享主键
             TCMDiagnosis = "诊断2",
-            CreatedBy = Guid.NewGuid(),
-            MedicalCase = medicalCase2
+            CreatedBy = Guid.NewGuid()
         };
 
         // 后插入，CreatedAt会更晚
@@ -199,12 +199,12 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "医生C"
         };
 
+        // OpenSpec: refactor-server-ddd-aggregates - 使用共享主键关联
         var consultation = new LYBT.Entities.Consultations.Consultation
         {
-            Id = medicalCase.Id,
+            Id = medicalCase.Id,  // 共享主键
             TCMDiagnosis = "感冒",
-            CreatedBy = Guid.NewGuid(),
-            MedicalCase = medicalCase
+            CreatedBy = Guid.NewGuid()
         };
 
         _context.MedicalCases.Add(medicalCase);
@@ -236,12 +236,12 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "李医生"
         };
 
+        // OpenSpec: refactor-server-ddd-aggregates - 使用共享主键关联
         var consultation1 = new LYBT.Entities.Consultations.Consultation
         {
-            Id = medicalCase1.Id,
+            Id = medicalCase1.Id,  // 共享主键
             TCMDiagnosis = "风寒感冒",
-            CreatedBy = Guid.NewGuid(),
-            MedicalCase = medicalCase1
+            CreatedBy = Guid.NewGuid()
         };
 
         var medicalCase2 = new LYBT.Entities.MedicalCases.MedicalCase
@@ -254,12 +254,12 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "王医生"
         };
 
+        // OpenSpec: refactor-server-ddd-aggregates - 使用共享主键关联
         var consultation2 = new LYBT.Entities.Consultations.Consultation
         {
-            Id = medicalCase2.Id,
+            Id = medicalCase2.Id,  // 共享主键
             TCMDiagnosis = "痰热咳嗽",
-            CreatedBy = Guid.NewGuid(),
-            MedicalCase = medicalCase2
+            CreatedBy = Guid.NewGuid()
         };
 
         _context.MedicalCases.AddRange(medicalCase1, medicalCase2);
@@ -291,12 +291,12 @@ public class ConsultationRepositoryTests : IDisposable
                 DoctorName = "医生"
             };
 
+            // OpenSpec: refactor-server-ddd-aggregates - 使用共享主键关联
             var consultation = new LYBT.Entities.Consultations.Consultation
             {
-                Id = medicalCase.Id,
+                Id = medicalCase.Id,  // 共享主键
                 TCMDiagnosis = $"诊断{i}",
-                CreatedBy = Guid.NewGuid(),
-                MedicalCase = medicalCase
+                CreatedBy = Guid.NewGuid()
             };
 
             _context.MedicalCases.Add(medicalCase);

@@ -88,10 +88,10 @@ namespace LYBT.Module.MedicalCases.Mapping
             // Issue #2231: Consultation使用共享主键，必须忽略Id相关字段以避免EF Core键修改错误
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
             // OpenSpec: consultation-field-alignment - PrescriptionEnabled已移除
+            // OpenSpec: refactor-server-ddd-aggregates - MedicalCase导航属性已移除
             CreateMap<ConsultationInputDto, LYBT.Entities.Consultations.Consultation>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())  // 共享主键，不可修改
-                .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())  // 导航属性，不可修改
-                                                                           // BaseEntity 审计字段
+                // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
@@ -102,6 +102,7 @@ namespace LYBT.Module.MedicalCases.Mapping
             // Request映射: PrescriptionInputDto -> Prescription (Shared层)
             // 注意：Items需要在Service层手动处理（删除旧项，添加新项），不能通过AutoMapper直接映射
             // OpenSpec: simplify-medicalcase-dataflow - Indication/FormulaSource已从实体删除
+            // OpenSpec: refactor-server-ddd-aggregates - MedicalCase导航属性已移除
             CreateMap<PrescriptionInputDto, LYBT.Entities.Prescriptions.Prescription>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
@@ -109,7 +110,6 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.LastPrintedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintCount, opt => opt.Ignore())
                 .ForMember(dest => dest.IsPrinted, opt => opt.Ignore())
-                .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintLogs, opt => opt.Ignore())
                 .ForMember(dest => dest.PrescriptionNumber, opt => opt.Ignore())
                 // Indication/FormulaSource已从实体删除
@@ -139,7 +139,9 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.PrescriptionId, opt => opt.Ignore());
 
             // Response映射: Consultation -> ConsultationDetailDto (Shared层)
+            // OpenSpec: refactor-server-ddd-aggregates - MedicalCaseId等于Id（共享主键）
             CreateMap<LYBT.Entities.Consultations.Consultation, ConsultationDetailDto>()
+                .ForMember(dest => dest.MedicalCaseId, opt => opt.MapFrom(src => src.Id))  // 共享主键
                 .ForMember(dest => dest.PatientId, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())

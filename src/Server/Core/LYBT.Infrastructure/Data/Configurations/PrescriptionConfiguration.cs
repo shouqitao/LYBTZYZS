@@ -1,3 +1,4 @@
+using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace LYBT.Infrastructure.Data.Configurations;
 /// <summary>
 /// Prescription 实体 EF Core 配置
 /// 继承 BaseEntityConfiguration 统一审计字段和并发控制
+/// OpenSpec: refactor-server-ddd-aggregates - 移除反向导航配置
 /// </summary>
 public class PrescriptionConfiguration : BaseEntityConfiguration<Prescription>
 {
@@ -28,8 +30,10 @@ public class PrescriptionConfiguration : BaseEntityConfiguration<Prescription>
         // CreatedBy 必填（覆盖基类的可空配置）
         builder.Property(p => p.CreatedBy).IsRequired();
 
-        // 配置与MedicalCase的一对一关系
-        builder.HasOne(p => p.MedicalCase)
+        // 与MedicalCase的一对一关系
+        // 使用泛型HasOne<T>()，不指定Prescription端的导航属性
+        // 关系从MedicalCase端维护（MedicalCase.Prescription）
+        builder.HasOne<MedicalCase>()
               .WithOne(m => m.Prescription)
               .HasForeignKey<Prescription>(p => p.MedicalCaseId)
               .IsRequired()

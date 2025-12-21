@@ -113,10 +113,10 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 聚合根模式：自动创建关联的Consultation（共享主键）
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
+            // OpenSpec: refactor-server-ddd-aggregates - 移除反向导航，仅使用共享主键关联
             var consultation = new Consultation
             {
                 Id = medicalCase.Id, // 共享主键（Consultation.Id == MedicalCase.Id）
-                MedicalCase = medicalCase, // 设置Required导航属性
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
@@ -220,10 +220,10 @@ namespace LYBT.Module.MedicalCases.Services
             };
 
             // 创建Consultation（聚合根模式：共享主键）
+            // OpenSpec: refactor-server-ddd-aggregates - 移除反向导航，仅使用共享主键关联
             var consultation = new Consultation
             {
                 Id = medicalCase.Id,
-                MedicalCase = medicalCase,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };

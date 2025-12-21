@@ -40,5 +40,13 @@ namespace LYBT.Module.Consultations.Interfaces
         /// 根据病案ID获取诊疗记录
         /// </summary>
         Task<Consultation> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 根据ID获取MedicalCase信息（PatientName, DoctorName）
+        /// OpenSpec: refactor-server-ddd-aggregates - 提供跨聚合查询的辅助方法
+        /// </summary>
+        /// <param name="id">共享主键ID（Consultation.Id == MedicalCase.Id）</param>
+        /// <returns>包含PatientName和DoctorName的元组，不存在则返回null</returns>
+        Task<(string PatientName, string DoctorName)?> GetMedicalCaseInfoAsync(Guid id);
     }
 }

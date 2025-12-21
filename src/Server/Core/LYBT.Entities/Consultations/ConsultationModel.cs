@@ -50,12 +50,8 @@ namespace LYBT.Entities.Consultations
 
         // RowVersion、IsDeleted等字段继承自BaseEntity
 
-        // 导航属性
-
-        /// <summary>
-        /// 所属医疗案例（必需的，通过共享主键关联）
-        /// </summary>
-        [Required]
-        public virtual MedicalCases.MedicalCase MedicalCase { get; set; } = null!;
+        // 导航属性已移除 - OpenSpec: refactor-server-ddd-aggregates
+        // Consultation作为MedicalCase聚合的内部实体，不应有反向导航
+        // 需要MedicalCase信息时，通过Id查询或使用Query Service
     }
 }

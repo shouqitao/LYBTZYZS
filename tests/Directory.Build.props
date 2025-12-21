@@ -38,12 +38,6 @@
     <CoverletVersion>6.0.2</CoverletVersion>
   </PropertyGroup>
 
-  <!-- 通用测试包引用 - 统一配置coverlet.collector -->
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
+  <!-- coverlet.collector 已移至 Directory.Build.targets，避免重复定义 -->
 
 </Project>

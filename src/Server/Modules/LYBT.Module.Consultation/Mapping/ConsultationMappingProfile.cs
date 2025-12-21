@@ -13,7 +13,9 @@ namespace LYBT.Module.Consultations.Mapping
         {
             // Consultation -> ConsultationDetailDto
             // Issue #1562 Phase 2: 已删除ConsultationStatus/StartTime/EndTime字段映射
+            // OpenSpec: refactor-server-ddd-aggregates - MedicalCaseId等于Id（共享主键）
             CreateMap<Consultation, ConsultationDetailDto>()
+                .ForMember(dest => dest.MedicalCaseId, opt => opt.MapFrom(src => src.Id))  // 共享主键
                 .ForMember(dest => dest.PatientId, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
@@ -26,9 +28,9 @@ namespace LYBT.Module.Consultations.Mapping
             // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
             // OpenSpec: refactor-dto-simplification - PatientName/DoctorName已从InputDto移除
             // OpenSpec: consultation-field-alignment - PrescriptionEnabled已移至MedicalCase
+            // OpenSpec: refactor-server-ddd-aggregates - MedicalCase导航属性已移除
             CreateMap<ConsultationInputDto, Consultation>()
                 .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
-                .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
@@ -41,7 +43,9 @@ namespace LYBT.Module.Consultations.Mapping
 
             // Consultation -> ConsultationListDto
             // OpenSpec: refactor-dto-simplification - 列表视图最小字段集
+            // OpenSpec: refactor-server-ddd-aggregates - MedicalCaseId等于Id（共享主键）
             CreateMap<Consultation, ConsultationListDto>()
+                .ForMember(dest => dest.MedicalCaseId, opt => opt.MapFrom(src => src.Id))  // 共享主键
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore());
         }

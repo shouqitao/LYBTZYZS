@@ -27,21 +27,28 @@ namespace LYBT.Module.Consultations.Repositories
 
         /// <summary>
         /// 根据患者ID获取诊疗记录
+        /// OpenSpec: refactor-server-ddd-aggregates - 使用子查询替代Include关联MedicalCase
         /// </summary>
         public async Task<List<Consultation>> GetByPatientIdAsync(Guid patientId)
         {
+            // 使用子查询获取患者的所有MedicalCaseId
+            // Consultation使用共享主键（Consultation.Id == MedicalCase.Id）
+            var medicalCaseIds = _context.Set<LYBT.Entities.MedicalCases.MedicalCase>()
+                .Where(mc => mc.PatientId == patientId && !mc.IsDeleted)
+                .Select(mc => mc.Id);
+
             return await DbSet
                 .AsNoTracking()
-                .Include(c => c.MedicalCase)  // 包含医疗案例信息
-                .Where(c => c.MedicalCase.PatientId == patientId && !c.IsDeleted)
+                .Where(c => medicalCaseIds.Contains(c.Id) && !c.IsDeleted)
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
         }
 
         /// <summary>
         /// 获取分页列表（包含关联数据）
-        /// 优化：预加载Patient和User信息，避免N+1查询
+        /// 优化：使用联接查询MedicalCase信息，避免N+1查询
         /// Phase 2: Repository层简化（Epic #1725）- 使用BaseRepository辅助方法
+        /// OpenSpec: refactor-server-ddd-aggregates - 使用联接替代Include关联MedicalCase
         /// </summary>
         public async Task<PagedResult<Consultation>> GetPagedWithDetailsAsync(
             int pageNumber,
@@ -50,18 +57,22 @@ namespace LYBT.Module.Consultations.Repositories
         {
             var query = DbSet
                 .AsNoTracking()
-                .Include(c => c.MedicalCase)  // 预加载病案信息（包含患者和医生信息）
                 .Where(c => !c.IsDeleted);
 
-            // 关键字搜索
+            // 关键字搜索 - 使用联接查询MedicalCase信息
             // OpenSpec: refactor-diagnosis-fields - 更新为4个核心字段
             if (!string.IsNullOrWhiteSpace(keyword))
             {
+                // 使用子查询获取匹配关键字的MedicalCaseId
+                var matchingMedicalCaseIds = _context.Set<LYBT.Entities.MedicalCases.MedicalCase>()
+                    .Where(mc => !mc.IsDeleted &&
+                        (mc.PatientName.Contains(keyword) || mc.DoctorName.Contains(keyword)))
+                    .Select(mc => mc.Id);
+
                 query = query.Where(c =>
                     (c.PresentIllness != null && c.PresentIllness.Contains(keyword)) ||
                     (c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(keyword)) ||
-                    c.MedicalCase.PatientName.Contains(keyword) ||
-                    c.MedicalCase.DoctorName.Contains(keyword));
+                    matchingMedicalCaseIds.Contains(c.Id));
             }
 
             // 分页处理
@@ -78,12 +89,12 @@ namespace LYBT.Module.Consultations.Repositories
 
         /// <summary>
         /// 根据ID获取诊疗记录（包含所有关联数据）
+        /// OpenSpec: refactor-server-ddd-aggregates - 移除Include，PatientName/DoctorName由Service层通过共享主键查询MedicalCase获取
         /// </summary>
         public async Task<Consultation> GetByIdWithDetailsAsync(Guid id)
         {
             return (await DbSet
-            .AsNoTracking()
-            .Include(c => c.MedicalCase)
+                .AsNoTracking()
                 .Where(c => c.Id == id && !c.IsDeleted)
                 .SingleOrDefaultAsync())!;
         }
@@ -92,18 +103,35 @@ namespace LYBT.Module.Consultations.Repositories
         /// 根据病案ID获取诊疗记录
         /// </summary>
         /// <remarks>
-        ///  设计说明：由于Consultation采用共享主键设计（Consultation.Id == MedicalCase.Id），
+        /// 设计说明：由于Consultation采用共享主键设计（Consultation.Id == MedicalCase.Id），
         /// 此方法与GetByIdAsync(medicalCaseId)在功能上等价，查询条件为c.Id == medicalCaseId。
         /// 保留此方法是为了语义清晰，明确表达"通过病案ID查询诊疗记录"的业务意图。
         /// 参见：ConsultationConfiguration.cs的Fluent API配置
+        /// OpenSpec: refactor-server-ddd-aggregates - 移除Include
         /// </remarks>
         public async Task<Consultation> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             return (await DbSet
-            .AsNoTracking()
-            .Include(c => c.MedicalCase)
+                .AsNoTracking()
                 .Where(c => c.Id == medicalCaseId && !c.IsDeleted)  // c.Id == MedicalCase.Id（共享主键）
                 .SingleOrDefaultAsync())!;
+        }
+
+        /// <summary>
+        /// 根据ID获取MedicalCase信息（PatientName, DoctorName）
+        /// OpenSpec: refactor-server-ddd-aggregates - 提供跨聚合查询的辅助方法
+        /// </summary>
+        /// <param name="id">共享主键ID（Consultation.Id == MedicalCase.Id）</param>
+        /// <returns>包含PatientName和DoctorName的元组，不存在则返回null</returns>
+        public async Task<(string PatientName, string DoctorName)?> GetMedicalCaseInfoAsync(Guid id)
+        {
+            var result = await _context.Set<LYBT.Entities.MedicalCases.MedicalCase>()
+                .AsNoTracking()
+                .Where(mc => mc.Id == id && !mc.IsDeleted)
+                .Select(mc => new { mc.PatientName, mc.DoctorName })
+                .FirstOrDefaultAsync();
+
+            return result != null ? (result.PatientName, result.DoctorName) : null;
         }
     }
 }
