@@ -1,4 +1,5 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿using System.Diagnostics.CodeAnalysis;
+using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Patients;
@@ -19,6 +20,8 @@ namespace LYBT.Server.PerformanceTests
     [MemoryDiagnoser]
     [SimpleJob(warmupCount: 3, iterationCount: 10)]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
+    [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable",
+        Justification = "BenchmarkDotNet通过[GlobalCleanup]管理资源释放")]
     public class ServerPerformanceTests
     {
         private AppDbContext _context = null!;

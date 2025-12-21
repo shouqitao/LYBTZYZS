@@ -32,15 +32,15 @@ public class RetryPolicyIntegrationTests
         var policy = RetryPolicyExtensions.CreateHttpRetryPolicy(_logger, retryCount: 3);
 
         // Act
-        var result = await policy.ExecuteAsync(async () =>
+        var result = await policy.ExecuteAsync(() =>
         {
             attemptCount++;
             if (attemptCount < 3)
             {
                 // 模拟前两次返回503 Service Unavailable
-                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
             }
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         });
 
         // Assert
@@ -56,10 +56,10 @@ public class RetryPolicyIntegrationTests
         var policy = RetryPolicyExtensions.CreateHttpRetryPolicy(_logger, retryCount: 3);
 
         // Act
-        var result = await policy.ExecuteAsync(async () =>
+        var result = await policy.ExecuteAsync(() =>
         {
             attemptCount++;
-            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
         });
 
         // Assert
@@ -75,14 +75,14 @@ public class RetryPolicyIntegrationTests
         var policy = RetryPolicyExtensions.CreateHttpRetryPolicy(_logger, retryCount: 2);
 
         // Act
-        var result = await policy.ExecuteAsync(async () =>
+        var result = await policy.ExecuteAsync(() =>
         {
             attemptCount++;
             if (attemptCount < 2)
             {
                 throw new HttpRequestException("模拟网络故障");
             }
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         });
 
         // Assert
@@ -98,10 +98,10 @@ public class RetryPolicyIntegrationTests
         var policy = RetryPolicyExtensions.CreateHttpRetryPolicy(_logger, retryCount: 3);
 
         // Act - 400 Bad Request 不应重试
-        var result = await policy.ExecuteAsync(async () =>
+        var result = await policy.ExecuteAsync(() =>
         {
             attemptCount++;
-            return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
         });
 
         // Assert
@@ -117,10 +117,10 @@ public class RetryPolicyIntegrationTests
         var policy = RetryPolicyExtensions.CreateHttpRetryPolicy(_logger, retryCount: 3);
 
         // Act
-        var result = await policy.ExecuteAsync(async () =>
+        var result = await policy.ExecuteAsync(() =>
         {
             attemptCount++;
-            return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
         });
 
         // Assert
@@ -146,15 +146,15 @@ public class RetryPolicyIntegrationTests
         {
             try
             {
-                await policy.ExecuteAsync(async () =>
-                    new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+                await policy.ExecuteAsync(() =>
+                    Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
             }
             catch { /* 忽略 */ }
         }
 
         // Assert - 熔断器应该打开
-        var act = async () => await policy.ExecuteAsync(async () =>
-            new HttpResponseMessage(HttpStatusCode.OK));
+        var act = async () => await policy.ExecuteAsync(() =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
 
         await act.Should().ThrowAsync<BrokenCircuitException>();
     }
@@ -171,13 +171,13 @@ public class RetryPolicyIntegrationTests
         // Act - 只触发2次失败（低于阈值5）
         for (var i = 0; i < 2; i++)
         {
-            await policy.ExecuteAsync(async () =>
-                new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+            await policy.ExecuteAsync(() =>
+                Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
         }
 
         // Assert - 熔断器应该仍然关闭，可以正常执行
-        var result = await policy.ExecuteAsync(async () =>
-            new HttpResponseMessage(HttpStatusCode.OK));
+        var result = await policy.ExecuteAsync(() =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
 
         result.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -241,14 +241,14 @@ public class RetryPolicyIntegrationTests
             circuitBreakerThreshold: 10);
 
         // Act
-        var result = await policy.ExecuteAsync(async (ct) =>
+        var result = await policy.ExecuteAsync((ct) =>
         {
             attemptCount++;
             if (attemptCount < 2)
             {
-                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
             }
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         }, CancellationToken.None);
 
         // Assert
@@ -268,11 +268,10 @@ public class RetryPolicyIntegrationTests
             circuitBreakerThreshold: 5);
 
         // Act
-        var result = await policy.ExecuteAsync(async (ct) =>
+        var result = await policy.ExecuteAsync((ct) =>
         {
             attemptCount++;
-            await Task.CompletedTask;
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         }, CancellationToken.None);
 
         // Assert
