@@ -51,6 +51,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **影响模块**: 全部Desktop模块
 
+#### 消除Service层catch-return反模式 (OpenSpec: eliminate-service-catch-return) - 2025-12-21
+
+**背景**: Service层存在97个手动catch-return反模式,违反SVC-003规范,导致双重异常处理和代码冗余。
+
+**重构工作**:
+- 移除Auth/Users/Patients/Herbs/Formula/MedicalCase共97个try-catch-rethrow反模式
+- 统一由IExceptionHandler处理异常,简化Controller层代码
+- 保留合理的catch场景: fire-and-forget(审计日志)、重试逻辑、批处理item-level隔离
+
+**测试更新**:
+- 更新11个单元测试从`_ShouldReturnFailure`改为`_ShouldThrowException`
+- 测试全部通过: Auth(81) + Users(31) + Patients(54) + Herbs(33) + MedicalCase(41) = 240通过
+
+**安全改进**: 修复TokenRevocationService中`IsTokenRevokedAsync`查询异常返回false(未撤销)的安全隐患
+
+**影响模块**: Auth, Users, Patients, Herbs, Formula, MedicalCase
+
 #### WPF转换器统一架构 (OpenSpec: consolidate-wpf-converters) - 2025-12-21
 
 **背景**: Desktop层的WPF转换器分散在多个项目中,存在大量重复定义,需要统一管理。
