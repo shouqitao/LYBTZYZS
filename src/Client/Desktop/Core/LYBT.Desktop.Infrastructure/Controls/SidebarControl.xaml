@@ -95,7 +95,7 @@
                 <StackPanel Orientation="Horizontal">
                     <!-- 用户头像 -->
                     <Border Width="32" Height="32" CornerRadius="16" Background="{StaticResource SidebarAvatarBrush}">
-                        <TextBlock Text="{Binding CurrentUser.RealName, ElementName=Root, Converter={StaticResource FirstCharConverter}}"
+                        <TextBlock Text="{Binding CurrentUser.RealName, ElementName=Root, Converter={StaticResource FirstCharacterConverter}}"
                                    FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource SidebarTextBrush}"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
