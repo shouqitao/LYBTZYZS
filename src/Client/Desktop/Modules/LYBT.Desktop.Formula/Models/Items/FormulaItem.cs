@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Models.Items.Formulas;
+namespace LYBT.Desktop.Formula.Models.Items;
 
 /// <summary>
 /// 验方列表项UI模型 - 用于DataGrid/ListView显示

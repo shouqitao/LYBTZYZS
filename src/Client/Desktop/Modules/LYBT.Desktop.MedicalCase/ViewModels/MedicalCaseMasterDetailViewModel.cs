@@ -3,7 +3,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.Models.Items.Prescriptions;
+using LYBT.Desktop.Prescriptions.Models.Items;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Modules.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.Herbs;

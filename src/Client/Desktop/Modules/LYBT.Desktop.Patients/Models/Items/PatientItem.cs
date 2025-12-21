@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Models.Items.Patients;
+namespace LYBT.Desktop.Patients.Models.Items;
 
 /// <summary>
 /// 患者列表项UI模型 - 用于DataGrid/ListView显示

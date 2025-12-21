@@ -5,13 +5,14 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Models.ViewModels.Base
+namespace LYBT.Desktop.Herbs.ViewModels.Base
 {
     /// <summary>
     /// 药材项基类 - 封装药材选择、剂量输入和拼音码过滤的共享逻辑
     /// Issue: unify-herb-card-control - 统一经验方和处方的药材编辑体验
     /// OpenSpec: unify-herb-list-controls - 修复Unit默认值
     /// OpenSpec: optimize-desktop-core - 实现IHerbItemEditable接口解耦UI控件依赖
+    /// OpenSpec: optimize-desktop-core - 从Core层迁移到Herbs模块
     /// </summary>
     public abstract class HerbItemViewModelBase : BindableBase, IHerbItemEditable
     {

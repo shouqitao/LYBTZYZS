@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Models.Items.MedicalCases;
+namespace LYBT.Desktop.MedicalCase.Models.Items;
 
 /// <summary>
 /// 病历列表项UI模型 - 用于DataGrid/ListView显示

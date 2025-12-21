@@ -5,7 +5,7 @@ using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
-using LYBT.Desktop.Models.Items.Prescriptions;
+using LYBT.Desktop.Prescriptions.Models.Items;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Formula;

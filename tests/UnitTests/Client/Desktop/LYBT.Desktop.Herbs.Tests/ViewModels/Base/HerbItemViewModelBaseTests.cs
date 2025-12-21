@@ -1,15 +1,16 @@
 using System.Collections.ObjectModel;
 using FluentAssertions;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Herbs.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Xunit;
 
-namespace LYBT.Desktop.Models.Tests.ViewModels.Base;
+namespace LYBT.Desktop.Herbs.Tests.ViewModels.Base;
 
 /// <summary>
 /// HerbItemViewModelBase 单元测试
 /// Issue: unify-herb-card-control - Phase 4 Task 4.1
 /// 测试拼音码过滤逻辑和药材选择功能
+/// OpenSpec: optimize-desktop-core - 迁移到Herbs.Tests
 /// </summary>
 public class HerbItemViewModelBaseTests
 {
@@ -37,9 +38,9 @@ public class HerbItemViewModelBaseTests
 
     #region Test Data
 
-    private static ObservableCollection<HerbListDto> CreateTestHerbs()
+    private static ObservableCollection<HerbDetailDto> CreateTestHerbs()
     {
-        return new ObservableCollection<HerbListDto>
+        return new ObservableCollection<HerbDetailDto>
         {
             new() { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g", Price = 0.5m },
             new() { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Unit = "g", Price = 0.8m },
@@ -226,7 +227,7 @@ public class HerbItemViewModelBaseTests
     {
         // Arrange
         var viewModel = new TestHerbItemViewModel();
-        var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g" };
+        var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g" };
 
         // Act
         viewModel.SelectedHerb = herb;
@@ -243,7 +244,7 @@ public class HerbItemViewModelBaseTests
     {
         // Arrange
         var viewModel = new TestHerbItemViewModel();
-        var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g" };
+        var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g" };
 
         // Act
         viewModel.SelectedHerb = herb;
@@ -260,7 +261,7 @@ public class HerbItemViewModelBaseTests
     {
         // Arrange
         var viewModel = new TestHerbItemViewModel();
-        var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "克" };
+        var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "克" };
 
         // Act
         viewModel.SelectedHerb = herb;
@@ -277,7 +278,7 @@ public class HerbItemViewModelBaseTests
     {
         // Arrange
         var viewModel = new TestHerbItemViewModel();
-        viewModel.SelectedHerb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Unit = "g" };
+        viewModel.SelectedHerb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Unit = "g" };
 
         // Act
         var act = () => viewModel.SelectedHerb = null;
@@ -328,7 +329,7 @@ public class HerbItemViewModelBaseTests
         };
 
         // Act
-        viewModel.Dosage = 10m;
+        viewModel.Dosage = 10;
 
         // Assert
         propertyChangedRaised.Should().BeTrue("因为Dosage变更应触发PropertyChanged");
@@ -339,16 +340,17 @@ public class HerbItemViewModelBaseTests
     #region Default Values Tests
 
     /// <summary>
-    /// 测试：默认Unit为"g"
+    /// 测试：默认Unit为空字符串（由SelectedHerb赋值时获取）
+    /// OpenSpec: unify-herb-list-controls - Unit默认为空，由药材数据赋值
     /// </summary>
     [Fact]
-    public void Unit_ByDefault_ShouldBeG()
+    public void Unit_ByDefault_ShouldBeEmpty()
     {
         // Arrange & Act
         var viewModel = new TestHerbItemViewModel();
 
         // Assert
-        viewModel.Unit.Should().Be("g", "因为默认单位应为克(g)");
+        viewModel.Unit.Should().BeEmpty("因为默认单位为空，由SelectedHerb赋值时从药材数据获取");
     }
 
     /// <summary>
@@ -374,7 +376,7 @@ public class HerbItemViewModelBaseTests
         var viewModel = new TestHerbItemViewModel();
 
         // Assert
-        viewModel.Dosage.Should().Be(0m, "因为默认剂量应为0");
+        viewModel.Dosage.Should().Be(0, "因为默认剂量应为0");
     }
 
     #endregion

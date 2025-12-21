@@ -3,9 +3,7 @@
 ## Purpose
 
 定义Client层(16个项目)的详细架构，包括Core层、Modules层、Roles层和Shell层的职责边界、MVVM模式规范和模块注册机制。
-
 ## Requirements
-
 ### Requirement: CLI-001 Core层职责
 
 Core层(5个项目) SHALL 提供客户端基础设施支持。
@@ -51,22 +49,13 @@ LYBT.Desktop.{Domain}/
 │   └── Dialogs/                   # 弹窗视图
 ├── ViewModels/                    # ViewModel
 │   ├── {Feature}ViewModel.cs
+│   ├── Components/                # ViewModel组件 (当ViewModel > 500行时必需)
+│   │   ├── {Entity}CommandHandler.cs
+│   │   ├── {Entity}DataManager.cs
+│   │   └── {Entity}Validator.cs
 │   └── Dialogs/                   # 弹窗ViewModel
 └── Services/                      # 客户端服务(可选)
 ```
-
-**模块清单**:
-
-| 模块 | 主要视图 | ViewModel数 | 说明 |
-|------|----------|-------------|------|
-| Auth | LoginView | 1 | 登录、令牌管理 |
-| Users | UserManagement | 2 | 用户CRUD |
-| Patients | PatientSelection | 5 | 患者选择、CRUD |
-| MedicalCase | MedicalCaseWorkspace | 17 | 医案核心工作区 |
-| Consultation | ConsultationForm | 1 | 诊断录入 |
-| Prescriptions | PrescriptionPanel | 2 | 处方编辑 |
-| Herbs | HerbManagement | 2 | 药材CRUD |
-| Formula | FormulaManagement | 2 | 经验方CRUD |
 
 #### Scenario: 创建业务视图
 - **WHEN** 需要新增功能界面
@@ -74,11 +63,10 @@ LYBT.Desktop.{Domain}/
 - **AND** View SHALL 只包含XAML声明
 - **AND** ViewModel SHALL 继承UnifiedViewModelBase
 
-#### Scenario: 创建弹窗
-- **WHEN** 需要模态对话框
-- **THEN** SHALL 创建{Dialog}Dialog.xaml和{Dialog}DialogViewModel.cs
-- **AND** ViewModel SHALL 实现IDialogAware
-- **AND** SHALL 使用Prism DialogService
+#### Scenario: ViewModel需要Components
+- **WHEN** ViewModel超过500行
+- **THEN** SHALL 创建ViewModels/Components/目录
+- **AND** SHALL 提取CommandHandler、DataManager、Validator组件
 
 ---
 
@@ -227,6 +215,35 @@ public class {Domain}Module : IModule
 - **AND** SHALL 指定View和ViewModel类型
 
 ---
+
+### Requirement: CLI-002-A Components注册规范
+
+Components SHALL 在Module中注册为Transient。
+
+**示例**:
+```csharp
+public class {Domain}Module : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // Components (Transient)
+        containerRegistry.Register<{Entity}CommandHandler>();
+        containerRegistry.Register<{Entity}DataManager>();
+        containerRegistry.Register<{Entity}Validator>();
+        
+        // ViewModel
+        containerRegistry.Register<{Feature}ViewModel>();
+        
+        // View导航
+        containerRegistry.RegisterForNavigation<{Feature}View>();
+    }
+}
+```
+
+#### Scenario: 注册Components
+- **WHEN** 模块有Components拆分
+- **THEN** SHALL 使用Register<T>()注册为Transient
+- **AND** SHALL 在ViewModel注册之前注册Components
 
 ## Cross-Reference
 

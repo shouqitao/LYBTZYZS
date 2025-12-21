@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using LYBT.Desktop.Models.Items.Prescriptions;
+using LYBT.Desktop.Prescriptions.Models.Items;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels.Components;

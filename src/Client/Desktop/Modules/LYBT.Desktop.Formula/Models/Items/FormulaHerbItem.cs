@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Models.Items.Formulas;
+namespace LYBT.Desktop.Formula.Models.Items;
 
 /// <summary>
 /// 验方中的药材项

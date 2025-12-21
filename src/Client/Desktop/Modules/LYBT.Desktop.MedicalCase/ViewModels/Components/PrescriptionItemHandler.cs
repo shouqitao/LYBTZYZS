@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using LYBT.Desktop.Models.Items.Prescriptions;
+using LYBT.Desktop.Prescriptions.Models.Items;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;

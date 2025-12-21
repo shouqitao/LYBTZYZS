@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Consultation;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Models.Items.Consultations;
+namespace LYBT.Desktop.Consultation.Models.Items;
 
 /// <summary>
 /// 问诊列表项UI模型 - 用于DataGrid/ListView显示

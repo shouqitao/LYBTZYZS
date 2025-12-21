@@ -1,14 +1,15 @@
-﻿using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Herbs.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.Models.Items.Prescriptions;
+namespace LYBT.Desktop.Prescriptions.Models.Items;
 
 /// <summary>
 /// 处方药材项 - 继承HerbItemViewModelBase
 /// OpenSpec: unify-frontend-backend-types Phase 8.4
 /// 统一自PrescriptionItemViewModel和PrescriptionHerbItemViewModel
 /// 用于医案处方编辑、处方模板等场景
+/// OpenSpec: optimize-desktop-core - 从Core层迁移到Prescriptions模块
 /// </summary>
 public class PrescriptionHerbItem : HerbItemViewModelBase
 {
