@@ -68,6 +68,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **影响模块**: Auth, Users, Patients, Herbs, Formula, MedicalCase
 
+#### 采用Activity API统一分布式追踪 (OpenSpec: adopt-activity-api-tracing) - 2025-12-21
+
+**背景**: 自定义CorrelationId实现分散、非标准格式、不兼容OpenTelemetry。
+
+**已实现内容**:
+- TraceContext.cs: 提供统一的Activity API访问（CurrentTraceId, TraceIdOrNew, StartActivity）
+- ActivityCorrelationIdProvider: 基于Activity的ICorrelationIdProvider实现
+- ViewModelBase/ClientErrorMessageMapper: 已迁移使用TraceContext.TraceIdOrNew
+- 旧代码删除: CorrelationIdContext.cs, CorrelationIdDelegatingHandler.cs
+
+**技术优势**: .NET原生AsyncLocal传播、W3C traceparent自动添加、OpenTelemetry兼容
+
+**影响模块**: LYBT.Shared.Logging, LYBT.Desktop.Models, LYBT.Desktop.Infrastructure
+
 #### 重构异常处理系统 (OpenSpec: refactor-exception-handling-system) - 2025-12-21
 
 **背景**: 异常处理体系存在异常吞没、消息泄露、无HTTP韧性等问题,需建立端到端一致的处理机制。
