@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### Desktop层Core净化重构 (OpenSpec: optimize-desktop-core) - 2025-12-21
+
+**背景**: Desktop层Core项目(LYBT.Desktop.Models)包含大量业务代码，违反三层对齐架构原则。
+
+**迁移工作**:
+- ConsultationItem -> LYBT.Desktop.Consultation/Models/Items/
+- FormulaHerbItem, FormulaItem -> LYBT.Desktop.Formula/Models/Items/
+- HerbItem, HerbItemViewModelBase -> LYBT.Desktop.Herbs/Models/Items/, ViewModels/Base/
+- MedicalCaseItem -> LYBT.Desktop.MedicalCase/Models/Items/
+- PatientItem -> LYBT.Desktop.Patients/Models/Items/
+- PrescriptionHerbItem, PrescriptionTemplate -> LYBT.Desktop.Prescriptions/Models/
+- UserItem -> LYBT.Desktop.Users/Models/Items/
+
+**Core层净化结果**:
+- 仅保留Http/ProblemDetails.cs (RFC 7807标准)
+- 仅保留ViewModels/Base/核心ViewModel基类
+
+**测试项目优化**:
+- 统一coverlet.collector到tests/Directory.Build.props
+- 清理12个测试项目的重复PackageReference
+
 ### Added
 
 #### 测试覆盖优化项目 (OpenSpec: optimize-integration-tests) - 2025-12-21
