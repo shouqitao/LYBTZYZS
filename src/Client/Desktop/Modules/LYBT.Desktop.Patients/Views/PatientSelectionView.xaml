@@ -6,13 +6,8 @@
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <UserControl.Resources>
-        <!-- Converters - Epic #2210 Task 3.2.2 & 3.2.3 -->
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
-        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
-        <!-- OpenSpec: refactor-patient-selection - 使用UnifiedDesignSystem全局样式 -->
-    </UserControl.Resources>
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
+    <!-- OpenSpec: refactor-patient-selection - 使用UnifiedDesignSystem全局样式 -->
 
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>

@@ -19,11 +19,8 @@
     右栏: 医案详情预览 (复用MedicalCaseViewControl)
     -->
 
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <infrastructure:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-        <infrastructure:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
-
         <!-- 历史医案卡片样式 -->
         <Style x:Key="HistoryCaseCardStyle" TargetType="Border">
             <Setter Property="Background" Value="White" />

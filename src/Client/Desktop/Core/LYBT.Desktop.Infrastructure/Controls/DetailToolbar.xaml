@@ -26,8 +26,7 @@
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <infrastructure:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+            <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
 
             <!-- 危险按钮样式 -->
             <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">

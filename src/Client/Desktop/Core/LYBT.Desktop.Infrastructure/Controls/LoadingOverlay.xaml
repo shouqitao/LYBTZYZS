@@ -21,11 +21,7 @@
              xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
              x:Name="Root">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
 
     <Grid Background="#80FFFFFF"
           Visibility="{Binding IsLoading, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}">

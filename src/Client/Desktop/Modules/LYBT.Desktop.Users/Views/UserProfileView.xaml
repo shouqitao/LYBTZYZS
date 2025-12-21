@@ -8,6 +8,7 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1200">
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
         <!-- 阴影效果 -->
         <DropShadowEffect x:Key="CardShadow"
@@ -15,9 +16,6 @@
                           ShadowDepth="2"
                           Opacity="0.05"
                           Color="#000000"/>
-
-        <!-- 布尔转可见性转换器 -->
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </UserControl.Resources>
 
     <!-- 主容器：页面背景 #F8FAFC -->

@@ -2,8 +2,6 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
-        xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters"
-        xmlns:infra="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
         xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding Title}"

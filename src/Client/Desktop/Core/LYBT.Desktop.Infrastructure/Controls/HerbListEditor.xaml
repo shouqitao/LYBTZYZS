@@ -25,12 +25,7 @@
         AddNewRowCommand="{Binding AddNewRowCommand}" />
     -->
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <!-- 用于空状态提示 -->
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
 
     <Grid>
         <!-- 药材列表 -->

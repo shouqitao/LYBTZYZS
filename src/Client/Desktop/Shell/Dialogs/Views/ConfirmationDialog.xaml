@@ -13,10 +13,7 @@
         ShowInTaskbar="False">
 
     <!-- Epic #1676 Phase 2: 通用确认对话框，支持删除选项 -->
-    <Window.Resources>
-        <!-- Bool转Visibility转换器 -->
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </Window.Resources>
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
 
     <Grid Margin="20">
         <Grid.RowDefinitions>

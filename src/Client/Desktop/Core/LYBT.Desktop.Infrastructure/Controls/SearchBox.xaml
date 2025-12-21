@@ -26,7 +26,7 @@
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <infrastructure:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
 
             <!-- 绑定代理 - 用于VisualBrush中访问控件属性 -->
             <helpers:BindingProxy x:Key="RootProxy" Data="{Binding ElementName=Root}"/>

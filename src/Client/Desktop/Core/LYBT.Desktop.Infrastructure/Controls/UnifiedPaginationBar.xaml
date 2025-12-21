@@ -8,10 +8,8 @@
              mc:Ignorable="d"
              d:DesignHeight="40" d:DesignWidth="800">
 
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
-        <!-- 转换器 -->
-        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-
         <!-- 页大小选项 -->
         <x:Array x:Key="PageSizeOptions" Type="sys:Int32">
             <sys:Int32>10</sys:Int32>

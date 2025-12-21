@@ -19,15 +19,12 @@
              xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-
-            <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-            <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <infrastructure:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
 
             <!-- 只读文本块样式 - 用于ViewContent -->
             <Style x:Key="ReadOnlyTextStyle" TargetType="TextBlock">

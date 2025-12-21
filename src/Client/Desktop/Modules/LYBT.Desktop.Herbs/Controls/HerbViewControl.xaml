@@ -19,13 +19,12 @@
              xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              x:Name="Root">
 
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <infrastructure:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
 

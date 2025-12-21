@@ -9,9 +9,8 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DesignHeight="40" d:DesignWidth="220">
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
         <ObjectDataProvider x:Key="DecocteMethodValues"
                             MethodName="GetValues"
                             ObjectType="{x:Type sys:Enum}">

@@ -2,7 +2,6 @@
     x:Class="LYBT.Desktop.Shell.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
@@ -24,19 +23,10 @@
 
                 <!--  对话框窗口样式 (OpenSpec: add-prescription-import-dialogs)  -->
                 <ResourceDictionary Source="Styles/DialogStyles.xaml" />
+
+                <!--  统一转换器资源字典 (OpenSpec: consolidate-wpf-converters)  -->
+                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Converters/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-            <!--  基础转换器 - 引用 Infrastructure 中的统一定义  -->
-            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
-            <converters:BoolToBrushConverter x:Key="BoolToBrushConverter" />
-            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-            <converters:FirstCharacterConverter x:Key="FirstCharacterConverter" />
-            <!--  UI统一化转换器 (Issue #1840)  -->
-            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-            <converters:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
-            <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
-
 
             <!--  应用级全局样式覆盖  -->
             <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">

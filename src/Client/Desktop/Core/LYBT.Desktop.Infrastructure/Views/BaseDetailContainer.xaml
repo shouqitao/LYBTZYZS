@@ -36,12 +36,7 @@
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- 布尔值转可见性转换器 -->
-            <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <infrastructure:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
-            <!-- Null转可见性转换器 - OpenSpec: unify-medicalcase-view-edit-pattern -->
-            <infrastructure:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-            <infrastructure:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
+            <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
 
             <!-- 卡片阴影 -->
             <DropShadowEffect x:Key="CardShadow"

@@ -22,14 +22,12 @@
              xmlns:herbControls="clr-namespace:LYBT.Desktop.Herbs.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-
-            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 

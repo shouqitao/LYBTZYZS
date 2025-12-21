@@ -1,0 +1,38 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters">
+
+    <!-- ========== Boolean Converters ========== -->
+
+    <!-- Bool to Visibility -->
+    <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+
+    <!-- Bool to other types -->
+    <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+    <converters:BoolToBrushConverter x:Key="BoolToBrushConverter" />
+    <converters:BoolToDoubleConverter x:Key="BoolToDoubleConverter" />
+    <converters:BoolToStringConverter x:Key="BoolToStringConverter" />
+
+    <!-- ========== Visibility Converters ========== -->
+
+    <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+    <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+    <converters:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
+
+    <!-- ========== Enum/Status Converters ========== -->
+
+    <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+    <converters:StatusToColorConverter x:Key="StatusToColorConverter" />
+    <converters:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter" />
+    <converters:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter" />
+
+    <!-- ========== String Converters ========== -->
+
+    <converters:FirstCharacterConverter x:Key="FirstCharacterConverter" />
+
+    <!-- ========== Domain-specific Converters ========== -->
+
+    <converters:DecocteMethodToVisibilityConverter x:Key="DecocteMethodToVisibilityConverter" />
+
+</ResourceDictionary>

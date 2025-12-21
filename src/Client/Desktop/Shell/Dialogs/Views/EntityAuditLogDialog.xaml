@@ -14,9 +14,8 @@
         MinHeight="400" MinWidth="700">
 
     <!-- OpenSpec: add-global-audit-system - 通用实体审计日志对话框 -->
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-
         <!-- 操作类型颜色 -->
         <Style x:Key="OperationTypeStyle" TargetType="TextBlock">
             <Style.Triggers>

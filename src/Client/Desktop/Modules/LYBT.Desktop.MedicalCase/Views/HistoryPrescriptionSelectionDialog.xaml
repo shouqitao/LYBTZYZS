@@ -9,10 +9,8 @@
     prism:ViewModelLocator.AutoWireViewModel="True">
     <!--
         Epic #2175 BF-002 Task 3.9: 历史处方选择对话框
+        转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters)
     -->
-    <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>

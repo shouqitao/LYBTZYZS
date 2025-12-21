@@ -18,9 +18,9 @@
     xmlns:views="clr-namespace:LYBT.Desktop.Infrastructure.Views;assembly=LYBT.Desktop.Infrastructure"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml" />
             </ResourceDictionary.MergedDictionaries>

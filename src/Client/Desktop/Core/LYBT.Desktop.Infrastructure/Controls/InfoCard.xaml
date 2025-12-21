@@ -25,13 +25,14 @@
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
+            <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
+
             <!-- 卡片阴影 -->
             <DropShadowEffect x:Key="CardShadow"
                               BlurRadius="16"
                               ShadowDepth="2"
                               Opacity="0.08"
                               Color="#000000"/>
-            <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
 

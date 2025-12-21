@@ -7,6 +7,7 @@ namespace LYBT.Desktop.Infrastructure.Converters;
 
 /// <summary>
 /// 将 ApiHealthStatus 转换为对应的颜色
+/// OpenSpec: consolidate-wpf-converters - 统一使用Fluent Design标准色
 /// </summary>
 public class ApiHealthStatusToColorConverter : IValueConverter
 {
@@ -17,9 +18,9 @@ public class ApiHealthStatusToColorConverter : IValueConverter
 
         return status switch
         {
-            ApiHealthStatus.Healthy => new SolidColorBrush(Color.FromRgb(76, 175, 80)), // Green
-            ApiHealthStatus.Checking => new SolidColorBrush(Color.FromRgb(255, 193, 7)), // Yellow/Orange
-            ApiHealthStatus.Unhealthy => new SolidColorBrush(Color.FromRgb(244, 67, 54)), // Red
+            ApiHealthStatus.Healthy => new SolidColorBrush(Color.FromRgb(34, 197, 94)),    // #22C55E 绿色
+            ApiHealthStatus.Checking => new SolidColorBrush(Color.FromRgb(251, 191, 36)),  // #FBBF24 黄色
+            ApiHealthStatus.Unhealthy => new SolidColorBrush(Color.FromRgb(239, 68, 68)),  // #EF4444 红色
             _ => new SolidColorBrush(Colors.Gray)
         };
     }

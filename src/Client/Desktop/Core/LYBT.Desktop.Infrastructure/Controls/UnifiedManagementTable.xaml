@@ -7,9 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
 
-    <UserControl.Resources>
-        <converters:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
-    </UserControl.Resources>
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
 
     <!-- Issue #2160: 添加Ctrl+A全选快捷键 -->
     <UserControl.InputBindings>

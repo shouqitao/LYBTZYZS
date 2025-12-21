@@ -19,10 +19,8 @@
     右栏: 验方详情 + 药材卡片预览
     -->
 
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <infrastructure:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-
         <!-- 验方卡片样式 -->
         <Style x:Key="FormulaCardStyle" TargetType="Border">
             <Setter Property="Background" Value="White" />

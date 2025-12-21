@@ -28,13 +28,10 @@
              xmlns:infra="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
              x:Name="Root">
 
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <infra:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <infra:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
-            <infra:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-
-            <!-- 侧边栏宽度转换器 -->
+            <!-- 侧边栏宽度转换器 - 需要本地定义（带特定TrueValue/FalseValue参数） -->
             <infra:BoolToDoubleConverter x:Key="BoolToSidebarWidthConverter" TrueValue="200" FalseValue="56"/>
 
             <!-- 侧边栏菜单项样式 -->
@@ -61,12 +58,6 @@
                 </Setter>
             </Style>
 
-            <!-- 首字转换器 -->
-            <infra:FirstCharacterConverter x:Key="FirstCharConverter"/>
-
-            <!-- API状态转换器 -->
-            <infra:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter"/>
-            <infra:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
