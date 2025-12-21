@@ -3,7 +3,7 @@ using System.Net.Http;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.Models.ViewModels.Base;

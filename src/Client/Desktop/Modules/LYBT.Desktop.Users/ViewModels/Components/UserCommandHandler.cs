@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Infrastructure.Localization;
+﻿using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;

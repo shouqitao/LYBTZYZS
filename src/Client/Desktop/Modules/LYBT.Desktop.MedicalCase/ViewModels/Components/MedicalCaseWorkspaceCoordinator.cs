@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;

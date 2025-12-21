@@ -1,6 +1,6 @@
 using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

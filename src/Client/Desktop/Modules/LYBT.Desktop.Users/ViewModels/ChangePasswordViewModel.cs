@@ -1,7 +1,7 @@
 ﻿using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;

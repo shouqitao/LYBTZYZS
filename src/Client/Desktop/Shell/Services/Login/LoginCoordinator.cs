@@ -3,7 +3,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;

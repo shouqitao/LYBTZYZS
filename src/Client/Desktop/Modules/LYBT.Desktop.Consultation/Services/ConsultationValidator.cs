@@ -1,6 +1,6 @@
 using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using Microsoft.Extensions.Logging;
 

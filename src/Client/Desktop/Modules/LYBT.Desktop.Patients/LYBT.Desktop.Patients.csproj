@@ -68,6 +68,7 @@
   <ItemGroup Label="Infrastructure Dependencies - 简化三层架构">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Utilities\LYBT.Desktop.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Desktop Core">

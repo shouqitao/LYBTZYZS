@@ -6,6 +6,7 @@ using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.ViewModels.Components;
+using LYBT.Desktop.Utilities.Excel;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
@@ -591,7 +592,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 using var fileStream = File.OpenRead(filePath);
                 Logger.LogInformation("开始导入用户文件：{FileName}", Path.GetFileName(filePath));
 
-                var users = await Infrastructure.Helpers.ExcelHelper.ParseAsync<UserInputDto>(fileStream, hasHeader: true);
+                var users = await ExcelHelper.ParseAsync<UserInputDto>(fileStream, hasHeader: true);
                 if (users == null || users.Count == 0)
                 {
                     await _commonDialogService.ShowErrorAsync("文件中没有有效的用户数据", "导入用户");
@@ -636,7 +637,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     return;
                 }
 
-                await Infrastructure.Helpers.ExcelHelper.ExportAsync(allUsers, filePath, "用户数据");
+                await ExcelHelper.ExportAsync(allUsers, filePath, "用户数据");
                 await _commonDialogService.ShowInfoAsync($"成功导出{allUsers.Count}条用户数据到：\n{filePath}", "导出成功");
             }, "导出用户");
         }
@@ -658,7 +659,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 };
 
                 Logger.LogInformation("生成用户导入模板");
-                await Infrastructure.Helpers.ExcelHelper.GenerateTemplateAsync(filePath, "用户导入模板", sampleData);
+                await ExcelHelper.GenerateTemplateAsync(filePath, "用户导入模板", sampleData);
                 await _commonDialogService.ShowInfoAsync(
                     $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入用户」功能导入。\n\n注意：\n1. 用户名必须唯一\n2. 角色可选值：Admin(管理员)、Doctor(医生)、Nurse(护士)\n3. 状态可选值：Enabled(启用)、Disabled(禁用)",
                     "下载成功");

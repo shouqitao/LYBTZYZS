@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;

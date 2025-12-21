@@ -1,17 +1,24 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using LYBT.Desktop.Infrastructure.Http;
-using LYBT.Shared.Logging;
+using LYBT.Shared.ExceptionHandling.ProblemDetails;
 
-namespace LYBT.Desktop.Infrastructure.Localization;
+namespace LYBT.Shared.ExceptionHandling.Mappers;
 
 /// <summary>
 /// 客户端错误消息映射器
-/// refactor-logging-system: 提供统一的用户友好错误消息
+/// 提供统一的用户友好错误消息
+/// optimize-desktop-core: 从Infrastructure.Localization迁移到共享异常处理模块
 /// </summary>
 public static class ClientErrorMessageMapper
 {
+    /// <summary>
+    /// 默认错误消息 - 用于系统异常或未知错误
+    /// </summary>
+    public const string DefaultErrorMessage = "操作失败，请稍后重试";
+
+    #region HTTP状态码映射
+
     /// <summary>
     /// HTTP状态码到用户消息的映射
     /// </summary>
@@ -30,6 +37,28 @@ public static class ClientErrorMessageMapper
     };
 
     /// <summary>
+    /// 从HTTP状态码获取用户消息
+    /// </summary>
+    public static string GetUserMessageFromStatusCode(HttpStatusCode statusCode)
+    {
+        return HttpStatusMessages.TryGetValue(statusCode, out var message)
+            ? message
+            : $"服务器返回错误 ({(int)statusCode})";
+    }
+
+    /// <summary>
+    /// 从HTTP状态码获取用户消息
+    /// </summary>
+    public static string GetUserMessageFromStatusCode(int statusCode)
+    {
+        return GetUserMessageFromStatusCode((HttpStatusCode)statusCode);
+    }
+
+    #endregion
+
+    #region 错误码映射
+
+    /// <summary>
     /// 错误码前缀到用户消息的映射
     /// </summary>
     private static readonly Dictionary<string, string> ErrorCodePrefixMessages = new()
@@ -46,7 +75,6 @@ public static class ClientErrorMessageMapper
 
     /// <summary>
     /// ErrorCode到用户消息的详细映射
-    /// ERR-012: 异常消息安全化 - 提供安全的本地化消息
     /// </summary>
     private static readonly Dictionary<int, string> ErrorCodeMessages = new()
     {
@@ -131,6 +159,49 @@ public static class ClientErrorMessageMapper
     };
 
     /// <summary>
+    /// 从错误码获取用户消息
+    /// </summary>
+    public static string GetUserMessageFromErrorCode(string? errorCode)
+    {
+        if (string.IsNullOrEmpty(errorCode))
+        {
+            return DefaultErrorMessage;
+        }
+
+        if (int.TryParse(errorCode, out var code))
+        {
+            return GetUserMessageFromErrorCode(code);
+        }
+
+        var prefix = GetErrorCodePrefix(errorCode);
+        return ErrorCodePrefixMessages.TryGetValue(prefix, out var message)
+            ? message
+            : DefaultErrorMessage;
+    }
+
+    /// <summary>
+    /// 从ErrorCode枚举值获取用户消息
+    /// </summary>
+    public static string GetUserMessageFromErrorCode(int errorCode)
+    {
+        return ErrorCodeMessages.TryGetValue(errorCode, out var message)
+            ? message
+            : DefaultErrorMessage;
+    }
+
+    /// <summary>
+    /// 获取错误码前缀（前6个字符）
+    /// </summary>
+    private static string GetErrorCodePrefix(string errorCode)
+    {
+        return errorCode.Length >= 6 ? errorCode[..6] : errorCode;
+    }
+
+    #endregion
+
+    #region 异常消息映射
+
+    /// <summary>
     /// 从异常获取用户友好消息
     /// </summary>
     public static string GetUserFriendlyMessage(Exception exception)
@@ -147,32 +218,36 @@ public static class ClientErrorMessageMapper
             ArgumentException => "参数无效",
             InvalidOperationException => "当前状态下无法执行此操作",
             FormatException => "数据格式不正确",
-            _ => "操作失败，请稍后重试"
+            _ => DefaultErrorMessage
         };
     }
 
     /// <summary>
-    /// 从HTTP状态码获取用户消息
+    /// 获取HTTP异常消息
     /// </summary>
-    public static string GetUserMessageFromStatusCode(HttpStatusCode statusCode)
+    private static string GetHttpExceptionMessage(HttpRequestException exception)
     {
-        return HttpStatusMessages.TryGetValue(statusCode, out var message)
-            ? message
-            : $"服务器返回错误 ({(int)statusCode})";
+        if (exception.StatusCode.HasValue)
+        {
+            return GetUserMessageFromStatusCode(exception.StatusCode.Value);
+        }
+
+        if (exception.InnerException is SocketException)
+        {
+            return "无法连接到服务器，请检查网络连接";
+        }
+
+        return "网络请求失败，请稍后重试";
     }
 
-    /// <summary>
-    /// 从HTTP状态码获取用户消息
-    /// </summary>
-    public static string GetUserMessageFromStatusCode(int statusCode)
-    {
-        return GetUserMessageFromStatusCode((HttpStatusCode)statusCode);
-    }
+    #endregion
+
+    #region ProblemDetails解析
 
     /// <summary>
-    /// 从ProblemDetails获取用户消息
+    /// 从ClientProblemDetails获取用户消息
     /// </summary>
-    public static string GetUserMessageFromProblemDetails(ProblemDetailsResponse problemDetails)
+    public static string GetUserMessageFromProblemDetails(ClientProblemDetails problemDetails)
     {
         // 优先使用服务器返回的详细消息
         if (!string.IsNullOrEmpty(problemDetails.Detail))
@@ -202,87 +277,20 @@ public static class ClientErrorMessageMapper
             return GetUserMessageFromStatusCode(problemDetails.Status.Value);
         }
 
-        return problemDetails.Title ?? "操作失败，请稍后重试";
+        return problemDetails.Title ?? DefaultErrorMessage;
     }
 
-    /// <summary>
-    /// 从错误码获取用户消息
-    /// </summary>
-    public static string GetUserMessageFromErrorCode(string? errorCode)
-    {
-        if (string.IsNullOrEmpty(errorCode))
-        {
-            return DefaultErrorMessage;
-        }
+    #endregion
 
-        // 尝试解析为整数错误码
-        if (int.TryParse(errorCode, out var code))
-        {
-            return GetUserMessageFromErrorCode(code);
-        }
-
-        var prefix = GetErrorCodePrefix(errorCode);
-        return ErrorCodePrefixMessages.TryGetValue(prefix, out var message)
-            ? message
-            : DefaultErrorMessage;
-    }
-
-    /// <summary>
-    /// 从ErrorCode枚举值获取用户消息
-    /// </summary>
-    public static string GetUserMessageFromErrorCode(int errorCode)
-    {
-        return ErrorCodeMessages.TryGetValue(errorCode, out var message)
-            ? message
-            : DefaultErrorMessage;
-    }
-
-    /// <summary>
-    /// 默认错误消息 - 用于系统异常或未知错误
-    /// </summary>
-    public const string DefaultErrorMessage = "操作失败，请稍后重试";
-
-    /// <summary>
-    /// 获取HTTP异常消息
-    /// </summary>
-    private static string GetHttpExceptionMessage(HttpRequestException exception)
-    {
-        // 检查是否有状态码
-        if (exception.StatusCode.HasValue)
-        {
-            return GetUserMessageFromStatusCode(exception.StatusCode.Value);
-        }
-
-        // 检查内部异常
-        if (exception.InnerException is SocketException)
-        {
-            return "无法连接到服务器，请检查网络连接";
-        }
-
-        return "网络请求失败，请稍后重试";
-    }
-
-    /// <summary>
-    /// 获取错误码前缀（前6个字符）
-    /// </summary>
-    private static string GetErrorCodePrefix(string errorCode)
-    {
-        return errorCode.Length >= 6 ? errorCode[..6] : errorCode;
-    }
+    #region 安全消息
 
     /// <summary>
     /// 获取安全的操作失败消息（带操作名称）
-    /// ERR-012: 异常消息安全化 - 防止ex.Message直接显示给用户
     /// </summary>
-    /// <param name="operationName">操作名称（如"保存患者"、"加载数据"）</param>
-    /// <param name="exception">异常对象</param>
-    /// <returns>安全的用户友好消息</returns>
     public static string GetSafeOperationFailureMessage(string operationName, Exception exception)
     {
-        // 获取基于异常类型的友好消息
         var friendlyMessage = GetUserFriendlyMessage(exception);
 
-        // 如果是通用消息，添加操作上下文
         if (friendlyMessage == DefaultErrorMessage)
         {
             return $"{operationName}失败，请稍后重试";
@@ -294,23 +302,23 @@ public static class ClientErrorMessageMapper
     /// <summary>
     /// 获取安全的操作失败消息（简化版）
     /// </summary>
-    /// <param name="operationName">操作名称</param>
-    /// <returns>安全的失败消息</returns>
     public static string GetSafeOperationFailureMessage(string operationName)
     {
         return $"{operationName}失败，请稍后重试";
     }
 
-    #region Phase 4.4: CorrelationId追踪码支持
+    #endregion
+
+    #region 追踪码支持
+
+    /// <summary>
+    /// 设置追踪ID提供器（由客户端在启动时配置）
+    /// </summary>
+    public static Func<string>? TraceIdProvider { get; set; }
 
     /// <summary>
     /// 获取带追踪码的安全操作失败消息
-    /// ERR-012/Phase 4.4: 用户提示包含错误追踪码，便于问题定位
     /// </summary>
-    /// <param name="operationName">操作名称</param>
-    /// <param name="exception">异常对象</param>
-    /// <param name="includeTrackingCode">是否包含追踪码（默认true）</param>
-    /// <returns>带追踪码的安全用户友好消息</returns>
     public static string GetSafeMessageWithTrackingCode(string operationName, Exception exception, bool includeTrackingCode = true)
     {
         var baseMessage = GetSafeOperationFailureMessage(operationName, exception);
@@ -327,9 +335,6 @@ public static class ClientErrorMessageMapper
     /// <summary>
     /// 获取带追踪码的通用错误消息
     /// </summary>
-    /// <param name="message">错误消息</param>
-    /// <param name="includeTrackingCode">是否包含追踪码</param>
-    /// <returns>带追踪码的消息</returns>
     public static string GetMessageWithTrackingCode(string message, bool includeTrackingCode = true)
     {
         if (!includeTrackingCode)
@@ -342,24 +347,20 @@ public static class ClientErrorMessageMapper
     }
 
     /// <summary>
-    /// 获取短追踪码（CorrelationId的前8位）
-    /// 用于用户报告问题时提供，技术人员可通过此码在日志中定位
+    /// 获取短追踪码（TraceId的前8位）
     /// </summary>
-    /// <returns>8位短追踪码</returns>
     public static string GetShortTrackingCode()
     {
-        var correlationId = TraceContext.TraceIdOrNew;
-        // 取CorrelationId的前8位作为短追踪码
-        return correlationId.Length >= 8 ? correlationId[..8].ToUpperInvariant() : correlationId.ToUpperInvariant();
+        var traceId = TraceIdProvider?.Invoke() ?? Guid.NewGuid().ToString("N");
+        return traceId.Length >= 8 ? traceId[..8].ToUpperInvariant() : traceId.ToUpperInvariant();
     }
 
     /// <summary>
-    /// 获取完整追踪码（完整CorrelationId）
+    /// 获取完整追踪码
     /// </summary>
-    /// <returns>完整追踪码</returns>
     public static string GetFullTrackingCode()
     {
-        return TraceContext.TraceIdOrNew;
+        return TraceIdProvider?.Invoke() ?? Guid.NewGuid().ToString("N");
     }
 
     #endregion

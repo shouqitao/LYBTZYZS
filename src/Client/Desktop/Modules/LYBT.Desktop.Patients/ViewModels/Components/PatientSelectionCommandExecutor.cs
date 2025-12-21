@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Infrastructure.Localization;
+﻿using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Patients.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

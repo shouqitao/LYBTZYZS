@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Startup;

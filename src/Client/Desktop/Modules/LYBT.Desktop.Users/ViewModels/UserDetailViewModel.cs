@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;

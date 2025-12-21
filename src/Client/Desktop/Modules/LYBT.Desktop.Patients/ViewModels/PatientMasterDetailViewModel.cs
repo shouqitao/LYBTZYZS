@@ -7,6 +7,7 @@ using LYBT.Desktop.Patients.Events;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.ViewModels.Components;
+using LYBT.Desktop.Utilities.Excel;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
@@ -475,7 +476,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (string.IsNullOrEmpty(filePath)) return;
 
                 using var fileStream = File.OpenRead(filePath);
-                var patients = await Infrastructure.Helpers.ExcelHelper.ParseAsync<PatientInputDto>(fileStream, hasHeader: true);
+                var patients = await ExcelHelper.ParseAsync<PatientInputDto>(fileStream, hasHeader: true);
                 if (patients == null || patients.Count == 0)
                 {
                     await CommonDialogService.ShowErrorAsync("文件中没有有效的患者数据", "导入患者");
@@ -523,7 +524,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     return;
                 }
 
-                await Infrastructure.Helpers.ExcelHelper.ExportAsync(allPatients, filePath, "患者数据");
+                await ExcelHelper.ExportAsync(allPatients, filePath, "患者数据");
                 await CommonDialogService.ShowInfoAsync($"成功导出{allPatients.Count}条患者数据到：\n{filePath}", "导出成功");
             }, "导出患者");
         }
@@ -544,7 +545,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     new() { Name = "张三", Gender = Gender.Male, BirthDate = new DateTime(1980, 1, 1), PhoneNumber = "13800138000", Address = "北京市朝阳区" },
                     new() { Name = "李四", Gender = Gender.Female, BirthDate = new DateTime(1990, 5, 15), PhoneNumber = "13800138001", Address = "上海市浦东新区" }
                 };
-                await Infrastructure.Helpers.ExcelHelper.GenerateTemplateAsync(filePath, "患者导入模板", sampleData);
+                await ExcelHelper.GenerateTemplateAsync(filePath, "患者导入模板", sampleData);
                 await CommonDialogService.ShowInfoAsync($"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入患者」功能导入。", "下载成功");
             }, "下载模板");
         }

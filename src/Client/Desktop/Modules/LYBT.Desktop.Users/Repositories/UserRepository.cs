@@ -1,5 +1,5 @@
 ﻿using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;

@@ -1,12 +1,13 @@
 using System.Text.Json.Serialization;
 
-namespace LYBT.Desktop.Utilities.Http;
+namespace LYBT.Shared.ExceptionHandling.ProblemDetails;
 
 /// <summary>
-/// RFC 7807 Problem Details响应模型
-/// refactor-logging-system: 用于解析服务器返回的标准化错误响应
+/// 客户端ProblemDetails响应模型
+/// 用于解析服务端返回的RFC 7807标准错误响应
+/// optimize-desktop-core: 从Infrastructure迁移并解耦
 /// </summary>
-public class ProblemDetailsResponse
+public class ClientProblemDetails
 {
     /// <summary>
     /// HTTP状态码
@@ -86,29 +87,7 @@ public class ProblemDetailsResponse
     [JsonPropertyName("businessRule")]
     public string? BusinessRule { get; set; }
 
-    /// <summary>
-    /// 获取用户友好的错误消息
-    /// 优先使用Detail，回退到Title
-    /// </summary>
-    public string GetUserMessage()
-    {
-        return Detail ?? Title ?? "操作失败，请稍后重试";
-    }
-
-    /// <summary>
-    /// 获取格式化的验证错误消息
-    /// </summary>
-    public string? GetValidationErrorMessage()
-    {
-        if (Errors == null || Errors.Count == 0)
-            return null;
-
-        var messages = Errors
-            .SelectMany(e => e.Value.Select(v => $"{e.Key}: {v}"))
-            .ToList();
-
-        return string.Join(Environment.NewLine, messages);
-    }
+    #region 便捷属性
 
     /// <summary>
     /// 是否为验证错误
@@ -139,4 +118,34 @@ public class ProblemDetailsResponse
     /// 是否为服务器错误
     /// </summary>
     public bool IsServerError => Status >= 500;
+
+    #endregion
+
+    #region 便捷方法
+
+    /// <summary>
+    /// 获取用户友好的错误消息
+    /// 优先使用Detail，回退到Title
+    /// </summary>
+    public string GetUserMessage()
+    {
+        return Detail ?? Title ?? "操作失败，请稍后重试";
+    }
+
+    /// <summary>
+    /// 获取格式化的验证错误消息
+    /// </summary>
+    public string? GetValidationErrorMessage()
+    {
+        if (Errors == null || Errors.Count == 0)
+            return null;
+
+        var messages = Errors
+            .SelectMany(e => e.Value.Select(v => $"{e.Key}: {v}"))
+            .ToList();
+
+        return string.Join(Environment.NewLine, messages);
+    }
+
+    #endregion
 }

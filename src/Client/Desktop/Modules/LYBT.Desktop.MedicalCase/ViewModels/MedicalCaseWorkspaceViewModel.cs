@@ -1,7 +1,7 @@
 ﻿using System.Windows.Media;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;

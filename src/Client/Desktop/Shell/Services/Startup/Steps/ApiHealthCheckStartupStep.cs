@@ -1,6 +1,6 @@
 ﻿using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Startup.Steps;

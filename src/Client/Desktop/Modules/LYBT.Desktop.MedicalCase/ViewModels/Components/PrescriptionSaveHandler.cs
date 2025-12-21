@@ -1,5 +1,5 @@
 ﻿using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;

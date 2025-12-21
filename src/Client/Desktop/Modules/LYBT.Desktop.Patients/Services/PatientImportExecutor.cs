@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Data;
 using System.Windows;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using Microsoft.Extensions.Logging;

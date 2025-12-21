@@ -2,7 +2,7 @@
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;

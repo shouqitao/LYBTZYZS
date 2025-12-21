@@ -3,7 +3,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Herbs.Interfaces;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;

@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Herbs.Interfaces;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.Items.Prescriptions;
 using LYBT.Desktop.Models.ViewModels.Base;

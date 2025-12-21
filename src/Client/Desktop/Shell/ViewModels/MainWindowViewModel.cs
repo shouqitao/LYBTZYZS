@@ -6,7 +6,7 @@ using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Infrastructure.Localization;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.HealthCheck;
