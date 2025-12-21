@@ -68,6 +68,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **影响模块**: Auth, Users, Patients, Herbs, Formula, MedicalCase
 
+#### 重构异常处理系统 (OpenSpec: refactor-exception-handling-system) - 2025-12-21
+
+**背景**: 异常处理体系存在异常吞没、消息泄露、无HTTP韧性等问题,需建立端到端一致的处理机制。
+
+**Phase 1: Service层异常规范化**:
+- 移除101个catch-return反模式(本提案4个 + eliminate-service-catch-return 97个)
+- Auth模块保留Result<T,AuthErrorCode>模式(架构需求,9个catch块)
+- 创建docs/development/ExceptionThrowingGuidelines.md规范文档
+
+**Phase 2: ViewModel层异常处理基类**:
+- ViewModelBase新增SafeExecuteAsync<T>方法
+- 新增HandleApiExceptionAsync/HandleUnauthorizedAsync/HandleConflictAsync
+- 28个ViewModel已使用GetSafeOperationFailureMessage
+
+**Phase 3: HTTP韧性层(Polly集成)**:
+- 添加RetryPolicyExtensions策略工厂
+- 配置重试策略(3次,指数退避)、熔断器(5次失败→30秒熔断)、超时(30秒)
+- 新增11个集成测试(RetryPolicyIntegrationTests.cs)
+
+**Phase 4: 异常消息安全化**:
+- 扩展ClientErrorMessageMapper(70+ ErrorCode映射)
+- 新增SensitiveInfoFilter过滤敏感信息
+- 100%用户可见消息替换为安全消息
+- CorrelationId追踪码机制(8位短追踪码)
+
+**统计**: 改造进度100%(101/101),259单元测试+11集成测试通过
+
+**影响模块**: Desktop.Foundation, Desktop.Infrastructure, 全部Server模块
+
 #### WPF转换器统一架构 (OpenSpec: consolidate-wpf-converters) - 2025-12-21
 
 **背景**: Desktop层的WPF转换器分散在多个项目中,存在大量重复定义,需要统一管理。
