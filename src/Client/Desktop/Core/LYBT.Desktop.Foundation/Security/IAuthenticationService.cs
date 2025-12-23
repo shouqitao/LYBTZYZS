@@ -64,5 +64,13 @@ namespace LYBT.Desktop.Foundation.Security
         /// </summary>
         /// <param name="request">修改密码请求</param>
         Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request);
+
+        /// <summary>
+        /// 使用AutoLoginToken自动登录
+        /// OpenSpec: refactor-login-authentication (CVT-001)
+        /// </summary>
+        /// <param name="request">自动登录请求</param>
+        /// <returns>登录响应</returns>
+        Task<ServiceResult<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request);
     }
 }

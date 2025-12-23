@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
@@ -15,6 +16,8 @@ namespace LYBT.Desktop.Shell.Services.Login;
 /// <summary>
 /// 登录流程协调器实现
 /// 编排完整的登录流程，包括认证、会话启动、模块加载和导航
+/// OpenSpec: refactor-login-authentication (Phase 2.2)
+/// 使用LoginStateMachine管理高层认证状态，LoginFlowState用于UI进度反馈
 /// </summary>
 public class LoginCoordinator : ILoginCoordinator
 {
@@ -24,6 +27,9 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly ISessionLifecycleManager _sessionLifecycleManager;
     private readonly IModuleLoadingService _moduleLoadingService;
     private readonly IRoleNavigationService _roleNavigationService;
+    private readonly ICredentialVault? _credentialVault;
+    private readonly IUsernameStorageService? _usernameStorage;
+    private readonly ILoginStateMachine _loginStateMachine;
     private readonly object _stateLock = new();
 
     private LoginFlowState _currentState = LoginFlowState.NotLoggedIn;
@@ -39,7 +45,10 @@ public class LoginCoordinator : ILoginCoordinator
         ITokenStorageService tokenStorageService,
         ISessionLifecycleManager sessionLifecycleManager,
         IModuleLoadingService moduleLoadingService,
-        IRoleNavigationService roleNavigationService)
+        IRoleNavigationService roleNavigationService,
+        ILoginStateMachine loginStateMachine,
+        ICredentialVault? credentialVault = null,
+        IUsernameStorageService? usernameStorage = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
@@ -47,6 +56,9 @@ public class LoginCoordinator : ILoginCoordinator
         _sessionLifecycleManager = sessionLifecycleManager ?? throw new ArgumentNullException(nameof(sessionLifecycleManager));
         _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
         _roleNavigationService = roleNavigationService ?? throw new ArgumentNullException(nameof(roleNavigationService));
+        _loginStateMachine = loginStateMachine ?? throw new ArgumentNullException(nameof(loginStateMachine));
+        _credentialVault = credentialVault;
+        _usernameStorage = usernameStorage;
     }
 
     /// <inheritdoc />
@@ -108,6 +120,9 @@ public class LoginCoordinator : ILoginCoordinator
         _logger.LogInformation("开始登录流程 [用户: {Username}, 尝试次数: {AttemptCount}]",
             username, _loginAttemptCount);
 
+        // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发状态机开始登录
+        _loginStateMachine.Fire(LoginTrigger.StartLogin);
+
         try
         {
             // Step 1: 认证
@@ -119,6 +134,8 @@ public class LoginCoordinator : ILoginCoordinator
             if (!result.IsSuccess || result.Data == null)
             {
                 _logger.LogWarning("登录认证失败 [用户: {Username}]", username);
+                // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发登录失败
+                _loginStateMachine.Fire(LoginTrigger.LoginFailure);
                 TransitionTo(LoginFlowState.NotLoggedIn);
                 return LoginResult.Failed(result.Message ?? "认证失败");
             }
@@ -128,6 +145,21 @@ public class LoginCoordinator : ILoginCoordinator
 
             // Step 2: 保存认证信息
             await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberCredentials);
+
+            // OpenSpec: refactor-login-authentication (CVT-001)
+            // 当rememberCredentials=true且有AutoLoginToken时，保存到CredentialVault
+            if (rememberCredentials && !string.IsNullOrEmpty(loginResponse.AutoLoginToken) && _credentialVault != null)
+            {
+                var saved = await _credentialVault.SaveAutoLoginTokenAsync(user.UserName!, loginResponse.AutoLoginToken);
+                if (saved)
+                {
+                    _logger.LogInformation("AutoLoginToken已保存到CredentialVault - UserName: {UserName}", user.UserName);
+                }
+                else
+                {
+                    _logger.LogWarning("保存AutoLoginToken失败 - UserName: {UserName}", user.UserName);
+                }
+            }
 
             // Step 3: 启动会话
             TransitionTo(LoginFlowState.StartingSession, "正在启动会话...");
@@ -142,6 +174,8 @@ public class LoginCoordinator : ILoginCoordinator
             await NavigateToRoleHomeAsync(user);
 
             // 完成登录
+            // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发登录成功
+            _loginStateMachine.Fire(LoginTrigger.LoginSuccess);
             TransitionTo(LoginFlowState.LoggedIn);
             LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt, isAutoLogin: false));
 
@@ -153,6 +187,8 @@ public class LoginCoordinator : ILoginCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "登录流程异常 [用户: {Username}]", username);
+            // OpenSpec: refactor-login-authentication (Phase 2.2) - 异常时触发登录失败
+            _loginStateMachine.Fire(LoginTrigger.LoginFailure);
             TransitionTo(LoginFlowState.NotLoggedIn);
             return LoginResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
         }
@@ -168,52 +204,100 @@ public class LoginCoordinator : ILoginCoordinator
 
         _logger.LogDebug("尝试自动登录 [尝试次数: {AttemptCount}]", _autoLoginAttemptCount);
 
+        // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发自动登录开始
+        _loginStateMachine.Fire(LoginTrigger.StartAutoLogin);
+
         try
         {
-            // 获取存储的Token
+            // 策略1: 尝试使用存储的JWT Token进行验证
             var token = await _tokenStorageService.GetTokenAsync();
-            if (string.IsNullOrEmpty(token))
+            if (!string.IsNullOrEmpty(token))
             {
-                _logger.LogDebug("无存储的Token，自动登录跳过");
-                return false;
+                TransitionTo(LoginFlowState.Authenticating, "正在验证Token...");
+                var validationResult = await _authenticationService.ValidateTokenAsync(token);
+
+                if (validationResult.IsSuccess && validationResult.Data?.IsValid == true)
+                {
+                    var loginResponse = await _tokenStorageService.GetLoginResponseAsync();
+                    if (loginResponse?.User != null)
+                    {
+                        var user = loginResponse.User;
+                        await HandleLoginSuccessAsync(user, loginResponse.ExpiresAt);
+                        // OpenSpec: Phase 2.2 - LoginSuccess已在HandleLoginSuccessAsync中触发
+                        LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt, isAutoLogin: true));
+                        _logger.LogInformation("JWT Token验证成功，自动登录完成 [用户: {Username}]", user.UserName);
+                        return true;
+                    }
+                }
+
+                _logger.LogDebug("JWT Token无效，尝试使用AutoLoginToken");
             }
 
-            // 验证Token
-            TransitionTo(LoginFlowState.Authenticating, "正在验证Token...");
-            var validationResult = await _authenticationService.ValidateTokenAsync(token);
-
-            if (!validationResult.IsSuccess || validationResult.Data == null || !validationResult.Data.IsValid)
+            // 策略2: 尝试使用CredentialVault中的AutoLoginToken
+            // OpenSpec: refactor-login-authentication (CVT-001)
+            if (_credentialVault != null && _usernameStorage != null)
             {
-                _logger.LogDebug("Token验证失败，自动登录失败");
-                await ClearInvalidTokenAsync();
-                TransitionTo(LoginFlowState.NotLoggedIn);
-                return false;
+                var savedUsername = await _usernameStorage.GetSavedUsernameAsync();
+                if (!string.IsNullOrEmpty(savedUsername))
+                {
+                    var autoLoginToken = await _credentialVault.GetAutoLoginTokenAsync(savedUsername);
+                    if (!string.IsNullOrEmpty(autoLoginToken))
+                    {
+                        _logger.LogDebug("发现AutoLoginToken，尝试自动登录 [用户: {Username}]", savedUsername);
+                        TransitionTo(LoginFlowState.Authenticating, "正在自动登录...");
+
+                        var autoLoginRequest = new AutoLoginRequest
+                        {
+                            UserName = savedUsername,
+                            AutoLoginToken = autoLoginToken
+                        };
+
+                        var result = await _authenticationService.LoginWithAutoTokenAsync(autoLoginRequest);
+                        if (result.IsSuccess && result.Data != null)
+                        {
+                            var loginResponse = result.Data;
+                            var user = loginResponse.User;
+
+                            // 保存新的认证信息
+                            await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberMe: true);
+
+                            // 保存新的AutoLoginToken（Token轮换）
+                            if (!string.IsNullOrEmpty(loginResponse.AutoLoginToken))
+                            {
+                                await _credentialVault.SaveAutoLoginTokenAsync(user.UserName!, loginResponse.AutoLoginToken);
+                                _logger.LogDebug("AutoLoginToken已轮换 [用户: {Username}]", user.UserName);
+                            }
+
+                            // 执行登录后流程
+                            await HandleLoginSuccessAsync(user, loginResponse.ExpiresAt);
+                            // OpenSpec: Phase 2.2 - LoginSuccess已在HandleLoginSuccessAsync中触发
+                            LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt, isAutoLogin: true));
+                            _logger.LogInformation("AutoLoginToken自动登录成功 [用户: {Username}]", user.UserName);
+                            return true;
+                        }
+                        else
+                        {
+                            _logger.LogWarning("AutoLoginToken自动登录失败: {Message}", result.Message);
+                            // AutoLoginToken无效，清除本地存储
+                            await _credentialVault.ClearCredentialsAsync(savedUsername);
+                        }
+                    }
+                }
             }
 
-            // 从TokenStorage获取完整的登录响应（包含User和ExpiresAt）
-            var loginResponse = await _tokenStorageService.GetLoginResponseAsync();
-            if (loginResponse?.User == null)
-            {
-                _logger.LogDebug("无法获取登录响应，自动登录失败");
-                await ClearInvalidTokenAsync();
-                TransitionTo(LoginFlowState.NotLoggedIn);
-                return false;
-            }
-
-            var user = loginResponse.User;
-            var tokenExpiresAt = loginResponse.ExpiresAt;
-
-            // Token有效，执行登录后流程
-            await HandleLoginSuccessAsync(user, tokenExpiresAt);
-
-            LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, tokenExpiresAt, isAutoLogin: true));
-
-            _logger.LogInformation("自动登录成功 [用户: {Username}]", user.UserName);
-            return true;
+            // 所有自动登录策略都失败
+            _logger.LogDebug("无可用的自动登录凭据");
+            // OpenSpec: refactor-login-authentication (Phase 2.2) - 自动登录失败回到NotLoggedIn
+            _loginStateMachine.Fire(LoginTrigger.LoginFailure);
+            await ClearInvalidTokenAsync();
+            TransitionTo(LoginFlowState.NotLoggedIn);
+            return false;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "自动登录异常");
+            // OpenSpec: refactor-login-authentication (Phase 2.2) - 异常时触发登录失败
+            _loginStateMachine.Fire(LoginTrigger.LoginFailure);
             TransitionTo(LoginFlowState.NotLoggedIn);
             return false;
         }
@@ -242,6 +326,8 @@ public class LoginCoordinator : ILoginCoordinator
             await NavigateToRoleHomeAsync(user);
 
             // 完成
+            // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发登录成功
+            _loginStateMachine.Fire(LoginTrigger.LoginSuccess);
             TransitionTo(LoginFlowState.LoggedIn);
 
             _logger.LogInformation("登录成功处理完成 [用户: {Username}]", user.UserName);
@@ -249,6 +335,8 @@ public class LoginCoordinator : ILoginCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "处理登录成功时发生异常");
+            // OpenSpec: refactor-login-authentication (Phase 2.2) - 异常时触发登录失败
+            _loginStateMachine.Fire(LoginTrigger.LoginFailure);
             TransitionTo(LoginFlowState.NotLoggedIn);
             throw;
         }
@@ -259,6 +347,8 @@ public class LoginCoordinator : ILoginCoordinator
     {
         _logger.LogInformation("开始登出流程 [用户: {Username}]", _currentUser?.UserName);
 
+        // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发开始登出
+        _loginStateMachine.Fire(LoginTrigger.StartLogout);
         TransitionTo(LoginFlowState.LoggingOut, "正在登出...");
 
         try
@@ -276,6 +366,8 @@ public class LoginCoordinator : ILoginCoordinator
                 _loginTime = null;
             }
 
+            // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发登出成功
+            _loginStateMachine.Fire(LoginTrigger.LogoutSuccess);
             TransitionTo(LoginFlowState.NotLoggedIn);
             LogoutCompleted?.Invoke(this, EventArgs.Empty);
 
@@ -284,7 +376,9 @@ public class LoginCoordinator : ILoginCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "登出流程异常");
-            // 即使异常也强制转换到未登录状态
+            // OpenSpec: refactor-login-authentication (Phase 2.2) - 登出失败（回滚到LoggedIn或强制NotLoggedIn）
+            // 即使异常也强制转换到未登录状态（用户体验优先，本地登出应该始终成功）
+            _loginStateMachine.Fire(LoginTrigger.LogoutSuccess); // 本地登出成功
             TransitionTo(LoginFlowState.NotLoggedIn);
             throw;
         }

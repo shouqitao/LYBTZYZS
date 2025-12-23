@@ -1,29 +1,46 @@
-﻿using System.IO;
+using System.IO;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Herbs.Interfaces
 {
     /// <summary>
-    /// 药材数据仓储接口 - Phase 2模块化架构
-    /// Issue #1114 - Repository下沉到模块
+    /// 药材数据仓储接口 - RESTful设计
+    /// List返回轻量ListDto，Detail返回完整DetailDto
     /// </summary>
     public interface IHerbRepository
     {
-        Task<PagedResult<HerbDetailDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        /// <summary>
+        /// 分页查询药材列表（返回轻量级ListDto）
+        /// </summary>
+        Task<PagedResult<HerbListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
 
         /// <summary>
-        /// 获取草药列表（返回HerbListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// 根据ID获取药材详情（返回完整DetailDto）
         /// </summary>
-        Task<PagedResult<HerbListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
         Task<HerbDetailDto?> GetByIdAsync(Guid id);
-        Task<HerbDetailDto> CreateAsync(HerbInputDto dto);
-        Task<HerbDetailDto> UpdateAsync(HerbInputDto dto);
-        Task<bool> DeleteAsync(Guid id);
-        Task<List<HerbDetailDto>> SearchAsync(string keyword);
 
-        // ========== Epic #1962: 批量导入/导出功能 ==========
+        /// <summary>
+        /// 创建新药材
+        /// </summary>
+        Task<HerbDetailDto> CreateAsync(HerbInputDto dto);
+
+        /// <summary>
+        /// 更新药材信息
+        /// </summary>
+        Task<HerbDetailDto> UpdateAsync(HerbInputDto dto);
+
+        /// <summary>
+        /// 删除药材（软删除）
+        /// </summary>
+        Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 搜索药材（基于关键词，返回ListDto）
+        /// </summary>
+        Task<List<HerbListDto>> SearchAsync(string keyword);
+
+        #region 批量导入/导出功能
 
         /// <summary>
         /// 批量导入药材数据
@@ -40,7 +57,9 @@ namespace LYBT.Desktop.Herbs.Interfaces
         /// </summary>
         Task<byte[]?> ExportHerbsAsync(string? keyword = null);
 
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
+        #endregion
+
+        #region 状态切换、恢复和批量操作
 
         /// <summary>
         /// 切换药材状态（启用/禁用）
@@ -51,8 +70,6 @@ namespace LYBT.Desktop.Herbs.Interfaces
         /// 恢复已删除的药材
         /// </summary>
         Task<HerbDetailDto?> RestoreAsync(Guid id);
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>
         /// 批量删除药材
@@ -68,5 +85,7 @@ namespace LYBT.Desktop.Herbs.Interfaces
         /// 批量禁用药材
         /// </summary>
         Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids);
+
+        #endregion
     }
 }

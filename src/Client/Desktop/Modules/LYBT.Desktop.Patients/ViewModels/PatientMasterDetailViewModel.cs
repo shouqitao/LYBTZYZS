@@ -2,8 +2,8 @@
 using System.IO;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Patients.Events;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.ViewModels.Components;
@@ -201,9 +201,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
             DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
 
-            // 订阅事件
-            EventAggregator.GetEvent<PatientCreatedEvent>().Subscribe(async _ => await RefreshAsync());
-            EventAggregator.GetEvent<PatientUpdatedEvent>().Subscribe(async _ => await RefreshAsync());
+            // 订阅事件 - OpenSpec: unify-event-system
+            EventAggregator.GetEvent<PatientEvents.CreatedEvent>().Subscribe(async _ => await RefreshAsync());
+            EventAggregator.GetEvent<PatientEvents.UpdatedEvent>().Subscribe(async _ => await RefreshAsync());
         }
 
         #endregion
@@ -215,7 +215,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             // OpenSpec: optimize-entity-data-flow - 使用轻量级ListDto
             try
             {
-                var result = await _patientRepository.GetPagedListAsync(page, pageSize, searchText);
+                var result = await _patientRepository.GetPagedAsync(page, pageSize, searchText);
                 TotalCount = result.TotalCount;
                 return result.Items ?? Enumerable.Empty<PatientListDto>();
             }
@@ -293,11 +293,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                 detail.Address = result.Address;
                 detail.Status = result.Status;
 
-                // 发布事件
+                // 发布事件 - OpenSpec: unify-event-system
                 if (dto.Id == Guid.Empty)
-                    EventAggregator.GetEvent<PatientCreatedEvent>().Publish(result);
+                    EventAggregator.GetEvent<PatientEvents.CreatedEvent>().Publish(new PatientCreatedPayload { Patient = result });
                 else
-                    EventAggregator.GetEvent<PatientUpdatedEvent>().Publish(result);
+                    EventAggregator.GetEvent<PatientEvents.UpdatedEvent>().Publish(new PatientUpdatedPayload { Patient = result });
 
                 RaisePropertyChanged(nameof(DetailTitle));
                 return true;

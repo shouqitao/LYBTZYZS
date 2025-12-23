@@ -32,9 +32,10 @@ namespace LYBT.Desktop.Contracts.Services
         /// <summary>
         /// 加载所有药材数据
         /// 用途：初始化处方编辑器，提供药材选择列表
+        /// OpenSpec: optimize-desktop-core - 使用轻量级HerbListDto
         /// </summary>
         /// <returns>所有药材DTO列表</returns>
-        Task<IEnumerable<HerbDetailDto>> LoadAllHerbsAsync();
+        Task<IEnumerable<HerbListDto>> LoadAllHerbsAsync();
 
         /// <summary>
         /// 过滤药材（支持拼音码模糊匹配）
@@ -42,7 +43,7 @@ namespace LYBT.Desktop.Contracts.Services
         /// </summary>
         /// <param name="searchText">搜索文本（药材名称或拼音码）</param>
         /// <returns>匹配的药材列表</returns>
-        IEnumerable<HerbDetailDto> FilterHerbs(string searchText);
+        IEnumerable<HerbListDto> FilterHerbs(string searchText);
 
         #endregion
 

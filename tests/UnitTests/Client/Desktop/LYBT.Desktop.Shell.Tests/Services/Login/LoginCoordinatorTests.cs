@@ -15,6 +15,7 @@ namespace LYBT.Desktop.Shell.Tests.Services.Login;
 
 /// <summary>
 /// LoginCoordinator 单元测试
+/// OpenSpec: refactor-login-authentication (Phase 2.2) - 添加ILoginStateMachine mock
 /// </summary>
 public class LoginCoordinatorTests
 {
@@ -24,6 +25,7 @@ public class LoginCoordinatorTests
     private readonly Mock<ISessionLifecycleManager> _sessionManagerMock;
     private readonly Mock<IModuleLoadingService> _moduleLoadingMock;
     private readonly Mock<IRoleNavigationService> _roleNavigationMock;
+    private readonly Mock<ILoginStateMachine> _loginStateMachineMock;
     private readonly LoginCoordinator _sut;
 
     public LoginCoordinatorTests()
@@ -34,6 +36,10 @@ public class LoginCoordinatorTests
         _sessionManagerMock = new Mock<ISessionLifecycleManager>();
         _moduleLoadingMock = new Mock<IModuleLoadingService>();
         _roleNavigationMock = new Mock<IRoleNavigationService>();
+        _loginStateMachineMock = new Mock<ILoginStateMachine>();
+
+        // 配置状态机Mock默认行为
+        _loginStateMachineMock.Setup(m => m.Fire(It.IsAny<LoginTrigger>())).Returns(true);
 
         _sut = new LoginCoordinator(
             _loggerMock.Object,
@@ -41,7 +47,8 @@ public class LoginCoordinatorTests
             _tokenStorageMock.Object,
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
-            _roleNavigationMock.Object);
+            _roleNavigationMock.Object,
+            _loginStateMachineMock.Object);
     }
 
     #region 初始状态测试
@@ -65,7 +72,8 @@ public class LoginCoordinatorTests
             _tokenStorageMock.Object,
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
-            _roleNavigationMock.Object);
+            _roleNavigationMock.Object,
+            _loginStateMachineMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -82,7 +90,8 @@ public class LoginCoordinatorTests
             _tokenStorageMock.Object,
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
-            _roleNavigationMock.Object);
+            _roleNavigationMock.Object,
+            _loginStateMachineMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()

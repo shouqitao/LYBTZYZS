@@ -24,7 +24,7 @@ namespace LYBT.Infrastructure.Migrations
                 )
                 SELECT
                     '00000000-0000-0000-0000-000000000001' AS Id,
-                    'admin' AS UserName,
+                    'sysadmin' AS UserName,
                     '超级管理员' AS RealName,
                     'admin@lybt.com' AS Email,
                     100 AS Role,  -- SuperAdmin = 100

@@ -9,20 +9,10 @@ namespace LYBT.Desktop.Contracts.Api
     public interface IFormulaApi
     {
         /// <summary>
-        /// 获取验方列表（支持分页和查询）
+        /// 获取验方列表（分页查询）
         /// </summary>
         [Refit.Get("/api/v1/formulas")]
-        Task<ApiResponse<PagedResult<FormulaDetailDto>>> GetFormulasAsync(
-            [Refit.Query] int page = 1,
-            [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? keyword = null);
-
-        /// <summary>
-        /// 获取验方列表（返回FormulaListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        [Refit.Get("/api/v1/formulas/list")]
-        Task<ApiResponse<PagedResult<FormulaListDto>>> GetFormulasListAsync(
+        Task<ApiResponse<PagedResult<FormulaListDto>>> GetFormulasAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null,

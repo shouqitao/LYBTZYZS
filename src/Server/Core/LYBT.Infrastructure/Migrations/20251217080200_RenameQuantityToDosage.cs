@@ -5,37 +5,22 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LYBT.Infrastructure.Migrations
 {
     /// <inheritdoc />
+    /// <remarks>
+    /// 此迁移的更改已合并到InitialCreateV2中。
+    /// FormulaHerbItems和PrescriptionItems表现在在InitialCreateV2中创建时就使用Dosage列名。
+    /// </remarks>
     public partial class RenameQuantityToDosage : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // 重命名 FormulaHerbItems 表的 Quantity 列为 Dosage
-            migrationBuilder.RenameColumn(
-                name: "Quantity",
-                table: "FormulaHerbItems",
-                newName: "Dosage");
-
-            // 重命名 PrescriptionItems 表的 Quantity 列为 Dosage
-            migrationBuilder.RenameColumn(
-                name: "Quantity",
-                table: "PrescriptionItems",
-                newName: "Dosage");
+            // 更改已合并到InitialCreateV2，此迁移为空
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // 回滚: 将 Dosage 列改回 Quantity
-            migrationBuilder.RenameColumn(
-                name: "Dosage",
-                table: "FormulaHerbItems",
-                newName: "Quantity");
-
-            migrationBuilder.RenameColumn(
-                name: "Dosage",
-                table: "PrescriptionItems",
-                newName: "Quantity");
+            // 更改已合并到InitialCreateV2，此迁移为空
         }
     }
 }

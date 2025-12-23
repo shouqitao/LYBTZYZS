@@ -70,6 +70,34 @@ namespace LYBT.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FormulaHerbItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FormulaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HerbId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    OriginalHerbName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    IsValidated = table.Column<bool>(type: "bit", nullable: false),
+                    HerbName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Dosage = table.Column<int>(type: "int", nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
+                    Usage = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Remark = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ProcessingMethod = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    DecocteMethod = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FormulaHerbItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FormulaHerbItems_Formulas_FormulaId",
+                        column: x => x.FormulaId,
+                        principalTable: "Formulas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Herbs",
                 columns: table => new
                 {
@@ -325,7 +353,7 @@ namespace LYBT.Infrastructure.Migrations
                     PrescriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     HerbId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     HerbName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    Dosage = table.Column<int>(type: "int", nullable: false),
                     Unit = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Usage = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
@@ -398,6 +426,11 @@ namespace LYBT.Infrastructure.Migrations
                 name: "IX_AuthSessions_UserId",
                 table: "AuthSessions",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FormulaHerbItems_FormulaId",
+                table: "FormulaHerbItems",
+                column: "FormulaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Herbs_Name",
@@ -598,6 +631,9 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Consultations");
+
+            migrationBuilder.DropTable(
+                name: "FormulaHerbItems");
 
             migrationBuilder.DropTable(
                 name: "Formulas");

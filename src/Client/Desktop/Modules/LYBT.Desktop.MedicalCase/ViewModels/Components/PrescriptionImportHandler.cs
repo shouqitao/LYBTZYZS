@@ -43,7 +43,7 @@ public class PrescriptionImportHandler
         FormulaDetailDto formula,
         List<FormulaHerbItemDto> herbs,
         ObservableCollection<PrescriptionHerbItem> existingHerbItems,
-        ObservableCollection<HerbDetailDto> allHerbs)
+        ObservableCollection<HerbListDto> allHerbs)
     {
         if (formula == null || herbs == null || !herbs.Any())
         {

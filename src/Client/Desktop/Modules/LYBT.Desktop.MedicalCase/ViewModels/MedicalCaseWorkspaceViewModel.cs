@@ -200,9 +200,9 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         SaveCommand = new DelegateCommand(ExecuteSave, () => _editModeStateMachine.IsEditing);
         EnterEditModeCommand = new DelegateCommand(ExecuteEnterEditMode, () => _editModeStateMachine.CanEnterEditMode);
 
-        // 订阅Prism事件
-        EventAggregator.GetEvent<ConsultationCompletedEvent>().Subscribe(OnConsultationCompleted, ThreadOption.UIThread);
-        EventAggregator.GetEvent<PrescriptionCompletedEvent>().Subscribe(OnPrescriptionCompleted, ThreadOption.UIThread);
+        // 订阅Prism事件 - OpenSpec: unify-event-system
+        EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Subscribe(OnConsultationCompleted, ThreadOption.UIThread);
+        EventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>().Subscribe(OnPrescriptionCompleted, ThreadOption.UIThread);
         EventAggregator.GetEvent<PrescriptionSavedEvent>().Subscribe(OnPrescriptionSaved, ThreadOption.UIThread);
     }
 
@@ -524,7 +524,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         SaveCommand?.RaiseCanExecuteChanged(); EnterEditModeCommand?.RaiseCanExecuteChanged();
     }
 
-    private void OnConsultationCompleted(ConsultationCompletedPayload payload)
+    private void OnConsultationCompleted(CaseConsultationCompletedPayload payload)
     {
         UpdateConsultationStatus(true);
         IsPrescriptionEnabled = payload.NeedsPrescription;
@@ -533,7 +533,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         // CanComplete由UpdateCanComplete()实时计算，IsPrescriptionEnabled变更时自动触发
     }
 
-    private void OnPrescriptionCompleted(PrescriptionCompletedPayload payload)
+    private void OnPrescriptionCompleted(CasePrescriptionCompletedPayload payload)
     {
         UpdatePrescriptionStatus(true);
         CanPrintPrescription = true;
@@ -611,8 +611,8 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             _lifecycleHandler.ActionCompleted -= OnLifecycleActionCompleted;
             _dataLoader.DataLoaded -= OnDataLoaded;
             _editModeStateMachine.EditStateChanged -= OnEditStateChanged;
-            EventAggregator.GetEvent<ConsultationCompletedEvent>().Unsubscribe(OnConsultationCompleted);
-            EventAggregator.GetEvent<PrescriptionCompletedEvent>().Unsubscribe(OnPrescriptionCompleted);
+            EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Unsubscribe(OnConsultationCompleted);
+            EventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>().Unsubscribe(OnPrescriptionCompleted);
             EventAggregator.GetEvent<PrescriptionSavedEvent>().Unsubscribe(OnPrescriptionSaved);
         }
         base.Dispose(disposing);

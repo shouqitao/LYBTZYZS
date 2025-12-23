@@ -1,26 +1,47 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Formula.Interfaces
 {
     /// <summary>
-    /// 验方数据仓储接口 - Phase 2模块化架构
-    /// Issue #1114 - Repository下沉到模块
+    /// 验方数据仓储接口 - RESTful设计
+    /// List返回轻量ListDto，Detail返回完整DetailDto
     /// </summary>
     public interface IFormulaRepository
     {
-        Task<PagedResult<FormulaDetailDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        /// <summary>
+        /// 分页查询验方列表（返回轻量级ListDto）
+        /// </summary>
+        Task<PagedResult<FormulaListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
 
         /// <summary>
-        /// 获取验方列表（返回FormulaListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// 根据ID获取验方详情（返回完整DetailDto）
         /// </summary>
-        Task<PagedResult<FormulaListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
         Task<FormulaDetailDto?> GetByIdAsync(Guid id);
+
+        /// <summary>
+        /// 创建新验方
+        /// </summary>
         Task<FormulaDetailDto> CreateAsync(FormulaInputDto dto);
+
+        /// <summary>
+        /// 更新验方信息
+        /// </summary>
         Task<FormulaDetailDto> UpdateAsync(FormulaInputDto dto);
+
+        /// <summary>
+        /// 删除验方（软删除）
+        /// </summary>
         Task<bool> DeleteAsync(Guid id);
-        Task<List<FormulaDetailDto>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 搜索验方（基于关键词，返回ListDto）
+        /// </summary>
+        Task<List<FormulaListDto>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 克隆验方
+        /// </summary>
         Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId);
 
         /// <summary>
@@ -33,7 +54,7 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// </summary>
         Task<bool> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId);
 
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
+        #region 状态切换、恢复和批量操作
 
         /// <summary>
         /// 切换验方状态（启用/禁用）
@@ -44,8 +65,6 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// 恢复已删除的验方
         /// </summary>
         Task<FormulaDetailDto?> RestoreAsync(Guid id);
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>
         /// 批量删除验方
@@ -61,5 +80,7 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// 批量禁用验方
         /// </summary>
         Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids);
+
+        #endregion
     }
 }

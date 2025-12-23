@@ -36,7 +36,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<UserListDto>>), 200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> GetUsers(
+        public async Task<IActionResult> GetList(
             int page = 1,
             int pageSize = 20,
             string? keyword = null,
@@ -100,7 +100,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetUser(Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
@@ -119,7 +119,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> CreateUser([FromBody] UserInputDto dto)
+        public async Task<IActionResult> Create([FromBody] UserInputDto dto)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var result = await _userService.CreateAsync(dto);
@@ -127,7 +127,7 @@ namespace LYBT.WebAPI.Controllers
             if (result.IsSuccess && result.Data != null)
             {
                 LogOperation("创建用户", dto, result.Data.Id);
-                return CreatedAtAction(nameof(GetUser),
+                return CreatedAtAction(nameof(GetById),
                     new { id = result.Data.Id, version = "1" },
                     ApiResponse<UserDetailDto>.CreateSuccess(result.Data, "创建成功"));
             }
@@ -141,7 +141,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserInputDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
@@ -163,7 +163,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;

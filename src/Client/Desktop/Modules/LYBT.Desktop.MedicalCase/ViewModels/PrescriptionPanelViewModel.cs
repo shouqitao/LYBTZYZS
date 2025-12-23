@@ -45,7 +45,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     private string _patientName = string.Empty;
     private bool _isLoadingData;
     private bool _isInitialized;
-    private ObservableCollection<HerbDetailDto> _allHerbs = new();
+    private ObservableCollection<HerbListDto> _allHerbs = new();
 
     #endregion
 

@@ -1,18 +1,21 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Repositories
 {
     /// <summary>
     /// Client端Repository统一基类，标准化HTTP API调用包装
+    /// RESTful设计：List返回轻量DTO，Detail返回完整DTO
     /// </summary>
-    /// <typeparam name="TDto">数据传输对象类型</typeparam>
+    /// <typeparam name="TDetailDto">详情DTO类型（用于单项查询、创建、更新返回）</typeparam>
+    /// <typeparam name="TListDto">列表DTO类型（用于分页查询返回）</typeparam>
     /// <typeparam name="TCreateDto">创建DTO类型</typeparam>
     /// <typeparam name="TUpdateDto">更新DTO类型</typeparam>
     /// <typeparam name="TApi">Refit API接口类型</typeparam>
-    public abstract class RepositoryBase<TDto, TCreateDto, TUpdateDto, TApi>
+    public abstract class RepositoryBase<TDetailDto, TListDto, TCreateDto, TUpdateDto, TApi>
         where TApi : class
-        where TDto : class
+        where TDetailDto : class
+        where TListDto : class
         where TCreateDto : class
         where TUpdateDto : class
     {
@@ -36,8 +39,8 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// 根据ID获取实体详情
         /// </summary>
         /// <param name="id">实体ID</param>
-        /// <returns>实体详情</returns>
-        public virtual async Task<TDto?> GetByIdAsync(Guid id)
+        /// <returns>实体详情DTO</returns>
+        public virtual async Task<TDetailDto?> GetByIdAsync(Guid id)
         {
             try
             {
@@ -46,26 +49,26 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取实体详情失败，ID: {Id}, 类型: {EntityType}", id, typeof(TDto).Name);
+                _logger.LogError(ex, "获取实体详情失败，ID: {Id}, 类型: {EntityType}", id, typeof(TDetailDto).Name);
                 throw;
             }
         }
 
         /// <summary>
-        /// 分页查询实体列表
+        /// 分页查询实体列表（返回轻量级ListDto）
         /// </summary>
         /// <param name="page">页码（从1开始）</param>
         /// <param name="pageSize">每页大小</param>
         /// <param name="keyword">搜索关键词（可选）</param>
         /// <returns>分页结果</returns>
-        public virtual async Task<PagedResult<TDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public virtual async Task<PagedResult<TListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
             try
             {
                 var response = await CallApiGetPagedAsync(page, pageSize, keyword);
-                return response.Data ?? new PagedResult<TDto>
+                return response.Data ?? new PagedResult<TListDto>
                 {
-                    Items = new List<TDto>(),
+                    Items = new List<TListDto>(),
                     TotalCount = 0,
                     CurrentPage = page,
                     PageSize = pageSize
@@ -74,7 +77,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "分页查询失败，Page: {Page}, PageSize: {PageSize}, Keyword: {Keyword}, 类型: {EntityType}",
-                    page, pageSize, keyword, typeof(TDto).Name);
+                    page, pageSize, keyword, typeof(TListDto).Name);
                 throw;
             }
         }
@@ -83,8 +86,8 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// 创建新实体
         /// </summary>
         /// <param name="dto">创建DTO</param>
-        /// <returns>创建的实体</returns>
-        public virtual async Task<TDto> CreateAsync(TCreateDto dto)
+        /// <returns>创建的实体详情</returns>
+        public virtual async Task<TDetailDto> CreateAsync(TCreateDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
@@ -93,18 +96,16 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             {
                 var response = await CallApiCreateAsync(dto);
 
-                // Issue #1563 Bug 6修复：检查业务逻辑是否成功
                 if (!response.Success)
                 {
                     throw new InvalidOperationException($"创建失败：{response.Message ?? "未知错误"}");
                 }
 
-                // 检查数据是否为null
                 return response.Data ?? throw new InvalidOperationException("创建失败：服务器未返回数据");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建实体失败，类型: {EntityType}", typeof(TDto).Name);
+                _logger.LogError(ex, "创建实体失败，类型: {EntityType}", typeof(TDetailDto).Name);
                 throw;
             }
         }
@@ -113,8 +114,8 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// 更新实体
         /// </summary>
         /// <param name="dto">更新DTO</param>
-        /// <returns>更新后的实体</returns>
-        public virtual async Task<TDto> UpdateAsync(TUpdateDto dto)
+        /// <returns>更新后的实体详情</returns>
+        public virtual async Task<TDetailDto> UpdateAsync(TUpdateDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
@@ -122,7 +123,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             var id = GetIdFromUpdateDto(dto);
             if (id == null || id == Guid.Empty)
             {
-                _logger.LogError("更新实体失败：无效的ID，类型: {EntityType}", typeof(TDto).Name);
+                _logger.LogError("更新实体失败：无效的ID，类型: {EntityType}", typeof(TDetailDto).Name);
                 throw new ArgumentException("更新DTO必须包含有效的ID", nameof(dto));
             }
 
@@ -130,18 +131,16 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             {
                 var response = await CallApiUpdateAsync(id.Value, dto);
 
-                // Issue #1563 Bug 6修复：检查业务逻辑是否成功
                 if (!response.Success)
                 {
                     throw new InvalidOperationException($"更新失败：{response.Message ?? "未知错误"}");
                 }
 
-                // 检查数据是否为null
                 return response.Data ?? throw new InvalidOperationException($"更新失败：ID {id.Value} 的实体不存在");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新实体失败，ID: {Id}, 类型: {EntityType}", id, typeof(TDto).Name);
+                _logger.LogError(ex, "更新实体失败，ID: {Id}, 类型: {EntityType}", id, typeof(TDetailDto).Name);
                 throw;
             }
         }
@@ -160,7 +159,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除实体失败，ID: {Id}, 类型: {EntityType}", id, typeof(TDto).Name);
+                _logger.LogError(ex, "删除实体失败，ID: {Id}, 类型: {EntityType}", id, typeof(TDetailDto).Name);
                 return false;
             }
         }
@@ -170,17 +169,16 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// </summary>
         /// <param name="keyword">搜索关键词</param>
         /// <returns>匹配的实体列表</returns>
-        public virtual async Task<List<TDto>> SearchAsync(string keyword)
+        public virtual async Task<List<TListDto>> SearchAsync(string keyword)
         {
             try
             {
-                // Issue #1567 - 修复pageSize超过API限制（max 100）导致的400错误
                 var response = await CallApiGetPagedAsync(1, 100, keyword);
-                return response.Data?.Items ?? new List<TDto>();
+                return response.Data?.Items ?? new List<TListDto>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "搜索实体失败，Keyword: {Keyword}, 类型: {EntityType}", keyword, typeof(TDto).Name);
+                _logger.LogError(ex, "搜索实体失败，Keyword: {Keyword}, 类型: {EntityType}", keyword, typeof(TListDto).Name);
                 throw;
             }
         }
@@ -190,35 +188,35 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         #region 抽象方法 - 子类必须实现具体的API调用
 
         /// <summary>
-        /// 调用API根据ID获取实体
+        /// 调用API根据ID获取实体详情
         /// </summary>
         /// <param name="id">实体ID</param>
-        /// <returns>API响应</returns>
-        protected abstract Task<ApiResponse<TDto>> CallApiGetByIdAsync(Guid id);
+        /// <returns>API响应（DetailDto）</returns>
+        protected abstract Task<ApiResponse<TDetailDto>> CallApiGetByIdAsync(Guid id);
 
         /// <summary>
-        /// 调用API分页查询实体
+        /// 调用API分页查询实体列表
         /// </summary>
         /// <param name="page">页码</param>
         /// <param name="pageSize">每页大小</param>
         /// <param name="keyword">搜索关键词</param>
-        /// <returns>API响应</returns>
-        protected abstract Task<ApiResponse<PagedResult<TDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword);
+        /// <returns>API响应（ListDto）</returns>
+        protected abstract Task<ApiResponse<PagedResult<TListDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword);
 
         /// <summary>
         /// 调用API创建实体
         /// </summary>
         /// <param name="dto">创建DTO</param>
-        /// <returns>API响应</returns>
-        protected abstract Task<ApiResponse<TDto>> CallApiCreateAsync(TCreateDto dto);
+        /// <returns>API响应（DetailDto）</returns>
+        protected abstract Task<ApiResponse<TDetailDto>> CallApiCreateAsync(TCreateDto dto);
 
         /// <summary>
         /// 调用API更新实体
         /// </summary>
         /// <param name="id">实体ID</param>
         /// <param name="dto">更新DTO</param>
-        /// <returns>API响应</returns>
-        protected abstract Task<ApiResponse<TDto>> CallApiUpdateAsync(Guid id, TUpdateDto dto);
+        /// <returns>API响应（DetailDto）</returns>
+        protected abstract Task<ApiResponse<TDetailDto>> CallApiUpdateAsync(Guid id, TUpdateDto dto);
 
         /// <summary>
         /// 调用API删除实体
@@ -271,7 +269,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         protected virtual void LogOperationSuccess(string operation, Guid entityId)
         {
             _logger.LogInformation("{Operation}成功，ID: {Id}, 类型: {EntityType}",
-                operation, entityId, typeof(TDto).Name);
+                operation, entityId, typeof(TDetailDto).Name);
         }
 
         /// <summary>
@@ -283,7 +281,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         protected virtual void LogOperationFailure(string operation, Guid entityId, Exception exception)
         {
             _logger.LogError(exception, "{Operation}失败，ID: {Id}, 类型: {EntityType}",
-                operation, entityId, typeof(TDto).Name);
+                operation, entityId, typeof(TDetailDto).Name);
         }
 
         #endregion

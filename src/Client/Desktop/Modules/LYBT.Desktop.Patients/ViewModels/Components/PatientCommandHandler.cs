@@ -316,7 +316,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// <summary>
         /// 搜索患者
         /// </summary>
-        public async Task<CommandResult<IEnumerable<PatientDetailDto>>> SearchPatientsAsync(string keyword)
+        public async Task<CommandResult<IEnumerable<PatientListDto>>> SearchPatientsAsync(string keyword)
         {
             try
             {
@@ -324,19 +324,19 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
                 var patients = await _patientRepository.SearchAsync(keyword);
                 _logger.LogInformation("搜索患者成功，数量: {Count}", patients.Count);
-                return CommandResult<IEnumerable<PatientDetailDto>>.Success(patients);
+                return CommandResult<IEnumerable<PatientListDto>>.Success(patients);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "搜索患者时发生异常：{Keyword}", keyword);
-                return CommandResult<IEnumerable<PatientDetailDto>>.Failure("搜索患者时发生系统错误");
+                return CommandResult<IEnumerable<PatientListDto>>.Failure("搜索患者时发生系统错误");
             }
         }
 
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        public async Task<CommandResult<PagedResult<PatientDetailDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null)
+        public async Task<CommandResult<PagedResult<PatientListDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null)
         {
             try
             {
@@ -344,12 +344,12 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
                 var result = await _patientRepository.GetPagedAsync(page, pageSize, keyword);
                 _logger.LogInformation("分页查询患者成功，数量: {Count}", result.Items.Count);
-                return CommandResult<PagedResult<PatientDetailDto>>.Success(result);
+                return CommandResult<PagedResult<PatientListDto>>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "分页查询患者时发生异常");
-                return CommandResult<PagedResult<PatientDetailDto>>.Failure("查询患者列表时发生系统错误");
+                return CommandResult<PagedResult<PatientListDto>>.Failure("查询患者列表时发生系统错误");
             }
         }
 

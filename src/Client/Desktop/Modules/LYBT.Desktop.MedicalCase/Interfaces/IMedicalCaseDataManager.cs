@@ -46,8 +46,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<bool> DeletePrescriptionAsync();
 
         /// <summary>
-        /// 分页查询病案列表
+        /// 分页查询病案列表（返回轻量级ListDto）
         /// </summary>
-        Task<PagedResult<MedicalCaseDetailDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null);
+        Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null);
     }
 }

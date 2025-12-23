@@ -217,7 +217,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
             else if (e.Key == Key.Enter)
             {
                 // Enter键：选择当前高亮项
-                if (SuggestionsListBox.SelectedItem is HerbDetailDto selected)
+                if (SuggestionsListBox.SelectedItem is HerbListDto selected)
                 {
                     UpdateSelectedHerb(selected);
                 }
@@ -336,7 +336,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
                 return;
 
             // 获取ListBoxItem的数据项
-            if (listBoxItem.Content is HerbDetailDto herb)
+            if (listBoxItem.Content is HerbListDto herb)
             {
                 UpdateSelectedHerb(herb);
                 e.Handled = true; // 阻止事件继续传播
@@ -361,7 +361,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
         /// <summary>
         /// 更新选中的药材 - 统一处理鼠标和键盘选择
         /// </summary>
-        private void UpdateSelectedHerb(HerbDetailDto herb)
+        private void UpdateSelectedHerb(HerbListDto herb)
         {
             if (DataContext is not IHerbItemEditable viewModel)
                 return;

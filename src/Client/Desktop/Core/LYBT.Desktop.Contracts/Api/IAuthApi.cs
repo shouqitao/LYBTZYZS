@@ -30,6 +30,20 @@ namespace LYBT.Desktop.Contracts.Api
         Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> LoginAsync([Refit.Body] LoginRequest loginRequest);
 
         /// <summary>
+        /// 使用AutoLoginToken自动登录
+        /// OpenSpec: refactor-login-authentication (CVT-001)
+        /// </summary>
+        /// <param name="request">自动登录请求 - 包含用户名和AutoLoginToken</param>
+        /// <returns>登录响应 - 包含JWT令牌、用户信息、过期时间、新的AutoLoginToken</returns>
+        /// <remarks>
+        /// <para>功能: 使用本地存储的AutoLoginToken进行自动登录</para>
+        /// <para>安全: AutoLoginToken可被服务端随时撤销，不暴露用户密码</para>
+        /// <para>更新: 成功登录后返回新的AutoLoginToken（Token轮换机制）</para>
+        /// </remarks>
+        [Refit.Post("/api/v1/auth/auto-login")]
+        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> LoginWithAutoTokenAsync([Refit.Body] AutoLoginRequest request);
+
+        /// <summary>
         /// 用户登出操作
         /// </summary>
         /// <param name="logoutRequest">登出请求信息</param>

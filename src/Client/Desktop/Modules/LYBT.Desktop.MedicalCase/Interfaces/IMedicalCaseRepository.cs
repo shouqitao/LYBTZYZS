@@ -4,25 +4,31 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 namespace LYBT.Desktop.MedicalCase.Interfaces
 {
     /// <summary>
-    /// 医疗案例数据仓储接口 - Phase 2模块化架构
-    /// Issue #1114 - Repository下沉到模块
+    /// 医案数据仓储接口 - RESTful设计
+    /// List返回轻量MedicalCaseListDto，Detail返回完整MedicalCaseDetailDto
     /// </summary>
     public interface IMedicalCaseRepository
     {
-        Task<PagedResult<MedicalCaseDetailDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-
         /// <summary>
-        /// 获取医案列表（返回MedicalCaseListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// 分页查询医案列表（返回轻量级ListDto）
         /// </summary>
-        Task<PagedResult<MedicalCaseListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        Task<PagedResult<MedicalCaseListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
-        /// 获取医案分页列表（包含所有医生的数据）
+        /// 搜索医案（返回DetailDto，支持跨医生查询）
         /// OpenSpec: fix-history-copy-all-patients - 用于历史医案复制查看全部患者功能
         /// </summary>
-        Task<PagedResult<MedicalCaseDetailDto>> GetPagedIncludeAllDoctorsAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        Task<PagedResult<MedicalCaseDetailDto>> SearchAsync(
+            string? patientName = null,
+            string? diagnosisKeyword = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            int page = 1,
+            int pageSize = 20);
 
+        /// <summary>
+        /// 根据ID获取医案详情（返回完整DetailDto）
+        /// </summary>
         Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id);
         /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
         Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto);
@@ -39,15 +45,6 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         // OpenSpec: simplify-medicalcase-api - UpdateConsultationAsync已删除
         // 诊断更新通过聚合保存 SaveAsync 处理
 
-        /// <summary>
-        /// 查询病案列表（支持多条件组合查询）
-        /// Issue #1592 - Phase 3
-        /// </summary>
-        Task<List<MedicalCaseDetailDto>> QueryAsync(
-            string? patientName = null,
-            DateTime? startDate = null,
-            DateTime? endDate = null,
-            string? diagnosisKeyword = null);
 
         // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
 

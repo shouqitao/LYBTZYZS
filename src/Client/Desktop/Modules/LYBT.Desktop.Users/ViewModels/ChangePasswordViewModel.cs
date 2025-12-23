@@ -258,7 +258,12 @@ namespace LYBT.Desktop.Users.ViewModels
                     NavigateBack("ContentRegion");
 
                     // 4. 发布密码修改事件（触发导航到登录界面）
-                    EventAggregator.GetEvent<PasswordChangedEvent>().Publish();
+                    // OpenSpec: unify-event-system - 使用AuthEvents聚合类
+                    EventAggregator.GetEvent<AuthEvents.PasswordChangedEvent>().Publish(new PasswordChangedPayload
+                    {
+                        UserName = UserName,
+                        RequiresReLogin = true
+                    });
 
                     Logger.LogInformation("用户 {UserName} 已返回并导航到登录界面", UserName);
 

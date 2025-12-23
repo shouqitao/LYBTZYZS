@@ -96,7 +96,7 @@ namespace LYBT.Desktop.Herbs.Services
             catch (Exception ex) { _logger.LogError(ex, "更新药材失败: HerbName={HerbName}", inputDto.Name); throw; }
         }
 
-        public virtual async Task<PagedResult<HerbDetailDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchKeyword)
+        public virtual async Task<PagedResult<HerbListDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchKeyword)
         {
             try { _logger.LogDebug("分页获取药材: Page={Page}, Size={Size}, Keyword='{Keyword}'", pageNumber, pageSize, searchKeyword); var result = await _herbRepository.GetPagedAsync(pageNumber, pageSize, searchKeyword); _logger.LogInformation("药材列表获取成功: Count={Count}", result.TotalCount); return result; }
             catch (Exception ex) { _logger.LogError(ex, "分页获取药材失败"); throw; }

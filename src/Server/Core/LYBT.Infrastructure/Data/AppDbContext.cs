@@ -41,6 +41,7 @@ namespace LYBT.Infrastructure.Data
         // 认证管理
         public DbSet<AuthSession> AuthSessions { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<AutoLoginToken> AutoLoginTokens { get; set; } // OpenSpec: refactor-login-authentication
 
         // 安全审计 - Issue #1869: Token认证安全重构，记录认证相关安全事件
         public DbSet<SecurityAuditLog> SecurityAuditLogs { get; set; }

@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
 
         // 所有药材列表（用于拼音码快速匹配）
-        private readonly ObservableCollection<HerbDetailDto> _allHerbs = new();
+        private readonly ObservableCollection<HerbListDto> _allHerbs = new();
 
         public FormulaMasterDetailViewModel(
             IFormulaRepository formulaRepository,
@@ -149,7 +149,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         protected override async Task<IEnumerable<FormulaListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
             // OpenSpec: optimize-entity-data-flow - 使用轻量级ListDto
-            var result = await _formulaRepository.GetPagedListAsync(page, pageSize, searchText);
+            var result = await _formulaRepository.GetPagedAsync(page, pageSize, searchText);
 
             TotalCount = result.TotalCount;
             CurrentPage = result.CurrentPage;

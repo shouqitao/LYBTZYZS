@@ -260,7 +260,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             Logger.LogInformation("药材搜索: 第{Page}页, 每页{PageSize}条, 关键词: '{SearchText}'", page, pageSize, searchText);
             try
             {
-                var pagedData = await _herbRepository.GetPagedListAsync(page, pageSize, searchText);
+                var pagedData = await _herbRepository.GetPagedAsync(page, pageSize, searchText);
                 TotalCount = pagedData.TotalCount;
                 return pagedData.Items ?? Enumerable.Empty<HerbListDto>();
             }

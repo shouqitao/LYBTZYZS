@@ -52,7 +52,7 @@ public class PrescriptionItemHandler
     /// <param name="onItemChanged">项变化回调（HerbId或ItemTotal变化时触发）</param>
     /// <returns>新创建的药材项</returns>
     public PrescriptionHerbItem CreateHerbItem(
-        ObservableCollection<HerbDetailDto> allHerbs,
+        ObservableCollection<HerbListDto> allHerbs,
         Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         var item = new PrescriptionHerbItem
@@ -85,7 +85,7 @@ public class PrescriptionItemHandler
     /// <returns>药材项ViewModel</returns>
     public PrescriptionHerbItem CreateHerbItemFromDto(
         PrescriptionItemDto itemDto,
-        ObservableCollection<HerbDetailDto> allHerbs,
+        ObservableCollection<HerbListDto> allHerbs,
         Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         var item = CreateHerbItem(allHerbs, onItemChanged);
@@ -112,7 +112,7 @@ public class PrescriptionItemHandler
     /// <param name="onItemChanged">项变化回调</param>
     public void AddDefaultHerbItems(
         ObservableCollection<PrescriptionHerbItem> herbItems,
-        ObservableCollection<HerbDetailDto> allHerbs,
+        ObservableCollection<HerbListDto> allHerbs,
         Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         // 初始化8个空槽位（2行4列）
@@ -138,7 +138,7 @@ public class PrescriptionItemHandler
     /// <param name="onItemChanged">项变化回调</param>
     public void EnsureMinimumBlankRows(
         ObservableCollection<PrescriptionHerbItem> herbItems,
-        ObservableCollection<HerbDetailDto> allHerbs,
+        ObservableCollection<HerbListDto> allHerbs,
         Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         // 统计空槽位数量（未选择药材的槽位）
@@ -172,7 +172,7 @@ public class PrescriptionItemHandler
     /// <param name="onItemChanged">项变化回调</param>
     public void CompactHerbItems(
         ObservableCollection<PrescriptionHerbItem> herbItems,
-        ObservableCollection<HerbDetailDto> allHerbs,
+        ObservableCollection<HerbListDto> allHerbs,
         Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         // 提取所有非空药材项（保持相对顺序）
@@ -205,7 +205,7 @@ public class PrescriptionItemHandler
     /// <param name="onItemChanged">项变化回调</param>
     public void AddNewRow(
         ObservableCollection<PrescriptionHerbItem> herbItems,
-        ObservableCollection<HerbDetailDto> allHerbs,
+        ObservableCollection<HerbListDto> allHerbs,
         Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         for (int i = 0; i < 4; i++)
@@ -227,7 +227,7 @@ public class PrescriptionItemHandler
     public void AddAfter(
         ObservableCollection<PrescriptionHerbItem> herbItems,
         PrescriptionHerbItem afterItem,
-        ObservableCollection<HerbDetailDto> allHerbs,
+        ObservableCollection<HerbListDto> allHerbs,
         Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         var index = herbItems.IndexOf(afterItem);
@@ -250,7 +250,7 @@ public class PrescriptionItemHandler
     public bool DeleteHerbItem(
         ObservableCollection<PrescriptionHerbItem> herbItems,
         PrescriptionHerbItem itemToDelete,
-        ObservableCollection<HerbDetailDto> allHerbs,
+        ObservableCollection<HerbListDto> allHerbs,
         Action<PrescriptionHerbItem, string>? onItemChanged = null)
     {
         if (itemToDelete == null)

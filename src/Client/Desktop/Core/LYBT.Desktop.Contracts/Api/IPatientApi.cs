@@ -10,20 +10,10 @@ namespace LYBT.Desktop.Contracts.Api
     public interface IPatientApi
     {
         /// <summary>
-        /// 获取患者列表（支持分页和查询）
+        /// 获取患者列表（分页查询）
         /// </summary>
         [Refit.Get("/api/v1/patients")]
-        Task<ApiResponse<PagedResult<PatientDetailDto>>> GetPatientsAsync(
-            [Refit.Query] int page = 1,
-            [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? keyword = null);
-
-        /// <summary>
-        /// 获取患者列表（返回PatientListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        [Refit.Get("/api/v1/patients/list")]
-        Task<ApiResponse<PagedResult<PatientListDto>>> GetPatientsListAsync(
+        Task<ApiResponse<PagedResult<PatientListDto>>> GetPatientsAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null);

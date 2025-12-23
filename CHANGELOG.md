@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 登录认证架构重构 (OpenSpec: refactor-login-authentication) - 2025-12-21
+
+**背景**: 登录认证模块存在安全隐患（明文密码存储）、状态管理混乱和事件通信不一致问题。
+
+**Phase 1 - 核心安全修复**:
+- TokenManager: 实现ITokenManager接口，Token严格内存存储，支持有效性和即将过期检查
+- CredentialVault: 实现ICredentialVault接口，使用DPAPI+HMAC加密，支持旧格式凭据迁移
+- AutoLoginToken: 自动登录使用AutoLoginToken而非明文密码，修改LoginViewModel使用AutoLogin
+- Token刷新失败处理: 实现分级处理策略（网络错误重试、Token过期导航登录）
+
+**Phase 2 - 状态管理重构**:
+- LoginStateMachine: 实现ILoginStateMachine接口，使用状态转换表管理8种登录状态
+- LoginCoordinator重构: 简化职责，集成LoginStateMachine
+- 可靠Logout: 实现ILogoutService接口，本地登出立即生效，服务端登出可重试
+
+**Phase 3 - 事件体系**:
+- AuthEvents定义: 9个Prism PubSubEvent事件类和9个Payload记录
+- 事件发布集成: LoginStateMachine/TokenRefreshHandler/LogoutService发布对应事件
+- 向后兼容: 保留原有EventHandler事件，新旧事件系统共存
+
+**测试覆盖**: 18+22+29+20+49 = 138个单元测试通过
+
 #### DDD聚合边界优化 (OpenSpec: refactor-server-ddd-aggregates) - 2025-12-21
 
 **背景**: Server端实体存在双向导航属性，违反DDD跨聚合引用原则，可能导致循环引用。

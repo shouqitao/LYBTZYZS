@@ -56,9 +56,9 @@ namespace LYBT.Desktop.Formula.Interfaces
         Task<(bool success, string? errorMessage)> PrintFormulaAsync(FormulaDetailDto formula);
 
         /// <summary>
-        /// 分页查询配方（Issue #1787: 支持分页查询）
+        /// 分页查询配方（Issue #1787: 支持分页查询，返回轻量级ListDto）
         /// </summary>
-        Task<(bool success, PagedResult<FormulaDetailDto>? data, string? errorMessage)> GetPagedAsync(
+        Task<(bool success, PagedResult<FormulaListDto>? data, string? errorMessage)> GetPagedAsync(
             int page, int pageSize, string? searchText = null);
 
         /// <summary>

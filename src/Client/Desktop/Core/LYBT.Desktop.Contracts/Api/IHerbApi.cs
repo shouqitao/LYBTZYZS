@@ -9,20 +9,10 @@ namespace LYBT.Desktop.Contracts.Api
     public interface IHerbApi
     {
         /// <summary>
-        /// 获取草药列表（支持分页和查询）- 有缓存
+        /// 获取草药列表（分页查询）
         /// </summary>
         [Refit.Get("/api/v1/herbs")]
-        Task<ApiResponse<PagedResult<HerbDetailDto>>> GetHerbsAsync(
-            [Refit.Query] int page = 1,
-            [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? keyword = null);
-
-        /// <summary>
-        /// 获取草药列表（返回HerbListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        [Refit.Get("/api/v1/herbs/list")]
-        Task<ApiResponse<PagedResult<HerbListDto>>> GetHerbsListAsync(
+        Task<ApiResponse<PagedResult<HerbListDto>>> GetHerbsAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null,

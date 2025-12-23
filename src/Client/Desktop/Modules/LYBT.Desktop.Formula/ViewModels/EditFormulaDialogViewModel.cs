@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         private readonly FormulaCommandHandler _commandHandler;
         private readonly IContainerProvider _containerProvider;
-        private readonly ObservableCollection<HerbDetailDto> _allHerbs = new();
+        private readonly ObservableCollection<HerbListDto> _allHerbs = new();
 
         private Guid? _formulaId;
         private string _formulaName = string.Empty;

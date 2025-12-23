@@ -7,7 +7,6 @@ using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Patients.Events;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -50,10 +49,10 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
     private Guid _medicalCaseFlowId;
     public Guid MedicalCaseFlowId { get => _medicalCaseFlowId; set => SetProperty(ref _medicalCaseFlowId, value); }
 
-    public ObservableCollection<PatientDetailDto> Patients => _searchManager.Patients;
+    public ObservableCollection<PatientListDto> Patients => _searchManager.Patients;
 
-    private PatientDetailDto? _selectedPatient;
-    public PatientDetailDto? SelectedPatient
+    private PatientListDto? _selectedPatient;
+    public PatientListDto? SelectedPatient
     {
         get => _selectedPatient;
         set
@@ -64,7 +63,8 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
                 if (value != null)
                 {
                     ClearPendingSelection();
-                    CurrentPatient = value;
+                    // 选中列表项时异步加载详情
+                    _ = LoadPatientDetailAsync(value.Id);
                 }
             }
         }
@@ -106,7 +106,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
             {
                 ClearPatientSelection();
                 CacheUnfinishedCase(value);
-                _ = _pendingQueueManager.LoadPatientForPendingCaseAsync(value.PatientId, Patients);
+                _ = _pendingQueueManager.LoadPatientForPendingCaseAsync(value.PatientId);
             }
         }
     }
@@ -133,7 +133,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
     public DelegateCommand SearchCommand { get; }
     public DelegateCommand NewPatientCommand { get; }
     public DelegateCommand SelectPatientCommand { get; }
-    public DelegateCommand<PatientDetailDto> DoubleClickPatientCommand { get; }
+    public DelegateCommand<PatientListDto> DoubleClickPatientCommand { get; }
     public DelegateCommand PreviousPageCommand { get; }
     public DelegateCommand NextPageCommand { get; }
     public DelegateCommand BackToHomeCommand { get; }
@@ -174,7 +174,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync(), () => !IsBusy);
         NewPatientCommand = new DelegateCommand(ExecuteNewPatient);
         SelectPatientCommand = new DelegateCommand(ExecuteSelectPatient, () => SelectedPatient != null);
-        DoubleClickPatientCommand = new DelegateCommand<PatientDetailDto>(ExecuteDoubleClickPatient);
+        DoubleClickPatientCommand = new DelegateCommand<PatientListDto>(ExecuteDoubleClickPatient);
         PreviousPageCommand = new DelegateCommand(async () => await ExecutePreviousPageAsync(), () => _searchManager.CanPreviousPage());
         NextPageCommand = new DelegateCommand(async () => await ExecuteNextPageAsync(), () => _searchManager.CanNextPage());
         BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
@@ -214,29 +214,62 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
                 if (newPatient != null)
                 {
                     Logger.LogInformation("新建患者成功：{Name}", newPatient.Name);
-                    Patients.Insert(0, newPatient);
-                    SelectedPatient = newPatient;
+                    // 将DetailDto转换为ListDto插入列表
+                    var listDto = ToListDto(newPatient);
+                    Patients.Insert(0, listDto);
+                    SelectedPatient = listDto;
+                    // 直接设置CurrentPatient（已有详情数据）
+                    CurrentPatient = newPatient;
                     PublishPatientSelectedEvent(newPatient);
                 }
             }
         });
     }
 
+    /// <summary>
+    /// 将PatientDetailDto转换为PatientListDto
+    /// </summary>
+    private static PatientListDto ToListDto(PatientDetailDto detail) => new()
+    {
+        Id = detail.Id,
+        Name = detail.Name,
+        Gender = detail.Gender,
+        Age = detail.Age,
+        PhoneNumber = detail.PhoneNumber,
+        LastVisitTime = detail.LastVisitTime,
+        VisitCount = detail.VisitCount,
+        PinYinCode = detail.PinYinCode,
+        Status = detail.Status,
+        CreatedAt = detail.CreatedAt
+    };
+
     private void ExecuteSelectPatient()
     {
-        if (SelectedPatient != null)
+        if (CurrentPatient != null)
         {
-            Logger.LogInformation("选择患者：{Name}", SelectedPatient.Name);
-            PublishPatientSelectedEvent(SelectedPatient);
+            Logger.LogInformation("选择患者：{Name}", CurrentPatient.Name);
+            PublishPatientSelectedEvent(CurrentPatient);
         }
     }
 
-    private void ExecuteDoubleClickPatient(PatientDetailDto? patient)
+    private void ExecuteDoubleClickPatient(PatientListDto? patient)
     {
         if (patient != null)
         {
             SelectedPatient = patient;
-            PublishPatientSelectedEvent(patient);
+            // CurrentPatient通过SelectedPatient setter异步加载
+            // 发布事件延迟到CurrentPatient加载完成后进行
+            _ = WaitAndPublishPatientSelectedAsync(patient.Id);
+        }
+    }
+
+    private async Task WaitAndPublishPatientSelectedAsync(Guid patientId)
+    {
+        // 等待CurrentPatient加载
+        await LoadPatientDetailAsync(patientId);
+        if (CurrentPatient != null)
+        {
+            PublishPatientSelectedEvent(CurrentPatient);
         }
     }
 
@@ -413,8 +446,28 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
 
     private async Task LoadPendingCasesAsync() => await _pendingQueueManager.LoadPendingCasesAsync();
 
+    /// <summary>
+    /// 加载患者详情（从列表选中时）
+    /// </summary>
+    private async Task LoadPatientDetailAsync(Guid patientId)
+    {
+        try
+        {
+            var result = await _commandHandler.GetByIdAsync(patientId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                CurrentPatient = result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "加载患者详情失败: {PatientId}", patientId);
+        }
+    }
+
     private void PublishPatientSelectedEvent(PatientDetailDto patient, Guid? medicalCaseId = null)
     {
+        // OpenSpec: unify-event-system - 使用PatientEvents聚合类
         var payload = new PatientSelectedPayload
         {
             PatientId = patient.Id, PatientName = patient.Name,
@@ -424,7 +477,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
             AllergyHistory = patient.AllergyHistory ?? string.Empty,
             MedicalCaseFlowId = MedicalCaseFlowId, SelectedAt = DateTime.Now
         };
-        EventAggregator.GetEvent<PatientSelectedEvent>().Publish(payload);
+        EventAggregator.GetEvent<PatientEvents.SelectedEvent>().Publish(payload);
         NavigateToMedicalCase(patient, medicalCaseId);
     }
 
@@ -461,27 +514,31 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         _unfinishedCaseHandler.CaseClosed += (_, _) => { };
         _pendingQueueManager.PendingQueueLoaded += (_, _) => RaisePropertyChanged(nameof(HasNoPendingPatients));
         _pendingQueueManager.PatientLoaded += (_, e) => CurrentPatient = e.Patient;
-        _patientUpdatedToken = EventAggregator.GetEvent<PatientUpdatedEvent>().Subscribe(OnPatientUpdated);
-        // OpenSpec: refactor-patient-selection Task 1.3 - 患者创建时失效缓存
-        _patientCreatedToken = EventAggregator.GetEvent<PatientCreatedEvent>().Subscribe(OnPatientCreated);
+        // OpenSpec: unify-event-system - 使用PatientEvents聚合类
+        _patientUpdatedToken = EventAggregator.GetEvent<PatientEvents.UpdatedEvent>().Subscribe(OnPatientUpdated);
+        _patientCreatedToken = EventAggregator.GetEvent<PatientEvents.CreatedEvent>().Subscribe(OnPatientCreated);
     }
 
     /// <summary>
     /// 患者创建事件处理
     /// OpenSpec: refactor-patient-selection Task 1.3 - 失效缓存
     /// </summary>
-    private void OnPatientCreated(PatientDetailDto patient)
+    private void OnPatientCreated(PatientCreatedPayload payload)
     {
-        Logger.LogDebug("患者创建事件：{PatientName}，失效搜索缓存", patient.Name);
+        Logger.LogDebug("患者创建事件：{PatientName}，失效搜索缓存", payload.Patient.Name);
         _searchManager.InvalidateCache();
     }
 
-    private void OnPatientUpdated(PatientDetailDto patient)
+    /// <summary>
+    /// 患者更新事件处理
+    /// </summary>
+    private void OnPatientUpdated(PatientUpdatedPayload payload)
     {
+        var patient = payload.Patient;
         // 更新本地状态
         if (CurrentPatient?.Id == patient.Id) CurrentPatient = patient;
         var idx = Patients.ToList().FindIndex(p => p.Id == patient.Id);
-        if (idx >= 0) Patients[idx] = patient;
+        if (idx >= 0) Patients[idx] = ToListDto(patient);
 
         // OpenSpec: refactor-patient-selection Task 1.3 - 失效缓存
         Logger.LogDebug("患者更新事件：{PatientName}，失效搜索缓存", patient.Name);
@@ -504,15 +561,15 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         if (disposing)
         {
             _searchManager.SearchCompleted -= (_, _) => { };
+            // OpenSpec: unify-event-system - 使用PatientEvents聚合类
             if (_patientUpdatedToken != null)
             {
-                EventAggregator.GetEvent<PatientUpdatedEvent>().Unsubscribe(_patientUpdatedToken);
+                EventAggregator.GetEvent<PatientEvents.UpdatedEvent>().Unsubscribe(_patientUpdatedToken);
                 _patientUpdatedToken = null;
             }
-            // OpenSpec: refactor-patient-selection Task 1.3
             if (_patientCreatedToken != null)
             {
-                EventAggregator.GetEvent<PatientCreatedEvent>().Unsubscribe(_patientCreatedToken);
+                EventAggregator.GetEvent<PatientEvents.CreatedEvent>().Unsubscribe(_patientCreatedToken);
                 _patientCreatedToken = null;
             }
             _searchDebounceTimer?.Dispose();

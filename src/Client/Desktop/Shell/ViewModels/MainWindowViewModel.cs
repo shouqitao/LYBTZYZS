@@ -243,7 +243,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
     {
         // 订阅LoginCoordinator的登录成功事件（取代EventAggregator的LoginSuccessEvent）
         _loginCoordinator.LoginSucceeded += OnLoginCoordinatorSuccess;
-        EventAggregator.GetEvent<PasswordChangedEvent>().Subscribe(OnPasswordChanged);
+        // OpenSpec: unify-event-system - 使用AuthEvents聚合类
+        EventAggregator.GetEvent<AuthEvents.PasswordChangedEvent>().Subscribe(OnPasswordChanged);
         EventAggregator.GetEvent<TokenLifecycleStateChangedEvent>().Subscribe(OnTokenLifecycleStateChanged);
         _navigationManager.SubscribeToRegionCollection();
     }
@@ -375,7 +376,12 @@ public class MainWindowViewModel : UnifiedViewModelBase
             try
             {
                 await _servicesFacade.AuthenticationService.LogoutAsync();
-                EventAggregator.GetEvent<LogoutEvent>().Publish(new LogoutEventArgs { Reason = LogoutReason.UserInitiated, Message = "用户主动退出" });
+                // OpenSpec: unify-event-system - 使用AuthEvents聚合类
+                EventAggregator.GetEvent<AuthEvents.LogoutCompletedEvent>().Publish(new LogoutCompletedPayload
+                {
+                    LocalLogoutCompleted = true,
+                    ServerLogoutCompleted = true
+                });
             }
             catch (Exception ex) { Logger.LogWarning(ex, "后台登出处理异常"); }
         });
@@ -450,9 +456,10 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     /// <summary>密码修改成功事件处理</summary>
-    private void OnPasswordChanged()
+    /// <remarks>OpenSpec: unify-event-system - 使用AuthEvents.PasswordChangedEvent</remarks>
+    private void OnPasswordChanged(PasswordChangedPayload payload)
     {
-        Logger.LogInformation("收到密码修改成功事件，导航到登录界面");
+        Logger.LogInformation("收到密码修改成功事件 [用户: {UserName}]，导航到登录界面", payload.UserName);
         Application.Current.Dispatcher.InvokeAsync(() =>
         {
             CurrentUser = null;

@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
@@ -8,10 +8,10 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Formula.Repositories
 {
     /// <summary>
-    /// 验方数据仓储实现 - RepositoryBase统一架构
-    /// Project Standardization 3.0 - 迁移到统一RepositoryBase
+    /// 验方数据仓储实现 - RESTful设计
+    /// List返回轻量ListDto，Detail返回完整DetailDto
     /// </summary>
-    public class FormulaRepository : RepositoryBase<FormulaDetailDto, FormulaInputDto, FormulaInputDto, IFormulaApi>, IFormulaRepository
+    public class FormulaRepository : RepositoryBase<FormulaDetailDto, FormulaListDto, FormulaInputDto, FormulaInputDto, IFormulaApi>, IFormulaRepository
     {
         public FormulaRepository(
             IFormulaApi formulaApi,
@@ -19,6 +19,69 @@ namespace LYBT.Desktop.Formula.Repositories
             : base(formulaApi, logger)
         {
         }
+
+        #region RepositoryBase抽象方法实现
+
+        protected override Task<ApiResponse<FormulaDetailDto>> CallApiGetByIdAsync(Guid id)
+        {
+            return _api.GetFormulaByIdAsync(id);
+        }
+
+        protected override Task<ApiResponse<PagedResult<FormulaListDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        {
+            return _api.GetFormulasAsync(page, pageSize, keyword);
+        }
+
+        protected override Task<ApiResponse<FormulaDetailDto>> CallApiCreateAsync(FormulaInputDto dto)
+        {
+            return _api.CreateFormulaAsync(dto);
+        }
+
+        protected override Task<ApiResponse<FormulaDetailDto>> CallApiUpdateAsync(Guid id, FormulaInputDto dto)
+        {
+            return _api.UpdateFormulaAsync(id, dto);
+        }
+
+        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        {
+            return _api.DeleteFormulaAsync(id);
+        }
+
+        protected override Guid? GetIdFromUpdateDto(FormulaInputDto dto)
+        {
+            return dto?.Id;
+        }
+
+        #endregion
+
+        #region 扩展方法 - 支持分类过滤
+
+        /// <summary>
+        /// 分页查询验方列表（支持分类过滤）
+        /// </summary>
+        public async Task<PagedResult<FormulaListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+        {
+            try
+            {
+                var response = await _api.GetFormulasAsync(page, pageSize, keyword, category);
+                return response.Data ?? new PagedResult<FormulaListDto>
+                {
+                    Items = new List<FormulaListDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取验方列表失败");
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region 验方专用方法
 
         /// <summary>
         /// 克隆验方
@@ -72,65 +135,9 @@ namespace LYBT.Desktop.Formula.Repositories
             }
         }
 
-        #region RepositoryBase抽象方法实现
-
-        protected override Task<ApiResponse<FormulaDetailDto>> CallApiGetByIdAsync(Guid id)
-        {
-            return _api.GetFormulaByIdAsync(id);
-        }
-
-        protected override Task<ApiResponse<PagedResult<FormulaDetailDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
-        {
-            return _api.GetFormulasAsync(page, pageSize, keyword);
-        }
-
-        /// <summary>
-        /// 获取验方列表（返回FormulaListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        public async Task<PagedResult<FormulaListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
-        {
-            try
-            {
-                var response = await _api.GetFormulasListAsync(page, pageSize, keyword, category);
-                return response.Data ?? new PagedResult<FormulaListDto>
-                {
-                    Items = new List<FormulaListDto>(),
-                    TotalCount = 0,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取验方列表失败");
-                throw;
-            }
-        }
-
-        protected override Task<ApiResponse<FormulaDetailDto>> CallApiCreateAsync(FormulaInputDto dto)
-        {
-            return _api.CreateFormulaAsync(dto);
-        }
-
-        protected override Task<ApiResponse<FormulaDetailDto>> CallApiUpdateAsync(Guid id, FormulaInputDto dto)
-        {
-            return _api.UpdateFormulaAsync(id, dto);
-        }
-
-        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
-        {
-            return _api.DeleteFormulaAsync(id);
-        }
-
-        protected override Guid? GetIdFromUpdateDto(FormulaInputDto dto)
-        {
-            return dto?.Id;
-        }
-
         #endregion
 
-        #region OpenSpec: optimize-module-list-ui - 状态切换和恢复
+        #region 状态切换、恢复和批量操作
 
         /// <summary>
         /// 切换验方状态（启用/禁用）
@@ -184,16 +191,12 @@ namespace LYBT.Desktop.Formula.Repositories
             }
         }
 
-        #endregion
-
-        #region OpenSpec: optimize-batch-operations Phase 2 - 批量操作
-
         /// <inheritdoc />
         public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
         {
             try
             {
-                _logger.LogInformation("批量删除验方：{Count} 个", ids.Count);
+                _logger.LogInformation("批量删除验方：{Count}个", ids.Count);
                 var request = new BatchDeleteInputDto { Ids = ids };
                 var response = await _api.BatchDeleteAsync(request);
 
@@ -203,7 +206,7 @@ namespace LYBT.Desktop.Formula.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("批量删除验方完成：成功 {Success} 个，失败 {Failure} 个",
+                _logger.LogInformation("批量删除验方完成：成功{Success}个，失败{Failure}个",
                     response.Data.SuccessCount, response.Data.FailureCount);
                 return response.Data;
             }
@@ -219,7 +222,7 @@ namespace LYBT.Desktop.Formula.Repositories
         {
             try
             {
-                _logger.LogInformation("批量启用验方：{Count} 个", ids.Count);
+                _logger.LogInformation("批量启用验方：{Count}个", ids.Count);
                 var request = new BatchDeleteInputDto { Ids = ids };
                 var response = await _api.BatchEnableAsync(request);
 
@@ -229,7 +232,7 @@ namespace LYBT.Desktop.Formula.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("批量启用验方完成：成功 {Success} 个，失败 {Failure} 个",
+                _logger.LogInformation("批量启用验方完成：成功{Success}个，失败{Failure}个",
                     response.Data.SuccessCount, response.Data.FailureCount);
                 return response.Data;
             }
@@ -245,7 +248,7 @@ namespace LYBT.Desktop.Formula.Repositories
         {
             try
             {
-                _logger.LogInformation("批量禁用验方：{Count} 个", ids.Count);
+                _logger.LogInformation("批量禁用验方：{Count}个", ids.Count);
                 var request = new BatchDeleteInputDto { Ids = ids };
                 var response = await _api.BatchDisableAsync(request);
 
@@ -255,7 +258,7 @@ namespace LYBT.Desktop.Formula.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("批量禁用验方完成：成功 {Success} 个，失败 {Failure} 个",
+                _logger.LogInformation("批量禁用验方完成：成功{Success}个，失败{Failure}个",
                     response.Data.SuccessCount, response.Data.FailureCount);
                 return response.Data;
             }

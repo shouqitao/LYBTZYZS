@@ -4,25 +4,16 @@ using LYBT.Shared.Models.Contracts.Users;
 namespace LYBT.Desktop.Contracts.Api
 {
     /// <summary>
-    /// 用户API客户端接口 - 简化版，只包含基础CRUD
-    /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
+    /// 用户API客户端接口 - RESTful设计
+    /// List返回轻量UserListDto，Detail返回完整UserDetailDto
     /// </summary>
     public interface IUserApi
     {
         /// <summary>
-        /// 获取用户列表（返回UserDetailDto）
+        /// 获取用户列表（返回UserListDto）
         /// </summary>
         [Refit.Get("/api/v1/users")]
-        Task<ApiResponse<PagedResult<UserDetailDto>>> GetUsersAsync(
-            [Refit.Query] int page = 1,
-            [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? keyword = null);
-
-        /// <summary>
-        /// 获取用户列表（返回UserListDto，用于列表视图优化）
-        /// </summary>
-        [Refit.Get("/api/v1/users")]
-        Task<ApiResponse<PagedResult<UserListDto>>> GetUsersListAsync(
+        Task<ApiResponse<PagedResult<UserListDto>>> GetUsersAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null);
@@ -57,7 +48,6 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Put("/api/v1/users/{id}/profile")]
         Task<ApiResponse<UserDetailDto>> ChangeProfileAsync(Guid id, [Refit.Body] ChangeProfileDto request);
 
-
         /// <summary>
         /// 修改密码 (Issue #1887-1892)
         /// </summary>
@@ -70,16 +60,13 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Post("/api/v1/users/{id}/reset-password")]
         Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, [Refit.Body] ResetPasswordRequestDto request);
 
-
         /// <summary>
         /// 批量导入用户 (Issue #2003 Task 2.10)
-        /// Desktop主导模式：Desktop解析Excel并组装DTO，API接收并批量创建
-        /// Note: Server端需要实现对应的 POST /api/v1/users/batch-import endpoint
         /// </summary>
         [Refit.Post("/api/v1/users/batch-import")]
         Task<ApiResponse<UserBatchImportResultDto>> BatchImportAsync([Refit.Body] UserBatchImportInputDto request);
 
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
+        #region 状态切换、恢复和批量操作
 
         /// <summary>
         /// 切换用户状态（启用/禁用）
@@ -92,8 +79,6 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/users/{id}/restore")]
         Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id);
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>
         /// 批量删除用户
@@ -112,5 +97,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/users/batch-disable")]
         Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
+
+        #endregion
     }
 }

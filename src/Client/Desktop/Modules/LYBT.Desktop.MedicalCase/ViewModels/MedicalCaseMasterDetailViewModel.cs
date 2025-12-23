@@ -76,13 +76,13 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
 
     #region OpenSpec: unify-herb-list-controls - 处方编辑属性
 
-    private ObservableCollection<HerbDetailDto> _allHerbs = new();
+    private ObservableCollection<HerbListDto> _allHerbs = new();
     private ObservableCollection<PrescriptionHerbItem> _herbItems = new();
 
     /// <summary>
     /// 所有药材列表 - 用于拼音自动补全
     /// </summary>
-    public ObservableCollection<HerbDetailDto> AllHerbs
+    public ObservableCollection<HerbListDto> AllHerbs
     {
         get => _allHerbs;
         private set => SetProperty(ref _allHerbs, value);
@@ -124,7 +124,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     protected override async Task<IEnumerable<MedicalCaseListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
     {
         // OpenSpec: optimize-entity-data-flow - 使用轻量级ListDto，不再为每个列表项加载完整详情
-        var result = await _repository.GetPagedListAsync(page, pageSize, searchText);
+        var result = await _repository.GetPagedAsync(page, pageSize, searchText);
 
         TotalCount = result.TotalCount;
         CurrentPage = result.CurrentPage;
@@ -341,7 +341,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
         {
             // 使用SearchAsync("")获取所有药材（无过滤条件）
             var herbs = await _herbRepository.SearchAsync(string.Empty);
-            AllHerbs = new ObservableCollection<HerbDetailDto>(herbs);
+            AllHerbs = new ObservableCollection<HerbListDto>(herbs);
             Logger.LogDebug("加载药材列表完成: {Count}个", AllHerbs.Count);
         }
         catch (Exception ex)

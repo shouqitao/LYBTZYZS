@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Patients.Services
         }
 
         /// <inheritdoc/>
-        public PagedResult<PatientDetailDto>? Get(string keyword, int page)
+        public PagedResult<PatientListDto>? Get(string keyword, int page)
         {
             var key = GenerateKey(keyword, page);
 
@@ -58,7 +58,7 @@ namespace LYBT.Desktop.Patients.Services
         }
 
         /// <inheritdoc/>
-        public void Set(string keyword, int page, PagedResult<PatientDetailDto> result)
+        public void Set(string keyword, int page, PagedResult<PatientListDto> result)
         {
             var key = GenerateKey(keyword, page);
 
@@ -147,7 +147,7 @@ namespace LYBT.Desktop.Patients.Services
             string Key,
             string Keyword,
             int Page,
-            PagedResult<PatientDetailDto> Result,
+            PagedResult<PatientListDto> Result,
             DateTime CreatedAt);
     }
 }

@@ -33,8 +33,8 @@ namespace LYBT.Desktop.Prescriptions.Services
         private readonly IHerbRepository _herbRepository;
         private readonly ILogger<PrescriptionEditorService> _logger;
 
-        // 缓存药材数据
-        private List<HerbDetailDto>? _cachedHerbs;
+        // 缓存药材数据（OpenSpec: optimize-desktop-core - 使用轻量级HerbListDto）
+        private List<HerbListDto>? _cachedHerbs;
 
         #endregion
 
@@ -55,7 +55,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 1. 药材数据管理
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<HerbDetailDto>> LoadAllHerbsAsync()
+        public async Task<IEnumerable<HerbListDto>> LoadAllHerbsAsync()
         {
             try
             {
@@ -78,29 +78,29 @@ namespace LYBT.Desktop.Prescriptions.Services
                 }
 
                 _logger.LogWarning("加载药材数据失败，返回空列表");
-                return Enumerable.Empty<HerbDetailDto>();
+                return Enumerable.Empty<HerbListDto>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载药材数据时发生异常");
-                return Enumerable.Empty<HerbDetailDto>();
+                return Enumerable.Empty<HerbListDto>();
             }
         }
 
         /// <inheritdoc/>
-        public IEnumerable<HerbDetailDto> FilterHerbs(string searchText)
+        public IEnumerable<HerbListDto> FilterHerbs(string searchText)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(searchText))
                 {
-                    return _cachedHerbs ?? Enumerable.Empty<HerbDetailDto>();
+                    return _cachedHerbs ?? Enumerable.Empty<HerbListDto>();
                 }
 
                 if (_cachedHerbs == null || _cachedHerbs.Count == 0)
                 {
                     _logger.LogWarning("药材数据未加载，过滤操作返回空结果");
-                    return Enumerable.Empty<HerbDetailDto>();
+                    return Enumerable.Empty<HerbListDto>();
                 }
 
                 var searchLower = searchText.Trim().ToLower();
@@ -117,7 +117,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "过滤药材数据时发生异常");
-                return Enumerable.Empty<HerbDetailDto>();
+                return Enumerable.Empty<HerbListDto>();
             }
         }
 

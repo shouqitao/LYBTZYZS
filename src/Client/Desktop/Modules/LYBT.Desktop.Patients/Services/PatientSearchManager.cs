@@ -25,7 +25,7 @@ public class PatientSearchManager
     /// <summary>
     /// 患者列表（搜索结果或分页数据）
     /// </summary>
-    public ObservableCollection<PatientDetailDto> Patients { get; } = new();
+    public ObservableCollection<PatientListDto> Patients { get; } = new();
 
     /// <summary>
     /// 当前页码
@@ -246,7 +246,7 @@ public class PatientSearchManager
     /// Issue #1790: 从PatientSelectionViewModel提取
     /// </summary>
     private void UpdatePatientsAndPaging(
-        List<PatientDetailDto> patients,
+        List<PatientListDto> patients,
         int totalCount,
         int currentPage,
         int totalPages)

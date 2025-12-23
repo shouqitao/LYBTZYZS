@@ -238,7 +238,7 @@ namespace LYBT.Desktop.Users.ViewModels
             try
             {
                 // OpenSpec: optimize-entity-data-flow - 使用UserListDto轻量DTO
-                var result = await _commandHandler.GetPagedListAsync(page, pageSize, searchText);
+                var result = await _commandHandler.GetPagedAsync(page, pageSize, searchText);
                 if (result.success && result.data != null)
                 {
                     TotalCount = result.data.TotalCount;

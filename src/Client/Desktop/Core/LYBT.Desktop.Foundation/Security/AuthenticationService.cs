@@ -277,6 +277,37 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
+        /// 使用AutoLoginToken自动登录
+        /// OpenSpec: refactor-login-authentication (CVT-001)
+        /// </summary>
+        public async Task<ServiceResult<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("使用AutoLoginToken登录 - UserName: {UserName}", request.UserName);
+
+                var apiResponse = await _authApi.LoginWithAutoTokenAsync(request);
+
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    _logger.LogInformation("AutoLoginToken登录成功 - UserName: {UserName}", request.UserName);
+                    return ServiceResult<LoginResponse>.Success(apiResponse.Data, apiResponse.Message);
+                }
+                else
+                {
+                    _logger.LogWarning("AutoLoginToken登录失败 - UserName: {UserName}, Message: {Message}",
+                        request.UserName, apiResponse.Message);
+                    return ServiceResult<LoginResponse>.Failure(apiResponse.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AutoLoginToken登录异常 - UserName: {UserName}", request.UserName);
+                return ServiceResult<LoginResponse>.Failure("自动登录失败，请手动登录");
+            }
+        }
+
+        /// <summary>
         /// 从JWT Token中提取过期时间
         /// Issue #1864: 辅助方法，用于本地Token验证
         /// </summary>

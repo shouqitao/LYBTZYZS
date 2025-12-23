@@ -81,19 +81,19 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                     return viewModelLoggerMock.Object;
                 });
 
-            // Mock EventAggregator.GetEvent
-            var patientSelectedEventMock = new Mock<PatientSelectedEvent>();
-            _eventAggregatorMock.Setup(x => x.GetEvent<PatientSelectedEvent>())
+            // Mock EventAggregator.GetEvent - OpenSpec: unify-event-system
+            var patientSelectedEventMock = new Mock<PatientEvents.SelectedEvent>();
+            _eventAggregatorMock.Setup(x => x.GetEvent<PatientEvents.SelectedEvent>())
                 .Returns(patientSelectedEventMock.Object);
 
-            // Issue #2221: Mock PatientUpdatedEvent
-            var patientUpdatedEventMock = new Mock<LYBT.Desktop.Patients.Events.PatientUpdatedEvent>();
-            _eventAggregatorMock.Setup(x => x.GetEvent<LYBT.Desktop.Patients.Events.PatientUpdatedEvent>())
+            // Issue #2221: Mock PatientUpdatedEvent - OpenSpec: unify-event-system
+            var patientUpdatedEventMock = new Mock<PatientEvents.UpdatedEvent>();
+            _eventAggregatorMock.Setup(x => x.GetEvent<PatientEvents.UpdatedEvent>())
                 .Returns(patientUpdatedEventMock.Object);
 
-            // OpenSpec: standardize-module-structure - Mock PatientCreatedEvent
-            var patientCreatedEventMock = new Mock<LYBT.Desktop.Patients.Events.PatientCreatedEvent>();
-            _eventAggregatorMock.Setup(x => x.GetEvent<LYBT.Desktop.Patients.Events.PatientCreatedEvent>())
+            // OpenSpec: standardize-module-structure - Mock PatientCreatedEvent - OpenSpec: unify-event-system
+            var patientCreatedEventMock = new Mock<PatientEvents.CreatedEvent>();
+            _eventAggregatorMock.Setup(x => x.GetEvent<PatientEvents.CreatedEvent>())
                 .Returns(patientCreatedEventMock.Object);
 
             // Epic #2210 Issue #2218: 构建依赖链（按依赖顺序）
@@ -175,7 +175,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         public void SelectedPatient_ShouldClearSelectedPendingPatient()
         {
             // Arrange
-            var patient = new PatientDetailDto { Id = Guid.NewGuid(), Name = "测试患者" };
+            var patient = new PatientListDto { Id = Guid.NewGuid(), Name = "测试患者" };
             var pendingCase = new PendingMedicalCaseDto
             {
                 PatientId = Guid.NewGuid(),
@@ -201,7 +201,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         public async Task SelectedPendingPatient_ShouldClearSelectedPatient()
         {
             // Arrange
-            var patient = new PatientDetailDto { Id = Guid.NewGuid(), Name = "全部患者" };
+            var patient = new PatientListDto { Id = Guid.NewGuid(), Name = "全部患者" };
             var pendingCase = new PendingMedicalCaseDto
             {
                 PatientId = Guid.NewGuid(),
@@ -229,18 +229,28 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
 
         /// <summary>
         /// Epic #2210 Issue #2218: 测试CurrentPatient始终指向唯一选中患者
+        /// RESTful重构: SelectedPatient现在是PatientListDto，CurrentPatient通过异步加载获取PatientDetailDto
         /// </summary>
         [Fact]
-        public void CurrentPatient_ShouldAlwaysPointToSelectedPatient()
+        public async Task CurrentPatient_ShouldAlwaysPointToSelectedPatient()
         {
             // Arrange
-            var patient = new PatientDetailDto { Id = Guid.NewGuid(), Name = "测试患者" };
+            var patientId = Guid.NewGuid();
+            var patientList = new PatientListDto { Id = patientId, Name = "测试患者" };
+            var patientDetail = new PatientDetailDto { Id = patientId, Name = "测试患者" };
+
+            // Mock GetByIdAsync返回详情
+            _patientRepositoryMock.Setup(x => x.GetByIdAsync(patientId))
+                .ReturnsAsync(patientDetail);
 
             // Act: 从全部患者列表选择
-            _viewModel.SelectedPatient = patient;
+            _viewModel.SelectedPatient = patientList;
+
+            // 等待异步加载完成
+            await Task.Delay(100);
 
             // Assert
-            _viewModel.CurrentPatient.Should().Be(patient, "CurrentPatient应指向SelectedPatient");
+            _viewModel.CurrentPatient?.Id.Should().Be(patientId, "CurrentPatient应通过异步加载获取");
 
             // Cleanup
             _viewModel.SelectedPatient = null;

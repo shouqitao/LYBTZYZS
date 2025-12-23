@@ -8,11 +8,10 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.MedicalCase.Repositories
 {
     /// <summary>
-    /// 医疗案例数据仓储实现 - RepositoryBase统一架构
-    /// Project Standardization 3.0 - 迁移到统一RepositoryBase
-    /// Epic #1961: 使用统一的 MedicalCaseInputDto
+    /// 医案数据仓储实现 - RESTful设计
+    /// List返回轻量MedicalCaseListDto，Detail返回完整MedicalCaseDetailDto
     /// </summary>
-    public class MedicalCaseRepository : RepositoryBase<MedicalCaseDetailDto, MedicalCaseInputDto, MedicalCaseInputDto, IMedicalCaseApi>, IMedicalCaseRepository
+    public class MedicalCaseRepository : RepositoryBase<MedicalCaseDetailDto, MedicalCaseListDto, MedicalCaseInputDto, MedicalCaseInputDto, IMedicalCaseApi>, IMedicalCaseRepository
     {
         public MedicalCaseRepository(
             IMedicalCaseApi medicalCaseApi,
@@ -62,26 +61,34 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         // 诊断更新通过聚合保存 SaveAsync 处理
 
         /// <summary>
-        /// 查询病案列表（支持多条件组合查询）
-        /// Issue #1592 - Phase 3
+        /// 搜索医案（返回DetailDto，支持跨医生查询）
+        /// OpenSpec: fix-history-copy-all-patients - 用于历史医案复制查看全部患者功能
         /// </summary>
-        public async Task<List<MedicalCaseDetailDto>> QueryAsync(
+        public async Task<PagedResult<MedicalCaseDetailDto>> SearchAsync(
             string? patientName = null,
+            string? diagnosisKeyword = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
-            string? diagnosisKeyword = null)
+            int page = 1,
+            int pageSize = 20)
         {
             try
             {
-                _logger.LogInformation("查询病案，条件：患者={PatientName}, 日期={StartDate}~{EndDate}, 诊断={DiagnosisKeyword}",
-                    patientName ?? "无", startDate, endDate, diagnosisKeyword ?? "无");
+                _logger.LogInformation("搜索医案，条件：患者={PatientName}, 诊断={DiagnosisKeyword}, 日期={StartDate}~{EndDate}",
+                    patientName ?? "无", diagnosisKeyword ?? "无", startDate, endDate);
 
-                var response = await _api.QueryMedicalCasesAsync(patientName, startDate, endDate, diagnosisKeyword);
-                return response.Data ?? new List<MedicalCaseDetailDto>();
+                var response = await _api.SearchMedicalCasesAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+                return response.Data ?? new PagedResult<MedicalCaseDetailDto>
+                {
+                    Items = new List<MedicalCaseDetailDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询病案列表失败");
+                _logger.LogError(ex, "搜索医案失败");
                 throw;
             }
         }
@@ -363,87 +370,11 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             return _api.GetMedicalCaseByIdAsync(id);
         }
 
-        /// <summary>
-        /// 获取医案分页列表（返回DetailDto，用于需要完整信息的场景）
-        /// OpenSpec: post-release-cleanup - 使用SearchMedicalCasesAsync保持返回DetailDto
-        /// </summary>
-        protected override async Task<ApiResponse<PagedResult<MedicalCaseDetailDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<MedicalCaseListDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
-            // OpenSpec: post-release-cleanup - GetMedicalCasesAsync现在返回ListDto
-            // 对于需要DetailDto的场景，使用SearchMedicalCasesAsync
-            var response = await _api.SearchMedicalCasesAsync(
-                patientName: keyword,
-                diagnosisKeyword: null,
-                startDate: null,
-                endDate: null,
-                page: page,
-                pageSize: pageSize);
-
-            // 转换为ApiResponse格式
-            return new ApiResponse<PagedResult<MedicalCaseDetailDto>>
-            {
-                Success = response.Success,
-                Message = response.Message,
-                Data = response.Data
-            };
+            return _api.GetMedicalCasesAsync(page, pageSize, keyword);
         }
 
-        /// <summary>
-        /// 获取医案列表（返回MedicalCaseListDto，用于列表视图）
-        /// OpenSpec: post-release-cleanup - 统一使用GetMedicalCasesAsync返回ListDto
-        /// </summary>
-        public async Task<PagedResult<MedicalCaseListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null)
-        {
-            try
-            {
-                var response = await _api.GetMedicalCasesAsync(page, pageSize, keyword);
-                return response.Data ?? new PagedResult<MedicalCaseListDto>
-                {
-                    Items = new List<MedicalCaseListDto>(),
-                    TotalCount = 0,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取医案列表失败");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 获取医案分页列表（包含所有医生的数据）
-        /// OpenSpec: fix-history-copy-all-patients - 用于历史医案复制查看全部患者功能
-        /// OpenSpec: post-release-cleanup - 使用SearchMedicalCasesAsync保持返回DetailDto
-        /// </summary>
-        public async Task<PagedResult<MedicalCaseDetailDto>> GetPagedIncludeAllDoctorsAsync(int page = 1, int pageSize = 20, string? keyword = null)
-        {
-            try
-            {
-                _logger.LogInformation("获取全部医生医案列表，page={Page}, pageSize={PageSize}", page, pageSize);
-                // OpenSpec: post-release-cleanup - 使用SearchMedicalCasesAsync，它返回所有医生的数据
-                var response = await _api.SearchMedicalCasesAsync(
-                    patientName: keyword,
-                    diagnosisKeyword: null,
-                    startDate: null,
-                    endDate: null,
-                    page: page,
-                    pageSize: pageSize);
-                return response.Data ?? new PagedResult<MedicalCaseDetailDto>
-                {
-                    Items = new List<MedicalCaseDetailDto>(),
-                    TotalCount = 0,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取全部医生医案列表失败");
-                throw;
-            }
-        }
 
         protected override Task<ApiResponse<MedicalCaseDetailDto>> CallApiCreateAsync(MedicalCaseInputDto dto)
         {

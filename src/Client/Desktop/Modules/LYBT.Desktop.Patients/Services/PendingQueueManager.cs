@@ -104,32 +104,15 @@ public class PendingQueueManager
     /// <summary>
     /// 为待看诊队列选中的患者加载完整信息
     /// Issue #1790: 从PatientSelectionViewModel提取
+    /// RESTful重构: 移除currentPatients参数，PatientListDto不含完整详情，直接调用API
     /// </summary>
-    public async Task<PatientDetailDto?> LoadPatientForPendingCaseAsync(
-        Guid patientId,
-        ObservableCollection<PatientDetailDto> currentPatients)
+    public async Task<PatientDetailDto?> LoadPatientForPendingCaseAsync(Guid patientId)
     {
         try
         {
             _logger.LogInformation("加载患者详情：PatientId={PatientId}", patientId);
 
-            // 先从当前患者列表中查找
-            var patientInList = currentPatients.FirstOrDefault(p => p.Id == patientId);
-            if (patientInList != null)
-            {
-                _logger.LogInformation("从当前列表中找到患者，直接返回");
-
-                // 触发事件
-                PatientLoaded?.Invoke(this, new PatientLoadedEventArgs
-                {
-                    Patient = patientInList,
-                    Source = "CurrentList"
-                });
-
-                return patientInList;
-            }
-
-            // 列表中没有，通过CommandHandler加载
+            // 通过CommandHandler加载完整详情
             var result = await _commandHandler.GetByIdAsync(patientId);
             if (result.IsSuccess && result.Data != null)
             {

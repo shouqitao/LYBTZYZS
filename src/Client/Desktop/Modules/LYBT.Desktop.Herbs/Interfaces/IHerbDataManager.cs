@@ -11,8 +11,8 @@ namespace LYBT.Desktop.Herbs.Interfaces
     public interface IHerbDataManager : IDataManager<HerbDetailDto>
     {
         /// <summary>
-        /// 分页查询药材列表
+        /// 分页查询药材列表（返回轻量级ListDto）
         /// </summary>
-        Task<Shared.Models.Contracts.Common.PagedResult<HerbDetailDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchKeyword = null);
+        Task<Shared.Models.Contracts.Common.PagedResult<HerbListDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchKeyword = null);
     }
 }

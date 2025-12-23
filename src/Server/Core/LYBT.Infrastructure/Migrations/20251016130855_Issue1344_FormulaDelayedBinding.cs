@@ -5,54 +5,22 @@
 namespace LYBT.Infrastructure.Migrations
 {
     /// <inheritdoc />
+    /// <remarks>
+    /// 此迁移的更改已合并到InitialCreateV2中。
+    /// FormulaHerbItems表现在在InitialCreateV2中创建时就包含HerbId(nullable)、IsValidated和OriginalHerbName列。
+    /// </remarks>
     public partial class Issue1344_FormulaDelayedBinding : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
-                name: "HerbId",
-                table: "FormulaHerbItems",
-                type: "uniqueidentifier",
-                nullable: true,
-                oldClrType: typeof(Guid),
-                oldType: "uniqueidentifier");
-
-            migrationBuilder.AddColumn<bool>(
-                name: "IsValidated",
-                table: "FormulaHerbItems",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
-
-            migrationBuilder.AddColumn<string>(
-                name: "OriginalHerbName",
-                table: "FormulaHerbItems",
-                type: "nvarchar(100)",
-                maxLength: 100,
-                nullable: true);
+            // 更改已合并到InitialCreateV2，此迁移为空
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "IsValidated",
-                table: "FormulaHerbItems");
-
-            migrationBuilder.DropColumn(
-                name: "OriginalHerbName",
-                table: "FormulaHerbItems");
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "HerbId",
-                table: "FormulaHerbItems",
-                type: "uniqueidentifier",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"),
-                oldClrType: typeof(Guid),
-                oldType: "uniqueidentifier",
-                oldNullable: true);
+            // 更改已合并到InitialCreateV2，此迁移为空
         }
     }
 }

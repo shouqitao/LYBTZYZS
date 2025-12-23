@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Desktop.Users.Interfaces;
@@ -10,126 +10,16 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Users.Repositories
 {
     /// <summary>
-    /// 用户数据仓储实现 - RepositoryBase统一架构
-    /// Project Standardization 3.0 - 迁移到统一RepositoryBase
+    /// 用户数据仓储实现 - RESTful设计
+    /// List返回轻量ListDto，Detail返回完整DetailDto
     /// </summary>
-    public class UserRepository : RepositoryBase<UserDetailDto, UserInputDto, UserInputDto, IUserApi>, IUserRepository
+    public class UserRepository : RepositoryBase<UserDetailDto, UserListDto, UserInputDto, UserInputDto, IUserApi>, IUserRepository
     {
         public UserRepository(
             IUserApi userApi,
             ILogger<UserRepository> logger)
             : base(userApi, logger)
         {
-        }
-
-        /// <summary>
-        /// 获取所有用户（通过分页获取第一页的大量数据）
-        /// </summary>
-        public async Task<List<UserDetailDto>> GetAllAsync()
-        {
-            try
-            {
-                var pagedResult = await GetPagedAsync(1, 1000);
-                return pagedResult.Items ?? new List<UserDetailDto>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取所有用户失败");
-                return new List<UserDetailDto>();
-            }
-        }
-
-        /// <summary>
-        /// 根据用户名获取用户
-        /// </summary>
-        public async Task<UserDetailDto> GetByUsernameAsync(string username)
-        {
-            try
-            {
-                // 由于IUserApi没有GetByUsernameAsync方法，使用搜索方式
-                var searchResult = await SearchAsync(username);
-                return searchResult.FirstOrDefault(u => u.UserName == username)
-                    ?? throw new InvalidOperationException($"用户 {username} 不存在");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"根据用户名获取用户失败: {username}");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 获取所有医生用户（Desktop端本地筛选实现）
-        /// Issue #1155 - 使用本地角色筛选替代不存在的Server API
-        /// </summary>
-        public async Task<List<UserDetailDto>> GetDoctorsAsync()
-        {
-            try
-            {
-                _logger.LogDebug("获取所有医生用户");
-
-                // 获取所有用户（第1页，100条，足够覆盖小诊所全部用户）
-                var result = await GetPagedAsync(1, 100, null);
-
-                if (result?.Items == null)
-                {
-                    _logger.LogWarning("获取用户列表失败或返回空");
-                    return new List<UserDetailDto>();
-                }
-
-                // Desktop端本地筛选：角色=医生 && 状态=启用
-                var doctors = result.Items
-                    .Where(u => u.Role == UserRole.Doctor && u.Status == CommonStatus.Enabled)
-                    .ToList();
-
-                _logger.LogInformation("成功获取{Count}名医生用户", doctors.Count);
-                return doctors;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取医生用户列表时发生异常");
-                return new List<UserDetailDto>();
-            }
-        }
-
-        /// <summary>
-        /// 分页获取用户列表（返回UserListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        public async Task<PagedResult<UserListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null)
-        {
-            try
-            {
-                _logger.LogDebug("获取用户列表: Page={Page}, PageSize={PageSize}, Keyword={Keyword}", page, pageSize, keyword);
-
-                var response = await _api.GetUsersListAsync(page, pageSize, keyword);
-
-                if (response.Success && response.Data != null)
-                {
-                    _logger.LogDebug("获取用户列表成功，共{Count}条", response.Data.TotalCount);
-                    return response.Data;
-                }
-
-                _logger.LogWarning("获取用户列表失败: {Message}", response.Message);
-                return new PagedResult<UserListDto>
-                {
-                    Items = new List<UserListDto>(),
-                    TotalCount = 0,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取用户列表异常");
-                return new PagedResult<UserListDto>
-                {
-                    Items = new List<UserListDto>(),
-                    TotalCount = 0,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
         }
 
         #region RepositoryBase抽象方法实现
@@ -139,7 +29,7 @@ namespace LYBT.Desktop.Users.Repositories
             return _api.GetUserByIdAsync(id);
         }
 
-        protected override Task<ApiResponse<PagedResult<UserDetailDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<UserListDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetUsersAsync(page, pageSize, keyword);
         }
@@ -165,6 +55,65 @@ namespace LYBT.Desktop.Users.Repositories
         }
 
         #endregion
+
+        #region 用户专用方法
+
+        /// <summary>
+        /// 根据用户名获取用户
+        /// </summary>
+        public async Task<UserDetailDto> GetByUsernameAsync(string username)
+        {
+            try
+            {
+                // 使用搜索方式查找用户
+                var searchResult = await SearchAsync(username);
+                var user = searchResult.FirstOrDefault(u => u.UserName == username);
+                if (user == null)
+                {
+                    throw new InvalidOperationException($"用户 {username} 不存在");
+                }
+                // 找到匹配的用户后，获取详情
+                return await GetByIdAsync(user.Id) ?? throw new InvalidOperationException($"用户 {username} 不存在");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据用户名获取用户失败: {Username}", username);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 获取所有医生用户（Desktop端本地筛选实现）
+        /// </summary>
+        public async Task<List<UserListDto>> GetDoctorsAsync()
+        {
+            try
+            {
+                _logger.LogDebug("获取所有医生用户");
+
+                // 获取所有用户（第1页，100条，足够覆盖小诊所全部用户）
+                var result = await GetPagedAsync(1, 100, null);
+
+                if (result?.Items == null)
+                {
+                    _logger.LogWarning("获取用户列表失败或返回空");
+                    return new List<UserListDto>();
+                }
+
+                // Desktop端本地筛选：角色=医生 && 状态=启用
+                var doctors = result.Items
+                    .Where(u => u.Role == UserRole.Doctor && u.Status == CommonStatus.Enabled)
+                    .ToList();
+
+                _logger.LogInformation("成功获取{Count}名医生用户", doctors.Count);
+                return doctors;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医生用户列表时发生异常");
+                return new List<UserListDto>();
+            }
+        }
 
         /// <summary>
         /// 修改个人资料 (Issue #1891)
@@ -193,7 +142,6 @@ namespace LYBT.Desktop.Users.Repositories
                 throw;
             }
         }
-
 
         /// <summary>
         /// 修改密码 (Issue #1887-1892)
@@ -256,20 +204,13 @@ namespace LYBT.Desktop.Users.Repositories
             }
         }
 
-
         /// <summary>
         /// 批量导入用户 (Issue #2003 Task 2.10)
-        /// Desktop主导模式：接收Desktop解析好的DTO列表，调用Server API
-        /// </summary>
-        /// <summary>
-        /// 批量导入用户 (Issue #2003 Task 2.10)
-        /// Desktop主导模式：接收Desktop解析好的DTO列表，调用Server API
         /// </summary>
         public async Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportInputDto request)
         {
             try
             {
-                // 调用Server端API: POST /api/v1/users/batch-import
                 var response = await _api.BatchImportAsync(request);
                 return response.Data;
             }
@@ -280,7 +221,9 @@ namespace LYBT.Desktop.Users.Repositories
             }
         }
 
-        #region OpenSpec: optimize-module-list-ui - 状态切换和恢复
+        #endregion
+
+        #region 状态切换、恢复和批量操作
 
         /// <summary>
         /// 切换用户状态（启用/禁用）
@@ -334,15 +277,12 @@ namespace LYBT.Desktop.Users.Repositories
             }
         }
 
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <inheritdoc />
         public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
         {
             try
             {
-                _logger.LogInformation("批量删除用户：{Count} 个", ids.Count);
+                _logger.LogInformation("批量删除用户：{Count}个", ids.Count);
                 var request = new BatchDeleteInputDto { Ids = ids };
                 var response = await _api.BatchDeleteAsync(request);
 
@@ -352,7 +292,7 @@ namespace LYBT.Desktop.Users.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("批量删除用户完成：成功 {Success} 个，失败 {Failure} 个",
+                _logger.LogInformation("批量删除用户完成：成功{Success}个，失败{Failure}个",
                     response.Data.SuccessCount, response.Data.FailureCount);
                 return response.Data;
             }
@@ -368,7 +308,7 @@ namespace LYBT.Desktop.Users.Repositories
         {
             try
             {
-                _logger.LogInformation("批量启用用户：{Count} 个", ids.Count);
+                _logger.LogInformation("批量启用用户：{Count}个", ids.Count);
                 var request = new BatchDeleteInputDto { Ids = ids };
                 var response = await _api.BatchEnableAsync(request);
 
@@ -378,7 +318,7 @@ namespace LYBT.Desktop.Users.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("批量启用用户完成：成功 {Success} 个，失败 {Failure} 个",
+                _logger.LogInformation("批量启用用户完成：成功{Success}个，失败{Failure}个",
                     response.Data.SuccessCount, response.Data.FailureCount);
                 return response.Data;
             }
@@ -394,7 +334,7 @@ namespace LYBT.Desktop.Users.Repositories
         {
             try
             {
-                _logger.LogInformation("批量禁用用户：{Count} 个", ids.Count);
+                _logger.LogInformation("批量禁用用户：{Count}个", ids.Count);
                 var request = new BatchDeleteInputDto { Ids = ids };
                 var response = await _api.BatchDisableAsync(request);
 
@@ -404,7 +344,7 @@ namespace LYBT.Desktop.Users.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("批量禁用用户完成：成功 {Success} 个，失败 {Failure} 个",
+                _logger.LogInformation("批量禁用用户完成：成功{Success}个，失败{Failure}个",
                     response.Data.SuccessCount, response.Data.FailureCount);
                 return response.Data;
             }

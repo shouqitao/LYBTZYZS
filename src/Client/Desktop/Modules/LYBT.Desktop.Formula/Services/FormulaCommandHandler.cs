@@ -232,7 +232,7 @@ namespace LYBT.Desktop.Formula.Services
         /// <summary>
         /// 分页查询配方（Issue #1787: 支持分页查询）
         /// </summary>
-        public async Task<(bool success, PagedResult<FormulaDetailDto>? data, string? errorMessage)> GetPagedAsync(
+        public async Task<(bool success, PagedResult<FormulaListDto>? data, string? errorMessage)> GetPagedAsync(
             int page, int pageSize, string? searchText = null)
         {
             try

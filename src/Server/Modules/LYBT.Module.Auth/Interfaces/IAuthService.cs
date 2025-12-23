@@ -17,6 +17,15 @@ namespace LYBT.Module.Auth.Interfaces
         Task<Result<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// 使用AutoLoginToken自动登录
+        /// OpenSpec: refactor-login-authentication (CVT-001)
+        /// </summary>
+        /// <param name="request">自动登录请求</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>登录响应（包含新的AutoLoginToken）</returns>
+        Task<Result<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// 用户登出
         /// </summary>
         Task<Result<bool>> LogoutAsync(LogoutRequest request);

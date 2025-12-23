@@ -102,7 +102,7 @@ public class PrescriptionHerbItem : HerbItemViewModelBase
     /// <summary>
     /// 药材选中后 - 获取单价并计算金额
     /// </summary>
-    protected override void OnHerbSelected(HerbDetailDto herb)
+    protected override void OnHerbSelected(HerbListDto herb)
     {
         base.OnHerbSelected(herb);
         SetUnitPrice(herb.Price);

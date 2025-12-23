@@ -24,8 +24,8 @@ namespace LYBT.Desktop.Herbs.ViewModels.Base
         // OpenSpec: unify-herb-list-controls - Unit默认为空，由SelectedHerb赋值时从药材数据获取
         private string _unit = string.Empty;
         private DecocteMethod _decocteMethod = DecocteMethod.Default;
-        private ObservableCollection<HerbDetailDto> _filteredHerbs = new();
-        private HerbDetailDto? _selectedHerb;
+        private ObservableCollection<HerbListDto> _filteredHerbs = new();
+        private HerbListDto? _selectedHerb;
 
         #endregion
 
@@ -107,13 +107,14 @@ namespace LYBT.Desktop.Herbs.ViewModels.Base
 
         /// <summary>
         /// 所有药材列表引用 - 由父ViewModel注入
+        /// OpenSpec: optimize-desktop-core - 使用轻量级HerbListDto
         /// </summary>
-        public ObservableCollection<HerbDetailDto>? AllHerbs { get; set; }
+        public ObservableCollection<HerbListDto>? AllHerbs { get; set; }
 
         /// <summary>
         /// 过滤后的药材列表 - 基于拼音码和名称的智能过滤
         /// </summary>
-        public ObservableCollection<HerbDetailDto> FilteredHerbs
+        public ObservableCollection<HerbListDto> FilteredHerbs
         {
             get => _filteredHerbs;
             private set => SetProperty(ref _filteredHerbs, value);
@@ -122,7 +123,7 @@ namespace LYBT.Desktop.Herbs.ViewModels.Base
         /// <summary>
         /// 选中的药材 - 自动填充HerbId、HerbName、Unit
         /// </summary>
-        public HerbDetailDto? SelectedHerb
+        public HerbListDto? SelectedHerb
         {
             get => _selectedHerb;
             set
@@ -145,7 +146,7 @@ namespace LYBT.Desktop.Herbs.ViewModels.Base
         /// 药材选中后的回调 - 子类可重写以添加额外逻辑（如获取价格）
         /// </summary>
         /// <param name="herb">选中的药材</param>
-        protected virtual void OnHerbSelected(HerbDetailDto herb)
+        protected virtual void OnHerbSelected(HerbListDto herb)
         {
             // 子类可重写
         }
@@ -213,7 +214,7 @@ namespace LYBT.Desktop.Herbs.ViewModels.Base
         /// <param name="herb">药材对象</param>
         /// <param name="searchText">搜索文本（小写）</param>
         /// <returns>匹配分数（0表示不匹配，分数越高匹配度越高）</returns>
-        private int GetMatchScore(HerbDetailDto herb, string searchText)
+        private int GetMatchScore(HerbListDto herb, string searchText)
         {
             if (string.IsNullOrWhiteSpace(searchText))
             {

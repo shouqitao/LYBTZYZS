@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Repositories;
@@ -9,34 +9,16 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Herbs.Repositories
 {
     /// <summary>
-    /// 药材数据仓储实现 - RepositoryBase统一架构
-    /// Project Standardization 3.0 - 迁移到统一RepositoryBase
+    /// 药材数据仓储实现 - RESTful设计
+    /// List返回轻量ListDto，Detail返回完整DetailDto
     /// </summary>
-    public class HerbRepository : RepositoryBase<HerbDetailDto, HerbInputDto, HerbInputDto, IHerbApi>, IHerbRepository
+    public class HerbRepository : RepositoryBase<HerbDetailDto, HerbListDto, HerbInputDto, HerbInputDto, IHerbApi>, IHerbRepository
     {
         public HerbRepository(
             IHerbApi herbApi,
             ILogger<HerbRepository> logger)
             : base(herbApi, logger)
         {
-        }
-
-        /// <summary>
-        /// 获取所有草药列表（不分页，用于兼容旧代码）
-        /// </summary>
-        public async Task<List<HerbDetailDto>> GetAllAsync()
-        {
-            try
-            {
-                // 获取第一页，大页数
-                var pagedResult = await GetPagedAsync(1, 1000);
-                return pagedResult.Items ?? new List<HerbDetailDto>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取草药列表失败");
-                throw;
-            }
         }
 
         #region RepositoryBase抽象方法实现
@@ -46,35 +28,9 @@ namespace LYBT.Desktop.Herbs.Repositories
             return _api.GetHerbByIdAsync(id);
         }
 
-        protected override Task<ApiResponse<PagedResult<HerbDetailDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<HerbListDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
-            // 使用统一的GetHerbsAsync接口，支持关键词缓存
-            _logger.LogInformation("=== API调用（带缓存搜索） === GetHerbsAsync(Page={Page}, Size={Size}, Keyword='{Keyword}')", page, pageSize, keyword);
             return _api.GetHerbsAsync(page, pageSize, keyword);
-        }
-
-        /// <summary>
-        /// 获取草药列表（返回HerbListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        public async Task<PagedResult<HerbListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
-        {
-            try
-            {
-                var response = await _api.GetHerbsListAsync(page, pageSize, keyword, category);
-                return response.Data ?? new PagedResult<HerbListDto>
-                {
-                    Items = new List<HerbListDto>(),
-                    TotalCount = 0,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取草药列表失败");
-                throw;
-            }
         }
 
         protected override Task<ApiResponse<HerbDetailDto>> CallApiCreateAsync(HerbInputDto dto)
@@ -99,7 +55,34 @@ namespace LYBT.Desktop.Herbs.Repositories
 
         #endregion
 
-        #region Epic #1962: 批量导入/导出功能
+        #region 扩展方法 - 支持分类过滤
+
+        /// <summary>
+        /// 分页查询药材列表（支持分类过滤）
+        /// </summary>
+        public async Task<PagedResult<HerbListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+        {
+            try
+            {
+                var response = await _api.GetHerbsAsync(page, pageSize, keyword, category);
+                return response.Data ?? new PagedResult<HerbListDto>
+                {
+                    Items = new List<HerbListDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取药材列表失败");
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region 批量导入/导出功能
 
         /// <summary>
         /// 批量导入药材数据
@@ -187,7 +170,7 @@ namespace LYBT.Desktop.Herbs.Repositories
 
         #endregion
 
-        #region OpenSpec: optimize-module-list-ui - 状态切换和恢复
+        #region 状态切换、恢复和批量操作
 
         /// <summary>
         /// 切换药材状态（启用/禁用）
@@ -241,16 +224,12 @@ namespace LYBT.Desktop.Herbs.Repositories
             }
         }
 
-        #endregion
-
-        #region OpenSpec: optimize-batch-operations Phase 2 - 批量操作
-
         /// <inheritdoc />
         public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
         {
             try
             {
-                _logger.LogInformation("批量删除药材：{Count} 个", ids.Count);
+                _logger.LogInformation("批量删除药材：{Count}个", ids.Count);
                 var request = new BatchDeleteInputDto { Ids = ids };
                 var response = await _api.BatchDeleteAsync(request);
 
@@ -260,7 +239,7 @@ namespace LYBT.Desktop.Herbs.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("批量删除药材完成：成功 {Success} 个，失败 {Failure} 个",
+                _logger.LogInformation("批量删除药材完成：成功{Success}个，失败{Failure}个",
                     response.Data.SuccessCount, response.Data.FailureCount);
                 return response.Data;
             }
@@ -276,7 +255,7 @@ namespace LYBT.Desktop.Herbs.Repositories
         {
             try
             {
-                _logger.LogInformation("批量启用药材：{Count} 个", ids.Count);
+                _logger.LogInformation("批量启用药材：{Count}个", ids.Count);
                 var request = new BatchDeleteInputDto { Ids = ids };
                 var response = await _api.BatchEnableAsync(request);
 
@@ -286,7 +265,7 @@ namespace LYBT.Desktop.Herbs.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("批量启用药材完成：成功 {Success} 个，失败 {Failure} 个",
+                _logger.LogInformation("批量启用药材完成：成功{Success}个，失败{Failure}个",
                     response.Data.SuccessCount, response.Data.FailureCount);
                 return response.Data;
             }
@@ -302,7 +281,7 @@ namespace LYBT.Desktop.Herbs.Repositories
         {
             try
             {
-                _logger.LogInformation("批量禁用药材：{Count} 个", ids.Count);
+                _logger.LogInformation("批量禁用药材：{Count}个", ids.Count);
                 var request = new BatchDeleteInputDto { Ids = ids };
                 var response = await _api.BatchDisableAsync(request);
 
@@ -312,7 +291,7 @@ namespace LYBT.Desktop.Herbs.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("批量禁用药材完成：成功 {Success} 个，失败 {Failure} 个",
+                _logger.LogInformation("批量禁用药材完成：成功{Success}个，失败{Failure}个",
                     response.Data.SuccessCount, response.Data.FailureCount);
                 return response.Data;
             }

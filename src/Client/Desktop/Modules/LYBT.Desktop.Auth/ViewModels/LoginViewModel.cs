@@ -177,15 +177,13 @@ namespace LYBT.Desktop.Auth.ViewModels
 
                 if (result.Success)
                 {
-                    // 登录成功，处理凭据存储（Remember Password功能）
-                    if (_credentialStorage != null && RememberPassword)
-                        await _credentialStorage.SaveCredentialsAsync(Username, Password, RememberPassword);
-                    else
+                    // 登录成功，处理用户名存储（Remember Me功能）
+                    // OpenSpec: refactor-login-authentication (CVT-001)
+                    // AutoLoginToken由LoginCoordinator负责保存到CredentialVault
+                    // 这里只需要保存用户名用于下次登录时填充
+                    if (_usernameStorage != null && (RememberMe || RememberPassword))
                     {
-                        if (_usernameStorage != null && RememberMe && !RememberPassword)
-                            await _usernameStorage.SaveUsernameAsync(Username, RememberMe);
-                        if (_credentialStorage != null && !RememberPassword)
-                            await _credentialStorage.ClearCredentialsAsync();
+                        await _usernameStorage.SaveUsernameAsync(Username, RememberMe || RememberPassword);
                     }
                     // LoginCoordinator已处理会话启动、模块加载和导航
                 }

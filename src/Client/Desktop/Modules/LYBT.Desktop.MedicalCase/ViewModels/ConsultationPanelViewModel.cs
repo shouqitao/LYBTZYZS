@@ -310,9 +310,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
-                // 发布诊断完成事件
-                EventAggregator.GetEvent<ConsultationCompletedEvent>()
-                    .Publish(new ConsultationCompletedPayload
+                // 发布诊断完成事件 - OpenSpec: unify-event-system
+                EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>()
+                    .Publish(new CaseConsultationCompletedPayload
                     {
                         MedicalCaseId = _medicalCaseId,
                         NeedsPrescription = NeedsPrescription

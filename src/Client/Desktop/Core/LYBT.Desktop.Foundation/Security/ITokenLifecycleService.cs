@@ -3,6 +3,7 @@ namespace LYBT.Desktop.Foundation.Security
     /// <summary>
     /// Token生命周期服务接口
     /// Issue #1864: 客户端Token生命周期管理
+    /// OpenSpec: unify-event-system (Phase 2.4)
     /// </summary>
     /// <remarks>
     /// 职责：
@@ -10,6 +11,9 @@ namespace LYBT.Desktop.Foundation.Security
     /// - 管理状态机转换(NotAuth->Active->Warning->Expired)
     /// - 发布状态变更事件
     /// - 协调Token自动刷新
+    ///
+    /// 事件通过Prism PubSubEvent发布:
+    /// - TokenLifecycleStateChangedEvent: 生命周期状态变更
     /// </remarks>
     public interface ITokenLifecycleService : IDisposable
     {

@@ -137,7 +137,7 @@ public class MedicalCaseDataManager : IMedicalCaseDataManager
         catch (Exception ex) { _logger.LogError(ex, "获取医案详情失败: {Id}", id); return null; }
     }
 
-    public virtual async Task<PagedResult<MedicalCaseDetailDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null)
+    public virtual async Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null)
     {
         try { return await _repository.GetPagedAsync(page, pageSize, searchText); }
         catch (Exception ex) { _logger.LogError(ex, "分页获取医案失败: Page={Page}", page); return null; }
@@ -149,10 +149,16 @@ public class MedicalCaseDataManager : IMedicalCaseDataManager
         catch (Exception ex) { _logger.LogError(ex, "删除医案失败: {Id}", id); return false; }
     }
 
-    public virtual async Task<List<MedicalCaseDetailDto>?> QueryAsync(string? patientName = null, DateTime? startDate = null, DateTime? endDate = null, string? diagnosisKeyword = null)
+    public virtual async Task<PagedResult<MedicalCaseDetailDto>?> SearchAsync(
+        string? patientName = null,
+        string? diagnosisKeyword = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        int page = 1,
+        int pageSize = 20)
     {
-        try { return await _repository.QueryAsync(patientName, startDate, endDate, diagnosisKeyword); }
-        catch (Exception ex) { _logger.LogError(ex, "查询医案失败"); return null; }
+        try { return await _repository.SearchAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize); }
+        catch (Exception ex) { _logger.LogError(ex, "搜索医案失败"); return null; }
     }
 
     #endregion

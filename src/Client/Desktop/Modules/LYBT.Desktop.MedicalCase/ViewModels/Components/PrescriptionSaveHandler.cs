@@ -77,9 +77,9 @@ public class PrescriptionSaveHandler
             {
                 _logger.LogInformation("处方数据保存成功");
 
-                // 发布处方完成事件
-                _eventAggregator.GetEvent<PrescriptionCompletedEvent>()
-                    .Publish(new PrescriptionCompletedPayload
+                // 发布处方完成事件 - OpenSpec: unify-event-system
+                _eventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>()
+                    .Publish(new CasePrescriptionCompletedPayload
                     {
                         PrescriptionId = result.Prescription.Id,
                         TotalItems = context.Items.Count,

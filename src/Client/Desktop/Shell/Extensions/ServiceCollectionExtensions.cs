@@ -129,6 +129,10 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<TokenRefreshHandler>(containerRegistry);
             RegisterLogger<AuthenticationService>(containerRegistry);
             RegisterLogger<TokenStorageService>(containerRegistry);
+            RegisterLogger<TokenManager>(containerRegistry); // OpenSpec: refactor-login-authentication
+            RegisterLogger<CredentialVault>(containerRegistry); // OpenSpec: refactor-login-authentication
+            RegisterLogger<LoginStateMachine>(containerRegistry); // OpenSpec: refactor-login-authentication (Phase 2.1)
+            RegisterLogger<LogoutService>(containerRegistry); // OpenSpec: refactor-login-authentication (Phase 2.3)
             RegisterLogger<UsernameStorageService>(containerRegistry);
             RegisterLogger<SecureCredentialStorage>(containerRegistry);
             RegisterLogger<LocalTokenValidator>(containerRegistry);
@@ -233,6 +237,8 @@ namespace LYBT.Desktop.Shell.Extensions
                 catch { /* 启动阶段可能尚未注册 */ }
                 return new TokenRefreshHandler(tokenStorage, configuration, logger, userActivityState);
             });
+            // OpenSpec: refactor-login-authentication (Phase 1.4) - 注册接口
+            containerRegistry.Register<ITokenRefreshHandler>(resolver => resolver.Resolve<TokenRefreshHandler>());
 
             // Handler链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → HttpClient
             // 注: HttpClient自动传播W3C TraceContext (traceparent header)
@@ -273,6 +279,10 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
             containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
+            containerRegistry.RegisterSingleton<ITokenManager, TokenManager>(); // OpenSpec: refactor-login-authentication
+            containerRegistry.RegisterSingleton<ICredentialVault, CredentialVault>(); // OpenSpec: refactor-login-authentication
+            containerRegistry.RegisterSingleton<ILoginStateMachine, LoginStateMachine>(); // OpenSpec: refactor-login-authentication (Phase 2.1)
+            containerRegistry.RegisterSingleton<ILogoutService, LogoutService>(); // OpenSpec: refactor-login-authentication (Phase 2.3)
             containerRegistry.RegisterSingleton<ITokenValidator, LocalTokenValidator>();
             containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();
             containerRegistry.RegisterSingleton<ISecureCredentialStorage, SecureCredentialStorage>();

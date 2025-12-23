@@ -367,8 +367,12 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
                 while (true)
                 {
-                    // OpenSpec: fix-history-copy-all-patients - 使用包含所有医生数据的方法
-                    var pagedResult = await _medicalCaseRepository.GetPagedIncludeAllDoctorsAsync(
+                    // OpenSpec: fix-history-copy-all-patients - 使用SearchAsync查询所有患者的医案
+                    var pagedResult = await _medicalCaseRepository.SearchAsync(
+                        patientName: null,
+                        diagnosisKeyword: null,
+                        startDate: null,
+                        endDate: null,
                         page: currentPage,
                         pageSize: pageSize);
 

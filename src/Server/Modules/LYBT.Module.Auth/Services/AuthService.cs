@@ -165,6 +165,20 @@ namespace LYBT.Module.Auth.Services
                 ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes)
             };
 
+            // OpenSpec: refactor-login-authentication (CVT-001)
+            // 当RememberMe=true时，生成AutoLoginToken供下次自动登录使用
+            if (request.RememberMe)
+            {
+                var autoLoginToken = GenerateAutoLoginToken(
+                    userDto.Id,
+                    userDto.UserName,
+                    request.DeviceId,
+                    request.DeviceName,
+                    request.ClientIp,
+                    request.UserAgent);
+                response.AutoLoginToken = autoLoginToken;
+            }
+
             // Issue #1872: 记录登录成功审计日志
             await _auditService.LogAsync(new SecurityAuditEvent
             {
@@ -471,6 +485,224 @@ namespace LYBT.Module.Auth.Services
         {
             await Task.CompletedTask;
             return Result<bool>.Success(true);
+        }
+
+        /// <summary>
+        /// 使用AutoLoginToken自动登录
+        /// OpenSpec: refactor-login-authentication (CVT-001)
+        /// </summary>
+        public async Task<Result<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(request.UserName))
+                return Result<LoginResponse>.Failure(AuthErrorCode.InvalidCredentials, "用户名不能为空");
+
+            if (string.IsNullOrWhiteSpace(request.AutoLoginToken))
+                return Result<LoginResponse>.Failure(AuthErrorCode.InvalidCredentials, "AutoLoginToken不能为空");
+
+            // 1. 查找AutoLoginToken记录
+            var tokenRecord = await _dbContext.Set<LYBT.Entities.Auth.AutoLoginToken>()
+                .FirstOrDefaultAsync(t =>
+                    t.Token == request.AutoLoginToken &&
+                    t.UserName.ToLower() == request.UserName.ToLower(),
+                    cancellationToken);
+
+            if (tokenRecord == null)
+            {
+                await _auditService.LogAsync(new SecurityAuditEvent
+                {
+                    EventType = "AutoLoginFailed",
+                    UserName = request.UserName,
+                    Success = false,
+                    ErrorMessage = "AutoLoginToken不存在"
+                });
+                return Result<LoginResponse>.Failure(AuthErrorCode.InvalidCredentials, "AutoLoginToken无效");
+            }
+
+            // 2. 检测重放攻击
+            if (tokenRecord.IsUsed)
+            {
+                _logger.LogWarning("检测到AutoLoginToken重放攻击！[TokenId: {TokenId}] [UserId: {UserId}] [UserName: {UserName}]",
+                    tokenRecord.Id, tokenRecord.UserId, tokenRecord.UserName);
+
+                // 撤销同一家族的所有Token
+                if (!string.IsNullOrEmpty(tokenRecord.FamilyId))
+                {
+                    await RevokeAutoLoginTokenFamilyAsync(tokenRecord.FamilyId, "检测到重放攻击");
+                }
+
+                await _auditService.LogAsync(new SecurityAuditEvent
+                {
+                    EventType = "AutoLoginReplayAttack",
+                    UserId = tokenRecord.UserId,
+                    UserName = request.UserName,
+                    Success = false,
+                    ErrorMessage = "检测到AutoLoginToken重放攻击"
+                });
+
+                return Result<LoginResponse>.Failure(AuthErrorCode.TokenRevoked, "检测到安全威胁，请重新登录");
+            }
+
+            // 3. 验证Token是否有效
+            if (!tokenRecord.IsValid())
+            {
+                string reason = tokenRecord.IsRevoked ? "已撤销" :
+                               tokenRecord.IsDeleted ? "已删除" : "已过期";
+
+                await _auditService.LogAsync(new SecurityAuditEvent
+                {
+                    EventType = "AutoLoginFailed",
+                    UserId = tokenRecord.UserId,
+                    UserName = request.UserName,
+                    Success = false,
+                    ErrorMessage = $"AutoLoginToken{reason}"
+                });
+
+                return Result<LoginResponse>.Failure(AuthErrorCode.RefreshTokenExpired, $"AutoLoginToken{reason}，请重新登录");
+            }
+
+            // 4. 获取用户信息
+            var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
+            if (userEntity == null)
+            {
+                return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound, "用户不存在");
+            }
+
+            // 检查用户是否被禁用
+            if (userEntity.Status != CommonStatus.Enabled)
+            {
+                return Result<LoginResponse>.Failure(AuthErrorCode.UserDisabled, "用户已被禁用");
+            }
+
+            var userDto = _mapper.Map<UserDetailDto>(userEntity);
+            string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
+
+            // 5. 生成新的JWT Token
+            var jwtToken = _jwtService.GenerateToken(
+                userDto.Id.ToString(),
+                userDto.UserName,
+                userDto.Role,
+                userType);
+
+            // 6. 生成RefreshToken
+            var refreshToken = GenerateRefreshToken();
+            var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
+            var tokenExpireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15;
+
+            var refreshTokenRecord = new LYBT.Entities.Auth.RefreshToken
+            {
+                Token = refreshToken,
+                UserId = userDto.Id,
+                UserType = userType,
+                Jti = Guid.NewGuid().ToString(),
+                ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
+                FamilyId = Guid.NewGuid().ToString()
+            };
+            _dbContext.RefreshTokens.Add(refreshTokenRecord);
+
+            // 7. Token轮换：标记旧Token为已使用，生成新的AutoLoginToken
+            var newAutoLoginToken = GenerateAutoLoginToken(
+                userDto.Id,
+                userDto.UserName,
+                request.DeviceId,
+                request.DeviceName,
+                request.ClientIp,
+                request.UserAgent,
+                tokenRecord.FamilyId); // 继承FamilyId
+
+            tokenRecord.MarkAsUsed(newAutoLoginToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            var response = new LoginResponse
+            {
+                Token = jwtToken,
+                User = userDto,
+                RefreshToken = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes),
+                AutoLoginToken = newAutoLoginToken
+            };
+
+            await _auditService.LogAsync(new SecurityAuditEvent
+            {
+                EventType = "AutoLogin",
+                UserId = userDto.Id,
+                UserType = userType,
+                UserName = userDto.UserName,
+                Success = true
+            });
+
+            _logger.LogInformation("用户自动登录成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
+                userDto.UserName, userDto.Role, DateTime.UtcNow);
+
+            return Result<LoginResponse>.Success(response);
+        }
+
+        /// <summary>
+        /// 生成AutoLoginToken
+        /// OpenSpec: refactor-login-authentication (CVT-001)
+        /// </summary>
+        private string GenerateAutoLoginToken(
+            Guid userId,
+            string userName,
+            string? deviceId,
+            string? deviceName,
+            string? clientIp,
+            string? userAgent,
+            string? familyId = null)
+        {
+            // 生成安全的随机Token
+            var tokenBytes = new byte[64];
+            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(tokenBytes);
+            var token = Convert.ToBase64String(tokenBytes);
+
+            // AutoLoginToken有效期：默认30天
+            var autoLoginTokenExpireDays = _configuration.GetValue<int?>("Lybt:Auth:AutoLoginTokenExpirationDays") ?? 30;
+
+            var tokenRecord = new LYBT.Entities.Auth.AutoLoginToken
+            {
+                Token = token,
+                UserId = userId,
+                UserName = userName,
+                ExpiresAt = DateTime.UtcNow.AddDays(autoLoginTokenExpireDays),
+                DeviceId = deviceId,
+                DeviceName = deviceName,
+                ClientIp = clientIp,
+                UserAgent = userAgent,
+                FamilyId = familyId ?? Guid.NewGuid().ToString()
+            };
+
+            _dbContext.Set<LYBT.Entities.Auth.AutoLoginToken>().Add(tokenRecord);
+            // 注意：调用者负责SaveChanges
+
+            return token;
+        }
+
+        /// <summary>
+        /// 撤销AutoLoginToken Family
+        /// OpenSpec: refactor-login-authentication (CVT-001)
+        /// </summary>
+        private async Task RevokeAutoLoginTokenFamilyAsync(string familyId, string reason)
+        {
+            try
+            {
+                var familyTokens = await _dbContext.Set<LYBT.Entities.Auth.AutoLoginToken>()
+                    .Where(t => t.FamilyId == familyId && !t.IsRevoked)
+                    .ToListAsync();
+
+                foreach (var token in familyTokens)
+                {
+                    token.Revoke(reason, "System:ReplayAttackDetection");
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogWarning("AutoLoginToken Family已撤销 [FamilyId: {FamilyId}] [撤销Token数量: {Count}] [原因: {Reason}]",
+                    familyId, familyTokens.Count, reason);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "撤销AutoLoginToken Family失败 [FamilyId: {FamilyId}]", familyId);
+            }
         }
 
         /// <summary>

@@ -56,7 +56,7 @@ public class PrescriptionDataLoader
     /// </summary>
     /// <param name="targetCollection">目标集合</param>
     /// <returns>加载的药材数量</returns>
-    public async Task<int> LoadAllHerbsAsync(ObservableCollection<HerbDetailDto> targetCollection)
+    public async Task<int> LoadAllHerbsAsync(ObservableCollection<HerbListDto> targetCollection)
     {
         try
         {
@@ -100,7 +100,7 @@ public class PrescriptionDataLoader
     /// <param name="allHerbs">所有药材列表</param>
     public void InjectHerbsToItems(
         ObservableCollection<PrescriptionHerbItem> herbItems,
-        ObservableCollection<HerbDetailDto> allHerbs)
+        ObservableCollection<HerbListDto> allHerbs)
     {
         foreach (var item in herbItems)
         {
@@ -117,7 +117,7 @@ public class PrescriptionDataLoader
     /// </summary>
     /// <param name="targetCollection">目标集合</param>
     /// <returns>加载的验方数量</returns>
-    public async Task<int> LoadFormulasAsync(ObservableCollection<FormulaDetailDto> targetCollection)
+    public async Task<int> LoadFormulasAsync(ObservableCollection<FormulaListDto> targetCollection)
     {
         try
         {

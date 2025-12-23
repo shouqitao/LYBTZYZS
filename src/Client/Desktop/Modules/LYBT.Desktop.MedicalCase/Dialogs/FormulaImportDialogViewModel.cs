@@ -21,7 +21,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         private readonly IFormulaRepository _formulaRepository;
         private readonly ILogger<FormulaImportDialogViewModel> _logger;
-        private List<FormulaDetailDto> _allFormulas = new();
+        private List<FormulaListDto> _allFormulas = new();
 
         #endregion
 
@@ -69,21 +69,21 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             }
         }
 
-        private ObservableCollection<FormulaDetailDto> _filteredFormulas = new();
+        private ObservableCollection<FormulaListDto> _filteredFormulas = new();
         /// <summary>
         /// 筛选后的验方列表
         /// </summary>
-        public ObservableCollection<FormulaDetailDto> FilteredFormulas
+        public ObservableCollection<FormulaListDto> FilteredFormulas
         {
             get => _filteredFormulas;
             set => SetProperty(ref _filteredFormulas, value);
         }
 
-        private FormulaDetailDto? _selectedFormula;
+        private FormulaListDto? _selectedFormula;
         /// <summary>
         /// 选中的验方
         /// </summary>
-        public FormulaDetailDto? SelectedFormula
+        public FormulaListDto? SelectedFormula
         {
             get => _selectedFormula;
             set
@@ -286,7 +286,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                     (f.Indications?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
-            FilteredFormulas = new ObservableCollection<FormulaDetailDto>(filtered);
+            FilteredFormulas = new ObservableCollection<FormulaListDto>(filtered);
 
             // 更新状态消息
             if (_allFormulas.Count > 0)

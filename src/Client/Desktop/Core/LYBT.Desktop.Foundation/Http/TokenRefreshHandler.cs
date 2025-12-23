@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -7,37 +8,54 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 
 namespace LYBT.Desktop.Foundation.Http
 {
     /// <summary>
     /// Token自动刷新处理器 - Issue #1838
     /// OpenSpec: refactor-token-sliding-expiration (AUTH-002)
+    /// OpenSpec: refactor-login-authentication (Phase 1.4, 3.2)
+    /// OpenSpec: unify-event-system (Phase 2.1)
     /// 检测Access Token即将过期时自动调用RefreshToken端点获取新Token
     /// 仅在用户活跃时执行刷新，实现滑动过期机制
+    /// 增强：分级处理刷新失败，支持重试和用户友好错误提示
+    /// 通过Prism EventAggregator发布Token刷新事件
     /// </summary>
-    public class TokenRefreshHandler : DelegatingHandler
+    public class TokenRefreshHandler : DelegatingHandler, ITokenRefreshHandler
     {
         private readonly ITokenStorageService _tokenStorage;
         private readonly IUserActivityState? _userActivityState;
         private readonly ILogger<TokenRefreshHandler> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IEventAggregator? _eventAggregator;
         private readonly HttpClient _refreshHttpClient; // 专用HttpClient，避免循环依赖
         private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
         // Token刷新提前量：提前5分钟刷新，避免临界情况
         private readonly TimeSpan _refreshBeforeExpiry = TimeSpan.FromMinutes(5);
 
+        // Phase 1.4: 重试配置
+        private const int MaxRetryAttempts = 3;
+        private static readonly TimeSpan[] RetryDelays = new[]
+        {
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(4)
+        };
+
         public TokenRefreshHandler(
             ITokenStorageService tokenStorage,
             IConfiguration configuration,
             ILogger<TokenRefreshHandler> logger,
-            IUserActivityState? userActivityState = null)
+            IUserActivityState? userActivityState = null,
+            IEventAggregator? eventAggregator = null)
         {
             _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userActivityState = userActivityState; // 可选依赖，启动时可能尚未注册
+            _eventAggregator = eventAggregator;
 
             // 创建专用HttpClient用于RefreshToken调用（不包含TokenRefreshHandler，避免循环依赖）
             var apiBaseUrl = _configuration["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
@@ -93,25 +111,22 @@ namespace LYBT.Desktop.Foundation.Http
                     if (currentLoginResponse == null || currentLoginResponse.ExpiresAt - DateTime.UtcNow <= _refreshBeforeExpiry)
                     {
                         // 5. 调用RefreshToken API
-                        var refreshToken = await _tokenStorage.GetRefreshTokenAsync();
-                        if (string.IsNullOrEmpty(refreshToken))
-                        {
-                            _logger.LogWarning("RefreshToken不存在，无法自动刷新");
-                            return await base.SendAsync(request, cancellationToken);
-                        }
-
-                        var success = await RefreshTokenAsync(refreshToken);
-                        if (success)
+                        var result = await RefreshTokenAsync();
+                        if (result.Success)
                         {
                             _logger.LogInformation("Token刷新成功");
 
                             // OpenSpec: refactor-token-sliding-expiration (AUTH-002)
                             // 刷新成功后重置用户活动计时器
                             _userActivityState?.ResetActivity();
+
+                            // 发布Prism PubSubEvent
+                            PublishTokenRefreshSucceededEvent();
                         }
                         else
                         {
-                            _logger.LogWarning("Token刷新失败，可能需要重新登录");
+                            _logger.LogWarning("Token刷新失败 [原因: {Reason}]", result.FailureReason);
+                            // 事件已在RefreshTokenAsync内部触发
                         }
                     }
                     else
@@ -130,10 +145,81 @@ namespace LYBT.Desktop.Foundation.Http
         }
 
         /// <summary>
-        /// 调用Refresh API获取新Token并保存
-        /// Issue #1838: 使用专用HttpClient直接调用，避免与Refit客户端的循环依赖
+        /// 主动刷新Token
+        /// OpenSpec: refactor-login-authentication (Phase 1.4)
         /// </summary>
-        private async Task<bool> RefreshTokenAsync(string refreshToken)
+        public async Task<TokenRefreshResult> RefreshTokenAsync()
+        {
+            var refreshToken = await _tokenStorage.GetRefreshTokenAsync();
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                _logger.LogWarning("RefreshToken不存在，无法刷新");
+                // 发布失败事件
+                PublishTokenRefreshFailedEvent(new TokenRefreshFailedEventArgs(
+                    TokenRefreshFailureReason.NotLoggedIn,
+                    "未登录",
+                    "RefreshToken不存在",
+                    canRetry: false,
+                    requiresReLogin: false));
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.NotLoggedIn, "RefreshToken不存在");
+            }
+
+            return await RefreshTokenWithRetryAsync(refreshToken);
+        }
+
+        /// <summary>
+        /// 带重试的Token刷新
+        /// OpenSpec: refactor-login-authentication (Phase 1.4)
+        /// </summary>
+        private async Task<TokenRefreshResult> RefreshTokenWithRetryAsync(string refreshToken)
+        {
+            TokenRefreshResult? lastResult = null;
+
+            for (int attempt = 0; attempt < MaxRetryAttempts; attempt++)
+            {
+                if (attempt > 0)
+                {
+                    var delay = RetryDelays[Math.Min(attempt - 1, RetryDelays.Length - 1)];
+                    _logger.LogInformation("Token刷新重试 [尝试: {Attempt}/{Max}] [延迟: {Delay}ms]",
+                        attempt + 1, MaxRetryAttempts, delay.TotalMilliseconds);
+                    await Task.Delay(delay);
+                }
+
+                lastResult = await ExecuteRefreshAsync(refreshToken);
+
+                if (lastResult.Success)
+                {
+                    return lastResult;
+                }
+
+                // 判断是否可重试
+                if (lastResult.FailureReason == TokenRefreshFailureReason.NetworkError ||
+                    lastResult.FailureReason == TokenRefreshFailureReason.ServerError)
+                {
+                    _logger.LogWarning("Token刷新失败（可重试） [原因: {Reason}] [尝试: {Attempt}/{Max}]",
+                        lastResult.FailureReason, attempt + 1, MaxRetryAttempts);
+                    continue;
+                }
+
+                // 不可重试的错误，立即返回
+                _logger.LogWarning("Token刷新失败（不可重试） [原因: {Reason}]", lastResult.FailureReason);
+                break;
+            }
+
+            // 发布失败事件
+            if (lastResult != null && lastResult.FailureReason.HasValue)
+            {
+                var eventArgs = CreateFailedEventArgs(lastResult.FailureReason.Value, lastResult.ErrorMessage ?? "未知错误");
+                PublishTokenRefreshFailedEvent(eventArgs);
+            }
+
+            return lastResult ?? TokenRefreshResult.Failed(TokenRefreshFailureReason.Unknown, "刷新失败");
+        }
+
+        /// <summary>
+        /// 执行单次Token刷新
+        /// </summary>
+        private async Task<TokenRefreshResult> ExecuteRefreshAsync(string refreshToken)
         {
             try
             {
@@ -148,18 +234,15 @@ namespace LYBT.Desktop.Foundation.Http
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning("RefreshToken API调用失败 [StatusCode: {StatusCode}] [Error: {Error}]",
-                        response.StatusCode, errorContent);
-                    return false;
+                    return await HandleRefreshErrorResponseAsync(response);
                 }
 
                 // 3. 解析响应
                 var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponse>>();
                 if (apiResponse == null || !apiResponse.Success || apiResponse.Data == null)
                 {
-                    _logger.LogWarning("RefreshToken API响应解析失败或返回失败状态");
-                    return false;
+                    var errorMessage = apiResponse?.Message ?? "响应解析失败";
+                    return CategorizeApiError(errorMessage);
                 }
 
                 // 4. 保存新的Token（保持当前的RememberMe状态）
@@ -169,22 +252,166 @@ namespace LYBT.Desktop.Foundation.Http
                 await _tokenStorage.SaveAuthenticationAsync(apiResponse.Data, rememberMe);
 
                 _logger.LogInformation("Token刷新成功 [NewExpiry: {ExpiresAt}]", apiResponse.Data.ExpiresAt);
-                return true;
-            }
-            catch (JsonException jsonEx)
-            {
-                _logger.LogError(jsonEx, "Token刷新响应JSON解析失败");
-                return false;
+                return TokenRefreshResult.Succeeded();
             }
             catch (HttpRequestException httpEx)
             {
                 _logger.LogError(httpEx, "Token刷新HTTP请求失败");
-                return false;
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.NetworkError, httpEx.Message);
+            }
+            catch (TaskCanceledException tcEx) when (tcEx.InnerException is TimeoutException)
+            {
+                _logger.LogError(tcEx, "Token刷新请求超时");
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.NetworkError, "请求超时");
+            }
+            catch (JsonException jsonEx)
+            {
+                _logger.LogError(jsonEx, "Token刷新响应JSON解析失败");
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.ServerError, "响应格式错误");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Token刷新时发生未预期的异常");
-                return false;
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.Unknown, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 处理刷新错误响应
+        /// OpenSpec: refactor-login-authentication (Phase 1.4)
+        /// </summary>
+        private async Task<TokenRefreshResult> HandleRefreshErrorResponseAsync(HttpResponseMessage response)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("RefreshToken API调用失败 [StatusCode: {StatusCode}] [Error: {Error}]",
+                response.StatusCode, errorContent);
+
+            // 根据HTTP状态码分类错误
+            return response.StatusCode switch
+            {
+                HttpStatusCode.Unauthorized => CategorizeUnauthorizedError(errorContent),
+                HttpStatusCode.Forbidden => TokenRefreshResult.Failed(TokenRefreshFailureReason.UserDisabled, "账户被禁用"),
+                HttpStatusCode.BadRequest => CategorizeApiError(errorContent),
+                >= HttpStatusCode.InternalServerError => TokenRefreshResult.Failed(TokenRefreshFailureReason.ServerError, "服务器错误"),
+                _ => TokenRefreshResult.Failed(TokenRefreshFailureReason.Unknown, $"HTTP {(int)response.StatusCode}: {errorContent}")
+            };
+        }
+
+        /// <summary>
+        /// 分类401未授权错误
+        /// </summary>
+        private TokenRefreshResult CategorizeUnauthorizedError(string errorContent)
+        {
+            var lowerContent = errorContent.ToLowerInvariant();
+
+            if (lowerContent.Contains("expired") || lowerContent.Contains("过期"))
+            {
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.RefreshTokenExpired, "RefreshToken已过期");
+            }
+
+            if (lowerContent.Contains("revoked") || lowerContent.Contains("撤销") || lowerContent.Contains("invalidated"))
+            {
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.RefreshTokenRevoked, "RefreshToken已被撤销");
+            }
+
+            if (lowerContent.Contains("invalid") || lowerContent.Contains("无效"))
+            {
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.RefreshTokenInvalid, "RefreshToken无效");
+            }
+
+            // 默认视为过期
+            return TokenRefreshResult.Failed(TokenRefreshFailureReason.RefreshTokenExpired, "认证失败");
+        }
+
+        /// <summary>
+        /// 分类API业务错误
+        /// </summary>
+        private TokenRefreshResult CategorizeApiError(string errorMessage)
+        {
+            var lowerMessage = errorMessage.ToLowerInvariant();
+
+            if (lowerMessage.Contains("disabled") || lowerMessage.Contains("禁用"))
+            {
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.UserDisabled, errorMessage);
+            }
+
+            if (lowerMessage.Contains("expired") || lowerMessage.Contains("过期"))
+            {
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.RefreshTokenExpired, errorMessage);
+            }
+
+            if (lowerMessage.Contains("invalid") || lowerMessage.Contains("无效"))
+            {
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.RefreshTokenInvalid, errorMessage);
+            }
+
+            return TokenRefreshResult.Failed(TokenRefreshFailureReason.Unknown, errorMessage);
+        }
+
+        /// <summary>
+        /// 创建失败事件参数
+        /// </summary>
+        private static TokenRefreshFailedEventArgs CreateFailedEventArgs(
+            TokenRefreshFailureReason reason, string detailedMessage)
+        {
+            return reason switch
+            {
+                TokenRefreshFailureReason.NetworkError => TokenRefreshFailedEventArgs.NetworkError(detailedMessage),
+                TokenRefreshFailureReason.RefreshTokenExpired => TokenRefreshFailedEventArgs.RefreshTokenExpired(detailedMessage),
+                TokenRefreshFailureReason.RefreshTokenRevoked => TokenRefreshFailedEventArgs.RefreshTokenRevoked(detailedMessage),
+                TokenRefreshFailureReason.RefreshTokenInvalid => TokenRefreshFailedEventArgs.RefreshTokenInvalid(detailedMessage),
+                TokenRefreshFailureReason.ServerError => TokenRefreshFailedEventArgs.ServerError(detailedMessage),
+                TokenRefreshFailureReason.UserDisabled => TokenRefreshFailedEventArgs.UserDisabled(detailedMessage),
+                _ => new TokenRefreshFailedEventArgs(reason, "刷新失败，请稍后重试", detailedMessage, canRetry: true, requiresReLogin: false)
+            };
+        }
+
+        /// <summary>
+        /// 发布Token刷新成功事件（Phase 3.2）
+        /// </summary>
+        private async void PublishTokenRefreshSucceededEvent()
+        {
+            if (_eventAggregator == null)
+                return;
+
+            try
+            {
+                var loginResponse = await _tokenStorage.GetLoginResponseAsync();
+                var payload = new TokenRefreshSucceededPayload
+                {
+                    NewExpiresAt = loginResponse?.ExpiresAt ?? DateTime.UtcNow.AddHours(1)
+                };
+                _eventAggregator.GetEvent<AuthEvents.TokenRefreshSucceededEvent>().Publish(payload);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发布Token刷新成功事件失败");
+            }
+        }
+
+        /// <summary>
+        /// 发布Token刷新失败事件（Phase 3.2）
+        /// </summary>
+        private void PublishTokenRefreshFailedEvent(TokenRefreshFailedEventArgs eventArgs)
+        {
+            if (_eventAggregator == null)
+                return;
+
+            try
+            {
+                var payload = new TokenRefreshFailedPayload
+                {
+                    Reason = eventArgs.Reason,
+                    UserMessage = eventArgs.UserMessage,
+                    DetailedMessage = eventArgs.DetailedMessage,
+                    RequiresReLogin = eventArgs.RequiresReLogin,
+                    IsRetryable = eventArgs.CanRetry
+                };
+                _eventAggregator.GetEvent<AuthEvents.TokenRefreshFailedEvent>().Publish(payload);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发布Token刷新失败事件失败");
             }
         }
 

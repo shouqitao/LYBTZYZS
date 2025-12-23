@@ -32,7 +32,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private string _remark = string.Empty;
         private bool _isShared;
         private string _category = string.Empty;
-        private ObservableCollection<HerbDetailDto> _allHerbs = new();
+        private ObservableCollection<HerbListDto> _allHerbs = new();
 
         public Guid FormulaId { get => _formulaId; set => SetProperty(ref _formulaId, value); }
 
@@ -99,7 +99,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public string StatusDisplay => Formula?.Status == CommonStatus.Enabled ? "正常" : "已禁用";
         public int HerbCount => HerbItems.Count(h => h.HerbId != Guid.Empty);
         public ObservableCollection<FormulaHerbItemViewModel> HerbItems { get; } = new();
-        public ObservableCollection<HerbDetailDto> AllHerbs => _allHerbs;
+        public ObservableCollection<HerbListDto> AllHerbs => _allHerbs;
 
         public DelegateCommand LoadDataCommand { get; }
         public DelegateCommand EditCommand { get; }

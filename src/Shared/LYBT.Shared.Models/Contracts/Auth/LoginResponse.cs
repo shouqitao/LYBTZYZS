@@ -25,5 +25,17 @@ namespace LYBT.Shared.Models.Contracts.Auth
         /// <summary>令牌过期时间</summary>
         [DisplayName("过期时间")]
         public DateTime ExpiresAt { get; set; }
+
+        /// <summary>
+        /// 自动登录令牌（仅当RememberMe=true时返回）
+        /// OpenSpec: refactor-login-authentication (CVT-001)
+        /// </summary>
+        /// <remarks>
+        /// <para>功能: 用于"记住密码"场景的自动登录</para>
+        /// <para>安全: 服务端生成的长期有效令牌，可随时撤销</para>
+        /// <para>存储: 客户端使用DPAPI+HMAC安全存储</para>
+        /// </remarks>
+        [DisplayName("自动登录令牌")]
+        public string? AutoLoginToken { get; set; }
     }
 }

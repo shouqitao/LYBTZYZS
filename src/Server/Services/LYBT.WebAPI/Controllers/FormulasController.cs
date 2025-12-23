@@ -84,7 +84,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
-        public async Task<IActionResult> Add([FromBody] FormulaInputDto dto)
+        public async Task<IActionResult> Create([FromBody] FormulaInputDto dto)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // OpenSpec: implement-formula-copy-flow - 获取当前用户ID并传递给服务
