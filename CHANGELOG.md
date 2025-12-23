@@ -64,12 +64,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DatabaseInitializationService: 使用SystemAdminOptions
 - 所有ServiceCollectionExtensions: 使用对应Options类
 
+**客户端迁移**:
+- TokenRefreshHandler: 使用ApiClientOptions获取超时配置
+- ApiHealthCheckService: 使用ApiClientOptions获取BaseUrl和超时
+- LocalTokenValidator: 使用JwtOptions进行本地Token验证
+- ServiceCollectionExtensions: 调用AddLybtClientConfiguration
+- PrismConfigurationExtensions: Prism容器注册Options到IContainerRegistry
+- 客户端appsettings.json: 配置节扁平化(Lybt:Client:Api → ApiClient)
+
 **删除代码**:
 - LybtOptions.cs (955行单体配置类)
 - ConfigurationExtensions.cs (旧扩展方法)
 - SecurityTests目录 (孤立测试文件)
 
-**测试验证**: 编译通过(0错误0警告)，Auth模块81个测试通过
+**测试覆盖** (57个测试用例):
+- Options类验证测试: JwtOptionsTests, ApiClientOptionsTests
+- 验证器测试: JwtOptionsValidatorTests
+- 扩展方法测试: ServerConfigurationExtensionsTests
+- 集成测试: ConfigurationLoadingTests, ValidateOnStartTests
+
+**文档更新**:
+- 新增docs/state/architecture/shared/configuration-architecture.md
+
+**归档**: 2025-12-23-unify-configuration-system
 
 #### 登录认证架构重构 (OpenSpec: refactor-login-authentication) - 2025-12-21
 
