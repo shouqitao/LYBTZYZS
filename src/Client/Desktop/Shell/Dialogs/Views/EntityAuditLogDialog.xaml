@@ -143,7 +143,7 @@
 
         <!-- 加载中提示 -->
         <Grid Grid.Row="1" Background="#80FFFFFF"
-              Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="正在加载..." FontSize="14" Foreground="#666"/>
             </StackPanel>
@@ -151,7 +151,7 @@
 
         <!-- 空数据提示 -->
         <Grid Grid.Row="1"
-              Visibility="{Binding ShowEmptyMessage, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding ShowEmptyMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="暂无变更记录" FontSize="14" Foreground="#999"/>
             </StackPanel>

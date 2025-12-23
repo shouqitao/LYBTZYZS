@@ -15,6 +15,7 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
     {
         private static readonly string[] Modules = new[]
         {
+            "UsersModule",    // 用户管理（个人资料、修改密码）
             "PatientsModule"  // 前台仅需要患者管理功能
         };
 
