@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 统一配置系统重构 (OpenSpec: unify-configuration-system) - 2025-12-23
+
+**背景**: 原有LybtOptions单体配置类(955行)包含所有配置项，违反单一职责原则，难以维护和扩展。
+
+**核心重构**:
+- 新增LYBT.Shared.Configuration项目，独立管理配置
+- 采用.NET Options Pattern (IOptions<T>)实现强类型配置
+- 配置路径扁平化: 从"Lybt:Jwt:SecretKey"变为"Jwt:SecretKey"
+- 三层配置分离: Server/Client/Common
+
+**新增Options类**:
+- Common: JwtOptions
+- Server: DatabaseOptions, SecurityOptions, SwaggerOptions, JsonOptions, DefaultPasswordOptions, SystemAdminOptions, MemoryCacheOptions, LoggingOptions, SessionOptions, PasswordPolicyOptions, UserManagementOptions
+- Client: ApiClientOptions, ClientSessionOptions, ClinicSettingsOptions, FeatureToggleOptions, PrescriptionOptions
+
+**服务端迁移**:
+- JwtService: 从IOptions<LybtOptions>迁移到IOptions<JwtOptions>
+- DefaultPasswordService: 迁移到DefaultPasswordOptions
+- DatabaseInitializationService: 使用SystemAdminOptions
+- 所有ServiceCollectionExtensions: 使用对应Options类
+
+**删除代码**:
+- LybtOptions.cs (955行单体配置类)
+- ConfigurationExtensions.cs (旧扩展方法)
+- SecurityTests目录 (孤立测试文件)
+
+**测试验证**: 编译通过(0错误0警告)，Auth模块81个测试通过
+
 #### 登录认证架构重构 (OpenSpec: refactor-login-authentication) - 2025-12-21
 
 **背景**: 登录认证模块存在安全隐患（明文密码存储）、状态管理混乱和事件通信不一致问题。
