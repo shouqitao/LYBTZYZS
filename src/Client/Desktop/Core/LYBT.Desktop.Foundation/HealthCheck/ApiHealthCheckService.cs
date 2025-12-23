@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+using System.Net.Http;
+using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Configuration;
 
 namespace LYBT.Desktop.Foundation.HealthCheck;
@@ -28,9 +29,10 @@ public class ApiHealthCheckService : IApiHealthCheckService
 
         try
         {
-            // 从配置中读取 WebAPI BaseUrl
-            var baseUrl = _configuration["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
-            var healthUrl = $"{baseUrl.TrimEnd('/')}/health";
+            // unify-configuration-system: 使用强类型配置
+            var apiOptions = new ApiClientOptions();
+            _configuration.GetSection(ApiClientOptions.SectionName).Bind(apiOptions);
+            var healthUrl = $"{apiOptions.BaseUrl.TrimEnd('/')}/health";
 
             using var cts = new CancellationTokenSource(timeout);
 

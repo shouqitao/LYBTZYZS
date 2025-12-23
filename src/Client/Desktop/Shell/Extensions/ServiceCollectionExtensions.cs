@@ -51,10 +51,13 @@ using LYBT.Desktop.Shell.Services.Startup.Steps;
 using LYBT.Desktop.Users;
 using LYBT.Desktop.Users.Repositories;
 using LYBT.Desktop.Users.ViewModels.Components;
+using LYBT.Shared.Configuration.Extensions;
+using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Prism.Ioc;
 using Refit;
 using Serilog;
@@ -86,6 +89,10 @@ namespace LYBT.Desktop.Shell.Extensions
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
             containerRegistry.RegisterInstance<IConfiguration>(configuration);
+
+            // unify-configuration-system: 注册强类型配置
+            containerRegistry.AddLybtClientConfiguration(configuration);
+
             return configuration;
         }
 
@@ -227,8 +234,11 @@ namespace LYBT.Desktop.Shell.Extensions
         /// <remarks>adopt-activity-api-tracing: HttpClient自动传播W3C TraceContext，无需自定义Handler</remarks>
         private static void RegisterHttpServices(IContainerRegistry containerRegistry, IConfiguration config)
         {
-            var apiBaseUrl = config["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
-            var ignoreSslErrors = config.GetValue<bool>("Lybt:Client:Api:IgnoreSslErrors", false);
+            // unify-configuration-system: 使用强类型配置
+            var apiOptions = new ApiClientOptions();
+            config.GetSection(ApiClientOptions.SectionName).Bind(apiOptions);
+            var apiBaseUrl = apiOptions.BaseUrl;
+            var ignoreSslErrors = apiOptions.IgnoreSslErrors;
 
             containerRegistry.RegisterSingleton<AuthorizationMessageHandler>();
             containerRegistry.RegisterSingleton<TokenRefreshHandler>(resolver =>
@@ -317,11 +327,14 @@ namespace LYBT.Desktop.Shell.Extensions
             {
                 var logger = resolver.Resolve<ILogger<UserActivityTracker>>();
                 var tickService = resolver.Resolve<IApplicationTickService>();
-                var config = resolver.Resolve<IConfiguration>();
-                var inactivityTimeout = config.GetValue("Lybt:Client:Session:InactivityTimeoutMinutes", 5);
-                var warningBefore = config.GetValue("Lybt:Client:Session:WarningBeforeTimeoutMinutes", 0);
-                var checkInterval = config.GetValue("Lybt:Client:Session:ActivityCheckIntervalSeconds", 30);
-                return new UserActivityTracker(logger, tickService, inactivityTimeout, warningBefore, checkInterval);
+                // unify-configuration-system: 使用强类型配置
+                var sessionOptions = resolver.Resolve<ClientSessionOptions>();
+                return new UserActivityTracker(
+                    logger,
+                    tickService,
+                    sessionOptions.InactivityTimeoutMinutes,
+                    sessionOptions.WarningBeforeTimeoutMinutes,
+                    sessionOptions.ActivityCheckIntervalSeconds);
             });
             containerRegistry.RegisterSingleton<IUserActivityTracker>(resolver => resolver.Resolve<UserActivityTracker>());
             containerRegistry.RegisterSingleton<IUserActivityState>(resolver => resolver.Resolve<UserActivityTracker>());

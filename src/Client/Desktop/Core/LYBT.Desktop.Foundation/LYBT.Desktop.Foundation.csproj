@@ -71,6 +71,8 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
     <!-- consolidate-exception-handling: 统一异常处理 -->
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
+    <!-- unify-configuration-system: 统一配置系统 -->
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
   </ItemGroup>
 
 </Project>

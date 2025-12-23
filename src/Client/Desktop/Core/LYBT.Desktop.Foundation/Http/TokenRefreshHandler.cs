@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Configuration;
@@ -57,9 +58,12 @@ namespace LYBT.Desktop.Foundation.Http
             _userActivityState = userActivityState; // 可选依赖，启动时可能尚未注册
             _eventAggregator = eventAggregator;
 
+            // unify-configuration-system: 使用强类型配置
             // 创建专用HttpClient用于RefreshToken调用（不包含TokenRefreshHandler，避免循环依赖）
-            var apiBaseUrl = _configuration["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
-            var ignoreSslErrors = _configuration.GetValue<bool>("Lybt:Client:Api:IgnoreSslErrors", false);
+            var apiOptions = new ApiClientOptions();
+            _configuration.GetSection(ApiClientOptions.SectionName).Bind(apiOptions);
+            var apiBaseUrl = apiOptions.BaseUrl;
+            var ignoreSslErrors = apiOptions.IgnoreSslErrors;
 
             var httpHandler = new HttpClientHandler();
             if (ignoreSslErrors)

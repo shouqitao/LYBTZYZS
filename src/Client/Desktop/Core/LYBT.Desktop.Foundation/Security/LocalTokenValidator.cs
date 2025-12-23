@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using LYBT.Shared.Configuration.Options.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -53,11 +54,13 @@ namespace LYBT.Desktop.Foundation.Security
 
             try
             {
-                // 读取JWT配置
-                var secretKey = _configuration["Lybt:Jwt:SecretKey"];
-                var issuer = _configuration["Lybt:Jwt:Issuer"];
-                var audience = _configuration["Lybt:Jwt:Audience"];
-                var clockSkewSeconds = _configuration.GetValue<int?>("Lybt:Jwt:ClockSkewSeconds") ?? 300;
+                // unify-configuration-system: 使用强类型配置
+                var jwtOptions = new JwtOptions();
+                _configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
+                var secretKey = jwtOptions.SecretKey;
+                var issuer = jwtOptions.Issuer;
+                var audience = jwtOptions.Audience;
+                var clockSkewSeconds = jwtOptions.ClockSkewSeconds;
 
                 if (string.IsNullOrEmpty(secretKey))
                 {
