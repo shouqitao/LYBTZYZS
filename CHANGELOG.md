@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 可扩展角色注册系统 (OpenSpec: refactor-auth-role-system) - 2025-12-23
+
+**背景**: 原有角色系统硬编码在各处(switch语句、条件判断)，添加新角色需修改多处代码，违反开闭原则(OCP)。
+
+**Phase 2 - 角色注册系统**:
+- IRoleDefinition接口: 定义角色元数据契约(Role/DisplayName/Description/HomeViewName/RequiredModules)
+- IRoleRegistry接口: 提供角色注册与查询服务(Register/GetDefinition/GetModulesForRole/GetHomeViewName)
+- RoleRegistry实现: 使用ConcurrentDictionary实现线程安全的角色注册表
+- RoleDefinitionBase基类: 提供默认实现和验证逻辑
+- 四个内置角色定义: SuperAdminRoleDefinition/AdminRoleDefinition/DoctorRoleDefinition/ReceptionistRoleDefinition
+
+**Phase 2.2 - Receptionist角色**:
+- UserRole枚举新增Receptionist=0(前台接待)
+- 角色层级: Receptionist(0) < Doctor(1) < Admin(10) < SuperAdmin(100)
+- ReceptionistRoleDefinition: HomeView=ClinicalHomeView, Modules=[PatientsModule]
+
+**Phase 2.3 - 消费者集成**:
+- ApplicationBootstrapper: 使用RoleRegistry.GetModulesForRole()动态加载模块
+- RoleNavigationService: 使用RoleRegistry.GetHomeViewName()动态获取主页视图
+- 消除硬编码switch语句，实现OCP
+
+**Phase 3 - Token安全增强**(已实现):
+- RefreshToken实体: FamilyId字段+IsUsed标记+MarkAsUsed()方法
+- 令牌家族追踪: 同一RefreshToken家族共享FamilyId
+- 重放攻击检测: IsReplayAttack属性检测已使用Token的重复使用
+- TokenLifecycleService: 到期前5分钟自动刷新
+
+**架构收益**:
+- 开闭原则: 新增角色只需添加RoleDefinition类并注册
+- 单一职责: 每个RoleDefinition封装自己的配置
+- 依赖倒置: 消费者依赖IRoleRegistry抽象
+
+**测试验证**: 编译通过(0错误0警告)，Foundation 131测试+Shell 156测试全部通过
+
 #### 统一配置系统重构 (OpenSpec: unify-configuration-system) - 2025-12-23
 
 **背景**: 原有LybtOptions单体配置类(955行)包含所有配置项，违反单一职责原则，难以维护和扩展。
