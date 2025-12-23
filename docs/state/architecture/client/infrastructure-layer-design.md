@@ -1596,7 +1596,9 @@ public class StatusToColorConverter : IValueConverter
 
 ## 5. 事件系统（Prism EventAggregator）
 
-Infrastructure层定义**11个Prism事件**，实现跨模块通信和解耦。
+Infrastructure层使用**事件聚合类**统一管理Prism事件，实现跨模块通信和解耦。
+
+> **架构变更 (2025-12-23)**: 事件系统已从独立事件类迁移到按领域分组的事件聚合类，详见OpenSpec `unify-event-system`。
 
 ### 5.1 事件设计模式
 
@@ -1622,91 +1624,178 @@ Infrastructure层定义**11个Prism事件**，实现跨模块通信和解耦。
 - ✅ 线程安全：ThreadOption.UIThread自动切换到UI线程
 - ✅ 弱引用：防止内存泄漏（订阅者被GC回收时自动解除订阅）
 
-### 5.2 事件列表
+### 5.2 事件聚合类架构
 
-| 事件名称 | Payload类型 | 用途 | 发布者 | 订阅者 |
-|---------|------------|------|--------|--------|
-| **PatientSelectedEvent** | PatientSelectedPayload | 患者选中 | PatientListViewModel | MedicalCaseViewModel |
-| **LoginSuccessEvent** | UserDto | 登录成功 | AuthViewModel | MainWindowViewModel, 各模块ViewModel |
-| **LogoutEvent** | - | 登出 | AuthViewModel | 所有模块ViewModel |
-| **PrescriptionCompletedEvent** | PrescriptionCompletedPayload | 处方完成 | PrescriptionViewModel | MedicalCaseViewModel |
-| **MedicalCaseFlowCancelledEvent** | MedicalCaseFlowCancelledPayload | 医案流程取消 | MedicalCaseViewModel | PrescriptionViewModel |
-| **DataRefreshEvent** | DataRefreshPayload | 数据刷新 | 各模块ViewModel | DataGridViewModel |
-| **DraftSavedEvent** | DraftSavedPayload | 草稿保存 | EditViewModel | StatusBarViewModel |
-| **UserLoggedInEvent** | UserDto | 用户已登录 | AuthService | 各模块ViewModel |
+事件按领域分组到4个聚合类中：
 
-### 5.3 事件定义示例
-
-#### PatientSelectedEvent
-
-```csharp
-/// <summary>
-/// 患者选中事件
-/// </summary>
-public class PatientSelectedEvent : PubSubEvent<PatientSelectedPayload>
-{
-}
-
-/// <summary>
-/// 患者选中事件Payload
-/// </summary>
-public class PatientSelectedPayload
-{
-    public Guid PatientId { get; set; }
-    public string PatientName { get; set; } = string.Empty;
-    public DateTime SelectedAt { get; set; } = DateTime.Now;
-}
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      事件聚合类架构                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────┐    ┌─────────────────┐                   │
+│  │   AuthEvents    │    │   TokenEvents   │                   │
+│  │  (认证事件)     │    │  (Token事件)    │                   │
+│  ├─────────────────┤    ├─────────────────┤                   │
+│  │ LoginSucceeded  │    │ RefreshSucceeded│                   │
+│  │ LoginFailed     │    │ RefreshFailed   │                   │
+│  │ LogoutCompleted │    │ LifecycleChanged│                   │
+│  │ StateChanged    │    └─────────────────┘                   │
+│  │ PasswordChanged │                                          │
+│  └─────────────────┘                                          │
+│                                                                 │
+│  ┌─────────────────┐    ┌─────────────────┐                   │
+│  │ PatientEvents   │    │   CaseEvents    │                   │
+│  │  (患者事件)     │    │  (诊疗事件)     │                   │
+│  ├─────────────────┤    ├─────────────────┤                   │
+│  │ Created         │    │ Consultation-   │                   │
+│  │ Updated         │    │   Completed     │                   │
+│  │ Selected        │    │ Prescription-   │                   │
+│  └─────────────────┘    │   Completed     │                   │
+│                         └─────────────────┘                   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-#### LoginSuccessEvent
+### 5.3 事件聚合类详情
+
+#### AuthEvents（认证事件聚合）
+
+**位置**: `LYBT.Desktop.Foundation/Security/AuthEvents.cs`
+
+| 事件 | Payload类型 | 用途 | 发布者 |
+|------|------------|------|--------|
+| `LoginSucceededEvent` | `LoginSucceededPayload` | 登录成功 | LoginStateMachine |
+| `LoginFailedEvent` | `LoginFailedPayload` | 登录失败 | LoginStateMachine |
+| `LogoutCompletedEvent` | `LogoutCompletedPayload` | 登出完成 | LogoutService |
+| `LoginStateChangedEvent` | `LoginStateChangedPayload` | 状态变更 | LoginStateMachine |
+| `PasswordChangedEvent` | `PasswordChangedPayload` | 密码修改 | UserProfileViewModel |
+
+#### TokenEvents（Token事件聚合）
+
+**位置**: `LYBT.Desktop.Foundation/Security/TokenEvents.cs`
+
+| 事件 | Payload类型 | 用途 | 发布者 |
+|------|------------|------|--------|
+| `TokenRefreshSucceededEvent` | `TokenRefreshSucceededPayload` | Token刷新成功 | TokenRefreshHandler |
+| `TokenRefreshFailedEvent` | `TokenRefreshFailedPayload` | Token刷新失败 | TokenRefreshHandler |
+| `TokenLifecycleChangedEvent` | `TokenLifecycleChangedPayload` | Token生命周期变更 | TokenLifecycleService |
+
+#### PatientEvents（患者事件聚合）
+
+**位置**: `LYBT.Desktop.Infrastructure/Events/PatientEvents.cs`
+
+| 事件 | Payload类型 | 用途 | 发布者 |
+|------|------------|------|--------|
+| `PatientCreatedEvent` | `PatientCreatedPayload` | 患者创建 | PatientViewModel |
+| `PatientUpdatedEvent` | `PatientUpdatedPayload` | 患者更新 | PatientViewModel |
+| `PatientSelectedEvent` | `PatientSelectedPayload` | 患者选中 | PatientSelectionViewModel |
+
+#### CaseEvents（诊疗事件聚合）
+
+**位置**: `LYBT.Desktop.Infrastructure/Events/CaseEvents.cs`
+
+| 事件 | Payload类型 | 用途 | 发布者 |
+|------|------------|------|--------|
+| `ConsultationCompletedEvent` | `ConsultationCompletedPayload` | 诊断完成 | ConsultationViewModel |
+| `PrescriptionCompletedEvent` | `PrescriptionCompletedPayload` | 处方完成 | PrescriptionViewModel |
+
+### 5.4 事件定义示例
+
+#### PatientEvents聚合类
 
 ```csharp
+namespace LYBT.Desktop.Infrastructure.Events;
+
 /// <summary>
-/// 登录成功事件
+/// 患者相关事件聚合类
 /// </summary>
-public class LoginSuccessEvent : PubSubEvent<UserDto>
+public static class PatientEvents
 {
+    /// <summary>患者创建事件</summary>
+    public class PatientCreatedEvent : PubSubEvent<PatientCreatedPayload> { }
+
+    /// <summary>患者更新事件</summary>
+    public class PatientUpdatedEvent : PubSubEvent<PatientUpdatedPayload> { }
+
+    /// <summary>患者选中事件</summary>
+    public class PatientSelectedEvent : PubSubEvent<PatientSelectedPayload> { }
 }
+
+/// <summary>患者选中事件Payload</summary>
+public record PatientSelectedPayload(
+    Guid PatientId,
+    string PatientName,
+    DateTime SelectedAt);
+
+/// <summary>患者创建事件Payload</summary>
+public record PatientCreatedPayload(
+    Guid PatientId,
+    string PatientName);
+
+/// <summary>患者更新事件Payload</summary>
+public record PatientUpdatedPayload(
+    Guid PatientId,
+    string PatientName);
 ```
 
-#### LogoutEvent（无Payload）
+#### AuthEvents聚合类
 
 ```csharp
+namespace LYBT.Desktop.Foundation.Security;
+
 /// <summary>
-/// 登出事件（无Payload）
+/// 认证相关事件聚合类
 /// </summary>
-public class LogoutEvent : PubSubEvent
+public static class AuthEvents
 {
+    /// <summary>登录成功事件</summary>
+    public class LoginSucceededEvent : PubSubEvent<LoginSucceededPayload> { }
+
+    /// <summary>登录失败事件</summary>
+    public class LoginFailedEvent : PubSubEvent<LoginFailedPayload> { }
+
+    /// <summary>登出完成事件</summary>
+    public class LogoutCompletedEvent : PubSubEvent<LogoutCompletedPayload> { }
+
+    /// <summary>登录状态变更事件</summary>
+    public class LoginStateChangedEvent : PubSubEvent<LoginStateChangedPayload> { }
+
+    /// <summary>密码修改事件</summary>
+    public class PasswordChangedEvent : PubSubEvent<PasswordChangedPayload> { }
 }
+
+public record LoginSucceededPayload(Guid UserId, string Username);
+public record LoginFailedPayload(string Reason, int FailedAttempts);
+public record LogoutCompletedPayload(Guid UserId, LogoutReason Reason);
+public record LoginStateChangedPayload(LoginState OldState, LoginState NewState);
+public record PasswordChangedPayload(Guid UserId, DateTime ChangedAt);
 ```
 
-### 5.4 事件使用示例
+### 5.5 事件使用示例
 
 #### 发布事件
 
 ```csharp
 // 在患者列表模块中发布患者选中事件
-public class PatientListViewModel : BindableBase
+public class PatientSelectionViewModel : BindableBase
 {
     private readonly IEventAggregator _eventAggregator;
 
-    public PatientListViewModel(IEventAggregator eventAggregator)
+    public PatientSelectionViewModel(IEventAggregator eventAggregator)
     {
         _eventAggregator = eventAggregator;
     }
 
-    private void SelectPatient(PatientDto patient)
+    private void OnPatientSelected(PatientListDto patient)
     {
-        // 更新当前选中患者
         SelectedPatient = patient;
 
-        // 发布患者选中事件
-        _eventAggregator.GetEvent<PatientSelectedEvent>().Publish(new PatientSelectedPayload
-        {
-            PatientId = patient.Id,
-            PatientName = patient.Name,
-            SelectedAt = DateTime.Now
-        });
+        // 发布患者选中事件（使用聚合类）
+        _eventAggregator.GetEvent<PatientEvents.PatientSelectedEvent>()
+            .Publish(new PatientSelectedPayload(
+                patient.Id,
+                patient.Name,
+                DateTime.Now));
     }
 }
 ```
@@ -1723,28 +1812,24 @@ public class MedicalCaseViewModel : BindableBase
     {
         _eventAggregator = eventAggregator;
 
-        // 订阅患者选中事件（UI线程）
-        _eventAggregator.GetEvent<PatientSelectedEvent>()
+        // 订阅患者选中事件（使用聚合类）
+        _eventAggregator.GetEvent<PatientEvents.PatientSelectedEvent>()
             .Subscribe(OnPatientSelected, ThreadOption.UIThread);
 
-        // 订阅登出事件（弱引用，keepSubscriberReferenceAlive = false）
-        _eventAggregator.GetEvent<LogoutEvent>()
+        // 订阅登出事件（使用聚合类）
+        _eventAggregator.GetEvent<AuthEvents.LogoutCompletedEvent>()
             .Subscribe(OnLogout, ThreadOption.UIThread, keepSubscriberReferenceAlive: false);
     }
 
     private void OnPatientSelected(PatientSelectedPayload payload)
     {
-        // 加载患者的医案列表
         LoadMedicalCases(payload.PatientId);
-
-        // 更新UI
         CurrentPatientName = payload.PatientName;
         StatusMessage = $"已选中患者：{payload.PatientName}";
     }
 
-    private void OnLogout()
+    private void OnLogout(LogoutCompletedPayload payload)
     {
-        // 清除数据
         MedicalCases.Clear();
         CurrentPatientName = null;
         StatusMessage = "已登出";
@@ -1756,14 +1841,27 @@ public class MedicalCaseViewModel : BindableBase
 
 ```csharp
 // 订阅事件并使用过滤器
-_eventAggregator.GetEvent<DataRefreshEvent>()
+_eventAggregator.GetEvent<PatientEvents.PatientUpdatedEvent>()
     .Subscribe(
-        payload => RefreshData(payload),
+        payload => RefreshPatientData(payload),
         ThreadOption.UIThread,
         keepSubscriberReferenceAlive: false,
-        filter: payload => payload.ModuleName == "Patients" // 仅处理患者模块的刷新事件
+        filter: payload => payload.PatientId == CurrentPatientId
     );
 ```
+
+### 5.6 设计原则
+
+**事件聚合优势**：
+- ✅ 领域分组：相关事件集中管理
+- ✅ 类型发现：IDE自动提示聚合类内所有事件
+- ✅ 一致性：统一的Payload设计（使用record类型）
+- ✅ 可维护性：新增事件只需扩展对应聚合类
+
+**单一事件机制**：
+- ✅ 仅使用Prism PubSubEvent，不混用EventHandler
+- ✅ Core层组件通过DI注入IEventAggregator发布事件
+- ✅ 禁止在接口中定义EventHandler事件
 
 ---
 
@@ -2111,20 +2209,31 @@ public partial class App : PrismApplication
 
 ### 8.2 事件系统设计原则
 
+**事件聚合规范**：
+- ✅ 按领域分组：AuthEvents、TokenEvents、PatientEvents、CaseEvents
+- ✅ 嵌套类定义：`AuthEvents.LoginSucceededEvent`
+- ✅ record类型Payload：`public record LoginSucceededPayload(Guid UserId, string Username);`
+- ❌ 禁止独立事件类文件
+
 **命名规范**：
-- ✅ 过去时态：PatientSelectedEvent, LoginSuccessEvent
-- ✅ 清晰描述：MedicalCaseFlowCancelledEvent
+- ✅ 过去时态：PatientSelectedEvent, LoginSucceededEvent
+- ✅ 聚合类+事件名：`PatientEvents.PatientSelectedEvent`
 - ❌ 避免缩写：PrescriptionCompletedEvent（非PrxCompEvent）
+
+**单一事件机制**：
+- ✅ 仅使用Prism PubSubEvent
+- ❌ 禁止在接口中定义EventHandler事件
+- ❌ 禁止混用EventHandler和PubSubEvent
 
 **弱引用原则**：
 ```csharp
 // ✅ 推荐：使用弱引用（keepSubscriberReferenceAlive: false）
-_eventAggregator.GetEvent<DataRefreshEvent>()
-    .Subscribe(OnDataRefresh, ThreadOption.UIThread, keepSubscriberReferenceAlive: false);
+_eventAggregator.GetEvent<PatientEvents.PatientUpdatedEvent>()
+    .Subscribe(OnPatientUpdated, ThreadOption.UIThread, keepSubscriberReferenceAlive: false);
 
 // ❌ 避免：强引用可能导致内存泄漏
-_eventAggregator.GetEvent<DataRefreshEvent>()
-    .Subscribe(OnDataRefresh, ThreadOption.UIThread, keepSubscriberReferenceAlive: true);
+_eventAggregator.GetEvent<PatientEvents.PatientUpdatedEvent>()
+    .Subscribe(OnPatientUpdated, ThreadOption.UIThread, keepSubscriberReferenceAlive: true);
 ```
 
 **线程选项**：
@@ -2188,29 +2297,48 @@ public async Task ViewModel_Should_Check_Authentication_On_Load()
 ### 9.2 事件系统测试
 
 ```csharp
-// 测试事件发布和订阅
+// 测试事件发布和订阅（使用事件聚合类）
 [Fact]
 public void EventAggregator_Should_Publish_And_Subscribe_PatientSelectedEvent()
 {
     // Arrange
     var eventAggregator = new EventAggregator();
-    var receivedPayload = (PatientSelectedPayload?)null;
+    PatientSelectedPayload? receivedPayload = null;
 
-    eventAggregator.GetEvent<PatientSelectedEvent>()
+    eventAggregator.GetEvent<PatientEvents.PatientSelectedEvent>()
         .Subscribe(payload => receivedPayload = payload);
 
     // Act
-    var publishedPayload = new PatientSelectedPayload
-    {
-        PatientId = Guid.NewGuid(),
-        PatientName = "李四"
-    };
-    eventAggregator.GetEvent<PatientSelectedEvent>().Publish(publishedPayload);
+    var patientId = Guid.NewGuid();
+    var publishedPayload = new PatientSelectedPayload(patientId, "李四", DateTime.Now);
+    eventAggregator.GetEvent<PatientEvents.PatientSelectedEvent>().Publish(publishedPayload);
 
     // Assert
     Assert.NotNull(receivedPayload);
-    Assert.Equal(publishedPayload.PatientId, receivedPayload.PatientId);
+    Assert.Equal(patientId, receivedPayload.PatientId);
     Assert.Equal("李四", receivedPayload.PatientName);
+}
+
+// 测试认证事件
+[Fact]
+public void EventAggregator_Should_Publish_LoginSucceededEvent()
+{
+    // Arrange
+    var eventAggregator = new EventAggregator();
+    LoginSucceededPayload? receivedPayload = null;
+
+    eventAggregator.GetEvent<AuthEvents.LoginSucceededEvent>()
+        .Subscribe(payload => receivedPayload = payload);
+
+    // Act
+    var userId = Guid.NewGuid();
+    var publishedPayload = new LoginSucceededPayload(userId, "doctor1");
+    eventAggregator.GetEvent<AuthEvents.LoginSucceededEvent>().Publish(publishedPayload);
+
+    // Assert
+    Assert.NotNull(receivedPayload);
+    Assert.Equal(userId, receivedPayload.UserId);
+    Assert.Equal("doctor1", receivedPayload.Username);
 }
 ```
 
@@ -2242,7 +2370,10 @@ public void EventAggregator_Should_Publish_And_Subscribe_PatientSelectedEvent()
 | **ErrorHandlingService** | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Services/ErrorHandling/ErrorHandlingService.cs` | 错误处理服务 |
 | **VirtualizedDataGrid** | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Controls/VirtualizedDataGrid.xaml` | 虚拟化数据网格 |
 | **BooleanToVisibilityConverter** | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Converters/BooleanToVisibilityConverter.cs` | 布尔值转换器 |
-| **PatientSelectedEvent** | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Events/PatientSelectedEvent.cs` | 患者选中事件 |
+| **PatientEvents** | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Events/PatientEvents.cs` | 患者事件聚合类 |
+| **CaseEvents** | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Events/CaseEvents.cs` | 诊疗事件聚合类 |
+| **AuthEvents** | `src/Client/Desktop/Core/LYBT.Desktop.Foundation/Security/AuthEvents.cs` | 认证事件聚合类 |
+| **TokenEvents** | `src/Client/Desktop/Core/LYBT.Desktop.Foundation/Security/TokenEvents.cs` | Token事件聚合类 |
 | **ExcelHelper** | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Helpers/ExcelHelper.cs` | Excel辅助类 |
 | **InfrastructureModule** | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/InfrastructureModule.cs` | 依赖注入注册 |
 
@@ -2253,9 +2384,10 @@ public void EventAggregator_Should_Publish_And_Subscribe_PatientSelectedEvent()
 | 版本 | 日期 | 作者 | 变更说明 |
 |------|------|------|---------|
 | v1.0 | 2025-10-29 | Claude Code | 初始版本，完整文档化Infrastructure层架构 |
+| v1.1 | 2025-12-23 | Claude Code | 更新事件系统章节，反映事件聚合类架构（OpenSpec: unify-event-system） |
 
 ---
 
 **文档维护**: Client端开发组
-**最后更新**: 2025-10-29
+**最后更新**: 2025-12-23
 **审查状态**: ✅ 已完成

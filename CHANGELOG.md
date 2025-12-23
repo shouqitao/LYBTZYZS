@@ -70,6 +70,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 统一coverlet.collector到tests/Directory.Build.props
 - 清理12个测试项目的重复PackageReference
 
+#### 事件系统统一重构 (OpenSpec: unify-event-system) - 2025-12-23
+
+**背景**: Desktop客户端事件通信存在两套机制并存(EventHandler + PubSubEvent)，事件类分散在各模块，缺乏统一管理。
+
+**Phase 1 - 事件基础设施**:
+- 创建TokenEvents聚合类: TokenRefreshSucceededEvent, TokenRefreshFailedEvent, TokenLifecycleChangedEvent
+- 创建PatientEvents聚合类: PatientCreatedEvent, PatientUpdatedEvent, PatientSelectedEvent
+- 创建CaseEvents聚合类: ConsultationCompletedEvent, PrescriptionCompletedEvent
+- 扩展AuthEvents: 添加PasswordChangedEvent
+
+**Phase 2 - Core层迁移**:
+- TokenRefreshHandler: 移除EventHandler事件，仅发布PubSubEvent
+- LoginStateMachine: 移除StateChanged EventHandler，仅发布AuthEvents.LoginStateChangedEvent
+- LogoutService: 移除ServerLogoutFailed/PendingLogoutsCleared EventHandler事件
+- TokenLifecycleService: 改用TokenEvents.LifecycleChangedEvent
+
+**Phase 3 - Infrastructure层迁移**:
+- 迁移8个旧事件类到聚合类(LoginSuccessEvent, LogoutEvent, PasswordChangedEvent等)
+- 更新所有订阅者使用新聚合类事件
+
+**Phase 4 - 清理**:
+- 删除8个独立旧事件类文件
+- 移除接口中的EventHandler定义
+- 清理未使用的EventArgs类
+
+**设计原则**:
+- 单一事件机制: 仅使用Prism PubSubEvent
+- 事件聚合: 按领域分组(Auth/Token/Patient/Case)
+- 强类型Payload: 每个事件有专属Payload记录类型
+
 ### Added
 
 #### 测试覆盖优化项目 (OpenSpec: optimize-integration-tests) - 2025-12-21
