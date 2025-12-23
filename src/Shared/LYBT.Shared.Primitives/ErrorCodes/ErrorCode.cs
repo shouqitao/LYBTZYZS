@@ -147,6 +147,24 @@ public enum ErrorCode
     /// </summary>
     PasswordChangeRequired = 10012,
 
+    /// <summary>
+    /// Access Token已过期
+    /// refactor-auth-role-system Phase 1.3
+    /// </summary>
+    TokenExpired = 10013,
+
+    /// <summary>
+    /// 设备指纹不匹配
+    /// refactor-auth-role-system Phase 1.3
+    /// </summary>
+    DeviceMismatch = 10014,
+
+    /// <summary>
+    /// 会话已过期
+    /// refactor-auth-role-system Phase 1.3
+    /// </summary>
+    SessionExpired = 10015,
+
     #endregion
 
     #region 2xxxx - 患者模块 (Patients)

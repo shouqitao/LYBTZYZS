@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Roles;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Modularity;
@@ -7,18 +8,21 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
     /// <summary>
     /// 应用程序启动引导服务实现
     /// 职责：角色驱动的模块加载
-    /// 注意：初始化逻辑已迁移至IStartupPipeline和各StartupStep
+    /// refactor-auth-role-system Phase 2.3.1: 使用RoleRegistry进行动态模块加载
     /// </summary>
     public class ApplicationBootstrapper : IApplicationBootstrapper
     {
         private readonly IModuleManager _moduleManager;
+        private readonly IRoleRegistry _roleRegistry;
         private readonly ILogger<ApplicationBootstrapper> _logger;
 
         public ApplicationBootstrapper(
             IModuleManager moduleManager,
+            IRoleRegistry roleRegistry,
             ILogger<ApplicationBootstrapper> logger)
         {
             _moduleManager = moduleManager ?? throw new ArgumentNullException(nameof(moduleManager));
+            _roleRegistry = roleRegistry ?? throw new ArgumentNullException(nameof(roleRegistry));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -29,22 +33,30 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
             {
                 _logger.LogInformation("开始为角色 {UserRole} 加载模块", userRole);
 
-                var modulesToLoad = DetermineModulesToLoad(userRole);
+                // 从RoleRegistry获取模块列表
+                var modulesToLoad = _roleRegistry.GetModulesForRole(userRole);
+                var loadedCount = 0;
+                var failedCount = 0;
 
                 foreach (var moduleName in modulesToLoad)
                 {
                     try
                     {
                         _moduleManager.LoadModule(moduleName);
-                        _logger.LogInformation("模块 {ModuleName} 加载成功", moduleName);
+                        loadedCount++;
+                        _logger.LogDebug("模块 {ModuleName} 加载成功", moduleName);
                     }
                     catch (Exception ex)
                     {
+                        failedCount++;
                         _logger.LogError(ex, "模块 {ModuleName} 加载失败", moduleName);
                     }
                 }
 
-                _logger.LogInformation("角色 {UserRole} 的模块加载完成", userRole);
+                _logger.LogInformation(
+                    "角色 {UserRole} 模块加载完成: 成功 {LoadedCount}, 失败 {FailedCount}",
+                    userRole, loadedCount, failedCount);
+
                 return Task.CompletedTask;
             }
             catch (Exception ex)
@@ -52,45 +64,6 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                 _logger.LogError(ex, "为角色 {UserRole} 加载模块时发生错误", userRole);
                 throw;
             }
-        }
-
-        /// <summary>
-        /// 根据用户角色确定需要加载的模块
-        /// </summary>
-        private static string[] DetermineModulesToLoad(UserRole userRole)
-        {
-            // 基础模块 - 所有角色都需要
-            var baseModules = new[]
-            {
-                "AuthModule",
-                "UsersModule"
-            };
-
-            // 根据角色添加特定模块
-            var roleSpecificModules = userRole switch
-            {
-                UserRole.Admin => new[]
-                {
-                    "PatientsModule",
-                    "HerbsModule",
-                    "FormulaModule",
-                    "MedicalCaseModule",
-                    // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块
-                    "PrescriptionsModule"
-                },
-                UserRole.Doctor => new[]
-                {
-                    "PatientsModule",
-                    "HerbsModule",
-                    "FormulaModule",
-                    "MedicalCaseModule",
-                    // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块
-                    "PrescriptionsModule"
-                },
-                _ => Array.Empty<string>()
-            };
-
-            return baseModules.Concat(roleSpecificModules).ToArray();
         }
     }
 }

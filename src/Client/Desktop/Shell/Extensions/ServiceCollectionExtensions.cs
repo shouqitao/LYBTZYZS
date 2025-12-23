@@ -9,6 +9,7 @@ using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula;
@@ -25,6 +26,8 @@ using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Desktop.Herbs.Services;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Roles;
+using LYBT.Desktop.Infrastructure.Roles.Definitions;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.Services.Notifications;
@@ -329,6 +332,21 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>(); // OpenSpec: print-prescription-slip
             containerRegistry.RegisterSingleton<IRoleNavigationService, RoleNavigationService>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
+
+            // refactor-auth-role-system Phase 2.1: 可扩展角色注册表
+            containerRegistry.RegisterSingleton<IRoleRegistry>(resolver =>
+            {
+                var logger = resolver.Resolve<ILogger<RoleRegistry>>();
+                var registry = new RoleRegistry(logger);
+
+                // 注册内置角色定义 (refactor-auth-role-system Phase 2.3.3)
+                registry.Register(new SuperAdminRoleDefinition());
+                registry.Register(new AdminRoleDefinition());
+                registry.Register(new DoctorRoleDefinition());
+                registry.Register(new ReceptionistRoleDefinition());
+
+                return registry;
+            });
         }
 
         /// <summary>注册全局命令和模块管理服务</summary>
