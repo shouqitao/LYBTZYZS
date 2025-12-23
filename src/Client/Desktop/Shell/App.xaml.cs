@@ -16,8 +16,10 @@ using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
+using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -77,6 +79,7 @@ public partial class App : PrismApplication
         containerRegistry.Register<MainWindowViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.EntityAuditLogDialog, Dialogs.ViewModels.EntityAuditLogDialogViewModel>();
+        containerRegistry.RegisterDialog<Dialogs.Views.ApiConnectionFailedDialog, Dialogs.ViewModels.ApiConnectionFailedDialogViewModel>();
     }
 
     /// <summary>配置ViewModel定位器</summary>
@@ -106,6 +109,7 @@ public partial class App : PrismApplication
     }
 
     /// <summary>异步初始化应用程序（使用启动管道）</summary>
+    /// <remarks>enhance-shell-connection-dialog: 支持API连接失败时的恢复对话框和重试机制</remarks>
     private async Task InitializeApplicationAsync()
     {
         try
@@ -119,19 +123,97 @@ public partial class App : PrismApplication
             SubscribeToPipelineEvents();
 
             var progress = new Progress<string>(message => _splashScreen?.UpdateStatus(message));
-            var result = await _startupPipeline.ExecuteAsync(progress);
 
-            if (!result.Success)
+            // enhance-shell-connection-dialog: 循环执行支持重试
+            while (true)
             {
+                var result = await _startupPipeline.ExecuteAsync(progress);
+
+                if (result.Success)
+                {
+                    await ShowMainWindowAfterInitializationAsync();
+                    return;
+                }
+
+                // API健康检查失败时显示恢复对话框
+                if (result.FailedStepName == "API健康检查")
+                {
+                    // 获取失败步骤的详细异常信息
+                    Exception? stepException = null;
+                    if (result.StepResults.TryGetValue(result.FailedStepName, out var stepResult))
+                    {
+                        stepException = stepResult.Exception;
+                    }
+
+                    var action = await HandleApiConnectionFailureAsync(
+                        result.ErrorMessage ?? "API服务不可用",
+                        stepException);
+
+                    switch (action)
+                    {
+                        case RecoveryAction.Retry:
+                            // 重置管道状态，继续循环
+                            _startupPipeline.Reset();
+                            _splashScreen?.UpdateStatus("正在重试连接...");
+                            continue;
+
+                        case RecoveryAction.OfflineMode:
+                            // v2.0: 启动离线模式
+                            throw new NotImplementedException("离线模式将在v2.0实现");
+
+                        case RecoveryAction.Exit:
+                        default:
+                            Application.Current.Shutdown(1);
+                            return;
+                    }
+                }
+
+                // 其他步骤失败，使用原有处理
                 throw new InvalidOperationException(
                     $"启动步骤 '{result.FailedStepName}' 执行失败: {result.ErrorMessage}");
             }
-
-            await ShowMainWindowAfterInitializationAsync();
         }
         catch (Exception ex)
         {
             await HandleInitializationFailureAsync(ex);
+        }
+    }
+
+    /// <summary>处理API连接失败</summary>
+    /// <remarks>enhance-shell-connection-dialog: 显示恢复对话框并返回用户选择的操作</remarks>
+    private async Task<RecoveryAction> HandleApiConnectionFailureAsync(string errorMessage, Exception? exception)
+    {
+        // 临时隐藏启动画面，显示对话框
+        await Dispatcher.InvokeAsync(() => _splashScreen?.Hide());
+
+        try
+        {
+            var recoveryService = Container.Resolve<IApiConnectionRecoveryService>();
+            var apiEndpoint = GetApiEndpoint();
+
+            return await recoveryService.ShowConnectionFailedDialogAsync(
+                errorMessage,
+                exception,
+                apiEndpoint);
+        }
+        finally
+        {
+            // 如果用户选择重试，重新显示启动画面
+            await Dispatcher.InvokeAsync(() => _splashScreen?.Show());
+        }
+    }
+
+    /// <summary>获取API端点地址</summary>
+    private string GetApiEndpoint()
+    {
+        try
+        {
+            var apiOptions = Container.Resolve<ApiClientOptions>();
+            return apiOptions.BaseUrl;
+        }
+        catch
+        {
+            return "未知";
         }
     }
 

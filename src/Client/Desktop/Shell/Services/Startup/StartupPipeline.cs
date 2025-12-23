@@ -262,6 +262,25 @@ public class StartupPipeline : IStartupPipeline
         }
     }
 
+    /// <inheritdoc />
+    public void Reset()
+    {
+        lock (_stateLock)
+        {
+            if (_state == StartupPipelineState.Running)
+            {
+                throw new InvalidOperationException("无法在管道执行中重置");
+            }
+
+            _logger.LogInformation("重置启动管道状态，之前状态: {PreviousState}", _state);
+
+            _state = StartupPipelineState.NotStarted;
+            _stepResults.Clear();
+            _completedSteps = 0;
+            _totalStopwatch = null;
+        }
+    }
+
     /// <summary>
     /// 状态转换
     /// </summary>

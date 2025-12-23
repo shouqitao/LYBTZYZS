@@ -60,6 +60,12 @@ public interface IStartupPipeline
     /// 获取管道诊断信息
     /// </summary>
     StartupPipelineDiagnostics GetDiagnostics();
+
+    /// <summary>
+    /// 重置管道状态，允许重新执行
+    /// enhance-shell-connection-dialog: 支持连接失败后重试
+    /// </summary>
+    void Reset();
 }
 
 /// <summary>

@@ -174,6 +174,9 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // Shell架构整合 - HealthCheckCoordinator Logger
             RegisterLogger<HealthCheckCoordinator>(containerRegistry);
+
+            // enhance-shell-connection-dialog: API连接恢复服务Logger
+            RegisterLogger<ApiConnectionRecoveryService>(containerRegistry);
         }
 
         /// <summary>注册业务模块Logger</summary>
@@ -394,6 +397,9 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // Shell架构整合 - HealthCheckCoordinator服务
             containerRegistry.RegisterSingleton<IHealthCheckCoordinator, HealthCheckCoordinator>();
+
+            // enhance-shell-connection-dialog: API连接恢复服务
+            containerRegistry.RegisterSingleton<IApiConnectionRecoveryService, ApiConnectionRecoveryService>();
         }
     }
 }
