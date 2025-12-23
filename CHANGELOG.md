@@ -28,6 +28,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ConsultationCommandHandler已正确实现CommandHandler模式
 - 编译通过(0错误0警告)
 
+#### Shell启动API连接恢复机制 (OpenSpec: enhance-shell-connection-dialog) - 2025-12-24
+
+**背景**: Shell启动时API健康检查失败后，用户只能点击确定退出应用重新启动，无法交互式重试。
+
+**核心改进**:
+- 新增ApiConnectionFailedDialog对话框，替代原有MessageBox
+- 实现IApiConnectionRecoveryService服务，支持交互式恢复流程
+- StartupPipeline增加Reset()方法，支持重试而无需重启应用
+- 预留v2.0离线模式入口(当前禁用，显示提示)
+
+**技术实现**:
+- RecoveryAction枚举: Retry/OfflineMode/Exit三种恢复选项
+- 分层错误显示: 摘要(默认显示) + 可展开技术详情
+- 启动流程while循环: 支持失败后重试
+- 符合Prism IDialogAware对话框标准
+
+**规范更新**:
+- dialog-patterns/spec.md新增DLG-006(Startup Connection Recovery Dialog)
+- dialog-patterns/spec.md新增DLG-007(Error Information Display Pattern)
+- DLG-005新增启动API失败例外场景
+
 #### 可扩展角色注册系统 (OpenSpec: refactor-auth-role-system) - 2025-12-23
 
 **背景**: 原有角色系统硬编码在各处(switch语句、条件判断)，添加新角色需修改多处代码，违反开闭原则(OCP)。
