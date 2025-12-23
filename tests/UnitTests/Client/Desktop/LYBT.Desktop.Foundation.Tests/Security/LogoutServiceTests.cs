@@ -1,6 +1,7 @@
 using System.Net.Http;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -18,13 +19,14 @@ namespace LYBT.Desktop.Foundation.Tests.Security;
 /// LogoutService单元测试
 /// OpenSpec: refactor-login-authentication (Phase 2.3)
 /// OpenSpec: unify-event-system (Phase 2.3)
+/// OpenSpec: refactor-auth-role-system (Phase 1.1) - 更新为使用IAuthenticationStateMachine
 /// </summary>
 public class LogoutServiceTests : IDisposable
 {
     private readonly ILogger<LogoutService> _logger;
     private readonly ITokenStorageService _tokenStorage;
     private readonly IAuthApi _authApi;
-    private readonly ILoginStateMachine _loginStateMachine;
+    private readonly IAuthenticationStateMachine _stateMachine;
     private readonly IEventAggregator _eventAggregator;
     private readonly LogoutService _sut;
 
@@ -33,12 +35,12 @@ public class LogoutServiceTests : IDisposable
         _logger = Substitute.For<ILogger<LogoutService>>();
         _tokenStorage = Substitute.For<ITokenStorageService>();
         _authApi = Substitute.For<IAuthApi>();
-        _loginStateMachine = Substitute.For<ILoginStateMachine>();
+        _stateMachine = Substitute.For<IAuthenticationStateMachine>();
         _eventAggregator = new EventAggregator();
 
-        _loginStateMachine.Fire(Arg.Any<LoginTrigger>()).Returns(true);
+        _stateMachine.Fire(Arg.Any<AuthEvent>(), Arg.Any<string?>()).Returns(true);
 
-        _sut = new LogoutService(_logger, _tokenStorage, _authApi, _loginStateMachine, _eventAggregator);
+        _sut = new LogoutService(_logger, _tokenStorage, _authApi, _stateMachine, _eventAggregator);
     }
 
     public void Dispose()
@@ -54,7 +56,7 @@ public class LogoutServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new LogoutService(null!, _tokenStorage, _authApi, _loginStateMachine));
+            new LogoutService(null!, _tokenStorage, _authApi, _stateMachine));
     }
 
     [Fact]
@@ -62,7 +64,7 @@ public class LogoutServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new LogoutService(_logger, null!, _authApi, _loginStateMachine));
+            new LogoutService(_logger, null!, _authApi, _stateMachine));
     }
 
     [Fact]
@@ -70,11 +72,11 @@ public class LogoutServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new LogoutService(_logger, _tokenStorage, null!, _loginStateMachine));
+            new LogoutService(_logger, _tokenStorage, null!, _stateMachine));
     }
 
     [Fact]
-    public void Constructor_WithNullLoginStateMachine_ShouldThrow()
+    public void Constructor_WithNullStateMachine_ShouldThrow()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
@@ -111,7 +113,7 @@ public class LogoutServiceTests : IDisposable
         await _sut.LogoutAsync();
 
         // Assert
-        _loginStateMachine.Received(1).Fire(LoginTrigger.StartLogout);
+        _stateMachine.Received(1).Fire(AuthEvent.StartLogout, Arg.Any<string?>());
     }
 
     [Fact]
@@ -124,7 +126,7 @@ public class LogoutServiceTests : IDisposable
         await _sut.LogoutAsync();
 
         // Assert
-        _loginStateMachine.Received(1).Fire(LoginTrigger.LogoutSuccess);
+        _stateMachine.Received(1).Fire(AuthEvent.LogoutSuccess, Arg.Any<string?>());
     }
 
     [Fact]

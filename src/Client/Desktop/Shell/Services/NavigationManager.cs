@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
@@ -11,13 +12,16 @@ public class NavigationManager
 {
     private readonly IRegionManager _regionManager;
     private readonly ILogger<NavigationManager> _logger;
+    private readonly IUserNotificationService? _userNotificationService;
 
     public NavigationManager(
         IRegionManager regionManager,
-        ILogger<NavigationManager> logger)
+        ILogger<NavigationManager> logger,
+        IUserNotificationService? userNotificationService = null)
     {
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _userNotificationService = userNotificationService;
     }
 
     /// <summary>显示登录界面</summary>
@@ -71,12 +75,21 @@ public class NavigationManager
             _regionManager.RequestNavigate(RegionNames.ContentRegion, viewName, result =>
             {
                 if (result.Result != true)
-                    _logger.LogError("导航失败：{ViewName}，错误：{Error}", viewName, result.Error?.Message ?? "未知错误");
+                {
+                    var errorMessage = result.Error?.Message ?? "未知错误";
+                    _logger.LogError("导航失败：{ViewName}，错误：{Error}", viewName, errorMessage);
+
+                    // OpenSpec: refactor-auth-role-system - 添加用户友好的错误提示
+                    _userNotificationService?.ShowErrorAsync($"无法打开页面：{errorMessage}");
+                }
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "导航到 {ViewName} 时发生异常", viewName);
+
+            // OpenSpec: refactor-auth-role-system - 添加用户友好的错误提示
+            _userNotificationService?.ShowErrorAsync($"导航失败：{ex.Message}");
         }
     }
 

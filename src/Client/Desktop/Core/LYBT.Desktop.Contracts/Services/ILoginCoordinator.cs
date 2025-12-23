@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Security;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Contracts.Services;
@@ -5,13 +6,15 @@ namespace LYBT.Desktop.Contracts.Services;
 /// <summary>
 /// 登录流程协调器接口
 /// 负责编排完整的登录流程，包括认证、会话启动、模块加载和导航
+/// OpenSpec: refactor-auth-role-system (Phase 1.1)
+/// 已重构为使用统一的 AuthState 替代原有的 LoginFlowState
 /// </summary>
 public interface ILoginCoordinator
 {
     /// <summary>
-    /// 当前登录状态
+    /// 当前认证状态
     /// </summary>
-    LoginFlowState CurrentState { get; }
+    AuthState CurrentState { get; }
 
     /// <summary>
     /// 是否已登录
@@ -24,9 +27,9 @@ public interface ILoginCoordinator
     UserDetailDto? CurrentUser { get; }
 
     /// <summary>
-    /// 登录流程状态变更事件
+    /// 认证状态变更事件
     /// </summary>
-    event EventHandler<LoginFlowStateChangedEventArgs>? StateChanged;
+    event EventHandler<AuthStateChangedEventArgs>? StateChanged;
 
     /// <summary>
     /// 登录成功事件（供外部组件订阅）
@@ -72,47 +75,6 @@ public interface ILoginCoordinator
     /// 获取登录流程诊断信息
     /// </summary>
     LoginFlowDiagnostics GetDiagnostics();
-}
-
-/// <summary>
-/// 登录流程状态
-/// </summary>
-public enum LoginFlowState
-{
-    /// <summary>未登录</summary>
-    NotLoggedIn,
-    /// <summary>正在认证</summary>
-    Authenticating,
-    /// <summary>正在启动会话</summary>
-    StartingSession,
-    /// <summary>正在加载模块</summary>
-    LoadingModules,
-    /// <summary>正在导航</summary>
-    Navigating,
-    /// <summary>已登录</summary>
-    LoggedIn,
-    /// <summary>正在登出</summary>
-    LoggingOut
-}
-
-/// <summary>
-/// 登录流程状态变更事件参数
-/// </summary>
-public class LoginFlowStateChangedEventArgs : EventArgs
-{
-    public LoginFlowState PreviousState { get; }
-    public LoginFlowState CurrentState { get; }
-    public string? StatusMessage { get; }
-
-    public LoginFlowStateChangedEventArgs(
-        LoginFlowState previousState,
-        LoginFlowState currentState,
-        string? statusMessage = null)
-    {
-        PreviousState = previousState;
-        CurrentState = currentState;
-        StatusMessage = statusMessage;
-    }
 }
 
 /// <summary>
@@ -165,9 +127,10 @@ public record LoginResult
 
 /// <summary>
 /// 登录流程诊断信息
+/// OpenSpec: refactor-auth-role-system - 使用AuthState替代LoginFlowState
 /// </summary>
 public record LoginFlowDiagnostics(
-    LoginFlowState CurrentState,
+    AuthState CurrentState,
     bool IsLoggedIn,
     string? UserName,
     string? UserRole,

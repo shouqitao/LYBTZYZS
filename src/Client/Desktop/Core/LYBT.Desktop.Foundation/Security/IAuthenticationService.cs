@@ -27,9 +27,15 @@ namespace LYBT.Desktop.Foundation.Security
         Task<ServiceResult> LogoutAsync();
 
         /// <summary>
-        /// 获取当前用户信息
+        /// 获取当前用户信息 (异步)
         /// </summary>
         Task<UserDetailDto?> GetCurrentUserAsync();
+
+        /// <summary>
+        /// 获取当前用户信息 (同步，用于属性访问)
+        /// refactor-auth-role-system Phase 1.2
+        /// </summary>
+        UserDetailDto? GetCurrentUser();
 
         /// <summary>
         /// 获取当前令牌

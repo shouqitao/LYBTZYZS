@@ -118,7 +118,7 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
-        /// 获取当前用户信息
+        /// 获取当前用户信息 (异步)
         /// </summary>
         public async Task<UserDetailDto?> GetCurrentUserAsync()
         {
@@ -127,11 +127,22 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
+        /// 获取当前用户信息 (同步，用于属性访问)
+        /// refactor-auth-role-system Phase 1.2
+        /// </summary>
+        public UserDetailDto? GetCurrentUser()
+        {
+            var loginResponse = _tokenStorage.GetLoginResponse();
+            return loginResponse?.User;
+        }
+
+        /// <summary>
         /// 获取当前令牌
+        /// refactor-auth-role-system Phase 1.2: 使用同步方法避免死锁
         /// </summary>
         public string? GetToken()
         {
-            return _tokenStorage.GetTokenAsync().GetAwaiter().GetResult();
+            return _tokenStorage.GetToken();
         }
 
         /// <summary>
@@ -183,10 +194,11 @@ namespace LYBT.Desktop.Foundation.Security
 
         /// <summary>
         /// 清除认证信息
+        /// refactor-auth-role-system Phase 1.2: 使用同步方法避免死锁
         /// </summary>
         public void ClearAuthInfo()
         {
-            _tokenStorage.ClearAuthenticationAsync().GetAwaiter().GetResult();
+            _tokenStorage.ClearAuthentication();
         }
 
         /// <summary>

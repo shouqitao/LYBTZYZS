@@ -25,12 +25,6 @@ public static class AuthEvents
     /// </summary>
     public class LoginFailedEvent : PubSubEvent<LoginFailedPayload> { }
 
-    /// <summary>
-    /// 登录状态变更事件
-    /// 当登录状态机状态发生变化时触发
-    /// </summary>
-    public class LoginStateChangedEvent : PubSubEvent<LoginStateChangedPayload> { }
-
     #endregion
 
     #region 登出相关事件
@@ -195,32 +189,6 @@ public enum LoginFailureReason
     /// Token已过期（自动登录）
     /// </summary>
     TokenExpired
-}
-
-/// <summary>
-/// 登录状态变更载荷
-/// </summary>
-public record LoginStateChangedPayload
-{
-    /// <summary>
-    /// 之前的状态
-    /// </summary>
-    public required LoginState PreviousState { get; init; }
-
-    /// <summary>
-    /// 当前状态
-    /// </summary>
-    public required LoginState CurrentState { get; init; }
-
-    /// <summary>
-    /// 触发状态变更的触发器
-    /// </summary>
-    public LoginTrigger? Trigger { get; init; }
-
-    /// <summary>
-    /// 状态变更时间戳
-    /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 }
 
 /// <summary>

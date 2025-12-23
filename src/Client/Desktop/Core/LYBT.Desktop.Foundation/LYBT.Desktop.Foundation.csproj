@@ -27,6 +27,11 @@
     <PackageTags>Foundation;HTTP;Cache;Configuration;Security;Performance;Diagnostics;中医;诊所</PackageTags>
   </PropertyGroup>
 
+  <!-- Test Access -->
+  <ItemGroup Label="Internal Visibility">
+    <InternalsVisibleTo Include="LYBT.Desktop.Foundation.Tests" />
+  </ItemGroup>
+
   <!-- HTTP and Resilience -->
   <ItemGroup Label="HTTP Services">
     <PackageReference Include="Refit" />

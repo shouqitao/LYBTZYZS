@@ -1,5 +1,6 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Auth.Interfaces;
+using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
@@ -16,8 +17,8 @@ namespace LYBT.Desktop.Shell.Services.Login;
 /// <summary>
 /// 登录流程协调器实现
 /// 编排完整的登录流程，包括认证、会话启动、模块加载和导航
-/// OpenSpec: refactor-login-authentication (Phase 2.2)
-/// 使用LoginStateMachine管理高层认证状态，LoginFlowState用于UI进度反馈
+/// OpenSpec: refactor-auth-role-system (Phase 1.1)
+/// 使用统一的 AuthenticationStateMachine 替代原有的双状态机架构
 /// </summary>
 public class LoginCoordinator : ILoginCoordinator
 {
@@ -29,10 +30,9 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly IRoleNavigationService _roleNavigationService;
     private readonly ICredentialVault? _credentialVault;
     private readonly IUsernameStorageService? _usernameStorage;
-    private readonly ILoginStateMachine _loginStateMachine;
+    private readonly IAuthenticationStateMachine _stateMachine;
     private readonly object _stateLock = new();
 
-    private LoginFlowState _currentState = LoginFlowState.NotLoggedIn;
     private UserDetailDto? _currentUser;
     private DateTime? _loginTime;
     private DateTime? _lastStateChangeTime;
@@ -46,7 +46,7 @@ public class LoginCoordinator : ILoginCoordinator
         ISessionLifecycleManager sessionLifecycleManager,
         IModuleLoadingService moduleLoadingService,
         IRoleNavigationService roleNavigationService,
-        ILoginStateMachine loginStateMachine,
+        IAuthenticationStateMachine stateMachine,
         ICredentialVault? credentialVault = null,
         IUsernameStorageService? usernameStorage = null)
     {
@@ -56,34 +56,19 @@ public class LoginCoordinator : ILoginCoordinator
         _sessionLifecycleManager = sessionLifecycleManager ?? throw new ArgumentNullException(nameof(sessionLifecycleManager));
         _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
         _roleNavigationService = roleNavigationService ?? throw new ArgumentNullException(nameof(roleNavigationService));
-        _loginStateMachine = loginStateMachine ?? throw new ArgumentNullException(nameof(loginStateMachine));
+        _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         _credentialVault = credentialVault;
         _usernameStorage = usernameStorage;
+
+        // 订阅状态机事件，转发给外部订阅者
+        _stateMachine.StateChanged += OnStateMachineStateChanged;
     }
 
     /// <inheritdoc />
-    public LoginFlowState CurrentState
-    {
-        get
-        {
-            lock (_stateLock)
-            {
-                return _currentState;
-            }
-        }
-    }
+    public AuthState CurrentState => _stateMachine.CurrentState;
 
     /// <inheritdoc />
-    public bool IsLoggedIn
-    {
-        get
-        {
-            lock (_stateLock)
-            {
-                return _currentState == LoginFlowState.LoggedIn;
-            }
-        }
-    }
+    public bool IsLoggedIn => _stateMachine.IsAuthenticated;
 
     /// <inheritdoc />
     public UserDetailDto? CurrentUser
@@ -98,7 +83,7 @@ public class LoginCoordinator : ILoginCoordinator
     }
 
     /// <inheritdoc />
-    public event EventHandler<LoginFlowStateChangedEventArgs>? StateChanged;
+    public event EventHandler<AuthStateChangedEventArgs>? StateChanged;
 
     /// <inheritdoc />
     public event EventHandler<LoginSuccessEventArgs>? LoginSucceeded;
@@ -120,33 +105,31 @@ public class LoginCoordinator : ILoginCoordinator
         _logger.LogInformation("开始登录流程 [用户: {Username}, 尝试次数: {AttemptCount}]",
             username, _loginAttemptCount);
 
-        // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发状态机开始登录
-        _loginStateMachine.Fire(LoginTrigger.StartLogin);
+        // OpenSpec: refactor-auth-role-system - 使用统一状态机
+        _stateMachine.Fire(AuthEvent.StartLogin, "正在验证身份...");
 
         try
         {
             // Step 1: 认证
-            TransitionTo(LoginFlowState.Authenticating, "正在验证身份...");
-
             var loginRequest = new LoginRequest { UserName = username, Password = password };
             var result = await _authenticationService.LoginAsync(loginRequest);
 
             if (!result.IsSuccess || result.Data == null)
             {
                 _logger.LogWarning("登录认证失败 [用户: {Username}]", username);
-                // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发登录失败
-                _loginStateMachine.Fire(LoginTrigger.LoginFailure);
-                TransitionTo(LoginFlowState.NotLoggedIn);
+                _stateMachine.Fire(AuthEvent.LoginFailure, result.Message ?? "认证失败");
                 return LoginResult.Failed(result.Message ?? "认证失败");
             }
 
             var loginResponse = result.Data;
             var user = loginResponse.User;
 
+            // 凭证验证成功，进入LoadingProfile阶段
+            _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
+
             // Step 2: 保存认证信息
             await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberCredentials);
 
-            // OpenSpec: refactor-login-authentication (CVT-001)
             // 当rememberCredentials=true且有AutoLoginToken时，保存到CredentialVault
             if (rememberCredentials && !string.IsNullOrEmpty(loginResponse.AutoLoginToken) && _credentialVault != null)
             {
@@ -162,21 +145,18 @@ public class LoginCoordinator : ILoginCoordinator
             }
 
             // Step 3: 启动会话
-            TransitionTo(LoginFlowState.StartingSession, "正在启动会话...");
             await StartSessionAsync(user, loginResponse.ExpiresAt);
+            _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
 
             // Step 4: 加载模块
-            TransitionTo(LoginFlowState.LoadingModules, "正在加载模块...");
             await LoadModulesForUserAsync(user);
+            _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
 
             // Step 5: 导航到首页
-            TransitionTo(LoginFlowState.Navigating, "正在跳转...");
             await NavigateToRoleHomeAsync(user);
+            _stateMachine.Fire(AuthEvent.NavigationCompleted);
 
             // 完成登录
-            // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发登录成功
-            _loginStateMachine.Fire(LoginTrigger.LoginSuccess);
-            TransitionTo(LoginFlowState.LoggedIn);
             LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt, isAutoLogin: false));
 
             _logger.LogInformation("登录流程完成 [用户: {Username}, 角色: {Role}]",
@@ -187,9 +167,7 @@ public class LoginCoordinator : ILoginCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "登录流程异常 [用户: {Username}]", username);
-            // OpenSpec: refactor-login-authentication (Phase 2.2) - 异常时触发登录失败
-            _loginStateMachine.Fire(LoginTrigger.LoginFailure);
-            TransitionTo(LoginFlowState.NotLoggedIn);
+            _stateMachine.Fire(AuthEvent.LoginFailure, ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
             return LoginResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
         }
     }
@@ -204,8 +182,8 @@ public class LoginCoordinator : ILoginCoordinator
 
         _logger.LogDebug("尝试自动登录 [尝试次数: {AttemptCount}]", _autoLoginAttemptCount);
 
-        // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发自动登录开始
-        _loginStateMachine.Fire(LoginTrigger.StartAutoLogin);
+        // OpenSpec: refactor-auth-role-system - 使用统一状态机
+        _stateMachine.Fire(AuthEvent.StartAutoLogin, "正在验证Token...");
 
         try
         {
@@ -213,7 +191,6 @@ public class LoginCoordinator : ILoginCoordinator
             var token = await _tokenStorageService.GetTokenAsync();
             if (!string.IsNullOrEmpty(token))
             {
-                TransitionTo(LoginFlowState.Authenticating, "正在验证Token...");
                 var validationResult = await _authenticationService.ValidateTokenAsync(token);
 
                 if (validationResult.IsSuccess && validationResult.Data?.IsValid == true)
@@ -222,8 +199,19 @@ public class LoginCoordinator : ILoginCoordinator
                     if (loginResponse?.User != null)
                     {
                         var user = loginResponse.User;
-                        await HandleLoginSuccessAsync(user, loginResponse.ExpiresAt);
-                        // OpenSpec: Phase 2.2 - LoginSuccess已在HandleLoginSuccessAsync中触发
+
+                        // Token验证成功，进入LoadingProfile
+                        _stateMachine.Fire(AuthEvent.TokenValidated, "正在启动会话...");
+
+                        await StartSessionAsync(user, loginResponse.ExpiresAt);
+                        _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
+
+                        await LoadModulesForUserAsync(user);
+                        _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
+
+                        await NavigateToRoleHomeAsync(user);
+                        _stateMachine.Fire(AuthEvent.NavigationCompleted);
+
                         LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt, isAutoLogin: true));
                         _logger.LogInformation("JWT Token验证成功，自动登录完成 [用户: {Username}]", user.UserName);
                         return true;
@@ -234,7 +222,6 @@ public class LoginCoordinator : ILoginCoordinator
             }
 
             // 策略2: 尝试使用CredentialVault中的AutoLoginToken
-            // OpenSpec: refactor-login-authentication (CVT-001)
             if (_credentialVault != null && _usernameStorage != null)
             {
                 var savedUsername = await _usernameStorage.GetSavedUsernameAsync();
@@ -244,7 +231,6 @@ public class LoginCoordinator : ILoginCoordinator
                     if (!string.IsNullOrEmpty(autoLoginToken))
                     {
                         _logger.LogDebug("发现AutoLoginToken，尝试自动登录 [用户: {Username}]", savedUsername);
-                        TransitionTo(LoginFlowState.Authenticating, "正在自动登录...");
 
                         var autoLoginRequest = new AutoLoginRequest
                         {
@@ -258,6 +244,9 @@ public class LoginCoordinator : ILoginCoordinator
                             var loginResponse = result.Data;
                             var user = loginResponse.User;
 
+                            // Token验证成功
+                            _stateMachine.Fire(AuthEvent.TokenValidated, "正在启动会话...");
+
                             // 保存新的认证信息
                             await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberMe: true);
 
@@ -269,8 +258,15 @@ public class LoginCoordinator : ILoginCoordinator
                             }
 
                             // 执行登录后流程
-                            await HandleLoginSuccessAsync(user, loginResponse.ExpiresAt);
-                            // OpenSpec: Phase 2.2 - LoginSuccess已在HandleLoginSuccessAsync中触发
+                            await StartSessionAsync(user, loginResponse.ExpiresAt);
+                            _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
+
+                            await LoadModulesForUserAsync(user);
+                            _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
+
+                            await NavigateToRoleHomeAsync(user);
+                            _stateMachine.Fire(AuthEvent.NavigationCompleted);
+
                             LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt, isAutoLogin: true));
                             _logger.LogInformation("AutoLoginToken自动登录成功 [用户: {Username}]", user.UserName);
                             return true;
@@ -287,18 +283,14 @@ public class LoginCoordinator : ILoginCoordinator
 
             // 所有自动登录策略都失败
             _logger.LogDebug("无可用的自动登录凭据");
-            // OpenSpec: refactor-login-authentication (Phase 2.2) - 自动登录失败回到NotLoggedIn
-            _loginStateMachine.Fire(LoginTrigger.LoginFailure);
+            _stateMachine.Fire(AuthEvent.LoginFailure);
             await ClearInvalidTokenAsync();
-            TransitionTo(LoginFlowState.NotLoggedIn);
             return false;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "自动登录异常");
-            // OpenSpec: refactor-login-authentication (Phase 2.2) - 异常时触发登录失败
-            _loginStateMachine.Fire(LoginTrigger.LoginFailure);
-            TransitionTo(LoginFlowState.NotLoggedIn);
+            _stateMachine.Fire(AuthEvent.LoginFailure);
             return false;
         }
     }
@@ -313,31 +305,32 @@ public class LoginCoordinator : ILoginCoordinator
 
         try
         {
+            // 假设已经通过认证，从LoadingProfile开始
+            // 如果当前状态不是ValidatingToken或Authenticating，先重置
+            if (_stateMachine.CurrentState == AuthState.Idle)
+            {
+                _stateMachine.Fire(AuthEvent.StartLogin);
+                _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
+            }
+
             // Step 1: 启动会话
-            TransitionTo(LoginFlowState.StartingSession, "正在启动会话...");
             await StartSessionAsync(user, tokenExpiresAt);
+            _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
 
             // Step 2: 加载模块
-            TransitionTo(LoginFlowState.LoadingModules, "正在加载模块...");
             await LoadModulesForUserAsync(user);
+            _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
 
             // Step 3: 导航到首页
-            TransitionTo(LoginFlowState.Navigating, "正在跳转...");
             await NavigateToRoleHomeAsync(user);
-
-            // 完成
-            // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发登录成功
-            _loginStateMachine.Fire(LoginTrigger.LoginSuccess);
-            TransitionTo(LoginFlowState.LoggedIn);
+            _stateMachine.Fire(AuthEvent.NavigationCompleted);
 
             _logger.LogInformation("登录成功处理完成 [用户: {Username}]", user.UserName);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "处理登录成功时发生异常");
-            // OpenSpec: refactor-login-authentication (Phase 2.2) - 异常时触发登录失败
-            _loginStateMachine.Fire(LoginTrigger.LoginFailure);
-            TransitionTo(LoginFlowState.NotLoggedIn);
+            _stateMachine.Fire(AuthEvent.LoginFailure);
             throw;
         }
     }
@@ -347,9 +340,8 @@ public class LoginCoordinator : ILoginCoordinator
     {
         _logger.LogInformation("开始登出流程 [用户: {Username}]", _currentUser?.UserName);
 
-        // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发开始登出
-        _loginStateMachine.Fire(LoginTrigger.StartLogout);
-        TransitionTo(LoginFlowState.LoggingOut, "正在登出...");
+        // OpenSpec: refactor-auth-role-system - 使用统一状态机
+        _stateMachine.Fire(AuthEvent.StartLogout, "正在登出...");
 
         try
         {
@@ -366,9 +358,7 @@ public class LoginCoordinator : ILoginCoordinator
                 _loginTime = null;
             }
 
-            // OpenSpec: refactor-login-authentication (Phase 2.2) - 触发登出成功
-            _loginStateMachine.Fire(LoginTrigger.LogoutSuccess);
-            TransitionTo(LoginFlowState.NotLoggedIn);
+            _stateMachine.Fire(AuthEvent.LogoutSuccess);
             LogoutCompleted?.Invoke(this, EventArgs.Empty);
 
             _logger.LogInformation("登出流程完成");
@@ -376,10 +366,8 @@ public class LoginCoordinator : ILoginCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "登出流程异常");
-            // OpenSpec: refactor-login-authentication (Phase 2.2) - 登出失败（回滚到LoggedIn或强制NotLoggedIn）
             // 即使异常也强制转换到未登录状态（用户体验优先，本地登出应该始终成功）
-            _loginStateMachine.Fire(LoginTrigger.LogoutSuccess); // 本地登出成功
-            TransitionTo(LoginFlowState.NotLoggedIn);
+            _stateMachine.Fire(AuthEvent.LogoutSuccess);
             throw;
         }
     }
@@ -390,8 +378,8 @@ public class LoginCoordinator : ILoginCoordinator
         lock (_stateLock)
         {
             return new LoginFlowDiagnostics(
-                CurrentState: _currentState,
-                IsLoggedIn: _currentState == LoginFlowState.LoggedIn,
+                CurrentState: _stateMachine.CurrentState,
+                IsLoggedIn: _stateMachine.IsAuthenticated,
                 UserName: _currentUser?.UserName,
                 UserRole: _currentUser?.Role.ToString(),
                 LoginTime: _loginTime,
@@ -400,6 +388,20 @@ public class LoginCoordinator : ILoginCoordinator
                 AutoLoginAttemptCount: _autoLoginAttemptCount
             );
         }
+    }
+
+    /// <summary>
+    /// 状态机状态变更事件处理
+    /// </summary>
+    private void OnStateMachineStateChanged(object? sender, AuthStateChangedEventArgs e)
+    {
+        lock (_stateLock)
+        {
+            _lastStateChangeTime = e.Timestamp;
+        }
+
+        // 转发事件给外部订阅者
+        StateChanged?.Invoke(this, e);
     }
 
     /// <summary>
@@ -439,7 +441,6 @@ public class LoginCoordinator : ILoginCoordinator
                 "UsersModule",
                 "HerbsModule",
                 "FormulaModule",
-                // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块
                 "MedicalCaseModule",
                 "PrescriptionsModule"
             });
@@ -502,30 +503,5 @@ public class LoginCoordinator : ILoginCoordinator
         }
 
         await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// 转换流程状态
-    /// </summary>
-    private void TransitionTo(LoginFlowState newState, string? statusMessage = null)
-    {
-        LoginFlowState previousState;
-
-        lock (_stateLock)
-        {
-            if (_currentState == newState)
-            {
-                return;
-            }
-
-            previousState = _currentState;
-            _currentState = newState;
-            _lastStateChangeTime = DateTime.Now;
-        }
-
-        _logger.LogDebug("登录流程状态转换: {From} -> {To} [{Message}]",
-            previousState, newState, statusMessage ?? "");
-
-        StateChanged?.Invoke(this, new LoginFlowStateChangedEventArgs(previousState, newState, statusMessage));
     }
 }

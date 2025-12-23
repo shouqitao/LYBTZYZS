@@ -144,5 +144,42 @@ namespace LYBT.Desktop.Foundation.Security
 
             return isExpired;
         }
+
+        #region 同步方法实现 (refactor-auth-role-system Phase 1.2)
+
+        /// <summary>
+        /// 同步获取当前Token (用于属性访问)
+        /// </summary>
+        /// <remarks>
+        /// 由于底层存储为内存，此方法是线程安全的。
+        /// 不会造成WPF死锁问题。
+        /// </remarks>
+        public string? GetToken()
+        {
+            return _cachedLoginResponse?.Token;
+        }
+
+        /// <summary>
+        /// 同步获取登录响应数据 (用于属性访问)
+        /// </summary>
+        public LoginResponse? GetLoginResponse()
+        {
+            if (_cachedLoginResponse != null)
+            {
+                _logger.LogDebug("同步读取Token（Session有效）");
+            }
+            return _cachedLoginResponse;
+        }
+
+        /// <summary>
+        /// 同步清除认证信息
+        /// </summary>
+        public void ClearAuthentication()
+        {
+            _cachedLoginResponse = null;
+            _logger.LogDebug("Token已同步清除");
+        }
+
+        #endregion
     }
 }

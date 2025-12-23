@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net.Http;
 using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Security;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -19,7 +20,7 @@ public class LogoutService : ILogoutService, IDisposable
     private readonly ILogger<LogoutService> _logger;
     private readonly ITokenStorageService _tokenStorage;
     private readonly IAuthApi _authApi;
-    private readonly ILoginStateMachine _loginStateMachine;
+    private readonly IAuthenticationStateMachine _stateMachine;
     private readonly IEventAggregator? _eventAggregator;
     private readonly ConcurrentQueue<PendingServerLogout> _pendingLogouts = new();
     private readonly SemaphoreSlim _processingLock = new(1, 1);
@@ -38,13 +39,13 @@ public class LogoutService : ILogoutService, IDisposable
         ILogger<LogoutService> logger,
         ITokenStorageService tokenStorage,
         IAuthApi authApi,
-        ILoginStateMachine loginStateMachine,
+        IAuthenticationStateMachine stateMachine,
         IEventAggregator? eventAggregator = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
         _authApi = authApi ?? throw new ArgumentNullException(nameof(authApi));
-        _loginStateMachine = loginStateMachine ?? throw new ArgumentNullException(nameof(loginStateMachine));
+        _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         _eventAggregator = eventAggregator;
     }
 
@@ -57,7 +58,7 @@ public class LogoutService : ILogoutService, IDisposable
         _logger.LogInformation("开始可靠登出流程");
 
         // 触发状态机开始登出
-        _loginStateMachine.Fire(LoginTrigger.StartLogout);
+        _stateMachine.Fire(AuthEvent.StartLogout);
 
         // 获取登出所需信息（在清除前获取）
         var loginResponse = await _tokenStorage.GetLoginResponseAsync();
@@ -68,7 +69,7 @@ public class LogoutService : ILogoutService, IDisposable
         await ExecuteLocalLogoutAsync();
 
         // 触发状态机登出成功（本地已完成）
-        _loginStateMachine.Fire(LoginTrigger.LogoutSuccess);
+        _stateMachine.Fire(AuthEvent.LogoutSuccess);
 
         // Step 2: 尝试服务端登出
         var serverResult = await TryServerLogoutAsync(username, refreshToken);

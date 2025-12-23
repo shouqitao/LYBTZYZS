@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
@@ -15,7 +16,8 @@ namespace LYBT.Desktop.Shell.Tests.Services.Login;
 
 /// <summary>
 /// LoginCoordinator 单元测试
-/// OpenSpec: refactor-login-authentication (Phase 2.2) - 添加ILoginStateMachine mock
+/// OpenSpec: refactor-login-authentication (Phase 2.2)
+/// OpenSpec: refactor-auth-role-system (Phase 1.1) - 更新为使用IAuthenticationStateMachine
 /// </summary>
 public class LoginCoordinatorTests
 {
@@ -25,8 +27,28 @@ public class LoginCoordinatorTests
     private readonly Mock<ISessionLifecycleManager> _sessionManagerMock;
     private readonly Mock<IModuleLoadingService> _moduleLoadingMock;
     private readonly Mock<IRoleNavigationService> _roleNavigationMock;
-    private readonly Mock<ILoginStateMachine> _loginStateMachineMock;
+    private readonly Mock<IAuthenticationStateMachine> _stateMachineMock;
     private readonly LoginCoordinator _sut;
+    private AuthState _currentMockState = AuthState.Idle;
+
+    /// <summary>
+    /// 状态转换表（模拟真实状态机）
+    /// </summary>
+    private static readonly Dictionary<(AuthState, AuthEvent), AuthState> StateTransitions = new()
+    {
+        { (AuthState.Idle, AuthEvent.StartLogin), AuthState.Authenticating },
+        { (AuthState.Idle, AuthEvent.StartAutoLogin), AuthState.ValidatingToken },
+        { (AuthState.Authenticating, AuthEvent.CredentialsValidated), AuthState.LoadingProfile },
+        { (AuthState.Authenticating, AuthEvent.LoginFailure), AuthState.Failed },
+        { (AuthState.ValidatingToken, AuthEvent.TokenValidated), AuthState.LoadingProfile },
+        { (AuthState.ValidatingToken, AuthEvent.LoginFailure), AuthState.Idle },
+        { (AuthState.LoadingProfile, AuthEvent.ProfileLoaded), AuthState.LoadingModules },
+        { (AuthState.LoadingModules, AuthEvent.ModulesLoaded), AuthState.Navigating },
+        { (AuthState.Navigating, AuthEvent.NavigationCompleted), AuthState.Authenticated },
+        { (AuthState.Authenticated, AuthEvent.StartLogout), AuthState.LoggingOut },
+        { (AuthState.LoggingOut, AuthEvent.LogoutSuccess), AuthState.Idle },
+        { (AuthState.Failed, AuthEvent.Reset), AuthState.Idle },
+    };
 
     public LoginCoordinatorTests()
     {
@@ -36,10 +58,26 @@ public class LoginCoordinatorTests
         _sessionManagerMock = new Mock<ISessionLifecycleManager>();
         _moduleLoadingMock = new Mock<IModuleLoadingService>();
         _roleNavigationMock = new Mock<IRoleNavigationService>();
-        _loginStateMachineMock = new Mock<ILoginStateMachine>();
+        _stateMachineMock = new Mock<IAuthenticationStateMachine>();
 
-        // 配置状态机Mock默认行为
-        _loginStateMachineMock.Setup(m => m.Fire(It.IsAny<LoginTrigger>())).Returns(true);
+        // 配置状态机Mock - 使用回调跟踪状态变化
+        _stateMachineMock.Setup(m => m.Fire(It.IsAny<AuthEvent>(), It.IsAny<string?>()))
+            .Returns((AuthEvent evt, string? msg) =>
+            {
+                if (StateTransitions.TryGetValue((_currentMockState, evt), out var newState))
+                {
+                    var previousState = _currentMockState;
+                    _currentMockState = newState;
+                    // 触发状态变更事件
+                    _stateMachineMock.Raise(m => m.StateChanged += null,
+                        new AuthStateChangedEventArgs(previousState, newState, evt, msg));
+                    return true;
+                }
+                return false;
+            });
+
+        _stateMachineMock.Setup(m => m.CurrentState).Returns(() => _currentMockState);
+        _stateMachineMock.Setup(m => m.IsAuthenticated).Returns(() => _currentMockState == AuthState.Authenticated);
 
         _sut = new LoginCoordinator(
             _loggerMock.Object,
@@ -48,7 +86,7 @@ public class LoginCoordinatorTests
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
             _roleNavigationMock.Object,
-            _loginStateMachineMock.Object);
+            _stateMachineMock.Object);
     }
 
     #region 初始状态测试
@@ -57,7 +95,7 @@ public class LoginCoordinatorTests
     public void Constructor_ShouldInitialize_WithNotLoggedInState()
     {
         // Assert
-        _sut.CurrentState.Should().Be(LoginFlowState.NotLoggedIn);
+        _sut.CurrentState.Should().Be(AuthState.Idle);
         _sut.IsLoggedIn.Should().BeFalse();
         _sut.CurrentUser.Should().BeNull();
     }
@@ -73,7 +111,7 @@ public class LoginCoordinatorTests
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
             _roleNavigationMock.Object,
-            _loginStateMachineMock.Object);
+            _stateMachineMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -91,7 +129,7 @@ public class LoginCoordinatorTests
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
             _roleNavigationMock.Object,
-            _loginStateMachineMock.Object);
+            _stateMachineMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -116,7 +154,7 @@ public class LoginCoordinatorTests
         // Assert
         result.Success.Should().BeTrue();
         result.User.Should().Be(user);
-        _sut.CurrentState.Should().Be(LoginFlowState.LoggedIn);
+        _sut.CurrentState.Should().Be(AuthState.Authenticated);
         _sut.IsLoggedIn.Should().BeTrue();
         _sut.CurrentUser.Should().Be(user);
     }
@@ -188,7 +226,8 @@ public class LoginCoordinatorTests
         // Assert
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("认证失败");
-        _sut.CurrentState.Should().Be(LoginFlowState.NotLoggedIn);
+        // 登录失败后状态机进入Failed状态，而非直接回到Idle
+        _sut.CurrentState.Should().Be(AuthState.Failed);
         _sut.IsLoggedIn.Should().BeFalse();
     }
 
@@ -199,18 +238,18 @@ public class LoginCoordinatorTests
         var user = CreateTestUser();
         var loginResponse = CreateLoginResponse(user);
         SetupSuccessfulLogin(loginResponse);
-        var stateChanges = new List<LoginFlowState>();
+        var stateChanges = new List<AuthState>();
         _sut.StateChanged += (_, args) => stateChanges.Add(args.CurrentState);
 
         // Act
         await _sut.LoginAsync("testuser", "password");
 
         // Assert
-        stateChanges.Should().Contain(LoginFlowState.Authenticating);
-        stateChanges.Should().Contain(LoginFlowState.StartingSession);
-        stateChanges.Should().Contain(LoginFlowState.LoadingModules);
-        stateChanges.Should().Contain(LoginFlowState.Navigating);
-        stateChanges.Should().Contain(LoginFlowState.LoggedIn);
+        stateChanges.Should().Contain(AuthState.Authenticating);
+        stateChanges.Should().Contain(AuthState.LoadingProfile);
+        stateChanges.Should().Contain(AuthState.LoadingModules);
+        stateChanges.Should().Contain(AuthState.Navigating);
+        stateChanges.Should().Contain(AuthState.Authenticated);
     }
 
     [Fact]
@@ -273,7 +312,7 @@ public class LoginCoordinatorTests
 
         // Assert
         result.Should().BeFalse();
-        _sut.CurrentState.Should().Be(LoginFlowState.NotLoggedIn);
+        _sut.CurrentState.Should().Be(AuthState.Idle);
     }
 
     [Fact]
@@ -289,7 +328,7 @@ public class LoginCoordinatorTests
 
         // Assert
         result.Should().BeFalse();
-        _sut.CurrentState.Should().Be(LoginFlowState.NotLoggedIn);
+        _sut.CurrentState.Should().Be(AuthState.Idle);
         _authServiceMock.Verify(a => a.ClearAuthInfo(), Times.Once);
     }
 
@@ -306,7 +345,7 @@ public class LoginCoordinatorTests
 
         // Assert
         result.Should().BeTrue();
-        _sut.CurrentState.Should().Be(LoginFlowState.LoggedIn);
+        _sut.CurrentState.Should().Be(AuthState.Authenticated);
         _sut.CurrentUser.Should().Be(user);
     }
 
@@ -392,7 +431,7 @@ public class LoginCoordinatorTests
         await _sut.LogoutAsync();
 
         // Assert
-        _sut.CurrentState.Should().Be(LoginFlowState.NotLoggedIn);
+        _sut.CurrentState.Should().Be(AuthState.Idle);
         _sut.IsLoggedIn.Should().BeFalse();
         _sut.CurrentUser.Should().BeNull();
     }
@@ -458,7 +497,7 @@ public class LoginCoordinatorTests
         var diagnostics = _sut.GetDiagnostics();
 
         // Assert
-        diagnostics.CurrentState.Should().Be(LoginFlowState.NotLoggedIn);
+        diagnostics.CurrentState.Should().Be(AuthState.Idle);
         diagnostics.IsLoggedIn.Should().BeFalse();
         diagnostics.UserName.Should().BeNull();
         diagnostics.UserRole.Should().BeNull();
@@ -478,7 +517,7 @@ public class LoginCoordinatorTests
         var diagnostics = _sut.GetDiagnostics();
 
         // Assert
-        diagnostics.CurrentState.Should().Be(LoginFlowState.LoggedIn);
+        diagnostics.CurrentState.Should().Be(AuthState.Authenticated);
         diagnostics.IsLoggedIn.Should().BeTrue();
         diagnostics.UserName.Should().Be(user.UserName);
         diagnostics.LoginAttemptCount.Should().Be(1);

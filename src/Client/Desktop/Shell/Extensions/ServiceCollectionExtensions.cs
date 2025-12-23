@@ -9,6 +9,7 @@ using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Formula.Repositories;
@@ -131,7 +132,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<TokenStorageService>(containerRegistry);
             RegisterLogger<TokenManager>(containerRegistry); // OpenSpec: refactor-login-authentication
             RegisterLogger<CredentialVault>(containerRegistry); // OpenSpec: refactor-login-authentication
-            RegisterLogger<LoginStateMachine>(containerRegistry); // OpenSpec: refactor-login-authentication (Phase 2.1)
+            RegisterLogger<AuthenticationStateMachine>(containerRegistry); // OpenSpec: refactor-auth-role-system (Phase 1.1)
             RegisterLogger<LogoutService>(containerRegistry); // OpenSpec: refactor-login-authentication (Phase 2.3)
             RegisterLogger<UsernameStorageService>(containerRegistry);
             RegisterLogger<SecureCredentialStorage>(containerRegistry);
@@ -281,7 +282,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
             containerRegistry.RegisterSingleton<ITokenManager, TokenManager>(); // OpenSpec: refactor-login-authentication
             containerRegistry.RegisterSingleton<ICredentialVault, CredentialVault>(); // OpenSpec: refactor-login-authentication
-            containerRegistry.RegisterSingleton<ILoginStateMachine, LoginStateMachine>(); // OpenSpec: refactor-login-authentication (Phase 2.1)
+            containerRegistry.RegisterSingleton<IAuthenticationStateMachine, AuthenticationStateMachine>(); // OpenSpec: refactor-auth-role-system (Phase 1.1)
             containerRegistry.RegisterSingleton<ILogoutService, LogoutService>(); // OpenSpec: refactor-login-authentication (Phase 2.3)
             containerRegistry.RegisterSingleton<ITokenValidator, LocalTokenValidator>();
             containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();

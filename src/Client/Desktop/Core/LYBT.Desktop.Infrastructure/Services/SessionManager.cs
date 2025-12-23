@@ -8,6 +8,7 @@ namespace LYBT.Desktop.Infrastructure.Services
     /// <summary>
     /// 会话管理器实现 - 包装AuthenticationService提供会话功能
     /// optimize-desktop-core: 移除Token相关属性，Token由ITokenStorageService管理
+    /// refactor-auth-role-system Phase 1.2: 使用同步方法避免死锁
     /// </summary>
     public class SessionManager : ISessionManager
     {
@@ -22,7 +23,10 @@ namespace LYBT.Desktop.Infrastructure.Services
 
         public SessionManager(IAuthenticationService authService) => _authService = authService ?? throw new ArgumentNullException(nameof(authService));
 
-        public UserDetailDto? CurrentUser { get { if (_cachedUser == null) _cachedUser = _authService.GetCurrentUserAsync().GetAwaiter().GetResult(); return _cachedUser; } }
+        /// <summary>
+        /// 当前用户（使用同步方法避免WPF死锁）
+        /// </summary>
+        public UserDetailDto? CurrentUser { get { if (_cachedUser == null) _cachedUser = _authService.GetCurrentUser(); return _cachedUser; } }
         public Guid? CurrentUserId => CurrentUser?.Id;
         public string? CurrentUserName => CurrentUser?.UserName;
         public bool IsAuthenticated => !string.IsNullOrEmpty(_authService.GetToken());
