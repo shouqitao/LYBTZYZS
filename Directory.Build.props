@@ -1,27 +1,7 @@
 <!-- Directory.Build.props - 全解决方案构建配置统一 -->
 <Project>
   
-  <!-- 统一输出路径配置 -->
-  <PropertyGroup>
-    <!-- Issue #839: 分离 Server 和 Desktop 输出目录，避免文件锁定冲突 -->
-    <!-- 根据项目路径判断是 Server 还是 Desktop 项目 -->
-    <IsServerProject Condition="$(MSBuildProjectDirectory.Contains('src\Server')) OR $(MSBuildProjectDirectory.Contains('src/Server'))">true</IsServerProject>
-    <IsDesktopProject Condition="$(MSBuildProjectDirectory.Contains('src\Client\Desktop')) OR $(MSBuildProjectDirectory.Contains('src/Client/Desktop'))">true</IsDesktopProject>
-    
-    <!-- Server 项目输出到 BIN\Server\ -->
-    <BaseOutputPath Condition="'$(IsServerProject)' == 'true'">$(MSBuildThisFileDirectory)BIN\Server\</BaseOutputPath>
-
-    <!-- Desktop 项目输出到 BIN\Desktop\ -->
-    <BaseOutputPath Condition="'$(IsDesktopProject)' == 'true'">$(MSBuildThisFileDirectory)BIN\Desktop\</BaseOutputPath>
-
-    <!-- Tests 项目输出到 BIN\Tests\ -->
-    <BaseOutputPath Condition="$(MSBuildProjectDirectory.Contains('tests\')) OR $(MSBuildProjectDirectory.Contains('tests/'))">$(MSBuildThisFileDirectory)BIN\Tests\</BaseOutputPath>
-
-    <!-- Shared 项目不设置独立输出路径,跟随引用方输出 -->
-
-    <!-- 确保输出目录存在 -->
-    <CreateOutputPath>true</CreateOutputPath>
-  </PropertyGroup>
+  <!-- 输出路径: 使用默认的项目本地 bin 目录，避免并行构建文件锁定 -->
   
   <!-- 统一编译配置 -->
   <PropertyGroup>
