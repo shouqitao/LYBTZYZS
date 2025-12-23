@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Desktop数据层标准化 (OpenSpec: standardize-desktop-data-layer) - 2025-12-23
+
+**背景**: Desktop端业务模块在数据分层方面存在不一致性，影响代码可维护性。
+
+**核心改进**:
+- 定义三种模块类型: 独立实体模块(Repository)、聚合根模块(Repository+DataManager)、从属实体模块(CommandHandler)
+- 统一Models层命名规范: DetailModel(可编辑)、Item(只读)、ViewState(视图状态)
+- 规范DTO命名: ListDto/DetailDto/InputDto/SummaryDto
+
+**架构文档**:
+- DESKTOP_ARCHITECTURE_STANDARD.md新增6.3节"模块类型分类"
+- 包含独立实体/聚合根/从属实体三种模式的目录结构和注册示例
+- 数据流图说明各类型模块的数据访问路径
+
+**现有实现验证**:
+- MedicalCase作为聚合根，管理Consultation和Prescription子实体
+- ConsultationCommandHandler已正确实现CommandHandler模式
+- 编译通过(0错误0警告)
+
 #### 可扩展角色注册系统 (OpenSpec: refactor-auth-role-system) - 2025-12-23
 
 **背景**: 原有角色系统硬编码在各处(switch语句、条件判断)，添加新角色需修改多处代码，违反开闭原则(OCP)。

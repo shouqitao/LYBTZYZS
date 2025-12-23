@@ -12,6 +12,7 @@
 - [4. ViewModel 设计规范](#4-viewmodel-设计规范)
 - [5. View 设计规范](#5-view-设计规范)
 - [6. 模块设计规范](#6-模块设计规范)
+  - [6.3 模块类型分类](#63-模块类型分类)
 - [7. 服务分层标准](#7-服务分层标准)
 - [8. 依赖注入规范](#8-依赖注入规范)
 - [9. 命名规范](#9-命名规范)
@@ -644,6 +645,142 @@ public class UsersModule : IModule { }
 [ModuleDependency("AuthenticationModule")]
 [ModuleDependency("UsersModule")]
 public class PatientsModule : IModule { }
+```
+
+### 6.3 模块类型分类
+
+根据业务实体与聚合根的关系，Desktop模块分为三种类型：
+
+| 类型 | 数据访问层 | 特征 | 典型模块 |
+|------|-----------|------|----------|
+| **独立实体模块** | Repository | 独立管理的实体，有完整CRUD | Patients, Users, Herbs |
+| **聚合根模块** | Repository + DataManager | 管理聚合及其子实体的生命周期 | MedicalCase, Formula |
+| **从属实体模块** | CommandHandler | 子实体，通过父聚合的DataManager访问 | Consultation, Prescriptions |
+
+#### 6.3.1 独立实体模块
+
+独立实体模块直接使用Repository进行数据访问：
+
+```csharp
+// 目录结构
+LYBT.Desktop.Patients/
+├── Interfaces/
+│   └── IPatientRepository.cs        // Repository接口
+├── Repositories/
+│   └── PatientRepository.cs         // Repository实现
+├── Models/
+│   ├── PatientDetailModel.cs        // 可编辑UI模型
+│   ├── PatientViewState.cs          // 视图状态
+│   └── Items/
+│       └── PatientItem.cs           // 列表项模型(只读)
+├── ViewModels/
+│   └── PatientMasterDetailViewModel.cs
+└── Views/
+    └── PatientMasterDetailView.xaml
+
+// 模块注册
+public class PatientsModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
+        containerRegistry.Register<PatientMasterDetailViewModel>();
+        containerRegistry.RegisterForNavigation<PatientMasterDetailView>();
+    }
+}
+```
+
+#### 6.3.2 聚合根模块
+
+聚合根模块使用Repository + DataManager管理聚合状态：
+
+```csharp
+// 目录结构
+LYBT.Desktop.MedicalCase/
+├── Interfaces/
+│   ├── IMedicalCaseRepository.cs    // Repository接口
+│   └── IMedicalCaseDataManager.cs   // DataManager接口
+├── Repositories/
+│   └── MedicalCaseRepository.cs
+├── Services/
+│   └── MedicalCaseDataManager.cs    // 管理聚合状态
+├── Models/
+│   ├── MedicalCaseDetailModel.cs
+│   └── Items/
+│       └── MedicalCaseItem.cs
+└── ViewModels/
+    └── MedicalCaseMasterDetailViewModel.cs
+
+// DataManager职责：
+// - 管理聚合根及其子实体(Consultation, Prescription)
+// - 状态追踪和变更检测(HasChanges)
+// - 统一保存(SaveAsync一次性提交整个聚合)
+
+// 模块注册
+public class MedicalCaseModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        containerRegistry.RegisterSingleton<IMedicalCaseRepository, MedicalCaseRepository>();
+        containerRegistry.RegisterScoped<IMedicalCaseDataManager, MedicalCaseDataManager>();
+        containerRegistry.Register<MedicalCaseMasterDetailViewModel>();
+    }
+}
+```
+
+#### 6.3.3 从属实体模块
+
+从属实体模块通过CommandHandler委托给父聚合的DataManager：
+
+```csharp
+// 目录结构
+LYBT.Desktop.Consultation/
+├── Interfaces/
+│   └── IConsultationValidator.cs    // 验证器接口(可选)
+├── Services/
+│   ├── ConsultationCommandHandler.cs // 命令处理器
+│   └── ConsultationValidator.cs
+├── Models/
+│   └── Items/
+│       └── ConsultationItem.cs
+└── ViewModels/
+    └── ConsultationPanelViewModel.cs
+
+// CommandHandler职责：
+// - 实现ICommandHandler接口
+// - 依赖父聚合的IMedicalCaseDataManager
+// - 通过DataManager执行保存/加载操作
+// - 本地验证和业务规则
+
+// 模块注册
+public class ConsultationModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        containerRegistry.Register<ConsultationCommandHandler>();
+        containerRegistry.Register<ConsultationValidator>();
+        containerRegistry.Register<ConsultationPanelViewModel>();
+    }
+}
+```
+
+#### 6.3.4 数据流图
+
+```
+独立实体模块:
+  ViewModel → Repository → API
+      ↓
+  DetailModel/Item
+
+聚合根模块:
+  ViewModel → DataManager → Repository → API
+      ↓           ↓
+  DetailModel   子实体DTO
+
+从属实体模块:
+  ViewModel → CommandHandler → 父DataManager → Repository → API
+      ↓
+  通过父聚合获取子实体数据
 ```
 
 ---
