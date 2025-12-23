@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using FluentValidation.AspNetCore;
-using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.Infrastructure.Serialization;
 using LYBT.Module.Auth;
 using LYBT.Module.Consultations;
@@ -13,9 +12,11 @@ using LYBT.Module.MedicalCases;
 using LYBT.Module.Patients;
 using LYBT.Module.Prescriptions;
 using LYBT.Module.Users;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
+using LybtJsonOptions = LYBT.Shared.Configuration.Options.Server.JsonOptions;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -61,7 +62,7 @@ public static class ServiceCollectionExtensions
         // 9）安全服务（数据保护、密钥管理、密钥旋转）
         services.AddSecurityServices(configuration, environment);
 
-        // 10）环境感知配置校验 - 已移除，统一使用LybtOptions配置验证
+        // 10）环境感知配置校验 - 已移除，统一使用 LYBT.Shared.Configuration 配置验证
 
         return services;
     }
@@ -111,9 +112,9 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // =========== UltraThink Phase 2：使用统一配置 ===========
-        var lybtOptions = configuration.GetLybtOptions();
-        var jsonConfig = lybtOptions.Json;
+        // unify-configuration-system: 使用强类型 JsonOptions
+        var jsonConfig = new LybtJsonOptions();
+        configuration.GetSection(LybtJsonOptions.SectionName).Bind(jsonConfig);
 
         // 确保 UTF-8 编码可用
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);

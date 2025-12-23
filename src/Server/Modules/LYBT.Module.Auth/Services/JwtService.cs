@@ -1,8 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -13,16 +13,17 @@ namespace LYBT.Module.Auth.Services;
 /// <summary>
 /// 简化的JWT服务实现
 /// 遵循适度设计原则，仅提供必要的认证功能
+/// unify-configuration-system: 迁移到 LYBT.Shared.Configuration
 /// </summary>
 public class JwtService : IJwtService
 {
-    private readonly LybtOptions _options;
+    private readonly JwtOptions _jwtOptions;
     private readonly IConfiguration _configuration;
     private readonly JwtSecurityTokenHandler _tokenHandler;
 
-    public JwtService(IOptions<LybtOptions> options, IConfiguration configuration)
+    public JwtService(IOptions<JwtOptions> jwtOptions, IConfiguration configuration)
     {
-        _options = options.Value ?? throw new ArgumentNullException(nameof(options));
+        _jwtOptions = jwtOptions.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _tokenHandler = new JwtSecurityTokenHandler();
 
@@ -35,12 +36,13 @@ public class JwtService : IJwtService
     /// </summary>
     private void ValidateSecretKeyStrength()
     {
-        var secretKey = _configuration["Lybt:Jwt:SecretKey"];
+        // unify-configuration-system: 使用扁平化配置路径
+        var secretKey = _jwtOptions.SecretKey;
 
         if (string.IsNullOrEmpty(secretKey))
         {
             throw new InvalidOperationException(
-                "JWT SecretKey 未配置。请在 appsettings.json 中设置 Lybt:Jwt:SecretKey 配置项。");
+                "JWT SecretKey 未配置。请在 appsettings.json 中设置 Jwt:SecretKey 配置项。");
         }
 
         if (secretKey.Length < 32)
@@ -63,15 +65,12 @@ public class JwtService : IJwtService
         if (string.IsNullOrEmpty(userName))
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
-        // 使用IOptions模式访问配置（统一配置访问方式）
-        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        var secretKey = _options.Jwt?.SecretKey;
+        // unify-configuration-system: 使用强类型 JwtOptions
+        var secretKey = _jwtOptions.SecretKey;
         if (string.IsNullOrEmpty(secretKey))
         {
-            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Jwt:SecretKey 配置。");
+            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Jwt:SecretKey 配置。");
         }
-
-        var jwtConfig = _options.Jwt ?? throw new InvalidOperationException("JWT配置未找到");
 
         // 创建Claims
         var claims = new[]
@@ -88,10 +87,8 @@ public class JwtService : IJwtService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // Issue #1838: 从配置读取Token过期时间（支持RefreshToken机制）
-        var expireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes")
-                           ?? _configuration.GetValue<int?>("Lybt:Jwt:AccessTokenExpirationMinutes")
-                           ?? 15; // 默认15分钟
+        // unify-configuration-system: 从强类型配置读取Token过期时间
+        var expireMinutes = _jwtOptions.AccessTokenExpirationMinutes;
         var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
 
         // 创建Token
@@ -99,8 +96,8 @@ public class JwtService : IJwtService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expires,
-            Issuer = jwtConfig.Issuer,
-            Audience = jwtConfig.Audience,
+            Issuer = _jwtOptions.Issuer,
+            Audience = _jwtOptions.Audience,
             SigningCredentials = credentials
         };
 
@@ -119,15 +116,12 @@ public class JwtService : IJwtService
         if (string.IsNullOrEmpty(userName))
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
-        // 使用IOptions模式访问配置（统一配置访问方式）
-        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        var secretKey = _options.Jwt?.SecretKey;
+        // unify-configuration-system: 使用强类型 JwtOptions
+        var secretKey = _jwtOptions.SecretKey;
         if (string.IsNullOrEmpty(secretKey))
         {
-            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Jwt:SecretKey 配置。");
+            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Jwt:SecretKey 配置。");
         }
-
-        var jwtConfig = _options.Jwt ?? throw new InvalidOperationException("JWT配置未找到");
 
         // 创建基础Claims
         var claims = new List<Claim>
@@ -153,10 +147,8 @@ public class JwtService : IJwtService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // Issue #1838: 从配置读取Token过期时间（支持RefreshToken机制）
-        var expireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes")
-                           ?? _configuration.GetValue<int?>("Lybt:Jwt:AccessTokenExpirationMinutes")
-                           ?? 15; // 默认15分钟
+        // unify-configuration-system: 从强类型配置读取Token过期时间
+        var expireMinutes = _jwtOptions.AccessTokenExpirationMinutes;
         var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
 
         // 创建Token
@@ -164,8 +156,8 @@ public class JwtService : IJwtService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expires,
-            Issuer = jwtConfig.Issuer,
-            Audience = jwtConfig.Audience,
+            Issuer = _jwtOptions.Issuer,
+            Audience = _jwtOptions.Audience,
             SigningCredentials = credentials
         };
 
@@ -183,20 +175,19 @@ public class JwtService : IJwtService
 
         try
         {
-            // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-            var jwtConfig = _options.Jwt ?? throw new InvalidOperationException("JWT配置未找到");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey));
+            // unify-configuration-system: 使用强类型 JwtOptions
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
 
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = key,
                 ValidateIssuer = true,
-                ValidIssuer = jwtConfig.Issuer,
+                ValidIssuer = _jwtOptions.Issuer,
                 ValidateAudience = true,
-                ValidAudience = jwtConfig.Audience,
+                ValidAudience = _jwtOptions.Audience,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromMinutes(5) // 5分钟时钟偏差容忍
+                ClockSkew = TimeSpan.FromSeconds(_jwtOptions.ClockSkewSeconds)
             };
 
             var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);

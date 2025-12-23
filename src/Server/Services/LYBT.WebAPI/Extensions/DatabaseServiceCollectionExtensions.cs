@@ -1,8 +1,10 @@
-﻿using LYBT.Infrastructure.Configuration.Extensions;
-using LYBT.Infrastructure.DependencyInjection;
+﻿using LYBT.Infrastructure.DependencyInjection;
 using LYBT.Infrastructure.Logging;
+using LYBT.Shared.Configuration.Options.Common;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using LybtMemoryCacheOptions = LYBT.Shared.Configuration.Options.Server.MemoryCacheOptions;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -10,6 +12,7 @@ namespace LYBT.WebAPI.Extensions;
 /// 数据库与基础设施服务注册扩展
 /// Issue #1732 Phase 2.5: 从UnifiedServiceRegistration拆分
 /// 职责：数据库配置、缓存配置、健康检查
+/// unify-configuration-system: 迁移到 LYBT.Shared.Configuration
 /// </summary>
 public static class DatabaseServiceCollectionExtensions
 {
@@ -20,28 +23,31 @@ public static class DatabaseServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // =========== UltraThink Phase 2：统一配置管理 ===========
-        // 注册新的统一配置系统，同时保持向后兼容
-        services.AddLybtConfiguration(configuration);
+        // unify-configuration-system: 使用强类型配置
+        var databaseOptions = new DatabaseOptions();
+        configuration.GetSection(DatabaseOptions.SectionName).Bind(databaseOptions);
 
-        // 配置验证由IValidateOptions<LybtOptions>自动处理
+        var memoryCacheOptions = new LybtMemoryCacheOptions();
+        configuration.GetSection(LybtMemoryCacheOptions.SectionName).Bind(memoryCacheOptions);
+
+        var jwtOptions = new JwtOptions();
+        configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
 
         // 数据库配置 - 从统一配置读取
-        var lybtOptions = configuration.GetLybtOptions();
-        var connectionString = lybtOptions.Database.ConnectionString ??
+        var connectionString = databaseOptions.ConnectionString ??
                               configuration.GetConnectionString("DefaultConnection") ??
                               Environment.GetEnvironmentVariable("CONNECTION_STRING") ??
                               string.Empty;
 
-        // 缓存配置 - Issue #1754: 直接使用IMemoryCache，移除ICacheService抽象层
-        services.Configure<MemoryCacheOptions>(options =>
+        // 缓存配置 - 配置Microsoft内置MemoryCacheOptions
+        services.Configure<Microsoft.Extensions.Caching.Memory.MemoryCacheOptions>(options =>
         {
-            var sizeLimit = lybtOptions.MemoryCache.SizeLimit;
+            var sizeLimit = memoryCacheOptions.SizeLimit;
             if (sizeLimit > 0)
             {
                 options.SizeLimit = sizeLimit;
-                options.CompactionPercentage = lybtOptions.MemoryCache.CompactionPercentage;
-                options.ExpirationScanFrequency = TimeSpan.FromSeconds(lybtOptions.MemoryCache.ExpirationScanFrequencySeconds);
+                options.CompactionPercentage = memoryCacheOptions.CompactionPercentage;
+                options.ExpirationScanFrequency = TimeSpan.FromSeconds(memoryCacheOptions.ExpirationScanFrequencySeconds);
             }
         });
         services.AddMemoryCache(); // 添加IMemoryCache服务
@@ -92,13 +98,9 @@ public static class DatabaseServiceCollectionExtensions
                        .Tag("permissions"));
         });
 
-        // =========== 保持向后兼容：注册传统配置选项 ===========
-        // 注意：这些配置选项已通过 AddLybtConfiguration 自动映射和注册
-        // 这里仅显式验证关键配置选项以确保启动时验证
-
+        // unify-configuration-system: 验证关键配置
         // 验证 JWT 配置
-        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        if (string.IsNullOrEmpty(lybtOptions.Jwt.SecretKey))
+        if (string.IsNullOrEmpty(jwtOptions.SecretKey))
         {
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
@@ -129,13 +131,14 @@ public static class DatabaseServiceCollectionExtensions
                 var sqlOptions = options.UseSqlServer(connectionString, sqlOptions =>
                 {
                     sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
+                    // unify-configuration-system: 使用强类型配置
                     sqlOptions.EnableRetryOnFailure(
-                        lybtOptions.Database.RetryPolicy.MaxRetryCount,
-                        TimeSpan.FromMilliseconds(lybtOptions.Database.RetryPolicy.MaxDelayMs),
+                        databaseOptions.RetryPolicy.MaxRetryCount,
+                        TimeSpan.FromMilliseconds(databaseOptions.RetryPolicy.MaxDelayMs),
                         null);
                 });
 
-                // Issue #1761 Phase 2.1: 使用硬编码默认值，移除Monitoring和ConnectionPool配置依赖
+                // unify-configuration-system: 使用硬编码默认值，移除Monitoring和ConnectionPool配置依赖
                 // MVP阶段：开发环境默认启用详细日志，生产环境关闭敏感数据
                 options.EnableSensitiveDataLogging(false); // 生产环境默认关闭
                 options.EnableDetailedErrors(true); // 开发环境启用详细错误
@@ -159,6 +162,13 @@ public static class DatabaseServiceCollectionExtensions
 
         // 常用服务
         services.AddHttpContextAccessor();
+
+        // unify-configuration-system: 注册 Options 供 DefaultPasswordService 和 DatabaseInitializationService 使用
+        services.Configure<DefaultPasswordOptions>(
+            configuration.GetSection(DefaultPasswordOptions.SectionName));
+        services.Configure<SystemAdminOptions>(
+            configuration.GetSection(SystemAdminOptions.SectionName));
+
         services.AddScoped<LYBT.Infrastructure.Configuration.Services.DefaultPasswordService>();
         services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
 
@@ -176,8 +186,8 @@ public static class DatabaseServiceCollectionExtensions
         services.AddHostedService<LYBT.WebAPI.BackgroundServices.SecurityAuditCleanupService>();
 
         // refactor-logging-system: 日志清理后台服务
-        services.Configure<LogCleanupOptions>(
-            configuration.GetSection(LogCleanupOptions.SectionName));
+        services.Configure<LYBT.Infrastructure.Logging.LogCleanupOptions>(
+            configuration.GetSection(LYBT.Infrastructure.Logging.LogCleanupOptions.SectionName));
         services.AddHostedService<LogCleanupService>();
 
         return services;

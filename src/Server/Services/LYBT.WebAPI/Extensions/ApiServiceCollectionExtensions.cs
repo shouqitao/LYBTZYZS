@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure.Configuration.Extensions;
+﻿using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.WebAPI.Configuration;
 
@@ -50,11 +50,11 @@ public static class ApiServiceCollectionExtensions
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
-            // 由于这里无法直接访问配置，使用服务提供者在运行时获取配置
+            // unify-configuration-system: 使用强类型 SwaggerOptions
             var serviceProvider = services.BuildServiceProvider();
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-            var lybtOptions = configuration.GetLybtOptions();
-            var swaggerConfig = lybtOptions.Swagger;
+            var swaggerConfig = new SwaggerOptions();
+            configuration.GetSection(SwaggerOptions.SectionName).Bind(swaggerConfig);
 
             c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
             {

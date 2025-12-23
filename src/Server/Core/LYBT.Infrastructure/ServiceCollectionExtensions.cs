@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -27,19 +27,18 @@ namespace LYBT.Infrastructure
         /// <returns>服务集合</returns>
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            // 使用统一的 LybtOptions 配置系统
-            var lybtOptions = configuration.GetSection("Lybt").Get<LybtOptions>();
-            // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-            if (lybtOptions?.Jwt == null)
+            // unify-configuration-system: 使用强类型 JwtOptions
+            var jwtOptions = new JwtOptions();
+            configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
+
+            if (string.IsNullOrEmpty(jwtOptions.SecretKey))
             {
                 throw new InvalidOperationException(
-                    "JWT 配置缺失。请检查 appsettings.json 中的 Lybt:Jwt 配置节。");
+                    "JWT 配置缺失。请检查 appsettings.json 中的 Jwt 配置节。");
             }
 
-            var jwtConfig = lybtOptions.Jwt;
-
-            // 注册 LybtOptions 到 DI 容器（供其他服务如 JwtService 使用）
-            services.Configure<LybtOptions>(configuration.GetSection("Lybt"));
+            // 注册 JwtOptions 到 DI 容器
+            services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 
             services.AddAuthentication(options =>
             {
@@ -55,10 +54,10 @@ namespace LYBT.Infrastructure
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtConfig.Issuer,
-                    ValidAudience = jwtConfig.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey)),
-                    ClockSkew = TimeSpan.FromSeconds(jwtConfig.ClockSkewSeconds)
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
+                    ClockSkew = TimeSpan.FromSeconds(jwtOptions.ClockSkewSeconds)
                 };
 
                 options.Events = new JwtBearerEvents

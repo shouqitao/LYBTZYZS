@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.WebAPI.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +11,7 @@ namespace LYBT.WebAPI.Extensions;
 /// 认证与授权服务注册扩展
 /// Issue #1732 Phase 2.5: 从UnifiedServiceRegistration拆分
 /// 职责：JWT认证、授权策略配置
+/// unify-configuration-system: 迁移到 LYBT.Shared.Configuration
 /// </summary>
 public static class AuthenticationServiceCollectionExtensions
 {
@@ -21,22 +22,23 @@ public static class AuthenticationServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // =========== UltraThink Phase 2：使用统一配置 ===========
-        var lybtOptions = configuration.GetLybtOptions();
+        // unify-configuration-system: 使用强类型 JwtOptions
+        var jwtOptions = new JwtOptions();
+        configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
 
         // JWT 认证 - 从统一配置读取
         try
         {
-            // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+            // unify-configuration-system: 使用扁平化配置路径
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
-                           lybtOptions.Jwt.SecretKey;
+                           jwtOptions.SecretKey;
 
             if (string.IsNullOrEmpty(jwtSecret))
             {
                 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
                 if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException("生产环境必须配置 JWT 密钥（JWT_SECRET 或 Lybt:Jwt:SecretKey）。");
+                    throw new InvalidOperationException("生产环境必须配置 JWT 密钥（JWT_SECRET 或 Jwt:SecretKey）。");
                 }
 
                 jwtSecret = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
@@ -44,11 +46,10 @@ public static class AuthenticationServiceCollectionExtensions
 
             if (!string.IsNullOrEmpty(jwtSecret))
             {
-                // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-                var jwtConfig = lybtOptions.Jwt;
-                var issuer = jwtConfig.Issuer;
-                var audience = jwtConfig.Audience;
-                var clockSkew = 300; // 5分钟时钟偏差（安全默认值）
+                // unify-configuration-system: 使用强类型配置
+                var issuer = jwtOptions.Issuer;
+                var audience = jwtOptions.Audience;
+                var clockSkew = jwtOptions.ClockSkewSeconds;
 
                 services.AddAuthentication(options =>
                 {

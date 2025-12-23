@@ -8,6 +8,7 @@
 /// </summary>
 using System.Text;
 using DotNetEnv;
+using LYBT.Shared.Configuration.Extensions;
 using LYBT.Shared.Logging.Extensions;
 using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Utilities.Security;
@@ -98,6 +99,10 @@ public class Program
 
             Log.Information("已切换到Final Logger，配置加载完成");
 
+            // unify-configuration-system: 注册强类型配置
+            builder.Services.AddLybtServerConfiguration(builder.Configuration);
+            Log.Information("强类型配置注册完成");
+
             // 验证默认密码配置（所有环境）
             ValidateDefaultPasswordConfiguration(builder.Configuration);
 
@@ -160,25 +165,26 @@ public class Program
     /// <exception cref="InvalidOperationException">当缺少必需的密码配置时抛出</exception>
     private static void ValidateDefaultPasswordConfiguration(IConfiguration configuration)
     {
-        var sysAdminPassword = configuration["Lybt:DefaultPasswords:SysAdminPassword"];
-        var newUserPassword = configuration["Lybt:DefaultPasswords:NewUserPassword"];
-        var systemAdminEmail = configuration["Lybt:SystemAdmin:Email"];
+        // unify-configuration-system: 使用扁平化配置路径
+        var sysAdminPassword = configuration["DefaultPasswords:SysAdminPassword"];
+        var newUserPassword = configuration["DefaultPasswords:NewUserPassword"];
+        var systemAdminEmail = configuration["SystemAdmin:Email"];
 
         var missingConfigurations = new List<string>();
 
         if (string.IsNullOrWhiteSpace(sysAdminPassword))
         {
-            missingConfigurations.Add("Lybt:DefaultPasswords:SysAdminPassword");
+            missingConfigurations.Add("DefaultPasswords:SysAdminPassword");
         }
 
         if (string.IsNullOrWhiteSpace(newUserPassword))
         {
-            missingConfigurations.Add("Lybt:DefaultPasswords:NewUserPassword");
+            missingConfigurations.Add("DefaultPasswords:NewUserPassword");
         }
 
         if (string.IsNullOrWhiteSpace(systemAdminEmail))
         {
-            missingConfigurations.Add("Lybt:SystemAdmin:Email");
+            missingConfigurations.Add("SystemAdmin:Email");
         }
 
         if (missingConfigurations.Any())
@@ -192,26 +198,19 @@ public class Program
 解决方案：
 1. 在 appsettings.json 中添加以下配置：
 {{
-  ""Lybt"": {{
-    ""DefaultPasswords"": {{
-      ""SysAdminPassword"": ""您的系统管理员默认密码"",
-      ""NewUserPassword"": ""您的新用户默认密码""
-    }},
-    ""SystemAdmin"": {{
-      ""Email"": ""admin@yourdomain.com""
-    }}
+  ""DefaultPasswords"": {{
+    ""SysAdminPassword"": ""您的系统管理员默认密码"",
+    ""NewUserPassword"": ""您的新用户默认密码""
+  }},
+  ""SystemAdmin"": {{
+    ""Email"": ""admin@yourdomain.com""
   }}
 }}
 
 2. 或者在环境变量中设置：
-  - LYBT__DEFAULTPASSWORDS__SYSADMINPASSWORD
-  - LYBT__DEFAULTPASSWORDS__NEWUSERPASSWORD
-  - LYBT__SYSTEMADMIN__EMAIL
-
-3. 或者在 .env 文件中添加：
-  LYBT_DEFAULTPASSWORDS_SYSADMINPASSWORD=您的系统管理员默认密码
-  LYBT_DEFAULTPASSWORDS_NEWUSERPASSWORD=您的新用户默认密码
-  LYBT_SYSTEMADMIN_EMAIL=admin@yourdomain.com
+  - DEFAULTPASSWORDS__SYSADMINPASSWORD
+  - DEFAULTPASSWORDS__NEWUSERPASSWORD
+  - SYSTEMADMIN__EMAIL
 
 注意：密码不能为空，密码长度至少8位，建议包含大小写字母、数字和特殊字符。";
 

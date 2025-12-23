@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using FluentAssertions;
-using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Services;
+using LYBT.Shared.Configuration.Options.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -12,27 +12,25 @@ namespace LYBT.Module.Auth.Tests.Services;
 /// <summary>
 /// JwtService 单元测试
 /// Issue #864 - Phase 2.3: Auth 模块测试
+/// unify-configuration-system: 迁移到 JwtOptions
 /// </summary>
 public class JwtServiceTests
 {
-    private readonly Mock<IOptions<LybtOptions>> _mockOptions;
+    private readonly Mock<IOptions<JwtOptions>> _mockOptions;
     private readonly IConfiguration _configuration;
     private readonly JwtService _sut;
 
     public JwtServiceTests()
     {
-        _mockOptions = new Mock<IOptions<LybtOptions>>();
-        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        _mockOptions.Setup(o => o.Value).Returns(new LybtOptions
+        _mockOptions = new Mock<IOptions<JwtOptions>>();
+        // unify-configuration-system: 使用扁平化的 JwtOptions
+        _mockOptions.Setup(o => o.Value).Returns(new JwtOptions
         {
-            Jwt = new JwtConfiguration
-            {
-                SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
-                Issuer = "LYBT",
-                Audience = "LYBTUsers",
-                AccessTokenExpirationMinutes = 30,
-                RefreshTokenExpirationDays = 7
-            }
+            SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
+            Issuer = "LYBT",
+            Audience = "LYBTUsers",
+            AccessTokenExpirationMinutes = 30,
+            RefreshTokenExpirationDays = 7
         });
 
         _configuration = CreateMockConfiguration();
@@ -41,14 +39,14 @@ public class JwtServiceTests
 
     private static IConfiguration CreateMockConfiguration()
     {
-        // Issue #2244: 使用真实ConfigurationBuilder替代Mock,避免GetValue<T>扩展方法访问路径不匹配
+        // unify-configuration-system: 使用扁平化配置路径 "Jwt:*"
         var configValues = new Dictionary<string, string>
         {
-            ["Lybt:Jwt:SecretKey"] = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
-            ["Lybt:Jwt:Issuer"] = "LYBT",
-            ["Lybt:Jwt:Audience"] = "LYBTUsers",
-            ["Lybt:Jwt:AccessTokenExpirationMinutes"] = "30",
-            ["Lybt:Jwt:RefreshTokenExpirationDays"] = "7"
+            ["Jwt:SecretKey"] = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
+            ["Jwt:Issuer"] = "LYBT",
+            ["Jwt:Audience"] = "LYBTUsers",
+            ["Jwt:AccessTokenExpirationMinutes"] = "30",
+            ["Jwt:RefreshTokenExpirationDays"] = "7"
         };
 
         return new ConfigurationBuilder()
@@ -382,20 +380,17 @@ public class JwtServiceTests
     public void Constructor_WithStrongKey_DoesNotThrow()
     {
         // Arrange
-        var mockOptions = new Mock<IOptions<LybtOptions>>();
-        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        mockOptions.Setup(o => o.Value).Returns(new LybtOptions
+        var mockOptions = new Mock<IOptions<JwtOptions>>();
+        // unify-configuration-system: 使用扁平化的 JwtOptions
+        mockOptions.Setup(o => o.Value).Returns(new JwtOptions
         {
-            Jwt = new JwtConfiguration
-            {
-                SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
-                Issuer = "LYBT",
-                Audience = "LYBTUsers"
-            }
+            SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
+            Issuer = "LYBT",
+            Audience = "LYBTUsers"
         });
 
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Jwt:SecretKey"])
+        config.Setup(c => c["Jwt:SecretKey"])
               .Returns("ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890");
 
         // Act & Assert
@@ -407,20 +402,17 @@ public class JwtServiceTests
     public void Constructor_WithTooShortKey_ThrowsArgumentException()
     {
         // Arrange
-        var mockOptions = new Mock<IOptions<LybtOptions>>();
-        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        mockOptions.Setup(o => o.Value).Returns(new LybtOptions
+        var mockOptions = new Mock<IOptions<JwtOptions>>();
+        // unify-configuration-system: 使用扁平化的 JwtOptions
+        mockOptions.Setup(o => o.Value).Returns(new JwtOptions
         {
-            Jwt = new JwtConfiguration
-            {
-                SecretKey = "TooShortKey123",
-                Issuer = "LYBT",
-                Audience = "LYBTUsers"
-            }
+            SecretKey = "TooShortKey123",
+            Issuer = "LYBT",
+            Audience = "LYBTUsers"
         });
 
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Jwt:SecretKey"]).Returns("TooShortKey123");
+        config.Setup(c => c["Jwt:SecretKey"]).Returns("TooShortKey123");
 
         // Act & Assert
         var act = () => new JwtService(mockOptions.Object, config.Object);
@@ -431,20 +423,17 @@ public class JwtServiceTests
     public void Constructor_WithMinimum32CharsKey_DoesNotThrow()
     {
         // Arrange
-        var mockOptions = new Mock<IOptions<LybtOptions>>();
-        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        mockOptions.Setup(o => o.Value).Returns(new LybtOptions
+        var mockOptions = new Mock<IOptions<JwtOptions>>();
+        // unify-configuration-system: 使用扁平化的 JwtOptions
+        mockOptions.Setup(o => o.Value).Returns(new JwtOptions
         {
-            Jwt = new JwtConfiguration
-            {
-                SecretKey = "12345678901234567890123456789012", // 正好 32 字符
-                Issuer = "LYBT",
-                Audience = "LYBTUsers"
-            }
+            SecretKey = "12345678901234567890123456789012", // 正好 32 字符
+            Issuer = "LYBT",
+            Audience = "LYBTUsers"
         });
 
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Jwt:SecretKey"])
+        config.Setup(c => c["Jwt:SecretKey"])
               .Returns("12345678901234567890123456789012");
 
         // Act & Assert
@@ -456,20 +445,17 @@ public class JwtServiceTests
     public void Constructor_WithEmptySecretKey_ThrowsInvalidOperationException()
     {
         // Arrange
-        var mockOptions = new Mock<IOptions<LybtOptions>>();
-        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        mockOptions.Setup(o => o.Value).Returns(new LybtOptions
+        var mockOptions = new Mock<IOptions<JwtOptions>>();
+        // unify-configuration-system: 使用扁平化的 JwtOptions
+        mockOptions.Setup(o => o.Value).Returns(new JwtOptions
         {
-            Jwt = new JwtConfiguration
-            {
-                SecretKey = "",
-                Issuer = "LYBT",
-                Audience = "LYBTUsers"
-            }
+            SecretKey = "",
+            Issuer = "LYBT",
+            Audience = "LYBTUsers"
         });
 
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Jwt:SecretKey"]).Returns("");
+        config.Setup(c => c["Jwt:SecretKey"]).Returns("");
 
         // Act & Assert
         var act = () => new JwtService(mockOptions.Object, config.Object);

@@ -1,19 +1,20 @@
 ﻿using FluentAssertions;
-using LYBT.Infrastructure.Configuration.Options;
+using LYBT.Shared.Configuration.Options.Common;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Security
 {
     /// <summary>
-    /// JWT配置验证测试（迁移到LybtOptions.JwtConfiguration）
+    /// JWT配置验证测试
+    /// unify-configuration-system: 迁移到 LYBT.Shared.Configuration.Options.Common.JwtOptions
     /// </summary>
     public class JwtOptionsValidationTests
     {
         [Fact]
-        public void JwtConfiguration_ShouldHaveSecureDefaults()
+        public void JwtOptions_ShouldHaveSecureDefaults()
         {
             // Arrange
-            var options = new JwtConfiguration();
+            var options = new JwtOptions();
 
             // Assert - 验证默认值的安全性
             options.AccessTokenExpirationMinutes.Should().BeLessOrEqualTo(30,
@@ -27,10 +28,10 @@ namespace LYBT.Module.Auth.Tests.Security
         [InlineData(null)]
         [InlineData("short")]
         [InlineData("NotLongEnoughKey123")]
-        public void JwtConfiguration_ShouldRejectWeakSecrets(string? secretKey)
+        public void JwtOptions_ShouldRejectWeakSecrets(string? secretKey)
         {
             // Arrange
-            var options = new JwtConfiguration { SecretKey = secretKey! };
+            var options = new JwtOptions { SecretKey = secretKey! };
 
             // Act
             var isValid = IsSecretValid(options.SecretKey);
@@ -40,11 +41,11 @@ namespace LYBT.Module.Auth.Tests.Security
         }
 
         [Fact]
-        public void JwtConfiguration_ShouldAcceptStrongSecret()
+        public void JwtOptions_ShouldAcceptStrongSecret()
         {
             // Arrange
             var strongKey = "ThisIsAVeryStrongSecretThatIsAtLeast32CharactersLong!@#$%";
-            var options = new JwtConfiguration { SecretKey = strongKey };
+            var options = new JwtOptions { SecretKey = strongKey };
 
             // Act
             var isValid = IsSecretValid(options.SecretKey);
@@ -62,7 +63,7 @@ namespace LYBT.Module.Auth.Tests.Security
         public void AccessTokenExpiration_ShouldBeReasonable(int minutes, bool shouldBeValid)
         {
             // Arrange
-            var options = new JwtConfiguration
+            var options = new JwtOptions
             {
                 AccessTokenExpirationMinutes = minutes
             };
@@ -83,7 +84,7 @@ namespace LYBT.Module.Auth.Tests.Security
         public void RefreshTokenExpiration_ShouldBeReasonable(int days, bool shouldBeValid)
         {
             // Arrange
-            var options = new JwtConfiguration
+            var options = new JwtOptions
             {
                 RefreshTokenExpirationDays = days
             };
@@ -96,10 +97,10 @@ namespace LYBT.Module.Auth.Tests.Security
         }
 
         [Fact]
-        public void JwtConfiguration_ShouldRequireIssuerAndAudience()
+        public void JwtOptions_ShouldRequireIssuerAndAudience()
         {
             // Arrange
-            var options = new JwtConfiguration();
+            var options = new JwtOptions();
 
             // Act & Assert
             options.Issuer.Should().NotBeNullOrEmpty("Issuer是必需的");
@@ -114,7 +115,7 @@ namespace LYBT.Module.Auth.Tests.Security
         public void Issuer_ShouldUseSecureProtocol(string issuer, bool shouldBeValid)
         {
             // Arrange
-            var options = new JwtConfiguration { Issuer = issuer };
+            var options = new JwtOptions { Issuer = issuer };
 
             // Act
             var isValid = IsIssuerSecure(options.Issuer);

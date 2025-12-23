@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure.Configuration.Options;
+﻿using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -8,22 +8,23 @@ namespace LYBT.Infrastructure.Configuration.Services
     /// <summary>
     /// 默认密码管理服务
     /// 实现环境感知的默认密码治理：Dev-only 保护 + 单点逻辑
+    /// unify-configuration-system: 迁移到 LYBT.Shared.Configuration
     /// </summary>
     /// <remarks>
     /// 核心治理规则:
     /// 1. 生产环境：强制禁用所有默认密码功能
     /// 2. 开发环境：可选启用默认密码以便调试
-    /// 3. 单点逻辑：统一从LybtOptions.DefaultPasswordConfiguration获取所有默认密码
+    /// 3. 单点逻辑：统一从 DefaultPasswordOptions 获取所有默认密码
     /// </remarks>
     public class DefaultPasswordService
     {
-        private readonly DefaultPasswordConfiguration _options;
+        private readonly DefaultPasswordOptions _options;
         private readonly IWebHostEnvironment _environment;
 
-        public DefaultPasswordService(IOptions<LybtOptions> lybtOptions, IWebHostEnvironment environment)
+        public DefaultPasswordService(IOptions<DefaultPasswordOptions> defaultPasswordOptions, IWebHostEnvironment environment)
         {
-            // Issue #1761 Phase 3.1: Authentication.DefaultPasswords → DefaultPasswords（完全扁平化）
-            _options = lybtOptions.Value.DefaultPasswords;
+            // unify-configuration-system: 使用强类型 DefaultPasswordOptions
+            _options = defaultPasswordOptions.Value;
             _environment = environment;
         }
 

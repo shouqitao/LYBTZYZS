@@ -40,6 +40,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\LYBT.Entities\LYBT.Entities.csproj" />
+		<!-- unify-configuration-system: 添加统一配置项目引用 -->
+		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<!-- consolidate-exception-handling: 统一异常处理 -->

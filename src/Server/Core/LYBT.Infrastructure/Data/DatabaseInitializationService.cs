@@ -1,5 +1,5 @@
 ﻿using LYBT.Entities.Users;
-using LYBT.Infrastructure.Configuration.Options;
+using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Security;
 using Microsoft.EntityFrameworkCore;
@@ -17,16 +17,19 @@ public class DatabaseInitializationService
 {
     private readonly AppDbContext _context;
     private readonly ILogger<DatabaseInitializationService> _logger;
-    private readonly LybtOptions _lybtOptions;
+    private readonly SystemAdminOptions _systemAdminOptions;
+    private readonly DefaultPasswordOptions _defaultPasswordOptions;
 
     public DatabaseInitializationService(
         AppDbContext context,
         ILogger<DatabaseInitializationService> logger,
-        IOptions<LybtOptions> lybtOptions)
+        IOptions<SystemAdminOptions> systemAdminOptions,
+        IOptions<DefaultPasswordOptions> defaultPasswordOptions)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _lybtOptions = lybtOptions?.Value ?? throw new ArgumentNullException(nameof(lybtOptions));
+        _systemAdminOptions = systemAdminOptions?.Value ?? throw new ArgumentNullException(nameof(systemAdminOptions));
+        _defaultPasswordOptions = defaultPasswordOptions?.Value ?? throw new ArgumentNullException(nameof(defaultPasswordOptions));
     }
 
     /// <summary>
@@ -91,7 +94,7 @@ public class DatabaseInitializationService
             }
 
             // Issue #2237: 自动创建系统管理员
-            if (_lybtOptions.SystemAdmin.AutoCreateOnStartup)
+            if (_systemAdminOptions.AutoCreateOnStartup)
             {
                 await EnsureSystemAdminExistsAsync();
             }
@@ -134,7 +137,7 @@ public class DatabaseInitializationService
         {
             _logger.LogInformation("开始检查系统管理员是否存在");
 
-            var config = _lybtOptions.SystemAdmin;
+            var config = _systemAdminOptions;
 
             // 检查是否已存在SuperAdmin用户（包括已删除的）
             var existingSuperAdmin = await _context.Users
@@ -165,12 +168,12 @@ public class DatabaseInitializationService
             }
 
             // 不存在，创建新的SuperAdmin用户
-            var defaultPassword = _lybtOptions.DefaultPasswords.SysAdminPassword;
+            var defaultPassword = _defaultPasswordOptions.SysAdminPassword;
 
             var superAdmin = new User
             {
                 Id = Guid.NewGuid(),
-                UserName = config.Username,
+                UserName = config.UserName,
                 RealName = config.DisplayName,
                 Email = config.Email,
                 Role = UserRole.SuperAdmin,

@@ -23,6 +23,8 @@
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
 	</ItemGroup>
 	<ItemGroup>
+		<!-- unify-configuration-system: 添加统一配置项目引用 -->
+		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
