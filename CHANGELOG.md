@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 统一数据流日志规范 LOG-018 (OpenSpec: enhance-dataflow-logging) - 2025-12-24
+
+**背景**: 系统日志格式不统一，层级标识混乱，敏感数据未脱敏，分布式追踪困难。
+
+**核心改进**:
+- 统一日志层级前缀: [SVC]Service层, [STATE]状态服务, [HDL]Handler层, [VM]ViewModel层, [HTTP]HTTP客户端, [API]API端点, [REPO]Repository层
+- 标准化操作日志格式: `EntityName.Operation started/completed/failed - Key=Value`
+- 箭头符号(→)表示特殊条件: ValidationFailed, PermissionDenied, NotFound, Conflict等
+- 敏感数据自动脱敏: PatientName, UserName, IpAddress
+
+**新增组件**:
+- LoggingHttpHandler: 客户端HTTP请求响应日志，自动注入CorrelationId
+- ApiLoggingFilter: 服务端API端点统一日志
+- CorrelationIdMiddleware: 分布式追踪ID传递
+
+**日志规范**:
+- LogInformation用于变更操作(Create/Update/Delete)
+- LogDebug用于查询操作(GetById/GetList)
+- LogWarning用于业务验证失败
+- LogError用于异常情况
+
+**影响模块**:
+- Server: Auth(4), MedicalCase(5), Consultation, Formula, Herbs, Patients, Users, Prescriptions
+- Client: LoginVM, MasterDetailBase, UnifiedListBase, 各模块Service/Handler
+
 #### Desktop层数据处理架构统一 (OpenSpec: unify-desktop-command-handler) - 2025-12-24
 
 **背景**: Desktop层数据访问模式高度碎片化，存在DataManager、CommandHandler、直接Repository调用等多种模式混用。
