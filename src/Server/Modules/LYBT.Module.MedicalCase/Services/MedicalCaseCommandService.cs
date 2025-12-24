@@ -49,13 +49,13 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<MedicalCase?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("开始创建病案，PatientId: {PatientId}, VisitDate: {VisitDate}, DoctorId: {DoctorId}",
+            _logger.LogInformation("[SVC] MedicalCase.Create started - PatientId={PatientId} VisitDate={VisitDate} DoctorId={DoctorId}",
                 patientId, visitDate, doctorId);
 
             // 参数验证：doctorId不能为Guid.Empty
             if (doctorId == Guid.Empty)
             {
-                _logger.LogWarning("DoctorId不能为空Guid");
+                _logger.LogWarning("[SVC] MedicalCase.Create → ValidationFailed - DoctorIdEmpty");
                 throw new ArgumentException("DoctorId不能为空", nameof(doctorId));
             }
 
@@ -63,7 +63,7 @@ namespace LYBT.Module.MedicalCases.Services
             var patient = await _patientRepository.GetByIdAsync(patientId);
             if (patient == null)
             {
-                _logger.LogWarning("患者不存在，PatientId: {PatientId}", patientId);
+                _logger.LogWarning("[SVC] MedicalCase.Create → PatientNotFound - PatientId={PatientId}", patientId);
                 throw new InvalidOperationException($"患者不存在，PatientId: {patientId}");
             }
 
@@ -71,7 +71,7 @@ namespace LYBT.Module.MedicalCases.Services
             var doctor = await _userRepository.GetByIdAsync(doctorId);
             if (doctor == null)
             {
-                _logger.LogWarning("医生不存在，DoctorId: {DoctorId}", doctorId);
+                _logger.LogWarning("[SVC] MedicalCase.Create → DoctorNotFound - DoctorId={DoctorId}", doctorId);
                 throw new InvalidOperationException($"医生不存在，DoctorId: {doctorId}");
             }
 
@@ -83,14 +83,14 @@ namespace LYBT.Module.MedicalCases.Services
                 if (MedicalCaseRules.HasActiveCase(existingActiveCases))
                 {
                     var activeCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
-                    _logger.LogWarning("患者已有进行中的医案，PatientId: {PatientId}, ActiveCaseId: {CaseId}",
+                    _logger.LogWarning("[SVC] MedicalCase.Create → ActiveCaseExists - PatientId={PatientId} ActiveCaseId={CaseId}",
                         patientId, activeCase?.Id);
                     throw new InvalidOperationException("该患者已有进行中的医案，请先完成现有医案");
                 }
                 else if (MedicalCaseRules.HasDraftCase(existingActiveCases))
                 {
                     var draftCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Draft);
-                    _logger.LogWarning("患者已有暂存的医案，PatientId: {PatientId}, DraftCaseId: {CaseId}",
+                    _logger.LogWarning("[SVC] MedicalCase.Create → DraftCaseExists - PatientId={PatientId} DraftCaseId={CaseId}",
                         patientId, draftCase?.Id);
                     throw new InvalidOperationException("该患者已有暂存的医案，请先处理现有医案（继续或关闭）");
                 }
@@ -126,7 +126,7 @@ namespace LYBT.Module.MedicalCases.Services
             // EF Core会级联保存Consultation
             var result = await _repository.AddAsync(medicalCase);
 
-            _logger.LogInformation("病案创建成功，MedicalCaseId: {Id}, ConsultationId: {ConsultationId}, Doctor: {DoctorName}, Patient: {PatientName}",
+            _logger.LogInformation("[SVC] MedicalCase.Create completed - MedicalCaseId={Id} ConsultationId={ConsultationId} DoctorName={DoctorName} PatientName={PatientName}",
                 result.Id, consultation.Id, medicalCase.DoctorName, medicalCase.PatientName);
 
             // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 记录创建审计日志
@@ -158,13 +158,13 @@ namespace LYBT.Module.MedicalCases.Services
             // 确定医生ID：优先使用DTO中的UserId（非空），否则使用currentUserId
             var doctorId = request.UserId != Guid.Empty ? request.UserId : currentUserId;
 
-            _logger.LogInformation("开始创建病案(InputDto方式)，PatientId: {PatientId}, UserId: {UserId}",
+            _logger.LogInformation("[SVC] MedicalCase.CreateFromInput started - PatientId={PatientId} UserId={UserId}",
                 request.PatientId, doctorId);
 
             // 参数验证：doctorId不能为Guid.Empty
             if (doctorId == Guid.Empty)
             {
-                _logger.LogWarning("UserId不能为空Guid");
+                _logger.LogWarning("[SVC] MedicalCase.CreateFromInput → ValidationFailed - UserIdEmpty");
                 throw new ArgumentException("UserId不能为空", nameof(request));
             }
 
@@ -172,7 +172,7 @@ namespace LYBT.Module.MedicalCases.Services
             var patient = await _patientRepository.GetByIdAsync(request.PatientId);
             if (patient == null)
             {
-                _logger.LogWarning("患者不存在，PatientId: {PatientId}", request.PatientId);
+                _logger.LogWarning("[SVC] MedicalCase.CreateFromInput → PatientNotFound - PatientId={PatientId}", request.PatientId);
                 throw new InvalidOperationException($"患者不存在，PatientId: {request.PatientId}");
             }
 
@@ -180,7 +180,7 @@ namespace LYBT.Module.MedicalCases.Services
             var doctor = await _userRepository.GetByIdAsync(doctorId);
             if (doctor == null)
             {
-                _logger.LogWarning("医生不存在，UserId: {UserId}", doctorId);
+                _logger.LogWarning("[SVC] MedicalCase.CreateFromInput → DoctorNotFound - UserId={UserId}", doctorId);
                 throw new InvalidOperationException($"医生不存在，UserId: {doctorId}");
             }
 
@@ -191,14 +191,14 @@ namespace LYBT.Module.MedicalCases.Services
                 if (MedicalCaseRules.HasActiveCase(existingActiveCases))
                 {
                     var activeCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
-                    _logger.LogWarning("患者已有进行中的医案，PatientId: {PatientId}, ActiveCaseId: {CaseId}",
+                    _logger.LogWarning("[SVC] MedicalCase.CreateFromInput → ActiveCaseExists - PatientId={PatientId} ActiveCaseId={CaseId}",
                         request.PatientId, activeCase?.Id);
                     throw new InvalidOperationException("该患者已有进行中的医案，请先完成现有医案");
                 }
                 else if (MedicalCaseRules.HasDraftCase(existingActiveCases))
                 {
                     var draftCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Draft);
-                    _logger.LogWarning("患者已有暂存的医案，PatientId: {PatientId}, DraftCaseId: {CaseId}",
+                    _logger.LogWarning("[SVC] MedicalCase.CreateFromInput → DraftCaseExists - PatientId={PatientId} DraftCaseId={CaseId}",
                         request.PatientId, draftCase?.Id);
                     throw new InvalidOperationException("该患者已有暂存的医案，请先处理现有医案（继续或关闭）");
                 }
@@ -281,14 +281,14 @@ namespace LYBT.Module.MedicalCases.Services
                 }
 
                 medicalCase.Prescription = prescription;
-                _logger.LogInformation("已创建处方，PrescriptionId: {PrescriptionId}, Items: {ItemCount}",
+                _logger.LogInformation("[SVC] MedicalCase.CreateFromInput → PrescriptionCreated - PrescriptionId={PrescriptionId} ItemCount={ItemCount}",
                     prescription.Id, prescription.Items.Count);
             }
 
             // EF Core会级联保存Consultation和Prescription
             var result = await _repository.AddAsync(medicalCase);
 
-            _logger.LogInformation("病案创建成功(InputDto方式)，MedicalCaseId: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
+            _logger.LogInformation("[SVC] MedicalCase.CreateFromInput completed - MedicalCaseId={Id} DoctorName={DoctorName} PatientName={PatientName}",
                 result.Id, medicalCase.DoctorName, medicalCase.PatientName);
 
             // 记录创建审计日志
@@ -315,7 +315,7 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("开始更新辨证信息，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // 获取聚合根（完整加载）
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
@@ -338,7 +338,7 @@ namespace LYBT.Module.MedicalCases.Services
                 var reason = isAdmin ? "权限不足" :
                     (medicalCase.UserId != currentUserId ? "非创建医生" :
                     $"医案状态为{medicalCase.CaseStatus}");
-                _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}, Reason: {Reason}",
+                _logger.LogWarning("[SVC] MedicalCase.UpdateConsultation → PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId} Reason={Reason}",
                     medicalCaseId, currentUserId, reason);
                 throw new UnauthorizedAccessException($"无权限编辑此病案：{reason}");
             }
@@ -346,7 +346,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 确保Consultation存在
             if (medicalCase.Consultation == null)
             {
-                _logger.LogWarning("Consultation不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("[SVC] MedicalCase.UpdateConsultation → ConsultationNotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 throw new InvalidOperationException("病案的辨证信息不存在");
             }
 
@@ -362,7 +362,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 通过聚合根保存（EF Core会跟踪子实体变更）
             var result = await _repository.UpdateAsync(medicalCase);
 
-            _logger.LogInformation("辨证信息更新成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 记录更新审计日志
             var operatorInfo = await GetOperatorInfoAsync(currentUserId, isAdmin);
@@ -388,14 +388,14 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("设置处方标志，MedicalCaseId: {MedicalCaseId}, NeedsPrescription: {NeedsPrescription}",
+            _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag started - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
                 medicalCaseId, needsPrescription);
 
             // 获取聚合根
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("[SVC] MedicalCase.SetPrescriptionFlag → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return null;
             }
 
@@ -405,7 +405,7 @@ namespace LYBT.Module.MedicalCases.Services
             // Epic #1731: 权限检查 - 集成CanEdit规则
             if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
             {
-                _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
+                _logger.LogWarning("[SVC] MedicalCase.SetPrescriptionFlag → PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId}",
                     medicalCaseId, currentUserId);
                 throw new UnauthorizedAccessException("无权限编辑此病案");
             }
@@ -418,7 +418,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 保存
             var result = await _repository.UpdateAsync(medicalCase);
 
-            _logger.LogInformation("处方标志设置成功，MedicalCaseId: {MedicalCaseId}, NeedsPrescription: {NeedsPrescription}",
+            _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag completed - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
                 medicalCaseId, needsPrescription);
 
             // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 记录更新审计日志
@@ -448,20 +448,20 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 try
                 {
-                    _logger.LogInformation("开始创建处方，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}", medicalCaseId, attempt);
+                    _logger.LogInformation("[SVC] MedicalCase.CreatePrescription started - MedicalCaseId={MedicalCaseId} Attempt={Attempt}", medicalCaseId, attempt);
 
                     // 获取聚合根（使用Fresh版本确保获取最新RowVersion，解决并发问题）
                     var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
                     if (medicalCase == null)
                     {
-                        _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                        _logger.LogWarning("[SVC] MedicalCase.CreatePrescription → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                         return null;
                     }
 
                     // 业务规则验证：验证处方需求标记
                     if (medicalCase.NeedsPrescription != true)
                     {
-                        _logger.LogWarning("未标记需要开处方，MedicalCaseId: {MedicalCaseId}, NeedsPrescription: {NeedsPrescription}",
+                        _logger.LogWarning("[SVC] MedicalCase.CreatePrescription → NeedsPrescriptionFalse - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
                             medicalCaseId, medicalCase.NeedsPrescription);
                         throw new InvalidOperationException("未标记需要开处方，请先设置处方需求标记");
                     }
@@ -469,7 +469,7 @@ namespace LYBT.Module.MedicalCases.Services
                     // 业务规则验证：AR-003（一诊一方约束）
                     if (medicalCase.Prescription != null && !medicalCase.Prescription.IsDeleted)
                     {
-                        _logger.LogWarning("病案已存在处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
+                        _logger.LogWarning("[SVC] MedicalCase.CreatePrescription → PrescriptionExists - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                             medicalCaseId, medicalCase.Prescription.Id);
                         throw new InvalidOperationException($"病案已存在处方（ID: {medicalCase.Prescription.Id}），请使用更新接口");
                     }
@@ -493,7 +493,7 @@ namespace LYBT.Module.MedicalCases.Services
                             item.PrescriptionId = prescription.Id;
                             prescription.Items.Add(item);
                         }
-                        _logger.LogInformation("处方项创建完成，共{Count}项", request.Items.Count);
+                        _logger.LogInformation("[SVC] MedicalCase.CreatePrescription → ItemsCreated - ItemCount={Count}", request.Items.Count);
                     }
 
                     // 关联到聚合根
@@ -503,7 +503,7 @@ namespace LYBT.Module.MedicalCases.Services
                     // 通过聚合根保存（EF Core会级联创建Prescription和Items）
                     await _repository.UpdateAsync(medicalCase);
 
-                    _logger.LogInformation("处方创建成功，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
+                    _logger.LogInformation("[SVC] MedicalCase.CreatePrescription completed - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                         medicalCaseId, prescription.Id);
 
                     return prescription;
@@ -511,7 +511,7 @@ namespace LYBT.Module.MedicalCases.Services
                 catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex) when (attempt < maxRetries)
                 {
                     // 并发冲突（EF Core原生异常），重试
-                    _logger.LogWarning(ex, "创建处方遇到EF并发冲突，准备重试，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
+                    _logger.LogWarning(ex, "[SVC] MedicalCase.CreatePrescription → EFConcurrencyRetry - MedicalCaseId={MedicalCaseId} Attempt={Attempt}",
                         medicalCaseId, attempt);
                     await Task.Delay(100 * attempt); // 递增延迟
                     continue;
@@ -519,19 +519,19 @@ namespace LYBT.Module.MedicalCases.Services
                 catch (InvalidOperationException ex) when (ex.Message.Contains("数据已被其他用户修改") && attempt < maxRetries)
                 {
                     // 并发冲突（Repository层封装的异常），重试
-                    _logger.LogWarning("创建处方遇到并发冲突，准备重试，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
+                    _logger.LogWarning("[SVC] MedicalCase.CreatePrescription → ConcurrencyRetry - MedicalCaseId={MedicalCaseId} Attempt={Attempt}",
                         medicalCaseId, attempt);
                     await Task.Delay(100 * attempt); // 递增延迟
                     continue;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "创建处方失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    _logger.LogError(ex, "[SVC] MedicalCase.CreatePrescription failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                     throw;
                 }
             }
 
-            _logger.LogError("创建处方失败，已达最大重试次数，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogError("[SVC] MedicalCase.CreatePrescription → MaxRetriesExceeded - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             throw new InvalidOperationException("创建处方失败，请稍后重试");
         }
 
@@ -547,21 +547,21 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("开始更新处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
+            _logger.LogInformation("[SVC] MedicalCase.UpdatePrescription started - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                 medicalCaseId, prescriptionId);
 
             // 获取聚合根（使用Fresh版本确保获取最新RowVersion，解决并发问题）
             var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return null;
             }
 
             // Epic #1731: 权限检查 - 集成CanEdit规则
             if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
             {
-                _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
+                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId}",
                     medicalCaseId, currentUserId);
                 throw new UnauthorizedAccessException("无权限编辑此病案");
             }
@@ -569,7 +569,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 验证Prescription存在且ID匹配
             if (medicalCase.Prescription == null || medicalCase.Prescription.Id != prescriptionId)
             {
-                _logger.LogWarning("处方不存在或ID不匹配，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
+                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → PrescriptionNotFound - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                     medicalCaseId, prescriptionId);
                 return null;
             }
@@ -577,7 +577,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 业务规则验证：已打印处方不允许修改
             if (medicalCase.Prescription.IsPrinted)
             {
-                _logger.LogWarning("处方已打印，不允许修改，PrescriptionId: {PrescriptionId}", prescriptionId);
+                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → AlreadyPrinted - PrescriptionId={PrescriptionId}", prescriptionId);
                 throw new InvalidOperationException("处方已打印，不允许修改");
             }
 
@@ -601,13 +601,13 @@ namespace LYBT.Module.MedicalCases.Services
                     medicalCase.Prescription.Items.Add(item);
                 }
 
-                _logger.LogInformation("处方项更新完成，共{Count}项", request.Items.Count);
+                _logger.LogInformation("[SVC] MedicalCase.UpdatePrescription → ItemsUpdated - ItemCount={Count}", request.Items.Count);
             }
 
             // 通过聚合根保存
             await _repository.UpdateAsync(medicalCase);
 
-            _logger.LogInformation("处方更新成功，PrescriptionId: {PrescriptionId}", prescriptionId);
+            _logger.LogInformation("[SVC] MedicalCase.UpdatePrescription completed - PrescriptionId={PrescriptionId}", prescriptionId);
             return medicalCase.Prescription;
         }
 
@@ -623,21 +623,21 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("开始删除处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
+            _logger.LogInformation("[SVC] MedicalCase.DeletePrescription started - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                 medicalCaseId, prescriptionId);
 
             // 获取聚合根
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return false;
             }
 
             // Epic #1731: 权限检查 - 集成CanDelete规则
             if (!MedicalCaseRules.CanDelete(medicalCase, currentUserId, isAdmin))
             {
-                _logger.LogWarning("无权限删除病案处方，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
+                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId}",
                     medicalCaseId, currentUserId);
                 throw new UnauthorizedAccessException("无权限删除此病案的处方");
             }
@@ -645,14 +645,14 @@ namespace LYBT.Module.MedicalCases.Services
             // 验证Prescription存在且ID匹配
             if (medicalCase.Prescription == null || medicalCase.Prescription.Id != prescriptionId)
             {
-                _logger.LogWarning("处方不存在或ID不匹配，PrescriptionId: {PrescriptionId}", prescriptionId);
+                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → PrescriptionNotFound - PrescriptionId={PrescriptionId}", prescriptionId);
                 return false;
             }
 
             // 业务规则验证：已打印处方不允许删除
             if (medicalCase.Prescription.IsPrinted)
             {
-                _logger.LogWarning("处方已打印，不允许删除，PrescriptionId: {PrescriptionId}", prescriptionId);
+                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → AlreadyPrinted - PrescriptionId={PrescriptionId}", prescriptionId);
                 throw new InvalidOperationException("处方已打印，不允许删除");
             }
 
@@ -667,7 +667,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 通过聚合根保存
             await _repository.UpdateAsync(medicalCase);
 
-            _logger.LogInformation("处方删除成功，PrescriptionId: {PrescriptionId}", prescriptionId);
+            _logger.LogInformation("[SVC] MedicalCase.DeletePrescription completed - PrescriptionId={PrescriptionId}", prescriptionId);
             return true;
         }
 
@@ -679,18 +679,18 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<bool> DeleteAsync(Guid id)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("开始软删除病案，MedicalCaseId: {MedicalCaseId}", id);
+            _logger.LogInformation("[SVC] MedicalCase.Delete started - MedicalCaseId={MedicalCaseId}", id);
 
             // 使用Repository的软删除（BaseRepository.DeleteAsync设置IsDeleted=true）
             var result = await _repository.DeleteAsync(id);
 
             if (result)
             {
-                _logger.LogInformation("病案软删除成功，MedicalCaseId: {MedicalCaseId}", id);
+                _logger.LogInformation("[SVC] MedicalCase.Delete completed - MedicalCaseId={MedicalCaseId}", id);
             }
             else
             {
-                _logger.LogWarning("病案软删除失败（不存在），MedicalCaseId: {MedicalCaseId}", id);
+                _logger.LogWarning("[SVC] MedicalCase.Delete → NotFound - MedicalCaseId={MedicalCaseId}", id);
             }
 
             return result;
@@ -725,19 +725,19 @@ namespace LYBT.Module.MedicalCases.Services
                 }
                 catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex) when (attempt < maxRetries)
                 {
-                    _logger.LogWarning(ex, "保存医案聚合根遇到EF并发冲突，准备重试，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
+                    _logger.LogWarning(ex, "[SVC] MedicalCase.Save → EFConcurrencyRetry - MedicalCaseId={MedicalCaseId} Attempt={Attempt}",
                         medicalCaseId, attempt);
                     await Task.Delay(100 * attempt);
                 }
                 catch (InvalidOperationException ex) when (ex.Message.Contains("数据已被其他用户修改") && attempt < maxRetries)
                 {
-                    _logger.LogWarning("保存医案聚合根遇到并发冲突，准备重试，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
+                    _logger.LogWarning("[SVC] MedicalCase.Save → ConcurrencyRetry - MedicalCaseId={MedicalCaseId} Attempt={Attempt}",
                         medicalCaseId, attempt);
                     await Task.Delay(100 * attempt);
                 }
             }
 
-            _logger.LogError("保存医案聚合根失败，已达最大重试次数，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogError("[SVC] MedicalCase.Save → MaxRetriesExceeded - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             throw new InvalidOperationException("保存失败，请稍后重试");
         }
 
@@ -752,7 +752,7 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin,
             int attempt)
         {
-            _logger.LogInformation("开始保存医案聚合根，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
+            _logger.LogInformation("[SVC] MedicalCase.Save started - MedicalCaseId={MedicalCaseId} Attempt={Attempt}",
                 medicalCaseId, attempt);
 
             // 获取聚合根
@@ -782,7 +782,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 保存并审计
             var result = await _repository.UpdateAsync(medicalCase);
-            _logger.LogInformation("医案聚合根保存成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin);
             return result;
@@ -798,7 +798,7 @@ namespace LYBT.Module.MedicalCases.Services
             var reason = isAdmin ? "权限不足" :
                 (medicalCase.UserId != currentUserId ? "非创建医生" : $"医案状态为{medicalCase.CaseStatus}");
 
-            _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}, Reason: {Reason}",
+            _logger.LogWarning("[SVC] MedicalCase.Save → PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId} Reason={Reason}",
                 medicalCase.Id, currentUserId, reason);
             throw new UnauthorizedAccessException($"无权限编辑此病案：{reason}");
         }
@@ -880,7 +880,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 medicalCase.Prescription.IsDeleted = true;
                 medicalCase.Prescription.UpdatedAt = DateTime.Now;
-                _logger.LogInformation("已软删除处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
+                _logger.LogInformation("[SVC] MedicalCase.Save → PrescriptionSoftDeleted - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                     medicalCase.Id, medicalCase.Prescription.Id);
             }
         }
@@ -907,7 +907,7 @@ namespace LYBT.Module.MedicalCases.Services
             prescription.Items = CreatePrescriptionItems(prescription.Id, prescriptionDto);
 
             medicalCase.Prescription = prescription;
-            _logger.LogInformation("已创建处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}, Items: {ItemCount}",
+            _logger.LogInformation("[SVC] MedicalCase.Save → PrescriptionCreated - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId} ItemCount={ItemCount}",
                 medicalCase.Id, prescription.Id, prescription.Items.Count);
         }
 
@@ -930,7 +930,7 @@ namespace LYBT.Module.MedicalCases.Services
                 prescription.Items.Add(item);
             }
 
-            _logger.LogInformation("已更新处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}, Items: {ItemCount}",
+            _logger.LogInformation("[SVC] MedicalCase.Save → PrescriptionUpdated - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId} ItemCount={ItemCount}",
                 prescription.MedicalCaseId, prescription.Id, prescription.Items.Count);
         }
 
@@ -1006,7 +1006,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "获取操作者信息失败，UserId: {UserId}", userId);
+                _logger.LogWarning(ex, "[SVC] MedicalCase.GetOperatorInfo failed - UserId={UserId}", userId);
             }
 
             // 回退到基本信息
@@ -1053,7 +1053,7 @@ namespace LYBT.Module.MedicalCases.Services
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(id);
-                    _logger.LogInformation("批量删除 - 医案已删除: {MedicalCaseId}", id);
+                    _logger.LogInformation("[SVC] MedicalCase.BatchDelete → ItemSuccess - MedicalCaseId={MedicalCaseId}", id);
                 }
                 catch (Exception ex)
                 {
@@ -1065,7 +1065,7 @@ namespace LYBT.Module.MedicalCases.Services
                         Id = id,
                         Reason = "删除操作失败"
                     });
-                    _logger.LogError(ex, "批量删除 - 删除医案失败: {MedicalCaseId}", id);
+                    _logger.LogError(ex, "[SVC] MedicalCase.BatchDelete → ItemFailed - MedicalCaseId={MedicalCaseId}", id);
                 }
             }
 

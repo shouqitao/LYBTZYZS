@@ -7,7 +7,7 @@
 **Priority**: P1
 **Phase**: Pre-Release Stabilization
 **Spec Deltas**: logging-infrastructure (8 requirements added: LOG-012 ~ LOG-019)
-**Depends On**: unify-desktop-command-handler (已完成)
+**Depends On**: standardize-service-layer (已完成)
 
 ---
 
@@ -30,12 +30,12 @@
    - Desktop与WebAPI之间缺少追踪连接
    - 无法追踪一个用户操作的完整链路
 
-### 前置工作已完成 (OpenSpec: unify-desktop-command-handler)
+### 前置工作已完成 (OpenSpec: standardize-service-layer)
 
 Desktop层数据处理架构已统一，形成三种模式：
-- **CommandHandler**: 无状态CRUD操作，统一返回`(success, data, error)`元组
-- **AggregateService**: 有状态聚合根管理
-- **StateManager**: 有状态简单实体管理
+- **Service**: 标准MVVM服务，统一返回`(success, data, error)`元组，包括CRUD操作和聚合根管理
+- **Handler**: 专用处理器，用于导航、生命周期、导入导出等特定领域逻辑
+- **StateManager**: 有状态简单实体管理（仅PatientStateManager）
 
 ### 现有基础设施 (logging-infrastructure spec LOG-001 ~ LOG-011)
 
@@ -73,22 +73,16 @@ LYBT.Shared.Logging已提供：
 
 ### Desktop端 (8个模块)
 
-#### CommandHandler (无状态CRUD - [CMD]前缀)
+#### Desktop Service (标准MVVM服务 - [SVC]前缀)
 
-| 模块 | CommandHandler | 当前日志状态 |
-|------|----------------|--------------|
-| Consultation | ConsultationCommandHandler | 部分有[CMD] |
-| Formula | FormulaCommandHandler | 部分有[CMD] |
-| Herbs | HerbCommandHandler | **新增，已有[CMD]** |
-| MedicalCase | MedicalCaseCommandHandler | 部分有[CMD] |
-| Patients | PatientCommandHandler | 部分有[CMD] |
-| Users | UserCommandHandler | 部分有[CMD] |
-
-#### AggregateService (有状态聚合根 - [AGG]前缀)
-
-| 模块 | AggregateService | 当前日志状态 |
-|------|------------------|--------------|
-| MedicalCase | MedicalCaseAggregateService | 无统一前缀 |
+| 模块 | Service | 职责 | 当前日志状态 |
+|------|---------|------|--------------|
+| Consultation | ConsultationService | CRUD操作 | 部分有前缀 |
+| Formula | FormulaService | CRUD操作 | 部分有前缀 |
+| Herbs | HerbService | CRUD操作 | 部分有前缀 |
+| MedicalCase | MedicalCaseService | 聚合根管理 | 无统一前缀 |
+| Patients | PatientService | CRUD操作 | 部分有前缀 |
+| Users | UserService | CRUD操作 | 部分有前缀 |
 
 #### StateManager (有状态实体 - [STATE]前缀)
 
@@ -154,18 +148,16 @@ LYBT.Shared.Logging已提供：
 
 ```
 [VM] Save started - MedicalCase                     ← ViewModel层
-  [AGG] SaveAsync: MedicalCase-001                  ← AggregateService层
-    [CMD] UpdateMedicalCase: {Id}                   ← CommandHandler层
-      [HTTP] >>> PUT /api/medicalcases/{id}         ← HTTP Client层
-        [API] >>> MedicalCasesController.Update     ← Controller层
-          [SVC] UpdateAsync: {Id}                   ← Service层
-            [REPO] MedicalCase.Update               ← Repository层
-            [REPO] MedicalCase.Update completed
-          [SVC] UpdateAsync completed: success
-        [API] <<< completed in 120ms
-      [HTTP] <<< 200 Duration=150ms
-    [CMD] UpdateMedicalCase completed: success
-  [AGG] SaveAsync completed
+  [SVC] MedicalCaseService.SaveAsync                ← Desktop Service层
+    [HTTP] >>> PUT /api/medicalcases/{id}           ← HTTP Client层
+      [API] >>> MedicalCasesController.Update       ← Controller层
+        [SVC] UpdateAsync: {Id}                     ← Server Service层
+          [REPO] MedicalCase.Update                 ← Repository层
+          [REPO] MedicalCase.Update completed
+        [SVC] UpdateAsync completed: success
+      [API] <<< completed in 120ms
+    [HTTP] <<< 200 Duration=150ms
+  [SVC] MedicalCaseService.SaveAsync completed
 [VM] Save completed - Duration=200ms
 ```
 
@@ -178,13 +170,12 @@ LYBT.Shared.Logging已提供：
 | 层级 | 前缀 | 适用范围 | 示例 |
 |------|------|----------|------|
 | ViewModel | [VM] | ViewModelBase派生类 | [VM] Save started |
-| AggregateService | [AGG] | 有状态聚合根管理器 | [AGG] SaveAsync |
+| Desktop Service | [SVC] | Desktop端MVVM服务（CRUD+聚合根） | [SVC] UserService.CreateAsync |
 | StateManager | [STATE] | 有状态实体管理器 | [STATE] InitializeAsync |
-| CommandHandler | [CMD] | 无状态CRUD操作 | [CMD] CreateUser |
-| Handler | [HDL] | 专用处理器 | [HDL] NavigateTo |
+| Handler | [HDL] | 专用处理器（导航/生命周期/导入） | [HDL] NavigateTo |
 | HTTP Client | [HTTP] | API请求/响应 | [HTTP] >>> POST /api/users |
 | Controller | [API] | Controller Action | [API] >>> UsersController.Create |
-| Service | [SVC] | Server端业务服务 | [SVC] CreateAsync |
+| Server Service | [SVC] | Server端业务服务 | [SVC] CreateAsync |
 | Repository | [REPO] | 数据访问操作 | [REPO] User.Add |
 
 ---
@@ -205,10 +196,9 @@ LYBT.Shared.Logging已提供：
 |------|--------|----------|
 | ViewModel基类 | 2 | 添加[VM]操作日志 |
 | Repository基类 | 1 | 添加[REPO]CRUD日志 |
-| CommandHandler | 6 | 规范化[CMD]前缀 |
-| AggregateService | 1 | 添加[AGG]前缀 |
+| Desktop Service | 6 | 规范化[SVC]前缀 |
 | StateManager | 1 | 添加[STATE]前缀 |
-| 其他Handler | 6 | 添加[HDL]前缀 |
+| Handler | 6 | 添加[HDL]前缀 |
 | Server Service | 15 | 规范化[SVC]前缀 |
 | SensitiveDataMasker | 1 | 添加MaskUri方法 |
 
@@ -229,7 +219,7 @@ LYBT.Shared.Logging已提供：
 | 3 | Server CorrelationId | 3.1-3.2 | CorrelationIdMiddleware |
 | 4 | Server API日志 | 4.1-4.2 | ApiLoggingFilter |
 | 5 | Repository日志 | 5.1-5.2 | RepositoryBase添加[REPO]日志 |
-| 6 | Desktop数据处理层规范化 | 6.1-6.8 | CommandHandler/AggregateService/StateManager/Handler |
+| 6 | Desktop数据处理层规范化 | 6.1-6.11 | Service/StateManager/Handler日志规范化 |
 | 7 | Server Service规范化 | 7.1-7.8 | 8个模块Service添加[SVC]前缀 |
 | 8 | 集成测试与文档 | 8.1-8.5 | 端到端测试 + 文档更新 |
 
@@ -254,7 +244,7 @@ LYBT.Shared.Logging已提供：
 - [ASP.NET Core HTTP Logging](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-logging)
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
 - [Serilog Structured Logging](https://github.com/serilog/serilog/wiki/Structured-Data)
-- OpenSpec: unify-desktop-command-handler (架构统一基础)
+- OpenSpec: standardize-service-layer (Service层统一命名基础)
 
 ---
 

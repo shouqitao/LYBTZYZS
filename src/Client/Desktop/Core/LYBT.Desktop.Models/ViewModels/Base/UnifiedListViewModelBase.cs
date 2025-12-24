@@ -83,19 +83,41 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         public async Task LoadPageAsync(bool showLoading = true)
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Logger.LogInformation("[VM] Refresh started - {ItemType} Page={Page} PageSize={PageSize}", 
+                typeof(T).Name, CurrentPage, PageSize);
+
             await ExecuteSafelyAsync(async () =>
             {
                 if (showLoading) IsLoading = true;
                 try
                 {
                     var items = await GetItemsAsync(CurrentPage, PageSize, SearchText);
-                    RunOnUIThread(() => { Items = new ObservableCollection<T>(items); RefreshPagingProperties(); });
+                    var itemsList = items.ToList();
+                    RunOnUIThread(() => { Items = new ObservableCollection<T>(itemsList); RefreshPagingProperties(); });
+
+                    sw.Stop();
+                    Logger.LogInformation("[VM] Refresh completed - {ItemType} Count={Count} Duration={Duration}ms", 
+                        typeof(T).Name, itemsList.Count, sw.ElapsedMilliseconds);
                 }
                 finally { if (showLoading) IsLoading = false; }
             }, "加载数据");
         }
 
-        public async Task SearchAsync() { CurrentPage = 1; await LoadPageAsync(false); }
+        public async Task SearchAsync()
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Logger.LogInformation("[VM] Search started - {ItemType} SearchText={SearchText}", 
+                typeof(T).Name, SearchText);
+
+            CurrentPage = 1;
+            await LoadPageAsync(false);
+
+            sw.Stop();
+            Logger.LogInformation("[VM] Search completed - {ItemType} Count={Count} Duration={Duration}ms", 
+                typeof(T).Name, Items.Count, sw.ElapsedMilliseconds);
+        }
+
         public async Task RefreshAsync() => await LoadPageAsync(false);
         public async Task ForceRefreshAsync() => await LoadPageAsync(true);
 

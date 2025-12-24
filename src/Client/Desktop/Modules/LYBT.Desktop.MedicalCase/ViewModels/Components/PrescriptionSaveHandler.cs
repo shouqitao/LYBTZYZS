@@ -12,6 +12,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 /// 处方保存处理器
 /// 负责处方的创建和更新逻辑
 /// OpenSpec: cleanup-ui-layer - Phase 1.1 PrescriptionPanelViewModel拆分
+/// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
 /// </summary>
 public class PrescriptionSaveHandler
 {
@@ -51,9 +52,12 @@ public class PrescriptionSaveHandler
         {
             if (!context.Items.Any())
             {
-                _logger.LogWarning("没有药材项，跳过保存");
+                _logger.LogWarning("[HDL] PrescriptionSave.Save → NoItems");
                 return PrescriptionSaveResult.Empty();
             }
+
+            _logger.LogInformation("[HDL] PrescriptionSave.Save started - MedicalCaseId={MedicalCaseId} ItemsCount={ItemsCount}",
+                context.MedicalCaseId, context.Items.Count);
 
             // OpenSpec: simplify-medicalcase-api - 通过聚合保存处理处方创建/更新
             var prescriptionInput = new PrescriptionInputDto
@@ -75,7 +79,7 @@ public class PrescriptionSaveHandler
 
             if (result?.Prescription != null)
             {
-                _logger.LogInformation("处方数据保存成功");
+                _logger.LogInformation("[HDL] PrescriptionSave.Save completed - PrescriptionId={PrescriptionId}", result.Prescription.Id);
 
                 // 发布处方完成事件 - OpenSpec: unify-event-system
                 _eventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>()
@@ -89,12 +93,12 @@ public class PrescriptionSaveHandler
                 return PrescriptionSaveResult.Success(result.Prescription.Id);
             }
 
-            _logger.LogWarning("处方数据保存失败");
+            _logger.LogWarning("[HDL] PrescriptionSave.Save → NullResult");
             return PrescriptionSaveResult.Failed("API返回null");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "保存处方数据异常");
+            _logger.LogError(ex, "[HDL] PrescriptionSave.Save failed - MedicalCaseId={MedicalCaseId}", context.MedicalCaseId);
             return PrescriptionSaveResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
         }
     }
@@ -109,12 +113,12 @@ public class PrescriptionSaveHandler
     {
         try
         {
-            _logger.LogInformation("[处方诊断] SaveSilentlyAsync被调用，MedicalCaseId: {MedicalCaseId}, Items.Count: {Count}",
+            _logger.LogDebug("[HDL] PrescriptionSave.SaveSilent started - MedicalCaseId={MedicalCaseId} ItemsCount={ItemsCount}",
                 context.MedicalCaseId, context.Items.Count);
 
             if (!context.Items.Any())
             {
-                _logger.LogWarning("[处方诊断] 没有有效药材项，静默保存跳过");
+                _logger.LogDebug("[HDL] PrescriptionSave.SaveSilent → NoItems");
                 return PrescriptionSaveResult.Empty();
             }
 
@@ -134,26 +138,22 @@ public class PrescriptionSaveHandler
                 Prescription = prescriptionInput
             };
 
-            _logger.LogInformation("[处方诊断] 准备调用SaveAsync，MedicalCaseId: {MedicalCaseId}, Items: {Count}",
-                context.MedicalCaseId, context.Items.Count);
-
             var result = await _medicalCaseRepository.SaveAsync(context.MedicalCaseId, medicalCaseInput);
-            _logger.LogInformation("[处方诊断] SaveAsync返回: {Result}", result?.Prescription != null ? $"成功,Id={result.Prescription.Id}" : "null");
 
             if (result?.Prescription != null)
             {
-                _logger.LogInformation("[处方诊断] 处方数据静默保存成功，PrescriptionId: {PrescriptionId}", result.Prescription.Id);
+                _logger.LogDebug("[HDL] PrescriptionSave.SaveSilent completed - PrescriptionId={PrescriptionId}", result.Prescription.Id);
                 // 静默保存不发布PrescriptionCompletedEvent
                 return PrescriptionSaveResult.Success(result.Prescription.Id);
             }
 
-            _logger.LogWarning("[处方诊断] 处方数据静默保存失败：API返回null");
+            _logger.LogDebug("[HDL] PrescriptionSave.SaveSilent → NullResult");
             return PrescriptionSaveResult.Failed("API返回null");
         }
         catch (Exception ex)
         {
             // 静默保存不显示错误，只记录日志
-            _logger.LogWarning(ex, "静默保存处方数据异常（不阻止后续操作）");
+            _logger.LogWarning(ex, "[HDL] PrescriptionSave.SaveSilent failed (non-blocking) - MedicalCaseId={MedicalCaseId}", context.MedicalCaseId);
             return PrescriptionSaveResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
         }
     }

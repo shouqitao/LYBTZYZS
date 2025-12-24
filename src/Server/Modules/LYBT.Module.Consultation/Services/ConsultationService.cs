@@ -30,7 +30,7 @@ namespace LYBT.Module.Consultations.Services
         /// <inheritdoc/>
         public async Task<ConsultationDetailDto> GetByIdAsync(Guid id)
         {
-            _logger.LogDebug("获取诊疗记录详情: {Id}", id);
+            _logger.LogDebug("[SVC] Consultation.GetById started - ConsultationId={Id}", id);
 
             // 使用优化后的查询方法
             var entity = await _repository.GetByIdWithDetailsAsync(id)
@@ -53,7 +53,7 @@ namespace LYBT.Module.Consultations.Services
         /// <inheritdoc/>
         public async Task<List<ConsultationDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
-            _logger.LogDebug("根据医案ID获取诊疗记录: {MedicalCaseId}", medicalCaseId);
+            _logger.LogDebug("[SVC] Consultation.GetByMedicalCaseId started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // 使用优化后的查询方法，直接从数据库获取相关记录
             var consultation = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);

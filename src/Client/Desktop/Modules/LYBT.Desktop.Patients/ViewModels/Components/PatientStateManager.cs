@@ -8,6 +8,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
     /// 患者数据管理器 - 组件化架构
     /// 职责单一：专注患者数据的CRUD操作和状态管理
     /// Epic #1773 Task 4: Patients模块组件化改造
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[STATE]前缀
     /// </summary>
     public class PatientStateManager
     {
@@ -57,7 +58,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 IsLoading = true;
                 PatientId = patientId;
 
-                _logger.LogInformation("开始初始化患者数据，患者ID: {PatientId}", patientId);
+                _logger.LogInformation("[STATE] Patient.Initialize started - PatientId={PatientId}", patientId);
 
                 if (patientId == Guid.Empty)
                 {
@@ -65,7 +66,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                     IsNewPatient = true;
                     CurrentPatient = null;
                     IsReadOnly = false;
-                    _logger.LogInformation("初始化为新建患者模式");
+                    _logger.LogDebug("[STATE] Patient.Initialize → NewPatientMode");
                 }
                 else
                 {
@@ -74,11 +75,11 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 }
 
                 HasChanges = false;
-                _logger.LogInformation("患者数据初始化完成");
+                _logger.LogInformation("[STATE] Patient.Initialize completed - PatientId={PatientId}", patientId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "初始化患者数据失败");
+                _logger.LogError(ex, "[STATE] Patient.Initialize failed - PatientId={PatientId}", patientId);
                 throw;
             }
             finally
@@ -94,23 +95,23 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始加载患者数据，患者ID: {PatientId}", PatientId);
+                _logger.LogDebug("[STATE] Patient.LoadExisting started - PatientId={PatientId}", PatientId);
 
                 CurrentPatient = await _patientRepository.GetByIdAsync(PatientId);
 
                 if (CurrentPatient != null)
                 {
                     IsNewPatient = false;
-                    _logger.LogInformation("成功加载患者数据: {PatientName}", CurrentPatient.Name);
+                    _logger.LogDebug("[STATE] Patient.LoadExisting completed - PatientName={PatientName}", CurrentPatient.Name);
                 }
                 else
                 {
-                    _logger.LogWarning("未找到患者数据，患者ID: {PatientId}", PatientId);
+                    _logger.LogWarning("[STATE] Patient.LoadExisting → NotFound - PatientId={PatientId}", PatientId);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载患者数据失败");
+                _logger.LogError(ex, "[STATE] Patient.LoadExisting failed - PatientId={PatientId}", PatientId);
                 throw;
             }
         }
@@ -128,12 +129,12 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             {
                 if (CurrentPatient == null)
                 {
-                    _logger.LogWarning("患者数据为空，无法保存");
+                    _logger.LogWarning("[STATE] Patient.Save → NoData");
                     return false;
                 }
 
                 IsLoading = true;
-                _logger.LogInformation("开始保存患者数据");
+                _logger.LogInformation("[STATE] Patient.Save started - IsNew={IsNew}", IsNewPatient);
 
                 // 转换为InputDto
                 var inputDto = ConvertToInputDto(CurrentPatient);
@@ -142,12 +143,12 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 if (IsNewPatient)
                 {
                     savedPatient = await _patientRepository.CreateAsync(inputDto);
-                    _logger.LogInformation("新建患者成功: {PatientName}", savedPatient.Name);
+                    _logger.LogInformation("[STATE] Patient.Create completed - PatientId={PatientId} Name={PatientName}", savedPatient.Id, savedPatient.Name);
                 }
                 else
                 {
                     savedPatient = await _patientRepository.UpdateAsync(inputDto);
-                    _logger.LogInformation("更新患者成功: {PatientName}", savedPatient.Name);
+                    _logger.LogInformation("[STATE] Patient.Update completed - PatientId={PatientId} Name={PatientName}", savedPatient.Id, savedPatient.Name);
                 }
 
                 if (savedPatient != null)
@@ -163,7 +164,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "保存患者数据失败");
+                _logger.LogError(ex, "[STATE] Patient.Save failed - PatientId={PatientId}", PatientId);
                 return false;
             }
             finally
@@ -181,27 +182,31 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             {
                 if (PatientId == Guid.Empty)
                 {
-                    _logger.LogWarning("患者ID为空，无法删除");
+                    _logger.LogWarning("[STATE] Patient.Delete → InvalidId");
                     return false;
                 }
 
                 IsLoading = true;
-                _logger.LogInformation("开始删除患者，患者ID: {PatientId}", PatientId);
+                _logger.LogInformation("[STATE] Patient.Delete started - PatientId={PatientId}", PatientId);
 
                 var result = await _patientRepository.DeleteAsync(PatientId);
 
                 if (result)
                 {
-                    _logger.LogInformation("删除患者成功");
+                    _logger.LogInformation("[STATE] Patient.Delete completed - PatientId={PatientId}", PatientId);
                     CurrentPatient = null;
                     PatientId = Guid.Empty;
+                }
+                else
+                {
+                    _logger.LogWarning("[STATE] Patient.Delete → Failed - PatientId={PatientId}", PatientId);
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除患者失败");
+                _logger.LogError(ex, "[STATE] Patient.Delete failed - PatientId={PatientId}", PatientId);
                 return false;
             }
             finally
@@ -217,6 +222,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         {
             if (PatientId != Guid.Empty)
             {
+                _logger.LogDebug("[STATE] Patient.Reload started - PatientId={PatientId}", PatientId);
                 await LoadExistingPatientAsync();
                 HasChanges = false;
             }

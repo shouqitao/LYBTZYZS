@@ -32,16 +32,17 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("创建用户: {Username}", createDto.UserName);
+                // OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
+                _logger.LogInformation("[SVC] User.Create started - Username={Username}", createDto.UserName);
 
                 var createdUser = await _repository.CreateAsync(createDto);
-                _logger.LogInformation("用户创建成功: {UserId}", createdUser.Id);
+                _logger.LogInformation("[SVC] User.Create completed - UserId={UserId}", createdUser.Id);
 
                 return (true, createdUser, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建用户时发生异常: {Username}", createDto.UserName);
+                _logger.LogError(ex, "[SVC] User.Create failed - Username={Username}", createDto.UserName);
                 return (false, null, "创建用户时发生系统错误");
             }
         }
@@ -53,16 +54,16 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("更新用户: {UserId}", updateDto.Id);
+                _logger.LogInformation("[SVC] User.Update started - UserId={UserId}", updateDto.Id);
 
                 var updatedUser = await _repository.UpdateAsync(updateDto);
-                _logger.LogInformation("用户更新成功: {Username}", updatedUser.UserName);
+                _logger.LogInformation("[SVC] User.Update completed - Username={Username}", updatedUser.UserName);
 
                 return (true, updatedUser, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新用户时发生异常: {UserId}", updateDto.Id);
+                _logger.LogError(ex, "[SVC] User.Update failed - UserId={UserId}", updateDto.Id);
                 return (false, null, "更新用户时发生系统错误");
             }
         }
@@ -74,24 +75,24 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("删除用户: {UserId}", userId);
+                _logger.LogInformation("[SVC] User.Delete started - UserId={UserId}", userId);
 
                 var result = await _repository.DeleteAsync(userId);
 
                 if (result)
                 {
-                    _logger.LogInformation("用户删除成功");
+                    _logger.LogInformation("[SVC] User.Delete completed");
                     return (true, null);
                 }
                 else
                 {
-                    _logger.LogWarning("用户删除失败：{UserId}", userId);
+                    _logger.LogWarning("[SVC] User.Delete failed - UserId={UserId}", userId);
                     return (false, "删除用户失败");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除用户时发生异常: {UserId}", userId);
+                _logger.LogError(ex, "[SVC] User.Delete failed - UserId={UserId}", userId);
                 return (false, "删除用户时发生系统错误");
             }
         }
@@ -104,25 +105,25 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("批量删除用户：{Count} 个", userIds.Count);
+                _logger.LogInformation("[SVC] User.BatchDelete started - Count={Count}", userIds.Count);
 
                 var result = await _repository.BatchDeleteAsync(userIds);
 
                 if (result != null)
                 {
-                    _logger.LogInformation("批量删除用户完成：成功 {Success} 个，失败 {Failure} 个",
+                    _logger.LogInformation("[SVC] User.BatchDelete completed - Success={Success} Failure={Failure}",
                         result.SuccessCount, result.FailureCount);
                     return (true, result, null);
                 }
                 else
                 {
-                    _logger.LogWarning("批量删除用户失败");
+                    _logger.LogWarning("[SVC] User.BatchDelete failed");
                     return (false, null, "批量删除用户失败");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "批量删除用户时发生异常");
+                _logger.LogError(ex, "[SVC] User.BatchDelete failed");
                 return (false, null, "批量删除用户时发生系统错误");
             }
         }
@@ -138,22 +139,22 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始查询用户: UserId={UserId}", userId);
+                _logger.LogDebug("[SVC] User.GetById started - UserId={UserId}", userId);
 
                 var user = await _repository.GetByIdAsync(userId);
 
                 if (user == null)
                 {
-                    _logger.LogWarning("用户不存在：UserId={UserId}", userId);
+                    _logger.LogWarning("[SVC] User.GetById → NotFound - UserId={UserId}", userId);
                     return (false, null, "用户不存在");
                 }
 
-                _logger.LogInformation("查询用户成功：{Username}", user.UserName);
+                _logger.LogDebug("[SVC] User.GetById completed - Username={Username}", user.UserName);
                 return (true, user, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询用户时发生异常：UserId={UserId}", userId);
+                _logger.LogError(ex, "[SVC] User.GetById failed - UserId={UserId}", userId);
                 return (false, null, "查询用户时发生系统错误");
             }
         }
@@ -166,17 +167,17 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("分页查询用户: Page={Page}, PageSize={PageSize}, SearchText={SearchText}",
+                _logger.LogDebug("[SVC] User.GetPaged started - Page={Page} PageSize={PageSize} SearchText={SearchText}",
                     page, pageSize, searchText);
 
                 var result = await _repository.GetPagedAsync(page, pageSize, searchText);
 
-                _logger.LogInformation("查询成功，共{TotalCount}条数据", result.TotalCount);
+                _logger.LogDebug("[SVC] User.GetPaged completed - TotalCount={TotalCount}", result.TotalCount);
                 return (true, result, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页查询用户时发生异常");
+                _logger.LogError(ex, "[SVC] User.GetPaged failed");
                 return (false, null, "查询用户时发生系统错误");
             }
         }
@@ -188,22 +189,22 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("根据用户名查询用户: {Username}", username);
+                _logger.LogDebug("[SVC] User.GetByUsername started - Username={Username}", username);
 
                 var user = await _repository.GetByUsernameAsync(username);
 
                 if (user == null)
                 {
-                    _logger.LogWarning("用户不存在：{Username}", username);
+                    _logger.LogWarning("[SVC] User.GetByUsername → NotFound - Username={Username}", username);
                     return (false, null, "用户不存在");
                 }
 
-                _logger.LogInformation("查询用户成功：{Username}", user.UserName);
+                _logger.LogDebug("[SVC] User.GetByUsername completed - Username={Username}", user.UserName);
                 return (true, user, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "根据用户名查询用户时发生异常：{Username}", username);
+                _logger.LogError(ex, "[SVC] User.GetByUsername failed - Username={Username}", username);
                 return (false, null, "查询用户时发生系统错误");
             }
         }
@@ -215,16 +216,16 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("搜索用户: {Keyword}", keyword);
+                _logger.LogDebug("[SVC] User.Search started - Keyword={Keyword}", keyword);
 
                 var users = await _repository.SearchAsync(keyword);
 
-                _logger.LogInformation("搜索成功，找到{Count}个用户", users.Count);
+                _logger.LogDebug("[SVC] User.Search completed - Count={Count}", users.Count);
                 return (true, users, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "搜索用户时发生异常");
+                _logger.LogError(ex, "[SVC] User.Search failed");
                 return (false, null, "搜索用户时发生系统错误");
             }
         }
@@ -236,16 +237,16 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("查询医生列表");
+                _logger.LogDebug("[SVC] User.GetDoctors started");
 
                 var doctors = await _repository.GetDoctorsAsync();
 
-                _logger.LogInformation("查询成功，共{Count}名医生", doctors.Count);
+                _logger.LogDebug("[SVC] User.GetDoctors completed - Count={Count}", doctors.Count);
                 return (true, doctors, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询医生列表时发生异常");
+                _logger.LogError(ex, "[SVC] User.GetDoctors failed");
                 return (false, null, "查询医生列表时发生系统错误");
             }
         }
@@ -262,16 +263,16 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("修改个人资料: UserId={UserId}", userId);
+                _logger.LogInformation("[SVC] User.ChangeProfile started - UserId={UserId}", userId);
 
                 var updatedUser = await _repository.ChangeProfileAsync(userId, dto);
 
-                _logger.LogInformation("个人资料修改成功");
+                _logger.LogInformation("[SVC] User.ChangeProfile completed");
                 return (true, updatedUser, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "修改个人资料时发生异常: UserId={UserId}", userId);
+                _logger.LogError(ex, "[SVC] User.ChangeProfile failed - UserId={UserId}", userId);
                 return (false, null, "修改个人资料时发生系统错误");
             }
         }
@@ -286,7 +287,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         public Task<(bool success, string? errorMessage)> ChangePasswordAsync(
             Guid userId, string oldPassword, string newPassword)
         {
-            _logger.LogInformation("修改密码: {UserId}", userId);
+            _logger.LogInformation("[SVC] User.ChangePassword started - UserId={UserId}", userId);
 
             // TODO: 实现修改密码逻辑（应该调用认证服务）
             return Task.FromResult<(bool, string?)>((true, "修改密码功能开发中"));
@@ -307,7 +308,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("UserService: 开始重置密码, UserId: {UserId}", userId);
+                _logger.LogInformation("[SVC] User.ResetPassword started - UserId={UserId}", userId);
 
                 // 构建请求DTO
                 var request = new ResetPasswordRequestDto();
@@ -317,19 +318,19 @@ namespace LYBT.Desktop.Users.ViewModels.Components
 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    _logger.LogInformation("UserService: 重置密码成功, UserId: {UserId}", userId);
+                    _logger.LogInformation("[SVC] User.ResetPassword completed - UserId={UserId}", userId);
                     return (true, null, result.Data);
                 }
                 else
                 {
-                    _logger.LogWarning("UserService: 重置密码失败, UserId: {UserId}, Message: {Message}",
+                    _logger.LogWarning("[SVC] User.ResetPassword failed - UserId={UserId} Message={Message}",
                         userId, result.Message);
                     return (false, result.Message, null);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "UserService: 重置密码异常, UserId: {UserId}", userId);
+                _logger.LogError(ex, "[SVC] User.ResetPassword failed - UserId={UserId}", userId);
                 return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("重置密码", ex), null);
             }
         }

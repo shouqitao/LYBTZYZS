@@ -31,15 +31,15 @@ namespace LYBT.Module.MedicalCases.Services
         {
             if (medicalCase == null)
             {
-                _logger.LogWarning("权限检查: 医案为null");
+                _logger.LogWarning("[SVC] MedicalCase.CheckPermission → NullEntity");
                 return false;
             }
 
             // 管理员可以编辑所有医案
             if (IsAdmin(role))
             {
-                _logger.LogDebug("权限检查: 管理员({Role})可以编辑医案 {MedicalCaseId}",
-                    role, medicalCase.Id);
+                _logger.LogDebug("[SVC] MedicalCase.CheckPermission → AdminGranted - MedicalCaseId={MedicalCaseId} Role={Role}",
+                    medicalCase.Id, role);
                 return true;
             }
 
@@ -51,8 +51,8 @@ namespace LYBT.Module.MedicalCases.Services
                 var isOwner = medicalCase.UserId == userId;
                 if (!isOwner)
                 {
-                    _logger.LogDebug("权限检查: 医生 {UserId} 不是医案 {MedicalCaseId} 的创建者",
-                        userId, medicalCase.Id);
+                    _logger.LogDebug("[SVC] MedicalCase.CheckPermission → NotOwner - MedicalCaseId={MedicalCaseId} UserId={UserId}",
+                        medicalCase.Id, userId);
                     return false;
                 }
 
@@ -60,9 +60,8 @@ namespace LYBT.Module.MedicalCases.Services
                 // IsLocked = CompletedAt有值 || 创建日期不是今天
                 if (medicalCase.IsLocked)
                 {
-                    _logger.LogDebug("权限检查: 医生 {UserId} 无法编辑已锁定的医案 {MedicalCaseId}, " +
-                        "CompletedAt: {CompletedAt}, CreatedAt: {CreatedAt}",
-                        userId, medicalCase.Id, medicalCase.CompletedAt, medicalCase.CreatedAt);
+                    _logger.LogDebug("[SVC] MedicalCase.CheckPermission → Locked - MedicalCaseId={MedicalCaseId} UserId={UserId} CompletedAt={CompletedAt} CreatedAt={CreatedAt}",
+                        medicalCase.Id, userId, medicalCase.CompletedAt, medicalCase.CreatedAt);
                     return false;
                 }
 
@@ -71,15 +70,15 @@ namespace LYBT.Module.MedicalCases.Services
 
                 if (!isEditable)
                 {
-                    _logger.LogDebug("权限检查: 医生 {UserId} 无法编辑非活跃的医案 {MedicalCaseId}, 状态: {Status}",
-                        userId, medicalCase.Id, medicalCase.CaseStatus);
+                    _logger.LogDebug("[SVC] MedicalCase.CheckPermission → NotActive - MedicalCaseId={MedicalCaseId} UserId={UserId} Status={Status}",
+                        medicalCase.Id, userId, medicalCase.CaseStatus);
                 }
 
                 return isEditable;
             }
 
             // 其他角色默认无权编辑
-            _logger.LogDebug("权限检查: 角色 {Role} 无编辑权限", role);
+            _logger.LogDebug("[SVC] MedicalCase.CheckPermission → RoleDenied - Role={Role}", role);
             return false;
         }
 
@@ -92,7 +91,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 空Guid表示未登录
             if (userId == Guid.Empty)
             {
-                _logger.LogWarning("权限检查: 未登录用户尝试创建医案");
+                _logger.LogWarning("[SVC] MedicalCase.CheckPermission → NotAuthenticated");
                 return false;
             }
 
@@ -100,7 +99,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 医案必须由接诊医生创建，管理员只能查看和编辑
             if (IsAdmin(role))
             {
-                _logger.LogDebug("权限检查: 管理员({Role})不能创建医案", role);
+                _logger.LogDebug("[SVC] MedicalCase.CheckPermission → AdminCannotCreate - Role={Role}", role);
                 return false;
             }
 

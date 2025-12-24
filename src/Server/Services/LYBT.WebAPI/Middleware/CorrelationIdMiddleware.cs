@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Serilog.Context;
 
 namespace LYBT.WebAPI.Middleware
@@ -5,6 +6,7 @@ namespace LYBT.WebAPI.Middleware
     /// <summary>
     /// CorrelationId中间件 - 实现端到端请求追踪
     /// refactor-logging-system: 从请求头读取或自动生成CorrelationId，并通过LogContext传递
+    /// LOG-013: 支持W3C traceparent header进行分布式追踪
     /// </summary>
     public class CorrelationIdMiddleware
     {
@@ -12,6 +14,12 @@ namespace LYBT.WebAPI.Middleware
         /// CorrelationId HTTP请求/响应头名称
         /// </summary>
         public const string CorrelationIdHeader = "X-Correlation-ID";
+
+        /// <summary>
+        /// W3C Trace Context标准头名称
+        /// LOG-013: 分布式追踪Header传递
+        /// </summary>
+        public const string TraceparentHeader = "traceparent";
 
         /// <summary>
         /// HttpContext.Items中存储CorrelationId的键名
@@ -31,19 +39,29 @@ namespace LYBT.WebAPI.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // 从请求头读取CorrelationId，如果不存在则生成新的
-            var correlationId = context.Request.Headers[CorrelationIdHeader].FirstOrDefault();
+            // LOG-013: 优先从traceparent header提取CorrelationId (W3C Trace Context)
+            var correlationId = context.Request.Headers[TraceparentHeader].FirstOrDefault();
+            
+            // 回退到X-Correlation-ID header
+            if (string.IsNullOrWhiteSpace(correlationId))
+            {
+                correlationId = context.Request.Headers[CorrelationIdHeader].FirstOrDefault();
+            }
 
+            // 如果都没有，生成新的
             if (string.IsNullOrWhiteSpace(correlationId))
             {
                 // 使用短格式GUID，便于日志展示
                 correlationId = Guid.NewGuid().ToString("N")[..12];
             }
 
+            // 设置到HttpContext.TraceIdentifier
+            context.TraceIdentifier = correlationId;
+
             // 存储到HttpContext.Items，供后续中间件和Controller使用
             context.Items[CorrelationIdItemKey] = correlationId;
 
-            // 添加到响应头，便于客户端关联
+            // LOG-013: 添加到响应头，便于客户端关联
             context.Response.OnStarting(() =>
             {
                 context.Response.Headers[CorrelationIdHeader] = correlationId;

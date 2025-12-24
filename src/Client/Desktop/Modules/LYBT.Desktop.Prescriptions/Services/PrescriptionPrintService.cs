@@ -51,20 +51,21 @@ namespace LYBT.Desktop.Prescriptions.Services
 
             try
             {
-                _logger.LogInformation("开始打印处方 ID: {PrescriptionId}", prescription.Id);
+                _logger.LogInformation("[SVC] Print.Print started - PrescriptionId={PrescriptionId}", prescription.Id);
 
                 var document = await PreparePrintDocumentAsync(prescription);
                 var success = ExecutePrint(document, prescription.Id);
 
-                _logger.LogInformation(success
-                    ? "处方打印成功 ID: {PrescriptionId}"
-                    : "用户取消打印 ID: {PrescriptionId}", prescription.Id);
+                if (success)
+                    _logger.LogInformation("[SVC] Print.Print completed - PrescriptionId={PrescriptionId}", prescription.Id);
+                else
+                    _logger.LogDebug("[SVC] Print.Print → UserCancelled - PrescriptionId={PrescriptionId}", prescription.Id);
 
                 return success;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "打印处方失败 ID: {PrescriptionId}", prescription.Id);
+                _logger.LogError(ex, "[SVC] Print.Print failed - PrescriptionId={PrescriptionId}", prescription.Id);
                 throw;
             }
         }
@@ -125,20 +126,21 @@ namespace LYBT.Desktop.Prescriptions.Services
 
             try
             {
-                _logger.LogInformation("开始打印处方 ID: {PrescriptionId}", prescription.Id);
+                _logger.LogInformation("[SVC] Print.PrintWithContext started - PrescriptionId={PrescriptionId}", prescription.Id);
 
                 var document = await PreparePrintDocumentAsync(prescription, patient, consultation);
                 var success = ExecutePrint(document, prescription.Id);
 
-                _logger.LogInformation(success
-                    ? "处方打印成功 ID: {PrescriptionId}"
-                    : "用户取消打印 ID: {PrescriptionId}", prescription.Id);
+                if (success)
+                    _logger.LogInformation("[SVC] Print.PrintWithContext completed - PrescriptionId={PrescriptionId}", prescription.Id);
+                else
+                    _logger.LogDebug("[SVC] Print.PrintWithContext → UserCancelled - PrescriptionId={PrescriptionId}", prescription.Id);
 
                 return success;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "打印处方失败 ID: {PrescriptionId}", prescription.Id);
+                _logger.LogError(ex, "[SVC] Print.PrintWithContext failed - PrescriptionId={PrescriptionId}", prescription.Id);
                 throw;
             }
         }
@@ -154,7 +156,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
             try
             {
-                _logger.LogInformation("开始预览处方 ID: {PrescriptionId}", prescription.Id);
+                _logger.LogDebug("[SVC] Print.Preview started - PrescriptionId={PrescriptionId}", prescription.Id);
 
                 // 1. 构建打印数据模型
                 var printDto = await MapToPrintDtoAsync(prescription, patient, consultation);
@@ -190,11 +192,11 @@ namespace LYBT.Desktop.Prescriptions.Services
                 previewWindow.Content = mainGrid;
                 previewWindow.ShowDialog();
 
-                _logger.LogInformation("处方预览完成 ID: {PrescriptionId}", prescription.Id);
+                _logger.LogDebug("[SVC] Print.Preview completed - PrescriptionId={PrescriptionId}", prescription.Id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "预览处方失败 ID: {PrescriptionId}", prescription.Id);
+                _logger.LogError(ex, "[SVC] Print.Preview failed - PrescriptionId={PrescriptionId}", prescription.Id);
                 throw;
             }
         }
@@ -415,7 +417,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "获取打印机列表失败");
+                _logger.LogWarning(ex, "[SVC] Print.GetPrinters failed");
             }
         }
 
@@ -448,7 +450,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
                 if (printQueue == null)
                 {
-                    _logger.LogError("未找到可用打印机");
+                    _logger.LogError("[SVC] Print.ExecuteWithSettings → NoPrinter - PrescriptionId={PrescriptionId}", prescriptionId);
                     return;
                 }
 
@@ -461,11 +463,11 @@ namespace LYBT.Desktop.Prescriptions.Services
                     writer.Write(paginator);
                 }
 
-                _logger.LogInformation("处方打印成功 ID: {PrescriptionId}, 份数: {Copies}", prescriptionId, copies);
+                _logger.LogInformation("[SVC] Print.ExecuteWithSettings completed - PrescriptionId={PrescriptionId} Copies={Copies}", prescriptionId, copies);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "打印失败 ID: {PrescriptionId}", prescriptionId);
+                _logger.LogError(ex, "[SVC] Print.ExecuteWithSettings failed - PrescriptionId={PrescriptionId}", prescriptionId);
             }
         }
 
@@ -488,7 +490,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             if (prescriptions == null || prescriptions.Length == 0)
                 throw new ArgumentException("处方列表不能为空", nameof(prescriptions));
 
-            _logger.LogInformation("开始批量打印 {Count} 个处方", prescriptions.Length);
+            _logger.LogInformation("[SVC] Print.BatchPrint started - Count={Count}", prescriptions.Length);
 
             int successCount = 0;
 
@@ -503,11 +505,11 @@ namespace LYBT.Desktop.Prescriptions.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "批量打印处方失败 ID: {PrescriptionId}", prescription.Id);
+                    _logger.LogError(ex, "[SVC] Print.BatchPrint → ItemFailed - PrescriptionId={PrescriptionId}", prescription.Id);
                 }
             }
 
-            _logger.LogInformation("批量打印完成，成功: {SuccessCount}/{TotalCount}",
+            _logger.LogInformation("[SVC] Print.BatchPrint completed - SuccessCount={SuccessCount} TotalCount={TotalCount}",
                 successCount, prescriptions.Length);
 
             return successCount;
@@ -527,7 +529,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
             try
             {
-                _logger.LogInformation("开始导出处方 ID: {PrescriptionId} 到 {FilePath}",
+                _logger.LogInformation("[SVC] Print.Export started - PrescriptionId={PrescriptionId} FilePath={FilePath}",
                     prescription.Id, filePath);
 
                 // MVP阶段：导出为XPS格式（原生WPF支持，无需第三方库）
@@ -556,14 +558,14 @@ namespace LYBT.Desktop.Prescriptions.Services
                     }
                 }
 
-                _logger.LogInformation("处方导出成功 ID: {PrescriptionId}, 文件: {FilePath}",
+                _logger.LogInformation("[SVC] Print.Export completed - PrescriptionId={PrescriptionId} FilePath={FilePath}",
                     prescription.Id, filePath);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导出处方失败 ID: {PrescriptionId}", prescription.Id);
+                _logger.LogError(ex, "[SVC] Print.Export failed - PrescriptionId={PrescriptionId}", prescription.Id);
                 throw;
             }
         }
@@ -585,7 +587,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取打印机列表失败");
+                _logger.LogError(ex, "[SVC] Print.GetAvailablePrinters failed");
                 return Array.Empty<string>();
             }
         }

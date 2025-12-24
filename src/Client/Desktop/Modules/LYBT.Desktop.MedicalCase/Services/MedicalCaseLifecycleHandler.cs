@@ -34,12 +34,13 @@ public class MedicalCaseLifecycleHandler
 
     /// <summary>
     /// 创建新医案
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
     /// </summary>
     public async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId)
     {
         try
         {
-            _logger.LogInformation("开始创建MedicalCase，PatientId: {PatientId}", patientId);
+            _logger.LogInformation("[HDL] Lifecycle.Create started - PatientId={PatientId}", patientId);
 
             // 验证SessionManager和CurrentUser
             if (!ValidateSessionAndUser(out var errorMessage))
@@ -47,7 +48,7 @@ public class MedicalCaseLifecycleHandler
                 return (false, Guid.Empty, errorMessage);
             }
 
-            _logger.LogInformation(" SessionManager验证通过，当前用户：{UserName}（ID: {UserId}）",
+            _logger.LogDebug("[HDL] Lifecycle.Create sessionValidated - UserName={UserName} UserId={UserId}",
                 _sessionManager!.CurrentUser!.UserName, _sessionManager.CurrentUser.Id);
 
             // 构建MedicalCaseInputDto（Epic #1961: 统一InputDto）
@@ -61,7 +62,7 @@ public class MedicalCaseLifecycleHandler
                 // 注意：VisitDate已删除，使用BaseEntity.CreatedAt代替
             };
 
-            _logger.LogInformation(" 准备调用API创建MedicalCase，PatientId: {PatientId}, UserId: {UserId}",
+            _logger.LogDebug("[HDL] Lifecycle.Create inputDto - PatientId={PatientId} UserId={UserId}",
                 createDto.PatientId, createDto.UserId);
 
             // 使用DataManager创建MedicalCase
@@ -69,11 +70,11 @@ public class MedicalCaseLifecycleHandler
 
             if (createdDto == null)
             {
-                _logger.LogError(" DataManager返回null，创建失败");
+                _logger.LogWarning("[HDL] Lifecycle.Create → NullResult");
                 return (false, Guid.Empty, "创建医案失败：服务返回空结果");
             }
 
-            _logger.LogInformation(" MedicalCase创建成功，ID: {MedicalCaseId}", createdDto.Id);
+            _logger.LogInformation("[HDL] Lifecycle.Create completed - MedicalCaseId={MedicalCaseId}", createdDto.Id);
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs
@@ -87,7 +88,7 @@ public class MedicalCaseLifecycleHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, " 创建MedicalCase失败，PatientId: {PatientId}", patientId);
+            _logger.LogError(ex, "[HDL] Lifecycle.Create failed - PatientId={PatientId}", patientId);
             var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建医案", ex);
 
             // 触发事件
@@ -106,22 +107,24 @@ public class MedicalCaseLifecycleHandler
     /// 暂存医案
     /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
     /// 使用专用 /draft 端点保存当前数据，设置状态为Draft
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
     /// </summary>
     public async Task<(bool success, string? errorMessage)> SaveDraftAsync(Guid medicalCaseId)
     {
         try
         {
-            _logger.LogInformation("暂存医案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("[HDL] Lifecycle.SaveDraft started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // OpenSpec: refactor-medicalcase-api - 使用专用 /draft 端点
             var response = await _dataManager.SaveDraftViaApiAsync(medicalCaseId);
 
             if (!response.Success)
             {
+                _logger.LogWarning("[HDL] Lifecycle.SaveDraft → Failed - Message={Message}", response.Message);
                 return (false, response.Message ?? "暂存医案失败");
             }
 
-            _logger.LogInformation("医案暂存成功");
+            _logger.LogInformation("[HDL] Lifecycle.SaveDraft completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs
@@ -135,7 +138,7 @@ public class MedicalCaseLifecycleHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "暂存医案失败");
+            _logger.LogError(ex, "[HDL] Lifecycle.SaveDraft failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("暂存", ex);
 
             // 触发事件
@@ -155,6 +158,7 @@ public class MedicalCaseLifecycleHandler
     /// 取消医案
     /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
     /// 使用专用 /cancel 端点设置状态为Cancelled，支持审计理由
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
     /// <param name="reason">取消原因（非当天本人操作时必填）</param>
@@ -162,7 +166,7 @@ public class MedicalCaseLifecycleHandler
     {
         try
         {
-            _logger.LogInformation("取消医案，MedicalCaseId: {MedicalCaseId}, HasReason: {HasReason}",
+            _logger.LogInformation("[HDL] Lifecycle.Cancel started - MedicalCaseId={MedicalCaseId} HasReason={HasReason}",
                 medicalCaseId, !string.IsNullOrEmpty(reason));
 
             // OpenSpec: refactor-medicalcase-api - 使用专用 /cancel 端点
@@ -170,10 +174,11 @@ public class MedicalCaseLifecycleHandler
 
             if (!response.Success)
             {
+                _logger.LogWarning("[HDL] Lifecycle.Cancel → Failed - Message={Message}", response.Message);
                 return (false, response.Message ?? "取消医案失败");
             }
 
-            _logger.LogInformation("医案已取消（状态变更为Cancelled）");
+            _logger.LogInformation("[HDL] Lifecycle.Cancel completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs
@@ -187,7 +192,7 @@ public class MedicalCaseLifecycleHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "取消医案失败");
+            _logger.LogError(ex, "[HDL] Lifecycle.Cancel failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("取消", ex);
 
             // 触发事件
@@ -205,12 +210,13 @@ public class MedicalCaseLifecycleHandler
 
     /// <summary>
     /// 完成医案
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
     /// </summary>
     public async Task<(bool success, string? errorMessage)> CompleteAsync(Guid medicalCaseId)
     {
         try
         {
-            _logger.LogInformation("完成病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("[HDL] Lifecycle.Complete started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // 更新MedicalCase状态为Completed
             var result = await UpdateMedicalCaseStatusAsync(medicalCaseId, MedicalCaseStatus.Completed);
@@ -220,7 +226,7 @@ public class MedicalCaseLifecycleHandler
                 return result;
             }
 
-            _logger.LogInformation("病案已完成");
+            _logger.LogInformation("[HDL] Lifecycle.Complete completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs
@@ -234,7 +240,7 @@ public class MedicalCaseLifecycleHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "完成病案失败");
+            _logger.LogError(ex, "[HDL] Lifecycle.Complete failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("完成", ex);
 
             // 触发事件
@@ -253,12 +259,13 @@ public class MedicalCaseLifecycleHandler
     /// <summary>
     /// 更新MedicalCase状态
     /// Issue #2243: 使用专用的UpdateStatusAsync API
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
     /// </summary>
     private async Task<(bool success, string? errorMessage)> UpdateMedicalCaseStatusAsync(Guid medicalCaseId, MedicalCaseStatus newStatus)
     {
         try
         {
-            _logger.LogInformation("更新MedicalCase状态，MedicalCaseId: {MedicalCaseId}, 新状态: {NewStatus}",
+            _logger.LogDebug("[HDL] Lifecycle.UpdateStatus started - MedicalCaseId={MedicalCaseId} NewStatus={NewStatus}",
                 medicalCaseId, newStatus);
 
             // Issue #2243: 使用专用的状态更新API
@@ -272,15 +279,16 @@ public class MedicalCaseLifecycleHandler
 
             if (!response.Success)
             {
+                _logger.LogWarning("[HDL] Lifecycle.UpdateStatus → Failed - Message={Message}", response.Message);
                 throw new InvalidOperationException(response.Message ?? "状态更新失败");
             }
 
-            _logger.LogInformation("MedicalCase状态更新成功，新状态: {NewStatus}", newStatus);
+            _logger.LogDebug("[HDL] Lifecycle.UpdateStatus completed - NewStatus={NewStatus}", newStatus);
             return (true, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "更新MedicalCase状态失败，MedicalCaseId: {MedicalCaseId}, 目标状态: {NewStatus}",
+            _logger.LogError(ex, "[HDL] Lifecycle.UpdateStatus failed - MedicalCaseId={MedicalCaseId} TargetStatus={NewStatus}",
                 medicalCaseId, newStatus);
             return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新状态", ex));
         }
@@ -288,19 +296,20 @@ public class MedicalCaseLifecycleHandler
 
     /// <summary>
     /// 验证SessionManager和CurrentUser
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
     /// </summary>
     private bool ValidateSessionAndUser(out string? errorMessage)
     {
         if (_sessionManager == null)
         {
-            _logger.LogError(" SessionManager为null，无法创建MedicalCase");
+            _logger.LogWarning("[HDL] Lifecycle.ValidateSession → NullSessionManager");
             errorMessage = "会话管理器未初始化，无法创建医案";
             return false;
         }
 
         if (_sessionManager.CurrentUser == null)
         {
-            _logger.LogError(" SessionManager.CurrentUser为null，无法创建MedicalCase");
+            _logger.LogWarning("[HDL] Lifecycle.ValidateSession → NullCurrentUser");
             errorMessage = "用户信息丢失，无法创建医案";
             return false;
         }

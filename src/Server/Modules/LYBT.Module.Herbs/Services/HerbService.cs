@@ -79,7 +79,7 @@ namespace LYBT.Module.Herbs.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("药材创建验证失败: {Errors}", string.Join("; ", errors));
+                _logger.LogWarning("[SVC] Herb.Create → ValidationFailed - Errors={Errors}", string.Join("; ", errors));
                 return Result<HerbDetailDto>.Failure(errors);
             }
 
@@ -101,7 +101,7 @@ namespace LYBT.Module.Herbs.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("药材更新验证失败: {HerbId}, {Errors}", id, string.Join("; ", errors));
+                _logger.LogWarning("[SVC] Herb.Update → ValidationFailed - HerbId={HerbId} Errors={Errors}", id, string.Join("; ", errors));
                 return Result<HerbDetailDto>.Failure(errors);
             }
 
@@ -239,7 +239,7 @@ namespace LYBT.Module.Herbs.Services
                         RecordIdentifier = $"第{row}行",
                         ErrorMessage = "导入失败：数据处理异常"
                     });
-                    _logger.LogError(ex, "导入第{Row}行时发生错误", row);
+                    _logger.LogError(ex, "[SVC] Herb.Import → RowError - Row={Row}", row);
                 }
             }
 
@@ -384,7 +384,7 @@ namespace LYBT.Module.Herbs.Services
                 return Result<HerbBatchImportResultDto>.Failure($"批量导入最多支持{MAX_IMPORT_SIZE}条记录");
             }
 
-            _logger.LogInformation("开始批量导入药材，总数: {Count}, 策略: {Strategy}", herbs.Count, strategy);
+            _logger.LogInformation("[SVC] Herb.BatchImport started - Count={Count} Strategy={Strategy}", herbs.Count, strategy);
 
             for (int i = 0; i < herbs.Count; i++)
             {
@@ -409,7 +409,7 @@ namespace LYBT.Module.Herbs.Services
                         {
                             case DuplicateStrategy.Skip:
                                 result.SkippedCount++;
-                                _logger.LogDebug("跳过重复药材: {Name}", dto.Name);
+                                _logger.LogDebug("[SVC] Herb.BatchImport → Skipped - HerbName={HerbName}", dto.Name);
                                 continue;
 
                             case DuplicateStrategy.Update:
@@ -422,7 +422,7 @@ namespace LYBT.Module.Herbs.Services
                                     existingHerb.UpdatedAt = DateTime.Now;
                                     await _repository.UpdateAsync(existingHerb);
                                     result.SuccessCount++;
-                                    _logger.LogDebug("更新已存在药材: {Name}", dto.Name);
+                                    _logger.LogDebug("[SVC] Herb.BatchImport → Updated - HerbName={HerbName}", dto.Name);
                                 }
                                 continue;
 
@@ -435,7 +435,7 @@ namespace LYBT.Module.Herbs.Services
                                     Reason = "药材名称重复",
                                     ErrorDetails = new List<string> { "已存在同名药材，导入策略设置为报错" }
                                 });
-                                _logger.LogWarning("发现重复药材（Error策略）: {Name}", dto.Name);
+                                _logger.LogWarning("[SVC] Herb.BatchImport → DuplicateError - HerbName={HerbName}", dto.Name);
                                 continue;
                         }
                     }
@@ -447,7 +447,7 @@ namespace LYBT.Module.Herbs.Services
 
                     await _repository.AddAsync(entity);
                     result.SuccessCount++;
-                    _logger.LogDebug("成功导入药材: {Name}", dto.Name);
+                    _logger.LogDebug("[SVC] Herb.BatchImport → ItemSuccess - HerbName={HerbName}", dto.Name);
                 }
                 catch (Exception ex)
                 {
@@ -460,11 +460,11 @@ namespace LYBT.Module.Herbs.Services
                         Reason = "导入失败",
                         ErrorDetails = new List<string> { "数据处理异常" }
                     });
-                    _logger.LogError(ex, "导入第{Row}行药材失败: {Name}", rowNumber, dto.Name);
+                    _logger.LogError(ex, "[SVC] Herb.BatchImport → ItemFailed - Row={Row} HerbName={HerbName}", rowNumber, dto.Name);
                 }
             }
 
-            _logger.LogInformation("批量导入完成: 成功{Success}, 失败{Failed}, 跳过{Skipped}",
+            _logger.LogInformation("[SVC] Herb.BatchImport completed - SuccessCount={Success} FailureCount={Failed} SkippedCount={Skipped}",
                 result.SuccessCount, result.FailureCount, result.SkippedCount);
 
             return Result<HerbBatchImportResultDto>.Success(result);
@@ -488,8 +488,8 @@ namespace LYBT.Module.Herbs.Services
                 .ToList();
             }
 
-            _logger.LogInformation("导出药材数据: 总数{Count}, 分类筛选{Category}",
-                herbDtos.Count, category ?? "无");
+            _logger.LogInformation("[SVC] Herb.Export completed - Count={Count} Category={Category}",
+                herbDtos.Count, category ?? "All");
 
             return Result<List<HerbDetailDto>>.Success(herbDtos);
         }
@@ -519,7 +519,7 @@ namespace LYBT.Module.Herbs.Services
             // TODO: 实现处方引用检查
             // 当前版本暂不检查，直接返回无引用
             // 后续迭代中需要查询 PrescriptionItems 表
-            _logger.LogInformation("检查药材引用: {HerbName}, 暂不支持引用检查", herb.Name);
+            _logger.LogInformation("[SVC] Herb.CheckReference completed - HerbName={HerbName} HasReferences=false", herb.Name);
 
             return Result<HerbReferenceCheckDto>.Success(result);
         }
@@ -549,7 +549,7 @@ namespace LYBT.Module.Herbs.Services
                 }
             }
 
-            _logger.LogInformation("批量检查药材引用完成: {Count}条", results.Count);
+            _logger.LogInformation("[SVC] Herb.BatchCheckReference completed - Count={Count}", results.Count);
 
             return Result<List<HerbReferenceCheckDto>>.Success(results);
         }
@@ -577,7 +577,7 @@ namespace LYBT.Module.Herbs.Services
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.Map<HerbDetailDto>(result);
 
-            _logger.LogInformation("药材状态已切换: {HerbId}, 新状态: {Status}", id, entity.Status);
+            _logger.LogInformation("[SVC] Herb.ToggleStatus completed - HerbId={HerbId} Status={Status}", id, entity.Status);
 
             return Result<HerbDetailDto>.Success(dto);
         }
@@ -607,7 +607,7 @@ namespace LYBT.Module.Herbs.Services
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.Map<HerbDetailDto>(result);
 
-            _logger.LogInformation("药材已恢复: {HerbId}, {HerbName}", id, entity.Name);
+            _logger.LogInformation("[SVC] Herb.Restore completed - HerbId={HerbId} HerbName={HerbName}", id, entity.Name);
 
             return Result<HerbDetailDto>.Success(dto);
         }
@@ -651,7 +651,7 @@ namespace LYBT.Module.Herbs.Services
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(id);
-                    _logger.LogInformation("批量{StatusText} - 药材状态已更新: {HerbId}, {HerbName}", statusText, id, entity.Name);
+                    _logger.LogInformation("[SVC] Herb.BatchUpdateStatus → ItemSuccess - HerbId={HerbId} HerbName={HerbName} Status={Status}", id, entity.Name, statusText);
                 }
                 catch (Exception ex)
                 {
@@ -663,7 +663,7 @@ namespace LYBT.Module.Herbs.Services
                         Id = id,
                         Reason = "状态更新失败"
                     });
-                    _logger.LogError(ex, "批量{StatusText} - 更新药材状态失败: {HerbId}", statusText, id);
+                    _logger.LogError(ex, "[SVC] Herb.BatchUpdateStatus → ItemFailed - HerbId={HerbId} Status={Status}", id, statusText);
                 }
             }
 
@@ -706,7 +706,7 @@ namespace LYBT.Module.Herbs.Services
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(id);
-                    _logger.LogInformation("批量删除 - 药材已删除: {HerbId}, {HerbName}", id, entity.Name);
+                    _logger.LogInformation("[SVC] Herb.BatchDelete → ItemSuccess - HerbId={HerbId} HerbName={HerbName}", id, entity.Name);
                 }
                 catch (Exception ex)
                 {
@@ -718,7 +718,7 @@ namespace LYBT.Module.Herbs.Services
                         Id = id,
                         Reason = "删除操作失败"
                     });
-                    _logger.LogError(ex, "批量删除 - 删除药材失败: {HerbId}", id);
+                    _logger.LogError(ex, "[SVC] Herb.BatchDelete → ItemFailed - HerbId={HerbId}", id);
                 }
             }
 

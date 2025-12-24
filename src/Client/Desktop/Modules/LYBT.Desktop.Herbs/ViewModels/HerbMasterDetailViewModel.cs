@@ -307,7 +307,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             var result = await _herbService.GetByIdAsync(item.Id);
             if (!result.success || result.data == null)
             {
-                ErrorMessage = result.error;
+                ErrorMessage = result.error ?? "加载药材详情失败";
                 return null;
             }
 
@@ -420,7 +420,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             if (!result.success)
             {
-                ErrorMessage = result.error;
+                ErrorMessage = result.error ?? "保存药材失败";
                 return false;
             }
 
@@ -450,7 +450,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             var result = await _herbService.DeleteAsync(detail.Id);
             if (!result.success)
-                ErrorMessage = result.error;
+                ErrorMessage = result.error ?? "删除药材失败";
             return result.success;
         }
 

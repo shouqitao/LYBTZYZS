@@ -79,14 +79,14 @@ namespace LYBT.Module.Auth.Services
                     _ => AuthErrorCode.InvalidCredentials
                 };
 
-                _logger.LogWarning("用户认证失败 [用户名: {UserName}] [原因: {Reason}] [时间: {Timestamp}]",
-                    request.UserName, validationResult.ErrorMessage, DateTime.UtcNow);
+                _logger.LogWarning("[SVC] Auth.VerifyCredentials → Failed - UserName={UserName} Reason={Reason}",
+                    request.UserName, validationResult.ErrorMessage);
                 return Result<string>.Failure(errorCode, validationResult.ErrorMessage);
             }
 
             var userDto = validationResult.Data!;
-            _logger.LogInformation("用户认证成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
-                request.UserName, userDto.Role, DateTime.UtcNow);
+            _logger.LogInformation("[SVC] Auth.VerifyCredentials completed - UserName={UserName} Role={Role}",
+                request.UserName, userDto.Role);
             return Result<string>.Success(userDto.Id.ToString());
         }
 
@@ -189,8 +189,8 @@ namespace LYBT.Module.Auth.Services
                 Success = true
             });
 
-            _logger.LogInformation("用户登录成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
-                request.UserName, userDto.Role, DateTime.UtcNow);
+            _logger.LogInformation("[SVC] Auth.Login completed - UserName={UserName} Role={Role}",
+                request.UserName, userDto.Role);
 
             return Result<LoginResponse>.Success(response);
         }
@@ -245,14 +245,14 @@ namespace LYBT.Module.Auth.Services
                     Success = true
                 });
 
-                _logger.LogInformation("用户登出成功 [用户名: {UserName}] [时间: {Timestamp}]",
-                    userName ?? "(unknown)", DateTime.UtcNow);
+                _logger.LogInformation("[SVC] Auth.Logout completed - UserName={UserName}",
+                    userName ?? "(unknown)");
 
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "用户登出时发生错误");
+                _logger.LogError(ex, "[SVC] Auth.Logout failed");
                 // 即使撤销失败，也返回成功，因为客户端应该清除Token
                 return Result<bool>.Success(true);
             }
@@ -288,7 +288,7 @@ namespace LYBT.Module.Auth.Services
             // 如果Token已经被使用过，说明检测到重放攻击
             if (tokenRecord.IsUsed)
             {
-                _logger.LogWarning("检测到Token重放攻击！[TokenId: {TokenId}] [FamilyId: {FamilyId}] [UserId: {UserId}]",
+                _logger.LogWarning("[SVC] Auth.RefreshToken → ReplayAttack - TokenId={TokenId} FamilyId={FamilyId} UserId={UserId}",
                     tokenRecord.Id, tokenRecord.FamilyId, tokenRecord.UserId);
 
                 // 安全措施：使整个Token Family失效
@@ -342,7 +342,7 @@ namespace LYBT.Module.Auth.Services
                     ErrorMessage = $"Token{reason}"
                 });
 
-                _logger.LogWarning("RefreshToken验证失败：{Reason}", reason);
+                _logger.LogWarning("[SVC] Auth.RefreshToken → Invalid - Reason={Reason}", reason);
                 return Result<LoginResponse>.Failure(errorCode, $"RefreshToken{reason}，请重新登录");
             }
 
@@ -350,7 +350,7 @@ namespace LYBT.Module.Auth.Services
             tokenRecord.RecordUsage();
             if (tokenRecord.UsageCount > 100)
             {
-                _logger.LogWarning("RefreshToken使用次数异常：{Count}", tokenRecord.UsageCount);
+                _logger.LogWarning("[SVC] Auth.RefreshToken → AbnormalUsage - UsageCount={Count}", tokenRecord.UsageCount);
             }
 
             // 4. 统一从Users表获取用户信息（包括SuperAdmin） - Issue #1909
@@ -363,7 +363,7 @@ namespace LYBT.Module.Auth.Services
             // 确定用户类型（SuperAdmin特殊处理UserType）
             string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
 
-            _logger.LogInformation("Token刷新：[UserName: {UserName}] [Role: {Role}]", userDto.UserName, userDto.Role);
+            _logger.LogDebug("[SVC] Auth.RefreshToken → UserLoaded - UserName={UserName} Role={Role}", userDto.UserName, userDto.Role);
 
             // 5. 生成新的Access Token
             var newAccessToken = _jwtService.GenerateToken(
@@ -415,8 +415,8 @@ namespace LYBT.Module.Auth.Services
                 Success = true
             });
 
-            _logger.LogInformation("Token刷新成功 [用户: {UserName}] [时间: {Timestamp}]",
-                userDto.UserName, DateTime.UtcNow);
+            _logger.LogInformation("[SVC] Auth.RefreshToken completed - UserName={UserName}",
+                userDto.UserName);
 
             return Result<LoginResponse>.Success(response);
         }
@@ -521,7 +521,7 @@ namespace LYBT.Module.Auth.Services
             // 2. 检测重放攻击
             if (tokenRecord.IsUsed)
             {
-                _logger.LogWarning("检测到AutoLoginToken重放攻击！[TokenId: {TokenId}] [UserId: {UserId}] [UserName: {UserName}]",
+                _logger.LogWarning("[SVC] Auth.AutoLogin → ReplayAttack - TokenId={TokenId} UserId={UserId} UserName={UserName}",
                     tokenRecord.Id, tokenRecord.UserId, tokenRecord.UserName);
 
                 // 撤销同一家族的所有Token
@@ -630,8 +630,8 @@ namespace LYBT.Module.Auth.Services
                 Success = true
             });
 
-            _logger.LogInformation("用户自动登录成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
-                userDto.UserName, userDto.Role, DateTime.UtcNow);
+            _logger.LogInformation("[SVC] Auth.AutoLogin completed - UserName={UserName} Role={Role}",
+                userDto.UserName, userDto.Role);
 
             return Result<LoginResponse>.Success(response);
         }
@@ -696,12 +696,12 @@ namespace LYBT.Module.Auth.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogWarning("AutoLoginToken Family已撤销 [FamilyId: {FamilyId}] [撤销Token数量: {Count}] [原因: {Reason}]",
+                _logger.LogWarning("[SVC] Auth.RevokeAutoLoginTokenFamily completed - FamilyId={FamilyId} RevokedCount={Count} Reason={Reason}",
                     familyId, familyTokens.Count, reason);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "撤销AutoLoginToken Family失败 [FamilyId: {FamilyId}]", familyId);
+                _logger.LogError(ex, "[SVC] Auth.RevokeAutoLoginTokenFamily failed - FamilyId={FamilyId}", familyId);
             }
         }
 
@@ -726,12 +726,12 @@ namespace LYBT.Module.Auth.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogWarning("Token Family已撤销 [FamilyId: {FamilyId}] [撤销Token数量: {Count}] [原因: {Reason}]",
+                _logger.LogWarning("[SVC] Auth.RevokeTokenFamily completed - FamilyId={FamilyId} RevokedCount={Count} Reason={Reason}",
                     familyId, familyTokens.Count, reason);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "撤销Token Family失败 [FamilyId: {FamilyId}]", familyId);
+                _logger.LogError(ex, "[SVC] Auth.RevokeTokenFamily failed - FamilyId={FamilyId}", familyId);
             }
         }
 

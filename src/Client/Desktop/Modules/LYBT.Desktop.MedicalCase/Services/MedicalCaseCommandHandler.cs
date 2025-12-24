@@ -8,6 +8,7 @@ namespace LYBT.Desktop.MedicalCase.Services
     /// <summary>
     /// 病案命令处理器 - 业务逻辑协调者
     /// Issue #1778: MedicalCase模块组件化改造
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
     ///
     /// 职责:
     /// - 协调DataManager和Validator执行业务操作
@@ -61,7 +62,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 throw new ArgumentNullException(nameof(handler));
 
             _commands[commandName] = handler;
-            _logger.LogDebug("命令已注册: {CommandName}", commandName);
+            _logger.LogDebug("[HDL] MedicalCase.RegisterCommand - Name={CommandName}", commandName);
         }
 
         /// <summary>
@@ -76,7 +77,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 throw new ArgumentNullException(nameof(canExecute));
 
             _canExecuteHandlers[commandName] = canExecute;
-            _logger.LogDebug("命令可执行条件已注册: {CommandName}", commandName);
+            _logger.LogDebug("[HDL] MedicalCase.RegisterCanExecute - Name={CommandName}", commandName);
         }
 
         /// <summary>
@@ -86,26 +87,26 @@ namespace LYBT.Desktop.MedicalCase.Services
         {
             if (string.IsNullOrWhiteSpace(commandName))
             {
-                _logger.LogWarning("命令名称为空,无法执行");
+                _logger.LogWarning("[HDL] MedicalCase.Execute → EmptyCommandName");
                 return false;
             }
 
             if (!_commands.ContainsKey(commandName))
             {
-                _logger.LogWarning("未找到命令: {CommandName}", commandName);
+                _logger.LogWarning("[HDL] MedicalCase.Execute → CommandNotFound - Name={CommandName}", commandName);
                 return false;
             }
 
             try
             {
-                _logger.LogInformation("开始执行命令: {CommandName}", commandName);
+                _logger.LogDebug("[HDL] MedicalCase.Execute started - Name={CommandName}", commandName);
                 var result = await _commands[commandName](parameter);
-                _logger.LogInformation("命令执行完成: {CommandName}, 结果: {Result}", commandName, result);
+                _logger.LogDebug("[HDL] MedicalCase.Execute completed - Name={CommandName} Result={Result}", commandName, result);
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "命令执行失败: {CommandName}", commandName);
+                _logger.LogError(ex, "[HDL] MedicalCase.Execute failed - Name={CommandName}", commandName);
                 return false;
             }
         }
@@ -143,14 +144,14 @@ namespace LYBT.Desktop.MedicalCase.Services
         {
             try
             {
-                _logger.LogInformation("开始保存病案聚合根数据, 保存前验证: {ValidateBeforeSave}", validateBeforeSave);
+                _logger.LogInformation("[HDL] MedicalCase.Save started - Validate={ValidateBeforeSave}", validateBeforeSave);
 
                 // 1. 可选验证
                 if (validateBeforeSave)
                 {
                     if (!_validator.IsValid(out var errorMessage))
                     {
-                        _logger.LogWarning("病案数据验证失败: {ErrorMessage}", errorMessage);
+                        _logger.LogWarning("[HDL] MedicalCase.Save → ValidationFailed - Error={ErrorMessage}", errorMessage);
                         return false;
                     }
                 }
@@ -159,18 +160,18 @@ namespace LYBT.Desktop.MedicalCase.Services
                 var result = await _dataManager.SaveAsync();
                 if (result)
                 {
-                    _logger.LogInformation("病案聚合根数据保存成功");
+                    _logger.LogInformation("[HDL] MedicalCase.Save completed");
                 }
                 else
                 {
-                    _logger.LogWarning("病案聚合根数据保存失败");
+                    _logger.LogWarning("[HDL] MedicalCase.Save → Failed");
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "保存病案聚合根数据失败");
+                _logger.LogError(ex, "[HDL] MedicalCase.Save failed");
                 return false;
             }
         }
@@ -183,23 +184,23 @@ namespace LYBT.Desktop.MedicalCase.Services
         {
             try
             {
-                _logger.LogInformation("开始删除病案数据");
+                _logger.LogInformation("[HDL] MedicalCase.Delete started");
                 var result = await _dataManager.DeleteAsync();
 
                 if (result)
                 {
-                    _logger.LogInformation("病案数据删除成功");
+                    _logger.LogInformation("[HDL] MedicalCase.Delete completed");
                 }
                 else
                 {
-                    _logger.LogWarning("病案数据删除失败");
+                    _logger.LogWarning("[HDL] MedicalCase.Delete → Failed");
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除病案数据失败");
+                _logger.LogError(ex, "[HDL] MedicalCase.Delete failed");
                 return false;
             }
         }
@@ -212,14 +213,14 @@ namespace LYBT.Desktop.MedicalCase.Services
         {
             try
             {
-                _logger.LogInformation("开始重新加载病案数据");
+                _logger.LogDebug("[HDL] MedicalCase.Reload started");
                 await _dataManager.ReloadAsync();
-                _logger.LogInformation("病案数据重新加载成功");
+                _logger.LogDebug("[HDL] MedicalCase.Reload completed");
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "重新加载病案数据失败");
+                _logger.LogError(ex, "[HDL] MedicalCase.Reload failed");
                 return false;
             }
         }
@@ -241,27 +242,27 @@ namespace LYBT.Desktop.MedicalCase.Services
             {
                 if (createDto == null)
                 {
-                    _logger.LogWarning("创建处方失败：DTO为空");
+                    _logger.LogWarning("[HDL] Prescription.Create → NullDto");
                     return false;
                 }
 
-                _logger.LogInformation("开始创建处方");
+                _logger.LogInformation("[HDL] Prescription.Create started");
 
                 var prescription = await _dataManager.CreatePrescriptionAsync(createDto);
                 if (prescription != null)
                 {
-                    _logger.LogInformation("处方创建成功: {PrescriptionId}", prescription.Id);
+                    _logger.LogInformation("[HDL] Prescription.Create completed - PrescriptionId={PrescriptionId}", prescription.Id);
                     return true;
                 }
                 else
                 {
-                    _logger.LogWarning("处方创建失败");
+                    _logger.LogWarning("[HDL] Prescription.Create → Failed");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建处方失败");
+                _logger.LogError(ex, "[HDL] Prescription.Create failed");
                 return false;
             }
         }
@@ -274,11 +275,11 @@ namespace LYBT.Desktop.MedicalCase.Services
         {
             try
             {
-                _logger.LogInformation("开始更新处方");
+                _logger.LogInformation("[HDL] Prescription.Update started");
 
                 if (_dataManager.CurrentPrescription == null)
                 {
-                    _logger.LogWarning("当前处方为空，无法更新");
+                    _logger.LogWarning("[HDL] Prescription.Update → NoPrescription");
                     return false;
                 }
 
@@ -286,14 +287,14 @@ namespace LYBT.Desktop.MedicalCase.Services
                 var result = await SaveAsync(validateBeforeSave: true);
                 if (result)
                 {
-                    _logger.LogInformation("处方更新成功");
+                    _logger.LogInformation("[HDL] Prescription.Update completed");
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新处方失败");
+                _logger.LogError(ex, "[HDL] Prescription.Update failed");
                 return false;
             }
         }
@@ -306,23 +307,23 @@ namespace LYBT.Desktop.MedicalCase.Services
         {
             try
             {
-                _logger.LogInformation("开始删除处方");
+                _logger.LogInformation("[HDL] Prescription.Delete started");
 
                 var result = await _dataManager.DeletePrescriptionAsync();
                 if (result)
                 {
-                    _logger.LogInformation("处方删除成功");
+                    _logger.LogInformation("[HDL] Prescription.Delete completed");
                 }
                 else
                 {
-                    _logger.LogWarning("处方删除失败");
+                    _logger.LogWarning("[HDL] Prescription.Delete → Failed");
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除处方失败");
+                _logger.LogError(ex, "[HDL] Prescription.Delete failed");
                 return false;
             }
         }
@@ -340,7 +341,7 @@ namespace LYBT.Desktop.MedicalCase.Services
         {
             try
             {
-                _logger.LogInformation("导航到患者病历历史: {PatientId}", patientId);
+                _logger.LogDebug("[HDL] MedicalCase.NavigateToPatientHistory - PatientId={PatientId}", patientId);
 
                 var parameters = new NavigationParameters
                 {
@@ -354,7 +355,7 @@ namespace LYBT.Desktop.MedicalCase.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导航到患者病历历史失败: {PatientId}", patientId);
+                _logger.LogError(ex, "[HDL] MedicalCase.NavigateToPatientHistory failed - PatientId={PatientId}", patientId);
                 return false;
             }
         }
@@ -367,7 +368,7 @@ namespace LYBT.Desktop.MedicalCase.Services
         {
             try
             {
-                _logger.LogInformation("导航到病案列表");
+                _logger.LogDebug("[HDL] MedicalCase.NavigateToList");
                 // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
                 _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
                 await Task.CompletedTask;
@@ -375,7 +376,7 @@ namespace LYBT.Desktop.MedicalCase.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导航到病案列表失败");
+                _logger.LogError(ex, "[HDL] MedicalCase.NavigateToList failed");
                 return false;
             }
         }

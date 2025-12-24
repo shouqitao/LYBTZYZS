@@ -59,11 +59,17 @@ namespace LYBT.Module.Users.Repositories
             if (string.IsNullOrWhiteSpace(username))
                 return null;
 
-            return await _dbSet
+            var user = await _dbSet
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u =>
                     (u.UserName == username || u.Email == username) &&
                     !u.IsDeleted);
+
+            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+            _logger.LogDebug("[REPO] User.GetByUsername({Username}) → {Result}",
+                username, user != null ? "Found" : "NotFound");
+
+            return user;
         }
 
         /// <summary>

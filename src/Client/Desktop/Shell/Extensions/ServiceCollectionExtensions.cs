@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Admin.Services;
+using LYBT.Desktop.Infrastructure.Http;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Auth.Services;
@@ -223,6 +224,8 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<MedicalCaseService>(containerRegistry);
             RegisterLogger<PatientStateManager>(containerRegistry);
             RegisterLogger<PatientValidator>(containerRegistry);
+            // LOG-012: LoggingHttpHandler日志
+            RegisterLogger<LoggingHttpHandler>(containerRegistry);
         }
 
         /// <summary>注册缓存服务</summary>
@@ -258,8 +261,11 @@ namespace LYBT.Desktop.Shell.Extensions
             // OpenSpec: refactor-login-authentication (Phase 1.4) - 注册接口
             containerRegistry.Register<ITokenRefreshHandler>(resolver => resolver.Resolve<TokenRefreshHandler>());
 
-            // Handler链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → HttpClient
-            // 注: HttpClient自动传播W3C TraceContext (traceparent header)
+            // LOG-012: 注册LoggingHttpHandler
+            containerRegistry.RegisterSingleton<LoggingHttpHandler>();
+
+            // Handler链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → LoggingHttpHandler → HttpClient
+            // LOG-012 & LOG-013: LoggingHttpHandler记录请求/响应并添加traceparent header
             containerRegistry.RegisterSingleton<HttpClient>(resolver =>
             {
                 var httpHandler = new HttpClientHandler();
@@ -270,8 +276,11 @@ namespace LYBT.Desktop.Shell.Extensions
                 tokenRefreshHandler.InnerHandler = httpHandler;
                 var authHandler = resolver.Resolve<AuthorizationMessageHandler>();
                 authHandler.InnerHandler = tokenRefreshHandler;
+                // LOG-012: 添加日志Handler到链中
+                var loggingHandler = resolver.Resolve<LoggingHttpHandler>();
+                loggingHandler.InnerHandler = authHandler;
 
-                return new HttpClient(authHandler) { BaseAddress = new Uri(apiBaseUrl), Timeout = TimeSpan.FromSeconds(30) };
+                return new HttpClient(loggingHandler) { BaseAddress = new Uri(apiBaseUrl), Timeout = TimeSpan.FromSeconds(30) };
             });
 
             // Refit客户端共享HttpClient实例 - 配置JSON序列化以支持枚举字符串转换

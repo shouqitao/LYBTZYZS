@@ -9,6 +9,7 @@ namespace LYBT.Desktop.MedicalCase.Services
     /// <summary>
     /// 医案导航处理器 - 负责工作区返回导航和离开确认逻辑
     /// OpenSpec: refactor-viewmodel-layer - Phase 5.2
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
     ///
     /// 职责:
     /// - 处理BackCommand返回导航
@@ -102,7 +103,7 @@ namespace LYBT.Desktop.MedicalCase.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "返回时发生异常");
+                _logger.LogError(ex, "[HDL] Navigation.ExecuteBack failed - Mode={Mode} IsReadOnly={IsReadOnly}", workspaceMode, isReadOnly);
             }
         }
 
@@ -116,7 +117,7 @@ namespace LYBT.Desktop.MedicalCase.Services
         {
             if (_dialogService == null)
             {
-                _logger.LogWarning("IDialogService不可用，无法显示未保存修改对话框，默认不允许离开");
+                _logger.LogWarning("[HDL] Navigation.HandleManagementLeave → DialogServiceUnavailable");
                 return false;
             }
 
@@ -161,7 +162,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "处理返回确认对话框时发生异常");
+                    _logger.LogError(ex, "[HDL] Navigation.HandleManagementLeave failed");
                     tcs.SetResult(false);
                 }
             });
@@ -195,7 +196,7 @@ namespace LYBT.Desktop.MedicalCase.Services
             }
             else
             {
-                _logger.LogWarning("CommonDialogService不可用，无法显示离开确认对话框，默认停留");
+                _logger.LogWarning("[HDL] Navigation.HandleLeaveRequest → CommonDialogServiceUnavailable");
                 choice = LeaveConsultationChoice.Stay;
             }
 
@@ -203,6 +204,7 @@ namespace LYBT.Desktop.MedicalCase.Services
             switch (choice)
             {
                 case LeaveConsultationChoice.SaveDraft:
+                    _logger.LogDebug("[HDL] Navigation.HandleLeaveRequest → SaveDraft");
                     if (SaveDraftCallback != null)
                     {
                         await SaveDraftCallback();
@@ -210,6 +212,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                     return LeaveConsultationResult.AllowLeave(choice);
 
                 case LeaveConsultationChoice.CancelCase:
+                    _logger.LogDebug("[HDL] Navigation.HandleLeaveRequest → CancelCase");
                     if (CancelCaseCallback != null)
                     {
                         await CancelCaseCallback();
@@ -218,7 +221,7 @@ namespace LYBT.Desktop.MedicalCase.Services
 
                 case LeaveConsultationChoice.Stay:
                 default:
-                    _logger.LogDebug("用户选择继续停留");
+                    _logger.LogDebug("[HDL] Navigation.HandleLeaveRequest → Stay");
                     return LeaveConsultationResult.CancelLeave();
             }
         }

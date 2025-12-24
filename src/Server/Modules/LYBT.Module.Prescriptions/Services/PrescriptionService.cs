@@ -34,7 +34,7 @@ namespace LYBT.Module.Prescriptions.Services
         /// <inheritdoc/>
         public async Task<PrescriptionDetailDto> GetByIdAsync(Guid id)
         {
-            _logger.LogDebug("获取处方详情: {Id}", id);
+            _logger.LogDebug("[SVC] Prescription.GetById started - PrescriptionId={Id}", id);
 
             // 使用优化后的查询方法，包含处方项
             var entity = await _repository.GetByIdWithDetailsAsync(id)
@@ -50,7 +50,7 @@ namespace LYBT.Module.Prescriptions.Services
         /// <inheritdoc/>
         public async Task<List<PrescriptionDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
-            _logger.LogDebug("根据医案ID获取处方列表: {MedicalCaseId}", medicalCaseId);
+            _logger.LogDebug("[SVC] Prescription.GetByMedicalCaseId started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // 使用优化后的查询方法，直接查询并包含Items集合
             var prescriptions = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);

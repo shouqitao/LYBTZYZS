@@ -87,7 +87,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (!isAdmin && currentDoctorId.HasValue)
             {
                 filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
-                _logger.LogDebug("应用角色过滤，DoctorId: {DoctorId}", currentDoctorId.Value);
+                _logger.LogDebug("[SVC] MedicalCase.GetList → RoleFilter - DoctorId={DoctorId}", currentDoctorId.Value);
             }
 
             return new PagedResult<MedicalCase>
@@ -194,7 +194,7 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("查询患者未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
+            _logger.LogInformation("[SVC] MedicalCase.GetUnfinished started - PatientId={PatientId} DoctorId={DoctorId}",
                 patientId, doctorId);
 
             // Epic #2210 Task 3.1.2: 直接传递doctorId到Repository，无额外业务逻辑
@@ -202,12 +202,12 @@ namespace LYBT.Module.MedicalCases.Services
 
             if (result != null)
             {
-                _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, UserId: {UserId}",
+                _logger.LogInformation("[SVC] MedicalCase.GetUnfinished → Found - MedicalCaseId={MedicalCaseId} CaseStatus={CaseStatus} UserId={UserId}",
                     result.Id, result.CaseStatus, result.UserId);
             }
             else
             {
-                _logger.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                _logger.LogInformation("[SVC] MedicalCase.GetUnfinished → NotFound - PatientId={PatientId} DoctorId={DoctorId}",
                     patientId, doctorId);
             }
 
@@ -221,12 +221,12 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("获取待看诊队列，DoctorId: {DoctorId}", doctorId);
+            _logger.LogInformation("[SVC] MedicalCase.GetPendingCases started - DoctorId={DoctorId}", doctorId);
 
             // Epic #2210: 直接委托给Repository，传递doctorId进行数据隔离
             var result = await _repository.GetPendingCasesAsync(doctorId);
 
-            _logger.LogInformation("待看诊队列查询完成，DoctorId: {DoctorId}, Count: {Count}",
+            _logger.LogInformation("[SVC] MedicalCase.GetPendingCases completed - DoctorId={DoctorId} Count={Count}",
                 doctorId, result.Count);
 
             return result;
@@ -239,11 +239,11 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("获取所有待看诊队列（管理员）");
+            _logger.LogInformation("[SVC] MedicalCase.GetAllPendingCases started - Admin");
 
             var result = await _repository.GetAllPendingCasesAsync();
 
-            _logger.LogInformation("待看诊队列查询完成（管理员），Count: {Count}", result.Count);
+            _logger.LogInformation("[SVC] MedicalCase.GetAllPendingCases completed - Count={Count}", result.Count);
 
             return result;
         }
@@ -263,7 +263,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             _logger.LogInformation(
-                "跨医案搜索: PatientName={PatientName}, DiagnosisKeyword={DiagnosisKeyword}, StartDate={StartDate}, EndDate={EndDate}, Page={Page}, PageSize={PageSize}",
+                "[SVC] MedicalCase.Search started - PatientName={PatientName} DiagnosisKeyword={DiagnosisKeyword} StartDate={StartDate} EndDate={EndDate} Page={Page} PageSize={PageSize}",
                 patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
 
             // 使用Repository的QueryAsync方法获取实体（已包含Include预加载）
@@ -282,7 +282,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 映射为DTO（包含嵌套Consultation/Prescription）
             var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(pagedEntities);
 
-            _logger.LogInformation("跨医案搜索完成: TotalCount={TotalCount}, ReturnedCount={ReturnedCount}",
+            _logger.LogInformation("[SVC] MedicalCase.Search completed - TotalCount={TotalCount} ReturnedCount={ReturnedCount}",
                 totalCount, dtos.Count);
 
             return new PagedResult<MedicalCaseDetailDto>(dtos, totalCount, page, pageSize);
@@ -296,14 +296,14 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<List<MedicalCaseDetailDto>> GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("获取患者最近医案: PatientId={PatientId}, Count={Count}", patientId, count);
+            _logger.LogInformation("[SVC] MedicalCase.GetPatientRecent started - PatientId={PatientId} Count={Count}", patientId, count);
 
             // 获取患者所有医案
             var entities = await _repository.GetByPatientIdAsync(patientId);
 
             if (entities == null || !entities.Any())
             {
-                _logger.LogInformation("患者无历史医案: PatientId={PatientId}", patientId);
+                _logger.LogInformation("[SVC] MedicalCase.GetPatientRecent → NoHistory - PatientId={PatientId}", patientId);
                 return new List<MedicalCaseDetailDto>();
             }
 
@@ -316,7 +316,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 映射为DTO（包含嵌套Consultation/Prescription）
             var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(recentEntities);
 
-            _logger.LogInformation("获取患者最近医案完成: PatientId={PatientId}, ReturnedCount={ReturnedCount}",
+            _logger.LogInformation("[SVC] MedicalCase.GetPatientRecent completed - PatientId={PatientId} ReturnedCount={ReturnedCount}",
                 patientId, dtos.Count);
 
             return dtos;

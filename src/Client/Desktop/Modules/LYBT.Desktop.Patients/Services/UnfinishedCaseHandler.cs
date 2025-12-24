@@ -7,6 +7,7 @@ namespace LYBT.Desktop.Patients.Services;
 /// <summary>
 /// 未完成医案处理器 - 负责未完成医案检查和处理逻辑
 /// Issue #1790: 从PatientSelectionViewModel提取未完成医案处理逻辑(~250行)
+/// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
 /// </summary>
 public class UnfinishedCaseHandler
 {
@@ -48,7 +49,7 @@ public class UnfinishedCaseHandler
             // 1. 先查本地缓存（仅当不检查所有医生时使用缓存）
             if (!checkAllDoctors && _pendingCaseCache.TryGetValue(patientId, out var cachedMedicalCaseId))
             {
-                _logger.LogInformation("缓存命中:PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
+                _logger.LogDebug("[HDL] UnfinishedCase.Check → CacheHit - PatientId={PatientId} MedicalCaseId={MedicalCaseId}",
                     patientId, cachedMedicalCaseId);
 
                 // 缓存命中,返回一个包含ID的MedicalCaseDetailDto
@@ -56,7 +57,7 @@ public class UnfinishedCaseHandler
             }
 
             // 2. 调用API查询
-            _logger.LogInformation("查询未完成医案:PatientId={PatientId}, DoctorId={DoctorId}, CheckAllDoctors={CheckAllDoctors}",
+            _logger.LogDebug("[HDL] UnfinishedCase.Check started - PatientId={PatientId} DoctorId={DoctorId} CheckAllDoctors={CheckAllDoctors}",
                 patientId, doctorId, checkAllDoctors);
 
             // OpenSpec: multi-doctor-unfinished-case - 查询所有医生的未完成医案
@@ -69,13 +70,12 @@ public class UnfinishedCaseHandler
 
                 // 判断是否是其他医生的医案
                 var isOtherDoctorCase = unfinishedCase.UserId != doctorId;
-                _logger.LogInformation("找到未完成医案,MedicalCaseId={MedicalCaseId}, DoctorId={CaseDoctorId}, DoctorName={DoctorName}, IsOtherDoctor={IsOtherDoctor}",
-                    unfinishedCase.Id, unfinishedCase.UserId, unfinishedCase.DoctorName ?? "未知", isOtherDoctorCase);
+                _logger.LogDebug("[HDL] UnfinishedCase.Check → Found - MedicalCaseId={MedicalCaseId} CaseDoctorId={CaseDoctorId} IsOtherDoctor={IsOtherDoctor}",
+                    unfinishedCase.Id, unfinishedCase.UserId, isOtherDoctorCase);
             }
             else
             {
-                _logger.LogInformation("患者无未完成医案:PatientId={PatientId}, CheckAllDoctors={CheckAllDoctors}",
-                    patientId, checkAllDoctors);
+                _logger.LogDebug("[HDL] UnfinishedCase.Check → NotFound - PatientId={PatientId}", patientId);
             }
 
             // 触发事件
@@ -90,8 +90,8 @@ public class UnfinishedCaseHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "检查未完成医案失败:PatientId={PatientId}, DoctorId={DoctorId}, CheckAllDoctors={CheckAllDoctors}",
-                patientId, doctorId, checkAllDoctors);
+            _logger.LogError(ex, "[HDL] UnfinishedCase.Check failed - PatientId={PatientId} DoctorId={DoctorId}",
+                patientId, doctorId);
             return null;
         }
     }
@@ -104,7 +104,7 @@ public class UnfinishedCaseHandler
     {
         try
         {
-            _logger.LogInformation("关闭旧医案：OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
+            _logger.LogInformation("[HDL] UnfinishedCase.CloseAndCreate started - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
 
             // 1. 关闭旧医案
             var response = await _medicalCaseDataManager.CloseCaseAsync(oldMedicalCaseId);
@@ -113,7 +113,7 @@ public class UnfinishedCaseHandler
             {
                 // 2. 从缓存中移除
                 _pendingCaseCache.Remove(patientId);
-                _logger.LogInformation("旧医案已关闭，缓存已清理");
+                _logger.LogInformation("[HDL] UnfinishedCase.CloseAndCreate completed - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
 
                 // 触发事件
                 CaseClosed?.Invoke(this, new CaseClosedEventArgs
@@ -127,13 +127,13 @@ public class UnfinishedCaseHandler
             }
             else
             {
-                _logger.LogWarning("关闭旧医案失败");
+                _logger.LogWarning("[HDL] UnfinishedCase.CloseAndCreate → CloseFailed - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
                 return false;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "关闭医案失败");
+            _logger.LogError(ex, "[HDL] UnfinishedCase.CloseAndCreate failed - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
             return false;
         }
     }
@@ -146,7 +146,7 @@ public class UnfinishedCaseHandler
     {
         try
         {
-            _logger.LogInformation("仅关闭医案：OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
+            _logger.LogInformation("[HDL] UnfinishedCase.CloseOnly started - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
 
             // 1. 关闭旧医案
             var response = await _medicalCaseDataManager.CloseCaseAsync(oldMedicalCaseId);
@@ -155,7 +155,7 @@ public class UnfinishedCaseHandler
             {
                 // 2. 从缓存中移除
                 _pendingCaseCache.Remove(patientId);
-                _logger.LogInformation("医案已关闭，缓存已清理");
+                _logger.LogInformation("[HDL] UnfinishedCase.CloseOnly completed - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
 
                 // 触发事件
                 CaseClosed?.Invoke(this, new CaseClosedEventArgs
@@ -169,13 +169,13 @@ public class UnfinishedCaseHandler
             }
             else
             {
-                _logger.LogWarning("关闭医案失败");
+                _logger.LogWarning("[HDL] UnfinishedCase.CloseOnly → CloseFailed - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
                 return false;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "关闭医案失败");
+            _logger.LogError(ex, "[HDL] UnfinishedCase.CloseOnly failed - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
             return false;
         }
     }
@@ -187,7 +187,7 @@ public class UnfinishedCaseHandler
     public void SetCache(Guid patientId, Guid medicalCaseId)
     {
         _pendingCaseCache[patientId] = medicalCaseId;
-        _logger.LogInformation("缓存已设置：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
+        _logger.LogDebug("[HDL] UnfinishedCase.SetCache - PatientId={PatientId} MedicalCaseId={MedicalCaseId}",
             patientId, medicalCaseId);
     }
 
@@ -197,7 +197,7 @@ public class UnfinishedCaseHandler
     public void ClearCache(Guid patientId)
     {
         _pendingCaseCache.Remove(patientId);
-        _logger.LogInformation("缓存已清除：PatientId={PatientId}", patientId);
+        _logger.LogDebug("[HDL] UnfinishedCase.ClearCache - PatientId={PatientId}", patientId);
     }
 
     /// <summary>

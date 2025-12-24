@@ -41,7 +41,7 @@ namespace LYBT.Module.Prescriptions.Services
             // 组合完整编号
             var prescriptionNumber = $"{datePrefix}-{newSequence:D4}";
 
-            _logger.LogInformation("生成处方编号: {PrescriptionNumber} (日期: {Date}, 序号: {Sequence})",
+            _logger.LogInformation("[SVC] PrescriptionNumber.Generate completed - Number={PrescriptionNumber} Date={Date} Sequence={Sequence}",
                 prescriptionNumber, date.ToString("yyyy-MM-dd"), newSequence);
 
             return prescriptionNumber;

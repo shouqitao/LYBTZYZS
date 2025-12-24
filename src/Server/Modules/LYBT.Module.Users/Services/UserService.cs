@@ -214,7 +214,7 @@ namespace LYBT.Module.Users.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("用户创建验证失败: {Errors}", string.Join("; ", errors));
+                _logger.LogWarning("[SVC] User.Create → ValidationFailed - Errors={Errors}", string.Join("; ", errors));
                 return Result<UserDetailDto>.Failure(errors);
             }
 
@@ -224,7 +224,7 @@ namespace LYBT.Module.Users.Services
             {
                 var roleName = dto.Role == UserRole.SuperAdmin ? "超级管理员" :
                                dto.Role == UserRole.Admin ? "管理员" : "医生";
-                _logger.LogWarning("用户 {CurrentRole} 尝试创建更高权限的用户: {TargetRole}",
+                _logger.LogWarning("[SVC] User.Create → PermissionDenied - CurrentRole={CurrentRole} TargetRole={TargetRole}",
                     currentRole, dto.Role);
                 return Result<UserDetailDto>.Failure($"您没有权限创建{roleName}账户");
             }
@@ -233,7 +233,7 @@ namespace LYBT.Module.Users.Services
             var reservedUsernames = new[] { "admin", "administrator", "root", "system", "superadmin", "sysadmin" };
             if (reservedUsernames.Any(reserved => string.Equals(dto.UserName, reserved, StringComparison.OrdinalIgnoreCase)))
             {
-                _logger.LogWarning("尝试创建保留用户名: {UserName}", dto.UserName);
+                _logger.LogWarning("[SVC] User.Create → ReservedUsername - UserName={UserName}", dto.UserName);
                 return Result<UserDetailDto>.Failure($"用户名 '{dto.UserName}' 为系统保留用户名，不可使用");
             }
 
@@ -243,7 +243,7 @@ namespace LYBT.Module.Users.Services
             var existingUser = await _repository.UsernameExistsAsync(dto.UserName!);
             if (existingUser)
             {
-                _logger.LogWarning("尝试创建重复的用户名: {UserName}", dto.UserName);
+                _logger.LogWarning("[SVC] User.Create → DuplicateUsername - UserName={UserName}", dto.UserName);
                 return Result<UserDetailDto>.Failure($"用户名 '{dto.UserName}' 已存在，请使用其他用户名");
             }
 
@@ -257,13 +257,13 @@ namespace LYBT.Module.Users.Services
             if (!string.IsNullOrWhiteSpace(dto.Password))
             {
                 passwordToHash = dto.Password;
-                _logger.LogDebug("使用用户提供的密码创建用户: {UserName}", dto.UserName);
+                _logger.LogDebug("[SVC] User.Create → UserPassword - UserName={UserName}", dto.UserName);
             }
             else
             {
                 // 从配置读取默认密码：Lybt:DefaultPasswords:NewUserPassword
                 passwordToHash = _configuration["Lybt:DefaultPasswords:NewUserPassword"] ?? "Lybt2025@TempPass!";
-                _logger.LogInformation("使用系统默认密码创建用户: {UserName}，密码配置: Lybt:DefaultPasswords:NewUserPassword", dto.UserName);
+                _logger.LogInformation("[SVC] User.Create → DefaultPassword - UserName={UserName}", dto.UserName);
             }
 
             // Issue #2547: 使用统一PasswordHelper进行密码哈希
@@ -272,7 +272,7 @@ namespace LYBT.Module.Users.Services
             var result = await _repository.AddAsync(entity);
             var resultDto = _mapper.Map<UserDetailDto>(result);
 
-            _logger.LogInformation("成功创建用户: {UserName}, Role: {Role}", resultDto.UserName, resultDto.Role);
+            _logger.LogInformation("[SVC] User.Create completed - UserName={UserName} Role={Role}", resultDto.UserName, resultDto.Role);
             return Result<UserDetailDto>.Success(resultDto);
         }
 
@@ -292,7 +292,7 @@ namespace LYBT.Module.Users.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("用户更新验证失败: {UserId}, {Errors}", id, string.Join("; ", errors));
+                _logger.LogWarning("[SVC] User.Update → ValidationFailed - UserId={UserId} Errors={Errors}", id, string.Join("; ", errors));
                 return Result<UserDetailDto>.Failure(errors);
             }
 
@@ -300,7 +300,7 @@ namespace LYBT.Module.Users.Services
             var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, entity.Role))
             {
-                _logger.LogWarning("用户 {CurrentRole} 尝试更新无权限的用户: {TargetUserId}, {TargetRole}",
+                _logger.LogWarning("[SVC] User.Update → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
                     currentRole, id, entity.Role);
                 return Result<UserDetailDto>.Failure("您没有权限更新该用户");
             }
@@ -308,7 +308,7 @@ namespace LYBT.Module.Users.Services
             // Issue #1909: 检查角色变更权限
             if (dto.Role != entity.Role && !CanManageUser(currentRole, dto.Role))
             {
-                _logger.LogWarning("用户 {CurrentRole} 尝试将用户角色改为更高权限: {OldRole} -> {NewRole}",
+                _logger.LogWarning("[SVC] User.Update → RoleEscalation - CurrentRole={CurrentRole} OldRole={OldRole} NewRole={NewRole}",
                     currentRole, entity.Role, dto.Role);
                 return Result<UserDetailDto>.Failure("您没有权限将用户角色修改为该级别");
             }
@@ -324,14 +324,14 @@ namespace LYBT.Module.Users.Services
             if (!string.IsNullOrWhiteSpace(dto.RealName) && dto.RealName != oldRealName)
             {
                 entity.PinYinCode = PinYinHelper.GetPinYinCode(dto.RealName);
-                _logger.LogDebug("RealName变化，重新生成拼音码: {OldName} -> {NewName}, PinYin: {PinYin}",
+                _logger.LogDebug("[SVC] User.Update → PinYinRegenerated - OldName={OldName} NewName={NewName} PinYin={PinYin}",
                     oldRealName, dto.RealName, entity.PinYinCode);
             }
 
             var result = await _repository.UpdateAsync(entity);
             var resultDto = _mapper.Map<UserDetailDto>(result);
 
-            _logger.LogInformation("成功更新用户: {UserId}", id);
+            _logger.LogInformation("[SVC] User.Update completed - UserId={UserId}", id);
             return Result<UserDetailDto>.Success(resultDto);
         }
 
@@ -352,13 +352,13 @@ namespace LYBT.Module.Users.Services
             var permissionCheck = await CanDeleteUserAsync(id, targetUser.Role);
             if (!permissionCheck.IsSuccess)
             {
-                _logger.LogWarning("删除用户权限检查失败: {UserId}, {Reason}",
+                _logger.LogWarning("[SVC] User.Delete → PermissionDenied - UserId={UserId} Reason={Reason}",
                     id, permissionCheck.Message);
                 return permissionCheck;
             }
 
             var result = await _repository.DeleteAsync(id);
-            _logger.LogInformation("成功删除用户: {UserId}, Role: {Role}", id, targetUser.Role);
+            _logger.LogInformation("[SVC] User.Delete completed - UserId={UserId} Role={Role}", id, targetUser.Role);
             return result ? Result.Success() : Result.Failure("删除失败");
         }
 
@@ -387,8 +387,7 @@ namespace LYBT.Module.Users.Services
                 TemporaryPassword = password
             };
 
-            _logger.LogInformation("重置用户密码成功: {UserId}, 使用配置默认密码",
-                id);
+            _logger.LogInformation("[SVC] User.ResetPassword completed - UserId={UserId}", id);
 
             return Result<ResetPasswordResponseDto>.Success(response);
         }
@@ -409,14 +408,14 @@ namespace LYBT.Module.Users.Services
             var entity = await _repository.GetByUsernameAsync(userName);
             if (entity == null)
             {
-                _logger.LogWarning("用户不存在: {UserName}", userName);
+                _logger.LogWarning("[SVC] User.ValidatePassword → NotFound - UserName={UserName}", userName);
                 return Result<UserDetailDto>.Failure("用户名或密码错误");
             }
 
             // 检查用户状态
             if (entity.Status == CommonStatus.Disabled)
             {
-                _logger.LogWarning("用户已被禁用: {UserName}", userName);
+                _logger.LogWarning("[SVC] User.ValidatePassword → Disabled - UserName={UserName}", userName);
                 return Result<UserDetailDto>.Failure("用户已被禁用");
             }
 
@@ -424,7 +423,7 @@ namespace LYBT.Module.Users.Services
             var verificationResult = PasswordHelper.VerifyPassword(password, entity.PasswordHash, entity.Role, _logger);
             if (!verificationResult.IsSuccess)
             {
-                _logger.LogWarning("密码验证失败: {UserName}", userName);
+                _logger.LogWarning("[SVC] User.ValidatePassword → InvalidPassword - UserName={UserName}", userName);
                 return Result<UserDetailDto>.Failure("用户名或密码错误");
             }
 
@@ -433,7 +432,7 @@ namespace LYBT.Module.Users.Services
             {
                 entity.PasswordHash = verificationResult.NewHashedPassword;
                 await _repository.UpdateAsync(entity);
-                _logger.LogInformation("用户密码哈希已升级: {UserName}", userName);
+                _logger.LogInformation("[SVC] User.ValidatePassword → HashUpgraded - UserName={UserName}", userName);
             }
 
             var userDto = _mapper.Map<UserDetailDto>(entity);
@@ -484,7 +483,7 @@ namespace LYBT.Module.Users.Services
             var entity = await _repository.GetByIdAsync(userId);
             if (entity == null)
             {
-                _logger.LogWarning("尝试修改不存在的用户资料: {UserId}", userId);
+                _logger.LogWarning("[SVC] User.ChangeProfile → NotFound - UserId={UserId}", userId);
                 return Result<UserDetailDto>.Failure("用户不存在");
             }
 
@@ -496,7 +495,7 @@ namespace LYBT.Module.Users.Services
             var updatedEntity = await _repository.UpdateAsync(entity);
             var resultDto = _mapper.Map<UserDetailDto>(updatedEntity);
 
-            _logger.LogInformation("成功修改用户资料: {UserId}, RealName: {RealName}", userId, dto.RealName);
+            _logger.LogInformation("[SVC] User.ChangeProfile completed - UserId={UserId} RealName={RealName}", userId, dto.RealName);
             return Result<UserDetailDto>.Success(resultDto);
         }
 
@@ -524,7 +523,7 @@ namespace LYBT.Module.Users.Services
             var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, entity.Role))
             {
-                _logger.LogWarning("用户 {CurrentRole} 尝试切换无权限的用户状态: {TargetUserId}, {TargetRole}",
+                _logger.LogWarning("[SVC] User.ToggleStatus → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
                     currentRole, id, entity.Role);
                 return Result<UserDetailDto>.Failure("您没有权限修改该用户状态");
             }
@@ -537,7 +536,7 @@ namespace LYBT.Module.Users.Services
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.Map<UserDetailDto>(result);
 
-            _logger.LogInformation("用户状态已切换: {UserId}, 新状态: {Status}", id, entity.Status);
+            _logger.LogInformation("[SVC] User.ToggleStatus completed - UserId={UserId} Status={Status}", id, entity.Status);
             return Result<UserDetailDto>.Success(dto);
         }
 
@@ -558,7 +557,7 @@ namespace LYBT.Module.Users.Services
             var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, entity.Role))
             {
-                _logger.LogWarning("用户 {CurrentRole} 尝试恢复无权限的用户: {TargetUserId}, {TargetRole}",
+                _logger.LogWarning("[SVC] User.Restore → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
                     currentRole, id, entity.Role);
                 return Result<UserDetailDto>.Failure("您没有权限恢复该用户");
             }
@@ -569,7 +568,7 @@ namespace LYBT.Module.Users.Services
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.Map<UserDetailDto>(result);
 
-            _logger.LogInformation("用户已恢复: {UserId}, {UserName}", id, entity.UserName);
+            _logger.LogInformation("[SVC] User.Restore completed - UserId={UserId} UserName={UserName}", id, entity.UserName);
             return Result<UserDetailDto>.Success(dto);
         }
 
@@ -639,7 +638,7 @@ namespace LYBT.Module.Users.Services
                 if (deleteResult)
                 {
                     result.SuccessCount++;
-                    _logger.LogInformation("批量删除用户成功: {UserId}, {UserName}", id, user.UserName);
+                    _logger.LogInformation("[SVC] User.BatchDelete → ItemSuccess - UserId={UserId} UserName={UserName}", id, user.UserName);
                 }
                 else
                 {
@@ -653,7 +652,7 @@ namespace LYBT.Module.Users.Services
                 }
             }
 
-            _logger.LogInformation("批量删除用户完成: 总数={Total}, 成功={Success}, 失败={Failure}",
+            _logger.LogInformation("[SVC] User.BatchDelete completed - TotalCount={Total} SuccessCount={Success} FailureCount={Failure}",
                 result.TotalCount, result.SuccessCount, result.FailureCount);
 
             return Result<BatchOperationResultDto>.Success(result);

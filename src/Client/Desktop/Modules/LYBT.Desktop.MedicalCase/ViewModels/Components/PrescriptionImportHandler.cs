@@ -11,6 +11,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 /// 处方导入处理器
 /// 负责验方导入和历史处方复制的数据处理逻辑
 /// OpenSpec: cleanup-ui-layer - Phase 1.1 PrescriptionPanelViewModel拆分
+/// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
 /// </summary>
 public class PrescriptionImportHandler
 {
@@ -99,7 +100,7 @@ public class PrescriptionImportHandler
             });
         }
 
-        _logger.LogInformation("验方导入处理完成: {FormulaName}, 准备添加{Count}味药材, 重复{DupCount}味",
+        _logger.LogInformation("[HDL] PrescriptionImport.ProcessFormula completed - FormulaName={FormulaName} AddCount={AddCount} DuplicateCount={DuplicateCount}",
             formula.Name, itemsToAdd.Count, duplicateInfos.Count);
 
         return FormulaImportResult.Success(formula.Name, itemsToAdd, duplicateInfos);
@@ -162,7 +163,7 @@ public class PrescriptionImportHandler
             });
         }
 
-        _logger.LogInformation("历史处方复制处理完成: 准备添加{Count}味药材, 重复{DupCount}味",
+        _logger.LogInformation("[HDL] PrescriptionImport.ProcessHistory completed - AddCount={AddCount} DuplicateCount={DuplicateCount}",
             itemsToAdd.Count, duplicateInfos.Count);
 
         return HistoryCopyResult.Success(itemsToAdd, duplicateInfos);
@@ -202,7 +203,7 @@ public class PrescriptionImportHandler
             addedCount++;
         }
 
-        _logger.LogDebug("已添加{Count}味药材到处方", addedCount);
+        _logger.LogDebug("[HDL] PrescriptionImport.AddItems - AddedCount={AddedCount}", addedCount);
         return addedCount;
     }
 

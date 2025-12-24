@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Consultation.Services
                 throw new ArgumentNullException(nameof(handler));
 
             _commands[commandName] = handler;
-            _logger.LogDebug("命令已注册: {CommandName}", commandName);
+            _logger.LogDebug("[SVC] Consultation.RegisterCommand - Name={CommandName}", commandName);
         }
 
         /// <summary>
@@ -76,34 +76,35 @@ namespace LYBT.Desktop.Consultation.Services
                 throw new ArgumentNullException(nameof(canExecute));
 
             _canExecuteHandlers[commandName] = canExecute;
-            _logger.LogDebug("命令可执行条件已注册: {CommandName}", commandName);
+            _logger.LogDebug("[SVC] Consultation.RegisterCanExecute - Name={CommandName}", commandName);
         }
 
         /// <summary>
         /// 执行命令
+        /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
         /// </summary>
         public async Task<bool> ExecuteAsync(string commandName, object? parameter = null)
         {
             if (string.IsNullOrWhiteSpace(commandName))
             {
-                _logger.LogWarning("命令名称为空,无法执行");
+                _logger.LogWarning("[SVC] Consultation.Execute → EmptyCommandName");
                 return false;
             }
 
             if (!_commands.ContainsKey(commandName))
             {
-                _logger.LogWarning("未找到命令: {CommandName}", commandName);
+                _logger.LogWarning("[SVC] Consultation.Execute → CommandNotFound - Name={CommandName}", commandName);
                 return false;
             }
 
             try
             {
-                _logger.LogDebug("执行命令: {CommandName}", commandName);
+                _logger.LogDebug("[SVC] Consultation.Execute started - Name={CommandName}", commandName);
                 return await _commands[commandName](parameter);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "执行命令失败: {CommandName}", commandName);
+                _logger.LogError(ex, "[SVC] Consultation.Execute failed - Name={CommandName}", commandName);
                 return false;
             }
         }
@@ -134,22 +135,24 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                _logger.LogInformation("开始保存诊断数据, 验证={Validate}", validate);
+                _logger.LogInformation("[SVC] Consultation.Save started - Validate={Validate}", validate);
 
                 if (validate)
                 {
                     if (!_validator.IsValid(out var errorMessage))
                     {
-                        _logger.LogWarning("验证失败: {ErrorMessage}", errorMessage);
+                        _logger.LogWarning("[SVC] Consultation.Save → ValidationFailed - Error={ErrorMessage}", errorMessage);
                         return false;
                     }
                 }
 
-                return await _dataManager.SaveAsync();
+                var result = await _dataManager.SaveAsync();
+                _logger.LogInformation("[SVC] Consultation.Save completed - Success={Success}", result);
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "保存诊断数据失败");
+                _logger.LogError(ex, "[SVC] Consultation.Save failed");
                 return false;
             }
         }
@@ -162,13 +165,14 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                _logger.LogInformation("重新加载诊断数据");
+                _logger.LogInformation("[SVC] Consultation.Reload started");
                 await _dataManager.ReloadAsync();
+                _logger.LogInformation("[SVC] Consultation.Reload completed");
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "重新加载诊断数据失败");
+                _logger.LogError(ex, "[SVC] Consultation.Reload failed");
                 return false;
             }
         }
@@ -185,12 +189,12 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                _logger.LogInformation("执行清空表单");
+                _logger.LogInformation("[SVC] Consultation.ClearForm started");
 
                 var consultation = _dataManager.CurrentConsultation;
                 if (consultation == null)
                 {
-                    _logger.LogWarning("当前诊断数据为空，无法清空");
+                    _logger.LogWarning("[SVC] Consultation.ClearForm → NoData");
                     return;
                 }
 
@@ -201,11 +205,11 @@ namespace LYBT.Desktop.Consultation.Services
                 consultation.PulseDiagnosis = null;
                 consultation.TCMDiagnosis = string.Empty;
 
-                _logger.LogInformation("表单已清空");
+                _logger.LogInformation("[SVC] Consultation.ClearForm completed");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "清空表单失败");
+                _logger.LogError(ex, "[SVC] Consultation.ClearForm failed");
             }
         }
 
@@ -217,14 +221,16 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                _logger.LogInformation("开始保存诊断草稿");
+                _logger.LogInformation("[SVC] Consultation.SaveDraft started");
 
                 // 通过聚合根保存数据
-                return await _dataManager.SaveAsync();
+                var result = await _dataManager.SaveAsync();
+                _logger.LogInformation("[SVC] Consultation.SaveDraft completed - Success={Success}", result);
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "保存诊断草稿失败");
+                _logger.LogError(ex, "[SVC] Consultation.SaveDraft failed");
                 return false;
             }
         }

@@ -125,7 +125,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                     else { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = $"WebAPI 连接失败: {_applicationStateService.ConnectionStatus}"; }
                 });
             }
-            catch (Exception ex) { Logger.LogError(ex, "加载API状态失败"); await Application.Current.Dispatcher.InvokeAsync(() => { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = "加载API状态失败，请稍后重试"; }); }
+            catch (Exception ex) { Logger.LogError(ex, "[VM] Login.LoadApiStatus failed"); await Application.Current.Dispatcher.InvokeAsync(() => { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = "加载API状态失败，请稍后重试"; }); }
         }
 
         private async Task TryAutoLoginWithTokenAsync()
@@ -156,7 +156,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                     if (!string.IsNullOrEmpty(savedUsername)) await Application.Current.Dispatcher.InvokeAsync(() => { _savedUsername = savedUsername; Username = savedUsername; RememberMe = isRememberMeEnabled; });
                 }
             }
-            catch (Exception ex) { Logger.LogError(ex, "加载保存的凭据失败"); }
+            catch (Exception ex) { Logger.LogError(ex, "[VM] Login.LoadCredentials failed"); }
         }
 
         private void UpdateConnectionStatus()
@@ -195,7 +195,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "登录过程中发生错误");
+                Logger.LogError(ex, "[VM] Login.Execute failed - Username={Username}", Username);
                 ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex);
                 Password = string.Empty;
             }
@@ -248,7 +248,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "重试API连接检查失败");
+                Logger.LogError(ex, "[VM] Login.RetryApiCheck failed");
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ApiStatus = ApiHealthStatus.Unhealthy;

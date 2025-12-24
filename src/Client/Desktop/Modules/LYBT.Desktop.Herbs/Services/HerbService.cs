@@ -25,20 +25,21 @@ public class HerbService : IHerbService
     }
 
     /// <inheritdoc/>
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
     public async Task<(bool success, HerbDetailDto? data, string? error)> CreateAsync(HerbInputDto input)
     {
         try
         {
-            _logger.LogInformation("[CMD] CreateHerb started: {Name}", input.Name);
+            _logger.LogInformation("[SVC] Herb.Create started - Name={Name}", input.Name);
 
             var result = await _repository.CreateAsync(input);
 
-            _logger.LogInformation("[CMD] CreateHerb completed: {Id}", result.Id);
+            _logger.LogInformation("[SVC] Herb.Create completed - HerbId={HerbId}", result.Id);
             return (true, result, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CMD] CreateHerb failed: {Name}", input.Name);
+            _logger.LogError(ex, "[SVC] Herb.Create failed - Name={Name}", input.Name);
             return (false, null, "创建中药失败，请重试");
         }
     }
@@ -48,16 +49,16 @@ public class HerbService : IHerbService
     {
         try
         {
-            _logger.LogInformation("[CMD] UpdateHerb started: {Id}", id);
+            _logger.LogInformation("[SVC] Herb.Update started - HerbId={HerbId}", id);
 
             var result = await _repository.UpdateAsync(input);
 
-            _logger.LogInformation("[CMD] UpdateHerb completed: {Id}", id);
+            _logger.LogInformation("[SVC] Herb.Update completed - HerbId={HerbId}", id);
             return (true, result, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CMD] UpdateHerb failed: {Id}", id);
+            _logger.LogError(ex, "[SVC] Herb.Update failed - HerbId={HerbId}", id);
             return (false, null, "更新中药失败，请重试");
         }
     }
@@ -67,24 +68,24 @@ public class HerbService : IHerbService
     {
         try
         {
-            _logger.LogInformation("[CMD] DeleteHerb started: {Id}", id);
+            _logger.LogInformation("[SVC] Herb.Delete started - HerbId={HerbId}", id);
 
             var result = await _repository.DeleteAsync(id);
 
             if (result)
             {
-                _logger.LogInformation("[CMD] DeleteHerb completed: {Id}", id);
+                _logger.LogInformation("[SVC] Herb.Delete completed - HerbId={HerbId}", id);
                 return (true, null);
             }
             else
             {
-                _logger.LogWarning("[CMD] DeleteHerb failed - not found or already deleted: {Id}", id);
+                _logger.LogWarning("[SVC] Herb.Delete → NotFound - HerbId={HerbId}", id);
                 return (false, "删除中药失败，记录不存在或已被删除");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CMD] DeleteHerb failed: {Id}", id);
+            _logger.LogError(ex, "[SVC] Herb.Delete failed - HerbId={HerbId}", id);
             return (false, "删除中药失败，请重试");
         }
     }
@@ -94,24 +95,24 @@ public class HerbService : IHerbService
     {
         try
         {
-            _logger.LogDebug("[CMD] GetHerbById started: {Id}", id);
+            _logger.LogDebug("[SVC] Herb.GetById started - HerbId={HerbId}", id);
 
             var result = await _repository.GetByIdAsync(id);
 
             if (result != null)
             {
-                _logger.LogDebug("[CMD] GetHerbById completed: {Id}", id);
+                _logger.LogDebug("[SVC] Herb.GetById completed - HerbId={HerbId}", id);
                 return (true, result, null);
             }
             else
             {
-                _logger.LogWarning("[CMD] GetHerbById - not found: {Id}", id);
+                _logger.LogWarning("[SVC] Herb.GetById → NotFound - HerbId={HerbId}", id);
                 return (false, null, "未找到指定的中药记录");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CMD] GetHerbById failed: {Id}", id);
+            _logger.LogError(ex, "[SVC] Herb.GetById failed - HerbId={HerbId}", id);
             return (false, null, "获取中药详情失败，请重试");
         }
     }
@@ -121,16 +122,16 @@ public class HerbService : IHerbService
     {
         try
         {
-            _logger.LogDebug("[CMD] GetHerbsPaged started: Page={Page}, PageSize={PageSize}, Keyword={Keyword}", page, pageSize, keyword);
+            _logger.LogDebug("[SVC] Herb.GetPaged started - Page={Page} PageSize={PageSize} Keyword={Keyword}", page, pageSize, keyword);
 
             var result = await _repository.GetPagedAsync(page, pageSize, keyword);
 
-            _logger.LogDebug("[CMD] GetHerbsPaged completed: TotalCount={TotalCount}", result.TotalCount);
+            _logger.LogDebug("[SVC] Herb.GetPaged completed - TotalCount={TotalCount}", result.TotalCount);
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CMD] GetHerbsPaged failed: Page={Page}, PageSize={PageSize}", page, pageSize);
+            _logger.LogError(ex, "[SVC] Herb.GetPaged failed - Page={Page} PageSize={PageSize}", page, pageSize);
             return new PagedResult<HerbListDto>([], 0, page, pageSize);
         }
     }

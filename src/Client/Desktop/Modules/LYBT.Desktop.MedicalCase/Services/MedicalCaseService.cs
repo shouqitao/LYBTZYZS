@@ -49,35 +49,35 @@ public class MedicalCaseService : IMedicalCaseService
 
     #region IDataManager实现
 
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
     public async Task InitializeAsync(Guid entityId)
     {
         try
         {
-            _logger.LogInformation("加载病案聚合根: {Id}", entityId);
+            _logger.LogInformation("[SVC] MedicalCase.Initialize started - MedicalCaseId={MedicalCaseId}", entityId);
             _currentDetail = await _repository.GetByIdWithDetailsAsync(entityId);
             if (_currentDetail == null) throw new InvalidOperationException($"未找到ID为{entityId}的病案");
             _originalDetail = CloneMedicalCaseDetail(_currentDetail);
-            // 调试日志：追踪400错误原因 - 验证服务器返回的UserId
-            _logger.LogInformation("[调试] 加载的病案 - PatientId: {PatientId}, UserId: {UserId}, PatientName: {PatientName}",
+            _logger.LogDebug("[SVC] MedicalCase.Initialize detail - PatientId={PatientId} UserId={UserId} PatientName={PatientName}",
                 _currentDetail.PatientId, _currentDetail.UserId, _currentDetail.PatientName);
-            _logger.LogInformation("病案加载成功: {PatientName}", _currentDetail.PatientName);
+            _logger.LogInformation("[SVC] MedicalCase.Initialize completed - PatientName={PatientName}", _currentDetail.PatientName);
         }
-        catch (Exception ex) { _logger.LogError(ex, "加载病案失败: {Id}", entityId); throw; }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Initialize failed - MedicalCaseId={MedicalCaseId}", entityId); throw; }
     }
 
+    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
     public virtual async Task<bool> SaveAsync()
     {
-        if (_currentDetail == null) { _logger.LogWarning("无法保存：当前病案数据为空"); return false; }
-        if (!HasChanges) { _logger.LogInformation("无变更，跳过保存"); return true; }
+        if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.Save → NoData"); return false; }
+        if (!HasChanges) { _logger.LogDebug("[SVC] MedicalCase.Save → NoChanges - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return true; }
 
         try
         {
-            _logger.LogInformation("保存病案: {Id}", _currentDetail.Id);
+            _logger.LogInformation("[SVC] MedicalCase.Save started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
             // OpenSpec: simplify-medicalcase-api - 通过聚合保存一次性更新MedicalCase+Consultation+Prescription
             var inputDto = _currentDetail.ToInputDto();
-            // 调试日志：追踪400错误原因
-            _logger.LogInformation("[调试] InputDto - Id: {Id}, PatientId: {PatientId}, UserId: {UserId}",
-                inputDto.Id, inputDto.PatientId, inputDto.UserId);
+            _logger.LogDebug("[SVC] MedicalCase.Save inputDto - PatientId={PatientId} UserId={UserId}",
+                inputDto.PatientId, inputDto.UserId);
             var updated = await _repository.SaveAsync(_currentDetail.Id, inputDto);
             if (updated != null)
             {
@@ -86,27 +86,40 @@ public class MedicalCaseService : IMedicalCaseService
                 if (updated.Prescription != null) _currentDetail.Prescription = updated.Prescription;
             }
             _originalDetail = CloneMedicalCaseDetail(_currentDetail);
-            _logger.LogInformation("保存成功");
+            _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
             return true;
         }
-        catch (Exception ex) { _logger.LogError(ex, "保存失败: {Id}", _currentDetail.Id); return false; }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Save failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return false; }
     }
 
     public virtual async Task<bool> DeleteAsync()
     {
-        if (_currentDetail == null) return false;
+        if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.Delete → NoData"); return false; }
         try
         {
+            _logger.LogInformation("[SVC] MedicalCase.Delete started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
             var result = await _repository.DeleteAsync(_currentDetail.Id);
-            if (result) { _currentDetail = null; _originalDetail = null; }
+            if (result)
+            {
+                _logger.LogInformation("[SVC] MedicalCase.Delete completed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
+                _currentDetail = null; _originalDetail = null;
+            }
+            else
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Delete → Failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
+            }
             return result;
         }
-        catch (Exception ex) { _logger.LogError(ex, "删除失败: {Id}", _currentDetail?.Id ?? Guid.Empty); return false; }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Delete failed - MedicalCaseId={MedicalCaseId}", _currentDetail?.Id ?? Guid.Empty); return false; }
     }
 
     public virtual async Task ReloadAsync()
     {
-        if (_currentDetail != null) await InitializeAsync(_currentDetail.Id);
+        if (_currentDetail != null)
+        {
+            _logger.LogDebug("[SVC] MedicalCase.Reload started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
+            await InitializeAsync(_currentDetail.Id);
+        }
     }
 
     #endregion
@@ -115,38 +128,79 @@ public class MedicalCaseService : IMedicalCaseService
 
     public virtual async Task<MedicalCaseDetailDto?> GetByIdSimpleAsync(Guid id)
     {
-        try { return await _repository.GetByIdAsync(id); }
-        catch (Exception ex) { _logger.LogError(ex, "获取病案失败: {Id}", id); return null; }
+        try
+        {
+            _logger.LogDebug("[SVC] MedicalCase.GetByIdSimple started - MedicalCaseId={MedicalCaseId}", id);
+            var result = await _repository.GetByIdAsync(id);
+            if (result == null)
+                _logger.LogWarning("[SVC] MedicalCase.GetByIdSimple → NotFound - MedicalCaseId={MedicalCaseId}", id);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetByIdSimple failed - MedicalCaseId={MedicalCaseId}", id); return null; }
     }
 
     public virtual async Task<MedicalCaseDetailDto?> UpdateSimpleAsync(MedicalCaseInputDto dto)
     {
-        try { return await _repository.UpdateAsync(dto); }
-        catch (Exception ex) { _logger.LogError(ex, "更新病案失败: {Id}", dto.Id); return null; }
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.UpdateSimple started - MedicalCaseId={MedicalCaseId}", dto.Id);
+            var result = await _repository.UpdateAsync(dto);
+            _logger.LogInformation("[SVC] MedicalCase.UpdateSimple completed - MedicalCaseId={MedicalCaseId}", dto.Id);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.UpdateSimple failed - MedicalCaseId={MedicalCaseId}", dto.Id); return null; }
     }
 
     public virtual async Task<MedicalCaseDetailDto?> CreateAsync(MedicalCaseInputDto dto)
     {
-        try { var created = await _repository.CreateAsync(dto); _logger.LogInformation("医案创建成功: {Id}", created.Id); return created; }
-        catch (Exception ex) { _logger.LogError(ex, "创建医案失败: PatientId={PatientId}", dto.PatientId); return null; }
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.Create started - PatientId={PatientId}", dto.PatientId);
+            var created = await _repository.CreateAsync(dto);
+            _logger.LogInformation("[SVC] MedicalCase.Create completed - MedicalCaseId={MedicalCaseId}", created.Id);
+            return created;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Create failed - PatientId={PatientId}", dto.PatientId); return null; }
     }
 
     public virtual async Task<MedicalCaseDetailDto?> GetByIdWithDetailsAsync(Guid id)
     {
-        try { return await _repository.GetByIdWithDetailsAsync(id); }
-        catch (Exception ex) { _logger.LogError(ex, "获取医案详情失败: {Id}", id); return null; }
+        try
+        {
+            _logger.LogDebug("[SVC] MedicalCase.GetByIdWithDetails started - MedicalCaseId={MedicalCaseId}", id);
+            var result = await _repository.GetByIdWithDetailsAsync(id);
+            if (result == null)
+                _logger.LogWarning("[SVC] MedicalCase.GetByIdWithDetails → NotFound - MedicalCaseId={MedicalCaseId}", id);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetByIdWithDetails failed - MedicalCaseId={MedicalCaseId}", id); return null; }
     }
 
     public virtual async Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null)
     {
-        try { return await _repository.GetPagedAsync(page, pageSize, searchText); }
-        catch (Exception ex) { _logger.LogError(ex, "分页获取医案失败: Page={Page}", page); return null; }
+        try
+        {
+            _logger.LogDebug("[SVC] MedicalCase.GetPaged started - Page={Page} PageSize={PageSize}", page, pageSize);
+            var result = await _repository.GetPagedAsync(page, pageSize, searchText);
+            _logger.LogDebug("[SVC] MedicalCase.GetPaged completed - TotalCount={TotalCount}", result?.TotalCount ?? 0);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetPaged failed - Page={Page}", page); return null; }
     }
 
     public virtual async Task<bool> DeleteAsync(Guid id)
     {
-        try { return await _repository.DeleteAsync(id); }
-        catch (Exception ex) { _logger.LogError(ex, "删除医案失败: {Id}", id); return false; }
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.DeleteById started - MedicalCaseId={MedicalCaseId}", id);
+            var result = await _repository.DeleteAsync(id);
+            if (result)
+                _logger.LogInformation("[SVC] MedicalCase.DeleteById completed - MedicalCaseId={MedicalCaseId}", id);
+            else
+                _logger.LogWarning("[SVC] MedicalCase.DeleteById → NotFound - MedicalCaseId={MedicalCaseId}", id);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeleteById failed - MedicalCaseId={MedicalCaseId}", id); return false; }
     }
 
     public virtual async Task<PagedResult<MedicalCaseDetailDto>?> SearchAsync(
@@ -157,8 +211,14 @@ public class MedicalCaseService : IMedicalCaseService
         int page = 1,
         int pageSize = 20)
     {
-        try { return await _repository.SearchAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize); }
-        catch (Exception ex) { _logger.LogError(ex, "搜索医案失败"); return null; }
+        try
+        {
+            _logger.LogDebug("[SVC] MedicalCase.Search started - PatientName={PatientName} DiagnosisKeyword={DiagnosisKeyword}", patientName, diagnosisKeyword);
+            var result = await _repository.SearchAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+            _logger.LogDebug("[SVC] MedicalCase.Search completed - TotalCount={TotalCount}", result?.TotalCount ?? 0);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Search failed"); return null; }
     }
 
     #endregion
@@ -170,8 +230,15 @@ public class MedicalCaseService : IMedicalCaseService
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(Guid medicalCaseId, SetPrescriptionFlagRequest request)
     {
-        try { return await _api.SetPrescriptionFlagAsync(medicalCaseId, request); }
-        catch (Exception ex) { _logger.LogError(ex, "设置处方标志失败: {Id}", medicalCaseId); throw; }
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag started - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
+                medicalCaseId, request.NeedsPrescription);
+            var result = await _api.SetPrescriptionFlagAsync(medicalCaseId, request);
+            _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SetPrescriptionFlag failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
     // OpenSpec: simplify-medicalcase-api - Ghost APIs已删除
@@ -180,14 +247,29 @@ public class MedicalCaseService : IMedicalCaseService
 
     public virtual async Task<ApiResponse> CloseCaseAsync(Guid medicalCaseId)
     {
-        try { return await _api.CloseCaseAsync(medicalCaseId); }
-        catch (Exception ex) { _logger.LogError(ex, "关闭病案失败: {Id}", medicalCaseId); throw; }
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.CloseCase started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            var result = await _api.CloseCaseAsync(medicalCaseId);
+            _logger.LogInformation("[SVC] MedicalCase.CloseCase completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
     public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
     {
-        try { return await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors); }
-        catch (Exception ex) { _logger.LogError(ex, "获取未完成病案失败: PatientId={PatientId}", patientId); throw; }
+        try
+        {
+            _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient started - PatientId={PatientId} DoctorId={DoctorId}", patientId, doctorId);
+            var result = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors);
+            if (result != null)
+                _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient found - MedicalCaseId={MedicalCaseId}", result.Id);
+            else
+                _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient → NotFound - PatientId={PatientId}", patientId);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetUnfinishedByPatient failed - PatientId={PatientId}", patientId); throw; }
     }
 
     // OpenSpec: simplify-medicalcase-api - 独立Prescription CRUD方法已删除
@@ -199,12 +281,20 @@ public class MedicalCaseService : IMedicalCaseService
     {
         try
         {
+            _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             var response = await _api.DeleteMedicalCaseAsync(medicalCaseId);
-            return response.IsSuccessStatusCode
-                ? new ApiResponse { Success = true, Message = "医案已取消" }
-                : new ApiResponse { Success = false, Message = $"删除失败: {response.ReasonPhrase}" };
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse { Success = true, Message = "医案已取消" };
+            }
+            else
+            {
+                _logger.LogWarning("[SVC] MedicalCase.DeleteViaApi → Failed - MedicalCaseId={MedicalCaseId} Reason={Reason}", medicalCaseId, response.ReasonPhrase);
+                return new ApiResponse { Success = false, Message = $"删除失败: {response.ReasonPhrase}" };
+            }
         }
-        catch (Exception ex) { _logger.LogError(ex, "删除医案失败: {Id}", medicalCaseId); return new ApiResponse { Success = false, Message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex) }; }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeleteViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); return new ApiResponse { Success = false, Message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex) }; }
     }
 
     // ========== SoftDeleteMedicalCaseAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
@@ -212,24 +302,39 @@ public class MedicalCaseService : IMedicalCaseService
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid medicalCaseId, MedicalCaseStatusInputDto request)
     {
-        try { return await _api.UpdateStatusAsync(medicalCaseId, request); }
-        catch (Exception ex) { _logger.LogError(ex, "更新状态失败: {Id}", medicalCaseId); throw; }
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.UpdateStatus started - MedicalCaseId={MedicalCaseId} Status={Status}", medicalCaseId, request.Status);
+            var result = await _api.UpdateStatusAsync(medicalCaseId, request);
+            _logger.LogInformation("[SVC] MedicalCase.UpdateStatus completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.UpdateStatus failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SaveDraftViaApiAsync(Guid medicalCaseId, ConsultationInputDto? consultationData = null)
     {
-        try { return await _api.SaveDraftAsync(medicalCaseId, consultationData); }
-        catch (Exception ex) { _logger.LogError(ex, "暂存医案失败(API): {Id}", medicalCaseId); throw; }
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.SaveDraftViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            var result = await _api.SaveDraftAsync(medicalCaseId, consultationData);
+            _logger.LogInformation("[SVC] MedicalCase.SaveDraftViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SaveDraftViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CancelMedicalCaseViaApiAsync(Guid medicalCaseId, string? reason = null)
     {
         try
         {
+            _logger.LogInformation("[SVC] MedicalCase.CancelViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequestDto { Reason = reason };
-            return await _api.CancelMedicalCaseAsync(medicalCaseId, request);
+            var result = await _api.CancelMedicalCaseAsync(medicalCaseId, request);
+            _logger.LogInformation("[SVC] MedicalCase.CancelViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return result;
         }
-        catch (Exception ex) { _logger.LogError(ex, "取消医案失败(API): {Id}", medicalCaseId); throw; }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CancelViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
     #endregion
@@ -240,6 +345,7 @@ public class MedicalCaseService : IMedicalCaseService
     {
         if (_currentDetail == null) throw new InvalidOperationException("当前病案数据为空");
         _currentDetail.Consultation = consultation ?? throw new ArgumentNullException(nameof(consultation));
+        _logger.LogDebug("[SVC] MedicalCase.UpdateConsultation - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
     }
 
     /// <summary>
@@ -248,9 +354,10 @@ public class MedicalCaseService : IMedicalCaseService
     /// </summary>
     public virtual async Task<PrescriptionDetailDto?> CreatePrescriptionAsync(PrescriptionInputDto createDto)
     {
-        if (_currentDetail == null) return null;
+        if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.CreatePrescription → NoData"); return null; }
         try
         {
+            _logger.LogInformation("[SVC] MedicalCase.CreatePrescription started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
             // 构建包含Prescription的InputDto
             var inputDto = _currentDetail.ToInputDto();
             inputDto.Prescription = createDto;
@@ -261,17 +368,20 @@ public class MedicalCaseService : IMedicalCaseService
             {
                 _currentDetail.Prescription = updated.Prescription;
                 _currentDetail.PrescriptionId = updated.PrescriptionId;
+                _logger.LogInformation("[SVC] MedicalCase.CreatePrescription completed - PrescriptionId={PrescriptionId}", updated.Prescription.Id);
                 return updated.Prescription;
             }
+            _logger.LogWarning("[SVC] MedicalCase.CreatePrescription → NoPrescriptionReturned - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
             return null;
         }
-        catch (Exception ex) { _logger.LogError(ex, "创建处方失败"); return null; }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CreatePrescription failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return null; }
     }
 
     public void UpdatePrescription(PrescriptionDetailDto prescription)
     {
         if (_currentDetail == null) throw new InvalidOperationException("当前病案数据为空");
         _currentDetail.Prescription = prescription ?? throw new ArgumentNullException(nameof(prescription));
+        _logger.LogDebug("[SVC] MedicalCase.UpdatePrescription - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}", _currentDetail.Id, prescription.Id);
     }
 
     /// <summary>
@@ -280,9 +390,10 @@ public class MedicalCaseService : IMedicalCaseService
     /// </summary>
     public virtual async Task<bool> DeletePrescriptionAsync()
     {
-        if (_currentDetail == null) return false;
+        if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → NoData"); return false; }
         try
         {
+            _logger.LogInformation("[SVC] MedicalCase.DeletePrescription started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
             // 设置NeedsPrescription=false触发服务端软删除
             var inputDto = _currentDetail.ToInputDto();
             inputDto.NeedsPrescription = false;
@@ -293,11 +404,13 @@ public class MedicalCaseService : IMedicalCaseService
             {
                 _currentDetail.Prescription = null;
                 _currentDetail.PrescriptionId = null;
+                _logger.LogInformation("[SVC] MedicalCase.DeletePrescription completed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
                 return true;
             }
+            _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → Failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
             return false;
         }
-        catch (Exception ex) { _logger.LogError(ex, "删除处方失败"); return false; }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeletePrescription failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return false; }
     }
 
     #endregion

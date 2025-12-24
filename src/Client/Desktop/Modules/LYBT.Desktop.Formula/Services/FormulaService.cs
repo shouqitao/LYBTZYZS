@@ -26,6 +26,7 @@ namespace LYBT.Desktop.Formula.Services
         /// <summary>
         /// 保存配方
         /// Issue #2149: 优化双重映射，直接接收InputDto以提升性能
+        /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
         /// </summary>
         public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> SaveFormulaAsync(
             FormulaDetailDto currentFormula,
@@ -41,7 +42,7 @@ namespace LYBT.Desktop.Formula.Services
             try
             {
                 var isNewFormula = currentFormula.Id == Guid.Empty;
-                _logger.LogInformation("保存配方: {FormulaId}, 是否新建: {IsNew}", currentFormula.Id, isNewFormula);
+                _logger.LogInformation("[SVC] Formula.Save started - FormulaId={FormulaId} IsNew={IsNew}", currentFormula.Id, isNewFormula);
 
                 // 验证至少有一味药材
                 if (herbInputDtos == null || herbInputDtos.Count == 0)
@@ -66,20 +67,22 @@ namespace LYBT.Desktop.Formula.Services
                 FormulaDetailDto resultFormula;
                 if (isNewFormula)
                 {
-                    _logger.LogInformation("创建新验方: {Name}", formulaName);
+                    _logger.LogInformation("[SVC] Formula.Create started - Name={Name}", formulaName);
                     resultFormula = await _repository.CreateAsync(inputDto);
+                    _logger.LogInformation("[SVC] Formula.Create completed - FormulaId={FormulaId}", resultFormula.Id);
                 }
                 else
                 {
-                    _logger.LogInformation("更新验方: {Id}", currentFormula.Id);
+                    _logger.LogInformation("[SVC] Formula.Update started - FormulaId={FormulaId}", currentFormula.Id);
                     resultFormula = await _repository.UpdateAsync(inputDto);
+                    _logger.LogInformation("[SVC] Formula.Update completed - FormulaId={FormulaId}", resultFormula.Id);
                 }
 
                 return (true, resultFormula, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "保存配方时发生异常: {FormulaId}", currentFormula.Id);
+                _logger.LogError(ex, "[SVC] Formula.Save failed - FormulaId={FormulaId}", currentFormula.Id);
                 return (false, null, "保存配方时发生系统错误，请稍后重试");
             }
         }
@@ -95,7 +98,7 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                _logger.LogInformation("复制配方: {FormulaId} ({FormulaName})", sourceFormula.Id, sourceFormula.Name);
+                _logger.LogInformation("[SVC] Formula.Copy started - SourceId={FormulaId} Name={FormulaName}", sourceFormula.Id, sourceFormula.Name);
 
                 var createDto = new FormulaInputDto
                 {
@@ -119,11 +122,12 @@ namespace LYBT.Desktop.Formula.Services
                 };
 
                 var newFormula = await _repository.CreateAsync(createDto);
+                _logger.LogInformation("[SVC] Formula.Copy completed - NewId={FormulaId} Name={FormulaName}", newFormula.Id, newFormula.Name);
                 return (true, newFormula, $"配方复制成功！新配方名称：{newFormula.Name}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "复制配方时发生异常: {FormulaId}", sourceFormula.Id);
+                _logger.LogError(ex, "[SVC] Formula.Copy failed - SourceId={FormulaId}", sourceFormula.Id);
                 return (false, null, "复制配方时发生系统错误，请稍后重试");
             }
         }
@@ -139,14 +143,15 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                _logger.LogInformation("删除配方: {FormulaId}", formulaId);
+                _logger.LogInformation("[SVC] Formula.Delete started - FormulaId={FormulaId}", formulaId);
 
                 await _repository.DeleteAsync(formulaId);
+                _logger.LogInformation("[SVC] Formula.Delete completed - FormulaId={FormulaId}", formulaId);
                 return (true, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除配方时发生异常: {FormulaId}", formulaId);
+                _logger.LogError(ex, "[SVC] Formula.Delete failed - FormulaId={FormulaId}", formulaId);
                 return (false, "删除配方时发生系统错误，请稍后重试");
             }
         }
@@ -158,13 +163,14 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                _logger.LogInformation("删除配方: {FormulaId}", formulaId);
+                _logger.LogInformation("[SVC] Formula.Delete started - FormulaId={FormulaId}", formulaId);
                 await _repository.DeleteAsync(formulaId);
+                _logger.LogInformation("[SVC] Formula.Delete completed - FormulaId={FormulaId}", formulaId);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除配方时发生异常: {FormulaId}", formulaId);
+                _logger.LogError(ex, "[SVC] Formula.Delete failed - FormulaId={FormulaId}", formulaId);
                 return false;
             }
         }
@@ -180,16 +186,16 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                _logger.LogInformation("创建配方: {FormulaName}", createDto.Name);
+                _logger.LogInformation("[SVC] Formula.Create started - Name={FormulaName}", createDto.Name);
 
                 var createdFormula = await _repository.CreateAsync(createDto);
-                _logger.LogInformation("配方创建成功: {FormulaId}", createdFormula.Id);
+                _logger.LogInformation("[SVC] Formula.Create completed - FormulaId={FormulaId}", createdFormula.Id);
 
                 return (true, createdFormula, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建配方时发生异常: {FormulaName}", createDto.Name);
+                _logger.LogError(ex, "[SVC] Formula.Create failed - Name={FormulaName}", createDto.Name);
                 return (false, null, "创建配方时发生系统错误");
             }
         }
@@ -201,16 +207,16 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                _logger.LogInformation("更新配方: {FormulaId}", updateDto.Id);
+                _logger.LogInformation("[SVC] Formula.Update started - FormulaId={FormulaId}", updateDto.Id);
 
                 var updatedFormula = await _repository.UpdateAsync(updateDto);
-                _logger.LogInformation("配方更新成功: {FormulaName}", updatedFormula.Name);
+                _logger.LogInformation("[SVC] Formula.Update completed - Name={FormulaName}", updatedFormula.Name);
 
                 return (true, updatedFormula, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新配方时发生异常: {FormulaId}", updateDto.Id);
+                _logger.LogError(ex, "[SVC] Formula.Update failed - FormulaId={FormulaId}", updateDto.Id);
                 return (false, null, "更新配方时发生系统错误");
             }
         }
@@ -224,7 +230,7 @@ namespace LYBT.Desktop.Formula.Services
         /// </summary>
         public Task<(bool success, string? errorMessage)> PrintFormulaAsync(FormulaDetailDto formula)
         {
-            _logger.LogInformation("打印配方: {FormulaId} ({FormulaName})", formula.Id, formula.Name);
+            _logger.LogDebug("[SVC] Formula.Print - FormulaId={FormulaId} Name={FormulaName}", formula.Id, formula.Name);
 
             // TODO: 实现打印逻辑
             return Task.FromResult<(bool, string?)>((true, "打印功能开发中"));
@@ -238,17 +244,17 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                _logger.LogInformation("分页查询配方: Page={Page}, PageSize={PageSize}, SearchText={SearchText}",
+                _logger.LogDebug("[SVC] Formula.GetPaged started - Page={Page} PageSize={PageSize} SearchText={SearchText}",
                     page, pageSize, searchText);
 
                 var result = await _repository.GetPagedAsync(page, pageSize, searchText);
 
-                _logger.LogInformation("查询成功，共{TotalCount}条数据", result.TotalCount);
+                _logger.LogDebug("[SVC] Formula.GetPaged completed - TotalCount={TotalCount}", result.TotalCount);
                 return (true, result, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页查询配方时发生异常");
+                _logger.LogError(ex, "[SVC] Formula.GetPaged failed");
                 return (false, null, "查询配方时发生系统错误");
             }
         }
@@ -260,22 +266,22 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                _logger.LogInformation("开始查询配方: FormulaId={FormulaId}", formulaId);
+                _logger.LogDebug("[SVC] Formula.GetById started - FormulaId={FormulaId}", formulaId);
 
                 var formula = await _repository.GetByIdAsync(formulaId);
 
                 if (formula == null)
                 {
-                    _logger.LogWarning("配方不存在：FormulaId={FormulaId}", formulaId);
+                    _logger.LogWarning("[SVC] Formula.GetById → NotFound - FormulaId={FormulaId}", formulaId);
                     return (false, null, "配方不存在");
                 }
 
-                _logger.LogInformation("查询配方成功：{FormulaName}", formula.Name);
+                _logger.LogDebug("[SVC] Formula.GetById completed - Name={FormulaName}", formula.Name);
                 return (true, formula, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询配方时发生异常：FormulaId={FormulaId}", formulaId);
+                _logger.LogError(ex, "[SVC] Formula.GetById failed - FormulaId={FormulaId}", formulaId);
                 return (false, null, "查询配方时发生系统错误");
             }
         }
@@ -285,7 +291,7 @@ namespace LYBT.Desktop.Formula.Services
         /// </summary>
         public Task<(bool success, string? errorMessage)> ViewUsageHistoryAsync(Guid formulaId)
         {
-            _logger.LogInformation("查看配方使用历史: {FormulaId}", formulaId);
+            _logger.LogDebug("[SVC] Formula.ViewUsageHistory - FormulaId={FormulaId}", formulaId);
 
             // TODO: 实现查看使用历史逻辑
             return Task.FromResult<(bool, string?)>((true, "查看使用历史功能开发中"));
@@ -298,16 +304,16 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                _logger.LogInformation("查询待校验验方列表");
+                _logger.LogDebug("[SVC] Formula.GetPendingValidation started");
 
                 var formulas = await _repository.GetPendingValidationFormulasAsync();
 
-                _logger.LogInformation("查询成功，共{Count}个待校验验方", formulas.Count);
+                _logger.LogDebug("[SVC] Formula.GetPendingValidation completed - Count={Count}", formulas.Count);
                 return (true, formulas, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询待校验验方列表时发生异常");
+                _logger.LogError(ex, "[SVC] Formula.GetPendingValidation failed");
                 return (false, null, "查询待校验验方列表时发生系统错误");
             }
         }
@@ -320,26 +326,25 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                _logger.LogInformation(
-                    "验证配方药材: FormulaId={FormulaId}, HerbItemId={HerbItemId}, SelectedHerbId={SelectedHerbId}",
+                _logger.LogInformation("[SVC] Formula.ValidateHerb started - FormulaId={FormulaId} HerbItemId={HerbItemId} SelectedHerbId={SelectedHerbId}",
                     formulaId, herbItemId, selectedHerbId);
 
                 var result = await _repository.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
 
                 if (result)
                 {
-                    _logger.LogInformation("配方药材验证成功");
+                    _logger.LogInformation("[SVC] Formula.ValidateHerb completed");
                     return (true, null);
                 }
                 else
                 {
-                    _logger.LogWarning("配方药材验证失败");
+                    _logger.LogWarning("[SVC] Formula.ValidateHerb failed");
                     return (false, "配方药材验证失败");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证配方药材时发生异常");
+                _logger.LogError(ex, "[SVC] Formula.ValidateHerb failed");
                 return (false, "验证配方药材时发生系统错误");
             }
         }

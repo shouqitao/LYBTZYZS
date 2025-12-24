@@ -114,7 +114,7 @@ namespace LYBT.Module.Patients.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("患者创建验证失败: {Errors}", string.Join("; ", errors));
+                _logger.LogWarning("[SVC] Patient.Create → ValidationFailed - Errors={Errors}", string.Join("; ", errors));
                 return Result<PatientDetailDto>.Failure(errors);
             }
 
@@ -144,7 +144,7 @@ namespace LYBT.Module.Patients.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("患者更新验证失败: {PatientId}, {Errors}", id, string.Join("; ", errors));
+                _logger.LogWarning("[SVC] Patient.Update → ValidationFailed - PatientId={PatientId} Errors={Errors}", id, string.Join("; ", errors));
                 return Result<PatientDetailDto>.Failure(errors);
             }
 
@@ -157,7 +157,7 @@ namespace LYBT.Module.Patients.Services
             if (entity.Name != oldName)
             {
                 entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
-                _logger.LogDebug("患者姓名变化，重新生成拼音码: {OldName} -> {NewName}, PinYin: {PinYin}",
+                _logger.LogDebug("[SVC] Patient.Update → PinYinRegenerated - OldName={OldName} NewName={NewName} PinYin={PinYin}",
                     oldName, entity.Name, entity.PinYinCode);
             }
 
@@ -293,7 +293,7 @@ namespace LYBT.Module.Patients.Services
                 {
                     // 行级错误隔离：单行解析失败不影响其他行
                     // ERR-012: 使用安全消息替代ex.Message
-                    _logger.LogError(ex, "处理第{Row}行数据时发生异常", row);
+                    _logger.LogError(ex, "[SVC] Patient.BatchImport → RowError - Row={Row}", row);
                     result.FailureCount++;
                     result.Failures.Add(new PatientImportFailureDto
                     {
@@ -548,7 +548,7 @@ namespace LYBT.Module.Patients.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("患者创建验证失败: {Errors}", string.Join("; ", errors));
+                _logger.LogWarning("[SVC] Patient.Create → ValidationFailed - Errors={Errors}", string.Join("; ", errors));
                 return Result<Patient>.Failure(errors);
             }
 
@@ -588,7 +588,7 @@ namespace LYBT.Module.Patients.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("患者更新验证失败: {PatientId}, {Errors}", id, string.Join("; ", errors));
+                _logger.LogWarning("[SVC] Patient.Update → ValidationFailed - PatientId={PatientId} Errors={Errors}", id, string.Join("; ", errors));
                 return Result<Patient>.Failure(errors);
             }
 
@@ -601,7 +601,7 @@ namespace LYBT.Module.Patients.Services
             if (entity.Name != oldName)
             {
                 entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
-                _logger.LogDebug("患者姓名变化，重新生成拼音码: {OldName} -> {NewName}, PinYin: {PinYin}",
+                _logger.LogDebug("[SVC] Patient.Update → PinYinRegenerated - OldName={OldName} NewName={NewName} PinYin={PinYin}",
                     oldName, entity.Name, entity.PinYinCode);
             }
 
@@ -635,7 +635,7 @@ namespace LYBT.Module.Patients.Services
             // 确保Age属性正确计算
             dto.Age = result.Age;
 
-            _logger.LogInformation("患者已恢复: {PatientId}, {PatientName}", id, entity.Name);
+            _logger.LogInformation("[SVC] Patient.Restore completed - PatientId={PatientId} Name={Name}", id, entity.Name);
             return Result<PatientDetailDto>.Success(dto);
         }
 
@@ -678,7 +678,7 @@ namespace LYBT.Module.Patients.Services
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(id);
-                    _logger.LogInformation("批量删除 - 患者已删除: {PatientId}, {PatientName}", id, entity.Name);
+                    _logger.LogInformation("[SVC] Patient.BatchDelete → ItemSuccess - PatientId={PatientId} Name={Name}", id, entity.Name);
                 }
                 catch (Exception ex)
                 {
@@ -691,7 +691,7 @@ namespace LYBT.Module.Patients.Services
                         Id = id,
                         Reason = "删除操作失败"
                     });
-                    _logger.LogError(ex, "批量删除 - 删除患者失败: {PatientId}", id);
+                    _logger.LogError(ex, "[SVC] Patient.BatchDelete → ItemFailed - PatientId={PatientId}", id);
                 }
             }
 

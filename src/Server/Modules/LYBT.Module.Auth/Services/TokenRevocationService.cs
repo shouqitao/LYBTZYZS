@@ -35,7 +35,7 @@ public class TokenRevocationService : ITokenRevocationService
 
         if (tokenRecord == null)
         {
-            _logger.LogWarning("Token not found or already revoked: {Token}", token);
+            _logger.LogWarning("[SVC] Token.Revoke → NotFound - Token={Token}", token);
             return false;
         }
 
@@ -69,12 +69,11 @@ public class TokenRevocationService : ITokenRevocationService
         }
         catch (Exception auditEx)
         {
-            _logger.LogError(auditEx, "Failed to log audit event for token revocation");
+            _logger.LogError(auditEx, "[SVC] Token.Revoke → AuditFailed - TokenId={TokenId}", tokenRecord.Id);
             // 审计日志失败不影响主操作
         }
 
-        _logger.LogInformation(
-            "Token revoked successfully. UserId: {UserId}, UserType: {UserType}, Reason: {Reason}",
+        _logger.LogInformation("[SVC] Token.Revoke completed - UserId={UserId} UserType={UserType} Reason={Reason}",
             tokenRecord.UserId, tokenRecord.UserType, reason);
 
         return true;

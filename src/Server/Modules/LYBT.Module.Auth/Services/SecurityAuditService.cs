@@ -59,15 +59,13 @@ public class SecurityAuditService : ISecurityAuditService
             await _context.SecurityAuditLogs.AddAsync(auditLog);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation(
-                "Security audit logged: EventType={EventType}, UserId={UserId}, Success={Success}",
+            _logger.LogInformation("[SVC] SecurityAudit.Log completed - EventType={EventType} UserId={UserId} Success={Success}",
                 auditEvent.EventType, auditEvent.UserId, auditEvent.Success);
         }
         catch (Exception ex)
         {
             // 审计日志失败不影响主流程，只记录错误日志
-            _logger.LogError(ex,
-                "Failed to log security audit event: EventType={EventType}, UserId={UserId}",
+            _logger.LogError(ex, "[SVC] SecurityAudit.Log failed - EventType={EventType} UserId={UserId}",
                 auditEvent.EventType, auditEvent.UserId);
         }
     }

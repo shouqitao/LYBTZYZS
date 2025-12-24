@@ -113,20 +113,21 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
         /// <summary>
         /// 创建患者
+        /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
         /// </summary>
         public async Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto)
         {
             try
             {
-                _logger.LogInformation("开始创建患者: {PatientName}", inputDto.Name);
+                _logger.LogInformation("[SVC] Patient.Create started - Name={PatientName}", inputDto.Name);
 
                 var patient = await _patientRepository.CreateAsync(inputDto);
-                _logger.LogInformation("患者创建成功: {PatientId}", patient.Id);
+                _logger.LogInformation("[SVC] Patient.Create completed - PatientId={PatientId}", patient.Id);
                 return CommandResult<PatientDetailDto>.Success(patient);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建患者时发生异常: {PatientName}", inputDto.Name);
+                _logger.LogError(ex, "[SVC] Patient.Create failed - Name={PatientName}", inputDto.Name);
                 return CommandResult<PatientDetailDto>.Failure("创建患者时发生系统错误");
             }
         }
@@ -138,15 +139,15 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始更新患者: {PatientId}", inputDto.Id);
+                _logger.LogInformation("[SVC] Patient.Update started - PatientId={PatientId}", inputDto.Id);
 
                 var patient = await _patientRepository.UpdateAsync(inputDto);
-                _logger.LogInformation("患者更新成功: {PatientId}", patient.Id);
+                _logger.LogInformation("[SVC] Patient.Update completed - PatientId={PatientId}", patient.Id);
                 return CommandResult<PatientDetailDto>.Success(patient);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新患者时发生异常: {PatientId}", inputDto.Id);
+                _logger.LogError(ex, "[SVC] Patient.Update failed - PatientId={PatientId}", inputDto.Id);
                 return CommandResult<PatientDetailDto>.Failure("更新患者时发生系统错误");
             }
         }
@@ -158,15 +159,15 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始删除患者: {PatientId}", patientId);
+                _logger.LogInformation("[SVC] Patient.Delete started - PatientId={PatientId}", patientId);
 
                 await _patientRepository.DeleteAsync(patientId);
-                _logger.LogInformation("患者删除成功: {PatientId}", patientId);
+                _logger.LogInformation("[SVC] Patient.Delete completed - PatientId={PatientId}", patientId);
                 return CommandResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除患者时发生异常: {PatientId}", patientId);
+                _logger.LogError(ex, "[SVC] Patient.Delete failed - PatientId={PatientId}", patientId);
                 return CommandResult<bool>.Failure("删除患者时发生系统错误");
             }
         }
@@ -180,7 +181,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// </summary>
         private Task ExecuteSaveAsync()
         {
-            _logger.LogInformation("执行保存患者");
+            _logger.LogDebug("[SVC] Patient.ExecuteSave");
             OnPatientSaved?.Invoke();
             return Task.CompletedTask;
         }
@@ -190,7 +191,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// </summary>
         private void ExecuteEdit()
         {
-            _logger.LogInformation("执行编辑患者");
+            _logger.LogDebug("[SVC] Patient.ExecuteEdit");
             OnEditEnabled?.Invoke();
         }
 
@@ -199,7 +200,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// </summary>
         private void ExecuteCancelEdit()
         {
-            _logger.LogInformation("执行取消编辑");
+            _logger.LogDebug("[SVC] Patient.ExecuteCancelEdit");
             OnEditCancelled?.Invoke();
         }
 
@@ -208,7 +209,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// </summary>
         private Task ExecuteDeleteAsync()
         {
-            _logger.LogInformation("执行删除患者");
+            _logger.LogDebug("[SVC] Patient.ExecuteDelete");
             OnPatientDeleted?.Invoke();
             return Task.CompletedTask;
         }
@@ -220,11 +221,11 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         {
             if (_dataManager == null || _dataManager.PatientId == Guid.Empty)
             {
-                _logger.LogWarning("无法查看病历历史：患者ID无效");
+                _logger.LogWarning("[SVC] Patient.ViewMedicalHistory → InvalidId");
                 return;
             }
 
-            _logger.LogInformation("导航到病历历史，患者ID: {PatientId}", _dataManager.PatientId);
+            _logger.LogDebug("[SVC] Patient.ViewMedicalHistory - PatientId={PatientId}", _dataManager.PatientId);
 
             var parameters = new NavigationParameters
             {
@@ -239,7 +240,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// </summary>
         private void ExecuteBack()
         {
-            _logger.LogInformation("执行返回");
+            _logger.LogDebug("[SVC] Patient.ExecuteBack");
             _regionManager.RequestNavigate("ContentRegion", "PatientMasterDetailView");
         }
 
@@ -276,7 +277,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             try
             {
                 var ids = patientIds?.ToList() ?? new List<Guid>();
-                _logger.LogInformation("开始批量删除患者，数量: {Count}", ids.Count);
+                _logger.LogInformation("[SVC] Patient.BatchDelete started - Count={Count}", ids.Count);
 
                 if (!ids.Any())
                 {
@@ -287,16 +288,17 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 var result = await _patientRepository.BatchDeleteAsync(ids);
                 if (result == null)
                 {
+                    _logger.LogWarning("[SVC] Patient.BatchDelete failed");
                     return CommandResult<BatchOperationResultDto>.Failure("批量删除患者失败");
                 }
 
                 if (result.FailureCount == 0)
                 {
-                    _logger.LogInformation("批量删除患者成功，数量: {Count}", ids.Count);
+                    _logger.LogInformation("[SVC] Patient.BatchDelete completed - Success={SuccessCount}", result.SuccessCount);
                 }
                 else
                 {
-                    _logger.LogWarning("批量删除患者部分失败：成功 {SuccessCount} 个，失败 {FailureCount} 个",
+                    _logger.LogWarning("[SVC] Patient.BatchDelete partial - Success={SuccessCount} Failure={FailureCount}",
                         result.SuccessCount, result.FailureCount);
                 }
 
@@ -304,7 +306,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "批量删除患者时发生异常");
+                _logger.LogError(ex, "[SVC] Patient.BatchDelete failed");
                 return CommandResult<BatchOperationResultDto>.Failure("批量删除患者时发生系统错误");
             }
         }
@@ -320,15 +322,15 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始搜索患者：{Keyword}", keyword);
+                _logger.LogDebug("[SVC] Patient.Search started - Keyword={Keyword}", keyword);
 
                 var patients = await _patientRepository.SearchAsync(keyword);
-                _logger.LogInformation("搜索患者成功，数量: {Count}", patients.Count);
+                _logger.LogDebug("[SVC] Patient.Search completed - Count={Count}", patients.Count);
                 return CommandResult<IEnumerable<PatientListDto>>.Success(patients);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "搜索患者时发生异常：{Keyword}", keyword);
+                _logger.LogError(ex, "[SVC] Patient.Search failed - Keyword={Keyword}", keyword);
                 return CommandResult<IEnumerable<PatientListDto>>.Failure("搜索患者时发生系统错误");
             }
         }
@@ -340,15 +342,15 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始分页查询患者：Page={Page}, PageSize={PageSize}", page, pageSize);
+                _logger.LogDebug("[SVC] Patient.GetPaged started - Page={Page} PageSize={PageSize}", page, pageSize);
 
                 var result = await _patientRepository.GetPagedAsync(page, pageSize, keyword);
-                _logger.LogInformation("分页查询患者成功，数量: {Count}", result.Items.Count);
+                _logger.LogDebug("[SVC] Patient.GetPaged completed - Count={Count}", result.Items.Count);
                 return CommandResult<PagedResult<PatientListDto>>.Success(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页查询患者时发生异常");
+                _logger.LogError(ex, "[SVC] Patient.GetPaged failed");
                 return CommandResult<PagedResult<PatientListDto>>.Failure("查询患者列表时发生系统错误");
             }
         }
@@ -360,22 +362,22 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始查询患者：PatientId={PatientId}", patientId);
+                _logger.LogDebug("[SVC] Patient.GetById started - PatientId={PatientId}", patientId);
 
                 var patient = await _patientRepository.GetByIdAsync(patientId);
 
                 if (patient == null)
                 {
-                    _logger.LogWarning("患者不存在：PatientId={PatientId}", patientId);
+                    _logger.LogWarning("[SVC] Patient.GetById → NotFound - PatientId={PatientId}", patientId);
                     return CommandResult<PatientDetailDto>.Failure("患者不存在");
                 }
 
-                _logger.LogInformation("查询患者成功：{PatientName}", patient.Name);
+                _logger.LogDebug("[SVC] Patient.GetById completed - Name={PatientName}", patient.Name);
                 return CommandResult<PatientDetailDto>.Success(patient);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询患者时发生异常：PatientId={PatientId}", patientId);
+                _logger.LogError(ex, "[SVC] Patient.GetById failed - PatientId={PatientId}", patientId);
                 return CommandResult<PatientDetailDto>.Failure("查询患者时发生系统错误");
             }
         }

@@ -13,6 +13,7 @@ using LYBT.Module.Patients;
 using LYBT.Module.Prescriptions;
 using LYBT.Module.Users;
 using LYBT.Shared.Configuration.Options.Server;
+using LYBT.WebAPI.Filters;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -135,7 +136,11 @@ public static class ServiceCollectionExtensions
             options.MultipartHeadersLengthLimit = int.MaxValue;
         });
 
-        services.AddControllers()
+        services.AddControllers(options =>
+            {
+                // OpenSpec: enhance-dataflow-logging - 全局API日志过滤器
+                options.Filters.Add<ApiLoggingFilter>();
+            })
             .AddJsonOptions(options =>
             {
                 // 使用统一配置的属性命名策略

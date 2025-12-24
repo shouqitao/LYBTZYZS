@@ -240,6 +240,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
             // 捕获当前选中项，防止加载过程中选中项变化
             var currentSelectedItem = SelectedItem;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            Logger.LogInformation("[VM] LoadDetail started - {ItemType}", typeof(TListItem).Name);
 
             try
             {
@@ -265,6 +268,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                     }
                     IsLoadingDetail = false;
                 });
+
+                sw.Stop();
+                Logger.LogInformation("[VM] LoadDetail completed - {ItemType} Duration={Duration}ms", 
+                    typeof(TListItem).Name, sw.ElapsedMilliseconds);
             }
             catch (OperationCanceledException)
             {
@@ -273,7 +280,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载详情失败: {ItemType}", typeof(TListItem).Name);
+                sw.Stop();
+                Logger.LogError(ex, "[VM] LoadDetail failed - {ItemType} Duration={Duration}ms", 
+                    typeof(TListItem).Name, sw.ElapsedMilliseconds);
                 if (!_isDisposed)
                 {
                     RunOnUIThreadSafe(() =>
@@ -325,6 +334,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         {
             if (CurrentDetail == null) return;
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Logger.LogInformation("[VM] Save started - {DetailType}", typeof(TDetail).Name);
+
             await ExecuteSafelyAsync(async () =>
             {
                 IsLoading = true;
@@ -343,10 +355,18 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                         // 刷新列表
                         await RefreshAsync();
 
+                        sw.Stop();
+                        Logger.LogInformation("[VM] Save completed - {DetailType} Duration={Duration}ms", 
+                            typeof(TDetail).Name, sw.ElapsedMilliseconds);
+
                         await ShowSuccessMessageAsync("保存成功");
                     }
                     else
                     {
+                        sw.Stop();
+                        Logger.LogWarning("[VM] Save failed - {DetailType} Duration={Duration}ms Error={Error}", 
+                            typeof(TDetail).Name, sw.ElapsedMilliseconds, ErrorMessage ?? "未知错误");
+
                         // Issue #2261: 保存失败时显示错误提示
                         var errorMsg = string.IsNullOrWhiteSpace(ErrorMessage) ? "保存失败，请重试" : ErrorMessage;
                         await ShowErrorMessageAsync(errorMsg);
@@ -382,6 +402,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             var confirmed = await ShowConfirmationAsync("确认删除此记录吗？\n此操作不可恢复。", "删除确认");
             if (!confirmed) return;
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Logger.LogInformation("[VM] Delete started - {DetailType}", typeof(TDetail).Name);
+
             await ExecuteSafelyAsync(async () =>
             {
                 IsLoading = true;
@@ -400,10 +423,18 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                         // 刷新列表
                         await RefreshAsync();
 
+                        sw.Stop();
+                        Logger.LogInformation("[VM] Delete completed - {DetailType} Duration={Duration}ms", 
+                            typeof(TDetail).Name, sw.ElapsedMilliseconds);
+
                         await ShowSuccessMessageAsync("删除成功");
                     }
                     else
                     {
+                        sw.Stop();
+                        Logger.LogWarning("[VM] Delete failed - {DetailType} Duration={Duration}ms Error={Error}", 
+                            typeof(TDetail).Name, sw.ElapsedMilliseconds, ErrorMessage ?? "未知错误");
+
                         // Issue #2261: 删除失败时显示错误提示
                         var errorMsg = string.IsNullOrWhiteSpace(ErrorMessage) ? "删除失败，请重试" : ErrorMessage;
                         await ShowErrorMessageAsync(errorMsg);

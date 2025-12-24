@@ -10,6 +10,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 /// 处方项处理器
 /// 负责药材项的创建、添加、删除、紧凑等操作
 /// OpenSpec: cleanup-ui-layer - Phase 1.1 PrescriptionPanelViewModel拆分
+/// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
 /// </summary>
 public class PrescriptionItemHandler
 {
@@ -122,7 +123,7 @@ public class PrescriptionItemHandler
             herbItems.Add(item);
         }
 
-        _logger.LogDebug("初始化{Count}个空槽位", InitialSlotCount);
+        _logger.LogDebug("[HDL] PrescriptionItem.AddDefault - Count={Count}", InitialSlotCount);
     }
 
     #endregion
@@ -156,7 +157,7 @@ public class PrescriptionItemHandler
 
         if (addedCount > 0)
         {
-            _logger.LogDebug("添加{Count}个空槽位以确保输入框可用", addedCount);
+            _logger.LogDebug("[HDL] PrescriptionItem.EnsureBlankRows - AddedCount={Count}", addedCount);
         }
     }
 
@@ -190,7 +191,7 @@ public class PrescriptionItemHandler
         // 再添加空槽位
         EnsureMinimumBlankRows(herbItems, allHerbs, onItemChanged);
 
-        _logger.LogDebug("紧凑完成: {NonEmptyCount}个药材 + 空槽位", nonEmptyItems.Count);
+        _logger.LogDebug("[HDL] PrescriptionItem.Compact completed - NonEmptyCount={NonEmptyCount}", nonEmptyItems.Count);
     }
 
     #endregion
@@ -214,7 +215,7 @@ public class PrescriptionItemHandler
             herbItems.Add(item);
         }
 
-        _logger.LogDebug("添加新行: 4个空槽位");
+        _logger.LogDebug("[HDL] PrescriptionItem.AddNewRow - SlotCount=4");
     }
 
     /// <summary>
@@ -235,7 +236,7 @@ public class PrescriptionItemHandler
         {
             var newItem = CreateHerbItem(allHerbs, onItemChanged);
             herbItems.Insert(index + 1, newItem);
-            _logger.LogDebug("在位置{Index}后添加新槽位", index);
+            _logger.LogDebug("[HDL] PrescriptionItem.AddAfter - AfterIndex={Index}", index);
         }
     }
 
@@ -261,7 +262,7 @@ public class PrescriptionItemHandler
         var removed = herbItems.Remove(itemToDelete);
         if (removed)
         {
-            _logger.LogDebug("删除药材项: {HerbName}", itemToDelete.HerbName);
+            _logger.LogDebug("[HDL] PrescriptionItem.Delete - HerbName={HerbName}", itemToDelete.HerbName);
 
             // 确保最少槽位
             EnsureMinimumBlankRows(herbItems, allHerbs, onItemChanged);

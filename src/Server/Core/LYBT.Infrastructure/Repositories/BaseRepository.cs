@@ -62,9 +62,15 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         public virtual async Task<TEntity?> GetByIdAsync(Guid id)
         {
-            return await _dbSet
+            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+            var entity = await _dbSet
                 .Where(e => e.Id == id && !e.IsDeleted)
                 .SingleOrDefaultAsync();
+
+            _logger.LogDebug("[REPO] {EntityType}.GetById({Id}) → {Result}",
+                typeof(TEntity).Name, id, entity != null ? "Found" : "NotFound");
+
+            return entity;
         }
 
         // Issue #1766: 删除GetByIdAsync(Guid, params string[]) - 未被使用，MVP阶段Repository子类都实现自己的WithDetails方法
@@ -341,7 +347,8 @@ namespace LYBT.Infrastructure.Repositories
             await _dbSet.AddAsync(entity);
             await SaveChangesAsync();
 
-            _logger?.LogDebug("实体已添加 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, entity.Id);
+            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+            _logger.LogDebug("[REPO] {EntityType}.Add({Id})", typeof(TEntity).Name, entity.Id);
 
             return entity;
         }
@@ -364,7 +371,8 @@ namespace LYBT.Infrastructure.Repositories
             await _dbSet.AddRangeAsync(entityList);
             await SaveChangesAsync();
 
-            _logger?.LogDebug("批量添加实体 - 类型: {EntityType}, 数量: {Count}",
+            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+            _logger.LogDebug("[REPO] {EntityType}.AddRange Count={Count}",
                 typeof(TEntity).Name, entityList.Count);
 
             return entityList;
@@ -391,7 +399,8 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet.Update(entity);
             await SaveChangesAsync();
 
-            _logger?.LogDebug("实体已更新 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, entity.Id);
+            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+            _logger.LogDebug("[REPO] {EntityType}.Update({Id})", typeof(TEntity).Name, entity.Id);
 
             return entity;
         }
@@ -414,7 +423,8 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet.UpdateRange(entityList);
             await SaveChangesAsync();
 
-            _logger?.LogDebug("批量更新实体 - 类型: {EntityType}, 数量: {Count}",
+            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+            _logger.LogDebug("[REPO] {EntityType}.UpdateRange Count={Count}",
                 typeof(TEntity).Name, entityList.Count);
         }
 
@@ -430,7 +440,8 @@ namespace LYBT.Infrastructure.Repositories
             var entity = await GetByIdAsync(id);
             if (entity == null)
             {
-                _logger?.LogWarning("实体不存在，无法删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
+                // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+                _logger.LogWarning("[REPO] {EntityType}.Delete({Id}) → NotFound", typeof(TEntity).Name, id);
                 return false;
             }
 
@@ -440,7 +451,8 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet.Update(entity);
             await SaveChangesAsync();
 
-            _logger?.LogDebug("实体已软删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
+            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+            _logger.LogDebug("[REPO] {EntityType}.Delete({Id})", typeof(TEntity).Name, id);
             return true;
         }
 
@@ -460,7 +472,8 @@ namespace LYBT.Infrastructure.Repositories
 
             if (!entities.Any())
             {
-                _logger?.LogWarning("没有找到符合条件的实体进行删除 - 类型: {EntityType}", typeof(TEntity).Name);
+                // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+                _logger.LogWarning("[REPO] {EntityType}.DeleteRange → NoMatch", typeof(TEntity).Name);
                 return 0;
             }
 
@@ -473,7 +486,8 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet.UpdateRange(entities);
             await SaveChangesAsync();
 
-            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
+            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+            _logger.LogDebug("[REPO] {EntityType}.DeleteRange Count={Count}",
                 typeof(TEntity).Name, entities.Count);
 
             return entities.Count;
@@ -487,14 +501,16 @@ namespace LYBT.Infrastructure.Repositories
             var entity = await _dbSet.FindAsync(id);
             if (entity == null)
             {
-                _logger?.LogWarning("实体不存在，无法物理删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
+                // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+                _logger.LogWarning("[REPO] {EntityType}.HardDelete({Id}) → NotFound", typeof(TEntity).Name, id);
                 return false;
             }
 
             _dbSet.Remove(entity);
             await SaveChangesAsync();
 
-            _logger?.LogDebug("实体已物理删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
+            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
+            _logger.LogDebug("[REPO] {EntityType}.HardDelete({Id})", typeof(TEntity).Name, id);
             return true;
         }
 

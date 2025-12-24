@@ -165,6 +165,33 @@ public static partial class SensitiveDataMasker
     #region 文本级脱敏方法
 
     /// <summary>
+    /// URI敏感参数模式
+    /// 匹配: password=xxx&token=xxx 等查询参数
+    /// LOG-016: URI敏感数据脱敏
+    /// </summary>
+    [GeneratedRegex(@"(?i)(password|token|key|secret|credential|apikey|access_token|refresh_token|auth)=([^&\s]*)", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    private static partial Regex UriSensitiveParamPattern();
+
+    /// <summary>
+    /// 对URI进行敏感参数脱敏处理
+    /// LOG-016: URI敏感数据脱敏
+    /// </summary>
+    /// <param name="uri">原始URI字符串</param>
+    /// <returns>脱敏后的URI字符串</returns>
+    public static string MaskUri(string? uri)
+    {
+        if (string.IsNullOrEmpty(uri))
+            return uri ?? string.Empty;
+
+        // 替换敏感查询参数: password=xxx -> password=***
+        return UriSensitiveParamPattern().Replace(uri, match =>
+        {
+            var paramName = match.Groups[1].Value;
+            return $"{paramName}=***";
+        });
+    }
+
+    /// <summary>
     /// 对字符串进行文本级脱敏处理
     /// 适用于日志消息、连接字符串等文本
     /// </summary>

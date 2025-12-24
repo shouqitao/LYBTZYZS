@@ -65,14 +65,12 @@ namespace LYBT.Module.MedicalCases.Services
                 _dbContext.MedicalCaseAuditLogs.Add(auditLog);
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation(
-                    "审计日志: {OperationType} 医案 {MedicalCaseId}, 操作者: {OperatorName}({OperatorRole}), 变更字段: {ChangedFields}",
-                    operationType, after.Id, operatorName, role, changedFields);
+                _logger.LogInformation("[SVC] MedicalCase.Audit completed - MedicalCaseId={MedicalCaseId} OperationType={OperationType} OperatorName={OperatorName} OperatorRole={OperatorRole} ChangedFields={ChangedFields}",
+                    after.Id, operationType, operatorName, role, changedFields);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,
-                    "记录审计日志失败: 医案 {MedicalCaseId}, 操作者: {OperatorId}",
+                _logger.LogError(ex, "[SVC] MedicalCase.Audit failed - MedicalCaseId={MedicalCaseId} OperatorId={OperatorId}",
                     after.Id, operatorId);
                 // 审计日志失败不应影响主业务流程
             }

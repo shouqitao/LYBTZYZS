@@ -62,8 +62,7 @@ namespace LYBT.Module.Formulas.Services
                     f.CreatedBy == currentUserId.Value ||
                     f.IsShared);
 
-                _logger.LogDebug(
-                    "应用角色过滤: UserId={UserId}, 原数量={OriginalCount}",
+                _logger.LogDebug("[SVC] Formula.GetPaged → RoleFilter - UserId={UserId} OriginalCount={OriginalCount}",
                     currentUserId.Value, pagedResult.Items.Count);
             }
 
@@ -256,7 +255,7 @@ namespace LYBT.Module.Formulas.Services
             {
                 // 所有药材都已验证，更新验方状态
                 formula.ValidationStatus = FormulaValidationStatus.Validated;
-                _logger.LogInformation("验方 {FormulaId} 所有药材已验证，状态更新为Validated", formulaId);
+                _logger.LogInformation("[SVC] Formula.ValidateHerb → AllValidated - FormulaId={FormulaId}", formulaId);
             }
 
             // 7. 保存变更
@@ -266,12 +265,12 @@ namespace LYBT.Module.Formulas.Services
             // 8. 返回成功（详细消息通过日志记录）
             if (allValidated)
             {
-                _logger.LogInformation("药材\"{OriginalHerbName}\"已映射为\"{HerbName}\"，验方\"{FormulaName}\"所有药材已校验完成",
+                _logger.LogInformation("[SVC] Formula.ValidateHerb completed - OriginalHerbName={OriginalHerbName} MappedName={MappedName} FormulaName={FormulaName} AllValidated=true",
                     herbItem.OriginalHerbName, selectedHerb.Name, formula.Name);
             }
             else
             {
-                _logger.LogInformation("药材\"{OriginalHerbName}\"已映射为\"{HerbName}\"",
+                _logger.LogInformation("[SVC] Formula.ValidateHerb completed - OriginalHerbName={OriginalHerbName} MappedName={MappedName}",
                     herbItem.OriginalHerbName, selectedHerb.Name);
             }
             return Result.Success();
@@ -296,7 +295,7 @@ namespace LYBT.Module.Formulas.Services
             // 映射为DTO
             var formulaDtos = _mapper.Map<List<FormulaDetailDto>>(pendingFormulas);
 
-            _logger.LogInformation("查询到 {Count} 个待验证验方", formulaDtos.Count);
+            _logger.LogInformation("[SVC] Formula.GetPendingValidation completed - Count={Count}", formulaDtos.Count);
             return Result<List<FormulaDetailDto>>.Success(formulaDtos);
         }
 
@@ -407,7 +406,7 @@ namespace LYBT.Module.Formulas.Services
                         ErrorMessage = "数据处理异常",
                         ErrorDetails = null // ERR-012: 不暴露堆栈信息
                     });
-                    _logger.LogError(ex, "导入验方 {FormulaName} 时发生错误", formulaImportItem.Name);
+                    _logger.LogError(ex, "[SVC] Formula.BatchImport → ItemError - FormulaName={FormulaName}", formulaImportItem.Name);
                 }
             }
 
@@ -442,7 +441,7 @@ namespace LYBT.Module.Formulas.Services
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "药材匹配失败：{HerbName}", herbName);
+                _logger.LogWarning(ex, "[SVC] Formula.MatchHerb → MatchFailed - HerbName={HerbName}", herbName);
                 return null;
             }
         }
@@ -636,7 +635,7 @@ namespace LYBT.Module.Formulas.Services
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.Map<FormulaDetailDto>(result);
 
-            _logger.LogInformation("验方状态已切换: {FormulaId}, 新状态: {Status}", id, entity.Status);
+            _logger.LogInformation("[SVC] Formula.ToggleStatus completed - FormulaId={FormulaId} Status={Status}", id, entity.Status);
 
             return Result<FormulaDetailDto>.Success(dto);
         }
@@ -666,7 +665,7 @@ namespace LYBT.Module.Formulas.Services
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.Map<FormulaDetailDto>(result);
 
-            _logger.LogInformation("验方已恢复: {FormulaId}, {FormulaName}", id, entity.Name);
+            _logger.LogInformation("[SVC] Formula.Restore completed - FormulaId={FormulaId} FormulaName={FormulaName}", id, entity.Name);
 
             return Result<FormulaDetailDto>.Success(dto);
         }
@@ -709,7 +708,7 @@ namespace LYBT.Module.Formulas.Services
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(id);
-                    _logger.LogInformation("批量删除 - 方剂已删除: {FormulaId}, {FormulaName}", id, entity.Name);
+                    _logger.LogInformation("[SVC] Formula.BatchDelete → ItemSuccess - FormulaId={FormulaId} FormulaName={FormulaName}", id, entity.Name);
                 }
                 catch (Exception ex)
                 {
@@ -721,7 +720,7 @@ namespace LYBT.Module.Formulas.Services
                         Id = id,
                         Reason = "删除操作失败"
                     });
-                    _logger.LogError(ex, "批量删除 - 删除方剂失败: {FormulaId}", id);
+                    _logger.LogError(ex, "[SVC] Formula.BatchDelete → ItemFailed - FormulaId={FormulaId}", id);
                 }
             }
 
@@ -768,7 +767,7 @@ namespace LYBT.Module.Formulas.Services
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(id);
-                    _logger.LogInformation("批量{StatusText} - 方剂状态已更新: {FormulaId}, {FormulaName}", statusText, id, formula.Name);
+                    _logger.LogInformation("[SVC] Formula.BatchUpdateStatus → ItemSuccess - FormulaId={FormulaId} FormulaName={FormulaName} Status={Status}", id, formula.Name, statusText);
                 }
                 catch (Exception ex)
                 {
@@ -780,7 +779,7 @@ namespace LYBT.Module.Formulas.Services
                         Id = id,
                         Reason = "状态更新失败"
                     });
-                    _logger.LogError(ex, "批量{StatusText} - 更新方剂状态失败: {FormulaId}", statusText, id);
+                    _logger.LogError(ex, "[SVC] Formula.BatchUpdateStatus → ItemFailed - FormulaId={FormulaId} Status={Status}", id, statusText);
                 }
             }
 
