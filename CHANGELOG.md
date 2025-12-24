@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Desktop层数据处理架构统一 (OpenSpec: unify-desktop-command-handler) - 2025-12-24
+
+**背景**: Desktop层数据访问模式高度碎片化，存在DataManager、CommandHandler、直接Repository调用等多种模式混用。
+
+**核心改进**:
+- 删除所有DataManager接口和实现，统一使用CommandHandler模式
+- CommandHandler采用无状态设计，统一返回`(success, data, error)`元组
+- 聚合根管理器重命名为AggregateService（如MedicalCaseAggregateService）
+- 简单实体状态管理器重命名为StateManager（如PatientStateManager）
+
+**删除的文件**:
+- IDataManager.cs (基接口)
+- IHerbDataManager.cs, HerbDataManager.cs
+- IFormulaDataManager.cs, FormulaDataManager.cs
+- IMedicalCaseDataManager.cs, MedicalCaseDataManager.cs
+- IPatientDataManager.cs, PatientDataManager.cs
+- IConsultationDataManager.cs
+
+**新增的文件**:
+- IHerbCommandHandler.cs, HerbCommandHandler.cs (Herbs模块)
+
+**重命名**:
+- MedicalCaseDataManager -> MedicalCaseAggregateService
+- PatientDataManager -> PatientStateManager
+
+**架构模式统一**:
+- CommandHandler: 无状态CRUD操作，统一日志前缀[CMD]
+- AggregateService: 有状态聚合根管理
+- StateManager: 有状态简单实体管理
+
 #### Desktop数据层标准化 (OpenSpec: standardize-desktop-data-layer) - 2025-12-23
 
 **背景**: Desktop端业务模块在数据分层方面存在不一致性，影响代码可维护性。
