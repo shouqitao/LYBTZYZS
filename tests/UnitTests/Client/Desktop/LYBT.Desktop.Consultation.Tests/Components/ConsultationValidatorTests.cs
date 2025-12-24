@@ -16,14 +16,14 @@ namespace LYBT.Desktop.Consultation.Tests.Components
     public class ConsultationValidatorTests
     {
         private readonly Mock<IValidationService> _mockValidationService;
-        private readonly Mock<IMedicalCaseDataManager> _mockDataManager;
+        private readonly Mock<IMedicalCaseAggregateService> _mockDataManager;
         private readonly Mock<ILogger<ConsultationValidator>> _mockLogger;
         private readonly ConsultationValidator _validator;
 
         public ConsultationValidatorTests()
         {
             _mockValidationService = new Mock<IValidationService>();
-            _mockDataManager = new Mock<IMedicalCaseDataManager>();
+            _mockDataManager = new Mock<IMedicalCaseAggregateService>();
             _mockLogger = new Mock<ILogger<ConsultationValidator>>();
 
             _validator = new ConsultationValidator(

@@ -75,7 +75,7 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// <summary>
         /// 设置依赖
         /// </summary>
-        void SetDependencies(PatientDataManager dataManager);
+        void SetDependencies(PatientStateManager dataManager);
 
         #endregion
 

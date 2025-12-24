@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Herbs.Contracts;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -10,7 +10,6 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Ioc;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Formula.ViewModels
@@ -18,9 +17,8 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// <summary>配方详情视图模型</summary>
     public class FormulaDetailViewModel : UnifiedViewModelBase
     {
-        private readonly IFormulaDataManager _dataManager;
         private readonly IFormulaCommandHandler _commandHandler;
-        private readonly IContainerProvider _containerProvider;
+        private readonly IHerbCommandHandler _herbCommandHandler;
 
         private Guid _formulaId;
         private FormulaDetailDto? _formula;
@@ -116,9 +114,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand AddNewRowCommand { get; }
 
         public FormulaDetailViewModel(
-            IFormulaDataManager dataManager,
             IFormulaCommandHandler commandHandler,
-            IContainerProvider containerProvider,
+            IHerbCommandHandler herbCommandHandler,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -126,9 +123,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
+            _herbCommandHandler = herbCommandHandler ?? throw new ArgumentNullException(nameof(herbCommandHandler));
 
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
             EditCommand = new DelegateCommand(EnableEdit, () => !IsBusy && Formula != null && !IsEditMode && CanEdit);
@@ -248,14 +244,13 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 Logger.LogDebug("开始加载所有药材列表");
-                var herbDataManager = _containerProvider.Resolve<IHerbDataManager>();
                 _allHerbs.Clear();
 
                 const int pageSize = 100;
                 int currentPage = 1;
                 while (true)
                 {
-                    var pagedResult = await herbDataManager.GetPagedAsync(currentPage, pageSize);
+                    var pagedResult = await _herbCommandHandler.GetPagedAsync(currentPage, pageSize);
                     if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
                     foreach (var herb in pagedResult.Items) _allHerbs.Add(herb);
                     if (pagedResult.Items.Count < pageSize) break;
@@ -273,7 +268,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 SetIsBusy(true, "正在加载配方详情...");
-                var (success, formula, errorMessage) = await _dataManager.LoadFormulaAsync(FormulaId);
+                var (success, formula, errorMessage) = await _commandHandler.GetByIdAsync(FormulaId);
                 if (success && formula != null) Formula = formula;
                 else await ShowErrorMessageAsync(errorMessage ?? "加载配方失败");
             }

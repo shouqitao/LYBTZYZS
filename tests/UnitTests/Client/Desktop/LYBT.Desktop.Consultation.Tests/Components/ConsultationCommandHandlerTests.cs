@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
     /// </summary>
     public class ConsultationCommandHandlerTests
     {
-        private readonly Mock<IMedicalCaseDataManager> _mockDataManager;
+        private readonly Mock<IMedicalCaseAggregateService> _mockDataManager;
         private readonly Mock<ConsultationValidator> _mockValidator;
         private readonly Mock<ILogger<ConsultationCommandHandler>> _mockLogger;
         private readonly Mock<IRegionManager> _mockRegionManager;
@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Consultation.Tests.Components
 
         public ConsultationCommandHandlerTests()
         {
-            _mockDataManager = new Mock<IMedicalCaseDataManager>();
+            _mockDataManager = new Mock<IMedicalCaseAggregateService>();
 
             _mockValidator = new Mock<ConsultationValidator>(
                 Mock.Of<IValidationService>(),

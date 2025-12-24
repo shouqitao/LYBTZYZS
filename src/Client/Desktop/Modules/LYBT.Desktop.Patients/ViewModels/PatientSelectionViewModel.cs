@@ -29,7 +29,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
     #region 依赖
 
     private readonly PatientCommandHandler _commandHandler;
-    private readonly MedicalCaseDataManager _medicalCaseDataManager;
+    private readonly MedicalCaseAggregateService _medicalCaseDataManager;
     private readonly IDialogService _dialogService;
     private readonly IMedicalCaseApi _medicalCaseApi;
     private readonly PatientSearchManager _searchManager;
@@ -146,7 +146,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
 
     public PatientSelectionViewModel(
         PatientCommandHandler commandHandler,
-        MedicalCaseDataManager medicalCaseDataManager,
+        MedicalCaseAggregateService medicalCaseDataManager,
         PatientSearchManager searchManager,
         UnfinishedCaseHandler unfinishedCaseHandler,
         PendingQueueManager pendingQueueManager,

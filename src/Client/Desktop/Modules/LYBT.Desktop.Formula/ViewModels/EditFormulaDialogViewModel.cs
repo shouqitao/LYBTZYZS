@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Services;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Herbs.Contracts;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -10,7 +10,6 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Ioc;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
@@ -20,7 +19,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     public class EditFormulaDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
         private readonly FormulaCommandHandler _commandHandler;
-        private readonly IContainerProvider _containerProvider;
+        private readonly IHerbCommandHandler _herbCommandHandler;
         private readonly ObservableCollection<HerbListDto> _allHerbs = new();
 
         private Guid? _formulaId;
@@ -54,7 +53,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         public EditFormulaDialogViewModel(
             FormulaCommandHandler commandHandler,
-            IContainerProvider containerProvider,
+            IHerbCommandHandler herbCommandHandler,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -63,7 +62,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
+            _herbCommandHandler = herbCommandHandler ?? throw new ArgumentNullException(nameof(herbCommandHandler));
             StatusOptions = Enum.GetValues<CommonStatus>();
 
             SaveCommand = new DelegateCommand(async () => await SaveFormulaAsync(), () => !IsBusy && !string.IsNullOrWhiteSpace(FormulaName) && !HasErrors);
@@ -196,13 +195,12 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                var herbDataManager = _containerProvider.Resolve<IHerbDataManager>();
                 _allHerbs.Clear();
                 const int pageSize = 100;
                 int currentPage = 1;
                 while (true)
                 {
-                    var pagedResult = await herbDataManager.GetPagedAsync(currentPage, pageSize);
+                    var pagedResult = await _herbCommandHandler.GetPagedAsync(currentPage, pageSize);
                     if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
                     foreach (var herb in pagedResult.Items) _allHerbs.Add(herb);
                     if (pagedResult.Items.Count < pageSize) break;

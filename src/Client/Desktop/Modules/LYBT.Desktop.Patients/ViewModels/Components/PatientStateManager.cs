@@ -9,14 +9,14 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
     /// 职责单一：专注患者数据的CRUD操作和状态管理
     /// Epic #1773 Task 4: Patients模块组件化改造
     /// </summary>
-    public class PatientDataManager
+    public class PatientStateManager
     {
         private readonly IPatientRepository _patientRepository;
-        private readonly ILogger<PatientDataManager> _logger;
+        private readonly ILogger<PatientStateManager> _logger;
 
-        public PatientDataManager(
+        public PatientStateManager(
             IPatientRepository patientRepository,
-            ILogger<PatientDataManager> logger)
+            ILogger<PatientStateManager> logger)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

@@ -19,15 +19,15 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
     {
         private readonly Mock<IMedicalCaseRepository> _mockRepository;
         private readonly Mock<IMedicalCaseApi> _mockApi; // Issue #2164: 添加Api mock
-        private readonly Mock<ILogger<MedicalCaseDataManager>> _mockLogger;
-        private readonly MedicalCaseDataManager _sut;
+        private readonly Mock<ILogger<MedicalCaseAggregateService>> _mockLogger;
+        private readonly MedicalCaseAggregateService _sut;
 
         public MedicalCaseDataManagerTests()
         {
             _mockRepository = new Mock<IMedicalCaseRepository>();
             _mockApi = new Mock<IMedicalCaseApi>(); // Issue #2164: 初始化Api mock
-            _mockLogger = new Mock<ILogger<MedicalCaseDataManager>>();
-            _sut = new MedicalCaseDataManager(_mockRepository.Object, _mockApi.Object, _mockLogger.Object); // Issue #2164: 添加api参数
+            _mockLogger = new Mock<ILogger<MedicalCaseAggregateService>>();
+            _sut = new MedicalCaseAggregateService(_mockRepository.Object, _mockApi.Object, _mockLogger.Object); // Issue #2164: 添加api参数
         }
 
         #region InitializeAsync Tests

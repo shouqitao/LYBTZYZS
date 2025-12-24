@@ -1,6 +1,7 @@
-﻿using LYBT.Desktop.Herbs.Interfaces;
+﻿using LYBT.Desktop.Herbs.Contracts;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Herbs.Repositories;
-using LYBT.Desktop.Herbs.Services; // Epic #1773: 添加Services命名空间
+using LYBT.Desktop.Herbs.Services;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -25,8 +26,8 @@ namespace LYBT.Desktop.Herbs
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IHerbRepository, HerbRepository>();
 
-            // Epic #1773: 注册Component组件（Issue #2149: 注册接口以支持跨模块访问）
-            containerRegistry.Register<IHerbDataManager, HerbDataManager>();
+            // OpenSpec: unify-desktop-command-handler - 使用CommandHandler模式替代DataManager
+            containerRegistry.RegisterScoped<IHerbCommandHandler, HerbCommandHandler>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.HerbDetailViewModel>();

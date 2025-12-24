@@ -36,7 +36,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         private readonly Mock<IMedicalCaseRepository> _medicalCaseRepositoryMock;
 
         private readonly PatientCommandHandler _commandHandler;
-        private readonly MedicalCaseDataManager _medicalCaseDataManager;
+        private readonly MedicalCaseAggregateService _medicalCaseDataManager;
         private readonly PatientSearchManager _searchManager;
         private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
         private readonly PendingQueueManager _pendingQueueManager;
@@ -62,7 +62,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
 
             // Mock LoggerFactory
             var commandHandlerLoggerMock = new Mock<ILogger<PatientCommandHandler>>();
-            var medicalCaseDataManagerLoggerMock = new Mock<ILogger<MedicalCaseDataManager>>();
+            var medicalCaseDataManagerLoggerMock = new Mock<ILogger<MedicalCaseAggregateService>>();
             var searchManagerLoggerMock = new Mock<ILogger<PatientSearchManager>>();
             var unfinishedCaseHandlerLoggerMock = new Mock<ILogger<UnfinishedCaseHandler>>();
             var pendingQueueManagerLoggerMock = new Mock<ILogger<PendingQueueManager>>();
@@ -73,7 +73,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                 .Returns<string>(name =>
                 {
                     if (name.Contains(nameof(PatientCommandHandler))) return commandHandlerLoggerMock.Object;
-                    if (name.Contains(nameof(MedicalCaseDataManager))) return medicalCaseDataManagerLoggerMock.Object;
+                    if (name.Contains(nameof(MedicalCaseAggregateService))) return medicalCaseDataManagerLoggerMock.Object;
                     if (name.Contains(nameof(PatientSearchManager))) return searchManagerLoggerMock.Object;
                     if (name.Contains(nameof(UnfinishedCaseHandler))) return unfinishedCaseHandlerLoggerMock.Object;
                     if (name.Contains(nameof(PendingQueueManager))) return pendingQueueManagerLoggerMock.Object;
@@ -105,7 +105,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
             );
 
             // 2. MedicalCaseDataManager（依赖：IMedicalCaseRepository, IMedicalCaseApi, ILogger）
-            _medicalCaseDataManager = new MedicalCaseDataManager(
+            _medicalCaseDataManager = new MedicalCaseAggregateService(
                 _medicalCaseRepositoryMock.Object,
                 _medicalCaseApiMock.Object,
                 medicalCaseDataManagerLoggerMock.Object

@@ -1,4 +1,3 @@
-using LYBT.Desktop.Contracts.Components;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -12,8 +11,42 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
     /// OpenSpec: simplify-medicalcase-api - 聚合根统一管理Consultation和Prescription
     /// 目的：消除具体类依赖，提升可测试性
     /// </summary>
-    public interface IMedicalCaseDataManager : IDataManager<MedicalCaseDetailDto>
+    public interface IMedicalCaseAggregateService
     {
+        #region IDataManager成员（原继承自IDataManager<MedicalCaseDetailDto>）
+
+        /// <summary>
+        /// 当前病案数据
+        /// </summary>
+        MedicalCaseDetailDto? Current { get; }
+
+        /// <summary>
+        /// 是否有未保存的变更
+        /// </summary>
+        bool HasChanges { get; }
+
+        /// <summary>
+        /// 初始化并加载病案数据
+        /// </summary>
+        Task InitializeAsync(Guid entityId);
+
+        /// <summary>
+        /// 保存变更
+        /// </summary>
+        Task<bool> SaveAsync();
+
+        /// <summary>
+        /// 删除当前病案
+        /// </summary>
+        Task<bool> DeleteAsync();
+
+        /// <summary>
+        /// 重新加载数据
+        /// </summary>
+        Task ReloadAsync();
+
+        #endregion
+
         /// <summary>
         /// 医案ID
         /// </summary>

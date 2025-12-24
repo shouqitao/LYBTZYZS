@@ -2,7 +2,7 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Herbs.Contracts;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private readonly IFormulaRepository _formulaRepository;
         private readonly IFormulaCommandHandler _commandHandler;
         private readonly IDialogService _prismDialogService;
-        private readonly IHerbDataManager _herbDataManager;
+        private readonly IHerbCommandHandler _herbCommandHandler;
 
         // 编辑模式下的药材列表
         private ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
@@ -40,7 +40,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             IFormulaRepository formulaRepository,
             IFormulaCommandHandler commandHandler,
             IDialogService prismDialogService,
-            IHerbDataManager herbDataManager,
+            IHerbCommandHandler herbCommandHandler,
             ICommonDialogService commonDialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -52,7 +52,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
-            _herbDataManager = herbDataManager ?? throw new ArgumentNullException(nameof(herbDataManager));
+            _herbCommandHandler = herbCommandHandler ?? throw new ArgumentNullException(nameof(herbCommandHandler));
 
             PageTitle = "验方管理";
 
@@ -549,7 +549,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 int currentPage = 1;
                 while (true)
                 {
-                    var pagedResult = await _herbDataManager.GetPagedAsync(currentPage, pageSize);
+                    var pagedResult = await _herbCommandHandler.GetPagedAsync(currentPage, pageSize);
                     if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
                     foreach (var herb in pagedResult.Items) _allHerbs.Add(herb);
                     if (pagedResult.Items.Count < pageSize) break;

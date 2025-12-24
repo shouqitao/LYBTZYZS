@@ -79,7 +79,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
         #region 依赖字段
 
-        private PatientDataManager? _dataManager;
+        private PatientStateManager? _dataManager;
 
         #endregion
 
@@ -104,7 +104,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// <summary>
         /// 设置依赖
         /// </summary>
-        public void SetDependencies(PatientDataManager dataManager)
+        public void SetDependencies(PatientStateManager dataManager)
         {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
         }

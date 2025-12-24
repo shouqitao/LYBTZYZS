@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     /// </summary>
     public class ConsultationFormViewModel : UnifiedViewModelBase, IValidatable
     {
-        private readonly IMedicalCaseDataManager _dataManager;
+        private readonly IMedicalCaseAggregateService _dataManager;
         private readonly ConsultationCommandHandler _commandHandler;
 
         private PatientDetailDto? _currentPatient;
@@ -52,7 +52,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public DelegateCommand SaveDraftCommand { get; }
 
         public ConsultationFormViewModel(
-            IMedicalCaseDataManager dataManager,
+            IMedicalCaseAggregateService dataManager,
             ConsultationCommandHandler commandHandler,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,

@@ -18,7 +18,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
     /// </summary>
     public class MedicalCaseCommandHandlerTests
     {
-        private readonly Mock<MedicalCaseDataManager> _mockDataManager;
+        private readonly Mock<MedicalCaseAggregateService> _mockDataManager;
         private readonly Mock<MedicalCaseValidator> _mockValidator;
         private readonly Mock<ILogger<MedicalCaseCommandHandler>> _mockLogger;
         private readonly Mock<IRegionManager> _mockRegionManager;
@@ -28,11 +28,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public MedicalCaseCommandHandlerTests()
         {
             // Issue #2164: 添加IMedicalCaseApi参数
-            _mockDataManager = new Mock<MedicalCaseDataManager>(
+            _mockDataManager = new Mock<MedicalCaseAggregateService>(
                 MockBehavior.Loose,
                 Mock.Of<IMedicalCaseRepository>(),
                 Mock.Of<IMedicalCaseApi>(),
-                Mock.Of<ILogger<MedicalCaseDataManager>>());
+                Mock.Of<ILogger<MedicalCaseAggregateService>>());
 
             _mockValidator = new Mock<MedicalCaseValidator>(
                 MockBehavior.Loose,

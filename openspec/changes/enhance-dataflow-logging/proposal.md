@@ -1,0 +1,217 @@
+# OpenSpec Proposal: 完善数据流转日志跟踪
+
+**Change ID**: enhance-dataflow-logging
+**Created**: 2025-12-24
+**Status**: Draft
+**Priority**: P1
+**Phase**: Pre-Release Stabilization
+**Spec Deltas**: logging-infrastructure (8 requirements added: LOG-012 ~ LOG-019)
+
+---
+
+## 问题背景
+
+### 当前问题
+
+1. **操作失败无法追踪**: Issue #2261中，用户创建失败但无法从日志中定位原因：
+   - API请求/响应未记录
+   - Repository操作未记录
+   - 数据流转链路不完整
+
+2. **现有日志分散且不规范**:
+   - Desktop端有1672处日志调用，但无统一前缀
+   - 各模块日志格式不一致
+   - 无法快速过滤特定层级日志
+
+3. **缺少端到端追踪能力**:
+   - CorrelationId基础设施已建立但未充分利用
+   - Desktop与WebAPI之间缺少追踪连接
+   - 无法追踪一个用户操作的完整链路
+
+### 现有基础设施 (logging-infrastructure spec LOG-001 ~ LOG-011)
+
+LYBT.Shared.Logging已提供：
+- `ICorrelationIdProvider` - 关联ID提供者接口
+- `ActivityCorrelationIdProvider` - W3C TraceContext实现
+- `CorrelationIdEnricher` - Serilog日志丰富器
+- `SensitiveDataMasker` - 敏感数据脱敏
+
+---
+
+## 目标
+
+### 核心目标
+
+1. **完整数据流转追踪**: 从UI点击到数据库存储的全链路日志
+2. **统一日志格式**: 所有层级使用规范化前缀
+3. **全模块覆盖**: 8个业务模块全部覆盖
+4. **快速问题定位**: 任何操作失败都能在5分钟内定位原因
+
+### 成功标准
+
+- [ ] ViewModel操作有日志 (LOG-017)
+- [ ] HTTP请求/响应有日志 (LOG-012)
+- [ ] CorrelationId端到端传递 (LOG-013)
+- [ ] Controller Action有日志 (LOG-014)
+- [ ] Repository操作有日志 (LOG-015)
+- [ ] 敏感数据自动脱敏 (LOG-016)
+- [ ] 日志格式统一规范 (LOG-018)
+- [ ] 现有日志规范化 (LOG-019)
+
+---
+
+## 模块覆盖范围
+
+### Desktop端 (8个模块)
+
+| 模块 | CommandHandler | 日志规范化 |
+|------|----------------|------------|
+| Auth | - | - |
+| Consultation | ConsultationCommandHandler | [CMD] |
+| Formula | FormulaCommandHandler | [CMD] |
+| Herbs | - | - |
+| MedicalCase | 6个Handler | [CMD] |
+| Patients | PatientCommandHandler, UnfinishedCaseHandler | [CMD] |
+| Prescriptions | - | - |
+| Users | UserCommandHandler | [CMD] |
+
+### Server端 (8个模块)
+
+| 模块 | Service | 日志规范化 |
+|------|---------|------------|
+| Auth | AuthService, JwtService, TokenRevocationService, SecurityAuditService | [SVC] |
+| Consultation | ConsultationService | [SVC] |
+| Formula | FormulaService | [SVC] |
+| Herbs | HerbService | [SVC] |
+| MedicalCase | 5个Service | [SVC] |
+| Patients | PatientService | [SVC] |
+| Prescriptions | PrescriptionService, PrescriptionNumberService | [SVC] |
+| Users | UserService | [SVC] |
+
+---
+
+## Spec Deltas 概览
+
+本提案向`logging-infrastructure`规范添加8个新需求：
+
+| Requirement | 标题 | 层级 | 描述 |
+|-------------|------|------|------|
+| LOG-012 | HTTP客户端请求日志 | Desktop | 记录所有API请求/响应 |
+| LOG-013 | 分布式追踪Header传递 | Desktop + Server | traceparent header传递 |
+| LOG-014 | Server端API Action日志 | Server | Controller Action日志 |
+| LOG-015 | Repository操作日志 | Server | CRUD操作日志 |
+| LOG-016 | URI敏感数据脱敏 | Shared | URI参数脱敏 |
+| LOG-017 | ViewModel操作日志 | Desktop | 用户操作生命周期日志 |
+| LOG-018 | 日志格式标准化 | 全局 | 统一前缀规范 |
+| LOG-019 | 现有日志规范化 | 全局 | 更新现有日志格式 |
+
+详见: `specs/logging-infrastructure/spec.md`
+
+---
+
+## 端到端日志链路
+
+完成后，一个用户创建操作的日志链路：
+
+```
+[VM] Save started - User                          ← ViewModel层
+  [CMD] CreateUser: admin                         ← CommandHandler层
+    [HTTP] >>> POST /api/users CorrelationId=abc  ← HTTP Client层
+      [API] >>> UsersController.Create            ← Controller层
+        [SVC] CreateAsync: admin                  ← Service层
+          [REPO] User.Add                         ← Repository层
+          [REPO] User.Add completed
+        [SVC] CreateAsync completed: success
+      [API] <<< completed in 120ms
+    [HTTP] <<< 201 Duration=150ms
+  [CMD] CreateUser completed: success
+[VM] Save completed - Duration=180ms
+```
+
+通过CorrelationId可过滤完整链路，快速定位问题。
+
+---
+
+## 日志前缀规范 (LOG-018)
+
+| 层级 | 前缀 | 示例 |
+|------|------|------|
+| ViewModel | [VM] | [VM] Save started |
+| CommandHandler | [CMD] | [CMD] CreateUser |
+| HTTP Client | [HTTP] | [HTTP] >>> POST /api/users |
+| Controller | [API] | [API] >>> UsersController.Create |
+| Service | [SVC] | [SVC] CreateAsync |
+| Repository | [REPO] | [REPO] User.Add |
+
+---
+
+## 影响范围
+
+### 新增文件
+
+| 文件 | 描述 |
+|------|------|
+| LoggingHttpHandler.cs | HTTP请求/响应日志 |
+| CorrelationIdMiddleware.cs | Server端CorrelationId中间件 |
+| ApiLoggingFilter.cs | Controller Action日志Filter |
+
+### 修改文件
+
+| 类别 | 文件数 | 修改内容 |
+|------|--------|----------|
+| ViewModel基类 | 2 | 添加操作日志 |
+| Repository基类 | 1 | 添加CRUD日志 |
+| CommandHandler | ~10 | 添加[CMD]前缀 |
+| Service | ~15 | 添加[SVC]前缀 |
+| SensitiveDataMasker | 1 | 添加MaskUri方法 |
+
+### 不影响的部分
+
+- 业务逻辑不变
+- API契约不变
+- 数据库Schema不变
+
+---
+
+## 实施计划
+
+| Phase | 内容 | Tasks | 描述 |
+|-------|------|-------|------|
+| 1 | Desktop ViewModel日志 | 1.1-1.2 | 基类日志增强 |
+| 2 | Desktop HTTP日志 | 2.1-2.4 | LoggingHttpHandler |
+| 3 | Server CorrelationId | 3.1-3.2 | 中间件 |
+| 4 | Server API日志 | 4.1-4.2 | ApiLoggingFilter |
+| 5 | Repository日志 | 5.1-5.2 | 基类日志 + 8模块验证 |
+| 6 | Desktop CommandHandler规范化 | 6.1-6.6 | 6个Task覆盖所有Handler |
+| 7 | Server Service规范化 | 7.1-7.8 | 8个Task覆盖所有Service |
+| 8 | 集成测试与文档 | 8.1-8.5 | 端到端测试 + 文档 |
+
+详见: `tasks.md`
+
+---
+
+## 风险评估
+
+| 风险 | 等级 | 缓解措施 |
+|------|------|----------|
+| 性能开销 | 低 | 使用异步日志、结构化日志 |
+| 日志量增大 | 中 | Repository/ViewModel使用Debug级别 |
+| 敏感数据泄露 | 中 | 使用SensitiveDataMasker |
+| 大量文件修改 | 中 | 分Phase执行，每Phase验证 |
+
+---
+
+## 参考文档
+
+- [.NET Logging Best Practices](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging)
+- [ASP.NET Core HTTP Logging](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-logging)
+- [W3C Trace Context](https://www.w3.org/TR/trace-context/)
+- [Serilog Structured Logging](https://github.com/serilog/serilog/wiki/Structured-Data)
+
+---
+
+## 审批
+
+- [ ] 技术方案评审
+- [ ] 用户确认
+- [ ] 开始实施

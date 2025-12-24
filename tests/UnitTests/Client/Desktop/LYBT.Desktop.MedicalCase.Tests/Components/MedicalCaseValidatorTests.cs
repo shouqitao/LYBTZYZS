@@ -22,18 +22,18 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
     public class MedicalCaseValidatorTests
     {
         private readonly Mock<IValidationService> _mockValidationService;
-        private readonly Mock<MedicalCaseDataManager> _mockDataManager;
+        private readonly Mock<MedicalCaseAggregateService> _mockDataManager;
         private readonly Mock<ILogger<MedicalCaseValidator>> _mockLogger;
         private readonly MedicalCaseValidator _sut;
 
         public MedicalCaseValidatorTests()
         {
             _mockValidationService = new Mock<IValidationService>();
-            _mockDataManager = new Mock<MedicalCaseDataManager>(
+            _mockDataManager = new Mock<MedicalCaseAggregateService>(
                 MockBehavior.Loose,
                 Mock.Of<IMedicalCaseRepository>(),
                 Mock.Of<IMedicalCaseApi>(),
-                Mock.Of<ILogger<MedicalCaseDataManager>>());
+                Mock.Of<ILogger<MedicalCaseAggregateService>>());
             _mockLogger = new Mock<ILogger<MedicalCaseValidator>>();
 
             _sut = new MedicalCaseValidator(

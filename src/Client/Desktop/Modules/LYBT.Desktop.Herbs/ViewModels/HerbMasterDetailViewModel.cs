@@ -1,10 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Herbs.Contracts;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Herbs.Models;
-using LYBT.Desktop.Herbs.Services;
-using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -27,7 +26,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// OpenSpec: optimize-entity-data-flow - 使用HerbListDto优化列表加载
     public class HerbMasterDetailViewModel : MasterDetailViewModelBase<HerbListDto, HerbDetailModel>
     {
-        private readonly HerbDataManager _dataManager;
+        private readonly IHerbCommandHandler _commandHandler;
         private readonly IHerbRepository _herbRepository;
         private readonly ICommonDialogService _dialogService;
         private readonly IDialogService _prismDialogService;
@@ -181,7 +180,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         #endregion
 
         public HerbMasterDetailViewModel(
-            HerbDataManager dataManager,
+            IHerbCommandHandler commandHandler,
             IHerbRepository herbRepository,
             ICommonDialogService dialogService,
             IDialogService prismDialogService,
@@ -192,7 +191,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, dialogService)
         {
-            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
@@ -282,16 +281,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             foreach (var item in items)
             {
-                try
-                {
-                    var success = await _dataManager.DeleteHerbAsync(item.Id);
-                    if (success) successCount++;
-                    else failureCount++;
-                }
-                catch
-                {
+                var result = await _commandHandler.DeleteAsync(item.Id);
+                if (result.success)
+                    successCount++;
+                else
                     failureCount++;
-                }
             }
 
             var message = $"批量删除完成！成功：{successCount}个，失败：{failureCount}个";
@@ -310,40 +304,32 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         protected override async Task<HerbDetailModel?> LoadDetailAsync(HerbListDto item)
         {
-            try
+            var result = await _commandHandler.GetByIdAsync(item.Id);
+            if (!result.success || result.data == null)
             {
-                var herb = await _herbRepository.GetByIdAsync(item.Id);
-                if (herb == null)
-                {
-                    Logger.LogWarning("未找到药材: {HerbId}", item.Id);
-                    return null;
-                }
-
-                var detail = new HerbDetailModel
-                {
-                    Id = herb.Id,
-                    Name = herb.Name,
-                    PinYinCode = herb.PinYinCode ?? PinYinHelper.GetPinYinCode(herb.Name),
-                    Origin = herb.Origin,
-                    Spec = herb.Spec,
-                    Unit = herb.Unit,
-                    Price = herb.Price,
-                    CostPrice = herb.CostPrice,
-                    Effect = herb.Effect,
-                    Usage = herb.Usage,
-                    Remark = herb.Remark,
-                    Status = herb.Status
-                };
-
-                RaisePropertyChanged(nameof(DetailTitle));
-                return detail;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载药材详情失败: {HerbId}", item.Id);
-                await ShowErrorMessageAsync("加载药材详情失败");
+                ErrorMessage = result.error;
                 return null;
             }
+
+            var herb = result.data;
+            var detail = new HerbDetailModel
+            {
+                Id = herb.Id,
+                Name = herb.Name,
+                PinYinCode = herb.PinYinCode ?? PinYinHelper.GetPinYinCode(herb.Name),
+                Origin = herb.Origin,
+                Spec = herb.Spec,
+                Unit = herb.Unit,
+                Price = herb.Price,
+                CostPrice = herb.CostPrice,
+                Effect = herb.Effect,
+                Usage = herb.Usage,
+                Remark = herb.Remark,
+                Status = herb.Status
+            };
+
+            RaisePropertyChanged(nameof(DetailTitle));
+            return detail;
         }
 
         protected override HerbDetailModel CreateNewDetail()
@@ -400,93 +386,72 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         protected override async Task<bool> SaveDetailAsync(HerbDetailModel detail)
         {
-            try
+            if (string.IsNullOrWhiteSpace(EditName))
             {
-                if (string.IsNullOrWhiteSpace(EditName))
-                {
-                    await ShowErrorMessageAsync("药材名称不能为空");
-                    return false;
-                }
-
-                if (string.IsNullOrWhiteSpace(EditUnit))
-                {
-                    await ShowErrorMessageAsync("单位不能为空");
-                    return false;
-                }
-
-                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端管理
-                var dto = new HerbInputDto
-                {
-                    Id = detail.Id,
-                    Name = EditName.Trim(),
-                    PinYinCode = EditPinYinCode?.Trim(),
-                    Origin = EditOrigin?.Trim(),
-                    Spec = EditSpec?.Trim(),
-                    Unit = EditUnit.Trim(),
-                    Price = EditPrice,
-                    CostPrice = EditCostPrice > 0 ? EditCostPrice : null,
-                    Effect = EditEffect?.Trim(),
-                    Usage = EditUsage?.Trim(),
-                    Remark = EditRemark?.Trim()
-                };
-
-                HerbDetailDto? result;
-                if (detail.IsNew)
-                {
-                    Logger.LogInformation("创建药材: {HerbName}", dto.Name);
-                    result = await _herbRepository.CreateAsync(dto);
-                }
-                else
-                {
-                    Logger.LogInformation("更新药材: {HerbId} - {HerbName}", dto.Id, dto.Name);
-                    result = await _herbRepository.UpdateAsync(dto);
-                }
-
-                if (result != null)
-                {
-                    // 更新详情模型
-                    detail.Id = result.Id;
-                    detail.Name = result.Name;
-                    detail.PinYinCode = result.PinYinCode ?? detail.PinYinCode ?? string.Empty;
-                    detail.Origin = result.Origin;
-                    detail.Spec = result.Spec;
-                    detail.Unit = result.Unit;
-                    detail.Price = result.Price;
-                    detail.CostPrice = result.CostPrice;
-                    detail.Effect = result.Effect;
-                    detail.Usage = result.Usage;
-                    detail.Remark = result.Remark;
-                    detail.Status = result.Status;
-
-                    RaisePropertyChanged(nameof(DetailTitle));
-                    return true;
-                }
-
-                await ShowErrorMessageAsync("保存药材失败");
+                await ShowErrorMessageAsync("药材名称不能为空");
                 return false;
             }
-            catch (Exception ex)
+
+            if (string.IsNullOrWhiteSpace(EditUnit))
             {
-                Logger.LogError(ex, "保存药材失败");
-                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存药材", ex));
+                await ShowErrorMessageAsync("单位不能为空");
                 return false;
             }
+
+            // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端管理
+            var input = new HerbInputDto
+            {
+                Id = detail.Id,
+                Name = EditName.Trim(),
+                PinYinCode = EditPinYinCode?.Trim(),
+                Origin = EditOrigin?.Trim(),
+                Spec = EditSpec?.Trim(),
+                Unit = EditUnit.Trim(),
+                Price = EditPrice,
+                CostPrice = EditCostPrice > 0 ? EditCostPrice : null,
+                Effect = EditEffect?.Trim(),
+                Usage = EditUsage?.Trim(),
+                Remark = EditRemark?.Trim()
+            };
+
+            var result = detail.IsNew
+                ? await _commandHandler.CreateAsync(input)
+                : await _commandHandler.UpdateAsync(detail.Id, input);
+
+            if (!result.success)
+            {
+                ErrorMessage = result.error;
+                return false;
+            }
+
+            if (result.data != null)
+            {
+                // 更新详情模型
+                detail.Id = result.data.Id;
+                detail.Name = result.data.Name;
+                detail.PinYinCode = result.data.PinYinCode ?? detail.PinYinCode ?? string.Empty;
+                detail.Origin = result.data.Origin;
+                detail.Spec = result.data.Spec;
+                detail.Unit = result.data.Unit;
+                detail.Price = result.data.Price;
+                detail.CostPrice = result.data.CostPrice;
+                detail.Effect = result.data.Effect;
+                detail.Usage = result.data.Usage;
+                detail.Remark = result.data.Remark;
+                detail.Status = result.data.Status;
+
+                RaisePropertyChanged(nameof(DetailTitle));
+            }
+
+            return true;
         }
 
         protected override async Task<bool> DeleteDetailAsync(HerbDetailModel detail)
         {
-            try
-            {
-                Logger.LogInformation("删除药材: {HerbId} - {HerbName}", detail.Id, detail.Name);
-                var success = await _dataManager.DeleteHerbAsync(detail.Id);
-                return success;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "删除药材失败: {HerbId}", detail.Id);
-                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除药材", ex));
-                return false;
-            }
+            var result = await _commandHandler.DeleteAsync(detail.Id);
+            if (!result.success)
+                ErrorMessage = result.error;
+            return result.success;
         }
 
         #endregion

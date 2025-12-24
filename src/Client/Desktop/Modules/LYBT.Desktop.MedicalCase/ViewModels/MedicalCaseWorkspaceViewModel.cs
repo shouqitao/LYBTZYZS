@@ -28,7 +28,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     #region 字段
 
     private readonly IRegionManager _regionManager;
-    private readonly MedicalCaseDataManager _dataManager;
+    private readonly MedicalCaseAggregateService _dataManager;
     private readonly MedicalCaseLifecycleHandler _lifecycleHandler;
     private readonly MedicalCaseDataLoader _dataLoader;
     private readonly ConsultationPanelViewModel _injectedConsultationPanelViewModel;
@@ -155,7 +155,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     #region 构造函数
 
     public MedicalCaseWorkspaceViewModel(
-        MedicalCaseDataManager dataManager, MedicalCaseLifecycleHandler lifecycleHandler,
+        MedicalCaseAggregateService dataManager, MedicalCaseLifecycleHandler lifecycleHandler,
         MedicalCaseDataLoader dataLoader, MedicalCaseWorkspaceCoordinator coordinator,
         MedicalCaseNavigationHandler navigationHandler, MedicalCaseEditModeStateMachine editModeStateMachine,
         IRegionManager regionManager, IEventAggregator eventAggregator, ILoggerFactory loggerFactory,

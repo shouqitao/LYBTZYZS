@@ -15,15 +15,15 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// 聚合根: 管理MedicalCase、Consultation、Prescription三个实体
 /// OpenSpec: simplify-medicalcase-api - 统一管理Consultation和Prescription
 /// </summary>
-public class MedicalCaseDataManager : IMedicalCaseDataManager
+public class MedicalCaseAggregateService : IMedicalCaseAggregateService
 {
     private readonly IMedicalCaseRepository _repository;
     private readonly IMedicalCaseApi _api;
-    private readonly ILogger<MedicalCaseDataManager> _logger;
+    private readonly ILogger<MedicalCaseAggregateService> _logger;
     private MedicalCaseDetailDto? _originalDetail;
     private MedicalCaseDetailDto? _currentDetail;
 
-    public MedicalCaseDataManager(IMedicalCaseRepository repository, IMedicalCaseApi api, ILogger<MedicalCaseDataManager> logger)
+    public MedicalCaseAggregateService(IMedicalCaseRepository repository, IMedicalCaseApi api, ILogger<MedicalCaseAggregateService> logger)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _api = api ?? throw new ArgumentNullException(nameof(api));

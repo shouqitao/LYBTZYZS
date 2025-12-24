@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Formula
 
             // Issue #1787: 注册Formula模块组件化组件（Epic #1773 Component-Based架构）
             // OpenSpec: optimize-desktop-code-reuse Phase 1 - 业务组件迁移至Services/
-            containerRegistry.Register<IFormulaDataManager, Services.FormulaDataManager>();
+            // OpenSpec: unify-desktop-command-handler - IFormulaDataManager已删除，统一使用CommandHandler
             containerRegistry.Register<IFormulaCommandHandler, Services.FormulaCommandHandler>();
             containerRegistry.Register<Services.FormulaValidator>();
             containerRegistry.Register<ViewModels.Components.FormulaCalculator>(); // UI辅助组件保留在ViewModels/Components/

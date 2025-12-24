@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Consultation.Services
     {
         #region 字段
 
-        private readonly IMedicalCaseDataManager _dataManager;
+        private readonly IMedicalCaseAggregateService _dataManager;
         private readonly ConsultationValidator _validator;
         private readonly ILogger<ConsultationCommandHandler> _logger;
         private readonly IRegionManager _regionManager;
@@ -32,7 +32,7 @@ namespace LYBT.Desktop.Consultation.Services
         #region 构造函数
 
         public ConsultationCommandHandler(
-            IMedicalCaseDataManager dataManager,
+            IMedicalCaseAggregateService dataManager,
             ConsultationValidator validator,
             ILogger<ConsultationCommandHandler> logger,
             IRegionManager regionManager)

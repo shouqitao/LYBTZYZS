@@ -217,10 +217,9 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<UserCommandHandler>(containerRegistry);
             RegisterLogger<FormulaCommandHandler>(containerRegistry);
             RegisterLogger<PatientCommandHandler>(containerRegistry);
-            RegisterLogger<HerbDataManager>(containerRegistry);
-            RegisterLogger<MedicalCaseDataManager>(containerRegistry);
-            RegisterLogger<FormulaDataManager>(containerRegistry);
-            RegisterLogger<PatientDataManager>(containerRegistry);
+            RegisterLogger<HerbCommandHandler>(containerRegistry);
+            RegisterLogger<MedicalCaseAggregateService>(containerRegistry);
+            RegisterLogger<PatientStateManager>(containerRegistry);
             RegisterLogger<PatientValidator>(containerRegistry);
         }
 

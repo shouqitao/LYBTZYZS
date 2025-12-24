@@ -34,7 +34,7 @@ namespace LYBT.Desktop.MedicalCase
 
             // Epic #1773: 注册Component组件
             // OpenSpec: simplify-medicalcase-api - 注册为接口供Consultation模块使用
-            containerRegistry.Register<IMedicalCaseDataManager, MedicalCaseDataManager>();
+            containerRegistry.Register<IMedicalCaseAggregateService, MedicalCaseAggregateService>();
 
             // Issue #1806: 注册MedicalCaseFlowViewModel组件化服务（Epic #1805 Phase 2）
             // [已移除] MedicalCaseFlowManager - 三步流程已取消
