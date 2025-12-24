@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserProfileViewModel : UnifiedViewModelBase
     {
-        private readonly UserCommandHandler _commandHandler;
+        private readonly UserService _commandHandler;
         private readonly ISessionManager _sessionManager;
         private Guid _currentUserId;
 
@@ -126,7 +126,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public UserProfileViewModel(
-            UserCommandHandler commandHandler,
+            UserService commandHandler,
             ISessionManager sessionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,

@@ -14,7 +14,7 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// </summary>
 public class MedicalCaseDataLoader
 {
-    private readonly MedicalCaseAggregateService _dataManager;
+    private readonly MedicalCaseService _dataManager;
     private readonly ILogger<MedicalCaseDataLoader> _logger;
 
     /// <summary>
@@ -38,7 +38,7 @@ public class MedicalCaseDataLoader
     public event EventHandler<DataLoadedEventArgs>? DataLoaded;
 
     public MedicalCaseDataLoader(
-        MedicalCaseAggregateService dataManager,
+        MedicalCaseService dataManager,
         ILogger<MedicalCaseDataLoader> logger)
     {
         _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));

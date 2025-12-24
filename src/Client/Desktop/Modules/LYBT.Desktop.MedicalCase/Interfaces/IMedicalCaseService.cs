@@ -6,12 +6,11 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 namespace LYBT.Desktop.MedicalCase.Interfaces
 {
     /// <summary>
-    /// 病案数据管理器接口 - 聚合根模式
-    /// Desktop层架构重构 Phase 2: DataManager接口化重构
+    /// 病案Service接口 - 聚合根模式
+    /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// OpenSpec: simplify-medicalcase-api - 聚合根统一管理Consultation和Prescription
-    /// 目的：消除具体类依赖，提升可测试性
     /// </summary>
-    public interface IMedicalCaseAggregateService
+    public interface IMedicalCaseService
     {
         #region IDataManager成员（原继承自IDataManager<MedicalCaseDetailDto>）
 

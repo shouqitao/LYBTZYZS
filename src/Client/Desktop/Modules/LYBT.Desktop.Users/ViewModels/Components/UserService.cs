@@ -7,15 +7,16 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Users.ViewModels.Components
 {
     /// <summary>
-    /// 用户命令处理器 - 组件化架构实现
+    /// 用户Service - 组件化架构实现
+    /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// Issue #1785: 负责用户的命令操作（创建、更新、删除、密码管理等）
     /// </summary>
-    public class UserCommandHandler
+    public class UserService
     {
         private readonly IUserRepository _repository;
-        private readonly ILogger<UserCommandHandler> _logger;
+        private readonly ILogger<UserService> _logger;
 
-        public UserCommandHandler(IUserRepository repository, ILogger<UserCommandHandler> logger)
+        public UserService(IUserRepository repository, ILogger<UserService> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -306,7 +307,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("CommandHandler: 开始重置密码, UserId: {UserId}", userId);
+                _logger.LogInformation("UserService: 开始重置密码, UserId: {UserId}", userId);
 
                 // 构建请求DTO
                 var request = new ResetPasswordRequestDto();
@@ -316,19 +317,19 @@ namespace LYBT.Desktop.Users.ViewModels.Components
 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    _logger.LogInformation("CommandHandler: 重置密码成功, UserId: {UserId}", userId);
+                    _logger.LogInformation("UserService: 重置密码成功, UserId: {UserId}", userId);
                     return (true, null, result.Data);
                 }
                 else
                 {
-                    _logger.LogWarning("CommandHandler: 重置密码失败, UserId: {UserId}, Message: {Message}",
+                    _logger.LogWarning("UserService: 重置密码失败, UserId: {UserId}, Message: {Message}",
                         userId, result.Message);
                     return (false, result.Message, null);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "CommandHandler: 重置密码异常, UserId: {UserId}", userId);
+                _logger.LogError(ex, "UserService: 重置密码异常, UserId: {UserId}", userId);
                 return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("重置密码", ex), null);
             }
         }

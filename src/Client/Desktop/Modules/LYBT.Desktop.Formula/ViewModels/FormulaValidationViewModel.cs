@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Formula.Services;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,8 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// <remarks>Issue #2256: HerbSelectionDialog已废弃，药材映射功能待重构为内嵌编辑方式</remarks>
     public class FormulaValidationViewModel : UnifiedViewModelBase
     {
-        private readonly FormulaCommandHandler _commandHandler;
+        // OpenSpec: standardize-service-layer - 统一使用Service命名
+        private readonly IFormulaService _formulaService;
 
         private FormulaDetailDto? _selectedFormula;
         private int _pendingFormulaCount;
@@ -39,7 +40,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand RefreshCommand { get; }
 
         public FormulaValidationViewModel(
-            FormulaCommandHandler commandHandler,
+            IFormulaService formulaService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -47,7 +48,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
 
             PageTitle = "验方校验管理";
 
@@ -74,7 +75,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载待校验验方...");
 
-                var result = await _commandHandler.GetPendingValidationFormulasAsync();
+                var result = await _formulaService.GetPendingValidationFormulasAsync();
                 if (!result.success || result.data == null)
                 {
                     Logger.LogError("加载待校验验方失败：{ErrorMessage}", result.errorMessage);

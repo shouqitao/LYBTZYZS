@@ -4,11 +4,11 @@ using LYBT.Shared.Models.Contracts.Formula;
 namespace LYBT.Desktop.Formula.Interfaces
 {
     /// <summary>
-    /// 配方命令处理器接口
-    /// Desktop层架构重构 Phase 1: 接口化重构
-    /// 目的：消除具体类依赖，提升可测试性
+    /// 配方Service接口
+    /// OpenSpec: standardize-service-layer - 统一使用Service命名
+    /// 提供配方CRUD和业务操作的统一处理
     /// </summary>
-    public interface IFormulaCommandHandler
+    public interface IFormulaService
     {
         /// <summary>
         /// 保存配方

@@ -2,6 +2,8 @@
 
 **Change ID**: enhance-dataflow-logging
 **Created**: 2025-12-24
+**Updated**: 2025-12-24
+**Depends On**: unify-desktop-command-handler (已完成)
 **Spec Deltas**: logging-infrastructure (LOG-012 ~ LOG-019)
 
 ---
@@ -77,7 +79,7 @@
 
 ### Task 3.1: 创建CorrelationIdMiddleware
 - **Requirement**: LOG-013 分布式追踪Header传递
-- **文件**: `src/Server/LYBT.Server.Core/Middleware/CorrelationIdMiddleware.cs`
+- **文件**: `src/Server/Services/LYBT.WebAPI/Middleware/CorrelationIdMiddleware.cs`
 - **内容**:
   - 从traceparent header提取CorrelationId
   - 无header时自动生成
@@ -86,7 +88,7 @@
 - **验收**: LOG-013响应追踪Header和自动生成Scenario通过
 
 ### Task 3.2: 注册中间件
-- **文件**: `src/Server/LYBT.Server.WebAPI/Program.cs`
+- **文件**: `src/Server/Services/LYBT.WebAPI/Program.cs`
 - **内容**:
   - 在请求管道早期注册CorrelationIdMiddleware
 - **验收**: 所有请求有CorrelationId
@@ -97,7 +99,7 @@
 
 ### Task 4.1: 创建ApiLoggingFilter
 - **Requirement**: LOG-014 Server端API Action日志
-- **文件**: `src/Server/LYBT.Server.Core/Filters/ApiLoggingFilter.cs`
+- **文件**: `src/Server/Services/LYBT.WebAPI/Filters/ApiLoggingFilter.cs`
 - **内容**:
   - [API] >>> Action started CorrelationId
   - [API] <<< Action completed Duration CorrelationId
@@ -105,7 +107,7 @@
 - **验收**: LOG-014所有Scenario通过
 
 ### Task 4.2: 注册全局Filter
-- **文件**: `src/Server/LYBT.Server.Core/Extensions/MvcExtensions.cs`
+- **文件**: `src/Server/Services/LYBT.WebAPI/Extensions/MvcExtensions.cs`
 - **内容**:
   - 全局注册ApiLoggingFilter
 - **验收**: 所有Controller Action有日志
@@ -116,7 +118,7 @@
 
 ### Task 5.1: Repository基类日志增强
 - **Requirement**: LOG-015 Repository操作日志
-- **文件**: `src/Server/LYBT.Server.Core/Repositories/RepositoryBase.cs`
+- **文件**: `src/Server/Core/LYBT.Infrastructure/Repositories/RepositoryBase.cs`
 - **内容**:
   - [REPO] Entity.GetById(Id) → Found/NotFound
   - [REPO] Entity.Add
@@ -125,7 +127,7 @@
 - **验收**: LOG-015所有Scenario通过
 
 ### Task 5.2: 验证各模块Repository继承
-- **文件**: 
+- **文件**:
   - `LYBT.Module.Users/Repositories/UserRepository.cs`
   - `LYBT.Module.Patients/Repositories/PatientRepository.cs`
   - `LYBT.Module.Consultation/Repositories/ConsultationRepository.cs`
@@ -140,66 +142,96 @@
 
 ---
 
-## Phase 6: Desktop端CommandHandler日志规范化 (LOG-018, LOG-019)
+## Phase 6: Desktop数据处理层日志规范化 (LOG-018, LOG-019)
 
-### Task 6.1: Users模块CommandHandler
+### Task 6.1: CommandHandler规范化 - Users模块
 - **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Users/ViewModels/Components/UserCommandHandler.cs`
-- **内容**: 所有日志添加[CMD]前缀
+- **前缀**: [CMD]
+- **内容**: 所有CRUD操作日志统一[CMD]前缀
 - **验收**: 日志格式符合LOG-018规范
 
-### Task 6.2: Patients模块CommandHandler
+### Task 6.2: CommandHandler规范化 - Patients模块
 - **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Patients/ViewModels/Components/PatientCommandHandler.cs`
-- **内容**: 所有日志添加[CMD]前缀
+- **前缀**: [CMD]
+- **内容**: 所有CRUD操作日志统一[CMD]前缀
 - **验收**: 日志格式符合LOG-018规范
 
-### Task 6.3: Consultation模块CommandHandler
+### Task 6.3: CommandHandler规范化 - Consultation模块
 - **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Consultation/Services/ConsultationCommandHandler.cs`
-- **内容**: 所有日志添加[CMD]前缀
+- **前缀**: [CMD]
+- **内容**: 所有CRUD操作日志统一[CMD]前缀
 - **验收**: 日志格式符合LOG-018规范
 
-### Task 6.4: Formula模块CommandHandler
+### Task 6.4: CommandHandler规范化 - Formula模块
 - **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Formula/Services/FormulaCommandHandler.cs`
-- **内容**: 所有日志添加[CMD]前缀
+- **前缀**: [CMD]
+- **内容**: 所有CRUD操作日志统一[CMD]前缀
 - **验收**: 日志格式符合LOG-018规范
 
-### Task 6.5: MedicalCase模块CommandHandler (多个)
-- **文件**: 
-  - `LYBT.Desktop.MedicalCase/Services/MedicalCaseCommandHandler.cs`
-  - `LYBT.Desktop.MedicalCase/Services/MedicalCaseLifecycleHandler.cs`
-  - `LYBT.Desktop.MedicalCase/Services/MedicalCaseNavigationHandler.cs`
-  - `LYBT.Desktop.MedicalCase/ViewModels/Components/PrescriptionSaveHandler.cs`
-  - `LYBT.Desktop.MedicalCase/ViewModels/Components/PrescriptionItemHandler.cs`
-  - `LYBT.Desktop.MedicalCase/ViewModels/Components/PrescriptionImportHandler.cs`
-- **内容**: 所有日志添加[CMD]前缀
+### Task 6.5: CommandHandler规范化 - Herbs模块 (新增)
+- **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Herbs/Services/HerbCommandHandler.cs`
+- **前缀**: [CMD]
+- **说明**: unify-desktop-command-handler中新增，已有[CMD]前缀
+- **内容**: 验证日志格式符合规范
 - **验收**: 日志格式符合LOG-018规范
 
-### Task 6.6: Patients模块其他Handler
-- **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Patients/Services/UnfinishedCaseHandler.cs`
-- **内容**: 所有日志添加[CMD]前缀
+### Task 6.6: CommandHandler规范化 - MedicalCase模块
+- **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Services/MedicalCaseCommandHandler.cs`
+- **前缀**: [CMD]
+- **内容**: 所有CRUD操作日志统一[CMD]前缀
 - **验收**: 日志格式符合LOG-018规范
 
-### Task 6.7: Herbs模块DataManager (非CommandHandler模式)
-- **说明**: Herbs模块使用DataManager模式而非CommandHandler
-- **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Herbs/Services/HerbDataManager.cs`
+### Task 6.7: AggregateService日志 - MedicalCase模块
+- **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Services/MedicalCaseAggregateService.cs`
+- **前缀**: [AGG]
+- **说明**: 有状态聚合根管理器，使用[AGG]前缀
 - **内容**:
-  - 已有日志需规范化添加[CMD]前缀
-  - SaveAsync/DeleteAsync/InitializeAsync等方法
+  - InitializeAsync: [AGG] Initialize started/completed
+  - SaveAsync: [AGG] Save started/completed
+  - 聚合子实体操作日志
 - **验收**: 日志格式符合LOG-018规范
 
-### Task 6.8: Auth模块LoginViewModel (认证流程)
+### Task 6.8: StateManager日志 - Patients模块
+- **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Patients/ViewModels/Components/PatientStateManager.cs`
+- **前缀**: [STATE]
+- **说明**: 有状态实体管理器，使用[STATE]前缀
+- **内容**:
+  - InitializeAsync: [STATE] Initialize started/completed
+  - SaveAsync: [STATE] Save started/completed
+- **验收**: 日志格式符合LOG-018规范
+
+### Task 6.9: 专用Handler日志 - MedicalCase模块
+- **文件**:
+  - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Services/MedicalCaseNavigationHandler.cs`
+  - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Services/MedicalCaseLifecycleHandler.cs`
+  - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/Components/PrescriptionSaveHandler.cs`
+  - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/Components/PrescriptionItemHandler.cs`
+  - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/Components/PrescriptionImportHandler.cs`
+- **前缀**: [HDL]
+- **说明**: 专用处理器，使用[HDL]前缀
+- **内容**: 所有操作日志统一[HDL]前缀
+- **验收**: 日志格式符合LOG-018规范
+
+### Task 6.10: 专用Handler日志 - Patients模块
+- **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Patients/Services/UnfinishedCaseHandler.cs`
+- **前缀**: [HDL]
+- **内容**: 所有操作日志统一[HDL]前缀
+- **验收**: 日志格式符合LOG-018规范
+
+### Task 6.11: Auth模块LoginViewModel (认证流程)
 - **说明**: Auth模块仅有登录流程，无CRUD操作
 - **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Auth/ViewModels/LoginViewModel.cs`
+- **前缀**: [VM]
 - **内容**:
-  - 添加[VM]前缀登录流程日志
   - Login started/success/failed
 - **验收**: 登录流程有完整日志
 
-### Task 6.9: Prescriptions模块PrintService (工具模块)
+### Task 6.12: Prescriptions模块PrintService (工具模块)
 - **说明**: Prescriptions模块仅有打印服务，无CRUD操作
 - **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Prescriptions/Services/PrescriptionPrintService.cs`
+- **前缀**: [SVC]
 - **内容**:
-  - 已有日志需规范化添加[SVC]前缀
-  - PrintPrescriptionAsync等方法
+  - PrintPrescriptionAsync: [SVC] Print started/completed
 - **验收**: 打印操作有完整日志
 
 ---
@@ -208,52 +240,60 @@
 
 ### Task 7.1: Users模块Service
 - **文件**: `src/Server/Modules/LYBT.Module.Users/Services/UserService.cs`
+- **前缀**: [SVC]
 - **内容**: 所有日志添加[SVC]前缀
 - **验收**: 日志格式符合LOG-018规范
 
 ### Task 7.2: Patients模块Service
 - **文件**: `src/Server/Modules/LYBT.Module.Patients/Services/PatientService.cs`
+- **前缀**: [SVC]
 - **内容**: 所有日志添加[SVC]前缀
 - **验收**: 日志格式符合LOG-018规范
 
 ### Task 7.3: Consultation模块Service
 - **文件**: `src/Server/Modules/LYBT.Module.Consultation/Services/ConsultationService.cs`
+- **前缀**: [SVC]
 - **内容**: 所有日志添加[SVC]前缀
 - **验收**: 日志格式符合LOG-018规范
 
 ### Task 7.4: Formula模块Service
 - **文件**: `src/Server/Modules/LYBT.Module.Formula/Services/FormulaService.cs`
+- **前缀**: [SVC]
 - **内容**: 所有日志添加[SVC]前缀
 - **验收**: 日志格式符合LOG-018规范
 
 ### Task 7.5: Herbs模块Service
 - **文件**: `src/Server/Modules/LYBT.Module.Herbs/Services/HerbService.cs`
+- **前缀**: [SVC]
 - **内容**: 所有日志添加[SVC]前缀
 - **验收**: 日志格式符合LOG-018规范
 
 ### Task 7.6: Prescriptions模块Service
-- **文件**: 
+- **文件**:
   - `src/Server/Modules/LYBT.Module.Prescriptions/Services/PrescriptionService.cs`
   - `src/Server/Modules/LYBT.Module.Prescriptions/Services/PrescriptionNumberService.cs`
+- **前缀**: [SVC]
 - **内容**: 所有日志添加[SVC]前缀
 - **验收**: 日志格式符合LOG-018规范
 
-### Task 7.7: MedicalCase模块Service (多个)
-- **文件**: 
+### Task 7.7: MedicalCase模块Service (5个)
+- **文件**:
   - `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseCommandService.cs`
   - `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseQueryService.cs`
   - `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseStateService.cs`
   - `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCasePermissionService.cs`
   - `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseAuditService.cs`
+- **前缀**: [SVC]
 - **内容**: 所有日志添加[SVC]前缀
 - **验收**: 日志格式符合LOG-018规范
 
-### Task 7.8: Auth模块Service
-- **文件**: 
+### Task 7.8: Auth模块Service (4个)
+- **文件**:
   - `src/Server/Modules/LYBT.Module.Auth/Services/AuthService.cs`
   - `src/Server/Modules/LYBT.Module.Auth/Services/JwtService.cs`
   - `src/Server/Modules/LYBT.Module.Auth/Services/TokenRevocationService.cs`
   - `src/Server/Modules/LYBT.Module.Auth/Services/SecurityAuditService.cs`
+- **前缀**: [SVC]
 - **内容**: 所有日志添加[SVC]前缀
 - **验收**: 日志格式符合LOG-018规范
 
@@ -271,12 +311,14 @@
 ### Task 8.2: 端到端追踪测试 - 患者创建
 - **内容**:
   - 执行患者创建操作
+  - 验证日志链路: [VM] → [STATE] → [CMD] → [HTTP] → [API] → [SVC] → [REPO]
   - 验证完整日志链路
 - **验收**: 患者模块端到端追踪通过
 
 ### Task 8.3: 端到端追踪测试 - 医案操作
 - **内容**:
   - 执行医案创建/编辑/提交操作
+  - 验证日志链路: [VM] → [AGG] → [CMD] → [HTTP] → [API] → [SVC] → [REPO]
   - 验证完整日志链路(包含处方子操作)
 - **验收**: 医案模块端到端追踪通过
 
@@ -290,7 +332,7 @@
 - **文件**: `docs/reference/logging.md`
 - **内容**:
   - 完整数据流转日志说明
-  - 日志前缀规范表
+  - 日志前缀规范表 (含[AGG], [STATE], [HDL]新前缀)
   - 各模块日志查询指南
   - 问题排查流程
 - **验收**: 文档完整
@@ -310,19 +352,36 @@
 - [ ] LOG-018: 日志格式标准化 - 所有Scenario通过
 - [ ] LOG-019: 现有日志规范化 - 所有Scenario通过
 
-### Module Coverage Checklist
+### Desktop数据处理层 Checklist (按架构模式分类)
 
-**Desktop数据操作层** (按实际架构区分):
-- [ ] Users - UserCommandHandler (CommandHandler模式)
-- [ ] Patients - PatientCommandHandler, UnfinishedCaseHandler (CommandHandler模式)
-- [ ] Consultation - ConsultationCommandHandler (CommandHandler模式)
-- [ ] Formula - FormulaCommandHandler (CommandHandler模式)
-- [ ] MedicalCase - 6个Handler (CommandHandler模式)
-- [ ] Herbs - HerbDataManager (DataManager模式，非CommandHandler)
-- [ ] Auth - LoginViewModel (仅登录流程，无CRUD)
-- [ ] Prescriptions - PrescriptionPrintService (工具模块，仅打印)
+**CommandHandler [CMD]** (无状态CRUD):
+- [ ] Users - UserCommandHandler
+- [ ] Patients - PatientCommandHandler
+- [ ] Consultation - ConsultationCommandHandler
+- [ ] Formula - FormulaCommandHandler
+- [ ] Herbs - HerbCommandHandler (新增)
+- [ ] MedicalCase - MedicalCaseCommandHandler
 
-**Server Service**:
+**AggregateService [AGG]** (有状态聚合根):
+- [ ] MedicalCase - MedicalCaseAggregateService
+
+**StateManager [STATE]** (有状态实体):
+- [ ] Patients - PatientStateManager
+
+**专用Handler [HDL]**:
+- [ ] MedicalCase - MedicalCaseNavigationHandler
+- [ ] MedicalCase - MedicalCaseLifecycleHandler
+- [ ] MedicalCase - PrescriptionSaveHandler
+- [ ] MedicalCase - PrescriptionItemHandler
+- [ ] MedicalCase - PrescriptionImportHandler
+- [ ] Patients - UnfinishedCaseHandler
+
+**特殊模块**:
+- [ ] Auth - LoginViewModel (仅登录流程)
+- [ ] Prescriptions - PrescriptionPrintService (仅打印)
+
+### Server Service Checklist [SVC]
+
 - [ ] Users - UserService
 - [ ] Patients - PatientService
 - [ ] Consultation - ConsultationService
@@ -338,3 +397,19 @@
 - [ ] 所有模块端到端测试通过
 - [ ] 性能验证通过
 - [ ] 文档更新完成
+
+---
+
+## 任务统计
+
+| Phase | Tasks数 | 预计工作量 |
+|-------|---------|-----------|
+| Phase 1 | 2 | 小 |
+| Phase 2 | 4 | 中 |
+| Phase 3 | 2 | 小 |
+| Phase 4 | 2 | 小 |
+| Phase 5 | 2 | 小 |
+| Phase 6 | 12 | 大 |
+| Phase 7 | 8 | 中 |
+| Phase 8 | 5 | 中 |
+| **总计** | **37** | - |

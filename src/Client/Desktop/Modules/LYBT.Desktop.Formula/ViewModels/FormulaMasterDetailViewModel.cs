@@ -26,9 +26,10 @@ namespace LYBT.Desktop.Formula.ViewModels
     public class FormulaMasterDetailViewModel : MasterDetailViewModelBase<FormulaListDto, FormulaDetailModel>
     {
         private readonly IFormulaRepository _formulaRepository;
-        private readonly IFormulaCommandHandler _commandHandler;
+        // OpenSpec: standardize-service-layer - 统一使用Service命名
+        private readonly IFormulaService _formulaService;
         private readonly IDialogService _prismDialogService;
-        private readonly IHerbCommandHandler _herbCommandHandler;
+        private readonly IHerbService _herbService;
 
         // 编辑模式下的药材列表
         private ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
@@ -38,9 +39,9 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         public FormulaMasterDetailViewModel(
             IFormulaRepository formulaRepository,
-            IFormulaCommandHandler commandHandler,
+            IFormulaService formulaService,
             IDialogService prismDialogService,
-            IHerbCommandHandler herbCommandHandler,
+            IHerbService herbService,
             ICommonDialogService commonDialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -50,9 +51,9 @@ namespace LYBT.Desktop.Formula.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, commonDialogService)
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
-            _herbCommandHandler = herbCommandHandler ?? throw new ArgumentNullException(nameof(herbCommandHandler));
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
 
             PageTitle = "验方管理";
 
@@ -269,7 +270,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var confirmed = await ShowConfirmationAsync($"确定要删除验方 '{detail.Name}' 吗？", "删除确认");
                 if (!confirmed) return false;
 
-                var success = await _commandHandler.DeleteAsync(detail.Id);
+                var success = await _formulaService.DeleteAsync(detail.Id);
                 if (success)
                 {
                     Logger.LogInformation("验方删除成功: {FormulaId} - {FormulaName}", detail.Id, detail.Name);
@@ -300,7 +301,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 try
                 {
-                    if (await _commandHandler.DeleteAsync(item.Id))
+                    if (await _formulaService.DeleteAsync(item.Id))
                         successCount++;
                     else
                     {
@@ -549,7 +550,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 int currentPage = 1;
                 while (true)
                 {
-                    var pagedResult = await _herbCommandHandler.GetPagedAsync(currentPage, pageSize);
+                    var pagedResult = await _herbService.GetPagedAsync(currentPage, pageSize);
                     if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
                     foreach (var herb in pagedResult.Items) _allHerbs.Add(herb);
                     if (pagedResult.Items.Count < pageSize) break;

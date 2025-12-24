@@ -35,8 +35,8 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         private readonly Mock<IPatientRepository> _patientRepositoryMock;
         private readonly Mock<IMedicalCaseRepository> _medicalCaseRepositoryMock;
 
-        private readonly PatientCommandHandler _commandHandler;
-        private readonly MedicalCaseAggregateService _medicalCaseDataManager;
+        private readonly PatientService _commandHandler;
+        private readonly MedicalCaseService _medicalCaseDataManager;
         private readonly PatientSearchManager _searchManager;
         private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
         private readonly PendingQueueManager _pendingQueueManager;
@@ -61,8 +61,8 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
             _sessionManagerMock.Setup(x => x.CurrentUserId).Returns(testDoctorId);
 
             // Mock LoggerFactory
-            var commandHandlerLoggerMock = new Mock<ILogger<PatientCommandHandler>>();
-            var medicalCaseDataManagerLoggerMock = new Mock<ILogger<MedicalCaseAggregateService>>();
+            var commandHandlerLoggerMock = new Mock<ILogger<PatientService>>();
+            var medicalCaseDataManagerLoggerMock = new Mock<ILogger<MedicalCaseService>>();
             var searchManagerLoggerMock = new Mock<ILogger<PatientSearchManager>>();
             var unfinishedCaseHandlerLoggerMock = new Mock<ILogger<UnfinishedCaseHandler>>();
             var pendingQueueManagerLoggerMock = new Mock<ILogger<PendingQueueManager>>();
@@ -72,8 +72,8 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
             _loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>()))
                 .Returns<string>(name =>
                 {
-                    if (name.Contains(nameof(PatientCommandHandler))) return commandHandlerLoggerMock.Object;
-                    if (name.Contains(nameof(MedicalCaseAggregateService))) return medicalCaseDataManagerLoggerMock.Object;
+                    if (name.Contains(nameof(PatientService))) return commandHandlerLoggerMock.Object;
+                    if (name.Contains(nameof(MedicalCaseService))) return medicalCaseDataManagerLoggerMock.Object;
                     if (name.Contains(nameof(PatientSearchManager))) return searchManagerLoggerMock.Object;
                     if (name.Contains(nameof(UnfinishedCaseHandler))) return unfinishedCaseHandlerLoggerMock.Object;
                     if (name.Contains(nameof(PendingQueueManager))) return pendingQueueManagerLoggerMock.Object;
@@ -97,21 +97,21 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                 .Returns(patientCreatedEventMock.Object);
 
             // Epic #2210 Issue #2218: 构建依赖链（按依赖顺序）
-            // 1. PatientCommandHandler（依赖：IPatientRepository, ILogger, IRegionManager）
-            _commandHandler = new PatientCommandHandler(
+            // 1. PatientService（依赖：IPatientRepository, ILogger, IRegionManager）
+            _commandHandler = new PatientService(
                 _patientRepositoryMock.Object,
                 commandHandlerLoggerMock.Object,
                 _regionManagerMock.Object
             );
 
             // 2. MedicalCaseDataManager（依赖：IMedicalCaseRepository, IMedicalCaseApi, ILogger）
-            _medicalCaseDataManager = new MedicalCaseAggregateService(
+            _medicalCaseDataManager = new MedicalCaseService(
                 _medicalCaseRepositoryMock.Object,
                 _medicalCaseApiMock.Object,
                 medicalCaseDataManagerLoggerMock.Object
             );
 
-            // 3. PatientSearchManager（依赖：PatientCommandHandler, IPatientSearchCache, ILogger）
+            // 3. PatientSearchManager（依赖：PatientService, IPatientSearchCache, ILogger）
             // OpenSpec: refactor-patient-selection Task 1.3 - 添加搜索缓存
             var searchCacheMock = new Mock<IPatientSearchCache>();
             _searchManager = new PatientSearchManager(
@@ -126,7 +126,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                 unfinishedCaseHandlerLoggerMock.Object
             );
 
-            // 5. PendingQueueManager（依赖：IMedicalCaseApi, PatientCommandHandler, UnfinishedCaseHandler, ISessionManager, ILogger）
+            // 5. PendingQueueManager（依赖：IMedicalCaseApi, PatientService, UnfinishedCaseHandler, ISessionManager, ILogger）
             // Epic #2210 Phase 3: 添加SessionManager参数
             _pendingQueueManager = new PendingQueueManager(
                 _medicalCaseApiMock.Object,

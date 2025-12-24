@@ -214,11 +214,13 @@ namespace LYBT.Desktop.Shell.Extensions
         /// <summary>注册Component层Logger（CommandHandler/DataManager/Validator等）</summary>
         private static void RegisterComponentLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<UserCommandHandler>(containerRegistry);
-            RegisterLogger<FormulaCommandHandler>(containerRegistry);
-            RegisterLogger<PatientCommandHandler>(containerRegistry);
-            RegisterLogger<HerbCommandHandler>(containerRegistry);
-            RegisterLogger<MedicalCaseAggregateService>(containerRegistry);
+            RegisterLogger<UserService>(containerRegistry);
+            // OpenSpec: standardize-service-layer - 统一使用Service命名
+            RegisterLogger<FormulaService>(containerRegistry);
+            RegisterLogger<PatientService>(containerRegistry);
+            // OpenSpec: standardize-service-layer - 统一使用Service命名
+            RegisterLogger<HerbService>(containerRegistry);
+            RegisterLogger<MedicalCaseService>(containerRegistry);
             RegisterLogger<PatientStateManager>(containerRegistry);
             RegisterLogger<PatientValidator>(containerRegistry);
         }

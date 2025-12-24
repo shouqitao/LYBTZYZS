@@ -6,9 +6,8 @@ using Prism.Regions;
 namespace LYBT.Desktop.Consultation.Services
 {
     /// <summary>
-    /// 诊断命令处理器 - 业务逻辑协调者
-    /// Issue #1779: Consultation模块组件化改造
-    /// OpenSpec: simplify-medicalcase-api - 使用IMedicalCaseDataManager聚合根管理器
+    /// 诊断Service - 业务逻辑协调者
+    /// OpenSpec: standardize-service-layer - 统一使用Service命名
     ///
     /// 职责:
     /// - 协调DataManager和Validator执行业务操作
@@ -16,13 +15,13 @@ namespace LYBT.Desktop.Consultation.Services
     /// - 清空表单命令
     /// - 导航命令
     /// </summary>
-    public class ConsultationCommandHandler : ICommandHandler
+    public class ConsultationService : ICommandHandler
     {
         #region 字段
 
-        private readonly IMedicalCaseAggregateService _dataManager;
+        private readonly IMedicalCaseService _dataManager;
         private readonly ConsultationValidator _validator;
-        private readonly ILogger<ConsultationCommandHandler> _logger;
+        private readonly ILogger<ConsultationService> _logger;
         private readonly IRegionManager _regionManager;
         private readonly Dictionary<string, Func<object?, Task<bool>>> _commands;
         private readonly Dictionary<string, Func<bool>> _canExecuteHandlers;
@@ -31,10 +30,10 @@ namespace LYBT.Desktop.Consultation.Services
 
         #region 构造函数
 
-        public ConsultationCommandHandler(
-            IMedicalCaseAggregateService dataManager,
+        public ConsultationService(
+            IMedicalCaseService dataManager,
             ConsultationValidator validator,
-            ILogger<ConsultationCommandHandler> logger,
+            ILogger<ConsultationService> logger,
             IRegionManager regionManager)
         {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));

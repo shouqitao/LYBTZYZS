@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Patients.Services;
 /// </summary>
 public class UnfinishedCaseHandler
 {
-    private readonly MedicalCaseAggregateService _medicalCaseDataManager;
+    private readonly MedicalCaseService _medicalCaseDataManager;
     private readonly ILogger<UnfinishedCaseHandler> _logger;
 
     private readonly Dictionary<Guid, Guid> _pendingCaseCache = new();
@@ -26,7 +26,7 @@ public class UnfinishedCaseHandler
     public event EventHandler<CaseClosedEventArgs>? CaseClosed;
 
     public UnfinishedCaseHandler(
-        MedicalCaseAggregateService medicalCaseDataManager,
+        MedicalCaseService medicalCaseDataManager,
         ILogger<UnfinishedCaseHandler> logger)
     {
         _medicalCaseDataManager = medicalCaseDataManager ?? throw new ArgumentNullException(nameof(medicalCaseDataManager));

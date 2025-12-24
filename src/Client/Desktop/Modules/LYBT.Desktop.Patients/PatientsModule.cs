@@ -51,7 +51,7 @@ namespace LYBT.Desktop.Patients
 
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
             containerRegistry.Register<ViewModels.Components.PatientStateManager>();
-            containerRegistry.Register<ViewModels.Components.PatientCommandHandler>();
+            containerRegistry.Register<ViewModels.Components.PatientService>();
             containerRegistry.Register<ViewModels.Components.PatientValidator>();
 
             // 注册视图模型 - MVP核心功能

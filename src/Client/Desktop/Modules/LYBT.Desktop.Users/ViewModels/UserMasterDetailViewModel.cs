@@ -27,7 +27,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserMasterDetailViewModel : MasterDetailViewModelBase<UserListDto, UserDetailModel>
     {
-        private readonly UserCommandHandler _commandHandler;
+        private readonly UserService _commandHandler;
         private readonly IUserRepository _userRepository;
         private readonly ICommonDialogService _commonDialogService;
         private readonly IDialogService _prismDialogService;
@@ -189,7 +189,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public UserMasterDetailViewModel(
-            UserCommandHandler commandHandler,
+            UserService commandHandler,
             IUserRepository userRepository,
             ICommonDialogService commonDialogService,
             IDialogService prismDialogService,

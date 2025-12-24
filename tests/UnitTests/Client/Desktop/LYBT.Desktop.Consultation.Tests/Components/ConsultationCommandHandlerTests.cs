@@ -10,31 +10,31 @@ using Prism.Regions;
 namespace LYBT.Desktop.Consultation.Tests.Components
 {
     /// <summary>
-    /// ConsultationCommandHandler 单元测试
+    /// ConsultationService 单元测试
     /// Issue #1779: Consultation模块组件化测试
     /// OpenSpec: simplify-medicalcase-api - 使用IMedicalCaseDataManager
     /// </summary>
-    public class ConsultationCommandHandlerTests
+    public class ConsultationServiceTests
     {
-        private readonly Mock<IMedicalCaseAggregateService> _mockDataManager;
+        private readonly Mock<IMedicalCaseService> _mockDataManager;
         private readonly Mock<ConsultationValidator> _mockValidator;
-        private readonly Mock<ILogger<ConsultationCommandHandler>> _mockLogger;
+        private readonly Mock<ILogger<ConsultationService>> _mockLogger;
         private readonly Mock<IRegionManager> _mockRegionManager;
-        private readonly ConsultationCommandHandler _commandHandler;
+        private readonly ConsultationService _commandHandler;
 
-        public ConsultationCommandHandlerTests()
+        public ConsultationServiceTests()
         {
-            _mockDataManager = new Mock<IMedicalCaseAggregateService>();
+            _mockDataManager = new Mock<IMedicalCaseService>();
 
             _mockValidator = new Mock<ConsultationValidator>(
                 Mock.Of<IValidationService>(),
                 _mockDataManager.Object,
                 Mock.Of<ILogger<ConsultationValidator>>());
 
-            _mockLogger = new Mock<ILogger<ConsultationCommandHandler>>();
+            _mockLogger = new Mock<ILogger<ConsultationService>>();
             _mockRegionManager = new Mock<IRegionManager>();
 
-            _commandHandler = new ConsultationCommandHandler(
+            _commandHandler = new ConsultationService(
                 _mockDataManager.Object,
                 _mockValidator.Object,
                 _mockLogger.Object,

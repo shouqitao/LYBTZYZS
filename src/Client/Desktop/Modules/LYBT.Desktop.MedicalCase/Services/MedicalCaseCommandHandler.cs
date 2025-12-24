@@ -19,7 +19,7 @@ namespace LYBT.Desktop.MedicalCase.Services
     {
         #region 字段
 
-        private readonly MedicalCaseAggregateService _dataManager;
+        private readonly MedicalCaseService _dataManager;
         private readonly MedicalCaseValidator _validator;
         private readonly ILogger<MedicalCaseCommandHandler> _logger;
         private readonly IRegionManager _regionManager;
@@ -31,7 +31,7 @@ namespace LYBT.Desktop.MedicalCase.Services
         #region 构造函数
 
         public MedicalCaseCommandHandler(
-            MedicalCaseAggregateService dataManager,
+            MedicalCaseService dataManager,
             MedicalCaseValidator validator,
             ILogger<MedicalCaseCommandHandler> logger,
             IRegionManager regionManager)

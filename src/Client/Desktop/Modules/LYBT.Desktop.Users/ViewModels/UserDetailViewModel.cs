@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// <summary>用户详情视图模型 - CRUD统一架构</summary>
     public class UserDetailViewModel : UnifiedViewModelBase
     {
-        private readonly UserCommandHandler _commandHandler;
+        private readonly UserService _commandHandler;
 
         private Guid _userId;
         private bool _isEditMode = true;
@@ -59,7 +59,7 @@ namespace LYBT.Desktop.Users.ViewModels
         public DelegateCommand GoBackCommand { get; }
 
         public UserDetailViewModel(
-            UserCommandHandler commandHandler,
+            UserService commandHandler,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,

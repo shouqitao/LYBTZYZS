@@ -19,7 +19,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 服务依赖
 
         // Issue #1783: 使用DataManager替代直接Repository访问
-        private readonly MedicalCaseAggregateService _dataManager;
+        private readonly MedicalCaseService _dataManager;
 
         #endregion
 
@@ -164,7 +164,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 构造函数
 
         public MedicalCaseDetailViewModel(
-            MedicalCaseAggregateService dataManager, // Issue #1783: 注入DataManager
+            MedicalCaseService dataManager, // Issue #1783: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,

@@ -24,10 +24,8 @@ namespace LYBT.Desktop.Formula
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IFormulaRepository, FormulaRepository>();
 
-            // Issue #1787: 注册Formula模块组件化组件（Epic #1773 Component-Based架构）
-            // OpenSpec: optimize-desktop-code-reuse Phase 1 - 业务组件迁移至Services/
-            // OpenSpec: unify-desktop-command-handler - IFormulaDataManager已删除，统一使用CommandHandler
-            containerRegistry.Register<IFormulaCommandHandler, Services.FormulaCommandHandler>();
+            // OpenSpec: standardize-service-layer - 统一使用Service命名
+            containerRegistry.Register<IFormulaService, Services.FormulaService>();
             containerRegistry.Register<Services.FormulaValidator>();
             containerRegistry.Register<ViewModels.Components.FormulaCalculator>(); // UI辅助组件保留在ViewModels/Components/
 

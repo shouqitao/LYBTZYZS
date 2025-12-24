@@ -11,19 +11,19 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.MedicalCase.Services;
 
 /// <summary>
-/// 病案数据管理器 - 聚合根模式实现
-/// 聚合根: 管理MedicalCase、Consultation、Prescription三个实体
+/// 病案Service - 聚合根模式实现
+/// OpenSpec: standardize-service-layer - 统一使用Service命名
 /// OpenSpec: simplify-medicalcase-api - 统一管理Consultation和Prescription
 /// </summary>
-public class MedicalCaseAggregateService : IMedicalCaseAggregateService
+public class MedicalCaseService : IMedicalCaseService
 {
     private readonly IMedicalCaseRepository _repository;
     private readonly IMedicalCaseApi _api;
-    private readonly ILogger<MedicalCaseAggregateService> _logger;
+    private readonly ILogger<MedicalCaseService> _logger;
     private MedicalCaseDetailDto? _originalDetail;
     private MedicalCaseDetailDto? _currentDetail;
 
-    public MedicalCaseAggregateService(IMedicalCaseRepository repository, IMedicalCaseApi api, ILogger<MedicalCaseAggregateService> logger)
+    public MedicalCaseService(IMedicalCaseRepository repository, IMedicalCaseApi api, ILogger<MedicalCaseService> logger)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _api = api ?? throw new ArgumentNullException(nameof(api));

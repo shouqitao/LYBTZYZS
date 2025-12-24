@@ -17,8 +17,9 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// <summary>配方详情视图模型</summary>
     public class FormulaDetailViewModel : UnifiedViewModelBase
     {
-        private readonly IFormulaCommandHandler _commandHandler;
-        private readonly IHerbCommandHandler _herbCommandHandler;
+        // OpenSpec: standardize-service-layer - 统一使用Service命名
+        private readonly IFormulaService _formulaService;
+        private readonly IHerbService _herbService;
 
         private Guid _formulaId;
         private FormulaDetailDto? _formula;
@@ -114,8 +115,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand AddNewRowCommand { get; }
 
         public FormulaDetailViewModel(
-            IFormulaCommandHandler commandHandler,
-            IHerbCommandHandler herbCommandHandler,
+            IFormulaService formulaService,
+            IHerbService herbService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -123,8 +124,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _herbCommandHandler = herbCommandHandler ?? throw new ArgumentNullException(nameof(herbCommandHandler));
+            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
 
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
             EditCommand = new DelegateCommand(EnableEdit, () => !IsBusy && Formula != null && !IsEditMode && CanEdit);
@@ -250,7 +251,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 int currentPage = 1;
                 while (true)
                 {
-                    var pagedResult = await _herbCommandHandler.GetPagedAsync(currentPage, pageSize);
+                    var pagedResult = await _herbService.GetPagedAsync(currentPage, pageSize);
                     if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
                     foreach (var herb in pagedResult.Items) _allHerbs.Add(herb);
                     if (pagedResult.Items.Count < pageSize) break;
@@ -268,7 +269,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 SetIsBusy(true, "正在加载配方详情...");
-                var (success, formula, errorMessage) = await _commandHandler.GetByIdAsync(FormulaId);
+                var (success, formula, errorMessage) = await _formulaService.GetByIdAsync(FormulaId);
                 if (success && formula != null) Formula = formula;
                 else await ShowErrorMessageAsync(errorMessage ?? "加载配方失败");
             }
@@ -328,7 +329,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 Logger.LogInformation("有效药材数量: {Count}", herbDtos.Count);
 
-                var (success, updatedFormula, errorMessage) = await _commandHandler.SaveFormulaAsync(
+                var (success, updatedFormula, errorMessage) = await _formulaService.SaveFormulaAsync(
                     Formula, FormulaName, Effect, Usage, Property, Category, Remark, IsShared, herbDtos);
 
                 if (success && updatedFormula != null)
@@ -353,7 +354,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 SetIsBusy(true, "正在复制配方...");
-                var (success, newFormula, message) = await _commandHandler.CopyFormulaAsync(Formula);
+                var (success, newFormula, message) = await _formulaService.CopyFormulaAsync(Formula);
                 if (success && newFormula != null)
                 {
                     await ShowSuccessMessageAsync(message ?? "配方复制成功");
@@ -392,7 +393,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private async void ExecutePrint()
         {
             if (Formula == null) return;
-            var (success, msg) = await _commandHandler.PrintFormulaAsync(Formula);
+            var (success, msg) = await _formulaService.PrintFormulaAsync(Formula);
             if (success) await ShowSuccessMessageAsync(msg ?? "打印功能开发中");
             else await ShowErrorMessageAsync(msg ?? "打印配方失败");
         }
@@ -400,7 +401,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private async void ExecuteViewUsageHistory()
         {
             if (FormulaId == Guid.Empty) return;
-            var (success, msg) = await _commandHandler.ViewUsageHistoryAsync(FormulaId);
+            var (success, msg) = await _formulaService.ViewUsageHistoryAsync(FormulaId);
             if (success) await ShowSuccessMessageAsync(msg ?? "查看使用历史功能开发中");
             else await ShowErrorMessageAsync(msg ?? "查看使用历史失败");
         }

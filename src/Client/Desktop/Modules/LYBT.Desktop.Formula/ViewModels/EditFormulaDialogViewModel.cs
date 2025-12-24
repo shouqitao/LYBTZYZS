@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Formula.Services;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Herbs.Contracts;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -18,8 +18,9 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// <summary>配方编辑对话框视图模型</summary>
     public class EditFormulaDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
-        private readonly FormulaCommandHandler _commandHandler;
-        private readonly IHerbCommandHandler _herbCommandHandler;
+        // OpenSpec: standardize-service-layer - 统一使用Service命名
+        private readonly IFormulaService _formulaService;
+        private readonly IHerbService _herbService;
         private readonly ObservableCollection<HerbListDto> _allHerbs = new();
 
         private Guid? _formulaId;
@@ -52,8 +53,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand AddNewRowCommand { get; }
 
         public EditFormulaDialogViewModel(
-            FormulaCommandHandler commandHandler,
-            IHerbCommandHandler herbCommandHandler,
+            IFormulaService formulaService,
+            IHerbService herbService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -61,8 +62,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _herbCommandHandler = herbCommandHandler ?? throw new ArgumentNullException(nameof(herbCommandHandler));
+            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             StatusOptions = Enum.GetValues<CommonStatus>();
 
             SaveCommand = new DelegateCommand(async () => await SaveFormulaAsync(), () => !IsBusy && !string.IsNullOrWhiteSpace(FormulaName) && !HasErrors);
@@ -92,7 +93,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 if (formulaId.HasValue)
                 {
                     SetIsBusy(true, "正在加载配方信息...");
-                    var result = await _commandHandler.GetByIdAsync(formulaId.Value);
+                    var result = await _formulaService.GetByIdAsync(formulaId.Value);
                     if (!result.success || result.formula == null) { await ShowErrorMessageAsync(result.errorMessage ?? "配方不存在"); return; }
                     FormulaName = result.formula.Name ?? string.Empty;
                     Description = result.formula.Remark ?? string.Empty;
@@ -118,13 +119,13 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 if (FormulaId.HasValue)
                 {
-                    var result = await _commandHandler.UpdateAsync(dto);
+                    var result = await _formulaService.UpdateAsync(dto);
                     if (!result.success || result.formula == null) { await ShowErrorMessageAsync(result.errorMessage ?? "更新配方失败"); return; }
                     RequestClose?.Invoke(new DialogResult(ButtonResult.OK, new DialogParameters { { "Formula", result.formula } }));
                 }
                 else
                 {
-                    var result = await _commandHandler.CreateAsync(dto);
+                    var result = await _formulaService.CreateAsync(dto);
                     if (!result.success || result.formula == null) { await ShowErrorMessageAsync(result.errorMessage ?? "创建配方失败"); return; }
                     RequestClose?.Invoke(new DialogResult(ButtonResult.OK, new DialogParameters { { "Formula", result.formula } }));
                 }
@@ -200,7 +201,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 int currentPage = 1;
                 while (true)
                 {
-                    var pagedResult = await _herbCommandHandler.GetPagedAsync(currentPage, pageSize);
+                    var pagedResult = await _herbService.GetPagedAsync(currentPage, pageSize);
                     if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
                     foreach (var herb in pagedResult.Items) _allHerbs.Add(herb);
                     if (pagedResult.Items.Count < pageSize) break;

@@ -1,5 +1,6 @@
 namespace LYBT.Desktop.Herbs.Services;
 
+// OpenSpec: standardize-service-layer - 重命名CommandHandler为Service
 using LYBT.Desktop.Herbs.Contracts;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -7,17 +8,17 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
-/// 中药CommandHandler实现
+/// 中药Service实现
 /// 无状态设计，统一返回类型，依赖Repository进行数据访问
 /// </summary>
-public class HerbCommandHandler : IHerbCommandHandler
+public class HerbService : IHerbService
 {
     private readonly IHerbRepository _repository;
-    private readonly ILogger<HerbCommandHandler> _logger;
+    private readonly ILogger<HerbService> _logger;
 
-    public HerbCommandHandler(
+    public HerbService(
         IHerbRepository repository,
-        ILogger<HerbCommandHandler> logger)
+        ILogger<HerbService> logger)
     {
         _repository = repository;
         _logger = logger;

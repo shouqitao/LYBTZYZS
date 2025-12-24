@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// </summary>
     public class PatientMasterDetailViewModel : MasterDetailViewModelBase<PatientListDto, PatientDetailModel>
     {
-        private readonly PatientCommandHandler _commandHandler;
+        private readonly PatientService _commandHandler;
         private readonly IPatientRepository _patientRepository;
         private readonly IDialogService _prismDialogService;
 
@@ -173,7 +173,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 构造函数
 
         public PatientMasterDetailViewModel(
-            PatientCommandHandler commandHandler,
+            PatientService commandHandler,
             IPatientRepository patientRepository,
             IDialogService prismDialogService,
             IEventAggregator eventAggregator,

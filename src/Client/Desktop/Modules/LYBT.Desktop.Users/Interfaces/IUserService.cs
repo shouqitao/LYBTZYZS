@@ -4,12 +4,11 @@ using LYBT.Shared.Models.Contracts.Users;
 namespace LYBT.Desktop.Users.Interfaces
 {
     /// <summary>
-    /// 用户命令处理器接口
-    /// Desktop层架构重构 Phase 1: 接口化重构
-    /// 目的：消除具体类依赖，提升可测试性
+    /// 用户Service接口
+    /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
     /// </summary>
-    public interface IUserCommandHandler
+    public interface IUserService
     {
         #region 基本CRUD操作
 

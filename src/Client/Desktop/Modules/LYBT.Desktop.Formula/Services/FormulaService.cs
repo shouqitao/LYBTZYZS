@@ -6,15 +6,16 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Formula.Services
 {
     /// <summary>
-    /// 配方命令处理器 - 组件化架构实现
-    /// Issue #1153: 负责配方的命令操作（保存、复制、打印等）
+    /// 配方Service实现
+    /// OpenSpec: standardize-service-layer - 统一使用Service命名
+    /// 提供配方CRUD和业务操作的统一处理
     /// </summary>
-    public class FormulaCommandHandler : IFormulaCommandHandler
+    public class FormulaService : IFormulaService
     {
         private readonly IFormulaRepository _repository;
-        private readonly ILogger<FormulaCommandHandler> _logger;
+        private readonly ILogger<FormulaService> _logger;
 
-        public FormulaCommandHandler(IFormulaRepository repository, ILogger<FormulaCommandHandler> logger)
+        public FormulaService(IFormulaRepository repository, ILogger<FormulaService> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

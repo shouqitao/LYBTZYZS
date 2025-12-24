@@ -4,10 +4,10 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 /// <summary>
-/// 中药CommandHandler接口
+/// 中药Service接口
 /// 提供中药CRUD操作的统一处理
 /// </summary>
-public interface IHerbCommandHandler
+public interface IHerbService
 {
     /// <summary>
     /// 创建中药

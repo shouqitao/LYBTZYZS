@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Patients.Services;
 /// </summary>
 public class PatientImportExecutor : IDisposable
 {
-    private readonly PatientCommandHandler _commandHandler;
+    private readonly PatientService _commandHandler;
     private readonly PatientImportDataMapper _dataMapper;
     private readonly ILogger<PatientImportExecutor> _logger;
     private BackgroundWorker? _importWorker;
@@ -35,7 +35,7 @@ public class PatientImportExecutor : IDisposable
     public bool IsImporting { get; private set; }
 
     public PatientImportExecutor(
-        PatientCommandHandler commandHandler,
+        PatientService commandHandler,
         PatientImportDataMapper dataMapper,
         ILogger<PatientImportExecutor> logger)
     {

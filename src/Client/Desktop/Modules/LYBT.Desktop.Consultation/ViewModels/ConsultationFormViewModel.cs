@@ -17,8 +17,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
     /// </summary>
     public class ConsultationFormViewModel : UnifiedViewModelBase, IValidatable
     {
-        private readonly IMedicalCaseAggregateService _dataManager;
-        private readonly ConsultationCommandHandler _commandHandler;
+        private readonly IMedicalCaseService _dataManager;
+        // OpenSpec: standardize-service-layer - 统一使用Service命名
+        private readonly ConsultationService _consultationService;
 
         private PatientDetailDto? _currentPatient;
         private Guid _medicalCaseId = Guid.Empty;
@@ -52,8 +53,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public DelegateCommand SaveDraftCommand { get; }
 
         public ConsultationFormViewModel(
-            IMedicalCaseAggregateService dataManager,
-            ConsultationCommandHandler commandHandler,
+            IMedicalCaseService dataManager,
+            ConsultationService consultationService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -62,7 +63,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
 
             ClearFormCommand = new DelegateCommand(ExecuteClearForm);
             ShowOtherCasesQueryCommand = new DelegateCommand(() => _ = ShowSuccessMessageAsync("其他病案查询功能将在Phase 3实现"));
@@ -106,7 +107,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private void ExecuteClearForm()
         {
-            try { _commandHandler.ClearForm(); SyncFromDataManager(); ValidationMessage = string.Empty; }
+            try { _consultationService.ClearForm(); SyncFromDataManager(); ValidationMessage = string.Empty; }
             catch (Exception ex) { Logger.LogError(ex, "清空表单失败"); }
         }
 

@@ -26,8 +26,8 @@ namespace LYBT.Desktop.Herbs
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IHerbRepository, HerbRepository>();
 
-            // OpenSpec: unify-desktop-command-handler - 使用CommandHandler模式替代DataManager
-            containerRegistry.RegisterScoped<IHerbCommandHandler, HerbCommandHandler>();
+            // OpenSpec: standardize-service-layer - 统一使用Service命名
+            containerRegistry.RegisterScoped<IHerbService, HerbService>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.HerbDetailViewModel>();

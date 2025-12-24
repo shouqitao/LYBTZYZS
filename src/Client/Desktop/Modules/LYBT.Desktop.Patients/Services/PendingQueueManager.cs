@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Api; // IMedicalCaseApi
 using LYBT.Desktop.Contracts.Services; // ISessionManager
-using LYBT.Desktop.Patients.ViewModels.Components; // PatientCommandHandler
+using LYBT.Desktop.Patients.ViewModels.Components; // PatientService
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Patients.Services;
 public class PendingQueueManager
 {
     private readonly IMedicalCaseApi _medicalCaseApi;
-    private readonly PatientCommandHandler _commandHandler;
+    private readonly PatientService _commandHandler;
     private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
     private readonly ILogger<PendingQueueManager> _logger;
     private readonly ISessionManager _sessionManager;
@@ -37,7 +37,7 @@ public class PendingQueueManager
 
     public PendingQueueManager(
         IMedicalCaseApi medicalCaseApi,
-        PatientCommandHandler commandHandler,
+        PatientService commandHandler,
         UnfinishedCaseHandler unfinishedCaseHandler,
         ISessionManager sessionManager,
         ILogger<PendingQueueManager> logger)

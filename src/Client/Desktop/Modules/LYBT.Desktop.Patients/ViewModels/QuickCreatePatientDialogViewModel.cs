@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 服务依赖
 
         // Issue #1788: 使用CommandHandler替代直接Repository访问
-        private readonly PatientCommandHandler _commandHandler;
+        private readonly PatientService _commandHandler;
 
         #endregion
 
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 构造函数
 
         public QuickCreatePatientDialogViewModel(
-            PatientCommandHandler commandHandler, // Issue #1788: 注入CommandHandler
+            PatientService commandHandler, // Issue #1788: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager)

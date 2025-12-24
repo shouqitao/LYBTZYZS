@@ -13,7 +13,7 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// </summary>
 public class MedicalCaseLifecycleHandler
 {
-    private readonly MedicalCaseAggregateService _dataManager;
+    private readonly MedicalCaseService _dataManager;
     private readonly ISessionManager? _sessionManager;
     private readonly ILogger<MedicalCaseLifecycleHandler> _logger;
 
@@ -23,7 +23,7 @@ public class MedicalCaseLifecycleHandler
     public event EventHandler<LifecycleActionCompletedEventArgs>? ActionCompleted;
 
     public MedicalCaseLifecycleHandler(
-        MedicalCaseAggregateService dataManager,
+        MedicalCaseService dataManager,
         ILogger<MedicalCaseLifecycleHandler> logger,
         ISessionManager? sessionManager = null)
     {

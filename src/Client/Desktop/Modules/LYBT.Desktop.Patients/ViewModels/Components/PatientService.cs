@@ -9,14 +9,14 @@ using Prism.Regions;
 namespace LYBT.Desktop.Patients.ViewModels.Components
 {
     /// <summary>
-    /// 患者命令处理器 - 组件化架构
+    /// 患者Service - 业务逻辑处理
+    /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// 负责处理患者相关的业务命令
-    /// Epic #1773 Task 4: Patients模块组件化改造
     /// </summary>
-    public class PatientCommandHandler
+    public class PatientService
     {
         private readonly IPatientRepository _patientRepository;
-        private readonly ILogger<PatientCommandHandler> _logger;
+        private readonly ILogger<PatientService> _logger;
         private readonly IRegionManager _regionManager;
 
         #region 事件定义
@@ -83,9 +83,9 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
         #endregion
 
-        public PatientCommandHandler(
+        public PatientService(
             IPatientRepository patientRepository,
-            ILogger<PatientCommandHandler> logger,
+            ILogger<PatientService> logger,
             IRegionManager regionManager)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));

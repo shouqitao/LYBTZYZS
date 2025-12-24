@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// OpenSpec: optimize-entity-data-flow - 使用HerbListDto优化列表加载
     public class HerbMasterDetailViewModel : MasterDetailViewModelBase<HerbListDto, HerbDetailModel>
     {
-        private readonly IHerbCommandHandler _commandHandler;
+        private readonly IHerbService _herbService;
         private readonly IHerbRepository _herbRepository;
         private readonly ICommonDialogService _dialogService;
         private readonly IDialogService _prismDialogService;
@@ -180,7 +180,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         #endregion
 
         public HerbMasterDetailViewModel(
-            IHerbCommandHandler commandHandler,
+            IHerbService herbService,
             IHerbRepository herbRepository,
             ICommonDialogService dialogService,
             IDialogService prismDialogService,
@@ -191,7 +191,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, dialogService)
         {
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
@@ -281,7 +281,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             foreach (var item in items)
             {
-                var result = await _commandHandler.DeleteAsync(item.Id);
+                var result = await _herbService.DeleteAsync(item.Id);
                 if (result.success)
                     successCount++;
                 else
@@ -304,7 +304,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         protected override async Task<HerbDetailModel?> LoadDetailAsync(HerbListDto item)
         {
-            var result = await _commandHandler.GetByIdAsync(item.Id);
+            var result = await _herbService.GetByIdAsync(item.Id);
             if (!result.success || result.data == null)
             {
                 ErrorMessage = result.error;
@@ -415,8 +415,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
             };
 
             var result = detail.IsNew
-                ? await _commandHandler.CreateAsync(input)
-                : await _commandHandler.UpdateAsync(detail.Id, input);
+                ? await _herbService.CreateAsync(input)
+                : await _herbService.UpdateAsync(detail.Id, input);
 
             if (!result.success)
             {
@@ -448,7 +448,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         protected override async Task<bool> DeleteDetailAsync(HerbDetailModel detail)
         {
-            var result = await _commandHandler.DeleteAsync(detail.Id);
+            var result = await _herbService.DeleteAsync(detail.Id);
             if (!result.success)
                 ErrorMessage = result.error;
             return result.success;

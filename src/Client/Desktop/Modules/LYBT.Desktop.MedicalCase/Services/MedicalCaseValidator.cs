@@ -21,7 +21,7 @@ namespace LYBT.Desktop.MedicalCase.Services
         #region 字段
 
         private readonly IValidationService _validationService;
-        private readonly MedicalCaseAggregateService _dataManager;
+        private readonly MedicalCaseService _dataManager;
         private readonly ILogger<MedicalCaseValidator> _logger;
 
         #endregion
@@ -30,7 +30,7 @@ namespace LYBT.Desktop.MedicalCase.Services
 
         public MedicalCaseValidator(
             IValidationService validationService,
-            MedicalCaseAggregateService dataManager,
+            MedicalCaseService dataManager,
             ILogger<MedicalCaseValidator> logger)
         {
             _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));

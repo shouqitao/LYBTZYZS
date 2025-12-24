@@ -6,11 +6,10 @@ using LYBT.Shared.Models.Contracts.Patients;
 namespace LYBT.Desktop.Patients.Interfaces
 {
     /// <summary>
-    /// 患者命令处理器接口
-    /// Desktop层架构重构 Phase 1: 接口化重构
-    /// 目的：消除具体类依赖，提升可测试性
+    /// 患者Service接口
+    /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// </summary>
-    public interface IPatientCommandHandler
+    public interface IPatientService
     {
         #region 事件定义
 
