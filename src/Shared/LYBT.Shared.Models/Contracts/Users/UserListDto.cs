@@ -21,6 +21,10 @@ public class UserListDto
     [DisplayName("真实姓名")]
     public string RealName { get; set; } = string.Empty;
 
+    /// <summary>手机号码</summary>
+    [DisplayName("手机号码")]
+    public string? PhoneNumber { get; set; }
+
     /// <summary>用户角色</summary>
     [DisplayName("用户角色")]
     public UserRole Role { get; set; }

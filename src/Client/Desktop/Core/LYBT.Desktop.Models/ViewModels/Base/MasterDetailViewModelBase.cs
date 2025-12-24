@@ -345,6 +345,11 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
                         await ShowSuccessMessageAsync("保存成功");
                     }
+                    else
+                    {
+                        // Issue #2261: 保存失败时显示错误提示
+                        await ShowErrorMessageAsync(ErrorMessage ?? "保存失败，请重试");
+                    }
                 }
                 finally
                 {
@@ -395,6 +400,11 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                         await RefreshAsync();
 
                         await ShowSuccessMessageAsync("删除成功");
+                    }
+                    else
+                    {
+                        // Issue #2261: 删除失败时显示错误提示
+                        await ShowErrorMessageAsync(ErrorMessage ?? "删除失败，请重试");
                     }
                 }
                 finally
