@@ -348,7 +348,8 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                     else
                     {
                         // Issue #2261: 保存失败时显示错误提示
-                        await ShowErrorMessageAsync(ErrorMessage ?? "保存失败，请重试");
+                        var errorMsg = string.IsNullOrWhiteSpace(ErrorMessage) ? "保存失败，请重试" : ErrorMessage;
+                        await ShowErrorMessageAsync(errorMsg);
                     }
                 }
                 finally
@@ -404,7 +405,8 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                     else
                     {
                         // Issue #2261: 删除失败时显示错误提示
-                        await ShowErrorMessageAsync(ErrorMessage ?? "删除失败，请重试");
+                        var errorMsg = string.IsNullOrWhiteSpace(ErrorMessage) ? "删除失败，请重试" : ErrorMessage;
+                        await ShowErrorMessageAsync(errorMsg);
                     }
                 }
                 finally
