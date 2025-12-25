@@ -1,16 +1,9 @@
 <!--
-    UserMasterDetailView - 用户Master-Detail视图
-    OpenSpec: refactor-master-detail-layout
+    UserMasterDetailView - 用户Master-Detail视图V2（组合模式）
+    OpenSpec: refactor-viewmodel-composition
 
-    重构说明：
-    - 合并UserManagementView和UserDetailView为单一视图
-    - 左侧40%显示用户列表，右侧60%显示详情/编辑
-    - 复用UserViewControl和UserEditControl
-
-    UI优化 (2025-12-16):
-    - 应用统一DataGrid样式(MasterDetailDataGridStyle)
-    - 使用StatusBadge组件显示状态
-    - 应用统一分页样式
+    使用组合模式ViewModel (UserMasterDetailViewModelV2)
+    命令名称已适配新基类
 -->
 <UserControl x:Class="LYBT.Desktop.Users.Views.UserMasterDetailView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -22,7 +15,6 @@
              xmlns:userControls="clr-namespace:LYBT.Desktop.Users.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -38,18 +30,18 @@
         <controls:MasterDetailLayout.MasterContent>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
-                    <RowDefinition Height="Auto"/>  <!-- 搜索和筛选 -->
-                    <RowDefinition Height="*"/>     <!-- 列表 -->
-                    <RowDefinition Height="Auto"/>  <!-- 分页 -->
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- 工具栏 -->
+                <!-- 工具栏 - 适配V2命令 -->
                 <controls:DataGridToolbar Grid.Row="0"
-                                          CreateCommand="{Binding AddCommand}"
+                                          CreateCommand="{Binding CreateNewCommand}"
                                           RefreshCommand="{Binding RefreshCommand}"
                                           ExportCommand="{Binding ExportCommand}"
-                                          BatchDeleteCommand="{Binding BatchDeleteCommand}">
+                                          BatchDeleteCommand="{Binding DeleteCommand}">
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">
                             <Button Content="导入"
@@ -116,7 +108,7 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- 用户列表 - 使用统一DataGrid样式，支持批量选择 -->
+                <!-- 用户列表 -->
                 <DataGrid Grid.Row="2"
                           ItemsSource="{Binding Items}"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
@@ -152,7 +144,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 角色 - 使用EnumDescriptionConverter转换UserRole枚举 -->
+                        <!-- 角色 -->
                         <DataGridTextColumn Header="角色"
                                             Binding="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"
                                             Width="70">
@@ -164,7 +156,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 状态 - 使用StatusBadge组件 -->
+                        <!-- 状态 -->
                         <DataGridTemplateColumn Header="状态" Width="70">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -188,22 +180,23 @@
                         </DataGridTextColumn>
                     </DataGrid.Columns>
 
-                    <!-- 行右键菜单 -->
+                    <!-- 行右键菜单 - 适配V2命令 -->
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="编辑" Command="{Binding EditCommand}"/>
                             <Separator/>
-                            <MenuItem Header="重置密码" Command="{Binding ResetPasswordCommand}" CommandParameter="{Binding SelectedItem}"/>
-                            <MenuItem Header="切换状态" Command="{Binding ToggleUserStatusCommand}" CommandParameter="{Binding SelectedItem}"/>
+                            <MenuItem Header="重置密码" Command="{Binding ResetPasswordCommand}"/>
+                            <MenuItem Header="切换状态" Command="{Binding ToggleUserStatusCommand}"/>
+                            <MenuItem Header="恢复" Command="{Binding RestoreCommand}"/>
                             <Separator/>
-                            <MenuItem Header="审计日志" Command="{Binding ShowAuditLogCommand}" CommandParameter="{Binding SelectedItem}"/>
+                            <MenuItem Header="审计日志" Command="{Binding ShowAuditLogCommand}"/>
                             <Separator/>
-                            <MenuItem Header="删除" Command="{Binding DeleteCurrentCommand}"/>
+                            <MenuItem Header="删除" Command="{Binding DeleteCommand}"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                 </DataGrid>
 
-                <!-- 分页控件 - 使用统一样式 -->
+                <!-- 分页控件 - 适配V2命令 -->
                 <Border Grid.Row="3" Style="{StaticResource MasterDetailPaginationPanelStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -213,14 +206,12 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- 统计信息 -->
                         <TextBlock Grid.Column="0" Style="{StaticResource MasterDetailPaginationInfoStyle}">
                             <Run Text="共"/>
                             <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="Medium"/>
                             <Run Text="条记录"/>
                         </TextBlock>
 
-                        <!-- 每页条数选择 -->
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="每页" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
                             <ComboBox ItemsSource="{Binding PageSizes}"
@@ -232,17 +223,16 @@
                             <TextBlock Text="条" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
                         </StackPanel>
 
-                        <!-- 分页按钮 -->
                         <StackPanel Grid.Column="3"
                                     Orientation="Horizontal"
                                     HorizontalAlignment="Right">
                             <Button Content="首页"
                                     Style="{StaticResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding FirstPageCommand}"
+                                    Command="{Binding GoToFirstPageCommand}"
                                     Margin="0,0,4,0"/>
                             <Button Content="上一页"
                                     Style="{StaticResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding PreviousPageCommand}"
+                                    Command="{Binding GoToPreviousPageCommand}"
                                     Margin="0,0,4,0"/>
                             <TextBlock Style="{StaticResource MasterDetailPaginationPageStyle}">
                                 <Run Text="{Binding CurrentPage, Mode=OneWay}"/>
@@ -251,11 +241,11 @@
                             </TextBlock>
                             <Button Content="下一页"
                                     Style="{StaticResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding NextPageCommand}"
+                                    Command="{Binding GoToNextPageCommand}"
                                     Margin="0,0,4,0"/>
                             <Button Content="末页"
                                     Style="{StaticResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding LastPageCommand}"/>
+                                    Command="{Binding GoToLastPageCommand}"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -273,18 +263,18 @@
         <controls:MasterDetailLayout.DetailContent>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
-                    <RowDefinition Height="*"/>     <!-- 内容 -->
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- 详情工具栏 -->
+                <!-- 详情工具栏 - 适配V2命令 -->
                 <controls:DetailToolbar Grid.Row="0"
                                         Title="{Binding DetailTitle}"
                                         IsEditMode="{Binding IsEditMode}"
                                         EditCommand="{Binding EditCommand}"
                                         SaveCommand="{Binding SaveCommand}"
                                         CancelCommand="{Binding CancelCommand}"
-                                        DeleteCommand="{Binding DeleteCurrentCommand}"/>
+                                        DeleteCommand="{Binding DeleteCommand}"/>
 
                 <!-- 查看模式内容 -->
                 <userControls:UserViewControl
@@ -303,7 +293,7 @@
                     ShowStatus="True"
                     Margin="16"/>
 
-                <!-- 编辑模式内容 - OpenSpec: refactor-masterdetail-editmode 直接绑定CurrentDetail -->
+                <!-- 编辑模式内容 -->
                 <userControls:UserEditControl
                     Grid.Row="1"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -317,12 +307,13 @@
                     RoleOptions="{Binding RoleOptions}"
                     Status="{Binding CurrentDetail.Status, Mode=TwoWay}"
                     StatusOptions="{Binding StatusOptions}"
+                    ErrorsSource="{Binding CurrentDetail.Errors}"
                     ShowStatus="True"
                     Margin="16"/>
 
                 <!-- 详情加载遮罩 -->
                 <controls:LoadingOverlay Grid.RowSpan="2"
-                                         IsLoading="{Binding IsLoadingDetail}"
+                                         IsLoading="{Binding IsBusy}"
                                          LoadingText="加载详情中..."/>
             </Grid>
         </controls:MasterDetailLayout.DetailContent>
@@ -335,7 +326,7 @@
                 Title="请选择用户"
                 Subtitle="从左侧列表中选择一位用户查看详情，或点击新增按钮创建新用户"
                 ActionText="新增用户"
-                ActionCommand="{Binding AddCommand}"/>
+                ActionCommand="{Binding CreateNewCommand}"/>
         </controls:MasterDetailLayout.EmptyContent>
     </controls:MasterDetailLayout>
 </UserControl>

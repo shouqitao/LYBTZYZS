@@ -27,6 +27,10 @@
 
     <!-- 防止 AssemblyInfo 重复生成 - 保留自动生成，清理手动文件 -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+
+    <!-- OpenSpec: refactor-viewmodel-composition - 源生成器支持 -->
+    <!-- 允许查看CommunityToolkit.Mvvm生成的代码用于调试 -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <!-- 包版本通过 Directory.Packages.props 中央管理，这里不再定义版本变量 -->

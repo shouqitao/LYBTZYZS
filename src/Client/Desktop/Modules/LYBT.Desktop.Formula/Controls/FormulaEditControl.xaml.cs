@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using LYBT.Desktop.Formula.ViewModels;
+using LYBT.Desktop.Models.ViewModels.Base;
 
 namespace LYBT.Desktop.Formula.Controls
 {
@@ -237,6 +238,27 @@ namespace LYBT.Desktop.Formula.Controls
         {
             get => (ICommand?)GetValue(AddNewRowCommandProperty);
             set => SetValue(AddNewRowCommandProperty, value);
+        }
+
+        #endregion
+
+        #region 验证属性
+
+        /// <summary>
+        /// 验证错误源 - 用于显示验证错误消息
+        /// OpenSpec: ui-validation-framework
+        /// </summary>
+        public static readonly DependencyProperty ErrorsSourceProperty =
+            DependencyProperty.Register(
+                nameof(ErrorsSource),
+                typeof(ValidationErrorsAccessor),
+                typeof(FormulaEditControl),
+                new PropertyMetadata(null));
+
+        public ValidationErrorsAccessor? ErrorsSource
+        {
+            get => (ValidationErrorsAccessor?)GetValue(ErrorsSourceProperty);
+            set => SetValue(ErrorsSourceProperty, value);
         }
 
         #endregion

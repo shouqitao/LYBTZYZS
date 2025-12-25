@@ -40,12 +40,17 @@
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：名称、分类 -->
+                    <!-- OpenSpec: ui-validation-framework - 添加验证绑定 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="名称" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding FormulaName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                        <TextBlock Style="{StaticResource FormLabelStyle}">
+                            <Run Text="名称"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        </TextBlock>
+                        <TextBox Text="{Binding FormulaName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 Style="{StaticResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
+                        <TextBlock Text="{Binding ErrorsSource[Name]}"
+                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">

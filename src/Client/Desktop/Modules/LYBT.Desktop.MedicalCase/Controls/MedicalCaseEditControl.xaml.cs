@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
@@ -250,6 +251,27 @@ public partial class MedicalCaseEditControl : UserControl
     {
         get => (DateTime?)GetValue(UpdatedAtProperty);
         set => SetValue(UpdatedAtProperty, value);
+    }
+
+    #endregion
+
+    #region 验证属性
+
+    /// <summary>
+    /// 验证错误源 - 用于显示验证错误消息
+    /// OpenSpec: ui-validation-framework
+    /// </summary>
+    public static readonly DependencyProperty ErrorsSourceProperty =
+        DependencyProperty.Register(
+            nameof(ErrorsSource),
+            typeof(ValidationErrorsAccessor),
+            typeof(MedicalCaseEditControl),
+            new PropertyMetadata(null));
+
+    public ValidationErrorsAccessor? ErrorsSource
+    {
+        get => (ValidationErrorsAccessor?)GetValue(ErrorsSourceProperty);
+        set => SetValue(ErrorsSourceProperty, value);
     }
 
     #endregion

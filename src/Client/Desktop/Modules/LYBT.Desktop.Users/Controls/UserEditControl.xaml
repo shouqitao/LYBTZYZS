@@ -38,21 +38,30 @@
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：用户名、真实姓名 -->
+                    <!-- OpenSpec: ui-validation-framework - 添加验证绑定 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="用户名 *" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                        <TextBlock Style="{StaticResource FormLabelStyle}">
+                            <Run Text="用户名"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        </TextBlock>
+                        <TextBox Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 Style="{StaticResource ValidatingTextBoxStyle}"
                                  IsReadOnly="{Binding IsUserNameReadOnly}"
                                  MinHeight="44"
                                  Padding="12,10"/>
+                        <TextBlock Text="{Binding ErrorsSource[UserName]}"
+                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="真实姓名 *" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                        <TextBlock Style="{StaticResource FormLabelStyle}">
+                            <Run Text="真实姓名"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        </TextBlock>
+                        <TextBox Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 Style="{StaticResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
+                        <TextBlock Text="{Binding ErrorsSource[RealName]}"
+                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <!-- 第二行：拼音码、手机号码 -->
@@ -67,23 +76,29 @@
 
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="手机号码" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                        <TextBox Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 Style="{StaticResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
+                        <TextBlock Text="{Binding ErrorsSource[PhoneNumber]}"
+                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <!-- 第三行：邮箱地址、用户角色 -->
                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="邮箱地址" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                        <TextBox Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 Style="{StaticResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
+                        <TextBlock Text="{Binding ErrorsSource[Email]}"
+                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="用户角色 *" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Style="{StaticResource FormLabelStyle}">
+                            <Run Text="用户角色"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        </TextBlock>
                         <ComboBox SelectedItem="{Binding Role, Mode=TwoWay}"
                                   ItemsSource="{Binding RoleOptions}"
                                   MinHeight="44"

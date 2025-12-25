@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Users.Controls
@@ -192,6 +193,23 @@ namespace LYBT.Desktop.Users.Controls
         {
             get => (bool)GetValue(ShowStatusProperty);
             set => SetValue(ShowStatusProperty, value);
+        }
+
+        /// <summary>
+        /// 验证错误源 - 用于显示验证错误消息
+        /// OpenSpec: ui-validation-framework
+        /// </summary>
+        public static readonly DependencyProperty ErrorsSourceProperty =
+            DependencyProperty.Register(
+                nameof(ErrorsSource),
+                typeof(ValidationErrorsAccessor),
+                typeof(UserEditControl),
+                new PropertyMetadata(null));
+
+        public ValidationErrorsAccessor? ErrorsSource
+        {
+            get => (ValidationErrorsAccessor?)GetValue(ErrorsSourceProperty);
+            set => SetValue(ErrorsSourceProperty, value);
         }
 
         #endregion

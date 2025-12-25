@@ -1,230 +1,205 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.IO;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Desktop.Utilities.Excel;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using Prism.Events;
-using Prism.Regions;
 using Prism.Services.Dialogs;
 
-namespace LYBT.Desktop.Users.ViewModels
+namespace LYBT.Desktop.Users.ViewModels;
+
+/// <summary>
+/// 用户Master-Detail视图模型（组合模式）
+/// OpenSpec: refactor-viewmodel-composition
+///
+/// 使用IMasterDetailServices实现组合模式
+/// </summary>
+public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserListDto, UserDetailModel>
 {
-    /// <summary>
-    /// 用户Master-Detail视图模型
-    /// OpenSpec: refactor-master-detail-layout
-    /// OpenSpec: optimize-entity-data-flow - 列表使用UserListDto
-    ///
-    /// 合并UserManagementViewModel和UserDetailViewModel功能
-    /// </summary>
-    public class UserMasterDetailViewModel : MasterDetailViewModelBase<UserListDto, UserDetailModel>
+    private readonly UserService _commandHandler;
+    private readonly IUserRepository _userRepository;
+    private readonly IDialogService _prismDialogService;
+    private readonly ICommonDialogService? _commonDialogService;
+    private readonly ISessionManager? _sessionManager;
+
+    #region 筛选属性
+
+    private UserRole? _selectedRoleFilter;
+    private CommonStatus? _selectedStatusFilter;
+    private bool _showInactiveUsers;
+
+    /// <summary>角色筛选</summary>
+    public UserRole? SelectedRoleFilter
     {
-        private readonly UserService _commandHandler;
-        private readonly IUserRepository _userRepository;
-        private readonly ICommonDialogService _commonDialogService;
-        private readonly IDialogService _prismDialogService;
-
-        #region 筛选属性
-
-        private UserRole? _selectedRoleFilter;
-        private CommonStatus? _selectedStatusFilter;
-        private bool _showInactiveUsers;
-
-        /// <summary>角色筛选</summary>
-        public UserRole? SelectedRoleFilter
+        get => _selectedRoleFilter;
+        set
         {
-            get => _selectedRoleFilter;
-            // OpenSpec: fix-infinite-loop - 使用CurrentPage=1避免无限循环（与UserManagementViewModel一致）
-            set { if (SetProperty(ref _selectedRoleFilter, value)) CurrentPage = 1; }
-        }
-
-        /// <summary>状态筛选</summary>
-        public CommonStatus? SelectedStatusFilter
-        {
-            get => _selectedStatusFilter;
-            // OpenSpec: fix-infinite-loop - 使用CurrentPage=1避免无限循环
-            set { if (SetProperty(ref _selectedStatusFilter, value)) CurrentPage = 1; }
-        }
-
-        /// <summary>显示已禁用用户</summary>
-        public bool ShowInactiveUsers
-        {
-            get => _showInactiveUsers;
-            // OpenSpec: fix-infinite-loop - 使用CurrentPage=1避免无限循环
-            set { if (SetProperty(ref _showInactiveUsers, value)) CurrentPage = 1; }
-        }
-
-        #endregion
-
-        #region 显示属性 - OpenSpec: refactor-masterdetail-editmode 移除Edit属性，直接绑定CurrentDetail
-
-        /// <summary>用户名是否只读（编辑模式下不可修改）</summary>
-        public bool IsUserNameReadOnly => CurrentDetail != null && !CurrentDetail.IsNew;
-
-        #endregion
-
-        #region 选项列表
-
-        /// <summary>角色选项</summary>
-        public ObservableCollection<UserRole> RoleOptions { get; }
-
-        /// <summary>状态选项</summary>
-        public ObservableCollection<CommonStatus> StatusOptions { get; }
-
-        #endregion
-
-        #region 显示属性
-
-        /// <summary>详情标题</summary>
-        public string DetailTitle => CurrentDetail == null ? string.Empty :
-            CurrentDetail.IsNew ? "新增用户" :
-            IsEditMode ? $"编辑用户 - {CurrentDetail.RealName}" :
-            $"用户详情 - {CurrentDetail.RealName}";
-
-        /// <summary>是否为管理员</summary>
-        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
-
-        #endregion
-
-        #region 扩展命令
-
-        /// <summary>重置密码命令</summary>
-        public DelegateCommand<UserListDto> ResetPasswordCommand { get; private set; } = null!;
-
-        /// <summary>切换用户状态命令</summary>
-        public DelegateCommand<UserListDto> ToggleUserStatusCommand { get; private set; } = null!;
-
-        /// <summary>清除筛选命令</summary>
-        public DelegateCommand ClearFiltersCommand { get; private set; } = null!;
-
-        /// <summary>导入命令</summary>
-        public DelegateCommand ImportCommand { get; private set; } = null!;
-
-        /// <summary>导出命令</summary>
-        public DelegateCommand ExportCommand { get; private set; } = null!;
-
-        /// <summary>下载模板命令</summary>
-        public DelegateCommand DownloadTemplateCommand { get; private set; } = null!;
-
-        /// <summary>查看审计日志命令</summary>
-        public DelegateCommand<UserListDto> ShowAuditLogCommand { get; private set; } = null!;
-
-        /// <summary>恢复命令</summary>
-        public DelegateCommand<UserListDto> RestoreCommand { get; private set; } = null!;
-
-        #endregion
-
-        #region 构造函数
-
-        public UserMasterDetailViewModel(
-            UserService commandHandler,
-            IUserRepository userRepository,
-            ICommonDialogService commonDialogService,
-            IDialogService prismDialogService,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
-            IRegionManager regionManager,
-            ISessionManager? sessionManager = null,
-            IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, commonDialogService)
-        {
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _commonDialogService = commonDialogService ?? throw new ArgumentNullException(nameof(commonDialogService));
-            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
-
-            PageTitle = "用户管理";
-            PageSize = SystemConstants.DefaultPageSize;
-
-            RoleOptions = new ObservableCollection<UserRole>(Enum.GetValues<UserRole>());
-            StatusOptions = new ObservableCollection<CommonStatus>(Enum.GetValues<CommonStatus>());
-
-            InitializeExtendedCommands();
-        }
-
-        private void InitializeExtendedCommands()
-        {
-            ResetPasswordCommand = new DelegateCommand<UserListDto>(async u => await ExecuteResetPasswordAsync(u),
-                u => u != null && !IsLoading && u.Status == CommonStatus.Enabled);
-            ToggleUserStatusCommand = new DelegateCommand<UserListDto>(async u => await ExecuteToggleUserStatusAsync(u),
-                u => u != null && !IsLoading);
-            ClearFiltersCommand = new DelegateCommand(ExecuteClearFilters, () => HasActiveFilters);
-            ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
-            ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
-            DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
-            ShowAuditLogCommand = new DelegateCommand<UserListDto>(ExecuteShowAuditLog, u => u != null);
-            RestoreCommand = new DelegateCommand<UserListDto>(async u => await RestoreAsync(u),
-                u => u != null && !IsLoading && IsAdmin);
-        }
-
-        #endregion
-
-        #region 列表数据加载
-
-        protected override async Task<IEnumerable<UserListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
-        {
-            try
+            if (SetProperty(ref _selectedRoleFilter, value))
             {
-                // OpenSpec: optimize-entity-data-flow - 使用UserListDto轻量DTO
-                var result = await _commandHandler.GetPagedAsync(page, pageSize, searchText);
+                Services.Pagination.GoToFirstPage();
+            }
+        }
+    }
+
+    /// <summary>状态筛选</summary>
+    public CommonStatus? SelectedStatusFilter
+    {
+        get => _selectedStatusFilter;
+        set
+        {
+            if (SetProperty(ref _selectedStatusFilter, value))
+            {
+                Services.Pagination.GoToFirstPage();
+            }
+        }
+    }
+
+    /// <summary>显示已禁用用户</summary>
+    public bool ShowInactiveUsers
+    {
+        get => _showInactiveUsers;
+        set
+        {
+            if (SetProperty(ref _showInactiveUsers, value))
+            {
+                Services.Pagination.GoToFirstPage();
+            }
+        }
+    }
+
+    /// <summary>是否有活动筛选</summary>
+    private bool HasActiveFilters =>
+        SelectedRoleFilter.HasValue || SelectedStatusFilter.HasValue ||
+        ShowInactiveUsers || !string.IsNullOrEmpty(SearchText);
+
+    #endregion
+
+    #region 扩展属性
+
+    /// <summary>是否为管理员</summary>
+    public bool IsAdmin => _sessionManager?.HasPermission(UserRole.Admin) == true;
+
+    /// <summary>用户名是否只读（编辑模式下不可修改）</summary>
+    public bool IsUserNameReadOnly => CurrentDetail != null && !IsNew;
+
+    /// <summary>角色选项</summary>
+    public ObservableCollection<UserRole> RoleOptions { get; } = new(Enum.GetValues<UserRole>());
+
+    /// <summary>状态选项</summary>
+    public ObservableCollection<CommonStatus> StatusOptions { get; } = new(Enum.GetValues<CommonStatus>());
+
+    /// <summary>详情标题</summary>
+    public string DetailTitle
+    {
+        get
+        {
+            if (CurrentDetail == null) return "用户详情";
+            if (IsNew) return "新增用户";
+            return IsEditMode ? $"编辑用户 - {CurrentDetail.RealName}" : $"用户详情 - {CurrentDetail.RealName}";
+        }
+    }
+
+    #endregion
+
+    public UserMasterDetailViewModel(
+        IMasterDetailServices<UserListDto, UserDetailModel> services,
+        UserService commandHandler,
+        IUserRepository userRepository,
+        IDialogService prismDialogService,
+        ILoggerFactory loggerFactory,
+        ISessionManager? sessionManager = null,
+        ICommonDialogService? commonDialogService = null)
+        : base(services, loggerFactory)
+    {
+        _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
+        _sessionManager = sessionManager;
+        _commonDialogService = commonDialogService;
+
+        PageTitle = "用户管理";
+
+        // 监听属性变化
+        PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName is nameof(CurrentDetail) or nameof(IsEditMode))
+            {
+                OnPropertyChanged(nameof(DetailTitle));
+                OnPropertyChanged(nameof(IsUserNameReadOnly));
+            }
+        };
+    }
+
+    #region 基类抽象方法实现
+
+    /// <summary>加载列表数据</summary>
+    protected override async Task LoadListAsync()
+    {
+        Logger.LogInformation("用户搜索: 第{Page}页, 每页{PageSize}条, 关键词: '{SearchText}'",
+            CurrentPage, PageSize, SearchText);
+
+        try
+        {
+            await Services.Loading.ExecuteWithLoadingAsync(async () =>
+            {
+                var result = await _commandHandler.GetPagedAsync(CurrentPage, PageSize, SearchText);
                 if (result.success && result.data != null)
                 {
-                    TotalCount = result.data.TotalCount;
-                    return ApplyFilters(result.data.Items);
+                    Services.Pagination.TotalCount = result.data.TotalCount;
+
+                    Items.Clear();
+                    var filteredItems = ApplyFilters(result.data.Items);
+                    foreach (var item in filteredItems)
+                    {
+                        Items.Add(item);
+                    }
                 }
                 else
                 {
-                    TotalCount = 0;
-                    return new List<UserListDto>();
+                    Services.Pagination.TotalCount = 0;
+                    Items.Clear();
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "获取用户列表时发生异常");
-                await UserNotificationService!.HandleExceptionAsync(ex, $"获取用户列表 - 模块:{nameof(UserMasterDetailViewModel)}");
-                TotalCount = 0;
-                return new List<UserListDto>();
-            }
+            });
         }
-
-        private IEnumerable<UserListDto> ApplyFilters(IEnumerable<UserListDto> items)
+        catch (Exception ex)
         {
-            var filteredItems = items.AsEnumerable();
-            if (SelectedRoleFilter.HasValue) filteredItems = filteredItems.Where(u => u.Role == SelectedRoleFilter.Value);
-            if (SelectedStatusFilter.HasValue) filteredItems = filteredItems.Where(u => u.Status == SelectedStatusFilter.Value);
-            if (!ShowInactiveUsers) filteredItems = filteredItems.Where(u => u.Status == CommonStatus.Enabled);
-            return filteredItems;
+            Logger.LogError(ex, "获取用户列表时发生异常");
+            Services.ErrorHandler.HandleException(ex, "获取用户列表");
         }
+    }
 
-        private bool HasActiveFilters => SelectedRoleFilter.HasValue || SelectedStatusFilter.HasValue || ShowInactiveUsers || !string.IsNullOrEmpty(SearchText);
+    private IEnumerable<UserListDto> ApplyFilters(IEnumerable<UserListDto> items)
+    {
+        var filteredItems = items.AsEnumerable();
+        if (SelectedRoleFilter.HasValue)
+            filteredItems = filteredItems.Where(u => u.Role == SelectedRoleFilter.Value);
+        if (SelectedStatusFilter.HasValue)
+            filteredItems = filteredItems.Where(u => u.Status == SelectedStatusFilter.Value);
+        if (!ShowInactiveUsers)
+            filteredItems = filteredItems.Where(u => u.Status == CommonStatus.Enabled);
+        return filteredItems;
+    }
 
-        private void ExecuteClearFilters()
+    /// <summary>加载详情数据</summary>
+    protected override async Task LoadDetailAsync(UserListDto item)
+    {
+        try
         {
-            SelectedRoleFilter = null;
-            SelectedStatusFilter = null;
-            ShowInactiveUsers = false;
-            SearchText = string.Empty;
-        }
-
-        #endregion
-
-        #region Master-Detail抽象方法实现
-
-        protected override async Task<UserDetailModel?> LoadDetailAsync(UserListDto item)
-        {
-            if (item == null) return null;
-
             var result = await _commandHandler.GetByIdAsync(item.Id);
-            if (!result.success || result.user == null) return null;
+            if (!result.success || result.user == null)
+            {
+                await Services.Dialog.ShowErrorAsync($"用户 '{item.UserName}' 不存在或已被删除", "加载失败");
+                return;
+            }
 
-            // OpenSpec: sync-entity-dto-fields - 完整映射DetailDto到DetailModel
             var detail = new UserDetailModel
             {
                 Id = result.user.Id,
@@ -241,26 +216,41 @@ namespace LYBT.Desktop.Users.ViewModels
                 Remark = result.user.Remark
             };
 
-            RaisePropertyChanged(nameof(DetailTitle));
-            RaisePropertyChanged(nameof(IsUserNameReadOnly));
+            Services.DetailEditor.LoadDetail(detail);
+            OnPropertyChanged(nameof(DetailTitle));
+            OnPropertyChanged(nameof(IsUserNameReadOnly));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "加载用户详情失败: {UserId}", item.Id);
+            Services.ErrorHandler.HandleException(ex, "加载用户详情");
+        }
+    }
 
-            return detail;
+    /// <summary>创建新详情实例</summary>
+    protected override UserDetailModel CreateNewDetail()
+    {
+        var detail = UserDetailModel.CreateNew();
+        OnPropertyChanged(nameof(DetailTitle));
+        OnPropertyChanged(nameof(IsUserNameReadOnly));
+        return detail;
+    }
+
+    /// <summary>保存详情</summary>
+    protected override async Task<bool> SaveDetailAsync(UserDetailModel detail)
+    {
+        if (string.IsNullOrWhiteSpace(detail.UserName))
+        {
+            await Services.Dialog.ShowErrorAsync("用户名不能为空", "验证失败");
+            return false;
         }
 
-        /// <summary>
-        /// 保存用户详情
-        /// OpenSpec: refactor-masterdetail-editmode - 直接使用CurrentDetail属性
-        /// </summary>
-        protected override async Task<bool> SaveDetailAsync(UserDetailModel detail)
+        try
         {
-            if (detail == null) return false;
-
-            // 直接使用CurrentDetail属性构建DTO，无需Edit属性中转
-            // OpenSpec: sync-entity-dto-fields - Status通过专用API管理，InputDto不包含Status
             var dto = new UserInputDto
             {
                 Id = detail.Id,
-                UserName = detail.UserName?.Trim() ?? string.Empty,
+                UserName = detail.UserName.Trim(),
                 RealName = detail.RealName?.Trim() ?? string.Empty,
                 PinYinCode = detail.PinYinCode?.Trim(),
                 PhoneNumber = detail.PhoneNumber?.Trim(),
@@ -268,13 +258,13 @@ namespace LYBT.Desktop.Users.ViewModels
                 Role = detail.Role
             };
 
-            var result = detail.IsNew
+            var result = IsNew
                 ? await _commandHandler.CreateAsync(dto)
                 : await _commandHandler.UpdateAsync(dto);
 
             if (result.success && result.user != null)
             {
-                // OpenSpec: sync-entity-dto-fields - 完整回填服务器返回数据
+                // 回填服务器返回数据
                 detail.Id = result.user.Id;
                 detail.UserName = result.user.UserName;
                 detail.RealName = result.user.RealName;
@@ -287,330 +277,307 @@ namespace LYBT.Desktop.Users.ViewModels
                 detail.UpdatedAt = result.user.UpdatedAt;
                 detail.Remark = result.user.Remark;
 
-                RaisePropertyChanged(nameof(DetailTitle));
+                Logger.LogInformation("用户{Action}成功: {UserId} - {UserName}",
+                    IsNew ? "创建" : "更新", result.user.Id, result.user.UserName);
+
+                OnPropertyChanged(nameof(DetailTitle));
                 return true;
             }
 
-            // 确保失败时总是设置ErrorMessage，避免显示通用消息
-            ErrorMessage = !string.IsNullOrEmpty(result.errorMessage)
+            var errorMessage = !string.IsNullOrEmpty(result.errorMessage)
                 ? result.errorMessage
-                : (detail.IsNew ? "创建用户失败" : "更新用户失败");
+                : (IsNew ? "创建用户失败" : "更新用户失败");
+            Services.ErrorHandler.SetError("Save", errorMessage);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "保存用户失败: {UserName}", detail.UserName);
+            var errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
+                IsNew ? "创建用户" : "更新用户", ex);
+            Services.ErrorHandler.SetError("Save", errorMessage);
+            return false;
+        }
+    }
 
+    /// <summary>删除项</summary>
+    protected override async Task<bool> DeleteItemAsync(UserListDto item)
+    {
+        // 检查是否删除当前登录用户
+        var currentUser = _sessionManager?.CurrentUser;
+        if (currentUser != null && item.Id == currentUser.Id)
+        {
+            await Services.Dialog.ShowWarningAsync("不能删除当前登录用户", "操作失败");
             return false;
         }
 
-        protected override async Task<bool> DeleteDetailAsync(UserDetailModel detail)
+        var result = await _commandHandler.DeleteAsync(item.Id);
+        if (!result.success)
         {
-            if (detail == null || detail.IsNew) return false;
-
-            var result = await _commandHandler.DeleteAsync(detail.Id);
-            return result.success;
+            Services.ErrorHandler.SetError("Delete", result.errorMessage ?? $"删除用户 '{item.UserName}' 失败");
         }
-
-        /// <summary>
-        /// 创建新用户详情
-        /// OpenSpec: refactor-masterdetail-editmode - 简化创建逻辑
-        /// </summary>
-        protected override UserDetailModel CreateNewDetail()
+        else
         {
-            var detail = UserDetailModel.CreateNew();
-            RaisePropertyChanged(nameof(DetailTitle));
-            RaisePropertyChanged(nameof(IsUserNameReadOnly));
-            return detail;
+            Logger.LogInformation("用户删除成功: {UserId} - {UserName}", item.Id, item.UserName);
         }
+        return result.success;
+    }
 
-        /// <summary>
-        /// 克隆详情用于取消编辑时恢复
-        /// OpenSpec: refactor-masterdetail-editmode - 直接克隆，无需填充Edit属性
-        /// </summary>
-        protected override UserDetailModel CloneDetail(UserDetailModel detail)
+    #endregion
+
+    #region 筛选命令
+
+    /// <summary>清除筛选</summary>
+    [RelayCommand(CanExecute = nameof(CanClearFilters))]
+    private void ClearFilters()
+    {
+        SelectedRoleFilter = null;
+        SelectedStatusFilter = null;
+        ShowInactiveUsers = false;
+        SearchText = string.Empty;
+    }
+
+    private bool CanClearFilters() => HasActiveFilters;
+
+    #endregion
+
+    #region 扩展命令
+
+    /// <summary>重置密码</summary>
+    [RelayCommand(CanExecute = nameof(CanResetPassword))]
+    private async Task ResetPasswordAsync()
+    {
+        if (SelectedItem == null) return;
+
+        try
         {
-            return detail.Clone();
-        }
+            var user = SelectedItem;
+            var confirmed = await Services.Dialog.ShowConfirmAsync(
+                $"确认重置用户 [{user.RealName ?? user.UserName}] 的密码吗？\n\n密码将被重置为系统配置的默认密码",
+                "重置密码确认");
+            if (!confirmed) return;
 
-        protected override object? GetDetailId(UserDetailModel detail)
-        {
-            return detail?.Id;
-        }
-
-        #endregion
-
-        #region 删除操作
-
-        protected override async Task OnExecuteDeleteAsync(UserListDto item)
-        {
-            if (item == null) return;
-
-            try
+            var result = await _commandHandler.ResetPasswordAsync(user.Id, null!);
+            if (result.success && result.response != null)
             {
-                var currentUser = SessionManager?.CurrentUser;
-                if (currentUser != null && item.Id == currentUser.Id)
-                {
-                    await ShowWarningMessageAsync("不能删除当前登录用户");
-                    return;
-                }
-
-                if (!await ShowConfirmationAsync($"确认删除用户 [{item.RealName ?? item.UserName}] 吗？", "删除确认")) return;
-
-                var result = await _commandHandler.DeleteAsync(item.Id);
-                if (result.success)
-                {
-                    await ShowSuccessMessageAsync($"用户 [{item.RealName ?? item.UserName}] 已删除");
-                    await RefreshAsync();
-                }
-                else
-                {
-                    ErrorMessage = result.errorMessage ?? "删除用户失败";
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "删除用户时发生异常");
-                await UserNotificationService!.HandleExceptionAsync(ex, "删除用户");
-            }
-        }
-
-        protected override async Task OnExecuteBatchDeleteAsync(List<UserListDto> items)
-        {
-            if (items == null || items.Count == 0) return;
-
-            var currentUser = SessionManager?.CurrentUser;
-            var ids = items
-                .Where(item => currentUser == null || item.Id != currentUser.Id)
-                .Select(item => item.Id)
-                .ToList();
-
-            // 检查是否有不能删除的项目（当前登录用户）
-            var skippedCount = items.Count - ids.Count;
-
-            if (ids.Count == 0)
-            {
-                await ShowWarningMessageAsync("所选用户均为当前登录用户，无法删除");
-                return;
-            }
-
-            // OpenSpec: optimize-batch-operations Phase 2 - 使用单次批量API调用
-            var (success, result, errorMessage) = await _commandHandler.BatchDeleteAsync(ids);
-
-            if (!success || result == null)
-            {
-                await ShowErrorMessageAsync(errorMessage ?? "批量删除失败");
-                return;
-            }
-
-            // 构建结果消息
-            var message = result.Message;
-            if (skippedCount > 0)
-            {
-                message += $"\n（已跳过{skippedCount}个当前登录用户）";
-            }
-
-            if (result.FailureCount > 0 && result.FailedItems.Count > 0)
-            {
-                var failedNames = result.FailedItems.Take(5).Select(f => $"{f.Name ?? f.Id.ToString()}（{f.Reason}）");
-                message += $"\n\n失败的用户：\n{string.Join("、", failedNames)}";
-                if (result.FailedItems.Count > 5) message += $"等{result.FailedItems.Count}个";
-                await ShowWarningMessageAsync(message);
+                await Services.Dialog.ShowSuccessAsync(
+                    $"用户 [{user.RealName ?? user.UserName}] 的密码已重置\n\n新密码：{result.response.TemporaryPassword}",
+                    "重置成功");
             }
             else
             {
-                await ShowSuccessMessageAsync(message);
+                await Services.Dialog.ShowErrorAsync(result.errorMessage ?? "重置密码失败", "操作失败");
             }
-
-            if (result.SuccessCount > 0) await RefreshAsync();
         }
-
-        #endregion
-
-        #region 扩展功能
-
-        private async Task ExecuteResetPasswordAsync(UserListDto user)
+        catch (Exception ex)
         {
-            if (user == null) return;
-            await ExecuteSafelyAsync(async () =>
+            Logger.LogError(ex, "重置密码失败");
+            await Services.Dialog.ShowErrorAsync("重置密码失败", "操作失败");
+        }
+    }
+
+    private bool CanResetPassword() => HasSelection && !IsBusy && SelectedItem?.Status == CommonStatus.Enabled;
+
+    /// <summary>切换用户状态</summary>
+    [RelayCommand(CanExecute = nameof(CanToggleUserStatus))]
+    private async Task ToggleUserStatusAsync()
+    {
+        if (SelectedItem == null) return;
+
+        try
+        {
+            var user = SelectedItem;
+            var action = user.Status == CommonStatus.Enabled ? "禁用" : "启用";
+
+            var result = await _commandHandler.ToggleStatusAsync(user.Id);
+            if (result.success)
             {
-                var confirmed = await ShowConfirmationAsync(
-                    $"确认重置用户 [{user.RealName ?? user.UserName}] 的密码吗？\n\n密码将被重置为系统配置的默认密码",
-                    "重置密码确认");
-                if (!confirmed) return;
-
-                var result = await _commandHandler.ResetPasswordAsync(user.Id, null!);
-                if (result.success && result.response != null)
-                {
-                    await ShowSuccessMessageAsync($"用户 [{user.RealName ?? user.UserName}] 的密码已重置\n\n新密码：{result.response.TemporaryPassword}");
-                }
-                else
-                {
-                    ErrorMessage = result.errorMessage ?? "重置密码失败";
-                }
-            }, "重置密码");
-        }
-
-        private async Task ExecuteToggleUserStatusAsync(UserListDto user)
-        {
-            if (user == null) return;
-            await ExecuteSafelyAsync(async () =>
+                Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
+                await RefreshAsync();
+            }
+            else
             {
-                var action = user.Status == CommonStatus.Enabled ? "禁用" : "启用";
-
-                // OpenSpec: sync-entity-dto-fields - 使用专用ToggleStatus API
-                var result = await _commandHandler.ToggleStatusAsync(user.Id);
-                if (result.success)
-                {
-                    Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
-                    await RefreshAsync();
-                }
-                else
-                {
-                    throw new InvalidOperationException(result.errorMessage ?? "切换用户状态失败");
-                }
-            }, user.Status == CommonStatus.Enabled ? "禁用用户" : "启用用户");
+                await Services.Dialog.ShowErrorAsync(result.errorMessage ?? "切换用户状态失败", "操作失败");
+            }
         }
-
-        private void ExecuteShowAuditLog(UserListDto? user)
+        catch (Exception ex)
         {
-            if (user == null) return;
-            _prismDialogService.ShowDialog("EntityAuditLogDialog", new DialogParameters
+            Logger.LogError(ex, "切换用户状态失败");
+            await Services.Dialog.ShowErrorAsync("切换用户状态失败", "操作失败");
+        }
+    }
+
+    private bool CanToggleUserStatus() => HasSelection && !IsBusy;
+
+    /// <summary>查看审计日志</summary>
+    [RelayCommand(CanExecute = nameof(CanShowAuditLog))]
+    private void ShowAuditLog()
+    {
+        if (SelectedItem == null) return;
+
+        Logger.LogInformation("查看用户审计日志：{UserId}", SelectedItem.Id);
+        _prismDialogService.ShowDialog("EntityAuditLogDialog",
+            new DialogParameters
             {
                 { "EntityType", "user" },
-                { "EntityId", user.Id },
-                { "EntityDescription", $"用户：{user.RealName ?? user.UserName}" }
-            }, _ => { });
-        }
-
-        private async Task RestoreAsync(UserListDto user)
-        {
-            if (user == null) return;
-            try
-            {
-                var confirmed = await ShowConfirmationAsync($"确认恢复用户 [{user.RealName ?? user.UserName}] 吗？", "恢复确认");
-                if (!confirmed) return;
-
-                var result = await _userRepository.RestoreAsync(user.Id);
-                if (result != null)
-                {
-                    await ShowSuccessMessageAsync($"用户 '{user.RealName ?? user.UserName}' 已恢复");
-                    await RefreshAsync();
-                }
-                else
-                {
-                    await ShowErrorMessageAsync("恢复用户失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "恢复用户失败: {UserId}", user.Id);
-                await ShowErrorMessageAsync("恢复用户失败");
-            }
-        }
-
-        #endregion
-
-        #region 导入导出
-
-        private async Task ExecuteImportAsync()
-        {
-            await ExecuteSafelyAsync(async () =>
-            {
-                var filePath = await _commonDialogService.ShowOpenFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "选择用户导入文件");
-                if (string.IsNullOrEmpty(filePath)) return;
-
-                using var fileStream = File.OpenRead(filePath);
-                Logger.LogInformation("开始导入用户文件：{FileName}", Path.GetFileName(filePath));
-
-                var users = await ExcelHelper.ParseAsync<UserInputDto>(fileStream, hasHeader: true);
-                if (users == null || users.Count == 0)
-                {
-                    await _commonDialogService.ShowErrorAsync("文件中没有有效的用户数据", "导入用户");
-                    return;
-                }
-
-                var request = new UserBatchImportInputDto { Users = users, Strategy = DuplicateStrategy.Skip };
-                var result = await _userRepository.BatchImportAsync(request);
-                if (result == null)
-                {
-                    await _commonDialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入用户");
-                    return;
-                }
-
-                var message = $"导入完成！\n\n成功：{result.SuccessCount}条\n失败：{result.FailureCount}条\n跳过：{result.SkippedCount}条\n\n成功率：{result.SuccessRate:F1}%";
-                if (result.FailureCount > 0)
-                {
-                    message += $"\n\n前{Math.Min(3, result.Failures.Count)}条失败记录：\n";
-                    foreach (var failure in result.Failures.Take(3))
-                        message += $"\n第{failure.OriginalRowNumber}行 [{failure.UserName}]：{failure.FailureReason}";
-                }
-                await _commonDialogService.ShowInfoAsync(message, "导入结果");
-                if (result.SuccessCount > 0) await RefreshAsync();
-            }, "导入用户");
-        }
-
-        private async Task ExecuteExportAsync()
-        {
-            await ExecuteSafelyAsync(async () =>
-            {
-                var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "导出用户数据",
-                    defaultFileName: $"用户数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
-                if (string.IsNullOrEmpty(filePath)) return;
-
-                Logger.LogInformation("导出用户数据，关键词：{Keyword}", SearchText);
-                var allUsers = await _userRepository.SearchAsync(SearchText ?? string.Empty);
-                if (allUsers == null || allUsers.Count == 0)
-                {
-                    await _commonDialogService.ShowErrorAsync("没有可导出的数据", "导出用户");
-                    return;
-                }
-
-                await ExcelHelper.ExportAsync(allUsers, filePath, "用户数据");
-                await _commonDialogService.ShowInfoAsync($"成功导出{allUsers.Count}条用户数据到：\n{filePath}", "导出成功");
-            }, "导出用户");
-        }
-
-        private async Task ExecuteDownloadTemplateAsync()
-        {
-            await ExecuteSafelyAsync(async () =>
-            {
-                var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "保存用户导入模板",
-                    defaultFileName: $"用户导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
-                if (string.IsNullOrEmpty(filePath)) return;
-
-                // OpenSpec: sync-entity-dto-fields - Status通过专用API管理，模板不包含Status字段
-                var sampleData = new List<UserInputDto>
-                {
-                    new() { UserName = "doctor001", RealName = "张医生", PhoneNumber = "13800138000", Email = "doctor001@example.com", Role = UserRole.Doctor },
-                    new() { UserName = "admin001", RealName = "李管理员", PhoneNumber = "13800138001", Email = "admin001@example.com", Role = UserRole.Admin }
-                };
-
-                Logger.LogInformation("生成用户导入模板");
-                await ExcelHelper.GenerateTemplateAsync(filePath, "用户导入模板", sampleData);
-                await _commonDialogService.ShowInfoAsync(
-                    $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入用户」功能导入。\n\n注意：\n1. 用户名必须唯一\n2. 角色可选值：Admin(管理员)、Doctor(医生)、Nurse(护士)\n3. 新创建用户默认为启用状态",
-                    "下载成功");
-            }, "下载模板");
-        }
-
-        #endregion
-
-        #region 辅助方法
-
-        // OpenSpec: refactor-masterdetail-editmode - 移除ClearEditProperties()，不再需要Edit属性
-
-        protected override void RefreshCanExecuteChanged()
-        {
-            base.RefreshCanExecuteChanged();
-            ResetPasswordCommand?.RaiseCanExecuteChanged();
-            ToggleUserStatusCommand?.RaiseCanExecuteChanged();
-            ClearFiltersCommand?.RaiseCanExecuteChanged();
-            ShowAuditLogCommand?.RaiseCanExecuteChanged();
-            RestoreCommand?.RaiseCanExecuteChanged();
-        }
-
-        #endregion
+                { "EntityId", SelectedItem.Id },
+                { "EntityDescription", $"用户：{SelectedItem.RealName ?? SelectedItem.UserName}" }
+            },
+            _ => { });
     }
+
+    private bool CanShowAuditLog() => HasSelection;
+
+    /// <summary>恢复软删除</summary>
+    [RelayCommand(CanExecute = nameof(CanRestore))]
+    private async Task RestoreAsync()
+    {
+        if (SelectedItem == null) return;
+
+        try
+        {
+            var user = SelectedItem;
+            var confirmed = await Services.Dialog.ShowConfirmAsync(
+                $"确认恢复用户 [{user.RealName ?? user.UserName}] 吗？", "恢复确认");
+            if (!confirmed) return;
+
+            var result = await _userRepository.RestoreAsync(user.Id);
+            if (result != null)
+            {
+                Logger.LogInformation("用户已恢复: {UserName}", user.UserName);
+                await Services.Dialog.ShowSuccessAsync($"用户 '{user.RealName ?? user.UserName}' 已恢复", "操作成功");
+                await RefreshAsync();
+            }
+            else
+            {
+                await Services.Dialog.ShowErrorAsync("恢复用户失败", "操作失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "恢复用户失败");
+            await Services.Dialog.ShowErrorAsync("恢复用户失败", "操作失败");
+        }
+    }
+
+    private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
+
+    #endregion
+
+    #region 导入导出命令
+
+    /// <summary>导入用户</summary>
+    [RelayCommand]
+    private async Task ImportAsync()
+    {
+        if (_commonDialogService == null) return;
+
+        try
+        {
+            var filePath = await _commonDialogService.ShowOpenFileDialogAsync(
+                filter: "Excel文件|*.xlsx",
+                title: "选择用户导入文件");
+            if (string.IsNullOrEmpty(filePath)) return;
+
+            using var fileStream = File.OpenRead(filePath);
+            var users = await ExcelHelper.ParseAsync<UserInputDto>(fileStream, hasHeader: true);
+            if (users == null || users.Count == 0)
+            {
+                await _commonDialogService.ShowErrorAsync("文件中没有有效的用户数据", "导入用户");
+                return;
+            }
+
+            var request = new UserBatchImportInputDto
+            {
+                Users = users,
+                Strategy = DuplicateStrategy.Skip
+            };
+            var result = await _userRepository.BatchImportAsync(request);
+            if (result == null)
+            {
+                await _commonDialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入用户");
+                return;
+            }
+
+            var message = $"导入完成！\n成功：{result.SuccessCount}条\n失败：{result.FailureCount}条\n跳过：{result.SkippedCount}条\n成功率：{result.SuccessRate:F1}%";
+            if (result.FailureCount > 0)
+            {
+                message += $"\n\n前{Math.Min(3, result.Failures.Count)}条失败记录：";
+                foreach (var f in result.Failures.Take(3))
+                    message += $"\n第{f.OriginalRowNumber}行 [{f.UserName}]：{f.FailureReason}";
+            }
+            await _commonDialogService.ShowInfoAsync(message, "导入结果");
+            if (result.SuccessCount > 0) await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "导入用户失败");
+            await Services.Dialog.ShowErrorAsync("导入用户失败", "操作失败");
+        }
+    }
+
+    /// <summary>导出用户</summary>
+    [RelayCommand]
+    private async Task ExportAsync()
+    {
+        if (_commonDialogService == null) return;
+
+        try
+        {
+            var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
+                filter: "Excel文件|*.xlsx",
+                title: "导出用户数据",
+                defaultFileName: $"用户数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+            if (string.IsNullOrEmpty(filePath)) return;
+
+            var allUsers = await _userRepository.SearchAsync(SearchText ?? string.Empty);
+            if (allUsers == null || allUsers.Count == 0)
+            {
+                await _commonDialogService.ShowErrorAsync("没有可导出的数据", "导出用户");
+                return;
+            }
+
+            await ExcelHelper.ExportAsync(allUsers, filePath, "用户数据");
+            await _commonDialogService.ShowInfoAsync($"成功导出{allUsers.Count}条用户数据到：\n{filePath}", "导出成功");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "导出用户失败");
+            await Services.Dialog.ShowErrorAsync("导出用户失败", "操作失败");
+        }
+    }
+
+    /// <summary>下载模板</summary>
+    [RelayCommand]
+    private async Task DownloadTemplateAsync()
+    {
+        if (_commonDialogService == null) return;
+
+        try
+        {
+            var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
+                filter: "Excel文件|*.xlsx",
+                title: "保存用户导入模板",
+                defaultFileName: $"用户导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
+            if (string.IsNullOrEmpty(filePath)) return;
+
+            var sampleData = new List<UserInputDto>
+            {
+                new() { UserName = "doctor001", RealName = "张医生", PhoneNumber = "13800138000", Email = "doctor001@example.com", Role = UserRole.Doctor },
+                new() { UserName = "admin001", RealName = "李管理员", PhoneNumber = "13800138001", Email = "admin001@example.com", Role = UserRole.Admin }
+            };
+
+            await ExcelHelper.GenerateTemplateAsync(filePath, "用户导入模板", sampleData);
+            await _commonDialogService.ShowInfoAsync(
+                $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入用户」功能导入。\n\n注意：\n1. 用户名必须唯一\n2. 角色可选值：Admin(管理员)、Doctor(医生)、Nurse(护士)\n3. 新创建用户默认为启用状态",
+                "下载成功");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "下载模板失败");
+            await Services.Dialog.ShowErrorAsync("下载模板失败", "操作失败");
+        }
+    }
+
+    #endregion
 }

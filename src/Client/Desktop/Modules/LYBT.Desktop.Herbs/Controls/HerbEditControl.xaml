@@ -39,13 +39,18 @@
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：药材名称、拼音码 -->
+                    <!-- OpenSpec: ui-validation-framework - 添加验证绑定 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="药材名称 *" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding HerbName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                        <TextBlock Style="{StaticResource FormLabelStyle}">
+                            <Run Text="药材名称"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        </TextBlock>
+                        <TextBox Text="{Binding HerbName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 Style="{StaticResource ValidatingTextBoxStyle}"
                                  IsReadOnly="{Binding IsNameEditable, Converter={StaticResource InverseBooleanConverter}}"
                                  MinHeight="44"
                                  Padding="12,10"/>
+                        <TextBlock Text="{Binding ErrorsSource[Name]}"
+                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
@@ -76,19 +81,25 @@
 
                     <!-- 第三行：单位、零售价 -->
                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="单位 *" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                        <TextBlock Style="{StaticResource FormLabelStyle}">
+                            <Run Text="单位"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        </TextBlock>
+                        <TextBox Text="{Binding Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 Style="{StaticResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
+                        <TextBlock Text="{Binding ErrorsSource[Unit]}"
+                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="零售价" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Price, Mode=TwoWay, StringFormat={}{0:0.##}}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                        <TextBox Text="{Binding Price, Mode=TwoWay, StringFormat={}{0:0.##}, ValidatesOnNotifyDataErrors=True}"
+                                 Style="{StaticResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
+                        <TextBlock Text="{Binding ErrorsSource[Price]}"
+                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <!-- 第四行：成本价、状态 -->

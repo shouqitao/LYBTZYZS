@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Admin.Services;
+using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.Infrastructure.Http;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.Auth.Interfaces;
@@ -80,6 +81,9 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterInfrastructureServices(containerRegistry);
             RegisterCommandServices(containerRegistry);
             RegisterApplicationServices(containerRegistry);
+
+            // OpenSpec: refactor-viewmodel-composition - 注册ViewModel组合服务
+            containerRegistry.AddViewModelServices();
         }
 
         /// <summary>注册配置服务</summary>

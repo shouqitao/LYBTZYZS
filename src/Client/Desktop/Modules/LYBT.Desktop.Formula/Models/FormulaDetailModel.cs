@@ -1,17 +1,20 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
-using Prism.Mvvm;
+using LYBT.Shared.Primitives.Validation;
 
 namespace LYBT.Desktop.Formula.Models
 {
     /// <summary>
     /// 验方详情模型 - Master-Detail模式使用
     /// OpenSpec: refactor-master-detail-layout
+    /// OpenSpec: ui-validation-framework - 添加验证支持
     ///
     /// 用于在Detail区域展示和编辑验方信息
     /// </summary>
-    public class FormulaDetailModel : BindableBase
+    public class FormulaDetailModel : ValidatableModelBase
     {
         private Guid _id;
         private string _name = string.Empty;
@@ -38,10 +41,12 @@ namespace LYBT.Desktop.Formula.Models
         public bool IsNew => Id == Guid.Empty;
 
         /// <summary>验方名称</summary>
+        [Required(ErrorMessage = "验方名称不能为空")]
+        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "验方名称长度不能超过100个字符")]
         public string Name
         {
             get => _name;
-            set => SetProperty(ref _name, value);
+            set => SetPropertyAndValidate(ref _name, value);
         }
 
         /// <summary>功效</summary>

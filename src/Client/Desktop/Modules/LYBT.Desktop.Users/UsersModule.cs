@@ -1,5 +1,8 @@
-﻿using LYBT.Desktop.Users.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.Repositories;
+using LYBT.Shared.Models.Contracts.Users;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -50,6 +53,11 @@ namespace LYBT.Desktop.Users
             // - ResetPasswordDialog → 重置密码移至列表操作
             // - UserProfileDialog → UserProfileView
             // - UserFormDialog → UserDetailView（Issue #2168：统一Create/Edit/View模式）
+
+            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
+            // 注册Users模块的MasterDetail服务
+            containerRegistry.AddMasterDetailServices<UserListDto, UserDetailModel>();
+            containerRegistry.RegisterForNavigation<Views.UserMasterDetailView, ViewModels.UserMasterDetailViewModel>();
         }
     }
 }

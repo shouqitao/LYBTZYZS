@@ -1,35 +1,34 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Herbs.Contracts;
+using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.ExceptionHandling.Mappers;
-using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
     /// <summary>
-    /// 验方Master-Detail视图模型
-    /// OpenSpec: refactor-master-detail-layout
-    /// OpenSpec: optimize-entity-data-flow - 使用FormulaListDto优化列表加载
+    /// 验方Master-Detail视图模型（组合模式）
+    /// OpenSpec: refactor-viewmodel-composition
     ///
-    /// 合并FormulaManagementViewModel和FormulaDetailViewModel功能
+    /// 使用IMasterDetailServices实现组合模式
     /// </summary>
-    public class FormulaMasterDetailViewModel : MasterDetailViewModelBase<FormulaListDto, FormulaDetailModel>
+    public partial class FormulaMasterDetailViewModel : MasterDetailViewModelBase<FormulaListDto, FormulaDetailModel>
     {
         private readonly IFormulaRepository _formulaRepository;
-        // OpenSpec: standardize-service-layer - 统一使用Service命名
         private readonly IFormulaService _formulaService;
         private readonly IDialogService _prismDialogService;
         private readonly IHerbService _herbService;
+        private readonly ISessionManager? _sessionManager;
 
         // 编辑模式下的药材列表
         private ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
@@ -37,66 +36,10 @@ namespace LYBT.Desktop.Formula.ViewModels
         // 所有药材列表（用于拼音码快速匹配）
         private readonly ObservableCollection<HerbListDto> _allHerbs = new();
 
-        public FormulaMasterDetailViewModel(
-            IFormulaRepository formulaRepository,
-            IFormulaService formulaService,
-            IDialogService prismDialogService,
-            IHerbService herbService,
-            ICommonDialogService commonDialogService,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
-            IRegionManager regionManager,
-            ISessionManager? sessionManager = null,
-            IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, commonDialogService)
-        {
-            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
-
-            PageTitle = "验方管理";
-
-            // 初始化扩展命令
-            ToggleStatusCommand = new DelegateCommand<FormulaListDto>(async f => await ToggleStatusAsync(f), f => f != null && !IsBusy);
-            RestoreCommand = new DelegateCommand<FormulaListDto>(async f => await RestoreAsync(f), f => f != null && !IsBusy && IsAdmin);
-            CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), () => HasSelection && !IsBusy);
-            ShowAuditLogCommand = new DelegateCommand(ExecuteShowAuditLog, () => HasSelection);
-
-            // 药材操作命令
-            AddHerbCommand = new DelegateCommand(ExecuteAddHerb, () => IsEditMode);
-            DeleteHerbCommand = new DelegateCommand<FormulaHerbItemViewModel>(ExecuteDeleteHerb, h => h != null && IsEditMode);
-
-            // 筛选命令
-            ClearFiltersCommand = new DelegateCommand(
-                async () => await ClearFiltersAsync(),
-                () => !IsBusy && !string.IsNullOrWhiteSpace(SearchText));
-            SearchByCategoryCommand = new DelegateCommand<string>(
-                async (category) => await SearchByCategoryAsync(category),
-                category => !IsBusy && !string.IsNullOrWhiteSpace(category));
-
-            // 监听属性变化
-            PropertyChanged += (s, e) =>
-            {
-                switch (e.PropertyName)
-                {
-                    case nameof(CurrentDetail):
-                        RaisePropertyChanged(nameof(ViewFormulaDto));
-                        break;
-                    case nameof(IsEditMode):
-                        if (IsEditMode)
-                            PopulateEditHerbItems();
-                        else
-                            RaisePropertyChanged(nameof(ViewFormulaDto));
-                        break;
-                }
-            };
-        }
-
-        #region 属性
+        #region 扩展属性
 
         /// <summary>是否为管理员</summary>
-        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
+        public bool IsAdmin => _sessionManager?.HasPermission(UserRole.Admin) == true;
 
         /// <summary>编辑模式下的药材列表</summary>
         public ObservableCollection<FormulaHerbItemViewModel> EditHerbItems
@@ -108,96 +51,133 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>药材数量</summary>
         public int HerbCount => EditHerbItems?.Count(h => h.HerbId != Guid.Empty) ?? 0;
 
-        /// <summary>
-        /// 查看模式下的FormulaDto（供FormulaViewControl使用）
-        /// </summary>
+        /// <summary>查看模式下的FormulaDto</summary>
         public FormulaDetailDto? ViewFormulaDto => CurrentDetail?.ToDto();
 
-        /// <summary>
-        /// 编辑模式下的详情模型（供FormulaEditControl绑定）
-        /// </summary>
+        /// <summary>编辑模式下的详情模型</summary>
         public FormulaDetailModel? EditDetail => CurrentDetail;
 
-        /// <summary>
-        /// 详情标题
-        /// </summary>
-        public string DetailTitle => CurrentDetail == null ? "验方详情" :
-            CurrentDetail.IsNew ? "新建验方" :
-            IsEditMode ? $"编辑验方 - {CurrentDetail.Name}" :
-            $"验方详情 - {CurrentDetail.Name}";
+        /// <summary>详情标题</summary>
+        public string DetailTitle
+        {
+            get
+            {
+                if (CurrentDetail == null) return "验方详情";
+                if (IsNew) return "新建验方";
+                return IsEditMode ? $"编辑验方 - {CurrentDetail.Name}" : $"验方详情 - {CurrentDetail.Name}";
+            }
+        }
 
         #endregion
 
-        #region 扩展命令
+        public FormulaMasterDetailViewModel(
+            IMasterDetailServices<FormulaListDto, FormulaDetailModel> services,
+            IFormulaRepository formulaRepository,
+            IFormulaService formulaService,
+            IDialogService prismDialogService,
+            IHerbService herbService,
+            ILoggerFactory loggerFactory,
+            ISessionManager? sessionManager = null)
+            : base(services, loggerFactory)
+        {
+            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
+            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            _sessionManager = sessionManager;
 
-        public DelegateCommand<FormulaListDto> ToggleStatusCommand { get; }
-        public DelegateCommand<FormulaListDto> RestoreCommand { get; }
-        public DelegateCommand CopyFormulaCommand { get; }
-        public DelegateCommand ShowAuditLogCommand { get; }
-        public DelegateCommand AddHerbCommand { get; }
-        public DelegateCommand<FormulaHerbItemViewModel> DeleteHerbCommand { get; }
+            PageTitle = "验方管理";
 
-        /// <summary>清除筛选命令</summary>
-        public DelegateCommand ClearFiltersCommand { get; }
-
-        /// <summary>按分类搜索命令</summary>
-        public DelegateCommand<string> SearchByCategoryCommand { get; }
-
-        #endregion
+            // 监听属性变化
+            PropertyChanged += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(CurrentDetail):
+                        OnPropertyChanged(nameof(ViewFormulaDto));
+                        OnPropertyChanged(nameof(EditDetail));
+                        break;
+                    case nameof(IsEditMode):
+                        if (IsEditMode)
+                            PopulateEditHerbItems();
+                        else
+                            OnPropertyChanged(nameof(ViewFormulaDto));
+                        OnPropertyChanged(nameof(DetailTitle));
+                        break;
+                }
+            };
+        }
 
         #region 基类抽象方法实现
 
-        protected override async Task<IEnumerable<FormulaListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        /// <summary>加载列表数据</summary>
+        protected override async Task LoadListAsync()
         {
-            // OpenSpec: optimize-entity-data-flow - 使用轻量级ListDto
-            var result = await _formulaRepository.GetPagedAsync(page, pageSize, searchText);
+            Logger.LogInformation("验方搜索: 第{Page}页, 每页{PageSize}条, 关键词: '{SearchText}'",
+                CurrentPage, PageSize, SearchText);
 
-            TotalCount = result.TotalCount;
-            CurrentPage = result.CurrentPage;
-            PageSize = result.PageSize;
+            try
+            {
+                await Services.Loading.ExecuteWithLoadingAsync(async () =>
+                {
+                    var pagedData = await _formulaRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                    Services.Pagination.TotalCount = pagedData.TotalCount;
 
-            return result.Items ?? Enumerable.Empty<FormulaListDto>();
+                    Items.Clear();
+                    foreach (var item in pagedData.Items ?? Enumerable.Empty<FormulaListDto>())
+                    {
+                        Items.Add(item);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "获取验方列表时发生异常");
+                Services.ErrorHandler.HandleException(ex, "获取验方列表");
+            }
         }
 
-        protected override async Task<FormulaDetailModel?> LoadDetailAsync(FormulaListDto item)
+        /// <summary>加载详情数据</summary>
+        protected override async Task LoadDetailAsync(FormulaListDto item)
         {
             try
             {
-                // OpenSpec: optimize-entity-data-flow - 从ListDto加载完整详情
                 var dto = await _formulaRepository.GetByIdAsync(item.Id);
                 if (dto == null)
                 {
-                    await ShowErrorMessageAsync($"验方 '{item.Name}' 不存在或已被删除");
-                    return null;
+                    await Services.Dialog.ShowErrorAsync($"验方 '{item.Name}' 不存在或已被删除", "加载失败");
+                    return;
                 }
 
-                return FormulaDetailModel.FromDto(dto);
+                var detail = FormulaDetailModel.FromDto(dto);
+                Services.DetailEditor.LoadDetail(detail);
+                OnPropertyChanged(nameof(DetailTitle));
+                OnPropertyChanged(nameof(ViewFormulaDto));
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载验方详情失败: {FormulaId}", item.Id);
-                await ShowErrorMessageAsync("加载验方详情失败");
-                return null;
+                Services.ErrorHandler.HandleException(ex, "加载验方详情");
             }
         }
 
+        /// <summary>创建新详情实例</summary>
         protected override FormulaDetailModel CreateNewDetail()
         {
-            return FormulaDetailModel.CreateNew();
+            var detail = FormulaDetailModel.CreateNew();
+            OnPropertyChanged(nameof(DetailTitle));
+            return detail;
         }
 
-        protected override FormulaDetailModel CloneDetail(FormulaDetailModel detail)
-        {
-            return detail.Clone();
-        }
-
-        protected override object? GetDetailId(FormulaDetailModel detail)
-        {
-            return detail.Id;
-        }
-
+        /// <summary>保存详情</summary>
         protected override async Task<bool> SaveDetailAsync(FormulaDetailModel detail)
         {
+            if (string.IsNullOrWhiteSpace(detail.Name))
+            {
+                await Services.Dialog.ShowErrorAsync("验方名称不能为空", "验证失败");
+                return false;
+            }
+
             try
             {
                 // 从编辑控件收集药材数据
@@ -215,7 +195,6 @@ namespace LYBT.Desktop.Formula.ViewModels
                     });
                 }
 
-                // OpenSpec: refactor-dto-simplification - Status字段已从FormulaInputDto移除
                 var dto = detail.ToDto();
                 var inputDto = new FormulaInputDto
                 {
@@ -238,7 +217,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                     }).ToList()
                 };
 
-                if (detail.IsNew)
+                if (IsNew)
                 {
                     var result = await _formulaRepository.CreateAsync(inputDto);
                     detail.Id = result.Id;
@@ -252,98 +231,41 @@ namespace LYBT.Desktop.Formula.ViewModels
                     Logger.LogInformation("验方更新成功: {FormulaId} - {FormulaName}", detail.Id, detail.Name);
                 }
 
-                await ShowSuccessMessageAsync($"验方 '{detail.Name}' 保存成功");
+                OnPropertyChanged(nameof(DetailTitle));
                 return true;
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存验方失败: {FormulaName}", detail.Name);
-                // 设置ErrorMessage由基类显示，避免双重消息
-                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
-                    detail.IsNew ? "创建验方" : "更新验方", ex);
+                var errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
+                    IsNew ? "创建验方" : "更新验方", ex);
+                Services.ErrorHandler.SetError("Save", errorMessage);
                 return false;
             }
         }
 
-        protected override async Task<bool> DeleteDetailAsync(FormulaDetailModel detail)
+        /// <summary>删除项</summary>
+        protected override async Task<bool> DeleteItemAsync(FormulaListDto item)
         {
-            try
+            var success = await _formulaService.DeleteAsync(item.Id);
+            if (!success)
             {
-                var confirmed = await ShowConfirmationAsync($"确定要删除验方 '{detail.Name}' 吗？", "删除确认");
-                if (!confirmed) return false;
-
-                var success = await _formulaService.DeleteAsync(detail.Id);
-                if (success)
-                {
-                    Logger.LogInformation("验方删除成功: {FormulaId} - {FormulaName}", detail.Id, detail.Name);
-                    await ShowSuccessMessageAsync($"验方 '{detail.Name}' 删除成功");
-                    return true;
-                }
-
-                await ShowErrorMessageAsync($"删除验方 '{detail.Name}' 失败");
-                return false;
+                Services.ErrorHandler.SetError("Delete", $"删除验方 '{item.Name}' 失败");
             }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "删除验方失败: {FormulaId}", detail.Id);
-                await ShowErrorMessageAsync("删除验方时发生系统错误");
-                return false;
-            }
-        }
-
-        protected override async Task OnExecuteBatchDeleteAsync(List<FormulaListDto> items)
-        {
-            if (items == null || items.Count == 0) return;
-
-            var successCount = 0;
-            var failureCount = 0;
-            var failedItems = new List<string>();
-
-            foreach (var item in items)
-            {
-                try
-                {
-                    if (await _formulaService.DeleteAsync(item.Id))
-                        successCount++;
-                    else
-                    {
-                        failureCount++;
-                        failedItems.Add(item.Name);
-                    }
-                }
-                catch
-                {
-                    failureCount++;
-                    failedItems.Add(item.Name);
-                }
-            }
-
-            var message = $"批量删除完成！\n\n成功：{successCount}个\n失败：{failureCount}个";
-            if (failureCount > 0 && failedItems.Count > 0)
-            {
-                message += $"\n\n失败的验方：\n{string.Join("、", failedItems.Take(5))}";
-                if (failedItems.Count > 5) message += $"等{failedItems.Count}个";
-            }
-
-            if (failureCount > 0)
-                await ShowWarningMessageAsync(message);
             else
-                await ShowSuccessMessageAsync(message);
-
-            if (successCount > 0)
-                await LoadPageAsync();
+            {
+                Logger.LogInformation("验方删除成功: {FormulaId} - {FormulaName}", item.Id, item.Name);
+            }
+            return success;
         }
 
         #endregion
 
         #region 编辑模式辅助
 
-        /// <summary>
-        /// 填充编辑药材列表（进入编辑模式时调用）
-        /// </summary>
+        /// <summary>填充编辑药材列表</summary>
         private void PopulateEditHerbItems()
         {
-            // 从当前详情填充编辑药材列表
             EditHerbItems.Clear();
             if (CurrentDetail != null)
             {
@@ -357,148 +279,165 @@ namespace LYBT.Desktop.Formula.ViewModels
                         Unit = herb.Unit ?? string.Empty,
                         Remark = herb.ProcessingMethod,
                         DecocteMethod = herb.DecocteMethod,
-                        AllHerbs = _allHerbs  // 注入药材列表用于快速匹配
+                        AllHerbs = _allHerbs
                     });
                 }
             }
 
-            // 确保至少有一个空行用于输入
+            // 确保至少有一个空行
             if (EditHerbItems.Count == 0)
             {
                 EditHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty, AllHerbs = _allHerbs });
             }
 
-            RaisePropertyChanged(nameof(HerbCount));
+            OnPropertyChanged(nameof(HerbCount));
         }
 
         #endregion
 
-        #region 扩展命令实现
+        #region 扩展命令
 
-        private async Task ToggleStatusAsync(FormulaListDto? formula)
+        /// <summary>切换验方状态</summary>
+        [RelayCommand(CanExecute = nameof(CanToggleStatus))]
+        private async Task ToggleStatusAsync()
         {
-            if (formula == null) return;
+            if (SelectedItem == null) return;
 
             try
             {
+                var formula = SelectedItem;
                 var newStatus = formula.Status == CommonStatus.Enabled ? "禁用" : "启用";
-                var confirmed = await ShowConfirmationAsync($"确认{newStatus}验方 [{formula.Name}] 吗？", "状态切换确认");
+                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认{newStatus}验方 [{formula.Name}] 吗？", "状态切换确认");
                 if (!confirmed) return;
 
                 var result = await _formulaRepository.ToggleStatusAsync(formula.Id);
                 if (result != null)
                 {
                     Logger.LogInformation("验方状态已切换: {FormulaName} -> {NewStatus}", formula.Name, result.Status);
-                    await ShowSuccessMessageAsync($"验方 '{formula.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
-                    await LoadPageAsync();
+                    await Services.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}", "操作成功");
+                    await RefreshAsync();
                 }
                 else
                 {
-                    await ShowErrorMessageAsync("切换验方状态失败");
+                    await Services.Dialog.ShowErrorAsync("切换验方状态失败", "操作失败");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "切换验方状态失败: {FormulaId}", formula.Id);
-                await ShowErrorMessageAsync("切换验方状态失败");
+                Logger.LogError(ex, "切换验方状态失败");
+                await Services.Dialog.ShowErrorAsync("切换验方状态失败", "操作失败");
             }
         }
 
-        private async Task RestoreAsync(FormulaListDto? formula)
-        {
-            if (formula == null) return;
+        private bool CanToggleStatus() => HasSelection && !IsBusy;
 
-            try
-            {
-                var confirmed = await ShowConfirmationAsync($"确认恢复验方 [{formula.Name}] 吗？", "恢复确认");
-                if (!confirmed) return;
-
-                var result = await _formulaRepository.RestoreAsync(formula.Id);
-                if (result != null)
-                {
-                    Logger.LogInformation("验方已恢复: {FormulaName}", formula.Name);
-                    await ShowSuccessMessageAsync($"验方 '{formula.Name}' 已恢复");
-                    await LoadPageAsync();
-                }
-                else
-                {
-                    await ShowErrorMessageAsync("恢复验方失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "恢复验方失败: {FormulaId}", formula.Id);
-                await ShowErrorMessageAsync("恢复验方失败");
-            }
-        }
-
+        /// <summary>复制验方</summary>
+        [RelayCommand(CanExecute = nameof(CanCopyFormula))]
         private async Task CopyFormulaAsync()
         {
             if (SelectedItem == null) return;
 
             try
             {
-                var confirmed = await ShowConfirmationAsync($"确认复制验方 [{SelectedItem.Name}] 吗？", "复制确认");
+                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认复制验方 [{SelectedItem.Name}] 吗？", "复制确认");
                 if (!confirmed) return;
 
                 var result = await _formulaRepository.CloneFormulaAsync(SelectedItem.Id);
                 if (result != null)
                 {
                     Logger.LogInformation("验方复制成功: {SourceName} -> {NewName}", SelectedItem.Name, result.Name);
-                    await ShowSuccessMessageAsync($"验方已复制为 '{result.Name}'");
-                    await LoadPageAsync();
+                    await Services.Dialog.ShowSuccessAsync($"验方已复制为 '{result.Name}'", "操作成功");
+                    await RefreshAsync();
                 }
                 else
                 {
-                    await ShowErrorMessageAsync("复制验方失败");
+                    await Services.Dialog.ShowErrorAsync("复制验方失败", "操作失败");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "复制验方失败: {FormulaId}", SelectedItem?.Id);
-                await ShowErrorMessageAsync("复制验方失败");
+                Logger.LogError(ex, "复制验方失败");
+                await Services.Dialog.ShowErrorAsync("复制验方失败", "操作失败");
             }
         }
 
-        private void ExecuteShowAuditLog()
+        private bool CanCopyFormula() => HasSelection && !IsBusy;
+
+        /// <summary>恢复软删除</summary>
+        [RelayCommand(CanExecute = nameof(CanRestore))]
+        private async Task RestoreAsync()
         {
             if (SelectedItem == null) return;
 
-            _prismDialogService.ShowDialog("EntityAuditLogDialog", new DialogParameters
+            try
             {
-                { "EntityType", "formula" },
-                { "EntityId", SelectedItem.Id },
-                { "EntityDescription", $"验方：{SelectedItem.Name}" }
-            }, _ => { });
+                var formula = SelectedItem;
+                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认恢复验方 [{formula.Name}] 吗？", "恢复确认");
+                if (!confirmed) return;
+
+                var result = await _formulaRepository.RestoreAsync(formula.Id);
+                if (result != null)
+                {
+                    Logger.LogInformation("验方已恢复: {FormulaName}", formula.Name);
+                    await Services.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已恢复", "操作成功");
+                    await RefreshAsync();
+                }
+                else
+                {
+                    await Services.Dialog.ShowErrorAsync("恢复验方失败", "操作失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "恢复验方失败");
+                await Services.Dialog.ShowErrorAsync("恢复验方失败", "操作失败");
+            }
         }
 
-        private void ExecuteAddHerb()
+        private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
+
+        /// <summary>查看审计日志</summary>
+        [RelayCommand(CanExecute = nameof(CanShowAuditLog))]
+        private void ShowAuditLog()
+        {
+            if (SelectedItem == null) return;
+
+            Logger.LogInformation("查看验方审计日志：{FormulaId}", SelectedItem.Id);
+            _prismDialogService.ShowDialog("EntityAuditLogDialog",
+                new DialogParameters
+                {
+                    { "EntityType", "formula" },
+                    { "EntityId", SelectedItem.Id },
+                    { "EntityDescription", $"验方：{SelectedItem.Name}" }
+                },
+                _ => { });
+        }
+
+        private bool CanShowAuditLog() => HasSelection;
+
+        /// <summary>添加药材行</summary>
+        [RelayCommand(CanExecute = nameof(CanAddHerb))]
+        private void AddHerb()
         {
             EditHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty, AllHerbs = _allHerbs });
-            RaisePropertyChanged(nameof(HerbCount));
+            OnPropertyChanged(nameof(HerbCount));
         }
 
-        private void ExecuteDeleteHerb(FormulaHerbItemViewModel? herb)
+        private bool CanAddHerb() => IsEditMode;
+
+        /// <summary>删除药材行</summary>
+        [RelayCommand(CanExecute = nameof(CanDeleteHerb))]
+        private void DeleteHerb(FormulaHerbItemViewModel? herb)
         {
             if (herb == null) return;
-
             EditHerbItems.Remove(herb);
-            RaisePropertyChanged(nameof(HerbCount));
+            OnPropertyChanged(nameof(HerbCount));
         }
 
-        /// <summary>
-        /// 清除筛选条件
-        /// </summary>
-        private async Task ClearFiltersAsync()
-        {
-            Logger.LogInformation("清除验方筛选条件");
-            SearchText = string.Empty;
-            await RefreshAsync();
-        }
+        private bool CanDeleteHerb(FormulaHerbItemViewModel? herb) => herb != null && IsEditMode;
 
-        /// <summary>
-        /// 按分类搜索验方
-        /// </summary>
+        /// <summary>按分类搜索</summary>
+        [RelayCommand]
         private async Task SearchByCategoryAsync(string? category)
         {
             if (string.IsNullOrWhiteSpace(category)) return;
@@ -510,37 +449,15 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #endregion
 
-        #region 命令状态刷新
+        #region 导航
 
-        protected override void RefreshCanExecuteChanged()
-        {
-            base.RefreshCanExecuteChanged();
-            ToggleStatusCommand?.RaiseCanExecuteChanged();
-            RestoreCommand?.RaiseCanExecuteChanged();
-            CopyFormulaCommand?.RaiseCanExecuteChanged();
-            ShowAuditLogCommand?.RaiseCanExecuteChanged();
-            AddHerbCommand?.RaiseCanExecuteChanged();
-            DeleteHerbCommand?.RaiseCanExecuteChanged();
-            ClearFiltersCommand?.RaiseCanExecuteChanged();
-            SearchByCategoryCommand?.RaiseCanExecuteChanged();
-        }
-
-        #endregion
-
-        #region 药材列表加载
-
-        /// <summary>
-        /// 导航到页面时加载药材列表
-        /// </summary>
         public override async void OnNavigatedTo(NavigationContext navigationContext)
         {
             base.OnNavigatedTo(navigationContext);
             await LoadAllHerbsAsync();
         }
 
-        /// <summary>
-        /// 加载所有药材列表（用于拼音码快速匹配）
-        /// </summary>
+        /// <summary>加载所有药材列表</summary>
         private async Task LoadAllHerbsAsync()
         {
             try

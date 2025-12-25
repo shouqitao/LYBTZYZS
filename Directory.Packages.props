@@ -66,6 +66,8 @@
     <PackageVersion Include="Prism.Core" Version="8.1.97" />
     <PackageVersion Include="Prism.DryIoc" Version="8.1.97" />
     <PackageVersion Include="Prism.Wpf" Version="8.1.97" />
+    <!-- OpenSpec: refactor-viewmodel-composition - MVVM Toolkit源生成器 -->
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <!-- HTTP 客户端 -->
     <PackageVersion Include="Refit" Version="8.0.0" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />

@@ -1,20 +1,23 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using Prism.Mvvm;
+using LYBT.Shared.Primitives.Validation;
 
 namespace LYBT.Desktop.Modules.MedicalCase.Models;
 
 /// <summary>
 /// 医案详情模型 - Master-Detail模式使用
 /// OpenSpec: refactor-medicalcase-management
+/// OpenSpec: ui-validation-framework - 添加验证支持
 ///
 /// 可编辑字段：诊断信息（现病史、舌诊、脉诊、中医诊断）、备注
 /// 只读字段：患者信息、处方信息、系统信息
 /// </summary>
-public class MedicalCaseDetailModel : BindableBase
+public class MedicalCaseDetailModel : ValidatableModelBase
 {
     private Guid _id;
     private Guid _patientId;

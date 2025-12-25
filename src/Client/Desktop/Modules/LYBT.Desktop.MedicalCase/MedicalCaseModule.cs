@@ -1,8 +1,11 @@
 ﻿// OpenSpec: standardize-module-structure - Components已合并到Services
+using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.MedicalCase.Dialogs; // Issue #2246: 弹窗组件
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Desktop.MedicalCase.Services; // Issue #1790: 引入Manager服务
+using LYBT.Desktop.Modules.MedicalCase.Models;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -123,6 +126,11 @@ namespace LYBT.Desktop.MedicalCase
 
             // OpenSpec: refactor-medicalcase-management - Master-Detail视图（新的主入口）
             containerRegistry.RegisterForNavigation<Views.MedicalCaseMasterDetailView>();
+
+            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
+            // 注册MedicalCase模块的MasterDetail服务
+            containerRegistry.AddMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel>();
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseMasterDetailView, ViewModels.MedicalCaseMasterDetailViewModel>();
         }
     }
 }

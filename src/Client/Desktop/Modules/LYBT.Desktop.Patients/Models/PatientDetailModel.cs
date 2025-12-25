@@ -1,16 +1,18 @@
+using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Primitives.Validation;
 using LYBT.Shared.Utilities.Text;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.Patients.Models
 {
     /// <summary>
     /// 患者详情模型 - Master-Detail模式使用
-    /// OpenSpec: refactor-master-detail-layout
+    /// OpenSpec: refactor-master-detail-layout, ui-validation-framework
     ///
     /// 用于在Detail区域展示和编辑患者信息
     /// </summary>
-    public class PatientDetailModel : BindableBase
+    public class PatientDetailModel : ValidatableModelBase
     {
         private Guid _id;
         private string _name = string.Empty;
@@ -44,12 +46,14 @@ namespace LYBT.Desktop.Patients.Models
         public bool IsNew => Id == Guid.Empty;
 
         /// <summary>患者姓名</summary>
+        [Required(ErrorMessage = "患者姓名不能为空")]
+        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "患者姓名长度不能超过100个字符")]
         public string Name
         {
             get => _name;
             set
             {
-                if (SetProperty(ref _name, value))
+                if (SetPropertyAndValidate(ref _name, value))
                 {
                     // 自动生成拼音码
                     PinYinCode = PinYinHelper.GetPinYinCode(value);
@@ -98,10 +102,11 @@ namespace LYBT.Desktop.Patients.Models
         }
 
         /// <summary>身份证号</summary>
+        [StringLength(ValidationConstants.IdCardMaxLength, ErrorMessage = "身份证号长度不能超过18个字符")]
         public string? IdNumber
         {
             get => _idNumber;
-            set => SetProperty(ref _idNumber, value);
+            set => SetPropertyAndValidate(ref _idNumber, value);
         }
 
         /// <summary>婚姻状况</summary>
@@ -119,17 +124,20 @@ namespace LYBT.Desktop.Patients.Models
         }
 
         /// <summary>手机号</summary>
+        [Phone(ErrorMessage = "手机号格式不正确")]
+        [StringLength(ValidationConstants.PhoneMaxLength, ErrorMessage = "手机号长度不能超过20个字符")]
         public string? PhoneNumber
         {
             get => _phoneNumber;
-            set => SetProperty(ref _phoneNumber, value);
+            set => SetPropertyAndValidate(ref _phoneNumber, value);
         }
 
         /// <summary>地址</summary>
+        [StringLength(ValidationConstants.AddressMaxLength, ErrorMessage = "地址长度不能超过200个字符")]
         public string? Address
         {
             get => _address;
-            set => SetProperty(ref _address, value);
+            set => SetPropertyAndValidate(ref _address, value);
         }
 
         /// <summary>紧急联系人姓名</summary>
@@ -154,17 +162,19 @@ namespace LYBT.Desktop.Patients.Models
         }
 
         /// <summary>过敏史</summary>
+        [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "过敏史长度不能超过1000个字符")]
         public string? AllergyHistory
         {
             get => _allergyHistory;
-            set => SetProperty(ref _allergyHistory, value);
+            set => SetPropertyAndValidate(ref _allergyHistory, value);
         }
 
         /// <summary>病史</summary>
+        [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "病史长度不能超过1000个字符")]
         public string? MedicalHistory
         {
             get => _medicalHistory;
-            set => SetProperty(ref _medicalHistory, value);
+            set => SetPropertyAndValidate(ref _medicalHistory, value);
         }
 
         /// <summary>状态</summary>

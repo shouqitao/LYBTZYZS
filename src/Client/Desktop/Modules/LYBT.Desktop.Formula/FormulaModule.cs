@@ -1,5 +1,8 @@
 ﻿using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Formula.Repositories;
+using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -43,6 +46,11 @@ namespace LYBT.Desktop.Formula
 
             // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
             // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
+            containerRegistry.RegisterForNavigation<Views.FormulaMasterDetailView, ViewModels.FormulaMasterDetailViewModel>();
+
+            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
+            // 注册Formula模块的MasterDetail服务
+            containerRegistry.AddMasterDetailServices<FormulaListDto, FormulaDetailModel>();
             containerRegistry.RegisterForNavigation<Views.FormulaMasterDetailView, ViewModels.FormulaMasterDetailViewModel>();
         }
     }

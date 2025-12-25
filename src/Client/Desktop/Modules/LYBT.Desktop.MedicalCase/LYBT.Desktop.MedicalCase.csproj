@@ -80,6 +80,7 @@
 
   <ItemGroup Label="Shared Libraries">
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Primitives\LYBT.Shared.Primitives.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Module Dependencies - Epic #2175">

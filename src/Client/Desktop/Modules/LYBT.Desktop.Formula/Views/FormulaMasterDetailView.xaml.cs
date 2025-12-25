@@ -3,10 +3,10 @@ using System.Windows.Controls;
 namespace LYBT.Desktop.Formula.Views
 {
     /// <summary>
-    /// 验方Master-Detail视图
-    /// OpenSpec: refactor-master-detail-layout
+    /// 验方Master-Detail视图V2（组合模式）
+    /// OpenSpec: refactor-viewmodel-composition
     ///
-    /// 合并FormulaManagementView和FormulaDetailView为单一视图
+    /// 迁移完成后将移除V2后缀，替换原FormulaMasterDetailView
     /// </summary>
     public partial class FormulaMasterDetailView : UserControl
     {

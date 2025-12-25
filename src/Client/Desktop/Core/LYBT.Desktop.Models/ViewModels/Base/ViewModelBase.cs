@@ -55,21 +55,8 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// <summary>用于XAML绑定的属性错误状态访问器</summary>
         public ValidationHasErrorsAccessor HasErrorsDictionary { get; }
 
-        /// <summary>验证错误访问器 - 支持XAML索引器绑定</summary>
-        public class ValidationErrorsAccessor
-        {
-            private readonly Dictionary<string, List<string>> _errors;
-            public ValidationErrorsAccessor(Dictionary<string, List<string>> errors) => _errors = errors;
-            public string this[string propertyName] => _errors.TryGetValue(propertyName, out var errors) && errors.Count > 0 ? errors[0] : string.Empty;
-        }
-
-        /// <summary>验证错误状态访问器 - 支持XAML索引器绑定</summary>
-        public class ValidationHasErrorsAccessor
-        {
-            private readonly Dictionary<string, List<string>> _errors;
-            public ValidationHasErrorsAccessor(Dictionary<string, List<string>> errors) => _errors = errors;
-            public bool this[string propertyName] => _errors.ContainsKey(propertyName) && _errors[propertyName].Count > 0;
-        }
+        // ValidationErrorsAccessor 和 ValidationHasErrorsAccessor 已提取到 ValidationAccessors.cs
+        // OpenSpec: ui-validation-framework
 
         protected ViewModelBase(IEventAggregator eventAggregator, ILoggerFactory loggerFactory)
         {

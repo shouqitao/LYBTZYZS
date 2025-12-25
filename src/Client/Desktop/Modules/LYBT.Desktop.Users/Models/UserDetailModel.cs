@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Primitives.Validation;
 using LYBT.Shared.Utilities.Text;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.Users.Models
 {
@@ -10,7 +12,7 @@ namespace LYBT.Desktop.Users.Models
     ///
     /// 用于在Detail区域展示和编辑用户信息
     /// </summary>
-    public class UserDetailModel : BindableBase
+    public class UserDetailModel : ValidatableModelBase
     {
         private Guid _id;
         private string _userName = string.Empty;
@@ -36,19 +38,25 @@ namespace LYBT.Desktop.Users.Models
         public bool IsNew => Id == Guid.Empty;
 
         /// <summary>用户名</summary>
+        [Required(ErrorMessage = "用户名不能为空")]
+        [StringLength(ValidationConstants.UserNameMaxLength, MinimumLength = 3,
+            ErrorMessage = "用户名长度必须在3-50个字符之间")]
         public string UserName
         {
             get => _userName;
-            set => SetProperty(ref _userName, value);
+            set => SetPropertyAndValidate(ref _userName, value);
         }
 
         /// <summary>真实姓名</summary>
+        [Required(ErrorMessage = "真实姓名不能为空")]
+        [StringLength(ValidationConstants.NameMaxLength,
+            ErrorMessage = "真实姓名长度不能超过100个字符")]
         public string RealName
         {
             get => _realName;
             set
             {
-                if (SetProperty(ref _realName, value))
+                if (SetPropertyAndValidate(ref _realName, value))
                 {
                     // 自动生成拼音码
                     PinYinCode = PinYinHelper.GetPinYinCode(value);
@@ -64,17 +72,21 @@ namespace LYBT.Desktop.Users.Models
         }
 
         /// <summary>手机号</summary>
+        [Phone(ErrorMessage = "手机号格式不正确")]
+        [StringLength(ValidationConstants.PhoneMaxLength,
+            ErrorMessage = "手机号长度不能超过20个字符")]
         public string? PhoneNumber
         {
             get => _phoneNumber;
-            set => SetProperty(ref _phoneNumber, value);
+            set => SetPropertyAndValidate(ref _phoneNumber, value);
         }
 
         /// <summary>邮箱</summary>
+        [EmailAddress(ErrorMessage = "邮箱格式不正确")]
         public string? Email
         {
             get => _email;
-            set => SetProperty(ref _email, value);
+            set => SetPropertyAndValidate(ref _email, value);
         }
 
         /// <summary>角色</summary>
@@ -113,10 +125,12 @@ namespace LYBT.Desktop.Users.Models
         }
 
         /// <summary>备注</summary>
+        [StringLength(ValidationConstants.RemarkMaxLength,
+            ErrorMessage = "备注长度不能超过1000个字符")]
         public string? Remark
         {
             get => _remark;
-            set => SetProperty(ref _remark, value);
+            set => SetPropertyAndValidate(ref _remark, value);
         }
 
         /// <summary>创建空模型</summary>

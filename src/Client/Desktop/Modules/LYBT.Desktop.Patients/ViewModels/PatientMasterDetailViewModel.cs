@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.IO;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.ViewModels.Components;
@@ -13,169 +13,165 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
     /// <summary>
-    /// 患者Master-Detail视图模型
-    /// OpenSpec: refactor-master-detail-layout
-    /// OpenSpec: optimize-entity-data-flow - 使用PatientListDto优化列表加载
+    /// 患者Master-Detail视图模型（组合模式）
+    /// OpenSpec: refactor-viewmodel-composition
     ///
-    /// 合并PatientManagementViewModel和PatientDetailViewModel功能
+    /// 使用IMasterDetailServices实现组合模式
     /// </summary>
-    public class PatientMasterDetailViewModel : MasterDetailViewModelBase<PatientListDto, PatientDetailModel>
+    public partial class PatientMasterDetailViewModel : MasterDetailViewModelBase<PatientListDto, PatientDetailModel>
     {
         private readonly PatientService _commandHandler;
         private readonly IPatientRepository _patientRepository;
         private readonly IDialogService _prismDialogService;
+        private readonly ICommonDialogService? _commonDialogService;
+        private readonly ISessionManager? _sessionManager;
 
-        #region 选项列表
-
-        /// <summary>性别选项</summary>
-        public ObservableCollection<Gender> GenderOptions { get; }
-
-        /// <summary>状态选项</summary>
-        public ObservableCollection<CommonStatus> StatusOptions { get; }
-
-        #endregion
-
-        #region 扩展命令
+        #region 扩展属性
 
         /// <summary>是否为管理员</summary>
-        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
+        public bool IsAdmin => _sessionManager?.HasPermission(UserRole.Admin) == true;
 
-        /// <summary>审计日志命令</summary>
-        public DelegateCommand<PatientListDto> ShowAuditLogCommand { get; private set; } = null!;
+        /// <summary>性别选项</summary>
+        public ObservableCollection<Gender> GenderOptions { get; } = new(Enum.GetValues<Gender>());
 
-        /// <summary>恢复软删除数据命令</summary>
-        public DelegateCommand<PatientListDto> RestoreCommand { get; private set; } = null!;
-
-        /// <summary>导入命令</summary>
-        public DelegateCommand ImportCommand { get; private set; } = null!;
-
-        /// <summary>导出命令</summary>
-        public DelegateCommand ExportCommand { get; private set; } = null!;
-
-        /// <summary>下载模板命令</summary>
-        public DelegateCommand DownloadTemplateCommand { get; private set; } = null!;
-
-        #endregion
-
-        #region 显示属性
+        /// <summary>状态选项</summary>
+        public ObservableCollection<CommonStatus> StatusOptions { get; } = new(Enum.GetValues<CommonStatus>());
 
         /// <summary>详情标题</summary>
-        public string DetailTitle => CurrentDetail == null ? string.Empty :
-            CurrentDetail.IsNew ? "新增患者" :
-            IsEditMode ? $"编辑患者 - {CurrentDetail.Name}" :
-            $"患者详情 - {CurrentDetail.Name}";
+        public string DetailTitle
+        {
+            get
+            {
+                if (CurrentDetail == null) return "患者详情";
+                if (IsNew) return "新增患者";
+                return IsEditMode ? $"编辑患者 - {CurrentDetail.Name}" : $"患者详情 - {CurrentDetail.Name}";
+            }
+        }
 
         #endregion
 
-        #region 构造函数
-
         public PatientMasterDetailViewModel(
+            IMasterDetailServices<PatientListDto, PatientDetailModel> services,
             PatientService commandHandler,
             IPatientRepository patientRepository,
             IDialogService prismDialogService,
-            IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
-            IRegionManager regionManager,
             ISessionManager? sessionManager = null,
-            IUserNotificationService? userNotificationService = null,
             ICommonDialogService? commonDialogService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, commonDialogService)
+            : base(services, loggerFactory)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
+            _sessionManager = sessionManager;
+            _commonDialogService = commonDialogService;
 
             PageTitle = "患者管理";
-            PageSize = SystemConstants.DefaultPageSize;
 
-            GenderOptions = new ObservableCollection<Gender>(Enum.GetValues<Gender>());
-            StatusOptions = new ObservableCollection<CommonStatus>(Enum.GetValues<CommonStatus>());
-
-            // 初始化扩展命令
-            ShowAuditLogCommand = new DelegateCommand<PatientListDto>(ExecuteShowAuditLog, p => p != null);
-            RestoreCommand = new DelegateCommand<PatientListDto>(async p => await RestoreAsync(p), p => p != null && !IsBusy && IsAdmin);
-            ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
-            ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
-            DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
-
-            // 订阅事件 - OpenSpec: unify-event-system
-            EventAggregator.GetEvent<PatientEvents.CreatedEvent>().Subscribe(async _ => await RefreshAsync());
-            EventAggregator.GetEvent<PatientEvents.UpdatedEvent>().Subscribe(async _ => await RefreshAsync());
+            // 监听属性变化
+            PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName is nameof(CurrentDetail) or nameof(IsEditMode))
+                {
+                    OnPropertyChanged(nameof(DetailTitle));
+                }
+            };
         }
 
-        #endregion
+        #region 基类抽象方法实现
 
-        #region 列表数据加载
-
-        protected override async Task<IEnumerable<PatientListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        /// <summary>加载列表数据</summary>
+        protected override async Task LoadListAsync()
         {
-            // OpenSpec: optimize-entity-data-flow - 使用轻量级ListDto
+            Logger.LogInformation("患者搜索: 第{Page}页, 每页{PageSize}条, 关键词: '{SearchText}'",
+                CurrentPage, PageSize, SearchText);
+
             try
             {
-                var result = await _patientRepository.GetPagedAsync(page, pageSize, searchText);
-                TotalCount = result.TotalCount;
-                return result.Items ?? Enumerable.Empty<PatientListDto>();
+                await Services.Loading.ExecuteWithLoadingAsync(async () =>
+                {
+                    var pagedData = await _patientRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                    Services.Pagination.TotalCount = pagedData.TotalCount;
+
+                    Items.Clear();
+                    foreach (var item in pagedData.Items ?? Enumerable.Empty<PatientListDto>())
+                    {
+                        Items.Add(item);
+                    }
+                });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "获取患者列表时发生异常");
-                await UserNotificationService!.HandleExceptionAsync(ex, $"获取患者列表 - 模块:{nameof(PatientMasterDetailViewModel)}");
-                TotalCount = 0;
-                return Enumerable.Empty<PatientListDto>();
+                Services.ErrorHandler.HandleException(ex, "获取患者列表");
             }
         }
 
-        #endregion
-
-        #region Master-Detail抽象方法实现
-
-        protected override async Task<PatientDetailModel?> LoadDetailAsync(PatientListDto item)
+        /// <summary>加载详情数据</summary>
+        protected override async Task LoadDetailAsync(PatientListDto item)
         {
-            if (item == null) return null;
-
-            var patient = await _patientRepository.GetByIdAsync(item.Id);
-            if (patient == null) return null;
-
-            var detail = new PatientDetailModel
+            try
             {
-                Id = patient.Id,
-                Name = patient.Name,
-                PinYinCode = patient.PinYinCode ?? PinYinHelper.GetPinYinCode(patient.Name),
-                Gender = patient.Gender,
-                BirthDate = patient.BirthDate,
-                IdNumber = patient.IdNumber,
-                PhoneNumber = patient.PhoneNumber,
-                Address = patient.Address,
-                Status = patient.Status,
-                VisitCount = patient.VisitCount
-            };
+                var patient = await _patientRepository.GetByIdAsync(item.Id);
+                if (patient == null)
+                {
+                    await Services.Dialog.ShowErrorAsync($"患者 '{item.Name}' 不存在或已被删除", "加载失败");
+                    return;
+                }
 
-            // 更新详情标题
-            RaisePropertyChanged(nameof(DetailTitle));
+                var detail = new PatientDetailModel
+                {
+                    Id = patient.Id,
+                    Name = patient.Name,
+                    PinYinCode = patient.PinYinCode ?? PinYinHelper.GetPinYinCode(patient.Name),
+                    Gender = patient.Gender,
+                    BirthDate = patient.BirthDate,
+                    IdNumber = patient.IdNumber,
+                    PhoneNumber = patient.PhoneNumber,
+                    Address = patient.Address,
+                    Status = patient.Status,
+                    VisitCount = patient.VisitCount
+                };
 
+                Services.DetailEditor.LoadDetail(detail);
+                OnPropertyChanged(nameof(DetailTitle));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载患者详情失败: {PatientId}", item.Id);
+                Services.ErrorHandler.HandleException(ex, "加载患者详情");
+            }
+        }
+
+        /// <summary>创建新详情实例</summary>
+        protected override PatientDetailModel CreateNewDetail()
+        {
+            var detail = PatientDetailModel.CreateNew();
+            OnPropertyChanged(nameof(DetailTitle));
             return detail;
         }
 
+        /// <summary>保存详情</summary>
         protected override async Task<bool> SaveDetailAsync(PatientDetailModel detail)
         {
-            if (detail == null) return false;
+            if (string.IsNullOrWhiteSpace(detail.Name))
+            {
+                await Services.Dialog.ShowErrorAsync("患者姓名不能为空", "验证失败");
+                return false;
+            }
 
             try
             {
-                // OpenSpec: refactor-masterdetail-editmode - 直接使用CurrentDetail数据
-                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端默认为Enabled
                 var dto = new PatientInputDto
                 {
                     Id = detail.Id,
-                    Name = detail.Name?.Trim() ?? string.Empty,
+                    Name = detail.Name.Trim(),
                     PinYinCode = detail.PinYinCode?.Trim(),
                     Gender = detail.Gender,
                     BirthDate = detail.BirthDate,
@@ -184,7 +180,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     Address = detail.Address?.Trim()
                 };
 
-                var result = detail.IsNew
+                var result = IsNew
                     ? await _patientRepository.CreateAsync(dto)
                     : await _patientRepository.UpdateAsync(dto);
 
@@ -199,161 +195,102 @@ namespace LYBT.Desktop.Patients.ViewModels
                 detail.Address = result.Address;
                 detail.Status = result.Status;
 
-                // 发布事件 - OpenSpec: unify-event-system
-                if (dto.Id == Guid.Empty)
-                    EventAggregator.GetEvent<PatientEvents.CreatedEvent>().Publish(new PatientCreatedPayload { Patient = result });
-                else
-                    EventAggregator.GetEvent<PatientEvents.UpdatedEvent>().Publish(new PatientUpdatedPayload { Patient = result });
+                Logger.LogInformation("患者{Action}成功: {PatientId} - {PatientName}",
+                    IsNew ? "创建" : "更新", result.Id, result.Name);
 
-                RaisePropertyChanged(nameof(DetailTitle));
+                OnPropertyChanged(nameof(DetailTitle));
                 return true;
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存患者失败: {PatientName}", detail.Name);
-                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
-                    detail.IsNew ? "创建患者" : "更新患者", ex);
+                var errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
+                    IsNew ? "创建患者" : "更新患者", ex);
+                Services.ErrorHandler.SetError("Save", errorMessage);
                 return false;
             }
         }
 
-        protected override async Task<bool> DeleteDetailAsync(PatientDetailModel detail)
+        /// <summary>删除项</summary>
+        protected override async Task<bool> DeleteItemAsync(PatientListDto item)
         {
-            if (detail == null || detail.IsNew) return false;
-
-            var result = await _commandHandler.DeletePatientAsync(detail.Id);
+            var result = await _commandHandler.DeletePatientAsync(item.Id);
+            if (!result.IsSuccess)
+            {
+                Services.ErrorHandler.SetError("Delete", result.ErrorMessage ?? $"删除患者 '{item.Name}' 失败");
+            }
+            else
+            {
+                Logger.LogInformation("患者删除成功: {PatientId} - {PatientName}", item.Id, item.Name);
+            }
             return result.IsSuccess;
         }
 
-        protected override PatientDetailModel CreateNewDetail()
-        {
-            // OpenSpec: refactor-masterdetail-editmode - 直接返回新模型
-            var detail = PatientDetailModel.CreateNew();
-            RaisePropertyChanged(nameof(DetailTitle));
-            return detail;
-        }
-
-        protected override PatientDetailModel CloneDetail(PatientDetailModel detail)
-        {
-            // OpenSpec: refactor-masterdetail-editmode - 直接克隆，无需复制到Edit属性
-            return detail.Clone();
-        }
-
-        protected override object? GetDetailId(PatientDetailModel detail)
-        {
-            return detail?.Id;
-        }
-
         #endregion
 
-        #region 删除操作
+        #region 扩展命令
 
-        protected override async Task OnExecuteDeleteAsync(PatientListDto item)
+        /// <summary>恢复软删除</summary>
+        [RelayCommand(CanExecute = nameof(CanRestore))]
+        private async Task RestoreAsync()
         {
-            if (item == null) return;
+            if (SelectedItem == null) return;
 
             try
             {
-                if (!await ShowConfirmationAsync($"确认删除患者 [{item.Name}] 吗？", "删除确认")) return;
-
-                var result = await _commandHandler.DeletePatientAsync(item.Id);
-                if (result.IsSuccess)
-                {
-                    await ShowSuccessMessageAsync($"患者 [{item.Name}] 已删除");
-                    await RefreshAsync();
-                }
-                else
-                {
-                    ErrorMessage = result.ErrorMessage ?? "删除患者失败";
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "删除患者时发生异常");
-                await UserNotificationService!.HandleExceptionAsync(ex, "删除患者");
-            }
-        }
-
-        protected override async Task OnExecuteBatchDeleteAsync(List<PatientListDto> items)
-        {
-            if (items == null || items.Count == 0) return;
-
-            var successCount = 0;
-            var failureCount = 0;
-            var failedItems = new List<string>();
-
-            foreach (var item in items)
-            {
-                try
-                {
-                    var result = await _commandHandler.DeletePatientAsync(item.Id);
-                    if (result.IsSuccess) successCount++;
-                    else { failureCount++; failedItems.Add($"{item.Name}（{result.ErrorMessage}）"); }
-                }
-                catch { failureCount++; failedItems.Add(item.Name); }
-            }
-
-            var message = $"批量删除完成！\n成功：{successCount}个\n失败：{failureCount}个";
-            if (failureCount > 0 && failedItems.Count > 0)
-            {
-                message += $"\n\n失败的患者：\n{string.Join("、", failedItems.Take(5))}";
-                if (failedItems.Count > 5) message += $"等{failedItems.Count}个";
-            }
-
-            if (failureCount > 0) await ShowWarningMessageAsync(message);
-            else await ShowSuccessMessageAsync(message);
-
-            if (successCount > 0) await RefreshAsync();
-        }
-
-        #endregion
-
-        #region 扩展命令实现
-
-        private void ExecuteShowAuditLog(PatientListDto? patient)
-        {
-            if (patient == null) return;
-            _prismDialogService.ShowDialog("EntityAuditLogDialog", new DialogParameters
-            {
-                { "EntityType", "patient" },
-                { "EntityId", patient.Id },
-                { "EntityDescription", $"患者：{patient.Name}" }
-            }, _ => { });
-        }
-
-        private async Task RestoreAsync(PatientListDto? patient)
-        {
-            if (patient == null) return;
-            try
-            {
-                Logger.LogInformation("恢复软删除患者: {PatientId} - {PatientName}", patient.Id, patient.Name);
-                var confirmed = await ShowConfirmationAsync($"确认恢复患者 [{patient.Name}] 吗？", "恢复确认");
+                var patient = SelectedItem;
+                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认恢复患者 [{patient.Name}] 吗？", "恢复确认");
                 if (!confirmed) return;
 
                 var result = await _patientRepository.RestoreAsync(patient.Id);
                 if (result != null)
                 {
                     Logger.LogInformation("患者已恢复: {PatientName}", patient.Name);
-                    await ShowSuccessMessageAsync($"患者 '{patient.Name}' 已恢复");
+                    await Services.Dialog.ShowSuccessAsync($"患者 '{patient.Name}' 已恢复", "操作成功");
                     await RefreshAsync();
                 }
                 else
                 {
-                    await ShowErrorMessageAsync("恢复患者失败");
+                    await Services.Dialog.ShowErrorAsync("恢复患者失败", "操作失败");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "恢复患者失败: {PatientId}", patient.Id);
-                await ShowErrorMessageAsync("恢复患者失败");
+                Logger.LogError(ex, "恢复患者失败");
+                await Services.Dialog.ShowErrorAsync("恢复患者失败", "操作失败");
             }
         }
 
-        private async Task ExecuteImportAsync()
+        private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
+
+        /// <summary>查看审计日志</summary>
+        [RelayCommand(CanExecute = nameof(CanShowAuditLog))]
+        private void ShowAuditLog()
         {
-            await ExecuteSafelyAsync(async () =>
+            if (SelectedItem == null) return;
+
+            Logger.LogInformation("查看患者审计日志：{PatientId}", SelectedItem.Id);
+            _prismDialogService.ShowDialog("EntityAuditLogDialog",
+                new DialogParameters
+                {
+                    { "EntityType", "patient" },
+                    { "EntityId", SelectedItem.Id },
+                    { "EntityDescription", $"患者：{SelectedItem.Name}" }
+                },
+                _ => { });
+        }
+
+        private bool CanShowAuditLog() => HasSelection;
+
+        /// <summary>导入患者</summary>
+        [RelayCommand]
+        private async Task ImportAsync()
+        {
+            if (_commonDialogService == null) return;
+
+            try
             {
-                var filePath = await CommonDialogService!.ShowOpenFileDialogAsync(
+                var filePath = await _commonDialogService.ShowOpenFileDialogAsync(
                     filter: "Excel文件|*.xlsx",
                     title: "选择患者导入文件");
                 if (string.IsNullOrEmpty(filePath)) return;
@@ -362,7 +299,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 var patients = await ExcelHelper.ParseAsync<PatientInputDto>(fileStream, hasHeader: true);
                 if (patients == null || patients.Count == 0)
                 {
-                    await CommonDialogService.ShowErrorAsync("文件中没有有效的患者数据", "导入患者");
+                    await _commonDialogService.ShowErrorAsync("文件中没有有效的患者数据", "导入患者");
                     return;
                 }
 
@@ -374,7 +311,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 var result = await _patientRepository.BatchImportAsync(request);
                 if (result == null)
                 {
-                    await CommonDialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入患者");
+                    await _commonDialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入患者");
                     return;
                 }
 
@@ -385,16 +322,25 @@ namespace LYBT.Desktop.Patients.ViewModels
                     foreach (var f in result.Failures.Take(3))
                         message += $"\n第{f.OriginalRowNumber}行：{f.FailureReason}";
                 }
-                await CommonDialogService.ShowInfoAsync(message, "导入结果");
+                await _commonDialogService.ShowInfoAsync(message, "导入结果");
                 if (result.SuccessCount > 0) await RefreshAsync();
-            }, "导入患者");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导入患者失败");
+                await Services.Dialog.ShowErrorAsync("导入患者失败", "操作失败");
+            }
         }
 
-        private async Task ExecuteExportAsync()
+        /// <summary>导出患者</summary>
+        [RelayCommand]
+        private async Task ExportAsync()
         {
-            await ExecuteSafelyAsync(async () =>
+            if (_commonDialogService == null) return;
+
+            try
             {
-                var filePath = await CommonDialogService!.ShowSaveFileDialogAsync(
+                var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
                     filter: "Excel文件|*.xlsx",
                     title: "导出患者数据",
                     defaultFileName: $"患者数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
@@ -403,46 +349,72 @@ namespace LYBT.Desktop.Patients.ViewModels
                 var allPatients = await _patientRepository.SearchAsync(SearchText ?? string.Empty);
                 if (allPatients == null || allPatients.Count == 0)
                 {
-                    await CommonDialogService.ShowErrorAsync("没有可导出的数据", "导出患者");
+                    await _commonDialogService.ShowErrorAsync("没有可导出的数据", "导出患者");
                     return;
                 }
 
                 await ExcelHelper.ExportAsync(allPatients, filePath, "患者数据");
-                await CommonDialogService.ShowInfoAsync($"成功导出{allPatients.Count}条患者数据到：\n{filePath}", "导出成功");
-            }, "导出患者");
+                await _commonDialogService.ShowInfoAsync($"成功导出{allPatients.Count}条患者数据到：\n{filePath}", "导出成功");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出患者失败");
+                await Services.Dialog.ShowErrorAsync("导出患者失败", "操作失败");
+            }
         }
 
-        private async Task ExecuteDownloadTemplateAsync()
+        /// <summary>下载模板</summary>
+        [RelayCommand]
+        private async Task DownloadTemplateAsync()
         {
-            await ExecuteSafelyAsync(async () =>
+            if (_commonDialogService == null) return;
+
+            try
             {
-                var filePath = await CommonDialogService!.ShowSaveFileDialogAsync(
+                var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
                     filter: "Excel文件|*.xlsx",
                     title: "保存患者导入模板",
                     defaultFileName: $"患者导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
                 if (string.IsNullOrEmpty(filePath)) return;
 
-                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除
                 var sampleData = new List<PatientInputDto>
                 {
                     new() { Name = "张三", Gender = Gender.Male, BirthDate = new DateTime(1980, 1, 1), PhoneNumber = "13800138000", Address = "北京市朝阳区" },
                     new() { Name = "李四", Gender = Gender.Female, BirthDate = new DateTime(1990, 5, 15), PhoneNumber = "13800138001", Address = "上海市浦东新区" }
                 };
                 await ExcelHelper.GenerateTemplateAsync(filePath, "患者导入模板", sampleData);
-                await CommonDialogService.ShowInfoAsync($"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入患者」功能导入。", "下载成功");
-            }, "下载模板");
+                await _commonDialogService.ShowInfoAsync($"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入患者」功能导入。", "下载成功");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "下载模板失败");
+                await Services.Dialog.ShowErrorAsync("下载模板失败", "操作失败");
+            }
         }
 
-        #endregion
-
-        #region 命令状态刷新
-
-        protected override void RefreshCanExecuteChanged()
+        /// <summary>查看病历</summary>
+        [RelayCommand(CanExecute = nameof(CanViewMedicalRecords))]
+        private void ViewMedicalRecords()
         {
-            base.RefreshCanExecuteChanged();
-            ShowAuditLogCommand?.RaiseCanExecuteChanged();
-            RestoreCommand?.RaiseCanExecuteChanged();
+            if (SelectedItem == null) return;
+
+            Logger.LogInformation("查看患者病历：{PatientId}", SelectedItem.Id);
+            // TODO: 导航到病历查看页面
         }
+
+        private bool CanViewMedicalRecords() => HasSelection;
+
+        /// <summary>新建问诊</summary>
+        [RelayCommand(CanExecute = nameof(CanNewConsultation))]
+        private void NewConsultation()
+        {
+            if (SelectedItem == null) return;
+
+            Logger.LogInformation("为患者新建问诊：{PatientId}", SelectedItem.Id);
+            // TODO: 导航到问诊流程页面
+        }
+
+        private bool CanNewConsultation() => HasSelection;
 
         #endregion
     }

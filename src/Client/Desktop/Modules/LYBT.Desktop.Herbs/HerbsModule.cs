@@ -1,7 +1,10 @@
 ﻿using LYBT.Desktop.Herbs.Contracts;
 using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Desktop.Herbs.Services;
+using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Shared.Models.Contracts.Herbs;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -41,6 +44,11 @@ namespace LYBT.Desktop.Herbs
 
             // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
             // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
+            containerRegistry.RegisterForNavigation<Views.HerbMasterDetailView, ViewModels.HerbMasterDetailViewModel>();
+
+            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
+            // 注册Herbs模块的MasterDetail服务
+            containerRegistry.AddMasterDetailServices<HerbListDto, HerbDetailModel>();
             containerRegistry.RegisterForNavigation<Views.HerbMasterDetailView, ViewModels.HerbMasterDetailViewModel>();
         }
     }

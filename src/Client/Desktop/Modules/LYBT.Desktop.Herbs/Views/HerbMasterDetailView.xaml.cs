@@ -3,10 +3,10 @@ using System.Windows.Controls;
 namespace LYBT.Desktop.Herbs.Views
 {
     /// <summary>
-    /// 药材Master-Detail视图
-    /// OpenSpec: refactor-master-detail-layout
+    /// 药材Master-Detail视图V2（组合模式）
+    /// OpenSpec: refactor-viewmodel-composition
     ///
-    /// 合并HerbManagementView和HerbDetailView为单一视图
+    /// 迁移完成后将移除V2后缀，替换原HerbMasterDetailView
     /// </summary>
     public partial class HerbMasterDetailView : UserControl
     {

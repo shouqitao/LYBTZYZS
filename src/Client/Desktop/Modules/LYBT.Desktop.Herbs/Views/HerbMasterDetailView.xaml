@@ -1,16 +1,9 @@
 <!--
-    HerbMasterDetailView - 药材Master-Detail视图
-    OpenSpec: refactor-master-detail-layout
+    HerbMasterDetailView - 药材Master-Detail视图V2（组合模式）
+    OpenSpec: refactor-viewmodel-composition
 
-    重构说明：
-    - 合并HerbManagementView和HerbDetailView为单一视图
-    - 左侧40%显示药材列表，右侧60%显示详情/编辑
-    - 复用HerbViewControl和HerbEditControl
-
-    UI优化 (2025-12-16):
-    - 应用统一DataGrid样式(MasterDetailDataGridStyle)
-    - 使用StatusBadge组件显示状态
-    - 应用统一分页样式
+    使用组合模式ViewModel (HerbMasterDetailViewModelV2)
+    命令名称已适配新基类
 -->
 <UserControl x:Class="LYBT.Desktop.Herbs.Views.HerbMasterDetailView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -22,7 +15,6 @@
              xmlns:herbControls="clr-namespace:LYBT.Desktop.Herbs.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -44,22 +36,17 @@
                     <RowDefinition Height="Auto"/>  <!-- 分页 -->
                 </Grid.RowDefinitions>
 
-                <!-- 工具栏 -->
+                <!-- 工具栏 - 适配V2命令 -->
                 <controls:DataGridToolbar Grid.Row="0"
-                                          CreateCommand="{Binding AddCommand}"
+                                          CreateCommand="{Binding CreateNewCommand}"
                                           RefreshCommand="{Binding RefreshCommand}"
-                                          ExportCommand="{Binding ExportCommand}"
-                                          BatchDeleteCommand="{Binding BatchDeleteCommand}">
+                                          ExportCommand="{Binding ExportHerbsCommand}"
+                                          BatchDeleteCommand="{Binding DeleteCommand}">
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">
                             <Button Content="导入"
                                     Style="{StaticResource SecondaryButton}"
-                                    Command="{Binding ImportCommand}"
-                                    Padding="12,6"
-                                    Margin="4,0,0,0"/>
-                            <Button Content="模板"
-                                    Style="{StaticResource SecondaryButton}"
-                                    Command="{Binding DownloadTemplateCommand}"
+                                    Command="{Binding ImportHerbsCommand}"
                                     Padding="12,6"
                                     Margin="4,0,0,0"/>
                         </StackPanel>
@@ -73,7 +60,7 @@
                                     Placeholder="搜索药材名称/拼音码..."
                                     Margin="12,8"/>
 
-                <!-- 药材列表 - 使用统一DataGrid样式，支持批量选择 -->
+                <!-- 药材列表 -->
                 <DataGrid Grid.Row="2"
                           ItemsSource="{Binding Items}"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
@@ -83,7 +70,6 @@
                           RowHeaderWidth="0"
                           Margin="0,0,0,8">
                     <DataGrid.Columns>
-                        <!-- 药材名称 -->
                         <DataGridTextColumn Header="名称"
                                             Binding="{Binding Name}"
                                             Width="100">
@@ -97,7 +83,6 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 拼音码 -->
                         <DataGridTextColumn Header="拼音码"
                                             Binding="{Binding PinYinCode}"
                                             Width="80">
@@ -111,7 +96,6 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 规格 -->
                         <DataGridTextColumn Header="规格"
                                             Binding="{Binding Spec}"
                                             Width="60">
@@ -123,7 +107,6 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 单位 -->
                         <DataGridTextColumn Header="单位"
                                             Binding="{Binding Unit}"
                                             Width="50">
@@ -135,7 +118,6 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 零售价 -->
                         <DataGridTextColumn Header="零售价"
                                             Binding="{Binding Price, StringFormat=N2}"
                                             Width="70">
@@ -149,7 +131,6 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 状态 - 使用StatusBadge组件 -->
                         <DataGridTemplateColumn Header="状态" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -159,7 +140,7 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
 
-                    <!-- 行右键菜单 -->
+                    <!-- 行右键菜单 - 适配V2命令 -->
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="编辑" Command="{Binding EditCommand}"/>
@@ -170,12 +151,12 @@
                             <Separator/>
                             <MenuItem Header="审计日志" Command="{Binding ShowAuditLogCommand}"/>
                             <Separator/>
-                            <MenuItem Header="删除" Command="{Binding DeleteCurrentCommand}"/>
+                            <MenuItem Header="删除" Command="{Binding DeleteCommand}"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                 </DataGrid>
 
-                <!-- 分页控件 - 使用统一样式 -->
+                <!-- 分页控件 - 适配V2命令 -->
                 <Border Grid.Row="3" Style="{StaticResource MasterDetailPaginationPanelStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -185,14 +166,12 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- 统计信息 -->
                         <TextBlock Grid.Column="0" Style="{StaticResource MasterDetailPaginationInfoStyle}">
                             <Run Text="共"/>
                             <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="Medium"/>
                             <Run Text="条记录"/>
                         </TextBlock>
 
-                        <!-- 每页条数选择 -->
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="每页" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
                             <ComboBox ItemsSource="{Binding PageSizes}"
@@ -204,17 +183,16 @@
                             <TextBlock Text="条" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
                         </StackPanel>
 
-                        <!-- 分页按钮 -->
                         <StackPanel Grid.Column="3"
                                     Orientation="Horizontal"
                                     HorizontalAlignment="Right">
                             <Button Content="首页"
                                     Style="{StaticResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding FirstPageCommand}"
+                                    Command="{Binding GoToFirstPageCommand}"
                                     Margin="0,0,4,0"/>
                             <Button Content="上一页"
                                     Style="{StaticResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding PreviousPageCommand}"
+                                    Command="{Binding GoToPreviousPageCommand}"
                                     Margin="0,0,4,0"/>
                             <TextBlock Style="{StaticResource MasterDetailPaginationPageStyle}">
                                 <Run Text="{Binding CurrentPage, Mode=OneWay}"/>
@@ -223,11 +201,11 @@
                             </TextBlock>
                             <Button Content="下一页"
                                     Style="{StaticResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding NextPageCommand}"
+                                    Command="{Binding GoToNextPageCommand}"
                                     Margin="0,0,4,0"/>
                             <Button Content="末页"
                                     Style="{StaticResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding LastPageCommand}"/>
+                                    Command="{Binding GoToLastPageCommand}"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -245,18 +223,18 @@
         <controls:MasterDetailLayout.DetailContent>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
-                    <RowDefinition Height="*"/>     <!-- 内容 -->
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- 详情工具栏 -->
+                <!-- 详情工具栏 - 适配V2命令 -->
                 <controls:DetailToolbar Grid.Row="0"
                                         Title="{Binding DetailTitle}"
                                         IsEditMode="{Binding IsEditMode}"
                                         EditCommand="{Binding EditCommand}"
                                         SaveCommand="{Binding SaveCommand}"
                                         CancelCommand="{Binding CancelCommand}"
-                                        DeleteCommand="{Binding DeleteCurrentCommand}"/>
+                                        DeleteCommand="{Binding DeleteCommand}"/>
 
                 <!-- 查看模式内容 -->
                 <herbControls:HerbViewControl
@@ -280,7 +258,7 @@
                     ShowStatus="True"
                     Margin="16"/>
 
-                <!-- 编辑模式内容 - OpenSpec: refactor-masterdetail-editmode 直接绑定CurrentDetail -->
+                <!-- 编辑模式内容 -->
                 <herbControls:HerbEditControl
                     Grid.Row="1"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -297,12 +275,13 @@
                     HerbEffect="{Binding CurrentDetail.Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     Usage="{Binding CurrentDetail.Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     Remark="{Binding CurrentDetail.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    ErrorsSource="{Binding CurrentDetail.Errors}"
                     ShowStatus="True"
                     Margin="16"/>
 
                 <!-- 详情加载遮罩 -->
                 <controls:LoadingOverlay Grid.RowSpan="2"
-                                         IsLoading="{Binding IsLoadingDetail}"
+                                         IsLoading="{Binding IsBusy}"
                                          LoadingText="加载详情中..."/>
             </Grid>
         </controls:MasterDetailLayout.DetailContent>
@@ -315,7 +294,7 @@
                 Title="请选择药材"
                 Subtitle="从左侧列表中选择一种药材查看详情，或点击新增按钮创建新药材"
                 ActionText="新增药材"
-                ActionCommand="{Binding AddCommand}"/>
+                ActionCommand="{Binding CreateNewCommand}"/>
         </controls:MasterDetailLayout.EmptyContent>
     </controls:MasterDetailLayout>
 </UserControl>

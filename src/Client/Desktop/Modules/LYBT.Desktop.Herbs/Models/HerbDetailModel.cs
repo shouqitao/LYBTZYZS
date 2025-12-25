@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Primitives.Validation;
 using LYBT.Shared.Utilities.Text;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.Herbs.Models
 {
@@ -10,7 +12,7 @@ namespace LYBT.Desktop.Herbs.Models
     ///
     /// 用于在Detail区域展示和编辑药材信息
     /// </summary>
-    public class HerbDetailModel : BindableBase
+    public class HerbDetailModel : ValidatableModelBase
     {
         private Guid _id;
         private string _name = string.Empty;
@@ -40,12 +42,15 @@ namespace LYBT.Desktop.Herbs.Models
         public bool IsNew => Id == Guid.Empty;
 
         /// <summary>药材名称</summary>
+        [Required(ErrorMessage = "药材名称不能为空")]
+        [StringLength(ValidationConstants.NameMaxLength,
+            ErrorMessage = "药材名称长度不能超过100个字符")]
         public string Name
         {
             get => _name;
             set
             {
-                if (SetProperty(ref _name, value))
+                if (SetPropertyAndValidate(ref _name, value))
                 {
                     // 自动生成拼音码
                     PinYinCode = PinYinHelper.GetPinYinCode(value);
@@ -89,45 +94,55 @@ namespace LYBT.Desktop.Herbs.Models
         }
 
         /// <summary>单位</summary>
+        [Required(ErrorMessage = "单位不能为空")]
         public string Unit
         {
             get => _unit;
-            set => SetProperty(ref _unit, value);
+            set => SetPropertyAndValidate(ref _unit, value);
         }
 
         /// <summary>零售价</summary>
+        [Required(ErrorMessage = "零售价不能为空")]
+        [Range(typeof(decimal), "0.01", "100000", ErrorMessage = "零售价必须在0.01-100000之间")]
         public decimal Price
         {
             get => _price;
-            set => SetProperty(ref _price, value);
+            set => SetPropertyAndValidate(ref _price, value);
         }
 
         /// <summary>成本价</summary>
+        [Range(typeof(decimal), "0", "100000", ErrorMessage = "成本价必须在0-100000之间")]
         public decimal? CostPrice
         {
             get => _costPrice;
-            set => SetProperty(ref _costPrice, value);
+            set => SetPropertyAndValidate(ref _costPrice, value);
         }
 
         /// <summary>功效</summary>
+        [StringLength(ValidationConstants.LongRemarkMaxLength,
+            ErrorMessage = "功效描述长度不能超过2000个字符")]
         public string? Effect
         {
             get => _effect;
-            set => SetProperty(ref _effect, value);
+            set => SetPropertyAndValidate(ref _effect, value);
         }
 
         /// <summary>用法用量</summary>
+        [StringLength(ValidationConstants.UsageMaxLength,
+            ErrorMessage = "用法用量长度不能超过200个字符")]
         public string? Usage
         {
             get => _usage;
-            set => SetProperty(ref _usage, value);
+            set => SetPropertyAndValidate(ref _usage, value);
         }
 
         /// <summary>备注</summary>
+        [StringLength(ValidationConstants.RemarkMaxLength,
+            ErrorMessage = "备注长度不能超过1000个字符")]
         public string? Remark
         {
             get => _remark;
-            set => SetProperty(ref _remark, value);
+            set => SetPropertyAndValidate(ref _remark, value);
         }
 
         /// <summary>状态</summary>

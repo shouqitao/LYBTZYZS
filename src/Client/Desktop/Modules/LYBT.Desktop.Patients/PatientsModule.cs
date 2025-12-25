@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.DependencyInjection;
 // OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Repositories;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -76,6 +78,11 @@ namespace LYBT.Desktop.Patients
 
             // Issue #1487: 快速创建患者对话框
             containerRegistry.RegisterDialog<Views.QuickCreatePatientDialog, ViewModels.QuickCreatePatientDialogViewModel>();
+
+            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
+            // 注册Patients模块的MasterDetail服务
+            containerRegistry.AddMasterDetailServices<PatientListDto, PatientDetailModel>();
+            containerRegistry.RegisterForNavigation<Views.PatientMasterDetailView, ViewModels.PatientMasterDetailViewModel>();
         }
     }
 }

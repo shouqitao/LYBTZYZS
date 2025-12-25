@@ -3,9 +3,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
-    <!--  合并预览样式资源  -->
+    <!--  合并样式资源  -->
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="PreviewStyles.xaml" />
+        <ResourceDictionary Source="ValidationStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <!--

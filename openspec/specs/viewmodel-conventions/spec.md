@@ -273,16 +273,35 @@ ViewModel MUST 使用Prism标准导航模式。
 
 ### Requirement: VM-003 Command Initialization Pattern
 
-DelegateCommand初始化 MUST 使用统一模式。
+命令初始化 MUST 使用统一模式（支持DelegateCommand和RelayCommand两种方式）。
 
 **规范**:
-- 异步命令 SHALL 使用 `DelegateCommand(async () => await Method())`
-- CanExecute条件 SHALL 使用 `ObservesProperty()`
+- **新代码推荐**: 使用 `[RelayCommand]` 特性 (CommunityToolkit.Mvvm源生成器)
+- **传统方式**: 使用 `DelegateCommand(async () => await Method())` (Prism)
+- CanExecute条件 SHALL 使用 `[NotifyCanExecuteChangedFor]` 或 `ObservesProperty()`
 - 常用条件（IsLoading, IsBusy）SHOULD 通过基类方法简化
 
-#### Scenario: Async command with loading guard
+#### Scenario: RelayCommand模式（推荐）
 - **GIVEN** 需要创建异步命令
-- **WHEN** 命令需要在加载时禁用
+- **WHEN** 使用CommunityToolkit.Mvvm
+- **THEN** 使用以下模式:
+```csharp
+[ObservableProperty]
+[NotifyCanExecuteChangedFor(nameof(AddCommand))]
+private bool _isLoading;
+
+[RelayCommand(CanExecute = nameof(CanAdd))]
+private async Task AddAsync()
+{
+    // 业务逻辑
+}
+
+private bool CanAdd() => !IsLoading && !IsBusy;
+```
+
+#### Scenario: DelegateCommand模式（传统）
+- **GIVEN** 需要创建异步命令
+- **WHEN** 使用Prism DelegateCommand
 - **THEN** 使用以下模式:
 ```csharp
 AddCommand = new DelegateCommand(
@@ -297,6 +316,14 @@ AddCommand = new DelegateCommand(
 - **WHEN** 参数为实体对象
 - **THEN** 使用以下模式:
 ```csharp
+// RelayCommand方式
+[RelayCommand]
+private void ViewDetails(TEntity entity)
+{
+    // 业务逻辑
+}
+
+// DelegateCommand方式
 ViewDetailsCommand = new DelegateCommand<TEntity>(
     ExecuteViewDetails,
     entity => entity != null);
@@ -380,23 +407,40 @@ ViewModel导航 MUST 使用统一的导航方式。
 
 ### Requirement: VM-007 Base Class Inheritance
 
-ViewModel MUST 继承适当的基类。
+ViewModel MUST 继承适当的基类。支持传统继承模式和新组合模式两种方式。
 
-**规范**:
-- 简单ViewModel SHALL 继承 `ViewModelBase`
-- 带导航的ViewModel SHALL 继承 `UnifiedViewModelBase`
-- 列表ViewModel SHALL 继承 `UnifiedListViewModelBase<T>`
+**基类选择**:
+
+| 模式 | 基类 | 适用场景 |
+|------|------|----------|
+| **新组合模式** | `LightViewModelBase` | 极简ViewModel，仅需INotifyPropertyChanged |
+| **新组合模式** | `ComposableViewModelBase` | 标准ViewModel，通过注入服务获得功能 |
+| **传统模式** | `ViewModelBase` | 简单ViewModel |
+| **传统模式** | `UnifiedViewModelBase` | 带导航的ViewModel |
+| **传统模式** | `UnifiedListViewModelBase<T>` | 列表ViewModel |
+| **传统模式** | `MasterDetailViewModelBase<TL,TD>` | Master-Detail模式 |
+
+**技术栈**:
+- 新组合模式: CommunityToolkit.Mvvm 8.x (ObservableObject) + Prism 9.x (导航/对话框/DI)
+- 传统模式: Prism 9.x (BindableBase)
+
+#### Scenario: 新组合模式（推荐新代码）
+- **GIVEN** 创建新的ViewModel
+- **WHEN** 使用组合模式
+- **THEN** 继承 `ComposableViewModelBase`
+- **AND** 通过构造函数注入所需服务（如`IListViewServices<T>`)
+- **AND** 使用`[ObservableProperty]`和`[RelayCommand]`特性
 
 #### Scenario: List ViewModel inheritance
 - **GIVEN** ViewModel管理实体列表
 - **WHEN** 选择基类
-- **THEN** 继承 `UnifiedListViewModelBase<TEntity>`
+- **THEN** 继承 `UnifiedListViewModelBase<TEntity>` 或使用组合模式+`IListViewServices<T>`
 - **AND** 实现 `GetItemsAsync()` 抽象方法
 
 #### Scenario: Detail ViewModel inheritance
 - **GIVEN** ViewModel管理单个实体详情
 - **WHEN** 选择基类
-- **THEN** 继承 `UnifiedViewModelBase`
+- **THEN** 继承 `UnifiedViewModelBase` 或使用组合模式+`IDetailEditorService<T>`
 - **AND** 实现 `InitializeAsync(NavigationParameters)` 方法
 
 ### Requirement: VM-002-A 标准Components类型
@@ -618,18 +662,40 @@ EditControl中的输入控件 MUST 启用验证通知。
 
 ### ViewModelBase继承链结构
 
+**传统模式（Prism继承链）**:
 ```
 BindableBase (Prism)
     └── ViewModelBase (核心状态、错误处理、IDisposable)
             └── UnifiedViewModelBase (导航、消息展示、验证增强)
                     └── UnifiedListViewModelBase<T> (列表管理、分页、CRUD)
+                            └── MasterDetailViewModelBase<TL,TD> (Master-Detail)
 
 BindableBase (Prism)
     └── HerbItemViewModelBase (药材项专用，独立分支)
 ```
 
-**继承深度**: 4层 (3层在项目控制下)
-**设计决策**: 保持继承模式，不提取为组合 (评估于2025-12-02，ROI过低)
+**新组合模式（CommunityToolkit.Mvvm + 服务注入）**:
+```
+ObservableObject (CommunityToolkit.Mvvm)
+    └── LightViewModelBase (极简: 仅INotifyPropertyChanged)
+            └── ComposableViewModelBase (标准: INavigationAware, IDisposable)
+                    ├── ListViewModelBase<T> (委托给IListViewServices<T>)
+                    └── MasterDetailViewModelBaseV2<TL,TD> (委托给IMasterDetailServices<TL,TD>)
+```
+
+**组合服务接口**:
+- `ILoadingStateManager` - 加载状态管理
+- `IPaginationService` - 分页服务
+- `ISearchService` - 搜索服务
+- `ISelectionService<T>` - 选择服务
+- `IDetailEditorService<TDetail>` - 详情编辑服务
+- `IDialogManager` - 对话框管理
+- `IViewNavigationService` - 导航服务
+- `IErrorHandler` - 错误处理
+- `IAsyncExecutor` - 异步执行器
+
+**继承深度**: 传统模式4层 → 新组合模式3层
+**设计决策**: 新代码推荐组合模式，现有代码逐步迁移 (评估于2025-12-25)
 
 ### Component目录结构
 ```
