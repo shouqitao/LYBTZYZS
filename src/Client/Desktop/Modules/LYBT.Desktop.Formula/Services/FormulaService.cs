@@ -1,4 +1,5 @@
 ﻿using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
@@ -83,7 +84,7 @@ namespace LYBT.Desktop.Formula.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.Save failed - FormulaId={FormulaId}", currentFormula.Id);
-                return (false, null, "保存配方时发生系统错误，请稍后重试");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存配方", ex));
             }
         }
 
@@ -128,7 +129,7 @@ namespace LYBT.Desktop.Formula.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.Copy failed - SourceId={FormulaId}", sourceFormula.Id);
-                return (false, null, "复制配方时发生系统错误，请稍后重试");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("复制配方", ex));
             }
         }
 
@@ -152,7 +153,7 @@ namespace LYBT.Desktop.Formula.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.Delete failed - FormulaId={FormulaId}", formulaId);
-                return (false, "删除配方时发生系统错误，请稍后重试");
+                return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除配方", ex));
             }
         }
 
@@ -196,7 +197,7 @@ namespace LYBT.Desktop.Formula.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.Create failed - Name={FormulaName}", createDto.Name);
-                return (false, null, "创建配方时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建配方", ex));
             }
         }
 
@@ -217,7 +218,7 @@ namespace LYBT.Desktop.Formula.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.Update failed - FormulaId={FormulaId}", updateDto.Id);
-                return (false, null, "更新配方时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新配方", ex));
             }
         }
 
@@ -255,7 +256,7 @@ namespace LYBT.Desktop.Formula.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.GetPaged failed");
-                return (false, null, "查询配方时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询配方列表", ex));
             }
         }
 
@@ -282,7 +283,7 @@ namespace LYBT.Desktop.Formula.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.GetById failed - FormulaId={FormulaId}", formulaId);
-                return (false, null, "查询配方时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询配方", ex));
             }
         }
 
@@ -314,7 +315,7 @@ namespace LYBT.Desktop.Formula.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.GetPendingValidation failed");
-                return (false, null, "查询待校验验方列表时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询待校验验方列表", ex));
             }
         }
 
@@ -345,7 +346,7 @@ namespace LYBT.Desktop.Formula.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.ValidateHerb failed");
-                return (false, "验证配方药材时发生系统错误");
+                return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证配方药材", ex));
             }
         }
 

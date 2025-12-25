@@ -28,6 +28,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         private bool _hasUnsavedChanges;
         private CancellationTokenSource? _loadDetailCts;
         private bool _isDisposed;
+        private bool _isCreatingNew;  // OpenSpec: refactor-masterdetail-editmode - 防止新建时CurrentDetail被置空
 
         #endregion
 
@@ -184,9 +185,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 // 使用SafeFireAndForget确保异常被正确处理
                 SafeFireAndForgetLoadDetail();
             }
-            else
+            else if (!_isCreatingNew)
             {
-                // 取消正在进行的加载操作
+                // OpenSpec: refactor-masterdetail-editmode
+                // 新建模式下不清空CurrentDetail，防止P0 Bug
                 CancelLoadDetail();
                 CurrentDetail = null;
                 IsEditMode = false;
@@ -453,18 +455,31 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         #region 新增操作
 
+        /// <summary>
+        /// 执行新增操作
+        /// OpenSpec: refactor-masterdetail-editmode - 使用_isCreatingNew标志防止CurrentDetail被置空
+        /// </summary>
         protected override async Task OnExecuteAddAsync()
         {
             // 创建新的详情对象
             var newDetail = CreateNewDetail();
 
-            RunOnUIThread(() =>
+            // 设置标志防止RefreshCanExecuteChanged清空CurrentDetail
+            _isCreatingNew = true;
+            try
             {
-                CurrentDetail = newDetail;
-                SelectedItem = null;
-                IsEditMode = true;
-                HasUnsavedChanges = false;
-            });
+                RunOnUIThread(() =>
+                {
+                    SelectedItem = null;  // 先清空选中项
+                    CurrentDetail = newDetail;  // 后设置详情
+                    IsEditMode = true;
+                    HasUnsavedChanges = false;
+                });
+            }
+            finally
+            {
+                _isCreatingNew = false;
+            }
 
             await Task.CompletedTask;
         }

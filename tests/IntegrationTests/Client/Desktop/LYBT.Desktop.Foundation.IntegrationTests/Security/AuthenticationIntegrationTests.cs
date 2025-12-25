@@ -333,10 +333,10 @@ public class AuthenticationIntegrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Lybt:Jwt:SecretKey"] = SecretKey,
-                ["Lybt:Jwt:Issuer"] = Issuer,
-                ["Lybt:Jwt:Audience"] = Audience,
-                ["Lybt:Jwt:ClockSkewSeconds"] = "300"
+                ["Jwt:SecretKey"] = SecretKey,
+                ["Jwt:Issuer"] = Issuer,
+                ["Jwt:Audience"] = Audience,
+                ["Jwt:ClockSkewSeconds"] = "300"
             })
             .Build();
 

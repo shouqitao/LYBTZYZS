@@ -280,23 +280,23 @@
                     ShowStatus="True"
                     Margin="16"/>
 
-                <!-- 编辑模式内容 -->
+                <!-- 编辑模式内容 - OpenSpec: refactor-masterdetail-editmode 直接绑定CurrentDetail -->
                 <herbControls:HerbEditControl
                     Grid.Row="1"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    HerbName="{Binding EditName, Mode=TwoWay}"
+                    HerbName="{Binding CurrentDetail.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     IsNameEditable="{Binding IsNameEditable}"
-                    PinYinCode="{Binding EditPinYinCode, Mode=TwoWay}"
-                    Origin="{Binding EditOrigin, Mode=TwoWay}"
-                    Spec="{Binding EditSpec, Mode=TwoWay}"
-                    Unit="{Binding EditUnit, Mode=TwoWay}"
-                    Price="{Binding EditPrice, Mode=TwoWay}"
-                    CostPrice="{Binding EditCostPrice, Mode=TwoWay}"
-                    Status="{Binding EditStatus, Mode=TwoWay}"
+                    PinYinCode="{Binding CurrentDetail.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Origin="{Binding CurrentDetail.Origin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Spec="{Binding CurrentDetail.Spec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Unit="{Binding CurrentDetail.Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Price="{Binding CurrentDetail.Price, Mode=TwoWay}"
+                    CostPrice="{Binding CurrentDetail.CostPrice, Mode=TwoWay}"
+                    Status="{Binding CurrentDetail.Status, Mode=TwoWay}"
                     StatusOptions="{Binding StatusOptions}"
-                    HerbEffect="{Binding EditEffect, Mode=TwoWay}"
-                    Usage="{Binding EditUsage, Mode=TwoWay}"
-                    Remark="{Binding EditRemark, Mode=TwoWay}"
+                    HerbEffect="{Binding CurrentDetail.Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Usage="{Binding CurrentDetail.Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Remark="{Binding CurrentDetail.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     ShowStatus="True"
                     Margin="16"/>
 

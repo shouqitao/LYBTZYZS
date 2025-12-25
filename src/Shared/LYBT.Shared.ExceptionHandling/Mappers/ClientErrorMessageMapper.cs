@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Text.Json;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.ExceptionHandling.ProblemDetails;
 
 namespace LYBT.Shared.ExceptionHandling.Mappers;
@@ -208,6 +210,8 @@ public static class ClientErrorMessageMapper
     {
         return exception switch
         {
+            // 优先处理AppException及其子类（如ApiException），使用其UserMessage
+            AppException appEx => GetAppExceptionMessage(appEx),
             HttpRequestException httpEx => GetHttpExceptionMessage(httpEx),
             TaskCanceledException => "操作被取消",
             TimeoutException => "操作超时，请稍后重试",
@@ -215,11 +219,165 @@ public static class ClientErrorMessageMapper
             OperationCanceledException => "操作已取消",
             UnauthorizedAccessException => "访问被拒绝",
             ArgumentNullException => "缺少必要的参数",
-            ArgumentException => "参数无效",
-            InvalidOperationException => "当前状态下无法执行此操作",
+            ArgumentException argEx => GetArgumentExceptionMessage(argEx),
+            InvalidOperationException invOpEx => GetInvalidOperationExceptionMessage(invOpEx),
             FormatException => "数据格式不正确",
+            // 检查是否为Refit.ApiException（通过类型名匹配，避免直接引用Refit包）
+            _ when exception.GetType().FullName == "Refit.ApiException" => GetRefitApiExceptionMessage(exception),
             _ => DefaultErrorMessage
         };
+    }
+
+    /// <summary>
+    /// 获取AppException消息
+    /// 优先返回UserMessage，如果为空则返回Message
+    /// </summary>
+    private static string GetAppExceptionMessage(AppException exception)
+    {
+        if (!string.IsNullOrWhiteSpace(exception.UserMessage))
+        {
+            return exception.UserMessage;
+        }
+
+        if (!string.IsNullOrWhiteSpace(exception.Message))
+        {
+            return exception.Message;
+        }
+
+        return DefaultErrorMessage;
+    }
+
+    /// <summary>
+    /// 从Refit.ApiException中提取错误消息
+    /// 通过反射获取Content属性并解析服务器返回的错误信息
+    /// </summary>
+    private static string GetRefitApiExceptionMessage(Exception exception)
+    {
+        try
+        {
+            // 尝试获取StatusCode属性
+            var statusCodeProp = exception.GetType().GetProperty("StatusCode");
+            if (statusCodeProp != null)
+            {
+                var statusCode = (HttpStatusCode?)statusCodeProp.GetValue(exception);
+                if (statusCode.HasValue)
+                {
+                    // 尝试获取Content属性以提取服务器返回的具体错误消息
+                    var contentProp = exception.GetType().GetProperty("Content");
+                    if (contentProp != null)
+                    {
+                        var content = contentProp.GetValue(exception) as string;
+                        if (!string.IsNullOrWhiteSpace(content))
+                        {
+                            var extractedMessage = ExtractMessageFromApiResponse(content);
+                            if (!string.IsNullOrWhiteSpace(extractedMessage))
+                            {
+                                return extractedMessage;
+                            }
+                        }
+                    }
+
+                    // 如果无法从Content提取消息，使用状态码映射
+                    return GetUserMessageFromStatusCode(statusCode.Value);
+                }
+            }
+        }
+        catch
+        {
+            // 反射失败时忽略，返回默认消息
+        }
+
+        return DefaultErrorMessage;
+    }
+
+    /// <summary>
+    /// 从API响应内容中提取错误消息
+    /// 支持ApiResponse和ValidationProblemDetails格式
+    /// </summary>
+    private static string? ExtractMessageFromApiResponse(string content)
+    {
+        try
+        {
+            // 使用JsonDocument解析响应内容
+            using var doc = JsonDocument.Parse(content);
+            var root = doc.RootElement;
+
+            // 检查message字段
+            if (root.TryGetProperty("message", out var messageProp) &&
+                messageProp.ValueKind == JsonValueKind.String)
+            {
+                var message = messageProp.GetString();
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    return message;
+                }
+            }
+
+            // 检查detail字段（ProblemDetails格式）
+            if (root.TryGetProperty("detail", out var detailProp) &&
+                detailProp.ValueKind == JsonValueKind.String)
+            {
+                var detail = detailProp.GetString();
+                if (!string.IsNullOrWhiteSpace(detail))
+                {
+                    return detail;
+                }
+            }
+
+            // 检查title字段（ProblemDetails格式）
+            if (root.TryGetProperty("title", out var titleProp) &&
+                titleProp.ValueKind == JsonValueKind.String)
+            {
+                var title = titleProp.GetString();
+                if (!string.IsNullOrWhiteSpace(title))
+                {
+                    return title;
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // JSON解析失败，忽略
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 获取InvalidOperationException消息
+    /// 优先返回异常中的具体消息（如服务器返回的业务错误）
+    /// </summary>
+    private static string GetInvalidOperationExceptionMessage(InvalidOperationException exception)
+    {
+        // 如果异常包含具体业务消息，直接返回
+        if (!string.IsNullOrWhiteSpace(exception.Message) &&
+            exception.Message != "Operation is not valid due to the current state of the object.")
+        {
+            return exception.Message;
+        }
+
+        return "当前状态下无法执行此操作";
+    }
+
+    /// <summary>
+    /// 获取ArgumentException消息
+    /// </summary>
+    private static string GetArgumentExceptionMessage(ArgumentException exception)
+    {
+        // 如果异常包含具体消息，返回（去除参数名部分）
+        if (!string.IsNullOrWhiteSpace(exception.Message))
+        {
+            // 移除 "(Parameter 'xxx')" 后缀
+            var message = exception.Message;
+            var paramIndex = message.LastIndexOf(" (Parameter '", StringComparison.Ordinal);
+            if (paramIndex > 0)
+            {
+                message = message[..paramIndex];
+            }
+            return message;
+        }
+
+        return "参数无效";
     }
 
     /// <summary>

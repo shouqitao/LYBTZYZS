@@ -3,6 +3,7 @@ namespace LYBT.Desktop.Herbs.Services;
 // OpenSpec: standardize-service-layer - 重命名CommandHandler为Service
 using LYBT.Desktop.Herbs.Contracts;
 using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
@@ -40,7 +41,7 @@ public class HerbService : IHerbService
         catch (Exception ex)
         {
             _logger.LogError(ex, "[SVC] Herb.Create failed - Name={Name}", input.Name);
-            return (false, null, "创建中药失败，请重试");
+            return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建中药", ex));
         }
     }
 
@@ -59,7 +60,7 @@ public class HerbService : IHerbService
         catch (Exception ex)
         {
             _logger.LogError(ex, "[SVC] Herb.Update failed - HerbId={HerbId}", id);
-            return (false, null, "更新中药失败，请重试");
+            return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新中药", ex));
         }
     }
 
@@ -86,7 +87,7 @@ public class HerbService : IHerbService
         catch (Exception ex)
         {
             _logger.LogError(ex, "[SVC] Herb.Delete failed - HerbId={HerbId}", id);
-            return (false, "删除中药失败，请重试");
+            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除中药", ex));
         }
     }
 
@@ -113,7 +114,7 @@ public class HerbService : IHerbService
         catch (Exception ex)
         {
             _logger.LogError(ex, "[SVC] Herb.GetById failed - HerbId={HerbId}", id);
-            return (false, null, "获取中药详情失败，请重试");
+            return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("获取中药详情", ex));
         }
     }
 

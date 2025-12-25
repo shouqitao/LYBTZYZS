@@ -291,19 +291,19 @@
                     ShowStatus="True"
                     Margin="16"/>
 
-                <!-- 编辑模式内容 -->
+                <!-- 编辑模式内容 - OpenSpec: refactor-masterdetail-editmode 直接绑定CurrentDetail -->
                 <userControls:UserEditControl
                     Grid.Row="1"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    UserName="{Binding EditUserName, Mode=TwoWay}"
+                    UserName="{Binding CurrentDetail.UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     IsUserNameReadOnly="{Binding IsUserNameReadOnly}"
-                    RealName="{Binding EditRealName, Mode=TwoWay}"
-                    PinYinCode="{Binding EditPinYinCode, Mode=TwoWay}"
-                    PhoneNumber="{Binding EditPhoneNumber, Mode=TwoWay}"
-                    Email="{Binding EditEmail, Mode=TwoWay}"
-                    Role="{Binding EditRole, Mode=TwoWay}"
+                    RealName="{Binding CurrentDetail.RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    PinYinCode="{Binding CurrentDetail.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    PhoneNumber="{Binding CurrentDetail.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Email="{Binding CurrentDetail.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Role="{Binding CurrentDetail.Role, Mode=TwoWay}"
                     RoleOptions="{Binding RoleOptions}"
-                    Status="{Binding EditStatus, Mode=TwoWay}"
+                    Status="{Binding CurrentDetail.Status, Mode=TwoWay}"
                     StatusOptions="{Binding StatusOptions}"
                     ShowStatus="True"
                     Margin="16"/>

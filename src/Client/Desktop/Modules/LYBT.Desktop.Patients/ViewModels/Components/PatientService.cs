@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -128,7 +129,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Patient.Create failed - Name={PatientName}", inputDto.Name);
-                return CommandResult<PatientDetailDto>.Failure("创建患者时发生系统错误");
+                return CommandResult<PatientDetailDto>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建患者", ex));
             }
         }
 
@@ -148,7 +149,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Patient.Update failed - PatientId={PatientId}", inputDto.Id);
-                return CommandResult<PatientDetailDto>.Failure("更新患者时发生系统错误");
+                return CommandResult<PatientDetailDto>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新患者", ex));
             }
         }
 
@@ -168,7 +169,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Patient.Delete failed - PatientId={PatientId}", patientId);
-                return CommandResult<bool>.Failure("删除患者时发生系统错误");
+                return CommandResult<bool>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除患者", ex));
             }
         }
 
@@ -307,7 +308,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Patient.BatchDelete failed");
-                return CommandResult<BatchOperationResultDto>.Failure("批量删除患者时发生系统错误");
+                return CommandResult<BatchOperationResultDto>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量删除患者", ex));
             }
         }
 
@@ -331,7 +332,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Patient.Search failed - Keyword={Keyword}", keyword);
-                return CommandResult<IEnumerable<PatientListDto>>.Failure("搜索患者时发生系统错误");
+                return CommandResult<IEnumerable<PatientListDto>>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("搜索患者", ex));
             }
         }
 
@@ -351,7 +352,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Patient.GetPaged failed");
-                return CommandResult<PagedResult<PatientListDto>>.Failure("查询患者列表时发生系统错误");
+                return CommandResult<PagedResult<PatientListDto>>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询患者列表", ex));
             }
         }
 
@@ -378,7 +379,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Patient.GetById failed - PatientId={PatientId}", patientId);
-                return CommandResult<PatientDetailDto>.Failure("查询患者时发生系统错误");
+                return CommandResult<PatientDetailDto>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询患者", ex));
             }
         }
 

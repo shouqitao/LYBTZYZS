@@ -8,6 +8,7 @@ using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Desktop.Utilities.Excel;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
@@ -31,102 +32,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly PatientService _commandHandler;
         private readonly IPatientRepository _patientRepository;
         private readonly IDialogService _prismDialogService;
-
-        #region 编辑属性
-
-        private string _editName = string.Empty;
-        private string _editPinYinCode = string.Empty;
-        private Gender _editGender = Gender.Unknown;
-        private DateTime? _editBirthDate;
-        private string? _editIdNumber;
-        private string? _editPhoneNumber;
-        private string? _editAddress;
-        private CommonStatus _editStatus = CommonStatus.Enabled;
-
-        /// <summary>编辑-姓名</summary>
-        public string EditName
-        {
-            get => _editName;
-            set
-            {
-                if (SetProperty(ref _editName, value))
-                {
-                    EditPinYinCode = PinYinHelper.GetPinYinCode(value);
-                    MarkAsModified();
-                }
-            }
-        }
-
-        /// <summary>编辑-拼音码（自动生成，可手动修正多音字错误）</summary>
-        public string EditPinYinCode
-        {
-            get => _editPinYinCode;
-            set { if (SetProperty(ref _editPinYinCode, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-性别</summary>
-        public Gender EditGender
-        {
-            get => _editGender;
-            set { if (SetProperty(ref _editGender, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-出生日期</summary>
-        public DateTime? EditBirthDate
-        {
-            get => _editBirthDate;
-            set
-            {
-                if (SetProperty(ref _editBirthDate, value))
-                {
-                    RaisePropertyChanged(nameof(EditAge));
-                    MarkAsModified();
-                }
-            }
-        }
-
-        /// <summary>编辑-年龄</summary>
-        public int? EditAge
-        {
-            get
-            {
-                if (!EditBirthDate.HasValue) return null;
-                var today = DateTime.Today;
-                var age = today.Year - EditBirthDate.Value.Year;
-                if (EditBirthDate.Value.Date > today.AddYears(-age)) age--;
-                return age;
-            }
-        }
-
-        /// <summary>编辑-身份证号</summary>
-        public string? EditIdNumber
-        {
-            get => _editIdNumber;
-            set { if (SetProperty(ref _editIdNumber, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-手机号</summary>
-        public string? EditPhoneNumber
-        {
-            get => _editPhoneNumber;
-            set { if (SetProperty(ref _editPhoneNumber, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-地址</summary>
-        public string? EditAddress
-        {
-            get => _editAddress;
-            set { if (SetProperty(ref _editAddress, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-状态</summary>
-        public CommonStatus EditStatus
-        {
-            get => _editStatus;
-            set { if (SetProperty(ref _editStatus, value)) MarkAsModified(); }
-        }
-
-        #endregion
 
         #region 选项列表
 
@@ -263,25 +168,26 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             if (detail == null) return false;
 
-            // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端默认为Enabled
-            var dto = new PatientInputDto
+            try
             {
-                Id = detail.Id,
-                Name = EditName.Trim(),
-                PinYinCode = EditPinYinCode?.Trim(),
-                Gender = EditGender,
-                BirthDate = EditBirthDate,
-                IdNumber = EditIdNumber?.Trim(),
-                PhoneNumber = EditPhoneNumber?.Trim(),
-                Address = EditAddress?.Trim()
-            };
+                // OpenSpec: refactor-masterdetail-editmode - 直接使用CurrentDetail数据
+                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端默认为Enabled
+                var dto = new PatientInputDto
+                {
+                    Id = detail.Id,
+                    Name = detail.Name?.Trim() ?? string.Empty,
+                    PinYinCode = detail.PinYinCode?.Trim(),
+                    Gender = detail.Gender,
+                    BirthDate = detail.BirthDate,
+                    IdNumber = detail.IdNumber?.Trim(),
+                    PhoneNumber = detail.PhoneNumber?.Trim(),
+                    Address = detail.Address?.Trim()
+                };
 
-            var result = detail.IsNew
-                ? await _patientRepository.CreateAsync(dto)
-                : await _patientRepository.UpdateAsync(dto);
+                var result = detail.IsNew
+                    ? await _patientRepository.CreateAsync(dto)
+                    : await _patientRepository.UpdateAsync(dto);
 
-            if (result != null)
-            {
                 // 更新详情数据
                 detail.Id = result.Id;
                 detail.Name = result.Name;
@@ -302,8 +208,13 @@ namespace LYBT.Desktop.Patients.ViewModels
                 RaisePropertyChanged(nameof(DetailTitle));
                 return true;
             }
-
-            return false;
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "保存患者失败: {PatientName}", detail.Name);
+                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
+                    detail.IsNew ? "创建患者" : "更新患者", ex);
+                return false;
+            }
         }
 
         protected override async Task<bool> DeleteDetailAsync(PatientDetailModel detail)
@@ -316,27 +227,15 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         protected override PatientDetailModel CreateNewDetail()
         {
+            // OpenSpec: refactor-masterdetail-editmode - 直接返回新模型
             var detail = PatientDetailModel.CreateNew();
-
-            // 初始化编辑属性
-            ClearEditProperties();
-
             RaisePropertyChanged(nameof(DetailTitle));
             return detail;
         }
 
         protected override PatientDetailModel CloneDetail(PatientDetailModel detail)
         {
-            // 保存到编辑属性
-            EditName = detail.Name;
-            EditPinYinCode = detail.PinYinCode;
-            EditGender = detail.Gender;
-            EditBirthDate = detail.BirthDate;
-            EditIdNumber = detail.IdNumber;
-            EditPhoneNumber = detail.PhoneNumber;
-            EditAddress = detail.Address;
-            EditStatus = detail.Status;
-
+            // OpenSpec: refactor-masterdetail-editmode - 直接克隆，无需复制到Edit属性
             return detail.Clone();
         }
 
@@ -405,22 +304,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             else await ShowSuccessMessageAsync(message);
 
             if (successCount > 0) await RefreshAsync();
-        }
-
-        #endregion
-
-        #region 辅助方法
-
-        private void ClearEditProperties()
-        {
-            EditName = string.Empty;
-            EditPinYinCode = string.Empty;
-            EditGender = Gender.Unknown;
-            EditBirthDate = null;
-            EditIdNumber = null;
-            EditPhoneNumber = null;
-            EditAddress = null;
-            EditStatus = CommonStatus.Enabled;
         }
 
         #endregion

@@ -43,7 +43,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.Create failed - Username={Username}", createDto.UserName);
-                return (false, null, "创建用户时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建用户", ex));
             }
         }
 
@@ -64,7 +64,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.Update failed - UserId={UserId}", updateDto.Id);
-                return (false, null, "更新用户时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新用户", ex));
             }
         }
 
@@ -93,7 +93,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.Delete failed - UserId={UserId}", userId);
-                return (false, "删除用户时发生系统错误");
+                return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除用户", ex));
             }
         }
 
@@ -124,7 +124,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.BatchDelete failed");
-                return (false, null, "批量删除用户时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量删除用户", ex));
             }
         }
 
@@ -155,7 +155,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.GetById failed - UserId={UserId}", userId);
-                return (false, null, "查询用户时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询用户", ex));
             }
         }
 
@@ -178,7 +178,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.GetPaged failed");
-                return (false, null, "查询用户时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询用户列表", ex));
             }
         }
 
@@ -205,7 +205,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.GetByUsername failed - Username={Username}", username);
-                return (false, null, "查询用户时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询用户", ex));
             }
         }
 
@@ -226,7 +226,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.Search failed");
-                return (false, null, "搜索用户时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("搜索用户", ex));
             }
         }
 
@@ -247,7 +247,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.GetDoctors failed");
-                return (false, null, "查询医生列表时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询医生列表", ex));
             }
         }
 
@@ -273,7 +273,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] User.ChangeProfile failed - UserId={UserId}", userId);
-                return (false, null, "修改个人资料时发生系统错误");
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改个人资料", ex));
             }
         }
 

@@ -31,110 +31,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private readonly ICommonDialogService _dialogService;
         private readonly IDialogService _prismDialogService;
 
-        #region 编辑属性
-
-        private string _editName = string.Empty;
-        private string _editPinYinCode = string.Empty;
-        private string? _editOrigin;
-        private string? _editSpec;
-        private string _editUnit = "克";
-        private decimal _editPrice;
-        private decimal _editCostPrice;
-        private string? _editEffect;
-        private string? _editUsage;
-        private string? _editRemark;
-        private CommonStatus _editStatus = CommonStatus.Enabled;
-
-        /// <summary>编辑-药材名称</summary>
-        public string EditName
-        {
-            get => _editName;
-            set
-            {
-                if (SetProperty(ref _editName, value))
-                {
-                    EditPinYinCode = PinYinHelper.GetPinYinCode(value);
-                    MarkAsModified();
-                }
-            }
-        }
-
-        /// <summary>编辑-拼音码（自动生成，可手动修正多音字错误）</summary>
-        public string EditPinYinCode
-        {
-            get => _editPinYinCode;
-            set { if (SetProperty(ref _editPinYinCode, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-产地</summary>
-        public string? EditOrigin
-        {
-            get => _editOrigin;
-            set { if (SetProperty(ref _editOrigin, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-规格</summary>
-        public string? EditSpec
-        {
-            get => _editSpec;
-            set { if (SetProperty(ref _editSpec, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-单位</summary>
-        public string EditUnit
-        {
-            get => _editUnit;
-            set { if (SetProperty(ref _editUnit, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-零售价</summary>
-        public decimal EditPrice
-        {
-            get => _editPrice;
-            set { if (SetProperty(ref _editPrice, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-成本价</summary>
-        public decimal EditCostPrice
-        {
-            get => _editCostPrice;
-            set { if (SetProperty(ref _editCostPrice, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-功效</summary>
-        public string? EditEffect
-        {
-            get => _editEffect;
-            set { if (SetProperty(ref _editEffect, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-用法用量</summary>
-        public string? EditUsage
-        {
-            get => _editUsage;
-            set { if (SetProperty(ref _editUsage, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-备注</summary>
-        public string? EditRemark
-        {
-            get => _editRemark;
-            set { if (SetProperty(ref _editRemark, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-状态</summary>
-        public CommonStatus EditStatus
-        {
-            get => _editStatus;
-            set { if (SetProperty(ref _editStatus, value)) MarkAsModified(); }
-        }
+        #region 扩展命令
 
         /// <summary>是否允许编辑名称（新建时允许，编辑时不允许）</summary>
         public bool IsNameEditable => CurrentDetail?.IsNew ?? false;
-
-        #endregion
-
-        #region 扩展命令
 
         /// <summary>切换药材状态命令</summary>
         public DelegateCommand ToggleStatusCommand { get; private set; } = null!;
@@ -335,47 +235,14 @@ namespace LYBT.Desktop.Herbs.ViewModels
         protected override HerbDetailModel CreateNewDetail()
         {
             var detail = HerbDetailModel.CreateNew();
-
-            // 清空编辑属性
-            ClearEditProperties();
             RaisePropertyChanged(nameof(IsNameEditable));
             RaisePropertyChanged(nameof(DetailTitle));
-
             return detail;
-        }
-
-        private void ClearEditProperties()
-        {
-            EditName = string.Empty;
-            EditPinYinCode = string.Empty;
-            EditOrigin = null;
-            EditSpec = null;
-            EditUnit = "克";
-            EditPrice = 0;
-            EditCostPrice = 0;
-            EditEffect = null;
-            EditUsage = null;
-            EditRemark = null;
-            EditStatus = CommonStatus.Enabled;
         }
 
         protected override HerbDetailModel CloneDetail(HerbDetailModel detail)
         {
-            // 复制到编辑属性
-            EditName = detail.Name;
-            EditPinYinCode = detail.PinYinCode;
-            EditOrigin = detail.Origin;
-            EditSpec = detail.Spec;
-            EditUnit = detail.Unit;
-            EditPrice = detail.Price;
-            EditCostPrice = detail.CostPrice ?? 0;
-            EditEffect = detail.Effect;
-            EditUsage = detail.Usage;
-            EditRemark = detail.Remark;
-            EditStatus = detail.Status;
-
             RaisePropertyChanged(nameof(IsNameEditable));
-
             return detail.Clone();
         }
 
@@ -386,13 +253,13 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         protected override async Task<bool> SaveDetailAsync(HerbDetailModel detail)
         {
-            if (string.IsNullOrWhiteSpace(EditName))
+            if (string.IsNullOrWhiteSpace(detail.Name))
             {
                 await ShowErrorMessageAsync("药材名称不能为空");
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(EditUnit))
+            if (string.IsNullOrWhiteSpace(detail.Unit))
             {
                 await ShowErrorMessageAsync("单位不能为空");
                 return false;
@@ -402,16 +269,16 @@ namespace LYBT.Desktop.Herbs.ViewModels
             var input = new HerbInputDto
             {
                 Id = detail.Id,
-                Name = EditName.Trim(),
-                PinYinCode = EditPinYinCode?.Trim(),
-                Origin = EditOrigin?.Trim(),
-                Spec = EditSpec?.Trim(),
-                Unit = EditUnit.Trim(),
-                Price = EditPrice,
-                CostPrice = EditCostPrice > 0 ? EditCostPrice : null,
-                Effect = EditEffect?.Trim(),
-                Usage = EditUsage?.Trim(),
-                Remark = EditRemark?.Trim()
+                Name = detail.Name.Trim(),
+                PinYinCode = detail.PinYinCode?.Trim(),
+                Origin = detail.Origin?.Trim(),
+                Spec = detail.Spec?.Trim(),
+                Unit = detail.Unit.Trim(),
+                Price = detail.Price,
+                CostPrice = detail.CostPrice > 0 ? detail.CostPrice : null,
+                Effect = detail.Effect?.Trim(),
+                Usage = detail.Usage?.Trim(),
+                Remark = detail.Remark?.Trim()
             };
 
             var result = detail.IsNew

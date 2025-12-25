@@ -258,7 +258,9 @@ namespace LYBT.Desktop.Formula.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存验方失败: {FormulaName}", detail.Name);
-                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存验方", ex));
+                // 设置ErrorMessage由基类显示，避免双重消息
+                ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
+                    detail.IsNew ? "创建验方" : "更新验方", ex);
                 return false;
             }
         }

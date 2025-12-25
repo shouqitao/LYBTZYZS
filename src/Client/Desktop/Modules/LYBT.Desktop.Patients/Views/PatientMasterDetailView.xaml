@@ -262,20 +262,20 @@
                     ShowStatus="True"
                     Margin="16"/>
 
-                <!-- 编辑模式内容 -->
+                <!-- 编辑模式内容 - OpenSpec: refactor-masterdetail-editmode 直接绑定CurrentDetail -->
                 <patientControls:PatientEditControl
                     Grid.Row="1"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    PatientName="{Binding EditName, Mode=TwoWay}"
-                    PinYinCode="{Binding EditPinYinCode, Mode=TwoWay}"
-                    Gender="{Binding EditGender, Mode=TwoWay}"
+                    PatientName="{Binding CurrentDetail.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    PinYinCode="{Binding CurrentDetail.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Gender="{Binding CurrentDetail.Gender, Mode=TwoWay}"
                     GenderOptions="{Binding GenderOptions}"
-                    BirthDate="{Binding EditBirthDate, Mode=TwoWay}"
-                    Age="{Binding EditAge}"
-                    IdNumber="{Binding EditIdNumber, Mode=TwoWay}"
-                    PhoneNumber="{Binding EditPhoneNumber, Mode=TwoWay}"
-                    Address="{Binding EditAddress, Mode=TwoWay}"
-                    Status="{Binding EditStatus, Mode=TwoWay}"
+                    BirthDate="{Binding CurrentDetail.BirthDate, Mode=TwoWay}"
+                    Age="{Binding CurrentDetail.Age}"
+                    IdNumber="{Binding CurrentDetail.IdNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    PhoneNumber="{Binding CurrentDetail.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Address="{Binding CurrentDetail.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Status="{Binding CurrentDetail.Status, Mode=TwoWay}"
                     StatusOptions="{Binding StatusOptions}"
                     ShowStatus="True"
                     Margin="16"/>

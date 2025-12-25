@@ -225,7 +225,8 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
         catch (Exception ex)
         {
             Logger.LogError(ex, "保存医案失败: {MedicalCaseId}", detail.Id);
-            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
+            // 设置ErrorMessage由基类显示，避免双重消息
+            ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存医案", ex);
             return false;
         }
     }

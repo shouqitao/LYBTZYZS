@@ -9,7 +9,6 @@ using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Desktop.Utilities.Excel;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -64,71 +63,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region 编辑属性
-
-        private string _editUserName = string.Empty;
-        private string _editRealName = string.Empty;
-        private string _editPinYinCode = string.Empty;
-        private string? _editPhoneNumber;
-        private string? _editEmail;
-        private UserRole _editRole = UserRole.Doctor;
-        private CommonStatus _editStatus = CommonStatus.Enabled;
-
-        /// <summary>编辑-用户名</summary>
-        public string EditUserName
-        {
-            get => _editUserName;
-            set { if (SetProperty(ref _editUserName, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-真实姓名</summary>
-        public string EditRealName
-        {
-            get => _editRealName;
-            set
-            {
-                if (SetProperty(ref _editRealName, value))
-                {
-                    EditPinYinCode = PinYinHelper.GetPinYinCode(value);
-                    MarkAsModified();
-                }
-            }
-        }
-
-        /// <summary>编辑-拼音码（自动生成，可手动修正多音字错误）</summary>
-        public string EditPinYinCode
-        {
-            get => _editPinYinCode;
-            set { if (SetProperty(ref _editPinYinCode, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-手机号</summary>
-        public string? EditPhoneNumber
-        {
-            get => _editPhoneNumber;
-            set { if (SetProperty(ref _editPhoneNumber, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-邮箱</summary>
-        public string? EditEmail
-        {
-            get => _editEmail;
-            set { if (SetProperty(ref _editEmail, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-角色</summary>
-        public UserRole EditRole
-        {
-            get => _editRole;
-            set { if (SetProperty(ref _editRole, value)) MarkAsModified(); }
-        }
-
-        /// <summary>编辑-状态</summary>
-        public CommonStatus EditStatus
-        {
-            get => _editStatus;
-            set { if (SetProperty(ref _editStatus, value)) MarkAsModified(); }
-        }
+        #region 显示属性 - OpenSpec: refactor-masterdetail-editmode 移除Edit属性，直接绑定CurrentDetail
 
         /// <summary>用户名是否只读（编辑模式下不可修改）</summary>
         public bool IsUserNameReadOnly => CurrentDetail != null && !CurrentDetail.IsNew;
@@ -306,20 +241,25 @@ namespace LYBT.Desktop.Users.ViewModels
             return detail;
         }
 
+        /// <summary>
+        /// 保存用户详情
+        /// OpenSpec: refactor-masterdetail-editmode - 直接使用CurrentDetail属性
+        /// </summary>
         protected override async Task<bool> SaveDetailAsync(UserDetailModel detail)
         {
             if (detail == null) return false;
 
+            // 直接使用CurrentDetail属性构建DTO，无需Edit属性中转
             var dto = new UserInputDto
             {
                 Id = detail.Id,
-                UserName = EditUserName.Trim(),
-                RealName = EditRealName.Trim(),
-                PinYinCode = EditPinYinCode?.Trim(),
-                PhoneNumber = EditPhoneNumber?.Trim(),
-                Email = EditEmail?.Trim(),
-                Role = EditRole,
-                Status = detail.IsNew ? CommonStatus.Enabled : EditStatus
+                UserName = detail.UserName?.Trim() ?? string.Empty,
+                RealName = detail.RealName?.Trim() ?? string.Empty,
+                PinYinCode = detail.PinYinCode?.Trim(),
+                PhoneNumber = detail.PhoneNumber?.Trim(),
+                Email = detail.Email?.Trim(),
+                Role = detail.Role,
+                Status = detail.IsNew ? CommonStatus.Enabled : detail.Status
             };
 
             var result = detail.IsNew
@@ -328,10 +268,11 @@ namespace LYBT.Desktop.Users.ViewModels
 
             if (result.success && result.user != null)
             {
+                // 更新detail以反映服务器返回的数据
                 detail.Id = result.user.Id;
                 detail.UserName = result.user.UserName;
                 detail.RealName = result.user.RealName;
-                detail.PinYinCode = result.user.PinYinCode ?? EditPinYinCode ?? string.Empty;
+                detail.PinYinCode = result.user.PinYinCode ?? detail.PinYinCode ?? string.Empty;
                 detail.PhoneNumber = result.user.PhoneNumber;
                 detail.Email = result.user.Email;
                 detail.Role = result.user.Role;
@@ -341,10 +282,10 @@ namespace LYBT.Desktop.Users.ViewModels
                 return true;
             }
 
-            if (!string.IsNullOrEmpty(result.errorMessage))
-            {
-                ErrorMessage = result.errorMessage;
-            }
+            // 确保失败时总是设置ErrorMessage，避免显示通用消息
+            ErrorMessage = !string.IsNullOrEmpty(result.errorMessage)
+                ? result.errorMessage
+                : (detail.IsNew ? "创建用户失败" : "更新用户失败");
 
             return false;
         }
@@ -357,27 +298,24 @@ namespace LYBT.Desktop.Users.ViewModels
             return result.success;
         }
 
+        /// <summary>
+        /// 创建新用户详情
+        /// OpenSpec: refactor-masterdetail-editmode - 简化创建逻辑
+        /// </summary>
         protected override UserDetailModel CreateNewDetail()
         {
             var detail = UserDetailModel.CreateNew();
-            ClearEditProperties();
-
             RaisePropertyChanged(nameof(DetailTitle));
             RaisePropertyChanged(nameof(IsUserNameReadOnly));
             return detail;
         }
 
+        /// <summary>
+        /// 克隆详情用于取消编辑时恢复
+        /// OpenSpec: refactor-masterdetail-editmode - 直接克隆，无需填充Edit属性
+        /// </summary>
         protected override UserDetailModel CloneDetail(UserDetailModel detail)
         {
-            EditUserName = detail.UserName;
-            EditRealName = detail.RealName;
-            // 注意：需要在EditRealName之后设置，以覆盖自动生成的值
-            EditPinYinCode = detail.PinYinCode;
-            EditPhoneNumber = detail.PhoneNumber;
-            EditEmail = detail.Email;
-            EditRole = detail.Role;
-            EditStatus = detail.Status;
-
             return detail.Clone();
         }
 
@@ -670,16 +608,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 辅助方法
 
-        private void ClearEditProperties()
-        {
-            EditUserName = string.Empty;
-            EditRealName = string.Empty;
-            EditPinYinCode = string.Empty;
-            EditPhoneNumber = null;
-            EditEmail = null;
-            EditRole = UserRole.Doctor;
-            EditStatus = CommonStatus.Enabled;
-        }
+        // OpenSpec: refactor-masterdetail-editmode - 移除ClearEditProperties()，不再需要Edit属性
 
         protected override void RefreshCanExecuteChanged()
         {
