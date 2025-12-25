@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### MasterDetail编辑模式统一 (OpenSpec: refactor-masterdetail-editmode) - 2025-12-25
+
+**背景**: MasterDetail模块存在多种编辑属性绑定模式，导致大量冗余代码。
+
+**核心改进**:
+- 移除冗余EditXxx属性模式，统一使用CurrentDetail直接绑定
+- XAML绑定从EditName改为CurrentDetail.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged
+- 所有DetailModel继承BindableBase (Prism)支持INPC，无需ViewModel中间层属性
+
+**影响模块**:
+- Users: 删除8个Edit属性，减少约200行代码
+- Patients: 删除8个Edit属性，减少约200行代码
+- Herbs: 删除11个Edit属性，减少约250行代码
+- MedicalCase/Formula: 已符合统一模式，无需修改
+
+**附带修复**:
+- 集成测试JWT配置key从Lybt:Jwt:*改为Jwt:*匹配JwtOptions.SectionName
+- 20/20集成测试全部通过
+
 #### 统一数据流日志规范 LOG-018 (OpenSpec: enhance-dataflow-logging) - 2025-12-24
 
 **背景**: 系统日志格式不统一，层级标识混乱，敏感数据未脱敏，分布式追踪困难。
