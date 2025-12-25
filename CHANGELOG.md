@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### UI层数据验证框架设计 (OpenSpec: ui-validation-framework) - 2025-12-25
+
+**背景**: 验证主要在服务端执行，用户填写表单后提交才能看到错误，缺乏即时反馈。
+
+**设计目标**:
+- 建立从UI层开始的完整数据验证机制
+- 用户输入时立即显示验证结果
+- 统一验证规则定义，避免前后端不一致
+
+**核心设计**:
+- ValidatableModelBase基类: 实现INotifyDataErrorInfo，提供SetPropertyAndValidate方法
+- 复用ValidationConstants: 使用现有LYBT.Shared.Primitives.Validation.ValidationConstants
+- Style模式: ValidatingTextBoxStyle、RequiredIndicatorStyle、ValidationErrorMessageStyle
+- 不创建FormField UserControl: 采用WPF原生Validation.ErrorTemplate机制
+
+**架构决策**:
+- Style模式优于UserControl（更灵活、性能更好、与项目一致）
+- 即时验证性能可接受（参考Microsoft Community Toolkit ObservableValidator）
+- 缓存优化延迟到下一个性能提案（与药材缓存统一规划）
+
+**Spec更新**:
+- dto-architecture: DTO-010~DTO-012
+- viewmodel-conventions: VM-010~VM-013
+
+**状态**: 设计归档完成，待实现
+
 #### MasterDetail编辑模式统一 (OpenSpec: refactor-masterdetail-editmode) - 2025-12-25
 
 **背景**: MasterDetail模块存在多种编辑属性绑定模式，导致大量冗余代码。
