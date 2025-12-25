@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### ViewModel组合模式重构 (OpenSpec: refactor-viewmodel-composition) - 2025-12-25
+
+**背景**: MasterDetail ViewModel基类过于臃肿，继承层次深，难以测试和维护。
+
+**核心改进**:
+- 采用组合模式替代继承：通过IMasterDetailServices注入服务而非基类膨胀
+- 引入CommunityToolkit.Mvvm 8.4.0：使用[RelayCommand]源生成器简化命令定义
+- 服务分离：9个独立服务接口 + 2个组合服务接口
+
+**新增服务**:
+- ILoadingStateManager: 加载状态管理
+- IPaginationService: 分页服务
+- ISearchService: 搜索服务
+- ISelectionService<T>: 选择服务
+- IDetailEditorService<T>: 详情编辑服务
+- IDialogManager: 对话框管理
+- IViewNavigationService: 导航服务
+- IErrorHandler: 错误处理
+- IAsyncExecutor: 异步执行
+
+**迁移模块**:
+- Herbs: HerbMasterDetailViewModel
+- Formula: FormulaMasterDetailViewModel
+- Patients: PatientMasterDetailViewModel
+- MedicalCase: MedicalCaseMasterDetailViewModel
+- Users: UserMasterDetailViewModel
+
+**代码清理**:
+- 删除16个旧文件（1个旧基类 + 5个旧ViewModel + 10个旧View）
+- 重命名V2文件移除后缀
+- 统一编码规范
+
+**状态**: 重构完成，已归档
+
 #### UI层数据验证框架设计 (OpenSpec: ui-validation-framework) - 2025-12-25
 
 **背景**: 验证主要在服务端执行，用户填写表单后提交才能看到错误，缺乏即时反馈。
