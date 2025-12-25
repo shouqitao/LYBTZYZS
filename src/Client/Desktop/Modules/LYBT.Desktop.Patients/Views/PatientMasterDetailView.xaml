@@ -80,9 +80,9 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 性别 - OpenSpec: unify-frontend-backend-types Phase 1 -->
+                        <!-- 性别 - 使用EnumDescriptionConverter转换Gender枚举 -->
                         <DataGridTextColumn Header="性别"
-                                            Binding="{Binding GenderDisplay}"
+                                            Binding="{Binding Gender, Converter={StaticResource EnumDescriptionConverter}}"
                                             Width="50">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">

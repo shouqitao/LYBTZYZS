@@ -115,18 +115,18 @@ namespace LYBT.Desktop.Herbs.Controls
         }
 
         /// <summary>
-        /// 成本价
+        /// 成本价（可空，非必填）
         /// </summary>
         public static readonly DependencyProperty CostPriceProperty =
             DependencyProperty.Register(
                 nameof(CostPrice),
-                typeof(decimal),
+                typeof(decimal?),
                 typeof(HerbEditControl),
-                new FrameworkPropertyMetadata(0m, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public decimal CostPrice
+        public decimal? CostPrice
         {
-            get => (decimal)GetValue(CostPriceProperty);
+            get => (decimal?)GetValue(CostPriceProperty);
             set => SetValue(CostPriceProperty, value);
         }
 

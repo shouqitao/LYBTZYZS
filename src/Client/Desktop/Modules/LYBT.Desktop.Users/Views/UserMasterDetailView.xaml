@@ -86,13 +86,25 @@
                                   Width="100"
                                   Margin="0,0,8,0"
                                   Text="全部角色"
-                                  IsEditable="False"/>
+                                  IsEditable="False">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         <ComboBox ItemsSource="{Binding StatusOptions}"
                                   SelectedItem="{Binding SelectedStatusFilter}"
                                   Width="100"
                                   Margin="0,0,8,0"
                                   Text="全部状态"
-                                  IsEditable="False"/>
+                                  IsEditable="False">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         <CheckBox Content="显示已禁用"
                                   IsChecked="{Binding ShowInactiveUsers}"
                                   VerticalAlignment="Center"
@@ -140,9 +152,9 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 角色 -->
+                        <!-- 角色 - 使用EnumDescriptionConverter转换UserRole枚举 -->
                         <DataGridTextColumn Header="角色"
-                                            Binding="{Binding Role}"
+                                            Binding="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"
                                             Width="70">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">

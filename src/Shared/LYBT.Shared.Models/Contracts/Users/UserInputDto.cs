@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Enums;  // UserRole
 
 namespace LYBT.Shared.Models.Contracts.Users
 {
@@ -67,8 +67,12 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("用户角色")]
         public UserRole? Role { get; set; } = UserRole.Doctor;
 
-        /// <summary>状态</summary>
-        [DisplayName("状态")]
-        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+        /// <summary>备注</summary>
+        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
+        [DisplayName("备注")]
+        public string? Remark { get; set; }
+
+        // OpenSpec: sync-entity-dto-fields - Status字段已移除
+        // InputDto不应包含Status字段，状态变更应通过专用API进行
     }
 }

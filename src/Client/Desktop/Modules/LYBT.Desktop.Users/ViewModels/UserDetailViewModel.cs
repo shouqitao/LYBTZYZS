@@ -109,7 +109,8 @@ namespace LYBT.Desktop.Users.ViewModels
             try
             {
                 IsLoading = true; StatusMessage = UserId == Guid.Empty ? "正在创建用户..." : "正在保存修改...";
-                var dto = new UserInputDto { Id = UserId, UserName = UserName.Trim(), RealName = RealName.Trim(), PhoneNumber = PhoneNumber?.Trim(), Email = Email?.Trim(), Role = SelectedRole, Status = UserId == Guid.Empty ? CommonStatus.Enabled : Status };
+                // OpenSpec: sync-entity-dto-fields - Status通过专用API管理，InputDto不包含Status
+                var dto = new UserInputDto { Id = UserId, UserName = UserName.Trim(), RealName = RealName.Trim(), PhoneNumber = PhoneNumber?.Trim(), Email = Email?.Trim(), Role = SelectedRole };
                 var result = UserId == Guid.Empty ? await _commandHandler.CreateAsync(dto) : await _commandHandler.UpdateAsync(dto);
                 if (result.success && result.user != null) NavigateBack("ContentRegion", new NavigationParameters { { "RefreshRequired", true }, { "Operation", UserId == Guid.Empty ? "UserCreated" : "UserUpdated" }, { "User", result.user } });
                 else await ShowErrorMessageAsync(result.errorMessage ?? (UserId == Guid.Empty ? "创建用户失败" : "更新用户失败"));

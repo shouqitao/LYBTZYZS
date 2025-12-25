@@ -39,6 +39,9 @@ public partial class App : PrismApplication
     /// <summary>应用程序启动入口</summary>
     protected override void OnStartup(StartupEventArgs e)
     {
+        // 设置控制台编码为UTF-8（必须在Serilog初始化前，否则Console sink无法正确显示中文）
+        SetConsoleEncoding();
+
         // refactor-logging-system: 初始化Serilog日志系统
         DesktopSerilogConfiguration.Initialize();
         Log.Information("应用程序启动");
@@ -97,13 +100,6 @@ public partial class App : PrismApplication
         _performanceMonitor = new StartupPerformanceMonitor(Container.Resolve<ILoggerFactory>());
         _performanceMonitor.StartMonitoring();
         _performanceMonitor.StartStage("应用初始化");
-
-        // 设置控制台编码为UTF-8（WPF应用默认无控制台，需先检查）
-        if (HasConsole())
-        {
-            try { System.Console.OutputEncoding = System.Text.Encoding.UTF8; }
-            catch (System.IO.IOException) { }
-        }
 
         _ = InitializeApplicationAsync();
     }
@@ -344,6 +340,26 @@ public partial class App : PrismApplication
             throw new ArgumentException($"无效的用户角色: {userRole}");
     }
 
+    /// <summary>设置控制台编码为UTF-8（必须在Serilog初始化前调用）</summary>
+    private static void SetConsoleEncoding()
+    {
+        if (HasConsole())
+        {
+            try
+            {
+                // 设置控制台代码页为UTF-8 (65001)
+                SetConsoleOutputCP(65001);
+                SetConsoleCP(65001);
+                System.Console.OutputEncoding = System.Text.Encoding.UTF8;
+                System.Console.InputEncoding = System.Text.Encoding.UTF8;
+            }
+            catch (System.IO.IOException)
+            {
+                // 忽略：某些环境可能不支持更改控制台编码
+            }
+        }
+    }
+
     /// <summary>检查是否有可用的控制台窗口（使用Windows API避免异常）</summary>
     private static bool HasConsole()
     {
@@ -352,4 +368,10 @@ public partial class App : PrismApplication
 
     [System.Runtime.InteropServices.DllImport("kernel32.dll")]
     private static extern IntPtr GetConsoleWindow();
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    private static extern bool SetConsoleOutputCP(uint wCodePageID);
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    private static extern bool SetConsoleCP(uint wCodePageID);
 }

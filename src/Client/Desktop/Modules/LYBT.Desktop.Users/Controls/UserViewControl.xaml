@@ -62,10 +62,9 @@
 
                         <!-- 用户角色 -->
                         <TextBlock Grid.Row="1" Grid.Column="2" Text="用户角色" Style="{StaticResource DetailLabelStyle}"/>
-                        <controls:StatusBadge Grid.Row="1" Grid.Column="3"
-                                              Status="{Binding Role}"
-                                              HorizontalAlignment="Left"
-                                              Margin="0,4,0,4"/>
+                        <TextBlock Grid.Row="1" Grid.Column="3"
+                                   Text="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"
+                                   Style="{StaticResource DetailValueStyle}"/>
 
                         <!-- 账户状态 -->
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="账户状态" Style="{StaticResource DetailLabelStyle}"

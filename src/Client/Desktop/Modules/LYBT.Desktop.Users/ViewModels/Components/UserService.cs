@@ -279,6 +279,39 @@ namespace LYBT.Desktop.Users.ViewModels.Components
 
         #endregion
 
+        #region 状态管理
+
+        /// <summary>
+        /// 切换用户状态
+        /// OpenSpec: sync-entity-dto-fields - 状态通过专用API管理
+        /// </summary>
+        public async Task<(bool success, UserDetailDto? user, string? errorMessage)> ToggleStatusAsync(Guid userId)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] User.ToggleStatus started - UserId={UserId}", userId);
+
+                var user = await _repository.ToggleStatusAsync(userId);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("[SVC] User.ToggleStatus → NotFound - UserId={UserId}", userId);
+                    return (false, null, "用户不存在");
+                }
+
+                _logger.LogInformation("[SVC] User.ToggleStatus completed - UserId={UserId} NewStatus={Status}",
+                    userId, user.Status);
+                return (true, user, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] User.ToggleStatus failed - UserId={UserId}", userId);
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("切换用户状态", ex));
+            }
+        }
+
+        #endregion
+
         #region 密码管理（占位实现）
 
         /// <summary>

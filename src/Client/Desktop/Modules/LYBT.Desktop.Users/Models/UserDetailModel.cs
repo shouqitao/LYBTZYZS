@@ -21,8 +21,9 @@ namespace LYBT.Desktop.Users.Models
         private UserRole _role = UserRole.Doctor;
         private CommonStatus _status = CommonStatus.Enabled;
         private DateTime? _lastLoginTime;
-        private DateTime? _createdAt;
+        private DateTime _createdAt;
         private DateTime? _updatedAt;
+        private string? _remark;
 
         /// <summary>用户ID</summary>
         public Guid Id
@@ -98,7 +99,7 @@ namespace LYBT.Desktop.Users.Models
         }
 
         /// <summary>创建时间</summary>
-        public DateTime? CreatedAt
+        public DateTime CreatedAt
         {
             get => _createdAt;
             set => SetProperty(ref _createdAt, value);
@@ -109,6 +110,13 @@ namespace LYBT.Desktop.Users.Models
         {
             get => _updatedAt;
             set => SetProperty(ref _updatedAt, value);
+        }
+
+        /// <summary>备注</summary>
+        public string? Remark
+        {
+            get => _remark;
+            set => SetProperty(ref _remark, value);
         }
 
         /// <summary>创建空模型</summary>
@@ -137,7 +145,8 @@ namespace LYBT.Desktop.Users.Models
                 Status = Status,
                 LastLoginTime = LastLoginTime,
                 CreatedAt = CreatedAt,
-                UpdatedAt = UpdatedAt
+                UpdatedAt = UpdatedAt,
+                Remark = Remark
             };
             // 直接赋值拼音码，避免设置RealName时触发自动生成
             clone._realName = RealName;

@@ -86,9 +86,14 @@
                         <TextBlock Text="用户角色 *" Style="{StaticResource FormLabelStyle}"/>
                         <ComboBox SelectedItem="{Binding Role, Mode=TwoWay}"
                                   ItemsSource="{Binding RoleOptions}"
-                                  DisplayMemberPath="."
                                   MinHeight="44"
-                                  Padding="12,10"/>
+                                  Padding="12,10">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
                     <!-- 第四行：账户状态 -->
@@ -97,9 +102,14 @@
                         <TextBlock Text="账户状态" Style="{StaticResource FormLabelStyle}"/>
                         <ComboBox SelectedItem="{Binding Status, Mode=TwoWay}"
                                   ItemsSource="{Binding StatusOptions}"
-                                  DisplayMemberPath="."
                                   MinHeight="44"
-                                  Padding="12,10"/>
+                                  Padding="12,10">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
                 </Grid>
             </controls:InfoCard.Content>

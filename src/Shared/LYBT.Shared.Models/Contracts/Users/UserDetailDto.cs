@@ -60,5 +60,9 @@ public class UserDetailDto
 
     /// <summary>更新时间</summary>
     [DisplayName("更新时间")]
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>备注</summary>
+    [DisplayName("备注")]
+    public string? Remark { get; set; }
 }

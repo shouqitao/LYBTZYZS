@@ -265,6 +265,19 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 return false;
             }
 
+            if (detail.Price <= 0)
+            {
+                await ShowErrorMessageAsync("售价必须大于0");
+                return false;
+            }
+
+            // 成本价非必填，但如果填写了必须大于0
+            if (detail.CostPrice.HasValue && detail.CostPrice <= 0)
+            {
+                await ShowErrorMessageAsync("成本价必须大于0");
+                return false;
+            }
+
             // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端管理
             var input = new HerbInputDto
             {
@@ -275,7 +288,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 Spec = detail.Spec?.Trim(),
                 Unit = detail.Unit.Trim(),
                 Price = detail.Price,
-                CostPrice = detail.CostPrice > 0 ? detail.CostPrice : null,
+                CostPrice = detail.CostPrice,  // 进价已通过验证，直接传递
                 Effect = detail.Effect?.Trim(),
                 Usage = detail.Usage?.Trim(),
                 Remark = detail.Remark?.Trim()

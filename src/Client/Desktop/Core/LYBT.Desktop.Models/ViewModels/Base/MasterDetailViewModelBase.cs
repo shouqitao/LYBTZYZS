@@ -185,10 +185,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 // 使用SafeFireAndForget确保异常被正确处理
                 SafeFireAndForgetLoadDetail();
             }
-            else if (!_isCreatingNew)
+            else if (!_isCreatingNew && !IsEditMode)
             {
                 // OpenSpec: refactor-masterdetail-editmode
-                // 新建模式下不清空CurrentDetail，防止P0 Bug
+                // 新建模式或编辑模式下不清空CurrentDetail，防止保存时被意外清空
                 CancelLoadDetail();
                 CurrentDetail = null;
                 IsEditMode = false;

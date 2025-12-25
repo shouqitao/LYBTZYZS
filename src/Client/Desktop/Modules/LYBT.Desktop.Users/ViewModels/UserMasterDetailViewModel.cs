@@ -224,15 +224,21 @@ namespace LYBT.Desktop.Users.ViewModels
             var result = await _commandHandler.GetByIdAsync(item.Id);
             if (!result.success || result.user == null) return null;
 
+            // OpenSpec: sync-entity-dto-fields - 完整映射DetailDto到DetailModel
             var detail = new UserDetailModel
             {
                 Id = result.user.Id,
                 UserName = result.user.UserName,
                 RealName = result.user.RealName,
+                PinYinCode = result.user.PinYinCode ?? string.Empty,
                 PhoneNumber = result.user.PhoneNumber,
                 Email = result.user.Email,
                 Role = result.user.Role,
-                Status = result.user.Status
+                Status = result.user.Status,
+                LastLoginTime = result.user.LastLoginTime,
+                CreatedAt = result.user.CreatedAt,
+                UpdatedAt = result.user.UpdatedAt,
+                Remark = result.user.Remark
             };
 
             RaisePropertyChanged(nameof(DetailTitle));
@@ -250,6 +256,7 @@ namespace LYBT.Desktop.Users.ViewModels
             if (detail == null) return false;
 
             // 直接使用CurrentDetail属性构建DTO，无需Edit属性中转
+            // OpenSpec: sync-entity-dto-fields - Status通过专用API管理，InputDto不包含Status
             var dto = new UserInputDto
             {
                 Id = detail.Id,
@@ -258,8 +265,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 PinYinCode = detail.PinYinCode?.Trim(),
                 PhoneNumber = detail.PhoneNumber?.Trim(),
                 Email = detail.Email?.Trim(),
-                Role = detail.Role,
-                Status = detail.IsNew ? CommonStatus.Enabled : detail.Status
+                Role = detail.Role
             };
 
             var result = detail.IsNew
@@ -268,7 +274,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             if (result.success && result.user != null)
             {
-                // 更新detail以反映服务器返回的数据
+                // OpenSpec: sync-entity-dto-fields - 完整回填服务器返回数据
                 detail.Id = result.user.Id;
                 detail.UserName = result.user.UserName;
                 detail.RealName = result.user.RealName;
@@ -277,6 +283,9 @@ namespace LYBT.Desktop.Users.ViewModels
                 detail.Email = result.user.Email;
                 detail.Role = result.user.Role;
                 detail.Status = result.user.Status;
+                detail.CreatedAt = result.user.CreatedAt;
+                detail.UpdatedAt = result.user.UpdatedAt;
+                detail.Remark = result.user.Remark;
 
                 RaisePropertyChanged(nameof(DetailTitle));
                 return true;
@@ -442,29 +451,10 @@ namespace LYBT.Desktop.Users.ViewModels
             if (user == null) return;
             await ExecuteSafelyAsync(async () =>
             {
-                var newStatus = user.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
-                var action = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
+                var action = user.Status == CommonStatus.Enabled ? "禁用" : "启用";
 
-                // OpenSpec: optimize-entity-data-flow - UserListDto是轻量DTO，需先获取完整数据
-                var fullUserResult = await _commandHandler.GetByIdAsync(user.Id);
-                if (!fullUserResult.success || fullUserResult.user == null)
-                {
-                    throw new InvalidOperationException("无法获取用户详细信息");
-                }
-
-                var fullUser = fullUserResult.user;
-                var updateDto = new UserInputDto
-                {
-                    Id = fullUser.Id,
-                    UserName = fullUser.UserName,
-                    RealName = fullUser.RealName,
-                    PhoneNumber = fullUser.PhoneNumber,
-                    Email = fullUser.Email,
-                    Role = fullUser.Role,
-                    Status = newStatus
-                };
-
-                var result = await _commandHandler.UpdateAsync(updateDto);
+                // OpenSpec: sync-entity-dto-fields - 使用专用ToggleStatus API
+                var result = await _commandHandler.ToggleStatusAsync(user.Id);
                 if (result.success)
                 {
                     Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
@@ -590,16 +580,17 @@ namespace LYBT.Desktop.Users.ViewModels
                     defaultFileName: $"用户导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
                 if (string.IsNullOrEmpty(filePath)) return;
 
+                // OpenSpec: sync-entity-dto-fields - Status通过专用API管理，模板不包含Status字段
                 var sampleData = new List<UserInputDto>
                 {
-                    new() { UserName = "doctor001", RealName = "张医生", PhoneNumber = "13800138000", Email = "doctor001@example.com", Role = UserRole.Doctor, Status = CommonStatus.Enabled },
-                    new() { UserName = "admin001", RealName = "李管理员", PhoneNumber = "13800138001", Email = "admin001@example.com", Role = UserRole.Admin, Status = CommonStatus.Enabled }
+                    new() { UserName = "doctor001", RealName = "张医生", PhoneNumber = "13800138000", Email = "doctor001@example.com", Role = UserRole.Doctor },
+                    new() { UserName = "admin001", RealName = "李管理员", PhoneNumber = "13800138001", Email = "admin001@example.com", Role = UserRole.Admin }
                 };
 
                 Logger.LogInformation("生成用户导入模板");
                 await ExcelHelper.GenerateTemplateAsync(filePath, "用户导入模板", sampleData);
                 await _commonDialogService.ShowInfoAsync(
-                    $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入用户」功能导入。\n\n注意：\n1. 用户名必须唯一\n2. 角色可选值：Admin(管理员)、Doctor(医生)、Nurse(护士)\n3. 状态可选值：Enabled(启用)、Disabled(禁用)",
+                    $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入用户」功能导入。\n\n注意：\n1. 用户名必须唯一\n2. 角色可选值：Admin(管理员)、Doctor(医生)、Nurse(护士)\n3. 新创建用户默认为启用状态",
                     "下载成功");
             }, "下载模板");
         }

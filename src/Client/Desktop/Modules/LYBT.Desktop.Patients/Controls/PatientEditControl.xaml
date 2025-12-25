@@ -62,7 +62,13 @@
                         <ComboBox SelectedItem="{Binding Gender, Mode=TwoWay}"
                                   ItemsSource="{Binding GenderOptions}"
                                   MinHeight="44"
-                                  Padding="12,10"/>
+                                  Padding="12,10">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
@@ -118,7 +124,13 @@
                         <ComboBox SelectedItem="{Binding Status, Mode=TwoWay}"
                                   ItemsSource="{Binding StatusOptions}"
                                   MinHeight="44"
-                                  Padding="12,10"/>
+                                  Padding="12,10">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
                 </Grid>
             </controls:InfoCard.Content>
