@@ -104,5 +104,19 @@ namespace LYBT.Desktop.Infrastructure.Services
             var result = dialog.ShowDialog();
             return Task.FromResult(result == true ? dialog.FileName : null);
         }
+
+        /// <summary>
+        /// 显示未完成医案四选项对话框
+        /// OpenSpec: optimize-medicalcase-navigation
+        /// 使用自定义UnfinishedCaseDialog实现四选项交互
+        /// </summary>
+        public Task<UnfinishedCaseChoice> ShowUnfinishedCaseDialogAsync(string patientName)
+        {
+            var dialog = new Views.UnfinishedCaseDialog();
+            dialog.SetPatientName(patientName);
+            dialog.Owner = Application.Current.MainWindow;
+            dialog.ShowDialog();
+            return Task.FromResult(dialog.Result);
+        }
     }
 }

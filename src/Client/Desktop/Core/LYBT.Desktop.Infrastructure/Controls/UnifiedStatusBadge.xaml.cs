@@ -4,9 +4,6 @@ using System.Windows.Media;
 
 namespace LYBT.Desktop.Infrastructure.Controls
 {
-    /// <summary>状态标签类型枚举</summary>
-    public enum BadgeType { Success, Warning, Danger, Info, Neutral }
-
     /// <summary>统一状态标签组件 - 提供统一的状态显示样式</summary>
     public partial class UnifiedStatusBadge : UserControl
     {
