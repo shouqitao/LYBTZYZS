@@ -155,7 +155,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var request = new ConsultationInputDto
             {
                 PresentIllness = "头痛",
-                TCMDiagnosis = "风寒感冒"
+                TcmDiagnosis = "风寒感冒"
             };
 
             var medicalCase = new MedicalCaseEntity
@@ -273,7 +273,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 Consultation = new ConsultationEntity
                 {
                     Id = medicalCaseId,
-                    TCMDiagnosis = "风寒感冒"
+                    TcmDiagnosis = "风寒感冒"
                 }
             };
 
@@ -323,7 +323,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 Consultation = new ConsultationEntity
                 {
                     Id = medicalCaseId,
-                    TCMDiagnosis = "风寒感冒"
+                    TcmDiagnosis = "风寒感冒"
                 }
             };
 

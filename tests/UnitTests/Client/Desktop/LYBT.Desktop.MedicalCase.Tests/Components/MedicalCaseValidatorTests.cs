@@ -259,7 +259,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 PatientId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
                 PresentIllness = "现病史记录", // 替代ChiefComplaint
-                TCMDiagnosis = "风寒感冒",
+                TcmDiagnosis = "风寒感冒",
                 TongueDiagnosis = "舌淡苔白",
                 PulseDiagnosis = "脉浮紧",
                 CreatedAt = DateTime.UtcNow,
@@ -277,7 +277,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                // PatientId, UserId, Indication已移除（Indication打印时从Consultation.TCMDiagnosis获取）
+                // PatientId, UserId, Indication已移除（Indication打印时从Consultation.TcmDiagnosis获取）
                 DosageCount = 3,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow

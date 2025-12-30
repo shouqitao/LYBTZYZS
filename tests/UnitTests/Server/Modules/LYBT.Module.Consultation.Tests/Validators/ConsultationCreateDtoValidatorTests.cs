@@ -25,7 +25,7 @@ public class ConsultationInputDtoValidatorTests
         // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
         var dto = new ConsultationInputDto
         {
-            TCMDiagnosis = "外感风寒" // 唯一必填字段
+            TcmDiagnosis = "外感风寒" // 唯一必填字段
         };
 
         // Act
@@ -46,7 +46,7 @@ public class ConsultationInputDtoValidatorTests
         // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
         var dto = new ConsultationInputDto
         {
-            TCMDiagnosis = "测试诊断"
+            TcmDiagnosis = "测试诊断"
         };
 
         // Act
@@ -56,20 +56,20 @@ public class ConsultationInputDtoValidatorTests
         result.ShouldNotHaveValidationErrorFor(x => x.PatientId);
     }
 
-    // OpenSpec: refactor-diagnosis-fields - ChiefComplaint已移除，测试TCMDiagnosis长度验证
+    // OpenSpec: refactor-diagnosis-fields - ChiefComplaint已移除，测试TcmDiagnosis长度验证
     [Fact]
-    public void Validate_WithTCMDiagnosisTooLong_FailsValidation()
+    public void Validate_WithTcmDiagnosisTooLong_FailsValidation()
     {
         // Arrange
         var dto = new ConsultationInputDto
         {
-            TCMDiagnosis = new string('a', 501) // 超过 500 字符限制
+            TcmDiagnosis = new string('a', 501) // 超过 500 字符限制
         };
 
         // Act
         var result = _validator.TestValidate(dto);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.TCMDiagnosis);
+        result.ShouldHaveValidationErrorFor(x => x.TcmDiagnosis);
     }
 }

@@ -50,7 +50,7 @@ namespace LYBT.Module.Consultations.Tests.Mapping
                 MedicalCaseId = Guid.NewGuid(),
                 ChiefComplaint = "咳嗽",
                 PresentIllness = "咳嗽2周",
-                TCMDiagnosis = "肺燥咳嗽",
+                TcmDiagnosis = "肺燥咳嗽",
                 TreatmentPrinciple = "润肺止咳",
                 Status = CommonStatus.Enabled
             };
@@ -66,8 +66,8 @@ namespace LYBT.Module.Consultations.Tests.Mapping
             dto.MedicalCaseId.Should().Be(consultation.MedicalCaseId);
             dto.ChiefComplaint.Should().Be(consultation.ChiefComplaint);
             dto.PresentIllness.Should().Be(consultation.PresentIllness);
-            dto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
-            dto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
+            dto.TcmDiagnosis.Should().Be(consultation.TcmDiagnosis);
+            dto.TcmDiagnosis.Should().Be(consultation.TcmDiagnosis);
             dto.TreatmentPrinciple.Should().Be(consultation.TreatmentPrinciple);
             dto.Status.Should().Be(consultation.Status);
 
@@ -92,7 +92,7 @@ namespace LYBT.Module.Consultations.Tests.Mapping
                 FourDiagnosis = "面色萎黄，口中有异味，饮食不规律",
                 TongueDiagnosis = "舌淡红，苔薄白",
                 PulseDiagnosis = "脉弦细",
-                TCMDiagnosis = "胃气郁滞",
+                TcmDiagnosis = "胃气郁滞",
                 TreatmentPrinciple = "理气和胃",
                 MedicalAdvice = "建议戒烟",
                 Status = CommonStatus.Enabled
@@ -112,8 +112,8 @@ namespace LYBT.Module.Consultations.Tests.Mapping
             detailDto.FourDiagnosis.Should().Be(consultation.FourDiagnosis);
             detailDto.TongueDiagnosis.Should().Be(consultation.TongueDiagnosis);
             detailDto.PulseDiagnosis.Should().Be(consultation.PulseDiagnosis);
-            detailDto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
-            detailDto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
+            detailDto.TcmDiagnosis.Should().Be(consultation.TcmDiagnosis);
+            detailDto.TcmDiagnosis.Should().Be(consultation.TcmDiagnosis);
             detailDto.TreatmentPrinciple.Should().Be(consultation.TreatmentPrinciple);
             detailDto.MedicalAdvice.Should().Be(consultation.MedicalAdvice);
 
@@ -176,7 +176,7 @@ namespace LYBT.Module.Consultations.Tests.Mapping
 
         /* // 暂时注释掉，等待Consultation聚合根重构完成
         [Fact]
-        public void Map_Consultation_With_ComplexTCMDiagnosis_Should_Success()
+        public void Map_Consultation_With_ComplexTcmDiagnosis_Should_Success()
         {
             // Arrange
             var consultation = new LYBT.Entities.Consultation.Consultation
@@ -184,7 +184,7 @@ namespace LYBT.Module.Consultations.Tests.Mapping
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                TCMDiagnosis = "肝郁脾虚，痰湿内阻",
+                TcmDiagnosis = "肝郁脾虚，痰湿内阻",
                 TreatmentPrinciple = "疏肝健脾，化痰安神"
             };
 
@@ -193,8 +193,8 @@ namespace LYBT.Module.Consultations.Tests.Mapping
 
             // Assert
             dto.Should().NotBeNull();
-            dto.TCMDiagnosis.Should().Be("肝郁脾虚，痰湿内阻");
-            // Note: Entity doesn't have DiagnosisResult, check TCMDiagnosis instead
+            dto.TcmDiagnosis.Should().Be("肝郁脾虚，痰湿内阻");
+            // Note: Entity doesn't have DiagnosisResult, check TcmDiagnosis instead
             dto.TreatmentPrinciple.Should().Be("疏肝健脾，化痰安神");
         }
         */

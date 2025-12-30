@@ -128,7 +128,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             await _sut.InitializeAsync(medicalCaseId);
 
             // 修改诊疗数据
-            _sut.CurrentConsultation!.TCMDiagnosis = "新的中医诊断";
+            _sut.CurrentConsultation!.TcmDiagnosis = "新的中医诊断";
 
             // Act
             var result = await _sut.SaveAsync();
@@ -137,7 +137,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             result.Should().BeTrue();
             // OpenSpec: simplify-medicalcase-api - 验证调用聚合保存方法（含Consultation）
             _mockRepository.Verify(x => x.SaveAsync(medicalCaseId, It.Is<MedicalCaseInputDto>(dto =>
-                dto.Consultation != null && dto.Consultation.TCMDiagnosis == "新的中医诊断")), Times.Once);
+                dto.Consultation != null && dto.Consultation.TcmDiagnosis == "新的中医诊断")), Times.Once);
         }
 
         [Fact]
@@ -361,8 +361,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             await _sut.InitializeAsync(medicalCaseId);
 
             // Act
-            // OpenSpec: unify-medicalcase-input-dto - ChiefComplaint已移除，使用TCMDiagnosis
-            _sut.CurrentConsultation!.TCMDiagnosis = "新的中医诊断内容";
+            // OpenSpec: unify-medicalcase-input-dto - ChiefComplaint已移除，使用TcmDiagnosis
+            _sut.CurrentConsultation!.TcmDiagnosis = "新的中医诊断内容";
 
             // Assert
             _sut.HasChanges.Should().BeTrue();
@@ -424,7 +424,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                     PresentIllness = "现病史",
                     TongueDiagnosis = "舌诊",
                     PulseDiagnosis = "脉诊",
-                    TCMDiagnosis = "风寒感冒",
+                    TcmDiagnosis = "风寒感冒",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
@@ -433,7 +433,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                     Id = Guid.NewGuid(),
                     PrescriptionNumber = "RX-2025-001",
                     MedicalCaseId = medicalCaseId,
-                    // PatientId, UserId, Indication已从PrescriptionDetailDto移除（Indication打印时从Consultation.TCMDiagnosis获取）
+                    // PatientId, UserId, Indication已从PrescriptionDetailDto移除（Indication打印时从Consultation.TcmDiagnosis获取）
                     DosageCount = 3,
                     Usage = "水煎服，每日一剂",
                     Discount = 1.0m,

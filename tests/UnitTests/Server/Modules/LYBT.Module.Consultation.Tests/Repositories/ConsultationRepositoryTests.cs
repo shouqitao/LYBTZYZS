@@ -53,7 +53,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = consultationId,  // 共享主键
-            TCMDiagnosis = "外感风寒",
+            TcmDiagnosis = "外感风寒",
             CreatedBy = Guid.NewGuid()
         };
 
@@ -67,7 +67,7 @@ public class ConsultationRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(consultationId);
-        result.TCMDiagnosis.Should().Be("外感风寒");
+        result.TcmDiagnosis.Should().Be("外感风寒");
         // MedicalCase信息现在通过GetMedicalCaseInfoAsync方法单独获取
     }
 
@@ -103,7 +103,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCaseId,  // 共享主键
-            TCMDiagnosis = "咳嗽",
+            TcmDiagnosis = "咳嗽",
             CreatedBy = Guid.NewGuid()
         };
 
@@ -117,7 +117,7 @@ public class ConsultationRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(medicalCaseId);
-        result.TCMDiagnosis.Should().Be("咳嗽");
+        result.TcmDiagnosis.Should().Be("咳嗽");
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation1 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase1.Id,  // 共享主键
-            TCMDiagnosis = "诊断1",
+            TcmDiagnosis = "诊断1",
             CreatedBy = Guid.NewGuid()
         };
 
@@ -163,7 +163,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation2 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase2.Id,  // 共享主键
-            TCMDiagnosis = "诊断2",
+            TcmDiagnosis = "诊断2",
             CreatedBy = Guid.NewGuid()
         };
 
@@ -177,8 +177,8 @@ public class ConsultationRepositoryTests : IDisposable
 
         // Assert
         result.Should().HaveCount(2);
-        result[0].TCMDiagnosis.Should().Be("诊断2"); // 最新的在前（后插入的）
-        result[1].TCMDiagnosis.Should().Be("诊断1");
+        result[0].TcmDiagnosis.Should().Be("诊断2"); // 最新的在前（后插入的）
+        result[1].TcmDiagnosis.Should().Be("诊断1");
     }
 
     #endregion
@@ -203,7 +203,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase.Id,  // 共享主键
-            TCMDiagnosis = "感冒",
+            TcmDiagnosis = "感冒",
             CreatedBy = Guid.NewGuid()
         };
 
@@ -240,7 +240,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation1 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase1.Id,  // 共享主键
-            TCMDiagnosis = "风寒感冒",
+            TcmDiagnosis = "风寒感冒",
             CreatedBy = Guid.NewGuid()
         };
 
@@ -258,7 +258,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation2 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase2.Id,  // 共享主键
-            TCMDiagnosis = "痰热咳嗽",
+            TcmDiagnosis = "痰热咳嗽",
             CreatedBy = Guid.NewGuid()
         };
 
@@ -272,7 +272,7 @@ public class ConsultationRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.Items.Should().HaveCount(1);
-        result.Items[0].TCMDiagnosis.Should().Be("风寒感冒");
+        result.Items[0].TcmDiagnosis.Should().Be("风寒感冒");
     }
 
     [Fact]
@@ -295,7 +295,7 @@ public class ConsultationRepositoryTests : IDisposable
             var consultation = new LYBT.Entities.Consultations.Consultation
             {
                 Id = medicalCase.Id,  // 共享主键
-                TCMDiagnosis = $"诊断{i}",
+                TcmDiagnosis = $"诊断{i}",
                 CreatedBy = Guid.NewGuid()
             };
 

@@ -37,6 +37,12 @@ namespace LYBT.Module.Users.Tests.Services
             _httpContextAccessorMock = CreateMock<IHttpContextAccessor>();
             _validatorMock = CreateMock<IValidator<UserInputDto>>();
 
+            // 设置默认密码配置（通过IConfiguration）
+            _configurationMock.Setup(x => x["Lybt:DefaultPasswords:NewUserPassword"])
+                .Returns("Lybt2025@TempPass#");
+            _configurationMock.Setup(x => x["Lybt:DefaultPasswords:SysAdminPassword"])
+                .Returns("LybtAdmin2025@SecurePass#");
+
             // Phase 1 Task 1.6: 默认设置 validator 返回成功
             _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<UserInputDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());

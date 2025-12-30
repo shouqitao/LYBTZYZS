@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Desktop.Users.ViewModels.Components;
@@ -13,15 +13,16 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
     /// <summary>
     /// UserDetailViewModel 单元测试
     /// Issue #2168: 测试CRUD统一架构（Create/Edit/View三种模式）
+    /// OpenSpec: migrate-to-communitytoolkit-mvvm - 更新测试以匹配新的构造函数签名
     /// </summary>
     public class UserDetailViewModelTests : IDisposable
     {
         private readonly Mock<UserService> _mockCommandHandler;
         private readonly Mock<IUserRepository> _mockUserRepository;
-        private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly Mock<ILoggerFactory> _mockLoggerFactory;
         private readonly Mock<ILogger<UserDetailViewModel>> _mockLogger;
         private readonly Mock<ILogger<UserService>> _mockCommandLogger;
+        private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly Mock<IRegionManager> _mockRegionManager;
         private readonly UserDetailViewModel _viewModel;
 
@@ -31,9 +32,9 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _mockUserRepository = new Mock<IUserRepository>();
             _mockCommandLogger = new Mock<ILogger<UserService>>();
             _mockCommandHandler = new Mock<UserService>(_mockUserRepository.Object, _mockCommandLogger.Object);
-            _mockEventAggregator = new Mock<IEventAggregator>();
             _mockLoggerFactory = new Mock<ILoggerFactory>();
             _mockLogger = new Mock<ILogger<UserDetailViewModel>>();
+            _mockEventAggregator = new Mock<IEventAggregator>();
             _mockRegionManager = new Mock<IRegionManager>();
 
             // Setup LoggerFactory to return mock logger
@@ -42,6 +43,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 .Returns(_mockLogger.Object);
 
             // Create ViewModel instance
+            // OpenSpec: migrate-to-communitytoolkit-mvvm - 新的构造函数签名
             _viewModel = new UserDetailViewModel(
                 _mockCommandHandler.Object,
                 _mockEventAggregator.Object,
@@ -177,6 +179,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _viewModel.IsReadOnly.Should().BeTrue();
 
             // Act - 切换到Edit模式
+            // DelegateCommand无参数版本使用Execute()
             _viewModel.SwitchToEditModeCommand.Execute();
 
             // Assert
@@ -195,6 +198,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             isEditModeProperty!.SetValue(_viewModel, false); // View模式
 
             // Act
+            // DelegateCommand无参数版本使用CanExecute()
             var canSwitch = _viewModel.SwitchToEditModeCommand.CanExecute();
 
             // Assert
@@ -208,6 +212,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _viewModel.UserId = Guid.Empty;
 
             // Act
+            // DelegateCommand无参数版本使用CanExecute()
             var canSwitch = _viewModel.SwitchToEditModeCommand.CanExecute();
 
             // Assert
@@ -232,6 +237,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _viewModel.RealName = "测试用户";
 
             // Act
+            // DelegateCommand无参数版本使用CanExecute()
             var canSubmit = _viewModel.SubmitCommand.CanExecute();
 
             // Assert
@@ -246,6 +252,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _viewModel.RealName = "测试用户";
 
             // Act
+            // DelegateCommand无参数版本使用CanExecute()
             var canSubmit = _viewModel.SubmitCommand.CanExecute();
 
             // Assert
@@ -260,6 +267,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _viewModel.RealName = "测试用户";
 
             // Act
+            // DelegateCommand无参数版本使用CanExecute()
             var canSubmit = _viewModel.SubmitCommand.CanExecute();
 
             // Assert
@@ -274,6 +282,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _viewModel.RealName = "";
 
             // Act
+            // DelegateCommand无参数版本使用CanExecute()
             var canSubmit = _viewModel.SubmitCommand.CanExecute();
 
             // Assert
@@ -312,6 +321,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         public void ExecuteGoBack_ShouldNotThrowException()
         {
             // Act & Assert
+            // DelegateCommand无参数版本使用Execute()
             Action act = () => _viewModel.GoBackCommand.Execute();
             act.Should().NotThrow();
         }

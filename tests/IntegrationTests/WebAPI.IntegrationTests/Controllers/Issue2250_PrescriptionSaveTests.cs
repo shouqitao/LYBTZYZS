@@ -487,7 +487,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var consultationRequest = new ConsultationInputDto
             {
                 PresentIllness = "头痛",
-                TCMDiagnosis = "风寒感冒"
+                TcmDiagnosis = "风寒感冒"
             };
 
             var updateResponse = await Client.PutAsJsonAsync(

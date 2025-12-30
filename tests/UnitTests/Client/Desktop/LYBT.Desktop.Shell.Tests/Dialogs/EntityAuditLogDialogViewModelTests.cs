@@ -15,6 +15,7 @@ namespace LYBT.Desktop.Shell.Tests.Dialogs;
 /// EntityAuditLogDialogViewModel 单元测试
 /// Issue #2249: 添加审计系统单元测试
 /// OpenSpec: add-global-audit-system
+/// OpenSpec: migrate-to-communitytoolkit-mvvm - 更新为简化构造函数
 /// </summary>
 public class EntityAuditLogDialogViewModelTests : IDisposable
 {
@@ -22,8 +23,8 @@ public class EntityAuditLogDialogViewModelTests : IDisposable
     private readonly Mock<IApiService> _mockApiService;
     private readonly Mock<IEventAggregator> _mockEventAggregator;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
-    private readonly Mock<ILogger> _mockLogger;
     private readonly Mock<IRegionManager> _mockRegionManager;
+    private readonly Mock<ILogger> _mockLogger;
     private readonly EntityAuditLogDialogViewModel _viewModel;
 
     public EntityAuditLogDialogViewModelTests()
@@ -31,8 +32,8 @@ public class EntityAuditLogDialogViewModelTests : IDisposable
         _mockApiService = new Mock<IApiService>();
         _mockEventAggregator = new Mock<IEventAggregator>();
         _mockLoggerFactory = new Mock<ILoggerFactory>();
-        _mockLogger = new Mock<ILogger>();
         _mockRegionManager = new Mock<IRegionManager>();
+        _mockLogger = new Mock<ILogger>();
 
         // 配置LoggerFactory返回Mock Logger
         _mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>()))

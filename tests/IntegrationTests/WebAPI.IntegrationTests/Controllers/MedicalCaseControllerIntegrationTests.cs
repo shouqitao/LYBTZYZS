@@ -311,7 +311,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 PatientId = medicalCase.PatientId,  // Issue #2231: ConsultationInputDtoValidator requires PatientId
                 UserId = FixedDoctorId,              // Issue #2231: ConsultationInputDtoValidator requires UserId
                 PresentIllness = "头痛",
-                TCMDiagnosis = "风寒感冒"
+                TcmDiagnosis = "风寒感冒"
             };
 
             // Act
@@ -890,7 +890,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Consultation = new ConsultationInputDto
                 {
                     PresentIllness = "头痛三天",
-                    TCMDiagnosis = "肝阳上亢"
+                    TcmDiagnosis = "肝阳上亢"
                 },
                 Prescription = new PrescriptionInputDto
                 {
@@ -932,7 +932,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Consultation = new ConsultationInputDto
                 {
                     PresentIllness = "头痛三天",
-                    TCMDiagnosis = "肝阳上亢"
+                    TcmDiagnosis = "肝阳上亢"
                 },
                 Prescription = new PrescriptionInputDto
                 {
@@ -1096,7 +1096,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 Consultation = new ConsultationInputDto
                 {
                     PresentIllness = "更新后的主诉",
-                    TCMDiagnosis = "更新后的诊断"
+                    TcmDiagnosis = "更新后的诊断"
                 },
                 Prescription = new PrescriptionInputDto
                 {
@@ -1198,7 +1198,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 PatientId = null,  // 不设置PatientId，从MedicalCase获取
                 UserId = null,  // 不设置UserId，从MedicalCase获取
                 PresentIllness = "头痛",
-                TCMDiagnosis = "风寒感冒"
+                TcmDiagnosis = "风寒感冒"
             };
 
             var updateResponse = await Client.PutAsJsonAsync(
@@ -1212,7 +1212,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 _output.WriteLine($"❌ 更新辨证失败 - 状态码: {updateResponse.StatusCode}");
                 _output.WriteLine($"❌ 错误响应: {errorContent}");
                 _output.WriteLine($"❌ MedicalCaseId: {medicalCase.Id}");
-                _output.WriteLine($"❌ 请求内容: PresentIllness={consultationRequest.PresentIllness}, TCMDiagnosis={consultationRequest.TCMDiagnosis}");
+                _output.WriteLine($"❌ 请求内容: PresentIllness={consultationRequest.PresentIllness}, TcmDiagnosis={consultationRequest.TcmDiagnosis}");
             }
 
             // ⚠️ Issue #1669: 验证更新请求是否成功

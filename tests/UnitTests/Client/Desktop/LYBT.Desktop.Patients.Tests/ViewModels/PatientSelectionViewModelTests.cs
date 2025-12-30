@@ -24,12 +24,12 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
     /// </summary>
     public class PatientSelectionViewModelTests : IDisposable
     {
-        private readonly Mock<IDialogService> _dialogServiceMock;
         private readonly Mock<IMedicalCaseApi> _medicalCaseApiMock;
         private readonly Mock<IEventAggregator> _eventAggregatorMock;
         private readonly Mock<ILoggerFactory> _loggerFactoryMock;
         private readonly Mock<IRegionManager> _regionManagerMock;
         private readonly Mock<ISessionManager> _sessionManagerMock; // Epic #2210 Phase 3: 添加SessionManager Mock
+        private readonly Mock<IDialogService> _dialogServiceMock;
 
         // Epic #2210 Issue #2218: 组件层Mock对象（正确构建依赖链）
         private readonly Mock<IPatientRepository> _patientRepositoryMock;
@@ -47,13 +47,13 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         public PatientSelectionViewModelTests()
         {
             // 创建接口Mock对象
-            _dialogServiceMock = new Mock<IDialogService>();
             _medicalCaseApiMock = new Mock<IMedicalCaseApi>();
             _eventAggregatorMock = new Mock<IEventAggregator>();
             _loggerFactoryMock = new Mock<ILoggerFactory>();
             _regionManagerMock = new Mock<IRegionManager>();
             _patientRepositoryMock = new Mock<IPatientRepository>();
             _medicalCaseRepositoryMock = new Mock<IMedicalCaseRepository>();
+            _dialogServiceMock = new Mock<IDialogService>();
 
             // Epic #2210 Phase 3: 创建SessionManager Mock并设置默认CurrentUserId
             _sessionManagerMock = new Mock<ISessionManager>();
@@ -151,7 +151,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                 _searchManager,
                 _unfinishedCaseHandler,
                 _pendingQueueManager,
-                _medicalCaseStartCoordinator, // OpenSpec: cleanup-ui-layer Phase 1.2
+                _medicalCaseStartCoordinator,
                 _dialogServiceMock.Object,
                 _medicalCaseApiMock.Object,
                 _eventAggregatorMock.Object,

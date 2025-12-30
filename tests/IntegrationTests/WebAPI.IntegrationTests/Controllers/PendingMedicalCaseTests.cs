@@ -148,9 +148,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             {
                 var configuration = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
 
-                var sysAdminPassword = configuration["Lybt:DefaultPasswords:SysAdminPassword"];
-                var newUserPassword = configuration["Lybt:DefaultPasswords:NewUserPassword"];
-                var systemAdminEmail = configuration["Lybt:SystemAdmin:Email"];
+                // 使用扁平化配置路径(已移除Lybt:前缀)
+                var sysAdminPassword = configuration["DefaultPasswords:SysAdminPassword"];
+                var newUserPassword = configuration["DefaultPasswords:NewUserPassword"];
+                var systemAdminEmail = configuration["SystemAdmin:Email"];
 
                 // 验证密码配置存在
                 sysAdminPassword.Should().NotBeNullOrEmpty("系统管理员密码配置应该存在");

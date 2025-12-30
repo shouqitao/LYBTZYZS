@@ -151,7 +151,7 @@ namespace LYBT.UnitTests.Core.Entities
         #region TCM Diagnosis Tests
 
         [Fact]
-        public void TCMDiagnosis_ShouldSupportFourDiagnosticMethods()
+        public void TcmDiagnosis_ShouldSupportFourDiagnosticMethods()
         {
             // Arrange
             var consultation = new Consultation();
@@ -169,7 +169,7 @@ namespace LYBT.UnitTests.Core.Entities
         }
 
         [Fact]
-        public void TCMDiagnosis_ShouldIncludeSyndromeAndTreatmentPrinciple()
+        public void TcmDiagnosis_ShouldIncludeSyndromeAndTreatmentPrinciple()
         {
             // Arrange
             var consultation = new Consultation();

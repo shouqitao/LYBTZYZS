@@ -53,7 +53,7 @@ namespace LYBT.UnitTests.Core.Services
             {
                 Id = Guid.NewGuid(),
                 ChiefComplaint = "测试主诉",
-                TCMDiagnosis = "测试诊断",
+                TcmDiagnosis = "测试诊断",
                 MedicalCase = new MedicalCase
                 {
                     Id = medicalCaseId,
@@ -67,7 +67,7 @@ namespace LYBT.UnitTests.Core.Services
                 Id = consultation.Id,
                 MedicalCaseId = medicalCaseId,
                 ChiefComplaint = "测试主诉",
-                TCMDiagnosis = "测试诊断",
+                TcmDiagnosis = "测试诊断",
                 PatientName = "测试患者",
                 DoctorName = "测试医生"
             };
@@ -168,7 +168,7 @@ namespace LYBT.UnitTests.Core.Services
             {
                 Id = consultationId,
                 ChiefComplaint = "测试主诉",
-                TCMDiagnosis = "测试诊断",
+                TcmDiagnosis = "测试诊断",
                 MedicalCase = new MedicalCase
                 {
                     PatientName = "测试患者",
@@ -180,7 +180,7 @@ namespace LYBT.UnitTests.Core.Services
             {
                 Id = consultationId,
                 ChiefComplaint = "测试主诉",
-                TCMDiagnosis = "测试诊断",
+                TcmDiagnosis = "测试诊断",
                 PatientName = "测试患者",
                 DoctorName = "测试医生"
             };
@@ -239,21 +239,21 @@ namespace LYBT.UnitTests.Core.Services
             var updateDto = new ConsultationInputDto
             {
                 ChiefComplaint = "更新后的主诉",
-                TCMDiagnosis = "更新后的诊断"
+                TcmDiagnosis = "更新后的诊断"
             };
 
             var updatedConsultation = new Consultation
             {
                 Id = consultationId,
                 ChiefComplaint = "更新后的主诉",
-                TCMDiagnosis = "更新后的诊断"
+                TcmDiagnosis = "更新后的诊断"
             };
 
             var resultDto = new ConsultationDetailDto
             {
                 Id = consultationId,
                 ChiefComplaint = "更新后的主诉",
-                TCMDiagnosis = "更新后的诊断"
+                TcmDiagnosis = "更新后的诊断"
             };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
@@ -329,7 +329,7 @@ namespace LYBT.UnitTests.Core.Services
                 {
                     Id = Guid.NewGuid(),
                     ChiefComplaint = "头痛发热",
-                    TCMDiagnosis = "外感风寒"
+                    TcmDiagnosis = "外感风寒"
                 }
             };
 
@@ -339,7 +339,7 @@ namespace LYBT.UnitTests.Core.Services
                 {
                     Id = consultations[0].Id,
                     ChiefComplaint = "头痛发热",
-                    TCMDiagnosis = "外感风寒"
+                    TcmDiagnosis = "外感风寒"
                 }
             };
 
@@ -507,14 +507,14 @@ namespace LYBT.UnitTests.Core.Services
             var updateDto = new ConsultationInputDto
             {
                 ChiefComplaint = "更新后的主诉",
-                TCMDiagnosis = "更新后的诊断"
+                TcmDiagnosis = "更新后的诊断"
             };
 
             var updatedConsultation = new Consultation
             {
                 Id = consultationId,
                 ChiefComplaint = "更新后的主诉",
-                TCMDiagnosis = "更新后的诊断",
+                TcmDiagnosis = "更新后的诊断",
                 CreatedAt = DateTime.Today.AddHours(10)
             };
 
@@ -522,7 +522,7 @@ namespace LYBT.UnitTests.Core.Services
             {
                 Id = consultationId,
                 ChiefComplaint = "更新后的主诉",
-                TCMDiagnosis = "更新后的诊断"
+                TcmDiagnosis = "更新后的诊断"
             };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
@@ -561,7 +561,7 @@ namespace LYBT.UnitTests.Core.Services
             var updateDto = new ConsultationInputDto
             {
                 ChiefComplaint = "尝试更新的主诉",
-                TCMDiagnosis = "尝试更新的诊断"
+                TcmDiagnosis = "尝试更新的诊断"
             };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
