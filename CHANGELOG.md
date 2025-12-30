@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Desktop API层标准化 (OpenSpec: standardize-desktop-api-layer) - 2025-12-31
+
+**背景**: Desktop API层存在返回类型不一致、方法重复、功能缺失等问题，需要统一规范。
+
+**核心改进**:
+- 修正6处返回类型不一致: `ApiResponse<ApiResponse>` → `ApiResponse`
+- 删除1处重复方法: `IMedicalCaseApi.QueryMedicalCasesAsync`
+- 新增3个Formula导入导出方法: BatchImportAsync/ExportTemplateAsync/ExportFormulasAsync
+- 更新RepositoryBase抽象方法签名及5个模块Repository实现
+
+**影响范围**:
+- IPatientApi / IHerbApi / IFormulaApi / IUserApi / IMedicalCaseApi
+- RepositoryBase及各模块Repository实现
+
+**规范更新**:
+- `client-api-conventions`规范新增3个Requirement:
+  - Standard API Function Matrix (标准API功能矩阵)
+  - Delete Method Return Type (Delete方法返回类型)
+  - No Duplicate Methods (禁止重复方法)
+
+**状态**: 已归档
+
 #### 医案导航与挂起逻辑优化 (OpenSpec: optimize-medicalcase-navigation) - 2025-12-30
 
 **背景**: 医案导航和挂起处理逻辑需要统一，提升用户体验。
