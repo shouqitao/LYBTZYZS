@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.MedicalCase
 {
@@ -25,12 +26,16 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("手机号脱敏")]
         public string PhoneMasked { get; set; } = string.Empty;
 
-        /// <summary>类型（"暂存" 或 "已挂号"）</summary>
+        /// <summary>待处理类型</summary>
         [DisplayName("类型")]
-        public string Type { get; set; } = string.Empty;
+        public PendingCaseType Type { get; set; }
 
         /// <summary>医案ID（如果有未完成医案，则有值；挂号患者为null）</summary>
         [DisplayName("医案ID")]
         public Guid? MedicalCaseId { get; set; }
+
+        /// <summary>创建时间</summary>
+        [DisplayName("创建时间")]
+        public DateTime CreatedAt { get; set; }
     }
 }

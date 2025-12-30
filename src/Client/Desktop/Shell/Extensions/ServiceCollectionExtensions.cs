@@ -9,7 +9,6 @@ using LYBT.Desktop.Auth;
 using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Clinical;
-using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Security;
@@ -190,7 +189,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<AuthenticationModule>(containerRegistry);
             RegisterLogger<UsersModule>(containerRegistry);
             RegisterLogger<PatientsModule>(containerRegistry);
-            RegisterLogger<ConsultationModule>(containerRegistry);
             RegisterLogger<MedicalCaseModule>(containerRegistry);
             RegisterLogger<PrescriptionsModule>(containerRegistry);
             RegisterLogger<HerbsModule>(containerRegistry);

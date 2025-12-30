@@ -17,7 +17,7 @@ namespace LYBT.Shared.Validators.Prescriptions
                 .When(x => !x.Id.HasValue);
 
             // Diagnosis验证已删除 - 冗余字段
-            // Indication验证已删除 - 打印时从Consultation.TCMDiagnosis获取
+            // Indication验证已删除 - 打印时从Consultation.TcmDiagnosis获取
 
             // 引用验方验证
             RuleFor(x => x.ReferencedFormulas)

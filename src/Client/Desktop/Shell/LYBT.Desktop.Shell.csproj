@@ -90,7 +90,7 @@
     <ProjectReference Include="..\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj" />
     <ProjectReference Include="..\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
-    <ProjectReference Include="..\Modules\LYBT.Desktop.Consultation\LYBT.Desktop.Consultation.csproj" />
+    <!-- LYBT.Desktop.Consultation已删除 - 功能已迁移到MedicalCase模块 -->
     <ProjectReference Include="..\Modules\LYBT.Desktop.Prescriptions\LYBT.Desktop.Prescriptions.csproj" />
     <ProjectReference Include="..\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
     <ProjectReference Include="..\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />

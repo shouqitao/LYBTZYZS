@@ -30,7 +30,7 @@ namespace LYBT.Module.Consultations.Mapping
             // OpenSpec: consultation-field-alignment - PrescriptionEnabled已移至MedicalCase
             // OpenSpec: refactor-server-ddd-aggregates - MedicalCase导航属性已移除
             CreateMap<ConsultationInputDto, Consultation>()
-                .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
+                .ForMember(dest => dest.TcmDiagnosis, opt => opt.MapFrom(src => src.TcmDiagnosis))
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())

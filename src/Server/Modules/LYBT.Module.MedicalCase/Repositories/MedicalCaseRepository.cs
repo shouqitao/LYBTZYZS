@@ -325,7 +325,7 @@ namespace LYBT.Module.MedicalCases.Repositories
                     PatientName = r.Patient.Name,
                     PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
                     PhoneMasked = MaskPhoneNumber(r.Patient.PhoneNumber ?? string.Empty),
-                    Type = "暂存", // 当前只支持未完成医案
+                    Type = PendingCaseType.Suspended, // 当前只支持未完成医案
                     MedicalCaseId = r.MedicalCase.Id
                 })
                 .ToListAsync();
@@ -356,7 +356,7 @@ namespace LYBT.Module.MedicalCases.Repositories
                     PatientName = r.Patient.Name,
                     PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
                     PhoneMasked = MaskPhoneNumber(r.Patient.PhoneNumber ?? string.Empty),
-                    Type = "暂存", // 当前只支持未完成医案
+                    Type = PendingCaseType.Suspended, // 当前只支持未完成医案
                     MedicalCaseId = r.MedicalCase.Id
                 })
                 .ToListAsync();
@@ -408,13 +408,13 @@ namespace LYBT.Module.MedicalCases.Repositories
                 query = query.Where(m => m.CreatedAt <= endOfDay);
             }
 
-            // 诊断关键字搜索（搜索Consultation.TCMDiagnosis字段）
+            // 诊断关键字搜索（搜索Consultation.TcmDiagnosis字段）
             if (!string.IsNullOrWhiteSpace(diagnosisKeyword))
             {
                 query = query.Where(m =>
                     m.Consultation != null &&
-                    m.Consultation.TCMDiagnosis != null &&
-                    m.Consultation.TCMDiagnosis.Contains(diagnosisKeyword));
+                    m.Consultation.TcmDiagnosis != null &&
+                    m.Consultation.TcmDiagnosis.Contains(diagnosisKeyword));
             }
 
             // 按创建时间倒序排列

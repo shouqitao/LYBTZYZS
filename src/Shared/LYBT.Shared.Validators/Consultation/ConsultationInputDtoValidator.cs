@@ -14,8 +14,8 @@ namespace LYBT.Shared.Validators.Consultation
     {
         public ConsultationInputDtoValidator()
         {
-            // TCMDiagnosis是唯一必填字段
-            RuleFor(x => x.TCMDiagnosis)
+            // TcmDiagnosis是唯一必填字段
+            RuleFor(x => x.TcmDiagnosis)
                 .NotEmpty().WithMessage("中医诊断不能为空")
                 .MaximumLength(500).WithMessage("中医诊断长度不能超过500个字符");
         }

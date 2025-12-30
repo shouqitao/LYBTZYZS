@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.Herbs.Contracts;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;

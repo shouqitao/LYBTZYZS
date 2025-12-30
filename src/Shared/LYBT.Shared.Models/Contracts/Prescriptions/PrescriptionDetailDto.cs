@@ -37,7 +37,7 @@ public class PrescriptionDetailDto
     [DisplayName("引用验方")]
     public string? ReferencedFormulas { get; set; }
 
-    // Indication已删除，打印时从Consultation.TCMDiagnosis获取
+    // Indication已删除，打印时从Consultation.TcmDiagnosis获取
     // FormulaSource已删除，与ReferencedFormulas功能重复
     // Diagnosis已删除，冗余字段
 

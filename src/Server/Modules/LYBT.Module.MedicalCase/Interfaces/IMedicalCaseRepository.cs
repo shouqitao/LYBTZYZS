@@ -53,7 +53,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="patientName">患者姓名关键字（模糊匹配）</param>
         /// <param name="startDate">开始日期（过滤CreatedAt）</param>
         /// <param name="endDate">结束日期（过滤CreatedAt）</param>
-        /// <param name="diagnosisKeyword">诊断关键字（搜索TCMDiagnosis）</param>
+        /// <param name="diagnosisKeyword">诊断关键字（搜索TcmDiagnosis）</param>
         Task<List<MedicalCase>> QueryAsync(
             string? patientName = null,
             DateTime? startDate = null,

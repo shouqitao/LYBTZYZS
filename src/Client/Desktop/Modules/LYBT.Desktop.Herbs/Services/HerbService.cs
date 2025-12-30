@@ -1,7 +1,6 @@
 namespace LYBT.Desktop.Herbs.Services;
 
 // OpenSpec: standardize-service-layer - 重命名CommandHandler为Service
-using LYBT.Desktop.Herbs.Contracts;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;

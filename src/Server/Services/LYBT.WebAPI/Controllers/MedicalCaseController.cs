@@ -207,7 +207,7 @@ namespace LYBT.WebAPI.Controllers
                 // ConsultationDate = entity.CreatedAt,
                 CaseStatus = entity.CaseStatus,
                 Remark = entity.Remark,
-                Diagnosis = entity.Consultation?.TCMDiagnosis,
+                Diagnosis = entity.Consultation?.TcmDiagnosis,
                 CreatedAt = entity.CreatedAt,
                 // Issue #2231: 添加ConsultationId字段（共享主键，值等于MedicalCase.Id）
                 ConsultationId = entity.Id
@@ -289,7 +289,7 @@ namespace LYBT.WebAPI.Controllers
                 // ConsultationDate = entity.CreatedAt,
                 CaseStatus = entity.CaseStatus,
                 Remark = entity.Remark,
-                Diagnosis = entity.Consultation?.TCMDiagnosis,
+                Diagnosis = entity.Consultation?.TcmDiagnosis,
                 CreatedAt = entity.CreatedAt,
 
                 // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
@@ -307,7 +307,7 @@ namespace LYBT.WebAPI.Controllers
                     PresentIllness = entity.Consultation.PresentIllness,
                     TongueDiagnosis = entity.Consultation.TongueDiagnosis,
                     PulseDiagnosis = entity.Consultation.PulseDiagnosis,
-                    TCMDiagnosis = entity.Consultation.TCMDiagnosis,
+                    TcmDiagnosis = entity.Consultation.TcmDiagnosis,
                     CreatedAt = entity.Consultation.CreatedAt,
                     UpdatedAt = entity.Consultation.UpdatedAt
                 } : null,
@@ -618,7 +618,7 @@ namespace LYBT.WebAPI.Controllers
                 // ConsultationDate = entity.CreatedAt,
                 CaseStatus = entity.CaseStatus,
                 Remark = entity.Remark,
-                Diagnosis = entity.Consultation?.TCMDiagnosis,
+                Diagnosis = entity.Consultation?.TcmDiagnosis,
                 CreatedAt = entity.CreatedAt,
 
                 // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
@@ -636,7 +636,7 @@ namespace LYBT.WebAPI.Controllers
                     PresentIllness = entity.Consultation.PresentIllness,
                     TongueDiagnosis = entity.Consultation.TongueDiagnosis,
                     PulseDiagnosis = entity.Consultation.PulseDiagnosis,
-                    TCMDiagnosis = entity.Consultation.TCMDiagnosis,
+                    TcmDiagnosis = entity.Consultation.TcmDiagnosis,
                     // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
                     CreatedAt = entity.Consultation.CreatedAt,
                     UpdatedAt = entity.Consultation.UpdatedAt
@@ -1007,7 +1007,7 @@ namespace LYBT.WebAPI.Controllers
                 // ConsultationDate = entity.CreatedAt,
                 CaseStatus = entity.CaseStatus,
                 Remark = entity.Remark,
-                Diagnosis = entity.Consultation?.TCMDiagnosis,
+                Diagnosis = entity.Consultation?.TcmDiagnosis,
                 CreatedAt = entity.CreatedAt,
                 // 设置ID字段，计算属性HasConsultation/HasPrescription会自动计算
                 ConsultationId = entity.Consultation != null ? entity.Id : null,
@@ -1082,7 +1082,7 @@ namespace LYBT.WebAPI.Controllers
                 // ConsultationDate = entityResult.CreatedAt,
                 CaseStatus = entityResult.CaseStatus,
                 Remark = entityResult.Remark,
-                Diagnosis = entityResult.Consultation?.TCMDiagnosis,
+                Diagnosis = entityResult.Consultation?.TcmDiagnosis,
                 CreatedAt = entityResult.CreatedAt
             };
 

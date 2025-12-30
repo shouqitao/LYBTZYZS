@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Herbs.Contracts;
+namespace LYBT.Desktop.Herbs.Interfaces;
 
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;

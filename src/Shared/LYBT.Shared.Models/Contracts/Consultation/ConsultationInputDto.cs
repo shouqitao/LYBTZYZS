@@ -38,7 +38,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>中医诊断（必填）</summary>
         [StringLength(ValidationConstants.DiagnosisMaxLength, ErrorMessage = "中医诊断长度不能超过{1}个字符")]
         [DisplayName("中医诊断")]
-        public string? TCMDiagnosis { get; set; }
+        public string? TcmDiagnosis { get; set; }
 
         // 系统字段
 

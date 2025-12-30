@@ -54,7 +54,7 @@ namespace LYBT.Shared.Validators.BusinessRules
         /// </summary>
         private Task<ValidationResult> ValidateBasicInputAsync(PrescriptionInputDto input)
         {
-            // Indication已删除 - 打印时从Consultation.TCMDiagnosis获取
+            // Indication已删除 - 打印时从Consultation.TcmDiagnosis获取
             // FormulaSource已删除 - 与ReferencedFormulas功能重复
 
             // 引用验方验证

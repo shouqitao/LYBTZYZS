@@ -32,7 +32,7 @@ public class ConsultationListDto
 
     /// <summary>中医诊断（列表摘要显示）</summary>
     [DisplayName("中医诊断")]
-    public string? TCMDiagnosis { get; set; }
+    public string? TcmDiagnosis { get; set; }
 
     /// <summary>创建时间</summary>
     [DisplayName("创建时间")]

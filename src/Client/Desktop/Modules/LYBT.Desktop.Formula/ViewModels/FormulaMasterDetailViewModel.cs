@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
-using LYBT.Desktop.Herbs.Contracts;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.ExceptionHandling.Mappers;

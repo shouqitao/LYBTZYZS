@@ -207,7 +207,7 @@ namespace LYBT.Module.MedicalCases.Services
                 medicalCase.Consultation.PresentIllness = request.PresentIllness;
                 medicalCase.Consultation.TongueDiagnosis = request.TongueDiagnosis;
                 medicalCase.Consultation.PulseDiagnosis = request.PulseDiagnosis;
-                medicalCase.Consultation.TCMDiagnosis = request.TCMDiagnosis;
+                medicalCase.Consultation.TcmDiagnosis = request.TcmDiagnosis;
                 medicalCase.Consultation.UpdatedAt = DateTime.Now;
             }
 

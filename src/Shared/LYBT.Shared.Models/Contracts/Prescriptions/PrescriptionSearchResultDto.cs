@@ -58,7 +58,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         /// <summary>中医诊断（从Consultation查询）</summary>
         [DisplayName("中医诊断")]
         [StringLength(500)]
-        public string? TCMDiagnosis { get; set; }
+        public string? TcmDiagnosis { get; set; }
 
         /// <summary>剂数</summary>
         [DisplayName("剂数")]

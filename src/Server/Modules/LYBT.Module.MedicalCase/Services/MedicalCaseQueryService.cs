@@ -78,7 +78,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 filteredItems = filteredItems.Where(m =>
                     (m.PatientName != null && m.PatientName.Contains(keyword)) ||
-                    (m.Consultation != null && m.Consultation.TCMDiagnosis != null && m.Consultation.TCMDiagnosis.Contains(keyword)));
+                    (m.Consultation != null && m.Consultation.TcmDiagnosis != null && m.Consultation.TcmDiagnosis.Contains(keyword)));
             }
 
             // OpenSpec: optimize-module-list-ui - 角色过滤
@@ -130,7 +130,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 filteredItems = filteredItems.Where(m =>
                     (m.PatientName != null && m.PatientName.Contains(keyword)) ||
-                    (m.Consultation != null && m.Consultation.TCMDiagnosis != null && m.Consultation.TCMDiagnosis.Contains(keyword)));
+                    (m.Consultation != null && m.Consultation.TcmDiagnosis != null && m.Consultation.TcmDiagnosis.Contains(keyword)));
             }
 
             // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId

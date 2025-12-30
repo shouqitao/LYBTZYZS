@@ -93,7 +93,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
         /// </summary>
         /// <param name="patientName">患者姓名关键字（模糊匹配）</param>
-        /// <param name="diagnosisKeyword">诊断关键字（搜索TCMDiagnosis）</param>
+        /// <param name="diagnosisKeyword">诊断关键字（搜索TcmDiagnosis）</param>
         /// <param name="startDate">开始日期</param>
         /// <param name="endDate">结束日期</param>
         /// <param name="page">页码（从1开始）</param>

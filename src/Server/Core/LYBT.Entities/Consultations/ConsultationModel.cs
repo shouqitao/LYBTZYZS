@@ -43,7 +43,7 @@ namespace LYBT.Entities.Consultations
         /// <summary>中医辨证（必填）</summary>
         [StringLength(500)]
         [DisplayName("中医辨证")]
-        public string? TCMDiagnosis { get; set; }
+        public string? TcmDiagnosis { get; set; }
 
         // OpenSpec: consultation-field-alignment - PrescriptionEnabled已移除
         // 处方开关统一使用MedicalCase.NeedsPrescription

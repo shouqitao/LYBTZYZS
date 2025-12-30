@@ -65,6 +65,6 @@ namespace LYBT.Shared.Models.Contracts.Consultation
 
         /// <summary>中医诊断（必填）</summary>
         [DisplayName("中医诊断")]
-        public string? TCMDiagnosis { get; set; }
+        public string? TcmDiagnosis { get; set; }
     }
 }

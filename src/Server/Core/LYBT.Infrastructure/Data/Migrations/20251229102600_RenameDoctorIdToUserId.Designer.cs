@@ -4,16 +4,19 @@ using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations
+namespace LYBT.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251229102600_RenameDoctorIdToUserId")]
+    partial class RenameDoctorIdToUserId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -491,7 +494,7 @@ namespace LYBT.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<string>("TcmDiagnosis")
+                    b.Property<string>("TCMDiagnosis")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -797,8 +800,7 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DoctorId");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 

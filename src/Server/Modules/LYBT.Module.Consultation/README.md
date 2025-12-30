@@ -41,7 +41,7 @@ LYBT.Module.Consultation/
 | AuscultationOlfaction | 闻诊(声音、气味) |
 | Inquiry | 问诊(症状、病史) |
 | Palpation | 切诊(脉诊、按诊) |
-| TCMDiagnosis | 中医辨证(如:肝郁脾虚证) |
+| TcmDiagnosis | 中医辨证(如:肝郁脾虚证) |
 | TreatmentPrinciple | 治疗原则(如:疏肝健脾) |
 
 ## 三步工作流

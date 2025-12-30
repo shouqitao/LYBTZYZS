@@ -38,7 +38,7 @@ public class PrescriptionInputDto
     public bool NeedsPrescription { get; set; } = true;
 
     // Diagnosis已删除 - 冗余字段
-    // Indication已删除 - 打印时从Consultation.TCMDiagnosis获取
+    // Indication已删除 - 打印时从Consultation.TcmDiagnosis获取
 
     /// <summary>剂数</summary>
     [Range(1, 100, ErrorMessage = "剂数必须在1-100之间")]

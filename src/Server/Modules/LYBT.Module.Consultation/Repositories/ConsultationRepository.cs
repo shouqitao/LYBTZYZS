@@ -71,7 +71,7 @@ namespace LYBT.Module.Consultations.Repositories
 
                 query = query.Where(c =>
                     (c.PresentIllness != null && c.PresentIllness.Contains(keyword)) ||
-                    (c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(keyword)) ||
+                    (c.TcmDiagnosis != null && c.TcmDiagnosis.Contains(keyword)) ||
                     matchingMedicalCaseIds.Contains(c.Id));
             }
 

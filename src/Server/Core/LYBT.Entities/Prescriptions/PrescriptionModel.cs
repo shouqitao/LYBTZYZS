@@ -58,7 +58,7 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        // Indication已删除，打印时从Consultation.TCMDiagnosis获取
+        // Indication已删除，打印时从Consultation.TcmDiagnosis获取
         // FormulaSource已删除，与ReferencedFormulas功能重复
 
         // 打印版本管理字段

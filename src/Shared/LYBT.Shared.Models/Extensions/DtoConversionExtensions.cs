@@ -45,7 +45,7 @@ public static class DtoConversionExtensions
             PresentIllness = dto.PresentIllness,
             TongueDiagnosis = dto.TongueDiagnosis,
             PulseDiagnosis = dto.PulseDiagnosis,
-            TCMDiagnosis = dto.TCMDiagnosis
+            TcmDiagnosis = dto.TcmDiagnosis
         };
     }
 

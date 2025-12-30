@@ -234,7 +234,7 @@ namespace LYBT.Module.MedicalCases.Services
                 consultation.PresentIllness = request.Consultation.PresentIllness;
                 consultation.TongueDiagnosis = request.Consultation.TongueDiagnosis;
                 consultation.PulseDiagnosis = request.Consultation.PulseDiagnosis;
-                consultation.TCMDiagnosis = request.Consultation.TCMDiagnosis;
+                consultation.TcmDiagnosis = request.Consultation.TcmDiagnosis;
             }
 
             medicalCase.Consultation = consultation;
@@ -356,7 +356,7 @@ namespace LYBT.Module.MedicalCases.Services
             consultation.PresentIllness = request.PresentIllness;
             consultation.TongueDiagnosis = request.TongueDiagnosis;
             consultation.PulseDiagnosis = request.PulseDiagnosis;
-            consultation.TCMDiagnosis = request.TCMDiagnosis;
+            consultation.TcmDiagnosis = request.TcmDiagnosis;
             consultation.UpdatedAt = DateTime.Now;
 
             // 通过聚合根保存（EF Core会跟踪子实体变更）
@@ -823,7 +823,7 @@ namespace LYBT.Module.MedicalCases.Services
             consultation.PresentIllness = dto.PresentIllness;
             consultation.TongueDiagnosis = dto.TongueDiagnosis;
             consultation.PulseDiagnosis = dto.PulseDiagnosis;
-            consultation.TCMDiagnosis = dto.TCMDiagnosis;
+            consultation.TcmDiagnosis = dto.TcmDiagnosis;
             consultation.UpdatedAt = DateTime.Now;
 
             // 日志由调用方ExecuteSaveAttemptAsync统一记录
