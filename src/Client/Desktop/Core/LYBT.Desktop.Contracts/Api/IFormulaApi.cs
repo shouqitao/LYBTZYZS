@@ -40,7 +40,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 删除验方
         /// </summary>
         [Refit.Delete("/api/v1/formulas/{id}")]
-        Task<ApiResponse<ApiResponse>> DeleteFormulaAsync(Guid id);
+        Task<ApiResponse> DeleteFormulaAsync(Guid id);
 
         /// <summary>
         /// 克隆验方
@@ -56,9 +56,10 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
+        /// OpenSpec: standardize-desktop-api-layer - 返回类型修正
         /// </summary>
         [Refit.Post("/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate")]
-        Task<ApiResponse<ApiResponse>> ValidateFormulaHerbAsync(
+        Task<ApiResponse> ValidateFormulaHerbAsync(
             Guid formulaId,
             Guid herbItemId,
             [Refit.Body] Guid selectedHerbId);
@@ -96,5 +97,25 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/formulas/batch-disable")]
         Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
+
+        // ========== OpenSpec: standardize-desktop-api-layer - 导入导出功能 ==========
+
+        /// <summary>
+        /// 批量导入验方数据
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/import")]
+        Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync([Refit.Body] FormulaBatchImportInputDto request);
+
+        /// <summary>
+        /// 导出验方数据到Excel
+        /// </summary>
+        [Refit.Get("/api/v1/formulas/export")]
+        Task<HttpResponseMessage> ExportFormulasAsync([Refit.Query] string? category = null);
+
+        /// <summary>
+        /// 下载验方导入模板
+        /// </summary>
+        [Refit.Get("/api/v1/formulas/import-template")]
+        Task<HttpResponseMessage> ExportTemplateAsync();
     }
 }

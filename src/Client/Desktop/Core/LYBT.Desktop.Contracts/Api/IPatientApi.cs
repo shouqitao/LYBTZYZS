@@ -40,7 +40,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 删除患者（软删除）
         /// </summary>
         [Refit.Delete("/api/v1/patients/{id}")]
-        Task<ApiResponse<ApiResponse>> DeletePatientAsync(Guid id);
+        Task<ApiResponse> DeletePatientAsync(Guid id);
 
         // ========== Epic #1934: 批量导入/导出功能 ==========
 

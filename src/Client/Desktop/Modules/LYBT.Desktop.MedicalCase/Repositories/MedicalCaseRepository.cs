@@ -388,15 +388,14 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             return _api.SaveAsync(id, dto);
         }
 
-        protected override async Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override async Task<ApiResponse> CallApiDeleteAsync(Guid id)
         {
             // OpenSpec: clarify-cancel-consultation-logic
-            // DELETE返回204 No Content，需要转换IApiResponse为ApiResponse<ApiResponse>
+            // DELETE返回204 No Content，需要转换IApiResponse为ApiResponse
             var response = await _api.DeleteMedicalCaseAsync(id);
-            var result = response.IsSuccessStatusCode
+            return response.IsSuccessStatusCode
                 ? new ApiResponse { Success = true, Message = "删除成功" }
                 : new ApiResponse { Success = false, Message = $"删除失败: {response.ReasonPhrase}" };
-            return ApiResponse<ApiResponse>.CreateSuccess(result);
         }
 
         protected override Guid? GetIdFromUpdateDto(MedicalCaseInputDto dto)

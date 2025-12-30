@@ -42,7 +42,7 @@ namespace LYBT.Desktop.Patients.Repositories
             return _api.UpdatePatientAsync(id, dto);
         }
 
-        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse> CallApiDeleteAsync(Guid id)
         {
             return _api.DeletePatientAsync(id);
         }

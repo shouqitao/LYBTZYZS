@@ -43,7 +43,7 @@ namespace LYBT.Desktop.Herbs.Repositories
             return _api.UpdateHerbAsync(id, dto);
         }
 
-        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse> CallApiDeleteAsync(Guid id)
         {
             return _api.DeleteHerbAsync(id);
         }

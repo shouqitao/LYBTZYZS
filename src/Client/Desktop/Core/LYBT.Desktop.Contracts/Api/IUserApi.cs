@@ -40,7 +40,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 删除用户
         /// </summary>
         [Refit.Delete("/api/v1/users/{id}")]
-        Task<ApiResponse<ApiResponse>> DeleteUserAsync(Guid id);
+        Task<ApiResponse> DeleteUserAsync(Guid id);
 
         /// <summary>
         /// 修改个人资料 (Issue #1891)
@@ -50,9 +50,10 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 修改密码 (Issue #1887-1892)
+        /// OpenSpec: standardize-desktop-api-layer - 返回类型修正
         /// </summary>
         [Refit.Put("/api/v1/users/{id}/change-password")]
-        Task<ApiResponse<ApiResponse>> ChangePasswordAsync(Guid id, [Refit.Body] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request);
+        Task<ApiResponse> ChangePasswordAsync(Guid id, [Refit.Body] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request);
 
         /// <summary>
         /// 管理员重置用户密码 (Issue #1910)

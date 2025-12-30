@@ -196,7 +196,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
                 }
                 else
                 {
-                    _logger.LogWarning("[REPO] {EntityType}.Delete → Failed - Id={Id} Message={Message}", entityType, id, response.Data?.Message);
+                    _logger.LogWarning("[REPO] {EntityType}.Delete → Failed - Id={Id} Message={Message}", entityType, id, response.Message);
                 }
                 return response.Success;
             }
@@ -270,7 +270,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// </summary>
         /// <param name="id">实体ID</param>
         /// <returns>API响应</returns>
-        protected abstract Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id);
+        protected abstract Task<ApiResponse> CallApiDeleteAsync(Guid id);
 
         /// <summary>
         /// 从更新DTO中提取ID

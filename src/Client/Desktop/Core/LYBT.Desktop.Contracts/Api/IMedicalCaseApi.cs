@@ -48,17 +48,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Get("/api/v1/medicalcases/pending")]
         Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync([Refit.Query] Guid doctorId);
 
-        /// <summary>
-        /// 查询病案列表（支持多条件组合查询）
-        /// Issue #1592 - Phase 3
-        /// </summary>
-        [Refit.Get("/api/v1/medicalcases/query")]
-        Task<ApiResponse<List<MedicalCaseDetailDto>>> QueryMedicalCasesAsync(
-            [Refit.Query] string? patientName = null,
-            [Refit.Query] DateTime? startDate = null,
-            [Refit.Query] DateTime? endDate = null,
-            [Refit.Query] string? diagnosisKeyword = null);
-
+        // QueryMedicalCasesAsync 已删除 - 与 SearchMedicalCasesAsync 功能重复
+        // OpenSpec: standardize-desktop-api-layer
 
         /// <summary>
         /// 跨医案搜索（分页版）
