@@ -20,16 +20,8 @@ tags: [openspec, archive]
 3. Run `openspec archive <id> --yes` so the CLI moves the change and applies spec updates without prompts (use `--skip-specs` only for tooling-only work).
 4. Review the command output to confirm the target specs were updated and the change landed in `changes/archive/`.
 5. Validate with `openspec validate --strict` and inspect with `openspec show <id>` if anything looks off.
-6. **归档后处理** - 执行 `lybtzyzs-openspec-archive-finalize` skill完成以下自动化流程:
-   - 代码审查：检查归档变更涉及的代码质量
-   - 提交推送：审查通过后自动commit并push到远程仓库
-   - 保存记忆：将变更关键信息保存到Graphiti知识图谱
-   - 同步文档：更新docs系统文档保持同步
-
-   如果审查未通过，输出问题报告并停止，用户需修复后手动执行skill。
 
 **Reference**
 - Use `openspec list` to confirm change IDs before archiving.
 - Inspect refreshed specs with `openspec list --specs` and address any validation issues before handing off.
-- 归档后处理skill: `.claude/skills/lybtzyzs-openspec-archive-finalize/SKILL.md`
 <!-- OPENSPEC:END -->

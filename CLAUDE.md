@@ -27,7 +27,7 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 ---
 
-## 🎯 当前阶段: 架构功能完善期
+## 当前阶段: 架构功能完善期
 
 **阶段目标**: 完善系统架构设计，补全功能实现，确保代码质量和可维护性
 
@@ -60,18 +60,22 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 ```
 
 **架构变更分级**:
-- **局部优化**: 单模块内的模式调整、代码组织优化 → 直接执行
-- **跨模块优化**: 影响2-3个模块的接口调整 → 说明影响范围后执行
-- **架构重构**: 涉及核心架构变更 → 需用户确认方案后执行
-- **技术栈变更**: 引入新框架或替换现有技术 → **必须用户审批**
+- **局部优化**: 单模块内的模式调整、代码组织优化 -> 直接执行
+- **跨模块优化**: 影响2-3个模块的接口调整 -> 说明影响范围后执行
+- **架构重构**: 涉及核心架构变更 -> 需用户确认方案后执行
+- **技术栈变更**: 引入新框架或替换现有技术 -> **必须用户审批**
 
 ---
 
-## 🔍 修改前必查(铁律)
+## 修改前必查(铁律)
 
 **出方案或修改代码前，必须完成以下步骤:**
 
-1. **查记忆**: `search_memory_facts("相关关键词")` 查已有解决方案
+1. **查记忆**: 用Serena记忆功能查已有解决方案
+   ```
+   mcp__serena__list_memories()           # 列出所有记忆
+   mcp__serena__read_memory("记忆名")     # 读取特定记忆
+   ```
 2. **查文档**: 用context7/microsoft_docs_mcp查官方文档和最佳实践
 3. **查案例**: 用tavily-search/brave-search查业界优秀实现
 4. **问用户**: 方案确认后再执行，不确定必问
@@ -80,38 +84,55 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 ---
 
-## 🎯 UltraThink四阶段(查Graphiti)
+## 记忆系统: Serena Memory
 
-```
-search_memory_facts("LYBTZYZS-UltraThink详细执行指南")
-```
+**工具集**:
+- `list_memories` - 列出所有可用记忆
+- `read_memory` - 读取记忆内容
+- `write_memory` - 写入新记忆
+- `edit_memory` - 编辑现有记忆
+- `delete_memory` - 删除记忆
 
-**THINK(深度思考)** → **PLAN(任务规划)** → **EXECUTE(渐进执行)** → **REFLECT(总结归档)**
+**使用场景**:
+- 设计决策记录
+- 架构约束备忘
+- 术语规范定义
+- 问题解决方案存档
 
----
-
-## 🧠 核心约束(查Graphiti)
-
-```
-search_memory_facts("LYBTZYZS-核心约束")
-search_memory_facts("LYBTZYZS-术语规范")
-search_memory_facts("LYBTZYZS-Issue自动关闭标准")
-```
-
-**关键规则**: TodoWrite必用 | Graphiti第一大脑 | Issue自动关闭(满足4标准) | Consultation仅指诊断部分
+**命名规范**: `<主题>-<日期>.md` 或 `<模块>-<功能>.md`
 
 ---
 
-## 📦 架构索引(查Graphiti)
+## UltraThink四阶段
 
-```
-search_memory_facts("LYBTZYZS-前端MVVM架构")
-search_memory_facts("LYBTZYZS-后端三层架构")
-search_memory_facts("LYBTZYZS-数据库Schema")
-search_memory_facts("LYBTZYZS-DDD聚合根设计")
-```
+**THINK(深度思考)** -> **PLAN(任务规划)** -> **EXECUTE(渐进执行)** -> **REFLECT(总结归档)**
 
 ---
 
-最后更新: 2025-12-23 20:45
-文档版本: v3.4-architecture-completion
+## 核心约束
+
+**关键规则**:
+- TodoWrite必用 - 复杂任务必须创建任务列表
+- Serena记忆优先 - 重要决策存入记忆系统
+- Issue自动关闭(满足4标准) - 代码实现+测试通过+文档更新+PR合并
+- Consultation仅指诊断部分 - 术语规范
+
+---
+
+## 架构索引
+
+查看Serena记忆获取架构信息:
+```
+mcp__serena__list_memories()  # 查看可用的架构记忆文件
+```
+
+**主要架构**:
+- 前端: WPF + Prism + MVVM
+- 后端: ASP.NET Core + 三层架构
+- 数据: EF Core + SQL Server
+- 设计: DDD聚合根模式
+
+---
+
+最后更新: 2025-12-29 21:06
+文档版本: v3.5-serena-memory
