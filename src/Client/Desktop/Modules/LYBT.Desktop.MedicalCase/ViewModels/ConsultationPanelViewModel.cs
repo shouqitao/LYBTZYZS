@@ -31,7 +31,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 诊断属性
         // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         // 移除: ChiefComplaint (主诉), FourDiagnosis (四诊), TreatmentPrinciple (治疗原则), MedicalCaseRemark (备注)
-        // 保留: PresentIllness (现病史), TongueDiagnosis (舌诊), PulseDiagnosis (脉诊), TCMDiagnosis (中医诊断-必填)
+        // 保留: PresentIllness (现病史), TongueDiagnosis (舌诊), PulseDiagnosis (脉诊), TcmDiagnosis (中医诊断-必填)
 
         private string _presentIllness = string.Empty;
         /// <summary>
@@ -47,7 +47,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 中医诊断（必填）
         /// </summary>
-        public string TCMDiagnosis
+        public string TcmDiagnosis
         {
             get => _tcmDiagnosis;
             set => SetProperty(ref _tcmDiagnosis, value);
@@ -107,8 +107,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public bool Validate()
         {
-            // OpenSpec: refactor-diagnosis-fields - 只有TCMDiagnosis是必填字段
-            if (string.IsNullOrWhiteSpace(TCMDiagnosis))
+            // OpenSpec: refactor-diagnosis-fields - 只有TcmDiagnosis是必填字段
+            if (string.IsNullOrWhiteSpace(TcmDiagnosis))
             {
                 ValidationMessage = "请填写中医诊断";
                 return false;
@@ -171,7 +171,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private void LoadFromDto(ConsultationDetailDto dto)
         {
             PresentIllness = dto.PresentIllness ?? string.Empty;
-            TCMDiagnosis = dto.TCMDiagnosis ?? string.Empty;
+            TcmDiagnosis = dto.TcmDiagnosis ?? string.Empty;
             TongueDiagnosis = dto.TongueDiagnosis ?? string.Empty;
             PulseDiagnosis = dto.PulseDiagnosis ?? string.Empty;
         }
@@ -200,7 +200,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 var consultationInput = new ConsultationInputDto
                 {
                     PresentIllness = PresentIllness,
-                    TCMDiagnosis = TCMDiagnosis,
+                    TcmDiagnosis = TcmDiagnosis,
                     TongueDiagnosis = TongueDiagnosis,
                     PulseDiagnosis = PulseDiagnosis
                 };
@@ -244,7 +244,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             return new ConsultationInputDto
             {
                 PresentIllness = PresentIllness,
-                TCMDiagnosis = TCMDiagnosis,
+                TcmDiagnosis = TcmDiagnosis,
                 TongueDiagnosis = TongueDiagnosis,
                 PulseDiagnosis = PulseDiagnosis
             };

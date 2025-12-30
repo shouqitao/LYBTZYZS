@@ -257,6 +257,26 @@ public class MedicalCaseLifecycleHandler
     }
 
     /// <summary>
+    /// 恢复暂存的医案为Active状态
+    /// OpenSpec: refactor-medicalcase-workspace Phase 5 - 从待诊队列恢复挂起医案
+    /// </summary>
+    public async Task<(bool success, string? errorMessage)> ResumeDraftAsync(Guid medicalCaseId)
+    {
+        _logger.LogDebug("[HDL] ResumeDraft started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+        var result = await UpdateMedicalCaseStatusAsync(medicalCaseId, MedicalCaseStatus.Active);
+        if (result.success)
+        {
+            _logger.LogInformation("[HDL] ResumeDraft completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs
+            {
+                Action = LifecycleAction.ResumeDraft,
+                MedicalCaseId = medicalCaseId
+            });
+        }
+        return result;
+    }
+
+    /// <summary>
     /// 更新MedicalCase状态
     /// Issue #2243: 使用专用的UpdateStatusAsync API
     /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
@@ -326,6 +346,7 @@ public enum LifecycleAction
 {
     Create,
     SaveDraft,
+    ResumeDraft,
     Cancel,
     Complete
 }

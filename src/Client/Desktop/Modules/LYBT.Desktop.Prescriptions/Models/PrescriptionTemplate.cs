@@ -229,7 +229,7 @@ public class PrescriptionTemplate : BindableBase
         {
             Id = Guid.NewGuid(),
             // OpenSpec: PatientId已移除，通过MedicalCaseId关联获取
-            // OpenSpec: simplify-medicalcase-dataflow - Indication已删除，打印时从Consultation.TCMDiagnosis获取
+            // OpenSpec: simplify-medicalcase-dataflow - Indication已删除，打印时从Consultation.TcmDiagnosis获取
             ReferencedFormulas = Name, // 记录模板来源
             DosageCount = DosageCount,
             Advice = Usage,

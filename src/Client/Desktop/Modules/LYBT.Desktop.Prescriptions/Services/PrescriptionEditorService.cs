@@ -147,7 +147,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                             CreatedAt = mc.Prescription.CreatedAt,
                             PatientId = mc.PatientId,
                             PatientName = mc.PatientName,
-                            TCMDiagnosis = mc.Consultation?.TCMDiagnosis,
+                            TcmDiagnosis = mc.Consultation?.TcmDiagnosis,
                             DosageCount = mc.Prescription.DosageCount,
                             Advice = mc.Prescription.Advice,
                             FormulaSource = mc.Prescription.ReferencedFormulas, // OpenSpec: simplify-medicalcase-dataflow

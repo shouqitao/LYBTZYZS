@@ -96,14 +96,14 @@ public partial class MedicalCaseEditControl : UserControl
         set => SetValue(PulseDiagnosisProperty, value);
     }
 
-    public static readonly DependencyProperty TCMDiagnosisProperty =
-        DependencyProperty.Register(nameof(TCMDiagnosis), typeof(string), typeof(MedicalCaseEditControl),
+    public static readonly DependencyProperty TcmDiagnosisProperty =
+        DependencyProperty.Register(nameof(TcmDiagnosis), typeof(string), typeof(MedicalCaseEditControl),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-    public string? TCMDiagnosis
+    public string? TcmDiagnosis
     {
-        get => (string?)GetValue(TCMDiagnosisProperty);
-        set => SetValue(TCMDiagnosisProperty, value);
+        get => (string?)GetValue(TcmDiagnosisProperty);
+        set => SetValue(TcmDiagnosisProperty, value);
     }
 
     #endregion

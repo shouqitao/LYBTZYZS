@@ -254,7 +254,7 @@
                     PulseDiagnosis="{Binding CurrentDetail.PulseDiagnosis, Mode=TwoWay}"
                     Remark="{Binding CurrentDetail.Remark, Mode=TwoWay}"
                     Status="{Binding CurrentDetail.Status}"
-                    TCMDiagnosis="{Binding CurrentDetail.TCMDiagnosis, Mode=TwoWay}"
+                    TcmDiagnosis="{Binding CurrentDetail.TcmDiagnosis, Mode=TwoWay}"
                     TongueDiagnosis="{Binding CurrentDetail.TongueDiagnosis, Mode=TwoWay}"
                     UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}" />

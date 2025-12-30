@@ -106,7 +106,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     }
 
     /// <summary>中医诊断</summary>
-    public string? TCMDiagnosis
+    public string? TcmDiagnosis
     {
         get => _tcmDiagnosis;
         set => SetProperty(ref _tcmDiagnosis, value);
@@ -124,8 +124,8 @@ public class MedicalCaseDetailModel : ValidatableModelBase
                 parts.Add($"舌诊: {TongueDiagnosis}");
             if (!string.IsNullOrWhiteSpace(PulseDiagnosis))
                 parts.Add($"脉诊: {PulseDiagnosis}");
-            if (!string.IsNullOrWhiteSpace(TCMDiagnosis))
-                parts.Add($"中医诊断: {TCMDiagnosis}");
+            if (!string.IsNullOrWhiteSpace(TcmDiagnosis))
+                parts.Add($"中医诊断: {TcmDiagnosis}");
             return parts.Count > 0 ? string.Join("\n", parts) : "暂无诊断信息";
         }
     }
@@ -252,7 +252,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
             model.PresentIllness = dto.Consultation.PresentIllness;
             model.TongueDiagnosis = dto.Consultation.TongueDiagnosis;
             model.PulseDiagnosis = dto.Consultation.PulseDiagnosis;
-            model.TCMDiagnosis = dto.Consultation.TCMDiagnosis;
+            model.TcmDiagnosis = dto.Consultation.TcmDiagnosis;
         }
 
         // 处方信息
@@ -296,7 +296,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
             PresentIllness = PresentIllness,
             TongueDiagnosis = TongueDiagnosis,
             PulseDiagnosis = PulseDiagnosis,
-            TCMDiagnosis = TCMDiagnosis
+            TcmDiagnosis = TcmDiagnosis
         };
     }
 
@@ -315,7 +315,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
             PresentIllness = PresentIllness,
             TongueDiagnosis = TongueDiagnosis,
             PulseDiagnosis = PulseDiagnosis,
-            TCMDiagnosis = TCMDiagnosis,
+            TcmDiagnosis = TcmDiagnosis,
             HerbCount = HerbCount,
             DoseCount = DoseCount,
             ReferencedFormulas = ReferencedFormulas,

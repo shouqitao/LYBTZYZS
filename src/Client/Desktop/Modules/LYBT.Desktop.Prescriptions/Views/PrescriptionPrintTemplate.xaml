@@ -173,7 +173,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Style="{StaticResource LabelStyle}" Text="诊断："/>
             <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
-                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding TCMDiagnosis}"
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding TcmDiagnosis}"
                            TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
             </Border>
         </Grid>

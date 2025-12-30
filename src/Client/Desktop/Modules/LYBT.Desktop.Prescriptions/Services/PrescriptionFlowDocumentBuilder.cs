@@ -206,7 +206,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             };
 
             paragraph.Inlines.Add(new Run("诊断："));
-            paragraph.Inlines.Add(CreateUnderlinedValue(_prescription.TCMDiagnosis ?? "", 0));
+            paragraph.Inlines.Add(CreateUnderlinedValue(_prescription.TcmDiagnosis ?? "", 0));
 
             _document.Blocks.Add(paragraph);
         }

@@ -96,7 +96,7 @@
 
                         <!-- 中医诊断 -->
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="中医诊断" Style="{StaticResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Detail.TCMDiagnosis, TargetNullValue='-'}"
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Detail.TcmDiagnosis, TargetNullValue='-'}"
                                    Style="{StaticResource DetailValueStyle}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
                     </Grid>
                 </controls:InfoCard.Content>

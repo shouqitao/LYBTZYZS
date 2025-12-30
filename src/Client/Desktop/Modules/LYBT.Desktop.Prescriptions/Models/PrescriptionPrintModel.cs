@@ -35,7 +35,7 @@ namespace LYBT.Desktop.Prescriptions.Models
 
         // ===== 诊断信息 =====
         /// <summary>诊断（中医诊断）</summary>
-        public string? TCMDiagnosis { get; set; }
+        public string? TcmDiagnosis { get; set; }
         /// <summary>诊见（症状描述）</summary>
         public string? Symptoms { get; set; }
 

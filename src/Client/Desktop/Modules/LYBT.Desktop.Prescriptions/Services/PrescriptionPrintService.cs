@@ -741,7 +741,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 填充四诊信息
         /// OpenSpec: print-prescription-slip - 从ConsultationInputDto获取诊断信息
         /// OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-        /// OpenSpec: simplify-medicalcase-dataflow - Indication已删除，从Consultation获取TCMDiagnosis
+        /// OpenSpec: simplify-medicalcase-dataflow - Indication已删除，从Consultation获取TcmDiagnosis
         /// </summary>
         private static void PopulateDiagnosisInfo(PrescriptionPrintModel printDto, PrescriptionDetailDto prescription, ConsultationInputDto? consultation)
         {
@@ -750,14 +750,14 @@ namespace LYBT.Desktop.Prescriptions.Services
                 printDto.PresentIllness = consultation.PresentIllness;
                 printDto.TongueDiagnosis = consultation.TongueDiagnosis;
                 printDto.PulseDiagnosis = consultation.PulseDiagnosis;
-                printDto.TCMDiagnosis = consultation.TCMDiagnosis; // OpenSpec: simplify-medicalcase-dataflow - 从Consultation获取
+                printDto.TcmDiagnosis = consultation.TcmDiagnosis; // OpenSpec: simplify-medicalcase-dataflow - 从Consultation获取
             }
             else
             {
                 printDto.PresentIllness = null;
                 printDto.TongueDiagnosis = null;
                 printDto.PulseDiagnosis = null;
-                printDto.TCMDiagnosis = null; // OpenSpec: simplify-medicalcase-dataflow - Indication已删除
+                printDto.TcmDiagnosis = null; // OpenSpec: simplify-medicalcase-dataflow - Indication已删除
             }
         }
 

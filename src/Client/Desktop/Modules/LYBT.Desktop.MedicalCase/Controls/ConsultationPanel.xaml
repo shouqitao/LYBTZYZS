@@ -10,7 +10,7 @@
         OpenSpec: refactor-medicalcase-ui - UI重构版本
         OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, FourDiagnosis, TreatmentPrinciple字段
 
-        保留4个核心字段: PresentIllness, TongueDiagnosis, PulseDiagnosis, TCMDiagnosis
+        保留4个核心字段: PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis
 
         新布局:
         - Row 0: 现病史
@@ -125,7 +125,7 @@
                 MinHeight="80"
                 AcceptsReturn="True"
                 Style="{StaticResource FormTextAreaStyle}"
-                Text="{Binding TCMDiagnosis, UpdateSourceTrigger=PropertyChanged}"
+                Text="{Binding TcmDiagnosis, UpdateSourceTrigger=PropertyChanged}"
                 TextWrapping="Wrap"
                 VerticalScrollBarVisibility="Auto" />
         </Grid>

@@ -198,7 +198,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         try
         {
             _prescriptionId = dto.Id;
-            TreatmentMethod = string.Empty; // Indication已删除，打印时从Consultation.TCMDiagnosis获取
+            TreatmentMethod = string.Empty; // Indication已删除，打印时从Consultation.TcmDiagnosis获取
             TreatmentPrinciple = dto.Advice ?? string.Empty;
             ReferencedFormulas = dto.ReferencedFormulas ?? string.Empty;
             Remark = dto.Remark ?? string.Empty;

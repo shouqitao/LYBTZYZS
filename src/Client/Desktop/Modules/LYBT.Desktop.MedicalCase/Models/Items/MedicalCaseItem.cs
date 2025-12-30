@@ -173,7 +173,7 @@ public class MedicalCaseItem : BindableBase
             PatientAge = dto.PatientAge,
             CaseNumber = dto.CaseNumber ?? dto.Id.ToString().Substring(0, 8).ToUpper(), // 优先使用CaseNumber
             PresentIllness = dto.PresentIllness,
-            Diagnosis = dto.Diagnosis ?? dto.Consultation?.TCMDiagnosis, // 优先使用Diagnosis字段
+            Diagnosis = dto.Diagnosis ?? dto.Consultation?.TcmDiagnosis, // 优先使用Diagnosis字段
             CaseStatus = dto.CaseStatus, // OpenSpec: unify-frontend-backend-types - 直接映射
             ConsultationId = dto.ConsultationId,
             PrescriptionId = dto.PrescriptionId,
@@ -226,7 +226,7 @@ public class MedicalCaseItem : BindableBase
         PatientAge = dto.PatientAge;
         CaseNumber = dto.CaseNumber ?? dto.Id.ToString().Substring(0, 8).ToUpper(); // 优先使用CaseNumber
         PresentIllness = dto.PresentIllness;
-        Diagnosis = dto.Diagnosis ?? dto.Consultation?.TCMDiagnosis; // 优先使用Diagnosis字段
+        Diagnosis = dto.Diagnosis ?? dto.Consultation?.TcmDiagnosis; // 优先使用Diagnosis字段
         CaseStatus = dto.CaseStatus; // OpenSpec: unify-frontend-backend-types - 直接映射
         ConsultationId = dto.ConsultationId;
         PrescriptionId = dto.PrescriptionId;

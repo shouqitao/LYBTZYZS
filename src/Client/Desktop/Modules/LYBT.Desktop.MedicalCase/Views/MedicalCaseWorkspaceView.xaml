@@ -113,7 +113,7 @@
                                 <!-- 中医诊断 -->
                                 <StackPanel Style="{StaticResource LabelValueStyle}">
                                     <TextBlock Text="中医诊断（辩证）" Style="{StaticResource FormLabelStyle}"/>
-                                    <TextBlock Text="{Binding ConsultationPanelViewModel.TCMDiagnosis}" Style="{StaticResource ReadOnlyTextStyle}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding ConsultationPanelViewModel.TcmDiagnosis}" Style="{StaticResource ReadOnlyTextStyle}" FontWeight="SemiBold"/>
                                 </StackPanel>
 
                                 <!-- 是否开处方 -->

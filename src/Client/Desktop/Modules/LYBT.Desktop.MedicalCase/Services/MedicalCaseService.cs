@@ -430,7 +430,7 @@ public class MedicalCaseService : IMedicalCaseService
         var c = _currentDetail.Consultation; var o = _originalDetail.Consultation;
         return c.PresentIllness != o.PresentIllness ||
                c.TongueDiagnosis != o.TongueDiagnosis || c.PulseDiagnosis != o.PulseDiagnosis ||
-               c.TCMDiagnosis != o.TCMDiagnosis;
+               c.TcmDiagnosis != o.TcmDiagnosis;
     }
 
     private bool IsPrescriptionChanged()
@@ -463,7 +463,7 @@ public class MedicalCaseService : IMedicalCaseService
         Id = s.Id, MedicalCaseId = s.MedicalCaseId, PatientId = s.PatientId, UserId = s.UserId,
         PatientName = s.PatientName, DoctorName = s.DoctorName,
         PresentIllness = s.PresentIllness, TongueDiagnosis = s.TongueDiagnosis,
-        PulseDiagnosis = s.PulseDiagnosis, TCMDiagnosis = s.TCMDiagnosis,
+        PulseDiagnosis = s.PulseDiagnosis, TcmDiagnosis = s.TcmDiagnosis,
         CreatedAt = s.CreatedAt, UpdatedAt = s.UpdatedAt
     };
 

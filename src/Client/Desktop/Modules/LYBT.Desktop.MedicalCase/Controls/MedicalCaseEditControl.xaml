@@ -113,7 +113,7 @@
                         <!-- 第三行：中医诊断（跨两列） -->
                         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                             <TextBlock Text="中医诊断" Style="{StaticResource FormLabelStyle}"/>
-                            <TextBox Text="{Binding TCMDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <TextBox Text="{Binding TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource EditableTextBoxStyle}"
                                      MinHeight="44"
                                      Padding="12,10"/>
