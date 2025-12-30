@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 医案导航与挂起逻辑优化 (OpenSpec: optimize-medicalcase-navigation) - 2025-12-30
+
+**背景**: 医案导航和挂起处理逻辑需要统一，提升用户体验。
+
+**核心改进**:
+- 四选项弹窗(UnfinishedCaseDialog): 处理挂起医案的继续/关闭+新建/仅关闭/取消选项
+- 三选项弹窗(UnsavedChangesDialog): 编辑模式离开时的暂存/取消/返回选项
+- 待诊队列控件(PendingQueueControl): 支持双击交互、状态显示(待诊/挂起/看诊中)
+- CommonDialogService集成: ShowUnfinishedCaseDialogAsync使用自定义弹窗
+- WorkspacePendingQueueHandler: 统一待诊队列选择逻辑
+
+**新增组件**:
+- UnfinishedCaseDialog.xaml/.cs + ViewModel
+- UnsavedChangesDialog.xaml (Prism Dialog)
+- PendingQueueControl.xaml/.cs
+- WorkspacePendingQueueHandler.cs
+- UnfinishedCaseChoice枚举、PendingCaseType枚举
+
+**业务规则**:
+- 单一挂起: 同一患者只允许有一个挂起医案
+- 模式区分: 查看模式无提示，编辑模式有提示
+- 状态颜色: 待诊(灰色)、挂起(橙色)、看诊中(绿色)
+
+**状态**: 已归档
+
 #### ViewModel组合模式重构 (OpenSpec: refactor-viewmodel-composition) - 2025-12-25
 
 **背景**: MasterDetail ViewModel基类过于臃肿，继承层次深，难以测试和维护。
