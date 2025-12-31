@@ -38,7 +38,13 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="id">病案ID</param>
         /// <returns>关闭是否成功</returns>
-        Task<bool> CloseCaseAsync(Guid id);
+        /// <summary>
+    /// 关闭医案（直接标记为Completed）
+    /// OpenSpec: optimize-medicalcase-api - 返回完整医案实体用于DTO映射
+    /// </summary>
+    /// <param name="id">医案ID</param>
+    /// <returns>更新后的医案实体，不存在返回null</returns>
+    Task<MedicalCase?> CloseCaseAsync(Guid id);
 
         /// <summary>
         /// 暂存医案（保存草稿）

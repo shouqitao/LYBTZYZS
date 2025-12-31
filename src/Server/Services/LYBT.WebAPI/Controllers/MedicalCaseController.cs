@@ -457,18 +457,20 @@ namespace LYBT.WebAPI.Controllers
         /// 业务规则：直接设置状态为Completed，不验证三步流程
         /// </summary>
         [HttpPut("{id}/close")]
-        [ProducesResponseType(typeof(ApiResponse), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         public async Task<IActionResult> CloseMedicalCase(Guid id)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // OpenSpec: optimize-medicalcase-api - 返回完整医案详情
             var result = await _stateService.CloseCaseAsync(id);
 
-            if (!result)
-                return NotFound(ApiResponse.CreateFail("病案不存在"));
+            if (result == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
 
+            var dto = MapToMedicalCaseDetailDto(result);
             _logger.LogInformation("病案关闭，MedicalCaseId: {Id}", id);
-            return Ok(ApiResponse.CreateSuccess("病案已关闭"));
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "病案已关闭"));
         }
 
         /// <summary>
@@ -571,13 +573,14 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // OpenSpec: optimize-medicalcase-api - GetById统一返回完整DetailDto（含Consultation+Prescription）
             var result = await _queryService.GetByIdAsync(id);
 
             if (result == null)
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
 
-            // Entity → DTO映射
-            var dto = MapToMedicalCaseDto(result);
+            // Entity → DTO映射 - 使用MapToMedicalCaseDetailDto返回完整详情
+            var dto = MapToMedicalCaseDetailDto(result);
 
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "查询成功"));
         }
@@ -594,6 +597,10 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         /// <param name="id">病案ID</param>
         /// <returns>完整的病案详情（包含Consultation和Prescription）</returns>
+        /// <summary>
+        /// OpenSpec: optimize-medicalcase-api - 此端点已废弃，请使用 GET /{id} 获取完整病案详情
+        /// </summary>
+        [Obsolete("Use GET /{id} instead. Will be removed in v2.0")]
         [HttpGet("{id}/with-details")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
@@ -819,6 +826,48 @@ namespace LYBT.WebAPI.Controllers
             return Ok(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateSuccess(result, "查询成功"));
         }
 
+        /// <summary>
+        /// 统一医案查询端点
+        /// OpenSpec: optimize-medicalcase-api - 整合多个查询端点为统一接口
+        /// 支持多种查询类型：All(默认分页)、ByPatient(按患者)、Pending(待看诊)、Unfinished(未完成)、Recent(最近)
+        /// </summary>
+        /// <param name="query">查询参数</param>
+        /// <returns>分页查询结果</returns>
+        [HttpGet("query")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseListDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseListDto>>), 400)]
+        public async Task<IActionResult> GetMedicalCases([FromQuery] MedicalCaseQueryDto query)
+        {
+            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (query.PageIndex <= 0 || query.PageSize <= 0 || query.PageSize > 100)
+            {
+                return BadRequest(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateFail(
+                    "页码和页大小参数无效（页码>0，页大小1-100）"));
+            }
+
+            // 获取当前用户信息
+            var (operatorId, _, operatorRole) = GetOperator();
+            
+            // 设置DoctorId和权限
+            if (!query.DoctorId.HasValue)
+            {
+                query.DoctorId = operatorId;
+            }
+            
+            // Admin角色可以查看所有数据
+            if (operatorRole is UserRole.SuperAdmin or UserRole.Admin)
+            {
+                query.IncludeAllDoctors = true;
+            }
+
+            var result = await _queryService.QueryAsync(query);
+
+            _logger.LogInformation("统一查询完成，QueryType: {QueryType}, 返回{Count}条记录", 
+                query.QueryType, result.Items.Count);
+
+            return Ok(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateSuccess(result, "查询成功"));
+        }
+
 
         /// <summary>
         /// 跨医案搜索
@@ -864,6 +913,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="patientId">患者ID</param>
         /// <param name="count">返回数量（默认5）</param>
         /// <returns>最近医案列表（按创建时间倒序，含完整Prescription数据）</returns>
+        [Obsolete("Use GET /api/v1/medicalcases/query with QueryType=Recent instead. Will be removed in v2.0")]
         [HttpGet("patient/{patientId}/recent")]
         [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 404)]
@@ -935,6 +985,7 @@ namespace LYBT.WebAPI.Controllers
         /// 业务规则：返回当前医生的所有Active状态医案的患者信息
         /// </summary>
         /// <param name="doctorId">医生ID（可选，默认使用当前登录医生ID）</param>
+        [Obsolete("Use GET /api/v1/medicalcases/query with QueryType=Pending instead. Will be removed in v2.0")]
         [HttpGet("pending")]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 401)]
@@ -980,6 +1031,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <returns>患者的所有医案列表</returns>
+        [Obsolete("Use GET /api/v1/medicalcases/query with QueryType=ByPatient instead. Will be removed in v2.0")]
         [HttpGet("by-patient/{patientId}")]
         [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 200)]
         public async Task<IActionResult> GetMedicalCasesByPatientId(Guid patientId)
@@ -1020,6 +1072,7 @@ namespace LYBT.WebAPI.Controllers
             return Ok(ApiResponse<List<MedicalCaseDetailDto>>.CreateSuccess(dtoItems, "查询成功"));
         }
 
+        [Obsolete("Use GET /api/v1/medicalcases/query with QueryType=Unfinished instead. Will be removed in v2.0")]
         [HttpGet("patient/{patientId}/unfinished")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]

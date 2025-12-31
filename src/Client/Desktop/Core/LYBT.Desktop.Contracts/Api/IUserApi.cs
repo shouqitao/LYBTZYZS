@@ -1,3 +1,4 @@
+﻿using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
@@ -53,7 +54,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// OpenSpec: standardize-desktop-api-layer - 返回类型修正
         /// </summary>
         [Refit.Put("/api/v1/users/{id}/change-password")]
-        Task<ApiResponse> ChangePasswordAsync(Guid id, [Refit.Body] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request);
+        Task<ApiResponse> ChangePasswordAsync(Guid id, [Refit.Body] ChangePasswordRequest request);
 
         /// <summary>
         /// 管理员重置用户密码 (Issue #1910)

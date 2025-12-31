@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
+
 namespace LYBT.Desktop.Contracts.Api
 {
 
@@ -27,7 +29,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>安全: PBKDF2密码哈希验证、失败次数限制、IP地址记录</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/login")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> LoginAsync([Refit.Body] LoginRequest loginRequest);
+        Task<ApiResponse<LoginResponse>> LoginAsync([Refit.Body] LoginRequest loginRequest);
 
         /// <summary>
         /// 使用AutoLoginToken自动登录
@@ -41,7 +43,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>更新: 成功登录后返回新的AutoLoginToken（Token轮换机制）</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/auto-login")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> LoginWithAutoTokenAsync([Refit.Body] AutoLoginRequest request);
+        Task<ApiResponse<LoginResponse>> LoginWithAutoTokenAsync([Refit.Body] AutoLoginRequest request);
 
         /// <summary>
         /// 用户登出操作
@@ -55,7 +57,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// </remarks>
         [Refit.Post("/api/v1/auth/logout")]
         [Refit.Headers("Authorization: Bearer")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse> LogoutAsync([Refit.Body] LogoutRequest logoutRequest);
+        Task<ApiResponse> LogoutAsync([Refit.Body] LogoutRequest logoutRequest);
 
         /// <summary>
         /// 刷新访问令牌 - Issue #1838
@@ -68,7 +70,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>过期: AccessToken 15分钟，RefreshToken 7天</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/refresh")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> RefreshTokenAsync([Refit.Body] RefreshTokenRequest request);
+        Task<ApiResponse<LoginResponse>> RefreshTokenAsync([Refit.Body] RefreshTokenRequest request);
 
 
         /// <summary>
@@ -83,7 +85,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// </remarks>
         [Refit.Post("/api/v1/auth/changeSysAdminPassword")]
         [Refit.Headers("Authorization: Bearer")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse> ChangeSysAdminPasswordAsync([Refit.Body] ChangeSysAdminPassword changeSysAdminPassword);
+        Task<ApiResponse> ChangeSysAdminPasswordAsync([Refit.Body] ChangeSysAdminPassword changeSysAdminPassword);
 
         /// <summary>
         /// 验证Token (GET方法)
@@ -95,7 +97,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// </remarks>
         [Refit.Get("/api/v1/auth/validate")]
         [Refit.Headers("Authorization: Bearer")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> ValidateTokenFromHeaderAsync();
+        Task<ApiResponse<object>> ValidateTokenFromHeaderAsync();
 
         /// <summary>
         /// 验证Token (POST方法)
@@ -116,7 +118,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>用途: Desktop客户端启动时的Token自动验证</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/validate")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<ValidateTokenResponse>> ValidateTokenAsync([Refit.Body] ValidateTokenRequest request);
+        Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync([Refit.Body] ValidateTokenRequest request);
 
         /// <summary>
         /// API服务健康状态检查
@@ -128,6 +130,6 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>响应: 返回服务状态信息，包含状态和时间戳，无需认证</para>
         /// </remarks>
         [Refit.Get("/api/v1/health")]
-        Task<LYBT.Shared.Models.Contracts.Common.HealthCheckResponse> HealthCheckAsync();
+        Task<HealthCheckResponse> HealthCheckAsync();
     }
 }

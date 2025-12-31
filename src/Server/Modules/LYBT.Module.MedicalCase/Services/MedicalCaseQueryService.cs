@@ -322,5 +322,106 @@ namespace LYBT.Module.MedicalCases.Services
             return dtos;
         }
 
+        /// <summary>
+        /// 统一查询接口
+        /// OpenSpec: optimize-medicalcase-api - 整合多个查询端点为统一接口
+        /// 根据QueryType分发到不同查询逻辑
+        /// </summary>
+        public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query)
+        {
+            _logger.LogInformation("[SVC] MedicalCase.Query started - QueryType={QueryType} PatientId={PatientId} DoctorId={DoctorId}",
+                query.QueryType, query.PatientId, query.DoctorId);
+
+            return query.QueryType switch
+            {
+                MedicalCaseQueryType.ByPatient => await QueryByPatientAsync(query),
+                MedicalCaseQueryType.Pending => await QueryPendingAsync(query),
+                MedicalCaseQueryType.Unfinished => await QueryUnfinishedAsync(query),
+                MedicalCaseQueryType.Recent => await QueryRecentAsync(query),
+                _ => await GetListDtoAsync(null, query.PatientId, query.PageIndex, query.PageSize, query.DoctorId, query.IncludeAllDoctors, query.Keyword)
+            };
+        }
+
+        private async Task<PagedResult<MedicalCaseListDto>> QueryByPatientAsync(MedicalCaseQueryDto query)
+        {
+            if (!query.PatientId.HasValue)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Query → ByPatient requires PatientId");
+                return new PagedResult<MedicalCaseListDto>();
+            }
+
+            var entities = await _repository.GetByPatientIdAsync(query.PatientId.Value);
+            var pagedEntities = entities
+                .OrderByDescending(e => e.CreatedAt)
+                .Skip((query.PageIndex - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToList();
+
+            var dtos = _mapper.Map<List<MedicalCaseListDto>>(pagedEntities);
+            return new PagedResult<MedicalCaseListDto>(dtos, entities.Count, query.PageIndex, query.PageSize);
+        }
+
+        private async Task<PagedResult<MedicalCaseListDto>> QueryPendingAsync(MedicalCaseQueryDto query)
+        {
+            List<PendingMedicalCaseDto> pendingCases;
+            if (query.IncludeAllDoctors || !query.DoctorId.HasValue)
+            {
+                pendingCases = await GetAllPendingCasesAsync();
+            }
+            else
+            {
+                pendingCases = await GetPendingCasesAsync(query.DoctorId.Value);
+            }
+
+            // 转换为ListDto格式，过滤掉没有MedicalCaseId的挂号记录
+            var dtos = pendingCases
+                .Where(p => p.MedicalCaseId.HasValue)
+                .Select(p => new MedicalCaseListDto
+                {
+                    Id = p.MedicalCaseId!.Value,
+                    PatientId = p.PatientId,
+                    PatientName = p.PatientName,
+                    CaseStatus = MedicalCaseStatus.Active,
+                    CreatedAt = p.CreatedAt
+                }).ToList();
+
+            return new PagedResult<MedicalCaseListDto>(dtos, dtos.Count, 1, dtos.Count);
+        }
+
+        private async Task<PagedResult<MedicalCaseListDto>> QueryUnfinishedAsync(MedicalCaseQueryDto query)
+        {
+            if (!query.PatientId.HasValue)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Query → Unfinished requires PatientId");
+                return new PagedResult<MedicalCaseListDto>();
+            }
+
+            var doctorId = query.IncludeAllDoctors ? Guid.Empty : (query.DoctorId ?? Guid.Empty);
+            var unfinished = await GetUnfinishedCaseByPatientIdAsync(query.PatientId.Value, doctorId);
+
+            if (unfinished == null)
+            {
+                return new PagedResult<MedicalCaseListDto>();
+            }
+
+            var dto = _mapper.Map<MedicalCaseListDto>(unfinished);
+            return new PagedResult<MedicalCaseListDto>(new List<MedicalCaseListDto> { dto }, 1, 1, 1);
+        }
+
+        private async Task<PagedResult<MedicalCaseListDto>> QueryRecentAsync(MedicalCaseQueryDto query)
+        {
+            if (!query.PatientId.HasValue)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Query → Recent requires PatientId");
+                return new PagedResult<MedicalCaseListDto>();
+            }
+
+            var count = query.Limit ?? 5;
+            var recentCases = await GetPatientRecentMedicalCasesAsync(query.PatientId.Value, count);
+
+            var dtos = _mapper.Map<List<MedicalCaseListDto>>(recentCases);
+            return new PagedResult<MedicalCaseListDto>(dtos, dtos.Count, 1, dtos.Count);
+        }
+
     }
 }

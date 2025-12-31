@@ -54,6 +54,33 @@ namespace LYBT.Shared.Models.Enums
 
 
     /// <summary>
+    /// 医疗案例查询类型枚举
+    /// OpenSpec: optimize-medicalcase-api - 统一查询端点
+    /// </summary>
+    public enum MedicalCaseQueryType
+    {
+        /// <summary>默认：分页列表</summary>
+        [Description("全部")]
+        All = 0,
+
+        /// <summary>按患者ID查询</summary>
+        [Description("按患者")]
+        ByPatient = 1,
+
+        /// <summary>待看诊（当前用户的Pending案例）</summary>
+        [Description("待看诊")]
+        Pending = 2,
+
+        /// <summary>未完成（指定患者的Active案例）</summary>
+        [Description("未完成")]
+        Unfinished = 3,
+
+        /// <summary>最近（处方参考用）</summary>
+        [Description("最近")]
+        Recent = 4
+    }
+
+    /// <summary>
     /// 病例更新模式枚举
     /// OpenSpec: unify-enums-to-shared - 从MedicalCaseDtos.cs迁移
     /// </summary>

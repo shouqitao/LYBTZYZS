@@ -1,6 +1,7 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Contracts.Api
 {
@@ -25,6 +26,29 @@ namespace LYBT.Desktop.Contracts.Api
         // 原GET /list端点已删除
 
         /// <summary>
+        /// 统一查询医案端点
+        /// OpenSpec: optimize-medicalcase-api - 整合多种查询方式
+        /// </summary>
+        /// <param name="queryType">查询类型</param>
+        /// <param name="patientId">患者ID（ByPatient/Unfinished/Recent时必填）</param>
+        /// <param name="doctorId">医生ID（可选）</param>
+        /// <param name="keyword">关键词（可选）</param>
+        /// <param name="pageIndex">页码（默认1）</param>
+        /// <param name="pageSize">每页数量（默认20）</param>
+        /// <param name="includeAllDoctors">是否包含所有医生（管理员用）</param>
+        /// <param name="limit">限制数量（Recent查询时使用）</param>
+        [Refit.Get("/api/v1/medicalcases/query")]
+        Task<ApiResponse<PagedResult<MedicalCaseListDto>>> QueryMedicalCasesAsync(
+            [Refit.Query] MedicalCaseQueryType queryType = MedicalCaseQueryType.All,
+            [Refit.Query] Guid? patientId = null,
+            [Refit.Query] Guid? doctorId = null,
+            [Refit.Query] string? keyword = null,
+            [Refit.Query] int pageIndex = 1,
+            [Refit.Query] int pageSize = 20,
+            [Refit.Query] bool includeAllDoctors = false,
+            [Refit.Query] int? limit = null);
+
+        /// <summary>
         /// 获取医疗案例详情
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/{id}")]
@@ -33,18 +57,16 @@ namespace LYBT.Desktop.Contracts.Api
         /// <summary>
         /// 根据患者ID获取医疗案例列表
         /// </summary>
+        [Obsolete("Use QueryMedicalCasesAsync with QueryType=ByPatient instead. Will be removed in v2.0")]
         [Refit.Get("/api/v1/medicalcases/by-patient/{patientId}")]
         Task<ApiResponse<List<MedicalCaseDetailDto>>> GetMedicalCasesByPatientIdAsync(Guid patientId);
 
         /// <summary>
         /// 获取待看诊医案列表（Status=Active）
         /// Epic #1583 - Phase 5
-        /// </summary>
-        /// <summary>
-        /// 获取待看诊医案列表（Status=Active）
-        /// Epic #1583 - Phase 5
         /// Epic #2210 Phase 3: 添加doctorId参数实现多医生数据隔离
         /// </summary>
+        [Obsolete("Use QueryMedicalCasesAsync with QueryType=Pending instead. Will be removed in v2.0")]
         [Refit.Get("/api/v1/medicalcases/pending")]
         Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync([Refit.Query] Guid doctorId);
 
@@ -70,6 +92,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-016)
         /// 用于处方编辑器历史处方参考
         /// </summary>
+        [Obsolete("Use QueryMedicalCasesAsync with QueryType=Recent instead. Will be removed in v2.0")]
         [Refit.Get("/api/v1/medicalcases/patient/{patientId}/recent")]
         Task<ApiResponse<List<MedicalCaseDetailDto>>> GetPatientRecentMedicalCasesAsync(
             Guid patientId,
@@ -77,7 +100,9 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 获取完整的医疗案例（包含所有关联数据）
+        /// OpenSpec: optimize-medicalcase-api - 此方法已废弃，请使用 GetMedicalCaseByIdAsync
         /// </summary>
+        [Obsolete("Use GetMedicalCaseByIdAsync instead. Will be removed in v2.0")]
         [Refit.Get("/api/v1/medicalcases/{id}/with-details")]
         Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdWithDetailsAsync(Guid id);
 
@@ -138,6 +163,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（当checkAllDoctors=false时使用）</param>
         /// <param name="checkAllDoctors">是否查询所有医生的未完成医案（用于多医生场景检测）</param>
+        [Obsolete("Use QueryMedicalCasesAsync with QueryType=Unfinished instead. Will be removed in v2.0")]
         [Refit.Get("/api/v1/medicalcases/patient/{patientId}/unfinished")]
         Task<ApiResponse<MedicalCaseDetailDto>> GetUnfinishedCaseByPatientIdAsync(
             Guid patientId,
@@ -150,7 +176,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 业务规则：直接设置状态为Completed，不验证三步流程
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}/close")]
-        Task<ApiResponse> CloseCaseAsync(Guid id);
+        Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid id);
 
         /// <summary>
         /// 暂存医案（保存草稿）

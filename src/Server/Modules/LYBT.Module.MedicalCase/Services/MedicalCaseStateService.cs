@@ -124,7 +124,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// Epic #1676 Phase 4 Task 4.1
         /// 业务规则：直接设置状态为Completed，不验证三步流程
         /// </summary>
-        public async Task<bool> CloseCaseAsync(Guid id)
+        public async Task<MedicalCase?> CloseCaseAsync(Guid id)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             _logger.LogInformation("[SVC] MedicalCase.Close started - MedicalCaseId={MedicalCaseId}", id);
@@ -134,7 +134,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Close → NotFound - MedicalCaseId={MedicalCaseId}", id);
-                return false;
+                return null;
             }
 
             // 直接更新状态为Completed（不验证三步流程）
@@ -151,7 +151,9 @@ namespace LYBT.Module.MedicalCases.Services
             await _repository.UpdateAsync(medicalCase);
 
             _logger.LogInformation("[SVC] MedicalCase.Close completed - MedicalCaseId={MedicalCaseId}", id);
-            return true;
+            
+            // OpenSpec: optimize-medicalcase-api - 返回更新后的实体用于DTO映射
+            return medicalCase;
         }
 
         /// <summary>

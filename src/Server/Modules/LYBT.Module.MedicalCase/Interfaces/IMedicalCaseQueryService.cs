@@ -118,5 +118,14 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<List<MedicalCaseDetailDto>> GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5);
 
         Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync();
+
+        /// <summary>
+        /// 统一查询接口
+        /// OpenSpec: optimize-medicalcase-api - 整合多个查询端点为统一接口
+        /// 根据QueryType分发到不同查询逻辑
+        /// </summary>
+        /// <param name="query">查询参数</param>
+        /// <returns>分页查询结果</returns>
+        Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query);
     }
 }

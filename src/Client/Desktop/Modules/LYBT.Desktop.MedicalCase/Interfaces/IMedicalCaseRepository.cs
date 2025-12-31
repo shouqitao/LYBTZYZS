@@ -1,5 +1,6 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.MedicalCase.Interfaces
 {
@@ -30,16 +31,31 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// 根据ID获取医案详情（返回完整DetailDto）
         /// </summary>
         Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id);
+
+        /// <summary>
+        /// 统一查询医案
+        /// OpenSpec: optimize-medicalcase-api - 整合多种查询方式
+        /// </summary>
+        Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query);
         /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
         Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto);
         /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
         Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto dto);
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 根据患者ID获取医案列表
+        /// </summary>
+        [Obsolete("Use QueryAsync with QueryType=ByPatient instead. Will be removed in v2.0")]
         Task<List<MedicalCaseDetailDto>> GetByPatientIdAsync(Guid patientId);
 
         // ========== CreateWithDetailsAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
         // Server端点POST /api/v1/medicalcases/with-details 不存在，且无调用者
 
+        /// <summary>
+        /// OpenSpec: optimize-medicalcase-api - 此方法已废弃，内部已改用统一端点
+        /// </summary>
+        [Obsolete("Internal implementation now uses unified endpoint. Will be removed in v2.0")]
         Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id);
 
         // OpenSpec: simplify-medicalcase-api - UpdateConsultationAsync已删除
@@ -70,6 +86,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（当checkAllDoctors=false时使用）</param>
         /// <param name="checkAllDoctors">是否查询所有医生的未完成医案（用于多医生场景检测）</param>
+        [Obsolete("Use QueryAsync with QueryType=Unfinished instead. Will be removed in v2.0")]
         Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false);
 
         /// <summary>
@@ -77,7 +94,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// Epic #1676 Phase 4 Task 4.4
         /// 业务规则：直接设置状态为Completed，不验证三步流程
         /// </summary>
-        Task<bool> CloseCaseAsync(Guid medicalCaseId);
+        Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 获取当前用户对指定医案的权限

@@ -2,6 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.MedicalCase.Interfaces
 {
@@ -81,5 +82,11 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// 分页查询病案列表（返回轻量级ListDto）
         /// </summary>
         Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null);
+
+        /// <summary>
+        /// 统一查询医案
+        /// OpenSpec: optimize-medicalcase-api
+        /// </summary>
+        Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query);
     }
 }

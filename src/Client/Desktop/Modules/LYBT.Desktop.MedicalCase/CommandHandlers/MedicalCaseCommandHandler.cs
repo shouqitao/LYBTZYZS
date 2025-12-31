@@ -182,16 +182,11 @@ public class MedicalCaseCommandHandler : IMedicalCaseCommandHandler
     {
         try
         {
-            var success = await _repository.CloseCaseAsync(id);
-            if (!success)
-            {
-                return CommandResult<MedicalCaseDetailDto>.Failed("完成医案失败");
-            }
-            // 获取更新后的医案详情
-            var result = await _repository.GetByIdAsync(id);
+            // OpenSpec: optimize-medicalcase-api - CloseCaseAsync直接返回完整医案详情
+            var result = await _repository.CloseCaseAsync(id);
             if (result == null)
             {
-                return CommandResult<MedicalCaseDetailDto>.NotFound($"未找到ID为 {id} 的医案");
+                return CommandResult<MedicalCaseDetailDto>.Failed("完成医案失败");
             }
             _logger.LogInformation("完成医案成功: {MedicalCaseId}", id);
             return CommandResult<MedicalCaseDetailDto>.Succeeded(result);

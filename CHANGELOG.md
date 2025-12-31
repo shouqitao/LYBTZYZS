@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### MedicalCase API优化 (OpenSpec: optimize-medicalcase-api) - 2025-12-31
+
+**背景**: MedicalCase API存在端点分散、返回类型不统一、查询方式多样等问题，需要整合优化。
+
+**核心改进**:
+- **Phase 1: CloseCaseAsync返回类型修正**
+  - Server端: 修改CloseMedicalCase端点返回ApiResponse<MedicalCaseDetailDto>
+  - Client端: 统一IMedicalCaseApi/Repository/Service返回类型
+  - 优化MedicalCaseCommandHandler.CompleteAsync，移除冗余GetByIdAsync调用
+
+- **Phase 2: GetById端点简化**
+  - GetById端点现在返回完整详情，无需额外WithDetails调用
+  - 标记GetMedicalCaseByIdWithDetails/Async为[Obsolete]
+
+- **Phase 3: 查询端点整合**
+  - 新增MedicalCaseQueryType枚举(All/ByPatient/Pending/Unfinished/Recent)
+  - 新增MedicalCaseQueryDto统一查询参数
+  - Server端: 新增QueryAsync方法和/query端点
+  - Client端: 新增IMedicalCaseApi.QueryMedicalCasesAsync及Repository/Service实现
+  - 标记旧查询端点为[Obsolete]:
+    - GetMedicalCasesByPatientId → QueryType=ByPatient
+    - GetPendingCases → QueryType=Pending
+    - GetUnfinishedCaseByPatientId → QueryType=Unfinished
+    - GetPatientRecentMedicalCases → QueryType=Recent
+
+**新增类型**:
+- MedicalCaseQueryType枚举 (src/Shared/LYBT.Shared.Models/Enums/MedicalCaseEnums.cs)
+- MedicalCaseQueryDto (src/Shared/LYBT.Shared.Models/Contracts/MedicalCase/MedicalCaseQueryDto.cs)
+
+**废弃标注**:
+- 使用[Obsolete]标记旧端点/方法，保持向后兼容，计划v2.0移除
+
+**状态**: 进行中（Phase 4-6待完成）
+
 #### Desktop API层标准化 (OpenSpec: standardize-desktop-api-layer) - 2025-12-31
 
 **背景**: Desktop API层存在返回类型不一致、方法重复、功能缺失等问题，需要统一规范。

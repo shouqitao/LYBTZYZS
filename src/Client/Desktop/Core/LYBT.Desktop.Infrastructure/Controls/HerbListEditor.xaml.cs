@@ -15,6 +15,15 @@ namespace LYBT.Desktop.Infrastructure.Controls
     /// - 支持编辑/只读模式切换
     /// - UI只显示药材名+剂量（不显示价格）
     /// </summary>
+    /// <remarks>
+    /// [迁移指引]
+    /// 请迁移到 HerbList.HerbListControl，新控件采用事件驱动模式：
+    /// - 替换命令绑定为 HerbListChanged 事件
+    /// - 使用 AllHerbs 属性提供药材库数据
+    /// - 通过 LoadFromDto/AddHerbs 方法加载数据
+    /// - 通过 HerbList 属性获取当前药材列表
+    /// </remarks>
+    [Obsolete("请迁移到 HerbList.HerbListControl。详见类型注释的迁移指引。")]
     public partial class HerbListEditor : UserControl
     {
         public HerbListEditor()

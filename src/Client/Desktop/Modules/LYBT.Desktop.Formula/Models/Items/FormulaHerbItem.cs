@@ -1,4 +1,5 @@
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Formula.Models.Items;
@@ -56,6 +57,17 @@ public class FormulaHerbItem : BindableBase
     }
 
     /// <summary>
+    /// 煎法（先煎、后下等）
+    /// OpenSpec: herb-editor-control-refactoring - 补充缺失字段
+    /// </summary>
+    private DecocteMethod _decocteMethod = DecocteMethod.Default;
+    public DecocteMethod DecocteMethod
+    {
+        get => _decocteMethod;
+        set => SetProperty(ref _decocteMethod, value);
+    }
+
+    /// <summary>
     /// 从FormulaHerbItemDto创建
     /// OpenSpec: unify-frontend-backend-types Phase 7 - SortOrder直接映射
     /// </summary>
@@ -68,7 +80,8 @@ public class FormulaHerbItem : BindableBase
             Dosage = dto.Dosage,
             Unit = dto.Unit,
             Usage = dto.Usage,
-            SortOrder = dto.SortOrder // OpenSpec: unify-frontend-backend-types - 直接映射
+            SortOrder = dto.SortOrder,
+            DecocteMethod = dto.DecocteMethod // OpenSpec: herb-editor-control-refactoring
         };
     }
 
@@ -85,7 +98,8 @@ public class FormulaHerbItem : BindableBase
             Dosage = Dosage,
             Unit = Unit,
             Usage = Usage,
-            SortOrder = SortOrder // OpenSpec: unify-frontend-backend-types - 直接映射
+            SortOrder = SortOrder,
+            DecocteMethod = DecocteMethod // OpenSpec: herb-editor-control-refactoring
         };
     }
 

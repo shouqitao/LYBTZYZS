@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -163,6 +164,10 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Create failed - PatientId={PatientId}", dto.PatientId); return null; }
     }
 
+    /// <summary>
+    /// OpenSpec: optimize-medicalcase-api - 此方法内部已改用统一端点
+    /// </summary>
+    [Obsolete("Internal implementation now uses unified endpoint. Will be removed in v2.0")]
     public virtual async Task<MedicalCaseDetailDto?> GetByIdWithDetailsAsync(Guid id)
     {
         try
@@ -186,6 +191,23 @@ public class MedicalCaseService : IMedicalCaseService
             return result;
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetPaged failed - Page={Page}", page); return null; }
+    }
+
+
+    /// <summary>
+    /// 统一查询医案
+    /// OpenSpec: optimize-medicalcase-api
+    /// </summary>
+    public virtual async Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query)
+    {
+        try
+        {
+            _logger.LogDebug("[SVC] MedicalCase.Query started - QueryType={QueryType}", query.QueryType);
+            var result = await _repository.QueryAsync(query);
+            _logger.LogDebug("[SVC] MedicalCase.Query completed - TotalCount={TotalCount}", result?.TotalCount ?? 0);
+            return result;
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Query failed - QueryType={QueryType}", query.QueryType); return null; }
     }
 
     public virtual async Task<bool> DeleteAsync(Guid id)
@@ -245,11 +267,12 @@ public class MedicalCaseService : IMedicalCaseService
     // - ClearPrescriptionAsync: Server端从未实现
     // - ImportFormulaIntoPrescriptionAsync: Server端从未实现
 
-    public virtual async Task<ApiResponse> CloseCaseAsync(Guid medicalCaseId)
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId)
     {
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.CloseCase started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            // OpenSpec: optimize-medicalcase-api - 返回完整医案详情
             var result = await _api.CloseCaseAsync(medicalCaseId);
             _logger.LogInformation("[SVC] MedicalCase.CloseCase completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             return result;

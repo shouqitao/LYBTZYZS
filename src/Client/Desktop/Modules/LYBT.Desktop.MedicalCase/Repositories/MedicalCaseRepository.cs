@@ -3,6 +3,7 @@ using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.Repositories
@@ -27,7 +28,8 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         {
             try
             {
-                var response = await _api.GetMedicalCaseByIdWithDetailsAsync(id);
+                // OpenSpec: optimize-medicalcase-api - 使用统一的GetMedicalCaseByIdAsync端点
+                var response = await _api.GetMedicalCaseByIdAsync(id);
                 return response.Data ?? throw new InvalidOperationException($"医疗案例 {id} 不存在");
             }
             catch (Exception ex)
@@ -50,6 +52,33 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "根据患者ID获取医疗案例列表失败，PatientId: {PatientId}", patientId);
+                throw;
+            }
+        }
+
+
+        /// <summary>
+        /// 统一查询医案
+        /// OpenSpec: optimize-medicalcase-api
+        /// </summary>
+        public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query)
+        {
+            try
+            {
+                var response = await _api.QueryMedicalCasesAsync(
+                    queryType: query.QueryType,
+                    patientId: query.PatientId,
+                    doctorId: query.DoctorId,
+                    keyword: query.Keyword,
+                    pageIndex: query.PageIndex,
+                    pageSize: query.PageSize,
+                    includeAllDoctors: query.IncludeAllDoctors,
+                    limit: query.Limit);
+                return response.Data ?? new PagedResult<MedicalCaseListDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询医案失败，QueryType: {QueryType}", query.QueryType);
                 throw;
             }
         }
@@ -162,7 +191,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// Epic #1676 Phase 4 Task 4.4
         /// 业务规则：直接设置状态为Completed，不验证三步流程
         /// </summary>
-        public async Task<bool> CloseCaseAsync(Guid medicalCaseId)
+        public async Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId)
         {
             if (medicalCaseId == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
@@ -171,18 +200,19 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             {
                 _logger.LogInformation("关闭病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
+                // OpenSpec: optimize-medicalcase-api - 返回完整医案详情
                 var response = await _api.CloseCaseAsync(medicalCaseId);
 
                 if (response.Success)
                 {
                     _logger.LogInformation("病案关闭成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    return true;
+                    return response.Data;
                 }
                 else
                 {
                     _logger.LogWarning("病案关闭失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
                         medicalCaseId, response.Message);
-                    return false;
+                    return null;
                 }
             }
             catch (Exception ex)

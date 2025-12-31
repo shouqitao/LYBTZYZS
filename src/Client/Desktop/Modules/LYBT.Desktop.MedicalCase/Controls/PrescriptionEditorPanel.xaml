@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:sharedControls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:herbList="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbList;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="False">
 
     <!--
@@ -63,20 +63,15 @@
                 </Grid>
             </Border>
 
-            <!-- OpenSpec: unify-medicalcase-view-edit-pattern - Task 2.4 使用HerbListEditor -->
-            <!-- 药材卡片列表 - ScrollViewer仅在内容超出时显示滚动条 -->
-            <ScrollViewer Grid.Row="1"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled"
-                          Padding="0">
-                <sharedControls:HerbListEditor
-                    HerbItems="{Binding HerbItems}"
-                    IsEditMode="True"
-                    DeleteHerbCommand="{Binding DeleteHerbCommand}"
-                    DosageCompletedCommand="{Binding DosageCompletedCommand}"
-                    AddNewRowCommand="{Binding AddNewRowCommand}"
-                    VerticalAlignment="Top"/>
-            </ScrollViewer>
+            <!-- OpenSpec: herb-editor-control-refactoring - 使用新的HerbListControl -->
+            <!-- 药材卡片列表 - HerbListControl内置ScrollViewer -->
+            <herbList:HerbListControl x:Name="HerbListCtrl"
+                                       Grid.Row="1"
+                                       AllHerbs="{Binding AllHerbs}"
+                                       IsEditMode="True"
+                                       Columns="4"
+                                       DuplicateStrategy="{Binding DuplicateStrategy}"
+                                       HerbListChanged="OnHerbListChanged"/>
         </Grid>
 
         <!-- Row 1: 重复药材警告 -->

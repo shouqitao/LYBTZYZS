@@ -429,19 +429,28 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
             _unfinishedCaseHandler.SetCache(pending.PatientId, pending.MedicalCaseId.Value);
     }
 
-    private Task<int> ShowUnfinishedCaseDialogAsync(string patientName)
+    /// <summary>
+    /// 显示未完成医案四选对话框
+    /// OpenSpec: optimize-medicalcase-api - 统一使用CommonDialogService
+    /// </summary>
+    private async Task<int> ShowUnfinishedCaseDialogAsync(string patientName)
     {
-        var tcs = new TaskCompletionSource<int>();
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        if (CommonDialogService == null)
         {
-            var dialog = new Views.UnfinishedCaseDialog();
-            dialog.SetPatientName(patientName);
-            var mainWindow = System.Windows.Application.Current.MainWindow;
-            if (mainWindow != null && mainWindow != dialog) dialog.Owner = mainWindow;
-            dialog.ShowDialog();
-            tcs.SetResult(dialog.Result);
-        });
-        return tcs.Task;
+            Logger.LogWarning("CommonDialogService不可用，返回取消选择");
+            return 0;
+        }
+
+        var choice = await CommonDialogService.ShowUnfinishedCaseDialogAsync(patientName);
+
+        // 转换枚举到int以匹配MedicalCaseStartCoordinator的期望
+        return choice switch
+        {
+            UnfinishedCaseChoice.Continue => 1,
+            UnfinishedCaseChoice.CloseAndCreate => 2,
+            UnfinishedCaseChoice.CloseOnly => 3,
+            _ => 0  // Cancel
+        };
     }
 
     private async Task LoadPendingCasesAsync() => await _pendingQueueManager.LoadPendingCasesAsync();

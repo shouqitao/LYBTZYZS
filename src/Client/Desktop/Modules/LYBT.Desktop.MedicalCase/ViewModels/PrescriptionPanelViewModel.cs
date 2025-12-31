@@ -2,6 +2,8 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Infrastructure.Controls.HerbList;
+using LYBT.Desktop.Infrastructure.Models;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
@@ -46,6 +48,8 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     private bool _isLoadingData;
     private bool _isInitialized;
     private ObservableCollection<HerbListDto> _allHerbs = new();
+    private DuplicateDosageStrategy _duplicateStrategy = DuplicateDosageStrategy.Max;
+    private IReadOnlyList<HerbItemDto>? _currentHerbList;
 
     #endregion
 
@@ -99,7 +103,32 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 
     #region 药材和警告属性
 
+    /// <summary>
+    /// 药材项集合 - 已弃用，保留用于向后兼容
+    /// OpenSpec: herb-editor-control-refactoring - 现在由HerbListControl管理
+    /// </summary>
+    [Obsolete("Use HerbListControl's HerbList instead")]
     public ObservableCollection<PrescriptionHerbItem> HerbItems { get; } = new();
+
+    /// <summary>
+    /// 药材库数据 - 供HerbListControl绑定
+    /// OpenSpec: herb-editor-control-refactoring
+    /// </summary>
+    public ObservableCollection<HerbListDto> AllHerbs
+    {
+        get => _allHerbs;
+        private set => SetProperty(ref _allHerbs, value);
+    }
+
+    /// <summary>
+    /// 重复剂量取值策略 - 供HerbListControl绑定
+    /// OpenSpec: herb-editor-control-refactoring
+    /// </summary>
+    public DuplicateDosageStrategy DuplicateStrategy
+    {
+        get => _duplicateStrategy;
+        set => SetProperty(ref _duplicateStrategy, value);
+    }
 
     private bool _isDuplicateHerbsWarningVisible;
     public bool IsDuplicateHerbsWarningVisible { get => _isDuplicateHerbsWarningVisible; set => SetProperty(ref _isDuplicateHerbsWarningVisible, value); }
@@ -304,11 +333,13 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     /// <summary>
     /// 获取处方数据
     /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.3)
+    /// OpenSpec: herb-editor-control-refactoring - 使用HerbItemDto
     /// </summary>
     /// <returns>处方聚合输入DTO</returns>
     public PrescriptionInputDto? GetPrescriptionData()
     {
-        var items = _itemHandler.CollectPrescriptionItems(HerbItems);
+        // OpenSpec: herb-editor-control-refactoring - 从HerbItemDto转换
+        var items = ConvertHerbItemsToInput();
 
         // 如果没有有效药材项，返回表示不需要处方的DTO
         if (items.Count == 0)
@@ -336,6 +367,27 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             Items = items,
             Id = _prescriptionId
         };
+    }
+
+    /// <summary>
+    /// 将HerbItemDto转换为PrescriptionItemInputDto列表
+    /// OpenSpec: herb-editor-control-refactoring
+    /// </summary>
+    private List<PrescriptionItemInputDto> ConvertHerbItemsToInput()
+    {
+        if (_currentHerbList == null)
+            return new List<PrescriptionItemInputDto>();
+
+        return _currentHerbList
+            .Where(h => h.IsValid)
+            .Select(h => new PrescriptionItemInputDto
+            {
+                HerbId = h.HerbId,
+                Dosage = h.Dosage,
+                DecocteMethod = h.DecocteMethod,
+                UnitPrice = h.UnitPrice
+            })
+            .ToList();
     }
 
     #endregion
@@ -449,8 +501,96 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 
     #region 辅助方法
 
+    /// <summary>
+    /// 处理HerbListControl的变更事件
+    /// OpenSpec: herb-editor-control-refactoring
+    /// </summary>
+    public void OnHerbListChanged(HerbListChangedEventArgs e)
+    {
+        if (_isLoadingData) return;
+
+        // 更新当前药材列表缓存（从控件获取）
+        // 注：实际生产中应通过View获取控件的HerbList
+        // 此处使用ItemCount作为临时过渡
+        ItemCount = e.ItemCount;
+
+        // 计算价格
+        CalculatePricesFromDto();
+
+        // 检查重复（由控件内部处理，这里更新警告显示）
+        UpdateDuplicateWarning();
+
+        // 通知数据变更
+        NotifyDataChanged();
+    }
+
+    /// <summary>
+    /// 设置当前药材列表（供View调用）
+    /// OpenSpec: herb-editor-control-refactoring
+    /// </summary>
+    public void SetCurrentHerbList(IReadOnlyList<HerbItemDto> herbList)
+    {
+        _currentHerbList = herbList;
+        ItemCount = herbList.Count(h => !h.IsEmpty);
+        CalculatePricesFromDto();
+        UpdateDuplicateWarning();
+    }
+
+    /// <summary>
+    /// 基于HerbItemDto计算价格
+    /// OpenSpec: herb-editor-control-refactoring
+    /// </summary>
+    private void CalculatePricesFromDto()
+    {
+        if (_currentHerbList == null || !_currentHerbList.Any())
+        {
+            SingleDosagePrice = 0;
+            TotalPrice = 0;
+            return;
+        }
+
+        var validItems = _currentHerbList.Where(h => h.IsValid);
+        var singlePrice = validItems.Sum(h => h.CalculatePrice());
+        SingleDosagePrice = singlePrice;
+        TotalPrice = singlePrice * DosageCount;
+    }
+
+    /// <summary>
+    /// 更新重复药材警告
+    /// OpenSpec: herb-editor-control-refactoring
+    /// </summary>
+    private void UpdateDuplicateWarning()
+    {
+        if (_currentHerbList == null)
+        {
+            IsDuplicateHerbsWarningVisible = false;
+            DuplicateHerbsWarningText = string.Empty;
+            return;
+        }
+
+        var validItems = _currentHerbList.Where(h => !h.IsEmpty).ToList();
+        var duplicateGroups = validItems
+            .GroupBy(h => h.HerbId)
+            .Where(g => g.Count() > 1)
+            .ToList();
+
+        if (duplicateGroups.Any())
+        {
+            IsDuplicateHerbsWarningVisible = true;
+            var names = duplicateGroups.Select(g => g.First().HerbName);
+            DuplicateHerbsWarningText = string.Join("、", names);
+        }
+        else
+        {
+            IsDuplicateHerbsWarningVisible = false;
+            DuplicateHerbsWarningText = string.Empty;
+        }
+    }
+
+    [Obsolete("Use CalculatePricesFromDto instead")]
     private void UpdateItemCount() => ItemCount = _calculator.CalculateItemCount(HerbItems);
 
+    [Obsolete("Use CalculatePricesFromDto instead")]
     private void CalculatePrices()
     {
         var result = _calculator.CalculatePrices(HerbItems, DosageCount);
@@ -458,6 +598,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         TotalPrice = result.TotalPrice;
     }
 
+    [Obsolete("Use UpdateDuplicateWarning instead")]
     private void CheckDuplicateHerbs()
     {
         var result = _validator.CheckDuplicateHerbs(HerbItems);
