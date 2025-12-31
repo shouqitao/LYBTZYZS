@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 药材编辑控件重构 (OpenSpec: herb-editor-control-refactoring) - 2025-12-31
+
+**背景**: 药材编辑逻辑分散在多个文件中(约1400行代码)，职责不清，复用困难。
+
+**核心改进**:
+- **两层控件架构**:
+  - HerbItemControl: 单药材控件(拼音码搜索+剂量输入+煎法选择)
+  - HerbListControl: 药材列表控件(批量导入+重复检测+空槽管理)
+
+- **导入时药材信息同步** (Decision 8):
+  - 从AllHerbs药材库获取最新HerbName/Unit/UnitPrice
+  - 保留原始Dosage和DecocteMethod
+  - 解决经验方无价格、历史处方价格过时问题
+
+- **事件驱动模式**:
+  - HerbListChanged事件通知外部变更
+  - 替代旧版命令绑定模式
+
+**新增文件**:
+- `Controls/HerbItem/` - 单药材控件(HerbItemControl + ViewModel)
+- `Controls/HerbList/` - 药材列表控件(HerbListControl + ViewModel)
+- `Models/HerbItemDto.cs` - 统一药材数据传输对象
+- `Models/DuplicateDosageStrategy.cs` - 重复剂量处理策略枚举
+
+**废弃标注**:
+- HerbListEditor添加[Obsolete]标记，提供迁移指引
+
+**状态**: 已归档 (Phase 1-3完成，Phase 4部分任务BLOCKED等待后续迁移)
+
 #### MedicalCase API优化 (OpenSpec: optimize-medicalcase-api) - 2025-12-31
 
 **背景**: MedicalCase API存在端点分散、返回类型不统一、查询方式多样等问题，需要整合优化。
