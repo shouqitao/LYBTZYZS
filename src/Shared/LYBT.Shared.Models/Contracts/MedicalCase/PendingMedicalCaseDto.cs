@@ -37,5 +37,12 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]
         public DateTime CreatedAt { get; set; }
+
+        /// <summary>
+        /// 队列序号（用于界面显示）
+        /// OpenSpec: redesign-pending-queue
+        /// </summary>
+        [DisplayName("序号")]
+        public int QueueNumber { get; set; }
     }
 }

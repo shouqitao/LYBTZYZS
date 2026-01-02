@@ -452,6 +452,32 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 批量获取医案详情（含处方）
+        /// OpenSpec: consolidate-medicalcase-detail-queries
+        /// 解决N+1查询问题，一次请求获取多个医案详情
+        /// </summary>
+        [HttpPost("batch-details")]
+        [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> GetBatchDetails([FromBody] BatchDetailQueryDto dto)
+        {
+            if (dto.Ids == null || dto.Ids.Count == 0)
+            {
+                return ValidationFail("请至少选择一个医案");
+            }
+
+            if (dto.Ids.Count > 50)
+            {
+                return ValidationFail("单次最多查询50个医案");
+            }
+
+            var entities = await _queryService.GetBatchAsync(dto.Ids);
+            var dtos = entities.Select(MapToMedicalCaseDetailDto).ToList();
+
+            return Success(dtos, $"查询成功，共{dtos.Count}条记录");
+        }
+
+        /// <summary>
         /// 关闭病案（直接标记为Completed）
         /// Epic #1676 Phase 4 Task 4.1
         /// 业务规则：直接设置状态为Completed，不验证三步流程

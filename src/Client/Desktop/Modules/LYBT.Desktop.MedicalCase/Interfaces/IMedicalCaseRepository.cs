@@ -43,51 +43,10 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto dto);
         Task<bool> DeleteAsync(Guid id);
 
-        /// <summary>
-        /// 根据患者ID获取医案列表
-        /// </summary>
-        [Obsolete("Use QueryAsync with QueryType=ByPatient instead. Will be removed in v2.0")]
-        Task<List<MedicalCaseDetailDto>> GetByPatientIdAsync(Guid patientId);
-
-        // ========== CreateWithDetailsAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
-        // Server端点POST /api/v1/medicalcases/with-details 不存在，且无调用者
-
-        /// <summary>
-        /// OpenSpec: optimize-medicalcase-api - 此方法已废弃，内部已改用统一端点
-        /// </summary>
-        [Obsolete("Internal implementation now uses unified endpoint. Will be removed in v2.0")]
-        Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id);
-
-        // OpenSpec: simplify-medicalcase-api - UpdateConsultationAsync已删除
-        // 诊断更新通过聚合保存 SaveAsync 处理
-
-
-        // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
-
-        // CompleteStep1Async和ResetConsultationStepsAsync已移除 - 简化业务流程，移除Step概念
-
-        // OpenSpec: simplify-medicalcase-api - Ghost APIs已删除
-        // - ClearPrescriptionAsync: Server端从未实现
-        // - ImportFormulaIntoPrescriptionAsync: Server端从未实现
-
-        // OpenSpec: simplify-medicalcase-api - 独立Prescription CRUD接口已删除
-        // - CreatePrescriptionAsync: 通过SaveAsync创建
-        // - UpdatePrescriptionAsync: 通过SaveAsync更新
-        // - DeletePrescriptionAsync: 通过SaveAsync设置NeedsPrescription=false触发
-
-        // ========== Epic #1676 Phase 4 Task 4.4 - Desktop端新增方法 ==========
-
-        /// <summary>
-        /// 获取患者的未完成医案（Status != Completed）
-        /// Epic #1676 Phase 4 Task 4.4
-        /// Epic #2210 Task 3.1.4: 添加doctorId参数
-        /// OpenSpec: multi-doctor-unfinished-case - 添加checkAllDoctors参数
-        /// </summary>
-        /// <param name="patientId">患者ID</param>
-        /// <param name="doctorId">医生ID（当checkAllDoctors=false时使用）</param>
-        /// <param name="checkAllDoctors">是否查询所有医生的未完成医案（用于多医生场景检测）</param>
-        [Obsolete("Use QueryAsync with QueryType=Unfinished instead. Will be removed in v2.0")]
-        Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false);
+        // OpenSpec: consolidate-medicalcase-detail-queries - 废弃方法已删除
+        // - GetByPatientIdAsync: 使用QueryAsync(QueryType=ByPatient)
+        // - GetByIdWithDetailsAsync: 使用GetByIdAsync
+        // - GetUnfinishedCaseByPatientIdAsync: 使用QueryAsync(QueryType=Unfinished)
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）
@@ -113,5 +72,14 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <param name="dto">聚合输入DTO（包含诊断和处方数据）</param>
         /// <returns>更新后的医案详情</returns>
         Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto);
+
+        /// <summary>
+        /// 批量获取医案详情（解决N+1查询问题）
+        /// OpenSpec: consolidate-medicalcase-detail-queries
+        /// 用于历史处方选择等需要批量获取详情的场景
+        /// </summary>
+        /// <param name="ids">医案ID列表（最多50个）</param>
+        /// <returns>医案详情列表</returns>
+        Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync(List<Guid> ids);
     }
 }

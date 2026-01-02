@@ -21,41 +21,9 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         {
         }
 
-        /// <summary>
-        /// 根据ID获取医疗案例详情（含关联数据）
-        /// </summary>
-        public async Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id)
-        {
-            try
-            {
-                // OpenSpec: optimize-medicalcase-api - 使用统一的GetMedicalCaseByIdAsync端点
-                var response = await _api.GetMedicalCaseByIdAsync(id);
-                return response.Data ?? throw new InvalidOperationException($"医疗案例 {id} 不存在");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取医疗案例详情（含关联数据）失败，ID: {Id}", id);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 根据患者ID获取医疗案例列表
-        /// </summary>
-        public async Task<List<MedicalCaseDetailDto>> GetByPatientIdAsync(Guid patientId)
-        {
-            try
-            {
-                var response = await _api.GetMedicalCasesByPatientIdAsync(patientId);
-                return response.Data ?? new List<MedicalCaseDetailDto>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据患者ID获取医疗案例列表失败，PatientId: {PatientId}", patientId);
-                throw;
-            }
-        }
-
+        // OpenSpec: consolidate-medicalcase-detail-queries - 废弃方法已删除
+        // - GetByIdWithDetailsAsync: 使用GetByIdAsync
+        // - GetByPatientIdAsync: 使用QueryAsync(QueryType=ByPatient)
 
         /// <summary>
         /// 统一查询医案
@@ -139,52 +107,8 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
         // ========== Epic #1676 Phase 4 Task 4.4 - Desktop端新增方法 ==========
 
-        /// <summary>
-        /// 获取患者的未完成医案（Status != Completed）
-        /// Epic #1676 Phase 4 Task 4.4
-        /// </summary>
-        public async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
-        {
-            if (patientId == Guid.Empty)
-                throw new ArgumentException("患者ID不能为空", nameof(patientId));
-
-            try
-            {
-                _logger.LogInformation("查询患者未完成医案,PatientId: {PatientId}, DoctorId: {DoctorId}, CheckAllDoctors: {CheckAllDoctors}",
-                    patientId, doctorId, checkAllDoctors);
-
-                // Epic #2210 Task 3.1.4: 传递doctorId到API
-                // OpenSpec: multi-doctor-unfinished-case - 传递checkAllDoctors参数
-                var response = await _api.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors);
-
-                // 成功响应但无数据
-                if (response.Data == null)
-                {
-                    _logger.LogInformation("患者无未完成医案,PatientId: {PatientId}, DoctorId: {DoctorId}",
-                        patientId, doctorId);
-                    return null;
-                }
-
-                _logger.LogInformation("找到未完成医案,MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, UserId: {UserId}",
-                    response.Data.Id, response.Data.CaseStatus, response.Data.UserId);
-
-                return response.Data;
-            }
-            catch (Refit.ApiException apiEx) when (apiEx.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                // Bug Fix: 404表示没有未完成医案，这是正常业务场景
-                // Refit默认在非2xx状态码时抛出ApiException，需要特殊处理404
-                _logger.LogInformation("患者无未完成医案(404),PatientId: {PatientId}, DoctorId: {DoctorId}",
-                    patientId, doctorId);
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "查询未完成医案失败,PatientId: {PatientId}, DoctorId: {DoctorId}",
-                    patientId, doctorId);
-                throw;
-            }
-        }
+        // OpenSpec: consolidate-medicalcase-detail-queries - GetUnfinishedCaseByPatientIdAsync已删除
+        // 使用QueryAsync(QueryType=Unfinished)
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）
@@ -434,5 +358,42 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         }
 
         #endregion
+
+        // ========== OpenSpec: consolidate-medicalcase-detail-queries ==========
+
+        /// <summary>
+        /// 批量获取医案详情（解决N+1查询问题）
+        /// 用于历史处方选择等需要批量获取详情的场景
+        /// </summary>
+        public async Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync(List<Guid> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return new List<MedicalCaseDetailDto>();
+
+            if (ids.Count > 50)
+                throw new ArgumentException("单次最多查询50个医案", nameof(ids));
+
+            try
+            {
+                _logger.LogInformation("批量获取医案详情，ID数量: {Count}", ids.Count);
+
+                var request = new BatchDetailQueryDto { Ids = ids };
+                var response = await _api.GetBatchDetailsAsync(request);
+
+                if (response.Success && response.Data != null)
+                {
+                    _logger.LogInformation("批量获取医案详情成功，返回数量: {Count}", response.Data.Count);
+                    return response.Data;
+                }
+
+                _logger.LogWarning("批量获取医案详情失败，Message: {Message}", response.Message);
+                return new List<MedicalCaseDetailDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量获取医案详情失败，ID数量: {Count}", ids.Count);
+                throw;
+            }
+        }
     }
 }

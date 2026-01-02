@@ -55,9 +55,10 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.RegisterScoped<MedicalCaseNavigationHandler>();
 
             // OpenSpec: cleanup-ui-layer - Phase 1.1 PrescriptionPanel Components
+            // OpenSpec: slim-medicalcase-workspace-viewmodel - Phase 5 移除 PrescriptionItemHandler
             containerRegistry.Register<ViewModels.Components.PrescriptionCalculator>();
             containerRegistry.Register<ViewModels.Components.PrescriptionValidator>();
-            containerRegistry.Register<ViewModels.Components.PrescriptionItemHandler>();
+            // [已移除] PrescriptionItemHandler - 功能由 HerbListControl 内部处理
             containerRegistry.Register<ViewModels.Components.PrescriptionSaveHandler>();
             containerRegistry.Register<ViewModels.Components.PrescriptionImportHandler>();
             containerRegistry.Register<ViewModels.Components.PrescriptionDataLoader>();
@@ -75,7 +76,7 @@ namespace LYBT.Desktop.MedicalCase
             // Issue #1549: MedicalCaseEntryViewModel已删除（由MedicalCaseFlowView的4步流程替代）
             // Epic #1583: PatientSelectionViewModel已移至PatientsModule（三区域布局）
             // OpenSpec: unify-frontend-backend-types Phase 8 - PrescriptionItemViewModel已合并到PrescriptionHerbItem
-            // PrescriptionHerbItem是Item类，由PrescriptionItemHandler通过new创建，不需要DI注册
+            // PrescriptionHerbItem已被HerbItemDto替代，由HerbListControl内部管理
             // OpenSpec: refactor-medicalcase-ui - 废弃注册已清理
 
             // Epic #2210 Phase 4: 4:6统一工作区视图模型

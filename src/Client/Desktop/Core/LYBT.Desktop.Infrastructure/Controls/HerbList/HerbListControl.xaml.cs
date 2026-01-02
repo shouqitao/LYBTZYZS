@@ -10,12 +10,18 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
     /// <summary>
     /// 药材列表控件 - 管理多个HerbItemControl
     /// OpenSpec: herb-editor-control-refactoring
+    /// OpenSpec: simplify-workspace-event-architecture - 移除事件，改用属性绑定
     /// </summary>
     public partial class HerbListControl : UserControl
     {
         #region Fields
 
         private HerbListControlViewModel? _viewModel;
+
+        /// <summary>
+        /// 防止属性同步时的循环更新
+        /// </summary>
+        private bool _isSyncingFromInternal;
 
         #endregion
 
@@ -24,6 +30,7 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
         /// <summary>
         /// 药材列表变更事件
         /// </summary>
+        [Obsolete("使用HerbItems属性的TwoWay绑定替代。将在下个版本移除。")]
         public event EventHandler<HerbListChangedEventArgs>? HerbListChanged;
 
         #endregion
@@ -110,6 +117,56 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
             }
         }
 
+        /// <summary>
+        /// 药材列表（支持TwoWay绑定）
+        /// OpenSpec: simplify-workspace-event-architecture
+        /// </summary>
+        public static readonly DependencyProperty HerbItemsProperty =
+            DependencyProperty.Register(
+                nameof(HerbItems),
+                typeof(IList<HerbItemDto>),
+                typeof(HerbListControl),
+                new FrameworkPropertyMetadata(
+                    null,
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                    OnHerbItemsPropertyChanged));
+
+        public IList<HerbItemDto>? HerbItems
+        {
+            get => (IList<HerbItemDto>?)GetValue(HerbItemsProperty);
+            set => SetValue(HerbItemsProperty, value);
+        }
+
+        private static void OnHerbItemsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is HerbListControl control)
+            {
+                control.OnHerbItemsChanged(e.NewValue as IList<HerbItemDto>);
+            }
+        }
+
+        /// <summary>
+        /// 外部数据源变更时加载到控件
+        /// </summary>
+        private void OnHerbItemsChanged(IList<HerbItemDto>? items)
+        {
+            // 防止循环更新：内部变更触发的DP更新不应再次加载
+            if (_isSyncingFromInternal)
+                return;
+
+            if (_viewModel == null)
+                return;
+
+            if (items == null || items.Count == 0)
+            {
+                _viewModel.Clear();
+            }
+            else
+            {
+                _viewModel.LoadFromDto(items);
+            }
+        }
+
         #endregion
 
         #region Constructor
@@ -129,7 +186,33 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
 
         private void OnViewModelListChanged(object? sender, HerbListChangedEventArgs e)
         {
+            // 同步内部变更到HerbItems属性（TwoWay绑定回写）
+            SyncToHerbItemsProperty();
+
+            // 兼容旧事件（已标记Obsolete）
             HerbListChanged?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// 将内部ViewModel数据同步到HerbItems属性
+        /// </summary>
+        private void SyncToHerbItemsProperty()
+        {
+            if (_viewModel == null)
+                return;
+
+            try
+            {
+                _isSyncingFromInternal = true;
+
+                var currentItems = _viewModel.ToDto();
+                // 创建新列表以触发PropertyChanged
+                HerbItems = currentItems.ToList();
+            }
+            finally
+            {
+                _isSyncingFromInternal = false;
+            }
         }
 
         #endregion

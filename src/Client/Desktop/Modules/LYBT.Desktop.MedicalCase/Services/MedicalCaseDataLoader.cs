@@ -55,7 +55,8 @@ public class MedicalCaseDataLoader
             _logger.LogInformation("开始加载医案详情，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
             // 加载完整医案数据
-            var medicalCaseDetail = await _dataManager.GetByIdWithDetailsAsync(medicalCaseId);
+            // OpenSpec: consolidate-medicalcase-detail-queries - 使用GetByIdSimpleAsync
+            var medicalCaseDetail = await _dataManager.GetByIdSimpleAsync(medicalCaseId);
 
             if (medicalCaseDetail == null)
             {

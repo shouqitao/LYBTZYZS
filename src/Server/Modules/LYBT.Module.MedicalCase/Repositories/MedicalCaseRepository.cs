@@ -303,12 +303,14 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// 获取待看诊医案列表（Status=Draft或Active）
         /// Epic #1583 - Phase 5
         /// Bug Fix: 应包含Draft和Active两种未完成状态
+        /// OpenSpec: redesign-pending-queue - 正确的状态判定和序号计算
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId)
         {
             // Epic #2210 Phase 3: 按医生ID过滤，实现多医生数据隔离
             // Bug Fix: 包含Draft和Active两种未完成状态，暂存后的医案应显示在待诊队列
             // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
+            // OpenSpec: redesign-pending-queue - 根据CaseStatus动态判定PendingCaseType
             var result = await _dbSet
                 .Where(m => !m.IsDeleted
                     && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active)
@@ -325,10 +327,21 @@ namespace LYBT.Module.MedicalCases.Repositories
                     PatientName = r.Patient.Name,
                     PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
                     PhoneMasked = MaskPhoneNumber(r.Patient.PhoneNumber ?? string.Empty),
-                    Type = PendingCaseType.Suspended, // 当前只支持未完成医案
-                    MedicalCaseId = r.MedicalCase.Id
+                    // OpenSpec: redesign-pending-queue - 根据医案状态判定队列类型
+                    // Active → InProgress（正在看诊）, Draft → Suspended（暂存草稿）
+                    Type = r.MedicalCase.CaseStatus == MedicalCaseStatus.Active
+                        ? PendingCaseType.InProgress
+                        : PendingCaseType.Suspended,
+                    MedicalCaseId = r.MedicalCase.Id,
+                    CreatedAt = r.MedicalCase.CreatedAt
                 })
                 .ToListAsync();
+
+            // OpenSpec: redesign-pending-queue - 添加队列序号（基于查询结果顺序）
+            for (int i = 0; i < result.Count; i++)
+            {
+                result[i].QueueNumber = i + 1;
+            }
 
             _logger?.LogInformation("获取待看诊列表（DoctorId: {DoctorId}），共 {Count} 条记录",
                 doctorId, result.Count);
@@ -338,10 +351,12 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// <summary>
         /// 获取所有待看诊医案列表（管理员专用）
         /// Bug Fix: 应包含Draft和Active两种未完成状态
+        /// OpenSpec: redesign-pending-queue - 正确的状态判定和序号计算
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
         {
             // Bug Fix: 包含Draft和Active两种未完成状态
+            // OpenSpec: redesign-pending-queue - 根据CaseStatus动态判定PendingCaseType
             var result = await _dbSet
                 .Where(m => !m.IsDeleted && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active))
                 .Join(
@@ -356,10 +371,20 @@ namespace LYBT.Module.MedicalCases.Repositories
                     PatientName = r.Patient.Name,
                     PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
                     PhoneMasked = MaskPhoneNumber(r.Patient.PhoneNumber ?? string.Empty),
-                    Type = PendingCaseType.Suspended, // 当前只支持未完成医案
-                    MedicalCaseId = r.MedicalCase.Id
+                    // OpenSpec: redesign-pending-queue - 根据医案状态判定队列类型
+                    Type = r.MedicalCase.CaseStatus == MedicalCaseStatus.Active
+                        ? PendingCaseType.InProgress
+                        : PendingCaseType.Suspended,
+                    MedicalCaseId = r.MedicalCase.Id,
+                    CreatedAt = r.MedicalCase.CreatedAt
                 })
                 .ToListAsync();
+
+            // OpenSpec: redesign-pending-queue - 添加队列序号
+            for (int i = 0; i < result.Count; i++)
+            {
+                result[i].QueueNumber = i + 1;
+            }
 
             _logger?.LogInformation("获取所有待看诊列表（管理员），共 {Count} 条记录", result.Count);
             return result ?? new List<PendingMedicalCaseDto>();
@@ -478,6 +503,32 @@ namespace LYBT.Module.MedicalCases.Repositories
                 _logger?.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
                     patientId, doctorId);
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 批量获取医案详情（包含所有关联数据）
+        /// OpenSpec: consolidate-medicalcase-detail-queries
+        /// 使用EF Core的Contains优化为单次数据库查询
+        /// </summary>
+        /// <param name="ids">医案ID列表</param>
+        /// <returns>医案实体列表</returns>
+        public async Task<List<MedicalCase>> GetBatchWithDetailsAsync(List<Guid> ids)
+        {
+            if (ids == null || !ids.Any())
+            {
+                return new List<MedicalCase>();
+            }
+
+            _logger?.LogInformation("批量获取医案详情，ID数量: {Count}", ids.Count);
+
+            var result = await GetDetailQuery()
+                .Where(m => ids.Contains(m.Id))
+                .OrderByDescending(m => m.CreatedAt)
+                .ToListAsync();
+
+            _logger?.LogInformation("批量获取医案详情完成，返回数量: {Count}", result.Count);
 
             return result;
         }

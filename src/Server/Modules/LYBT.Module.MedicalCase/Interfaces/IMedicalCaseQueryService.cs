@@ -127,5 +127,14 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="query">查询参数</param>
         /// <returns>分页查询结果</returns>
         Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query);
+
+        /// <summary>
+        /// 批量获取医案详情
+        /// OpenSpec: consolidate-medicalcase-detail-queries
+        /// 解决N+1查询问题，一次请求获取多个医案详情（含处方）
+        /// </summary>
+        /// <param name="ids">医案ID列表（最多50个）</param>
+        /// <returns>医案实体列表</returns>
+        Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids);
     }
 }

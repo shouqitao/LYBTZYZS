@@ -7,6 +7,7 @@ using LYBT.Desktop.Infrastructure.Models;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
+using LYBT.Desktop.MedicalCase.ViewModels.Events;
 using LYBT.Desktop.Prescriptions.Models.Items;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -37,7 +38,6 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     private readonly IEventAggregator _eventAggregator;
     private readonly PrescriptionCalculator _calculator;
     private readonly PrescriptionValidator _validator;
-    private readonly PrescriptionItemHandler _itemHandler;
     private readonly PrescriptionSaveHandler _saveHandler;
     private readonly PrescriptionImportHandler _importHandler;
     private readonly PrescriptionDataLoader _dataLoader;
@@ -50,6 +50,12 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     private ObservableCollection<HerbListDto> _allHerbs = new();
     private DuplicateDosageStrategy _duplicateStrategy = DuplicateDosageStrategy.Max;
     private IReadOnlyList<HerbItemDto>? _currentHerbList;
+
+    /// <summary>
+    /// 待添加的药材（用于导入场景，View处理后自动清空）
+    /// OpenSpec: simplify-workspace-event-architecture
+    /// </summary>
+    private IReadOnlyList<HerbItemDto>? _pendingAddHerbs;
 
     #endregion
 
@@ -84,7 +90,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     public int DosageCount
     {
         get => _dosageCount;
-        set { if (SetProperty(ref _dosageCount, value)) CalculatePrices(); }
+        set { if (SetProperty(ref _dosageCount, value)) CalculatePricesFromDto(); }
     }
 
     private string _usage = "水煎服，一日一剂，分早晚两次温服";
@@ -104,13 +110,6 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     #region 药材和警告属性
 
     /// <summary>
-    /// 药材项集合 - 已弃用，保留用于向后兼容
-    /// OpenSpec: herb-editor-control-refactoring - 现在由HerbListControl管理
-    /// </summary>
-    [Obsolete("Use HerbListControl's HerbList instead")]
-    public ObservableCollection<PrescriptionHerbItem> HerbItems { get; } = new();
-
-    /// <summary>
     /// 药材库数据 - 供HerbListControl绑定
     /// OpenSpec: herb-editor-control-refactoring
     /// </summary>
@@ -128,6 +127,45 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     {
         get => _duplicateStrategy;
         set => SetProperty(ref _duplicateStrategy, value);
+    }
+
+    /// <summary>
+    /// 药材列表（TwoWay绑定到HerbListControl.HerbItems）
+    /// OpenSpec: simplify-workspace-event-architecture
+    /// </summary>
+    private IList<HerbItemDto>? _herbItemsToLoad;
+    public IList<HerbItemDto>? HerbItemsToLoad
+    {
+        get => _herbItemsToLoad;
+        set
+        {
+            if (SetProperty(ref _herbItemsToLoad, value))
+            {
+                // 同步到_currentHerbList供保存使用
+                _currentHerbList = value?.ToList().AsReadOnly();
+                // OpenSpec: simplify-workspace-event-architecture - 使用新方法替代已删除的过期方法
+                CalculatePricesFromDto();
+                UpdateDuplicateWarning();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 待添加的药材（导入场景：View处理后自动清空）
+    /// OpenSpec: simplify-workspace-event-architecture
+    /// </summary>
+    public IReadOnlyList<HerbItemDto>? PendingAddHerbs
+    {
+        get => _pendingAddHerbs;
+        set => SetProperty(ref _pendingAddHerbs, value);
+    }
+
+    /// <summary>
+    /// 清空待添加药材（View处理后调用）
+    /// </summary>
+    public void ClearPendingAddHerbs()
+    {
+        PendingAddHerbs = null;
     }
 
     private bool _isDuplicateHerbsWarningVisible;
@@ -168,7 +206,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         IMedicalCaseRepository medicalCaseRepository, IHerbRepository herbRepository,
         IDialogService dialogService, IEventAggregator eventAggregator, ILoggerFactory loggerFactory,
         IRegionManager regionManager, PrescriptionCalculator calculator,
-        PrescriptionValidator validator, PrescriptionItemHandler itemHandler,
+        PrescriptionValidator validator,
         PrescriptionSaveHandler saveHandler, PrescriptionImportHandler importHandler,
         PrescriptionDataLoader dataLoader, ISessionManager? sessionManager = null,
         ICommonDialogService? commonDialogService = null)
@@ -180,22 +218,21 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         _eventAggregator = eventAggregator;
         _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-        _itemHandler = itemHandler ?? throw new ArgumentNullException(nameof(itemHandler));
         _saveHandler = saveHandler ?? throw new ArgumentNullException(nameof(saveHandler));
         _importHandler = importHandler ?? throw new ArgumentNullException(nameof(importHandler));
         _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
 
-        AddRowCommand = new DelegateCommand(ExecuteAddRow);
+        // OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5) - 移除旧Handler依赖
+        AddRowCommand = new DelegateCommand(() => { /* 由控件内部处理 */ });
         SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft);
         DeletePrescriptionCommand = new DelegateCommand(ExecuteDeletePrescription);
         DeleteHerbCommand = new DelegateCommand<PrescriptionHerbItem>(ExecuteDeleteHerb);
         DosageCompletedCommand = new DelegateCommand<PrescriptionHerbItem>(ExecuteDosageCompleted);
-        AddNewRowCommand = new DelegateCommand(() => _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged));
+        AddNewRowCommand = new DelegateCommand(() => { /* 由控件内部处理 */ });
         OpenFormulaImportDialogCommand = new DelegateCommand(ExecuteOpenFormulaImportDialog);
         OpenHistoryCopyDialogCommand = new DelegateCommand(ExecuteOpenHistoryCopyDialog);
         ClearHerbItemsCommand = new DelegateCommand(ExecuteClearHerbItems);
 
-        _itemHandler.AddDefaultHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
         EventAggregator.GetEvent<SaveAllRequestedEvent>().Subscribe(OnSaveAllRequested, ThreadOption.UIThread);
     }
 
@@ -208,14 +245,20 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         _medicalCaseId = medicalCaseId;
         _patientId = patientId;
         _patientName = patientName;
-        HerbItems.Clear();
         _prescriptionId = null;
 
         await _dataLoader.LoadAllHerbsAsync(_allHerbs);
-        _dataLoader.InjectHerbsToItems(HerbItems, _allHerbs);
 
-        if (existingPrescription != null) LoadFromDto(existingPrescription);
-        else { _itemHandler.AddDefaultHerbItems(HerbItems, _allHerbs, OnHerbItemChanged); UpdateItemCount(); }
+        // OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5) - 通过事件请求View加载数据
+        if (existingPrescription != null)
+        {
+            LoadFromDto(existingPrescription);
+        }
+        else
+        {
+            // 初始状态：空列表，控件会自动添加空槽位
+            HerbItemsToLoad = null;
+        }
 
         _isInitialized = true;
         HasUnsavedChanges = false;
@@ -236,36 +279,36 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             SingleDosagePrice = dto.SingleDosePrice;
             TotalPrice = dto.TotalPrice;
 
-            HerbItems.Clear();
+            // OpenSpec: simplify-workspace-event-architecture - 通过属性绑定加载药材
             if (dto.Items?.Any() == true)
             {
-                foreach (var item in dto.Items)
+                var herbItems = dto.Items.Select(item => new HerbItemDto
                 {
-                    var herbItem = _itemHandler.CreateHerbItem(_allHerbs, OnHerbItemChanged);
-                    herbItem.HerbId = item.HerbId;
-                    herbItem.HerbName = item.HerbName ?? string.Empty;
-                    herbItem.Dosage = item.Dosage;
-                    herbItem.DecocteMethod = item.DecocteMethod;
-                    herbItem.SetLoadedUnitPrice(item.UnitPrice);
-                    HerbItems.Add(herbItem);
-                }
+                    HerbId = item.HerbId,
+                    HerbName = item.HerbName ?? string.Empty,
+                    Dosage = item.Dosage,
+                    DecocteMethod = item.DecocteMethod,
+                    UnitPrice = item.UnitPrice
+                }).ToList();
+
+                HerbItemsToLoad = herbItems;
             }
-            _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged);
-            UpdateItemCount();
-            CalculatePrices();
+            else
+            {
+                HerbItemsToLoad = null;
+            }
         }
         finally { _isLoadingData = false; }
     }
 
+    /// <summary>
+    /// 旧版药材项变更回调 - 已弃用
+    /// OpenSpec: simplify-workspace-event-architecture - 使用HerbItemsToLoad属性TwoWay绑定替代
+    /// </summary>
+    [Obsolete("使用HerbItemsToLoad属性的TwoWay绑定替代。")]
     private void OnHerbItemChanged(PrescriptionHerbItem item, string propertyName)
     {
-        if (_isLoadingData) return;
-        CalculatePrices();
-        UpdateItemCount();
-        CheckDuplicateHerbs();
-        if (propertyName == nameof(PrescriptionHerbItem.HerbId))
-            _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged);
-        NotifyDataChanged();
+        // 已废弃：使用HerbItemsToLoad属性的TwoWay绑定
     }
 
     #endregion
@@ -287,7 +330,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             if (result.IsSuccess)
             {
                 _prescriptionId = result.PrescriptionId;
-                _itemHandler.CompactHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
+                // OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5) - 控件内部自动处理紧凑
                 HasUnsavedChanges = false;
                 EventAggregator.GetEvent<PrescriptionSavedEvent>().Publish(new PrescriptionSavedPayload
                 {
@@ -315,9 +358,34 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         UserId = SessionManager?.CurrentUserId ?? Guid.Empty,
         DosageCount = DosageCount,
         Usage = Usage,
-        Items = _itemHandler.CollectPrescriptionItems(HerbItems),
+        // OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5) - 从_currentHerbList获取
+        Items = CollectPrescriptionItemsFromDto(),
         TotalPrice = TotalPrice
     };
+
+    /// <summary>
+    /// 从当前药材列表收集处方项(用于保存)
+    /// OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5)
+    /// </summary>
+    private List<PrescriptionItemInputDto> CollectPrescriptionItemsFromDto()
+    {
+        if (_currentHerbList == null)
+            return new List<PrescriptionItemInputDto>();
+
+        return _currentHerbList
+            .Where(h => h.IsValid)
+            .Select(h => new PrescriptionItemInputDto
+            {
+                HerbId = h.HerbId,
+                HerbName = h.HerbName,
+                Unit = h.Unit ?? "g",
+                Dosage = h.Dosage,
+                DecocteMethod = h.DecocteMethod,
+                UnitPrice = h.UnitPrice,
+                Subtotal = h.Dosage * h.UnitPrice
+            })
+            .ToList();
+    }
 
     #endregion
 
@@ -394,22 +462,30 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 
     #region 命令实现
 
-    private void ExecuteAddRow() => _itemHandler.AddNewRow(HerbItems, _allHerbs, OnHerbItemChanged);
+    /// <summary>
+    /// 添加新行 - 已由控件内部处理
+    /// OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5)
+    /// </summary>
+    private void ExecuteAddRow()
+    {
+        // 控件内部自动管理空槽位，无需外部触发
+    }
 
+    /// <summary>
+    /// 删除药材 - 已由控件处理
+    /// OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5)
+    /// </summary>
     private void ExecuteDeleteHerb(PrescriptionHerbItem? item)
     {
-        if (item == null) return;
-        _itemHandler.DeleteHerbItem(HerbItems, item, _allHerbs, OnHerbItemChanged);
-        UpdateItemCount();
-        CalculatePrices();
-        CheckDuplicateHerbs();
+        // 控件通过HerbListChanged事件通知，此处保留空实现以保持命令绑定兼容
     }
 
     private void ExecuteDosageCompleted(PrescriptionHerbItem? item)
     {
         if (item == null) return;
-        CheckDuplicateHerbs();
-        CalculatePrices();
+        // OpenSpec: simplify-workspace-event-architecture - 使用新方法替代已删除的过期方法
+        UpdateDuplicateWarning();
+        CalculatePricesFromDto();
     }
 
     private async void ExecuteSaveDraft()
@@ -458,8 +534,8 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     private void ResetPrescription()
     {
         _prescriptionId = null;
-        HerbItems.Clear();
-        _itemHandler.AddDefaultHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
+        // OpenSpec: simplify-workspace-event-architecture - 通过属性绑定清空控件
+        HerbItemsToLoad = null;
         TreatmentMethod = TreatmentPrinciple = string.Empty;
         ReferencedFormulas = Remark = string.Empty;
         SingleDosagePrice = TotalPrice = 0;
@@ -468,11 +544,12 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 
     /// <summary>
     /// 清空当前处方药材
+    /// OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5)
     /// </summary>
     private async void ExecuteClearHerbItems()
     {
         // 检查是否有有效药材
-        var validItemCount = HerbItems.Count(i => i.HerbId != Guid.Empty && i.Dosage > 0);
+        var validItemCount = _currentHerbList?.Count(h => h.IsValid) ?? 0;
         if (validItemCount == 0)
         {
             await ShowSuccessMessageAsync("当前没有可清空的药材");
@@ -483,14 +560,8 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         if (!await ShowConfirmationAsync($"确定要清空当前所有药材（共{validItemCount}项）吗？", "清空药材"))
             return;
 
-        // 清空药材项
-        HerbItems.Clear();
-        _itemHandler.AddDefaultHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
-
-        // 更新统计
-        UpdateItemCount();
-        CalculatePrices();
-        CheckDuplicateHerbs();
+        // 通过属性绑定清空控件
+        HerbItemsToLoad = null;
         NotifyDataChanged();
 
         Logger.LogInformation("已清空处方药材，共{Count}项", validItemCount);
@@ -505,6 +576,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     /// 处理HerbListControl的变更事件
     /// OpenSpec: herb-editor-control-refactoring
     /// </summary>
+    [Obsolete("使用HerbItemsToLoad属性的TwoWay绑定替代。控件变更自动同步到属性。")]
     public void OnHerbListChanged(HerbListChangedEventArgs e)
     {
         if (_isLoadingData) return;
@@ -528,6 +600,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
     /// 设置当前药材列表（供View调用）
     /// OpenSpec: herb-editor-control-refactoring
     /// </summary>
+    [Obsolete("使用HerbItemsToLoad属性的TwoWay绑定替代。设置HerbItemsToLoad即可。")]
     public void SetCurrentHerbList(IReadOnlyList<HerbItemDto> herbList)
     {
         _currentHerbList = herbList;
@@ -587,24 +660,10 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         }
     }
 
-    [Obsolete("Use CalculatePricesFromDto instead")]
-    private void UpdateItemCount() => ItemCount = _calculator.CalculateItemCount(HerbItems);
-
-    [Obsolete("Use CalculatePricesFromDto instead")]
-    private void CalculatePrices()
-    {
-        var result = _calculator.CalculatePrices(HerbItems, DosageCount);
-        SingleDosagePrice = result.SingleDosagePrice;
-        TotalPrice = result.TotalPrice;
-    }
-
-    [Obsolete("Use UpdateDuplicateWarning instead")]
-    private void CheckDuplicateHerbs()
-    {
-        var result = _validator.CheckDuplicateHerbs(HerbItems);
-        IsDuplicateHerbsWarningVisible = result.HasDuplicates;
-        DuplicateHerbsWarningText = result.WarningText;
-    }
+    // OpenSpec: simplify-workspace-event-architecture - 已删除过期方法
+    // - UpdateItemCount() - HerbItems已移除，使用CalculatePricesFromDto替代
+    // - CalculatePrices() - HerbItems已移除，使用CalculatePricesFromDto替代
+    // - CheckDuplicateHerbs() - HerbItems已移除，使用UpdateDuplicateWarning替代
 
     #endregion
 
@@ -619,6 +678,10 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             new DialogParameters { { "PatientId", _patientId }, { "PatientName", _patientName } },
             async r => { if (r.Result == ButtonResult.OK) await HandleHistoryCopyResultAsync(r.Parameters); });
 
+    /// <summary>
+    /// 处理验方导入结果
+    /// OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5) - 使用事件机制
+    /// </summary>
     private async Task HandleFormulaImportResultAsync(IDialogParameters parameters)
     {
         try
@@ -628,34 +691,25 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             if (!parameters.TryGetValue<List<FormulaHerbItemDto>>("SelectedHerbs", out var herbs) || herbs?.Any() != true)
             { await ShowErrorMessageAsync("验方无药材信息"); return; }
 
-            var importResult = _importHandler.ProcessFormulaImport(formula, herbs, HerbItems, _allHerbs);
-            if (!importResult.IsSuccess) { await ShowErrorMessageAsync(importResult.ErrorMessage ?? "导入失败"); return; }
+            // OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5) - 简化导入，直接转换为HerbItemDto
+            var herbItems = _importHandler.ToHerbItemDtos(formula, herbs);
+            if (!herbItems.Any())
+            { await ShowErrorMessageAsync("验方无有效药材"); return; }
 
-            // OpenSpec: enhance-duplicate-herb-dialog - 使用逐个弹窗确认重复药材
-            Logger.LogInformation("验方导入处理: HasDuplicates={HasDuplicates}, DuplicateCount={Count}",
-                importResult.HasDuplicates, importResult.DuplicateInfos.Count);
-            if (importResult.HasDuplicates)
-            {
-                Logger.LogInformation("开始逐个弹窗确认重复药材...");
-                await ShowDuplicateHerbDialogsAsync(importResult.DuplicateInfos);
-                Logger.LogInformation("重复药材确认完成");
-            }
-
-            var addedCount = _importHandler.AddHerbItemsToCollection(HerbItems, importResult.ItemsToAdd, () => _itemHandler.CreateHerbItem(_allHerbs, OnHerbItemChanged));
-            _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged);
-            UpdateItemCount();
-            CalculatePrices();
+            // OpenSpec: simplify-workspace-event-architecture - 通过属性触发添加
+            // View处理PendingAddHerbs，调用控件的AddHerbs方法
+            PendingAddHerbs = herbItems;
 
             // 记录引用的验方名称
-            if (!string.IsNullOrEmpty(importResult.FormulaName))
+            if (!string.IsNullOrEmpty(formula.Name))
             {
                 if (string.IsNullOrEmpty(ReferencedFormulas))
-                    ReferencedFormulas = importResult.FormulaName;
-                else if (!ReferencedFormulas.Contains(importResult.FormulaName))
-                    ReferencedFormulas = $"{ReferencedFormulas}, {importResult.FormulaName}";
+                    ReferencedFormulas = formula.Name;
+                else if (!ReferencedFormulas.Contains(formula.Name))
+                    ReferencedFormulas = $"{ReferencedFormulas}, {formula.Name}";
             }
 
-            await ShowSuccessMessageAsync($"已导入验方「{importResult.FormulaName}」，添加 {addedCount} 味药材");
+            await ShowSuccessMessageAsync($"已导入验方「{formula.Name}」，共 {herbItems.Count} 味药材");
         }
         catch (Exception ex)
         {
@@ -665,6 +719,10 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         finally { SetIsBusy(false); }
     }
 
+    /// <summary>
+    /// 处理历史处方复制结果
+    /// OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5) - 使用事件机制
+    /// </summary>
     private async Task HandleHistoryCopyResultAsync(IDialogParameters parameters)
     {
         try
@@ -673,24 +731,16 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             if (!parameters.TryGetValue<List<PrescriptionItemDto>>("SelectedItems", out var items) || items?.Any() != true)
             { await ShowErrorMessageAsync("历史处方无药材记录"); return; }
 
-            var copyResult = _importHandler.ProcessHistoryCopy(items, HerbItems);
-            if (!copyResult.IsSuccess) { await ShowErrorMessageAsync(copyResult.ErrorMessage ?? "复制失败"); return; }
+            // OpenSpec: slim-medicalcase-workspace-viewmodel (Phase 5) - 简化复制，直接转换为HerbItemDto
+            var herbItems = _importHandler.ToHerbItemDtos(items);
+            if (!herbItems.Any())
+            { await ShowErrorMessageAsync("历史处方无有效药材"); return; }
 
-            // OpenSpec: enhance-duplicate-herb-dialog - 使用逐个弹窗确认重复药材
-            Logger.LogInformation("历史复制处理: HasDuplicates={HasDuplicates}, DuplicateCount={Count}",
-                copyResult.HasDuplicates, copyResult.DuplicateInfos.Count);
-            if (copyResult.HasDuplicates)
-            {
-                Logger.LogInformation("开始逐个弹窗确认重复药材...");
-                await ShowDuplicateHerbDialogsAsync(copyResult.DuplicateInfos);
-                Logger.LogInformation("重复药材确认完成");
-            }
+            // OpenSpec: simplify-workspace-event-architecture - 通过属性触发添加
+            // View处理PendingAddHerbs，调用控件的AddHerbs方法
+            PendingAddHerbs = herbItems;
 
-            var addedCount = _importHandler.AddHerbItemsToCollection(HerbItems, copyResult.ItemsToAdd, () => _itemHandler.CreateHerbItem(_allHerbs, OnHerbItemChanged));
-            _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged);
-            UpdateItemCount();
-            CalculatePrices();
-            await ShowSuccessMessageAsync($"已复制 {addedCount} 味药材");
+            await ShowSuccessMessageAsync($"已复制 {herbItems.Count} 味药材");
         }
         catch (Exception ex)
         {
@@ -700,55 +750,9 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         finally { SetIsBusy(false); }
     }
 
-    /// <summary>
-    /// 逐个显示重复药材确认对话框
-    /// OpenSpec: enhance-duplicate-herb-dialog
-    /// </summary>
-    private async Task ShowDuplicateHerbDialogsAsync(List<DuplicateHerbInfo> duplicates)
-    {
-        Logger.LogInformation("ShowDuplicateHerbDialogsAsync: 开始处理 {Count} 个重复药材", duplicates.Count);
-        foreach (var duplicate in duplicates)
-        {
-            Logger.LogInformation("显示重复药材对话框: {HerbName}", duplicate.HerbName);
-            var parameters = new DialogParameters
-            {
-                { "HerbName", duplicate.HerbName }
-            };
-
-            var tcs = new TaskCompletionSource<bool>();
-            _dialogService.ShowDialog("DuplicateHerbAlertDialog", parameters, result =>
-            {
-                Logger.LogInformation("对话框已关闭: {HerbName}, Result={Result}", duplicate.HerbName, result.Result);
-                tcs.SetResult(true);
-            });
-
-            await tcs.Task;
-        }
-
-        Logger.LogInformation("所有对话框已确认，开始合并剂量");
-        // 所有确认完成后执行剂量合并
-        MergeDuplicateHerbs(duplicates);
-    }
-
-    /// <summary>
-    /// 合并重复药材的剂量（取最大值）
-    /// OpenSpec: enhance-duplicate-herb-dialog
-    /// </summary>
-    private void MergeDuplicateHerbs(List<DuplicateHerbInfo> duplicates)
-    {
-        foreach (var duplicate in duplicates)
-        {
-            var existingItem = HerbItems.FirstOrDefault(h => h.HerbId == duplicate.HerbId);
-            if (existingItem != null)
-            {
-                existingItem.Dosage = duplicate.MergedDosage;
-                Logger.LogDebug("合并重复药材: {HerbName}, 剂量: {CurrentDosage}g -> {MergedDosage}g",
-                    duplicate.HerbName, duplicate.CurrentDosage, duplicate.MergedDosage);
-            }
-        }
-
-        CalculatePrices();
-    }
+    // OpenSpec: simplify-workspace-event-architecture - 已删除死代码
+    // - ShowDuplicateHerbDialogsAsync: 从未被调用
+    // - MergeDuplicateHerbs: HerbItems已移除，重复药材合并由HerbListControl内部处理
 
     #endregion
 

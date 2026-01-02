@@ -134,7 +134,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
                 await LoadHerbsAsync();
             }
 
-            var dto = await _repository.GetByIdWithDetailsAsync(item.Id);
+            var dto = await _repository.GetByIdAsync(item.Id);
             var detail = MedicalCaseDetailModel.FromDto(dto);
 
             // 初始化处方编辑列表

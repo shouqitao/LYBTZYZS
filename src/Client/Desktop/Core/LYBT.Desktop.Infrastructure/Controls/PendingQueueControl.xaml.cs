@@ -2,6 +2,8 @@ using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Desktop.Contracts.Services;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Desktop.Infrastructure.Controls
 {
@@ -9,20 +11,90 @@ namespace LYBT.Desktop.Infrastructure.Controls
     /// 待诊队列控件 - 从PatientSelectionView提取
     /// OpenSpec: refactor-medicalcase-workspace
     /// OpenSpec: optimize-medicalcase-navigation - 添加双击处理
+    /// OpenSpec: redesign-pending-queue - 添加轮询刷新和PatientSelected事件
     /// </summary>
     public partial class PendingQueueControl : UserControl
     {
-        public PendingQueueControl() => InitializeComponent();
+        private IApplicationTickService? _tickService;
+        private bool _isSubscribed;
+
+        public PendingQueueControl()
+        {
+            InitializeComponent();
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        #region 轮询刷新逻辑 - OpenSpec: redesign-pending-queue
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            // 尝试从全局获取TickService（通过Application.Current.Properties或其他方式）
+            if (Application.Current.Properties.Contains("ApplicationTickService"))
+            {
+                _tickService = Application.Current.Properties["ApplicationTickService"] as IApplicationTickService;
+                SubscribeToTick();
+            }
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            UnsubscribeFromTick();
+        }
+
+        private void SubscribeToTick()
+        {
+            if (_tickService != null && !_isSubscribed && AutoRefreshEnabled)
+            {
+                _tickService.Tick += OnTick;
+                _isSubscribed = true;
+            }
+        }
+
+        private void UnsubscribeFromTick()
+        {
+            if (_tickService != null && _isSubscribed)
+            {
+                _tickService.Tick -= OnTick;
+                _isSubscribed = false;
+            }
+        }
+
+        private void OnTick(object? sender, ApplicationTickEventArgs e)
+        {
+            // 每AutoRefreshInterval秒刷新一次
+            if (AutoRefreshInterval > 0 && e.TickCount % AutoRefreshInterval == 0)
+            {
+                // 触发刷新回调（在UI线程执行）
+                Dispatcher.Invoke(() =>
+                {
+                    if (RefreshCommand?.CanExecute(null) == true)
+                    {
+                        RefreshCommand.Execute(null);
+                    }
+                });
+            }
+        }
+
+        #endregion
 
         /// <summary>
-        /// 双击行处理 - 执行SelectCommand
+        /// 双击行处理 - 执行SelectCommand并触发PatientSelected事件
         /// OpenSpec: optimize-medicalcase-navigation
+        /// OpenSpec: redesign-pending-queue - 添加PatientSelected事件触发
         /// </summary>
         private void PendingDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (SelectedItem != null && SelectCommand?.CanExecute(SelectedItem) == true)
+            if (SelectedItem is PendingMedicalCaseDto patient)
             {
-                SelectCommand.Execute(SelectedItem);
+                // 触发事件（优先）
+                RaisePatientSelected(patient);
+
+                // 执行命令（向后兼容）
+                if (SelectCommand?.CanExecute(SelectedItem) == true)
+                {
+                    SelectCommand.Execute(SelectedItem);
+                }
             }
         }
 
@@ -168,6 +240,64 @@ namespace LYBT.Desktop.Infrastructure.Controls
         public static readonly DependencyProperty EmptyMessageProperty =
             DependencyProperty.Register(nameof(EmptyMessage), typeof(string), typeof(PendingQueueControl),
                 new PropertyMetadata("从列表选择患者或等待新的挂号"));
+
+        #endregion
+
+        #region 自动刷新 - OpenSpec: redesign-pending-queue
+
+        /// <summary>
+        /// 是否启用自动刷新
+        /// </summary>
+        public bool AutoRefreshEnabled
+        {
+            get => (bool)GetValue(AutoRefreshEnabledProperty);
+            set => SetValue(AutoRefreshEnabledProperty, value);
+        }
+
+        public static readonly DependencyProperty AutoRefreshEnabledProperty =
+            DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(PendingQueueControl),
+                new PropertyMetadata(true, OnAutoRefreshEnabledChanged));
+
+        private static void OnAutoRefreshEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is PendingQueueControl control)
+            {
+                if ((bool)e.NewValue)
+                    control.SubscribeToTick();
+                else
+                    control.UnsubscribeFromTick();
+            }
+        }
+
+        /// <summary>
+        /// 自动刷新间隔（秒），默认30秒
+        /// </summary>
+        public int AutoRefreshInterval
+        {
+            get => (int)GetValue(AutoRefreshIntervalProperty);
+            set => SetValue(AutoRefreshIntervalProperty, value);
+        }
+
+        public static readonly DependencyProperty AutoRefreshIntervalProperty =
+            DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(int), typeof(PendingQueueControl),
+                new PropertyMetadata(30));
+
+        #endregion
+
+        #region 患者选择事件 - OpenSpec: redesign-pending-queue
+
+        /// <summary>
+        /// 患者选择事件（双击或回车时触发）
+        /// </summary>
+        public event EventHandler<PendingMedicalCaseDto>? PatientSelected;
+
+        /// <summary>
+        /// 触发患者选择事件
+        /// </summary>
+        private void RaisePatientSelected(PendingMedicalCaseDto patient)
+        {
+            PatientSelected?.Invoke(this, patient);
+        }
 
         #endregion
     }

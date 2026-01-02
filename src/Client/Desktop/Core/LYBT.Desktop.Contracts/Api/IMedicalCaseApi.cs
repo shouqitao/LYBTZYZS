@@ -54,12 +54,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Get("/api/v1/medicalcases/{id}")]
         Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdAsync(Guid id);
 
-        /// <summary>
-        /// 根据患者ID获取医疗案例列表
-        /// </summary>
-        [Obsolete("Use QueryMedicalCasesAsync with QueryType=ByPatient instead. Will be removed in v2.0")]
-        [Refit.Get("/api/v1/medicalcases/by-patient/{patientId}")]
-        Task<ApiResponse<List<MedicalCaseDetailDto>>> GetMedicalCasesByPatientIdAsync(Guid patientId);
+        // OpenSpec: consolidate-medicalcase-detail-queries - GetMedicalCasesByPatientIdAsync已删除
+        // 使用QueryMedicalCasesAsync(QueryType=ByPatient)
 
         /// <summary>
         /// 获取待看诊医案列表（Status=Active）
@@ -98,14 +94,7 @@ namespace LYBT.Desktop.Contracts.Api
             Guid patientId,
             [Refit.Query] int count = 5);
 
-        /// <summary>
-        /// 获取完整的医疗案例（包含所有关联数据）
-        /// OpenSpec: optimize-medicalcase-api - 此方法已废弃，请使用 GetMedicalCaseByIdAsync
-        /// </summary>
-        [Obsolete("Use GetMedicalCaseByIdAsync instead. Will be removed in v2.0")]
-        [Refit.Get("/api/v1/medicalcases/{id}/with-details")]
-        Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdWithDetailsAsync(Guid id);
-
+        // OpenSpec: consolidate-medicalcase-detail-queries - GetMedicalCaseByIdWithDetailsAsync已删除，使用GetMedicalCaseByIdAsync
         /// <summary>
         /// 创建医疗案例
         /// Epic #1961: 使用统一的 MedicalCaseInputDto
@@ -154,21 +143,8 @@ namespace LYBT.Desktop.Contracts.Api
 
         // ========== Epic #1676 Phase 4 Task 4.1 - 新增专用API ==========
 
-        /// <summary>
-        /// 获取患者的未完成医案（Status != Completed）
-        /// Epic #1676 Phase 4 Task 4.1
-        /// Epic #2210 Task 3.1.4: 添加doctorId参数
-        /// OpenSpec: multi-doctor-unfinished-case - 添加checkAllDoctors参数
-        /// </summary>
-        /// <param name="patientId">患者ID</param>
-        /// <param name="doctorId">医生ID（当checkAllDoctors=false时使用）</param>
-        /// <param name="checkAllDoctors">是否查询所有医生的未完成医案（用于多医生场景检测）</param>
-        [Obsolete("Use QueryMedicalCasesAsync with QueryType=Unfinished instead. Will be removed in v2.0")]
-        [Refit.Get("/api/v1/medicalcases/patient/{patientId}/unfinished")]
-        Task<ApiResponse<MedicalCaseDetailDto>> GetUnfinishedCaseByPatientIdAsync(
-            Guid patientId,
-            [Refit.Query] Guid doctorId,
-            [Refit.Query] bool checkAllDoctors = false);
+        // OpenSpec: consolidate-medicalcase-detail-queries - GetUnfinishedCaseByPatientIdAsync已删除
+        // 使用QueryMedicalCasesAsync(QueryType=Unfinished)
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）
@@ -250,5 +226,15 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/medicalcases/batch-delete")]
         Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 批量获取医案详情（解决N+1查询问题）
+        /// OpenSpec: consolidate-medicalcase-detail-queries
+        /// 用于历史处方选择等需要批量获取详情的场景
+        /// </summary>
+        /// <param name="request">批量查询参数（最多50个ID）</param>
+        /// <returns>医案详情列表</returns>
+        [Refit.Post("/api/v1/medicalcases/batch-details")]
+        Task<ApiResponse<List<MedicalCaseDetailDto>>> GetBatchDetailsAsync([Refit.Body] BatchDetailQueryDto request);
     }
 }

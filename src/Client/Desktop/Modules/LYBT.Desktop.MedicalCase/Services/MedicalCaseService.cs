@@ -56,7 +56,7 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.Initialize started - MedicalCaseId={MedicalCaseId}", entityId);
-            _currentDetail = await _repository.GetByIdWithDetailsAsync(entityId);
+            _currentDetail = await _repository.GetByIdAsync(entityId);
             if (_currentDetail == null) throw new InvalidOperationException($"未找到ID为{entityId}的病案");
             _originalDetail = CloneMedicalCaseDetail(_currentDetail);
             _logger.LogDebug("[SVC] MedicalCase.Initialize detail - PatientId={PatientId} UserId={UserId} PatientName={PatientName}",
@@ -164,23 +164,7 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Create failed - PatientId={PatientId}", dto.PatientId); return null; }
     }
 
-    /// <summary>
-    /// OpenSpec: optimize-medicalcase-api - 此方法内部已改用统一端点
-    /// </summary>
-    [Obsolete("Internal implementation now uses unified endpoint. Will be removed in v2.0")]
-    public virtual async Task<MedicalCaseDetailDto?> GetByIdWithDetailsAsync(Guid id)
-    {
-        try
-        {
-            _logger.LogDebug("[SVC] MedicalCase.GetByIdWithDetails started - MedicalCaseId={MedicalCaseId}", id);
-            var result = await _repository.GetByIdWithDetailsAsync(id);
-            if (result == null)
-                _logger.LogWarning("[SVC] MedicalCase.GetByIdWithDetails → NotFound - MedicalCaseId={MedicalCaseId}", id);
-            return result;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetByIdWithDetails failed - MedicalCaseId={MedicalCaseId}", id); return null; }
-    }
-
+    // OpenSpec: consolidate-medicalcase-detail-queries - GetByIdWithDetailsAsync已删除，使用GetByIdAsync
     public virtual async Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null)
     {
         try
@@ -280,17 +264,34 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
+    // OpenSpec: consolidate-medicalcase-detail-queries - 使用QueryAsync替代废弃的GetUnfinishedCaseByPatientIdAsync
     public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
     {
         try
         {
             _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient started - PatientId={PatientId} DoctorId={DoctorId}", patientId, doctorId);
-            var result = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors);
-            if (result != null)
-                _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient found - MedicalCaseId={MedicalCaseId}", result.Id);
-            else
-                _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient → NotFound - PatientId={PatientId}", patientId);
-            return result;
+            
+            // 使用统一查询端点
+            var query = new MedicalCaseQueryDto
+            {
+                QueryType = LYBT.Shared.Models.Enums.MedicalCaseQueryType.Unfinished,
+                PatientId = patientId,
+                DoctorId = doctorId,
+                IncludeAllDoctors = checkAllDoctors,
+                PageSize = 1
+            };
+            var result = await _repository.QueryAsync(query);
+            
+            if (result?.Items?.Count > 0)
+            {
+                // 获取完整详情
+                var detail = await _repository.GetByIdAsync(result.Items[0].Id);
+                _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient found - MedicalCaseId={MedicalCaseId}", detail?.Id);
+                return detail;
+            }
+            
+            _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient → NotFound - PatientId={PatientId}", patientId);
+            return null;
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetUnfinishedByPatient failed - PatientId={PatientId}", patientId); throw; }
     }

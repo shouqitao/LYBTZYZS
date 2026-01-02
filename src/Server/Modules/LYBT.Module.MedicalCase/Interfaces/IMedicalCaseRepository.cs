@@ -69,5 +69,13 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
         /// <returns>未完成的医案实体，若无则返回null</returns>
         Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
+
+        /// <summary>
+        /// 批量获取医案详情（包含所有关联数据）
+        /// OpenSpec: consolidate-medicalcase-detail-queries
+        /// </summary>
+        /// <param name="ids">医案ID列表</param>
+        /// <returns>医案实体列表</returns>
+        Task<List<MedicalCase>> GetBatchWithDetailsAsync(List<Guid> ids);
     }
 }

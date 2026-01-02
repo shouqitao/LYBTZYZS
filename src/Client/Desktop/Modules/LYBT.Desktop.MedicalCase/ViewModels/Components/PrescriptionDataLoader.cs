@@ -179,17 +179,31 @@ public class PrescriptionDataLoader
                 return LoadHistoryResult.Empty();
             }
 
-            var cases = await medicalCaseRepository.GetByPatientIdAsync(patientId);
+            // OpenSpec: consolidate-medicalcase-detail-queries - 使用QueryAsync替代废弃的GetByPatientIdAsync
+            var query = new MedicalCaseQueryDto
+            {
+                QueryType = LYBT.Shared.Models.Enums.MedicalCaseQueryType.ByPatient,
+                PatientId = patientId,
+                PageSize = 100
+            };
+            var caseList = await medicalCaseRepository.QueryAsync(query);
             targetCollection.Clear();
 
-            // 过滤掉当前医案，只显示其他历史医案
-            var historyCases = cases
+            // 过滤掉当前医案，获取其他历史医案的ID列表
+            var historyCaseIds = caseList?.Items?
                 .Where(c => c.Id != currentMedicalCaseId)
-                .OrderByDescending(c => c.CreatedAt);
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => c.Id)
+                .ToList();
 
-            foreach (var caseItem in historyCases)
+            if (historyCaseIds != null && historyCaseIds.Count > 0)
             {
-                targetCollection.Add(caseItem);
+                // 批量获取详情
+                var historyCases = await medicalCaseRepository.GetBatchDetailsAsync(historyCaseIds);
+                foreach (var caseItem in historyCases.OrderByDescending(c => c.CreatedAt))
+                {
+                    targetCollection.Add(caseItem);
+                }
             }
 
             _logger.LogInformation("加载历史处方完成，共{Count}条", targetCollection.Count);

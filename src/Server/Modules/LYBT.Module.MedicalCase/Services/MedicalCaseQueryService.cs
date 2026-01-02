@@ -342,6 +342,25 @@ namespace LYBT.Module.MedicalCases.Services
             };
         }
 
+        /// <summary>
+        /// 批量获取医案详情
+        /// OpenSpec: consolidate-medicalcase-detail-queries
+        /// </summary>
+        public async Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids)
+        {
+            _logger.LogInformation("[SVC] MedicalCase.GetBatch started - Count={Count}", ids?.Count ?? 0);
+
+            if (ids == null || !ids.Any())
+            {
+                return new List<MedicalCase>();
+            }
+
+            var result = await _repository.GetBatchWithDetailsAsync(ids);
+            _logger.LogInformation("[SVC] MedicalCase.GetBatch completed - Found={Found}", result.Count);
+
+            return result;
+        }
+
         private async Task<PagedResult<MedicalCaseListDto>> QueryByPatientAsync(MedicalCaseQueryDto query)
         {
             if (!query.PatientId.HasValue)

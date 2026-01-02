@@ -17,6 +17,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 /// 工作台待诊队列处理器
 /// 负责待诊队列加载、患者切换、挂起医案处理等逻辑
 /// OpenSpec: refactor-desktop-comprehensive - Phase 3 ViewModel瘦身
+/// OpenSpec: redesign-pending-queue - 简化切换逻辑（自动暂存+双选项弹窗）
 /// </summary>
 public class WorkspacePendingQueueHandler
 {
@@ -136,22 +137,27 @@ public class WorkspacePendingQueueHandler
 
             var hasCurrentCase = medicalCaseId != Guid.Empty;
 
-            // 2. 当前是编辑模式 -> 显示三选项弹窗
-            if (hasCurrentCase && !isReadOnly)
+            // OpenSpec: redesign-pending-queue - 自动暂存，无需弹窗确认
+            // 2. 当前有医案 -> 自动暂存后切换
+            if (hasCurrentCase)
             {
-                var switchResult = await HandleEditModeSwitch(medicalCaseId, saveDraftOnlyAsync);
-                if (!switchResult) return;
-            }
-            else if (hasCurrentCase)
-            {
-                // 当前是查看模式 -> 直接切换
-                _setIsBusy(true, "正在切换患者...");
-                var switchResult = await _lifecycleHandler.SaveDraftAsync(medicalCaseId);
-                if (!switchResult.success)
+                _setIsBusy(true, "正在暂存当前医案...");
+                if (!isReadOnly)
                 {
-                    _logger.LogWarning("切换时暂存当前医案失败：{Error}", switchResult.errorMessage);
+                    // 编辑模式：执行暂存回调（保存当前编辑内容）
+                    await saveDraftOnlyAsync();
+                    _logger.LogInformation("编辑模式，自动暂存后切换到患者：{PatientName}", pendingCase.PatientName);
                 }
-                _logger.LogInformation("查看模式，直接切换到患者：{PatientName}", pendingCase.PatientName);
+                else
+                {
+                    // 查看模式：调用生命周期暂存
+                    var switchResult = await _lifecycleHandler.SaveDraftAsync(medicalCaseId);
+                    if (!switchResult.success)
+                    {
+                        _logger.LogWarning("切换时暂存当前医案失败：{Error}", switchResult.errorMessage);
+                    }
+                    _logger.LogInformation("查看模式，直接切换到患者：{PatientName}", pendingCase.PatientName);
+                }
             }
             else
             {
@@ -227,69 +233,51 @@ public class WorkspacePendingQueueHandler
     }
 
     /// <summary>
-    /// 处理挂起医案
+    /// 处理挂起医案（暂存状态的医案）
+    /// OpenSpec: redesign-pending-queue - 简化为双选项弹窗（继续看诊/新建医案）
     /// </summary>
     private async Task HandleSuspendedCaseAsync(PendingMedicalCaseDto pendingCase)
     {
         if (_commonDialogService == null)
         {
-            _logger.LogWarning("CommonDialogService为空，无法显示四选项弹窗");
+            _logger.LogWarning("CommonDialogService为空，无法显示弹窗");
             return;
         }
 
-        _logger.LogInformation("显示四选项弹窗，患者：{PatientName}，挂起医案：{MedicalCaseId}",
+        _logger.LogInformation("显示双选项弹窗，患者：{PatientName}，挂起医案：{MedicalCaseId}",
             pendingCase.PatientName, pendingCase.MedicalCaseId);
 
-        var choice = await _commonDialogService.ShowUnfinishedCaseDialogAsync(pendingCase.PatientName ?? "未知患者");
+        // OpenSpec: redesign-pending-queue - 简化为双选项确认
+        // 使用ShowConfirmAsync: 确认=继续看诊，取消=新建医案
+        var message = $"患者 {pendingCase.PatientName ?? "未知"} 有未完成的医案。\n\n" +
+            "点击「确定」继续看诊原医案\n" +
+            "点击「取消」关闭原医案并新建";
 
-        switch (choice)
+        var choice = await _commonDialogService.ShowConfirmAsync(message, "选择操作");
+
+        if (choice)
         {
-            case UnfinishedCaseChoice.Continue:
-                _logger.LogInformation("用户选择继续看诊，导航到挂起医案");
-                await NavigateToExistingMedicalCaseAsync(pendingCase);
-                break;
-
-            case UnfinishedCaseChoice.CloseAndCreate:
-                _logger.LogInformation("用户选择关闭挂起+新建医案");
-                _setIsBusy(true, "正在关闭旧医案...");
-                if (pendingCase.MedicalCaseId.HasValue)
+            // 用户选择"继续看诊"
+            _logger.LogInformation("用户选择继续看诊，导航到挂起医案");
+            await NavigateToExistingMedicalCaseAsync(pendingCase);
+        }
+        else
+        {
+            // 用户选择"新建医案" - 需要先关闭旧医案
+            _logger.LogInformation("用户选择新建医案，关闭挂起医案并创建新医案");
+            _setIsBusy(true, "正在关闭旧医案...");
+            if (pendingCase.MedicalCaseId.HasValue)
+            {
+                var cancelResult = await _lifecycleHandler.CancelAsync(pendingCase.MedicalCaseId.Value);
+                if (!cancelResult.success)
                 {
-                    var cancelResult = await _lifecycleHandler.CancelAsync(pendingCase.MedicalCaseId.Value);
-                    if (!cancelResult.success)
-                    {
-                        _logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.errorMessage);
-                        await _showErrorAsync("关闭旧医案失败：" + cancelResult.errorMessage);
-                        _setIsBusy(false, null);
-                        return;
-                    }
+                    _logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.errorMessage);
+                    await _showErrorAsync("关闭旧医案失败：" + cancelResult.errorMessage);
+                    _setIsBusy(false, null);
+                    return;
                 }
-                await NavigateToNewMedicalCaseAsync(pendingCase);
-                break;
-
-            case UnfinishedCaseChoice.CloseOnly:
-                _logger.LogInformation("用户选择仅关闭挂起医案");
-                _setIsBusy(true, "正在关闭挂起医案...");
-                if (pendingCase.MedicalCaseId.HasValue)
-                {
-                    var cancelResult = await _lifecycleHandler.CancelAsync(pendingCase.MedicalCaseId.Value);
-                    if (!cancelResult.success)
-                    {
-                        _logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.errorMessage);
-                        await _showErrorAsync("关闭医案失败：" + cancelResult.errorMessage);
-                    }
-                    else
-                    {
-                        await _showSuccessAsync("挂起医案已关闭");
-                        await LoadPendingQueueAsync();
-                    }
-                }
-                _setIsBusy(false, null);
-                break;
-
-            case UnfinishedCaseChoice.Cancel:
-            default:
-                _logger.LogInformation("用户取消操作，留在当前界面");
-                break;
+            }
+            await NavigateToNewMedicalCaseAsync(pendingCase);
         }
     }
 

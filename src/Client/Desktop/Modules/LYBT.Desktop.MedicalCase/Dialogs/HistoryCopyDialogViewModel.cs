@@ -326,12 +326,31 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             {
                 StatusMessage = "正在加载历史医案...";
 
-                var cases = await _medicalCaseRepository.GetByPatientIdAsync(_patientId);
-                // 按就诊时间倒序排列，只显示已完成且有处方的医案
-                _currentPatientCases = cases
-                    .Where(c => c.CaseStatus == MedicalCaseStatus.Completed && c.PrescriptionId.HasValue)
-                    .OrderByDescending(c => c.CreatedAt)
+                // OpenSpec: consolidate-medicalcase-detail-queries - 使用QueryAsync替代废弃的GetByPatientIdAsync
+                var query = new MedicalCaseQueryDto
+                {
+                    QueryType = MedicalCaseQueryType.ByPatient,
+                    PatientId = _patientId,
+                    PageSize = 100
+                };
+                var caseList = await _medicalCaseRepository.QueryAsync(query);
+                
+                // 筛选已完成且有处方的医案ID
+                var completedWithPrescriptionIds = caseList?.Items?
+                    .Where(c => c.CaseStatus == MedicalCaseStatus.Completed && c.HasPrescription)
+                    .Select(c => c.Id)
                     .ToList();
+
+                // 批量获取详情并按时间排序
+                if (completedWithPrescriptionIds != null && completedWithPrescriptionIds.Count > 0)
+                {
+                    var cases = await _medicalCaseRepository.GetBatchDetailsAsync(completedWithPrescriptionIds);
+                    _currentPatientCases = cases.OrderByDescending(c => c.CreatedAt).ToList();
+                }
+                else
+                {
+                    _currentPatientCases = new List<MedicalCaseDetailDto>();
+                }
 
                 // 初始状态：当前患者模式
                 _isShowingAllPatients = false;
@@ -511,7 +530,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 IsLoading = true;
 
                 // 获取医案详情（包含诊疗信息和处方信息）
-                var detail = await _medicalCaseRepository.GetByIdWithDetailsAsync(SelectedCase.Id);
+                var detail = await _medicalCaseRepository.GetByIdAsync(SelectedCase.Id);
                 SelectedCaseDetail = detail;
 
                 // 提取处方药材列表用于复制

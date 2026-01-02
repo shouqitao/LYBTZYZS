@@ -112,19 +112,15 @@ public class MedicalCaseCommandHandler : IMedicalCaseCommandHandler
     {
         try
         {
-            var details = await _repository.GetByPatientIdAsync(patientId);
-            // 将DetailDto转换为ListDto（提取列表展示所需字段）
-            var listDtos = details.Select(d => new MedicalCaseListDto
+            // OpenSpec: consolidate-medicalcase-detail-queries - 使用QueryAsync替代废弃的GetByPatientIdAsync
+            var query = new MedicalCaseQueryDto
             {
-                Id = d.Id,
-                PatientId = d.PatientId,
-                PatientName = d.PatientName,
-                UserId = d.UserId,
-                DoctorName = d.DoctorName,
-                CaseStatus = d.CaseStatus,
-                CreatedAt = d.CreatedAt
-            }).ToList();
-            return CommandResult<List<MedicalCaseListDto>>.Succeeded(listDtos);
+                QueryType = LYBT.Shared.Models.Enums.MedicalCaseQueryType.ByPatient,
+                PatientId = patientId,
+                PageSize = 100
+            };
+            var result = await _repository.QueryAsync(query);
+            return CommandResult<List<MedicalCaseListDto>>.Succeeded(result?.Items?.ToList() ?? new List<MedicalCaseListDto>());
         }
         catch (Exception ex)
         {

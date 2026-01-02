@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -113,19 +114,30 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 Logger.LogDebug("开始加载患者历史处方: PatientId={PatientId}", _patientId);
 
-                // 调用Repository获取患者的所有医案
-                var allMedicalCases = await _medicalCaseRepository.GetByPatientIdAsync(_patientId);
-
-                // 筛选已完成的医案
-                var medicalCases = allMedicalCases?.Where(mc => mc.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed).ToList();
-
-                if (medicalCases != null)
+                // OpenSpec: consolidate-medicalcase-detail-queries - 使用QueryAsync替代废弃的GetByPatientIdAsync
+                var query = new MedicalCaseQueryDto
                 {
+                    QueryType = LYBT.Shared.Models.Enums.MedicalCaseQueryType.ByPatient,
+                    PatientId = _patientId,
+                    PageSize = 100 // 获取足够多的历史记录
+                };
+                var allMedicalCases = await _medicalCaseRepository.QueryAsync(query);
+
+                // 筛选已完成的医案ID列表
+                var completedCaseIds = allMedicalCases?.Items?
+                    .Where(mc => mc.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed)
+                    .Select(mc => mc.Id)
+                    .ToList();
+
+                if (completedCaseIds != null && completedCaseIds.Count > 0)
+                {
+                    // OpenSpec: consolidate-medicalcase-detail-queries
+                    // 使用批量查询替代N+1循环查询，单次请求获取所有医案详情
+                    var medicalCaseDetails = await _medicalCaseRepository.GetBatchDetailsAsync(completedCaseIds);
+
                     // 提取所有有处方的医案
-                    foreach (var medicalCase in medicalCases)
+                    foreach (var detail in medicalCaseDetails)
                     {
-                        // 获取医案详情（包含处方）
-                        var detail = await _medicalCaseRepository.GetByIdWithDetailsAsync(medicalCase.Id);
                         if (detail?.Prescription != null && detail.Prescription.Items?.Count > 0)
                         {
                             Prescriptions.Add(detail.Prescription);

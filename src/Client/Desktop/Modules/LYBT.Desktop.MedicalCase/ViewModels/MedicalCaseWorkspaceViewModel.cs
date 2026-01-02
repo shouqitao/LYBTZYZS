@@ -217,39 +217,10 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     public string HeaderTitle => _editModeStateMachine.HeaderTitle;
     public string BackButtonText => _editModeStateMachine.BackButtonText;
 
-    #region 待诊队列 - OpenSpec: refactor-medicalcase-workspace
-
-    /// <summary>
-    /// 待诊队列 - 直接暴露PendingQueueManager的集合
-    /// </summary>
-    public ObservableCollection<PendingMedicalCaseDto> PendingQueue => _pendingQueueManager.PendingQueue;
-
-    private PendingMedicalCaseDto? _selectedPendingCase;
-    /// <summary>
-    /// 选中的待诊患者
-    /// </summary>
-    public PendingMedicalCaseDto? SelectedPendingCase
-    {
-        get => _selectedPendingCase;
-        set => SetProperty(ref _selectedPendingCase, value);
-    }
-
-    private bool _isRefreshingPendingQueue;
-    /// <summary>
-    /// 是否正在刷新待诊队列
-    /// </summary>
-    public bool IsRefreshingPendingQueue
-    {
-        get => _isRefreshingPendingQueue;
-        set => SetProperty(ref _isRefreshingPendingQueue, value);
-    }
-
-    /// <summary>
-    /// 待诊队列是否为空
-    /// </summary>
-    public bool HasNoPendingCases => PendingQueue.Count == 0;
-
-    #endregion
+    // [Phase 8 清理] 待诊队列UI属性已删除（XAML未绑定）
+    // - PendingQueue, SelectedPendingCase, IsRefreshingPendingQueue, HasNoPendingCases
+    // - 待诊队列在PatientSelectionView中展示，不在Workspace中
+    // - Handler刷新调用保留（用于同步全局队列状态）
 
     #endregion
 
@@ -273,9 +244,8 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     public DelegateCommand SaveCommand { get; }
     public DelegateCommand EnterEditModeCommand { get; }
 
-    // 待诊队列命令 - OpenSpec: refactor-medicalcase-workspace
-    public DelegateCommand RefreshPendingQueueCommand { get; }
-    public DelegateCommand<PendingMedicalCaseDto> SelectPendingCaseCommand { get; }
+    // [Phase 8 清理] 待诊队列命令已删除（XAML未绑定）
+    // - RefreshPendingQueueCommand, SelectPendingCaseCommand
 
     #endregion
 
@@ -349,12 +319,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         EnterEditModeCommand = new DelegateCommand(ExecuteEnterEditMode, () => _editModeStateMachine.CanEnterEditMode);
         ViewPatientHistoryCommand = new DelegateCommand(ExecuteViewPatientHistory, () => CurrentPatient != null).ObservesProperty(() => CurrentPatient);
 
-        // 待诊队列命令初始化 - OpenSpec: refactor-desktop-comprehensive Phase 3
-        RefreshPendingQueueCommand = new DelegateCommand(async () => await _pendingQueueHandler.LoadPendingQueueAsync());
-        SelectPendingCaseCommand = new DelegateCommand<PendingMedicalCaseDto>(async dto => await _pendingQueueHandler.SelectPendingCaseAsync(dto, SaveDraftOnlyAsync));
-
-        // 订阅待诊队列集合变化事件
-        _pendingQueueManager.PendingQueue.CollectionChanged += (s, e) => RaisePropertyChanged(nameof(HasNoPendingCases));
+        // [Phase 8 清理] 待诊队列命令和事件订阅已删除（XAML未绑定）
 
         // 订阅Prism事件 - OpenSpec: unify-event-system
         EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Subscribe(OnConsultationCompleted, ThreadOption.UIThread);
@@ -515,133 +480,13 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     /// <summary>
     /// 加载待诊队列
     /// </summary>
-    private async Task LoadPendingQueueAsync()
-    {
-        try
-        {
-            IsRefreshingPendingQueue = true;
-            await _pendingQueueManager.LoadPendingCasesAsync();
-            Logger.LogInformation("待诊队列加载完成，共{Count}条", PendingQueue.Count);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "加载待诊队列失败");
-        }
-        finally
-        {
-            IsRefreshingPendingQueue = false;
-        }
-    }
+    // [已移除] LoadPendingQueueAsync - 功能由 WorkspacePendingQueueHandler 提供
 
     /// <summary>
     /// 选择待诊队列中的患者，切换到该患者的医案
     /// OpenSpec: refactor-medicalcase-workspace Phase 5 - 切换时显示三选项对话框
     /// </summary>
-    private async Task ExecuteSelectPendingCaseAsync(PendingMedicalCaseDto? pendingCase)
-    {
-        if (pendingCase == null) return;
-
-        try
-        {
-            Logger.LogInformation("选择待诊患者：{PatientName}，Type: {Type}，MedicalCaseId: {MedicalCaseId}",
-                pendingCase.PatientName, pendingCase.Type, pendingCase.MedicalCaseId);
-
-            // OpenSpec: optimize-medicalcase-navigation - 区分三种状态处理
-
-            // 1. 正在看诊(InProgress) → 不可操作，直接返回
-            if (pendingCase.Type == PendingCaseType.InProgress)
-            {
-                Logger.LogInformation("选择的是当前正在看诊的患者，不可切换");
-                return;
-            }
-
-            // 如果选择的是当前医案，无需切换
-            if (pendingCase.MedicalCaseId == MedicalCaseId && MedicalCaseId != Guid.Empty)
-            {
-                Logger.LogInformation("选择的是当前医案，无需切换");
-                return;
-            }
-
-            var hasCurrentCase = MedicalCaseId != Guid.Empty;
-
-            // 2. 当前是编辑模式 → 显示三选项弹窗（暂存/取消/继续）
-            if (hasCurrentCase && !IsReadOnly)
-            {
-                var message = "当前医案有未保存的更改，是否暂存后切换？\n\n" +
-                    "【是】暂存并切换 - 保存当前医案后切换\n" +
-                    "【否】取消医案 - 取消当前医案后切换\n" +
-                    "【取消】继续看诊 - 留在当前界面";
-
-                if (CommonDialogService != null)
-                {
-                    var dialogResult = await CommonDialogService.ShowTripleChoiceAsync(message, "切换患者确认");
-                    switch (dialogResult)
-                    {
-                        case TripleChoiceResult.Yes: // 暂存并切换
-                            SetIsBusy(true, "正在暂存当前医案...");
-                            await SaveDraftOnlyAsync();
-                            Logger.LogInformation("用户选择暂存当前医案后切换");
-                            break;
-                        case TripleChoiceResult.No: // 取消医案并切换
-                            SetIsBusy(true, "正在取消当前医案...");
-                            var cancelResult = await _lifecycleHandler.CancelAsync(MedicalCaseId);
-                            if (!cancelResult.success)
-                            {
-                                Logger.LogWarning("取消当前医案失败：{Error}", cancelResult.errorMessage);
-                                await ShowErrorMessageAsync("取消医案失败，请重试");
-                                SetIsBusy(false);
-                                return;
-                            }
-                            Logger.LogInformation("用户选择取消当前医案后切换");
-                            break;
-                        case TripleChoiceResult.Cancel:
-                        default:
-                            Logger.LogInformation("用户取消切换，留在当前界面");
-                            return;
-                    }
-                }
-            }
-            else if (hasCurrentCase)
-            {
-                // 当前是查看模式 → 直接切换，无需确认
-                SetIsBusy(true, "正在切换患者...");
-                // 将当前医案设为Draft状态，避免显示为"看诊中"
-                var switchResult = await _lifecycleHandler.SaveDraftAsync(MedicalCaseId);
-                if (!switchResult.success)
-                {
-                    Logger.LogWarning("切换时暂存当前医案失败：{Error}", switchResult.errorMessage);
-                }
-                Logger.LogInformation("查看模式，直接切换到患者：{PatientName}", pendingCase.PatientName);
-            }
-            else
-            {
-                SetIsBusy(true, "正在切换患者...");
-                Logger.LogInformation("当前无医案，直接切换到患者：{PatientName}", pendingCase.PatientName);
-            }
-
-            // 3. 处理目标患者
-            if (pendingCase.Type == PendingCaseType.Suspended)
-            {
-                // 挂起(Suspended) → 显示四选项弹窗
-                SetIsBusy(false); // 先关闭Busy，显示对话框
-                await HandleSuspendedCaseAsync(pendingCase);
-            }
-            else
-            {
-                // 待诊(Waiting) → 直接创建新医案
-                await NavigateToNewMedicalCaseAsync(pendingCase);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "切换患者失败");
-            await ShowErrorMessageAsync("切换患者失败，请重试");
-        }
-        finally
-        {
-            SetIsBusy(false);
-        }
-    }
+    // [已移除] ExecuteSelectPendingCaseAsync - 功能由 WorkspacePendingQueueHandler.SelectPendingCaseAsync 提供
 
 
     /// <summary>
@@ -703,8 +548,8 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
                     else
                     {
                         await ShowSuccessMessageAsync("挂起医案已关闭");
-                        // 刷新待诊队列
-                        await LoadPendingQueueAsync();
+                        // 刷新待诊队列（通过Handler同步全局状态）
+                        await _pendingQueueHandler.LoadPendingQueueAsync();
                     }
                 }
                 SetIsBusy(false);

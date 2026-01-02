@@ -160,6 +160,17 @@
                 </DataGrid.CellStyle>
 
                 <DataGrid.Columns>
+                    <!-- OpenSpec: redesign-pending-queue - 序号列 -->
+                    <DataGridTextColumn Header="序号" Binding="{Binding QueueNumber}" Width="40">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
                     <!-- 患者姓名 -->
                     <DataGridTextColumn Header="姓名" Binding="{Binding PatientName}" Width="70">
                         <DataGridTextColumn.ElementStyle>

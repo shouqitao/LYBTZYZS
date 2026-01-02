@@ -63,7 +63,7 @@
                 </Grid>
             </Border>
 
-            <!-- OpenSpec: herb-editor-control-refactoring - 使用新的HerbListControl -->
+            <!-- OpenSpec: simplify-workspace-event-architecture - 使用HerbItems属性绑定替代事件 -->
             <!-- 药材卡片列表 - HerbListControl内置ScrollViewer -->
             <herbList:HerbListControl x:Name="HerbListCtrl"
                                        Grid.Row="1"
@@ -71,7 +71,7 @@
                                        IsEditMode="True"
                                        Columns="4"
                                        DuplicateStrategy="{Binding DuplicateStrategy}"
-                                       HerbListChanged="OnHerbListChanged"/>
+                                       HerbItems="{Binding HerbItemsToLoad, Mode=TwoWay}"/>
         </Grid>
 
         <!-- Row 1: 重复药材警告 -->

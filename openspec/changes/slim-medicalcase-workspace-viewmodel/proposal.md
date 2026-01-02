@@ -1,11 +1,12 @@
 # OpenSpec Proposal: slim-medicalcase-workspace-viewmodel
 
 **Change ID**: slim-medicalcase-workspace-viewmodel
-**Status**: applied
+**Status**: applied (Phase 1-5, 8)
 **Priority**: High
-**Estimated Effort**: 6h (实际: 2h)
+**Estimated Effort**: 6h (实际: 4h)
 **Created**: 2025-12-30
 **Applied**: 2025-12-30
+**Updated**: 2026-01-01 (Phase 5 Handler清理完成, Phase 8 待诊队列死代码清理)
 
 ---
 
@@ -41,6 +42,194 @@
 
 - 编译: 成功 (0警告, 0错误)
 - 影响文件: 2个 (WorkspaceStatusDisplay.cs, MedicalCaseWorkspaceViewModel.cs)
+
+---
+
+### Phase 5: Handler清理 - 已完成 (2026-01-01)
+
+**背景**: `herb-editor-control-refactoring`已归档，HerbListControl接管了大部分处方项管理功能。
+
+**实施结果**:
+| 文件 | 变更 | 行数变化 |
+|------|------|----------|
+| `PrescriptionItemHandler.cs` | 已删除(之前Phase) | -307行 |
+| `PrescriptionImportHandler.cs` | 简化为纯DTO转换 | 292行 → 100行 (-192行) |
+| **总计** | | **-499行** |
+
+**保留的方法**:
+- `ToHerbItemDtos(FormulaDetailDto, List<FormulaHerbItemDto>)` - 验方导入DTO转换
+- `ToHerbItemDtos(List<PrescriptionItemDto>)` - 历史处方复制DTO转换
+
+#### 5.1 职责重叠分析
+
+| 功能 | 旧Handler | HerbListControl | 结论 |
+|------|-----------|-----------------|------|
+| 创建药材项 | `PrescriptionItemHandler.CreateHerbItem` | `CreateItemViewModel` | **重叠-可删** |
+| 删除药材 | `PrescriptionItemHandler.DeleteHerbItem` | `DeleteAt` | **重叠-可删** |
+| 紧凑列表 | `PrescriptionItemHandler.CompactHerbItems` | `Compact` | **重叠-可删** |
+| 确保空行 | `PrescriptionItemHandler.EnsureMinimumBlankRows` | `EnsureSingleEmptySlot` | **重叠-可删** |
+| 添加新行 | `PrescriptionItemHandler.AddNewRow` | `RequestNewSlot` | **重叠-可删** |
+| 处方收集 | `PrescriptionItemHandler.CollectPrescriptionItems` | `ToDto` | **重叠-可删** |
+| 重复检测 | `PrescriptionImportHandler.ProcessFormulaImport` | `AddHerbsAsync`内置 | **重叠-需简化** |
+| 批量添加 | `PrescriptionImportHandler.AddHerbItemsToCollection` | `AddHerbs` | **重叠-可删** |
+| 剂量合并 | ImportHandler内置逻辑 | `DuplicateStrategy` | **重叠-可删** |
+
+#### 5.2 清理方案
+
+**完全删除**:
+- `PrescriptionItemHandler.cs` (307行) - 所有功能被控件接管
+
+**简化重构**:
+- `PrescriptionImportHandler.cs` (292行 → ~80行)
+  - 删除: `AddHerbItemsToCollection` 方法
+  - 简化: `ProcessFormulaImport` 仅做DTO转换，返回`List<HerbItemDto>`
+  - 简化: `ProcessHistoryCopy` 仅做DTO转换，返回`List<HerbItemDto>`
+
+#### 5.3 导入与HerbListControl对接方案
+
+**新数据流**:
+```
+经验方/历史处方选择
+    │
+    ▼
+Dialog返回原始数据 (FormulaDto / PrescriptionDto)
+    │
+    ▼
+PrescriptionImportHandler.ToHerbItemDtos() ─────────────────┐
+    │                                                        │
+    │  纯DTO转换，无业务逻辑                                   │
+    ▼                                                        │
+List<HerbItemDto>                                            │
+    │                                                        │
+    ▼                                                        │
+PrescriptionPanelViewModel.ImportHerbsAsync()                │
+    │                                                        │
+    │  通过View调用控件方法                                    │
+    ▼                                                        │
+HerbListControl.AddHerbs(dtos)  ◄────────────────────────────┘
+    │
+    │  控件内部处理:
+    │  • 重复检测 (FindHerbIndex)
+    │  • 剂量合并 (DuplicateStrategy)
+    │  • 价格同步 (从AllHerbs获取最新价格)
+    │
+    ▼
+触发 HerbListChanged 事件
+    │
+    ▼
+View.OnHerbListChanged()
+    │
+    ▼
+ViewModel.SetCurrentHerbList() + OnHerbListChanged()
+    │
+    ▼
+更新统计、状态、金额
+```
+
+**关键接口变更**:
+
+```csharp
+// PrescriptionImportHandler.cs - 简化后
+public class PrescriptionImportHandler
+{
+    /// <summary>
+    /// 将经验方转换为HerbItemDto列表（纯数据转换）
+    /// </summary>
+    public List<HerbItemDto> ToHerbItemDtos(FormulaDetailDto formula)
+    {
+        return formula.Herbs.Select(h => new HerbItemDto
+        {
+            HerbId = h.HerbId,
+            HerbName = h.HerbName,
+            Dosage = h.Dosage,
+            CookingMethod = h.CookingMethod
+            // 注意: UnitPrice由控件从AllHerbs同步，不在此设置
+        }).ToList();
+    }
+
+    /// <summary>
+    /// 将历史处方转换为HerbItemDto列表（纯数据转换）
+    /// </summary>
+    public List<HerbItemDto> ToHerbItemDtos(PrescriptionDetailDto prescription)
+    {
+        return prescription.Items.Select(i => new HerbItemDto
+        {
+            HerbId = i.HerbId,
+            HerbName = i.HerbName,
+            Dosage = i.Dosage,
+            CookingMethod = i.CookingMethod
+            // 注意: UnitPrice由控件从AllHerbs同步，不在此设置
+        }).ToList();
+    }
+}
+
+// PrescriptionPanelViewModel.cs - 新导入方法
+public partial class PrescriptionPanelViewModel
+{
+    /// <summary>
+    /// 导入药材到控件（由View调用控件的AddHerbs方法）
+    /// </summary>
+    public event EventHandler<ImportHerbsRequestEventArgs>? ImportHerbsRequested;
+
+    public void RequestImportHerbs(List<HerbItemDto> herbs)
+    {
+        ImportHerbsRequested?.Invoke(this, new ImportHerbsRequestEventArgs(herbs));
+    }
+}
+
+// PrescriptionEditorPanel.xaml.cs - 处理导入请求
+private void OnViewModelImportHerbsRequested(object? sender, ImportHerbsRequestEventArgs e)
+{
+    HerbListCtrl.AddHerbs(e.Herbs);
+}
+```
+
+#### 5.4 实际收益
+
+| 指标 | 变更前 | 变更后 | 减少 |
+|------|--------|--------|------|
+| PrescriptionItemHandler | 307行 | **已删除** | -307行 |
+| PrescriptionImportHandler | 292行 | 100行 | -192行 |
+| 总Handler代码 | 599行 | 100行 | **-499行 (83%)** |
+
+---
+
+### Phase 8: 待诊队列死代码清理 - 已完成 (2026-01-01)
+
+**背景**: 分析发现MedicalCaseWorkspaceViewModel中的待诊队列UI属性和命令从未在XAML中绑定，属于死代码。待诊队列实际在PatientSelectionView中展示。
+
+#### 8.1 死代码分析
+
+| 代码类型 | 成员 | XAML绑定 | 结论 |
+|----------|------|----------|------|
+| UI属性 | `PendingQueue` | 无 | **死代码-删除** |
+| UI属性 | `SelectedPendingCase` | 无 | **死代码-删除** |
+| UI属性 | `IsRefreshingPendingQueue` | 无 | **死代码-删除** |
+| UI属性 | `HasNoPendingCases` | 无 | **死代码-删除** |
+| 命令 | `RefreshPendingQueueCommand` | 无 | **死代码-删除** |
+| 命令 | `SelectPendingCaseCommand` | 无 | **死代码-删除** |
+| Handler调用 | `_pendingQueueHandler.LoadPendingQueueAsync()` | N/A | **保留-业务逻辑** |
+
+#### 8.2 保留原因
+
+Handler内部调用被保留，用于以下场景的全局待诊队列状态同步：
+- 保存草稿后刷新 (line 393)
+- 取消挂起后刷新 (line 552)
+- 完成医案后刷新 (line 735)
+- 初始化时刷新 (line 780)
+
+#### 8.3 清理内容
+
+| 区域 | 变更 |
+|------|------|
+| 属性区域 (line 220-223) | 替换为注释说明 |
+| 命令声明 (line 247-248) | 替换为注释说明 |
+| 构造函数 (line 322) | 删除命令初始化和事件订阅 |
+
+#### 8.4 当前行数
+
+- **清理后**: 1046行
+- **目标**: <750行 (需继续Phase 5 Handler重构)
 
 ---
 
