@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 待诊队列全栈重构 (OpenSpec: redesign-pending-queue) - 2026-01-02
+
+**背景**: 待诊队列存在状态硬编码、切换逻辑复杂、无自动刷新等问题。
+
+**核心改进**:
+- **Server端状态判定修复**:
+  - `CaseStatus.Active` → `PendingCaseType.InProgress` (正在看诊)
+  - `CaseStatus.Draft` → `PendingCaseType.Suspended` (暂存)
+  - 添加 `QueueNumber` 序号显示
+
+- **Desktop端控件重构**:
+  - PendingQueueControl 新增序号列(40px)
+  - 集成 IApplicationTickService 实现轮询刷新(30秒)
+  - 新增 PatientSelected 事件
+
+- **切换逻辑简化**:
+  - 自动暂存当前医案，无需确认弹窗
+  - 暂存患者处理简化为双选项（继续看诊/新建医案）
+
+**影响模块**: Server.MedicalCase, Desktop.Infrastructure, Desktop.MedicalCase, Shared.Models
+
+**状态**: 已归档
+
 #### 药材编辑控件重构 (OpenSpec: herb-editor-control-refactoring) - 2025-12-31
 
 **背景**: 药材编辑逻辑分散在多个文件中(约1400行代码)，职责不清，复用困难。
