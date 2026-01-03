@@ -173,66 +173,69 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 导航到患者管理 - Issue #1827
+        /// OpenSpec: refactor-admin-workspace - 使用Clinical角色台参考视图
         /// </summary>
         private void ExecuteNavigateToPatientManagement()
         {
             try
             {
-                Logger.LogInformation("导航到患者管理视图");
-                _regionManager.RequestNavigate("ContentRegion", "PatientMasterDetailView");
+                Logger.LogInformation("导航到患者历史视图");
+                _regionManager.RequestNavigate("ContentRegion", "PatientHistoryView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到患者管理时发生异常");
+                Logger.LogError(ex, "导航到患者历史时发生异常");
             }
         }
 
         /// <summary>
         /// 导航到病历查询 - Issue #1827
-        /// OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
+        /// OpenSpec: refactor-admin-workspace - 使用Clinical角色台参考视图
         /// </summary>
         private void ExecuteNavigateToMedicalCaseQuery()
         {
             try
             {
-                Logger.LogInformation("导航到医案管理视图");
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
+                Logger.LogInformation("导航到医案归档视图");
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseArchiveView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到医案管理时发生异常");
+                Logger.LogError(ex, "导航到医案归档时发生异常");
             }
         }
 
         /// <summary>
         /// 导航到药材库 - Issue #1827
+        /// OpenSpec: refactor-admin-workspace - 使用Clinical角色台参考视图
         /// </summary>
         private void ExecuteNavigateToHerbLibrary()
         {
             try
             {
-                Logger.LogInformation("导航到药材库视图");
-                _regionManager.RequestNavigate("ContentRegion", "HerbMasterDetailView");
+                Logger.LogInformation("导航到药材参考视图");
+                _regionManager.RequestNavigate("ContentRegion", "HerbReferenceView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到药材库时发生异常");
+                Logger.LogError(ex, "导航到药材参考时发生异常");
             }
         }
 
         /// <summary>
         /// 导航到验方库 - Issue #1827
+        /// OpenSpec: refactor-admin-workspace - 使用Clinical角色台参考视图
         /// </summary>
         private void ExecuteNavigateToFormulaLibrary()
         {
             try
             {
-                Logger.LogInformation("导航到验方库视图");
-                _regionManager.RequestNavigate("ContentRegion", "FormulaMasterDetailView");
+                Logger.LogInformation("导航到经验方参考视图");
+                _regionManager.RequestNavigate("ContentRegion", "FormulaReferenceView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到验方库时发生异常");
+                Logger.LogError(ex, "导航到经验方参考时发生异常");
             }
         }
 

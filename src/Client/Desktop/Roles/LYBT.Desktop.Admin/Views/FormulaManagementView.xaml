@@ -1,0 +1,15 @@
+<!--
+    FormulaManagementView - 经验方管理视图
+    OpenSpec: refactor-admin-workspace
+
+    薄包装View，复用业务模块的FormulaMasterDetailControl
+    View在角色台，Control在业务模块
+-->
+<UserControl x:Class="LYBT.Desktop.Admin.Views.FormulaManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:formulaControls="clr-namespace:LYBT.Desktop.Formula.Controls;assembly=LYBT.Desktop.Formula">
+    <Grid>
+        <formulaControls:FormulaMasterDetailControl />
+    </Grid>
+</UserControl>

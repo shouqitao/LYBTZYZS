@@ -44,14 +44,13 @@ namespace LYBT.Desktop.Formula
             containerRegistry.RegisterDialog<Views.EditFormulaDialog, ViewModels.EditFormulaDialogViewModel>();
             // Issue #1802: ViewFormulaDialog已删除（改用FormulaDetailView进行只读查看）
 
-            // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
-            // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
-            containerRegistry.RegisterForNavigation<Views.FormulaMasterDetailView, ViewModels.FormulaMasterDetailViewModel>();
-
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Formula模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<FormulaListDto, FormulaDetailModel>();
-            containerRegistry.RegisterForNavigation<Views.FormulaMasterDetailView, ViewModels.FormulaMasterDetailViewModel>();
+
+            // OpenSpec: refactor-admin-workspace - Control模式重构
+            // FormulaMasterDetailControl供角色台View复用，ViewModel在Control内部解析
+            containerRegistry.Register<ViewModels.FormulaMasterDetailViewModel>();
         }
     }
 }

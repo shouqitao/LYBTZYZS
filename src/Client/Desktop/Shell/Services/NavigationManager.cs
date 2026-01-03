@@ -56,10 +56,11 @@ public class NavigationManager
     }
 
     /// <summary>快速导航到患者管理并触发新增</summary>
+    /// <remarks>OpenSpec: refactor-admin-workspace - 导航到角色台管理视图</remarks>
     public void NavigateToAddPatient()
     {
         var navigationParams = new NavigationParameters { { "Action", "AddNew" } };
-        _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientMasterDetailView", navigationParams);
+        _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientManagementView", navigationParams);
     }
 
     /// <summary>快速导航到医案工作区视图</summary>

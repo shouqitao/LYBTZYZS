@@ -80,7 +80,7 @@ namespace LYBT.Desktop.MedicalCase
             // OpenSpec: refactor-medicalcase-ui - 废弃注册已清理
 
             // Epic #2210 Phase 4: 4:6统一工作区视图模型
-            containerRegistry.Register<ViewModels.MedicalCaseWorkspaceViewModel>();
+            // OpenSpec: refactor-clinical-workflow - MedicalCaseWorkspaceViewModel已迁移到ClinicalModule
             containerRegistry.Register<ViewModels.ConsultationPanelViewModel>();
             containerRegistry.Register<ViewModels.PrescriptionPanelViewModel>();
 
@@ -118,20 +118,20 @@ namespace LYBT.Desktop.MedicalCase
             // Epic #1583: PatientSelectionView已移至PatientsModule（三区域布局）
             // OpenSpec: refactor-medicalcase-ui - 废弃视图注册已清理（MedicalCaseFlowView, MedicalCaseEditorView, CompletionView）
 
-            // Epic #2210 Phase 4: 4:6统一工作区视图（唯一的看诊入口）
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseWorkspaceView>();
+            // Epic #2210 Phase 4: 4:6统一工作区视图
+            // OpenSpec: refactor-clinical-workflow - MedicalCaseWorkspaceView已迁移到ClinicalModule
             // [已移除] PrescriptionEditorView - 死代码，从未导航到（OpenSpec: refactor-viewmodel-layer）
             // Issue #1799: 删除OtherCasesQueryView（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListView（功能与ManagementView重复）
             containerRegistry.RegisterForNavigation<Views.MedicalCaseDetailView>();  // Issue #2167: 医案详情视图
 
-            // OpenSpec: refactor-medicalcase-management - Master-Detail视图（新的主入口）
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseMasterDetailView>();
-
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册MedicalCase模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel>();
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseMasterDetailView, ViewModels.MedicalCaseMasterDetailViewModel>();
+
+            // OpenSpec: refactor-admin-workspace - Control模式重构
+            // MedicalCaseMasterDetailControl供角色台View复用，ViewModel在Control内部解析
+            containerRegistry.Register<ViewModels.MedicalCaseMasterDetailViewModel>();
         }
     }
 }

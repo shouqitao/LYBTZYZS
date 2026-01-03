@@ -1,0 +1,394 @@
+<!--
+    MedicalCaseWorkspaceView - 医案工作区视图
+    OpenSpec: refactor-clinical-workflow
+    
+    医生工作台专用视图
+    - 使用 BaseDetailContainer 容器实现查看/编辑模式分离
+    - ViewContent: 只读模式，5:5分栏展示诊断信息和处方信息
+    - EditContent: 编辑模式，5:5分栏使用ConsultationPanel和PrescriptionEditorPanel
+    - FooterContent: 自定义底部操作栏（备注、修改原因、操作按钮）
+-->
+<UserControl x:Class="LYBT.Desktop.Clinical.Views.MedicalCaseWorkspaceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:views="clr-namespace:LYBT.Desktop.Infrastructure.Views;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:controls="clr-namespace:LYBT.Desktop.MedicalCase.Controls;assembly=LYBT.Desktop.MedicalCase"
+             xmlns:infraControls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:sharedControls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- 只读文本块样式 - 用于ViewContent -->
+            <Style x:Key="ReadOnlyTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="Margin" Value="0,4,0,12"/>
+            </Style>
+
+            <!-- 四诊文本块样式 - 稍小字体 -->
+            <Style x:Key="FourExamTextStyle" TargetType="TextBlock" BasedOn="{StaticResource ReadOnlyTextStyle}">
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Margin" Value="0,2,0,8"/>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <views:BaseDetailContainer
+        Title="{Binding HeaderTitle}"
+        IsEditMode="{Binding IsEditing, Mode=OneWay}"
+        GoBackCommand="{Binding BackCommand}"
+        SwitchToEditCommand="{Binding EnterEditModeCommand}"
+        ShowEditButton="{Binding CanEdit}"
+        UseContentScrolling="False">
+
+        <!-- ========================================
+             ActionButtons - Header右侧自定义内容
+             显示患者信息
+             ======================================== -->
+        <views:BaseDetailContainer.ActionButtons>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                <TextBlock Text="患者：" FontSize="14" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding PatientName}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                <TextBlock Text="{Binding PatientInfo}" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+            </StackPanel>
+        </views:BaseDetailContainer.ActionButtons>
+
+        <!-- ========================================
+             ViewContent - 只读模式内容
+             5:5分栏：左侧诊断信息，右侧处方信息
+             ======================================== -->
+        <views:BaseDetailContainer.ViewContent>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧：诊断信息卡片 -->
+                <infraControls:InfoCard Grid.Column="0" Title="诊断信息">
+                    <infraControls:InfoCard.Content>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <!-- OpenSpec: refactor-diagnosis-fields - 仅保留4个核心诊断字段 -->
+                            <StackPanel Margin="0,8,0,0">
+                                <!-- 现病史 -->
+                                <StackPanel Style="{StaticResource LabelValueStyle}">
+                                    <TextBlock Text="现病史" Style="{StaticResource FormLabelStyle}"/>
+                                    <TextBlock Text="{Binding ConsultationPanelViewModel.PresentIllness}" Style="{StaticResource ReadOnlyTextStyle}"/>
+                                </StackPanel>
+
+                                <!-- 四诊合参 -->
+                                <TextBlock Text="四诊合参" Style="{StaticResource FormLabelStyle}" Margin="0,8,0,8"/>
+
+                                <!-- 舌诊 + 脉诊 -->
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 舌诊 -->
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="舌诊" FontSize="12" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,2"/>
+                                        <TextBlock Text="{Binding ConsultationPanelViewModel.TongueDiagnosis}" Style="{StaticResource FourExamTextStyle}"/>
+                                    </StackPanel>
+
+                                    <!-- 脉诊 -->
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="脉诊" FontSize="12" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,2"/>
+                                        <TextBlock Text="{Binding ConsultationPanelViewModel.PulseDiagnosis}" Style="{StaticResource FourExamTextStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- 中医诊断 -->
+                                <StackPanel Style="{StaticResource LabelValueStyle}">
+                                    <TextBlock Text="中医诊断（辩证）" Style="{StaticResource FormLabelStyle}"/>
+                                    <TextBlock Text="{Binding ConsultationPanelViewModel.TcmDiagnosis}" Style="{StaticResource ReadOnlyTextStyle}" FontWeight="SemiBold"/>
+                                </StackPanel>
+
+                                <!-- 是否开处方 -->
+                                <StackPanel Style="{StaticResource LabelValueStyle}">
+                                    <TextBlock Text="处方状态" Style="{StaticResource FormLabelStyle}"/>
+                                    <TextBlock Style="{StaticResource ReadOnlyTextStyle}">
+                                        <TextBlock.Text>
+                                            <Binding Path="ConsultationPanelViewModel.NeedsPrescription">
+                                                <Binding.Converter>
+                                                    <infrastructure:BoolToStringConverter TrueValue="已开处方" FalseValue="未开处方"/>
+                                                </Binding.Converter>
+                                            </Binding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </infraControls:InfoCard.Content>
+                </infraControls:InfoCard>
+
+                <!-- 右侧：处方信息卡片 -->
+                <infraControls:InfoCard Grid.Column="2" Title="处方信息">
+                    <infraControls:InfoCard.Content>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 药材列表（只读模式） -->
+                            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel>
+                                    <!-- 药材统计 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,12">
+                                        <TextBlock Text="药材总数：" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PrescriptionPanelViewModel.ItemCount}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text=" 味" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- 药材卡片列表（只读） -->
+                                    <!-- OpenSpec: unify-herb-list-controls - 统一使用HerbListView控件 -->
+                                    <sharedControls:HerbListView
+                                        HerbItems="{Binding PrescriptionPanelViewModel.HerbItems}"
+                                        ShowPrice="False" />
+                                </StackPanel>
+                            </ScrollViewer>
+
+                            <!-- 处方信息（剂数、用法、价格） -->
+                            <Border Grid.Row="1"
+                                    Background="{StaticResource BackgroundBrush}"
+                                    CornerRadius="8"
+                                    Padding="16,12"
+                                    Margin="0,12,0,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 剂数和用法 -->
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <TextBlock Text="剂数：" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PrescriptionPanelViewModel.DosageCount}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center" Margin="0,0,24,0"/>
+                                        <TextBlock Text="用法：" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PrescriptionPanelViewModel.Usage}" FontSize="14" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- 价格信息 -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                        <TextBlock Text="单剂：" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock VerticalAlignment="Center" Margin="0,0,16,0">
+                                            <Run Text="￥" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}"/>
+                                            <Run Text="{Binding PrescriptionPanelViewModel.SingleDosagePrice, StringFormat=F2}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource SuccessBrush}"/>
+                                        </TextBlock>
+                                        <TextBlock Text="总计：" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock VerticalAlignment="Center">
+                                            <Run Text="￥" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}"/>
+                                            <Run Text="{Binding PrescriptionPanelViewModel.TotalPrice, StringFormat=F2}" FontWeight="Bold" FontSize="18" Foreground="{StaticResource PrimaryBrush}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </infraControls:InfoCard.Content>
+                </infraControls:InfoCard>
+            </Grid>
+        </views:BaseDetailContainer.ViewContent>
+
+        <!-- ========================================
+             EditContent - 编辑模式内容
+             5:5分栏：左侧ConsultationPanel，右侧PrescriptionEditorPanel
+             ======================================== -->
+        <views:BaseDetailContainer.EditContent>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧：诊断面板 -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource SurfaceBrush}"
+                        CornerRadius="12"
+                        BorderBrush="{StaticResource DividerBrush}"
+                        BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 面板标题 -->
+                        <Border Grid.Row="0" BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,0,1" Padding="16,12">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="诊断录入" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}"/>
+                                <TextBlock Text=" (Consultation)" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 诊断内容区 -->
+                        <controls:ConsultationPanel
+                            Grid.Row="1"
+                            DataContext="{Binding ConsultationPanelViewModel}"
+                            Margin="12,8"/>
+                    </Grid>
+                </Border>
+
+                <!-- 右侧：处方面板 -->
+                <Border Grid.Column="2"
+                        Background="{StaticResource SurfaceBrush}"
+                        CornerRadius="12"
+                        BorderBrush="{StaticResource DividerBrush}"
+                        BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 面板标题 -->
+                        <Border Grid.Row="0" BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,0,1" Padding="12,6">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <TextBlock Text="处方编辑" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="(Prescription)" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                </StackPanel>
+                                <!-- 查询和清空按钮 -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Content="经验方查询"
+                                            Command="{Binding PrescriptionPanelViewModel.OpenFormulaImportDialogCommand}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Margin="0,0,8,0"/>
+                                    <Button Content="历史医案查询"
+                                            Command="{Binding PrescriptionPanelViewModel.OpenHistoryCopyDialogCommand}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Margin="0,0,8,0"/>
+                                    <Button Content="清空药材"
+                                            Command="{Binding PrescriptionPanelViewModel.ClearHerbItemsCommand}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            ToolTip="清空当前所有药材项"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- 处方内容区 -->
+                        <controls:PrescriptionEditorPanel
+                            Grid.Row="1"
+                            DataContext="{Binding PrescriptionPanelViewModel}"
+                            IsEnabled="{Binding DataContext.IsPrescriptionEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </views:BaseDetailContainer.EditContent>
+
+        <!-- ========================================
+             FooterContent - 自定义底部操作栏
+             备注、修改原因、操作按钮
+             ======================================== -->
+        <views:BaseDetailContainer.FooterContent>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 备注标签 -->
+                <TextBlock Grid.Column="0"
+                           Text="备注："
+                           FontSize="13"
+                           Foreground="{StaticResource SecondaryTextBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+
+                <!-- 备注输入框 -->
+                <TextBox Grid.Column="1"
+                         Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource EditableTextBoxStyle}"
+                         MinHeight="36"
+                         MaxLength="500"
+                         ToolTip="医案备注信息（最多500字）"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Stretch"
+                         IsReadOnly="{Binding IsReadOnly}"/>
+
+                <!-- 修改原因输入区域（历史修改模式显示） -->
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsHistoricalEditMode, Converter={StaticResource BoolToVisibility}}"
+                            Margin="16,0,0,0">
+                    <TextBlock Text="修改原因："
+                               FontSize="13"
+                               Foreground="{StaticResource WarningBrush}"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <TextBox Text="{Binding EditReason, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource EditableTextBoxStyle}"
+                             Width="200"
+                             MinHeight="36"
+                             MaxLength="200"
+                             ToolTip="请输入修改原因（必填）"
+                             VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- 操作按钮组 -->
+                <StackPanel Grid.Column="4"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+
+                    <!-- Clinical只读模式: 修改医案按钮 -->
+                    <Button Content="修改医案"
+                            Command="{Binding EnterEditModeCommand}"
+                            Style="{StaticResource SuccessButton}"
+                            ToolTip="进入编辑模式，可修改诊断和处方内容"
+                            Visibility="{Binding ShowEditButton, Converter={StaticResource BoolToVisibility}}"
+                            Margin="0,0,8,0"/>
+
+                    <!-- Clinical编辑模式: 暂存医案按钮 -->
+                    <Button Content="暂存医案"
+                            Command="{Binding SaveAndStayCommand}"
+                            Style="{StaticResource WarningButton}"
+                            ToolTip="保存当前进度，可随时点击'修改医案'继续编辑"
+                            Visibility="{Binding ShowDraftButton, Converter={StaticResource BoolToVisibility}}"
+                            Margin="0,0,8,0"/>
+
+                    <!-- 所有模式: 打印处方笺按钮 -->
+                    <Button Content="打印处方笺"
+                            Command="{Binding PrintPrescriptionCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            IsEnabled="{Binding CanPrintPrescription}"
+                            ToolTip="打印当前处方"
+                            Margin="0,0,8,0"/>
+
+                    <!-- Clinical编辑模式: 完成看诊按钮 -->
+                    <Button Content="完成看诊"
+                            Command="{Binding CompleteConsultationCommand}"
+                            Style="{StaticResource SuccessButton}"
+                            IsEnabled="{Binding CanComplete}"
+                            ToolTip="完成本次看诊，关闭医案"
+                            Visibility="{Binding ShowCompleteButton, Converter={StaticResource BoolToVisibility}}"/>
+
+                    <!-- Management编辑模式: 保存医案按钮 -->
+                    <Button Content="保存医案"
+                            Command="{Binding SaveAndStayCommand}"
+                            Style="{StaticResource SuccessButton}"
+                            ToolTip="保存修改并留在当前界面"
+                            Visibility="{Binding ShowSaveButton, Converter={StaticResource BoolToVisibility}}"/>
+                </StackPanel>
+            </Grid>
+        </views:BaseDetailContainer.FooterContent>
+    </views:BaseDetailContainer>
+</UserControl>

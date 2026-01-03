@@ -34,10 +34,6 @@ namespace LYBT.Desktop.Users
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.UserDetailView>();
 
-            // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
-            // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
-            containerRegistry.RegisterForNavigation<Views.UserMasterDetailView, ViewModels.UserMasterDetailViewModel>();
-
             // Issue #1927 & #2168: CRUD统一架构 - UserDetailView支持Create/Edit/View三种模式
             // UserCreateView和UserEditView已删除，统一使用UserDetailView
 
@@ -57,7 +53,10 @@ namespace LYBT.Desktop.Users
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Users模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<UserListDto, UserDetailModel>();
-            containerRegistry.RegisterForNavigation<Views.UserMasterDetailView, ViewModels.UserMasterDetailViewModel>();
+
+            // OpenSpec: refactor-admin-workspace - Control模式重构
+            // UserMasterDetailControl供角色台View复用，ViewModel在Control内部解析
+            containerRegistry.Register<ViewModels.UserMasterDetailViewModel>();
         }
     }
 }

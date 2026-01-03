@@ -1,20 +1,19 @@
 <!--
-    MedicalCaseMasterDetailView - 医案Master-Detail视图V2（组合模式）
-    OpenSpec: refactor-viewmodel-composition
+    MedicalCaseMasterDetailControl - 医案Master-Detail控件
+    OpenSpec: refactor-admin-workspace
 
-    使用组合模式ViewModel (MedicalCaseMasterDetailViewModelV2)
-    命令名称已适配新基类
+    可复用业务控件，供Admin和Clinical角色台使用
+    从MedicalCaseMasterDetailView重构而来
     注意：医案不支持新建，新建仅通过看诊入口创建
 -->
 <UserControl
-    x:Class="LYBT.Desktop.MedicalCase.Views.MedicalCaseMasterDetailView"
+    x:Class="LYBT.Desktop.MedicalCase.Controls.MedicalCaseMasterDetailControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
     xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
     xmlns:local="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
-    xmlns:prism="http://prismlibrary.com/"
-    prism:ViewModelLocator.AutoWireViewModel="True">
+    xmlns:prism="http://prismlibrary.com/">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -37,7 +36,7 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!-- 工具栏 - 仅刷新和批量删除（适配V2命令） -->
+                <!-- 工具栏 - 仅刷新和批量删除 -->
                 <controls:DataGridToolbar
                     Grid.Row="0"
                     BatchDeleteCommand="{Binding DeleteCommand}"
@@ -114,7 +113,7 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
 
-                    <!-- 行右键菜单 - 适配V2命令 -->
+                    <!-- 行右键菜单 -->
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Command="{Binding EditCommand}" Header="查看详情" />
@@ -124,7 +123,7 @@
                     </DataGrid.ContextMenu>
                 </DataGrid>
 
-                <!-- 分页控件 - 适配V2命令 -->
+                <!-- 分页控件 -->
                 <Border Grid.Row="3" Style="{StaticResource MasterDetailPaginationPanelStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -165,7 +164,7 @@
                                 Text="条" />
                         </StackPanel>
 
-                        <!-- 分页按钮 - 适配V2命令 -->
+                        <!-- 分页按钮 -->
                         <StackPanel
                             Grid.Column="3"
                             HorizontalAlignment="Right"
@@ -216,7 +215,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- 详情工具栏 - 适配V2命令 -->
+                <!-- 详情工具栏 -->
                 <controls:DetailToolbar
                     Title="{Binding DetailTitle}"
                     Grid.Row="0"

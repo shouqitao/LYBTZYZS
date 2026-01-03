@@ -41,14 +41,13 @@ namespace LYBT.Desktop.Herbs
             // Issue #2168: CRUD统一架构 - HerbDetailView支持Create/Detail两种模式
             // HerbCreateView已删除，统一使用HerbDetailView
 
-            // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
-            // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
-            containerRegistry.RegisterForNavigation<Views.HerbMasterDetailView, ViewModels.HerbMasterDetailViewModel>();
-
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Herbs模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<HerbListDto, HerbDetailModel>();
-            containerRegistry.RegisterForNavigation<Views.HerbMasterDetailView, ViewModels.HerbMasterDetailViewModel>();
+
+            // OpenSpec: refactor-admin-workspace - Control模式重构
+            // HerbMasterDetailControl供角色台View复用，ViewModel在Control内部解析
+            containerRegistry.Register<ViewModels.HerbMasterDetailViewModel>();
         }
     }
 }

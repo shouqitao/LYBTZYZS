@@ -118,14 +118,13 @@ namespace LYBT.Desktop.Admin.ViewModels
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
-            // 初始化导航命令 - OpenSpec: refactor-master-detail-layout
-            // 使用新的Master-Detail布局视图
-            NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserMasterDetailView"));
-            NavigateToHerbManagementCommand = new DelegateCommand(() => NavigateTo("HerbMasterDetailView"));
-            NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientMasterDetailView"));
-            NavigateToFormulaManagementCommand = new DelegateCommand(() => NavigateTo("FormulaMasterDetailView"));
-            // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
-            NavigateToMedicalCaseManagementCommand = new DelegateCommand(() => NavigateTo("MedicalCaseMasterDetailView"));
+            // OpenSpec: refactor-admin-workspace - 导航到角色台管理视图
+            // View在角色台，Control在业务模块
+            NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserManagementView"));
+            NavigateToHerbManagementCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
+            NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
+            NavigateToFormulaManagementCommand = new DelegateCommand(() => NavigateTo("FormulaManagementView"));
+            NavigateToMedicalCaseManagementCommand = new DelegateCommand(() => NavigateTo("MedicalCaseManagementView"));
             NavigateToSystemSettingsCommand = new DelegateCommand(() => NavigateTo("SystemSettingsView"));
 
             // Issue #1887-1892: 初始化修改信息和修改密码命令

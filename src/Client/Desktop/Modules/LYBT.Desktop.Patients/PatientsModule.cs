@@ -59,17 +59,15 @@ namespace LYBT.Desktop.Patients
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.PatientDetailViewModel>();
             // Issue #2167: PatientImportWizardViewModel已删除（改用直接API调用）
-            containerRegistry.Register<ViewModels.PatientSelectionViewModel>();  // Issue #1557: 看诊流程Step 1
+            // [已移除] PatientSelectionViewModel - 已迁移到LYBT.Desktop.Clinical模块
+            // OpenSpec: refactor-clinical-workflow
             // Issue #2168: CRUD统一架构 - PatientCreateViewModel和PatientEditViewModel已删除
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
             // Issue #2167: PatientImportWizardView已删除（改用直接API调用）
-            containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();  // Issue #1557: 看诊流程Step 1（Region导航）
-            // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
-            // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
-            containerRegistry.RegisterForNavigation<Views.PatientMasterDetailView, ViewModels.PatientMasterDetailViewModel>();
-
+            // [已移除] PatientSelectionView - 已迁移到LYBT.Desktop.Clinical模块
+            // OpenSpec: refactor-clinical-workflow
             // Issue #2168: CRUD统一架构 - PatientDetailView支持Create/Edit/View三种模式
             // PatientCreateView和PatientEditView已删除，统一使用PatientDetailView
 
@@ -82,7 +80,10 @@ namespace LYBT.Desktop.Patients
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Patients模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<PatientListDto, PatientDetailModel>();
-            containerRegistry.RegisterForNavigation<Views.PatientMasterDetailView, ViewModels.PatientMasterDetailViewModel>();
+
+            // OpenSpec: refactor-admin-workspace - Control模式重构
+            // PatientMasterDetailControl供角色台View复用，ViewModel在Control内部解析
+            containerRegistry.Register<ViewModels.PatientMasterDetailViewModel>();
         }
     }
 }

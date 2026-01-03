@@ -19,6 +19,12 @@ namespace LYBT.Desktop.MedicalCase.Models
         /// 返回目标: MedicalCaseManagementView
         /// 标题显示: "编辑医案 | 患者：XXX"
         /// </summary>
-        Management = 1
+        Management = 1,
+
+        /// <summary>
+        /// 前台挂号模式 - 前台选择患者挂号
+        /// OpenSpec: refactor-clinical-workflow
+        /// </summary>
+        Reception = 2
     }
 }
