@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Admin工作台架构重构 (OpenSpec: refactor-admin-workspace) - 2026-01-03
+
+**背景**: 5个MasterDetailView分散在业务模块中，无法被多角色台复用，架构不统一。
+
+**核心改进**:
+- **架构统一**: 实现"View在角色台，Control在业务模块"模式
+  - 业务模块: MasterDetailView → MasterDetailControl (可复用)
+  - 角色台: 薄包装View引用Control
+
+- **Phase A - 业务模块Control重构**:
+  - Herbs/Formula/Patients/MedicalCase/Users 5个模块
+  - View文件移至Controls/目录并重命名为Control
+  - ViewModel通过ContainerLocator手动解析
+
+- **Phase B - 角色台View创建**:
+  - Admin: 5个ManagementView (Herb/Formula/Patient/MedicalCase/User)
+  - Clinical: 4个ReferenceView + PatientSelection/MedicalCaseWorkspace
+
+- **规范新增** (desktop-architecture):
+  - ARCH-010: View在角色台规范
+  - ARCH-011: 特殊视图例外规范
+  - ARCH-012: Control与View职责划分
+  - ARCH-013: 架构一致性优先原则
+
+**影响模块**: Desktop.Herbs, Desktop.Formula, Desktop.Patients, Desktop.MedicalCase, Desktop.Users, Desktop.Admin, Desktop.Clinical
+
+**状态**: 已归档
+
 #### 待诊队列全栈重构 (OpenSpec: redesign-pending-queue) - 2026-01-02
 
 **背景**: 待诊队列存在状态硬编码、切换逻辑复杂、无自动刷新等问题。
