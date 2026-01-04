@@ -171,11 +171,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>poc-drawer-layout: 关闭Drawer命令 (Escape)</summary>
     public DelegateCommand CloseDrawerCommand { get; private set; } = null!;
 
-    /// <summary>poc-drawer-layout: 修改个人资料命令 - 委托给MenuManager</summary>
+    /// <summary>账户设置命令 - OpenSpec: migrate-views-to-role-modules</summary>
     public DelegateCommand EditProfileCommand => _menuManager.EditProfileCommand;
-
-    /// <summary>poc-drawer-layout: 修改密码命令 - 委托给MenuManager</summary>
-    public DelegateCommand ChangePasswordCommand => _menuManager.ChangePasswordCommand;
 
     #endregion
 

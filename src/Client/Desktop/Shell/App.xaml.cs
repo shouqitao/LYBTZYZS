@@ -83,6 +83,10 @@ public partial class App : PrismApplication
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.EntityAuditLogDialog, Dialogs.ViewModels.EntityAuditLogDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.ApiConnectionFailedDialog, Dialogs.ViewModels.ApiConnectionFailedDialogViewModel>();
+
+        // OpenSpec: migrate-views-to-role-modules - 账户设置（合并个人资料+修改密码）
+        containerRegistry.Register<ViewModels.AccountSettingsViewModel>();
+        containerRegistry.RegisterForNavigation<Views.AccountSettingsView>();
     }
 
     /// <summary>配置ViewModel定位器</summary>

@@ -123,7 +123,7 @@ namespace LYBT.Desktop.MedicalCase
             // [已移除] PrescriptionEditorView - 死代码，从未导航到（OpenSpec: refactor-viewmodel-layer）
             // Issue #1799: 删除OtherCasesQueryView（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListView（功能与ManagementView重复）
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseDetailView>();  // Issue #2167: 医案详情视图
+            // OpenSpec: migrate-views-to-role-modules - MedicalCaseDetailView/MedicalCaseWorkspaceView已删除（无调用/重复）
 
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册MedicalCase模块的MasterDetail服务

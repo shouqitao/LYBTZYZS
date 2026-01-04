@@ -109,7 +109,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         #endregion
 
-        #region EditProfileCommand - 修改个人信息命令
+        #region EditProfileCommand - 账户设置命令 (OpenSpec: migrate-views-to-role-modules)
 
         public ICommand? EditProfileCommand
         {
@@ -119,20 +119,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         public static readonly DependencyProperty EditProfileCommandProperty =
             DependencyProperty.Register(nameof(EditProfileCommand), typeof(ICommand), typeof(SidebarControl),
-                new PropertyMetadata(null));
-
-        #endregion
-
-        #region ChangePasswordCommand - 修改密码命令
-
-        public ICommand? ChangePasswordCommand
-        {
-            get => (ICommand?)GetValue(ChangePasswordCommandProperty);
-            set => SetValue(ChangePasswordCommandProperty, value);
-        }
-
-        public static readonly DependencyProperty ChangePasswordCommandProperty =
-            DependencyProperty.Register(nameof(ChangePasswordCommand), typeof(ICommand), typeof(SidebarControl),
                 new PropertyMetadata(null));
 
         #endregion

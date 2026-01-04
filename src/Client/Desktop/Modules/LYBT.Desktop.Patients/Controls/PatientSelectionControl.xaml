@@ -1,21 +1,24 @@
 <UserControl x:Class="LYBT.Desktop.Patients.Controls.PatientSelectionControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:local="clr-namespace:LYBT.Desktop.Patients.Controls"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1000">
 
     <!-- 患者选择控件
          OpenSpec: refactor-clinical-workflow
          可复用的患者选择控件，使用Master-Detail布局
          左侧：患者列表（工具栏+搜索+列表）
-         右侧：患者详情（使用PatientViewControl）-->
+         右侧：患者详情（使用PatientViewControl）
 
-    <controls:MasterDetailLayout 
-        HasSelection="{Binding HasSelection, RelativeSource={RelativeSource AncestorType=UserControl}}"
+         修复: RelativeSource使用具体类型PatientSelectionControl，
+               避免MasterDetailLayout（也是UserControl）被错误匹配 -->
+
+    <controls:MasterDetailLayout
+        HasSelection="{Binding HasSelection, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
         MasterWidth="2*"
         DetailWidth="3*">
 
@@ -30,19 +33,19 @@
 
                 <!-- 工具栏 -->
                 <controls:DataGridToolbar Grid.Row="0"
-                    CreateCommand="{Binding CreateNewCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                    RefreshCommand="{Binding RefreshCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    CreateCommand="{Binding CreateNewCommand, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                    RefreshCommand="{Binding RefreshCommand, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"/>
 
                 <!-- 搜索框 -->
                 <controls:SearchBox Grid.Row="1"
-                    SearchText="{Binding SearchText, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                    SearchCommand="{Binding SearchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    SearchText="{Binding SearchText, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                    SearchCommand="{Binding SearchCommand, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
                     Placeholder="搜索患者姓名或拼音码..."/>
 
                 <!-- 患者列表 -->
                 <DataGrid Grid.Row="2"
-                    ItemsSource="{Binding Patients, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                    SelectedItem="{Binding SelectedPatient, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+                    ItemsSource="{Binding Patients, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                    SelectedItem="{Binding SelectedPatient, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}, Mode=TwoWay}"
                     AutoGenerateColumns="False"
                     IsReadOnly="True"
                     SelectionMode="Single"
@@ -70,29 +73,29 @@
         <!-- Detail: 患者详情区域 -->
         <controls:MasterDetailLayout.DetailContent>
             <local:PatientViewControl
-                PatientName="{Binding PatientDetail.Name, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                PinYinCode="{Binding PatientDetail.PinYinCode, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                Gender="{Binding PatientDetail.Gender, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                BirthDate="{Binding PatientDetail.BirthDate, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                Age="{Binding PatientDetail.Age, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                IdNumber="{Binding PatientDetail.IdNumber, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                IdType="{Binding PatientDetail.IdType, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                MaritalStatus="{Binding PatientDetail.MaritalStatus, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                BloodType="{Binding PatientDetail.BloodType, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                PhoneNumber="{Binding PatientDetail.PhoneNumber, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                Address="{Binding PatientDetail.Address, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                EmergencyContactName="{Binding PatientDetail.EmergencyContactName, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                EmergencyContactPhone="{Binding PatientDetail.EmergencyContactPhone, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                EmergencyContactRelation="{Binding PatientDetail.EmergencyContactRelation, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                AllergyHistory="{Binding PatientDetail.AllergyHistory, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                MedicalHistory="{Binding PatientDetail.MedicalHistory, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                LastVisitTime="{Binding PatientDetail.LastVisitTime, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                VisitCount="{Binding PatientDetail.VisitCount, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                Status="{Binding PatientDetail.Status, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                PatientName="{Binding PatientDetail.Name, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                PinYinCode="{Binding PatientDetail.PinYinCode, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                Gender="{Binding PatientDetail.Gender, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                BirthDate="{Binding PatientDetail.BirthDate, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                Age="{Binding PatientDetail.Age, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                IdNumber="{Binding PatientDetail.IdNumber, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                IdType="{Binding PatientDetail.IdType, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                MaritalStatus="{Binding PatientDetail.MaritalStatus, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                BloodType="{Binding PatientDetail.BloodType, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                PhoneNumber="{Binding PatientDetail.PhoneNumber, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                Address="{Binding PatientDetail.Address, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                EmergencyContactName="{Binding PatientDetail.EmergencyContactName, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                EmergencyContactPhone="{Binding PatientDetail.EmergencyContactPhone, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                EmergencyContactRelation="{Binding PatientDetail.EmergencyContactRelation, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                AllergyHistory="{Binding PatientDetail.AllergyHistory, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                MedicalHistory="{Binding PatientDetail.MedicalHistory, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                LastVisitTime="{Binding PatientDetail.LastVisitTime, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                VisitCount="{Binding PatientDetail.VisitCount, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                Status="{Binding PatientDetail.Status, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
                 ShowStatus="False"
-                DisableReason="{Binding PatientDetail.DisableReason, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                CreatedAt="{Binding PatientDetail.CreatedAt, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                UpdatedAt="{Binding PatientDetail.UpdatedAt, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                DisableReason="{Binding PatientDetail.DisableReason, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                CreatedAt="{Binding PatientDetail.CreatedAt, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                UpdatedAt="{Binding PatientDetail.UpdatedAt, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"/>
         </controls:MasterDetailLayout.DetailContent>
 
         <!-- Empty: 空状态 -->
@@ -101,7 +104,7 @@
                 Title="请选择患者"
                 Subtitle="从左侧列表选择患者，或点击新建创建新患者"
                 ActionText="新建患者"
-                ActionCommand="{Binding CreateNewCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                ActionCommand="{Binding CreateNewCommand, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"/>
         </controls:MasterDetailLayout.EmptyContent>
 
     </controls:MasterDetailLayout>

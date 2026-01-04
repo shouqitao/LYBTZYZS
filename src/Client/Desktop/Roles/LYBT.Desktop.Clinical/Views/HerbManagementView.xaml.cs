@@ -3,16 +3,19 @@ using System.Windows.Controls;
 namespace LYBT.Desktop.Clinical.Views
 {
     /// <summary>
-    /// 药材参考视图
-    /// OpenSpec: refactor-admin-workspace
+    /// 药材管理视图
+    /// OpenSpec: rename-reference-to-management
     ///
     /// 薄包装View，复用业务模块的HerbMasterDetailControl
     /// View在角色台，Control在业务模块
-    /// 用于医生诊疗时查看药材信息
+    ///
+    /// 权限设计：
+    /// - 诊所共享药材：只读参考
+    /// - 医生自创药材：可完整管理
     /// </summary>
-    public partial class HerbReferenceView : UserControl
+    public partial class HerbManagementView : UserControl
     {
-        public HerbReferenceView()
+        public HerbManagementView()
         {
             InitializeComponent();
         }

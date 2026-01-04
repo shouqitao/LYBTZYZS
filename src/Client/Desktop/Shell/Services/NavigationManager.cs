@@ -68,7 +68,13 @@ public class NavigationManager
 
     /// <summary>poc-drawer-layout: 通用导航到指定视图</summary>
     /// <param name="viewName">视图名称</param>
-    public void NavigateTo(string viewName)
+    public void NavigateTo(string viewName) => NavigateTo(viewName, null);
+
+    /// <summary>通用导航到指定视图（带参数）</summary>
+    /// <param name="viewName">视图名称</param>
+    /// <param name="parameters">导航参数</param>
+    /// <remarks>OpenSpec: migrate-views-to-role-modules - 支持带参数导航</remarks>
+    public void NavigateTo(string viewName, NavigationParameters? parameters)
     {
         try
         {
@@ -83,7 +89,7 @@ public class NavigationManager
                     // OpenSpec: refactor-auth-role-system - 添加用户友好的错误提示
                     _userNotificationService?.ShowErrorAsync($"无法打开页面：{errorMessage}");
                 }
-            });
+            }, parameters);
         }
         catch (Exception ex)
         {

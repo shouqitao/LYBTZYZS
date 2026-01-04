@@ -36,9 +36,7 @@ namespace LYBT.Desktop.Formula
             containerRegistry.Register<ViewModels.FormulaDetailViewModel>();
             containerRegistry.Register<ViewModels.FormulaValidationViewModel>(); // FORMULA-10: 验方校验视图模型
 
-            // Phase 2: 启用 Region Navigation 注册
-            containerRegistry.RegisterForNavigation<Views.FormulaDetailView>();
-            containerRegistry.RegisterForNavigation<Views.FormulaValidationView>(); // FORMULA-10: 验方校验视图
+            // OpenSpec: migrate-views-to-role-modules - FormulaDetailView/FormulaValidationView已删除（无调用）
 
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.EditFormulaDialog, ViewModels.EditFormulaDialogViewModel>();

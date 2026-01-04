@@ -43,9 +43,7 @@ namespace LYBT.Desktop.Consultation
             containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // Issue #1607, #1784: 已重构使用Components (Issue #1557: 看诊流程Step 2)
             //  Issue #1463: ConsultationEntryViewModel已迁移到MedicalCaseModule.MedicalCaseEntryViewModel
 
-            // Phase 2: 启用 Region Navigation 注册
-            // Issue #1800: 删除ConsultationManagementView（违反AR-001聚合根约束）
-            containerRegistry.RegisterForNavigation<Views.ConsultationFormView>();  // Issue #1607: 已重构 (Issue #1557: 看诊流程Step 2)
+            // OpenSpec: migrate-views-to-role-modules - ConsultationFormView已删除（无调用）
             //  Issue #1463: ConsultationEntryView已迁移到MedicalCaseModule.MedicalCaseEntryView
         }
     }

@@ -3,16 +3,19 @@ using System.Windows.Controls;
 namespace LYBT.Desktop.Clinical.Views
 {
     /// <summary>
-    /// 医案归档视图
-    /// OpenSpec: refactor-admin-workspace
+    /// 医案管理视图
+    /// OpenSpec: rename-reference-to-management
     ///
     /// 薄包装View，复用业务模块的MedicalCaseMasterDetailControl
     /// View在角色台，Control在业务模块
-    /// 用于医生查看和管理历史医案
+    ///
+    /// 权限设计：
+    /// - 诊所共享医案：只读参考
+    /// - 医生自创医案：可完整管理
     /// </summary>
-    public partial class MedicalCaseArchiveView : UserControl
+    public partial class MedicalCaseManagementView : UserControl
     {
-        public MedicalCaseArchiveView()
+        public MedicalCaseManagementView()
         {
             InitializeComponent();
         }

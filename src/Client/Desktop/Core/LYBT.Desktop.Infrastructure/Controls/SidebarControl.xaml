@@ -1,12 +1,12 @@
 <!--
     SidebarControl - 侧边栏控件
-    OpenSpec: refactor-role-navigation
+    OpenSpec: refactor-role-navigation, migrate-views-to-role-modules
 
     功能：
     - 展开/收缩切换
     - 用户信息显示
     - 返回主页按钮
-    - 修改个人信息/修改密码
+    - 账户设置（合并个人资料+修改密码）
     - 状态信息（网络+时间）
     - 退出登录
 
@@ -19,7 +19,6 @@
         ToggleCommand="{Binding ToggleDrawerCommand}"
         NavigateToHomeCommand="{Binding NavigateToHomeCommand}"
         EditProfileCommand="{Binding EditProfileCommand}"
-        ChangePasswordCommand="{Binding ChangePasswordCommand}"
         LogoutCommand="{Binding LogoutCommand}"/>
 -->
 <UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.SidebarControl"
@@ -123,21 +122,12 @@
                                    Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </StackPanel>
                 </Button>
-                <!-- 修改个人信息 -->
-                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding EditProfileCommand, ElementName=Root}" ToolTip="修改个人信息">
+                <!-- 账户设置 - OpenSpec: migrate-views-to-role-modules - 合并个人资料+修改密码 -->
+                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding EditProfileCommand, ElementName=Root}" ToolTip="账户设置">
                     <StackPanel Orientation="Horizontal">
                         <Path Fill="{StaticResource SidebarTextBrush}" Width="20" Height="20" Stretch="Uniform"
-                              Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        <TextBlock Text="修改个人信息" VerticalAlignment="Center" Margin="12,0,0,0"
-                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                    </StackPanel>
-                </Button>
-                <!-- 修改密码 -->
-                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding ChangePasswordCommand, ElementName=Root}" ToolTip="修改密码">
-                    <StackPanel Orientation="Horizontal">
-                        <Path Fill="{StaticResource SidebarTextBrush}" Width="20" Height="20" Stretch="Uniform"
-                              Data="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                        <TextBlock Text="修改密码" VerticalAlignment="Center" Margin="12,0,0,0"
+                              Data="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                        <TextBlock Text="账户设置" VerticalAlignment="Center" Margin="12,0,0,0"
                                    Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </StackPanel>
                 </Button>

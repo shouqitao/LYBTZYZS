@@ -30,12 +30,13 @@ namespace LYBT.Desktop.Clinical
             containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();
             containerRegistry.RegisterForNavigation<Views.MedicalCaseWorkspaceView>();
 
-            // OpenSpec: refactor-admin-workspace - 参考视图（薄包装，复用业务模块Control）
+            // OpenSpec: rename-reference-to-management - 管理视图（薄包装，复用业务模块Control）
             // View在角色台，Control在业务模块
-            containerRegistry.RegisterForNavigation<Views.HerbReferenceView>();
-            containerRegistry.RegisterForNavigation<Views.FormulaReferenceView>();
-            containerRegistry.RegisterForNavigation<Views.PatientHistoryView>();
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseArchiveView>();
+            // 权限设计：诊所共享数据-只读参考，医生自创数据-可完整管理
+            containerRegistry.RegisterForNavigation<Views.HerbManagementView>();
+            containerRegistry.RegisterForNavigation<Views.FormulaManagementView>();
+            containerRegistry.RegisterForNavigation<Views.PatientManagementView>();
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
         }
     }
 }

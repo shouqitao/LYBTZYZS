@@ -47,7 +47,6 @@
                 ToggleCommand="{Binding ToggleDrawerCommand}"
                 NavigateToHomeCommand="{Binding NavigateToHomeCommand}"
                 EditProfileCommand="{Binding EditProfileCommand}"
-                ChangePasswordCommand="{Binding ChangePasswordCommand}"
                 LogoutCommand="{Binding LogoutCommand}" />
 
             <!-- 右侧工作区 -->

@@ -1,12 +1,15 @@
 <!--
-    PatientHistoryView - 患者历史视图
-    OpenSpec: refactor-admin-workspace
+    PatientManagementView - 患者管理视图
+    OpenSpec: rename-reference-to-management
 
     薄包装View，复用业务模块的PatientMasterDetailControl
     View在角色台，Control在业务模块
-    用于医生查看患者详细信息和历史记录
+
+    权限设计：
+    - 诊所共享患者：只读参考
+    - 医生自创患者：可完整管理
 -->
-<UserControl x:Class="LYBT.Desktop.Clinical.Views.PatientHistoryView"
+<UserControl x:Class="LYBT.Desktop.Clinical.Views.PatientManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:patientControls="clr-namespace:LYBT.Desktop.Patients.Controls;assembly=LYBT.Desktop.Patients">

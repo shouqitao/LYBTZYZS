@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows.Controls;
 using LYBT.Desktop.Formula.ViewModels;
 using Prism.Ioc;
@@ -18,6 +19,10 @@ namespace LYBT.Desktop.Formula.Controls
         public FormulaMasterDetailControl()
         {
             InitializeComponent();
+
+            // 设计时跳过ViewModel解析，避免空引用异常
+            if (DesignerProperties.GetIsInDesignMode(this))
+                return;
 
             // 从DI容器解析ViewModel并设置DataContext
             // 这样可以复用现有的FormulaMasterDetailViewModel
