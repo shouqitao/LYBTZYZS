@@ -1,6 +1,8 @@
+// OpenSpec: create-printing-module - 使用新的独立打印模块
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Services;
-using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Printing.Interfaces;
+using LYBT.Desktop.Printing.Models;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -12,12 +14,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 /// 处方打印处理器
 /// 负责处方打印预览和DTO构建
 /// OpenSpec: slim-medicalcase-viewmodel (Phase 2)
+/// OpenSpec: create-printing-module - 更新为使用独立Printing模块
 /// </summary>
 public class PrescriptionPrintHandler
 {
     #region 字段
 
-    private readonly IPrescriptionPrintService? _printService;
+    private readonly IPrintService<PrescriptionPrintModel>? _printService;
     private readonly MedicalCaseDataLoader _dataLoader;
     private readonly ILogger<PrescriptionPrintHandler> _logger;
 
@@ -28,7 +31,7 @@ public class PrescriptionPrintHandler
     public PrescriptionPrintHandler(
         MedicalCaseDataLoader dataLoader,
         ILoggerFactory loggerFactory,
-        IPrescriptionPrintService? printService = null)
+        IPrintService<PrescriptionPrintModel>? printService = null)
     {
         _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
         _logger = loggerFactory.CreateLogger<PrescriptionPrintHandler>();
@@ -69,8 +72,9 @@ public class PrescriptionPrintHandler
                 return PrintResult.Failed("没有可打印的处方数据");
             }
 
-            // 调用打印预览服务
-            await _printService.PreviewPrescriptionAsync(prescription, currentPatient, consultationData);
+            // OpenSpec: create-printing-module - 组装PrescriptionPrintModel并调用新接口
+            var printModel = BuildPrintModel(prescription, currentPatient, consultationData);
+            await _printService.PreviewAsync(printModel);
 
             return PrintResult.Success();
         }
@@ -79,6 +83,79 @@ public class PrescriptionPrintHandler
             _logger.LogError(ex, "打印处方笺失败");
             return PrintResult.Failed($"打印失败: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// 构建打印数据模型
+    /// OpenSpec: create-printing-module
+    /// </summary>
+    private static PrescriptionPrintModel BuildPrintModel(
+        PrescriptionDetailDto prescription,
+        PatientDetailDto? patient,
+        ConsultationInputDto? consultation)
+    {
+        var model = new PrescriptionPrintModel
+        {
+            // 患者信息
+            PatientName = patient?.Name ?? string.Empty,
+            Gender = patient?.Gender.ToString() ?? string.Empty,
+            Age = CalculateAge(patient?.BirthDate),
+            PatientPhone = patient?.PhoneNumber,
+            PatientAddress = patient?.Address,
+
+            // 诊断信息
+            TcmDiagnosis = consultation?.TcmDiagnosis,
+            PresentIllness = consultation?.PresentIllness,
+            TongueDiagnosis = consultation?.TongueDiagnosis,
+            PulseDiagnosis = consultation?.PulseDiagnosis,
+
+            // 处方信息
+            DosageCount = prescription.DosageCount,
+            Usage = prescription.Usage ?? "水煎服，日1剂，1日2次",
+            Advice = prescription.Advice,
+            FormulaSource = prescription.ReferencedFormulas,
+
+            // 费用信息
+            SingleDosePrice = prescription.Items?.Sum(i => i.Dosage * i.UnitPrice) ?? 0,
+
+            // 签名
+            PrescriptionDate = DateTime.Now
+        };
+
+        // 计算总价
+        model.MedicineFee = model.SingleDosePrice * model.DosageCount;
+        model.TotalPrice = model.ConsultationFee + model.MedicineFee + model.TreatmentFee;
+
+        // 药材列表
+        if (prescription.Items != null)
+        {
+            var seq = 1;
+            foreach (var item in prescription.Items)
+            {
+                model.Items.Add(new PrescriptionItemPrintModel
+                {
+                    SequenceNumber = seq++,
+                    HerbName = item.HerbName,
+                    Dosage = item.Dosage,
+                    Unit = item.Unit,
+                    DecocteMethod = item.DecocteMethod
+                });
+            }
+        }
+
+        return model;
+    }
+
+    /// <summary>
+    /// 计算年龄
+    /// </summary>
+    private static int CalculateAge(DateTime? birthDate)
+    {
+        if (birthDate == null) return 0;
+        var today = DateTime.Today;
+        var age = today.Year - birthDate.Value.Year;
+        if (birthDate.Value.Date > today.AddYears(-age)) age--;
+        return age;
     }
 
     /// <summary>

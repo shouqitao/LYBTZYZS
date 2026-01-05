@@ -36,10 +36,14 @@ using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.Patients;
+// OpenSpec: create-printing-module - 独立打印模块
+using LYBT.Desktop.Printing.Interfaces;
+using LYBT.Desktop.Printing.Models;
+using LYBT.Desktop.Printing.Services;
 using LYBT.Desktop.Patients.Repositories;
 using LYBT.Desktop.Patients.ViewModels.Components;
-using LYBT.Desktop.Prescriptions;
-using LYBT.Desktop.Prescriptions.Services;
+// [已删除] using LYBT.Desktop.Prescriptions - 模块已移除
+// [已删除] using LYBT.Desktop.Prescriptions.Services - 服务已迁移到MedicalCase
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.Services.Diagnostics;
@@ -190,7 +194,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<UsersModule>(containerRegistry);
             RegisterLogger<PatientsModule>(containerRegistry);
             RegisterLogger<MedicalCaseModule>(containerRegistry);
-            RegisterLogger<PrescriptionsModule>(containerRegistry);
+            // [已删除] RegisterLogger<PrescriptionsModule> - 模块已移除
             RegisterLogger<HerbsModule>(containerRegistry);
             RegisterLogger<FormulaModule>(containerRegistry);
             RegisterLogger<ClinicalModule>(containerRegistry);
@@ -210,8 +214,10 @@ namespace LYBT.Desktop.Shell.Extensions
         /// <summary>注册业务服务Logger</summary>
         private static void RegisterServiceLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<PrescriptionEditorService>(containerRegistry);
+            // [已删除] RegisterLogger<PrescriptionEditorService> - 服务已删除
             RegisterLogger<SystemSettingsService>(containerRegistry);
+            // OpenSpec: create-printing-module - 打印服务Logger
+            RegisterLogger<PrescriptionPrintService>(containerRegistry);
         }
 
         /// <summary>注册Component层Logger（CommandHandler/DataManager/Validator等）</summary>
@@ -360,6 +366,9 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>(); // OpenSpec: print-prescription-slip
             containerRegistry.RegisterSingleton<IRoleNavigationService, RoleNavigationService>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
+
+            // OpenSpec: create-printing-module - 注册独立打印模块服务
+            containerRegistry.RegisterSingleton<IPrintService<PrescriptionPrintModel>, PrescriptionPrintService>();
 
             // refactor-auth-role-system Phase 2.1: 可扩展角色注册表
             containerRegistry.RegisterSingleton<IRoleRegistry>(resolver =>

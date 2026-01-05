@@ -1,0 +1,271 @@
+<UserControl x:Class="LYBT.Desktop.Printing.Templates.PrescriptionPrintTemplate"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:LYBT.Desktop.Printing.Models"
+             mc:Ignorable="d"
+             Width="559" Height="794"
+             d:DataContext="{d:DesignInstance Type=models:PrescriptionPrintModel, IsDesignTimeCreatable=True}"
+             Background="White">
+    <!--
+    OpenSpec: create-printing-module (从MedicalCase迁移)
+    A5纸张尺寸: 148mm x 210mm
+    96 DPI: 1mm = 3.78px
+    宽度: 148 * 3.78 = 559px
+    高度: 210 * 3.78 = 794px
+    页边距: 左右15mm(57px), 上下10mm(38px)
+    内容区宽度: 559 - 57*2 = 445px
+    -->
+
+    <UserControl.Resources>
+        <!-- 字体定义 -->
+        <FontFamily x:Key="KaiTiFont">STKaiti, 华文楷体, KaiTi, SimKai, Microsoft YaHei</FontFamily>
+
+        <!-- 标题样式 -->
+        <Style x:Key="TitleStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource KaiTiFont}"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <!-- 标签样式 -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource KaiTiFont}"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+
+        <!-- 下划线字段容器样式 -->
+        <Style x:Key="FieldBorderStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+
+        <!-- 字段值文本样式 -->
+        <Style x:Key="FieldValueStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource KaiTiFont}"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Margin" Value="2,0,2,0"/>
+        </Style>
+
+        <!-- Rp样式 -->
+        <Style x:Key="RpStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource KaiTiFont}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,6,0,4"/>
+        </Style>
+
+        <!-- 药材项样式 -->
+        <Style x:Key="HerbItemStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource KaiTiFont}"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Width" Value="95"/>
+            <Setter Property="Margin" Value="0,1,8,1"/>
+        </Style>
+
+        <!-- 用法样式 -->
+        <Style x:Key="UsageStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource KaiTiFont}"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,15,0,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="57,38,57,38">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 0: 标题 -->
+            <RowDefinition Height="Auto"/>  <!-- 1: 患者信息行1 -->
+            <RowDefinition Height="Auto"/>  <!-- 2: 患者信息行2 -->
+            <RowDefinition Height="Auto"/>  <!-- 3: 住址 -->
+            <RowDefinition Height="Auto"/>  <!-- 4: 诊断 -->
+            <RowDefinition Height="Auto"/>  <!-- 5: 诊见 -->
+            <RowDefinition Height="Auto"/>  <!-- 6: Rp. + 药材 + 服法 -->
+            <RowDefinition Height="*"/>     <!-- 7: 空白填充 -->
+            <RowDefinition Height="Auto"/>  <!-- 8: 分隔线 -->
+            <RowDefinition Height="Auto"/>  <!-- 9: 签名行 -->
+            <RowDefinition Height="Auto"/>  <!-- 10: 费用行 -->
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: 标题 -->
+        <TextBlock Grid.Row="0" Style="{StaticResource TitleStyle}">
+            <Run Text="{Binding ClinicName, Mode=OneWay}"/><Run Text="普通处方笺"/>
+        </TextBlock>
+
+        <!-- Row 1: 姓名/性别/年龄/时间 - 使用Grid对齐 -->
+        <Grid Grid.Row="1" Height="20" Margin="0,0,0,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="70"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="35"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource LabelStyle}" Text="姓名："/>
+            <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding PatientName}"/>
+            </Border>
+            <TextBlock Grid.Column="2" Style="{StaticResource LabelStyle}" Text="  性别："/>
+            <Border Grid.Column="3" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding Gender}"/>
+            </Border>
+            <TextBlock Grid.Column="4" Style="{StaticResource LabelStyle}" Text="  年龄："/>
+            <Border Grid.Column="5" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding Age, StringFormat={}{0}岁}"/>
+            </Border>
+            <TextBlock Grid.Column="6" Style="{StaticResource LabelStyle}" Text="  时间："/>
+            <Border Grid.Column="7" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding ConsultationDate, StringFormat=yyyy年M月d日}"/>
+            </Border>
+        </Grid>
+
+        <!-- Row 2: 门诊号/科别/电话 -->
+        <Grid Grid.Row="2" Height="20" Margin="0,0,0,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="70"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource LabelStyle}" Text="门诊号："/>
+            <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding OutpatientNumber}"/>
+            </Border>
+            <TextBlock Grid.Column="2" Style="{StaticResource LabelStyle}" Text="  科别："/>
+            <Border Grid.Column="3" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding Department}"/>
+            </Border>
+            <TextBlock Grid.Column="4" Style="{StaticResource LabelStyle}" Text="  电话："/>
+            <Border Grid.Column="5" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding PatientPhone}"/>
+            </Border>
+        </Grid>
+
+        <!-- Row 3: 住址 - 下划线延伸到行尾 -->
+        <Grid Grid.Row="3" Height="20" Margin="0,0,0,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource LabelStyle}" Text="住址："/>
+            <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding PatientAddress}"
+                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+            </Border>
+        </Grid>
+
+        <!-- Row 4: 诊断 - 下划线延伸到行尾 -->
+        <Grid Grid.Row="4" Height="20" Margin="0,0,0,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource LabelStyle}" Text="诊断："/>
+            <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding TcmDiagnosis}"
+                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+            </Border>
+        </Grid>
+
+        <!-- Row 5: 诊见 - 下划线延伸到行尾 -->
+        <Grid Grid.Row="5" Height="20" Margin="0,0,0,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource LabelStyle}" Text="诊见："/>
+            <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" x:Name="SymptomsText"
+                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+            </Border>
+        </Grid>
+
+        <!-- Row 6: 处方内容 (Rp. + 药材 + 服法) -->
+        <StackPanel Grid.Row="6">
+            <TextBlock Style="{StaticResource RpStyle}" Text="Rp."/>
+            <ItemsControl x:Name="HerbsItemsControl" ItemsSource="{Binding Items}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Style="{StaticResource HerbItemStyle}">
+                            <Run Text="{Binding HerbName, Mode=OneWay}"/><Run Text="{Binding Dosage, StringFormat={}{0:0.##}, Mode=OneWay}"/><Run Text="{Binding Unit, Mode=OneWay}"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Style="{StaticResource UsageStyle}">
+                <Run Text="{Binding DosageCount, Mode=OneWay}"/><Run Text="剂，"/><Run Text="{Binding Usage, Mode=OneWay}"/>
+            </TextBlock>
+        </StackPanel>
+
+        <!-- Row 7: 弹性空白填充 -->
+        <Border Grid.Row="7"/>
+
+        <!-- Row 8: 分隔线 -->
+        <Border Grid.Row="8" BorderBrush="Black" BorderThickness="0,0,0,1.5" Margin="0,0,0,5"/>
+
+        <!-- Row 9: 签名行 - 三等分对齐，全部留空供手写 -->
+        <Grid Grid.Row="9" Height="20" Margin="0,2,0,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource LabelStyle}" Text="医师签字："/>
+            <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}"/>
+            <TextBlock Grid.Column="2" Style="{StaticResource LabelStyle}" Text="  审核："/>
+            <Border Grid.Column="3" Style="{StaticResource FieldBorderStyle}"/>
+            <TextBlock Grid.Column="4" Style="{StaticResource LabelStyle}" Text="  调配："/>
+            <Border Grid.Column="5" Style="{StaticResource FieldBorderStyle}"/>
+        </Grid>
+
+        <!-- Row 10: 费用行 - 四等分对齐 -->
+        <Grid Grid.Row="10" Height="20" Margin="0,2,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource LabelStyle}" Text="诊疗费："/>
+            <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding ConsultationFee, StringFormat={}{0:F0}}"/>
+            </Border>
+            <TextBlock Grid.Column="2" Style="{StaticResource LabelStyle}" Text="  药费："/>
+            <Border Grid.Column="3" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding MedicineFee, StringFormat={}{0:F0}}"/>
+            </Border>
+            <TextBlock Grid.Column="4" Style="{StaticResource LabelStyle}" Text="  治疗费："/>
+            <Border Grid.Column="5" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding TreatmentFee, StringFormat={}{0:F0}}"/>
+            </Border>
+            <TextBlock Grid.Column="6" Style="{StaticResource LabelStyle}" Text="  合计："/>
+            <Border Grid.Column="7" Style="{StaticResource FieldBorderStyle}">
+                <TextBlock Style="{StaticResource FieldValueStyle}" Text="{Binding TotalPrice, StringFormat={}{0:F0}}"/>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

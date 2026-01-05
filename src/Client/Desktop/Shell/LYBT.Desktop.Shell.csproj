@@ -82,7 +82,8 @@
     <ProjectReference Include="..\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
     <ProjectReference Include="..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
     <ProjectReference Include="..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
-
+    <!-- OpenSpec: create-printing-module - 独立打印模块 -->
+    <ProjectReference Include="..\Core\LYBT.Desktop.Printing\LYBT.Desktop.Printing.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Business Modules">
@@ -91,7 +92,7 @@
     <ProjectReference Include="..\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
     <!-- LYBT.Desktop.Consultation已删除 - 功能已迁移到MedicalCase模块 -->
-    <ProjectReference Include="..\Modules\LYBT.Desktop.Prescriptions\LYBT.Desktop.Prescriptions.csproj" />
+    <!-- LYBT.Desktop.Prescriptions已删除 - 空壳模块已移除 -->
     <ProjectReference Include="..\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
     <ProjectReference Include="..\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
   </ItemGroup>
