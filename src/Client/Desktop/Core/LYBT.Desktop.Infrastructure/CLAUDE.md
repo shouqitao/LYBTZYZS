@@ -83,3 +83,31 @@ var inputDto = _mappingService.ToInputDto(item);
 所有 Item 类中的静态 `FromDto()` 和实例 `ToDto()` 方法已标记 `[Obsolete]`：
 - 请使用对应模块的 `XXXMappingService.ToItem()` / `ToDto()` / `ToInputDto()` 替代
 - 这些方法将在后续版本移除
+
+### Mapperly + CommunityToolkit.Mvvm 源生成器兼容性
+
+**重要**: Mapperly源生成器与CommunityToolkit.Mvvm的`[ObservableProperty]`存在编译顺序冲突。
+
+**问题**: Mapperly在编译时验证属性存在性，但`[ObservableProperty]`生成的属性尚未生成，导致RMG005/RMG006错误。
+
+**解决方案**: 对于源生成属性，使用`[MapperIgnore*]`忽略，在包装方法中手动映射：
+
+```csharp
+// 错误模式（编译失败）
+[MapProperty(nameof(Dto.CaseStatus), "CaseStatus")]
+public partial Item ToItemCore(Dto dto);
+
+// 正确模式
+[MapperIgnoreTarget("CaseStatus")]  // 字符串字面量
+[MapperIgnoreSource(nameof(Dto.CaseStatus))]
+public partial Item ToItemCore(Dto dto);
+
+public Item ToItem(Dto dto)
+{
+    var item = ToItemCore(dto);
+    item.CaseStatus = dto.CaseStatus;  // 手动映射
+    return item;
+}
+```
+
+**详细说明**: 参见 `MedicalCase/CLAUDE.md` 的"Mapperly与CommunityToolkit.Mvvm源生成器兼容性"章节
