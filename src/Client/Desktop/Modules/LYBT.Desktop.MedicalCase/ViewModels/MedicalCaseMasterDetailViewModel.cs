@@ -2,11 +2,12 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Infrastructure.Mapping;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Modules.MedicalCase.Models;
-using LYBT.Desktop.Prescriptions.Models.Items;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -28,6 +29,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     private readonly IMedicalCaseRepository _repository;
     private readonly IHerbRepository _herbRepository;
     private readonly ISessionManager? _sessionManager;
+    private readonly IMappingService<MedicalCaseDetailDto, MedicalCaseInputDto, MedicalCaseDetailModel> _mappingService;
 
     #region 扩展属性
 
@@ -74,12 +76,14 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> services,
         IMedicalCaseRepository repository,
         IHerbRepository herbRepository,
+        IMappingService<MedicalCaseDetailDto, MedicalCaseInputDto, MedicalCaseDetailModel> mappingService,
         ILoggerFactory loggerFactory,
         ISessionManager? sessionManager = null)
         : base(services, loggerFactory)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+        _mappingService = mappingService ?? throw new ArgumentNullException(nameof(mappingService));
         _sessionManager = sessionManager;
 
         PageTitle = "医案管理";
@@ -135,7 +139,13 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
             }
 
             var dto = await _repository.GetByIdAsync(item.Id);
-            var detail = MedicalCaseDetailModel.FromDto(dto);
+            if (dto == null)
+            {
+                Logger.LogWarning("医案详情不存在: {MedicalCaseId}", item.Id);
+                return;
+            }
+
+            var detail = _mappingService.ToItem(dto);
 
             // 初始化处方编辑列表
             InitializeHerbItems(detail);

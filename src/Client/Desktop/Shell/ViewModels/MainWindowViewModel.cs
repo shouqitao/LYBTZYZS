@@ -1,5 +1,7 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
@@ -13,15 +15,19 @@ using LYBT.Desktop.Shell.Services.HealthCheck;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Shell.ViewModels;
 
-/// <summary>主窗口视图模型 - 用户登录状态管理、界面导航控制、键盘快捷键</summary>
-public class MainWindowViewModel : UnifiedViewModelBase
+/// <summary>
+/// 主窗口视图模型 - 用户登录状态管理、界面导航控制、键盘快捷键
+/// OpenSpec: standardize-viewmodel-framework - 迁移到CoreViewModelBase
+/// </summary>
+public partial class MainWindowViewModel : CoreViewModelBase
 {
+    #region 依赖服务
+
     private readonly IMainWindowServicesFacade _servicesFacade;
     private readonly IHealthCheckCoordinator _healthCheckCoordinator;
     private readonly NavigationManager _navigationManager;
@@ -33,7 +39,79 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private readonly ITokenStorageService _tokenStorageService;
     private readonly ILoginCoordinator _loginCoordinator;
 
-    /// <summary>构造函数</summary>
+    /// <summary>
+    /// 区域管理器
+    /// </summary>
+    protected IRegionManager RegionManager { get; }
+
+    /// <summary>
+    /// 通用对话框服务
+    /// </summary>
+    protected ICommonDialogService? CommonDialogService { get; }
+
+    /// <summary>
+    /// 用户通知服务
+    /// </summary>
+    protected IUserNotificationService? UserNotificationService { get; }
+
+    #endregion
+
+    #region 可观察属性
+
+    /// <summary>
+    /// 窗口标题
+    /// </summary>
+    [ObservableProperty]
+    private string _title = SystemConstants.SystemTitle;
+
+    /// <summary>
+    /// 当前登录用户
+    /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
+    /// </summary>
+    [ObservableProperty]
+    private UserDetailDto? _currentUser;
+
+    /// <summary>
+    /// 用户登录状态
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsNotLoggedIn))]
+    private bool _isLoggedIn;
+
+    /// <summary>
+    /// 当前系统时间
+    /// </summary>
+    [ObservableProperty]
+    private DateTime _currentTime = DateTime.Now;
+
+    /// <summary>
+    /// API健康状态
+    /// </summary>
+    [ObservableProperty]
+    private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
+
+    /// <summary>
+    /// poc-drawer-layout: Drawer是否打开
+    /// </summary>
+    [ObservableProperty]
+    private bool _isDrawerOpen;
+
+    #endregion
+
+    #region 计算属性
+
+    /// <summary>
+    /// 是否未登录状态，用于界面绑定
+    /// </summary>
+    public bool IsNotLoggedIn => !IsLoggedIn;
+
+    #endregion
+
+    #region 构造函数
+
+    /// <summary>
+    /// 构造函数
+    /// </summary>
     public MainWindowViewModel(
         IRegionManager regionManager,
         IEventAggregator eventAggregator,
@@ -50,8 +128,12 @@ public class MainWindowViewModel : UnifiedViewModelBase
         ITokenStorageService tokenStorageService,
         ILoginCoordinator loginCoordinator,
         ICommonDialogService commonDialogService)
-        : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService, commonDialogService)
+        : base(loggerFactory, eventAggregator)
     {
+        RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+        CommonDialogService = commonDialogService;
+        UserNotificationService = userNotificationService;
+
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _healthCheckCoordinator = healthCheckCoordinator ?? throw new ArgumentNullException(nameof(healthCheckCoordinator));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
@@ -66,138 +148,141 @@ public class MainWindowViewModel : UnifiedViewModelBase
         InitializeViewModel();
     }
 
-    private string _title = SystemConstants.SystemTitle;
-    // OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
-    private UserDetailDto? _currentUser;
-    private bool _isLoggedIn = false;
-    private DateTime _currentTime = DateTime.Now;
-    private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
+    #endregion
 
-    // poc-drawer-layout: Drawer状态
-    private bool _isDrawerOpen = false;
+    #region 委托命令属性
 
-    /// <summary>获取或设置窗口标题</summary>
-    public string Title
-    {
-        get => _title;
-        set => SetProperty(ref _title, value);
-    }
+    /// <summary>
+    /// 显示控件示例命令 - 委托给MenuManager
+    /// </summary>
+    public ICommand ShowControlExamplesCommand => _menuManager.ShowControlExamplesCommand;
 
-    /// <summary>获取或设置当前登录用户</summary>
-    public UserDetailDto? CurrentUser
-    {
-        get => _currentUser;
-        set => SetProperty(ref _currentUser, value);
-    }
+    /// <summary>
+    /// 快速添加患者命令(Ctrl+N) - 委托给MenuManager
+    /// </summary>
+    public ICommand QuickAddPatientCommand => _menuManager.QuickAddPatientCommand;
 
-    /// <summary>获取或设置用户登录状态</summary>
-    public bool IsLoggedIn
-    {
-        get => _isLoggedIn;
-        set { SetProperty(ref _isLoggedIn, value); RaisePropertyChanged(nameof(IsNotLoggedIn)); }
-    }
+    /// <summary>
+    /// 快速开始诊疗命令(Ctrl+Shift+C) - 委托给MenuManager
+    /// </summary>
+    public ICommand QuickStartConsultationCommand => _menuManager.QuickStartConsultationCommand;
 
-    /// <summary>获取或设置当前系统时间</summary>
-    public DateTime CurrentTime
-    {
-        get => _currentTime;
-        set => SetProperty(ref _currentTime, value);
-    }
+    /// <summary>
+    /// 显示帮助命令 (F1) - 委托给MenuManager
+    /// </summary>
+    public ICommand ShowHelpCommand => _menuManager.ShowHelpCommand;
 
-    /// <summary>获取或设置 API 健康状态</summary>
-    public ApiHealthStatus ApiStatus
-    {
-        get => _apiStatus;
-        set => SetProperty(ref _apiStatus, value);
-    }
+    /// <summary>
+    /// 显示设置命令 (Ctrl+,) - 委托给MenuManager
+    /// </summary>
+    public ICommand ShowSettingsCommand => _menuManager.ShowSettingsCommand;
 
-    /// <summary>获取是否未登录状态，用于界面绑定</summary>
-    public bool IsNotLoggedIn => !_isLoggedIn;
+    /// <summary>
+    /// 主题切换命令 - 委托给MenuManager
+    /// </summary>
+    public ICommand ToggleThemeCommand => _menuManager.ToggleThemeCommand;
 
-    /// <summary>poc-drawer-layout: Drawer是否打开</summary>
-    public bool IsDrawerOpen
-    {
-        get => _isDrawerOpen;
-        set => SetProperty(ref _isDrawerOpen, value);
-    }
-
-    #region 命令属性
-
-    /// <summary>退出登录命令</summary>
-    public DelegateCommand LogoutCommand { get; set; } = null!;
-
-    /// <summary>重试 API 健康检查命令</summary>
-    public DelegateCommand RetryHealthCheckCommand { get; set; } = null!;
-
-    /// <summary>显示控件示例命令 - 委托给MenuManager</summary>
-    public DelegateCommand ShowControlExamplesCommand => _menuManager.ShowControlExamplesCommand;
-
-    /// <summary>快速添加患者命令(Ctrl+N) - 委托给MenuManager</summary>
-    public DelegateCommand QuickAddPatientCommand => _menuManager.QuickAddPatientCommand;
-
-    /// <summary>快速开始诊疗命令(Ctrl+Shift+C) - 委托给MenuManager</summary>
-    public DelegateCommand QuickStartConsultationCommand => _menuManager.QuickStartConsultationCommand;
-
-    /// <summary>显示帮助命令 (F1) - 委托给MenuManager</summary>
-    public DelegateCommand ShowHelpCommand => _menuManager.ShowHelpCommand;
-
-    /// <summary>显示设置命令 (Ctrl+,) - 委托给MenuManager</summary>
-    public DelegateCommand ShowSettingsCommand => _menuManager.ShowSettingsCommand;
-
-    /// <summary>主题切换命令 - 委托给MenuManager</summary>
-    public DelegateCommand ToggleThemeCommand => _menuManager.ToggleThemeCommand;
-
-    /// <summary>全局保存命令 (Ctrl+S) - 委托给MenuManager</summary>
+    /// <summary>
+    /// 全局保存命令 (Ctrl+S) - 委托给MenuManager
+    /// </summary>
     public ICommand SaveAllCommand => _menuManager.SaveAllCommand;
 
-    /// <summary>全局刷新命令 (F5) - 委托给MenuManager</summary>
+    /// <summary>
+    /// 全局刷新命令 (F5) - 委托给MenuManager
+    /// </summary>
     public ICommand RefreshAllCommand => _menuManager.RefreshAllCommand;
 
-    /// <summary>全局打印命令 (Ctrl+P) - 委托给MenuManager</summary>
+    /// <summary>
+    /// 全局打印命令 (Ctrl+P) - 委托给MenuManager
+    /// </summary>
     public ICommand PrintCommand => _menuManager.PrintCommand;
 
-    /// <summary>全局导出命令 - 委托给MenuManager</summary>
+    /// <summary>
+    /// 全局导出命令 - 委托给MenuManager
+    /// </summary>
     public ICommand ExportCommand => _menuManager.ExportCommand;
 
-    /// <summary>全局撤销命令 (Ctrl+Z) - 委托给MenuManager</summary>
+    /// <summary>
+    /// 全局撤销命令 (Ctrl+Z) - 委托给MenuManager
+    /// </summary>
     public ICommand UndoCommand => _menuManager.UndoCommand;
 
-    /// <summary>全局重做命令 (Ctrl+Y) - 委托给MenuManager</summary>
+    /// <summary>
+    /// 全局重做命令 (Ctrl+Y) - 委托给MenuManager
+    /// </summary>
     public ICommand RedoCommand => _menuManager.RedoCommand;
 
-    /// <summary>poc-drawer-layout: 切换Drawer命令 (Ctrl+M)</summary>
-    public DelegateCommand ToggleDrawerCommand { get; private set; } = null!;
-
-    /// <summary>poc-drawer-layout: 关闭Drawer命令 (Escape)</summary>
-    public DelegateCommand CloseDrawerCommand { get; private set; } = null!;
-
-    /// <summary>账户设置命令 - OpenSpec: migrate-views-to-role-modules</summary>
-    public DelegateCommand EditProfileCommand => _menuManager.EditProfileCommand;
+    /// <summary>
+    /// 账户设置命令 - OpenSpec: migrate-views-to-role-modules
+    /// </summary>
+    public ICommand EditProfileCommand => _menuManager.EditProfileCommand;
 
     #endregion
 
-    /// <summary>初始化核心命令</summary>
-    private new void InitializeCommands()
+    #region RelayCommand
+
+    /// <summary>
+    /// 退出登录命令
+    /// </summary>
+    [RelayCommand]
+    private async Task LogoutAsync()
     {
-        LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync().ConfigureAwait(false));
-        RetryHealthCheckCommand = new DelegateCommand(async () => await ExecuteRetryHealthCheckAsync().ConfigureAwait(false));
+        try
+        {
+            if (_activeConsultationService.HasActiveConsultation)
+            {
+                var leaveResult = await _activeConsultationService.RequestLeaveAsync();
+                if (!leaveResult.CanLeave)
+                {
+                    Logger.LogDebug("用户选择继续停留，取消退出登录");
+                    return;
+                }
+                Logger.LogInformation("活跃医案已处理（选择: {Choice}），继续退出登录", leaveResult.Choice);
+            }
+            else
+            {
+                var result = await ShowConfirmationAsync("确定要退出登录吗？");
+                if (!result)
+                {
+                    return;
+                }
+            }
 
-        // poc-drawer-layout: Drawer命令
-        ToggleDrawerCommand = new DelegateCommand(ExecuteToggleDrawer);
-        CloseDrawerCommand = new DelegateCommand(ExecuteCloseDrawer);
-
-        Logger.LogDebug("核心命令已初始化");
+            // 执行退出登录
+            await PerformLogoutAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "退出登录时发生异常");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("退出登录", ex));
+        }
     }
 
-    /// <summary>poc-drawer-layout: 切换Drawer状态</summary>
-    private void ExecuteToggleDrawer()
+    /// <summary>
+    /// 重试API健康检查命令
+    /// </summary>
+    [RelayCommand]
+    private async Task RetryHealthCheckAsync()
+    {
+        Logger.LogInformation("用户手动触发 API 健康检查");
+        await _healthCheckCoordinator.CheckNowAsync();
+    }
+
+    /// <summary>
+    /// poc-drawer-layout: 切换Drawer命令 (Ctrl+M)
+    /// </summary>
+    [RelayCommand]
+    private void ToggleDrawer()
     {
         IsDrawerOpen = !IsDrawerOpen;
         Logger.LogDebug("Drawer状态切换: {IsOpen}", IsDrawerOpen);
     }
 
-    /// <summary>poc-drawer-layout: 关闭Drawer</summary>
-    private void ExecuteCloseDrawer()
+    /// <summary>
+    /// poc-drawer-layout: 关闭Drawer命令 (Escape)
+    /// </summary>
+    [RelayCommand]
+    private void CloseDrawer()
     {
         if (IsDrawerOpen)
         {
@@ -206,7 +291,23 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
     }
 
-    /// <summary>初始化时钟计时器</summary>
+    #endregion
+
+    #region 初始化
+
+    /// <summary>
+    /// 执行完整的ViewModel初始化
+    /// </summary>
+    private void InitializeViewModel()
+    {
+        InitializeClock();
+        InitializeHealthCheck();
+        InitializeEvents();
+    }
+
+    /// <summary>
+    /// 初始化时钟计时器
+    /// </summary>
     private void InitializeClock()
     {
         _tickService.Tick += OnTick;
@@ -215,61 +316,61 @@ public class MainWindowViewModel : UnifiedViewModelBase
         _userActivityTracker.SessionExpired += OnSessionExpired;
     }
 
-    /// <summary>初始化API健康检查</summary>
+    /// <summary>
+    /// 初始化API健康检查
+    /// </summary>
     private void InitializeHealthCheck()
     {
         _healthCheckCoordinator.StatusChanged += OnHealthStatusChanged;
         _healthCheckCoordinator.Start();
     }
 
-    /// <summary>健康状态变更事件处理</summary>
-    private void OnHealthStatusChanged(object? sender, HealthStatusChangedEventArgs e)
-    {
-        Application.Current?.Dispatcher.BeginInvoke(() => ApiStatus = e.CurrentStatus);
-    }
-
-    /// <summary>执行重试API健康检查</summary>
-    private async Task ExecuteRetryHealthCheckAsync()
-    {
-        Logger.LogInformation("用户手动触发 API 健康检查");
-        await _healthCheckCoordinator.CheckNowAsync();
-    }
-
-    /// <summary>初始化事件订阅</summary>
+    /// <summary>
+    /// 初始化事件订阅
+    /// </summary>
     private void InitializeEvents()
     {
         // 订阅LoginCoordinator的登录成功事件（取代EventAggregator的LoginSuccessEvent）
         _loginCoordinator.LoginSucceeded += OnLoginCoordinatorSuccess;
         // OpenSpec: unify-event-system - 使用AuthEvents聚合类
-        EventAggregator.GetEvent<AuthEvents.PasswordChangedEvent>().Subscribe(OnPasswordChanged);
-        EventAggregator.GetEvent<TokenLifecycleStateChangedEvent>().Subscribe(OnTokenLifecycleStateChanged);
+        Events.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
+        Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(OnTokenLifecycleStateChanged);
         _navigationManager.SubscribeToRegionCollection();
     }
 
-    /// <summary>执行完整的ViewModel初始化</summary>
-    private void InitializeViewModel()
-    {
-        InitializeClock();
-        InitializeHealthCheck();
-        InitializeCommands();
-        InitializeEvents();
-    }
+    #endregion
 
-    /// <summary>统一Tick处理 - 时钟更新</summary>
+    #region 事件处理
+
+    /// <summary>
+    /// 统一Tick处理 - 时钟更新
+    /// </summary>
     private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
         // UI线程更新时间显示（避免应用关闭时空引用）
         Application.Current?.Dispatcher.BeginInvoke(() => CurrentTime = DateTime.Now);
     }
 
-    /// <summary>会话即将过期事件处理 - 仅记录日志，不弹窗打扰用户</summary>
+    /// <summary>
+    /// 健康状态变更事件处理
+    /// </summary>
+    private void OnHealthStatusChanged(object? sender, HealthStatusChangedEventArgs e)
+    {
+        Application.Current?.Dispatcher.BeginInvoke(() => ApiStatus = e.CurrentStatus);
+    }
+
+    /// <summary>
+    /// 会话即将过期事件处理 - 仅记录日志，不弹窗打扰用户
+    /// </summary>
     private void OnSessionExpiring(object? sender, SessionExpiringEventArgs e)
     {
         // 静默处理，等待会话自然过期后自动登出
         Logger.LogDebug("会话即将过期，剩余时间: {RemainingTime}", e.RemainingTime);
     }
 
-    /// <summary>会话已过期事件处理 - 执行自动登出</summary>
+    /// <summary>
+    /// 会话已过期事件处理 - 执行自动登出
+    /// </summary>
     private async void OnSessionExpired(object? sender, EventArgs e)
     {
         Logger.LogWarning("用户会话因不活跃已过期，执行自动登出");
@@ -309,89 +410,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
         });
     }
 
-    /// <summary>处理Token已过期</summary>
-    private async Task HandleTokenExpiredAsync()
-    {
-        Logger.LogWarning("Token已过期，执行自动登出");
-
-        await ShowSuccessMessageAsync("您的登录凭证已过期，请重新登录。");
-
-        // 重置Token生命周期服务
-        _tokenLifecycleService.Reset();
-
-        // 执行登出
-        await PerformLogoutAsync();
-    }
-
-    /// <summary>退出登录命令执行</summary>
-    private async Task ExecuteLogoutAsync()
-    {
-        try
-        {
-            if (_activeConsultationService.HasActiveConsultation)
-            {
-                var leaveResult = await _activeConsultationService.RequestLeaveAsync();
-                if (!leaveResult.CanLeave)
-                {
-                    Logger.LogDebug("用户选择继续停留，取消退出登录");
-                    return;
-                }
-                Logger.LogInformation("活跃医案已处理（选择: {Choice}），继续退出登录", leaveResult.Choice);
-            }
-            else
-            {
-                var result = await ShowConfirmationAsync("确定要退出登录吗？");
-                if (!result)
-                {
-                    return;
-                }
-            }
-
-            // 执行退出登录
-            await PerformLogoutAsync();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "退出登录时发生异常");
-            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("退出登录", ex));
-        }
-    }
-
-    /// <summary>执行实际的退出登录操作</summary>
-    private Task PerformLogoutAsync()
-    {
-        _userActivityTracker.StopTracking();
-        _tokenLifecycleService.Reset(); // Issue #1864: 重置Token生命周期
-        CurrentUser = null;
-        IsLoggedIn = false;
-        Title = "凌隐宝堂中医诊所诊疗系统";
-
-        _navigationManager.ClearContentRegion();
-        _navigationManager.ShowLoginDialog();
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await _servicesFacade.AuthenticationService.LogoutAsync();
-                // OpenSpec: unify-event-system - 使用AuthEvents聚合类
-                EventAggregator.GetEvent<AuthEvents.LogoutCompletedEvent>().Publish(new LogoutCompletedPayload
-                {
-                    LocalLogoutCompleted = true,
-                    ServerLogoutCompleted = true
-                });
-            }
-            catch (Exception ex) { Logger.LogWarning(ex, "后台登出处理异常"); }
-        });
-        return Task.CompletedTask;
-    }
-
-    /// <summary>检查登录状态</summary>
-    private async Task CheckLoginStatusAsync()
-    {
-        try { _navigationManager.ShowLoginDialog(); }
-        catch (Exception ex) { await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("初始化登录界面", ex)); _navigationManager.ShowLoginDialog(); }
-    }
-
     /// <summary>
     /// LoginCoordinator登录成功事件处理
     /// 负责更新UI状态（LoginCoordinator已处理模块加载和导航）
@@ -427,6 +445,73 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     /// <summary>
+    /// 密码修改成功事件处理
+    /// </summary>
+    /// <remarks>OpenSpec: unify-event-system - 使用AuthEvents.PasswordChangedEvent</remarks>
+    private void OnPasswordChanged(PasswordChangedPayload payload)
+    {
+        Logger.LogInformation("收到密码修改成功事件 [用户: {UserName}]，导航到登录界面", payload.UserName);
+        Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            CurrentUser = null;
+            IsLoggedIn = false;
+            Title = "凌隐宝堂中医诊所诊疗系统";
+            _navigationManager.ClearContentRegion();
+            _navigationManager.ShowLoginDialog();
+        });
+    }
+
+    #endregion
+
+    #region 业务逻辑
+
+    /// <summary>
+    /// 处理Token已过期
+    /// </summary>
+    private async Task HandleTokenExpiredAsync()
+    {
+        Logger.LogWarning("Token已过期，执行自动登出");
+
+        await ShowSuccessMessageAsync("您的登录凭证已过期，请重新登录。");
+
+        // 重置Token生命周期服务
+        _tokenLifecycleService.Reset();
+
+        // 执行登出
+        await PerformLogoutAsync();
+    }
+
+    /// <summary>
+    /// 执行实际的退出登录操作
+    /// </summary>
+    private Task PerformLogoutAsync()
+    {
+        _userActivityTracker.StopTracking();
+        _tokenLifecycleService.Reset(); // Issue #1864: 重置Token生命周期
+        CurrentUser = null;
+        IsLoggedIn = false;
+        Title = "凌隐宝堂中医诊所诊疗系统";
+
+        _navigationManager.ClearContentRegion();
+        _navigationManager.ShowLoginDialog();
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _servicesFacade.AuthenticationService.LogoutAsync();
+                // OpenSpec: unify-event-system - 使用AuthEvents聚合类
+                EventAggregator.GetEvent<AuthEvents.LogoutCompletedEvent>().Publish(new LogoutCompletedPayload
+                {
+                    LocalLogoutCompleted = true,
+                    ServerLogoutCompleted = true
+                });
+            }
+            catch (Exception ex) { Logger.LogWarning(ex, "后台登出处理异常"); }
+        });
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// 启动Token生命周期监控
     /// Issue #1864: 客户端Token生命周期管理
     /// </summary>
@@ -452,22 +537,22 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
     }
 
-    /// <summary>密码修改成功事件处理</summary>
-    /// <remarks>OpenSpec: unify-event-system - 使用AuthEvents.PasswordChangedEvent</remarks>
-    private void OnPasswordChanged(PasswordChangedPayload payload)
+    /// <summary>
+    /// 检查登录状态
+    /// </summary>
+    private async Task CheckLoginStatusAsync()
     {
-        Logger.LogInformation("收到密码修改成功事件 [用户: {UserName}]，导航到登录界面", payload.UserName);
-        Application.Current.Dispatcher.InvokeAsync(() =>
-        {
-            CurrentUser = null;
-            IsLoggedIn = false;
-            Title = "凌隐宝堂中医诊所诊疗系统";
-            _navigationManager.ClearContentRegion();
-            _navigationManager.ShowLoginDialog();
-        });
+        try { _navigationManager.ShowLoginDialog(); }
+        catch (Exception ex) { await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("初始化登录界面", ex)); _navigationManager.ShowLoginDialog(); }
     }
 
-    /// <summary>窗口加载完成回调</summary>
+    #endregion
+
+    #region 公共方法
+
+    /// <summary>
+    /// 窗口加载完成回调
+    /// </summary>
     public async Task OnWindowLoadedAsync()
     {
         await Task.Delay(500);
@@ -489,9 +574,69 @@ public class MainWindowViewModel : UnifiedViewModelBase
         return confirmed;
     }
 
+    #endregion
+
+    #region 对话框辅助方法
+
+    /// <summary>
+    /// 显示成功消息
+    /// </summary>
+    protected virtual async Task ShowSuccessMessageAsync(string message)
+    {
+        if (CommonDialogService != null)
+        {
+            await CommonDialogService.ShowInfoAsync(message, "成功");
+            return;
+        }
+        Logger.LogWarning("CommonDialogService不可用，成功消息未显示: {Message}", message);
+    }
+
+    /// <summary>
+    /// 显示错误消息
+    /// </summary>
+    protected virtual async Task ShowErrorMessageAsync(string message)
+    {
+        if (CommonDialogService != null)
+        {
+            await CommonDialogService.ShowErrorAsync(message, "错误");
+            return;
+        }
+        Logger.LogError("CommonDialogService不可用，错误消息未显示: {Message}", message);
+    }
+
+    /// <summary>
+    /// 显示警告消息
+    /// </summary>
+    protected virtual async Task ShowWarningMessageAsync(string message)
+    {
+        if (CommonDialogService != null)
+        {
+            await CommonDialogService.ShowWarningAsync(message, "警告");
+            return;
+        }
+        Logger.LogWarning("CommonDialogService不可用，警告消息未显示: {Message}", message);
+    }
+
+    /// <summary>
+    /// 显示确认对话框
+    /// </summary>
+    protected virtual async Task<bool> ShowConfirmationAsync(string message, string title = "确认")
+    {
+        if (CommonDialogService != null)
+        {
+            return await CommonDialogService.ShowConfirmAsync(message, title);
+        }
+        Logger.LogWarning("CommonDialogService不可用，确认对话框未显示: {Message}，默认返回false", message);
+        return false;
+    }
+
+    #endregion
+
     #region IDisposable
 
-    /// <summary>重写OnDisposing方法，清理资源防止内存泄漏</summary>
+    /// <summary>
+    /// 重写OnDisposing方法，清理资源防止内存泄漏
+    /// </summary>
     protected override void OnDisposing()
     {
         try
@@ -499,7 +644,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
             CleanupTickSubscription();
             CleanupHealthCheckCoordinator();
             UnsubscribeLoginEvent();
-            UnsubscribeTokenLifecycleEvent();
             _navigationManager.UnsubscribeFromRegionCollection();
             _tokenLifecycleService.Dispose(); // Issue #1864: 释放Token生命周期服务
         }
@@ -507,7 +651,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
         finally { base.OnDisposing(); }
     }
 
-    /// <summary>清理Tick订阅和用户活动追踪</summary>
+    /// <summary>
+    /// 清理Tick订阅和用户活动追踪
+    /// </summary>
     private void CleanupTickSubscription()
     {
         _tickService.Tick -= OnTick;
@@ -516,7 +662,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
         _userActivityTracker.StopTracking();
     }
 
-    /// <summary>清理健康检查协调器订阅</summary>
+    /// <summary>
+    /// 清理健康检查协调器订阅
+    /// </summary>
     private void CleanupHealthCheckCoordinator()
     {
         try
@@ -527,18 +675,13 @@ public class MainWindowViewModel : UnifiedViewModelBase
         catch (Exception ex) { Logger.LogError(ex, "清理健康检查协调器失败"); }
     }
 
-    /// <summary>取消登录事件订阅</summary>
+    /// <summary>
+    /// 取消登录事件订阅
+    /// </summary>
     private void UnsubscribeLoginEvent()
     {
         try { _loginCoordinator.LoginSucceeded -= OnLoginCoordinatorSuccess; }
         catch (Exception ex) { Logger.LogError(ex, "取消LoginCoordinator事件订阅失败"); }
-    }
-
-    /// <summary>取消Token生命周期事件订阅</summary>
-    private void UnsubscribeTokenLifecycleEvent()
-    {
-        try { EventAggregator.GetEvent<TokenLifecycleStateChangedEvent>().Unsubscribe(OnTokenLifecycleStateChanged); }
-        catch (Exception ex) { Logger.LogError(ex, "取消TokenLifecycle事件订阅失败"); }
     }
 
     #endregion

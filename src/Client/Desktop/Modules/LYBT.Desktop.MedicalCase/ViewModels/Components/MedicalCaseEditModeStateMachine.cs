@@ -1,12 +1,13 @@
-﻿using System.Windows.Media;
+using System.Windows.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.MedicalCase.Models;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 
 /// <summary>
 /// 医案编辑模式状态机
 /// OpenSpec: refactor-viewmodel-layer Phase 1 - 解决编辑模式状态交织问题
+/// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
 ///
 /// 职责:
 /// - 管理编辑状态（Editing/ReadOnly）
@@ -14,7 +15,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 /// - 计算标题和状态显示
 /// - 处理状态转换
 /// </summary>
-public class MedicalCaseEditModeStateMachine : BindableBase
+public partial class MedicalCaseEditModeStateMachine : ObservableObject
 {
     #region 核心状态字段
 
@@ -22,7 +23,17 @@ public class MedicalCaseEditModeStateMachine : BindableBase
     private EditState _editState = EditState.Editing;
     private EditType _editType = EditType.Create;
     private bool _canEdit;
+
+    /// <summary>
+    /// 是否有未保存的修改
+    /// </summary>
+    [ObservableProperty]
     private bool _hasUnsavedChanges;
+
+    /// <summary>
+    /// 编辑原因（历史编辑模式下）
+    /// </summary>
+    [ObservableProperty]
     private string _editReason = string.Empty;
 
     #endregion
@@ -95,29 +106,11 @@ public class MedicalCaseEditModeStateMachine : BindableBase
         {
             if (SetProperty(ref _canEdit, value))
             {
-                RaisePropertyChanged(nameof(ShowEditButton));
-                RaisePropertyChanged(nameof(ShowEditButtonTopRight));
-                RaisePropertyChanged(nameof(CanEnterEditMode));
+                OnPropertyChanged(nameof(ShowEditButton));
+                OnPropertyChanged(nameof(ShowEditButtonTopRight));
+                OnPropertyChanged(nameof(CanEnterEditMode));
             }
         }
-    }
-
-    /// <summary>
-    /// 是否有未保存的修改
-    /// </summary>
-    public bool HasUnsavedChanges
-    {
-        get => _hasUnsavedChanges;
-        set => SetProperty(ref _hasUnsavedChanges, value);
-    }
-
-    /// <summary>
-    /// 编辑原因（历史编辑模式下）
-    /// </summary>
-    public string EditReason
-    {
-        get => _editReason;
-        set => SetProperty(ref _editReason, value);
     }
 
     #endregion
@@ -323,28 +316,28 @@ public class MedicalCaseEditModeStateMachine : BindableBase
 
     private void RaiseAllComputedPropertiesChanged()
     {
-        RaisePropertyChanged(nameof(IsEditing));
-        RaisePropertyChanged(nameof(IsReadOnly));
-        RaisePropertyChanged(nameof(IsHistoricalEditMode));
-        RaisePropertyChanged(nameof(CanEnterEditMode));
-        RaisePropertyChanged(nameof(ShowEditButton));
-        RaisePropertyChanged(nameof(ShowEditButtonTopRight));
-        RaisePropertyChanged(nameof(ShowSaveButton));
-        RaisePropertyChanged(nameof(ShowDraftButton));
-        RaisePropertyChanged(nameof(ShowCompleteButton));
-        RaisePropertyChanged(nameof(HeaderTitle));
-        RaisePropertyChanged(nameof(BackButtonText));
-        RaisePropertyChanged(nameof(EditStateText));
-        RaisePropertyChanged(nameof(EditStateColor));
+        OnPropertyChanged(nameof(IsEditing));
+        OnPropertyChanged(nameof(IsReadOnly));
+        OnPropertyChanged(nameof(IsHistoricalEditMode));
+        OnPropertyChanged(nameof(CanEnterEditMode));
+        OnPropertyChanged(nameof(ShowEditButton));
+        OnPropertyChanged(nameof(ShowEditButtonTopRight));
+        OnPropertyChanged(nameof(ShowSaveButton));
+        OnPropertyChanged(nameof(ShowDraftButton));
+        OnPropertyChanged(nameof(ShowCompleteButton));
+        OnPropertyChanged(nameof(HeaderTitle));
+        OnPropertyChanged(nameof(BackButtonText));
+        OnPropertyChanged(nameof(EditStateText));
+        OnPropertyChanged(nameof(EditStateColor));
     }
 
     private void RaiseAllPropertiesChanged()
     {
-        RaisePropertyChanged(nameof(WorkspaceMode));
-        RaisePropertyChanged(nameof(EditState));
-        RaisePropertyChanged(nameof(EditType));
-        RaisePropertyChanged(nameof(CanEdit));
-        RaisePropertyChanged(nameof(HasUnsavedChanges));
+        OnPropertyChanged(nameof(WorkspaceMode));
+        OnPropertyChanged(nameof(EditState));
+        OnPropertyChanged(nameof(EditType));
+        OnPropertyChanged(nameof(CanEdit));
+        OnPropertyChanged(nameof(HasUnsavedChanges));
         RaiseAllComputedPropertiesChanged();
     }
 

@@ -11,11 +11,13 @@ namespace LYBT.Desktop.MedicalCase.Controls;
 
 /// <summary>
 /// 医案编辑控件 - 编辑模式
+/// OpenSpec: refactor-medicalcase-workspace V2
 /// OpenSpec: refactor-medicalcase-management
-/// OpenSpec: unify-herb-list-controls - 统一使用HerbListEditor编辑处方
+/// OpenSpec: unify-herb-controls-to-herbs-module
 ///
-/// 可编辑字段：诊断信息（现病史、舌诊、脉诊、中医诊断）、处方药材、备注
-/// 只读显示：患者信息、系统信息
+/// 支持两种显示模式:
+/// - Full (默认): MasterDetail场景，显示患者信息、诊断、处方、备注、系统信息
+/// - Compact: Workspace场景，仅显示诊断+处方+工具栏
 /// </summary>
 public partial class MedicalCaseEditControl : UserControl
 {
@@ -24,7 +26,26 @@ public partial class MedicalCaseEditControl : UserControl
         InitializeComponent();
     }
 
-    #region 患者信息（只读）
+    #region 显示模式
+
+    /// <summary>
+    /// 是否为紧凑模式 (Workspace场景)
+    /// True: 显示简化布局 (工具栏+诊断+处方)
+    /// False: 显示完整布局 (患者信息+诊断+处方+备注+系统信息)
+    /// </summary>
+    public static readonly DependencyProperty IsCompactModeProperty =
+        DependencyProperty.Register(nameof(IsCompactMode), typeof(bool), typeof(MedicalCaseEditControl),
+            new PropertyMetadata(false));
+
+    public bool IsCompactMode
+    {
+        get => (bool)GetValue(IsCompactModeProperty);
+        set => SetValue(IsCompactModeProperty, value);
+    }
+
+    #endregion
+
+    #region 患者信息（只读）- Full模式
 
     public static readonly DependencyProperty PatientNameProperty =
         DependencyProperty.Register(nameof(PatientName), typeof(string), typeof(MedicalCaseEditControl));
@@ -109,7 +130,6 @@ public partial class MedicalCaseEditControl : UserControl
     #endregion
 
     #region 处方信息（可编辑）
-    // OpenSpec: unify-herb-list-controls - 统一使用HerbListEditor编辑处方
 
     public static readonly DependencyProperty HerbCountProperty =
         DependencyProperty.Register(nameof(HerbCount), typeof(int), typeof(MedicalCaseEditControl),
@@ -122,7 +142,8 @@ public partial class MedicalCaseEditControl : UserControl
     }
 
     public static readonly DependencyProperty DoseCountProperty =
-        DependencyProperty.Register(nameof(DoseCount), typeof(int?), typeof(MedicalCaseEditControl));
+        DependencyProperty.Register(nameof(DoseCount), typeof(int?), typeof(MedicalCaseEditControl),
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
     public int? DoseCount
     {
@@ -140,11 +161,24 @@ public partial class MedicalCaseEditControl : UserControl
     }
 
     /// <summary>
-    /// 药材列表 - 用于HerbListEditor编辑
+    /// 所有可用药材列表 - 用于HerbListControl药材选择
+    /// </summary>
+    public static readonly DependencyProperty AllHerbsProperty =
+        DependencyProperty.Register(nameof(AllHerbs), typeof(IEnumerable), typeof(MedicalCaseEditControl),
+            new PropertyMetadata(null));
+
+    public IEnumerable? AllHerbs
+    {
+        get => (IEnumerable?)GetValue(AllHerbsProperty);
+        set => SetValue(AllHerbsProperty, value);
+    }
+
+    /// <summary>
+    /// 药材列表 - 用于HerbListControl编辑(双向绑定)
     /// </summary>
     public static readonly DependencyProperty HerbItemsProperty =
         DependencyProperty.Register(nameof(HerbItems), typeof(IEnumerable), typeof(MedicalCaseEditControl),
-            new PropertyMetadata(null));
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
     public IEnumerable? HerbItems
     {
@@ -154,45 +188,84 @@ public partial class MedicalCaseEditControl : UserControl
 
     #endregion
 
-    #region 处方编辑命令
+    #region Compact模式专用属性
 
     /// <summary>
-    /// 删除药材命令
+    /// 用法 - Compact模式编辑
     /// </summary>
-    public static readonly DependencyProperty DeleteHerbCommandProperty =
-        DependencyProperty.Register(nameof(DeleteHerbCommand), typeof(ICommand), typeof(MedicalCaseEditControl),
-            new PropertyMetadata(null));
+    public static readonly DependencyProperty UsageProperty =
+        DependencyProperty.Register(nameof(Usage), typeof(string), typeof(MedicalCaseEditControl),
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-    public ICommand? DeleteHerbCommand
+    public string? Usage
     {
-        get => (ICommand?)GetValue(DeleteHerbCommandProperty);
-        set => SetValue(DeleteHerbCommandProperty, value);
+        get => (string?)GetValue(UsageProperty);
+        set => SetValue(UsageProperty, value);
     }
 
     /// <summary>
-    /// 剂量输入完成命令
+    /// 用法选项列表
     /// </summary>
-    public static readonly DependencyProperty DosageCompletedCommandProperty =
-        DependencyProperty.Register(nameof(DosageCompletedCommand), typeof(ICommand), typeof(MedicalCaseEditControl),
-            new PropertyMetadata(null));
+    public static readonly DependencyProperty UsageOptionsProperty =
+        DependencyProperty.Register(nameof(UsageOptions), typeof(IEnumerable), typeof(MedicalCaseEditControl));
 
-    public ICommand? DosageCompletedCommand
+    public IEnumerable? UsageOptions
     {
-        get => (ICommand?)GetValue(DosageCompletedCommandProperty);
-        set => SetValue(DosageCompletedCommandProperty, value);
+        get => (IEnumerable?)GetValue(UsageOptionsProperty);
+        set => SetValue(UsageOptionsProperty, value);
     }
 
     /// <summary>
-    /// 添加新行命令
+    /// 总价 - Compact模式显示
     /// </summary>
-    public static readonly DependencyProperty AddNewRowCommandProperty =
-        DependencyProperty.Register(nameof(AddNewRowCommand), typeof(ICommand), typeof(MedicalCaseEditControl),
-            new PropertyMetadata(null));
+    public static readonly DependencyProperty TotalPriceProperty =
+        DependencyProperty.Register(nameof(TotalPrice), typeof(decimal), typeof(MedicalCaseEditControl),
+            new PropertyMetadata(0m));
 
-    public ICommand? AddNewRowCommand
+    public decimal TotalPrice
     {
-        get => (ICommand?)GetValue(AddNewRowCommandProperty);
-        set => SetValue(AddNewRowCommandProperty, value);
+        get => (decimal)GetValue(TotalPriceProperty);
+        set => SetValue(TotalPriceProperty, value);
+    }
+
+    #endregion
+
+    #region 工具栏命令 - V2 Compact模式
+
+    /// <summary>
+    /// 导入经验方命令
+    /// </summary>
+    public static readonly DependencyProperty ImportFormulaCommandProperty =
+        DependencyProperty.Register(nameof(ImportFormulaCommand), typeof(ICommand), typeof(MedicalCaseEditControl));
+
+    public ICommand? ImportFormulaCommand
+    {
+        get => (ICommand?)GetValue(ImportFormulaCommandProperty);
+        set => SetValue(ImportFormulaCommandProperty, value);
+    }
+
+    /// <summary>
+    /// 导入历史处方命令
+    /// </summary>
+    public static readonly DependencyProperty ImportHistoryCommandProperty =
+        DependencyProperty.Register(nameof(ImportHistoryCommand), typeof(ICommand), typeof(MedicalCaseEditControl));
+
+    public ICommand? ImportHistoryCommand
+    {
+        get => (ICommand?)GetValue(ImportHistoryCommandProperty);
+        set => SetValue(ImportHistoryCommandProperty, value);
+    }
+
+    /// <summary>
+    /// 清空所有药材命令
+    /// </summary>
+    public static readonly DependencyProperty ClearAllCommandProperty =
+        DependencyProperty.Register(nameof(ClearAllCommand), typeof(ICommand), typeof(MedicalCaseEditControl));
+
+    public ICommand? ClearAllCommand
+    {
+        get => (ICommand?)GetValue(ClearAllCommandProperty);
+        set => SetValue(ClearAllCommandProperty, value);
     }
 
     #endregion
@@ -219,7 +292,7 @@ public partial class MedicalCaseEditControl : UserControl
 
     #endregion
 
-    #region 备注（可编辑）
+    #region 备注（可编辑）- Full模式
 
     public static readonly DependencyProperty RemarkProperty =
         DependencyProperty.Register(nameof(Remark), typeof(string), typeof(MedicalCaseEditControl),
@@ -233,7 +306,7 @@ public partial class MedicalCaseEditControl : UserControl
 
     #endregion
 
-    #region 系统信息（只读）
+    #region 系统信息（只读）- Full模式
 
     public static readonly DependencyProperty CreatedAtProperty =
         DependencyProperty.Register(nameof(CreatedAt), typeof(DateTime), typeof(MedicalCaseEditControl));

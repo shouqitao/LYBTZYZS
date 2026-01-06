@@ -216,6 +216,7 @@
                     Margin="16"/>
 
                 <!-- 编辑模式内容 -->
+                <!-- OpenSpec: unify-herb-controls-to-herbs-module - 使用HerbListControl替代HerbListEditor -->
                 <formulaControls:FormulaEditControl
                     Grid.Row="1"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -228,9 +229,8 @@
                     CreatedAt="{Binding EditDetail.CreatedAt}"
                     UpdatedAt="{Binding EditDetail.UpdatedAt}"
                     HerbCount="{Binding HerbCount}"
-                    HerbItems="{Binding EditHerbItems}"
-                    DeleteHerbCommand="{Binding DeleteHerbCommand}"
-                    AddNewRowCommand="{Binding AddHerbCommand}"
+                    AllHerbs="{Binding AllHerbs}"
+                    HerbItems="{Binding HerbItems, Mode=TwoWay}"
                     ErrorsSource="{Binding EditDetail.Errors}"
                     Margin="16"/>
 

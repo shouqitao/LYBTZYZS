@@ -1,13 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Contracts.Services;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
     /// 带验证功能的对话框ViewModel基类
-    /// OpenSpec: migrate-to-communitytoolkit-mvvm
+    /// OpenSpec: standardize-viewmodel-framework
     ///
     /// 继承自ValidatingViewModelBase，提供:
     /// - INotifyDataErrorInfo验证支持
@@ -38,10 +39,12 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         #region 构造函数
 
         /// <summary>
-        /// 构造函数（仅日志）
+        /// 构造函数（仅日志和事件）
         /// </summary>
-        protected ValidatingDialogViewModelBase(ILoggerFactory loggerFactory)
-            : base(loggerFactory)
+        protected ValidatingDialogViewModelBase(
+            ILoggerFactory loggerFactory,
+            IEventAggregator eventAggregator)
+            : base(loggerFactory, eventAggregator)
         {
         }
 
@@ -50,8 +53,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected ValidatingDialogViewModelBase(
             ILoggerFactory loggerFactory,
+            IEventAggregator eventAggregator,
             ICommonDialogService dialogService)
-            : base(loggerFactory)
+            : base(loggerFactory, eventAggregator)
         {
             DialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
         }

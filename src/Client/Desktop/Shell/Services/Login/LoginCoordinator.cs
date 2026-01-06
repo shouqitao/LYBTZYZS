@@ -441,8 +441,8 @@ public class LoginCoordinator : ILoginCoordinator
                 "UsersModule",
                 "HerbsModule",
                 "FormulaModule",
-                "MedicalCaseModule",
-                "PrescriptionsModule"
+                "MedicalCaseModule"
+                // [已删除] "PrescriptionsModule" - 空壳模块已移除
             });
         }
 

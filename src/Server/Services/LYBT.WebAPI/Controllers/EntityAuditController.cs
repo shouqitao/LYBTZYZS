@@ -1,5 +1,4 @@
 ﻿using Asp.Versioning;
-using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
@@ -21,16 +20,13 @@ namespace LYBT.WebAPI.Controllers
     public class EntityAuditController : BaseApiController
     {
         private readonly AppDbContext _dbContext;
-        private readonly IMapper _mapper;
 
         public EntityAuditController(
             AppDbContext dbContext,
-            IMapper mapper,
             ILogger<EntityAuditController> logger)
             : base(logger)
         {
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         /// <summary>

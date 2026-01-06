@@ -1,6 +1,6 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.Formula.Models.Items;
 
@@ -8,208 +8,114 @@ namespace LYBT.Desktop.Formula.Models.Items;
 /// 验方列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用FormulaDetailDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与FormulaDetailDto一致，确保XAML绑定兼容
+/// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
 /// </summary>
-public class FormulaItem : BindableBase
+public partial class FormulaItem : ObservableObject
 {
+    [ObservableProperty]
     private Guid _id;
-    public Guid Id
-    {
-        get => _id;
-        set => SetProperty(ref _id, value);
-    }
 
+    [ObservableProperty]
     private string _name = string.Empty;
-    public string Name
-    {
-        get => _name;
-        set => SetProperty(ref _name, value);
-    }
 
+    [ObservableProperty]
     private string? _pinyin;
-    public string? Pinyin
-    {
-        get => _pinyin;
-        set => SetProperty(ref _pinyin, value);
-    }
 
+    [ObservableProperty]
     private string? _category;
-    public string? Category
-    {
-        get => _category;
-        set => SetProperty(ref _category, value);
-    }
 
-    private string? _source;
-    public string? Source
-    {
-        get => _source;
-        set => SetProperty(ref _source, value);
-    } // 来源
+    [ObservableProperty]
+    private string? _source; // 来源
 
-    private string? _composition;
-    public string? Composition
-    {
-        get => _composition;
-        set => SetProperty(ref _composition, value);
-    } // 组成
+    [ObservableProperty]
+    private string? _composition; // 组成
 
-    private string? _effect;
-    public string? Effect
-    {
-        get => _effect;
-        set => SetProperty(ref _effect, value);
-    } // 功效
+    [ObservableProperty]
+    private string? _effect; // 功效
 
     /// <summary>
     /// 主治 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为Indications，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
     private string? _indications;
-    public string? Indications
-    {
-        get => _indications;
-        set => SetProperty(ref _indications, value);
-    }
 
-    private string? _usage;
-    public string? Usage
-    {
-        get => _usage;
-        set => SetProperty(ref _usage, value);
-    } // 用法用量
+    [ObservableProperty]
+    private string? _usage; // 用法用量
 
-    private string? _modification;
-    public string? Modification
-    {
-        get => _modification;
-        set => SetProperty(ref _modification, value);
-    } // 加减
+    [ObservableProperty]
+    private string? _modification; // 加减
 
     /// <summary>
     /// 禁忌 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为Contraindications，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
     private string? _contraindications;
-    public string? Contraindications
-    {
-        get => _contraindications;
-        set => SetProperty(ref _contraindications, value);
-    }
 
     /// <summary>
     /// 注意事项/备注 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为Remark，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
     private string? _remark;
-    public string? Remark
-    {
-        get => _remark;
-        set => SetProperty(ref _remark, value);
-    }
 
     /// <summary>
     /// 创建者ID - OpenSpec: unify-frontend-backend-types Phase 4
     /// 统一使用Guid?，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
     private Guid? _createdBy;
-    public Guid? CreatedBy
-    {
-        get => _createdBy;
-        set => SetProperty(ref _createdBy, value);
-    }
 
-    private bool _isClassic;
-    public bool IsClassic
-    {
-        get => _isClassic;
-        set => SetProperty(ref _isClassic, value);
-    } // 是否经典方
+    [ObservableProperty]
+    private bool _isClassic; // 是否经典方
 
-    private bool _isPersonal;
-    public bool IsPersonal
-    {
-        get => _isPersonal;
-        set => SetProperty(ref _isPersonal, value);
-    } // 是否个人验方
+    [ObservableProperty]
+    private bool _isPersonal; // 是否个人验方
 
     /// <summary>
     /// 状态 - OpenSpec: unify-frontend-backend-types Phase 4
     /// 统一使用CommonStatus枚举，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsActive))]
+    [NotifyPropertyChangedFor(nameof(StatusText))]
+    [NotifyPropertyChangedFor(nameof(StatusColor))]
+    [NotifyPropertyChangedFor(nameof(IsAvailable))]
     private CommonStatus _status = CommonStatus.Enabled;
-    public CommonStatus Status
-    {
-        get => _status;
-        set
-        {
-            if (SetProperty(ref _status, value))
-            {
-                RaisePropertyChanged(nameof(IsActive));
-                RaisePropertyChanged(nameof(StatusText));
-                RaisePropertyChanged(nameof(StatusColor));
-                RaisePropertyChanged(nameof(IsAvailable));
-            }
-        }
-    }
 
     /// <summary>
     /// 是否启用（向后兼容计算属性）- OpenSpec: unify-frontend-backend-types Phase 4
     /// </summary>
     public bool IsActive => Status == CommonStatus.Enabled;
 
-    private int _usageCount;
-    public int UsageCount
-    {
-        get => _usageCount;
-        set => SetProperty(ref _usageCount, value);
-    } // 使用次数
+    [ObservableProperty]
+    private int _usageCount; // 使用次数
 
+    [ObservableProperty]
     private DateTime _createdAt;
-    public DateTime CreatedAt
-    {
-        get => _createdAt;
-        set => SetProperty(ref _createdAt, value);
-    }
 
+    [ObservableProperty]
     private DateTime? _updatedAt;
-    public DateTime? UpdatedAt
-    {
-        get => _updatedAt;
-        set => SetProperty(ref _updatedAt, value);
-    }
 
+    [ObservableProperty]
     private List<FormulaHerbItem> _herbs = new();
-    public List<FormulaHerbItem> Herbs
-    {
-        get => _herbs;
-        set => SetProperty(ref _herbs, value);
-    }
 
+    [ObservableProperty]
     private bool _isSelected;
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetProperty(ref _isSelected, value);
-    }
 
+    [ObservableProperty]
     private bool _isExpanded;
-    public bool IsExpanded
-    {
-        get => _isExpanded;
-        set => SetProperty(ref _isExpanded, value);
-    }
 
+    [ObservableProperty]
     private bool _isFavorite;
-    public bool IsFavorite
-    {
-        get => _isFavorite;
-        set => SetProperty(ref _isFavorite, value);
-    }
 
     /// <summary>
     /// 从FormulaDetailDto创建FormulaItem
     /// OpenSpec: unify-frontend-backend-types Phase 4 - Status/CreatedBy直接使用
     /// </summary>
+    /// <remarks>已废弃：请使用FormulaMappingService.ToItem()</remarks>
+    [Obsolete("请使用FormulaMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public static FormulaItem FromDto(FormulaDetailDto dto)
     {
         var item = new FormulaItem
@@ -238,7 +144,9 @@ public class FormulaItem : BindableBase
         // 转换药材列表
         if (dto.Herbs != null)
         {
+#pragma warning disable CS0618
             item.Herbs = dto.Herbs.Select(h => FormulaHerbItem.FromDto(h)).ToList();
+#pragma warning restore CS0618
         }
 
         return item;
@@ -248,6 +156,8 @@ public class FormulaItem : BindableBase
     /// 转换为FormulaDetailDto（用于API调用）
     /// OpenSpec: unify-frontend-backend-types Phase 4 - Status直接使用枚举
     /// </summary>
+    /// <remarks>已废弃：请使用FormulaMappingService.ToDto()</remarks>
+    [Obsolete("请使用FormulaMappingService.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public FormulaDetailDto ToDto()
     {
         return new FormulaDetailDto
@@ -262,7 +172,9 @@ public class FormulaItem : BindableBase
             Status = Status, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt,
+#pragma warning disable CS0618
             Herbs = Herbs.Select(h => h.ToDto()).ToList()
+#pragma warning restore CS0618
         };
     }
 

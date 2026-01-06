@@ -16,10 +16,9 @@ public class MedicalCaseWorkspaceCoordinator
 {
     #region 字段
 
-    private readonly MedicalCaseLifecycleHandler _lifecycleHandler;
+    private readonly IMedicalCaseService _medicalCaseService;
     private readonly MedicalCaseDataLoader _dataLoader;
     private readonly IMedicalCaseRepository _repository;
-    private readonly IAuditRequirementChecker? _auditRequirementChecker;
     private readonly ILogger<MedicalCaseWorkspaceCoordinator> _logger;
 
     #endregion
@@ -27,17 +26,15 @@ public class MedicalCaseWorkspaceCoordinator
     #region 构造函数
 
     public MedicalCaseWorkspaceCoordinator(
-        MedicalCaseLifecycleHandler lifecycleHandler,
+        IMedicalCaseService medicalCaseService,
         MedicalCaseDataLoader dataLoader,
         IMedicalCaseRepository repository,
-        ILoggerFactory loggerFactory,
-        IAuditRequirementChecker? auditRequirementChecker = null)
+        ILoggerFactory loggerFactory)
     {
-        _lifecycleHandler = lifecycleHandler ?? throw new ArgumentNullException(nameof(lifecycleHandler));
+        _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = loggerFactory.CreateLogger<MedicalCaseWorkspaceCoordinator>();
-        _auditRequirementChecker = auditRequirementChecker;
     }
 
     #endregion
@@ -111,7 +108,7 @@ public class MedicalCaseWorkspaceCoordinator
         }
 
         // 更新状态为Draft
-        var result = await _lifecycleHandler.SaveDraftAsync(medicalCaseId);
+        var result = await _medicalCaseService.SaveDraftAsync(medicalCaseId);
 
         if (result.success)
         {
@@ -154,7 +151,7 @@ public class MedicalCaseWorkspaceCoordinator
         }
 
         // 完成医案
-        var result = await _lifecycleHandler.CompleteAsync(medicalCaseId);
+        var result = await _medicalCaseService.CompleteMedicalCaseAsync(medicalCaseId);
 
         if (result.success)
         {
@@ -186,7 +183,7 @@ public class MedicalCaseWorkspaceCoordinator
         }
 
         // 执行软删除
-        var result = await _lifecycleHandler.CancelAsync(medicalCaseId);
+        var result = await _medicalCaseService.CancelMedicalCaseAsync(medicalCaseId);
 
         if (result.success)
         {
@@ -204,26 +201,12 @@ public class MedicalCaseWorkspaceCoordinator
     /// 检查是否需要审计
     /// </summary>
     /// <param name="currentUserId">当前用户ID</param>
-    /// <returns>
-    /// null: 用户取消
-    /// 空字符串: 无需审计
-    /// 非空字符串: 需要审计，返回审计原因（由调用方获取）
-    /// </returns>
+    /// <returns>是否需要审计（当前始终返回false）</returns>
+    /// <remarks>OpenSpec: migrate-views-to-role-modules - 审计功能后续单独规划</remarks>
     public bool CheckAuditRequired(Guid currentUserId)
     {
-        if (_auditRequirementChecker == null)
-        {
-            return false;
-        }
-
-        var medicalCase = _dataLoader.CachedMedicalCase;
-        if (medicalCase == null)
-        {
-            _logger.LogWarning("CheckAuditRequired: 无法获取当前医案数据");
-            return false;
-        }
-
-        return _auditRequirementChecker.IsAuditRequired(medicalCase, currentUserId);
+        // TODO: 审计功能将来单独创建project实现
+        return false;
     }
 
     #endregion

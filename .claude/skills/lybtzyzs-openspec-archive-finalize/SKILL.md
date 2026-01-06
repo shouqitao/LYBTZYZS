@@ -9,7 +9,7 @@ description: OpenSpec归档完成后的自动化流程：代码审查→提交�
 
 1. **代码审查** - 检查归档变更涉及的代码质量（调用lybtzyzs-code-review）
 2. **提交推送** - 审查通过后自动commit并push到远程仓库
-3. **保存记忆** - 将变更关键信息保存到Graphiti知识图谱
+3. **保存记忆** - 将变更关键信息保存到Serena记忆系统（`.serena/memories/`）
 4. **同步文档** - 更新docs系统文档保持同步
 
 ## 何时使用
@@ -50,11 +50,11 @@ description: OpenSpec归档完成后的自动化流程：代码审查→提交�
                     │
                     ▼
 ┌──────────────────────────────────────────────────────────────┐
-│  STEP 3: 保存Graphiti记忆                                    │
+│  STEP 3: 保存Serena记忆                                      │
 │  ─────────────────────────                                  │
 │  • 提取变更关键信息（change-id, 影响范围, 技术决策）            │
-│  • 构建知识节点（实体、关系、事实）                            │
-│  • 保存到知识图谱（group_id=LYBTZYZS）                        │
+│  • 创建Markdown记忆文件                                       │
+│  • 保存到 .serena/memories/openspec-{change-id}-{date}.md    │
 └──────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -126,19 +126,18 @@ Related: openspec refactor-medicalcase-api
 
 ---
 
-### 3. Graphiti记忆保存
+### 3. Serena记忆保存
 
-**节点创建**: 3个
-- MedicalCaseAPI (Entity)
-- RowVersionConcurrency (Concept)
-- EditModeStateMachine (Pattern)
+**记忆文件**: `.serena/memories/openspec-refactor-medicalcase-api-2025-11-29.md`
 
-**事实记录**: 5条
-- MedicalCase模块重构了API接口设计
-- 引入了状态机管理编辑模式
-- ...
+**记录内容**:
+- 变更摘要
+- 影响范围（模块列表）
+- 关键技术决策
+- 规范更新
+- 验收结果
 
-**Group ID**: LYBTZYZS
+**位置**: `.serena/memories/`
 
 ---
 
@@ -172,9 +171,7 @@ Related: openspec refactor-medicalcase-api
 1. **Bash (git)** - 获取变更文件、提交推送
 2. **Grep** - 快速代码扫描
 3. **mcp__serena** - 深度代码分析
-4. **mcp__graphiti-memory** - 知识图谱保存
-   - `add_memory` - 添加变更记录
-   - `search_memory_facts` - 检查是否已存在
+4. **Write** - 创建Serena记忆文件（`.serena/memories/`）
 5. **mcp__filesystem** - 文件读写操作
 6. **mcp__time** - 获取当前时间
 
@@ -195,9 +192,9 @@ Related: openspec refactor-medicalcase-api
    └─ git commit -m "[生成的提交信息]"
    └─ git push origin master
 
-4. 保存Graphiti记忆
-   └─ 构建episode内容（变更摘要）
-   └─ add_memory(name, episode_body, group_id="LYBTZYZS")
+4. 保存Serena记忆
+   └─ 构建Markdown记忆文件内容
+   └─ Write(.serena/memories/openspec-{change-id}-{date}.md)
 
 5. 同步文档
    └─ 检测变更影响的文档
@@ -220,33 +217,56 @@ Related: openspec refactor-medicalcase-api
 
 **通过标准**: 评分 >= 8.0/10 且无严重问题
 
-## Graphiti记忆结构
+## Serena记忆文件结构
 
-```json
-{
-  "name": "OpenSpec归档: {change-id}",
-  "episode_body": {
-    "type": "openspec-archive",
-    "change_id": "refactor-medicalcase-api",
-    "summary": "重构医案API接口设计",
-    "affected_modules": ["MedicalCase", "Consultation"],
-    "key_decisions": [
-      "引入状态机管理编辑模式",
-      "统一RowVersion并发处理"
-    ],
-    "commit_hash": "a1b2c3d",
-    "archived_at": "2025-11-29T15:30:00+08:00"
-  },
-  "group_id": "LYBTZYZS",
-  "source": "json",
-  "source_description": "OpenSpec归档自动记录"
-}
+**文件位置**: `.serena/memories/openspec-{change-id}-{date}.md`
+
+**文件内容模板**:
+
+```markdown
+# OpenSpec归档: {change-id}
+
+**归档日期**: {date}
+**提交哈希**: {commit-hash}
+**状态**: 已完成
+
+---
+
+## 变更摘要
+
+{summary}
+
+## 影响范围
+
+### 新增模块
+- {new-modules}
+
+### 修改模块
+- {modified-modules}
+
+## 关键技术决策
+
+1. {decision-1}
+2. {decision-2}
+
+## 规范更新
+
+{spec-updates}
+
+## 验收结果
+
+- 编译验证: {build-status}
+- 代码审查: {review-score}
+
+---
+
+**维护者**: Claude Code
 ```
 
 ## 限制条件
 
 - 需要git仓库且有远程origin配置
-- 需要Graphiti MCP服务可用
+- 需要`.serena/memories/`目录存在
 - 代码审查仅支持.NET/C#代码
 - 文档同步仅处理docs/目录下的Markdown文件
 
@@ -256,14 +276,14 @@ Related: openspec refactor-medicalcase-api
 |-----|---------|
 | 代码审查失败 | 输出问题报告，停止流程，不提交代码 |
 | git push失败 | 保留本地提交，提示手动解决冲突 |
-| Graphiti不可用 | 跳过记忆保存，继续其他步骤 |
+| 记忆目录不存在 | 自动创建`.serena/memories/`目录 |
 | 文档同步失败 | 记录失败原因，继续完成流程 |
 
 ## 最佳实践
 
 1. **归档前确保代码质量** - 在归档前先执行代码审查
 2. **检查未提交更改** - 确保工作区干净再执行归档
-3. **定期验证Graphiti连接** - 确保记忆服务可用
+3. **记忆文件命名规范** - 使用`openspec-{change-id}-{date}.md`格式
 4. **文档同步时仔细审查** - 自动生成的文档可能需要人工调整
 
 ## 版本历史
@@ -271,9 +291,10 @@ Related: openspec refactor-medicalcase-api
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
 | v1.0 | 2025-11-29 | 初始版本 |
+| v1.1 | 2026-01-05 | 记忆存储从Graphiti迁移到Serena（`.serena/memories/`） |
 
 ---
 
 **维护者**：Claude Code
 **反馈渠道**：GitHub Issues
-**最后更新**：2025-11-29
+**最后更新**：2026-01-05

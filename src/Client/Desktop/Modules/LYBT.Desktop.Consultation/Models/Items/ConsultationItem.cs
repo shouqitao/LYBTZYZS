@@ -1,5 +1,5 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Shared.Models.Contracts.Consultation;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.Consultation.Models.Items;
 
@@ -13,167 +13,115 @@ namespace LYBT.Desktop.Consultation.Models.Items;
 /// - Patient相关字段(Gender/Age/History等) → 应从Patient实体获取
 /// - Syndrome → 已废弃
 /// - Status/CompletedAt/PrescriptionId → 无后端对应
+/// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
 /// </summary>
-public class ConsultationItem : BindableBase
+public partial class ConsultationItem : ObservableObject
 {
     #region 基础标识字段
 
-    private Guid _id = Guid.Empty;
     /// <summary>
     /// 问诊记录ID（等于MedicalCaseId，共享主键）
     /// </summary>
-    public Guid Id
-    {
-        get => _id;
-        set => SetProperty(ref _id, value);
-    }
+    [ObservableProperty]
+    private Guid _id = Guid.Empty;
 
-    private Guid _medicalCaseId = Guid.Empty;
     /// <summary>
     /// 关联的病历ID
     /// </summary>
-    public Guid MedicalCaseId
-    {
-        get => _medicalCaseId;
-        set => SetProperty(ref _medicalCaseId, value);
-    }
+    [ObservableProperty]
+    private Guid _medicalCaseId = Guid.Empty;
 
-    private Guid _patientId = Guid.Empty;
     /// <summary>
     /// 患者ID
     /// </summary>
-    public Guid PatientId
-    {
-        get => _patientId;
-        set => SetProperty(ref _patientId, value);
-    }
+    [ObservableProperty]
+    private Guid _patientId = Guid.Empty;
 
-    private Guid _userId = Guid.Empty;
     /// <summary>
     /// 医生用户ID
     /// </summary>
-    public Guid UserId
-    {
-        get => _userId;
-        set => SetProperty(ref _userId, value);
-    }
+    [ObservableProperty]
+    private Guid _userId = Guid.Empty;
 
     #endregion
 
     #region 展示字段
 
-    private string _patientName = string.Empty;
     /// <summary>
     /// 患者姓名（展示用）
     /// </summary>
-    public string PatientName
-    {
-        get => _patientName;
-        set => SetProperty(ref _patientName, value);
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayText))]
+    private string _patientName = string.Empty;
 
-    private string _doctorName = string.Empty;
     /// <summary>
     /// 医生姓名（展示用）
     /// </summary>
-    public string DoctorName
-    {
-        get => _doctorName;
-        set => SetProperty(ref _doctorName, value);
-    }
+    [ObservableProperty]
+    private string _doctorName = string.Empty;
 
     #endregion
 
     #region 诊断核心字段
 
-    private string? _presentIllness;
     /// <summary>
     /// 现病史
     /// </summary>
-    public string? PresentIllness
-    {
-        get => _presentIllness;
-        set => SetProperty(ref _presentIllness, value);
-    }
+    [ObservableProperty]
+    private string? _presentIllness;
 
-    private string? _tongueDiagnosis;
     /// <summary>
     /// 舌诊
     /// </summary>
-    public string? TongueDiagnosis
-    {
-        get => _tongueDiagnosis;
-        set => SetProperty(ref _tongueDiagnosis, value);
-    }
+    [ObservableProperty]
+    private string? _tongueDiagnosis;
 
-    private string? _pulseDiagnosis;
     /// <summary>
     /// 脉诊
     /// </summary>
-    public string? PulseDiagnosis
-    {
-        get => _pulseDiagnosis;
-        set => SetProperty(ref _pulseDiagnosis, value);
-    }
+    [ObservableProperty]
+    private string? _pulseDiagnosis;
 
-    private string? _tcmDiagnosis;
     /// <summary>
     /// 中医诊断（必填）
-    /// 注：属性名保持TcmDiagnosis以兼容现有XAML绑定，Phase 2将统一为TCMDiagnosis
+    /// OpenSpec: consolidate-panel-viewmodels - 属性名统一为TcmDiagnosis，与DTO和XAML绑定一致
     /// </summary>
-    public string? TCMDiagnosis
-    {
-        get => _tcmDiagnosis;
-        set => SetProperty(ref _tcmDiagnosis, value);
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDiagnosisComplete))]
+    [NotifyPropertyChangedFor(nameof(DisplayText))]
+    private string? _tcmDiagnosis;
 
     #endregion
 
     #region 审计字段
 
-    private DateTime _createdAt = DateTime.Now;
     /// <summary>
     /// 创建时间
     /// </summary>
-    public DateTime CreatedAt
-    {
-        get => _createdAt;
-        set => SetProperty(ref _createdAt, value);
-    }
+    [ObservableProperty]
+    private DateTime _createdAt = DateTime.Now;
 
-    private DateTime? _updatedAt;
     /// <summary>
     /// 更新时间
     /// </summary>
-    public DateTime? UpdatedAt
-    {
-        get => _updatedAt;
-        set => SetProperty(ref _updatedAt, value);
-    }
+    [ObservableProperty]
+    private DateTime? _updatedAt;
 
     #endregion
 
     #region UI状态字段
 
-    private bool _isSelected;
     /// <summary>
     /// 是否选中（UI状态）
     /// </summary>
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetProperty(ref _isSelected, value);
-    }
+    [ObservableProperty]
+    private bool _isSelected;
 
-    private bool _isExpanded;
     /// <summary>
     /// 是否展开（UI状态）
     /// </summary>
-    public bool IsExpanded
-    {
-        get => _isExpanded;
-        set => SetProperty(ref _isExpanded, value);
-    }
+    [ObservableProperty]
+    private bool _isExpanded;
 
     #endregion
 
@@ -183,13 +131,13 @@ public class ConsultationItem : BindableBase
     /// 诊断是否完整（仅检查中医诊断必填）
     /// </summary>
     public bool IsDiagnosisComplete =>
-        !string.IsNullOrWhiteSpace(TCMDiagnosis);
+        !string.IsNullOrWhiteSpace(TcmDiagnosis);
 
     /// <summary>
     /// 显示文本
     /// </summary>
     public string DisplayText =>
-        $"{PatientName} - {TCMDiagnosis ?? "未诊断"}";
+        $"{PatientName} - {TcmDiagnosis ?? "未诊断"}";
 
     #endregion
 
@@ -198,6 +146,8 @@ public class ConsultationItem : BindableBase
     /// <summary>
     /// 从ConsultationDetailDto创建ConsultationItem
     /// </summary>
+    /// <remarks>已废弃：请使用ConsultationMappingService.ToItem()</remarks>
+    [Obsolete("请使用ConsultationMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public static ConsultationItem FromDto(ConsultationDetailDto dto)
     {
         return new ConsultationItem
@@ -211,7 +161,7 @@ public class ConsultationItem : BindableBase
             PresentIllness = dto.PresentIllness,
             TongueDiagnosis = dto.TongueDiagnosis,
             PulseDiagnosis = dto.PulseDiagnosis,
-            TCMDiagnosis = dto.TCMDiagnosis,
+            TcmDiagnosis = dto.TcmDiagnosis,
             CreatedAt = dto.CreatedAt,
             UpdatedAt = dto.UpdatedAt
         };
@@ -220,6 +170,8 @@ public class ConsultationItem : BindableBase
     /// <summary>
     /// 转换为ConsultationDetailDto（用于API调用）
     /// </summary>
+    /// <remarks>已废弃：请使用ConsultationMappingService.ToDto()替代</remarks>
+    [Obsolete("请使用ConsultationMappingService.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public ConsultationDetailDto ToDto()
     {
         return new ConsultationDetailDto
@@ -233,7 +185,7 @@ public class ConsultationItem : BindableBase
             PresentIllness = PresentIllness,
             TongueDiagnosis = TongueDiagnosis,
             PulseDiagnosis = PulseDiagnosis,
-            TCMDiagnosis = TCMDiagnosis,
+            TcmDiagnosis = TcmDiagnosis,
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt
         };
@@ -253,7 +205,7 @@ public class ConsultationItem : BindableBase
             PresentIllness = PresentIllness,
             TongueDiagnosis = TongueDiagnosis,
             PulseDiagnosis = PulseDiagnosis,
-            TCMDiagnosis = TCMDiagnosis
+            TcmDiagnosis = TcmDiagnosis
         };
     }
 

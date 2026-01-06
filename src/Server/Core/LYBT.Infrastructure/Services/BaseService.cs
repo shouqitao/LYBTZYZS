@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using AutoMapper;
 using FluentValidation;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Common;
@@ -239,15 +238,13 @@ namespace LYBT.Infrastructure.Services
     /// <summary>
     /// 泛型BaseService，提供类型安全的权限验证和统一错误处理
     /// Phase 2: 扩展支持 ExecuteAsync 和 ValidateAsync
+    /// OpenSpec: adopt-mapperly-unified-mapping - 移除IMapper依赖，各Service注入具体Mapper
     /// </summary>
     /// <typeparam name="T">实体类型</typeparam>
     public abstract class BaseService<T> : BaseService where T : class
     {
-        protected readonly IMapper _mapper;
-
-        protected BaseService(ILogger logger, IMapper mapper) : base(logger)
+        protected BaseService(ILogger logger) : base(logger)
         {
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         #region 统一错误处理方法（Phase 2）

@@ -59,6 +59,8 @@
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="Prism.DryIoc" />
     <PackageReference Include="Prism.Wpf" />
+    <!-- OpenSpec: adopt-mapperly-unified-mapping - 编译时映射源生成器 -->
+    <PackageReference Include="Riok.Mapperly" />
   </ItemGroup>
 
   <!-- Logging -->

@@ -234,20 +234,19 @@
                     Visibility="{Binding IsEditMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
 
                 <!-- 详情内容 - 编辑模式 -->
+                <!-- OpenSpec: unify-herb-controls-to-herbs-module - 使用HerbListControl替代HerbListEditor -->
                 <local:MedicalCaseEditControl
                     Grid.Row="1"
                     Margin="16"
-                    AddNewRowCommand="{Binding AddNewRowCommand}"
+                    AllHerbs="{Binding AllHerbs}"
                     ConsultationDate="{Binding CurrentDetail.ConsultationDate}"
                     CreatedAt="{Binding CurrentDetail.CreatedAt}"
-                    DeleteHerbCommand="{Binding DeleteHerbCommand}"
                     DoctorName="{Binding CurrentDetail.DoctorName}"
-                    DosageCompletedCommand="{Binding DosageCompletedCommand}"
                     DoseCount="{Binding CurrentDetail.DoseCount}"
                     ErrorsSource="{Binding CurrentDetail.Errors}"
                     FormulaSource="{Binding CurrentDetail.FormulaSource}"
                     HerbCount="{Binding HerbCount}"
-                    HerbItems="{Binding HerbItems}"
+                    HerbItems="{Binding HerbItems, Mode=TwoWay}"
                     PatientName="{Binding CurrentDetail.PatientName}"
                     PresentIllness="{Binding CurrentDetail.PresentIllness, Mode=TwoWay}"
                     PulseDiagnosis="{Binding CurrentDetail.PulseDiagnosis, Mode=TwoWay}"

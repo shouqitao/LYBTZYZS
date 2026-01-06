@@ -70,33 +70,10 @@
     </Style>
 
     <!--
-        带验证的TextBox样式 - 继承自EditableTextBoxStyle
-        验证失败时显示红色下边框和ToolTip
-        
-        使用方式:
-        <TextBox Text="{Binding UserName, ValidatesOnNotifyDataErrors=True}"
-                 Style="{StaticResource ValidatingTextBoxStyle}"/>
+        ValidatingTextBoxStyle 已迁移至 UnifiedComponents.xaml
+        以解决资源加载顺序问题（需要在EditableTextBoxStyle之后定义）
+        OpenSpec: ui-validation-framework
     -->
-    <Style x:Key="ValidatingTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource EditableTextBoxStyle}">
-        <Setter Property="Validation.ErrorTemplate">
-            <Setter.Value>
-                <ControlTemplate>
-                    <Border BorderBrush="{StaticResource ValidationErrorBrush}" 
-                            BorderThickness="0,0,0,2"
-                            CornerRadius="4">
-                        <AdornedElementPlaceholder/>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Style.Triggers>
-            <Trigger Property="Validation.HasError" Value="True">
-                <Setter Property="ToolTip" 
-                        Value="{Binding RelativeSource={RelativeSource Self}, 
-                               Path=(Validation.Errors)[0].ErrorContent}"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
 
     <!--
         带验证的ComboBox样式

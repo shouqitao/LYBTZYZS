@@ -1,4 +1,5 @@
 ﻿using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
@@ -20,15 +21,21 @@ public class MedicalCaseService : IMedicalCaseService
 {
     private readonly IMedicalCaseRepository _repository;
     private readonly IMedicalCaseApi _api;
+    private readonly ISessionManager? _sessionManager;
     private readonly ILogger<MedicalCaseService> _logger;
     private MedicalCaseDetailDto? _originalDetail;
     private MedicalCaseDetailDto? _currentDetail;
 
-    public MedicalCaseService(IMedicalCaseRepository repository, IMedicalCaseApi api, ILogger<MedicalCaseService> logger)
+    public MedicalCaseService(
+        IMedicalCaseRepository repository,
+        IMedicalCaseApi api,
+        ILogger<MedicalCaseService> logger,
+        ISessionManager? sessionManager = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _api = api ?? throw new ArgumentNullException(nameof(api));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _sessionManager = sessionManager;
     }
 
     #region 属性
@@ -513,6 +520,181 @@ public class MedicalCaseService : IMedicalCaseService
         target.ConsultationId = source.ConsultationId; target.PrescriptionId = source.PrescriptionId;
         target.CaseStatus = source.CaseStatus;
         target.Remark = source.Remark; target.UpdatedAt = source.UpdatedAt;
+    }
+
+    #endregion
+
+    #region 生命周期管理（合并自MedicalCaseLifecycleHandler）
+
+    /// <summary>
+    /// 创建新医案
+    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+    /// </summary>
+    public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId)
+    {
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.CreateNew started - PatientId={PatientId}", patientId);
+
+            // 验证SessionManager和CurrentUser
+            if (_sessionManager == null)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.CreateNew → NullSessionManager");
+                return (false, Guid.Empty, "会话管理器未初始化，无法创建医案");
+            }
+            if (_sessionManager.CurrentUser == null)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.CreateNew → NullCurrentUser");
+                return (false, Guid.Empty, "用户信息丢失，无法创建医案");
+            }
+
+            _logger.LogDebug("[SVC] MedicalCase.CreateNew sessionValidated - UserName={UserName} UserId={UserId}",
+                _sessionManager.CurrentUser.UserName, _sessionManager.CurrentUser.Id);
+
+            var createDto = new MedicalCaseInputDto
+            {
+                Id = null,
+                PatientId = patientId,
+                UserId = _sessionManager.CurrentUser.Id,
+                Remark = null
+            };
+
+            var createdDto = await CreateAsync(createDto);
+            if (createdDto == null)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.CreateNew → NullResult");
+                return (false, Guid.Empty, "创建医案失败：服务返回空结果");
+            }
+
+            _logger.LogInformation("[SVC] MedicalCase.CreateNew completed - MedicalCaseId={MedicalCaseId}", createdDto.Id);
+            return (true, createdDto.Id, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SVC] MedicalCase.CreateNew failed - PatientId={PatientId}", patientId);
+            return (false, Guid.Empty, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建医案", ex));
+        }
+    }
+
+    /// <summary>
+    /// 暂存医案
+    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+    /// </summary>
+    public virtual async Task<(bool success, string? errorMessage)> SaveDraftAsync(Guid medicalCaseId)
+    {
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.SaveDraft started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+
+            var response = await SaveDraftViaApiAsync(medicalCaseId);
+            if (!response.Success)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.SaveDraft → Failed - Message={Message}", response.Message);
+                return (false, response.Message ?? "暂存医案失败");
+            }
+
+            _logger.LogInformation("[SVC] MedicalCase.SaveDraft completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SVC] MedicalCase.SaveDraft failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("暂存", ex));
+        }
+    }
+
+    /// <summary>
+    /// 取消医案
+    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+    /// </summary>
+    public virtual async Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null)
+    {
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.Cancel started - MedicalCaseId={MedicalCaseId} HasReason={HasReason}",
+                medicalCaseId, !string.IsNullOrEmpty(reason));
+
+            var response = await CancelMedicalCaseViaApiAsync(medicalCaseId, reason);
+            if (!response.Success)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Cancel → Failed - Message={Message}", response.Message);
+                return (false, response.Message ?? "取消医案失败");
+            }
+
+            _logger.LogInformation("[SVC] MedicalCase.Cancel completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SVC] MedicalCase.Cancel failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("取消", ex));
+        }
+    }
+
+    /// <summary>
+    /// 完成医案
+    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+    /// </summary>
+    public virtual async Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId)
+    {
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.Complete started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+
+            var request = new MedicalCaseStatusInputDto
+            {
+                Status = MedicalCaseStatus.Completed,
+                StatusChangeReason = null
+            };
+            var response = await UpdateStatusAsync(medicalCaseId, request);
+
+            if (!response.Success)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Complete → Failed - Message={Message}", response.Message);
+                return (false, response.Message ?? "完成医案失败");
+            }
+
+            _logger.LogInformation("[SVC] MedicalCase.Complete completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SVC] MedicalCase.Complete failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("完成", ex));
+        }
+    }
+
+    /// <summary>
+    /// 恢复暂存医案为Active状态
+    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+    /// </summary>
+    public virtual async Task<(bool success, string? errorMessage)> ResumeDraftAsync(Guid medicalCaseId)
+    {
+        try
+        {
+            _logger.LogDebug("[SVC] MedicalCase.ResumeDraft started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+
+            var request = new MedicalCaseStatusInputDto
+            {
+                Status = MedicalCaseStatus.Active,
+                StatusChangeReason = null
+            };
+            var response = await UpdateStatusAsync(medicalCaseId, request);
+
+            if (!response.Success)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.ResumeDraft → Failed - Message={Message}", response.Message);
+                return (false, response.Message ?? "恢复医案失败");
+            }
+
+            _logger.LogInformation("[SVC] MedicalCase.ResumeDraft completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SVC] MedicalCase.ResumeDraft failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("恢复", ex));
+        }
     }
 
     #endregion

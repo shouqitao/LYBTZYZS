@@ -1,5 +1,5 @@
-﻿using AutoMapper;
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
+using LYBT.Module.Users.Mapping;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
 using LYBT.Module.Users.Interfaces;
@@ -24,7 +24,7 @@ namespace LYBT.Module.Auth.Services
         private readonly IJwtService _jwtService;
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService; // Issue #1864: 职责分离
-        private readonly IMapper _mapper;
+        private readonly UserMapper _mapper = new();
         private readonly ILogger<AuthService> _logger;
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _configuration;
@@ -35,7 +35,6 @@ namespace LYBT.Module.Auth.Services
             IJwtService jwtService,
             IUserRepository userRepository,
             IUserService userService, // Issue #1864: 职责分离
-            IMapper mapper,
             ILogger<AuthService> logger,
             AppDbContext dbContext,
             IConfiguration configuration,
@@ -45,7 +44,6 @@ namespace LYBT.Module.Auth.Services
             _jwtService = jwtService;
             _userRepository = userRepository;
             _userService = userService; // Issue #1864: 职责分离
-            _mapper = mapper;
             _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
@@ -128,7 +126,7 @@ namespace LYBT.Module.Auth.Services
             if (userEntity == null)
                 return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound);
 
-            var userDto = _mapper.Map<UserDetailDto>(userEntity);
+            var userDto = _mapper.ToDetailDto(userEntity);
 
             // 确定用户类型（SuperAdmin特殊处理UserType）
             string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
@@ -358,7 +356,7 @@ namespace LYBT.Module.Auth.Services
             if (userEntity == null)
                 return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound);
 
-            var userDto = _mapper.Map<UserDetailDto>(userEntity);
+            var userDto = _mapper.ToDetailDto(userEntity);
 
             // 确定用户类型（SuperAdmin特殊处理UserType）
             string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
@@ -573,7 +571,7 @@ namespace LYBT.Module.Auth.Services
                 return Result<LoginResponse>.Failure(AuthErrorCode.UserDisabled, "用户已被禁用");
             }
 
-            var userDto = _mapper.Map<UserDetailDto>(userEntity);
+            var userDto = _mapper.ToDetailDto(userEntity);
             string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
 
             // 5. 生成新的JWT Token

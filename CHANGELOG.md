@@ -7,7 +7,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### 独立打印模块 (OpenSpec: create-printing-module) - 2026-01-05
+
+**背景**: 处方打印服务位于MedicalCase模块内，耦合过紧，扩展困难。
+
+**核心改进**:
+- **新建Printing模块**:
+  - 位置: `src/Client/Desktop/Core/LYBT.Desktop.Printing/`
+  - 泛型接口: `IPrintService<TModel>` 支持多模板扩展
+  - 完整实现: 打印、预览、导出(XPS)功能
+
+- **代码迁移**:
+  - `PrescriptionPrintModel` 迁移到Printing模块
+  - `PrescriptionPrintTemplate.xaml` 迁移到Printing模块
+  - `PrescriptionPrintService` 重构为泛型实现
+
+- **依赖更新**:
+  - MedicalCase模块使用新`IPrintService<PrescriptionPrintModel>`接口
+  - Clinical模块移除旧打印服务依赖
+  - Shell统一注册打印服务
+
+**影响模块**: Desktop.Printing(新), Desktop.MedicalCase, Desktop.Clinical, Desktop.Shell
+
+**规范**: 新增 `printing-infrastructure` 规范
+
+**状态**: 已归档
+
 ### Changed
+
+#### 接口重复清理提案取消 (OpenSpec: cleanup-interface-duplication) - 2026-01-05
+
+**背景**: Desktop层存在Contracts和Infrastructure两处接口定义。
+
+**取消原因**: 经分析发现两套接口服务于不同架构层次：
+- **Contracts版本**: 简化契约接口，面向服务调用
+- **Infrastructure版本**: MVVM友好实现，支持ObservableCollection
+
+**结论**: 两套接口各有用途，不应删除任何一方
+
+**状态**: 已取消并归档
+
+#### Desktop架构统一提案取消 (OpenSpec: unify-desktop-architecture) - 2026-01-05
+
+**背景**: 整合多个分散的Desktop优化提案。
+
+**取消原因**: 已被 `refactor-desktop-comprehensive` 提案整合替代，避免重复规划。
+
+**状态**: 已取消并归档
+
+#### UserControl组织规范化 (OpenSpec: standardize-usercontrol-organization) - 2026-01-05
+
+**背景**: 项目中存在重复控件(StatusBadge/UnifiedStatusBadge)，缺乏控件化设计标准。
+
+**核心改进**:
+- **Phase 1 - 合并重复控件**:
+  - 删除未使用的 `UnifiedStatusBadge.xaml(.cs)`
+  - 创建独立 `BadgeType.cs` 枚举定义
+
+- **规范文档化**:
+  - 控件化判断标准 (复用性>=2、集成度<=3绑定、维护性)
+  - 控件位置规范 (Infrastructure vs Module)
+  - 高集成度设计模式 (Model对象模式)
+
+**影响模块**: Desktop.Infrastructure
+
+**状态**: 已归档
+
+#### MedicalCase ViewModel瘦身 (OpenSpec: slim-medicalcase-viewmodel) - 2026-01-05
+
+**背景**: MedicalCaseWorkspaceViewModel达到1229行，存在死代码和职责混乱问题。
+
+**核心改进**:
+- **Phase 1 - 删除死代码**:
+  - 删除未使用的 `MedicalCaseUICoordinator.cs`
+  - 删除对应接口 `IMedicalCaseUICoordinator.cs`
+
+- **Phase 2 - 提取打印逻辑**:
+  - 创建 `PrescriptionPrintHandler.cs` (~150行)
+  - 迁移 `BuildPrescriptionDetailDto()` 方法
+  - ViewModel减少约44行
+
+- **Phase 3 - 取消** (设计决策):
+  - 待诊选择逻辑与ViewModel深度耦合，提取得不偿失
+
+**影响模块**: Desktop.MedicalCase
+
+**状态**: 已归档
 
 #### Admin工作台架构重构 (OpenSpec: refactor-admin-workspace) - 2026-01-03
 

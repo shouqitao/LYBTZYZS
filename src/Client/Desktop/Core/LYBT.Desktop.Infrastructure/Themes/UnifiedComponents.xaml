@@ -467,6 +467,36 @@
     </Style>
 
     <!--
+        带验证的TextBox样式 - 继承自EditableTextBoxStyle
+        验证失败时显示红色下边框和ToolTip
+        OpenSpec: ui-validation-framework (从ValidationStyles.xaml迁移以解决资源加载顺序问题)
+
+        使用方式:
+        <TextBox Text="{Binding UserName, ValidatesOnNotifyDataErrors=True}"
+                 Style="{StaticResource ValidatingTextBoxStyle}"/>
+    -->
+    <Style x:Key="ValidatingTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource EditableTextBoxStyle}">
+        <Setter Property="Validation.ErrorTemplate">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border BorderBrush="{StaticResource ValidationErrorBrush}"
+                            BorderThickness="0,0,0,2"
+                            CornerRadius="4">
+                        <AdornedElementPlaceholder/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="ToolTip"
+                        Value="{Binding RelativeSource={RelativeSource Self},
+                               Path=(Validation.Errors)[0].ErrorContent}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--
         查看模式值显示样式 - OpenSpec: refactor-detail-view-container
         用于详情页查看模式下的只读值展示，无边框纯文本
     -->
@@ -629,6 +659,32 @@
         </Setter>
     </Style>
 
+    <!--  OpenSpec: optimize-module-list-ui - DataGrid单元格样式，修复垂直对齐问题  -->
+    <Style x:Key="BaseDataGridCell" TargetType="DataGridCell">
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!--  Master-Detail专用DataGrid单元格样式 - 去掉选中时的黑色边框  -->
     <Style
         x:Key="MasterDetailDataGridCellStyle"
@@ -672,32 +728,6 @@
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-    </Style>
-
-    <!--  OpenSpec: optimize-module-list-ui - DataGrid单元格样式，修复垂直对齐问题  -->
-    <Style x:Key="BaseDataGridCell" TargetType="DataGridCell">
-        <Setter Property="Padding" Value="12,0" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="DataGridCell">
-                    <Border
-                        Padding="{TemplateBinding Padding}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}">
-                        <ContentPresenter VerticalAlignment="Center" />
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Style.Triggers>
-            <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
     <!--

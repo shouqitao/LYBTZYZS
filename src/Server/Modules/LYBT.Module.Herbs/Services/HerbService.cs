@@ -1,8 +1,8 @@
-﻿using AutoMapper;
-using FluentValidation;
+﻿using FluentValidation;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Herbs.Interfaces;
+using LYBT.Module.Herbs.Mapping;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -17,18 +17,19 @@ namespace LYBT.Module.Herbs.Services
     /// 药材服务 - 简化版，只包含基础CRUD
     /// 同时实现 Module 内部接口和 Shared 跨平台接口
     /// Phase 2: 继承BaseService<Herb>复用统一错误处理和验证逻辑
+    /// OpenSpec: adopt-mapperly-unified-mapping - 使用HerbMapper替代AutoMapper
     /// </summary>
     public class HerbService : BaseService<Herb>, IHerbService
     {
         private readonly IHerbRepository _repository;
         private readonly IValidator<HerbInputDto> _validator;
+        private readonly HerbMapper _mapper = new();
 
         public HerbService(
             IHerbRepository repository,
-            IMapper mapper,
             ILogger<HerbService> logger,
             IValidator<HerbInputDto> validator)
-            : base(logger, mapper)
+            : base(logger)
         {
             _repository = repository;
             _validator = validator;
@@ -39,7 +40,7 @@ namespace LYBT.Module.Herbs.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // 修复：传递keyword参数到Repository进行数据库级别搜索
             var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-            var dtos = _mapper.Map<List<HerbListDto>>(pagedResult.Items);
+            var dtos = _mapper.ToListDtos(pagedResult.Items.ToList());
 
             // Issue #1164: 应用分类筛选（在DTO级别过滤）
             if (!string.IsNullOrWhiteSpace(category))
@@ -67,7 +68,7 @@ namespace LYBT.Module.Herbs.Services
             if (entity == null)
                 return Result<HerbDetailDto>.Failure("药材不存在");
 
-            var dto = _mapper.Map<HerbDetailDto>(entity);
+            var dto = _mapper.ToDetailDto(entity);
             return Result<HerbDetailDto>.Success(dto);
         }
 
@@ -83,9 +84,9 @@ namespace LYBT.Module.Herbs.Services
                 return Result<HerbDetailDto>.Failure(errors);
             }
 
-            var entity = _mapper.Map<Herb>(dto);
+            var entity = _mapper.ToEntity(dto);
             var result = await _repository.AddAsync(entity);
-            var resultDto = _mapper.Map<HerbDetailDto>(result);
+            var resultDto = _mapper.ToDetailDto(result);
             return Result<HerbDetailDto>.Success(resultDto);
         }
 
@@ -105,9 +106,9 @@ namespace LYBT.Module.Herbs.Services
                 return Result<HerbDetailDto>.Failure(errors);
             }
 
-            _mapper.Map(dto, entity);
+            _mapper.UpdateEntity(dto, entity);
             var result = await _repository.UpdateAsync(entity);
-            var resultDto = _mapper.Map<HerbDetailDto>(result);
+            var resultDto = _mapper.ToDetailDto(result);
             return Result<HerbDetailDto>.Success(resultDto);
         }
 
@@ -124,7 +125,7 @@ namespace LYBT.Module.Herbs.Services
             var entities = await _repository.FindAsync(h =>
                 h.Name.Contains(keyword) ||
                 (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
-            var dtos = _mapper.Map<List<HerbDetailDto>>(entities);
+            var dtos = _mapper.ToDetailDtos(entities.ToList());
             return Result<List<HerbDetailDto>>.Success(dtos);
         }
 
@@ -224,7 +225,7 @@ namespace LYBT.Module.Herbs.Services
                     };
 
                     var savedHerb = await _repository.AddAsync(herb);
-                    var herbDto = _mapper.Map<HerbDetailDto>(savedHerb);
+                    var herbDto = _mapper.ToDetailDto(savedHerb);
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(savedHerb.Id);
@@ -258,7 +259,7 @@ namespace LYBT.Module.Herbs.Services
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             var herbs = await _repository.GetAllAsync();
-            var herbDtos = _mapper.Map<List<HerbDetailDto>>(herbs);
+            var herbDtos = _mapper.ToDetailDtos(herbs.ToList());
 
             // 应用分类筛选
             if (!string.IsNullOrWhiteSpace(category))
@@ -418,7 +419,7 @@ namespace LYBT.Module.Herbs.Services
                                 var existingHerb = existingHerbs.FirstOrDefault();
                                 if (existingHerb != null)
                                 {
-                                    _mapper.Map(dto, existingHerb);
+                                    _mapper.UpdateEntity(dto, existingHerb);
                                     existingHerb.UpdatedAt = DateTime.Now;
                                     await _repository.UpdateAsync(existingHerb);
                                     result.SuccessCount++;
@@ -441,7 +442,7 @@ namespace LYBT.Module.Herbs.Services
                     }
 
                     // 创建新药材
-                    var entity = _mapper.Map<Herb>(dto);
+                    var entity = _mapper.ToEntity(dto);
                     entity.CreatedAt = DateTime.Now;
                     entity.Status = CommonStatus.Enabled;
 
@@ -477,7 +478,7 @@ namespace LYBT.Module.Herbs.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var herbs = await _repository.GetAllAsync();
-            var herbDtos = _mapper.Map<List<HerbDetailDto>>(herbs);
+            var herbDtos = _mapper.ToDetailDtos(herbs.ToList());
 
             // 应用分类筛选
             if (!string.IsNullOrWhiteSpace(category))
@@ -575,7 +576,7 @@ namespace LYBT.Module.Herbs.Services
             entity.UpdatedAt = DateTime.Now;
 
             var result = await _repository.UpdateAsync(entity);
-            var dto = _mapper.Map<HerbDetailDto>(result);
+            var dto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] Herb.ToggleStatus completed - HerbId={HerbId} Status={Status}", id, entity.Status);
 
@@ -605,7 +606,7 @@ namespace LYBT.Module.Herbs.Services
             entity.UpdatedAt = DateTime.Now;
 
             var result = await _repository.UpdateAsync(entity);
-            var dto = _mapper.Map<HerbDetailDto>(result);
+            var dto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] Herb.Restore completed - HerbId={HerbId} HerbName={HerbName}", id, entity.Name);
 

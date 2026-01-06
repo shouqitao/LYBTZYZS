@@ -118,12 +118,7 @@ public static class ApiServiceCollectionExtensions
             });
         });
 
-        // AutoMapper 配置
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(a => a.GetName().Name?.StartsWith("LYBT.") == true)
-            .ToArray();
-        services.AddAutoMapper(cfg => cfg.AddMaps(assemblies), assemblies);
-
+        // OpenSpec: adopt-mapperly-unified-mapping - AutoMapper已移除，改用Mapperly编译时映射
         return services;
 
         // 生成 Schema ID 的帮助方法

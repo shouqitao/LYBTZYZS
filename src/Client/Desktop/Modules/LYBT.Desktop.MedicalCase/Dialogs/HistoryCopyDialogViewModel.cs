@@ -1,18 +1,19 @@
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using Prism.Mvvm;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.MedicalCase.Dialogs
 {
     /// <summary>
     /// OpenSpec: redesign-history-copy-ui
+    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
     /// 历史医案复制弹窗ViewModel - 支持左右双栏布局
     /// 用于从历史医案中选择复制药材组合到当前处方
     ///
@@ -21,7 +22,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
     /// - 支持"显示更多"展开本患者全部记录
     /// - 支持"查看全部患者"切换到全局查询模式
     /// </summary>
-    public class HistoryCopyDialogViewModel : BindableBase, IDialogAware
+    public partial class HistoryCopyDialogViewModel : ObservableObject, IDialogAware
     {
         #region 常量
 
@@ -40,110 +41,87 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         #endregion
 
-        #region 属性
+        #region 可观察属性
 
-        private string _patientName = string.Empty;
         /// <summary>
         /// 患者姓名
         /// </summary>
-        public string PatientName
-        {
-            get => _patientName;
-            set => SetProperty(ref _patientName, value);
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ViewModeText))]
+        private string _patientName = string.Empty;
 
-        private string _searchText = string.Empty;
         /// <summary>
         /// 搜索文本（支持患者姓名、中医诊断模糊查询）
         /// </summary>
-        public string SearchText
-        {
-            get => _searchText;
-            set
-            {
-                if (SetProperty(ref _searchText, value))
-                {
-                    FilterCases();
-                }
-            }
-        }
+        [ObservableProperty]
+        private string _searchText = string.Empty;
 
-        private DateTime? _startDate;
         /// <summary>
         /// 时间区间筛选 - 起始日期
         /// </summary>
-        public DateTime? StartDate
-        {
-            get => _startDate;
-            set
-            {
-                if (SetProperty(ref _startDate, value))
-                {
-                    FilterCases();
-                }
-            }
-        }
+        [ObservableProperty]
+        private DateTime? _startDate;
 
-        private DateTime? _endDate;
         /// <summary>
         /// 时间区间筛选 - 结束日期
         /// </summary>
-        public DateTime? EndDate
-        {
-            get => _endDate;
-            set
-            {
-                if (SetProperty(ref _endDate, value))
-                {
-                    FilterCases();
-                }
-            }
-        }
+        [ObservableProperty]
+        private DateTime? _endDate;
 
-        private ObservableCollection<MedicalCaseDetailDto> _filteredCases = new();
         /// <summary>
         /// 筛选后的医案列表
         /// </summary>
-        public ObservableCollection<MedicalCaseDetailDto> FilteredCases
-        {
-            get => _filteredCases;
-            set => SetProperty(ref _filteredCases, value);
-        }
+        [ObservableProperty]
+        private ObservableCollection<MedicalCaseDetailDto> _filteredCases = new();
 
-        private MedicalCaseDetailDto? _selectedCase;
         /// <summary>
         /// 选中的医案（左栏卡片列表）
         /// </summary>
-        public MedicalCaseDetailDto? SelectedCase
-        {
-            get => _selectedCase;
-            set
-            {
-                if (SetProperty(ref _selectedCase, value))
-                {
-                    LoadCaseDetailAsync();
-                    ConfirmCommand.RaiseCanExecuteChanged();
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
+        private MedicalCaseDetailDto? _selectedCase;
 
-        private MedicalCaseDetailDto? _selectedCaseDetail;
         /// <summary>
         /// 选中医案的详情（用于右栏MedicalCaseViewControl绑定）
         /// </summary>
-        public MedicalCaseDetailDto? SelectedCaseDetail
-        {
-            get => _selectedCaseDetail;
-            set
-            {
-                if (SetProperty(ref _selectedCaseDetail, value))
-                {
-                    RaisePropertyChanged(nameof(SelectedCaseHasConsultation));
-                    RaisePropertyChanged(nameof(SelectedCaseHasPrescription));
-                    ConfirmCommand.RaiseCanExecuteChanged();
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SelectedCaseHasConsultation))]
+        [NotifyPropertyChangedFor(nameof(SelectedCaseHasPrescription))]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
+        private MedicalCaseDetailDto? _selectedCaseDetail;
+
+        /// <summary>
+        /// 是否正在加载详情
+        /// </summary>
+        [ObservableProperty]
+        private bool _isLoading;
+
+        /// <summary>
+        /// 状态消息
+        /// </summary>
+        [ObservableProperty]
+        private string _statusMessage = string.Empty;
+
+        /// <summary>
+        /// 是否显示全部患者模式（false=仅当前患者）
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ViewModeText))]
+        [NotifyPropertyChangedFor(nameof(CanShowMoreCurrentPatient))]
+        [NotifyCanExecuteChangedFor(nameof(ShowMoreCurrentPatientCommand))]
+        private bool _isShowingAllPatients;
+
+        /// <summary>
+        /// 是否显示当前患者的全部记录（默认false只显示5条）
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanShowMoreCurrentPatient))]
+        [NotifyCanExecuteChangedFor(nameof(ShowMoreCurrentPatientCommand))]
+        private bool _isShowingAllCurrentPatient;
+
+        #endregion
+
+        #region 计算属性
 
         /// <summary>
         /// 选中医案是否有诊疗记录（用于MedicalCaseViewControl绑定）
@@ -155,80 +133,10 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// </summary>
         public bool SelectedCaseHasPrescription => SelectedCaseDetail?.Prescription != null;
 
-        private bool _isLoading;
-        /// <summary>
-        /// 是否正在加载详情
-        /// </summary>
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        private string _statusMessage = string.Empty;
-        /// <summary>
-        /// 状态消息
-        /// </summary>
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
-
         /// <summary>
         /// 选中医案的处方药材列表（用于复制）
         /// </summary>
         public List<PrescriptionItemDto> SelectedPrescriptionItems { get; private set; } = new();
-
-        // ========== UX改进：查看模式相关属性 ==========
-
-        private bool _isShowingAllPatients;
-        /// <summary>
-        /// 是否显示全部患者模式（false=仅当前患者）
-        /// </summary>
-        public bool IsShowingAllPatients
-        {
-            get => _isShowingAllPatients;
-            set
-            {
-                if (SetProperty(ref _isShowingAllPatients, value))
-                {
-                    // 切换模式时重新加载数据
-                    if (value)
-                    {
-                        LoadAllPatientsAsync();
-                    }
-                    else
-                    {
-                        // 切回当前患者模式
-                        _isShowingAllCurrentPatient = false;
-                        RaisePropertyChanged(nameof(IsShowingAllCurrentPatient));
-                        ApplyCurrentPatientFilter();
-                    }
-                    RaisePropertyChanged(nameof(ViewModeText));
-                    RaisePropertyChanged(nameof(CanShowMoreCurrentPatient));
-                    ShowMoreCurrentPatientCommand.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        private bool _isShowingAllCurrentPatient;
-        /// <summary>
-        /// 是否显示当前患者的全部记录（默认false只显示5条）
-        /// </summary>
-        public bool IsShowingAllCurrentPatient
-        {
-            get => _isShowingAllCurrentPatient;
-            set
-            {
-                if (SetProperty(ref _isShowingAllCurrentPatient, value))
-                {
-                    ApplyCurrentPatientFilter();
-                    RaisePropertyChanged(nameof(CanShowMoreCurrentPatient));
-                    ShowMoreCurrentPatientCommand.RaiseCanExecuteChanged();
-                }
-            }
-        }
 
         /// <summary>
         /// 当前患者是否有更多记录可显示
@@ -247,6 +155,67 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// 查看模式文本
         /// </summary>
         public string ViewModeText => IsShowingAllPatients ? "全部患者" : $"本患者 ({PatientName})";
+
+        #endregion
+
+        #region 属性变更回调
+
+        /// <summary>
+        /// 搜索文本变更时触发筛选
+        /// </summary>
+        partial void OnSearchTextChanged(string value)
+        {
+            FilterCases();
+        }
+
+        /// <summary>
+        /// 起始日期变更时触发筛选
+        /// </summary>
+        partial void OnStartDateChanged(DateTime? value)
+        {
+            FilterCases();
+        }
+
+        /// <summary>
+        /// 结束日期变更时触发筛选
+        /// </summary>
+        partial void OnEndDateChanged(DateTime? value)
+        {
+            FilterCases();
+        }
+
+        /// <summary>
+        /// 选中医案变更时加载详情
+        /// </summary>
+        partial void OnSelectedCaseChanged(MedicalCaseDetailDto? value)
+        {
+            LoadCaseDetailAsync();
+        }
+
+        /// <summary>
+        /// 全部患者模式变更时切换数据源
+        /// </summary>
+        partial void OnIsShowingAllPatientsChanged(bool value)
+        {
+            if (value)
+            {
+                LoadAllPatientsAsync();
+            }
+            else
+            {
+                // 切回当前患者模式
+                IsShowingAllCurrentPatient = false;
+                ApplyCurrentPatientFilter();
+            }
+        }
+
+        /// <summary>
+        /// 当前患者全部记录模式变更时更新筛选
+        /// </summary>
+        partial void OnIsShowingAllCurrentPatientChanged(bool value)
+        {
+            ApplyCurrentPatientFilter();
+        }
 
         #endregion
 
@@ -277,15 +246,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         #endregion
 
-        #region 命令
-
-        public DelegateCommand ConfirmCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-        public DelegateCommand ShowMoreCurrentPatientCommand { get; }
-        public DelegateCommand ToggleAllPatientsCommand { get; }
-
-        #endregion
-
         #region 构造函数
 
         public HistoryCopyDialogViewModel(
@@ -295,15 +255,54 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            ConfirmCommand = new DelegateCommand(ExecuteConfirm, CanConfirm);
-            CancelCommand = new DelegateCommand(ExecuteCancel);
-            ShowMoreCurrentPatientCommand = new DelegateCommand(
-                () => IsShowingAllCurrentPatient = true,
-                () => CanShowMoreCurrentPatient);
-            ToggleAllPatientsCommand = new DelegateCommand(
-                () => IsShowingAllPatients = !IsShowingAllPatients);
-
             _logger.LogInformation("HistoryCopyDialogViewModel已初始化");
+        }
+
+        #endregion
+
+        #region 命令
+
+        /// <summary>
+        /// 确认复制命令
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanConfirm))]
+        private void Confirm()
+        {
+            var parameters = new DialogParameters
+            {
+                { "SelectedCase", SelectedCase },
+                { "SelectedItems", SelectedPrescriptionItems }
+            };
+            RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+        }
+
+        private bool CanConfirm() => SelectedCase != null && SelectedPrescriptionItems.Any();
+
+        /// <summary>
+        /// 取消命令
+        /// </summary>
+        [RelayCommand]
+        private void Cancel()
+        {
+            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+        }
+
+        /// <summary>
+        /// 显示更多当前患者记录命令
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanShowMoreCurrentPatient))]
+        private void ShowMoreCurrentPatient()
+        {
+            IsShowingAllCurrentPatient = true;
+        }
+
+        /// <summary>
+        /// 切换全部患者模式命令
+        /// </summary>
+        [RelayCommand]
+        private void ToggleAllPatients()
+        {
+            IsShowingAllPatients = !IsShowingAllPatients;
         }
 
         #endregion
@@ -334,7 +333,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                     PageSize = 100
                 };
                 var caseList = await _medicalCaseRepository.QueryAsync(query);
-                
+
                 // 筛选已完成且有处方的医案ID
                 var completedWithPrescriptionIds = caseList?.Items?
                     .Where(c => c.CaseStatus == MedicalCaseStatus.Completed && c.HasPrescription)
@@ -352,9 +351,13 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                     _currentPatientCases = new List<MedicalCaseDetailDto>();
                 }
 
-                // 初始状态：当前患者模式
+                // 初始状态：当前患者模式（直接设置字段避免触发重复加载）
+                // 注意：这里使用字段而非属性，因为属性setter会触发回调导致不必要的操作
+                // 对话框每次打开都会重新创建ViewModel，所以这里是安全的
+#pragma warning disable MVVMTK0034
                 _isShowingAllPatients = false;
                 _isShowingAllCurrentPatient = false;
+#pragma warning restore MVVMTK0034
 
                 ApplyCurrentPatientFilter();
 
@@ -465,9 +468,9 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                     : $"本患者共 {_currentPatientCases.Count} 条已完成历史医案";
             }
 
-            RaisePropertyChanged(nameof(CurrentPatientTotalCount));
-            RaisePropertyChanged(nameof(CanShowMoreCurrentPatient));
-            ShowMoreCurrentPatientCommand.RaiseCanExecuteChanged();
+            OnPropertyChanged(nameof(CurrentPatientTotalCount));
+            OnPropertyChanged(nameof(CanShowMoreCurrentPatient));
+            ShowMoreCurrentPatientCommand.NotifyCanExecuteChanged();
         }
 
         /// <summary>
@@ -543,7 +546,8 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                     SelectedPrescriptionItems = new List<PrescriptionItemDto>();
                 }
 
-                ConfirmCommand.RaiseCanExecuteChanged();
+                // 药材加载完成后刷新确认按钮状态
+                ConfirmCommand.NotifyCanExecuteChanged();
             }
             catch (Exception ex)
             {
@@ -555,29 +559,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             {
                 IsLoading = false;
             }
-        }
-
-        /// <summary>
-        /// 确认复制条件：选中医案必须有处方药材
-        /// </summary>
-        private bool CanConfirm() => SelectedCase != null && SelectedPrescriptionItems.Any();
-
-        /// <summary>
-        /// 执行确认复制 - 仅返回药材组合
-        /// </summary>
-        private void ExecuteConfirm()
-        {
-            var parameters = new DialogParameters
-            {
-                { "SelectedCase", SelectedCase },
-                { "SelectedItems", SelectedPrescriptionItems }
-            };
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
-        }
-
-        private void ExecuteCancel()
-        {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
 
         #endregion

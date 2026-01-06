@@ -1,12 +1,12 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Text.Json;
-using LYBT.Desktop.Foundation.Http; // OpenSpec: add-global-audit-system - IApiService
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using Prism.Events;
-using Prism.Regions;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
@@ -14,131 +14,126 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
     /// <summary>
     /// 通用实体审计日志对话框视图模型
     /// OpenSpec: add-global-audit-system
+    /// OpenSpec: standardize-viewmodel-framework - 迁移到DialogViewModelBase
     /// 支持查看任意实体类型的变更历史记录
     /// </summary>
-    public class EntityAuditLogDialogViewModel : UnifiedViewModelBase, IDialogAware
+    public partial class EntityAuditLogDialogViewModel : DialogViewModelBase
     {
         #region 私有字段
 
         private readonly IApiService _apiService;
-        private string _title = "变更记录";
+        private readonly int _pageSize = 20;
+
+        #endregion
+
+        #region 可观察属性
+
+        /// <summary>
+        /// 实体类型
+        /// </summary>
+        [ObservableProperty]
         private string _entityType = string.Empty;
+
+        /// <summary>
+        /// 实体ID
+        /// </summary>
+        [ObservableProperty]
         private Guid _entityId;
+
+        /// <summary>
+        /// 实体描述
+        /// </summary>
+        [ObservableProperty]
         private string _entityDescription = string.Empty;
+
+        /// <summary>
+        /// 审计日志列表
+        /// </summary>
+        [ObservableProperty]
         private ObservableCollection<AuditLogDisplayItem> _auditLogs = new();
+
+        /// <summary>
+        /// 选中的日志项
+        /// </summary>
+        [ObservableProperty]
         private AuditLogDisplayItem? _selectedLog;
+
+        /// <summary>
+        /// 是否正在加载
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowEmptyMessage))]
         private bool _isLoading;
-        private bool _showEmptyMessage;
+
+        /// <summary>
+        /// 当前页码
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanGoPrevious))]
+        [NotifyPropertyChangedFor(nameof(CanGoNext))]
         private int _currentPage = 1;
-        private int _pageSize = 20;
+
+        /// <summary>
+        /// 总记录数
+        /// </summary>
+        [ObservableProperty]
         private int _totalCount;
+
+        /// <summary>
+        /// 总页数
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanGoPrevious))]
+        [NotifyPropertyChangedFor(nameof(CanGoNext))]
         private int _totalPages = 1;
 
         #endregion
 
-        #region 公共属性
+        #region 计算属性
 
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
+        /// <summary>
+        /// 是否显示空消息
+        /// </summary>
+        public bool ShowEmptyMessage => !IsLoading && AuditLogs.Count == 0;
 
-        public string EntityType
-        {
-            get => _entityType;
-            set => SetProperty(ref _entityType, value);
-        }
-
-        public Guid EntityId
-        {
-            get => _entityId;
-            set => SetProperty(ref _entityId, value);
-        }
-
-        public string EntityDescription
-        {
-            get => _entityDescription;
-            set => SetProperty(ref _entityDescription, value);
-        }
-
-        public ObservableCollection<AuditLogDisplayItem> AuditLogs
-        {
-            get => _auditLogs;
-            set => SetProperty(ref _auditLogs, value);
-        }
-
-        public AuditLogDisplayItem? SelectedLog
-        {
-            get => _selectedLog;
-            set => SetProperty(ref _selectedLog, value);
-        }
-
-        public new bool IsLoading
-        {
-            get => _isLoading;
-            set
-            {
-                SetProperty(ref _isLoading, value);
-                UpdateEmptyMessage();
-            }
-        }
-
-        public bool ShowEmptyMessage
-        {
-            get => _showEmptyMessage;
-            set => SetProperty(ref _showEmptyMessage, value);
-        }
-
-        public int CurrentPage
-        {
-            get => _currentPage;
-            set
-            {
-                SetProperty(ref _currentPage, value);
-                RaisePropertyChanged(nameof(CanGoPrevious));
-                RaisePropertyChanged(nameof(CanGoNext));
-            }
-        }
-
-        public int TotalCount
-        {
-            get => _totalCount;
-            set => SetProperty(ref _totalCount, value);
-        }
-
-        public int TotalPages
-        {
-            get => _totalPages;
-            set
-            {
-                SetProperty(ref _totalPages, value);
-                RaisePropertyChanged(nameof(CanGoPrevious));
-                RaisePropertyChanged(nameof(CanGoNext));
-            }
-        }
-
+        /// <summary>
+        /// 是否可以上一页
+        /// </summary>
         public bool CanGoPrevious => CurrentPage > 1;
+
+        /// <summary>
+        /// 是否可以下一页
+        /// </summary>
         public bool CanGoNext => CurrentPage < TotalPages;
 
         #endregion
 
-        #region IDialogAware 实现
+        #region 构造函数
 
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogOpened(IDialogParameters parameters)
+        public EntityAuditLogDialogViewModel(
+            IApiService apiService,
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory)
+            : base(loggerFactory, eventAggregator)
         {
-            if (parameters.ContainsKey("EntityType"))
-                EntityType = parameters.GetValue<string>("EntityType");
+            _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+            Title = "变更记录";
+        }
 
-            if (parameters.ContainsKey("EntityId"))
-                EntityId = parameters.GetValue<Guid>("EntityId");
+        #endregion
 
-            if (parameters.ContainsKey("EntityDescription"))
-                EntityDescription = parameters.GetValue<string>("EntityDescription");
+        #region 对话框生命周期
+
+        /// <summary>
+        /// 对话框打开时处理参数
+        /// </summary>
+        protected override void OnDialogOpenedCore(IDialogParameters? parameters)
+        {
+            if (parameters == null) return;
+
+            EntityType = GetDialogParameter(parameters, "EntityType", string.Empty);
+            EntityId = GetDialogParameter(parameters, "EntityId", Guid.Empty);
+            EntityDescription = GetDialogParameter(parameters, "EntityDescription", string.Empty);
 
             // 根据实体类型设置标题
             Title = GetTitleByEntityType(EntityType);
@@ -150,7 +145,10 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
             _ = LoadAuditLogsAsync();
         }
 
-        public void OnDialogClosed()
+        /// <summary>
+        /// 对话框关闭时清理
+        /// </summary>
+        protected override void OnDialogClosedCore()
         {
             Logger.LogInformation("EntityAuditLogDialog - 对话框已关闭");
         }
@@ -159,36 +157,57 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 
         #region 命令
 
-        public DelegateCommand RefreshCommand { get; }
-        public DelegateCommand CloseCommand { get; }
-        public DelegateCommand PreviousPageCommand { get; }
-        public DelegateCommand NextPageCommand { get; }
-
-        #endregion
-
-        #region 构造函数
-
-        public EntityAuditLogDialogViewModel(
-            IApiService apiService,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
-            IRegionManager regionManager)
-            : base(eventAggregator, loggerFactory, regionManager, null, null)
+        /// <summary>
+        /// 刷新命令
+        /// </summary>
+        [RelayCommand]
+        private async Task RefreshAsync()
         {
-            _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+            await LoadAuditLogsAsync();
+        }
 
-            RefreshCommand = new DelegateCommand(async () => await LoadAuditLogsAsync());
-            CloseCommand = new DelegateCommand(ExecuteClose);
-            PreviousPageCommand = new DelegateCommand(async () => await GoToPreviousPageAsync(), () => CanGoPrevious)
-                .ObservesProperty(() => CanGoPrevious);
-            NextPageCommand = new DelegateCommand(async () => await GoToNextPageAsync(), () => CanGoNext)
-                .ObservesProperty(() => CanGoNext);
+        /// <summary>
+        /// 关闭命令
+        /// </summary>
+        [RelayCommand]
+        private void Close()
+        {
+            CloseDialog(ButtonResult.OK);
+        }
+
+        /// <summary>
+        /// 上一页命令
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanGoPrevious))]
+        private async Task PreviousPageAsync()
+        {
+            if (CurrentPage > 1)
+            {
+                CurrentPage--;
+                await LoadAuditLogsAsync();
+            }
+        }
+
+        /// <summary>
+        /// 下一页命令
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanGoNext))]
+        private async Task NextPageAsync()
+        {
+            if (CurrentPage < TotalPages)
+            {
+                CurrentPage++;
+                await LoadAuditLogsAsync();
+            }
         }
 
         #endregion
 
         #region 私有方法
 
+        /// <summary>
+        /// 加载审计日志
+        /// </summary>
         private async Task LoadAuditLogsAsync()
         {
             if (string.IsNullOrEmpty(EntityType) || EntityId == Guid.Empty)
@@ -230,38 +249,14 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
             finally
             {
                 IsLoading = false;
+                OnPropertyChanged(nameof(ShowEmptyMessage));
             }
         }
 
-        private async Task GoToPreviousPageAsync()
-        {
-            if (CurrentPage > 1)
-            {
-                CurrentPage--;
-                await LoadAuditLogsAsync();
-            }
-        }
-
-        private async Task GoToNextPageAsync()
-        {
-            if (CurrentPage < TotalPages)
-            {
-                CurrentPage++;
-                await LoadAuditLogsAsync();
-            }
-        }
-
-        private void ExecuteClose()
-        {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
-        }
-
-        private void UpdateEmptyMessage()
-        {
-            ShowEmptyMessage = !IsLoading && AuditLogs.Count == 0;
-        }
-
-        private string GetTitleByEntityType(string entityType)
+        /// <summary>
+        /// 根据实体类型获取标题
+        /// </summary>
+        private static string GetTitleByEntityType(string entityType)
         {
             return entityType?.ToLower() switch
             {

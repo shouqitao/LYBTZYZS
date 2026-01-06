@@ -1,13 +1,12 @@
-# Proposal: 看诊工作台布局重构与控件化
+# Proposal: 看诊工作台布局重构 V2
 
 **Change ID**: `refactor-medicalcase-workspace`
-**Type**: UI Refactoring + Component Extraction
-**Priority**: P2 (Post-Release)
-**Status**: Applied
+**Type**: UI Refactoring + Layout Optimization
+**Priority**: P1 (Current Sprint)
+**Status**: In Progress
 **Author**: Claude Code
 **Created**: 2025-12-25
-**Updated**: 2025-12-30
-**Applied**: 2025-12-30
+**Updated**: 2026-01-04
 **Target Version**: v1.1.0+
 
 ---
@@ -20,58 +19,60 @@
 
 | 问题 | 影响 | 严重程度 |
 |------|------|----------|
-| 诊断内容减少后布局比例不合理 | 诊断区50%空间利用率低，处方区拥挤 | 中 |
-| 患者选择逻辑无法复用 | 前台挂号需要重复实现患者搜索 | 中 |
-| 待诊队列与患者搜索分离不清晰 | PatientSelectionView职责过重(581行) | 中 |
-| 患者信息展示不统一 | 不同场景下患者卡片样式不一致 | 低 |
+| 诊断和处方分离为两个面板 | 界面割裂，操作繁琐 | 高 |
+| 诊断区占用过多空间(35%-50%) | 仅4个字段却占用大量空间 | 高 |
+| 待诊队列在患者选择界面 | 看诊时无法快速切换患者 | 中 |
+| 左侧患者卡片信息冗余 | 已有患者信息区域，重复展示 | 低 |
 
-### 1.2 提案目标
+### 1.2 提案目标 (V2更新)
 
-1. **重新设计看诊界面布局**: 左25%患者卡片 + 右75%(诊断35%+处方65%)
-2. **提取可复用控件**: PatientInfoCardControl, PatientSearchControl, PendingQueueControl
-3. **保留原有两步流程**: 患者选择 -> 看诊
-4. **确保功能完整**: 经验方查询、历史医案查询等功能不遗漏
+1. **统一医案表单**: 诊断和处方合并为连续表单，不再分割面板
+2. **左侧整合**: 患者信息(上) + 待诊队列(下)
+3. **诊断精简**: 仅3行布局(现病史、舌诊+脉诊、中医诊断)
+4. **处方增强**: 使用HerbListControl，占主要空间
 
-### 1.3 技术方案
+### 1.3 技术方案 (V2更新)
 
-| 组件 | 当前 | 变更后 | 说明 |
-|------|------|--------|------|
-| 看诊布局 | 50:50 | 25:75(35:65) | 适应诊断内容减少 |
-| 患者信息 | 内联代码 | PatientInfoCardControl | UserControl + DependencyProperty |
-| 患者搜索 | PatientSelectionView内嵌 | PatientSearchControl | 可复用控件 |
-| 待诊队列 | PatientSelectionView内嵌 | PendingQueueControl | 可复用控件 |
+| 组件 | 当前(V1) | 变更后(V2) | 说明 |
+|------|----------|------------|------|
+| 看诊布局 | 左25%(患者卡片) + 右75%(诊断35%:处方65%) | 左25%(患者+待诊) + 右75%(统一表单) | 统一表单 |
+| 诊断区 | 独立面板，2x2网格 | 表单顶部3行布局 | 精简 |
+| 处方区 | 独立面板 | 表单主体区域 | HerbListControl |
+| 待诊队列 | 患者选择界面 | 左侧底部 | 快速切换 |
 
 ### 1.4 预期收益
 
 | 收益 | 量化指标 |
 |------|----------|
-| 控件复用 | 3个控件可在前台挂号等场景复用 |
-| 代码简化 | PatientSelectionViewModel从581行降至<400行 |
-| 布局优化 | 处方区空间增加30%，更符合实际使用 |
-| 一致性 | 患者信息展示统一风格 |
+| 界面简洁 | 诊断区从50%降至约15%高度 |
+| 操作流畅 | 表单连续，无需切换面板 |
+| 快速切换 | 看诊界面可直接选择待诊患者 |
+| 处方空间 | 处方区占主界面约85% |
 
 ---
 
 ## 2. Current State Analysis
 
-### 2.1 当前布局
+### 2.1 当前布局 (V1实现后)
 
 **MedicalCaseWorkspaceView (看诊界面)**:
 ```
 +------------------------------------------------------------------+
 |                    医生工作台 - 看诊                              |
 +------------------------------------------------------------------+
-|         诊断区 50%          |         处方区 50%                  |
+| 左25%                      |        右75%                         |
 | +------------------------+ | +------------------------------------+
-| | 现病史                 | | | [经验方查询] [历史医案] [清空]    |
-| | 舌诊                   | | +------------------------------------+
-| | 脉诊                   | | | 药材列表                          |
-| | 中医诊断               | | | ...                               |
+| | PatientInfoCard        | | |          诊断区 35%               |
+| |                        | | | 现病史 | 舌诊                     |
+| |                        | | | 脉诊   | 中医诊断                 |
 | +------------------------+ | +------------------------------------+
+|                            | |          处方区 65%               |
+|                            | | [经验方查询] [历史医案] [清空]    |
+|                            | | 药材列表...                       |
 +------------------------------------------------------------------+
 ```
 
-**问题**: 诊断内容已大幅减少(仅4字段)，50%空间浪费严重
+**问题**: 诊断和处方分割为两个独立面板，界面割裂
 
 ### 2.2 当前代码结构
 
@@ -93,113 +94,254 @@
 
 ---
 
-## 3. Proposed Architecture
+## 3. Proposed Architecture (V2)
 
 ### 3.1 新布局方案
 
-**MedicalCaseWorkspaceView (重构后)**:
+**MedicalCaseWorkspaceView (V2重构后)**:
 ```
 +------------------------------------------------------------------+
 |                    医生工作台 - 看诊                              |
 +------------------------------------------------------------------+
-| 左侧 25% (Min 300px)       |        右侧 75% (自适应)            |
+| 左侧 25% (Min 280px)       |        右侧 75% (自适应)             |
 | +------------------------+ | +------------------------------------+
-| |                        | | |          诊断区 35%               |
-| |  PatientInfoCardControl| | | +----------------------------------+
-| |                        | | | | 现病史 | 舌诊 | 脉诊 | 中医诊断 |
-| |  - 姓名/性别/年龄      | | | +----------------------------------+
-| |  - 挂号时间            | | |                                    |
-| |  - 就诊次数            | | |          处方区 65%               |
-| |  - [查看历史] 按钮     | | | +----------------------------------+
-| |                        | | | | [经验方查询] [历史医案] [清空]  |
-| +------------------------+ | | +----------------------------------+
-|                            | | | 药材列表 (拼音自动补全)         |
-|                            | | +----------------------------------+
+| | PatientInfoCard        | | |    [经验方] [历史处方] [清空] ←右上|
+| | - 姓名/性别/年龄       | | +------------------------------------+
+| | - 挂号时间             | | | 诊断区 (固定高度约120px)          |
+| | - [查看历史]           | | | Row1: [现病史...................]  |
+| +------------------------+ | | Row2: [舌诊.....] [脉诊........]  |
+| | 待诊队列 (可折叠)      | | | Row3: [中医诊断*...............]  |
+| | - 王某 等待中          | | +------------------------------------+
+| | - 李某 等待中          | | | 处方区 (占剩余全部空间)           |
+| | - 张某 (挂起)          | | | HerbListControl (4列网格)         |
+| | [刷新]                 | | |   药材1  药材2  药材3  药材4      |
+| +------------------------+ | +------------------------------------+
+|                            | | 共X味 | 付数/用法/单价 信息区      |
 +------------------------------------------------------------------+
 ```
 
-### 3.2 控件化设计
+**关键变化 (V2)**:
+1. **诊断区精简**: 从独立面板变为表单顶部区域，固定高度约120px
+2. **处方区扩展**: 占主界面约85%空间
+3. **待诊队列移入**: 从患者选择界面移到看诊界面左侧
+4. **统一表单**: 诊断+处方连续排列，无分割线
 
-#### 3.2.1 PatientInfoCardControl (新建)
+### 3.2 四大核心控件 (V2)
 
-**位置**: `LYBT.Desktop.Shared/Controls/PatientInfoCardControl.xaml`
+#### 概览
+
+| 控件 | 位置 | 状态 | 用途 |
+|------|------|------|------|
+| PatientInfoCardControl | `Infrastructure/Controls/` | 已有 | 患者信息展示 |
+| PendingQueueControl | `Infrastructure/Controls/` | 已有 | 待诊队列列表 |
+| **MedicalCaseEditControl** | `MedicalCase/Controls/` | **新建** | 医案编辑表单 |
+| **MedicalCaseViewControl** | `MedicalCase/Controls/` | **新建** | 医案只读预览 |
+
+#### 3.2.1 MedicalCaseEditControl (新建)
+
+**位置**: `LYBT.Desktop.MedicalCase/Controls/MedicalCaseEditControl.xaml`
+
+**职责**: 统一的医案编辑表单，包含诊断区+处方区
+
+**布局**:
+```
++--------------------------------------------------+
+|        [经验方] [历史处方] [清空]  ←右上角工具栏  |
++--------------------------------------------------+
+| 诊断区 (固定高度约120px)                          |
+| Row1: [现病史...............................]    |
+| Row2: [舌诊..........] [脉诊...............]    |
+| Row3: [中医诊断*...........................]    |
++--------------------------------------------------+
+| 处方区 (占剩余空间)                               |
+| +----------------------------------------------+ |
+| | HerbListControl (4列网格)                    | |
+| |   药材1  药材2  药材3  药材4                 | |
+| |   药材5  药材6  ...                         | |
+| +----------------------------------------------+ |
+| | 共X味 | 付数/用法/单价信息区                  | |
++--------------------------------------------------+
+```
 
 **DependencyProperty**:
 ```csharp
-public static readonly DependencyProperty PatientProperty;            // 患者数据
-public static readonly DependencyProperty DisplayModeProperty;        // Full/Compact/Minimal
-public static readonly DependencyProperty ShowHistoryButtonProperty;  // 历史按钮
-public static readonly DependencyProperty HistoryCommandProperty;     // 历史命令
-public static readonly DependencyProperty ShowVisitCountProperty;     // 显示就诊次数
+public static readonly DependencyProperty ConsultationProperty;      // 诊断数据
+public static readonly DependencyProperty HerbItemsProperty;         // 药材列表
+public static readonly DependencyProperty AllHerbsProperty;          // 全部药材(自动补全)
+public static readonly DependencyProperty PrescriptionInfoProperty;  // 处方信息(付数/用法)
+// Commands
+public static readonly DependencyProperty ImportFormulaCommandProperty;   // 导入经验方
+public static readonly DependencyProperty ImportHistoryCommandProperty;   // 导入历史医案
+public static readonly DependencyProperty ClearAllCommandProperty;        // 清空处方
 ```
 
-**复用场景**: 看诊工作台、患者选择详情区、医案详情
+#### 3.2.2 MedicalCaseViewControl (新建)
 
-#### 3.2.2 PatientSearchControl (提取)
+**位置**: `LYBT.Desktop.MedicalCase/Controls/MedicalCaseViewControl.xaml`
 
-**位置**: `LYBT.Desktop.Shared/Controls/PatientSearchControl.xaml`
+**职责**: 医案只读预览，用于详情查看
+
+**布局**:
+```
++--------------------------------------------------+
+| 诊断信息                                          |
+| 现病史: XXXXXXX                                  |
+| 舌诊: XX  脉诊: XX                               |
+| 中医诊断: XXXXXXX                                |
++--------------------------------------------------+
+| 处方内容                                          |
+| HerbListControl (IsEditMode=False)              |
+|   药材1 10g  药材2 15g  药材3 12g  ...          |
++--------------------------------------------------+
+| 付数: X付  用法: XXX                             |
++--------------------------------------------------+
+```
 
 **DependencyProperty**:
 ```csharp
-public static readonly DependencyProperty SearchKeywordProperty;      // 搜索关键词
-public static readonly DependencyProperty PatientsProperty;           // 患者列表
-public static readonly DependencyProperty SelectedPatientProperty;    // 选中患者
-public static readonly DependencyProperty SearchCommandProperty;      // 搜索命令
-public static readonly DependencyProperty PatientSelectedCommandProperty; // 选中回调
-public static readonly DependencyProperty ShowCreateButtonProperty;   // 显示新建按钮
-public static readonly DependencyProperty ShowPaginationProperty;     // 显示分页
+public static readonly DependencyProperty MedicalCaseProperty;   // 医案数据
+public static readonly DependencyProperty ShowPrintButtonProperty;  // 显示打印按钮
+public static readonly DependencyProperty PrintCommandProperty;     // 打印命令
 ```
 
-**复用场景**: 患者选择界面、前台挂号界面
+#### 3.2.3 HerbListControl (已有，Herbs模块)
 
-#### 3.2.3 PendingQueueControl (提取)
+**位置**: `LYBT.Desktop.Herbs/Controls/HerbList/HerbListControl.xaml`
 
-**位置**: `LYBT.Desktop.Shared/Controls/PendingQueueControl.xaml`
+**使用方式**:
+```xml
+<!-- 编辑模式 -->
+<herbList:HerbListControl
+    AllHerbs="{Binding AllHerbs}"
+    HerbItems="{Binding HerbItems, Mode=TwoWay}"
+    IsEditMode="True"
+    Columns="4" />
 
-**DependencyProperty**:
-```csharp
-public static readonly DependencyProperty PendingQueueProperty;       // 队列数据
-public static readonly DependencyProperty SelectedItemProperty;       // 选中项
-public static readonly DependencyProperty RefreshCommandProperty;     // 刷新命令
-public static readonly DependencyProperty SelectCommandProperty;      // 选择命令
-public static readonly DependencyProperty IsCompactModeProperty;      // 紧凑模式
+<!-- 只读模式 -->
+<herbList:HerbListControl
+    HerbItems="{Binding HerbItems}"
+    IsEditMode="False"
+    Columns="4" />
 ```
 
-**复用场景**: 患者选择界面、前台叫号管理
+### 3.3 诊断区布局规范 (V2新增)
 
-### 3.3 响应式设计
+**布局**: 3行固定高度区域
 
-| 屏幕宽度 | 布局模式 |
-|---------|---------|
-| >= 1600px | 完整模式：左25%+右75%，所有信息展示 |
-| 1280-1600px | 折叠模式：左侧收窄至200px，患者卡片精简 |
-| < 1280px | 下拉模式：左侧变为顶部下拉选择器 |
+| 行 | 字段 | 宽度 | 高度 |
+|----|------|------|------|
+| Row1 | 现病史 | 100% | 40px |
+| Row2 | 舌诊 + 脉诊 | 各50% | 40px |
+| Row3 | 中医诊断* | 100% | 40px |
+
+**总高度**: 约120px (含边距)
+
+```xml
+<StackPanel>
+    <!-- Row1: 现病史 -->
+    <Grid Height="40">
+        <TextBlock Text="现病史" Width="60"/>
+        <TextBox Text="{Binding Consultation.History}" Margin="60,0,0,0"/>
+    </Grid>
+
+    <!-- Row2: 舌诊 + 脉诊 -->
+    <Grid Height="40">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Orientation="Horizontal">
+            <TextBlock Text="舌诊" Width="40"/>
+            <TextBox Text="{Binding Consultation.TongueDiagnosis}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <TextBlock Text="脉诊" Width="40"/>
+            <TextBox Text="{Binding Consultation.PulseDiagnosis}"/>
+        </StackPanel>
+    </Grid>
+
+    <!-- Row3: 中医诊断(必填) -->
+    <Grid Height="40">
+        <TextBlock Text="中医诊断*" Width="70"/>
+        <TextBox Text="{Binding Consultation.Diagnosis}" Margin="70,0,0,0"/>
+    </Grid>
+</StackPanel>
+```
 
 ---
 
-## 4. Flow Design (流程设计)
+## 4. Flow Design (V2更新)
 
-### 4.1 保留原有两步流程
+### 4.1 简化流程
+
+**V2变化**: 待诊队列移入看诊界面，减少界面切换
 
 ```
-+------------------+          +----------------------------------+
-| 患者选择界面     |  选择    |        看诊界面                   |
-| PatientSelection |  ====>   | MedicalCaseWorkspace             |
-+------------------+          +----------------------------------+
-| - 待诊队列       |          | 左25%: 患者信息卡片              |
-| - 患者搜索       |          | 右75%: 诊断(35%) + 处方(65%)     |
-| - 患者列表       |          |                                  |
-+------------------+          +----------------------------------+
++------------------+          +------------------------------------------+
+| 患者选择界面     |  选择    |        看诊界面(V2)                       |
+| PatientSelection |  ====>   | MedicalCaseWorkspace                     |
++------------------+          +------------------------------------------+
+| - 待诊队列       |          | 左25%:                                   |
+| - 患者搜索       |          |   - 患者信息卡片 (上)                     |
+| - 患者列表       |          |   - 待诊队列 (下) <-- 新增               |
++------------------+          | 右75%: 统一医案表单                       |
+                              |   - 诊断(顶部3行)                         |
+                              |   - 处方(HerbListControl)                 |
+                              +------------------------------------------+
 ```
 
-### 4.2 导航事件保留
+### 4.2 看诊界面内切换患者
 
-- `PatientSelectedEvent`: 患者选择完成后触发
-- `NavigationParameters`: 传递PatientId
+**V2新增**: 可在看诊界面左下角待诊队列直接切换患者
+
+1. 点击待诊队列中的患者
+2. 当前医案自动暂存
+3. 加载新患者医案
 
 ---
 
-## 5. Risk Assessment
+## 5. 控件清理 (V2新增)
+
+### 5.1 需要删除的无用控件
+
+| 控件 | 位置 | 删除原因 |
+|------|------|----------|
+| `MedicalCaseDetailViewModel.cs` | MedicalCase/ViewModels/ | 已被MedicalCaseWorkspaceViewModel替代 |
+| `ConsultationFormViewModel.cs` | Consultation/ViewModels/ | 诊断字段精简后不再需要独立ViewModel |
+| `DuplicateHerbAlertDialog` | MedicalCase/Views/ | 合并到HerbListControl内部处理 |
+| `DuplicateHerbAlertDialogViewModel.cs` | MedicalCase/ViewModels/ | 配套删除 |
+| `HistoryPrescriptionSelectionDialog` | MedicalCase/Views/ | 重复功能，保留HistoryCopyDialog |
+| `HistoryPrescriptionSelectionDialogViewModel.cs` | MedicalCase/ViewModels/ | 配套删除 |
+| `AuditLogDialog/AuditReasonDialog` | MedicalCase/Dialogs/ | 审计功能延迟到v2.0 |
+| `HerbDetailViewModel.cs` | Herbs/ViewModels/ | 已被HerbMasterDetailControl替代 |
+| `PatientDetailViewModel.cs` | Patients/ViewModels/ | 已被PatientMasterDetailControl替代 |
+| `PatientDetailView.xaml` | Patients/Views/ | 配套删除 |
+| `QuickCreatePatientDialog` | Patients/Views/ | 功能合并到PatientEditControl |
+| `UserDetailViewModel.cs` | Users/ViewModels/ | 已被UserMasterDetailControl替代 |
+| `FormulaDetailViewModel.cs` | Formula/ViewModels/ | 已被FormulaMasterDetailControl替代 |
+| `FormulaValidationViewModel.cs` | Formula/ViewModels/ | 验证逻辑移入Service层 |
+| `EditFormulaDialog` | Formula/Views/ | 已被FormulaEditControl替代 |
+
+### 5.2 需要删除的基础控件(Infrastructure)
+
+| 控件 | 删除原因 |
+|------|----------|
+| `HerbCardControl` | 已被HerbItemControl替代 |
+| `HerbListView` | 已被HerbListControl替代 |
+| `HerbListEditor` | 已被HerbListControl替代 |
+| `HerbItem/` 目录(Infrastructure) | 已迁移到Herbs模块 |
+| `HerbList/` 目录(Infrastructure) | 已迁移到Herbs模块 |
+| `HerbItemDto.cs`(Infrastructure) | 已迁移到Herbs模块 |
+
+### 5.3 清理验证
+
+- [ ] 删除后编译通过
+- [ ] 无悬挂引用
+- [ ] 相关功能正常工作
+
+---
+
+## 6. Risk Assessment
 
 ### 5.1 风险矩阵
 
@@ -224,24 +366,47 @@ public static readonly DependencyProperty IsCompactModeProperty;      // 紧凑�
 
 ---
 
-## 6. Affected Files
-
-### 需修改
-
-| 文件 | 变更类型 | 说明 |
-|------|----------|------|
-| `MedicalCaseWorkspaceView.xaml` | 重构 | 布局调整为25:75 |
-| `MedicalCaseWorkspaceViewModel.cs` | 修改 | 集成PatientInfoCard |
-| `PatientSelectionView.xaml` | 重构 | 使用提取的控件 |
-| `PatientSelectionViewModel.cs` | 简化 | 目标<400行 |
+## 7. Affected Files (V2更新)
 
 ### 需新建
 
 | 文件 | 说明 |
 |------|------|
-| `LYBT.Desktop.Shared/Controls/PatientInfoCardControl.xaml(.cs)` | 患者信息卡片 |
-| `LYBT.Desktop.Shared/Controls/PatientSearchControl.xaml(.cs)` | 患者搜索控件 |
-| `LYBT.Desktop.Shared/Controls/PendingQueueControl.xaml(.cs)` | 待诊队列控件 |
+| `MedicalCase/Controls/MedicalCaseEditControl.xaml(.cs)` | **医案编辑控件** |
+| `MedicalCase/Controls/MedicalCaseViewControl.xaml(.cs)` | **医案查看控件** |
+
+### 需修改
+
+| 文件 | 变更类型 | 说明 |
+|------|----------|------|
+| `MedicalCaseWorkspaceView.xaml` | 重构 | 使用4个控件组合 |
+| `MedicalCaseWorkspaceViewModel.cs` | 简化 | 集成待诊队列 |
+| `MedicalCaseMasterDetailControl.xaml` | 修改 | 使用新View/Edit控件 |
+
+### 需删除
+
+| 文件 | 删除原因 |
+|------|----------|
+| `MedicalCaseDetailViewModel.cs` | 已被控件替代 |
+| `ConsultationFormViewModel.cs` | 诊断精简 |
+| `DuplicateHerbAlertDialog.xaml(.cs)` | 功能合并 |
+| `HistoryPrescriptionSelectionDialog.xaml(.cs)` | 功能重复 |
+| `AuditLogDialog.xaml(.cs)` | 延迟v2.0 |
+| `AuditReasonDialog.xaml(.cs)` | 延迟v2.0 |
+| `HerbDetailViewModel.cs` | 已被控件替代 |
+| `PatientDetailViewModel.cs` | 已被控件替代 |
+| `PatientDetailView.xaml(.cs)` | 已被控件替代 |
+| `QuickCreatePatientDialog.xaml(.cs)` | 功能合并 |
+| `UserDetailViewModel.cs` | 已被控件替代 |
+| `FormulaDetailViewModel.cs` | 已被控件替代 |
+| `FormulaValidationViewModel.cs` | 逻辑迁移 |
+| `EditFormulaDialog.xaml(.cs)` | 已被控件替代 |
+| `Infrastructure/Controls/HerbCardControl.*` | 已迁移 |
+| `Infrastructure/Controls/HerbListView.*` | 已迁移 |
+| `Infrastructure/Controls/HerbListEditor.*` | 已迁移 |
+| `Infrastructure/Controls/HerbItem/*` | 已迁移 |
+| `Infrastructure/Controls/HerbList/*` | 已迁移 |
+| `Infrastructure/Models/HerbItemDto.cs` | 已迁移 |
 
 ### 保持不变
 
@@ -251,6 +416,9 @@ public static readonly DependencyProperty IsCompactModeProperty;      // 紧凑�
 | `HistoryCopyDialog.xaml` | 历史医案复制对话框 |
 | `PrescriptionPanelViewModel.cs` | 处方面板(含经验方/历史命令) |
 | `PendingQueueManager.cs` | 待诊队列管理器 |
+| `PatientInfoCardControl` | 已有控件 |
+| `PendingQueueControl` | 已有控件 |
+| `HerbListControl` | Herbs模块已有 |
 
 ---
 

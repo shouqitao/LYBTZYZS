@@ -143,6 +143,8 @@ namespace LYBT.Desktop.Formula.Models
         }
 
         /// <summary>从DTO创建模型</summary>
+        /// <remarks>已废弃：请使用IMappingService&lt;FormulaDetailDto, FormulaInputDto, FormulaDetailModel&gt;.ToItem()</remarks>
+        [Obsolete("请使用FormulaDetailModelMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
         public static FormulaDetailModel FromDto(FormulaDetailDto dto)
         {
             var model = new FormulaDetailModel
@@ -181,6 +183,8 @@ namespace LYBT.Desktop.Formula.Models
         }
 
         /// <summary>转换为DTO</summary>
+        /// <remarks>已废弃：请使用IMappingService&lt;FormulaDetailDto, FormulaInputDto, FormulaDetailModel&gt;.ToDto()</remarks>
+        [Obsolete("请使用FormulaDetailModelMappingService.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
         public FormulaDetailDto ToDto()
         {
             return new FormulaDetailDto

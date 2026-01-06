@@ -1,6 +1,6 @@
 using Asp.Versioning;
-using AutoMapper;
 using LYBT.Infrastructure.Web;
+using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -21,13 +21,12 @@ namespace LYBT.WebAPI.Controllers
     public class PatientsController : BaseApiController
     {
         private readonly IPatientService _service;
-        private readonly IMapper _mapper;
+        private readonly PatientMapper _mapper = new();
 
-        public PatientsController(IPatientService service, IMapper mapper, ILogger<PatientsController> logger)
+        public PatientsController(IPatientService service, ILogger<PatientsController> logger)
             : base(logger)
         {
             _service = service;
-            _mapper = mapper;
         }
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var patientEntity = entityResult.Data;
-            var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
+            var patientDto = _mapper.ToDetailDto(patientEntity);
             patientDto.Age = patientEntity.Age;
 
             return Success(patientDto, "查询成功");
@@ -94,7 +93,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var patientEntity = entityResult.Data;
-            var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
+            var patientDto = _mapper.ToDetailDto(patientEntity);
             patientDto.Age = patientEntity.Age;
 
             LogOperation("新增患者成功", patientDto, patientEntity.Id);
@@ -126,7 +125,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var patientEntity = entityResult.Data;
-            var patientDto = _mapper.Map<PatientDetailDto>(patientEntity);
+            var patientDto = _mapper.ToDetailDto(patientEntity);
             patientDto.Age = patientEntity.Age;
 
             LogOperation("更新患者成功", patientDto, id);

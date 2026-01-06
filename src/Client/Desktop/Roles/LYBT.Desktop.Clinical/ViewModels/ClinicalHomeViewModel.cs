@@ -1,7 +1,8 @@
-﻿using LYBT.Desktop.Foundation.Security;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
@@ -14,89 +15,38 @@ namespace LYBT.Desktop.Clinical.ViewModels
     /// Issue #1553: 角色模块化重构 - Clinical模块
     /// Issue #1567: 导航到患者选择视图（新流程：主页 → 患者选择 → 3步看病流程）
     /// Issue #1887-1891: 添加个人资料编辑功能
+    /// OpenSpec: standardize-viewmodel-framework - 迁移到NavigableViewModelBase
     /// </summary>
-    public class ClinicalHomeViewModel : UnifiedViewModelBase
+    public partial class ClinicalHomeViewModel : NavigableViewModelBase
     {
         #region 依赖服务
 
-        private readonly IRegionManager _regionManager;
         private readonly IAuthenticationService _authService;
         private readonly IDialogService _dialogService;
 
         #endregion 依赖服务
 
-        #region 属性
+        #region 可观察属性
 
-        private string _currentUserName = "医生";
         /// <summary>
         /// 当前用户名 (Issue #1887-1891)
         /// </summary>
-        public string CurrentUserName
-        {
-            get => _currentUserName;
-            set => SetProperty(ref _currentUserName, value);
-        }
+        [ObservableProperty]
+        private string _currentUserName = "医生";
 
-        private int _todayConsultationCount = 0;
         /// <summary>
         /// 今日接诊数量
         /// </summary>
-        public int TodayConsultationCount
-        {
-            get => _todayConsultationCount;
-            set => SetProperty(ref _todayConsultationCount, value);
-        }
+        [ObservableProperty]
+        private int _todayConsultationCount;
 
-        private int _pendingCaseCount = 0;
         /// <summary>
         /// 待完成医案数量
         /// </summary>
-        public int PendingCaseCount
-        {
-            get => _pendingCaseCount;
-            set => SetProperty(ref _pendingCaseCount, value);
-        }
+        [ObservableProperty]
+        private int _pendingCaseCount;
 
-        #endregion 属性
-
-        #region 命令
-
-        /// <summary>
-        /// 开始看诊命令
-        /// </summary>
-        public DelegateCommand StartConsultationCommand { get; }
-
-        /// <summary>
-        /// 导航到患者管理命令 - Issue #1827
-        /// </summary>
-        public DelegateCommand NavigateToPatientManagementCommand { get; }
-
-        /// <summary>
-        /// 导航到病历查询命令 - Issue #1827
-        /// </summary>
-        public DelegateCommand NavigateToMedicalCaseQueryCommand { get; }
-
-        /// <summary>
-        /// 导航到药材库命令 - Issue #1827
-        /// </summary>
-        public DelegateCommand NavigateToHerbLibraryCommand { get; }
-
-        /// <summary>
-        /// 导航到验方库命令 - Issue #1827
-        /// </summary>
-        public DelegateCommand NavigateToFormulaLibraryCommand { get; }
-
-        /// <summary>
-        /// 编辑个人资料命令 (Issue #1887-1892)
-        /// </summary>
-        public DelegateCommand EditProfileCommand { get; }
-
-        /// <summary>
-        /// 修改密码命令 (Issue #1887-1892)
-        /// </summary>
-        public DelegateCommand ChangePasswordCommand { get; }
-
-        #endregion 命令
+        #endregion 可观察属性
 
         #region 构造函数
 
@@ -106,24 +56,10 @@ namespace LYBT.Desktop.Clinical.ViewModels
             ILoggerFactory loggerFactory,
             IAuthenticationService authService,
             IDialogService dialogService)
-            : base(eventAggregator, loggerFactory, regionManager)
+            : base(loggerFactory, eventAggregator, regionManager)
         {
-            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-
-            // 初始化核心命令
-            StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation);
-
-            // Issue #1827: 初始化4个辅助导航命令
-            NavigateToPatientManagementCommand = new DelegateCommand(ExecuteNavigateToPatientManagement);
-            NavigateToMedicalCaseQueryCommand = new DelegateCommand(ExecuteNavigateToMedicalCaseQuery);
-            NavigateToHerbLibraryCommand = new DelegateCommand(ExecuteNavigateToHerbLibrary);
-            NavigateToFormulaLibraryCommand = new DelegateCommand(ExecuteNavigateToFormulaLibrary);
-
-            // Issue #1887-1892: 初始化编辑个人资料和修改密码命令
-            EditProfileCommand = new DelegateCommand(ExecuteEditProfileCommand);
-            ChangePasswordCommand = new DelegateCommand(ExecuteChangePasswordCommand);
 
             // 加载当前用户信息
             LoadCurrentUser();
@@ -134,22 +70,21 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         #endregion 构造函数
 
-        #region 命令实现
+        #region 命令
 
         /// <summary>
         /// 开始看诊
         /// Issue #1567 - 导航到患者选择视图（PatientSelectionView）
         /// 新流程：主页 → 患者选择 → 3步看病流程
         /// </summary>
-        private void ExecuteStartConsultation()
+        [RelayCommand]
+        private void StartMedicalCase()
         {
             try
             {
                 Logger.LogInformation("开始看诊，导航到患者选择视图");
 
-                // Issue #1567 - 导航到患者选择视图（独立化）
-                // 流程：主页 → PatientSelectionView → MedicalCaseFlowView（3步）
-                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView", navigationResult =>
+                RegionManager.RequestNavigate("ContentRegion", "PatientSelectionView", navigationResult =>
                 {
                     if (navigationResult.Result == true)
                     {
@@ -175,12 +110,13 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// 导航到患者管理 - Issue #1827
         /// OpenSpec: rename-reference-to-management - 使用Clinical角色台管理视图
         /// </summary>
-        private void ExecuteNavigateToPatientManagement()
+        [RelayCommand]
+        private void NavigateToPatientManagement()
         {
             try
             {
                 Logger.LogInformation("导航到患者管理视图");
-                _regionManager.RequestNavigate("ContentRegion", "PatientManagementView");
+                RegionManager.RequestNavigate("ContentRegion", "PatientManagementView");
             }
             catch (Exception ex)
             {
@@ -192,12 +128,13 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// 导航到病历查询 - Issue #1827
         /// OpenSpec: rename-reference-to-management - 使用Clinical角色台管理视图
         /// </summary>
-        private void ExecuteNavigateToMedicalCaseQuery()
+        [RelayCommand]
+        private void NavigateToMedicalCaseQuery()
         {
             try
             {
                 Logger.LogInformation("导航到医案管理视图");
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
+                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
             }
             catch (Exception ex)
             {
@@ -209,12 +146,13 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// 导航到药材库 - Issue #1827
         /// OpenSpec: rename-reference-to-management - 使用Clinical角色台管理视图
         /// </summary>
-        private void ExecuteNavigateToHerbLibrary()
+        [RelayCommand]
+        private void NavigateToHerbLibrary()
         {
             try
             {
                 Logger.LogInformation("导航到药材管理视图");
-                _regionManager.RequestNavigate("ContentRegion", "HerbManagementView");
+                RegionManager.RequestNavigate("ContentRegion", "HerbManagementView");
             }
             catch (Exception ex)
             {
@@ -226,12 +164,13 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// 导航到验方库 - Issue #1827
         /// OpenSpec: rename-reference-to-management - 使用Clinical角色台管理视图
         /// </summary>
-        private void ExecuteNavigateToFormulaLibrary()
+        [RelayCommand]
+        private void NavigateToFormulaLibrary()
         {
             try
             {
                 Logger.LogInformation("导航到经验方管理视图");
-                _regionManager.RequestNavigate("ContentRegion", "FormulaManagementView");
+                RegionManager.RequestNavigate("ContentRegion", "FormulaManagementView");
             }
             catch (Exception ex)
             {
@@ -242,14 +181,15 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// <summary>
         /// 编辑个人资料 (Issue #1887-1891)
         /// </summary>
-        private void ExecuteEditProfileCommand()
+        [RelayCommand]
+        private void EditProfile()
         {
             try
             {
                 Logger.LogInformation("导航到个人资料页面");
 
                 // Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
-                _regionManager.RequestNavigate("ContentRegion", "UserProfileView");
+                RegionManager.RequestNavigate("ContentRegion", "UserProfileView");
             }
             catch (Exception ex)
             {
@@ -257,19 +197,19 @@ namespace LYBT.Desktop.Clinical.ViewModels
             }
         }
 
-
         /// <summary>
         /// 修改密码 (Issue #1887-1892)
         /// Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
         /// </summary>
-        private void ExecuteChangePasswordCommand()
+        [RelayCommand]
+        private void ChangePassword()
         {
             try
             {
                 Logger.LogInformation("导航到修改密码页面");
 
                 // Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
-                _regionManager.RequestNavigate("ContentRegion", "ChangePasswordView");
+                RegionManager.RequestNavigate("ContentRegion", "ChangePasswordView");
             }
             catch (Exception ex)
             {
@@ -277,7 +217,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             }
         }
 
-        #endregion 命令实现
+        #endregion 命令
 
         #region 辅助方法
 
@@ -329,6 +269,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         public override void OnNavigatedTo(NavigationContext navigationContext)
         {
+            base.OnNavigatedTo(navigationContext);
             // 每次导航到主页时刷新统计数据
             LoadTodayStatistics();
         }
@@ -340,6 +281,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         public override void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            base.OnNavigatedFrom(navigationContext);
             // 简化实现 - 无需清理
         }
 

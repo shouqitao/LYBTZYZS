@@ -1,7 +1,9 @@
 using System.Reactive.Disposables;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
+using LYBT.Desktop.Infrastructure.Events;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {
@@ -19,6 +21,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         #region 私有字段
 
         private readonly CompositeDisposable _disposables = new();
+        private EventSubscriptionManager? _eventManager;
         private bool _disposed;
 
         #endregion
@@ -34,6 +37,17 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// 日志记录器工厂
         /// </summary>
         protected ILoggerFactory LoggerFactory { get; }
+
+        /// <summary>
+        /// Prism事件聚合器
+        /// </summary>
+        protected IEventAggregator EventAggregator { get; }
+
+        /// <summary>
+        /// 事件订阅管理器 (延迟初始化)
+        /// 使用此属性订阅事件，Dispose时自动清理
+        /// </summary>
+        protected EventSubscriptionManager Events => _eventManager ??= new EventSubscriptionManager(EventAggregator);
 
         #endregion
 
@@ -77,9 +91,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         #region 构造函数
 
-        protected CoreViewModelBase(ILoggerFactory loggerFactory)
+        protected CoreViewModelBase(ILoggerFactory loggerFactory, IEventAggregator eventAggregator)
         {
             LoggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+            EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             Logger = loggerFactory.CreateLogger(GetType());
         }
 
@@ -138,6 +153,90 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         {
             ErrorMessage = message;
             Logger.LogWarning("设置错误消息: {Message}", message);
+        }
+
+        #endregion
+
+        #region 异步执行包装
+
+        /// <summary>
+        /// 异步执行包装 - 统一异常处理
+        /// </summary>
+        /// <param name="action">要执行的异步操作</param>
+        /// <param name="operationName">操作名称（用于日志和错误消息）</param>
+        /// <param name="showBusy">是否显示忙碌状态</param>
+        /// <param name="showErrorToUser">是否向用户显示错误消息</param>
+        protected async Task ExecuteWithErrorHandlingAsync(
+            Func<Task> action,
+            string operationName,
+            bool showBusy = true,
+            bool showErrorToUser = true)
+        {
+            try
+            {
+                if (showBusy) SetBusy(true, $"正在{operationName}...");
+                ClearError();
+                await action();
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogInformation("{Operation} 已取消", operationName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "{Operation} 失败", operationName);
+                if (showErrorToUser)
+                {
+                    SetError($"{operationName}失败: {ex.Message}");
+                }
+            }
+            finally
+            {
+                if (showBusy) SetBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 异步执行包装 (带返回值)
+        /// </summary>
+        /// <typeparam name="T">返回值类型</typeparam>
+        /// <param name="action">要执行的异步操作</param>
+        /// <param name="operationName">操作名称</param>
+        /// <param name="defaultValue">失败时的默认值</param>
+        /// <param name="showBusy">是否显示忙碌状态</param>
+        /// <param name="showErrorToUser">是否向用户显示错误消息</param>
+        /// <returns>操作结果或默认值</returns>
+        protected async Task<T?> ExecuteWithErrorHandlingAsync<T>(
+            Func<Task<T>> action,
+            string operationName,
+            T? defaultValue = default,
+            bool showBusy = true,
+            bool showErrorToUser = true)
+        {
+            try
+            {
+                if (showBusy) SetBusy(true, $"正在{operationName}...");
+                ClearError();
+                return await action();
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogInformation("{Operation} 已取消", operationName);
+                return defaultValue;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "{Operation} 失败", operationName);
+                if (showErrorToUser)
+                {
+                    SetError($"{operationName}失败: {ex.Message}");
+                }
+                return defaultValue;
+            }
+            finally
+            {
+                if (showBusy) SetBusy(false);
+            }
         }
 
         #endregion
@@ -206,6 +305,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
             if (disposing)
             {
+                _eventManager?.Dispose();
                 _disposables.Dispose();
                 OnDisposing();
             }

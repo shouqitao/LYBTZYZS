@@ -9,7 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" />
+    <!-- OpenSpec: adopt-mapperly-unified-mapping - 迁移到Mapperly -->
+    <PackageReference Include="Riok.Mapperly" />
     <PackageReference Include="EPPlus" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
   </ItemGroup>

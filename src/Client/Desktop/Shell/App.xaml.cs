@@ -9,7 +9,7 @@ using LYBT.Desktop.Herbs;
 using LYBT.Desktop.Infrastructure.Logging;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
-using LYBT.Desktop.Prescriptions;
+// [已删除] using LYBT.Desktop.Prescriptions; - 模块已移除
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
@@ -323,8 +323,8 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<PatientsModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<HerbsModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<FormulaModule>(InitializationMode.WhenAvailable);
-        // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块的ConsultationPanelViewModel
-        moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.WhenAvailable);
+        // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块的ConsultationItem（Entity→DTO→Item模式）
+        // [已删除] PrescriptionsModule - 空壳模块已移除，功能已迁移到MedicalCase
         moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.WhenAvailable);
 
         base.ConfigureModuleCatalog(moduleCatalog);

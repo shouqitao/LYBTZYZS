@@ -1,565 +1,427 @@
-# Design: 看诊工作台布局重构与控件化
+# Design: 看诊工作台布局重构 V2
 
 **Change ID**: refactor-medicalcase-workspace
 **设计类型**: UI架构 + 控件设计
 **创建时间**: 2025-12-25
+**更新时间**: 2026-01-04
+**版本**: V2
 
 ---
 
 ## 1. 架构概览
 
-### 1.1 控件层次结构
+### 1.1 四大核心控件
 
 ```
-LYBT.Desktop.Shared/Controls/
-├── PatientInfoCardControl.xaml(.cs)    // 新建 - 患者信息卡片
-├── PatientSearchControl.xaml(.cs)      // 新建 - 患者搜索控件
-└── PendingQueueControl.xaml(.cs)       // 新建 - 待诊队列控件
+LYBT.Desktop.MedicalCase/Controls/
+├── MedicalCaseEditControl.xaml(.cs)    # 新建 - 医案编辑表单
+└── MedicalCaseViewControl.xaml(.cs)    # 新建 - 医案只读预览
 
-使用场景:
-┌─────────────────────────────────────────────────────────────────────┐
-│                          PatientSelectionView                        │
-│  ┌──────────────────┐  ┌────────────────────────────────────────┐  │
-│  │PendingQueueControl│  │         PatientSearchControl          │  │
-│  │                   │  │  ┌──────────────────────────────────┐ │  │
-│  │  - 待诊列表       │  │  │ 搜索框 + 患者列表 + 分页         │ │  │
-│  │  - 选择/刷新      │  │  └──────────────────────────────────┘ │  │
-│  └──────────────────┘  └────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
+LYBT.Desktop.Infrastructure/Controls/
+├── PatientInfoCardControl.xaml(.cs)    # 已有 - 患者信息卡片
+└── PendingQueueControl.xaml(.cs)       # 已有 - 待诊队列控件
 
+LYBT.Desktop.Herbs/Controls/
+├── HerbList/HerbListControl.xaml(.cs)  # 已有 - 药材列表控件
+└── HerbItem/HerbItemControl.xaml(.cs)  # 已有 - 单个药材项控件
+```
+
+### 1.2 MedicalCaseWorkspaceView 布局
+
+```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                       MedicalCaseWorkspaceView                       │
 │  ┌──────────────────┐  ┌────────────────────────────────────────┐  │
-│  │PatientInfoCard   │  │              诊断区 35%                │  │
-│  │Control           │  ├────────────────────────────────────────┤  │
-│  │                  │  │              处方区 65%                │  │
-│  │  25%             │  │              75%                       │  │
-│  └──────────────────┘  └────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│                       未来: 前台挂号界面                             │
-│  ┌──────────────────────────────────────┐  ┌──────────────────┐    │
-│  │      PatientSearchControl            │  │PendingQueue      │    │
-│  │      (复用)                          │  │Control           │    │
-│  └──────────────────────────────────────┘  └──────────────────┘    │
+│  │PatientInfoCard   │  │     [经验方] [历史处方] [清空] ←右上角 │  │
+│  │Control           │  │  ┌────────────────────────────────────┐│  │
+│  │                  │  │  │ 诊断区 (固定高度120px)             ││  │
+│  │  - 姓名/性别/年龄│  │  │ Row1: 现病史                       ││  │
+│  │  - 挂号时间      │  │  │ Row2: 舌诊 | 脉诊                  ││  │
+│  │  - [查看历史]    │  │  │ Row3: 中医诊断*                    ││  │
+│  ├──────────────────┤  │  ├────────────────────────────────────┤│  │
+│  │PendingQueue      │  │  │ 处方区 (占剩余空间)                ││  │
+│  │Control           │  │  │ HerbListControl (4列)              ││  │
+│  │                  │  │  │   药材1  药材2  药材3  药材4       ││  │
+│  │  - 待诊患者列表  │  │  │   药材5  药材6  ...                ││  │
+│  │  - [刷新]        │  │  ├────────────────────────────────────┤│  │
+│  │                  │  │  │ 共X味 | 付数/用法/单价 信息区      ││  │
+│  │  左侧 25%        │  │  └────────────────────────────────────┘│  │
+│  └──────────────────┘  │              右侧 75%                   │  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 数据流设计
+**工具栏位置**: 右上角(诊断区上方)，包含经验方、历史处方、清空按钮
+
+### 1.3 数据流设计
 
 ```
-┌──────────────┐     PatientSelectedEvent      ┌───────────────────────┐
-│PatientSelect │ ───────────────────────────▶  │MedicalCaseWorkspace   │
-│ionViewModel  │     NavigationParameters      │ViewModel              │
-└──────────────┘     {PatientId, Patient}      └───────────────────────┘
-       │                                                   │
-       │ 绑定                                              │ 绑定
-       ▼                                                   ▼
-┌──────────────┐                               ┌───────────────────────┐
-│PatientSearch │                               │PatientInfoCard        │
-│Control       │                               │Control                │
-│DP: Patients  │                               │DP: Patient            │
-│DP: Selected  │                               │DP: DisplayMode        │
-└──────────────┘                               └───────────────────────┘
+┌──────────────────────────┐
+│MedicalCaseWorkspace      │
+│ViewModel                 │
+│  - CurrentPatient        │────────▶ PatientInfoCardControl.Patient
+│  - PendingQueue          │────────▶ PendingQueueControl.PendingQueue
+│  - Consultation          │────────▶ MedicalCaseEditControl.Consultation
+│  - PrescriptionPanel     │────────▶ MedicalCaseEditControl.HerbItems
+└──────────────────────────┘
 ```
 
 ---
 
 ## 2. 控件详细设计
 
-### 2.1 PatientInfoCardControl
+### 2.1 MedicalCaseEditControl
 
-**职责**: 展示患者基本信息，支持多种显示模式
+**职责**: 统一的医案编辑表单(诊断+处方)
 
 ```xml
-<!-- 控件结构 -->
-<UserControl x:Class="LYBT.Desktop.Shared.Controls.PatientInfoCardControl">
-    <Border Style="{StaticResource CardBorder}">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- 头像+姓名 -->
-                <RowDefinition Height="Auto"/>  <!-- 基本信息 -->
-                <RowDefinition Height="Auto"/>  <!-- 就诊信息 -->
-                <RowDefinition Height="*"/>     <!-- 操作按钮 -->
-            </Grid.RowDefinitions>
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Controls.MedicalCaseEditControl">
+    <!-- OpenSpec: refactor-medicalcase-workspace V2 -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 右上角工具栏 -->
+            <RowDefinition Height="Auto"/>  <!-- 诊断区约120px -->
+            <RowDefinition Height="*"/>     <!-- 处方区 -->
+        </Grid.RowDefinitions>
 
-            <!-- Row 0: 头像区 -->
-            <StackPanel Orientation="Horizontal">
-                <Ellipse Width="48" Height="48">
-                    <Ellipse.Fill>
-                        <!-- 首字母头像 -->
-                    </Ellipse.Fill>
-                </Ellipse>
-                <StackPanel>
-                    <TextBlock Text="{Binding Patient.Name}"/>
-                    <TextBlock Text="{Binding Patient.Gender}"/>
-                </StackPanel>
+        <!-- 右上角工具栏 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8">
+            <Button Content="经验方"
+                    Command="{Binding ImportFormulaCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="0,0,8,0"/>
+            <Button Content="历史处方"
+                    Command="{Binding ImportHistoryCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="0,0,8,0"/>
+            <Button Content="清空"
+                    Command="{Binding ClearAllCommand}"
+                    Style="{StaticResource LinkButtonStyle}"
+                    Foreground="#DC3545"/>
+        </StackPanel>
+
+        <!-- 诊断区 -->
+        <Border Grid.Row="1" Style="{StaticResource SectionBorder}" Margin="0,0,0,8">
+            <StackPanel Margin="12">
+                <!-- Row1: 现病史 -->
+                <Grid Height="36" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="现病史" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding Consultation.History, Mode=TwoWay}"
+                             Style="{StaticResource EditableTextBoxStyle}"/>
+                </Grid>
+
+                <!-- Row2: 舌诊 + 脉诊 -->
+                <Grid Height="36" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="舌诊" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay}"
+                                 Style="{StaticResource EditableTextBoxStyle}"/>
+                    </Grid>
+                    <Grid Grid.Column="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="脉诊" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay}"
+                                 Style="{StaticResource EditableTextBoxStyle}"/>
+                    </Grid>
+                </Grid>
+
+                <!-- Row3: 中医诊断(必填) -->
+                <Grid Height="36">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center">
+                        <Run Text="中医诊断"/><Run Text="*" Foreground="Red"/>
+                    </TextBlock>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding Consultation.Diagnosis, Mode=TwoWay}"
+                             Style="{StaticResource ValidatingTextBoxStyle}"/>
+                </Grid>
             </StackPanel>
+        </Border>
 
-            <!-- Row 1: 基本信息 -->
-            <ItemsControl Grid.Row="1">
-                <TextBlock Text="年龄: XX岁"/>
-                <TextBlock Text="电话: XXXX"/>
-            </ItemsControl>
+        <!-- 处方区 -->
+        <Border Grid.Row="2" Style="{StaticResource SectionBorder}">
+            <Grid Margin="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>     <!-- 药材列表 -->
+                    <RowDefinition Height="Auto"/>  <!-- 底部信息栏 -->
+                </Grid.RowDefinitions>
 
-            <!-- Row 2: 就诊信息 -->
-            <StackPanel Grid.Row="2" Visibility="{Binding ShowVisitCount}">
-                <TextBlock Text="就诊次数: XX"/>
-                <TextBlock Text="挂号时间: XX"/>
-            </StackPanel>
+                <!-- 药材列表 -->
+                <herbList:HerbListControl Grid.Row="0"
+                    AllHerbs="{Binding AllHerbs}"
+                    HerbItems="{Binding HerbItems, Mode=TwoWay}"
+                    IsEditMode="True"
+                    Columns="4"/>
 
-            <!-- Row 3: 操作按钮 -->
-            <Button Grid.Row="3"
-                    Content="查看历史"
-                    Command="{Binding HistoryCommand}"
-                    Visibility="{Binding ShowHistoryButton}"/>
-        </Grid>
-    </Border>
+                <!-- 底部信息栏 -->
+                <Grid Grid.Row="1" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>  <!-- 药材数 -->
+                        <ColumnDefinition Width="Auto"/>  <!-- 付数 -->
+                        <ColumnDefinition Width="Auto"/>  <!-- 用法 -->
+                        <ColumnDefinition Width="*"/>     <!-- 单价 -->
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                        <Run Text="共"/>
+                        <Run Text="{Binding ValidHerbCount}" FontWeight="SemiBold" Foreground="#2196F3"/>
+                        <Run Text="味药材"/>
+                    </TextBlock>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,24,0">
+                        <TextBlock Text="付数:" VerticalAlignment="Center"/>
+                        <TextBox Width="60" Text="{Binding Doses}" Margin="8,0,0,0"/>
+                        <TextBlock Text="付" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,24,0">
+                        <TextBlock Text="用法:" VerticalAlignment="Center"/>
+                        <ComboBox Width="120" SelectedItem="{Binding Usage}" Margin="8,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="单价:" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding TotalPrice, StringFormat='{}{0:F2}元'}"
+                                   VerticalAlignment="Center" Margin="8,0,0,0"
+                                   FontWeight="SemiBold" Foreground="#28A745"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>
 ```
 
 **代码后台**:
 ```csharp
-public partial class PatientInfoCardControl : UserControl
+public partial class MedicalCaseEditControl : UserControl
 {
-    #region Patient属性
-    public static readonly DependencyProperty PatientProperty =
+    #region Consultation属性
+    public static readonly DependencyProperty ConsultationProperty =
         DependencyProperty.Register(
-            nameof(Patient),
-            typeof(PatientDisplayModel),
-            typeof(PatientInfoCardControl),
+            nameof(Consultation),
+            typeof(ConsultationEditModel),
+            typeof(MedicalCaseEditControl),
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    public ConsultationEditModel? Consultation
+    {
+        get => (ConsultationEditModel?)GetValue(ConsultationProperty);
+        set => SetValue(ConsultationProperty, value);
+    }
+    #endregion
+
+    #region HerbItems属性
+    public static readonly DependencyProperty HerbItemsProperty =
+        DependencyProperty.Register(
+            nameof(HerbItems),
+            typeof(ObservableCollection<HerbItemDto>),
+            typeof(MedicalCaseEditControl),
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    public ObservableCollection<HerbItemDto>? HerbItems
+    {
+        get => (ObservableCollection<HerbItemDto>?)GetValue(HerbItemsProperty);
+        set => SetValue(HerbItemsProperty, value);
+    }
+    #endregion
+
+    #region AllHerbs属性
+    public static readonly DependencyProperty AllHerbsProperty =
+        DependencyProperty.Register(
+            nameof(AllHerbs),
+            typeof(IEnumerable<HerbDto>),
+            typeof(MedicalCaseEditControl),
             new PropertyMetadata(null));
 
-    public PatientDisplayModel? Patient
+    public IEnumerable<HerbDto>? AllHerbs
     {
-        get => (PatientDisplayModel?)GetValue(PatientProperty);
-        set => SetValue(PatientProperty, value);
+        get => (IEnumerable<HerbDto>?)GetValue(AllHerbsProperty);
+        set => SetValue(AllHerbsProperty, value);
     }
     #endregion
 
-    #region DisplayMode属性
-    public static readonly DependencyProperty DisplayModeProperty =
-        DependencyProperty.Register(
-            nameof(DisplayMode),
-            typeof(PatientCardDisplayMode),
-            typeof(PatientInfoCardControl),
-            new PropertyMetadata(PatientCardDisplayMode.Full));
+    #region Commands
+    public static readonly DependencyProperty ImportFormulaCommandProperty =
+        DependencyProperty.Register(nameof(ImportFormulaCommand), typeof(ICommand),
+            typeof(MedicalCaseEditControl), new PropertyMetadata(null));
 
-    public PatientCardDisplayMode DisplayMode
+    public static readonly DependencyProperty ImportHistoryCommandProperty =
+        DependencyProperty.Register(nameof(ImportHistoryCommand), typeof(ICommand),
+            typeof(MedicalCaseEditControl), new PropertyMetadata(null));
+
+    public static readonly DependencyProperty ClearAllCommandProperty =
+        DependencyProperty.Register(nameof(ClearAllCommand), typeof(ICommand),
+            typeof(MedicalCaseEditControl), new PropertyMetadata(null));
+
+    public ICommand? ImportFormulaCommand
     {
-        get => (PatientCardDisplayMode)GetValue(DisplayModeProperty);
-        set => SetValue(DisplayModeProperty, value);
+        get => (ICommand?)GetValue(ImportFormulaCommandProperty);
+        set => SetValue(ImportFormulaCommandProperty, value);
     }
-    #endregion
 
-    #region ShowHistoryButton属性
-    public static readonly DependencyProperty ShowHistoryButtonProperty =
-        DependencyProperty.Register(
-            nameof(ShowHistoryButton),
-            typeof(bool),
-            typeof(PatientInfoCardControl),
-            new PropertyMetadata(true));
-
-    public bool ShowHistoryButton
+    public ICommand? ImportHistoryCommand
     {
-        get => (bool)GetValue(ShowHistoryButtonProperty);
-        set => SetValue(ShowHistoryButtonProperty, value);
+        get => (ICommand?)GetValue(ImportHistoryCommandProperty);
+        set => SetValue(ImportHistoryCommandProperty, value);
     }
-    #endregion
 
-    #region HistoryCommand属性
-    public static readonly DependencyProperty HistoryCommandProperty =
-        DependencyProperty.Register(
-            nameof(HistoryCommand),
-            typeof(ICommand),
-            typeof(PatientInfoCardControl),
-            new PropertyMetadata(null));
-
-    public ICommand? HistoryCommand
+    public ICommand? ClearAllCommand
     {
-        get => (ICommand?)GetValue(HistoryCommandProperty);
-        set => SetValue(HistoryCommandProperty, value);
-    }
-    #endregion
-
-    #region ShowVisitCount属性
-    public static readonly DependencyProperty ShowVisitCountProperty =
-        DependencyProperty.Register(
-            nameof(ShowVisitCount),
-            typeof(bool),
-            typeof(PatientInfoCardControl),
-            new PropertyMetadata(true));
-
-    public bool ShowVisitCount
-    {
-        get => (bool)GetValue(ShowVisitCountProperty);
-        set => SetValue(ShowVisitCountProperty, value);
-    }
-    #endregion
-}
-
-public enum PatientCardDisplayMode
-{
-    Full,      // 完整模式：所有信息
-    Compact,   // 紧凑模式：仅姓名+性别+年龄
-    Minimal    // 最小模式：仅姓名
-}
-```
-
-### 2.2 PatientSearchControl
-
-**职责**: 提供患者搜索、列表展示、分页功能
-
-```csharp
-public partial class PatientSearchControl : UserControl
-{
-    #region SearchKeyword属性
-    public static readonly DependencyProperty SearchKeywordProperty =
-        DependencyProperty.Register(
-            nameof(SearchKeyword),
-            typeof(string),
-            typeof(PatientSearchControl),
-            new FrameworkPropertyMetadata(
-                string.Empty,
-                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    public string SearchKeyword
-    {
-        get => (string)GetValue(SearchKeywordProperty);
-        set => SetValue(SearchKeywordProperty, value);
-    }
-    #endregion
-
-    #region Patients属性
-    public static readonly DependencyProperty PatientsProperty =
-        DependencyProperty.Register(
-            nameof(Patients),
-            typeof(IEnumerable<PatientListDto>),
-            typeof(PatientSearchControl),
-            new PropertyMetadata(null));
-
-    public IEnumerable<PatientListDto>? Patients
-    {
-        get => (IEnumerable<PatientListDto>?)GetValue(PatientsProperty);
-        set => SetValue(PatientsProperty, value);
-    }
-    #endregion
-
-    #region SelectedPatient属性
-    public static readonly DependencyProperty SelectedPatientProperty =
-        DependencyProperty.Register(
-            nameof(SelectedPatient),
-            typeof(PatientListDto),
-            typeof(PatientSearchControl),
-            new FrameworkPropertyMetadata(
-                null,
-                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    public PatientListDto? SelectedPatient
-    {
-        get => (PatientListDto?)GetValue(SelectedPatientProperty);
-        set => SetValue(SelectedPatientProperty, value);
-    }
-    #endregion
-
-    #region SearchCommand属性
-    public static readonly DependencyProperty SearchCommandProperty =
-        DependencyProperty.Register(
-            nameof(SearchCommand),
-            typeof(ICommand),
-            typeof(PatientSearchControl),
-            new PropertyMetadata(null));
-
-    public ICommand? SearchCommand
-    {
-        get => (ICommand?)GetValue(SearchCommandProperty);
-        set => SetValue(SearchCommandProperty, value);
-    }
-    #endregion
-
-    #region PatientSelectedCommand属性
-    public static readonly DependencyProperty PatientSelectedCommandProperty =
-        DependencyProperty.Register(
-            nameof(PatientSelectedCommand),
-            typeof(ICommand),
-            typeof(PatientSearchControl),
-            new PropertyMetadata(null));
-
-    public ICommand? PatientSelectedCommand
-    {
-        get => (ICommand?)GetValue(PatientSelectedCommandProperty);
-        set => SetValue(PatientSelectedCommandProperty, value);
-    }
-    #endregion
-
-    #region ShowCreateButton属性
-    public static readonly DependencyProperty ShowCreateButtonProperty =
-        DependencyProperty.Register(
-            nameof(ShowCreateButton),
-            typeof(bool),
-            typeof(PatientSearchControl),
-            new PropertyMetadata(true));
-
-    public bool ShowCreateButton
-    {
-        get => (bool)GetValue(ShowCreateButtonProperty);
-        set => SetValue(ShowCreateButtonProperty, value);
-    }
-    #endregion
-
-    #region ShowPagination属性
-    public static readonly DependencyProperty ShowPaginationProperty =
-        DependencyProperty.Register(
-            nameof(ShowPagination),
-            typeof(bool),
-            typeof(PatientSearchControl),
-            new PropertyMetadata(true));
-
-    public bool ShowPagination
-    {
-        get => (bool)GetValue(ShowPaginationProperty);
-        set => SetValue(ShowPaginationProperty, value);
+        get => (ICommand?)GetValue(ClearAllCommandProperty);
+        set => SetValue(ClearAllCommandProperty, value);
     }
     #endregion
 }
 ```
 
-### 2.3 PendingQueueControl
+### 2.2 MedicalCaseViewControl
 
-**职责**: 展示待诊队列，支持选择和刷新
+**职责**: 医案只读预览
 
-```csharp
-public partial class PendingQueueControl : UserControl
-{
-    #region PendingQueue属性
-    public static readonly DependencyProperty PendingQueueProperty =
-        DependencyProperty.Register(
-            nameof(PendingQueue),
-            typeof(IEnumerable<PendingPatientDto>),
-            typeof(PendingQueueControl),
-            new PropertyMetadata(null));
+```xml
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Controls.MedicalCaseViewControl">
+    <!-- OpenSpec: refactor-medicalcase-workspace -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 诊断信息 -->
+            <RowDefinition Height="*"/>     <!-- 处方内容 -->
+            <RowDefinition Height="Auto"/>  <!-- 底部信息 -->
+        </Grid.RowDefinitions>
 
-    public IEnumerable<PendingPatientDto>? PendingQueue
-    {
-        get => (IEnumerable<PendingPatientDto>?)GetValue(PendingQueueProperty);
-        set => SetValue(PendingQueueProperty, value);
-    }
-    #endregion
+        <!-- 诊断信息 -->
+        <Border Grid.Row="0" Style="{StaticResource SectionBorder}" Margin="0,0,0,8">
+            <StackPanel Margin="12">
+                <TextBlock Margin="0,0,0,8">
+                    <Run Text="现病史: " FontWeight="SemiBold"/>
+                    <Run Text="{Binding MedicalCase.History}"/>
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock>
+                        <Run Text="舌诊: " FontWeight="SemiBold"/>
+                        <Run Text="{Binding MedicalCase.TongueDiagnosis}"/>
+                    </TextBlock>
+                    <TextBlock Margin="24,0,0,0">
+                        <Run Text="脉诊: " FontWeight="SemiBold"/>
+                        <Run Text="{Binding MedicalCase.PulseDiagnosis}"/>
+                    </TextBlock>
+                </StackPanel>
+                <TextBlock>
+                    <Run Text="中医诊断: " FontWeight="SemiBold"/>
+                    <Run Text="{Binding MedicalCase.Diagnosis}"/>
+                </TextBlock>
+            </StackPanel>
+        </Border>
 
-    #region SelectedItem属性
-    public static readonly DependencyProperty SelectedItemProperty =
-        DependencyProperty.Register(
-            nameof(SelectedItem),
-            typeof(PendingPatientDto),
-            typeof(PendingQueueControl),
-            new FrameworkPropertyMetadata(
-                null,
-                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        <!-- 处方内容 -->
+        <Border Grid.Row="1" Style="{StaticResource SectionBorder}">
+            <Grid Margin="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="处方内容" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <herbList:HerbListControl Grid.Row="1"
+                    HerbItems="{Binding MedicalCase.HerbItems}"
+                    IsEditMode="False"
+                    Columns="4"/>
+            </Grid>
+        </Border>
 
-    public PendingPatientDto? SelectedItem
-    {
-        get => (PendingPatientDto?)GetValue(SelectedItemProperty);
-        set => SetValue(SelectedItemProperty, value);
-    }
-    #endregion
-
-    #region RefreshCommand属性
-    public static readonly DependencyProperty RefreshCommandProperty =
-        DependencyProperty.Register(
-            nameof(RefreshCommand),
-            typeof(ICommand),
-            typeof(PendingQueueControl),
-            new PropertyMetadata(null));
-
-    public ICommand? RefreshCommand
-    {
-        get => (ICommand?)GetValue(RefreshCommandProperty);
-        set => SetValue(RefreshCommandProperty, value);
-    }
-    #endregion
-
-    #region SelectCommand属性
-    public static readonly DependencyProperty SelectCommandProperty =
-        DependencyProperty.Register(
-            nameof(SelectCommand),
-            typeof(ICommand),
-            typeof(PendingQueueControl),
-            new PropertyMetadata(null));
-
-    public ICommand? SelectCommand
-    {
-        get => (ICommand?)GetValue(SelectCommandProperty);
-        set => SetValue(SelectCommandProperty, value);
-    }
-    #endregion
-
-    #region IsCompactMode属性
-    public static readonly DependencyProperty IsCompactModeProperty =
-        DependencyProperty.Register(
-            nameof(IsCompactMode),
-            typeof(bool),
-            typeof(PendingQueueControl),
-            new PropertyMetadata(false));
-
-    public bool IsCompactMode
-    {
-        get => (bool)GetValue(IsCompactModeProperty);
-        set => SetValue(IsCompactModeProperty, value);
-    }
-    #endregion
-}
+        <!-- 底部信息 -->
+        <Border Grid.Row="2" Style="{StaticResource SectionBorder}" Margin="0,8,0,0">
+            <StackPanel Orientation="Horizontal" Margin="12">
+                <TextBlock>
+                    <Run Text="付数: "/>
+                    <Run Text="{Binding MedicalCase.Doses}" FontWeight="SemiBold"/>
+                    <Run Text="付"/>
+                </TextBlock>
+                <TextBlock Margin="24,0,0,0">
+                    <Run Text="用法: "/>
+                    <Run Text="{Binding MedicalCase.Usage}"/>
+                </TextBlock>
+                <TextBlock Margin="24,0,0,0">
+                    <Run Text="总价: "/>
+                    <Run Text="{Binding MedicalCase.TotalPrice, StringFormat='{}{0:F2}元'}" FontWeight="SemiBold"/>
+                </TextBlock>
+                <Button Content="打印"
+                        Command="{Binding PrintCommand}"
+                        Visibility="{Binding ShowPrintButton, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Margin="24,0,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
 ```
 
 ---
 
-## 3. 布局详细设计
+## 3. MedicalCaseWorkspaceView 布局调整
 
-### 3.1 MedicalCaseWorkspaceView 新布局
+### 3.1 新布局实现
 
 ```xml
-<Grid>
-    <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="25*" MinWidth="300" MaxWidth="400"/>
-        <ColumnDefinition Width="75*"/>
-    </Grid.ColumnDefinitions>
+<UserControl x:Class="LYBT.Desktop.Clinical.Views.MedicalCaseWorkspaceView">
+    <!-- OpenSpec: refactor-medicalcase-workspace V2 -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="25*" MinWidth="280" MaxWidth="350"/>
+            <ColumnDefinition Width="75*"/>
+        </Grid.ColumnDefinitions>
 
-    <!-- 左侧: 患者信息卡片 -->
-    <Border Grid.Column="0"
-            Margin="12"
-            Style="{StaticResource SectionBorder}">
-        <controls:PatientInfoCardControl
-            Patient="{Binding CurrentPatient}"
-            DisplayMode="Full"
-            ShowHistoryButton="True"
-            ShowVisitCount="True"
-            HistoryCommand="{Binding ViewHistoryCommand}"/>
-    </Border>
+        <!-- 左侧: 患者信息 + 待诊队列 -->
+        <Grid Grid.Column="0" Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>  <!-- 患者信息卡片 -->
+                <RowDefinition Height="*"/>     <!-- 待诊队列 -->
+            </Grid.RowDefinitions>
 
-    <!-- 右侧: 诊断+处方 -->
-    <Grid Grid.Column="1">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="35*"/>  <!-- 诊断区 -->
-            <RowDefinition Height="65*"/>  <!-- 处方区 -->
-        </Grid.RowDefinitions>
+            <!-- 患者信息卡片 -->
+            <controls:PatientInfoCardControl Grid.Row="0"
+                Patient="{Binding CurrentPatient}"
+                DisplayMode="Compact"
+                ShowHistoryButton="True"
+                HistoryCommand="{Binding ViewHistoryCommand}"
+                Margin="0,0,0,12"/>
 
-        <!-- 诊断区 35% -->
-        <Border Grid.Row="0"
-                Margin="0,12,12,6"
-                Style="{StaticResource SectionBorder}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- 待诊队列 (可折叠) -->
+            <controls:PendingQueueControl Grid.Row="1"
+                PendingQueue="{Binding PendingQueue}"
+                SelectedItem="{Binding SelectedPendingCase}"
+                SelectCommand="{Binding SelectPendingCaseCommand}"
+                RefreshCommand="{Binding RefreshQueueCommand}"
+                IsCompactMode="True"/>
+        </Grid>
 
-                <!-- 现病史 -->
-                <GroupBox Grid.Row="0" Grid.Column="0" Header="现病史">
-                    <TextBox Text="{Binding Consultation.History}"/>
-                </GroupBox>
-
-                <!-- 舌诊 -->
-                <GroupBox Grid.Row="0" Grid.Column="1" Header="舌诊">
-                    <TextBox Text="{Binding Consultation.TongueDiagnosis}"/>
-                </GroupBox>
-
-                <!-- 脉诊 -->
-                <GroupBox Grid.Row="1" Grid.Column="0" Header="脉诊">
-                    <TextBox Text="{Binding Consultation.PulseDiagnosis}"/>
-                </GroupBox>
-
-                <!-- 中医诊断 -->
-                <GroupBox Grid.Row="1" Grid.Column="1" Header="中医诊断*">
-                    <TextBox Text="{Binding Consultation.Diagnosis}"/>
-                </GroupBox>
-            </Grid>
-        </Border>
-
-        <!-- 处方区 65% -->
-        <Border Grid.Row="1"
-                Margin="0,6,12,12"
-                Style="{StaticResource SectionBorder}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>  <!-- 标题栏+按钮 -->
-                    <RowDefinition Height="*"/>     <!-- 药材列表 -->
-                </Grid.RowDefinitions>
-
-                <!-- 标题栏: 包含经验方查询和历史医案按钮 -->
-                <Border Grid.Row="0" Style="{StaticResource HeaderBar}">
-                    <DockPanel>
-                        <TextBlock Text="处方" DockPanel.Dock="Left"/>
-                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                            <Button Content="经验方查询"
-                                    Command="{Binding PrescriptionPanel.OpenFormulaImportDialogCommand}"
-                                    Style="{StaticResource SecondaryButton}"/>
-                            <Button Content="历史医案"
-                                    Command="{Binding PrescriptionPanel.OpenHistoryCopyDialogCommand}"
-                                    Style="{StaticResource SecondaryButton}"/>
-                            <Button Content="清空"
-                                    Command="{Binding PrescriptionPanel.ClearAllCommand}"
-                                    Style="{StaticResource LinkButton}"/>
-                        </StackPanel>
-                    </DockPanel>
-                </Border>
-
-                <!-- 药材列表 -->
-                <DataGrid Grid.Row="1"
-                          ItemsSource="{Binding PrescriptionPanel.HerbItems}"
-                          Style="{StaticResource PrescriptionDataGrid}">
-                    <!-- 列定义 -->
-                </DataGrid>
-            </Grid>
-        </Border>
+        <!-- 右侧: 医案编辑表单 -->
+        <medicalCase:MedicalCaseEditControl Grid.Column="1"
+            Consultation="{Binding Consultation}"
+            HerbItems="{Binding PrescriptionPanel.HerbItems}"
+            AllHerbs="{Binding AllHerbs}"
+            ImportFormulaCommand="{Binding PrescriptionPanel.OpenFormulaImportDialogCommand}"
+            ImportHistoryCommand="{Binding PrescriptionPanel.OpenHistoryCopyDialogCommand}"
+            ClearAllCommand="{Binding PrescriptionPanel.ClearAllCommand}"
+            Margin="0,12,12,12"/>
     </Grid>
-</Grid>
-```
-
-### 3.2 响应式布局
-
-```xml
-<!-- 使用AdaptiveTrigger实现响应式 -->
-<VisualStateManager.VisualStateGroups>
-    <VisualStateGroup>
-        <!-- 完整模式: >= 1600px -->
-        <VisualState x:Name="FullMode">
-            <VisualState.StateTriggers>
-                <AdaptiveTrigger MinWindowWidth="1600"/>
-            </VisualState.StateTriggers>
-            <VisualState.Setters>
-                <Setter Target="LeftColumn.Width" Value="25*"/>
-                <Setter Target="PatientCard.DisplayMode" Value="Full"/>
-            </VisualState.Setters>
-        </VisualState>
-
-        <!-- 折叠模式: 1280-1600px -->
-        <VisualState x:Name="CompactMode">
-            <VisualState.StateTriggers>
-                <AdaptiveTrigger MinWindowWidth="1280"/>
-            </VisualState.StateTriggers>
-            <VisualState.Setters>
-                <Setter Target="LeftColumn.Width" Value="200"/>
-                <Setter Target="LeftColumn.MinWidth" Value="200"/>
-                <Setter Target="PatientCard.DisplayMode" Value="Compact"/>
-            </VisualState.Setters>
-        </VisualState>
-
-        <!-- 下拉模式: < 1280px -->
-        <VisualState x:Name="MinimalMode">
-            <VisualState.StateTriggers>
-                <AdaptiveTrigger MinWindowWidth="0"/>
-            </VisualState.StateTriggers>
-            <VisualState.Setters>
-                <Setter Target="LeftColumn.Width" Value="0"/>
-                <Setter Target="PatientDropdown.Visibility" Value="Visible"/>
-            </VisualState.Setters>
-        </VisualState>
-    </VisualStateGroup>
-</VisualStateManager.VisualStateGroups>
+</UserControl>
 ```
 
 ---
@@ -571,70 +433,52 @@ public partial class PendingQueueControl : UserControl
 ```csharp
 public partial class MedicalCaseWorkspaceViewModel : ViewModelBase
 {
-    // 新增: 当前患者信息(用于左侧卡片)
+    // 患者信息
     [ObservableProperty]
-    private PatientDisplayModel? _currentPatient;
+    private PatientDto? _currentPatient;
 
-    // 保留: 处方面板ViewModel(含经验方/历史命令)
+    // 诊断数据
+    [ObservableProperty]
+    private ConsultationEditModel _consultation = new();
+
+    // 处方面板(含经验方/历史命令)
     public PrescriptionPanelViewModel PrescriptionPanel { get; }
 
-    // 保留: 诊断数据
-    public ConsultationEditModel Consultation { get; }
+    // === V2新增: 待诊队列 ===
+    public ObservableCollection<PendingCaseDto> PendingQueue =>
+        _pendingQueueManager.PendingQueue;
 
-    // 新增: 查看历史命令
+    [ObservableProperty]
+    private PendingCaseDto? _selectedPendingCase;
+
+    // 选择待诊患者命令
+    [RelayCommand]
+    private async Task SelectPendingCaseAsync(PendingCaseDto? pendingCase)
+    {
+        if (pendingCase == null) return;
+
+        // 1. 暂存当前医案
+        if (HasUnsavedChanges)
+        {
+            await SaveDraftAsync();
+        }
+
+        // 2. 加载新患者医案
+        await LoadMedicalCaseAsync(pendingCase.PatientId, pendingCase.MedicalCaseId);
+    }
+
+    // 刷新队列命令
+    [RelayCommand]
+    private async Task RefreshQueueAsync() => await _pendingQueueManager.RefreshAsync();
+
+    // 查看历史命令
     [RelayCommand]
     private void ViewHistory()
     {
         if (CurrentPatient == null) return;
-        // 打开患者历史记录对话框
+        _regionManager.RequestNavigate("MainRegion", "PatientHistoryView",
+            new NavigationParameters { { "PatientId", CurrentPatient.Id } });
     }
-}
-```
-
-### 4.2 PatientSelectionViewModel 简化
-
-**目标**: 从581行降至<400行
-
-**保留功能**:
-- 待诊队列管理
-- 患者搜索
-- 导航跳转
-
-**移除到控件**:
-- UI状态管理(通过DependencyProperty)
-- 列表渲染逻辑
-
-```csharp
-public partial class PatientSelectionViewModel : ViewModelBase
-{
-    // 待诊队列数据(绑定到PendingQueueControl)
-    public ObservableCollection<PendingPatientDto> PendingQueue =>
-        _pendingQueueManager.PendingQueue;
-
-    // 患者列表数据(绑定到PatientSearchControl)
-    [ObservableProperty]
-    private ObservableCollection<PatientListDto> _patients = new();
-
-    // 选中患者
-    [ObservableProperty]
-    private PatientListDto? _selectedPatient;
-
-    // 搜索命令
-    [RelayCommand]
-    private async Task SearchAsync(string keyword) { ... }
-
-    // 选择患者命令
-    [RelayCommand]
-    private void SelectPatient(PatientListDto patient)
-    {
-        _eventAggregator.GetEvent<PatientSelectedEvent>()
-            .Publish(new PatientSelectedPayload(patient));
-        _regionManager.RequestNavigate("MainRegion", "MedicalCaseWorkspaceView");
-    }
-
-    // 刷新待诊队列命令
-    [RelayCommand]
-    private async Task RefreshQueueAsync() => await _pendingQueueManager.RefreshAsync();
 }
 ```
 
@@ -646,63 +490,55 @@ public partial class PatientSelectionViewModel : ViewModelBase
 
 | 测试项 | 测试内容 |
 |--------|----------|
-| DependencyProperty绑定 | 验证所有DP双向绑定正常 |
-| Command执行 | 验证按钮命令触发正确 |
-| 显示模式切换 | 验证DisplayMode切换UI正确 |
+| MedicalCaseEditControl绑定 | 验证Consultation/HerbItems双向绑定 |
+| MedicalCaseViewControl渲染 | 验证只读数据正确显示 |
+| 诊断区布局 | 验证3行布局正确 |
+| HerbListControl集成 | 验证4列网格显示 |
 
 ### 5.2 集成测试
 
 | 测试场景 | 验证点 |
 |----------|--------|
-| 患者选择流程 | 搜索 -> 选择 -> 导航 |
-| 看诊流程 | 患者卡片显示 -> 诊断输入 -> 处方编辑 |
-| 经验方导入 | 点击按钮 -> 对话框弹出 -> 选择方剂 -> 药材导入 |
-| 历史医案复制 | 点击按钮 -> 对话框弹出 -> 选择医案 -> 内容复制 |
-
-### 5.3 响应式测试
-
-| 分辨率 | 预期布局 |
-|--------|----------|
-| 1920x1080 | 完整模式(左25%+右75%) |
-| 1440x900 | 折叠模式(左200px+右自适应) |
-| 1280x720 | 折叠模式边界 |
-| 1024x768 | 下拉模式(顶部选择器) |
+| 新建医案流程 | 诊断输入 -> 药材添加 -> 保存 |
+| 待诊队列切换 | 选择患者 -> 暂存 -> 加载新医案 |
+| 经验方导入 | 点击按钮 -> 选择方剂 -> 药材导入 |
+| 历史医案复制 | 点击按钮 -> 选择医案 -> 内容复制 |
 
 ---
 
 ## 6. 技术决策记录
 
-### 6.1 为什么使用DependencyProperty而非ViewModel
+### 6.1 为什么统一诊断和处方面板
 
-**决策**: 控件使用DependencyProperty暴露接口
-
-**原因**:
-1. WPF控件标准模式
-2. 支持XAML直接绑定
-3. 无需额外ViewModel层
-4. 性能更优(绑定引擎优化)
-
-### 6.2 为什么保留两步流程
-
-**决策**: 保留"患者选择 -> 看诊"两步流程
+**决策**: 将诊断区和处方区合并为单一表单
 
 **原因**:
-1. 用户明确反馈偏好原有流程
-2. 职责分离清晰
-3. 复用性更好(前台挂号复用患者选择)
-4. 看诊界面更聚焦
+1. 诊断字段已精简至4个，不需要独立面板
+2. 连续表单操作更流畅，无需切换焦点
+3. 处方区获得更多空间(约85%)
+4. 符合用户反馈的操作习惯
 
-### 6.3 为什么不把待诊队列移到看诊界面
+### 6.2 为什么将待诊队列移入看诊界面
 
-**决策**: 待诊队列保留在患者选择界面
+**决策**: 待诊队列从患者选择界面移到看诊界面左侧
 
 **原因**:
-1. 用户明确要求保留原有流程
-2. 待诊队列是"选择"阶段的功能
-3. 看诊界面聚焦于诊断和处方
-4. 避免界面过于复杂
+1. 减少界面切换，提高效率
+2. 看诊时可快速切换患者
+3. 左侧空间利用更充分
+4. 支持暂存后切换患者
+
+### 6.3 诊断区3行布局设计
+
+**决策**: 现病史/舌诊+脉诊/中医诊断 三行布局
+
+**原因**:
+1. 现病史独占一行(内容较多)
+2. 舌诊+脉诊同行(内容较少，相关性强)
+3. 中医诊断独占一行(必填项，突出显示)
+4. 固定高度约120px，节省空间
 
 ---
 
-**文档版本**: v1.0
-**最后更新**: 2025-12-25
+**文档版本**: v2.0
+**最后更新**: 2026-01-04

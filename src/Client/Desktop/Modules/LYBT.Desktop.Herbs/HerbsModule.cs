@@ -1,8 +1,10 @@
 ﻿using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Herbs.Mappers;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Desktop.Herbs.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Desktop.Infrastructure.Mapping;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -28,14 +30,16 @@ namespace LYBT.Desktop.Herbs
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IHerbRepository, HerbRepository>();
 
+            // OpenSpec: adopt-mapperly-unified-mapping - 注册映射服务
+            containerRegistry.RegisterSingleton<
+                IMappingService<HerbDetailDto, HerbInputDto, HerbDetailModel>,
+                HerbMappingService>();
+
             // OpenSpec: standardize-service-layer - 统一使用Service命名
             containerRegistry.RegisterScoped<IHerbService, HerbService>();
 
-            // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<ViewModels.HerbDetailViewModel>();
-            // Issue #2168: CRUD统一架构 - HerbCreateViewModel已删除，统一使用HerbDetailViewModel
-
-            // OpenSpec: migrate-views-to-role-modules - HerbDetailView已删除（无调用）
+            // OpenSpec: migrate-views-to-role-modules - HerbDetailView/HerbDetailViewModel已删除（无调用）
+            // Issue #2168: CRUD统一架构 - HerbCreateViewModel已删除
 
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Herbs模块的MasterDetail服务

@@ -1,7 +1,7 @@
-using AutoMapper;
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Mapping;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -15,16 +15,17 @@ namespace LYBT.Module.MedicalCases.Services
     /// 病案查询服务实现 - 读操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：GetById, GetList, Search等查询操作
+    /// OpenSpec: adopt-mapperly-unified-mapping - 使用MedicalCaseMapper替代AutoMapper
     /// </summary>
     public class MedicalCaseQueryService : BaseService<MedicalCase>, IMedicalCaseQueryService
     {
         private readonly IMedicalCaseRepository _repository;
+        private readonly MedicalCaseMapper _mapper = new();
 
         public MedicalCaseQueryService(
             IMedicalCaseRepository repository,
-            IMapper mapper,
             ILogger<MedicalCaseQueryService> logger)
-            : base(logger, mapper)
+            : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
@@ -139,7 +140,7 @@ namespace LYBT.Module.MedicalCases.Services
                 filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
             }
 
-            var dtos = _mapper.Map<List<MedicalCaseListDto>>(filteredItems.ToList());
+            var dtos = _mapper.ToListDtos(filteredItems.ToList());
 
             return new PagedResult<MedicalCaseListDto>
             {
@@ -164,7 +165,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 当前架构下只有一条Consultation（共享主键），直接映射
-            var dto = _mapper.Map<ConsultationDetailDto>(medicalCase.Consultation);
+            var dto = _mapper.ToConsultationDetailDto(medicalCase.Consultation);
             return new List<ConsultationDetailDto> { dto };
         }
 
@@ -182,7 +183,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 当前架构下只有一条Prescription（一诊一方），直接映射
-            var dto = _mapper.Map<PrescriptionDetailDto>(medicalCase.Prescription);
+            var dto = _mapper.ToPrescriptionDetailDto(medicalCase.Prescription);
             return new List<PrescriptionDetailDto> { dto };
         }
 
@@ -280,7 +281,7 @@ namespace LYBT.Module.MedicalCases.Services
                 .ToList();
 
             // 映射为DTO（包含嵌套Consultation/Prescription）
-            var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(pagedEntities);
+            var dtos = _mapper.ToDetailDtos(pagedEntities);
 
             _logger.LogInformation("[SVC] MedicalCase.Search completed - TotalCount={TotalCount} ReturnedCount={ReturnedCount}",
                 totalCount, dtos.Count);
@@ -314,7 +315,7 @@ namespace LYBT.Module.MedicalCases.Services
                 .ToList();
 
             // 映射为DTO（包含嵌套Consultation/Prescription）
-            var dtos = _mapper.Map<List<MedicalCaseDetailDto>>(recentEntities);
+            var dtos = _mapper.ToDetailDtos(recentEntities);
 
             _logger.LogInformation("[SVC] MedicalCase.GetPatientRecent completed - PatientId={PatientId} ReturnedCount={ReturnedCount}",
                 patientId, dtos.Count);
@@ -376,7 +377,7 @@ namespace LYBT.Module.MedicalCases.Services
                 .Take(query.PageSize)
                 .ToList();
 
-            var dtos = _mapper.Map<List<MedicalCaseListDto>>(pagedEntities);
+            var dtos = _mapper.ToListDtos(pagedEntities);
             return new PagedResult<MedicalCaseListDto>(dtos, entities.Count, query.PageIndex, query.PageSize);
         }
 
@@ -423,7 +424,7 @@ namespace LYBT.Module.MedicalCases.Services
                 return new PagedResult<MedicalCaseListDto>();
             }
 
-            var dto = _mapper.Map<MedicalCaseListDto>(unfinished);
+            var dto = _mapper.ToListDto(unfinished);
             return new PagedResult<MedicalCaseListDto>(new List<MedicalCaseListDto> { dto }, 1, 1, 1);
         }
 
@@ -438,8 +439,26 @@ namespace LYBT.Module.MedicalCases.Services
             var count = query.Limit ?? 5;
             var recentCases = await GetPatientRecentMedicalCasesAsync(query.PatientId.Value, count);
 
-            var dtos = _mapper.Map<List<MedicalCaseListDto>>(recentCases);
-            return new PagedResult<MedicalCaseListDto>(dtos, dtos.Count, 1, dtos.Count);
+            // 从DetailDto手动映射为ListDto（DetailDto包含ListDto的所有字段）
+            var listDtos = recentCases.Select(detail => new MedicalCaseListDto
+            {
+                Id = detail.Id,
+                CaseNumber = detail.CaseNumber,
+                PatientId = detail.PatientId,
+                PatientName = detail.PatientName,
+                PatientGender = detail.PatientGender,
+                PatientAge = detail.PatientAge,
+                UserId = detail.UserId,
+                DoctorName = detail.DoctorName,
+                CompletedAt = detail.CompletedAt,
+                CaseStatus = detail.CaseStatus,
+                Diagnosis = detail.Diagnosis,
+                HasConsultation = detail.HasConsultation,
+                HasPrescription = detail.HasPrescription,
+                CreatedAt = detail.CreatedAt
+            }).ToList();
+
+            return new PagedResult<MedicalCaseListDto>(listDtos, listDtos.Count, 1, listDtos.Count);
         }
 
     }

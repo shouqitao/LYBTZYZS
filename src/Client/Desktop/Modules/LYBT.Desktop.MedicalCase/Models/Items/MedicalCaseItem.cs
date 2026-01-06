@@ -1,6 +1,6 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.MedicalCase.Models.Items;
 
@@ -8,46 +8,26 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 /// 病历列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用MedicalCaseDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与MedicalCaseDto一致，确保XAML绑定兼容
+/// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
 /// </summary>
-public class MedicalCaseItem : BindableBase
+public partial class MedicalCaseItem : ObservableObject
 {
+    [ObservableProperty]
     private Guid _id;
-    public Guid Id
-    {
-        get => _id;
-        set => SetProperty(ref _id, value);
-    }
 
+    [ObservableProperty]
     private Guid _patientId;
-    public Guid PatientId
-    {
-        get => _patientId;
-        set => SetProperty(ref _patientId, value);
-    }
 
+    [ObservableProperty]
     private string _patientName = string.Empty;
-    public string PatientName
-    {
-        get => _patientName;
-        set => SetProperty(ref _patientName, value);
-    }
 
     /// <summary>
     /// 患者性别 - OpenSpec: unify-frontend-backend-types Phase 2
     /// 统一使用Gender枚举，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PatientGenderDisplay))]
     private Gender _patientGender;
-    public Gender PatientGender
-    {
-        get => _patientGender;
-        set
-        {
-            if (SetProperty(ref _patientGender, value))
-            {
-                RaisePropertyChanged(nameof(PatientGenderDisplay));
-            }
-        }
-    }
 
     /// <summary>
     /// 患者性别显示文本（用于UI绑定）- OpenSpec: unify-frontend-backend-types Phase 2
@@ -59,109 +39,59 @@ public class MedicalCaseItem : BindableBase
         _ => "未知"
     };
 
+    [ObservableProperty]
     private int? _patientAge;
-    public int? PatientAge
-    {
-        get => _patientAge;
-        set => SetProperty(ref _patientAge, value);
-    }
 
+    [ObservableProperty]
     private string _caseNumber = string.Empty;
-    public string CaseNumber
-    {
-        get => _caseNumber;
-        set => SetProperty(ref _caseNumber, value);
-    }
 
     // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, TreatmentPlan
     // 保留PresentIllness和Diagnosis用于显示
 
+    [ObservableProperty]
     private string? _presentIllness;
-    public string? PresentIllness
-    {
-        get => _presentIllness;
-        set => SetProperty(ref _presentIllness, value);
-    }
 
+    [ObservableProperty]
     private string? _diagnosis;
-    public string? Diagnosis
-    {
-        get => _diagnosis;
-        set => SetProperty(ref _diagnosis, value);
-    }
 
     /// <summary>
     /// 医案状态 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为CaseStatus，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
     private MedicalCaseStatus _caseStatus;
-    public MedicalCaseStatus CaseStatus
-    {
-        get => _caseStatus;
-        set => SetProperty(ref _caseStatus, value);
-    }
 
+    [ObservableProperty]
     private Guid? _consultationId;
-    public Guid? ConsultationId
-    {
-        get => _consultationId;
-        set => SetProperty(ref _consultationId, value);
-    }
 
+    [ObservableProperty]
     private Guid? _prescriptionId;
-    public Guid? PrescriptionId
-    {
-        get => _prescriptionId;
-        set => SetProperty(ref _prescriptionId, value);
-    }
 
+    [ObservableProperty]
     private DateTime _createdAt;
-    public DateTime CreatedAt
-    {
-        get => _createdAt;
-        set => SetProperty(ref _createdAt, value);
-    }
 
+    [ObservableProperty]
     private DateTime? _completedAt;
-    public DateTime? CompletedAt
-    {
-        get => _completedAt;
-        set => SetProperty(ref _completedAt, value);
-    }
 
+    [ObservableProperty]
     private string? _completionReason;
-    public string? CompletionReason
-    {
-        get => _completionReason;
-        set => SetProperty(ref _completionReason, value);
-    }
 
+    [ObservableProperty]
     private bool _isSelected;
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetProperty(ref _isSelected, value);
-    }
 
+    [ObservableProperty]
     private bool _isHighlighted;
-    public bool IsHighlighted
-    {
-        get => _isHighlighted;
-        set => SetProperty(ref _isHighlighted, value);
-    }
 
+    [ObservableProperty]
     private bool _isExpanded;
-    public bool IsExpanded
-    {
-        get => _isExpanded;
-        set => SetProperty(ref _isExpanded, value);
-    }
 
     /// <summary>
     /// 从MedicalCaseDetailDto创建MedicalCaseItem
     /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, DiagnosisResult, TreatmentPlan
     /// OpenSpec: unify-frontend-backend-types Phase 2 - PatientGender使用枚举
     /// </summary>
+    /// <remarks>已废弃：请使用MedicalCaseItemMapper.ToItem()</remarks>
+    [Obsolete("请使用MedicalCaseItemMapper.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public static MedicalCaseItem FromDto(MedicalCaseDetailDto dto)
     {
         return new MedicalCaseItem
@@ -188,6 +118,8 @@ public class MedicalCaseItem : BindableBase
     /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId, ConsultationDate删除
     /// OpenSpec: unify-frontend-backend-types Phase 2 - PatientGender使用枚举
     /// </summary>
+    /// <remarks>已废弃：请使用MedicalCaseItemMapper.ToDto()</remarks>
+    [Obsolete("请使用MedicalCaseItemMapper.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public MedicalCaseDetailDto ToDto()
     {
         return new MedicalCaseDetailDto

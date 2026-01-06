@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using AutoMapper;
+using LYBT.Module.Users.Mapping;
 using FluentValidation;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Services;
@@ -29,15 +29,15 @@ namespace LYBT.Module.Users.Services
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IValidator<UserInputDto> _validator;
+        private readonly UserMapper _mapper = new();
 
         public UserService(
             IUserRepository repository,
-            IMapper mapper,
             ILogger<UserService> logger,
             IConfiguration configuration,
             IHttpContextAccessor httpContextAccessor,
             IValidator<UserInputDto> validator)
-            : base(logger, mapper)
+            : base(logger)
         {
             _repository = repository;
             _configuration = configuration;
@@ -134,7 +134,7 @@ namespace LYBT.Module.Users.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var pagedResult = await _repository.GetPagedAsync(page, pageSize);
-            var dtos = _mapper.Map<List<UserListDto>>(pagedResult.Items);
+            var dtos = _mapper.ToListDtos(pagedResult.Items.ToList());
 
             // 应用筛选条件（MVP阶段内存过滤）
             if (!string.IsNullOrWhiteSpace(keyword))
@@ -178,7 +178,7 @@ namespace LYBT.Module.Users.Services
             if (entity == null)
                 return Result<UserDetailDto>.Failure("用户不存在");
 
-            var dto = _mapper.Map<UserDetailDto>(entity);
+            var dto = _mapper.ToDetailDto(entity);
             return Result<UserDetailDto>.Success(dto);
         }
 
@@ -193,7 +193,7 @@ namespace LYBT.Module.Users.Services
                 u.RealName.Contains(keyword) ||
                 (u.Email != null && u.Email.Contains(keyword)));
 
-            var dtos = _mapper.Map<List<UserListDto>>(entities);
+            var dtos = _mapper.ToListDtos(entities.ToList());
             return Result<List<UserListDto>>.Success(dtos);
         }
 
@@ -247,7 +247,7 @@ namespace LYBT.Module.Users.Services
                 return Result<UserDetailDto>.Failure($"用户名 '{dto.UserName}' 已存在，请使用其他用户名");
             }
 
-            var entity = _mapper.Map<User>(dto);
+            var entity = _mapper.ToEntity(dto);
 
             // Issue #1911: 生成拼音码（基于RealName）
             entity.PinYinCode = PinYinHelper.GetPinYinCode(dto.RealName);
@@ -270,7 +270,7 @@ namespace LYBT.Module.Users.Services
             entity.PasswordHash = PasswordHelper.HashPassword(passwordToHash, entity.Role, _logger);
 
             var result = await _repository.AddAsync(entity);
-            var resultDto = _mapper.Map<UserDetailDto>(result);
+            var resultDto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] User.Create completed - UserName={UserName} Role={Role}", resultDto.UserName, resultDto.Role);
             return Result<UserDetailDto>.Success(resultDto);
@@ -318,7 +318,7 @@ namespace LYBT.Module.Users.Services
 
             // Issue #1911: 保存原 RealName 用于比较
             var oldRealName = entity.RealName;
-            _mapper.Map(dto, entity);
+            _mapper.UpdateEntity(dto, entity);
 
             // Issue #1911: 更新拼音码（仅当RealName发生变化时）
             if (!string.IsNullOrWhiteSpace(dto.RealName) && dto.RealName != oldRealName)
@@ -329,7 +329,7 @@ namespace LYBT.Module.Users.Services
             }
 
             var result = await _repository.UpdateAsync(entity);
-            var resultDto = _mapper.Map<UserDetailDto>(result);
+            var resultDto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] User.Update completed - UserId={UserId}", id);
             return Result<UserDetailDto>.Success(resultDto);
@@ -435,7 +435,7 @@ namespace LYBT.Module.Users.Services
                 _logger.LogInformation("[SVC] User.ValidatePassword → HashUpgraded - UserName={UserName}", userName);
             }
 
-            var userDto = _mapper.Map<UserDetailDto>(entity);
+            var userDto = _mapper.ToDetailDto(entity);
             return Result<UserDetailDto>.Success(userDto);
         }
 
@@ -493,7 +493,7 @@ namespace LYBT.Module.Users.Services
 
             // 保存更改
             var updatedEntity = await _repository.UpdateAsync(entity);
-            var resultDto = _mapper.Map<UserDetailDto>(updatedEntity);
+            var resultDto = _mapper.ToDetailDto(updatedEntity);
 
             _logger.LogInformation("[SVC] User.ChangeProfile completed - UserId={UserId} RealName={RealName}", userId, dto.RealName);
             return Result<UserDetailDto>.Success(resultDto);
@@ -534,7 +534,7 @@ namespace LYBT.Module.Users.Services
             entity.UpdatedAt = DateTime.Now;
 
             var result = await _repository.UpdateAsync(entity);
-            var dto = _mapper.Map<UserDetailDto>(result);
+            var dto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] User.ToggleStatus completed - UserId={UserId} Status={Status}", id, entity.Status);
             return Result<UserDetailDto>.Success(dto);
@@ -566,7 +566,7 @@ namespace LYBT.Module.Users.Services
             entity.UpdatedAt = DateTime.Now;
 
             var result = await _repository.UpdateAsync(entity);
-            var dto = _mapper.Map<UserDetailDto>(result);
+            var dto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] User.Restore completed - UserId={UserId} UserName={UserName}", id, entity.UserName);
             return Result<UserDetailDto>.Success(dto);

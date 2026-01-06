@@ -3,13 +3,14 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Http;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
     /// 详情编辑ViewModel基类
-    /// OpenSpec: migrate-to-communitytoolkit-mvvm
+    /// OpenSpec: standardize-viewmodel-framework
     ///
     /// 适用于:
     /// - 单实体详情查看/编辑页面
@@ -54,6 +55,13 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         [ObservableProperty]
         private Guid _entityId;
 
+        /// <summary>
+        /// 是否有验证错误
+        /// </summary>
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+        private bool _hasValidationErrors;
+
         #endregion
 
         #region 计算属性
@@ -73,17 +81,24 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         public virtual string FormTitle => IsNewItem ? "新建" : "编辑";
 
+        /// <summary>
+        /// 是否有错误（用于命令CanExecute）
+        /// </summary>
+        protected bool HasErrors => HasValidationErrors;
+
         #endregion
 
         #region 构造函数
 
         protected DetailViewModelBase(
+            ILoggerFactory loggerFactory,
+            IEventAggregator eventAggregator,
             IRegionManager regionManager,
-            ICommonDialogService dialogService,
             IApiService apiService,
-            ISessionManager sessionManager,
-            ILoggerFactory loggerFactory)
-            : base(regionManager, dialogService, apiService, sessionManager, loggerFactory)
+            ISessionManager? sessionManager = null,
+            IUserNotificationService? userNotificationService = null,
+            ICommonDialogService? commonDialogService = null)
+            : base(loggerFactory, eventAggregator, regionManager, apiService, sessionManager, userNotificationService, commonDialogService)
         {
         }
 
@@ -173,7 +188,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         {
             if (CurrentItem == null) return;
 
-            var confirmed = await ShowConfirmationAsync("确定要删除吗？此操作不可撤销。", "确认删除");
+            var confirmed = await ShowConfirmMessageAsync("确定要删除吗？此操作不可撤销。", "确认删除");
             if (!confirmed) return;
 
             var success = await SafeExecuteAsync(async () =>
@@ -384,6 +399,27 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             {
                 await InitializeForEditAsync(EntityId);
             }
+        }
+
+        #endregion
+
+        #region 验证辅助方法
+
+        /// <summary>
+        /// 清除所有验证错误
+        /// </summary>
+        protected virtual void ClearAllErrors()
+        {
+            HasValidationErrors = false;
+        }
+
+        /// <summary>
+        /// 验证所有属性并检查结果
+        /// </summary>
+        protected virtual void ValidateAllPropertiesAndCheck()
+        {
+            // 子类可重写以实现具体验证逻辑
+            // 验证后应设置 HasValidationErrors
         }
 
         #endregion

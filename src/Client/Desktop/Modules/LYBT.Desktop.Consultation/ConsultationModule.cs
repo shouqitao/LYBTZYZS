@@ -38,12 +38,8 @@ namespace LYBT.Desktop.Consultation
             containerRegistry.Register<Services.ConsultationService>();
             containerRegistry.Register<Services.ConsultationValidator>();
 
-            // 注册视图模型 - MVP核心功能
-            // Issue #1800: 删除ConsultationManagementViewModel（违反AR-001聚合根约束）
-            containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // Issue #1607, #1784: 已重构使用Components (Issue #1557: 看诊流程Step 2)
+            // OpenSpec: migrate-views-to-role-modules - ConsultationFormView/ConsultationFormViewModel已删除（无调用）
             //  Issue #1463: ConsultationEntryViewModel已迁移到MedicalCaseModule.MedicalCaseEntryViewModel
-
-            // OpenSpec: migrate-views-to-role-modules - ConsultationFormView已删除（无调用）
             //  Issue #1463: ConsultationEntryView已迁移到MedicalCaseModule.MedicalCaseEntryView
         }
     }

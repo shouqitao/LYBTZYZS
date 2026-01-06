@@ -1,8 +1,8 @@
-﻿using AutoMapper;
-using FluentValidation;
+﻿using FluentValidation;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Patients.Mapping;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -17,18 +17,19 @@ namespace LYBT.Module.Patients.Services
     /// 患者服务 - 统一接口实现
     /// 包含DTO和Entity两种返回模式
     /// Phase 2: 继承BaseService<Patient>复用统一错误处理和验证逻辑
+    /// OpenSpec: adopt-mapperly-unified-mapping - 使用PatientMapper替代AutoMapper
     /// </summary>
     public class PatientService : BaseService<Patient>, IPatientService
     {
         private readonly IPatientRepository _repository;
         private readonly IValidator<PatientInputDto> _validator;
+        private readonly PatientMapper _mapper = new();
 
         public PatientService(
             IPatientRepository repository,
-            IMapper mapper,
             ILogger<PatientService> logger,
             IValidator<PatientInputDto> validator)
-            : base(logger, mapper)
+            : base(logger)
         {
             _repository = repository;
             _validator = validator;
@@ -40,7 +41,7 @@ namespace LYBT.Module.Patients.Services
             // Bug #1587修复：支持关键字搜索（姓名/拼音码/手机号）
             var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
 
-            var items = _mapper.Map<List<PatientListDto>>(pagedResult.Items);
+            var items = _mapper.ToListDtos(pagedResult.Items.ToList());
 
             // 确保Age属性正确计算（从实体的计算属性复制到DTO）
             foreach (var item in items)
@@ -70,7 +71,7 @@ namespace LYBT.Module.Patients.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch
             var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-            var dtos = _mapper.Map<List<PatientListDto>>(pagedResult.Items);
+            var dtos = _mapper.ToListDtos(pagedResult.Items.ToList());
 
             // 确保Age属性正确计算
             foreach (var dto in dtos)
@@ -99,7 +100,7 @@ namespace LYBT.Module.Patients.Services
             if (entity == null)
                 return Result<PatientDetailDto>.Failure("患者不存在");
 
-            var dto = _mapper.Map<PatientDetailDto>(entity);
+            var dto = _mapper.ToDetailDto(entity);
             // 确保Age属性正确计算（从实体的计算属性复制到DTO）
             dto.Age = entity.Age;
 
@@ -118,13 +119,13 @@ namespace LYBT.Module.Patients.Services
                 return Result<PatientDetailDto>.Failure(errors);
             }
 
-            var entity = _mapper.Map<Patient>(dto);
+            var entity = _mapper.ToEntity(dto);
 
             // 生成拼音码（基于姓名）
             entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
 
             var result = await _repository.AddAsync(entity);
-            var resultDto = _mapper.Map<PatientDetailDto>(result);
+            var resultDto = _mapper.ToDetailDto(result);
 
             // 确保Age属性正确计算
             resultDto.Age = result.Age;
@@ -151,7 +152,7 @@ namespace LYBT.Module.Patients.Services
             // 保存旧的姓名用于检测变化
             var oldName = entity.Name;
 
-            _mapper.Map(dto, entity);
+            _mapper.UpdateEntity(dto, entity);
 
             // 更新拼音码（仅当姓名发生变化时）
             if (entity.Name != oldName)
@@ -162,7 +163,7 @@ namespace LYBT.Module.Patients.Services
             }
 
             var result = await _repository.UpdateAsync(entity);
-            var resultDto = _mapper.Map<PatientDetailDto>(result);
+            var resultDto = _mapper.ToDetailDto(result);
 
             // 确保Age属性正确计算
             resultDto.Age = result.Age;
@@ -184,7 +185,7 @@ namespace LYBT.Module.Patients.Services
             var searchResult = await _repository.GetPagedAsync(1, 100, keyword);
 
             // 转换为DTO
-            var patientDtos = _mapper.Map<List<PatientDetailDto>>(searchResult.Items);
+            var patientDtos = _mapper.ToDetailDtos(searchResult.Items.ToList());
 
             return Result<List<PatientDetailDto>>.Success(patientDtos);
         }
@@ -282,7 +283,7 @@ namespace LYBT.Module.Patients.Services
                     }
 
                     // 映射到Patient实体
-                    var patient = _mapper.Map<Patient>(inputDto);
+                    var patient = _mapper.ToEntity(inputDto);
 
                     // 生成拼音码（Task 2.6）
                     patient.PinYinCode = PinYinHelper.GetPinYinCode(patient.Name);
@@ -562,7 +563,7 @@ namespace LYBT.Module.Patients.Services
                 }
             }
 
-            var entity = _mapper.Map<Patient>(dto);
+            var entity = _mapper.ToEntity(dto);
 
             // 生成拼音码（基于姓名）
             entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
@@ -595,7 +596,7 @@ namespace LYBT.Module.Patients.Services
             // 保存旧的姓名用于检测变化
             var oldName = entity.Name;
 
-            _mapper.Map(dto, entity);
+            _mapper.UpdateEntity(dto, entity);
 
             // 更新拼音码（仅当姓名发生变化时）
             if (entity.Name != oldName)
@@ -630,7 +631,7 @@ namespace LYBT.Module.Patients.Services
             entity.UpdatedAt = DateTime.Now;
 
             var result = await _repository.UpdateAsync(entity);
-            var dto = _mapper.Map<PatientDetailDto>(result);
+            var dto = _mapper.ToDetailDto(result);
 
             // 确保Age属性正确计算
             dto.Age = result.Age;

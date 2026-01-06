@@ -1,6 +1,6 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.Users.Models.Items;
 
@@ -8,126 +8,69 @@ namespace LYBT.Desktop.Users.Models.Items;
 /// 用户列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用UserDetailDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与UserDetailDto一致，确保XAML绑定兼容
+/// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
 /// </summary>
-public class UserItem : BindableBase
+public partial class UserItem : ObservableObject
 {
+    [ObservableProperty]
     private Guid _id;
-    public Guid Id
-    {
-        get => _id;
-        set => SetProperty(ref _id, value);
-    }
 
-    private string _username = string.Empty;
-    public string UserName
-    {
-        get => _username;
-        set => SetProperty(ref _username, value);
-    }
+    [ObservableProperty]
+    private string _userName = string.Empty;
 
+    [ObservableProperty]
     private string _realName = string.Empty;
-    public string RealName
-    {
-        get => _realName;
-        set => SetProperty(ref _realName, value);
-    }
 
+    [ObservableProperty]
     private UserRole _role;
-    public UserRole Role
-    {
-        get => _role;
-        set => SetProperty(ref _role, value);
-    }
 
+    [ObservableProperty]
     private string? _email;
-    public string? Email
-    {
-        get => _email;
-        set => SetProperty(ref _email, value);
-    }
 
+    [ObservableProperty]
     private string? _phoneNumber;
-    public string? PhoneNumber
-    {
-        get => _phoneNumber;
-        set => SetProperty(ref _phoneNumber, value);
-    }
 
+    [ObservableProperty]
     private string? _department;
-    public string? Department
-    {
-        get => _department;
-        set => SetProperty(ref _department, value);
-    }
 
+    [ObservableProperty]
     private string? _title;
-    public string? Title
-    {
-        get => _title;
-        set => SetProperty(ref _title, value);
-    }
 
+    [ObservableProperty]
     private string? _pinYinCode;
-    public string? PinYinCode
-    {
-        get => _pinYinCode;
-        set => SetProperty(ref _pinYinCode, value);
-    }
 
+    [ObservableProperty]
     private CommonStatus _status;
-    public CommonStatus Status
-    {
-        get => _status;
-        set => SetProperty(ref _status, value);
-    }
 
     /// <summary>
     /// 创建时间 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为CreatedAt，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
     private DateTime _createdAt;
-    public DateTime CreatedAt
-    {
-        get => _createdAt;
-        set => SetProperty(ref _createdAt, value);
-    }
 
     /// <summary>
     /// 更新时间 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为UpdatedAt，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
     private DateTime? _updatedAt;
-    public DateTime? UpdatedAt
-    {
-        get => _updatedAt;
-        set => SetProperty(ref _updatedAt, value);
-    }
 
+    [ObservableProperty]
     private bool _isSelected;
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetProperty(ref _isSelected, value);
-    }
 
+    [ObservableProperty]
     private bool _isHighlighted;
-    public bool IsHighlighted
-    {
-        get => _isHighlighted;
-        set => SetProperty(ref _isHighlighted, value);
-    }
 
+    [ObservableProperty]
     private bool _isEditing;
-    public bool IsEditing
-    {
-        get => _isEditing;
-        set => SetProperty(ref _isEditing, value);
-    }
 
     /// <summary>
     /// 从UserDetailDto创建UserItem
     /// OpenSpec: unify-frontend-backend-types Phase 6 - 时间字段命名统一
     /// </summary>
+    /// <remarks>已废弃：请使用UserMappingService.ToItem()</remarks>
+    [Obsolete("请使用UserMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public static UserItem FromDto(UserDetailDto dto)
     {
         return new UserItem
@@ -151,6 +94,8 @@ public class UserItem : BindableBase
     /// 转换为UserDetailDto（用于API调用）
     /// OpenSpec: unify-frontend-backend-types Phase 6 - 时间字段命名统一
     /// </summary>
+    /// <remarks>已废弃：请使用UserMappingService.ToDto()</remarks>
+    [Obsolete("请使用UserMappingService.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public UserDetailDto ToDto()
     {
         return new UserDetailDto

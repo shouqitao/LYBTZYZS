@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Models;
+using LYBT.Desktop.Herbs.Models.Items;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels.Events;
 

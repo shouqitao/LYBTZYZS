@@ -2,8 +2,8 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.MedicalCase.Events;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
-using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -24,7 +24,7 @@ public class WorkspacePendingQueueHandler
     #region 字段
 
     private readonly IPendingQueueManager _pendingQueueManager;
-    private readonly MedicalCaseLifecycleHandler _lifecycleHandler;
+    private readonly IMedicalCaseService _medicalCaseService;
     private readonly IRegionManager _regionManager;
     private readonly ICommonDialogService? _commonDialogService;
     private readonly ILogger<WorkspacePendingQueueHandler> _logger;
@@ -43,7 +43,7 @@ public class WorkspacePendingQueueHandler
 
     public WorkspacePendingQueueHandler(
         IPendingQueueManager pendingQueueManager,
-        MedicalCaseLifecycleHandler lifecycleHandler,
+        IMedicalCaseService medicalCaseService,
         IRegionManager regionManager,
         ICommonDialogService? commonDialogService,
         ILoggerFactory loggerFactory,
@@ -55,7 +55,7 @@ public class WorkspacePendingQueueHandler
         Func<string, Task> showSuccessAsync)
     {
         _pendingQueueManager = pendingQueueManager ?? throw new ArgumentNullException(nameof(pendingQueueManager));
-        _lifecycleHandler = lifecycleHandler ?? throw new ArgumentNullException(nameof(lifecycleHandler));
+        _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
         _commonDialogService = commonDialogService;
         _logger = loggerFactory.CreateLogger<WorkspacePendingQueueHandler>();
@@ -150,8 +150,8 @@ public class WorkspacePendingQueueHandler
                 }
                 else
                 {
-                    // 查看模式：调用生命周期暂存
-                    var switchResult = await _lifecycleHandler.SaveDraftAsync(medicalCaseId);
+                    // 查看模式：调用Service暂存
+                    var switchResult = await _medicalCaseService.SaveDraftAsync(medicalCaseId);
                     if (!switchResult.success)
                     {
                         _logger.LogWarning("切换时暂存当前医案失败：{Error}", switchResult.errorMessage);
@@ -213,7 +213,7 @@ public class WorkspacePendingQueueHandler
                     break;
                 case TripleChoiceResult.No:
                     _setIsBusy(true, "正在取消当前医案...");
-                    var cancelResult = await _lifecycleHandler.CancelAsync(medicalCaseId);
+                    var cancelResult = await _medicalCaseService.CancelMedicalCaseAsync(medicalCaseId);
                     if (!cancelResult.success)
                     {
                         _logger.LogWarning("取消当前医案失败：{Error}", cancelResult.errorMessage);
@@ -268,7 +268,7 @@ public class WorkspacePendingQueueHandler
             _setIsBusy(true, "正在关闭旧医案...");
             if (pendingCase.MedicalCaseId.HasValue)
             {
-                var cancelResult = await _lifecycleHandler.CancelAsync(pendingCase.MedicalCaseId.Value);
+                var cancelResult = await _medicalCaseService.CancelMedicalCaseAsync(pendingCase.MedicalCaseId.Value);
                 if (!cancelResult.success)
                 {
                     _logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.errorMessage);
@@ -291,7 +291,7 @@ public class WorkspacePendingQueueHandler
             _setIsBusy(true, "正在创建新医案...");
             _logger.LogInformation("为患者创建新医案：{PatientName}", pendingCase.PatientName);
 
-            var createResult = await _lifecycleHandler.CreateMedicalCaseAsync(pendingCase.PatientId);
+            var createResult = await _medicalCaseService.CreateMedicalCaseAsync(pendingCase.PatientId);
             if (!createResult.success)
             {
                 _logger.LogWarning("创建医案失败：{Error}", createResult.errorMessage);

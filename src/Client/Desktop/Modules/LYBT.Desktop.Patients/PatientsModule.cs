@@ -1,9 +1,12 @@
 ﻿using FluentValidation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Desktop.Infrastructure.Mapping;
 // OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Patients.Mappers;
 using LYBT.Desktop.Patients.Models;
+using LYBT.Desktop.Patients.Models.Items;
 using LYBT.Desktop.Patients.Repositories;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -32,6 +35,11 @@ namespace LYBT.Desktop.Patients
             // Phase 2：Repository由模块自己注册
             containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
 
+            // OpenSpec: adopt-mapperly-unified-mapping - 注册映射服务
+            containerRegistry.RegisterSingleton<
+                IMappingService<PatientDetailDto, PatientInputDto, PatientItem>,
+                PatientMappingService>();
+
             // 注册FluentValidation验证器
             containerRegistry.Register<IValidator<PatientInputDto>, PatientInputDtoValidator>();
 
@@ -56,26 +64,10 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<ViewModels.Components.PatientService>();
             containerRegistry.Register<ViewModels.Components.PatientValidator>();
 
-            // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<ViewModels.PatientDetailViewModel>();
-            // Issue #2167: PatientImportWizardViewModel已删除（改用直接API调用）
-            // [已移除] PatientSelectionViewModel - 已迁移到LYBT.Desktop.Clinical模块
-            // OpenSpec: refactor-clinical-workflow
-            // Issue #2168: CRUD统一架构 - PatientCreateViewModel和PatientEditViewModel已删除
-
-            // 注册视图用于导航
-            containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
-            // Issue #2167: PatientImportWizardView已删除（改用直接API调用）
-            // [已移除] PatientSelectionView - 已迁移到LYBT.Desktop.Clinical模块
-            // OpenSpec: refactor-clinical-workflow
-            // Issue #2168: CRUD统一架构 - PatientDetailView支持Create/Edit/View三种模式
-            // PatientCreateView和PatientEditView已删除，统一使用PatientDetailView
-
-            // Issue #1547: PatientSelectionDialog已删除（由MedicalCaseFlowView的Step 1替代）
-            // containerRegistry.RegisterDialog<Views.PatientSelectionDialog, ViewModels.PatientSelectionDialogViewModel>();
-
-            // Issue #1487: 快速创建患者对话框
-            containerRegistry.RegisterDialog<Views.QuickCreatePatientDialog, ViewModels.QuickCreatePatientDialogViewModel>();
+            // OpenSpec: migrate-views-to-role-modules - 视图模型和视图已迁移到角色台模块
+            // PatientDetailViewModel/PatientDetailView已删除，改用PatientMasterDetailControl（内嵌在角色台的PatientManagementView中）
+            // PatientSelectionViewModel已迁移到Clinical模块
+            // QuickCreatePatientDialog已删除（无调用）
 
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Patients模块的MasterDetail服务

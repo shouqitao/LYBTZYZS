@@ -299,8 +299,9 @@ namespace LYBT.Desktop.Formula.Services
         }
 
         /// <summary>
-        /// 获取待校验的验方列表（Issue #1787: 支持FormulaValidationViewModel）
+        /// 获取待校验的验方列表
         /// </summary>
+        /// <remarks>Issue #1787原为FormulaValidationViewModel设计，该ViewModel已删除（OpenSpec: migrate-views-to-role-modules）</remarks>
         public async Task<(bool success, List<FormulaDetailDto>? data, string? errorMessage)> GetPendingValidationFormulasAsync()
         {
             try
@@ -320,8 +321,9 @@ namespace LYBT.Desktop.Formula.Services
         }
 
         /// <summary>
-        /// 验证验方药材 - 手动绑定药材到系统药材库（Issue #1787: 支持FormulaValidationViewModel）
+        /// 验证验方药材 - 手动绑定药材到系统药材库
         /// </summary>
+        /// <remarks>Issue #1787原为FormulaValidationViewModel设计，该ViewModel已删除（OpenSpec: migrate-views-to-role-modules）</remarks>
         public async Task<(bool success, string? errorMessage)> ValidateFormulaHerbAsync(
             Guid formulaId, Guid herbItemId, Guid selectedHerbId)
         {

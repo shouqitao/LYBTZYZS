@@ -1,10 +1,10 @@
 ﻿using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Patients.ViewModels.Components
@@ -94,12 +94,13 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
 
             // 初始化命令
-            SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave);
-            EditCommand = new DelegateCommand(ExecuteEdit, CanExecuteEdit);
-            CancelEditCommand = new DelegateCommand(ExecuteCancelEdit, CanExecuteCancelEdit);
-            DeleteCommand = new DelegateCommand(async () => await ExecuteDeleteAsync(), CanExecuteDelete);
-            ViewMedicalHistoryCommand = new DelegateCommand(ExecuteViewMedicalHistory);
-            BackCommand = new DelegateCommand(ExecuteBack);
+            // OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm RelayCommand
+            SaveCommand = new AsyncRelayCommand(ExecuteSaveAsync, CanExecuteSave);
+            EditCommand = new RelayCommand(ExecuteEdit, CanExecuteEdit);
+            CancelEditCommand = new RelayCommand(ExecuteCancelEdit, CanExecuteCancelEdit);
+            DeleteCommand = new AsyncRelayCommand(ExecuteDeleteAsync, CanExecuteDelete);
+            ViewMedicalHistoryCommand = new RelayCommand(ExecuteViewMedicalHistory);
+            BackCommand = new RelayCommand(ExecuteBack);
         }
 
         /// <summary>

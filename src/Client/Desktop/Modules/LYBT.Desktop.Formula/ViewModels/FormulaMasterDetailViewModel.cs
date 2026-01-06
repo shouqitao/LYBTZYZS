@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Infrastructure.Mapping;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.ExceptionHandling.Mappers;
@@ -29,6 +30,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private readonly IDialogService _prismDialogService;
         private readonly IHerbService _herbService;
         private readonly ISessionManager? _sessionManager;
+        private readonly IMappingService<FormulaDetailDto, FormulaInputDto, FormulaDetailModel> _mappingService;
 
         // 编辑模式下的药材列表
         private ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
@@ -52,7 +54,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public int HerbCount => EditHerbItems?.Count(h => h.HerbId != Guid.Empty) ?? 0;
 
         /// <summary>查看模式下的FormulaDto</summary>
-        public FormulaDetailDto? ViewFormulaDto => CurrentDetail?.ToDto();
+        public FormulaDetailDto? ViewFormulaDto => CurrentDetail != null ? _mappingService.ToDto(CurrentDetail) : null;
 
         /// <summary>编辑模式下的详情模型</summary>
         public FormulaDetailModel? EditDetail => CurrentDetail;
@@ -76,6 +78,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             IFormulaService formulaService,
             IDialogService prismDialogService,
             IHerbService herbService,
+            IMappingService<FormulaDetailDto, FormulaInputDto, FormulaDetailModel> mappingService,
             ILoggerFactory loggerFactory,
             ISessionManager? sessionManager = null)
             : base(services, loggerFactory)
@@ -84,6 +87,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            _mappingService = mappingService ?? throw new ArgumentNullException(nameof(mappingService));
             _sessionManager = sessionManager;
 
             PageTitle = "验方管理";
@@ -149,7 +153,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                     return;
                 }
 
-                var detail = FormulaDetailModel.FromDto(dto);
+                var detail = _mappingService.ToItem(dto);
                 Services.DetailEditor.LoadDetail(detail);
                 OnPropertyChanged(nameof(DetailTitle));
                 OnPropertyChanged(nameof(ViewFormulaDto));
@@ -195,27 +199,8 @@ namespace LYBT.Desktop.Formula.ViewModels
                     });
                 }
 
-                var dto = detail.ToDto();
-                var inputDto = new FormulaInputDto
-                {
-                    Id = dto.Id,
-                    Name = dto.Name,
-                    Effect = dto.Effect ?? string.Empty,
-                    Usage = dto.Usage ?? string.Empty,
-                    Property = dto.Property,
-                    Remark = dto.Remark,
-                    IsShared = dto.IsShared,
-                    Category = dto.Category,
-                    Herbs = detail.Herbs.Select(h => new FormulaHerbItemInputDto
-                    {
-                        HerbId = h.HerbId,
-                        HerbName = h.HerbName,
-                        Dosage = h.Dosage,
-                        Unit = h.Unit,
-                        ProcessingMethod = h.ProcessingMethod,
-                        DecocteMethod = h.DecocteMethod
-                    }).ToList()
-                };
+                // OpenSpec: adopt-mapperly-unified-mapping - 使用MappingService替代手动映射
+                var inputDto = _mappingService.ToInputDto(detail);
 
                 if (IsNew)
                 {

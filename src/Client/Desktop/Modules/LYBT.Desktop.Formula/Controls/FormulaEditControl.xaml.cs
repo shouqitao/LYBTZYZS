@@ -1,14 +1,16 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using LYBT.Desktop.Formula.ViewModels;
 using LYBT.Desktop.Models.ViewModels.Base;
 
 namespace LYBT.Desktop.Formula.Controls
 {
     /// <summary>
-    /// 验方编辑控件 - OpenSpec: extract-detail-controls Task 1.2
+    /// 验方编辑控件
+    /// OpenSpec: extract-detail-controls Task 1.2
+    /// OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑处方
     /// 独立的验方编辑控件，可在FormulaDetailView中复用
     /// </summary>
     public partial class FormulaEditControl : UserControl
@@ -155,6 +157,7 @@ namespace LYBT.Desktop.Formula.Controls
         #endregion
 
         #region 药材列表属性
+        // OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑处方
 
         /// <summary>
         /// 药材数量
@@ -173,71 +176,35 @@ namespace LYBT.Desktop.Formula.Controls
         }
 
         /// <summary>
-        /// 药材列表
+        /// 所有可用药材列表 - 用于HerbListControl药材选择
+        /// </summary>
+        public static readonly DependencyProperty AllHerbsProperty =
+            DependencyProperty.Register(
+                nameof(AllHerbs),
+                typeof(IEnumerable),
+                typeof(FormulaEditControl),
+                new PropertyMetadata(null));
+
+        public IEnumerable? AllHerbs
+        {
+            get => (IEnumerable?)GetValue(AllHerbsProperty);
+            set => SetValue(AllHerbsProperty, value);
+        }
+
+        /// <summary>
+        /// 药材列表 - 用于HerbListControl编辑(双向绑定)
         /// </summary>
         public static readonly DependencyProperty HerbItemsProperty =
             DependencyProperty.Register(
                 nameof(HerbItems),
-                typeof(ObservableCollection<FormulaHerbItemViewModel>),
+                typeof(IEnumerable),
                 typeof(FormulaEditControl),
-                new PropertyMetadata(null));
+                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public ObservableCollection<FormulaHerbItemViewModel>? HerbItems
+        public IEnumerable? HerbItems
         {
-            get => (ObservableCollection<FormulaHerbItemViewModel>?)GetValue(HerbItemsProperty);
+            get => (IEnumerable?)GetValue(HerbItemsProperty);
             set => SetValue(HerbItemsProperty, value);
-        }
-
-        #endregion
-
-        #region 命令属性
-
-        /// <summary>
-        /// 删除药材命令
-        /// </summary>
-        public static readonly DependencyProperty DeleteHerbCommandProperty =
-            DependencyProperty.Register(
-                nameof(DeleteHerbCommand),
-                typeof(ICommand),
-                typeof(FormulaEditControl),
-                new PropertyMetadata(null));
-
-        public ICommand? DeleteHerbCommand
-        {
-            get => (ICommand?)GetValue(DeleteHerbCommandProperty);
-            set => SetValue(DeleteHerbCommandProperty, value);
-        }
-
-        /// <summary>
-        /// 剂量输入完成命令
-        /// </summary>
-        public static readonly DependencyProperty DosageCompletedCommandProperty =
-            DependencyProperty.Register(
-                nameof(DosageCompletedCommand),
-                typeof(ICommand),
-                typeof(FormulaEditControl),
-                new PropertyMetadata(null));
-
-        public ICommand? DosageCompletedCommand
-        {
-            get => (ICommand?)GetValue(DosageCompletedCommandProperty);
-            set => SetValue(DosageCompletedCommandProperty, value);
-        }
-
-        /// <summary>
-        /// 添加新行命令
-        /// </summary>
-        public static readonly DependencyProperty AddNewRowCommandProperty =
-            DependencyProperty.Register(
-                nameof(AddNewRowCommand),
-                typeof(ICommand),
-                typeof(FormulaEditControl),
-                new PropertyMetadata(null));
-
-        public ICommand? AddNewRowCommand
-        {
-            get => (ICommand?)GetValue(AddNewRowCommandProperty);
-            set => SetValue(AddNewRowCommandProperty, value);
         }
 
         #endregion

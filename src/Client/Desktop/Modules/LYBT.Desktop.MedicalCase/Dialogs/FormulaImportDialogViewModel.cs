@@ -1,21 +1,22 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Net.Http;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using Prism.Mvvm;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.MedicalCase.Dialogs
 {
     /// <summary>
-    /// OpenSpec: redesign-formula-import-ui
     /// 验方导入弹窗ViewModel - 重新设计版本
+    /// OpenSpec: redesign-formula-import-ui
+    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
     /// 用于从经验方库搜索选择验方，批量导入药材到处方
     /// </summary>
-    public class FormulaImportDialogViewModel : BindableBase, IDialogAware
+    public partial class FormulaImportDialogViewModel : ObservableObject, IDialogAware
     {
         #region 服务依赖
 
@@ -25,126 +26,96 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         #endregion
 
-        #region 属性
+        #region 可观察属性
 
-        private string _searchText = string.Empty;
         /// <summary>
         /// 搜索文本
         /// </summary>
-        public string SearchText
-        {
-            get => _searchText;
-            set
-            {
-                if (SetProperty(ref _searchText, value))
-                {
-                    FilterFormulas();
-                }
-            }
-        }
+        [ObservableProperty]
+        private string _searchText = string.Empty;
 
-        private ObservableCollection<string> _categories = new();
         /// <summary>
         /// 分类列表
         /// </summary>
-        public ObservableCollection<string> Categories
-        {
-            get => _categories;
-            set => SetProperty(ref _categories, value);
-        }
+        [ObservableProperty]
+        private ObservableCollection<string> _categories = new();
 
-        private string _selectedCategory = "全部";
         /// <summary>
         /// 选中的分类
         /// </summary>
-        public string SelectedCategory
-        {
-            get => _selectedCategory;
-            set
-            {
-                if (SetProperty(ref _selectedCategory, value))
-                {
-                    FilterFormulas();
-                }
-            }
-        }
+        [ObservableProperty]
+        private string _selectedCategory = "全部";
 
-        private ObservableCollection<FormulaListDto> _filteredFormulas = new();
         /// <summary>
         /// 筛选后的验方列表
         /// </summary>
-        public ObservableCollection<FormulaListDto> FilteredFormulas
-        {
-            get => _filteredFormulas;
-            set => SetProperty(ref _filteredFormulas, value);
-        }
+        [ObservableProperty]
+        private ObservableCollection<FormulaListDto> _filteredFormulas = new();
 
-        private FormulaListDto? _selectedFormula;
         /// <summary>
         /// 选中的验方
         /// </summary>
-        public FormulaListDto? SelectedFormula
-        {
-            get => _selectedFormula;
-            set
-            {
-                if (SetProperty(ref _selectedFormula, value))
-                {
-                    LoadFormulaPreviewAsync();
-                    ConfirmCommand.RaiseCanExecuteChanged();
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
+        private FormulaListDto? _selectedFormula;
 
-        private FormulaDetailDto? _selectedFormulaDetail;
         /// <summary>
         /// 选中验方的详情（用于FormulaViewControl预览）
         /// OpenSpec: extract-detail-controls Task 1.4
         /// </summary>
-        public FormulaDetailDto? SelectedFormulaDetail
-        {
-            get => _selectedFormulaDetail;
-            set => SetProperty(ref _selectedFormulaDetail, value);
-        }
+        [ObservableProperty]
+        private FormulaDetailDto? _selectedFormulaDetail;
 
-        private ObservableCollection<FormulaHerbItemDto> _selectedFormulaHerbs = new();
         /// <summary>
         /// 选中验方的药材列表（用于绑定和导入）
         /// </summary>
-        public ObservableCollection<FormulaHerbItemDto> SelectedFormulaHerbs
-        {
-            get => _selectedFormulaHerbs;
-            set => SetProperty(ref _selectedFormulaHerbs, value);
-        }
+        [ObservableProperty]
+        private ObservableCollection<FormulaHerbItemDto> _selectedFormulaHerbs = new();
 
-        private string _statusMessage = string.Empty;
         /// <summary>
         /// 状态消息
         /// </summary>
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
+        [ObservableProperty]
+        private string _statusMessage = string.Empty;
 
-        private bool _isLoading;
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
+        [ObservableProperty]
+        private bool _isLoading;
 
-        private string _loadingMessage = string.Empty;
         /// <summary>
         /// 加载提示消息
         /// </summary>
-        public string LoadingMessage
+        [ObservableProperty]
+        private string _loadingMessage = string.Empty;
+
+        #endregion
+
+        #region 属性变更回调
+
+        /// <summary>
+        /// 搜索文本变更时触发筛选
+        /// </summary>
+        partial void OnSearchTextChanged(string value)
         {
-            get => _loadingMessage;
-            set => SetProperty(ref _loadingMessage, value);
+            FilterFormulas();
+        }
+
+        /// <summary>
+        /// 选中分类变更时触发筛选
+        /// </summary>
+        partial void OnSelectedCategoryChanged(string value)
+        {
+            FilterFormulas();
+        }
+
+        /// <summary>
+        /// 选中验方变更时加载预览
+        /// </summary>
+        partial void OnSelectedFormulaChanged(FormulaListDto? value)
+        {
+            LoadFormulaPreviewAsync();
         }
 
         #endregion
@@ -166,13 +137,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         #endregion
 
-        #region 命令
-
-        public DelegateCommand ConfirmCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-
-        #endregion
-
         #region 构造函数
 
         public FormulaImportDialogViewModel(
@@ -182,13 +146,39 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            ConfirmCommand = new DelegateCommand(ExecuteConfirm, CanConfirm);
-            CancelCommand = new DelegateCommand(ExecuteCancel);
-
             // 初始化分类列表
             InitializeCategories();
 
             _logger.LogInformation("FormulaImportDialogViewModel已初始化");
+        }
+
+        #endregion
+
+        #region 命令
+
+        /// <summary>
+        /// 确认导入命令
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanConfirm))]
+        private void Confirm()
+        {
+            var parameters = new DialogParameters
+            {
+                { "SelectedFormula", SelectedFormula },
+                { "SelectedHerbs", SelectedFormulaHerbs.ToList() }
+            };
+            RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+        }
+
+        private bool CanConfirm() => SelectedFormula != null && SelectedFormulaHerbs.Any();
+
+        /// <summary>
+        /// 取消命令
+        /// </summary>
+        [RelayCommand]
+        private void Cancel()
+        {
+            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
 
         #endregion
@@ -279,7 +269,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             // 2. 文本搜索（支持名称、适应症、功效）
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
-                var searchLower = SearchText.ToLowerInvariant();
                 filtered = filtered.Where(f =>
                     f.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                     (f.Effect?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
@@ -336,7 +325,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 }
 
                 // 药材加载完成后刷新确认按钮状态
-                ConfirmCommand.RaiseCanExecuteChanged();
+                ConfirmCommand.NotifyCanExecuteChanged();
 
                 LoadingMessage = string.Empty;
             }
@@ -350,23 +339,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             {
                 IsLoading = false;
             }
-        }
-
-        private bool CanConfirm() => SelectedFormula != null && SelectedFormulaHerbs.Any();
-
-        private void ExecuteConfirm()
-        {
-            var parameters = new DialogParameters
-            {
-                { "SelectedFormula", SelectedFormula },
-                { "SelectedHerbs", SelectedFormulaHerbs.ToList() }
-            };
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
-        }
-
-        private void ExecuteCancel()
-        {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
 
         #endregion

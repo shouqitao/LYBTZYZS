@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -15,16 +16,19 @@ namespace LYBT.Desktop.Shell.ViewModels
     /// <summary>
     /// 账户设置视图模型 - 合并个人资料和修改密码功能
     /// OpenSpec: migrate-views-to-role-modules - 从Users模块迁移到Shell
+    /// OpenSpec: standardize-viewmodel-framework - 迁移到CoreViewModelBase
     /// </summary>
-    public partial class AccountSettingsViewModel : ObservableObject, INavigationAware
+    public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAware
     {
+        #region 依赖服务
+
         private readonly IAuthenticationService _authService;
         private readonly IUserRepository _userRepository;
         private readonly ISessionManager _sessionManager;
-        private readonly IEventAggregator _eventAggregator;
         private readonly IRegionManager _regionManager;
         private readonly IUserNotificationService? _userNotificationService;
-        private readonly ILogger<AccountSettingsViewModel> _logger;
+
+        #endregion
 
         #region 个人资料属性
 
@@ -55,7 +59,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #endregion
 
-        #region 通用属性
+        #region 验证属性
 
         [ObservableProperty]
         private string _validationError = string.Empty;
@@ -63,8 +67,9 @@ namespace LYBT.Desktop.Shell.ViewModels
         [ObservableProperty]
         private bool _hasValidationError;
 
-        [ObservableProperty]
-        private bool _isBusy;
+        #endregion
+
+        #region Tab选择属性
 
         /// <summary>个人资料页是否选中</summary>
         [ObservableProperty]
@@ -75,6 +80,8 @@ namespace LYBT.Desktop.Shell.ViewModels
         private bool _isPasswordSelected;
 
         #endregion
+
+        #region 构造函数
 
         /// <summary>
         /// 构造函数
@@ -87,17 +94,18 @@ namespace LYBT.Desktop.Shell.ViewModels
             IRegionManager regionManager,
             ILoggerFactory loggerFactory,
             IUserNotificationService? userNotificationService = null)
+            : base(loggerFactory, eventAggregator)
         {
             _authService = authService;
             _userRepository = userRepository;
             _sessionManager = sessionManager;
-            _eventAggregator = eventAggregator;
             _regionManager = regionManager;
             _userNotificationService = userNotificationService;
-            _logger = loggerFactory.CreateLogger<AccountSettingsViewModel>();
 
             LoadUserProfile();
         }
+
+        #endregion
 
         #region 命令
 
@@ -138,7 +146,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
                 if (updatedUser != null)
                 {
-                    _logger.LogInformation("用户资料更新成功: {UserName}", UserName);
+                    Logger.LogInformation("用户资料更新成功: {UserName}", UserName);
                     await NotifySuccessAsync("个人资料已保存");
 
                     // 刷新本地显示（不需要更新Session，下次登录会自动刷新）
@@ -151,7 +159,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "保存个人资料失败");
+                Logger.LogError(ex, "保存个人资料失败");
                 SetValidationError($"保存失败: {ex.Message}");
             }
             finally
@@ -191,7 +199,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
                 if (success)
                 {
-                    _logger.LogInformation("密码修改成功: {UserName}", UserName);
+                    Logger.LogInformation("密码修改成功: {UserName}", UserName);
                     await NotifySuccessAsync("密码修改成功");
 
                     // 清空密码字段
@@ -204,7 +212,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "修改密码失败");
+                Logger.LogError(ex, "修改密码失败");
                 SetValidationError($"修改失败: {ex.Message}");
             }
             finally

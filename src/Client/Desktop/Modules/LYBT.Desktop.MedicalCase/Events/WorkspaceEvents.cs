@@ -1,26 +1,21 @@
-using Prism.Events;
-
 namespace LYBT.Desktop.MedicalCase.Events;
 
 /// <summary>
-/// 医案工作区事件定义
-/// OpenSpec: controlify-workspace - Phase 1.4
-/// OpenSpec: optimize-medicalcase-api - Phase 5.2 技术债务清理
+/// 医案工作区事件相关类型
+/// OpenSpec: simplify-workspace-event-architecture (Phase 4)
 /// </summary>
 /// <remarks>
-/// 已删除未使用的事件类（ConsultationSavedEvent, WorkspaceModeChangedEvent等）
+/// 所有Event类已移除，改用回调模式：
+/// - PrescriptionSavedEvent -> SetOnPrescriptionSavedCallback
+/// - PrescriptionDataChangedEvent -> 已删除（无订阅者）
+/// - SaveAllRequestedEvent -> 已删除（无发布者）
+/// 
 /// 跨模块事件使用 LYBT.Desktop.Infrastructure.Events.CaseEvents
 /// </remarks>
 
-#region 处方相关事件
-
 /// <summary>
-/// 处方已保存事件
-/// </summary>
-public class PrescriptionSavedEvent : PubSubEvent<PrescriptionSavedPayload> { }
-
-/// <summary>
-/// 处方已保存负载
+/// 处方已保存负载（供回调使用）
+/// OpenSpec: simplify-workspace-event-architecture (Phase 4)
 /// </summary>
 public class PrescriptionSavedPayload
 {
@@ -44,19 +39,3 @@ public class PrescriptionSavedPayload
     /// </summary>
     public bool IsAutoSave { get; init; }
 }
-
-/// <summary>
-/// 处方数据变更事件（用于脏数据追踪）
-/// </summary>
-public class PrescriptionDataChangedEvent : PubSubEvent<Guid> { }
-
-#endregion
-
-#region 工作区协调事件
-
-/// <summary>
-/// 请求保存所有修改事件
-/// </summary>
-public class SaveAllRequestedEvent : PubSubEvent<Guid> { }
-
-#endregion

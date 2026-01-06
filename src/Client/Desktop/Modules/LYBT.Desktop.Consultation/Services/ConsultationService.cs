@@ -203,7 +203,7 @@ namespace LYBT.Desktop.Consultation.Services
                 consultation.PresentIllness = null;
                 consultation.TongueDiagnosis = null;
                 consultation.PulseDiagnosis = null;
-                consultation.TCMDiagnosis = string.Empty;
+                consultation.TcmDiagnosis = string.Empty;
 
                 _logger.LogInformation("[SVC] Consultation.ClearForm completed");
             }

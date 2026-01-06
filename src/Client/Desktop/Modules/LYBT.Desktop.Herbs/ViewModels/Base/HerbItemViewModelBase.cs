@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Shared.Components;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.Herbs.ViewModels.Base
 {
@@ -13,51 +13,36 @@ namespace LYBT.Desktop.Herbs.ViewModels.Base
     /// OpenSpec: unify-herb-list-controls - 修复Unit默认值
     /// OpenSpec: optimize-desktop-core - 实现IHerbItemEditable接口解耦UI控件依赖
     /// OpenSpec: optimize-desktop-core - 从Core层迁移到Herbs模块
+    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
     /// </summary>
-    public abstract class HerbItemViewModelBase : BindableBase, IHerbItemEditable
+    public abstract partial class HerbItemViewModelBase : ObservableObject, IHerbItemEditable
     {
         #region 字段
 
+        [ObservableProperty]
         private Guid _herbId;
+
+        [ObservableProperty]
         private string _herbName = string.Empty;
-        private int _dosage = 0;
+
+        [ObservableProperty]
         // OpenSpec: unify-herb-list-controls - Unit默认为空，由SelectedHerb赋值时从药材数据获取
         private string _unit = string.Empty;
+
+        [ObservableProperty]
         private DecocteMethod _decocteMethod = DecocteMethod.Default;
+
+        [ObservableProperty]
         private ObservableCollection<HerbListDto> _filteredHerbs = new();
+
+        [ObservableProperty]
         private HerbListDto? _selectedHerb;
+
+        private int _dosage = 0;
 
         #endregion
 
         #region IHerbItem 属性实现
-
-        /// <summary>
-        /// 药材ID
-        /// </summary>
-        [Required(ErrorMessage = "药材不能为空")]
-        public Guid HerbId
-        {
-            get => _herbId;
-            set => SetProperty(ref _herbId, value);
-        }
-
-        /// <summary>
-        /// 药材名称
-        /// </summary>
-        [Required(ErrorMessage = "药材名称不能为空")]
-        [StringLength(100, ErrorMessage = "药材名称长度不能超过100个字符")]
-        public string HerbName
-        {
-            get => _herbName;
-            set
-            {
-                if (SetProperty(ref _herbName, value))
-                {
-                    // 药材名称变更时触发拼音码过滤
-                    FilterHerbs();
-                }
-            }
-        }
 
         /// <summary>
         /// 剂量/用量（整数克）
@@ -77,25 +62,6 @@ namespace LYBT.Desktop.Herbs.ViewModels.Base
         }
 
         /// <summary>
-        /// 单位
-        /// </summary>
-        [Required(ErrorMessage = "单位不能为空")]
-        public string Unit
-        {
-            get => _unit;
-            set => SetProperty(ref _unit, value);
-        }
-
-        /// <summary>
-        /// 煎法
-        /// </summary>
-        public DecocteMethod DecocteMethod
-        {
-            get => _decocteMethod;
-            set => SetProperty(ref _decocteMethod, value);
-        }
-
-        /// <summary>
         /// 单价 - 抽象属性，由子类实现
         /// 经验方返回0，处方返回药材库实际价格
         /// </summary>
@@ -111,30 +77,29 @@ namespace LYBT.Desktop.Herbs.ViewModels.Base
         /// </summary>
         public ObservableCollection<HerbListDto>? AllHerbs { get; set; }
 
+        #endregion
+
+        #region 属性变更回调
+
         /// <summary>
-        /// 过滤后的药材列表 - 基于拼音码和名称的智能过滤
+        /// 药材名称变更时触发拼音码过滤
         /// </summary>
-        public ObservableCollection<HerbListDto> FilteredHerbs
+        partial void OnHerbNameChanged(string value)
         {
-            get => _filteredHerbs;
-            private set => SetProperty(ref _filteredHerbs, value);
+            FilterHerbs();
         }
 
         /// <summary>
-        /// 选中的药材 - 自动填充HerbId、HerbName、Unit
+        /// 选中药材变更时自动填充属性
         /// </summary>
-        public HerbListDto? SelectedHerb
+        partial void OnSelectedHerbChanged(HerbListDto? value)
         {
-            get => _selectedHerb;
-            set
+            if (value != null)
             {
-                if (SetProperty(ref _selectedHerb, value) && value != null)
-                {
-                    HerbId = value.Id;
-                    HerbName = value.Name ?? string.Empty;
-                    Unit = value.Unit;
-                    OnHerbSelected(value);
-                }
+                HerbId = value.Id;
+                HerbName = value.Name ?? string.Empty;
+                Unit = value.Unit;
+                OnHerbSelected(value);
             }
         }
 

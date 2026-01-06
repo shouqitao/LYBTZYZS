@@ -119,6 +119,23 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 ---
 
+## 死代码识别模式
+
+**识别方法**:
+1. `Grep` 搜索类型引用，仅自身和README = 死代码
+2. 服务已注册但从未被ViewModel注入 = 死代码
+3. 预规划功能无Repository/Service支持 = 未激活代码
+
+**清理流程**:
+1. 创建新文件 -> 更新引用 -> 删除原文件
+2. Shell/Extensions中的Logger注册需同步清理
+3. 空壳模块暂保留维持系统加载兼容性
+
+**模块状态**:
+- `Prescriptions` - 已完全移除（2026-01-05），功能迁移到MedicalCase
+
+---
+
 ## 架构索引
 
 查看Serena记忆获取架构信息:
@@ -134,5 +151,5 @@ mcp__serena__list_memories()  # 查看可用的架构记忆文件
 
 ---
 
-最后更新: 2025-12-29 21:06
-文档版本: v3.5-serena-memory
+最后更新: 2026-01-05 08:12
+文档版本: v3.6-dead-code-patterns

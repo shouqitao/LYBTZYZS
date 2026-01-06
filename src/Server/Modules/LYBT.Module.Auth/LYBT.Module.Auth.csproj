@@ -11,7 +11,7 @@
 	  <None Remove="obj\**" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="AutoMapper" />
+		<!-- OpenSpec: adopt-mapperly-unified-mapping - AutoMapper已移除，使用UserMapper -->
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">

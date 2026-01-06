@@ -7,233 +7,121 @@ using LYBT.Desktop.Foundation.Http;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Logging;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
-    /// 页面ViewModel基类 - 提供导航、对话框、安全执行功能
-    /// OpenSpec: migrate-to-communitytoolkit-mvvm
+    /// 页面ViewModel基类 - 提供API调用和HTTP错误处理功能
+    /// OpenSpec: standardize-viewmodel-framework
     ///
-    /// 继承自ValidatingViewModelBase，实现INavigationAware
-    /// 构造函数参数从7个减少到5个
+    /// 继承自NavigableViewModelBase，添加:
+    /// - API服务访问
+    /// - 刷新命令
+    /// - 页面描述
+    /// - HTTP错误处理（401/409/5xx等）
+    /// - 安全执行包装
     /// </summary>
-    public abstract partial class PageViewModelBase : ValidatingViewModelBase, INavigationAware
+    public abstract partial class PageViewModelBase : NavigableViewModelBase
     {
         #region 依赖服务
 
-        protected readonly IRegionManager RegionManager;
-        protected readonly ICommonDialogService DialogService;
         protected readonly IApiService ApiService;
-        protected readonly ISessionManager SessionManager;
 
         #endregion
 
         #region 可观察属性
 
         /// <summary>
-        /// 页面标题
+        /// 页面描述
         /// </summary>
         [ObservableProperty]
-        private string _pageTitle = string.Empty;
+        private string _pageDescription = string.Empty;
 
         #endregion
 
         #region 构造函数
 
         protected PageViewModelBase(
+            ILoggerFactory loggerFactory,
+            IEventAggregator eventAggregator,
             IRegionManager regionManager,
-            ICommonDialogService dialogService,
             IApiService apiService,
-            ISessionManager sessionManager,
-            ILoggerFactory loggerFactory)
-            : base(loggerFactory)
+            ISessionManager? sessionManager = null,
+            IUserNotificationService? userNotificationService = null,
+            ICommonDialogService? commonDialogService = null)
+            : base(loggerFactory, eventAggregator, regionManager, sessionManager, userNotificationService, commonDialogService)
         {
-            RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-            DialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             ApiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
-            SessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         }
 
         #endregion
 
-        #region 导航命令
+        #region 刷新命令
 
         /// <summary>
-        /// 返回主页命令
+        /// 刷新页面数据命令
         /// </summary>
-        [RelayCommand]
-        protected virtual void NavigateToHome()
+        [RelayCommand(CanExecute = nameof(CanRefresh))]
+        protected virtual async Task RefreshAsync()
         {
-            var homeView = GetHomeViewName();
-            NavigateTo("ContentRegion", homeView);
+            await ExecuteWithErrorHandlingAsync(
+                OnRefreshAsync,
+                "刷新数据");
         }
+
+        /// <summary>
+        /// 是否可以执行刷新
+        /// </summary>
+        protected virtual bool CanRefresh() => !IsBusy;
+
+        /// <summary>
+        /// 刷新数据的实际逻辑（子类重写）
+        /// </summary>
+        protected virtual Task OnRefreshAsync() => Task.CompletedTask;
 
         #endregion
 
-        #region 导航方法
+        #region 导航重写
 
         /// <summary>
-        /// 导航到指定视图
+        /// 导航到此页面时调用
         /// </summary>
-        /// <param name="regionName">区域名称</param>
-        /// <param name="viewName">视图名称</param>
-        /// <param name="parameters">导航参数</param>
-        protected virtual void NavigateTo(string regionName, string viewName, NavigationParameters? parameters = null)
+        public override void OnNavigatedTo(NavigationContext navigationContext)
         {
+            base.OnNavigatedTo(navigationContext);
+
             try
             {
-                Logger.LogDebug("导航到视图: {ViewName} (区域: {RegionName})", viewName, regionName);
-                RegionManager.RequestNavigate(regionName, viewName, parameters ?? new NavigationParameters());
+                ProcessNavigationParameters(navigationContext.Parameters);
+
+                // 使用基类的 InitializeAsync，这里不重复调用
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航失败: {ViewName}", viewName);
-                _ = ShowErrorMessageAsync($"导航失败: {ex.Message}");
+                Logger.LogError(ex, "页面导航处理失败");
+                _ = HandleExceptionAsync(ex, "页面加载");
             }
         }
 
         /// <summary>
-        /// 导航回退
+        /// 处理导航参数（子类重写）
         /// </summary>
-        /// <param name="regionName">区域名称</param>
-        protected virtual void NavigateBack(string regionName)
-        {
-            try
-            {
-                var region = RegionManager.Regions[regionName];
-                if (region?.NavigationService?.Journal?.CanGoBack == true)
-                {
-                    region.NavigationService.Journal.GoBack();
-                    Logger.LogDebug("导航回退成功: {RegionName}", regionName);
-                }
-                else
-                {
-                    Logger.LogWarning("无法回退，导航历史为空: {RegionName}", regionName);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航回退失败");
-                _ = ShowErrorMessageAsync($"导航回退失败: {ex.Message}");
-            }
-        }
+        protected virtual void ProcessNavigationParameters(NavigationParameters parameters) { }
 
         /// <summary>
-        /// 导航回退（带参数）
+        /// 页面初始化（子类重写）
         /// </summary>
-        protected virtual void NavigateBack(string regionName, NavigationParameters parameters)
-        {
-            try
-            {
-                var region = RegionManager.Regions[regionName];
-                if (region?.NavigationService?.Journal?.CanGoBack == true)
-                {
-                    var journal = region.NavigationService.Journal;
-                    var currentEntry = journal.CurrentEntry;
-
-                    if (currentEntry != null)
-                    {
-                        journal.GoBack();
-
-                        var currentView = region.ActiveViews.FirstOrDefault();
-                        if (currentView != null)
-                        {
-                            var dataContext = currentView.GetType().GetProperty("DataContext")?.GetValue(currentView);
-                            if (dataContext is INavigationAware navigationAware)
-                            {
-                                var navigationContext = new NavigationContext(
-                                    region.NavigationService,
-                                    new Uri(currentEntry.Uri.OriginalString, UriKind.Relative),
-                                    parameters);
-                                navigationAware.OnNavigatedTo(navigationContext);
-                            }
-                        }
-
-                        Logger.LogDebug("导航回退成功（带参数）: {RegionName}", regionName);
-                    }
-                }
-                else
-                {
-                    Logger.LogWarning("无法回退，导航历史为空: {RegionName}", regionName);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航回退失败");
-                _ = ShowErrorMessageAsync($"导航回退失败: {ex.Message}");
-            }
-        }
+        protected virtual Task InitializeAsync(NavigationParameters parameters) => Task.CompletedTask;
 
         /// <summary>
-        /// 是否可以回退
+        /// 首次导航时的初始化
         /// </summary>
-        protected virtual bool CanNavigateBack(string regionName)
+        protected override async Task InitializeAsync(NavigationContext context)
         {
-            try
-            {
-                return RegionManager.Regions[regionName]?.NavigationService?.Journal?.CanGoBack ?? false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 获取主页视图名称（根据用户角色）
-        /// </summary>
-        protected virtual string GetHomeViewName()
-        {
-            var role = SessionManager.CurrentUser?.Role;
-
-            return role switch
-            {
-                UserRole.Admin or UserRole.SuperAdmin => "AdminHomeView",
-                UserRole.Doctor => "ClinicalHomeView",
-                _ => "AdminHomeView"
-            };
-        }
-
-        #endregion
-
-        #region 对话框方法
-
-        /// <summary>
-        /// 显示成功消息
-        /// </summary>
-        protected virtual async Task ShowSuccessMessageAsync(string message)
-        {
-            await DialogService.ShowInfoAsync(message, "成功");
-        }
-
-        /// <summary>
-        /// 显示错误消息
-        /// </summary>
-        protected virtual async Task ShowErrorMessageAsync(string message)
-        {
-            await DialogService.ShowErrorAsync(message, "错误");
-        }
-
-        /// <summary>
-        /// 显示警告消息
-        /// </summary>
-        protected virtual async Task ShowWarningMessageAsync(string message)
-        {
-            await DialogService.ShowWarningAsync(message, "警告");
-        }
-
-        /// <summary>
-        /// 显示确认对话框
-        /// </summary>
-        /// <param name="message">确认消息</param>
-        /// <param name="title">对话框标题</param>
-        /// <returns>用户是否确认</returns>
-        protected virtual async Task<bool> ShowConfirmationAsync(string message, string title = "确认")
-        {
-            return await DialogService.ShowConfirmAsync(message, title);
+            await InitializeAsync(context.Parameters);
         }
 
         #endregion
@@ -332,7 +220,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
             await RunOnUIThreadAsync(() =>
             {
-                SessionManager.ClearSession();
+                SessionManager?.ClearSession();
                 return Task.CompletedTask;
             });
         }
@@ -344,7 +232,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         {
             Logger.LogWarning("数据冲突: {Operation}", operationName);
 
-            var shouldRefresh = await ShowConfirmationAsync(
+            var shouldRefresh = await ShowConfirmMessageAsync(
                 "数据已被其他用户修改，是否刷新获取最新数据？",
                 "数据冲突");
 
@@ -421,84 +309,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 _ => "操作失败，请重试"
             };
         }
-
-        #endregion
-
-        #region 用户信息
-
-        /// <summary>
-        /// 获取当前用户信息
-        /// </summary>
-        protected virtual string GetCurrentUserInfo()
-        {
-            return SessionManager.CurrentUser?.RealName ?? "未知用户";
-        }
-
-        /// <summary>
-        /// 检查用户是否已登录
-        /// </summary>
-        protected virtual bool IsUserLoggedIn()
-        {
-            return SessionManager.IsAuthenticated;
-        }
-
-        #endregion
-
-        #region INavigationAware实现
-
-        /// <summary>
-        /// 导航到此页面时调用
-        /// </summary>
-        public virtual void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            Logger.LogDebug("进入页面: {PageTitle}", PageTitle);
-
-            try
-            {
-                ProcessNavigationParameters(navigationContext.Parameters);
-
-                _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
-                {
-                    try
-                    {
-                        await InitializeAsync(navigationContext.Parameters);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "InitializeAsync执行失败");
-                        await HandleExceptionAsync(ex, "数据初始化");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "页面导航处理失败");
-                _ = HandleExceptionAsync(ex, "页面加载");
-            }
-        }
-
-        /// <summary>
-        /// 是否为导航目标
-        /// </summary>
-        public virtual bool IsNavigationTarget(NavigationContext navigationContext) => true;
-
-        /// <summary>
-        /// 离开此页面时调用
-        /// </summary>
-        public virtual void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-            Logger.LogDebug("离开页面: {PageTitle}", PageTitle);
-        }
-
-        /// <summary>
-        /// 处理导航参数（子类重写）
-        /// </summary>
-        protected virtual void ProcessNavigationParameters(NavigationParameters parameters) { }
-
-        /// <summary>
-        /// 页面初始化（子类重写）
-        /// </summary>
-        protected virtual Task InitializeAsync(NavigationParameters parameters) => Task.CompletedTask;
 
         #endregion
     }

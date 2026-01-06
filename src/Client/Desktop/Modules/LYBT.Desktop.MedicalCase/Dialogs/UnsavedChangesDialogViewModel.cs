@@ -1,15 +1,16 @@
-using Prism.Commands;
-using Prism.Mvvm;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.MedicalCase.Dialogs
 {
     /// <summary>
-    /// OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008)
     /// 未保存修改确认对话框ViewModel
+    /// OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008)
+    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
     /// 提供三个选项：保存修改、放弃修改、取消
     /// </summary>
-    public class UnsavedChangesDialogViewModel : BindableBase, IDialogAware
+    public partial class UnsavedChangesDialogViewModel : ObservableObject, IDialogAware
     {
         #region IDialogAware
 
@@ -32,57 +33,30 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         /// <summary>
         /// 保存修改命令 - 保存当前修改后返回列表
-        /// </summary>
-        public DelegateCommand SaveCommand { get; }
-
-        /// <summary>
-        /// 放弃修改命令 - 不保存修改直接返回列表
-        /// </summary>
-        public DelegateCommand DiscardCommand { get; }
-
-        /// <summary>
-        /// 取消命令 - 留在当前编辑界面
-        /// </summary>
-        public DelegateCommand CancelCommand { get; }
-
-        #endregion
-
-        #region 构造函数
-
-        public UnsavedChangesDialogViewModel()
-        {
-            SaveCommand = new DelegateCommand(ExecuteSave);
-            DiscardCommand = new DelegateCommand(ExecuteDiscard);
-            CancelCommand = new DelegateCommand(ExecuteCancel);
-        }
-
-        #endregion
-
-        #region 私有方法
-
-        /// <summary>
-        /// 执行保存修改
         /// ButtonResult.Yes 表示用户选择保存修改
         /// </summary>
-        private void ExecuteSave()
+        [RelayCommand]
+        private void Save()
         {
             RequestClose?.Invoke(new DialogResult(ButtonResult.Yes));
         }
 
         /// <summary>
-        /// 执行放弃修改
+        /// 放弃修改命令 - 不保存修改直接返回列表
         /// ButtonResult.No 表示用户选择放弃修改
         /// </summary>
-        private void ExecuteDiscard()
+        [RelayCommand]
+        private void Discard()
         {
             RequestClose?.Invoke(new DialogResult(ButtonResult.No));
         }
 
         /// <summary>
-        /// 执行取消
-        /// ButtonResult.Cancel 表示用户选择取消，留在当前界面
+        /// 取消命令 - 留在当前编辑界面
+        /// ButtonResult.Cancel 表示用户选择取消
         /// </summary>
-        private void ExecuteCancel()
+        [RelayCommand]
+        private void Cancel()
         {
             RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }

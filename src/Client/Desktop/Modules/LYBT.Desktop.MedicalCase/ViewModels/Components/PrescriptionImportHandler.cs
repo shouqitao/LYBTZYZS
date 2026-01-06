@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Models;
+using LYBT.Desktop.Herbs.Models.Items;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;

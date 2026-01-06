@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using LYBT.Module.Formulas.Mapping;
 using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Formulas.Interfaces;
@@ -19,18 +19,16 @@ namespace LYBT.Module.Formulas.Services
     {
         private readonly IFormulaRepository _repository;
         private readonly ICrossModuleQueryService _crossModuleQuery;
-        private readonly IMapper _mapper;
+        private readonly FormulaMapper _mapper = new();
         private readonly ILogger<FormulaService> _logger;
 
         public FormulaService(
             IFormulaRepository repository,
             ICrossModuleQueryService crossModuleQuery,
-            IMapper mapper,
             ILogger<FormulaService> logger)
         {
             _repository = repository;
             _crossModuleQuery = crossModuleQuery;
-            _mapper = mapper;
             _logger = logger;
         }
 
@@ -80,7 +78,7 @@ namespace LYBT.Module.Formulas.Services
             var needsRecalculateTotal = (!isAdmin && currentUserId.HasValue) || !string.IsNullOrWhiteSpace(category);
 
             // AutoMapper配置: HerbCount从Herbs.Count映射，TotalPrice标记为Ignore（无法计算）
-            var items = _mapper.Map<List<FormulaListDto>>(filteredList);
+            var items = _mapper.ToListDtos(filteredList);
 
             var dto = new PagedResult<FormulaListDto>
             {
@@ -100,7 +98,7 @@ namespace LYBT.Module.Formulas.Services
             if (entity == null)
                 return Result<FormulaDetailDto>.Failure("验方不存在");
 
-            var dto = _mapper.Map<FormulaDetailDto>(entity);
+            var dto = _mapper.ToDetailDto(entity);
             return Result<FormulaDetailDto>.Success(dto);
         }
 
@@ -138,7 +136,7 @@ namespace LYBT.Module.Formulas.Services
             };
 
             var result = await _repository.AddAsync(entity);
-            var resultDto = _mapper.Map<FormulaDetailDto>(result);
+            var resultDto = _mapper.ToDetailDto(result);
             return Result<FormulaDetailDto>.Success(resultDto);
         }
 
@@ -184,7 +182,7 @@ namespace LYBT.Module.Formulas.Services
             }
 
             var result = await _repository.UpdateAsync(entity);
-            var resultDto = _mapper.Map<FormulaDetailDto>(result);
+            var resultDto = _mapper.ToDetailDto(result);
             return Result<FormulaDetailDto>.Success(resultDto);
         }
 
@@ -198,7 +196,7 @@ namespace LYBT.Module.Formulas.Services
             }
 
             var pagedResult = await _repository.GetPagedWithDetailsAsync(1, 100, keyword);
-            var formulaDtos = _mapper.Map<List<FormulaDetailDto>>(pagedResult.Items);
+            var formulaDtos = _mapper.ToDetailDtos(pagedResult.Items.ToList());
 
             return Result<List<FormulaDetailDto>>.Success(formulaDtos);
         }
@@ -293,7 +291,7 @@ namespace LYBT.Module.Formulas.Services
                 .ToList();
 
             // 映射为DTO
-            var formulaDtos = _mapper.Map<List<FormulaDetailDto>>(pendingFormulas);
+            var formulaDtos = _mapper.ToDetailDtos(pendingFormulas);
 
             _logger.LogInformation("[SVC] Formula.GetPendingValidation completed - Count={Count}", formulaDtos.Count);
             return Result<List<FormulaDetailDto>>.Success(formulaDtos);
@@ -389,7 +387,7 @@ namespace LYBT.Module.Formulas.Services
                     }
 
                     var savedFormula = await _repository.AddAsync(formula);
-                    var formulaResultDto = _mapper.Map<FormulaDetailDto>(savedFormula);
+                    var formulaResultDto = _mapper.ToDetailDto(savedFormula);
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(savedFormula.Id);
@@ -633,7 +631,7 @@ namespace LYBT.Module.Formulas.Services
             entity.UpdatedAt = DateTime.Now;
 
             var result = await _repository.UpdateAsync(entity);
-            var dto = _mapper.Map<FormulaDetailDto>(result);
+            var dto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] Formula.ToggleStatus completed - FormulaId={FormulaId} Status={Status}", id, entity.Status);
 
@@ -663,7 +661,7 @@ namespace LYBT.Module.Formulas.Services
             entity.UpdatedAt = DateTime.Now;
 
             var result = await _repository.UpdateAsync(entity);
-            var dto = _mapper.Map<FormulaDetailDto>(result);
+            var dto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] Formula.Restore completed - FormulaId={FormulaId} FormulaName={FormulaName}", id, entity.Name);
 

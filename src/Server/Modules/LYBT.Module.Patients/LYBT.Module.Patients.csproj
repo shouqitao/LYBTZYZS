@@ -13,8 +13,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AutoMapper" />
-		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+		<!-- OpenSpec: adopt-mapperly-unified-mapping - 迁移到Mapperly -->
+		<PackageReference Include="Riok.Mapperly" />
 		<PackageReference Include="EPPlus" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />

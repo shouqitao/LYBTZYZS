@@ -35,6 +35,8 @@
     <PackageReference Include="NPOI" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="Prism.Wpf" />
+    <!-- OpenSpec: adopt-mapperly-unified-mapping - 编译时映射源生成器 -->
+    <PackageReference Include="Riok.Mapperly" />
     <PackageReference Include="System.ComponentModel.Annotations" />
     <PackageReference Include="System.Reactive" />
   </ItemGroup>

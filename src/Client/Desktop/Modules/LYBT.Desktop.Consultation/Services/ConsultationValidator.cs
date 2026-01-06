@@ -186,8 +186,8 @@ namespace LYBT.Desktop.Consultation.Services
             }
 
             // 检查必填字段
-            // OpenSpec: refactor-diagnosis-fields - 只需验证TCMDiagnosis
-            if (string.IsNullOrWhiteSpace(consultation.TCMDiagnosis))
+            // OpenSpec: refactor-diagnosis-fields - 只需验证TcmDiagnosis
+            if (string.IsNullOrWhiteSpace(consultation.TcmDiagnosis))
             {
                 errorMessage = "中医诊断不能为空";
                 return false;
@@ -212,8 +212,8 @@ namespace LYBT.Desktop.Consultation.Services
                 return false;
             }
 
-            // OpenSpec: refactor-diagnosis-fields - 只需验证TCMDiagnosis
-            if (string.IsNullOrWhiteSpace(consultation.TCMDiagnosis))
+            // OpenSpec: refactor-diagnosis-fields - 只需验证TcmDiagnosis
+            if (string.IsNullOrWhiteSpace(consultation.TcmDiagnosis))
             {
                 errors.Add("中医诊断不能为空");
             }

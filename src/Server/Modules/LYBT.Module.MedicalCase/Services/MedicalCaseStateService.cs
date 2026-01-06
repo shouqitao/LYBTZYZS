@@ -1,4 +1,3 @@
-using AutoMapper;
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -13,6 +12,7 @@ namespace LYBT.Module.MedicalCases.Services
     /// 病案状态服务实现 - 状态管理操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：UpdateStatus, Complete, CloseCase, SaveDraft, Cancel等状态流转操作
+    /// OpenSpec: adopt-mapperly-unified-mapping - 移除IMapper依赖（此Service无映射需求）
     /// </summary>
     public class MedicalCaseStateService : BaseService<MedicalCase>, IMedicalCaseStateService
     {
@@ -24,9 +24,8 @@ namespace LYBT.Module.MedicalCases.Services
             IMedicalCaseRepository repository,
             IUserRepository userRepository,
             IMedicalCaseAuditService auditService,
-            IMapper mapper,
             ILogger<MedicalCaseStateService> logger)
-            : base(logger, mapper)
+            : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));

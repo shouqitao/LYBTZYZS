@@ -88,5 +88,50 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// OpenSpec: optimize-medicalcase-api
         /// </summary>
         Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query);
+
+        #region 生命周期管理（合并自MedicalCaseLifecycleHandler）
+
+        /// <summary>
+        /// 创建新医案
+        /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>(是否成功, 医案ID, 错误信息)</returns>
+        Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId);
+
+        /// <summary>
+        /// 暂存医案
+        /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>(是否成功, 错误信息)</returns>
+        Task<(bool success, string? errorMessage)> SaveDraftAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 取消医案
+        /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="reason">取消原因</param>
+        /// <returns>(是否成功, 错误信息)</returns>
+        Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null);
+
+        /// <summary>
+        /// 完成医案
+        /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>(是否成功, 错误信息)</returns>
+        Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 恢复暂存医案为Active状态
+        /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>(是否成功, 错误信息)</returns>
+        Task<(bool success, string? errorMessage)> ResumeDraftAsync(Guid medicalCaseId);
+
+        #endregion
     }
 }

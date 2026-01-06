@@ -1,34 +1,26 @@
 using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
-using Prism.Commands;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.Infrastructure.ViewModels
 {
     /// <summary>
     /// 未完成医案对话框ViewModel
     /// OpenSpec: optimize-medicalcase-navigation - 统一四选项弹窗
+    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
     /// 支持4个选项：继续看诊、新建医案、仅关闭、取消
     /// </summary>
-    public class UnfinishedCaseDialogViewModel : BindableBase
+    public partial class UnfinishedCaseDialogViewModel : ObservableObject
     {
-        private string _patientName = string.Empty;
         private Window? _dialogWindow;
 
         /// <summary>
         /// 患者姓名
         /// </summary>
-        public string PatientName
-        {
-            get => _patientName;
-            set
-            {
-                if (SetProperty(ref _patientName, value))
-                {
-                    RaisePropertyChanged(nameof(Message));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Message))]
+        private string _patientName = string.Empty;
 
         /// <summary>
         /// 对话框标题
@@ -45,26 +37,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// </summary>
         public UnfinishedCaseChoice Result { get; private set; } = UnfinishedCaseChoice.Cancel;
 
-        /// <summary>继续看诊命令</summary>
-        public DelegateCommand ContinueCommand { get; }
-
-        /// <summary>新建医案命令</summary>
-        public DelegateCommand CreateNewCommand { get; }
-
-        /// <summary>仅关闭命令</summary>
-        public DelegateCommand CloseOnlyCommand { get; }
-
-        /// <summary>取消命令</summary>
-        public DelegateCommand CancelCommand { get; }
-
-        public UnfinishedCaseDialogViewModel()
-        {
-            ContinueCommand = new DelegateCommand(ExecuteContinue);
-            CreateNewCommand = new DelegateCommand(ExecuteCreateNew);
-            CloseOnlyCommand = new DelegateCommand(ExecuteCloseOnly);
-            CancelCommand = new DelegateCommand(ExecuteCancel);
-        }
-
         /// <summary>
         /// 设置对话框窗口引用
         /// </summary>
@@ -73,25 +45,33 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             _dialogWindow = window;
         }
 
-        private void ExecuteContinue()
+        /// <summary>继续看诊命令</summary>
+        [RelayCommand]
+        private void Continue()
         {
             Result = UnfinishedCaseChoice.Continue;
             _dialogWindow?.Close();
         }
 
-        private void ExecuteCreateNew()
+        /// <summary>新建医案命令</summary>
+        [RelayCommand]
+        private void CreateNew()
         {
             Result = UnfinishedCaseChoice.CloseAndCreate;
             _dialogWindow?.Close();
         }
 
-        private void ExecuteCloseOnly()
+        /// <summary>仅关闭命令</summary>
+        [RelayCommand]
+        private void CloseOnly()
         {
             Result = UnfinishedCaseChoice.CloseOnly;
             _dialogWindow?.Close();
         }
 
-        private void ExecuteCancel()
+        /// <summary>取消命令</summary>
+        [RelayCommand]
+        private void Cancel()
         {
             Result = UnfinishedCaseChoice.Cancel;
             _dialogWindow?.Close();

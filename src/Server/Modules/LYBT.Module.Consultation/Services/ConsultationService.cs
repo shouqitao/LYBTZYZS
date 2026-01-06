@@ -1,5 +1,5 @@
-﻿using AutoMapper;
-using LYBT.Module.Consultations.Interfaces;
+﻿using LYBT.Module.Consultations.Interfaces;
+using LYBT.Module.Consultations.Mapping;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
@@ -14,16 +14,14 @@ namespace LYBT.Module.Consultations.Services
     public class ConsultationService : IConsultationService
     {
         private readonly IConsultationRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly ConsultationMapper _mapper = new();
         private readonly ILogger<ConsultationService> _logger;
 
         public ConsultationService(
             IConsultationRepository repository,
-            IMapper mapper,
             ILogger<ConsultationService> logger)
         {
             _repository = repository;
-            _mapper = mapper;
             _logger = logger;
         }
 
@@ -36,7 +34,7 @@ namespace LYBT.Module.Consultations.Services
             var entity = await _repository.GetByIdWithDetailsAsync(id)
                 ?? throw NotFoundException.Consultation(id);
 
-            var dto = _mapper.Map<ConsultationDetailDto>(entity);
+            var dto = _mapper.ToDetailDto(entity);
 
             // OpenSpec: refactor-server-ddd-aggregates - 通过共享主键查询MedicalCase获取PatientName/DoctorName
             var medicalCaseInfo = await _repository.GetMedicalCaseInfoAsync(id);
@@ -62,7 +60,7 @@ namespace LYBT.Module.Consultations.Services
                 return new List<ConsultationDetailDto>();
             }
 
-            var dto = _mapper.Map<ConsultationDetailDto>(consultation);
+            var dto = _mapper.ToDetailDto(consultation);
 
             // OpenSpec: refactor-server-ddd-aggregates - 通过共享主键查询MedicalCase获取PatientName/DoctorName
             var medicalCaseInfo = await _repository.GetMedicalCaseInfoAsync(medicalCaseId);

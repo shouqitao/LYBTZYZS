@@ -1,9 +1,9 @@
-﻿using AutoMapper;
-using LYBT.Entities.Consultations;
+﻿using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Mapping;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -18,6 +18,7 @@ namespace LYBT.Module.MedicalCases.Services
     /// 病案命令服务实现 - 写操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：Create, Update, Delete操作
+    /// OpenSpec: adopt-mapperly-unified-mapping - 使用MedicalCaseMapper替代AutoMapper
     /// </summary>
     public class MedicalCaseCommandService : BaseService<MedicalCase>, IMedicalCaseCommandService
     {
@@ -25,15 +26,15 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IPatientRepository _patientRepository;
         private readonly IUserRepository _userRepository;
         private readonly IMedicalCaseAuditService _auditService;
+        private readonly MedicalCaseMapper _mapper = new();
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
             IPatientRepository patientRepository,
             IUserRepository userRepository,
             IMedicalCaseAuditService auditService,
-            IMapper mapper,
             ILogger<MedicalCaseCommandService> logger)
-            : base(logger, mapper)
+            : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
@@ -476,7 +477,7 @@ namespace LYBT.Module.MedicalCases.Services
 
                     // 创建Prescription实体（不包含Items，需手动处理）
                     // OpenSpec: optimize-entity-data-flow - PatientId/UserId通过MedicalCase获取
-                    var prescription = _mapper.Map<Prescription>(request);
+                    var prescription = _mapper.ToPrescriptionEntity(request);
                     prescription.Id = Guid.NewGuid();
                     prescription.MedicalCaseId = medicalCaseId;
                     prescription.CreatedAt = DateTime.Now;
@@ -488,7 +489,7 @@ namespace LYBT.Module.MedicalCases.Services
                         prescription.Items = new List<LYBT.Entities.Prescriptions.PrescriptionItem>();
                         foreach (var itemDto in request.Items)
                         {
-                            var item = _mapper.Map<LYBT.Entities.Prescriptions.PrescriptionItem>(itemDto);
+                            var item = _mapper.ToPrescriptionItemEntity(itemDto);
                             item.Id = Guid.NewGuid();
                             item.PrescriptionId = prescription.Id;
                             prescription.Items.Add(item);
@@ -582,7 +583,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 通过AutoMapper更新Prescription子实体（不包含Items）
-            _mapper.Map(request, medicalCase.Prescription);
+            _mapper.UpdatePrescriptionEntity(request, medicalCase.Prescription);
             medicalCase.Prescription.UpdatedAt = DateTime.Now;
             medicalCase.UpdatedAt = DateTime.Now;
 
@@ -595,7 +596,7 @@ namespace LYBT.Module.MedicalCases.Services
                 // 添加新的处方项
                 foreach (var itemDto in request.Items)
                 {
-                    var item = _mapper.Map<LYBT.Entities.Prescriptions.PrescriptionItem>(itemDto);
+                    var item = _mapper.ToPrescriptionItemEntity(itemDto);
                     item.Id = Guid.NewGuid();
                     item.PrescriptionId = prescriptionId;
                     medicalCase.Prescription.Items.Add(item);

@@ -33,7 +33,7 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
 
-		<PackageReference Include="AutoMapper" />
+		<!-- OpenSpec: adopt-mapperly-unified-mapping - AutoMapper已移除 -->
 		<PackageReference Include="FluentValidation" />
 		<PackageReference Include="Serilog" />
 	</ItemGroup>

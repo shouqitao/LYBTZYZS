@@ -1,7 +1,7 @@
-﻿using LYBT.Shared.ExceptionHandling.Mappers;
+﻿using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Patients.Services;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 
 namespace LYBT.Desktop.Patients.ViewModels.Components;
 
@@ -21,17 +21,20 @@ public class PatientSelectionCommandExecutor
     private readonly Action<int, int, int> _syncPaginationProperties;
     private readonly Action<bool, string?> _setBusy;
     private readonly Func<string, Task> _showErrorMessage;
-    private readonly DelegateCommand _previousPageCommand;
-    private readonly DelegateCommand _nextPageCommand;
+    private readonly IRelayCommand _previousPageCommand;
+    private readonly IRelayCommand _nextPageCommand;
 
+    /// <summary>
+    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm IRelayCommand
+    /// </summary>
     public PatientSelectionCommandExecutor(
         PatientSearchManager searchManager,
         ILogger logger,
         Action<int, int, int> syncPaginationProperties,
         Action<bool, string?> setBusy,
         Func<string, Task> showErrorMessage,
-        DelegateCommand previousPageCommand,
-        DelegateCommand nextPageCommand)
+        IRelayCommand previousPageCommand,
+        IRelayCommand nextPageCommand)
     {
         _searchManager = searchManager ?? throw new ArgumentNullException(nameof(searchManager));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -51,8 +54,8 @@ public class PatientSelectionCommandExecutor
             _searchManager.CurrentPage,
             _searchManager.TotalPages,
             _searchManager.TotalCount);
-        _previousPageCommand.RaiseCanExecuteChanged();
-        _nextPageCommand.RaiseCanExecuteChanged();
+        _previousPageCommand.NotifyCanExecuteChanged();
+        _nextPageCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>

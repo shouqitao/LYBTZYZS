@@ -64,9 +64,9 @@
     <PackageReference Include="Prism.Wpf" />
   </ItemGroup>
 
-  <!-- Object Mapping -->
+  <!-- OpenSpec: adopt-mapperly-unified-mapping - 替换AutoMapper为Mapperly -->
   <ItemGroup Label="Data Processing">
-    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="Riok.Mapperly" />
   </ItemGroup>
 
   <!-- Project References -->

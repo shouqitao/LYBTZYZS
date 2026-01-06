@@ -230,7 +230,11 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     #region 工厂方法
 
     /// <summary>从MedicalCaseDetailDto创建模型</summary>
-    /// <remarks>OpenSpec: simplify-medicalcase-dataflow - ConsultationDate删除，使用CreatedAt</remarks>
+    /// <remarks>
+    /// OpenSpec: simplify-medicalcase-dataflow - ConsultationDate删除，使用CreatedAt
+    /// 已废弃：请使用MedicalCaseMappingService.ToItem()
+    /// </remarks>
+    [Obsolete("请使用MedicalCaseMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public static MedicalCaseDetailModel FromDto(MedicalCaseDetailDto dto)
     {
         var model = new MedicalCaseDetailModel

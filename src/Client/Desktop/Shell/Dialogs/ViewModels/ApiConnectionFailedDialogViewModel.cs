@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.IO;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using Prism.Events;
-using Prism.Regions;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels;
@@ -13,68 +13,46 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels;
 /// <summary>
 /// API连接失败对话框ViewModel
 /// enhance-shell-connection-dialog: 显示连接失败信息并提供恢复操作选项
-/// 实现IDialogAware接口，符合Prism Dialog标准
+/// OpenSpec: standardize-viewmodel-framework - 迁移到DialogViewModelBase
 /// </summary>
-public class ApiConnectionFailedDialogViewModel : UnifiedViewModelBase, IDialogAware
+public partial class ApiConnectionFailedDialogViewModel : DialogViewModelBase
 {
     #region 私有字段
 
-    private string _title = "无法连接到服务器";
-    private string _errorSummary = "无法连接到凌隐宝堂服务，请检查：";
-    private List<string> _possibleReasons = [];
-    private string _technicalDetails = string.Empty;
-    private bool _isDetailsExpanded;
     private string _apiEndpoint = string.Empty;
     private string _errorType = string.Empty;
 
     #endregion
 
-    #region 公共属性
-
-    /// <summary>
-    /// 对话框标题
-    /// </summary>
-    public string Title
-    {
-        get => _title;
-        set => SetProperty(ref _title, value);
-    }
+    #region 可观察属性
 
     /// <summary>
     /// 错误摘要信息
     /// </summary>
-    public string ErrorSummary
-    {
-        get => _errorSummary;
-        set => SetProperty(ref _errorSummary, value);
-    }
+    [ObservableProperty]
+    private string _errorSummary = "无法连接到凌隐宝堂服务，请检查：";
 
     /// <summary>
     /// 可能原因列表
     /// </summary>
-    public List<string> PossibleReasons
-    {
-        get => _possibleReasons;
-        set => SetProperty(ref _possibleReasons, value);
-    }
+    [ObservableProperty]
+    private List<string> _possibleReasons = [];
 
     /// <summary>
     /// 技术详情(可展开)
     /// </summary>
-    public string TechnicalDetails
-    {
-        get => _technicalDetails;
-        set => SetProperty(ref _technicalDetails, value);
-    }
+    [ObservableProperty]
+    private string _technicalDetails = string.Empty;
 
     /// <summary>
     /// 详情是否展开
     /// </summary>
-    public bool IsDetailsExpanded
-    {
-        get => _isDetailsExpanded;
-        set => SetProperty(ref _isDetailsExpanded, value);
-    }
+    [ObservableProperty]
+    private bool _isDetailsExpanded;
+
+    #endregion
+
+    #region 只读属性
 
     /// <summary>
     /// 离线模式是否可用 (v2.0启用)
@@ -88,69 +66,40 @@ public class ApiConnectionFailedDialogViewModel : UnifiedViewModelBase, IDialogA
 
     #endregion
 
-    #region 命令
+    #region 构造函数
 
-    /// <summary>
-    /// 重试命令
-    /// </summary>
-    public DelegateCommand RetryCommand { get; }
-
-    /// <summary>
-    /// 离线模式命令 (v2.0预留)
-    /// </summary>
-    public DelegateCommand OfflineModeCommand { get; }
-
-    /// <summary>
-    /// 查看日志命令
-    /// </summary>
-    public DelegateCommand ViewLogsCommand { get; }
-
-    /// <summary>
-    /// 退出命令
-    /// </summary>
-    public DelegateCommand ExitCommand { get; }
+    public ApiConnectionFailedDialogViewModel(
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory)
+        : base(loggerFactory, eventAggregator)
+    {
+        Title = "无法连接到服务器";
+    }
 
     #endregion
 
-    #region IDialogAware 实现
+    #region 对话框生命周期
 
     /// <summary>
-    /// 对话框关闭请求事件
+    /// 对话框打开时处理参数
     /// </summary>
-    public event Action<IDialogResult>? RequestClose;
-
-    /// <summary>
-    /// 是否可以关闭对话框
-    /// </summary>
-    public bool CanCloseDialog() => true;
-
-    /// <summary>
-    /// 对话框打开时调用
-    /// </summary>
-    public void OnDialogOpened(IDialogParameters parameters)
+    protected override void OnDialogOpenedCore(IDialogParameters? parameters)
     {
+        if (parameters == null) return;
+
         // 从参数中读取配置
-        if (parameters.ContainsKey("ErrorMessage"))
+        var errorMessage = GetDialogParameter(parameters, "ErrorMessage", string.Empty);
+        if (!string.IsNullOrWhiteSpace(errorMessage))
         {
-            var errorMessage = parameters.GetValue<string>("ErrorMessage");
-            ErrorSummary = string.IsNullOrWhiteSpace(errorMessage)
-                ? "无法连接到凌隐宝堂服务，请检查："
-                : errorMessage;
+            ErrorSummary = errorMessage;
         }
 
-        if (parameters.ContainsKey("ApiEndpoint"))
-        {
-            _apiEndpoint = parameters.GetValue<string>("ApiEndpoint") ?? string.Empty;
-        }
+        _apiEndpoint = GetDialogParameter(parameters, "ApiEndpoint", string.Empty);
 
-        if (parameters.ContainsKey("Exception"))
+        if (parameters.TryGetValue<Exception>("Exception", out var exception) && exception != null)
         {
-            var exception = parameters.GetValue<Exception>("Exception");
-            if (exception != null)
-            {
-                _errorType = exception.GetType().Name;
-                BuildTechnicalDetails(exception);
-            }
+            _errorType = exception.GetType().Name;
+            BuildTechnicalDetails(exception);
         }
 
         // 设置默认的可能原因
@@ -165,90 +114,56 @@ public class ApiConnectionFailedDialogViewModel : UnifiedViewModelBase, IDialogA
     }
 
     /// <summary>
-    /// 对话框关闭时调用
+    /// 对话框关闭时清理
     /// </summary>
-    public void OnDialogClosed()
+    protected override void OnDialogClosedCore()
     {
         Logger.LogInformation("ApiConnectionFailedDialog - 对话框已关闭");
     }
 
     #endregion
 
-    #region 构造函数
-
-    public ApiConnectionFailedDialogViewModel(
-        IEventAggregator eventAggregator,
-        ILoggerFactory loggerFactory,
-        IRegionManager regionManager)
-        : base(eventAggregator, loggerFactory, regionManager, null, null)
-    {
-        RetryCommand = new DelegateCommand(ExecuteRetry);
-        OfflineModeCommand = new DelegateCommand(ExecuteOfflineMode, CanExecuteOfflineMode);
-        ViewLogsCommand = new DelegateCommand(ExecuteViewLogs);
-        ExitCommand = new DelegateCommand(ExecuteExit);
-    }
-
-    #endregion
-
-    #region 私有方法
+    #region 命令
 
     /// <summary>
-    /// 构建技术详情文本
+    /// 重试命令
     /// </summary>
-    private void BuildTechnicalDetails(Exception exception)
-    {
-        var details = new System.Text.StringBuilder();
-        details.AppendLine($"服务地址: {_apiEndpoint}");
-        details.AppendLine($"错误类型: {exception.GetType().Name}");
-        details.AppendLine($"详细信息: {exception.Message}");
-
-        if (exception.InnerException != null)
-        {
-            details.AppendLine($"内部错误: {exception.InnerException.Message}");
-        }
-
-        TechnicalDetails = details.ToString();
-    }
-
-    /// <summary>
-    /// 执行重试
-    /// </summary>
-    private void ExecuteRetry()
+    [RelayCommand]
+    private void Retry()
     {
         Logger.LogInformation("ApiConnectionFailedDialog - 用户选择重试");
 
-        var result = new DialogResult(ButtonResult.Retry, new DialogParameters
+        var result = new DialogParameters
         {
             { "RecoveryAction", RecoveryAction.Retry }
-        });
+        };
 
-        RequestClose?.Invoke(result);
+        CloseDialog(result, ButtonResult.Retry);
     }
 
     /// <summary>
-    /// 执行离线模式 (v2.0预留)
+    /// 离线模式命令 (v2.0预留)
     /// </summary>
-    private void ExecuteOfflineMode()
+    [RelayCommand(CanExecute = nameof(CanExecuteOfflineMode))]
+    private void OfflineMode()
     {
         Logger.LogInformation("ApiConnectionFailedDialog - 用户选择离线模式");
 
-        var result = new DialogResult(ButtonResult.Yes, new DialogParameters
+        var result = new DialogParameters
         {
             { "RecoveryAction", RecoveryAction.OfflineMode }
-        });
+        };
 
-        RequestClose?.Invoke(result);
+        CloseDialog(result, ButtonResult.Yes);
     }
 
-    /// <summary>
-    /// 检查是否可以执行离线模式
-    /// </summary>
     private bool CanExecuteOfflineMode() => IsOfflineModeEnabled;
 
     /// <summary>
-    /// 执行查看日志
+    /// 查看日志命令
     /// </summary>
-    private void ExecuteViewLogs()
+    [RelayCommand]
+    private void ViewLogs()
     {
         Logger.LogInformation("ApiConnectionFailedDialog - 用户选择查看日志");
 
@@ -279,18 +194,41 @@ public class ApiConnectionFailedDialogViewModel : UnifiedViewModelBase, IDialogA
     }
 
     /// <summary>
-    /// 执行退出
+    /// 退出命令
     /// </summary>
-    private void ExecuteExit()
+    [RelayCommand]
+    private void Exit()
     {
         Logger.LogInformation("ApiConnectionFailedDialog - 用户选择退出");
 
-        var result = new DialogResult(ButtonResult.Cancel, new DialogParameters
+        var result = new DialogParameters
         {
             { "RecoveryAction", RecoveryAction.Exit }
-        });
+        };
 
-        RequestClose?.Invoke(result);
+        CloseDialog(result, ButtonResult.Cancel);
+    }
+
+    #endregion
+
+    #region 私有方法
+
+    /// <summary>
+    /// 构建技术详情文本
+    /// </summary>
+    private void BuildTechnicalDetails(Exception exception)
+    {
+        var details = new System.Text.StringBuilder();
+        details.AppendLine($"服务地址: {_apiEndpoint}");
+        details.AppendLine($"错误类型: {exception.GetType().Name}");
+        details.AppendLine($"详细信息: {exception.Message}");
+
+        if (exception.InnerException != null)
+        {
+            details.AppendLine($"内部错误: {exception.InnerException.Message}");
+        }
+
+        TechnicalDetails = details.ToString();
     }
 
     #endregion

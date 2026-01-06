@@ -1,6 +1,7 @@
 <!--
     FormulaEditControl - 验方编辑控件
     OpenSpec: extract-detail-controls Task 1.2
+    OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑处方
 
     独立的验方编辑控件，可在FormulaDetailView中复用
     通过DependencyProperty接收数据，支持双向绑定
@@ -9,7 +10,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:sharedControls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:herbList="clr-namespace:LYBT.Desktop.Herbs.Controls.HerbList;assembly=LYBT.Desktop.Herbs"
              x:Name="Root">
 
     <UserControl.Resources>
@@ -120,14 +121,14 @@
         </controls:InfoCard>
 
         <!-- 药材组成卡片 - 编辑模式 -->
+        <!-- OpenSpec: unify-herb-controls-to-herbs-module - 使用HerbListControl替代HerbListEditor -->
         <controls:InfoCard Title="{Binding HerbCount, StringFormat=药材组成 (共{0}味)}">
             <controls:InfoCard.Content>
-                <sharedControls:HerbListEditor
-                    HerbItems="{Binding HerbItems}"
+                <herbList:HerbListControl
+                    AllHerbs="{Binding AllHerbs}"
+                    HerbItems="{Binding HerbItems, Mode=TwoWay}"
                     IsEditMode="True"
-                    DeleteHerbCommand="{Binding DeleteHerbCommand}"
-                    DosageCompletedCommand="{Binding DosageCompletedCommand}"
-                    AddNewRowCommand="{Binding AddNewRowCommand}"/>
+                    Columns="4"/>
             </controls:InfoCard.Content>
         </controls:InfoCard>
     </StackPanel>

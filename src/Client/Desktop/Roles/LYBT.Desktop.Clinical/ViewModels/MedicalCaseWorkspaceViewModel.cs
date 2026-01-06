@@ -39,7 +39,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
 
     private readonly IRegionManager _regionManager;
     private readonly MedicalCaseService _dataManager;
-    private readonly MedicalCaseLifecycleHandler _lifecycleHandler;
+    private readonly IMedicalCaseService _medicalCaseService;
     private readonly MedicalCaseDataLoader _dataLoader;
     // OpenSpec: consolidate-panel-viewmodels - ConsultationPanelViewModel和PrescriptionPanelViewModel已删除，使用Consultation/Prescription属性替代
     private readonly IActiveConsultationService _activeConsultationService;
@@ -348,8 +348,9 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     #region 构造函数
 
     // OpenSpec: consolidate-panel-viewmodels - 移除ConsultationPanelViewModel和PrescriptionPanelViewModel参数
+    // OpenSpec: simplify-medicalcase-module - MedicalCaseLifecycleHandler已合并到IMedicalCaseService
     public MedicalCaseWorkspaceViewModel(
-        MedicalCaseService dataManager, MedicalCaseLifecycleHandler lifecycleHandler,
+        MedicalCaseService dataManager, IMedicalCaseService medicalCaseService,
         MedicalCaseDataLoader dataLoader, MedicalCaseWorkspaceCoordinator coordinator,
         MedicalCaseNavigationHandler navigationHandler, MedicalCaseEditModeStateMachine editModeStateMachine,
         IRegionManager regionManager, IEventAggregator eventAggregator, ILoggerFactory loggerFactory,
@@ -364,7 +365,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     {
         _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-        _lifecycleHandler = lifecycleHandler ?? throw new ArgumentNullException(nameof(lifecycleHandler));
+        _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
         _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
         _navigationHandler = navigationHandler ?? throw new ArgumentNullException(nameof(navigationHandler));
@@ -377,9 +378,10 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         _printHandler = printHandler ?? throw new ArgumentNullException(nameof(printHandler));
 
         // OpenSpec: refactor-desktop-comprehensive Phase 3 - 初始化待诊队列处理器
+        // OpenSpec: simplify-medicalcase-module - 使用IMedicalCaseService替代MedicalCaseLifecycleHandler
         _pendingQueueHandler = new WorkspacePendingQueueHandler(
             _pendingQueueManager,
-            _lifecycleHandler,
+            _medicalCaseService,
             _regionManager,
             commonDialogService,
             loggerFactory,
@@ -392,7 +394,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
 
         // 订阅事件
         _editModeStateMachine.EditStateChanged += OnEditStateChanged;
-        _lifecycleHandler.ActionCompleted += OnLifecycleActionCompleted;
+        // OpenSpec: simplify-medicalcase-module - ActionCompleted事件已移除（服务方法直接返回结果）
         _dataLoader.DataLoaded += OnDataLoaded;
 
         // 配置导航处理器回调
@@ -631,7 +633,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
                 SetIsBusy(true, "正在关闭旧医案...");
                 if (pendingCase.MedicalCaseId.HasValue)
                 {
-                    var cancelResult = await _lifecycleHandler.CancelAsync(pendingCase.MedicalCaseId.Value);
+                    var cancelResult = await _medicalCaseService.CancelMedicalCaseAsync(pendingCase.MedicalCaseId.Value);
                     if (!cancelResult.success)
                     {
                         Logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.errorMessage);
@@ -649,7 +651,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
                 SetIsBusy(true, "正在关闭挂起医案...");
                 if (pendingCase.MedicalCaseId.HasValue)
                 {
-                    var cancelResult = await _lifecycleHandler.CancelAsync(pendingCase.MedicalCaseId.Value);
+                    var cancelResult = await _medicalCaseService.CancelMedicalCaseAsync(pendingCase.MedicalCaseId.Value);
                     if (!cancelResult.success)
                     {
                         Logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.errorMessage);
@@ -685,7 +687,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             Logger.LogInformation("为患者创建新医案：{PatientName}", pendingCase.PatientName);
 
             // 创建新医案
-            var createResult = await _lifecycleHandler.CreateMedicalCaseAsync(pendingCase.PatientId);
+            var createResult = await _medicalCaseService.CreateMedicalCaseAsync(pendingCase.PatientId);
             if (!createResult.success)
             {
                 Logger.LogWarning("创建医案失败：{Error}", createResult.errorMessage);
@@ -1076,7 +1078,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             try
             {
                 SetIsBusy(true, "正在创建医案...");
-                var result = await _lifecycleHandler.CreateMedicalCaseAsync(CurrentPatient.Id);
+                var result = await _medicalCaseService.CreateMedicalCaseAsync(CurrentPatient.Id);
                 if (!result.success) { await ShowErrorMessageAsync("创建医案失败，请重试"); return; }
                 MedicalCaseId = result.medicalCaseId;
             }
@@ -1122,7 +1124,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         {
             Logger.LogInformation("[CMD] ResumeDraft → MedicalCaseId={MedicalCaseId}", MedicalCaseId);
 
-            var result = await _lifecycleHandler.ResumeDraftAsync(MedicalCaseId);
+            var result = await _medicalCaseService.ResumeDraftAsync(MedicalCaseId);
             if (result.success)
             {
                 // 更新缓存的医案状态
@@ -1265,10 +1267,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         if (payload.MedicalCaseId == MedicalCaseId) HasUnsavedPrescriptionChanges = false;
     }
 
-    private async void OnLifecycleActionCompleted(object? sender, LifecycleActionCompletedEventArgs e)
-    {
-        if (!e.Success) await ShowErrorMessageAsync(e.ErrorMessage ?? "操作失败");
-    }
+    // OpenSpec: simplify-medicalcase-module - OnLifecycleActionCompleted已移除，服务方法直接返回结果
 
     private async void OnDataLoaded(object? sender, DataLoadedEventArgs e)
     {
@@ -1363,7 +1362,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         if (disposing)
         {
             _activeConsultationService.Unregister();
-            _lifecycleHandler.ActionCompleted -= OnLifecycleActionCompleted;
+            // OpenSpec: simplify-medicalcase-module - ActionCompleted事件已移除
             _dataLoader.DataLoaded -= OnDataLoaded;
             _editModeStateMachine.EditStateChanged -= OnEditStateChanged;
             EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Unsubscribe(OnConsultationCompleted);

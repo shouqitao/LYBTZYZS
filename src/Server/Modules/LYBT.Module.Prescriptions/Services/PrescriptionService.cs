@@ -1,5 +1,5 @@
-﻿using AutoMapper;
-using LYBT.Module.Prescriptions.Interfaces;
+﻿using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Module.Prescriptions.Mapping;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
@@ -16,18 +16,16 @@ namespace LYBT.Module.Prescriptions.Services
     {
         private readonly IPrescriptionRepository _repository;
         private readonly IPrescriptionNumberService _numberService;
-        private readonly IMapper _mapper;
+        private readonly PrescriptionMapper _mapper = new();
         private readonly ILogger<PrescriptionService> _logger;
 
         public PrescriptionService(
             IPrescriptionRepository repository,
             IPrescriptionNumberService numberService,
-            IMapper mapper,
             ILogger<PrescriptionService> logger)
         {
             _repository = repository;
             _numberService = numberService;
-            _mapper = mapper;
             _logger = logger;
         }
 
@@ -40,7 +38,7 @@ namespace LYBT.Module.Prescriptions.Services
             var entity = await _repository.GetByIdWithDetailsAsync(id)
                 ?? throw NotFoundException.Prescription(id);
 
-            return _mapper.Map<PrescriptionDetailDto>(entity);
+            return _mapper.ToDetailDto(entity);
         }
 
         // ========== Write方法已移除（Issue #1601 Phase 1）==========
@@ -56,7 +54,7 @@ namespace LYBT.Module.Prescriptions.Services
             var prescriptions = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
 
             // 转换为DTO
-            return _mapper.Map<List<PrescriptionDetailDto>>(prescriptions);
+            return _mapper.ToDetailDtos(prescriptions.ToList());
         }
 
         /// <summary>

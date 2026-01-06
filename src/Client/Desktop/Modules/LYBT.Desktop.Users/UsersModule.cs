@@ -1,6 +1,9 @@
 ﻿using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Desktop.Infrastructure.Mapping;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.Mappers;
 using LYBT.Desktop.Users.Models;
+using LYBT.Desktop.Users.Models.Items;
 using LYBT.Desktop.Users.Repositories;
 using LYBT.Shared.Models.Contracts.Users;
 using Prism.Ioc;
@@ -26,6 +29,11 @@ namespace LYBT.Desktop.Users
         {
             // Issue #1128: 注册模块内 Repository（覆盖 Shell 层的旧 Repository）
             containerRegistry.RegisterSingleton<IUserRepository, UserRepository>();
+
+            // OpenSpec: adopt-mapperly-unified-mapping - 注册映射服务
+            containerRegistry.RegisterSingleton<
+                IMappingService<UserDetailDto, UserInputDto, UserItem>,
+                UserMappingService>();
 
             // Issue #1785: 注册Users模块组件化组件（Epic #1773 Component-Based架构）
             // OpenSpec: standardize-service-layer - 统一使用Service命名

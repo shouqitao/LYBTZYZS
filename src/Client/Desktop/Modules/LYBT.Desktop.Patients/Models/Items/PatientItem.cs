@@ -1,6 +1,6 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using Prism.Mvvm;
 
 namespace LYBT.Desktop.Patients.Models.Items;
 
@@ -8,39 +8,23 @@ namespace LYBT.Desktop.Patients.Models.Items;
 /// 患者列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用PatientDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与PatientDto一致，确保XAML绑定兼容
+/// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
 /// </summary>
-public class PatientItem : BindableBase
+public partial class PatientItem : ObservableObject
 {
+    [ObservableProperty]
     private Guid _id;
-    public Guid Id
-    {
-        get => _id;
-        set => SetProperty(ref _id, value);
-    }
 
+    [ObservableProperty]
     private string _name = string.Empty;
-    public string Name
-    {
-        get => _name;
-        set => SetProperty(ref _name, value);
-    }
 
     /// <summary>
     /// 性别 - OpenSpec: unify-frontend-backend-types Phase 1
     /// 统一使用Gender枚举，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(GenderDisplay))]
     private Gender _gender;
-    public Gender Gender
-    {
-        get => _gender;
-        set
-        {
-            if (SetProperty(ref _gender, value))
-            {
-                RaisePropertyChanged(nameof(GenderDisplay));
-            }
-        }
-    }
 
     /// <summary>
     /// 性别显示文本（用于UI绑定）- OpenSpec: unify-frontend-backend-types Phase 1
@@ -52,21 +36,12 @@ public class PatientItem : BindableBase
         _ => "未知"
     };
 
-    private DateTime? _birthDate;
     /// <summary>
     /// 出生日期（Issue #2240: 存储BirthDate，Age从此计算）
     /// </summary>
-    public DateTime? BirthDate
-    {
-        get => _birthDate;
-        set
-        {
-            if (SetProperty(ref _birthDate, value))
-            {
-                RaisePropertyChanged(nameof(Age));
-            }
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Age))]
+    private DateTime? _birthDate;
 
     /// <summary>
     /// 年龄（只读计算属性，从BirthDate计算）
@@ -90,89 +65,51 @@ public class PatientItem : BindableBase
         }
     }
 
+    [ObservableProperty]
     private string _phoneNumber = string.Empty;
-    public string PhoneNumber
-    {
-        get => _phoneNumber;
-        set => SetProperty(ref _phoneNumber, value);
-    }
 
+    [ObservableProperty]
     private string? _address;
-    public string? Address
-    {
-        get => _address;
-        set => SetProperty(ref _address, value);
-    }
 
     /// <summary>
     /// 身份证号 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为IdNumber，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
     private string? _idNumber;
-    public string? IdNumber
-    {
-        get => _idNumber;
-        set => SetProperty(ref _idNumber, value);
-    }
 
+    [ObservableProperty]
     private string? _medicalHistory;
-    public string? MedicalHistory
-    {
-        get => _medicalHistory;
-        set => SetProperty(ref _medicalHistory, value);
-    }
 
+    [ObservableProperty]
     private string? _allergyHistory;
-    public string? AllergyHistory
-    {
-        get => _allergyHistory;
-        set => SetProperty(ref _allergyHistory, value);
-    }
 
+    [ObservableProperty]
     private DateTime _createdAt;
-    public DateTime CreatedAt
-    {
-        get => _createdAt;
-        set => SetProperty(ref _createdAt, value);
-    }
 
     /// <summary>
     /// 最后就诊时间 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为LastVisitTime，与DTO保持一致
     /// </summary>
+    [ObservableProperty]
     private DateTime? _lastVisitTime;
-    public DateTime? LastVisitTime
-    {
-        get => _lastVisitTime;
-        set => SetProperty(ref _lastVisitTime, value);
-    }
 
+    [ObservableProperty]
     private int _visitCount;
-    public int VisitCount
-    {
-        get => _visitCount;
-        set => SetProperty(ref _visitCount, value);
-    }
 
+    [ObservableProperty]
     private bool _isSelected;
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetProperty(ref _isSelected, value);
-    }
 
+    [ObservableProperty]
     private bool _isHighlighted;
-    public bool IsHighlighted
-    {
-        get => _isHighlighted;
-        set => SetProperty(ref _isHighlighted, value);
-    }
 
     /// <summary>
     /// 从PatientDto创建PatientItem
     /// Issue #2240: 直接传递BirthDate，Age自动计算
     /// OpenSpec: unify-frontend-backend-types Phase 1 - Gender直接使用枚举
     /// </summary>
+    /// <remarks>已废弃：请使用PatientMappingService.ToItem()</remarks>
+    [Obsolete("请使用PatientMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public static PatientItem FromDto(PatientDetailDto dto)
     {
         return new PatientItem
@@ -197,6 +134,8 @@ public class PatientItem : BindableBase
     /// Issue #2240: 直接传递BirthDate，不再从Age反算
     /// OpenSpec: unify-frontend-backend-types Phase 1 - Gender直接使用枚举
     /// </summary>
+    /// <remarks>已废弃：请使用PatientMappingService.ToDto()</remarks>
+    [Obsolete("请使用PatientMappingService.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
     public PatientDetailDto ToDto()
     {
         return new PatientDetailDto

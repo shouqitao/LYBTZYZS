@@ -42,8 +42,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AutoMapper" />
-		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+		<!-- OpenSpec: adopt-mapperly-unified-mapping - AutoMapper已移除，改用Mapperly -->
 		<PackageReference Include="EPPlus" />
 		<!-- Epic #1731: FluentValidation ASP.NET Core集成 -->
 		<PackageReference Include="FluentValidation.AspNetCore" />
