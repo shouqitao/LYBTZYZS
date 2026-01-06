@@ -11,6 +11,7 @@ description: OpenSpec归档完成后的自动化流程：代码审查→提交�
 2. **提交推送** - 审查通过后自动commit并push到远程仓库
 3. **保存记忆** - 将变更关键信息保存到Serena记忆系统（`.serena/memories/`）
 4. **同步文档** - 更新docs系统文档保持同步
+5. **知识持久化** - 将会话中学到的新知识更新到CLAUDE.md文件
 
 ## 何时使用
 
@@ -70,6 +71,16 @@ description: OpenSpec归档完成后的自动化流程：代码审查→提交�
                               │
                               ▼
 ┌──────────────────────────────────────────────────────────────┐
+│  STEP 5: 知识持久化 (CLAUDE.md)                              │
+│  ─────────────────────────────                               │
+│  • 识别会话中学到的新知识                                      │
+│  • 确定知识归属（全局/模块级/子目录）                           │
+│  • 更新对应的CLAUDE.md文件                                    │
+│  • 提交CLAUDE.md更新                                          │
+└──────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌──────────────────────────────────────────────────────────────┐
 │  完成：输出处理报告                                           │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -90,78 +101,46 @@ description: OpenSpec归档完成后的自动化流程：代码审查→提交�
 ```markdown
 ## OpenSpec 归档完成处理报告
 
-**变更ID**: refactor-medicalcase-api
-**归档时间**: 2025-11-29 15:30 CST
-**处理状态**: 成功
+**变更ID**: {change-id}
+**归档时间**: {timestamp}
+**处理状态**: 成功/失败
 
 ---
 
 ### 1. 代码审查结果
 
-**评分**: 9.2/10（优秀）
-**检查文件**: 12个
-**问题统计**:
-- 严重问题: 0
-- 警告: 2
-- 通过: 45
-
-**详细结果**: 见 [审查报告](#code-review-details)
+**评分**: {score}/10
+**检查文件**: {file-count}个
+**问题统计**: 严重{critical} / 警告{warning} / 通过{passed}
 
 ---
 
 ### 2. 提交推送结果
 
-**提交哈希**: a1b2c3d
-**提交信息**:
-```
-feat(MedicalCase): 重构医案API接口
-
-- 统一编辑模式切换逻辑
-- 优化RowVersion并发处理
-- 添加状态机管理
-
-Related: openspec refactor-medicalcase-api
-```
-**推送状态**: 成功 (master -> origin/master)
+**提交哈希**: {commit-hash}
+**推送状态**: 成功/失败
 
 ---
 
 ### 3. Serena记忆保存
 
-**记忆文件**: `.serena/memories/openspec-refactor-medicalcase-api-2025-11-29.md`
-
-**记录内容**:
-- 变更摘要
-- 影响范围（模块列表）
-- 关键技术决策
-- 规范更新
-- 验收结果
-
-**位置**: `.serena/memories/`
+**记忆文件**: `.serena/memories/openspec-{change-id}-{date}.md`
 
 ---
 
 ### 4. 文档同步结果
 
-**更新文件**:
-- `docs/reference/api/medicalcase.md` - API接口更新
-- `docs/explanation/architecture/medicalcase-flow.md` - 架构说明更新
-- `CHANGELOG.md` - 添加变更记录
-
-**提交哈希**: d4e5f6g
+**更新文件**: {updated-files-list}
 
 ---
 
-## 后续建议
+### 5. 知识持久化结果
 
-1. 验证线上功能正常
-2. 通知相关团队成员
-3. 更新相关Issue状态
+**更新CLAUDE.md**: {updated-claude-files}
 
 ---
 
-**处理完成时间**: 2025-11-29 15:32 CST
-**处理耗时**: 2分15秒
+**处理耗时**: {duration}
 ```
 
 ## 技术实现
@@ -183,8 +162,8 @@ Related: openspec refactor-medicalcase-api
    └─ git diff HEAD~1 --name-only → 变更文件列表
 
 2. 代码审查（调用lybtzyzs-code-review skill逻辑）
-   └─ Grep快速扫描 → ServiceLocator/.Wait()/命名规范
-   └─ serena深度分析 → MVVM模式/依赖关系
+   └─ Grep快速扫描 → 反模式检测
+   └─ serena深度分析 → 架构合规性
    └─ 生成评分报告
 
 3. 提交推送（如审查通过）
@@ -198,8 +177,14 @@ Related: openspec refactor-medicalcase-api
 
 5. 同步文档
    └─ 检测变更影响的文档
-   └─ 更新相关文档内容
+   └─ 更新CHANGELOG.md
    └─ 提交文档更新
+
+6. 知识持久化
+   └─ 识别会话中学到的新知识
+   └─ 判断知识归属位置
+   └─ 更新对应CLAUDE.md文件
+   └─ 提交CLAUDE.md更新
 ```
 
 ## 代码审查标准
@@ -285,6 +270,47 @@ Related: openspec refactor-medicalcase-api
 2. **检查未提交更改** - 确保工作区干净再执行归档
 3. **记忆文件命名规范** - 使用`openspec-{change-id}-{date}.md`格式
 4. **文档同步时仔细审查** - 自动生成的文档可能需要人工调整
+5. **知识持久化到正确位置** - 模块特定知识放子目录CLAUDE.md
+
+## 知识持久化 (CLAUDE.md)
+
+### CLAUDE.md文件体系
+
+Claude Code使用CLAUDE.md文件管理持久化记忆：
+
+| 文件类型 | 位置 | 用途 | 版本控制 |
+|---------|------|------|---------|
+| **共享项目记忆** | `CLAUDE.md` | 团队共享的项目上下文 | 提交到仓库 |
+| **本地私有记忆** | `CLAUDE.local.md` | 开发者个人笔记 | 排除在外 |
+| **子目录记忆** | `{subdir}/CLAUDE.md` | 模块特定知识 | 提交到仓库 |
+| **全局用户记忆** | `~/.claude/CLAUDE.md` | 跨项目个人记忆 | 用户管理 |
+
+### 加载规则
+
+- 从当前目录向上递归加载所有CLAUDE.md和CLAUDE.local.md
+- 子目录的CLAUDE.md仅在编辑该目录文件时加载
+- 全局CLAUDE.md自动合并到所有会话
+
+### 何时更新CLAUDE.md
+
+在会话中发生以下情况时，应更新CLAUDE.md：
+
+1. **学到新知识** - 关于项目的新发现
+2. **被用户纠正** - 实现细节的修正
+3. **代码被修正** - 生成代码的问题修复
+4. **信息查找困难** - 需要推断的项目细节
+5. **项目结构迷失** - 需要查找源码的信息
+
+### 知识归属判断
+
+```
+知识类型                           → 存放位置
+────────────────────────────────────────────────────────
+全局架构决策/跨模块规范             → 根目录 CLAUDE.md
+基础设施/共享组件相关               → Core/Infrastructure/CLAUDE.md
+特定模块知识                       → {Module}/CLAUDE.md
+个人开发偏好                       → CLAUDE.local.md
+```
 
 ## 版本历史
 
@@ -292,9 +318,10 @@ Related: openspec refactor-medicalcase-api
 |------|------|----------|
 | v1.0 | 2025-11-29 | 初始版本 |
 | v1.1 | 2026-01-05 | 记忆存储从Graphiti迁移到Serena（`.serena/memories/`） |
+| v1.2 | 2026-01-06 | 添加STEP 5知识持久化(CLAUDE.md)，整合会话知识更新机制 |
 
 ---
 
 **维护者**：Claude Code
 **反馈渠道**：GitHub Issues
-**最后更新**：2026-01-05
+**最后更新**：2026-01-06
