@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,13 +9,13 @@ namespace LYBT.Tests.Common
 {
     /// <summary>
     /// 测试基类 - 提供通用的测试基础设施
+    /// 注：项目已迁移到Mapperly，不再需要AutoMapper配置
     /// </summary>
     public abstract class TestBase : IDisposable
     {
         protected readonly IServiceProvider ServiceProvider;
         protected readonly IServiceCollection Services;
         protected readonly Mock<ILogger> MockLogger;
-        protected IMapper Mapper { get; private set; } = null!;
 
         protected TestBase()
         {
@@ -27,67 +26,16 @@ namespace LYBT.Tests.Common
             Services.AddSingleton(MockLogger.Object);
             Services.AddLogging(builder => builder.AddDebug());
 
-            // 配置AutoMapper
-            ConfigureAutoMapper();
-
             // 允许子类添加额外的服务
             ConfigureServices(Services);
 
             ServiceProvider = Services.BuildServiceProvider();
-
-            // 初始化Mapper
-            Mapper = ServiceProvider.GetService<IMapper>()!;
-        }
-
-        /// <summary>
-        /// 配置AutoMapper - 使用统一的测试配置
-        /// </summary>
-        private void ConfigureAutoMapper()
-        {
-            // 使用统一的AutoMapper测试配置
-            var mapper = AutoMapperTestConfiguration.GetMapper();
-            var mapperConfig = AutoMapperTestConfiguration.GetConfiguration();
-
-            // 如果子类需要自定义配置，创建隔离的Mapper
-            if (HasCustomMapperConfiguration())
-            {
-                mapper = AutoMapperTestConfiguration.CreateIsolatedMapper(cfg =>
-                {
-                    ConfigureMapperProfiles(cfg);
-                });
-
-                Services.AddSingleton<IMapper>(mapper);
-            }
-            else
-            {
-                Services.AddSingleton<IMapper>(mapper);
-                Services.AddSingleton(mapperConfig);
-            }
-        }
-
-        /// <summary>
-        /// 检查是否有自定义的Mapper配置
-        /// </summary>
-        private bool HasCustomMapperConfiguration()
-        {
-            // 通过反射检查子类是否重写了ConfigureMapperProfiles方法
-            var method = GetType().GetMethod("ConfigureMapperProfiles",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            return method != null && method.DeclaringType != typeof(TestBase);
         }
 
         /// <summary>
         /// 子类可以重写此方法来添加额外的服务配置
         /// </summary>
         protected virtual void ConfigureServices(IServiceCollection services)
-        {
-            // 默认为空，子类可重写
-        }
-
-        /// <summary>
-        /// 子类可以重写此方法来添加额外的AutoMapper配置
-        /// </summary>
-        protected virtual void ConfigureMapperProfiles(IMapperConfigurationExpression cfg)
         {
             // 默认为空，子类可重写
         }

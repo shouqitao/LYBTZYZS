@@ -1,15 +1,14 @@
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Herbs.Models.Items;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.MedicalCase.Models.Items;
 
 /// <summary>
 /// 处方数据Item - 用于UI绑定的处方数据模型
 /// OpenSpec: consolidate-panel-viewmodels - 遵循Entity-DTO-Item模式
-/// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
+/// OpenSpec: adopt-mapperly-unified-mapping - 使用BindableBase确保Mapperly兼容
 ///
 /// 遵循Entity-DTO-Item模式：
 /// - Entity: 服务端Prescription实体
@@ -18,84 +17,145 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 ///
 /// 属性名与PrescriptionDetailDto保持一致，确保XAML绑定兼容
 /// </summary>
-public partial class PrescriptionItem : ObservableObject
+public class PrescriptionItem : BindableBase
 {
     #region 基础标识字段
 
+    private Guid _id = Guid.Empty;
     /// <summary>
     /// 处方ID
     /// </summary>
-    [ObservableProperty]
-    private Guid _id = Guid.Empty;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
+    private string? _prescriptionNumber;
     /// <summary>
     /// 处方编号（格式：RX-YYYYMMDD-NNNN）
     /// </summary>
-    [ObservableProperty]
-    private string? _prescriptionNumber;
+    public string? PrescriptionNumber
+    {
+        get => _prescriptionNumber;
+        set
+        {
+            if (SetProperty(ref _prescriptionNumber, value))
+            {
+                RaisePropertyChanged(nameof(DisplayText));
+            }
+        }
+    }
 
+    private Guid _medicalCaseId = Guid.Empty;
     /// <summary>
     /// 关联的病历ID
     /// </summary>
-    [ObservableProperty]
-    private Guid _medicalCaseId = Guid.Empty;
+    public Guid MedicalCaseId
+    {
+        get => _medicalCaseId;
+        set => SetProperty(ref _medicalCaseId, value);
+    }
 
     #endregion
 
     #region 处方核心字段
 
+    private int _dosageCount = 7;
     /// <summary>
     /// 剂数
     /// </summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(TotalPrice))]
-    private int _dosageCount = 7;
+    public int DosageCount
+    {
+        get => _dosageCount;
+        set
+        {
+            if (SetProperty(ref _dosageCount, value))
+            {
+                RaisePropertyChanged(nameof(TotalPrice));
+            }
+        }
+    }
 
+    private string _usage = "水煎服，一日一剂，分早晚两次温服";
     /// <summary>
     /// 用法
     /// </summary>
-    [ObservableProperty]
-    private string _usage = "水煎服，一日一剂，分早晚两次温服";
+    public string Usage
+    {
+        get => _usage;
+        set => SetProperty(ref _usage, value);
+    }
 
+    private string? _advice;
     /// <summary>
     /// 医嘱/用药建议
     /// </summary>
-    [ObservableProperty]
-    private string? _advice;
+    public string? Advice
+    {
+        get => _advice;
+        set => SetProperty(ref _advice, value);
+    }
 
+    private string? _referencedFormulas;
     /// <summary>
     /// 引用的验方名称列表，逗号分隔
     /// </summary>
-    [ObservableProperty]
-    private string? _referencedFormulas;
+    public string? ReferencedFormulas
+    {
+        get => _referencedFormulas;
+        set => SetProperty(ref _referencedFormulas, value);
+    }
 
+    private string? _remark;
     /// <summary>
     /// 备注
     /// </summary>
-    [ObservableProperty]
-    private string? _remark;
+    public string? Remark
+    {
+        get => _remark;
+        set => SetProperty(ref _remark, value);
+    }
 
+    private decimal _discount = 1.0m;
     /// <summary>
     /// 折扣（0-1之间）
     /// </summary>
-    [ObservableProperty]
-    private decimal _discount = 1.0m;
+    public decimal Discount
+    {
+        get => _discount;
+        set => SetProperty(ref _discount, value);
+    }
 
     #endregion
 
     #region 价格字段
 
+    private decimal _singleDosePrice;
     /// <summary>
     /// 单帖价格
     /// </summary>
-    [ObservableProperty]
-    private decimal _singleDosePrice;
+    public decimal SingleDosePrice
+    {
+        get => _singleDosePrice;
+        set
+        {
+            if (SetProperty(ref _singleDosePrice, value))
+            {
+                RaisePropertyChanged(nameof(TotalPrice));
+            }
+        }
+    }
 
+    private decimal _totalWeight;
     /// <summary>
     /// 总重量
     /// </summary>
-    [ObservableProperty]
-    private decimal _totalWeight;
+    public decimal TotalWeight
+    {
+        get => _totalWeight;
+        set => SetProperty(ref _totalWeight, value);
+    }
 
     #endregion
 
@@ -112,11 +172,12 @@ public partial class PrescriptionItem : ObservableObject
         {
             if (SetProperty(ref _items, value))
             {
-                OnPropertyChanged(nameof(ItemCount));
-                OnPropertyChanged(nameof(HasItems));
-                OnPropertyChanged(nameof(IsValid));
-                OnPropertyChanged(nameof(TotalPrice));
-                OnPropertyChanged(nameof(SingleDosePrice));
+                RaisePropertyChanged(nameof(ItemCount));
+                RaisePropertyChanged(nameof(HasItems));
+                RaisePropertyChanged(nameof(IsValid));
+                RaisePropertyChanged(nameof(TotalPrice));
+                RaisePropertyChanged(nameof(SingleDosePrice));
+                RaisePropertyChanged(nameof(DisplayText));
             }
         }
     }
@@ -125,65 +186,97 @@ public partial class PrescriptionItem : ObservableObject
 
     #region 状态字段
 
+    private CommonStatus _status = CommonStatus.Enabled;
     /// <summary>
     /// 状态
     /// </summary>
-    [ObservableProperty]
-    private CommonStatus _status = CommonStatus.Enabled;
+    public CommonStatus Status
+    {
+        get => _status;
+        set => SetProperty(ref _status, value);
+    }
 
     #endregion
 
     #region 审计字段
 
+    private DateTime _createdAt = DateTime.Now;
     /// <summary>
     /// 创建时间
     /// </summary>
-    [ObservableProperty]
-    private DateTime _createdAt = DateTime.Now;
+    public DateTime CreatedAt
+    {
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
+    }
 
+    private DateTime? _updatedAt;
     /// <summary>
     /// 更新时间
     /// </summary>
-    [ObservableProperty]
-    private DateTime? _updatedAt;
+    public DateTime? UpdatedAt
+    {
+        get => _updatedAt;
+        set => SetProperty(ref _updatedAt, value);
+    }
 
     #endregion
 
     #region 警告字段
 
+    private string? _duplicateWarning;
     /// <summary>
     /// 重复用药警告
     /// </summary>
-    [ObservableProperty]
-    private string? _duplicateWarning;
+    public string? DuplicateWarning
+    {
+        get => _duplicateWarning;
+        set => SetProperty(ref _duplicateWarning, value);
+    }
 
+    private string? _missingDrugWarning;
     /// <summary>
     /// 缺药警告
     /// </summary>
-    [ObservableProperty]
-    private string? _missingDrugWarning;
+    public string? MissingDrugWarning
+    {
+        get => _missingDrugWarning;
+        set => SetProperty(ref _missingDrugWarning, value);
+    }
 
     #endregion
 
     #region UI状态字段
 
+    private bool _isSelected;
     /// <summary>
     /// 是否选中（UI状态）
     /// </summary>
-    [ObservableProperty]
-    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
+    private bool _isExpanded;
     /// <summary>
     /// 是否展开（UI状态）
     /// </summary>
-    [ObservableProperty]
-    private bool _isExpanded;
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => SetProperty(ref _isExpanded, value);
+    }
 
+    private bool _isReadOnly;
     /// <summary>
     /// 是否只读
     /// </summary>
-    [ObservableProperty]
-    private bool _isReadOnly;
+    public bool IsReadOnly
+    {
+        get => _isReadOnly;
+        set => SetProperty(ref _isReadOnly, value);
+    }
 
     #endregion
 
@@ -217,97 +310,7 @@ public partial class PrescriptionItem : ObservableObject
 
     #endregion
 
-    #region 转换方法
-
-    /// <summary>
-    /// 从PrescriptionDetailDto创建PrescriptionItem
-    /// </summary>
-    /// <remarks>已废弃：请使用PrescriptionMappingService.ToItem()</remarks>
-    [Obsolete("请使用PrescriptionMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
-    public static PrescriptionItem FromDto(PrescriptionDetailDto dto)
-    {
-        var item = new PrescriptionItem
-        {
-            Id = dto.Id,
-            PrescriptionNumber = dto.PrescriptionNumber,
-            MedicalCaseId = dto.MedicalCaseId,
-            DosageCount = dto.DosageCount,
-            Usage = dto.Usage ?? "水煎服，一日一剂，分早晚两次温服",
-            Advice = dto.Advice,
-            ReferencedFormulas = dto.ReferencedFormulas,
-            Remark = dto.Remark,
-            Discount = dto.Discount,
-            SingleDosePrice = dto.SingleDosePrice,
-            TotalWeight = dto.TotalWeight,
-            Status = dto.Status,
-            CreatedAt = dto.CreatedAt,
-            UpdatedAt = dto.UpdatedAt,
-            DuplicateWarning = dto.DuplicateWarning,
-            MissingDrugWarning = dto.MissingDrugWarning
-        };
-
-        // 转换药材列表
-        if (dto.Items != null)
-        {
-            foreach (var herbDto in dto.Items)
-            {
-                item.Items.Add(HerbItemDto.FromPrescriptionItemDto(herbDto));
-            }
-        }
-
-        return item;
-    }
-
-    /// <summary>
-    /// 转换为PrescriptionDetailDto（用于展示）
-    /// </summary>
-    /// <remarks>已废弃：请使用PrescriptionMappingService.ToDto()</remarks>
-    [Obsolete("请使用PrescriptionMappingService.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
-    public PrescriptionDetailDto ToDto()
-    {
-        return new PrescriptionDetailDto
-        {
-            Id = Id,
-            PrescriptionNumber = PrescriptionNumber,
-            MedicalCaseId = MedicalCaseId,
-            DosageCount = DosageCount,
-            Usage = Usage,
-            Advice = Advice,
-            ReferencedFormulas = ReferencedFormulas,
-            Remark = Remark,
-            Discount = Discount,
-            SingleDosePrice = SingleDosePrice,
-            TotalPrice = TotalPrice,
-            TotalWeight = TotalWeight,
-            Status = Status,
-            CreatedAt = CreatedAt,
-            UpdatedAt = UpdatedAt,
-            DuplicateWarning = DuplicateWarning,
-            MissingDrugWarning = MissingDrugWarning,
-            Items = Items?.Select(h => h.ToPrescriptionItemDto()).ToList() ?? new()
-        };
-    }
-
-    /// <summary>
-    /// 转换为PrescriptionInputDto（用于保存）
-    /// </summary>
-    public PrescriptionInputDto ToInputDto()
-    {
-        return new PrescriptionInputDto
-        {
-            Id = Id == Guid.Empty ? null : Id,
-            MedicalCaseId = MedicalCaseId,
-            NeedsPrescription = HasItems,
-            DosageCount = DosageCount,
-            Usage = Usage,
-            Advice = Advice,
-            ReferencedFormulas = ReferencedFormulas,
-            Discount = Discount,
-            TotalPrice = TotalPrice,
-            Remark = Remark,
-            Items = Items?.Select(h => h.ToPrescriptionItemInputDto()).ToList() ?? new()
-        };
-    }
+    #region 方法
 
     /// <summary>
     /// 清空处方数据
@@ -328,10 +331,23 @@ public partial class PrescriptionItem : ObservableObject
         MissingDrugWarning = null;
         Items.Clear();
 
-        OnPropertyChanged(nameof(ItemCount));
-        OnPropertyChanged(nameof(HasItems));
-        OnPropertyChanged(nameof(IsValid));
-        OnPropertyChanged(nameof(TotalPrice));
+        RaisePropertyChanged(nameof(ItemCount));
+        RaisePropertyChanged(nameof(HasItems));
+        RaisePropertyChanged(nameof(IsValid));
+        RaisePropertyChanged(nameof(TotalPrice));
+        RaisePropertyChanged(nameof(DisplayText));
+    }
+
+    /// <summary>
+    /// 通知药材列表相关属性更新
+    /// </summary>
+    public void NotifyItemsChanged()
+    {
+        RaisePropertyChanged(nameof(ItemCount));
+        RaisePropertyChanged(nameof(HasItems));
+        RaisePropertyChanged(nameof(IsValid));
+        RaisePropertyChanged(nameof(TotalPrice));
+        RaisePropertyChanged(nameof(DisplayText));
     }
 
     #endregion

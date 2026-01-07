@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Herbs.Mappers;
 ///
 /// 注意：HerbDetailModel使用ValidatableModelBase，无FromDto/ToDto方法。
 /// </remarks>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class HerbMapper
 {
     /// <summary>

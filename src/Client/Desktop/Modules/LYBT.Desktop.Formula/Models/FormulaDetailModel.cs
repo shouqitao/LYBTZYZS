@@ -142,68 +142,8 @@ namespace LYBT.Desktop.Formula.Models
             };
         }
 
-        /// <summary>从DTO创建模型</summary>
-        /// <remarks>已废弃：请使用IMappingService&lt;FormulaDetailDto, FormulaInputDto, FormulaDetailModel&gt;.ToItem()</remarks>
-        [Obsolete("请使用FormulaDetailModelMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
-        public static FormulaDetailModel FromDto(FormulaDetailDto dto)
-        {
-            var model = new FormulaDetailModel
-            {
-                Id = dto.Id,
-                Name = dto.Name,
-                Effect = dto.Effect,
-                Usage = dto.Usage,
-                Property = dto.Property,
-                Remark = dto.Remark,
-                IsShared = dto.IsShared,
-                Category = dto.Category,
-                Status = dto.Status,
-                CreatedAt = dto.CreatedAt,
-                UpdatedAt = dto.UpdatedAt,
-                CreatedBy = dto.CreatedBy
-            };
 
-            if (dto.Herbs != null)
-            {
-                foreach (var herb in dto.Herbs)
-                {
-                    model.Herbs.Add(new FormulaHerbItemDto
-                    {
-                        HerbId = herb.HerbId,
-                        HerbName = herb.HerbName,
-                        Dosage = herb.Dosage,
-                        Unit = herb.Unit,
-                        ProcessingMethod = herb.ProcessingMethod,
-                        DecocteMethod = herb.DecocteMethod
-                    });
-                }
-            }
 
-            return model;
-        }
-
-        /// <summary>转换为DTO</summary>
-        /// <remarks>已废弃：请使用IMappingService&lt;FormulaDetailDto, FormulaInputDto, FormulaDetailModel&gt;.ToDto()</remarks>
-        [Obsolete("请使用FormulaDetailModelMappingService.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
-        public FormulaDetailDto ToDto()
-        {
-            return new FormulaDetailDto
-            {
-                Id = Id,
-                Name = Name,
-                Effect = Effect,
-                Usage = Usage,
-                Property = Property,
-                Remark = Remark,
-                IsShared = IsShared,
-                Category = Category ?? string.Empty,
-                Status = Status,
-                CreatedAt = CreatedAt ?? DateTime.Now,
-                UpdatedAt = UpdatedAt,
-                CreatedBy = CreatedBy,
-                Herbs = Herbs.ToList()
-            };
-        }
 
         /// <summary>克隆模型</summary>
         public FormulaDetailModel Clone()

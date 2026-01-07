@@ -26,7 +26,7 @@ namespace LYBT.Desktop.MedicalCase.Mappers;
 /// - 处方信息(HerbCount, DoseCount等)来自嵌套的Prescription DTO
 /// - 这些字段需要手动映射，无法使用Mapperly自动生成
 /// </remarks>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class MedicalCaseDetailModelMapper
 {
     /// <summary>

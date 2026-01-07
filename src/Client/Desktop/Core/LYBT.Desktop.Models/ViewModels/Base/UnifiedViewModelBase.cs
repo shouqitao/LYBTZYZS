@@ -209,12 +209,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         protected async Task<bool> ShowConfirmMessageAsync(string message, string title = "确认") => await ShowConfirmationAsync(message, title);
 
-        /// <summary>
-        /// 同步确认对话框 - 已弃用，可能导致WPF死锁
-        /// refactor-auth-role-system Phase 1.2
-        /// </summary>
-        [Obsolete("使用ShowConfirmMessageAsync代替，同步调用可能导致WPF死锁")]
-        protected bool ShowConfirmMessage(string message, string title = "确认") => ShowConfirmMessageAsync(message, title).GetAwaiter().GetResult();
 
         protected override void HandleError(Exception ex, string? context = null)
         {

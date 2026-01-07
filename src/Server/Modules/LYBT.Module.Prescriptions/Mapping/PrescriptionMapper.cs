@@ -15,7 +15,7 @@ namespace LYBT.Module.Prescriptions.Mapping;
 /// 处方数据映射器 - Mapperly编译时生成
 /// 替代原AutoMapper的PrescriptionMappingProfile
 /// </summary>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class PrescriptionMapper
 {
     /// <summary>

@@ -15,7 +15,7 @@ namespace LYBT.Module.Consultations.Mapping;
 /// 诊疗数据映射器 - Mapperly编译时生成
 /// 替代原AutoMapper的ConsultationMappingProfile
 /// </summary>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class ConsultationMapper
 {
     /// <summary>

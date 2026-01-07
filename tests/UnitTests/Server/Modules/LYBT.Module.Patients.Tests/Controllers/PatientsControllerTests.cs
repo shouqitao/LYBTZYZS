@@ -1,5 +1,4 @@
 ﻿using Asp.Versioning;
-using AutoMapper;
 using FluentAssertions;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Interfaces;
@@ -23,15 +22,14 @@ namespace LYBT.Module.Patients.Tests.Controllers
     {
         private readonly PatientsController _controller;
         private readonly Mock<IPatientService> _mockService;
-        private readonly Mock<IMapper> _mockMapper;
 
         public PatientsControllerTests()
         {
             _mockService = CreateMock<IPatientService>();
-            _mockMapper = CreateMock<IMapper>();
             var mockLogger = CreateLoggerMock<PatientsController>();
 
-            _controller = new PatientsController(_mockService.Object, _mockMapper.Object, mockLogger.Object);
+            // 注：Mapperly迁移后，Controller内部使用私有Mapper，无需外部注入
+            _controller = new PatientsController(_mockService.Object, mockLogger.Object);
         }
 
         #region Constructor Tests
@@ -41,9 +39,9 @@ namespace LYBT.Module.Patients.Tests.Controllers
         {
             // Act
             var mockService = CreateMock<IPatientService>();
-            var mockMapper = CreateMock<IMapper>();
             var mockLogger = CreateLoggerMock<PatientsController>();
-            var controller = new PatientsController(mockService.Object, mockMapper.Object, mockLogger.Object);
+            // 注：Mapperly迁移后，Controller内部使用私有Mapper
+            var controller = new PatientsController(mockService.Object, mockLogger.Object);
 
             // Assert
             controller.Should().NotBeNull();
@@ -55,8 +53,8 @@ namespace LYBT.Module.Patients.Tests.Controllers
             // Note: 当前实现不验证null参数，这是一个已知的技术债务
             // Controller依赖.NET的NRT（Nullable Reference Types）在编译时检查
             // 实际运行时不会抛出异常，但会在首次使用null服务时失败
-            var mockMapper = CreateMock<IMapper>();
-            var controller = new PatientsController(null!, mockMapper.Object, CreateLoggerMock<PatientsController>().Object);
+            var mockLogger = CreateLoggerMock<PatientsController>();
+            var controller = new PatientsController(null!, mockLogger.Object);
 
             // 构造函数不会抛出异常，但对象会被创建
             controller.Should().NotBeNull();

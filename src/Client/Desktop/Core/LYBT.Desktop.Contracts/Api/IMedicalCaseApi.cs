@@ -83,16 +83,6 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20);
 
-        /// <summary>
-        /// 获取患者最近医案列表
-        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-016)
-        /// 用于处方编辑器历史处方参考
-        /// </summary>
-        [Obsolete("Use QueryMedicalCasesAsync with QueryType=Recent instead. Will be removed in v2.0")]
-        [Refit.Get("/api/v1/medicalcases/patient/{patientId}/recent")]
-        Task<ApiResponse<List<MedicalCaseDetailDto>>> GetPatientRecentMedicalCasesAsync(
-            Guid patientId,
-            [Refit.Query] int count = 5);
 
         // OpenSpec: consolidate-medicalcase-detail-queries - GetMedicalCaseByIdWithDetailsAsync已删除，使用GetMedicalCaseByIdAsync
         /// <summary>

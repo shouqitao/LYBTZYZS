@@ -229,52 +229,6 @@ public class MedicalCaseDetailModel : ValidatableModelBase
 
     #region 工厂方法
 
-    /// <summary>从MedicalCaseDetailDto创建模型</summary>
-    /// <remarks>
-    /// OpenSpec: simplify-medicalcase-dataflow - ConsultationDate删除，使用CreatedAt
-    /// 已废弃：请使用MedicalCaseMappingService.ToItem()
-    /// </remarks>
-    [Obsolete("请使用MedicalCaseMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
-    public static MedicalCaseDetailModel FromDto(MedicalCaseDetailDto dto)
-    {
-        var model = new MedicalCaseDetailModel
-        {
-            Id = dto.Id,
-            PatientId = dto.PatientId,
-            PatientName = dto.PatientName ?? string.Empty,
-            // ConsultationDate已删除，使用CreatedAt代替
-            Status = dto.CaseStatus,
-            Remark = dto.Remark,
-            CreatedAt = dto.CreatedAt,
-            UpdatedAt = dto.UpdatedAt,
-            DoctorName = dto.DoctorName
-        };
-
-        // 诊断信息（从Consultation获取）
-        if (dto.Consultation != null)
-        {
-            model.PresentIllness = dto.Consultation.PresentIllness;
-            model.TongueDiagnosis = dto.Consultation.TongueDiagnosis;
-            model.PulseDiagnosis = dto.Consultation.PulseDiagnosis;
-            model.TcmDiagnosis = dto.Consultation.TcmDiagnosis;
-        }
-
-        // 处方信息
-        if (dto.Prescription != null)
-        {
-            model.HerbCount = dto.Prescription.Items?.Count ?? 0;
-            model.DoseCount = dto.Prescription.DosageCount;
-            model.ReferencedFormulas = dto.Prescription.ReferencedFormulas ?? "自拟方";
-
-            // 填充处方药材列表
-            if (dto.Prescription.Items != null)
-            {
-                model.PrescriptionItems = new ObservableCollection<PrescriptionItemDto>(dto.Prescription.Items);
-            }
-        }
-
-        return model;
-    }
 
     /// <summary>转换为医案更新DTO（包含Remark）</summary>
     public MedicalCaseInputDto ToPrescriptionInputDto()

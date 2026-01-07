@@ -1,6 +1,6 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Users.Models.Items;
 
@@ -8,131 +8,142 @@ namespace LYBT.Desktop.Users.Models.Items;
 /// 用户列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用UserDetailDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与UserDetailDto一致，确保XAML绑定兼容
-/// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
+/// OpenSpec: resolve-mapperly-source-generator-conflict - 使用BindableBase确保Mapperly兼容
 /// </summary>
-public partial class UserItem : ObservableObject
+public class UserItem : BindableBase
 {
-    [ObservableProperty]
     private Guid _id;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-    [ObservableProperty]
     private string _userName = string.Empty;
+    public string UserName
+    {
+        get => _userName;
+        set => SetProperty(ref _userName, value);
+    }
 
-    [ObservableProperty]
     private string _realName = string.Empty;
+    public string RealName
+    {
+        get => _realName;
+        set => SetProperty(ref _realName, value);
+    }
 
-    [ObservableProperty]
     private UserRole _role;
+    public UserRole Role
+    {
+        get => _role;
+        set
+        {
+            if (SetProperty(ref _role, value))
+            {
+                RaisePropertyChanged(nameof(RoleDisplayText));
+                RaisePropertyChanged(nameof(RoleColor));
+                RaisePropertyChanged(nameof(IsAdmin));
+                RaisePropertyChanged(nameof(IsDoctor));
+                RaisePropertyChanged(nameof(DisplayText));
+            }
+        }
+    }
 
-    [ObservableProperty]
     private string? _email;
+    public string? Email
+    {
+        get => _email;
+        set => SetProperty(ref _email, value);
+    }
 
-    [ObservableProperty]
     private string? _phoneNumber;
+    public string? PhoneNumber
+    {
+        get => _phoneNumber;
+        set => SetProperty(ref _phoneNumber, value);
+    }
 
-    [ObservableProperty]
     private string? _department;
+    public string? Department
+    {
+        get => _department;
+        set => SetProperty(ref _department, value);
+    }
 
-    [ObservableProperty]
     private string? _title;
+    public string? Title
+    {
+        get => _title;
+        set => SetProperty(ref _title, value);
+    }
 
-    [ObservableProperty]
     private string? _pinYinCode;
+    public string? PinYinCode
+    {
+        get => _pinYinCode;
+        set => SetProperty(ref _pinYinCode, value);
+    }
 
-    [ObservableProperty]
     private CommonStatus _status;
+    public CommonStatus Status
+    {
+        get => _status;
+        set
+        {
+            if (SetProperty(ref _status, value))
+            {
+                RaisePropertyChanged(nameof(StatusText));
+                RaisePropertyChanged(nameof(StatusColor));
+                RaisePropertyChanged(nameof(IsActive));
+                RaisePropertyChanged(nameof(CanEdit));
+                RaisePropertyChanged(nameof(CanResetPassword));
+            }
+        }
+    }
 
     /// <summary>
-    /// 创建时间 - OpenSpec: unify-frontend-backend-types Phase 6
-    /// 统一命名为CreatedAt，与DTO保持一致
+    /// 创建时间
     /// </summary>
-    [ObservableProperty]
     private DateTime _createdAt;
+    public DateTime CreatedAt
+    {
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
+    }
 
     /// <summary>
-    /// 更新时间 - OpenSpec: unify-frontend-backend-types Phase 6
-    /// 统一命名为UpdatedAt，与DTO保持一致
+    /// 更新时间
     /// </summary>
-    [ObservableProperty]
     private DateTime? _updatedAt;
+    public DateTime? UpdatedAt
+    {
+        get => _updatedAt;
+        set => SetProperty(ref _updatedAt, value);
+    }
 
-    [ObservableProperty]
     private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
-    [ObservableProperty]
     private bool _isHighlighted;
+    public bool IsHighlighted
+    {
+        get => _isHighlighted;
+        set => SetProperty(ref _isHighlighted, value);
+    }
 
-    [ObservableProperty]
     private bool _isEditing;
-
-    /// <summary>
-    /// 从UserDetailDto创建UserItem
-    /// OpenSpec: unify-frontend-backend-types Phase 6 - 时间字段命名统一
-    /// </summary>
-    /// <remarks>已废弃：请使用UserMappingService.ToItem()</remarks>
-    [Obsolete("请使用UserMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
-    public static UserItem FromDto(UserDetailDto dto)
+    public bool IsEditing
     {
-        return new UserItem
-        {
-            Id = dto.Id,
-            UserName = dto.UserName,
-            RealName = dto.RealName,
-            Role = dto.Role,
-            Email = dto.Email,
-            PhoneNumber = dto.PhoneNumber,
-            Department = null, // UserDetailDto中没有此属性
-            Title = null, // UserDetailDto中没有此属性
-            PinYinCode = dto.PinYinCode,
-            Status = dto.Status,
-            CreatedAt = dto.CreatedAt, // OpenSpec: unify-frontend-backend-types - 直接映射
-            UpdatedAt = dto.UpdatedAt  // OpenSpec: unify-frontend-backend-types - 直接映射
-        };
+        get => _isEditing;
+        set => SetProperty(ref _isEditing, value);
     }
 
-    /// <summary>
-    /// 转换为UserDetailDto（用于API调用）
-    /// OpenSpec: unify-frontend-backend-types Phase 6 - 时间字段命名统一
-    /// </summary>
-    /// <remarks>已废弃：请使用UserMappingService.ToDto()</remarks>
-    [Obsolete("请使用UserMappingService.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
-    public UserDetailDto ToDto()
-    {
-        return new UserDetailDto
-        {
-            Id = Id,
-            UserName = UserName,
-            RealName = RealName,
-            Role = Role,
-            Email = Email,
-            PhoneNumber = PhoneNumber,
-            // Department 和 Title 在 UserDetailDto 中不存在
-            PinYinCode = PinYinCode,
-            Status = Status,
-            CreatedAt = CreatedAt, // OpenSpec: unify-frontend-backend-types - 直接映射
-            UpdatedAt = UpdatedAt ?? DateTime.MinValue // OpenSpec: unify-frontend-backend-types - 直接映射
-        };
-    }
-
-    /// <summary>
-    /// 从UserDetailDto更新当前项
-    /// OpenSpec: unify-frontend-backend-types Phase 6 - 时间字段命名统一
-    /// </summary>
-    public void UpdateFromDto(UserDetailDto dto)
-    {
-        Id = dto.Id;
-        UserName = dto.UserName;
-        RealName = dto.RealName;
-        Role = dto.Role;
-        Email = dto.Email;
-        PhoneNumber = dto.PhoneNumber;
-        Department = null; // UserDetailDto中没有此属性
-        Title = null; // UserDetailDto中没有此属性
-        PinYinCode = dto.PinYinCode;
-        Status = dto.Status;
-        CreatedAt = dto.CreatedAt; // OpenSpec: unify-frontend-backend-types - 直接映射
-        UpdatedAt = dto.UpdatedAt; // OpenSpec: unify-frontend-backend-types - 直接映射
-    }
+    #region 计算属性
 
     /// <summary>
     /// 角色显示文本
@@ -202,10 +213,35 @@ public partial class UserItem : ObservableObject
     /// <summary>
     /// 是否可以删除
     /// </summary>
-    public bool CanDelete => !UserName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase); // 系统管理员不能删除
+    public bool CanDelete => !UserName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// 是否可以重置密码
     /// </summary>
     public bool CanResetPassword => IsActive;
+
+    #endregion
+
+    #region 辅助方法
+
+    /// <summary>
+    /// 从UserDetailDto更新当前项
+    /// </summary>
+    public void UpdateFromDto(UserDetailDto dto)
+    {
+        Id = dto.Id;
+        UserName = dto.UserName;
+        RealName = dto.RealName;
+        Role = dto.Role;
+        Email = dto.Email;
+        PhoneNumber = dto.PhoneNumber;
+        Department = null;
+        Title = null;
+        PinYinCode = dto.PinYinCode;
+        Status = dto.Status;
+        CreatedAt = dto.CreatedAt;
+        UpdatedAt = dto.UpdatedAt;
+    }
+
+    #endregion
 }

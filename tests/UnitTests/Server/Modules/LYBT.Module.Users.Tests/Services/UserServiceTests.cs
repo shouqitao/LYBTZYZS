@@ -47,10 +47,9 @@ namespace LYBT.Module.Users.Tests.Services
             _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<UserInputDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
-            // 创建UserService实例，使用基类提供的Mapper
+            // 创建UserService实例 - OpenSpec: adopt-mapperly-unified-mapping - Service内部使用Mapperly
             _userService = new UserService(
                 _repositoryMock.Object,
-                Mapper,
                 _loggerMock.Object,
                 _configurationMock.Object,
                 _httpContextAccessorMock.Object,

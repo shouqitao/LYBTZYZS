@@ -20,20 +20,20 @@ namespace LYBT.Desktop.MedicalCase.Mappers;
 /// - MedicalCaseDetailDto → MedicalCaseItem (从API加载)
 /// - MedicalCaseItem → MedicalCaseDetailDto (仅供展示)
 ///
-/// 注意：部分字段需要自定义映射逻辑（CaseNumber默认值、Diagnosis从嵌套DTO获取）。
+/// OpenSpec: adopt-mapperly-unified-mapping - MedicalCaseItem使用BindableBase，支持Mapperly源生成
 /// </remarks>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class MedicalCaseItemMapper
 {
+    #region DTO → Item
+
     /// <summary>
     /// 将MedicalCaseDetailDto转换为MedicalCaseItem（核心映射）。
     /// </summary>
     /// <param name="dto">API返回的详情DTO。</param>
     /// <returns>用于列表显示的Item对象。</returns>
     /// <remarks>
-    /// 忽略UI状态字段（IsSelected, IsExpanded, IsHighlighted）。
-    /// 忽略计算属性（StatusText, StatusColor, DisplayText等）。
-    /// 忽略需要自定义逻辑的字段（CaseNumber, Diagnosis, CompletedAt, CompletionReason）。
+    /// 忽略UI状态字段、计算属性、需要自定义逻辑的字段。
     /// </remarks>
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.UserId))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.DoctorName))]
@@ -47,15 +47,15 @@ public partial class MedicalCaseItemMapper
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.Prescription))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.CaseNumber))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.Diagnosis))]
-    // 注意：以下属性由[ObservableProperty]源生成器生成，需使用字符串字面量
-    // OpenSpec: standardize-viewmodel-framework - CommunityToolkit.Mvvm源生成器兼容
-    [MapperIgnoreTarget("CaseNumber")]
-    [MapperIgnoreTarget("Diagnosis")]
-    [MapperIgnoreTarget("CompletedAt")]
-    [MapperIgnoreTarget("CompletionReason")]
-    [MapperIgnoreTarget("IsSelected")]
-    [MapperIgnoreTarget("IsHighlighted")]
-    [MapperIgnoreTarget("IsExpanded")]
+    [MapperIgnoreSource(nameof(MedicalCaseDetailDto.CaseStatus))]
+    [MapperIgnoreTarget(nameof(MedicalCaseItem.CaseNumber))]
+    [MapperIgnoreTarget(nameof(MedicalCaseItem.Diagnosis))]
+    [MapperIgnoreTarget(nameof(MedicalCaseItem.CompletedAt))]
+    [MapperIgnoreTarget(nameof(MedicalCaseItem.CompletionReason))]
+    [MapperIgnoreTarget(nameof(MedicalCaseItem.IsSelected))]
+    [MapperIgnoreTarget(nameof(MedicalCaseItem.IsHighlighted))]
+    [MapperIgnoreTarget(nameof(MedicalCaseItem.IsExpanded))]
+    [MapperIgnoreTarget(nameof(MedicalCaseItem.CaseStatus))]
     [MapperIgnoreTarget(nameof(MedicalCaseItem.PatientGenderDisplay))]
     [MapperIgnoreTarget(nameof(MedicalCaseItem.StatusText))]
     [MapperIgnoreTarget(nameof(MedicalCaseItem.StatusColor))]
@@ -66,9 +66,7 @@ public partial class MedicalCaseItemMapper
     [MapperIgnoreTarget(nameof(MedicalCaseItem.CanCreatePrescription))]
     [MapperIgnoreTarget(nameof(MedicalCaseItem.DisplayText))]
     [MapperIgnoreTarget(nameof(MedicalCaseItem.DurationMinutes))]
-    [MapperIgnoreTarget("CaseStatus")]
-    [MapperIgnoreSource(nameof(MedicalCaseDetailDto.CaseStatus))]
-    public partial MedicalCaseItem ToItemCore(MedicalCaseDetailDto dto);
+    private partial MedicalCaseItem ToItemCore(MedicalCaseDetailDto dto);
 
     /// <summary>
     /// 将MedicalCaseDetailDto转换为MedicalCaseItem（完整映射）。
@@ -79,7 +77,7 @@ public partial class MedicalCaseItemMapper
     {
         var item = ToItemCore(dto);
 
-        // 手动映射CaseStatus（源生成属性，无法使用[MapProperty]）
+        // 手动映射CaseStatus
         item.CaseStatus = dto.CaseStatus;
 
         // 自定义逻辑：CaseNumber默认值
@@ -98,17 +96,21 @@ public partial class MedicalCaseItemMapper
         return item;
     }
 
+    #endregion
+
+    #region Item → DTO
+
     /// <summary>
     /// 将MedicalCaseItem转换为MedicalCaseDetailDto（核心映射）。
     /// </summary>
     /// <param name="item">Item对象。</param>
     /// <returns>DetailDTO对象。</returns>
-    // 注意：以下属性由[ObservableProperty]源生成器生成，需使用字符串字面量
-    // OpenSpec: standardize-viewmodel-framework - CommunityToolkit.Mvvm源生成器兼容
-    [MapperIgnoreSource("IsSelected")]
-    [MapperIgnoreSource("IsHighlighted")]
-    [MapperIgnoreSource("IsExpanded")]
-    [MapperIgnoreSource("CompletionReason")]
+    [MapperIgnoreSource(nameof(MedicalCaseItem.IsSelected))]
+    [MapperIgnoreSource(nameof(MedicalCaseItem.IsHighlighted))]
+    [MapperIgnoreSource(nameof(MedicalCaseItem.IsExpanded))]
+    [MapperIgnoreSource(nameof(MedicalCaseItem.CompletionReason))]
+    [MapperIgnoreSource(nameof(MedicalCaseItem.CompletedAt))]
+    [MapperIgnoreSource(nameof(MedicalCaseItem.CaseStatus))]
     [MapperIgnoreSource(nameof(MedicalCaseItem.PatientGenderDisplay))]
     [MapperIgnoreSource(nameof(MedicalCaseItem.StatusText))]
     [MapperIgnoreSource(nameof(MedicalCaseItem.StatusColor))]
@@ -129,9 +131,8 @@ public partial class MedicalCaseItemMapper
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.Prescription))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.CaseStatus))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.UpdatedAt))]
-    [MapperIgnoreSource("CaseStatus")]
-    [MapperIgnoreSource("CompletedAt")]
-    public partial MedicalCaseDetailDto ToDtoCore(MedicalCaseItem item);
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.CompletedAt))] // 手动映射或不需要映射
+    private partial MedicalCaseDetailDto ToDtoCore(MedicalCaseItem item);
 
     /// <summary>
     /// 将MedicalCaseItem转换为MedicalCaseDetailDto（完整映射）。
@@ -142,7 +143,7 @@ public partial class MedicalCaseItemMapper
     {
         var dto = ToDtoCore(item);
 
-        // 手动映射源生成属性（无法使用[MapProperty]）
+        // 手动映射
         dto.CaseStatus = item.CaseStatus;
         dto.UpdatedAt = item.CompletedAt;
 
@@ -152,4 +153,6 @@ public partial class MedicalCaseItemMapper
 
         return dto;
     }
+
+    #endregion
 }

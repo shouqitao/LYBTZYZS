@@ -6,6 +6,7 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Desktop.MedicalCase.Services;
@@ -957,12 +958,14 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             SetIsBusy(true, "正在准备预览...");
 
             // OpenSpec: slim-medicalcase-viewmodel - 委托给打印处理器
-            // OpenSpec: consolidate-panel-viewmodels - 使用Consultation.ToInputDto()替代ConsultationPanelViewModel
+            // OpenSpec: consolidate-panel-viewmodels - 使用Mapper.ToInputDto()替代实例方法
+            // OpenSpec: adopt-mapperly-unified-mapping - 使用Mapper实例方法
+            var consultationMapper = new ConsultationMapper();
             var result = await _printHandler.PrintPreviewAsync(
                 MedicalCaseId,
                 GetPrescriptionProvider(),
                 CurrentPatient,
-                Consultation.ToInputDto());
+                consultationMapper.ToInputDto(Consultation));
 
             if (!result.IsSuccess)
             {
@@ -1379,9 +1382,11 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     /// <summary>
     /// ConsultationItem的IDataProvider适配器
     /// OpenSpec: consolidate-panel-viewmodels - 将ConsultationItem包装为IDataProvider
+    /// OpenSpec: adopt-mapperly-unified-mapping - 使用Mapper实例方法替代Item实例方法
     /// </summary>
     private sealed class ConsultationDataProviderAdapter : IDataProvider
     {
+        private static readonly ConsultationMapper s_mapper = new();
         private readonly ConsultationItem _consultation;
 
         public ConsultationDataProviderAdapter(ConsultationItem consultation)
@@ -1389,7 +1394,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             _consultation = consultation ?? throw new ArgumentNullException(nameof(consultation));
         }
 
-        public ConsultationInputDto? GetConsultationData() => _consultation.ToInputDto();
+        public ConsultationInputDto? GetConsultationData() => s_mapper.ToInputDto(_consultation);
         public PrescriptionInputDto? GetPrescriptionData() => null;
     }
 
@@ -1423,9 +1428,11 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     /// <summary>
     /// PrescriptionItem的IDataProvider适配器
     /// OpenSpec: consolidate-panel-viewmodels - 将PrescriptionItem包装为IDataProvider
+    /// OpenSpec: adopt-mapperly-unified-mapping - 使用Mapper实例方法替代Item实例方法
     /// </summary>
     private sealed class PrescriptionDataProviderAdapter : IDataProvider
     {
+        private static readonly PrescriptionMapper s_mapper = new();
         private readonly PrescriptionItem _prescription;
 
         public PrescriptionDataProviderAdapter(PrescriptionItem prescription)
@@ -1434,7 +1441,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         }
 
         public ConsultationInputDto? GetConsultationData() => null;
-        public PrescriptionInputDto? GetPrescriptionData() => _prescription.ToInputDto();
+        public PrescriptionInputDto? GetPrescriptionData() => s_mapper.ToInputDto(_prescription);
     }
 
     /// <summary>

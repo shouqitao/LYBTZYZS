@@ -23,7 +23,6 @@ public class EntityAuditLogDialogViewModelTests : IDisposable
     private readonly Mock<IApiService> _mockApiService;
     private readonly Mock<IEventAggregator> _mockEventAggregator;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
-    private readonly Mock<IRegionManager> _mockRegionManager;
     private readonly Mock<ILogger> _mockLogger;
     private readonly EntityAuditLogDialogViewModel _viewModel;
 
@@ -32,18 +31,17 @@ public class EntityAuditLogDialogViewModelTests : IDisposable
         _mockApiService = new Mock<IApiService>();
         _mockEventAggregator = new Mock<IEventAggregator>();
         _mockLoggerFactory = new Mock<ILoggerFactory>();
-        _mockRegionManager = new Mock<IRegionManager>();
         _mockLogger = new Mock<ILogger>();
 
         // 配置LoggerFactory返回Mock Logger
         _mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>()))
             .Returns(_mockLogger.Object);
 
+        // OpenSpec: migrate-to-communitytoolkit-mvvm - 更新为简化构造函数（3个参数）
         _viewModel = new EntityAuditLogDialogViewModel(
             _mockApiService.Object,
             _mockEventAggregator.Object,
-            _mockLoggerFactory.Object,
-            _mockRegionManager.Object);
+            _mockLoggerFactory.Object);
     }
 
     #region 构造函数测试
@@ -55,8 +53,7 @@ public class EntityAuditLogDialogViewModelTests : IDisposable
         var act = () => new EntityAuditLogDialogViewModel(
             null!,
             _mockEventAggregator.Object,
-            _mockLoggerFactory.Object,
-            _mockRegionManager.Object);
+            _mockLoggerFactory.Object);
 
         act.Should().Throw<ArgumentNullException>()
             .WithParameterName("apiService");
@@ -208,7 +205,7 @@ public class EntityAuditLogDialogViewModelTests : IDisposable
         _viewModel.RequestClose += result => receivedResult = result;
 
         // Act
-        _viewModel.CloseCommand.Execute();
+        _viewModel.CloseCommand.Execute(null);
 
         // Assert
         receivedResult.Should().NotBeNull();

@@ -19,7 +19,7 @@ namespace LYBT.Module.MedicalCases.Mapping;
 /// 医案数据映射器 - Mapperly编译时生成
 /// 替代原AutoMapper的MedicalCaseMappingProfile
 /// </summary>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class MedicalCaseMapper
 {
     // ========== MedicalCase映射 ==========

@@ -17,7 +17,7 @@
 - **Database**: SQL Server
 - **Authentication**: JWT Bearer (Microsoft.AspNetCore.Authentication.JwtBearer)
 - **Validation**: FluentValidation 12.0
-- **Mapping**: AutoMapper 12.0.1
+- **Mapping**: Riok.Mapperly 4.1.1 (编译时源生成器，替代AutoMapper)
 - **Password Hashing**: BCrypt.Net-Next 4.0.3
 
 ### Frontend (Desktop)
@@ -46,17 +46,17 @@ LYBTZYZS/
 │   │   ├── Core/                 # 核心库
 │   │   │   ├── LYBT.Desktop.Contracts/      # 接口定义
 │   │   │   ├── LYBT.Desktop.Foundation/     # 基础设施
-│   │   │   ├── LYBT.Desktop.Infrastructure/ # 通用服务
+│   │   │   ├── LYBT.Desktop.Infrastructure/ # 通用服务、控件
 │   │   │   ├── LYBT.Desktop.Models/         # 客户端模型
-│   │   │   └── LYBT.Desktop.Presentation/   # UI 基础组件
+│   │   │   ├── LYBT.Desktop.Printing/       # 打印服务 (2026-01新增)
+│   │   │   └── LYBT.Desktop.Utilities/      # 工具类库
 │   │   ├── Modules/              # 业务模块 (Prism Modules)
 │   │   │   ├── LYBT.Desktop.Auth/           # 认证模块
 │   │   │   ├── LYBT.Desktop.Consultation/   # 诊断模块
 │   │   │   ├── LYBT.Desktop.Formula/        # 经验方模块
 │   │   │   ├── LYBT.Desktop.Herbs/          # 药材模块
-│   │   │   ├── LYBT.Desktop.MedicalCase/    # 医案模块 (核心)
+│   │   │   ├── LYBT.Desktop.MedicalCase/    # 医案模块 (核心，含处方功能)
 │   │   │   ├── LYBT.Desktop.Patients/       # 患者模块
-│   │   │   ├── LYBT.Desktop.Prescriptions/  # 处方模块
 │   │   │   └── LYBT.Desktop.Users/          # 用户模块
 │   │   ├── Roles/                # 角色入口
 │   │   │   ├── LYBT.Desktop.Admin/          # 管理员端
@@ -91,6 +91,8 @@ LYBTZYZS/
 └── openspec/                     # OpenSpec 配置
 ```
 
+**注意**: Desktop.Prescriptions模块已于2026-01-05完全移除，处方功能已迁移至MedicalCase模块。
+
 ## Project Conventions
 
 ### Code Style
@@ -105,11 +107,34 @@ LYBTZYZS/
 
 ### File Naming
 - 视图: `*View.xaml` / `*View.xaml.cs`
+- 控件: `*Control.xaml` / `*Control.xaml.cs`
 - 视图模型: `*ViewModel.cs`
 - 服务: `*Service.cs`
 - 仓储: `*Repository.cs`
-- DTO: `*Dto.cs`
+- DTO: `*Dto.cs` (ListDto, DetailDto, InputDto)
+- 映射器: `*Mapper.cs` (Mapperly)
 - 实体: 无后缀 (如 `MedicalCase.cs`)
+
+### Mapping Conventions (Mapperly)
+- **映射器配置**: 使用 `[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]`
+- **字段忽略**: 使用 `[MapperIgnoreTarget]` 忽略目标中源没有的字段
+- **集合映射**: 自动继承元素映射器配置，无需重复声明
+
+```csharp
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class XxxMapper
+{
+    // Entity → DTO: 忽略DTO中Entity没有的计算字段
+    [MapperIgnoreTarget(nameof(XxxDto.CalculatedField))]
+    public partial XxxDto ToDto(Xxx entity);
+
+    // DTO → Entity: 忽略Entity中由Service层管理的字段
+    [MapperIgnoreTarget(nameof(Xxx.Id))]
+    [MapperIgnoreTarget(nameof(Xxx.Status))]
+    [MapperIgnoreTarget(nameof(Xxx.CreatedAt))]
+    public partial Xxx ToEntity(XxxInputDto dto);
+}
+```
 
 ### Architecture Patterns
 
@@ -153,6 +178,7 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 // Program.cs / Startup
 services.AddScoped<IService, Service>();
 services.AddScoped<IRepository, Repository>();
+services.AddSingleton<XxxMapper>(); // Mapperly映射器
 ```
 
 ### Testing Strategy
@@ -177,7 +203,7 @@ feat(MedicalCase): 实现验方导入和历史复制弹窗功能 #2246
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ```
 
 ## Domain Context
@@ -299,6 +325,7 @@ DELETE /api/{resource}/{id}      # 删除
 | [server-layer-architecture](specs/server-layer-architecture/spec.md) | Server层详细架构、CQRS/三层模式选择 |
 | [shared-layer-architecture](specs/shared-layer-architecture/spec.md) | Shared层职责、DTO继承层次规范 |
 | [client-layer-architecture](specs/client-layer-architecture/spec.md) | Client层架构、MVVM模式、模块注册 |
+| [desktop-architecture](specs/desktop-architecture/spec.md) | Desktop综合架构规范 |
 
 ### 模式与约定规范
 
@@ -315,6 +342,11 @@ DELETE /api/{resource}/{id}      # 删除
 | [module-communication](specs/module-communication/spec.md) | 模块间通信、ICrossModuleQueryService |
 | [error-handling](specs/error-handling/spec.md) | 错误处理规范、异常类型定义 |
 | [logging-infrastructure](specs/logging-infrastructure/spec.md) | 日志基础设施、日志级别规范 |
+| [converter-conventions](specs/converter-conventions/spec.md) | 值转换器约定 |
+| [desktop-code-patterns](specs/desktop-code-patterns/spec.md) | Desktop代码模式规范 |
+| [shared-utilities](specs/shared-utilities/spec.md) | 共享工具类规范 |
+| [testing-infrastructure](specs/testing-infrastructure/spec.md) | 测试基础设施规范 |
+| [code-quality](specs/code-quality/spec.md) | 代码质量规范 |
 
 ### 功能规范
 
@@ -329,8 +361,13 @@ DELETE /api/{resource}/{id}      # 删除
 | [medicalcase-ui-layout](specs/medicalcase-ui-layout/spec.md) | 医案工作区UI布局 |
 | [login-credential-handling](specs/login-credential-handling/spec.md) | 登录凭据处理 |
 | [login-ui](specs/login-ui/spec.md) | 登录界面UI规范 |
+| [login-state-machine](specs/login-state-machine/spec.md) | 登录状态机规范 |
 | [herb-card-control](specs/herb-card-control/spec.md) | 药材卡片控件规范 |
 | [formula-copy-flow](specs/formula-copy-flow/spec.md) | 经验方复制流程规范 |
+| [auth-events](specs/auth-events/spec.md) | 认证事件规范 |
+| [credential-vault](specs/credential-vault/spec.md) | 凭据保险库规范 |
+| [token-management](specs/token-management/spec.md) | Token管理规范 |
+| [printing-infrastructure](specs/printing-infrastructure/spec.md) | 打印基础设施规范 (2026-01新增) |
 
 ### UI规范
 
@@ -354,6 +391,7 @@ DELETE /api/{resource}/{id}      # 删除
 | [service-cleanup](specs/service-cleanup/spec.md) | Service层清理规范 |
 | [dto-cleanup](specs/dto-cleanup/spec.md) | DTO清理规范 |
 | [desktop-structure-cleanup](specs/desktop-structure-cleanup/spec.md) | Desktop结构清理规范 |
+| [desktop-core-cleanup](specs/desktop-core-cleanup/spec.md) | Desktop Core清理规范 |
 | [service-permission-separation](specs/service-permission-separation/spec.md) | Service权限分离规范 |
 
 ---
@@ -371,3 +409,8 @@ DELETE /api/{resource}/{id}      # 删除
   - Controller 层显式提取 userId
   - Service 层参数签名包含 userId
   - 禁止 Service 层注入 IHttpContextAccessor
+
+---
+
+**最后更新**: 2026-01-07
+**文档版本**: v2.1

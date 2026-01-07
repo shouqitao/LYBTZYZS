@@ -5,7 +5,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Collections.ObjectModel;
 using LYBT.Desktop.Herbs.Models.Items;
 using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -22,24 +21,34 @@ namespace LYBT.Desktop.MedicalCase.Mappers;
 /// - PrescriptionItem → PrescriptionDetailDto (仅供展示)
 /// - PrescriptionItem → PrescriptionInputDto (保存到API)
 ///
-/// 注意：Items集合需要自定义映射，因为HerbItemDto与PrescriptionItemDto类型不同。
-/// 注意：PrescriptionItem的属性由[ObservableProperty]源生成器生成，需使用字符串字面量。
-/// OpenSpec: standardize-viewmodel-framework - CommunityToolkit.Mvvm源生成器兼容
+/// OpenSpec: adopt-mapperly-unified-mapping - PrescriptionItem使用BindableBase，支持Mapperly源生成
+/// 注意：Items集合需要手动映射，因为HerbItemDto与PrescriptionItemDto类型不同。
 /// </remarks>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class PrescriptionMapper
 {
+    #region DTO → Item
+
     /// <summary>
-    /// 将PrescriptionDetailDto转换为PrescriptionItem。
+    /// 将PrescriptionDetailDto转换为PrescriptionItem（核心映射）。
     /// </summary>
     /// <param name="dto">API返回的详情DTO。</param>
     /// <returns>用于XAML绑定的Item对象。</returns>
-    [MapperIgnoreTarget("IsSelected")]
-    [MapperIgnoreTarget("IsExpanded")]
-    [MapperIgnoreTarget("IsReadOnly")]
-    [MapperIgnoreTarget("Items")]
+    /// <remarks>
+    /// 忽略UI状态字段、计算属性、Items集合（手动映射）。
+    /// </remarks>
     [MapperIgnoreSource(nameof(PrescriptionDetailDto.Items))]
-    public partial PrescriptionItem ToItemCore(PrescriptionDetailDto dto);
+    [MapperIgnoreSource(nameof(PrescriptionDetailDto.TotalPrice))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.Items))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.IsSelected))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.IsExpanded))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.IsReadOnly))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.ItemCount))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.HasItems))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.IsValid))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.TotalPrice))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.DisplayText))]
+    private partial PrescriptionItem ToItemCore(PrescriptionDetailDto dto);
 
     /// <summary>
     /// 将PrescriptionDetailDto转换为PrescriptionItem（完整映射，包含Items集合）。
@@ -49,6 +58,12 @@ public partial class PrescriptionMapper
     public PrescriptionItem ToItem(PrescriptionDetailDto dto)
     {
         var item = ToItemCore(dto);
+
+        // 处理Usage默认值
+        if (string.IsNullOrEmpty(item.Usage))
+        {
+            item.Usage = "水煎服，一日一剂，分早晚两次温服";
+        }
 
         // 手动映射Items集合：PrescriptionItemDto → HerbItemDto
         if (dto.Items != null)
@@ -62,21 +77,25 @@ public partial class PrescriptionMapper
         return item;
     }
 
+    #endregion
+
+    #region Item → DTO
+
     /// <summary>
-    /// 将PrescriptionItem转换为PrescriptionDetailDto。
+    /// 将PrescriptionItem转换为PrescriptionDetailDto（核心映射）。
     /// </summary>
     /// <param name="item">Item对象。</param>
     /// <returns>DetailDTO对象。</returns>
-    [MapperIgnoreSource("IsSelected")]
-    [MapperIgnoreSource("IsExpanded")]
-    [MapperIgnoreSource("IsReadOnly")]
+    [MapperIgnoreSource(nameof(PrescriptionItem.Items))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.IsSelected))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.IsExpanded))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.IsReadOnly))]
     [MapperIgnoreSource(nameof(PrescriptionItem.ItemCount))]
     [MapperIgnoreSource(nameof(PrescriptionItem.HasItems))]
     [MapperIgnoreSource(nameof(PrescriptionItem.IsValid))]
     [MapperIgnoreSource(nameof(PrescriptionItem.DisplayText))]
-    [MapperIgnoreSource("Items")]
     [MapperIgnoreTarget(nameof(PrescriptionDetailDto.Items))]
-    public partial PrescriptionDetailDto ToDtoCore(PrescriptionItem item);
+    private partial PrescriptionDetailDto ToDtoCore(PrescriptionItem item);
 
     /// <summary>
     /// 将PrescriptionItem转换为PrescriptionDetailDto（完整映射，包含Items集合）。
@@ -89,35 +108,45 @@ public partial class PrescriptionMapper
 
         // 手动映射Items集合：HerbItemDto → PrescriptionItemDto
         dto.Items = item.Items?.Select(h => h.ToPrescriptionItemDto()).ToList() ?? new();
-        dto.TotalPrice = item.TotalPrice;
 
         return dto;
     }
 
+    #endregion
+
+    #region Item → InputDto
+
     /// <summary>
-    /// 将PrescriptionItem转换为PrescriptionInputDto（用于创建/更新API调用）。
+    /// 将PrescriptionItem转换为PrescriptionInputDto（核心映射）。
     /// </summary>
     /// <param name="item">Item对象。</param>
     /// <returns>InputDTO对象。</returns>
-    [MapperIgnoreSource("IsSelected")]
-    [MapperIgnoreSource("IsExpanded")]
-    [MapperIgnoreSource("IsReadOnly")]
+    /// <remarks>
+    /// 仅映射可写字段。
+    /// </remarks>
+    [MapperIgnoreSource(nameof(PrescriptionItem.Id))] // 手动映射：Id == Guid.Empty ? null : Id
+    [MapperIgnoreSource(nameof(PrescriptionItem.TotalPrice))] // 手动映射
+    [MapperIgnoreSource(nameof(PrescriptionItem.PrescriptionNumber))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.SingleDosePrice))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.TotalWeight))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.Status))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.CreatedAt))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.UpdatedAt))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.DuplicateWarning))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.MissingDrugWarning))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.Items))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.IsSelected))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.IsExpanded))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.IsReadOnly))]
     [MapperIgnoreSource(nameof(PrescriptionItem.ItemCount))]
     [MapperIgnoreSource(nameof(PrescriptionItem.HasItems))]
     [MapperIgnoreSource(nameof(PrescriptionItem.IsValid))]
     [MapperIgnoreSource(nameof(PrescriptionItem.DisplayText))]
-    [MapperIgnoreSource("PrescriptionNumber")]
-    [MapperIgnoreSource("SingleDosePrice")]
-    [MapperIgnoreSource("TotalWeight")]
-    [MapperIgnoreSource("Status")]
-    [MapperIgnoreSource("CreatedAt")]
-    [MapperIgnoreSource("UpdatedAt")]
-    [MapperIgnoreSource("DuplicateWarning")]
-    [MapperIgnoreSource("MissingDrugWarning")]
-    [MapperIgnoreSource("Items")]
+    [MapperIgnoreTarget(nameof(PrescriptionInputDto.Id))]
     [MapperIgnoreTarget(nameof(PrescriptionInputDto.NeedsPrescription))]
+    [MapperIgnoreTarget(nameof(PrescriptionInputDto.TotalPrice))]
     [MapperIgnoreTarget(nameof(PrescriptionInputDto.Items))]
-    public partial PrescriptionInputDto ToInputDtoCore(PrescriptionItem item);
+    private partial PrescriptionInputDto ToInputDtoCore(PrescriptionItem item);
 
     /// <summary>
     /// 将PrescriptionItem转换为PrescriptionInputDto（完整映射，包含Items集合）。
@@ -128,13 +157,9 @@ public partial class PrescriptionMapper
     {
         var dto = ToInputDtoCore(item);
 
-        // 设置NeedsPrescription标志
-        dto.NeedsPrescription = item.HasItems;
-
-        // 处理Id：空Guid转为null表示创建
+        // 手动设置需要自定义逻辑的字段
         dto.Id = item.Id == Guid.Empty ? null : item.Id;
-
-        // 计算TotalPrice
+        dto.NeedsPrescription = item.HasItems;
         dto.TotalPrice = item.TotalPrice;
 
         // 手动映射Items集合：HerbItemDto → PrescriptionItemInputDto
@@ -142,4 +167,6 @@ public partial class PrescriptionMapper
 
         return dto;
     }
+
+    #endregion
 }

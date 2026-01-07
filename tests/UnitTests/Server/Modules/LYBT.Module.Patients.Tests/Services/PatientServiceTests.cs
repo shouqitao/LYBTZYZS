@@ -35,10 +35,9 @@ namespace LYBT.Module.Patients.Tests.Services
                 .Setup(x => x.ValidateAsync(It.IsAny<PatientInputDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
-            // 创建PatientService实例，使用基类提供的Mapper
+            // 创建PatientService实例（Mapperly迁移后，Service内部使用私有Mapper）
             _patientService = new PatientService(
                 _repositoryMock.Object,
-                Mapper,
                 _loggerMock.Object,
                 _validatorMock.Object);
         }

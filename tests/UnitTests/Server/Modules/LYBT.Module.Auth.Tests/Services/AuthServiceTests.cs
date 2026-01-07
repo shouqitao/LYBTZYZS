@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
@@ -23,13 +22,13 @@ namespace LYBT.Module.Auth.Tests.Services;
 /// Issue #864 - Phase 2.3: Auth 模块测试
 /// Issue #1008 - 更新为匹配新的 AuthService 实现（IUserRepository + IMapper 替代 IUserService）
 /// Issue #1864 - 重新引入 IUserService 实现 Auth/User 职责分离
+/// OpenSpec: adopt-mapperly-unified-mapping - 移除IMapper依赖，使用Mapperly
 /// </summary>
 public class AuthServiceTests : IDisposable
 {
     private readonly Mock<IJwtService> _mockJwtService;
     private readonly Mock<IUserRepository> _mockUserRepository;
     private readonly Mock<IUserService> _mockUserService; // Issue #1864: 职责分离
-    private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<ILogger<AuthService>> _mockLogger;
     private readonly AppDbContext _dbContext;
     private readonly IConfiguration _configuration;
@@ -42,7 +41,6 @@ public class AuthServiceTests : IDisposable
         _mockJwtService = new Mock<IJwtService>();
         _mockUserRepository = new Mock<IUserRepository>();
         _mockUserService = new Mock<IUserService>(); // Issue #1864: 职责分离
-        _mockMapper = new Mock<IMapper>();
         _mockLogger = new Mock<ILogger<AuthService>>();
         _mockRevocationService = new Mock<ITokenRevocationService>();
         _mockAuditService = new Mock<ISecurityAuditService>();
@@ -65,7 +63,6 @@ public class AuthServiceTests : IDisposable
             _mockJwtService.Object,
             _mockUserRepository.Object,
             _mockUserService.Object, // Issue #1864: 职责分离
-            _mockMapper.Object,
             _mockLogger.Object,
             _dbContext,
             _configuration,
@@ -251,9 +248,6 @@ public class AuthServiceTests : IDisposable
         _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync(testUser);
 
-        _mockMapper.Setup(x => x.Map<UserDetailDto>(testUser))
-            .Returns(testUserDto);
-
         _mockJwtService.Setup(x => x.GenerateToken(
             testUserDto.Id.ToString(),
             testUserDto.UserName,
@@ -433,9 +427,6 @@ public class AuthServiceTests : IDisposable
         _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
             .ReturnsAsync(testUser);
 
-        _mockMapper.Setup(x => x.Map<UserDetailDto>(testUser))
-            .Returns(testUserDto);
-
         _mockJwtService.Setup(x => x.GenerateToken(
             testUserDto.Id.ToString(),
             testUserDto.UserName,
@@ -499,9 +490,6 @@ public class AuthServiceTests : IDisposable
 
         _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync(testUser);
-
-        _mockMapper.Setup(x => x.Map<UserDetailDto>(testUser))
-            .Returns(testUserDto);
 
         _mockJwtService.Setup(x => x.GenerateToken(
             testUserDto.Id.ToString(),

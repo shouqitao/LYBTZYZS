@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Formula.Mappers;
 ///
 /// 注意：Herbs集合需要手动映射（ObservableCollection）。
 /// </remarks>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class FormulaDetailModelMapper
 {
     /// <summary>

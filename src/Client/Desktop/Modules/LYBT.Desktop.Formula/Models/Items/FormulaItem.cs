@@ -1,6 +1,5 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Formula.Models.Items;
 
@@ -8,175 +7,288 @@ namespace LYBT.Desktop.Formula.Models.Items;
 /// 验方列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用FormulaDetailDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与FormulaDetailDto一致，确保XAML绑定兼容
-/// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
+/// OpenSpec: resolve-mapperly-source-generator-conflict - 使用BindableBase确保Mapperly兼容
 /// </summary>
-public partial class FormulaItem : ObservableObject
+public class FormulaItem : BindableBase
 {
-    [ObservableProperty]
     private Guid _id;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-    [ObservableProperty]
     private string _name = string.Empty;
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            if (SetProperty(ref _name, value))
+            {
+                RaisePropertyChanged(nameof(DisplayText));
+                RaisePropertyChanged(nameof(SearchText));
+            }
+        }
+    }
 
-    [ObservableProperty]
     private string? _pinyin;
+    public string? Pinyin
+    {
+        get => _pinyin;
+        set
+        {
+            if (SetProperty(ref _pinyin, value))
+            {
+                RaisePropertyChanged(nameof(SearchText));
+            }
+        }
+    }
 
-    [ObservableProperty]
     private string? _category;
+    public string? Category
+    {
+        get => _category;
+        set
+        {
+            if (SetProperty(ref _category, value))
+            {
+                RaisePropertyChanged(nameof(DisplayText));
+                RaisePropertyChanged(nameof(SearchText));
+            }
+        }
+    }
 
-    [ObservableProperty]
-    private string? _source; // 来源
+    private string? _source;
+    /// <summary>来源</summary>
+    public string? Source
+    {
+        get => _source;
+        set => SetProperty(ref _source, value);
+    }
 
-    [ObservableProperty]
-    private string? _composition; // 组成
+    private string? _composition;
+    /// <summary>组成</summary>
+    public string? Composition
+    {
+        get => _composition;
+        set => SetProperty(ref _composition, value);
+    }
 
-    [ObservableProperty]
-    private string? _effect; // 功效
+    private string? _effect;
+    /// <summary>功效</summary>
+    public string? Effect
+    {
+        get => _effect;
+        set
+        {
+            if (SetProperty(ref _effect, value))
+            {
+                RaisePropertyChanged(nameof(SearchText));
+            }
+        }
+    }
 
+    private string? _indications;
     /// <summary>
     /// 主治 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为Indications，与DTO保持一致
     /// </summary>
-    [ObservableProperty]
-    private string? _indications;
+    public string? Indications
+    {
+        get => _indications;
+        set
+        {
+            if (SetProperty(ref _indications, value))
+            {
+                RaisePropertyChanged(nameof(SearchText));
+            }
+        }
+    }
 
-    [ObservableProperty]
-    private string? _usage; // 用法用量
+    private string? _usage;
+    /// <summary>用法用量</summary>
+    public string? Usage
+    {
+        get => _usage;
+        set => SetProperty(ref _usage, value);
+    }
 
-    [ObservableProperty]
-    private string? _modification; // 加减
+    private string? _modification;
+    /// <summary>加减</summary>
+    public string? Modification
+    {
+        get => _modification;
+        set
+        {
+            if (SetProperty(ref _modification, value))
+            {
+                RaisePropertyChanged(nameof(HasModification));
+            }
+        }
+    }
 
+    private string? _contraindications;
     /// <summary>
     /// 禁忌 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为Contraindications，与DTO保持一致
     /// </summary>
-    [ObservableProperty]
-    private string? _contraindications;
+    public string? Contraindications
+    {
+        get => _contraindications;
+        set
+        {
+            if (SetProperty(ref _contraindications, value))
+            {
+                RaisePropertyChanged(nameof(HasContraindication));
+            }
+        }
+    }
 
+    private string? _remark;
     /// <summary>
     /// 注意事项/备注 - OpenSpec: unify-frontend-backend-types Phase 6
     /// 统一命名为Remark，与DTO保持一致
     /// </summary>
-    [ObservableProperty]
-    private string? _remark;
+    public string? Remark
+    {
+        get => _remark;
+        set => SetProperty(ref _remark, value);
+    }
 
+    private Guid? _createdBy;
     /// <summary>
     /// 创建者ID - OpenSpec: unify-frontend-backend-types Phase 4
     /// 统一使用Guid?，与DTO保持一致
     /// </summary>
-    [ObservableProperty]
-    private Guid? _createdBy;
+    public Guid? CreatedBy
+    {
+        get => _createdBy;
+        set => SetProperty(ref _createdBy, value);
+    }
 
-    [ObservableProperty]
-    private bool _isClassic; // 是否经典方
+    private bool _isClassic;
+    /// <summary>是否经典方</summary>
+    public bool IsClassic
+    {
+        get => _isClassic;
+        set
+        {
+            if (SetProperty(ref _isClassic, value))
+            {
+                RaisePropertyChanged(nameof(TypeText));
+                RaisePropertyChanged(nameof(TypeColor));
+                RaisePropertyChanged(nameof(DisplayText));
+            }
+        }
+    }
 
-    [ObservableProperty]
-    private bool _isPersonal; // 是否个人验方
+    private bool _isPersonal;
+    /// <summary>是否个人验方</summary>
+    public bool IsPersonal
+    {
+        get => _isPersonal;
+        set
+        {
+            if (SetProperty(ref _isPersonal, value))
+            {
+                RaisePropertyChanged(nameof(TypeText));
+                RaisePropertyChanged(nameof(TypeColor));
+                RaisePropertyChanged(nameof(DisplayText));
+            }
+        }
+    }
 
+    private CommonStatus _status = CommonStatus.Enabled;
     /// <summary>
     /// 状态 - OpenSpec: unify-frontend-backend-types Phase 4
     /// 统一使用CommonStatus枚举，与DTO保持一致
     /// </summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsActive))]
-    [NotifyPropertyChangedFor(nameof(StatusText))]
-    [NotifyPropertyChangedFor(nameof(StatusColor))]
-    [NotifyPropertyChangedFor(nameof(IsAvailable))]
-    private CommonStatus _status = CommonStatus.Enabled;
+    public CommonStatus Status
+    {
+        get => _status;
+        set
+        {
+            if (SetProperty(ref _status, value))
+            {
+                RaisePropertyChanged(nameof(IsActive));
+                RaisePropertyChanged(nameof(StatusText));
+                RaisePropertyChanged(nameof(StatusColor));
+                RaisePropertyChanged(nameof(IsAvailable));
+            }
+        }
+    }
 
     /// <summary>
     /// 是否启用（向后兼容计算属性）- OpenSpec: unify-frontend-backend-types Phase 4
     /// </summary>
     public bool IsActive => Status == CommonStatus.Enabled;
 
-    [ObservableProperty]
-    private int _usageCount; // 使用次数
-
-    [ObservableProperty]
-    private DateTime _createdAt;
-
-    [ObservableProperty]
-    private DateTime? _updatedAt;
-
-    [ObservableProperty]
-    private List<FormulaHerbItem> _herbs = new();
-
-    [ObservableProperty]
-    private bool _isSelected;
-
-    [ObservableProperty]
-    private bool _isExpanded;
-
-    [ObservableProperty]
-    private bool _isFavorite;
-
-    /// <summary>
-    /// 从FormulaDetailDto创建FormulaItem
-    /// OpenSpec: unify-frontend-backend-types Phase 4 - Status/CreatedBy直接使用
-    /// </summary>
-    /// <remarks>已废弃：请使用FormulaMappingService.ToItem()</remarks>
-    [Obsolete("请使用FormulaMappingService.ToItem()替代。OpenSpec: adopt-mapperly-unified-mapping")]
-    public static FormulaItem FromDto(FormulaDetailDto dto)
+    private int _usageCount;
+    /// <summary>使用次数</summary>
+    public int UsageCount
     {
-        var item = new FormulaItem
+        get => _usageCount;
+        set
         {
-            Id = dto.Id,
-            Name = dto.Name,
-            Pinyin = null, // FormulaDetailDto中没有此属性
-            Category = dto.Category,
-            Source = null, // FormulaDetailDto中没有此属性
-            Composition = null, // FormulaDetailDto中没有此属性
-            Effect = dto.Effect,
-            Indications = null, // FormulaDetailDto中没有此属性
-            Usage = dto.Usage,
-            Modification = null, // FormulaDetailDto中没有此属性
-            Contraindications = null, // FormulaDetailDto中没有此属性
-            Remark = dto.Remark, // OpenSpec: unify-frontend-backend-types - 直接映射
-            CreatedBy = dto.CreatedBy, // OpenSpec: unify-frontend-backend-types - 直接使用Guid?
-            IsClassic = false, // 默认值
-            IsPersonal = !dto.IsShared, // 根据IsShared推断
-            Status = dto.Status, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
-            UsageCount = 0, // 默认值
-            CreatedAt = dto.CreatedAt,
-            UpdatedAt = dto.UpdatedAt
-        };
-
-        // 转换药材列表
-        if (dto.Herbs != null)
-        {
-#pragma warning disable CS0618
-            item.Herbs = dto.Herbs.Select(h => FormulaHerbItem.FromDto(h)).ToList();
-#pragma warning restore CS0618
+            if (SetProperty(ref _usageCount, value))
+            {
+                RaisePropertyChanged(nameof(PopularityLevel));
+                RaisePropertyChanged(nameof(PopularityColor));
+            }
         }
-
-        return item;
     }
 
-    /// <summary>
-    /// 转换为FormulaDetailDto（用于API调用）
-    /// OpenSpec: unify-frontend-backend-types Phase 4 - Status直接使用枚举
-    /// </summary>
-    /// <remarks>已废弃：请使用FormulaMappingService.ToDto()</remarks>
-    [Obsolete("请使用FormulaMappingService.ToDto()替代。OpenSpec: adopt-mapperly-unified-mapping")]
-    public FormulaDetailDto ToDto()
+    private DateTime _createdAt;
+    public DateTime CreatedAt
     {
-        return new FormulaDetailDto
-        {
-            Id = Id,
-            Name = Name,
-            Effect = Effect,
-            Usage = Usage,
-            Property = null, // FormulaDetailDto中的属性
-            IsShared = !IsPersonal,
-            Remark = Remark, // OpenSpec: unify-frontend-backend-types - 直接映射
-            Status = Status, // OpenSpec: unify-frontend-backend-types - 直接使用枚举
-            CreatedAt = CreatedAt,
-            UpdatedAt = UpdatedAt,
-#pragma warning disable CS0618
-            Herbs = Herbs.Select(h => h.ToDto()).ToList()
-#pragma warning restore CS0618
-        };
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
     }
+
+    private DateTime? _updatedAt;
+    public DateTime? UpdatedAt
+    {
+        get => _updatedAt;
+        set => SetProperty(ref _updatedAt, value);
+    }
+
+    private List<FormulaHerbItem> _herbs = new();
+    public List<FormulaHerbItem> Herbs
+    {
+        get => _herbs;
+        set
+        {
+            if (SetProperty(ref _herbs, value))
+            {
+                RaisePropertyChanged(nameof(HerbCount));
+                RaisePropertyChanged(nameof(HerbCompositionText));
+            }
+        }
+    }
+
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+
+    private bool _isExpanded;
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => SetProperty(ref _isExpanded, value);
+    }
+
+    private bool _isFavorite;
+    public bool IsFavorite
+    {
+        get => _isFavorite;
+        set => SetProperty(ref _isFavorite, value);
+    }
+
+    #region 计算属性
 
     /// <summary>
     /// 类型文本
@@ -296,4 +408,6 @@ public partial class FormulaItem : ObservableObject
             return "#9E9E9E";
         }
     }
+
+    #endregion
 }
