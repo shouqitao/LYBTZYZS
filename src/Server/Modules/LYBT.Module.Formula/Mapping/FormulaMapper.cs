@@ -15,7 +15,7 @@ namespace LYBT.Module.Formulas.Mapping;
 /// 验方数据映射器 - Mapperly编译时生成
 /// 替代原AutoMapper的FormulaMappingProfile
 /// </summary>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class FormulaMapper
 {
     /// <summary>
@@ -47,6 +47,9 @@ public partial class FormulaMapper
     [MapperIgnoreTarget(nameof(FormulaDetailDto.HerbCount))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.TotalPrice))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Herbs))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Description))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Source))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Contraindications))]
     public partial FormulaDetailDto ToDetailDto(Formula entity);
 
     /// <summary>
@@ -57,6 +60,15 @@ public partial class FormulaMapper
     /// <summary>
     /// FormulaHerbItem实体转换为FormulaHerbItemDto
     /// </summary>
+    /// <remarks>
+    /// 以下字段由Service层填充：SpecialInstructions, SortOrder, Processing, Price, Preparation, Herb
+    /// </remarks>
+    [MapperIgnoreTarget(nameof(FormulaHerbItemDto.SpecialInstructions))]
+    [MapperIgnoreTarget(nameof(FormulaHerbItemDto.SortOrder))]
+    [MapperIgnoreTarget(nameof(FormulaHerbItemDto.Processing))]
+    [MapperIgnoreTarget(nameof(FormulaHerbItemDto.Price))]
+    [MapperIgnoreTarget(nameof(FormulaHerbItemDto.Preparation))]
+    [MapperIgnoreTarget(nameof(FormulaHerbItemDto.Herb))]
     public partial FormulaHerbItemDto ToHerbItemDto(FormulaHerbItem entity);
 
     /// <summary>
@@ -86,6 +98,10 @@ public partial class FormulaMapper
     [MapperIgnoreTarget(nameof(Formula.UpdatedBy))]
     [MapperIgnoreTarget(nameof(Formula.RowVersion))]
     [MapperIgnoreTarget(nameof(Formula.IsDeleted))]
+    [MapperIgnoreTarget(nameof(Formula.ValidationStatus))]
+    [MapperIgnoreTarget(nameof(Formula.UserId))]
+    [MapperIgnoreTarget(nameof(Formula.Indication))]
+    [MapperIgnoreTarget(nameof(Formula.FormulaType))]
     public partial Formula ToEntity(FormulaInputDto dto);
 
     /// <summary>
@@ -106,5 +122,9 @@ public partial class FormulaMapper
     [MapperIgnoreTarget(nameof(Formula.UpdatedBy))]
     [MapperIgnoreTarget(nameof(Formula.RowVersion))]
     [MapperIgnoreTarget(nameof(Formula.IsDeleted))]
+    [MapperIgnoreTarget(nameof(Formula.ValidationStatus))]
+    [MapperIgnoreTarget(nameof(Formula.UserId))]
+    [MapperIgnoreTarget(nameof(Formula.Indication))]
+    [MapperIgnoreTarget(nameof(Formula.FormulaType))]
     public partial void UpdateEntity(FormulaInputDto dto, Formula entity);
 }

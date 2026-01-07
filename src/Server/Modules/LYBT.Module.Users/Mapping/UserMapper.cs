@@ -15,7 +15,7 @@ namespace LYBT.Module.Users.Mapping;
 /// 用户数据映射器 - Mapperly编译时生成
 /// 替代原AutoMapper的UserMappingProfile
 /// </summary>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class UserMapper
 {
     /// <summary>
@@ -47,6 +47,7 @@ public partial class UserMapper
     /// </remarks>
     [MapperIgnoreSource(nameof(UserInputDto.Id))]
     [MapperIgnoreTarget(nameof(User.Id))]
+    [MapperIgnoreTarget(nameof(User.Status))]
     [MapperIgnoreTarget(nameof(User.PasswordHash))]
     [MapperIgnoreTarget(nameof(User.FailedLoginCount))]
     [MapperIgnoreTarget(nameof(User.LockoutEnd))]
@@ -68,6 +69,7 @@ public partial class UserMapper
     [MapperIgnoreSource(nameof(UserInputDto.UserName))]
     [MapperIgnoreTarget(nameof(User.Id))]
     [MapperIgnoreTarget(nameof(User.UserName))]
+    [MapperIgnoreTarget(nameof(User.Status))]
     [MapperIgnoreTarget(nameof(User.PasswordHash))]
     [MapperIgnoreTarget(nameof(User.FailedLoginCount))]
     [MapperIgnoreTarget(nameof(User.LockoutEnd))]

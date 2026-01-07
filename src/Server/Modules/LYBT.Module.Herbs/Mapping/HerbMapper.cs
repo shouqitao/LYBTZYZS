@@ -15,7 +15,7 @@ namespace LYBT.Module.Herbs.Mapping;
 /// 药材数据映射器 - Mapperly编译时生成
 /// 替代原AutoMapper的HerbMappingProfile
 /// </summary>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class HerbMapper
 {
     /// <summary>
@@ -40,7 +40,9 @@ public partial class HerbMapper
     /// <summary>
     /// Herb实体列表转换为HerbDetailDto列表
     /// </summary>
-    [MapperIgnoreTarget(nameof(HerbDetailDto.Properties))]
+    /// <remarks>
+    /// 注：集合映射自动继承元素映射器ToDetailDto的忽略配置，无需重复声明
+    /// </remarks>
     public partial List<HerbDetailDto> ToDetailDtos(List<Herb> entities);
 
     /// <summary>
