@@ -36,9 +36,11 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 获取待看诊医案列表（Status=Active）
         /// Epic #1583 - Phase 5
         /// Epic #2210 Phase 3: 添加doctorId参数实现多医生数据隔离
+        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
         /// <param name="doctorId">医生ID</param>
-        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId);
+        /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
+        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null);
 
         /// <summary>
         /// 获取所有待看诊医案列表（管理员专用）

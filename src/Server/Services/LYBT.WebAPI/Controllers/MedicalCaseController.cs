@@ -1009,14 +1009,15 @@ namespace LYBT.WebAPI.Controllers
         /// 获取待看诊队列（Status = Active的医案患者列表）
         /// Epic #2210 Phase 3: P0 Bug修复 - 添加缺失的API端点
         /// 业务规则：返回当前医生的所有Active状态医案的患者信息
+        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
-        /// <param name="doctorId">医生ID（可选，默认使用当前登录医生ID）</param>
+        /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
         [Obsolete("Use GET /api/v1/medicalcases/query with QueryType=Pending instead. Will be removed in v2.0")]
         [HttpGet("pending")]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 401)]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 403)]
-        public async Task<IActionResult> GetPendingCases()
+        public async Task<IActionResult> GetPendingCases([FromQuery] Guid? patientId = null)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // UnauthorizedAccessException由SystemExceptionHandler转换为401响应
@@ -1027,16 +1028,23 @@ namespace LYBT.WebAPI.Controllers
             if (operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin)
             {
                 // 管理员查询所有待诊医案
-                _logger.LogInformation("管理员查询全部待诊队列，OperatorId: {OperatorId}, Role: {Role}",
-                    operatorId, operatorRole);
+                _logger.LogInformation("管理员查询全部待诊队列，OperatorId: {OperatorId}, Role: {Role}, PatientId: {PatientId}",
+                    operatorId, operatorRole, patientId);
+                // OpenSpec: unify-pending-query-api - 管理员目前不支持按患者筛选（返回全部）
                 result = await _queryService.GetAllPendingCasesAsync();
+                // 如果有patientId参数，在内存中过滤
+                if (patientId.HasValue)
+                {
+                    result = result.Where(r => r.PatientId == patientId.Value).ToList();
+                }
             }
             else if (operatorRole == UserRole.Doctor)
             {
                 // 医生只查询自己的待诊医案
-                _logger.LogInformation("医生查询自己的待诊队列，DoctorId: {DoctorId}",
-                    operatorId);
-                result = await _queryService.GetPendingCasesAsync(operatorId);
+                _logger.LogInformation("医生查询自己的待诊队列，DoctorId: {DoctorId}, PatientId: {PatientId}",
+                    operatorId, patientId);
+                // OpenSpec: unify-pending-query-api - 传递patientId参数
+                result = await _queryService.GetPendingCasesAsync(operatorId, patientId);
             }
             else
             {

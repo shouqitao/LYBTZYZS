@@ -220,7 +220,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 new PendingMedicalCaseDto { PatientId = Guid.NewGuid(), PatientName = "李四" }
             };
 
-            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId))
+            // OpenSpec: unify-pending-query-api - 添加patientId参数支持
+            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId, null))
                 .ReturnsAsync(pendingCases);
 
             // Act
@@ -237,7 +238,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             // Arrange
             var doctorId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId))
+            // OpenSpec: unify-pending-query-api - 添加patientId参数支持
+            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId, null))
                 .ReturnsAsync(new List<PendingMedicalCaseDto>());
 
             // Act
@@ -246,6 +248,32 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result.Should().BeEmpty();
+        }
+
+        /// <summary>
+        /// OpenSpec: unify-pending-query-api - 按患者筛选待看诊医案
+        /// </summary>
+        [Fact]
+        public async Task GetPendingCasesAsync_WithPatientId_ShouldFilterByPatient()
+        {
+            // Arrange
+            var doctorId = Guid.NewGuid();
+            var patientId = Guid.NewGuid();
+            var pendingCases = new List<PendingMedicalCaseDto>
+            {
+                new PendingMedicalCaseDto { PatientId = patientId, PatientName = "张三" }
+            };
+
+            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId, patientId))
+                .ReturnsAsync(pendingCases);
+
+            // Act
+            var result = await _service.GetPendingCasesAsync(doctorId, patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(1);
+            result[0].PatientId.Should().Be(patientId);
         }
 
         #endregion

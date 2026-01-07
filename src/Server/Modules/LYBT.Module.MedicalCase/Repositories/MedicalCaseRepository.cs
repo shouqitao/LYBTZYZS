@@ -304,17 +304,26 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// Epic #1583 - Phase 5
         /// Bug Fix: 应包含Draft和Active两种未完成状态
         /// OpenSpec: redesign-pending-queue - 正确的状态判定和序号计算
+        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
-        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId)
+        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null)
         {
             // Epic #2210 Phase 3: 按医生ID过滤，实现多医生数据隔离
             // Bug Fix: 包含Draft和Active两种未完成状态，暂存后的医案应显示在待诊队列
             // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             // OpenSpec: redesign-pending-queue - 根据CaseStatus动态判定PendingCaseType
-            var result = await _dbSet
+            var query = _dbSet
                 .Where(m => !m.IsDeleted
                     && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active)
-                    && m.UserId == doctorId)
+                    && m.UserId == doctorId);
+
+            // OpenSpec: unify-pending-query-api - 按患者筛选
+            if (patientId.HasValue)
+            {
+                query = query.Where(m => m.PatientId == patientId.Value);
+            }
+
+            var result = await query
                 .Join(
                     _context.Set<Patient>(),
                     m => m.PatientId,

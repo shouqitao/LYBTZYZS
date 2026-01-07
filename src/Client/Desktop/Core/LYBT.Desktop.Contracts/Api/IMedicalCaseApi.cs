@@ -58,13 +58,16 @@ namespace LYBT.Desktop.Contracts.Api
         // 使用QueryMedicalCasesAsync(QueryType=ByPatient)
 
         /// <summary>
-        /// 获取待看诊医案列表（Status=Active）
+        /// 获取待看诊医案列表（Status=Draft/Active）
         /// Epic #1583 - Phase 5
-        /// Epic #2210 Phase 3: 添加doctorId参数实现多医生数据隔离
+        /// Epic #2210 Phase 3: 多医生数据隔离（从JWT获取当前用户）
+        /// OpenSpec: standardize-api-naming - 保留此API，DTO结构与QueryMedicalCasesAsync不兼容
+        /// 返回PendingMedicalCaseDto（含Type字段），QueryMedicalCasesAsync返回MedicalCaseListDto（含CaseStatus字段）
+        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
-        [Obsolete("Use QueryMedicalCasesAsync with QueryType=Pending instead. Will be removed in v2.0")]
+        /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
         [Refit.Get("/api/v1/medicalcases/pending")]
-        Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync([Refit.Query] Guid doctorId);
+        Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync([Refit.Query] Guid? patientId = null);
 
         // QueryMedicalCasesAsync 已删除 - 与 SearchMedicalCasesAsync 功能重复
         // OpenSpec: standardize-desktop-api-layer
@@ -101,10 +104,10 @@ namespace LYBT.Desktop.Contracts.Api
         /// <summary>
         /// 删除医疗案例（软删除）
         /// OpenSpec: clarify-cancel-consultation-logic
-        /// 服务端返回204 No Content，使用IApiResponse处理空响应
+        /// OpenSpec: standardize-api-naming - 统一使用ApiResponse返回类型
         /// </summary>
         [Refit.Delete("/api/v1/medicalcases/{id}")]
-        Task<Refit.IApiResponse> DeleteMedicalCaseAsync(Guid id);
+        Task<ApiResponse> DeleteMedicalCaseAsync(Guid id);
 
         // ========== SoftDeleteMedicalCaseAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
         // Server端点DELETE /api/v1/medicalcases/{id}/soft 不存在，且无调用者

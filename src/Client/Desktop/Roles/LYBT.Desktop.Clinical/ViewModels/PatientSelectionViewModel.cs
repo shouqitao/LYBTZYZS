@@ -166,7 +166,8 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
             SetBusyWithMessage(true, "正在检查医案状态...");
             IsError = false;
 
-            // 检查是否有挂起医案
+            // 检查该患者是否有挂起医案
+            // OpenSpec: unify-pending-query-api - 使用patientId参数按患者筛选
             var pendingCases = await _medicalCaseApi.GetPendingCasesAsync(SelectedPatient.Id);
             var suspendedCase = pendingCases?.Data?.FirstOrDefault(c => c.Type == PendingCaseType.Suspended);
 

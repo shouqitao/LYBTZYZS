@@ -78,10 +78,12 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 获取待看诊队列（Status = Active的医案患者列表）
+        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
         /// <param name="doctorId">医生ID</param>
+        /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
         /// <returns>待诊队列列表</returns>
-        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId);
+        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null);
 
         /// <summary>
         /// 获取所有待看诊队列（管理员专用）

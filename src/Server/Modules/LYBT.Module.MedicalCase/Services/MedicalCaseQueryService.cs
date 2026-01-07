@@ -218,17 +218,20 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 获取待看诊队列（Status = Active的医案患者列表）
         /// Epic #2210 Phase 3: P0 Bug修复 - 实现缺失的Service方法
+        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
-        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId)
+        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            _logger.LogInformation("[SVC] MedicalCase.GetPendingCases started - DoctorId={DoctorId}", doctorId);
+            _logger.LogInformation("[SVC] MedicalCase.GetPendingCases started - DoctorId={DoctorId} PatientId={PatientId}",
+                doctorId, patientId);
 
             // Epic #2210: 直接委托给Repository，传递doctorId进行数据隔离
-            var result = await _repository.GetPendingCasesAsync(doctorId);
+            // OpenSpec: unify-pending-query-api: 传递patientId支持按患者筛选
+            var result = await _repository.GetPendingCasesAsync(doctorId, patientId);
 
-            _logger.LogInformation("[SVC] MedicalCase.GetPendingCases completed - DoctorId={DoctorId} Count={Count}",
-                doctorId, result.Count);
+            _logger.LogInformation("[SVC] MedicalCase.GetPendingCases completed - DoctorId={DoctorId} PatientId={PatientId} Count={Count}",
+                doctorId, patientId, result.Count);
 
             return result;
         }

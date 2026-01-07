@@ -66,8 +66,9 @@ public class PendingQueueManager
                 return;
             }
 
-            var doctorId = _sessionManager.CurrentUserId.Value;
-            var response = await _medicalCaseApi.GetPendingCasesAsync(doctorId);
+            // OpenSpec: unify-pending-query-api - 不传patientId，获取当前医生的所有待看诊医案
+            // Server从JWT获取当前登录用户ID进行数据隔离
+            var response = await _medicalCaseApi.GetPendingCasesAsync();
 
             if (response.Success && response.Data != null)
             {
