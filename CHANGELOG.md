@@ -60,6 +60,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **状态**: 已归档
 
+#### 统一待看诊查询API (OpenSpec: unify-pending-query-api) - 2026-01-07
+
+**背景**: PatientSelectionViewModel调用GetPendingCasesAsync传递的doctorId参数被Server端忽略，实际上Server从JWT获取当前用户ID进行数据隔离。
+
+**核心改进**:
+- **参数重构**:
+  - 移除无效的doctorId查询参数
+  - 添加可选patientId参数支持按患者筛选
+  - 保持向后兼容（无参数时返回所有）
+
+- **Desktop端修复**:
+  - `IMedicalCaseApi`: doctorId改为可选patientId参数
+  - `PatientSelectionViewModel`: 传递patientId筛选患者暂存医案
+  - `PendingQueueManager`: 移除无用参数
+
+- **Server端完善**:
+  - Repository/Service/Controller全链路支持patientId参数
+  - Where条件动态筛选
+
+**影响模块**: Desktop.Contracts, Desktop.Patients, Desktop.Clinical, Module.MedicalCase, WebAPI
+
+**状态**: 已归档
+
 #### Mapperly配置标准化 (OpenSpec: standardize-mapperly-configuration) - 2026-01-07
 
 **背景**: 项目存在247个RMG012/RMG020 Mapperly警告，各Mapper配置不一致。
