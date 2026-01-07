@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper"  />
+    <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除 -->
     <PackageReference Include="Bogus"  />
     <PackageReference Include="FluentAssertions"  />
     <!-- SQLite InMemory由Directory.Build.props提供 -->

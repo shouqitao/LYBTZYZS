@@ -35,8 +35,7 @@
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Bogus" />
     <PackageReference Include="NSubstitute" />
-    <PackageReference Include="AutoMapper" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+    <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除，使用Mapperly -->
   </ItemGroup>
 
   <ItemGroup>

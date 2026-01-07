@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper"  />
+    <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除 -->
     <PackageReference Include="Bogus"  />
   </ItemGroup>
 

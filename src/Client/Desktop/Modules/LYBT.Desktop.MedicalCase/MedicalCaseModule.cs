@@ -1,6 +1,5 @@
 // OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Infrastructure.DependencyInjection;
-using LYBT.Desktop.Infrastructure.Mapping;
 // OpenSpec: migrate-views-to-role-modules - AuditLogDialog/AuditReasonDialog已删除，审计功能后续单独规划
 using LYBT.Desktop.MedicalCase.Dialogs;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -38,19 +37,7 @@ namespace LYBT.Desktop.MedicalCase
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IMedicalCaseRepository, MedicalCaseRepository>();
 
-            // OpenSpec: adopt-mapperly-unified-mapping - 注册映射服务
-            containerRegistry.RegisterSingleton<
-                IMappingService<ConsultationDetailDto, ConsultationInputDto, ConsultationItem>,
-                ConsultationMappingService>();
-            containerRegistry.RegisterSingleton<
-                IMappingService<PrescriptionDetailDto, PrescriptionInputDto, PrescriptionItem>,
-                PrescriptionMappingService>();
-            containerRegistry.RegisterSingleton<
-                IMappingService<MedicalCaseDetailDto, MedicalCaseInputDto, MedicalCaseItem>,
-                MedicalCaseItemMappingService>();
-            containerRegistry.RegisterSingleton<
-                IMappingService<MedicalCaseDetailDto, MedicalCaseInputDto, MedicalCaseDetailModel>,
-                MedicalCaseDetailModelMappingService>();
+            // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 
             // OpenSpec: create-printing-module - 处方打印服务已迁移到独立Printing模块
             // [已移除] IPrescriptionPrintService, PrescriptionPrintService

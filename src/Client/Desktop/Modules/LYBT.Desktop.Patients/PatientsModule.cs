@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
-using LYBT.Desktop.Infrastructure.Mapping;
 // OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Mappers;
@@ -35,10 +34,7 @@ namespace LYBT.Desktop.Patients
             // Phase 2：Repository由模块自己注册
             containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
 
-            // OpenSpec: adopt-mapperly-unified-mapping - 注册映射服务
-            containerRegistry.RegisterSingleton<
-                IMappingService<PatientDetailDto, PatientInputDto, PatientItem>,
-                PatientMappingService>();
+            // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 
             // 注册FluentValidation验证器
             containerRegistry.Register<IValidator<PatientInputDto>, PatientInputDtoValidator>();

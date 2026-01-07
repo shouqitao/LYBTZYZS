@@ -60,6 +60,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **状态**: 已归档
 
+#### MedicalCase集群统一归档 - 6个提案 (2026-01-07)
+
+**归档提案及验证完成度**:
+1. **refactor-medicalcase-workspace** (~80%): 控件重构完成，删除废弃ViewModels
+2. **simplify-workspace-event-architecture** (~95%): 事件架构简化，PanelStatus枚举+Converters
+3. **consolidate-panel-viewmodels** (~95%): PanelViewModel→Item模式迁移完成
+4. **refactor-clinical-workflow** (~85%): Views迁移到Clinical模块完成
+5. **slim-medicalcase-workspace-viewmodel** (~40%): 部分组件提取完成
+6. **optimize-medicalcase-api** (~80%): 查询API优化完成
+
+**附带代码清理**:
+- 删除 `ConsultationPanel.xaml/.cs` (已被MedicalCaseEditControl替代)
+- 删除 `PatientSelectionCommandExecutor.cs` (死代码)
+- 保留 `PendingQueueManager.cs` (仍在使用中)
+
+**关键技术决策**:
+- Entity→DTO→Item模式替代PanelViewModel
+- 事件转Callback模式，减少EventAggregator耦合
+- PanelStatus枚举+Converter模式统一状态显示
+- Clinical模块承载诊疗工作流Views
+
+**状态**: 已归档
+
 #### 批量归档 - 4个已完成提案 (2026-01-07)
 
 **归档提案**:

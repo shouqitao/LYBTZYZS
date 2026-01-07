@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Herbs.Interfaces;
-using LYBT.Desktop.Infrastructure.Mapping;
+using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -29,7 +29,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     private readonly IMedicalCaseRepository _repository;
     private readonly IHerbRepository _herbRepository;
     private readonly ISessionManager? _sessionManager;
-    private readonly IMappingService<MedicalCaseDetailDto, MedicalCaseInputDto, MedicalCaseDetailModel> _mappingService;
+    private readonly MedicalCaseDetailModelMapper _mapper = new();
 
     #region 扩展属性
 
@@ -76,14 +76,14 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> services,
         IMedicalCaseRepository repository,
         IHerbRepository herbRepository,
-        IMappingService<MedicalCaseDetailDto, MedicalCaseInputDto, MedicalCaseDetailModel> mappingService,
+        
         ILoggerFactory loggerFactory,
         ISessionManager? sessionManager = null)
         : base(services, loggerFactory)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
-        _mappingService = mappingService ?? throw new ArgumentNullException(nameof(mappingService));
+        // OpenSpec: standardize-api-architecture - 使用直接Mapper实例替代MappingService
         _sessionManager = sessionManager;
 
         PageTitle = "医案管理";
@@ -145,7 +145,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
                 return;
             }
 
-            var detail = _mappingService.ToItem(dto);
+            var detail = _mapper.ToItem(dto);
 
             // 初始化处方编辑列表
             InitializeHerbItems(detail);

@@ -52,7 +52,7 @@ MedicalCase作为聚合根，持有诊断和处方的Item类：
 - `IsDiagnosisComplete` - 验证必填字段
 
 方法:
-- ~~`FromDto()`, `ToDto()`~~ - 已废弃，请使用 `ConsultationMappingService`
+- ~~`FromDto()`, `ToDto()`~~ - 已废弃，请使用 `ConsultationMapper`
 - `ToInputDto()`
 
 ### PrescriptionItem
@@ -67,7 +67,7 @@ MedicalCase作为聚合根，持有诊断和处方的Item类：
 - `ItemCount`, `SingleDosePrice`, `TotalPrice`, `HasItems`, `IsValid`
 
 方法:
-- ~~`FromDto()`, `ToDto()`~~ - 已废弃，请使用 `PrescriptionMappingService`
+- ~~`FromDto()`, `ToDto()`~~ - 已废弃，请使用 `PrescriptionMapper`
 - `ToInputDto()`, `Clear()`
 
 ### PrescriptionHerbItem (已废弃)

@@ -4,7 +4,6 @@ using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Desktop.Herbs.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
-using LYBT.Desktop.Infrastructure.Mapping;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -30,10 +29,7 @@ namespace LYBT.Desktop.Herbs
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IHerbRepository, HerbRepository>();
 
-            // OpenSpec: adopt-mapperly-unified-mapping - 注册映射服务
-            containerRegistry.RegisterSingleton<
-                IMappingService<HerbDetailDto, HerbInputDto, HerbDetailModel>,
-                HerbMappingService>();
+            // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 
             // OpenSpec: standardize-service-layer - 统一使用Service命名
             containerRegistry.RegisterScoped<IHerbService, HerbService>();

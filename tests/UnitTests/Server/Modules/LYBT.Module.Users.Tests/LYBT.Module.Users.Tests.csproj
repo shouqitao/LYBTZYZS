@@ -22,8 +22,7 @@
     <!-- SQLite InMemory由Directory.Build.props提供 -->
     <PackageReference Include="Bogus"  />
     <PackageReference Include="Moq"  />
-    <PackageReference Include="AutoMapper"  />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection"  />
+    <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除，使用Mapperly -->
   </ItemGroup>
 
   <ItemGroup>

@@ -35,53 +35,45 @@ Themes/
 
 ---
 
-## Mapperly 统一映射架构 (OpenSpec: adopt-mapperly-unified-mapping)
+## Mapperly 直接映射架构 (OpenSpec: standardize-api-architecture)
 
-### 核心组件
+### 架构演进 (2026-01-07)
 
-```
-Mapping/
-├── IMappingService.cs           # 泛型接口 IMappingService<TDto, TInputDto, TItem>
-└── MappingServiceBase.cs        # 抽象基类，提供集合映射实现
-```
+**已删除**: `IMappingService<TDto, TInputDto, TItem>` 接口和 `MappingServiceBase` 基类
+- 原因: MappingService是Mapper的薄包装层，增加了不必要的间接性
+- 方案: ViewModel直接实例化Mapper，无需DI注入
 
-### 使用模式
+### 当前模式
 
-**1. MasterDetailViewModel (推荐模式)**
+**直接Mapper实例化 (唯一推荐模式)**
 ```csharp
-// DI 注入
-private readonly IMappingService<XXXDetailDto, XXXInputDto, XXXItem> _mappingService;
+public class XXXMasterDetailViewModel
+{
+    // 直接实例化，无需DI
+    private readonly XXXMapper _mapper = new();
 
-// 加载时
-var item = _mappingService.ToItem(dto);
+    // 加载时
+    var item = _mapper.ToItem(dto);
 
-// 保存时
-var inputDto = _mappingService.ToInputDto(item);
+    // 保存时
+    var inputDto = _mapper.ToInputDto(item);
+}
 ```
-
-**2. Controls 就地更新模式** (Herbs Controls)
-- 使用 `LoadFromDto()` 实例方法填充现有对象
-- 使用 `ToDto()` 实例方法导出数据
-- 适合长生命周期的 Control ViewModel
-
-**3. 手动属性复制** (复杂场景如 MedicalCaseWorkspaceViewModel)
-- 使用 DataLoader 缓存原始 DTO
-- 通过手动属性赋值初始化子 ViewModel
 
 ### 各模块 Mapper 位置
 
 | 模块 | Mapper 类 | 位置 |
 |------|-----------|------|
 | Herbs | HerbMapper | `Mappers/HerbMapper.cs` |
-| Formula | FormulaMapper, FormulaHerbItemMapper, FormulaDetailModelMapper | `Mappers/` |
-| MedicalCase | MedicalCaseMapper | `Mappers/MedicalCaseMapper.cs` |
+| Formula | FormulaMapper, FormulaDetailModelMapper | `Mappers/` |
+| MedicalCase | MedicalCaseDetailModelMapper | `Mappers/` |
 | Patients | PatientMapper | `Mappers/PatientMapper.cs` |
 | Users | UserMapper | `Mappers/UserMapper.cs` |
 
 ### 已废弃的 FromDto/ToDto 方法
 
 所有 Item 类中的静态 `FromDto()` 和实例 `ToDto()` 方法已标记 `[Obsolete]`：
-- 请使用对应模块的 `XXXMappingService.ToItem()` / `ToDto()` / `ToInputDto()` 替代
+- 请使用对应模块的 `XXXMapper.ToItem()` / `ToDto()` / `ToInputDto()` 替代
 - 这些方法将在后续版本移除
 
 ### Mapperly + CommunityToolkit.Mvvm 源生成器兼容性

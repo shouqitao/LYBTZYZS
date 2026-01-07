@@ -60,10 +60,7 @@
     <PackageReference Include="Prism.Wpf" />
   </ItemGroup>
 
-  <!-- Object Mapping -->
-  <ItemGroup Label="Data Processing">
-    <PackageReference Include="AutoMapper" />
-  </ItemGroup>
+  <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除，使用Mapperly -->
 
   <!-- Logging -->
   <ItemGroup Label="Logging">

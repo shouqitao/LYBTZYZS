@@ -4,7 +4,6 @@ using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Formula.Models.Items;
 using LYBT.Desktop.Formula.Repositories;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
-using LYBT.Desktop.Infrastructure.Mapping;
 using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -30,13 +29,7 @@ namespace LYBT.Desktop.Formula
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IFormulaRepository, FormulaRepository>();
 
-            // OpenSpec: adopt-mapperly-unified-mapping - 注册映射服务
-            containerRegistry.RegisterSingleton<
-                IMappingService<FormulaDetailDto, FormulaInputDto, FormulaItem>,
-                FormulaMappingService>();
-            containerRegistry.RegisterSingleton<
-                IMappingService<FormulaDetailDto, FormulaInputDto, FormulaDetailModel>,
-                FormulaDetailModelMappingService>();
+            // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 
             // OpenSpec: standardize-service-layer - 统一使用Service命名
             containerRegistry.Register<IFormulaService, Services.FormulaService>();
@@ -48,7 +41,7 @@ namespace LYBT.Desktop.Formula
 
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Formula模块的MasterDetail服务
-            containerRegistry.AddMasterDetailServices<FormulaListDto, FormulaDetailModel>();
+            containerRegistry.AddMasterDetailServices<FormulaListDto, FormulaItem>();
 
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // FormulaMasterDetailControl供角色台View复用，ViewModel在Control内部解析

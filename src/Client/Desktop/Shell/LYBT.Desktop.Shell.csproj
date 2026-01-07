@@ -71,10 +71,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
 
-  <!-- Object Mapping -->
-  <ItemGroup Label="Data Processing">
-    <PackageReference Include="AutoMapper" />
-  </ItemGroup>
+  <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除，使用Mapperly -->
 
   <!-- Project References -->
   <ItemGroup Label="Core Infrastructure - 简化三层架构">

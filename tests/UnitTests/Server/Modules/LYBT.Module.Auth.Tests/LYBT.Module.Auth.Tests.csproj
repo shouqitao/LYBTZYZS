@@ -21,7 +21,7 @@
     <!-- SQLite InMemory由Directory.Build.props提供，优于EF Core InMemory -->
     <!-- Removed conflicting packages - provided by dependencies -->
     <PackageReference Include="Bogus"  />
-    <PackageReference Include="AutoMapper"  />
+    <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除 -->
     <PackageReference Include="Moq"  />
   </ItemGroup>
 
