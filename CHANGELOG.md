@@ -37,6 +37,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Mapperly配置标准化 (OpenSpec: standardize-mapperly-configuration) - 2026-01-07
+
+**背景**: 项目存在247个RMG012/RMG020 Mapperly警告，各Mapper配置不一致。
+
+**核心改进**:
+- **统一配置策略**:
+  - 所有Mapper类添加 `RequiredMappingStrategy.Target`
+  - 消除RMG020警告(源成员未映射)
+
+- **修复RMG012警告**:
+  - FormulaMapper: 18个警告 (Service层计算字段)
+  - UserMapper(Server): 2个警告 (Status字段)
+  - UserMapper(Client): 6个警告 (DTO扩展字段)
+  - HerbMapper: 1个RMG004警告 (集合方法配置)
+
+- **建立规范**:
+  - 字段分类: Service计算/审计系统/安全敏感/关联实体/DTO扩展
+  - 集合方法自动继承元素映射器配置
+
+**影响模块**: Module.Herbs, Module.Users, Module.Formula, Desktop.Users
+
+**状态**: 已归档
+
 #### 接口重复清理提案取消 (OpenSpec: cleanup-interface-duplication) - 2026-01-05
 
 **背景**: Desktop层存在Contracts和Infrastructure两处接口定义。
