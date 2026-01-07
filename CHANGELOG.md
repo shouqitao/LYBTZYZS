@@ -60,6 +60,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **状态**: 已归档
 
+#### 批量归档 - 4个已完成提案 (2026-01-07)
+
+**归档提案**:
+1. **standardize-converter-organization**: Converter目录组织规范化
+2. **standardize-service-naming**: 服务命名规范文档化 (`docs/development/desktop-naming-conventions.md`)
+3. **optimize-medicalcase-ui**: 医案UI优化（移除重复患者信息、2x2诊断布局）
+4. **refactor-desktop-comprehensive**: Desktop综合重构（整合多个分散提案）
+
+**附带技术优化**:
+- 清理Mapperly RMG012警告（27个→0个）
+- 删除废弃AutoMapper测试文件（6个MappingProfile测试）
+
+**状态**: 已归档
+
 #### 接口重复清理提案取消 (OpenSpec: cleanup-interface-duplication) - 2026-01-05
 
 **背景**: Desktop层存在Contracts和Infrastructure两处接口定义。
