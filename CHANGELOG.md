@@ -37,6 +37,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 统一API架构 - 删除MappingService层 (OpenSpec: standardize-api-architecture) - 2026-01-07
+
+**背景**: Desktop端存在双层映射架构(Mapper+MappingService)，增加不必要的复杂性。
+
+**核心改进**:
+- **Server端清理**:
+  - 移除所有模块的AutoMapper包引用
+  - 统一使用Mapperly作为唯一映射方案
+
+- **Desktop端重构**:
+  - 删除`IMappingService`接口和`MappingServiceBase`基类
+  - 删除11个MappingService实现类
+  - ViewModel直接实例化Mapper: `private readonly XXXMapper _mapper = new();`
+  - 移除所有Module中的MappingService DI注册
+
+**架构决策**:
+- Mapper作为无状态工具类，直接实例化无需DI
+- 消除不必要的间接层，遵循KISS原则
+
+**影响模块**: Infrastructure, Formula, MedicalCase, Users, Patients, Herbs
+
+**状态**: 已归档
+
 #### Mapperly配置标准化 (OpenSpec: standardize-mapperly-configuration) - 2026-01-07
 
 **背景**: 项目存在247个RMG012/RMG020 Mapperly警告，各Mapper配置不一致。
