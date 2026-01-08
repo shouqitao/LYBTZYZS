@@ -314,15 +314,16 @@ public class MedicalCaseService : IMedicalCaseService
         {
             _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             var response = await _api.DeleteMedicalCaseAsync(medicalCaseId);
-            if (response.IsSuccessStatusCode)
+            // OpenSpec: standardize-api-naming - 使用统一的ApiResponse返回类型
+            if (response.Success)
             {
                 _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return new ApiResponse { Success = true, Message = "医案已取消" };
             }
             else
             {
-                _logger.LogWarning("[SVC] MedicalCase.DeleteViaApi → Failed - MedicalCaseId={MedicalCaseId} Reason={Reason}", medicalCaseId, response.ReasonPhrase);
-                return new ApiResponse { Success = false, Message = $"删除失败: {response.ReasonPhrase}" };
+                _logger.LogWarning("[SVC] MedicalCase.DeleteViaApi → Failed - MedicalCaseId={MedicalCaseId} Reason={Reason}", medicalCaseId, response.Message);
+                return new ApiResponse { Success = false, Message = $"删除失败: {response.Message}" };
             }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeleteViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); return new ApiResponse { Success = false, Message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex) }; }

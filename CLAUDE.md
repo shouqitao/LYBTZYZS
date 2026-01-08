@@ -117,6 +117,12 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 - Issue自动关闭(满足4标准) - 代码实现+测试通过+文档更新+PR合并
 - Consultation仅指诊断部分 - 术语规范
 
+**重构兼容设计原则**:
+- 重构过程中的兼容代码(如保留旧API、临时适配器)是**临时措施**
+- 兼容代码必须添加注释标记来源提案，格式: `// OpenSpec: {change-id} - 兼容设计，待{目标提案}完成后移除`
+- 重构完成后，必须创建清理提案移除兼容代码
+- 禁止无限期保留兼容代码，每个兼容设计必须有明确的移除计划
+
 ---
 
 ## 死代码识别模式
@@ -151,5 +157,5 @@ mcp__serena__list_memories()  # 查看可用的架构记忆文件
 
 ---
 
-最后更新: 2026-01-05 08:12
-文档版本: v3.6-dead-code-patterns
+最后更新: 2026-01-07 22:41
+文档版本: v3.7-refactor-compatibility-rules

@@ -1,6 +1,9 @@
 ---
 name: lybtzyzs-openspec-archive-finalize
-description: OpenSpec归档完成后的自动化流程：代码审查→提交推送→保存记忆→文档同步。遵循文档层级：project.md(源)→README.md(入口)→CHANGELOG.md(历史)
+description: |
+  OpenSpec归档完成后的自动化流程：代码审查→提交推送→保存记忆→文档同步。
+  遵循文档层级：project.md(源)→README.md(入口)→CHANGELOG.md(历史)。
+  触发关键词：归档提案、openspec archive、确认完成进入归档、完成归档、archive finalize
 ---
 
 # OpenSpec 归档完成处理器
@@ -43,8 +46,15 @@ description: OpenSpec归档完成后的自动化流程：代码审查→提交�
 
 ## 何时使用
 
+- OpenSpec执行阶段(/lybtzyzs-openspec-apply)完成后触发
 - OpenSpec归档（/openspec:archive）完成后手动触发
 - 批量归档后需要统一处理
+
+## 前置条件
+
+- `openspec/changes/{change-id}/` 目录已存在
+- 执行阶段已完成，所有代码变更已应用
+- 用户已确认执行结果
 
 ## 工作流程
 
@@ -286,6 +296,41 @@ description: OpenSpec归档完成后的自动化流程：代码审查→提交�
 3. **归档前确保代码质量** - 在归档前先执行代码审查
 4. **记忆文件命名规范** - 使用`openspec-{change-id}-{date}.md`格式
 
+## 工作流整合
+
+此Skill是OpenSpec全流程自动化的第4阶段（最终阶段）:
+
+```
+lybtzyzs-openspec-proposal (采访阶段)
+    ↓ 用户确认提案
+lybtzyzs-openspec-design (设计阶段)
+    ↓ 用户确认设计
+lybtzyzs-openspec-apply (执行阶段)
+    ↓ 用户确认完成
+lybtzyzs-openspec-archive-finalize (归档阶段) ← 当前
+    ↓
+完成
+```
+
+### 从执行阶段过渡
+
+执行阶段完成后，用户确认"确认完成，进入归档"即可触发此Skill:
+
+```markdown
+## 执行摘要
+
+所有任务已完成，编译验证通过。
+
+**选项**:
+A. 确认完成，进入归档阶段  → 触发此Skill
+B. 需要额外修改
+C. 回滚变更
+```
+
+### 归档完成后
+
+归档完成后，OpenSpec变更流程结束。输出完整报告供用户存档。
+
 ## 版本历史
 
 | 版本 | 日期 | 变更说明 |
@@ -293,7 +338,8 @@ description: OpenSpec归档完成后的自动化流程：代码审查→提交�
 | v1.0 | 2025-11-29 | 初始版本 |
 | v1.1 | 2026-01-05 | 记忆存储迁移到Serena |
 | v1.2 | 2026-01-06 | 添加CLAUDE.md知识持久化 |
-| v2.0 | 2026-01-07 | 重构文档同步：建立文档层级(project.md→README.md→CHANGELOG.md)，移除CLAUDE.md持久化，新增project.md更新检测 |
+| v2.0 | 2026-01-07 | 重构文档同步：建立文档层级 |
+| v2.1 | 2026-01-07 | 集成OpenSpec全流程自动化工作流 |
 
 ---
 
