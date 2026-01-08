@@ -37,6 +37,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 统一API命名规范 (OpenSpec: standardize-api-naming) - 2026-01-08
+
+**背景**: Desktop端API存在命名不一致、幽灵API、返回类型不统一等问题。
+
+**核心改进**:
+- **删除幽灵API**:
+  - `IAuthApi.ChangeSysAdminPasswordAsync` 已移除（Server端Issue #1909已删除）
+  - 清理相关注释和空壳方法
+
+- **统一URL命名**:
+  - `IFormulaApi.BatchImportAsync`: `/import` → `/batch-import`
+  - `FormulasController`: 路由同步更新
+
+- **修复返回类型**:
+  - `IMedicalCaseApi.DeleteMedicalCaseAsync`: `IApiResponse` → `ApiResponse`
+
+**遗留问题**: Issue #2262 跟踪ChangePasswordAsync空壳方法修复
+
+**影响模块**: Desktop.Contracts, Desktop.Foundation, WebAPI
+
+**状态**: 已归档
+
 #### 统一API架构 - 删除MappingService层 (OpenSpec: standardize-api-architecture) - 2026-01-07
 
 **背景**: Desktop端存在双层映射架构(Mapper+MappingService)，增加不必要的复杂性。
