@@ -5,6 +5,7 @@ using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -194,10 +195,16 @@ namespace LYBT.Desktop.Shell.ViewModels
                     return;
                 }
 
-                // 调用认证服务修改密码（不需要userId，使用当前登录用户）
-                var success = await _authService.ChangePasswordAsync(OldPassword, NewPassword);
+                // Issue #2262: 改用IUserRepository统一密码修改逻辑
+                // 职责分离：Auth负责认证，User负责用户管理（包括密码修改）
+                var request = new ChangePasswordRequest
+                {
+                    OldPassword = OldPassword,
+                    NewPassword = NewPassword
+                };
+                var result = await _userRepository.ChangePasswordAsync(currentUser.Id, request);
 
-                if (success)
+                if (result.IsSuccess)
                 {
                     Logger.LogInformation("密码修改成功: {UserName}", UserName);
                     await NotifySuccessAsync("密码修改成功");
@@ -207,7 +214,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 }
                 else
                 {
-                    SetValidationError("密码修改失败，请检查当前密码是否正确");
+                    SetValidationError(result.ErrorMessage ?? "密码修改失败，请检查当前密码是否正确");
                 }
             }
             catch (Exception ex)

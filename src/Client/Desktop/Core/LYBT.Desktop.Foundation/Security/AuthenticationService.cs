@@ -226,22 +226,9 @@ namespace LYBT.Desktop.Foundation.Security
             }
         }
 
-        /// <summary>
-        /// 修改密码
-        /// Issue #1909: 原ChangeSysAdminPasswordAsync API已移除
-        /// TODO: 需要重构为使用IUserApi.ChangePasswordAsync
-        /// </summary>
-        public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
-        {
-            // Issue #1909: 原API已移除，此方法需要重构
-            // SuperAdmin密码修改现统一使用IUserApi.ChangePasswordAsync
-            _logger.LogWarning("ChangePasswordAsync: 此方法尚未完成重构，请使用账户设置页面的密码修改功能");
-            await Task.CompletedTask;
-            return false;
-        }
-
-        // Issue #1909: ChangeSysAdminPasswordAsync已移除
-        // SuperAdmin密码修改现统一使用IUserApi.ChangePasswordAsync
+        // Issue #2262: ChangePasswordAsync已移除
+        // 职责分离：密码修改统一使用IUserRepository.ChangePasswordAsync
+        // Auth服务负责认证，User服务负责用户管理（包括密码修改）
 
         /// <summary>
         /// 使用AutoLoginToken自动登录

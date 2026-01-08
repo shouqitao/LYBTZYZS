@@ -57,16 +57,9 @@ namespace LYBT.Desktop.Foundation.Security
         /// </summary>
         Task<bool> CheckConnectionAsync();
 
-        /// <summary>
-        /// 修改密码
-        /// </summary>
-        /// <param name="currentPassword">当前密码</param>
-        /// <param name="newPassword">新密码</param>
-        /// <returns>修改是否成功</returns>
-        Task<bool> ChangePasswordAsync(string currentPassword, string newPassword);
-
-        // Issue #1909: ChangeSysAdminPasswordAsync已移除
-        // SuperAdmin密码修改现统一使用IUserApi.ChangePasswordAsync
+        // Issue #2262: ChangePasswordAsync已移除
+        // 职责分离：密码修改统一使用IUserRepository.ChangePasswordAsync
+        // Auth服务负责认证，User服务负责用户管理（包括密码修改）
 
         /// <summary>
         /// 使用AutoLoginToken自动登录
