@@ -37,6 +37,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 简化数据访问层架构 (OpenSpec: simplify-desktop-data-layer) - 2026-01-08
+
+**背景**: Desktop端数据访问层存在冗余，Service层包含大量CRUD转发方法，ViewModel需要同时依赖Service和Repository。
+
+**核心改进**:
+- **MedicalCaseService统一数据访问**:
+  - 移除`_api`字段直接调用，统一使用Repository
+  - 删除7个CRUD转发方法(GetByIdSimple/UpdateSimple/Create/GetPaged/Query/Delete/Search)
+  - 使用Mapperly替代手写克隆代码(~50行)
+
+- **HerbService合并到Repository**:
+  - 删除`HerbService.cs`和`IHerbService.cs`
+  - `HerbRepository`新增包装方法(CreateWithResult/UpdateWithResult/DeleteWithResult/GetByIdWithResult)
+  - ViewModel直接使用`IHerbRepository`
+
+- **FormulaService精简**:
+  - 删除CRUD转发方法(Create/Update/GetPaged/GetById/Delete)
+  - 保留业务逻辑方法(SaveFormula/CopyFormula/DeleteFormula等)
+
+- **过期属性清理**:
+  - 删除`MedicalCaseItem.CanStartConsultation`和`CanCreatePrescription`属性
+  - 更新Mapper忽略配置
+
+**新增文件**:
+- `MedicalCaseCloneMapper.cs` - Mapperly克隆映射器
+
+**删除文件**:
+- `HerbService.cs` - 功能合并到Repository
+- `IHerbService.cs` - 接口删除
+
+**影响模块**: Desktop.MedicalCase, Desktop.Herbs, Desktop.Formula, Desktop.Shell
+
+**净减少代码**: 约450+行
+
+**状态**: 已归档
+
 #### 统一API命名规范 (OpenSpec: standardize-api-naming) - 2026-01-08
 
 **背景**: Desktop端API存在命名不一致、幽灵API、返回类型不统一等问题。
