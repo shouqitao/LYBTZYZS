@@ -102,8 +102,9 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 批量导入验方数据
+        /// OpenSpec: standardize-api-naming - REQ-API-002 批量操作URL模式
         /// </summary>
-        [Refit.Post("/api/v1/formulas/import")]
+        [Refit.Post("/api/v1/formulas/batch-import")]
         Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync([Refit.Body] FormulaBatchImportInputDto request);
 
         /// <summary>

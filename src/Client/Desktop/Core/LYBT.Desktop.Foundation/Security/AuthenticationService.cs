@@ -227,67 +227,21 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
-        /// 修改密码 - 调用HTTP API
+        /// 修改密码
+        /// Issue #1909: 原ChangeSysAdminPasswordAsync API已移除
+        /// TODO: 需要重构为使用IUserApi.ChangePasswordAsync
         /// </summary>
         public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
         {
-            try
-            {
-                var request = new ChangeSysAdminPassword
-                {
-                    OldPassword = currentPassword,
-                    NewPassword = newPassword
-                };
-
-                var apiResponse = await _authApi.ChangeSysAdminPasswordAsync(request);
-
-                if (apiResponse.Success)
-                {
-                    _logger.LogInformation("密码修改成功");
-                    return true;
-                }
-                else
-                {
-                    _logger.LogWarning("密码修改失败: {Message}", apiResponse.Message);
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "修改密码时发生异常");
-                return false;
-            }
+            // Issue #1909: 原API已移除，此方法需要重构
+            // SuperAdmin密码修改现统一使用IUserApi.ChangePasswordAsync
+            _logger.LogWarning("ChangePasswordAsync: 此方法尚未完成重构，请使用账户设置页面的密码修改功能");
+            await Task.CompletedTask;
+            return false;
         }
 
-        /// <summary>
-        /// 修改系统管理员密码 (Issue #1892)
-        /// </summary>
-        public async Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
-        {
-            try
-            {
-                _logger.LogInformation("修改系统管理员密码");
-
-                var apiResponse = await _authApi.ChangeSysAdminPasswordAsync(request);
-
-                if (apiResponse.Success)
-                {
-                    _logger.LogInformation("系统管理员密码修改成功");
-                    return ServiceResult<bool>.Success(true, apiResponse.Message ?? "密码修改成功");
-                }
-                else
-                {
-                    var errorMsg = apiResponse.Message ?? "密码修改失败";
-                    _logger.LogWarning("系统管理员密码修改失败: {Message}", errorMsg);
-                    return ServiceResult<bool>.Failure(errorMsg);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "修改系统管理员密码时发生异常");
-                return ServiceResult<bool>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex));
-            }
-        }
+        // Issue #1909: ChangeSysAdminPasswordAsync已移除
+        // SuperAdmin密码修改现统一使用IUserApi.ChangePasswordAsync
 
         /// <summary>
         /// 使用AutoLoginToken自动登录

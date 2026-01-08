@@ -73,19 +73,8 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<LoginResponse>> RefreshTokenAsync([Refit.Body] RefreshTokenRequest request);
 
 
-        /// <summary>
-        /// 修改系统管理员密码
-        /// </summary>
-        /// <param name="changeSysAdminPassword">密码修改请求</param>
-        /// <returns>密码修改结果</returns>
-        /// <remarks>
-        /// <para>功能: 修改系统管理员密码</para>
-        /// <para>验证: 新密码强度检查，至少6位</para>
-        /// <para>权限: 仅管理员角色可访问</para>
-        /// </remarks>
-        [Refit.Post("/api/v1/auth/changeSysAdminPassword")]
-        [Refit.Headers("Authorization: Bearer")]
-        Task<ApiResponse> ChangeSysAdminPasswordAsync([Refit.Body] ChangeSysAdminPassword changeSysAdminPassword);
+        // Issue #1909: ChangeSysAdminPasswordAsync已移除
+        // SuperAdmin密码修改现统一使用IUserApi.ChangePasswordAsync
 
         /// <summary>
         /// 验证Token (GET方法)

@@ -148,8 +148,9 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量导入验方数据 (Issue #1166, #1758)
         /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
+        /// OpenSpec: standardize-api-naming - REQ-API-002 批量操作URL模式
         /// </summary>
-        [HttpPost("import")]
+        [HttpPost("batch-import")]
         [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
         public async Task<IActionResult> Import([FromBody] FormulaBatchImportInputDto request)
         {
