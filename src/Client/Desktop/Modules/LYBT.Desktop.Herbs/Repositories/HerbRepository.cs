@@ -2,6 +2,7 @@ using System.IO;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Repositories;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
@@ -299,6 +300,97 @@ namespace LYBT.Desktop.Herbs.Repositories
             {
                 _logger.LogError(ex, "批量禁用药材时发生异常");
                 return null;
+            }
+        }
+
+        #endregion
+
+        #region 包装方法（统一返回元组格式）
+        // OpenSpec: simplify-desktop-data-layer - 合并HerbService功能
+
+        /// <inheritdoc/>
+        public async Task<(bool success, HerbDetailDto? data, string? error)> CreateWithResultAsync(HerbInputDto input)
+        {
+            try
+            {
+                _logger.LogInformation("[REPO] Herb.Create started - Name={Name}", input.Name);
+                var result = await CreateAsync(input);
+                _logger.LogInformation("[REPO] Herb.Create completed - HerbId={HerbId}", result.Id);
+                return (true, result, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Herb.Create failed - Name={Name}", input.Name);
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建中药", ex));
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<(bool success, HerbDetailDto? data, string? error)> UpdateWithResultAsync(Guid id, HerbInputDto input)
+        {
+            try
+            {
+                _logger.LogInformation("[REPO] Herb.Update started - HerbId={HerbId}", id);
+                var result = await UpdateAsync(input);
+                _logger.LogInformation("[REPO] Herb.Update completed - HerbId={HerbId}", id);
+                return (true, result, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Herb.Update failed - HerbId={HerbId}", id);
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新中药", ex));
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<(bool success, string? error)> DeleteWithResultAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("[REPO] Herb.Delete started - HerbId={HerbId}", id);
+                var result = await DeleteAsync(id);
+
+                if (result)
+                {
+                    _logger.LogInformation("[REPO] Herb.Delete completed - HerbId={HerbId}", id);
+                    return (true, null);
+                }
+                else
+                {
+                    _logger.LogWarning("[REPO] Herb.Delete → NotFound - HerbId={HerbId}", id);
+                    return (false, "删除中药失败，记录不存在或已被删除");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Herb.Delete failed - HerbId={HerbId}", id);
+                return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除中药", ex));
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<(bool success, HerbDetailDto? data, string? error)> GetByIdWithResultAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogDebug("[REPO] Herb.GetById started - HerbId={HerbId}", id);
+                var result = await GetByIdAsync(id);
+
+                if (result != null)
+                {
+                    _logger.LogDebug("[REPO] Herb.GetById completed - HerbId={HerbId}", id);
+                    return (true, result, null);
+                }
+                else
+                {
+                    _logger.LogWarning("[REPO] Herb.GetById → NotFound - HerbId={HerbId}", id);
+                    return (false, null, "未找到指定的中药记录");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Herb.GetById failed - HerbId={HerbId}", id);
+                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("获取中药详情", ex));
             }
         }
 

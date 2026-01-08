@@ -1,4 +1,5 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 
@@ -81,5 +82,34 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <param name="ids">医案ID列表（最多50个）</param>
         /// <returns>医案详情列表</returns>
         Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync(List<Guid> ids);
+
+        // ========================================
+        // OpenSpec: simplify-desktop-data-layer - Phase 1
+        // 以下方法从Service层迁移，统一数据访问入口
+        // ========================================
+
+        /// <summary>
+        /// 设置处方标志
+        /// OpenSpec: simplify-desktop-data-layer (Phase 1)
+        /// </summary>
+        Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request);
+
+        /// <summary>
+        /// 更新医案状态
+        /// OpenSpec: simplify-desktop-data-layer (Phase 1)
+        /// </summary>
+        Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request);
+
+        /// <summary>
+        /// 取消医案
+        /// OpenSpec: simplify-desktop-data-layer (Phase 1)
+        /// </summary>
+        Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request);
+
+        /// <summary>
+        /// 暂存医案草稿
+        /// OpenSpec: simplify-desktop-data-layer (Phase 1)
+        /// </summary>
+        Task<MedicalCaseDetailDto?> SaveDraftAsync(Guid id, ConsultationInputDto? request);
     }
 }

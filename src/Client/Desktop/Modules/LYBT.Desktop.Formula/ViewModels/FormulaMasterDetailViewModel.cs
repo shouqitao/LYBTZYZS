@@ -28,7 +28,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         private readonly IFormulaRepository _formulaRepository;
         private readonly IFormulaService _formulaService;
         private readonly IDialogService _prismDialogService;
-        private readonly IHerbService _herbService;
+        // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，改用IHerbRepository
+        private readonly IHerbRepository _herbRepository;
         private readonly ISessionManager? _sessionManager;
         private readonly FormulaDetailModelMapper _mapper = new();
 
@@ -77,8 +78,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IFormulaRepository formulaRepository,
             IFormulaService formulaService,
             IDialogService prismDialogService,
-            IHerbService herbService,
-            
+            // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，改用IHerbRepository
+            IHerbRepository herbRepository,
             ILoggerFactory loggerFactory,
             ISessionManager? sessionManager = null)
             : base(services, loggerFactory)
@@ -86,7 +87,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             // OpenSpec: standardize-api-architecture - 使用直接Mapper实例替代MappingService
             _sessionManager = sessionManager;
 
@@ -232,7 +233,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>删除项</summary>
         protected override async Task<bool> DeleteItemAsync(FormulaListDto item)
         {
-            var success = await _formulaService.DeleteAsync(item.Id);
+            // OpenSpec: simplify-desktop-data-layer - 使用Repository替代Service
+            var success = await _formulaRepository.DeleteAsync(item.Id);
             if (!success)
             {
                 Services.ErrorHandler.SetError("Delete", $"删除验方 '{item.Name}' 失败");
@@ -454,7 +456,8 @@ namespace LYBT.Desktop.Formula.ViewModels
                 int currentPage = 1;
                 while (true)
                 {
-                    var pagedResult = await _herbService.GetPagedAsync(currentPage, pageSize);
+                    // OpenSpec: simplify-desktop-data-layer - 使用IHerbRepository替代IHerbService
+                    var pagedResult = await _herbRepository.GetPagedAsync(currentPage, pageSize);
                     if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
                     foreach (var herb in pagedResult.Items) _allHerbs.Add(herb);
                     if (pagedResult.Items.Count < pageSize) break;

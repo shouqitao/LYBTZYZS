@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// </summary>
     public partial class HerbMasterDetailViewModel : MasterDetailViewModelBase<HerbListDto, HerbDetailModel>
     {
-        private readonly IHerbService _herbService;
+        // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，统一使用IHerbRepository
         private readonly IHerbRepository _herbRepository;
         private readonly IDialogService _prismDialogService;
         private readonly ISessionManager? _sessionManager;
@@ -53,14 +53,13 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         public HerbMasterDetailViewModel(
             IMasterDetailServices<HerbListDto, HerbDetailModel> services,
-            IHerbService herbService,
             IHerbRepository herbRepository,
             IDialogService prismDialogService,
             ILoggerFactory loggerFactory,
             ISessionManager? sessionManager = null)
             : base(services, loggerFactory)
         {
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            // OpenSpec: simplify-desktop-data-layer - 移除IHerbService依赖
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
             _sessionManager = sessionManager;
@@ -101,7 +100,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>加载详情数据</summary>
         protected override async Task LoadDetailAsync(HerbListDto item)
         {
-            var result = await _herbService.GetByIdAsync(item.Id);
+            // OpenSpec: simplify-desktop-data-layer - 使用Repository替代Service
+            var result = await _herbRepository.GetByIdWithResultAsync(item.Id);
             if (!result.success || result.data == null)
             {
                 Services.ErrorHandler.SetError("LoadDetail", result.error ?? "加载药材详情失败");
@@ -181,9 +181,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 Remark = detail.Remark?.Trim()
             };
 
+            // OpenSpec: simplify-desktop-data-layer - 使用Repository替代Service
             var result = IsNew
-                ? await _herbService.CreateAsync(input)
-                : await _herbService.UpdateAsync(detail.Id, input);
+                ? await _herbRepository.CreateWithResultAsync(input)
+                : await _herbRepository.UpdateWithResultAsync(detail.Id, input);
 
             if (!result.success)
             {
@@ -215,7 +216,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>删除项</summary>
         protected override async Task<bool> DeleteItemAsync(HerbListDto item)
         {
-            var result = await _herbService.DeleteAsync(item.Id);
+            // OpenSpec: simplify-desktop-data-layer - 使用Repository替代Service
+            var result = await _herbRepository.DeleteWithResultAsync(item.Id);
             if (!result.success)
             {
                 Services.ErrorHandler.SetError("Delete", result.error ?? "删除药材失败");

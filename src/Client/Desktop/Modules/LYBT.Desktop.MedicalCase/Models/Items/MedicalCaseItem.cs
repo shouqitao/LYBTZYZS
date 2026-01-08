@@ -104,8 +104,6 @@ public class MedicalCaseItem : BindableBase
                 RaisePropertyChanged(nameof(IsActive));
                 RaisePropertyChanged(nameof(IsCompleted));
                 RaisePropertyChanged(nameof(CanEdit));
-                RaisePropertyChanged(nameof(CanStartConsultation));
-                RaisePropertyChanged(nameof(CanCreatePrescription));
                 RaisePropertyChanged(nameof(DisplayText));
             }
         }
@@ -117,11 +115,7 @@ public class MedicalCaseItem : BindableBase
         get => _consultationId;
         set
         {
-            if (SetProperty(ref _consultationId, value))
-            {
-                RaisePropertyChanged(nameof(CanStartConsultation));
-                RaisePropertyChanged(nameof(CanCreatePrescription));
-            }
+            SetProperty(ref _consultationId, value);
         }
     }
 
@@ -131,10 +125,7 @@ public class MedicalCaseItem : BindableBase
         get => _prescriptionId;
         set
         {
-            if (SetProperty(ref _prescriptionId, value))
-            {
-                RaisePropertyChanged(nameof(CanCreatePrescription));
-            }
+            SetProperty(ref _prescriptionId, value);
         }
     }
 
@@ -231,15 +222,8 @@ public class MedicalCaseItem : BindableBase
     /// </summary>
     public bool CanEdit => IsActive;
 
-    /// <summary>
-    /// 是否可开始问诊
-    /// </summary>
-    public bool CanStartConsultation => IsActive && !ConsultationId.HasValue;
-
-    /// <summary>
-    /// 是否可开处方
-    /// </summary>
-    public bool CanCreatePrescription => IsActive && ConsultationId.HasValue && !PrescriptionId.HasValue;
+    // OpenSpec: simplify-desktop-data-layer - Phase 2
+    // CanStartConsultation和CanCreatePrescription属性已删除（无XAML绑定使用）
 
     /// <summary>
     /// 显示文本（用于ComboBox等）

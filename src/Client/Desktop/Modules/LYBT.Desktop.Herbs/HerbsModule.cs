@@ -2,7 +2,7 @@
 using LYBT.Desktop.Herbs.Mappers;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Repositories;
-using LYBT.Desktop.Herbs.Services;
+// OpenSpec: simplify-desktop-data-layer - HerbService已删除
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Prism.Ioc;
@@ -31,8 +31,7 @@ namespace LYBT.Desktop.Herbs
 
             // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 
-            // OpenSpec: standardize-service-layer - 统一使用Service命名
-            containerRegistry.RegisterScoped<IHerbService, HerbService>();
+            // OpenSpec: simplify-desktop-data-layer - HerbService已删除，功能合并到Repository
 
             // OpenSpec: migrate-views-to-role-modules - HerbDetailView/HerbDetailViewModel已删除（无调用）
             // Issue #2168: CRUD统一架构 - HerbCreateViewModel已删除

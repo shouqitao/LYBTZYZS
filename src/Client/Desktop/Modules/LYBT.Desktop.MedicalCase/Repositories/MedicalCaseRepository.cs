@@ -2,6 +2,7 @@
 using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -391,6 +392,145 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "批量获取医案详情失败，ID数量: {Count}", ids.Count);
+                throw;
+            }
+        }
+
+
+        // ========================================
+        // OpenSpec: simplify-desktop-data-layer - Phase 1
+        // 以下方法从Service层迁移，统一数据访问入口
+        // ========================================
+
+        /// <inheritdoc/>
+        public async Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request)
+        {
+            if (id == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(id));
+
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            try
+            {
+                _logger.LogInformation("[REPO] 设置处方标志，MedicalCaseId: {MedicalCaseId}, NeedsPrescription: {NeedsPrescription}",
+                    id, request.NeedsPrescription);
+
+                var response = await _api.SetPrescriptionFlagAsync(id, request);
+
+                if (response.Success)
+                {
+                    _logger.LogInformation("[REPO] 设置处方标志成功，MedicalCaseId: {MedicalCaseId}", id);
+                    return response.Data;
+                }
+                else
+                {
+                    _logger.LogWarning("[REPO] 设置处方标志失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
+                        id, response.Message);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] 设置处方标志异常，MedicalCaseId: {MedicalCaseId}", id);
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request)
+        {
+            if (id == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(id));
+
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            try
+            {
+                _logger.LogInformation("[REPO] 更新医案状态，MedicalCaseId: {MedicalCaseId}, TargetStatus: {Status}",
+                    id, request.Status);
+
+                var response = await _api.UpdateStatusAsync(id, request);
+
+                if (response.Success)
+                {
+                    _logger.LogInformation("[REPO] 更新医案状态成功，MedicalCaseId: {MedicalCaseId}", id);
+                    return response.Data;
+                }
+                else
+                {
+                    _logger.LogWarning("[REPO] 更新医案状态失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
+                        id, response.Message);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] 更新医案状态异常，MedicalCaseId: {MedicalCaseId}", id);
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request)
+        {
+            if (id == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(id));
+
+            try
+            {
+                _logger.LogInformation("[REPO] 取消医案，MedicalCaseId: {MedicalCaseId}, Reason: {Reason}",
+                    id, request?.Reason ?? "无");
+
+                var response = await _api.CancelMedicalCaseAsync(id, request);
+
+                if (response.Success)
+                {
+                    _logger.LogInformation("[REPO] 取消医案成功，MedicalCaseId: {MedicalCaseId}", id);
+                    return response.Data;
+                }
+                else
+                {
+                    _logger.LogWarning("[REPO] 取消医案失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
+                        id, response.Message);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] 取消医案异常，MedicalCaseId: {MedicalCaseId}", id);
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<MedicalCaseDetailDto?> SaveDraftAsync(Guid id, ConsultationInputDto? request)
+        {
+            if (id == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(id));
+
+            try
+            {
+                _logger.LogInformation("[REPO] 暂存医案草稿，MedicalCaseId: {MedicalCaseId}", id);
+
+                var response = await _api.SaveDraftAsync(id, request);
+
+                if (response.Success)
+                {
+                    _logger.LogInformation("[REPO] 暂存医案草稿成功，MedicalCaseId: {MedicalCaseId}", id);
+                    return response.Data;
+                }
+                else
+                {
+                    _logger.LogWarning("[REPO] 暂存医案草稿失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
+                        id, response.Message);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] 暂存医案草稿异常，MedicalCaseId: {MedicalCaseId}", id);
                 throw;
             }
         }

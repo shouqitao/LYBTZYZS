@@ -35,36 +35,14 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// </summary>
         Task<(bool success, string? errorMessage)> DeleteFormulaAsync(Guid formulaId);
 
-        /// <summary>
-        /// 删除配方（简化版，Issue #1787: 兼容返回bool的调用）
-        /// </summary>
-        Task<bool> DeleteAsync(Guid formulaId);
-
-        /// <summary>
-        /// 创建配方（Issue #1787: 支持基本创建操作）
-        /// </summary>
-        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> CreateAsync(FormulaInputDto createDto);
-
-        /// <summary>
-        /// 更新配方（Issue #1787: 支持基本更新操作）
-        /// </summary>
-        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> UpdateAsync(FormulaInputDto updateDto);
+        // OpenSpec: simplify-desktop-data-layer - 已删除DeleteAsync/CreateAsync/UpdateAsync，ViewModel直接使用Repository
 
         /// <summary>
         /// 打印配方
         /// </summary>
         Task<(bool success, string? errorMessage)> PrintFormulaAsync(FormulaDetailDto formula);
 
-        /// <summary>
-        /// 分页查询配方（Issue #1787: 支持分页查询，返回轻量级ListDto）
-        /// </summary>
-        Task<(bool success, PagedResult<FormulaListDto>? data, string? errorMessage)> GetPagedAsync(
-            int page, int pageSize, string? searchText = null);
-
-        /// <summary>
-        /// 根据ID获取配方（Issue #1787: 支持单个配方查询）
-        /// </summary>
-        Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> GetByIdAsync(Guid formulaId);
+        // OpenSpec: simplify-desktop-data-layer - 已删除GetPagedAsync/GetByIdAsync，ViewModel直接使用Repository
 
         /// <summary>
         /// 查看使用历史

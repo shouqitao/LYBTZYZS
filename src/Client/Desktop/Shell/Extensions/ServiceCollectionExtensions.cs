@@ -24,7 +24,7 @@ using LYBT.Desktop.Foundation.Performance;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Herbs;
 using LYBT.Desktop.Herbs.Repositories;
-using LYBT.Desktop.Herbs.Services;
+// OpenSpec: simplify-desktop-data-layer - HerbService已删除，功能合并到Repository
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Roles;
@@ -227,8 +227,7 @@ namespace LYBT.Desktop.Shell.Extensions
             // OpenSpec: standardize-service-layer - 统一使用Service命名
             RegisterLogger<FormulaService>(containerRegistry);
             RegisterLogger<PatientService>(containerRegistry);
-            // OpenSpec: standardize-service-layer - 统一使用Service命名
-            RegisterLogger<HerbService>(containerRegistry);
+            // OpenSpec: simplify-desktop-data-layer - HerbService已删除，功能合并到HerbRepository
             RegisterLogger<MedicalCaseService>(containerRegistry);
             RegisterLogger<PatientStateManager>(containerRegistry);
             RegisterLogger<PatientValidator>(containerRegistry);

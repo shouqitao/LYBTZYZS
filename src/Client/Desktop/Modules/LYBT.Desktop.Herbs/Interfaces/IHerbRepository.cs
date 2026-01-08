@@ -87,5 +87,30 @@ namespace LYBT.Desktop.Herbs.Interfaces
         Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids);
 
         #endregion
+
+        #region 包装方法（统一返回元组格式）
+        // OpenSpec: simplify-desktop-data-layer - 合并HerbService功能
+
+        /// <summary>
+        /// 创建中药（带结果包装）
+        /// </summary>
+        Task<(bool success, HerbDetailDto? data, string? error)> CreateWithResultAsync(HerbInputDto input);
+
+        /// <summary>
+        /// 更新中药（带结果包装）
+        /// </summary>
+        Task<(bool success, HerbDetailDto? data, string? error)> UpdateWithResultAsync(Guid id, HerbInputDto input);
+
+        /// <summary>
+        /// 删除中药（带结果包装）
+        /// </summary>
+        Task<(bool success, string? error)> DeleteWithResultAsync(Guid id);
+
+        /// <summary>
+        /// 根据ID获取中药详情（带结果包装）
+        /// </summary>
+        Task<(bool success, HerbDetailDto? data, string? error)> GetByIdWithResultAsync(Guid id);
+
+        #endregion
     }
 }

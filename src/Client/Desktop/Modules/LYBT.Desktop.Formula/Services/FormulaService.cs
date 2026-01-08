@@ -156,75 +156,13 @@ namespace LYBT.Desktop.Formula.Services
                 return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除配方", ex));
             }
         }
-
-        /// <summary>
-        /// 删除配方（简化版，Issue #1787: 兼容返回bool的调用）
-        /// </summary>
-        public async Task<bool> DeleteAsync(Guid formulaId)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Formula.Delete started - FormulaId={FormulaId}", formulaId);
-                await _repository.DeleteAsync(formulaId);
-                _logger.LogInformation("[SVC] Formula.Delete completed - FormulaId={FormulaId}", formulaId);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.Delete failed - FormulaId={FormulaId}", formulaId);
-                return false;
-            }
-        }
+        // OpenSpec: simplify-desktop-data-layer - 已删除DeleteAsync(Guid)，ViewModel直接使用Repository.DeleteAsync
 
         #endregion
 
-        #region 基本CRUD操作
+        // OpenSpec: simplify-desktop-data-layer - 已删除基本CRUD操作(CreateAsync/UpdateAsync)，ViewModel直接使用Repository
 
-        /// <summary>
-        /// 创建配方（Issue #1787: 支持基本创建操作）
-        /// </summary>
-        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> CreateAsync(FormulaInputDto createDto)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Formula.Create started - Name={FormulaName}", createDto.Name);
-
-                var createdFormula = await _repository.CreateAsync(createDto);
-                _logger.LogInformation("[SVC] Formula.Create completed - FormulaId={FormulaId}", createdFormula.Id);
-
-                return (true, createdFormula, null);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.Create failed - Name={FormulaName}", createDto.Name);
-                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建配方", ex));
-            }
-        }
-
-        /// <summary>
-        /// 更新配方（Issue #1787: 支持基本更新操作）
-        /// </summary>
-        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> UpdateAsync(FormulaInputDto updateDto)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Formula.Update started - FormulaId={FormulaId}", updateDto.Id);
-
-                var updatedFormula = await _repository.UpdateAsync(updateDto);
-                _logger.LogInformation("[SVC] Formula.Update completed - Name={FormulaName}", updatedFormula.Name);
-
-                return (true, updatedFormula, null);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.Update failed - FormulaId={FormulaId}", updateDto.Id);
-                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新配方", ex));
-            }
-        }
-
-        #endregion
-
-        #region 其他操作
+#region 其他操作
 
         /// <summary>
         /// 打印配方（占位实现）
@@ -237,55 +175,7 @@ namespace LYBT.Desktop.Formula.Services
             return Task.FromResult<(bool, string?)>((true, "打印功能开发中"));
         }
 
-        /// <summary>
-        /// 分页查询配方（Issue #1787: 支持分页查询）
-        /// </summary>
-        public async Task<(bool success, PagedResult<FormulaListDto>? data, string? errorMessage)> GetPagedAsync(
-            int page, int pageSize, string? searchText = null)
-        {
-            try
-            {
-                _logger.LogDebug("[SVC] Formula.GetPaged started - Page={Page} PageSize={PageSize} SearchText={SearchText}",
-                    page, pageSize, searchText);
-
-                var result = await _repository.GetPagedAsync(page, pageSize, searchText);
-
-                _logger.LogDebug("[SVC] Formula.GetPaged completed - TotalCount={TotalCount}", result.TotalCount);
-                return (true, result, null);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.GetPaged failed");
-                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询配方列表", ex));
-            }
-        }
-
-        /// <summary>
-        /// 根据ID获取配方（Issue #1787: 支持单个配方查询）
-        /// </summary>
-        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> GetByIdAsync(Guid formulaId)
-        {
-            try
-            {
-                _logger.LogDebug("[SVC] Formula.GetById started - FormulaId={FormulaId}", formulaId);
-
-                var formula = await _repository.GetByIdAsync(formulaId);
-
-                if (formula == null)
-                {
-                    _logger.LogWarning("[SVC] Formula.GetById → NotFound - FormulaId={FormulaId}", formulaId);
-                    return (false, null, "配方不存在");
-                }
-
-                _logger.LogDebug("[SVC] Formula.GetById completed - Name={FormulaName}", formula.Name);
-                return (true, formula, null);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.GetById failed - FormulaId={FormulaId}", formulaId);
-                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询配方", ex));
-            }
-        }
+        // OpenSpec: simplify-desktop-data-layer - 已删除GetPagedAsync和GetByIdAsync，ViewModel直接使用Repository
 
         /// <summary>
         /// 查看使用历史（占位实现）

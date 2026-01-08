@@ -62,8 +62,7 @@ public partial class MedicalCaseItemMapper
     [MapperIgnoreTarget(nameof(MedicalCaseItem.IsActive))]
     [MapperIgnoreTarget(nameof(MedicalCaseItem.IsCompleted))]
     [MapperIgnoreTarget(nameof(MedicalCaseItem.CanEdit))]
-    [MapperIgnoreTarget(nameof(MedicalCaseItem.CanStartConsultation))]
-    [MapperIgnoreTarget(nameof(MedicalCaseItem.CanCreatePrescription))]
+    // OpenSpec: simplify-desktop-data-layer - CanStartConsultation/CanCreatePrescription属性已删除
     [MapperIgnoreTarget(nameof(MedicalCaseItem.DisplayText))]
     [MapperIgnoreTarget(nameof(MedicalCaseItem.DurationMinutes))]
     private partial MedicalCaseItem ToItemCore(MedicalCaseDetailDto dto);
@@ -117,8 +116,7 @@ public partial class MedicalCaseItemMapper
     [MapperIgnoreSource(nameof(MedicalCaseItem.IsActive))]
     [MapperIgnoreSource(nameof(MedicalCaseItem.IsCompleted))]
     [MapperIgnoreSource(nameof(MedicalCaseItem.CanEdit))]
-    [MapperIgnoreSource(nameof(MedicalCaseItem.CanStartConsultation))]
-    [MapperIgnoreSource(nameof(MedicalCaseItem.CanCreatePrescription))]
+    // OpenSpec: simplify-desktop-data-layer - CanStartConsultation/CanCreatePrescription属性已删除
     [MapperIgnoreSource(nameof(MedicalCaseItem.DisplayText))]
     [MapperIgnoreSource(nameof(MedicalCaseItem.DurationMinutes))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.UserId))]

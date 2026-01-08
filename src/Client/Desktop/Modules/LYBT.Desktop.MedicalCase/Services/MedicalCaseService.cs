@@ -1,6 +1,7 @@
-﻿using LYBT.Desktop.Contracts.Api;
+// OpenSpec: simplify-desktop-data-layer - IMedicalCaseApi已不再使用
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -20,20 +21,20 @@ namespace LYBT.Desktop.MedicalCase.Services;
 public class MedicalCaseService : IMedicalCaseService
 {
     private readonly IMedicalCaseRepository _repository;
-    private readonly IMedicalCaseApi _api;
+    // OpenSpec: simplify-desktop-data-layer - _api已移除，所有数据访问通过_repository
     private readonly ISessionManager? _sessionManager;
     private readonly ILogger<MedicalCaseService> _logger;
+    // OpenSpec: simplify-desktop-data-layer - Mapperly克隆替代手写Clone方法
+    private readonly MedicalCaseCloneMapper _cloneMapper = new();
     private MedicalCaseDetailDto? _originalDetail;
     private MedicalCaseDetailDto? _currentDetail;
 
     public MedicalCaseService(
         IMedicalCaseRepository repository,
-        IMedicalCaseApi api,
         ILogger<MedicalCaseService> logger,
         ISessionManager? sessionManager = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        _api = api ?? throw new ArgumentNullException(nameof(api));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _sessionManager = sessionManager;
     }
@@ -65,7 +66,7 @@ public class MedicalCaseService : IMedicalCaseService
             _logger.LogInformation("[SVC] MedicalCase.Initialize started - MedicalCaseId={MedicalCaseId}", entityId);
             _currentDetail = await _repository.GetByIdAsync(entityId);
             if (_currentDetail == null) throw new InvalidOperationException($"未找到ID为{entityId}的病案");
-            _originalDetail = CloneMedicalCaseDetail(_currentDetail);
+            _originalDetail = _cloneMapper.Clone(_currentDetail);
             _logger.LogDebug("[SVC] MedicalCase.Initialize detail - PatientId={PatientId} UserId={UserId} PatientName={PatientName}",
                 _currentDetail.PatientId, _currentDetail.UserId, _currentDetail.PatientName);
             _logger.LogInformation("[SVC] MedicalCase.Initialize completed - PatientName={PatientName}", _currentDetail.PatientName);
@@ -93,7 +94,7 @@ public class MedicalCaseService : IMedicalCaseService
                 if (updated.Consultation != null) _currentDetail.Consultation = updated.Consultation;
                 if (updated.Prescription != null) _currentDetail.Prescription = updated.Prescription;
             }
-            _originalDetail = CloneMedicalCaseDetail(_currentDetail);
+            _originalDetail = _cloneMapper.Clone(_currentDetail);
             _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
             return true;
         }
@@ -147,29 +148,8 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetByIdSimple failed - MedicalCaseId={MedicalCaseId}", id); return null; }
     }
 
-    public virtual async Task<MedicalCaseDetailDto?> UpdateSimpleAsync(MedicalCaseInputDto dto)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.UpdateSimple started - MedicalCaseId={MedicalCaseId}", dto.Id);
-            var result = await _repository.UpdateAsync(dto);
-            _logger.LogInformation("[SVC] MedicalCase.UpdateSimple completed - MedicalCaseId={MedicalCaseId}", dto.Id);
-            return result;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.UpdateSimple failed - MedicalCaseId={MedicalCaseId}", dto.Id); return null; }
-    }
-
-    public virtual async Task<MedicalCaseDetailDto?> CreateAsync(MedicalCaseInputDto dto)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.Create started - PatientId={PatientId}", dto.PatientId);
-            var created = await _repository.CreateAsync(dto);
-            _logger.LogInformation("[SVC] MedicalCase.Create completed - MedicalCaseId={MedicalCaseId}", created.Id);
-            return created;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Create failed - PatientId={PatientId}", dto.PatientId); return null; }
-    }
+    // OpenSpec: simplify-desktop-data-layer - UpdateSimpleAsync、CreateAsync已删除
+    // ViewModel应直接使用Repository进行CRUD操作
 
     // OpenSpec: consolidate-medicalcase-detail-queries - GetByIdWithDetailsAsync已删除，使用GetByIdAsync
     public virtual async Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null)
@@ -201,38 +181,8 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Query failed - QueryType={QueryType}", query.QueryType); return null; }
     }
 
-    public virtual async Task<bool> DeleteAsync(Guid id)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.DeleteById started - MedicalCaseId={MedicalCaseId}", id);
-            var result = await _repository.DeleteAsync(id);
-            if (result)
-                _logger.LogInformation("[SVC] MedicalCase.DeleteById completed - MedicalCaseId={MedicalCaseId}", id);
-            else
-                _logger.LogWarning("[SVC] MedicalCase.DeleteById → NotFound - MedicalCaseId={MedicalCaseId}", id);
-            return result;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeleteById failed - MedicalCaseId={MedicalCaseId}", id); return false; }
-    }
-
-    public virtual async Task<PagedResult<MedicalCaseDetailDto>?> SearchAsync(
-        string? patientName = null,
-        string? diagnosisKeyword = null,
-        DateTime? startDate = null,
-        DateTime? endDate = null,
-        int page = 1,
-        int pageSize = 20)
-    {
-        try
-        {
-            _logger.LogDebug("[SVC] MedicalCase.Search started - PatientName={PatientName} DiagnosisKeyword={DiagnosisKeyword}", patientName, diagnosisKeyword);
-            var result = await _repository.SearchAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
-            _logger.LogDebug("[SVC] MedicalCase.Search completed - TotalCount={TotalCount}", result?.TotalCount ?? 0);
-            return result;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Search failed"); return null; }
-    }
+    // OpenSpec: simplify-desktop-data-layer - DeleteAsync(Guid)、SearchAsync已删除
+    // ViewModel应直接使用Repository进行这些操作
 
     #endregion
 
@@ -247,9 +197,20 @@ public class MedicalCaseService : IMedicalCaseService
         {
             _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag started - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
                 medicalCaseId, request.NeedsPrescription);
-            var result = await _api.SetPrescriptionFlagAsync(medicalCaseId, request);
-            _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return result;
+
+            // OpenSpec: simplify-desktop-data-layer - 改用Repository
+            var data = await _repository.SetPrescriptionFlagAsync(medicalCaseId, request);
+            
+            if (data != null)
+            {
+                _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
+            }
+            else
+            {
+                _logger.LogWarning("[SVC] MedicalCase.SetPrescriptionFlag failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "设置处方标志失败" };
+            }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SetPrescriptionFlag failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
@@ -263,10 +224,20 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.CloseCase started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            // OpenSpec: optimize-medicalcase-api - 返回完整医案详情
-            var result = await _api.CloseCaseAsync(medicalCaseId);
-            _logger.LogInformation("[SVC] MedicalCase.CloseCase completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return result;
+
+            // OpenSpec: simplify-desktop-data-layer - 改用Repository
+            var data = await _repository.CloseCaseAsync(medicalCaseId);
+            
+            if (data != null)
+            {
+                _logger.LogInformation("[SVC] MedicalCase.CloseCase completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
+            }
+            else
+            {
+                _logger.LogWarning("[SVC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "关闭病案失败" };
+            }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
@@ -313,17 +284,19 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var response = await _api.DeleteMedicalCaseAsync(medicalCaseId);
-            // OpenSpec: standardize-api-naming - 使用统一的ApiResponse返回类型
-            if (response.Success)
+
+            // OpenSpec: simplify-desktop-data-layer - 改用Repository
+            var success = await _repository.DeleteAsync(medicalCaseId);
+            
+            if (success)
             {
                 _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return new ApiResponse { Success = true, Message = "医案已取消" };
             }
             else
             {
-                _logger.LogWarning("[SVC] MedicalCase.DeleteViaApi → Failed - MedicalCaseId={MedicalCaseId} Reason={Reason}", medicalCaseId, response.Message);
-                return new ApiResponse { Success = false, Message = $"删除失败: {response.Message}" };
+                _logger.LogWarning("[SVC] MedicalCase.DeleteViaApi → Failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse { Success = false, Message = "删除失败" };
             }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeleteViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); return new ApiResponse { Success = false, Message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex) }; }
@@ -337,9 +310,20 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdateStatus started - MedicalCaseId={MedicalCaseId} Status={Status}", medicalCaseId, request.Status);
-            var result = await _api.UpdateStatusAsync(medicalCaseId, request);
-            _logger.LogInformation("[SVC] MedicalCase.UpdateStatus completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return result;
+
+            // OpenSpec: simplify-desktop-data-layer - 改用Repository
+            var data = await _repository.UpdateStatusAsync(medicalCaseId, request);
+            
+            if (data != null)
+            {
+                _logger.LogInformation("[SVC] MedicalCase.UpdateStatus completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
+            }
+            else
+            {
+                _logger.LogWarning("[SVC] MedicalCase.UpdateStatus failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "更新状态失败" };
+            }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.UpdateStatus failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
@@ -349,9 +333,20 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.SaveDraftViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var result = await _api.SaveDraftAsync(medicalCaseId, consultationData);
-            _logger.LogInformation("[SVC] MedicalCase.SaveDraftViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return result;
+
+            // OpenSpec: simplify-desktop-data-layer - 改用Repository
+            var data = await _repository.SaveDraftAsync(medicalCaseId, consultationData);
+            
+            if (data != null)
+            {
+                _logger.LogInformation("[SVC] MedicalCase.SaveDraftViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
+            }
+            else
+            {
+                _logger.LogWarning("[SVC] MedicalCase.SaveDraftViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "暂存草稿失败" };
+            }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SaveDraftViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
@@ -361,10 +356,21 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.CancelViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+
+            // OpenSpec: simplify-desktop-data-layer - 改用Repository
             var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequestDto { Reason = reason };
-            var result = await _api.CancelMedicalCaseAsync(medicalCaseId, request);
-            _logger.LogInformation("[SVC] MedicalCase.CancelViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return result;
+            var data = await _repository.CancelMedicalCaseAsync(medicalCaseId, request);
+            
+            if (data != null)
+            {
+                _logger.LogInformation("[SVC] MedicalCase.CancelViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
+            }
+            else
+            {
+                _logger.LogWarning("[SVC] MedicalCase.CancelViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "取消医案失败" };
+            }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CancelViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
@@ -473,42 +479,7 @@ public class MedicalCaseService : IMedicalCaseService
                c.Discount != o.Discount || c.Advice != o.Advice || c.Remark != o.Remark;
     }
 
-    #endregion
-
-    #region 私有方法 - 深拷贝
-
-    // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
-    private MedicalCaseDetailDto CloneMedicalCaseDetail(MedicalCaseDetailDto s) => new()
-    {
-        Id = s.Id, CaseNumber = s.CaseNumber, PatientId = s.PatientId,
-        PatientName = s.PatientName, PatientGender = s.PatientGender, PatientAge = s.PatientAge,
-        UserId = s.UserId, DoctorName = s.DoctorName, ConsultationId = s.ConsultationId,
-        PrescriptionId = s.PrescriptionId, CaseStatus = s.CaseStatus,
-        Remark = s.Remark, CreatedAt = s.CreatedAt, UpdatedAt = s.UpdatedAt,
-        Consultation = s.Consultation != null ? CloneConsultation(s.Consultation) : null,
-        Prescription = s.Prescription != null ? ClonePrescription(s.Prescription) : null
-    };
-
-    // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
-    private ConsultationDetailDto CloneConsultation(ConsultationDetailDto s) => new()
-    {
-        Id = s.Id, MedicalCaseId = s.MedicalCaseId, PatientId = s.PatientId, UserId = s.UserId,
-        PatientName = s.PatientName, DoctorName = s.DoctorName,
-        PresentIllness = s.PresentIllness, TongueDiagnosis = s.TongueDiagnosis,
-        PulseDiagnosis = s.PulseDiagnosis, TcmDiagnosis = s.TcmDiagnosis,
-        CreatedAt = s.CreatedAt, UpdatedAt = s.UpdatedAt
-    };
-
-    // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
-    private PrescriptionDetailDto ClonePrescription(PrescriptionDetailDto s) => new()
-    {
-        Id = s.Id, PrescriptionNumber = s.PrescriptionNumber, MedicalCaseId = s.MedicalCaseId,
-        DosageCount = s.DosageCount,
-        Usage = s.Usage, Discount = s.Discount, Advice = s.Advice,
-        ReferencedFormulas = s.ReferencedFormulas, Remark = s.Remark, SingleDosePrice = s.SingleDosePrice,
-        TotalPrice = s.TotalPrice, TotalWeight = s.TotalWeight, Status = s.Status,
-        CreatedAt = s.CreatedAt, UpdatedAt = s.UpdatedAt, Items = s.Items
-    };
+    // OpenSpec: simplify-desktop-data-layer - Clone方法已迁移到MedicalCaseCloneMapper(Mapperly源生成)
 
     // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
     // OpenSpec: refactor-dto-simplification - MedicalCaseDto已删除，统一使用MedicalCaseDetailDto
@@ -560,7 +531,8 @@ public class MedicalCaseService : IMedicalCaseService
                 Remark = null
             };
 
-            var createdDto = await CreateAsync(createDto);
+            // OpenSpec: simplify-desktop-data-layer - 直接使用Repository
+            var createdDto = await _repository.CreateAsync(createDto);
             if (createdDto == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.CreateNew → NullResult");
