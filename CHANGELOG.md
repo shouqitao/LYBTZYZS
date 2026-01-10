@@ -37,6 +37,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 统一导航架构 (OpenSpec: unify-navigation-architecture) - 2026-01-10
+
+**背景**: Desktop层导航系统存在GetHomeViewName重复实现、视图名称硬编码分散、多个导航服务职责不清等问题。
+
+**核心改进**:
+- **消除GetHomeViewName重复**:
+  - 确立RoleRegistry为唯一权威源
+  - 移除MenuManager/NavigableViewModelBase/UnifiedViewModelBase中的3处重复实现
+  - ViewModel基类通过ISessionManager获取角色后委托RoleRegistry
+
+- **引入ViewNames常量类**:
+  - 新建`ViewNames.cs`定义16个类型安全的视图名称常量
+  - 全量替换Shell/Infrastructure/Roles/Modules层硬编码字符串
+  - 消除魔法字符串，提供编译时类型检查
+
+- **创建INavigationCoordinator**:
+  - 统一导航入口接口
+  - 整合通用导航和角色主页导航功能
+  - MenuManager/ViewModel使用统一接口
+
+- **统一INavigationAware实现**:
+  - NavigableViewModelBase实现完整导航生命周期
+  - UnifiedViewModelBase添加IConfirmNavigationRequest支持
+
+**架构决策**:
+- ADR-1: RoleRegistry为GetHomeViewName唯一权威源
+- ADR-2: ViewNames常量类提供类型安全
+- ADR-3: INavigationCoordinator统一导航入口
+- ADR-4: ViewNavigationService保留用于MasterDetail架构
+- ADR-5: 统一系统设置入口(角色内容自适应)
+- ADR-6: 统一视图命名规范
+
+**新增文件**:
+- `INavigationCoordinator.cs` - 统一导航接口
+- `NavigationCoordinator.cs` - 导航协调器实现
+- `ViewNames.cs` - 视图名称常量类
+
+**影响模块**: Desktop.Contracts, Desktop.Infrastructure, Desktop.Shell, Desktop.Admin, Desktop.Clinical
+
+**状态**: 已归档
+
 #### 简化数据访问层架构 (OpenSpec: simplify-desktop-data-layer) - 2026-01-08
 
 **背景**: Desktop端数据访问层存在冗余，Service层包含大量CRUD转发方法，ViewModel需要同时依赖Service和Repository。
