@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Models;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
@@ -81,7 +82,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                     // Management只读模式: 直接返回
                     if (isReadOnly)
                     {
-                        _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
+                        _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseMasterDetail);
                         return;
                     }
 
@@ -89,7 +90,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                     var shouldNavigate = await HandleManagementLeaveRequestAsync();
                     if (shouldNavigate)
                     {
-                        _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
+                        _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseMasterDetail);
                     }
                     return;
                 }
@@ -98,7 +99,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 var result = await HandleLeaveRequestAsync();
                 if (result.CanLeave)
                 {
-                    _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                    _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.PatientSelection);
                 }
             }
             catch (Exception ex)

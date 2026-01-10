@@ -163,9 +163,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
     public ICommand QuickAddPatientCommand => _menuManager.QuickAddPatientCommand;
 
     /// <summary>
-    /// 快速开始诊疗命令(Ctrl+Shift+C) - 委托给MenuManager
+    /// 快速开始看诊命令(Ctrl+Shift+C) - 委托给MenuManager
     /// </summary>
-    public ICommand QuickStartConsultationCommand => _menuManager.QuickStartConsultationCommand;
+    public ICommand QuickStartMedicalCaseCommand => _menuManager.QuickStartMedicalCaseCommand;
 
     /// <summary>
     /// 显示帮助命令 (F1) - 委托给MenuManager
@@ -216,6 +216,11 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// 账户设置命令 - OpenSpec: migrate-views-to-role-modules
     /// </summary>
     public ICommand EditProfileCommand => _menuManager.EditProfileCommand;
+
+    /// <summary>
+    /// 导航到主页命令 - OpenSpec: fix-button-navigation-system
+    /// </summary>
+    public ICommand NavigateToHomeCommand => _menuManager.NavigateToHomeCommand;
 
     #endregion
 

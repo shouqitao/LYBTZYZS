@@ -2,28 +2,29 @@
 using System.Windows.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Commands;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Regions;
 
 namespace LYBT.Desktop.Shell.Services;
 
 /// <summary>菜单命令管理器 - 负责快捷键命令、主题切换、帮助设置等功能</summary>
+/// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator统一导航入口</remarks>
 public class MenuManager
 {
-    private readonly NavigationManager _navigationManager;
+    private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ILogger<MenuManager> _logger;
     private readonly IUserNotificationService _userNotificationService;
     private readonly IApplicationCommands _applicationCommands;
 
     public MenuManager(
-        NavigationManager navigationManager,
+        INavigationCoordinator navigationCoordinator,
         ILogger<MenuManager> logger,
         IUserNotificationService userNotificationService,
         IApplicationCommands applicationCommands)
     {
-        _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
+        _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _userNotificationService = userNotificationService ?? throw new ArgumentNullException(nameof(userNotificationService));
         _applicationCommands = applicationCommands ?? throw new ArgumentNullException(nameof(applicationCommands));
@@ -39,8 +40,8 @@ public class MenuManager
     /// <summary>快速添加患者命令(Ctrl+N)</summary>
     public DelegateCommand QuickAddPatientCommand { get; private set; } = null!;
 
-    /// <summary>快速开始诊疗命令(Ctrl+Shift+C)</summary>
-    public DelegateCommand QuickStartConsultationCommand { get; private set; } = null!;
+    /// <summary>快速开始看诊命令(Ctrl+Shift+C)</summary>
+    public DelegateCommand QuickStartMedicalCaseCommand { get; private set; } = null!;
 
     /// <summary>显示帮助命令 (F1)</summary>
     public DelegateCommand ShowHelpCommand { get; private set; } = null!;
@@ -72,6 +73,9 @@ public class MenuManager
     /// <summary>账户设置命令 - OpenSpec: migrate-views-to-role-modules</summary>
     public DelegateCommand EditProfileCommand { get; private set; } = null!;
 
+    /// <summary>导航到主页命令 - OpenSpec: fix-button-navigation-system</summary>
+    public DelegateCommand NavigateToHomeCommand { get; private set; } = null!;
+
     #endregion 命令属性
 
     /// <summary>初始化所有命令</summary>
@@ -79,7 +83,7 @@ public class MenuManager
     {
         ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples);
         QuickAddPatientCommand = new DelegateCommand(async () => await ExecuteQuickAddPatientAsync().ConfigureAwait(false));
-        QuickStartConsultationCommand = new DelegateCommand(async () => await ExecuteQuickStartConsultationAsync().ConfigureAwait(false));
+        QuickStartMedicalCaseCommand = new DelegateCommand(async () => await ExecuteQuickStartMedicalCaseAsync().ConfigureAwait(false));
         ShowHelpCommand = new DelegateCommand(ExecuteShowHelp);
         ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings);
         ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
@@ -87,30 +91,53 @@ public class MenuManager
         // OpenSpec: migrate-views-to-role-modules - 账户设置命令
         EditProfileCommand = new DelegateCommand(ExecuteAccountSettings);
 
+        // OpenSpec: fix-button-navigation-system - 导航到主页命令
+        NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
+
         _logger.LogDebug("菜单命令系统已初始化");
     }
 
     /// <summary>OpenSpec: migrate-views-to-role-modules - 账户设置</summary>
+    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator</remarks>
     private void ExecuteAccountSettings()
     {
         _logger.LogInformation("导航到账户设置");
-        _navigationManager.NavigateTo("AccountSettingsView");
+        _navigationCoordinator.NavigateTo(ViewNames.AccountSettings);
+    }
+
+    /// <summary>OpenSpec: fix-button-navigation-system - 导航到主页</summary>
+    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator.NavigateToHome()</remarks>
+    private void ExecuteNavigateToHome()
+    {
+        _logger.LogInformation("导航到主页");
+        _navigationCoordinator.NavigateToHome();
     }
 
     /// <summary>显示控件示例</summary>
-    private void ExecuteShowControlExamples() => _navigationManager.NavigateToControlExamples();
+    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator</remarks>
+    private void ExecuteShowControlExamples() => _navigationCoordinator.NavigateTo(ViewNames.ControlExamples);
 
     /// <summary>快速添加患者(Ctrl+N)</summary>
+    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator</remarks>
     private async Task ExecuteQuickAddPatientAsync()
     {
-        try { _navigationManager.NavigateToAddPatient(); await _userNotificationService.ShowSuccessAsync("已切换到患者管理页面，准备添加新患者"); }
+        try
+        {
+            _navigationCoordinator.NavigateTo(ViewNames.PatientManagement, new Dictionary<string, object> { { "Action", "AddNew" } });
+            await _userNotificationService.ShowSuccessAsync("已切换到患者管理页面，准备添加新患者");
+        }
         catch (Exception ex) { await _userNotificationService.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("快速添加患者", ex)); }
     }
 
-    /// <summary>快速开始诊疗(Ctrl+Shift+C)</summary>
-    private async Task ExecuteQuickStartConsultationAsync()
+    /// <summary>快速开始看诊(Ctrl+Shift+C)</summary>
+    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator</remarks>
+    private async Task ExecuteQuickStartMedicalCaseAsync()
     {
-        try { _navigationManager.NavigateToMedicalCaseFlow(); await _userNotificationService.ShowSuccessAsync("已开始诊疗流程，请选择患者"); }
+        try
+        {
+            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace);
+            await _userNotificationService.ShowSuccessAsync("已开始诊疗流程，请选择患者");
+        }
         catch (Exception ex) { await _userNotificationService.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("快速开始诊疗", ex)); }
     }
 

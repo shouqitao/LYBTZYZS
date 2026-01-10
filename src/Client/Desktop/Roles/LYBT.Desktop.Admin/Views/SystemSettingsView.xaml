@@ -31,6 +31,7 @@
                     Text="系统设置" />
 
                 <!--  右侧: 操作按钮  -->
+                <!-- 返回主页按钮已移除 - 使用左侧侧边栏"主页"按钮统一返回 -->
                 <StackPanel
                     Grid.Column="1"
                     Orientation="Horizontal">
@@ -43,12 +44,6 @@
                         Command="{Binding ResetCommand}"
                         Content="重置"
                         Style="{StaticResource SecondaryButton}"
-                        Margin="{StaticResource SpacingSmall}" />
-                    <Button
-                        Command="{Binding NavigateToHomeCommand}"
-                        Content="返回主页"
-                        Style="{StaticResource PrimaryButton}"
-                        ToolTip="返回管理员主页"
                         Margin="{StaticResource SpacingSmall}" />
                 </StackPanel>
             </Grid>

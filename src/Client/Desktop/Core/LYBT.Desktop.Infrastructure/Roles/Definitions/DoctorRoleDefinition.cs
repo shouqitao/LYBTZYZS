@@ -1,3 +1,4 @@
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Infrastructure.Roles.Definitions
@@ -32,7 +33,8 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         public override string Description => "诊疗、记录、查询等业务操作";
 
         /// <inheritdoc/>
-        public override string HomeViewName => "ClinicalHomeView";
+        /// <remarks>OpenSpec: unify-navigation-architecture - 使用ViewNames常量</remarks>
+        public override string HomeViewName => ViewNames.ClinicalHome;
 
         /// <inheritdoc/>
         public override IReadOnlyList<string> RequiredModules => Modules;

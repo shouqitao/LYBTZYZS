@@ -231,7 +231,11 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     public bool IsFromManagement { get => _isFromManagement; set => SetProperty(ref _isFromManagement, value); }
 
     private bool _hasUnsavedPrescriptionChanges;
-    public bool HasUnsavedChanges => _hasUnsavedPrescriptionChanges;
+    /// <summary>
+    /// 是否有未保存的更改 - 重写基类以提供处方更改状态
+    /// OpenSpec: unify-navigation-architecture - IConfirmNavigationRequest支持
+    /// </summary>
+    protected override bool HasUnsavedChanges => _hasUnsavedPrescriptionChanges;
     public bool HasUnsavedPrescriptionChanges
     {
         get => _hasUnsavedPrescriptionChanges;
@@ -566,7 +570,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         Logger.LogInformation("查看患者历史，PatientId: {PatientId}", CurrentPatient.Id);
 
         // 导航到患者管理视图，用户可在MasterDetail界面查看患者详情
-        _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientManagementView");
+        _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.PatientManagement);
     }
 
     #region 待诊队列操作 - OpenSpec: refactor-medicalcase-workspace V2 TASK-V2-010
@@ -705,7 +709,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
                 { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
             };
 
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseWorkspaceView", parameters);
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseWorkspace, parameters);
             Logger.LogInformation("已导航到新医案：{MedicalCaseId}", createResult.medicalCaseId);
         }
         catch (Exception ex)
@@ -745,7 +749,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
                 { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
             };
 
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseWorkspaceView", parameters);
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseWorkspace, parameters);
             Logger.LogInformation("已导航到挂起医案：{MedicalCaseId}", pendingCase.MedicalCaseId.Value);
         }
         catch (Exception ex)

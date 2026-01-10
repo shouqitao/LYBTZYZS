@@ -88,6 +88,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync());
             ResetCommand = new DelegateCommand(async () => await ExecuteResetAsync());
             BrowseBackupPathCommand = new DelegateCommand(async () => await ExecuteBrowseBackupPathAsync());
+            // NavigateToHomeCommand 已由基类 UnifiedViewModelBase 提供
         }
 
         #endregion

@@ -16,7 +16,7 @@
 
     <Window.InputBindings>
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding QuickAddPatientCommand}" />
-        <KeyBinding Key="C" Modifiers="Ctrl+Shift" Command="{Binding QuickStartConsultationCommand}" />
+        <KeyBinding Key="C" Modifiers="Ctrl+Shift" Command="{Binding QuickStartMedicalCaseCommand}" />
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
         <KeyBinding Key="OemComma" Modifiers="Ctrl" Command="{Binding ShowSettingsCommand}" />
         <KeyBinding Key="M" Modifiers="Ctrl" Command="{Binding ToggleDrawerCommand}" />

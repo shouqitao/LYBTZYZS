@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
@@ -234,7 +235,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 { "PatientId", _dataManager.PatientId }
             };
 
-            _regionManager.RequestNavigate("ContentRegion", "MedicalCaseListView", parameters);
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseList, parameters);
         }
 
         /// <summary>
@@ -243,7 +244,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         private void ExecuteBack()
         {
             _logger.LogDebug("[SVC] Patient.ExecuteBack");
-            _regionManager.RequestNavigate("ContentRegion", "PatientMasterDetailView");
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.PatientMasterDetail);
         }
 
         /// <summary>

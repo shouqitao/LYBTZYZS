@@ -33,12 +33,10 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
@@ -52,10 +50,6 @@
   <!-- Issue #1607: ViewModel重构完成，恢复编译 -->
   <ItemGroup>
     <Compile Remove="Repositories\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="LYBT.Desktop.Consultation.xml" />
   </ItemGroup>
 
   <!-- Prism and WPF Framework -->

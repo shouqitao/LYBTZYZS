@@ -213,7 +213,7 @@
 
                         <!-- Clinical编辑模式: 暂存医案按钮 -->
                         <Button Content="暂存医案"
-                                Command="{Binding SaveAndStayCommand}"
+                                Command="{Binding SaveDraftCommand}"
                                 Style="{StaticResource WarningButton}"
                                 ToolTip="保存当前进度，可随时点击'修改医案'继续编辑"
                                 Visibility="{Binding ShowDraftButton, Converter={StaticResource BoolToVisibility}}"
@@ -229,7 +229,7 @@
 
                         <!-- Clinical编辑模式: 完成看诊按钮 -->
                         <Button Content="完成看诊"
-                                Command="{Binding CompleteConsultationCommand}"
+                                Command="{Binding CompleteMedicalCaseCommand}"
                                 Style="{StaticResource SuccessButton}"
                                 IsEnabled="{Binding CanComplete}"
                                 ToolTip="完成本次看诊，关闭医案"
@@ -237,7 +237,7 @@
 
                         <!-- Management编辑模式: 保存医案按钮 -->
                         <Button Content="保存医案"
-                                Command="{Binding SaveAndStayCommand}"
+                                Command="{Binding SaveDraftCommand}"
                                 Style="{StaticResource SuccessButton}"
                                 ToolTip="保存修改并留在当前界面"
                                 Visibility="{Binding ShowSaveButton, Converter={StaticResource BoolToVisibility}}"/>

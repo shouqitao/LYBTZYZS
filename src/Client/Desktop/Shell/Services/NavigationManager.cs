@@ -30,7 +30,7 @@ public class NavigationManager
         Application.Current.Dispatcher.InvokeAsync(() =>
         {
             if (_regionManager != null)
-                _regionManager.RequestNavigate(RegionNames.LoginRegion, "LoginView");
+                _regionManager.RequestNavigate(RegionNames.LoginRegion, ViewNames.Login);
         });
     }
 
@@ -51,7 +51,7 @@ public class NavigationManager
     /// <summary>导航到控件示例页面</summary>
     public void NavigateToControlExamples()
     {
-        try { _regionManager.RequestNavigate(RegionNames.ContentRegion, "ControlExamplesView"); }
+        try { _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.ControlExamples); }
         catch (Exception ex) { throw new InvalidOperationException(ClientErrorMessageMapper.GetSafeOperationFailureMessage("打开控件示例页面", ex), ex); }
     }
 
@@ -60,11 +60,11 @@ public class NavigationManager
     public void NavigateToAddPatient()
     {
         var navigationParams = new NavigationParameters { { "Action", "AddNew" } };
-        _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientManagementView", navigationParams);
+        _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.PatientManagement, navigationParams);
     }
 
     /// <summary>快速导航到医案工作区视图</summary>
-    public void NavigateToMedicalCaseFlow() => _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseWorkspaceView");
+    public void NavigateToMedicalCaseFlow() => _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseWorkspace);
 
     /// <summary>poc-drawer-layout: 通用导航到指定视图</summary>
     /// <param name="viewName">视图名称</param>

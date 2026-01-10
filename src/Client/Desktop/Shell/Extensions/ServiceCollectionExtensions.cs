@@ -171,6 +171,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<ApplicationStateService>(containerRegistry);
             RegisterLogger<NavigationManager>(containerRegistry);
             RegisterLogger<MenuManager>(containerRegistry);
+            RegisterLogger<NavigationCoordinator>(containerRegistry);
 
             // Shell启动流程重构 - Phase 1 新增Logger
             RegisterLogger<ApplicationLifecycle>(containerRegistry);
@@ -335,6 +336,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IDesktopExceptionHandler, DesktopExceptionHandler>();
             containerRegistry.RegisterSingleton<NavigationManager>();
             containerRegistry.RegisterSingleton<MenuManager>();
+            // OpenSpec: unify-navigation-architecture (ADR-3) - 统一导航入口
+            containerRegistry.RegisterSingleton<INavigationCoordinator, NavigationCoordinator>();
         }
 
         /// <summary>注册Infrastructure层服务</summary>

@@ -73,7 +73,7 @@
                           ItemsSource="{Binding Items}"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                           behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
-                          behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+                          behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=OneWay}"
                           Style="{StaticResource MasterDetailDataGridStyle}"
                           RowHeaderWidth="0"
                           Margin="0,0,0,8">

@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Constants;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
@@ -77,72 +78,72 @@ namespace LYBT.Desktop.Admin.ViewModels
         /// OpenSpec: refactor-admin-workspace - 导航到角色台管理视图
         /// </summary>
         [RelayCommand]
-        private void NavigateToUserManagement() => NavigateTo("UserManagementView");
+        private void NavigateToUserManagement() => NavigateTo(ViewNames.UserManagement);
 
         /// <summary>
         /// 导航到药材管理
         /// </summary>
         [RelayCommand]
-        private void NavigateToHerbManagement() => NavigateTo("HerbManagementView");
+        private void NavigateToHerbManagement() => NavigateTo(ViewNames.HerbManagement);
 
         /// <summary>
         /// 导航到患者管理
         /// </summary>
         [RelayCommand]
-        private void NavigateToPatientManagement() => NavigateTo("PatientManagementView");
+        private void NavigateToPatientManagement() => NavigateTo(ViewNames.PatientManagement);
 
         /// <summary>
         /// 导航到验方管理
         /// </summary>
         [RelayCommand]
-        private void NavigateToFormulaManagement() => NavigateTo("FormulaManagementView");
+        private void NavigateToFormulaManagement() => NavigateTo(ViewNames.FormulaManagement);
 
         /// <summary>
         /// 导航到病历管理
         /// </summary>
         [RelayCommand]
-        private void NavigateToMedicalCaseManagement() => NavigateTo("MedicalCaseManagementView");
+        private void NavigateToMedicalCaseManagement() => NavigateTo(ViewNames.MedicalCaseManagement);
 
         /// <summary>
         /// 导航到系统设置
         /// </summary>
         [RelayCommand]
-        private void NavigateToSystemSettings() => NavigateTo("SystemSettingsView");
+        private void NavigateToSystemSettings() => NavigateTo(ViewNames.SystemSettings);
 
         /// <summary>
         /// 修改个人信息命令 (Issue #1887-1892)
-        /// Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
+        /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>
         [RelayCommand]
         private void EditProfile()
         {
             try
             {
-                Logger.LogInformation("导航到个人资料页面");
-                NavigateTo("UserProfileView");
+                Logger.LogInformation("导航到账户设置页面(个人资料)");
+                NavigateTo(ViewNames.AccountSettings);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到个人资料页面失败");
+                Logger.LogError(ex, "导航到账户设置页面失败");
             }
         }
 
         /// <summary>
         /// 修改密码命令 (Issue #1887-1892)
-        /// Issue #1909: 统一密码修改流程（SuperAdmin也使用UserService）
-        /// Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
+        /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>
         [RelayCommand]
         private void ChangePassword()
         {
             try
             {
-                Logger.LogInformation("导航到修改密码页面");
-                NavigateTo("ChangePasswordView");
+                Logger.LogInformation("导航到账户设置页面(修改密码)");
+                var parameters = new NavigationParameters { { "Tab", "Password" } };
+                RegionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.AccountSettings, parameters);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到修改密码页面失败");
+                Logger.LogError(ex, "导航到账户设置页面失败");
             }
         }
 

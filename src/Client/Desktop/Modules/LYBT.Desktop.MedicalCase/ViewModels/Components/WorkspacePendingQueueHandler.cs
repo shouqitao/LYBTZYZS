@@ -307,7 +307,7 @@ public class WorkspacePendingQueueHandler
                 { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
             };
 
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseWorkspaceView", parameters);
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseWorkspace, parameters);
             _logger.LogInformation("已导航到新医案：{MedicalCaseId}", createResult.medicalCaseId);
         }
         catch (Exception ex)
@@ -345,7 +345,7 @@ public class WorkspacePendingQueueHandler
                 { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
             };
 
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseWorkspaceView", parameters);
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseWorkspace, parameters);
             _logger.LogInformation("已导航到挂起医案：{MedicalCaseId}", pendingCase.MedicalCaseId.Value);
         }
         catch (Exception ex)

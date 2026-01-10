@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using LYBT.Desktop.Contracts.Roles;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -16,8 +17,9 @@ namespace LYBT.Desktop.Infrastructure.Roles
 
         /// <summary>
         /// 默认主页视图（当角色未注册时使用）
+        /// OpenSpec: unify-navigation-architecture - 使用ViewNames常量
         /// </summary>
-        private const string DefaultHomeView = "ClinicalHomeView";
+        private const string DefaultHomeView = ViewNames.ClinicalHome;
 
         public RoleRegistry(ILogger<RoleRegistry> logger)
         {

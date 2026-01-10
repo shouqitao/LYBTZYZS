@@ -6,6 +6,7 @@
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:local="clr-namespace:LYBT.Desktop.Patients.Controls"
              mc:Ignorable="d"
+             x:Name="Root"
              d:DesignHeight="600" d:DesignWidth="1000">
 
     <!-- 患者选择控件
@@ -14,11 +15,11 @@
          左侧：患者列表（工具栏+搜索+列表）
          右侧：患者详情（使用PatientViewControl）
 
-         修复: RelativeSource使用具体类型PatientSelectionControl，
-               避免MasterDetailLayout（也是UserControl）被错误匹配 -->
+         修复: 使用ElementName=Root替代RelativeSource，
+               确保绑定在任何视觉树场景下都能正确工作 -->
 
     <controls:MasterDetailLayout
-        HasSelection="{Binding HasSelection, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+        HasSelection="{Binding HasSelection, ElementName=Root}"
         MasterWidth="2*"
         DetailWidth="3*">
 
@@ -33,19 +34,19 @@
 
                 <!-- 工具栏 -->
                 <controls:DataGridToolbar Grid.Row="0"
-                    CreateCommand="{Binding CreateNewCommand, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                    RefreshCommand="{Binding RefreshCommand, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"/>
+                    CreateCommand="{Binding CreateNewCommand, ElementName=Root}"
+                    RefreshCommand="{Binding RefreshCommand, ElementName=Root}"/>
 
                 <!-- 搜索框 -->
                 <controls:SearchBox Grid.Row="1"
-                    SearchText="{Binding SearchText, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                    SearchCommand="{Binding SearchCommand, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                    SearchText="{Binding SearchText, Mode=TwoWay, ElementName=Root}"
+                    SearchCommand="{Binding SearchCommand, ElementName=Root}"
                     Placeholder="搜索患者姓名或拼音码..."/>
 
                 <!-- 患者列表 -->
                 <DataGrid Grid.Row="2"
-                    ItemsSource="{Binding Patients, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                    SelectedItem="{Binding SelectedPatient, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}, Mode=TwoWay}"
+                    ItemsSource="{Binding Patients, ElementName=Root}"
+                    SelectedItem="{Binding SelectedPatient, ElementName=Root, Mode=TwoWay}"
                     AutoGenerateColumns="False"
                     IsReadOnly="True"
                     SelectionMode="Single"
@@ -73,29 +74,29 @@
         <!-- Detail: 患者详情区域 -->
         <controls:MasterDetailLayout.DetailContent>
             <local:PatientViewControl
-                PatientName="{Binding PatientDetail.Name, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                PinYinCode="{Binding PatientDetail.PinYinCode, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                Gender="{Binding PatientDetail.Gender, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                BirthDate="{Binding PatientDetail.BirthDate, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                Age="{Binding PatientDetail.Age, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                IdNumber="{Binding PatientDetail.IdNumber, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                IdType="{Binding PatientDetail.IdType, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                MaritalStatus="{Binding PatientDetail.MaritalStatus, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                BloodType="{Binding PatientDetail.BloodType, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                PhoneNumber="{Binding PatientDetail.PhoneNumber, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                Address="{Binding PatientDetail.Address, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                EmergencyContactName="{Binding PatientDetail.EmergencyContactName, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                EmergencyContactPhone="{Binding PatientDetail.EmergencyContactPhone, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                EmergencyContactRelation="{Binding PatientDetail.EmergencyContactRelation, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                AllergyHistory="{Binding PatientDetail.AllergyHistory, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                MedicalHistory="{Binding PatientDetail.MedicalHistory, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                LastVisitTime="{Binding PatientDetail.LastVisitTime, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                VisitCount="{Binding PatientDetail.VisitCount, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                Status="{Binding PatientDetail.Status, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
+                PatientName="{Binding PatientDetail.Name, ElementName=Root}"
+                PinYinCode="{Binding PatientDetail.PinYinCode, ElementName=Root}"
+                Gender="{Binding PatientDetail.Gender, ElementName=Root}"
+                BirthDate="{Binding PatientDetail.BirthDate, ElementName=Root}"
+                Age="{Binding PatientDetail.Age, ElementName=Root}"
+                IdNumber="{Binding PatientDetail.IdNumber, ElementName=Root}"
+                IdType="{Binding PatientDetail.IdType, ElementName=Root}"
+                MaritalStatus="{Binding PatientDetail.MaritalStatus, ElementName=Root}"
+                BloodType="{Binding PatientDetail.BloodType, ElementName=Root}"
+                PhoneNumber="{Binding PatientDetail.PhoneNumber, ElementName=Root}"
+                Address="{Binding PatientDetail.Address, ElementName=Root}"
+                EmergencyContactName="{Binding PatientDetail.EmergencyContactName, ElementName=Root}"
+                EmergencyContactPhone="{Binding PatientDetail.EmergencyContactPhone, ElementName=Root}"
+                EmergencyContactRelation="{Binding PatientDetail.EmergencyContactRelation, ElementName=Root}"
+                AllergyHistory="{Binding PatientDetail.AllergyHistory, ElementName=Root}"
+                MedicalHistory="{Binding PatientDetail.MedicalHistory, ElementName=Root}"
+                LastVisitTime="{Binding PatientDetail.LastVisitTime, ElementName=Root}"
+                VisitCount="{Binding PatientDetail.VisitCount, ElementName=Root}"
+                Status="{Binding PatientDetail.Status, ElementName=Root}"
                 ShowStatus="False"
-                DisableReason="{Binding PatientDetail.DisableReason, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                CreatedAt="{Binding PatientDetail.CreatedAt, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"
-                UpdatedAt="{Binding PatientDetail.UpdatedAt, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"/>
+                DisableReason="{Binding PatientDetail.DisableReason, ElementName=Root}"
+                CreatedAt="{Binding PatientDetail.CreatedAt, ElementName=Root}"
+                UpdatedAt="{Binding PatientDetail.UpdatedAt, ElementName=Root}"/>
         </controls:MasterDetailLayout.DetailContent>
 
         <!-- Empty: 空状态 -->
@@ -104,7 +105,7 @@
                 Title="请选择患者"
                 Subtitle="从左侧列表选择患者，或点击新建创建新患者"
                 ActionText="新建患者"
-                ActionCommand="{Binding CreateNewCommand, RelativeSource={RelativeSource AncestorType=local:PatientSelectionControl}}"/>
+                ActionCommand="{Binding CreateNewCommand, ElementName=Root}"/>
         </controls:MasterDetailLayout.EmptyContent>
 
     </controls:MasterDetailLayout>

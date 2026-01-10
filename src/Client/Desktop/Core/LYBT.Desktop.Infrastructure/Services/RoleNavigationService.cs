@@ -1,5 +1,6 @@
 ﻿using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
@@ -116,8 +117,9 @@ namespace LYBT.Desktop.Infrastructure.Services
             var role = _sessionManager.CurrentUser?.Role;
             if (role == null)
             {
+                // OpenSpec: unify-navigation-architecture - 使用ViewNames常量
                 _logger.LogWarning("当前用户角色为空，使用默认主页视图");
-                return "ClinicalHomeView";
+                return ViewNames.ClinicalHome;
             }
 
             return _roleRegistry.GetHomeViewName(role.Value);

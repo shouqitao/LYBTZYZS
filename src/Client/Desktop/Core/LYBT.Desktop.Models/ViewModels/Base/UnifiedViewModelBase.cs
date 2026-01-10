@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -9,13 +11,17 @@ using Prism.Regions;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {
-    /// <summary>统一ViewModel基类 - 提供导航、错误处理、会话管理功能</summary>
-    public abstract class UnifiedViewModelBase : ViewModelBase, INavigationAware, IRegionMemberLifetime
+    /// <summary>
+    /// 统一ViewModel基类 - 提供导航、错误处理、会话管理功能
+    /// OpenSpec: unify-navigation-architecture - 添加IConfirmNavigationRequest支持
+    /// </summary>
+    public abstract class UnifiedViewModelBase : ViewModelBase, INavigationAware, IRegionMemberLifetime, IConfirmNavigationRequest
     {
         protected readonly IRegionManager RegionManager;
         protected readonly ISessionManager? SessionManager;
         protected readonly IUserNotificationService? UserNotificationService;
         protected readonly ICommonDialogService? CommonDialogService;
+        protected readonly IRoleRegistry? RoleRegistry;
 
         private string _pageTitle = string.Empty;
         public string PageTitle { get => _pageTitle; protected set => SetProperty(ref _pageTitle, value); }
@@ -23,13 +29,15 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         protected UnifiedViewModelBase(
             IEventAggregator eventAggregator, ILoggerFactory loggerFactory, IRegionManager regionManager,
-            ISessionManager? sessionManager = null, IUserNotificationService? userNotificationService = null, ICommonDialogService? commonDialogService = null)
+            ISessionManager? sessionManager = null, IUserNotificationService? userNotificationService = null,
+            ICommonDialogService? commonDialogService = null, IRoleRegistry? roleRegistry = null)
             : base(eventAggregator, loggerFactory)
         {
             RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             SessionManager = sessionManager;
             UserNotificationService = userNotificationService;
             CommonDialogService = commonDialogService;
+            RoleRegistry = roleRegistry;
             NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
         }
 
@@ -100,6 +108,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             catch (Exception ex) { Logger.LogError(ex, "返回主页失败"); HandleError(ex, "返回主页"); }
         }
 
+        /// <summary>
+        /// 获取主页视图名称
+        /// OpenSpec: unify-navigation-architecture - 使用RoleRegistry作为权威源
+        /// </summary>
         protected virtual string GetHomeViewName()
         {
             // 获取 SessionManager - 优先使用构造函数注入的，否则从容器获取
@@ -117,27 +129,36 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 }
             }
 
-            var role = sessionManager?.CurrentUser?.Role;
-            Logger.LogDebug("GetHomeViewName: 当前用户角色 = {Role}, SessionManager = {HasSession}",
-                role, sessionManager != null ? "已获取" : "null");
+            var role = sessionManager?.CurrentUser?.Role ?? UserRole.Admin;
+            Logger.LogDebug("GetHomeViewName: 当前用户角色 = {Role}", role);
 
-            // 管理员角色优先判断 - 返回管理员主页
-            if (role == UserRole.Admin || role == UserRole.SuperAdmin)
+            // 优先使用RoleRegistry
+            var roleRegistry = RoleRegistry;
+            if (roleRegistry == null)
             {
-                Logger.LogDebug("导航到管理员主页: AdminHomeView");
-                return "AdminHomeView";
+                try
+                {
+                    roleRegistry = ContainerLocator.Container?.Resolve<IRoleRegistry>();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "GetHomeViewName: 无法从容器获取 RoleRegistry");
+                }
             }
 
-            // 医生角色 - 返回临床主页
-            if (role == UserRole.Doctor)
+            if (roleRegistry != null)
             {
-                Logger.LogDebug("导航到临床主页: ClinicalHomeView");
-                return "ClinicalHomeView";
+                return roleRegistry.GetHomeViewName(role);
             }
 
-            // 默认返回管理员主页（未知角色或未登录时）
-            Logger.LogWarning("未知用户角色 {Role}，默认返回管理员主页", role);
-            return "AdminHomeView";
+            // OpenSpec: unify-navigation-architecture - 回退时使用ViewNames常量
+            Logger.LogWarning("RoleRegistry不可用，使用默认主页映射");
+            return role switch
+            {
+                UserRole.Admin or UserRole.SuperAdmin => ViewNames.AdminHome,
+                UserRole.Doctor => ViewNames.ClinicalHome,
+                _ => ViewNames.AdminHome
+            };
         }
 
         public virtual bool IsNavigationTarget(NavigationContext navigationContext) => true;
@@ -160,6 +181,49 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         protected virtual void ProcessNavigationParameters(NavigationParameters parameters) { }
         protected virtual Task InitializeAsync(NavigationParameters parameters) => Task.CompletedTask;
+
+        #region IConfirmNavigationRequest
+
+        /// <summary>
+        /// 确认导航请求 - 子类可重写以实现未保存数据确认
+        /// OpenSpec: unify-navigation-architecture - 统一导航确认行为
+        /// </summary>
+        public virtual void ConfirmNavigationRequest(NavigationContext navigationContext, Action<bool> continuationCallback)
+        {
+            // 默认实现：检查是否可以离开
+            if (CanNavigateAway())
+            {
+                continuationCallback(true);
+                return;
+            }
+
+            // 有未保存更改时，显示确认对话框
+            _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                var canLeave = await ShowUnsavedChangesDialogAsync();
+                continuationCallback(canLeave);
+            });
+        }
+
+        /// <summary>
+        /// 是否有未保存的更改 - 子类重写以提供状态
+        /// </summary>
+        protected virtual bool HasUnsavedChanges => false;
+
+        /// <summary>
+        /// 是否可以离开当前页面 - 子类可重写以添加自定义逻辑
+        /// </summary>
+        protected virtual bool CanNavigateAway() => !HasUnsavedChanges;
+
+        /// <summary>
+        /// 显示未保存更改确认对话框
+        /// </summary>
+        protected virtual async Task<bool> ShowUnsavedChangesDialogAsync()
+        {
+            return await ShowConfirmationAsync("有未保存的更改，是否放弃更改并离开？", "未保存的更改");
+        }
+
+        #endregion IConfirmNavigationRequest
 
         protected virtual void ValidateProperty([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {

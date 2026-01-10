@@ -46,7 +46,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelection))]
-    [NotifyCanExecuteChangedFor(nameof(StartConsultationCommand))]
+    [NotifyCanExecuteChangedFor(nameof(StartMedicalCaseCommand))]
     private PatientListDto? _selectedPatient;
 
     /// <summary>
@@ -139,7 +139,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
         {
             // 导航到患者管理视图，用户可在MasterDetail界面点击"新建"按钮
             Logger.LogInformation("导航到患者管理视图");
-            RegionManager.RequestNavigate("ContentRegion", "PatientManagementView");
+            RegionManager.RequestNavigate("ContentRegion", ViewNames.PatientManagement);
         }
         catch (Exception ex)
         {
@@ -156,8 +156,8 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
     private async Task SearchAsync() => await LoadPatientsAsync();
 
     /// <summary>开始看诊</summary>
-    [RelayCommand(CanExecute = nameof(CanStartConsultation))]
-    private async Task StartConsultationAsync()
+    [RelayCommand(CanExecute = nameof(CanStartMedicalCase))]
+    private async Task StartMedicalCaseAsync()
     {
         if (SelectedPatient == null) return;
 
@@ -192,7 +192,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
         }
     }
 
-    private bool CanStartConsultation() => SelectedPatient != null;
+    private bool CanStartMedicalCase() => SelectedPatient != null;
 
     #endregion
 
@@ -347,7 +347,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
             { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
         };
 
-        RegionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseWorkspaceView", parameters);
+        RegionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseWorkspace, parameters);
         Logger.LogInformation("导航到医案工作区：{MedicalCaseId}", medicalCaseId);
     }
 

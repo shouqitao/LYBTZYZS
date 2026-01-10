@@ -43,7 +43,7 @@ LYBT.Desktop.Patients/
 | 未完成 | UnfinishedCases | 未完成医案列表 |
 | 未完成 | UnfinishedCount | 未完成数量 |
 | 状态 | IsLoading | 加载状态 |
-| 状态 | CanStartConsultation | 可开始看诊 |
+| 状态 | CanStartMedicalCase | 可开始看诊 |
 | 分页 | PageIndex | 当前页码 |
 | 分页 | TotalCount | 总数量 |
 
@@ -54,7 +54,7 @@ LYBT.Desktop.Patients/
 | LoadCommand | 加载患者列表 |
 | SearchCommand | 搜索患者 |
 | SelectPatientCommand | 选择患者 |
-| StartConsultationCommand | 开始看诊(启动MedicalCase流程) |
+| StartMedicalCaseCommand | 开始看诊(启动MedicalCase流程) |
 | QuickCreateCommand | 快速建档 |
 | EditPatientCommand | 编辑患者 |
 | ViewHistoryCommand | 查看就诊历史 |
@@ -98,7 +98,7 @@ LYBT.Desktop.Patients/
 
 | 集成点 | 说明 |
 |--------|------|
-| StartConsultation | 选择患者后启动MedicalCase流程 |
+| StartMedicalCase | 选择患者后启动MedicalCase流程 |
 | 传递PatientId | 导航参数传递患者ID |
 | 未完成恢复 | 支持恢复中断的医案流程 |
 

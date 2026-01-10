@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Constants;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
@@ -84,15 +85,15 @@ namespace LYBT.Desktop.Clinical.ViewModels
             {
                 Logger.LogInformation("开始看诊，导航到患者选择视图");
 
-                RegionManager.RequestNavigate("ContentRegion", "PatientSelectionView", navigationResult =>
+                RegionManager.RequestNavigate("ContentRegion", ViewNames.PatientSelection, navigationResult =>
                 {
                     if (navigationResult.Result == true)
                     {
-                        Logger.LogInformation("导航成功：PatientSelectionView");
+                        Logger.LogInformation("导航成功：{ViewName}", ViewNames.PatientSelection);
                     }
                     else
                     {
-                        Logger.LogError("导航失败：PatientSelectionView，错误：{Error}", navigationResult.Error?.Message ?? "未知错误");
+                        Logger.LogError("导航失败：{ViewName}，错误：{Error}", ViewNames.PatientSelection, navigationResult.Error?.Message ?? "未知错误");
                         if (navigationResult.Error != null)
                         {
                             Logger.LogError(navigationResult.Error, "导航异常详情");
@@ -116,7 +117,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到患者管理视图");
-                RegionManager.RequestNavigate("ContentRegion", "PatientManagementView");
+                RegionManager.RequestNavigate("ContentRegion", ViewNames.PatientManagement);
             }
             catch (Exception ex)
             {
@@ -134,7 +135,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到医案管理视图");
-                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
+                RegionManager.RequestNavigate("ContentRegion", ViewNames.MedicalCaseManagement);
             }
             catch (Exception ex)
             {
@@ -152,7 +153,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到药材管理视图");
-                RegionManager.RequestNavigate("ContentRegion", "HerbManagementView");
+                RegionManager.RequestNavigate("ContentRegion", ViewNames.HerbManagement);
             }
             catch (Exception ex)
             {
@@ -170,7 +171,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到经验方管理视图");
-                RegionManager.RequestNavigate("ContentRegion", "FormulaManagementView");
+                RegionManager.RequestNavigate("ContentRegion", ViewNames.FormulaManagement);
             }
             catch (Exception ex)
             {
@@ -180,40 +181,38 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 编辑个人资料 (Issue #1887-1891)
+        /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>
         [RelayCommand]
         private void EditProfile()
         {
             try
             {
-                Logger.LogInformation("导航到个人资料页面");
-
-                // Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
-                RegionManager.RequestNavigate("ContentRegion", "UserProfileView");
+                Logger.LogInformation("导航到账户设置页面(个人资料)");
+                RegionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.AccountSettings);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到个人资料页面时发生异常");
+                Logger.LogError(ex, "导航到账户设置页面时发生异常");
             }
         }
 
         /// <summary>
         /// 修改密码 (Issue #1887-1892)
-        /// Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
+        /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>
         [RelayCommand]
         private void ChangePassword()
         {
             try
             {
-                Logger.LogInformation("导航到修改密码页面");
-
-                // Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
-                RegionManager.RequestNavigate("ContentRegion", "ChangePasswordView");
+                Logger.LogInformation("导航到账户设置页面(修改密码)");
+                var parameters = new NavigationParameters { { "Tab", "Password" } };
+                RegionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.AccountSettings, parameters);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到修改密码页面时发生异常");
+                Logger.LogError(ex, "导航到账户设置页面时发生异常");
             }
         }
 

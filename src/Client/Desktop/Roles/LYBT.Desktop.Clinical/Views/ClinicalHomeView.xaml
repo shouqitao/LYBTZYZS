@@ -148,7 +148,7 @@
                 <Border Margin="12" Style="{StaticResource PrimaryCardStyle}">
                     <Button
                         Style="{StaticResource TransparentButtonStyle}"
-                        Command="{Binding StartConsultationCommand}">
+                        Command="{Binding StartMedicalCaseCommand}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock
                                 Margin="0,0,0,16"

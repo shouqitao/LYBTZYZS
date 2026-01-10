@@ -16,8 +16,8 @@ LYBT.Desktop.Clinical/
 │   └── ClinicalHomeViewModel.cs     # 医生工作台ViewModel
 │       ├── TodayConsultationCount   # 今日接诊数量(统计数据)
 │       ├── PendingCaseCount         # 待处理病案数量(统计数据)
-│       ├── StartConsultationCommand # 开始看诊命令(核心功能)
-│       ├── ExecuteStartConsultation() # 执行开始看诊
+│       ├── StartMedicalCaseCommand # 开始看诊命令(核心功能)
+│       ├── ExecuteStartMedicalCase() # 执行开始看诊
 │       ├── LoadTodayStatistics()    # 加载今日统计数据
 │       ├── OnNavigatedTo()          # Prism导航生命周期(进入)
 │       ├── OnNavigatedFrom()        # Prism导航生命周期(离开)
@@ -134,7 +134,7 @@ public class MainViewModel
         <!-- 核心功能:开始看诊 -->
         <Button Grid.Row="2"
                 Content="开始看诊"
-                Command="{Binding StartConsultationCommand}"
+                Command="{Binding StartMedicalCaseCommand}"
                 Style="{StaticResource PrimaryActionButtonStyle}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -163,8 +163,8 @@ public class ClinicalHomeViewModel : ViewModelBase, INavigationAware
         _medicalCaseService = medicalCaseService;
 
         // 初始化开始看诊命令
-        StartConsultationCommand = new DelegateCommand(
-            async () => await ExecuteStartConsultation()
+        StartMedicalCaseCommand = new DelegateCommand(
+            async () => await ExecuteStartMedicalCase()
         );
     }
 
@@ -182,9 +182,9 @@ public class ClinicalHomeViewModel : ViewModelBase, INavigationAware
         set => SetProperty(ref _pendingCaseCount, value);
     }
 
-    public DelegateCommand StartConsultationCommand { get; }
+    public DelegateCommand StartMedicalCaseCommand { get; }
 
-    private async Task ExecuteStartConsultation()
+    private async Task ExecuteStartMedicalCase()
     {
         // ExecuteSafelyAsync自动处理异常和加载状态
         await ExecuteSafelyAsync(async () =>

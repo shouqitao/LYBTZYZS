@@ -84,9 +84,9 @@ namespace LYBT.Desktop.Shell.Models
         public string DetailedStatusDisplay => $"{Status} · {DoctorName}";
 
         /// <summary>
-        /// 是否可以开始诊疗（已挂号状态）
+        /// 是否可以开始看诊（已挂号状态）
         /// </summary>
-        public bool CanStartConsultation => CaseStatus == MedicalCaseStatus.Active;
+        public bool CanStartMedicalCase => CaseStatus == MedicalCaseStatus.Active;
 
         /// <summary>
         /// 是否正在诊疗中

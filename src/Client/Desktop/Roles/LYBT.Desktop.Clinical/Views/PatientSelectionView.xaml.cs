@@ -24,9 +24,9 @@ public partial class PatientSelectionView : UserControl
         if (DataContext is ViewModels.PatientSelectionViewModel viewModel)
         {
             // 双击等同于点击"开始看诊"按钮
-            if (viewModel.StartConsultationCommand.CanExecute(null))
+            if (viewModel.StartMedicalCaseCommand.CanExecute(null))
             {
-                viewModel.StartConsultationCommand.Execute(null);
+                viewModel.StartMedicalCaseCommand.Execute(null);
             }
         }
     }

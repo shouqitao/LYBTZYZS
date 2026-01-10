@@ -1,7 +1,9 @@
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -29,6 +31,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         protected readonly ISessionManager? SessionManager;
         protected readonly IUserNotificationService? UserNotificationService;
         protected readonly ICommonDialogService? CommonDialogService;
+        protected readonly IRoleRegistry? RoleRegistry;
 
         #endregion
 
@@ -89,13 +92,15 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null,
-            ICommonDialogService? commonDialogService = null)
+            ICommonDialogService? commonDialogService = null,
+            IRoleRegistry? roleRegistry = null)
             : base(loggerFactory, eventAggregator)
         {
             RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             SessionManager = sessionManager;
             UserNotificationService = userNotificationService;
             CommonDialogService = commonDialogService;
+            RoleRegistry = roleRegistry;
         }
 
         #endregion
@@ -346,9 +351,11 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 获取主页视图名称
+        /// OpenSpec: unify-navigation-architecture - 使用RoleRegistry作为权威源
         /// </summary>
         protected virtual string GetHomeViewName()
         {
+            // 尝试获取角色
             var sessionManager = SessionManager;
             if (sessionManager == null)
             {
@@ -362,12 +369,34 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 }
             }
 
-            var role = sessionManager?.CurrentUser?.Role;
+            var role = sessionManager?.CurrentUser?.Role ?? UserRole.Admin;
+
+            // 优先使用RoleRegistry
+            var roleRegistry = RoleRegistry;
+            if (roleRegistry == null)
+            {
+                try
+                {
+                    roleRegistry = ContainerLocator.Container?.Resolve<IRoleRegistry>();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "无法从容器获取 RoleRegistry");
+                }
+            }
+
+            if (roleRegistry != null)
+            {
+                return roleRegistry.GetHomeViewName(role);
+            }
+
+            // OpenSpec: unify-navigation-architecture - 回退时使用ViewNames常量
+            Logger.LogWarning("RoleRegistry不可用，使用默认主页映射");
             return role switch
             {
-                UserRole.Admin or UserRole.SuperAdmin => "AdminHomeView",
-                UserRole.Doctor => "ClinicalHomeView",
-                _ => "AdminHomeView"
+                UserRole.Admin or UserRole.SuperAdmin => ViewNames.AdminHome,
+                UserRole.Doctor => ViewNames.ClinicalHome,
+                _ => ViewNames.AdminHome
             };
         }
 

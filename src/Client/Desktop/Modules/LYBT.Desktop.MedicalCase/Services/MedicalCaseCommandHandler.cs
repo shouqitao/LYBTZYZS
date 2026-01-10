@@ -1,4 +1,5 @@
 ﻿using LYBT.Desktop.Contracts.Components;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
@@ -349,7 +350,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 };
 
                 // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView", parameters);
+                _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseMasterDetail, parameters);
                 await Task.CompletedTask;
                 return true;
             }
@@ -370,7 +371,7 @@ namespace LYBT.Desktop.MedicalCase.Services
             {
                 _logger.LogDebug("[HDL] MedicalCase.NavigateToList");
                 // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
+                _regionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseMasterDetail);
                 await Task.CompletedTask;
                 return true;
             }
