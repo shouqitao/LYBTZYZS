@@ -39,9 +39,6 @@ namespace LYBT.Desktop.Patients
             // 注册FluentValidation验证器
             containerRegistry.Register<IValidator<PatientInputDto>, PatientInputDtoValidator>();
 
-            // Issue #1781 Task 8 Phase 1: 注册Excel解析服务（Singleton生命周期）
-            containerRegistry.RegisterSingleton<IExcelParserService, ExcelParserService>();
-
             // Issue #1790: 注册患者导入服务
             containerRegistry.RegisterSingleton<Services.PatientImportDataMapper>();
             containerRegistry.Register<Services.PatientImportExecutor>();
@@ -50,7 +47,7 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<PatientSearchManager>();
             containerRegistry.RegisterSingleton<IPatientSearchCache, PatientSearchCache>();  // OpenSpec: refactor-patient-selection - 搜索缓存
             containerRegistry.Register<UnfinishedCaseHandler>();
-            containerRegistry.Register<PendingQueueManager>();
+            containerRegistry.Register<IPendingQueueManager, PendingQueueManager>();
 
             // OpenSpec: cleanup-ui-layer Phase 1.2 - 注册医案启动协调器
             containerRegistry.Register<ViewModels.Components.MedicalCaseStartCoordinator>();
