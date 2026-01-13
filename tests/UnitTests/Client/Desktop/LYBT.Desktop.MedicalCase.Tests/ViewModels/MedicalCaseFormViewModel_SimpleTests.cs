@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Desktop.Prescriptions.Models.Items;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Xunit;
 
