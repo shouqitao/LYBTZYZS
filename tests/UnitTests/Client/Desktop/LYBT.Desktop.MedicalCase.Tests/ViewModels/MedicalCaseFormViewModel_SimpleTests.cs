@@ -25,7 +25,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
 
             // Act
             viewModel.SelectedHerb = herb;
@@ -40,7 +40,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 10;
 
@@ -59,8 +59,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb1 = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
-            var herb2 = new HerbDetailDto { Id = Guid.NewGuid(), Name = "党参", Price = 20.0m };
+            var herb1 = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var herb2 = new HerbListDto { Id = Guid.NewGuid(), Name = "党参", Price = 20.0m };
 
             viewModel.SelectedHerb = herb1;
             viewModel.Dosage = 10;
@@ -91,7 +91,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 0;
 
@@ -104,7 +104,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.5m };
+            var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.5m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 11;
 
@@ -122,7 +122,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
 
             var propertyChangedRaised = false;
             viewModel.PropertyChanged += (sender, args) =>
@@ -167,7 +167,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
 
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 10;
@@ -201,7 +201,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
 
             // Act
@@ -216,7 +216,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
+            var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "当归", Price = 15.0m };
             viewModel.SelectedHerb = herb;
 
             // Act
@@ -231,7 +231,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         {
             // Arrange
             var viewModel = new PrescriptionHerbItem();
-            var herb = new HerbDetailDto { Id = Guid.NewGuid(), Name = "免费药材", Price = 0m };
+            var herb = new HerbListDto { Id = Guid.NewGuid(), Name = "免费药材", Price = 0m };
             viewModel.SelectedHerb = herb;
             viewModel.Dosage = 10;
 

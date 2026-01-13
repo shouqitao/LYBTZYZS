@@ -16,9 +16,9 @@ public class PrescriptionEditFlowTests
 {
     #region Test Data
 
-    private static ObservableCollection<HerbDetailDto> CreateHerbCatalog()
+    private static ObservableCollection<HerbListDto> CreateHerbCatalog()
     {
-        return new ObservableCollection<HerbDetailDto>
+        return new ObservableCollection<HerbListDto>
         {
             new() { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g", Price = 0.5m },
             new() { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Unit = "g", Price = 0.8m },

@@ -16,9 +16,9 @@ public class PrescriptionHerbItemPriceTests
 {
     #region Test Data
 
-    private static HerbDetailDto CreateTestHerb(decimal price = 0.5m)
+    private static HerbListDto CreateTestHerb(decimal price = 0.5m)
     {
-        return new HerbDetailDto
+        return new HerbListDto
         {
             Id = Guid.NewGuid(),
             Name = "当归",
@@ -28,9 +28,9 @@ public class PrescriptionHerbItemPriceTests
         };
     }
 
-    private static ObservableCollection<HerbDetailDto> CreateTestHerbs()
+    private static ObservableCollection<HerbListDto> CreateTestHerbs()
     {
-        return new ObservableCollection<HerbDetailDto>
+        return new ObservableCollection<HerbListDto>
         {
             new() { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g", Price = 0.5m },
             new() { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Unit = "g", Price = 0.8m },
@@ -56,7 +56,7 @@ public class PrescriptionHerbItemPriceTests
     }
 
     /// <summary>
-    /// 测试：选择药材后单价从HerbDetailDto.Price获取
+    /// 测试：选择药材后单价从HerbListDto.Price获取
     /// </summary>
     [Fact]
     public void UnitPrice_WhenHerbSelected_ShouldReturnHerbPrice()
