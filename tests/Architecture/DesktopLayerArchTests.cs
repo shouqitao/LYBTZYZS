@@ -20,7 +20,7 @@ public class DesktopLayerArchTests
         Assembly.Load("LYBT.Desktop.Patients"),
         Assembly.Load("LYBT.Desktop.MedicalCase"),
         // [已删除] LYBT.Desktop.Consultation - 诊断功能已合并到MedicalCase模块
-        Assembly.Load("LYBT.Desktop.Prescriptions"),
+        // [已删除] LYBT.Desktop.Prescriptions - 处方功能已合并到MedicalCase模块
         Assembly.Load("LYBT.Desktop.Herbs"),
         Assembly.Load("LYBT.Desktop.Formula"),
         Assembly.Load("LYBT.Desktop.Admin"),
@@ -303,7 +303,7 @@ public class DesktopLayerArchTests
             "LYBT.Desktop.Patients",
             "LYBT.Desktop.MedicalCase",
             // [已删除] LYBT.Desktop.Consultation - 诊断功能已合并到MedicalCase模块
-            "LYBT.Desktop.Prescriptions",
+            // [已删除] LYBT.Desktop.Prescriptions - 处方功能已合并到MedicalCase模块
             "LYBT.Desktop.Herbs",
             "LYBT.Desktop.Formula",
             "LYBT.Desktop.Admin",
@@ -409,7 +409,7 @@ public class DesktopLayerArchTests
             Assembly.Load("LYBT.Desktop.Patients"),
             Assembly.Load("LYBT.Desktop.MedicalCase"),
             // [已删除] LYBT.Desktop.Consultation - 诊断功能已合并到MedicalCase模块
-            Assembly.Load("LYBT.Desktop.Prescriptions"),
+            // [已删除] LYBT.Desktop.Prescriptions - 处方功能已合并到MedicalCase模块
             Assembly.Load("LYBT.Desktop.Herbs"),
             Assembly.Load("LYBT.Desktop.Formula")
         };
