@@ -37,6 +37,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 统一Item与EditModel模型 (OpenSpec: unify-medicalcase-item-editmodel) - 2026-01-17
+
+**背景**: 医案模块存在ConsultationItem/ConsultationEditModel和PrescriptionItem/PrescriptionEditModel两套重复的数据模型定义。
+
+**核心改进**:
+- **模型统一**:
+  - 将 ConsultationEditModel 功能合并到 ConsultationItem
+  - 将 PrescriptionEditModel 功能合并到 PrescriptionItem
+  - 删除 Models/Edit/ 目录及其文件
+
+- **功能增强**:
+  - ConsultationItem 添加 `Reset()` 方法重置诊断字段
+  - PrescriptionItem 添加 `DefaultUsage` 常量和 `Reset()` 方法
+  - Reset() 仅重置可编辑字段，保留ID（区别于Clear()）
+
+- **ViewModel更新**:
+  - MedicalCaseMasterDetailViewModel 属性类型从 EditModel 改为 Item
+  - XAML绑定无需修改（duck typing支持）
+
+**架构决策**:
+- ADR-1: 统一到Item类（功能更完整）
+- ADR-2: Reset()仅重置可编辑字段
+- ADR-3: 保持XAML绑定路径不变
+
+**影响模块**: Desktop.MedicalCase
+
+**状态**: 已归档
+
+#### 精简工作区ViewModel (OpenSpec: slim-workspace-viewmodel) - 2026-01-12
+
+**背景**: MedicalCaseWorkspaceViewModel行数达1497行，尝试使用State对象模式和Handler委托模式减少到<500行。
+
+**执行结果**:
+- **State对象模式**:
+  - 创建`WorkspaceState.cs`聚合UI状态属性
+  - 发现XAML兼容性约束：保持`{Binding PropertyName}`需要委托包装器，无法减少行数
+
+- **Handler委托评估**:
+  - 分析发现Execute方法已大量委托给Coordinator/Handler
+  - 决定跳过创建新Handler，现有委托程度已足够
+
+- **适配器类提取**:
+  - 提取4个内嵌适配器类到独立文件`DataProviderAdapters.cs`
+  - 减少ViewModel 104行代码
+
+**最终结果**: 1497行 → 1393行 (-104行, 7%)
+
+**架构决策**:
+- State对象适合逻辑分组和可测试性，即使不减少行数
+- Handler委托已足够，不需要过度分离
+- 内嵌类应提取到独立文件
+
+**新增文件**:
+- `MedicalCase/ViewModels/Components/WorkspaceState.cs` - 状态聚合对象
+- `MedicalCase/ViewModels/Components/DataProviderAdapters.cs` - 适配器类
+
+**影响模块**: Desktop.MedicalCase
+
+**状态**: 部分完成，已归档
+
 #### 统一导航架构 (OpenSpec: unify-navigation-architecture) - 2026-01-10
 
 **背景**: Desktop层导航系统存在GetHomeViewName重复实现、视图名称硬编码分散、多个导航服务职责不清等问题。
