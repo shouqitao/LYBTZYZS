@@ -43,6 +43,9 @@ temp_hash_gen/
 *.local.md
 *.private.*
 
+# Claude Code临时文件（自动生成的工作目录）
+tmpclaude-*
+
 # 验证报告和实施总结（临时文件，归档到 docs/reports/ 后删除）
 .verification/
 
