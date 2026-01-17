@@ -37,6 +37,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 前端架构SRP模式重构 (OpenSpec: refactor-frontend-srp-patterns) - 2026-01-17
+
+**背景**: 前端架构存在16个架构问题，核心服务违反SRP原则（MedicalCaseService 605行/4职责，UserMasterDetailViewModel 584行/8职责）。
+
+**核心改进**:
+- **服务拆分**:
+  - `IMedicalCaseQueryService` - 查询职责（4个方法）
+  - `IMedicalCaseCommandService` - 命令职责（6个方法）
+  - `IMedicalCaseLifecycleService` - 生命周期职责（5个方法）
+  - `IMedicalCaseService` - 门面接口（向后兼容）
+
+- **Handler提取模式**:
+  - `UserPasswordHandler` - 密码重置
+  - `UserImportExportHandler` - 导入导出
+  - `UserStatusHandler` - 状态管理
+  - `UserAuditHandler` - 审计日志
+
+- **控件基类抽象**:
+  - 创建 `MasterDetailControlBase` 非泛型基类
+  - 使用 `InitializeViewModel<TViewModel>()` 泛型方法模式
+  - 重构5个MasterDetailControl继承基类
+
+- **架构风险修复**:
+  - HerbItemControl.xaml Popup绑定改用RelativeSource
+  - PatientSearchCache添加用户隔离（键格式：`{userId}:{keyword}:{page}`）
+
+**架构决策**:
+- ADR-1: MedicalCaseService按职责拆分为4个服务
+- ADR-2: ViewModel Handler提取模式
+- ADR-3: MasterDetailControlBase非泛型设计（WPF XAML限制）
+- ADR-4: 缓存用户隔离
+- ADR-5: Popup绑定修复
+
+**新增文件**:
+- `Contracts/Services/IAsyncInitializable.cs`
+- `Contracts/Services/IMedicalCaseQueryService.cs`
+- `Contracts/Services/IMedicalCaseCommandService.cs`
+- `Contracts/Services/IMedicalCaseLifecycleService.cs`
+- `Infrastructure/Controls/MasterDetailControlBase.cs`
+- `Users/ViewModels/Handlers/*.cs` (4个Handler)
+
+**影响模块**: Desktop.Contracts, Desktop.Infrastructure, Desktop.MedicalCase, Desktop.Users, Desktop.Patients, Desktop.Formula, Desktop.Herbs
+
+**状态**: 已归档
+
 #### 统一Item与EditModel模型 (OpenSpec: unify-medicalcase-item-editmodel) - 2026-01-17
 
 **背景**: 医案模块存在ConsultationItem/ConsultationEditModel和PrescriptionItem/PrescriptionEditModel两套重复的数据模型定义。
