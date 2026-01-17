@@ -1,4 +1,6 @@
-﻿namespace LYBT.Desktop.Infrastructure.Events
+﻿using LYBT.Shared.Models.Enums;
+
+namespace LYBT.Desktop.Infrastructure.Events
 {
     /// <summary>
     /// 患者选择事件负载
@@ -18,7 +20,7 @@
         /// <summary>
         /// 患者性别
         /// </summary>
-        public required string Gender { get; set; }
+        public Gender Gender { get; set; }
 
         /// <summary>
         /// 患者年龄

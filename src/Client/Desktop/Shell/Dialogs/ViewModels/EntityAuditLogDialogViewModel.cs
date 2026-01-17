@@ -2,11 +2,11 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
@@ -110,11 +110,14 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 
         #region 构造函数
 
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
         public EntityAuditLogDialogViewModel(
-            IApiService apiService,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory)
-            : base(loggerFactory, eventAggregator)
+            IViewModelServices services,
+            IApiService apiService)
+            : base(services)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             Title = "变更记录";

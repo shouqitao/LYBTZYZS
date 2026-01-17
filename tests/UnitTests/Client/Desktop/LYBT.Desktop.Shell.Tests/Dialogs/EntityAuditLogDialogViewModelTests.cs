@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+using FluentAssertions;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Shell.Dialogs.ViewModels;
 using LYBT.Shared.Models.Contracts.Common;
@@ -6,7 +7,6 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Events;
-using Prism.Regions;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Shell.Tests.Dialogs;
@@ -15,13 +15,13 @@ namespace LYBT.Desktop.Shell.Tests.Dialogs;
 /// EntityAuditLogDialogViewModel 单元测试
 /// Issue #2249: 添加审计系统单元测试
 /// OpenSpec: add-global-audit-system
-/// OpenSpec: migrate-to-communitytoolkit-mvvm - 更新为简化构造函数
+/// OpenSpec: enhance-viewmodel-architecture - 更新为IViewModelServices构造函数
 /// </summary>
 public class EntityAuditLogDialogViewModelTests : IDisposable
 {
     private bool _disposed;
     private readonly Mock<IApiService> _mockApiService;
-    private readonly Mock<IEventAggregator> _mockEventAggregator;
+    private readonly Mock<IViewModelServices> _mockServices;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
     private readonly Mock<ILogger> _mockLogger;
     private readonly EntityAuditLogDialogViewModel _viewModel;
@@ -29,7 +29,6 @@ public class EntityAuditLogDialogViewModelTests : IDisposable
     public EntityAuditLogDialogViewModelTests()
     {
         _mockApiService = new Mock<IApiService>();
-        _mockEventAggregator = new Mock<IEventAggregator>();
         _mockLoggerFactory = new Mock<ILoggerFactory>();
         _mockLogger = new Mock<ILogger>();
 
@@ -37,23 +36,38 @@ public class EntityAuditLogDialogViewModelTests : IDisposable
         _mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>()))
             .Returns(_mockLogger.Object);
 
-        // OpenSpec: migrate-to-communitytoolkit-mvvm - 更新为简化构造函数（3个参数）
+        // 配置IViewModelServices
+        _mockServices = new Mock<IViewModelServices>();
+        _mockServices.Setup(x => x.LoggerFactory).Returns(_mockLoggerFactory.Object);
+        _mockServices.Setup(x => x.EventAggregator).Returns(new Mock<IEventAggregator>().Object);
+
+        // OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices构造函数（2个参数）
         _viewModel = new EntityAuditLogDialogViewModel(
-            _mockApiService.Object,
-            _mockEventAggregator.Object,
-            _mockLoggerFactory.Object);
+            _mockServices.Object,
+            _mockApiService.Object);
     }
 
     #region 构造函数测试
+
+    [Fact]
+    public void Constructor_WithNullServices_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        var act = () => new EntityAuditLogDialogViewModel(
+            null!,
+            _mockApiService.Object);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("services");
+    }
 
     [Fact]
     public void Constructor_WithNullApiService_ShouldThrowArgumentNullException()
     {
         // Act & Assert
         var act = () => new EntityAuditLogDialogViewModel(
-            null!,
-            _mockEventAggregator.Object,
-            _mockLoggerFactory.Object);
+            _mockServices.Object,
+            null!);
 
         act.Should().Throw<ArgumentNullException>()
             .WithParameterName("apiService");

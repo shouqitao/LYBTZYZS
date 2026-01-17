@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;

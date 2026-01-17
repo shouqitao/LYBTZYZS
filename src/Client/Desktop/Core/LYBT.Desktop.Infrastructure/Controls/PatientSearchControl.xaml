@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     PatientSearchControl - 患者搜索控件
     OpenSpec: refactor-medicalcase-workspace
 
@@ -37,10 +37,10 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource SurfaceBrush}"
+    <Border Background="{StaticResource SurfaceCardBrush}"
             Padding="15"
             CornerRadius="5"
-            BorderBrush="{StaticResource BorderBrush}"
+            BorderBrush="{StaticResource BorderDefaultBrush}"
             BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
@@ -72,11 +72,11 @@
                          Height="35"
                          Padding="10,0"
                          VerticalContentAlignment="Center"
-                         BorderBrush="{StaticResource DisabledBrush}"
+                         BorderBrush="{StaticResource StateDisabledBrush}"
                          BorderThickness="1">
                     <TextBox.Style>
                         <Style TargetType="TextBox">
-                            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+                            <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}"/>
                             <Style.Triggers>
                                 <Trigger Property="Text" Value="">
                                     <Setter Property="Background">
@@ -84,7 +84,7 @@
                                             <VisualBrush Stretch="None" AlignmentX="Left">
                                                 <VisualBrush.Visual>
                                                     <TextBlock Text=" 输入姓名/手机号/拼音码搜索"
-                                                               Foreground="{StaticResource DisabledBrush}"
+                                                               Foreground="{StaticResource StateDisabledBrush}"
                                                                FontSize="12"
                                                                Margin="10,0,0,0"/>
                                                 </VisualBrush.Visual>
@@ -101,7 +101,7 @@
                 <TextBlock Grid.Column="1"
                            Text="搜索中..."
                            FontSize="12"
-                           Foreground="{StaticResource TextHintBrush}"
+                           Foreground="{StaticResource TextTertiaryBrush}"
                            VerticalAlignment="Center"
                            Margin="10,0,0,0"
                            Visibility="{Binding IsBusy, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -129,7 +129,7 @@
                       CanUserResizeRows="False"
                       HeadersVisibility="Column"
                       GridLinesVisibility="None"
-                      BorderBrush="{StaticResource BorderBrush}"
+                      BorderBrush="{StaticResource BorderDefaultBrush}"
                       BorderThickness="1"
                       Background="Transparent"
                       RowHeight="42"
@@ -154,7 +154,7 @@
                         <Setter Property="FontWeight" Value="Medium"/>
                         <Setter Property="Height" Value="36"/>
                         <Setter Property="Padding" Value="12,0"/>
-                        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}"/>
                         <Setter Property="BorderThickness" Value="0,0,0,1"/>
                         <Setter Property="HorizontalContentAlignment" Value="Left"/>
                         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -236,7 +236,7 @@
                     <DataGridTextColumn Header="拼音码" Binding="{Binding PinYinCode}" Width="100">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{StaticResource TextHintBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextTertiaryBrush}"/>
                                 <Setter Property="VerticalAlignment" Value="Center"/>
                                 <Setter Property="FontFamily" Value="Consolas"/>
                                 <Setter Property="FontSize" Value="12"/>
@@ -250,7 +250,7 @@
                                         Width="*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{StaticResource TextHintBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextTertiaryBrush}"/>
                                 <Setter Property="VerticalAlignment" Value="Center"/>
                                 <Setter Property="FontSize" Value="12"/>
                             </Style>
@@ -313,7 +313,7 @@
 
                     <TextBlock Text="/"
                                VerticalAlignment="Center"
-                               Foreground="{StaticResource DisabledBrush}"
+                               Foreground="{StaticResource StateDisabledBrush}"
                                Margin="5,0"/>
 
                     <TextBlock Text="{Binding TotalPages, RelativeSource={RelativeSource AncestorType=UserControl}}"

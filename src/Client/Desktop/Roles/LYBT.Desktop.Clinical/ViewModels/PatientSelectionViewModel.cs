@@ -14,6 +14,8 @@ using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
 
+// OpenSpec: unify-navigation-architecture Phase 6 - 整合INavigationCoordinator
+
 namespace LYBT.Desktop.Clinical.ViewModels;
 
 /// <summary>
@@ -30,6 +32,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
     private readonly IMedicalCaseApi _medicalCaseApi;
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly ICommonDialogService _dialogService;
+    private readonly INavigationCoordinator _navigationCoordinator;
 
     #endregion
 
@@ -84,20 +87,24 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
 
     #region 构造函数
 
+    /// <summary>
+    /// 构造函数
+    /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+    /// </summary>
     public PatientSelectionViewModel(
-        IRegionManager regionManager,
-        IEventAggregator eventAggregator,
-        ILoggerFactory loggerFactory,
+        IViewModelServices services,
         IPatientApi patientApi,
         IMedicalCaseApi medicalCaseApi,
         IMedicalCaseService medicalCaseService,
-        ICommonDialogService dialogService)
-        : base(loggerFactory, eventAggregator, regionManager)
+        INavigationCoordinator navigationCoordinator)
+        : base(services)
     {
         _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
         _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
-        _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+        // OpenSpec: enhance-viewmodel-architecture - 使用基类CommonDialogService替代本地_dialogService
+        _dialogService = services.CommonDialogService;
+        _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
     }
 
     #endregion
@@ -135,16 +142,10 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
     [RelayCommand]
     private void NewPatient()
     {
-        try
-        {
-            // 导航到患者管理视图，用户可在MasterDetail界面点击"新建"按钮
-            Logger.LogInformation("导航到患者管理视图");
-            RegionManager.RequestNavigate("ContentRegion", ViewNames.PatientManagement);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "导航到患者管理视图时发生异常");
-        }
+        // 导航到患者管理视图，用户可在MasterDetail界面点击"新建"按钮
+        // OpenSpec: unify-navigation-architecture Phase 6 - 使用INavigationCoordinator
+        Logger.LogInformation("导航到患者管理视图");
+        _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
     }
 
     /// <summary>刷新列表</summary>
@@ -166,19 +167,40 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
             SetBusyWithMessage(true, "正在检查医案状态...");
             IsError = false;
 
-            // 检查该患者是否有挂起医案
+            // 检查该患者是否有进行中的医案（任何待处理状态）
             // OpenSpec: unify-pending-query-api - 使用patientId参数按患者筛选
             var pendingCases = await _medicalCaseApi.GetPendingCasesAsync(SelectedPatient.Id);
-            var suspendedCase = pendingCases?.Data?.FirstOrDefault(c => c.Type == PendingCaseType.Suspended);
+            var existingCase = pendingCases?.Data?.FirstOrDefault();
 
-            if (suspendedCase != null)
+            if (existingCase != null)
             {
                 SetBusyWithMessage(false, null);
-                await HandleSuspendedCaseAsync(suspendedCase);
+
+                // OpenSpec: unify-case-status - 根据CaseStatus决定处理方式
+                if (existingCase.CaseStatus == MedicalCaseStatus.Draft)
+                {
+                    // 暂存草稿：让用户选择继续或新建
+                    await HandleSuspendedCaseAsync(existingCase);
+                }
+                else
+                {
+                    // Active状态：直接打开现有医案
+                    Logger.LogInformation("患者已有进行中的医案，直接打开：{MedicalCaseId}, CaseStatus: {CaseStatus}",
+                        existingCase.MedicalCaseId, existingCase.CaseStatus);
+                    if (existingCase.MedicalCaseId.HasValue)
+                    {
+                        NavigateToMedicalCase(existingCase.MedicalCaseId.Value);
+                    }
+                    else
+                    {
+                        Logger.LogError("进行中医案MedicalCaseId为空。PatientId: {PatientId}", existingCase.PatientId);
+                        await ShowErrorDialogAsync("无法打开医案：医案ID丢失，请刷新后重试");
+                    }
+                }
             }
             else
             {
-                // 无挂起医案，直接创建新医案
+                // 无进行中医案，创建新医案
                 await CreateAndNavigateToNewMedicalCaseAsync();
             }
         }
@@ -266,6 +288,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
     /// <summary>
     /// 处理挂起医案 - 四选项弹窗
     /// OpenSpec: refactor-clinical-workflow
+    /// OpenSpec: unify-navigation-architecture Phase 6 - 添加MedicalCaseId为空时的错误处理
     /// </summary>
     private async Task HandleSuspendedCaseAsync(PendingMedicalCaseDto suspendedCase)
     {
@@ -283,6 +306,13 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
             if (suspendedCase.MedicalCaseId.HasValue)
             {
                 NavigateToMedicalCase(suspendedCase.MedicalCaseId.Value);
+            }
+            else
+            {
+                // 修复静默失败：MedicalCaseId为空时显示错误
+                Logger.LogError("暂存医案MedicalCaseId为空，无法导航。PatientId: {PatientId}, CaseStatus: {CaseStatus}",
+                    suspendedCase.PatientId, suspendedCase.CaseStatus);
+                await ShowErrorDialogAsync("无法打开医案：医案ID丢失，请刷新后重试或联系管理员");
             }
         }
         else
@@ -336,19 +366,20 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
 
     /// <summary>
     /// 导航到医案工作区
+    /// OpenSpec: unify-navigation-architecture Phase 6 - 使用INavigationCoordinator
     /// </summary>
     private void NavigateToMedicalCase(Guid medicalCaseId)
     {
-        var parameters = new NavigationParameters
+        var parameters = new Dictionary<string, object>
         {
             { "MedicalCaseId", medicalCaseId },
-            { "CurrentPatient", PatientDetail },
+            { "CurrentPatient", PatientDetail! },
             { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
             { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
         };
 
-        RegionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.MedicalCaseWorkspace, parameters);
         Logger.LogInformation("导航到医案工作区：{MedicalCaseId}", medicalCaseId);
+        _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
     }
 
     /// <summary>

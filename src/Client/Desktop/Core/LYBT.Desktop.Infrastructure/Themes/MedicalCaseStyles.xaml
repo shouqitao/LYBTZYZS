@@ -1,11 +1,11 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--
     医案模块共享样式资源字典
     OpenSpec: refactor-medicalcase-ui, cleanup-ui-layer
 
     设计规范:
-    - 颜色/间距: 继承自 Shell/Styles/Colors.xaml (全局定义)
+    - 颜色/间距: 继承自 Shell/Resources/DesignTokens/Colors.Light.xaml
     - 本文件仅定义医案模块特有的控件样式
     - 目标分辨率: 1920x1080 (Full HD)
     - 最小支持: 1366x768
@@ -58,40 +58,40 @@
 
     <!-- 主要按钮 (绿色 - 完成/确认操作) -->
     <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource MedicalCaseButtonBaseStyle}">
-        <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+        <Setter Property="Background" Value="{StaticResource SemanticSuccessBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
     <!-- 次要按钮 (蓝色 - 打印/导出操作) -->
     <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource MedicalCaseButtonBaseStyle}">
-        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Background" Value="{StaticResource BrandPrimaryBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
     <!-- 轮廓按钮 (边框 - 导入/辅助操作) -->
     <Style x:Key="OutlineButtonStyle" TargetType="Button" BasedOn="{StaticResource MedicalCaseButtonBaseStyle}">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource BrandPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <!-- 警告按钮 (橙色 - 暂停操作) -->
     <Style x:Key="WarningButtonStyle" TargetType="Button" BasedOn="{StaticResource MedicalCaseButtonBaseStyle}">
-        <Setter Property="Background" Value="{StaticResource WarningBrush}" />
+        <Setter Property="Background" Value="{StaticResource SemanticWarningBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
     <!-- 危险按钮 (红色 - 取消/删除操作) -->
     <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource MedicalCaseButtonBaseStyle}">
-        <Setter Property="Background" Value="{StaticResource DangerBrush}" />
+        <Setter Property="Background" Value="{StaticResource SemanticErrorBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
     <!-- 文本按钮 (无背景 - 辅助操作) -->
     <Style x:Key="TextButtonStyle" TargetType="Button" BasedOn="{StaticResource MedicalCaseButtonBaseStyle}">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource BrandPrimaryBrush}" />
         <Setter Property="Padding" Value="8,4" />
     </Style>
 
@@ -102,8 +102,8 @@
         <Setter Property="Padding" Value="10,8" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="MinHeight" Value="36" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -123,14 +123,14 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
                             <Setter TargetName="border" Property="BorderThickness" Value="2" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource SurfaceBackgroundBrush}" />
                             <Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -170,7 +170,7 @@
         <Setter Property="Text" Value="*" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource SemanticErrorBrush}" />
         <Setter Property="Margin" Value="2,0,0,0" />
         <Setter Property="VerticalAlignment" Value="Top" />
     </Style>
@@ -185,15 +185,15 @@
     <!-- 辅助文本样式 -->
     <Style x:Key="HintTextStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="Foreground" Value="{StaticResource TextHintBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextTertiaryBrush}" />
     </Style>
 
     <!-- ==================== 卡片与容器样式 ==================== -->
 
     <!-- 面板卡片样式 -->
     <Style x:Key="PanelCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
     </Style>
@@ -201,14 +201,14 @@
     <!-- 面板头部样式 -->
     <Style x:Key="PanelHeaderStyle" TargetType="Border">
         <Setter Property="Background" Value="#F8F9FA" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="Padding" Value="16,12" />
     </Style>
 
     <!-- 分隔线样式 -->
     <Style x:Key="DividerStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource DividerBrush}" />
+        <Setter Property="Background" Value="{StaticResource BorderDividerBrush}" />
         <Setter Property="Height" Value="1" />
         <Setter Property="Margin" Value="0,12" />
     </Style>
@@ -234,15 +234,15 @@
 
     <!-- 底部操作栏样式 -->
     <Style x:Key="ActionBarStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
         <Setter Property="BorderThickness" Value="0,1,0,0" />
         <Setter Property="Height" Value="64" />
     </Style>
 
     <!-- 顶部信息栏样式 -->
     <Style x:Key="InfoBarStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}" />
+        <Setter Property="Background" Value="{StaticResource BrandPrimaryLightBrush}" />
         <Setter Property="BorderBrush" Value="#90CAF9" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="Height" Value="50" />

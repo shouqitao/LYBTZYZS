@@ -6,6 +6,7 @@ using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Models;
+using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Desktop.Utilities.Excel;
 using LYBT.Shared.ExceptionHandling.Mappers;
@@ -30,12 +31,11 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IPatientRepository _patientRepository;
         private readonly IDialogService _prismDialogService;
         private readonly ICommonDialogService? _commonDialogService;
-        private readonly ISessionManager? _sessionManager;
 
         #region 扩展属性
 
         /// <summary>是否为管理员</summary>
-        public bool IsAdmin => _sessionManager?.HasPermission(UserRole.Admin) == true;
+        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
 
         /// <summary>性别选项</summary>
         public ObservableCollection<Gender> GenderOptions { get; } = new(Enum.GetValues<Gender>());
@@ -56,20 +56,22 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #endregion
 
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
         public PatientMasterDetailViewModel(
-            IMasterDetailServices<PatientListDto, PatientDetailModel> services,
+            IViewModelServices viewModelServices,
+            IMasterDetailServices<PatientListDto, PatientDetailModel> masterDetailServices,
             PatientService commandHandler,
             IPatientRepository patientRepository,
             IDialogService prismDialogService,
-            ILoggerFactory loggerFactory,
-            ISessionManager? sessionManager = null,
             ICommonDialogService? commonDialogService = null)
-            : base(services, loggerFactory)
+            : base(viewModelServices, masterDetailServices)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
-            _sessionManager = sessionManager;
             _commonDialogService = commonDialogService;
 
             PageTitle = "患者管理";
@@ -94,10 +96,10 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             try
             {
-                await Services.Loading.ExecuteWithLoadingAsync(async () =>
+                await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
                     var pagedData = await _patientRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                    Services.Pagination.TotalCount = pagedData.TotalCount;
+                    MasterDetailServices.Pagination.TotalCount = pagedData.TotalCount;
 
                     Items.Clear();
                     foreach (var item in pagedData.Items ?? Enumerable.Empty<PatientListDto>())
@@ -109,7 +111,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "获取患者列表时发生异常");
-                Services.ErrorHandler.HandleException(ex, "获取患者列表");
+                MasterDetailServices.ErrorHandler.HandleException(ex, "获取患者列表");
             }
         }
 
@@ -121,7 +123,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 var patient = await _patientRepository.GetByIdAsync(item.Id);
                 if (patient == null)
                 {
-                    await Services.Dialog.ShowErrorAsync($"患者 '{item.Name}' 不存在或已被删除", "加载失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync($"患者 '{item.Name}' 不存在或已被删除", "加载失败");
                     return;
                 }
 
@@ -139,13 +141,13 @@ namespace LYBT.Desktop.Patients.ViewModels
                     VisitCount = patient.VisitCount
                 };
 
-                Services.DetailEditor.LoadDetail(detail);
+                MasterDetailServices.DetailEditor.LoadDetail(detail);
                 OnPropertyChanged(nameof(DetailTitle));
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载患者详情失败: {PatientId}", item.Id);
-                Services.ErrorHandler.HandleException(ex, "加载患者详情");
+                MasterDetailServices.ErrorHandler.HandleException(ex, "加载患者详情");
             }
         }
 
@@ -162,7 +164,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             if (string.IsNullOrWhiteSpace(detail.Name))
             {
-                await Services.Dialog.ShowErrorAsync("患者姓名不能为空", "验证失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("患者姓名不能为空", "验证失败");
                 return false;
             }
 
@@ -206,7 +208,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogError(ex, "保存患者失败: {PatientName}", detail.Name);
                 var errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
                     IsNew ? "创建患者" : "更新患者", ex);
-                Services.ErrorHandler.SetError("Save", errorMessage);
+                MasterDetailServices.ErrorHandler.SetError("Save", errorMessage);
                 return false;
             }
         }
@@ -217,7 +219,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             var result = await _commandHandler.DeletePatientAsync(item.Id);
             if (!result.IsSuccess)
             {
-                Services.ErrorHandler.SetError("Delete", result.ErrorMessage ?? $"删除患者 '{item.Name}' 失败");
+                MasterDetailServices.ErrorHandler.SetError("Delete", result.ErrorMessage ?? $"删除患者 '{item.Name}' 失败");
             }
             else
             {
@@ -239,25 +241,25 @@ namespace LYBT.Desktop.Patients.ViewModels
             try
             {
                 var patient = SelectedItem;
-                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认恢复患者 [{patient.Name}] 吗？", "恢复确认");
+                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认恢复患者 [{patient.Name}] 吗？", "恢复确认");
                 if (!confirmed) return;
 
                 var result = await _patientRepository.RestoreAsync(patient.Id);
                 if (result != null)
                 {
                     Logger.LogInformation("患者已恢复: {PatientName}", patient.Name);
-                    await Services.Dialog.ShowSuccessAsync($"患者 '{patient.Name}' 已恢复", "操作成功");
+                    await MasterDetailServices.Dialog.ShowSuccessAsync($"患者 '{patient.Name}' 已恢复", "操作成功");
                     await RefreshAsync();
                 }
                 else
                 {
-                    await Services.Dialog.ShowErrorAsync("恢复患者失败", "操作失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync("恢复患者失败", "操作失败");
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "恢复患者失败");
-                await Services.Dialog.ShowErrorAsync("恢复患者失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("恢复患者失败", "操作失败");
             }
         }
 
@@ -328,7 +330,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导入患者失败");
-                await Services.Dialog.ShowErrorAsync("导入患者失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("导入患者失败", "操作失败");
             }
         }
 
@@ -359,7 +361,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导出患者失败");
-                await Services.Dialog.ShowErrorAsync("导出患者失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("导出患者失败", "操作失败");
             }
         }
 
@@ -388,7 +390,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "下载模板失败");
-                await Services.Dialog.ShowErrorAsync("下载模板失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("下载模板失败", "操作失败");
             }
         }
 

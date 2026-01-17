@@ -123,6 +123,20 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         #endregion
 
+        #region NavigateToSystemSettingsCommand - 系统设置命令 (OpenSpec: unify-navigation-architecture - ADR-5修正)
+
+        public ICommand? NavigateToSystemSettingsCommand
+        {
+            get => (ICommand?)GetValue(NavigateToSystemSettingsCommandProperty);
+            set => SetValue(NavigateToSystemSettingsCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty NavigateToSystemSettingsCommandProperty =
+            DependencyProperty.Register(nameof(NavigateToSystemSettingsCommand), typeof(ICommand), typeof(SidebarControl),
+                new PropertyMetadata(null));
+
+        #endregion
+
         #region LogoutCommand - 退出登录命令
 
         public ICommand? LogoutCommand

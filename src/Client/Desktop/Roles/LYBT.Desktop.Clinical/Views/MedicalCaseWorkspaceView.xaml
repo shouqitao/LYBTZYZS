@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     MedicalCaseWorkspaceView - 医案工作区视图
     OpenSpec: refactor-clinical-workflow
     OpenSpec: refactor-medicalcase-workspace V2
@@ -89,9 +89,9 @@
                  ======================================== -->
             <views:BaseDetailContainer.ActionButtons>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
-                    <TextBlock Text="患者：" FontSize="14" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding PatientName}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                    <TextBlock Text="{Binding PatientInfo}" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    <TextBlock Text="患者：" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding PatientName}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                    <TextBlock Text="{Binding PatientInfo}" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                 </StackPanel>
             </views:BaseDetailContainer.ActionButtons>
 
@@ -102,41 +102,29 @@
                  ======================================== -->
             <views:BaseDetailContainer.ViewContent>
                 <!-- V2布局: 使用MedicalCaseViewControl紧凑模式 -->
-                <!-- OpenSpec: consolidate-panel-viewmodels - 绑定路径改为Consultation.和Prescription. -->
+                <!-- OpenSpec: unify-control-data-binding - 对象绑定模式 -->
                 <controls:MedicalCaseViewControl
                     IsCompactMode="True"
-                    PresentIllness="{Binding Consultation.PresentIllness}"
-                    TongueDiagnosis="{Binding Consultation.TongueDiagnosis}"
-                    PulseDiagnosis="{Binding Consultation.PulseDiagnosis}"
-                    TcmDiagnosis="{Binding Consultation.TcmDiagnosis}"
-                    HerbItems="{Binding Prescription.Items}"
+                    Consultation="{Binding Consultation}"
+                    Prescription="{Binding Prescription}"
                     AllHerbs="{Binding AllHerbs}"
-                    DoseCount="{Binding Prescription.DosageCount}"
-                    Usage="{Binding Prescription.Usage}"
-                    TotalPrice="{Binding Prescription.SingleDosePrice}"
                     ShowPrintButton="False"/>
             </views:BaseDetailContainer.ViewContent>
 
             <!-- ========================================
                  EditContent - 编辑模式内容
                  OpenSpec: refactor-medicalcase-workspace V2
+                 OpenSpec: unify-control-data-binding - 使用对象绑定
                  使用MedicalCaseEditControl统一诊断+处方编辑
                  ======================================== -->
             <views:BaseDetailContainer.EditContent>
                 <!-- V2布局: 使用MedicalCaseEditControl紧凑模式 -->
-                <!-- OpenSpec: consolidate-panel-viewmodels - 绑定路径改为Consultation.和Prescription. -->
+                <!-- OpenSpec: unify-control-data-binding - 对象绑定模式 -->
                 <controls:MedicalCaseEditControl
                     IsCompactMode="True"
-                    PresentIllness="{Binding Consultation.PresentIllness, Mode=TwoWay}"
-                    TongueDiagnosis="{Binding Consultation.TongueDiagnosis, Mode=TwoWay}"
-                    PulseDiagnosis="{Binding Consultation.PulseDiagnosis, Mode=TwoWay}"
-                    TcmDiagnosis="{Binding Consultation.TcmDiagnosis, Mode=TwoWay}"
-                    HerbItems="{Binding Prescription.Items, Mode=TwoWay}"
+                    Consultation="{Binding Consultation}"
+                    Prescription="{Binding Prescription}"
                     AllHerbs="{Binding AllHerbs}"
-                    HerbCount="{Binding Prescription.ItemCount}"
-                    DoseCount="{Binding Prescription.DosageCount, Mode=TwoWay}"
-                    Usage="{Binding Prescription.Usage, Mode=TwoWay}"
-                    TotalPrice="{Binding Prescription.SingleDosePrice}"
                     ImportFormulaCommand="{Binding OpenFormulaImportDialogCommand}"
                     ImportHistoryCommand="{Binding OpenHistoryCopyDialogCommand}"
                     ClearAllCommand="{Binding ClearHerbItemsCommand}"
@@ -162,7 +150,7 @@
                     <TextBlock Grid.Column="0"
                                Text="备注："
                                FontSize="13"
-                               Foreground="{StaticResource SecondaryTextBrush}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0"/>
 
@@ -181,11 +169,11 @@
                     <StackPanel Grid.Column="2"
                                 Orientation="Horizontal"
                                 VerticalAlignment="Center"
-                                Visibility="{Binding IsHistoricalEditMode, Converter={StaticResource BoolToVisibility}}"
+                                Visibility="{Binding IsHistoricalEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
                                 Margin="16,0,0,0">
                         <TextBlock Text="修改原因："
                                    FontSize="13"
-                                   Foreground="{StaticResource WarningBrush}"
+                                   Foreground="{StaticResource SemanticWarningBrush}"
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
@@ -208,7 +196,7 @@
                                 Command="{Binding EnterEditModeCommand}"
                                 Style="{StaticResource SuccessButton}"
                                 ToolTip="进入编辑模式，可修改诊断和处方内容"
-                                Visibility="{Binding ShowEditButton, Converter={StaticResource BoolToVisibility}}"
+                                Visibility="{Binding ShowEditButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                                 Margin="0,0,8,0"/>
 
                         <!-- Clinical编辑模式: 暂存医案按钮 -->
@@ -216,7 +204,7 @@
                                 Command="{Binding SaveDraftCommand}"
                                 Style="{StaticResource WarningButton}"
                                 ToolTip="保存当前进度，可随时点击'修改医案'继续编辑"
-                                Visibility="{Binding ShowDraftButton, Converter={StaticResource BoolToVisibility}}"
+                                Visibility="{Binding ShowDraftButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                                 Margin="0,0,8,0"/>
 
                         <!-- 所有模式: 打印处方笺按钮 -->
@@ -233,14 +221,14 @@
                                 Style="{StaticResource SuccessButton}"
                                 IsEnabled="{Binding CanComplete}"
                                 ToolTip="完成本次看诊，关闭医案"
-                                Visibility="{Binding ShowCompleteButton, Converter={StaticResource BoolToVisibility}}"/>
+                                Visibility="{Binding ShowCompleteButton, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
                         <!-- Management编辑模式: 保存医案按钮 -->
                         <Button Content="保存医案"
                                 Command="{Binding SaveDraftCommand}"
                                 Style="{StaticResource SuccessButton}"
                                 ToolTip="保存修改并留在当前界面"
-                                Visibility="{Binding ShowSaveButton, Converter={StaticResource BoolToVisibility}}"/>
+                                Visibility="{Binding ShowSaveButton, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </StackPanel>
                 </Grid>
             </views:BaseDetailContainer.FooterContent>

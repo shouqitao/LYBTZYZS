@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     DataGridToolbar - 数据列表工具栏控件
     OpenSpec: refactor-master-detail-layout
 
@@ -35,8 +35,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource SurfaceBrush}"
-            BorderBrush="{StaticResource BorderBrush}"
+    <Border Background="{StaticResource SurfaceCardBrush}"
+            BorderBrush="{StaticResource BorderDefaultBrush}"
             BorderThickness="0,0,0,1"
             Padding="12,8">
         <!-- 注意：不设置Grid的DataContext，以便AdditionalContent能继承父级的ViewModel DataContext -->

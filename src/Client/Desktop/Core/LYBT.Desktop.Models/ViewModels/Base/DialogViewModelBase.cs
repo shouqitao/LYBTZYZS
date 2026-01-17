@@ -1,14 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
     /// 对话框ViewModel基类
-    /// OpenSpec: standardize-viewmodel-framework
+    /// OpenSpec: enhance-viewmodel-architecture
     ///
     /// 继承CoreViewModelBase，实现IDialogAware:
     /// - 对话框参数处理
@@ -80,8 +80,12 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         #region 构造函数
 
-        protected DialogViewModelBase(ILoggerFactory loggerFactory, IEventAggregator eventAggregator)
-            : base(loggerFactory, eventAggregator)
+        /// <summary>
+        /// 构造函数 - 使用IViewModelServices聚合服务
+        /// OpenSpec: enhance-viewmodel-architecture
+        /// </summary>
+        protected DialogViewModelBase(IViewModelServices services)
+            : base(services)
         {
         }
 

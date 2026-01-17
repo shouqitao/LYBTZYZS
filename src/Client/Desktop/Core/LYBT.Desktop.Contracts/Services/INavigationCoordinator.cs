@@ -1,12 +1,16 @@
+using LYBT.Shared.Models.Enums;
+
 namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
 /// 导航协调器接口 - 统一导航入口
-/// OpenSpec: unify-navigation-architecture (ADR-3)
-/// 整合NavigationManager和RoleNavigationService功能
+/// OpenSpec: unify-navigation-architecture (ADR-3 + ADR-7)
+/// 整合NavigationManager、ViewNavigationService、RoleNavigationService功能
 /// </summary>
 public interface INavigationCoordinator
 {
+    #region 基础导航 (原有)
+
     /// <summary>
     /// 导航到指定视图
     /// </summary>
@@ -18,6 +22,12 @@ public interface INavigationCoordinator
     /// 导航到当前角色主页
     /// </summary>
     void NavigateToHome();
+
+    /// <summary>
+    /// 导航到指定角色主页
+    /// </summary>
+    /// <param name="role">用户角色</param>
+    void NavigateToHome(UserRole role);
 
     /// <summary>
     /// 导航后退
@@ -33,4 +43,81 @@ public interface INavigationCoordinator
     /// 当前视图名称
     /// </summary>
     string? CurrentView { get; }
+
+    #endregion
+
+    #region 历史导航 (从ViewNavigationService整合)
+
+    /// <summary>
+    /// 导航历史记录
+    /// </summary>
+    IReadOnlyList<string> NavigationHistory { get; }
+
+    /// <summary>
+    /// 清除导航历史
+    /// </summary>
+    void ClearHistory();
+
+    /// <summary>
+    /// 导航变更事件
+    /// </summary>
+    event EventHandler<NavigationChangedEventArgs>? NavigationChanged;
+
+    #endregion
+
+    #region Region管理 (从NavigationManager整合)
+
+    /// <summary>
+    /// 显示登录对话框
+    /// </summary>
+    void ShowLoginDialog();
+
+    /// <summary>
+    /// 清除登录区域
+    /// </summary>
+    void ClearLoginRegion();
+
+    /// <summary>
+    /// 清除内容区域
+    /// </summary>
+    void ClearContentRegion();
+
+    #endregion
+
+    #region 事件订阅 (从NavigationManager整合)
+
+    /// <summary>
+    /// 订阅Region集合变化事件（用于导航监控）
+    /// </summary>
+    void SubscribeToRegionCollection();
+
+    /// <summary>
+    /// 取消Region集合变化事件订阅
+    /// </summary>
+    void UnsubscribeFromRegionCollection();
+
+    #endregion
+}
+
+/// <summary>
+/// 导航变更事件参数
+/// OpenSpec: unify-navigation-architecture (ADR-7)
+/// </summary>
+public class NavigationChangedEventArgs : EventArgs
+{
+    /// <summary>源视图</summary>
+    public string? FromView { get; }
+
+    /// <summary>目标视图</summary>
+    public string ToView { get; }
+
+    /// <summary>导航参数</summary>
+    public IDictionary<string, object>? Parameters { get; }
+
+    public NavigationChangedEventArgs(string? fromView, string toView, IDictionary<string, object>? parameters = null)
+    {
+        FromView = fromView;
+        ToView = toView;
+        Parameters = parameters;
+    }
 }

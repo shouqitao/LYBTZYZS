@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Patients.Interfaces;
-using LYBT.Desktop.Patients.ViewModels.Components;
+// OpenSpec: refactor-frontend-srp-patterns - PatientService已迁移到Services命名空间
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 

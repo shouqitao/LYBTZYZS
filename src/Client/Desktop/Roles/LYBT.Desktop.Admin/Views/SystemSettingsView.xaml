@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     SystemSettingsView - 系统设置视图
     统一风格: 与其他管理界面保持一致的工具栏布局
 -->
@@ -9,7 +9,7 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <Grid Background="{StaticResource BackgroundBrush}">
+    <Grid Background="{StaticResource SurfaceBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

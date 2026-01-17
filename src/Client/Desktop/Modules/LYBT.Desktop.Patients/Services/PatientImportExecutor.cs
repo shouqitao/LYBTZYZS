@@ -3,7 +3,7 @@ using System.Data;
 using System.Windows;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Patients.Models;
-using LYBT.Desktop.Patients.ViewModels.Components;
+// OpenSpec: refactor-frontend-srp-patterns - PatientService已迁移到Services命名空间
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Patients.Services;

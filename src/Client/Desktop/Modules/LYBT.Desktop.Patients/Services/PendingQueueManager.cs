@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Api; // IMedicalCaseApi
 using LYBT.Desktop.Contracts.Services; // ISessionManager
-using LYBT.Desktop.Patients.ViewModels.Components; // PatientService
+// OpenSpec: refactor-frontend-srp-patterns - PatientService已迁移到Services命名空间
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Patients.Services;
 /// 待诊队列管理器 - 负责待诊队列加载和患者选择逻辑
 /// Issue #1790: 从PatientSelectionViewModel提取待诊队列逻辑(~100行)
 /// </summary>
-public class PendingQueueManager
+public class PendingQueueManager : IPendingQueueManager
 {
     private readonly IMedicalCaseApi _medicalCaseApi;
     private readonly PatientService _commandHandler;

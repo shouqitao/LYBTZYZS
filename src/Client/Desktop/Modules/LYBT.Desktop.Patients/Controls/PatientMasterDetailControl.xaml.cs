@@ -1,33 +1,20 @@
-using System.ComponentModel;
-using System.Windows.Controls;
+using LYBT.Desktop.Infrastructure.Controls;
 using LYBT.Desktop.Patients.ViewModels;
-using Prism.Ioc;
 
 namespace LYBT.Desktop.Patients.Controls
 {
     /// <summary>
     /// 患者Master-Detail控件
-    /// OpenSpec: refactor-admin-workspace
+    /// OpenSpec: refactor-frontend-srp-patterns - 继承MasterDetailControlBase基类
     ///
     /// 可复用业务控件，供Admin和Clinical角色台使用
-    /// 从PatientMasterDetailView重构而来
-    ///
-    /// 复用PatientMasterDetailViewModel作为DataContext
     /// </summary>
-    public partial class PatientMasterDetailControl : UserControl
+    public partial class PatientMasterDetailControl : MasterDetailControlBase
     {
         public PatientMasterDetailControl()
         {
             InitializeComponent();
-
-            // 设计时跳过ViewModel解析，避免空引用异常
-            if (DesignerProperties.GetIsInDesignMode(this))
-                return;
-
-            // 从DI容器解析ViewModel并设置DataContext
-            // 这样可以复用现有的PatientMasterDetailViewModel
-            var container = ContainerLocator.Container;
-            DataContext = container.Resolve<PatientMasterDetailViewModel>();
+            InitializeViewModel<PatientMasterDetailViewModel>();
         }
     }
 }

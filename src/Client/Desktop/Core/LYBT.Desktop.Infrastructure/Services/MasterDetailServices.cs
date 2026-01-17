@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Services;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {
@@ -23,7 +24,7 @@ namespace LYBT.Desktop.Infrastructure.Services
         public IDialogManager Dialog { get; }
 
         /// <inheritdoc/>
-        public IViewNavigationService Navigation { get; }
+        public INavigationCoordinator Navigation { get; }
 
         // === 便捷属性委托 ===
 
@@ -49,7 +50,7 @@ namespace LYBT.Desktop.Infrastructure.Services
             IListViewServices<TListItem> list,
             IDetailEditorService<TDetail> detailEditor,
             IDialogManager dialog,
-            IViewNavigationService navigation)
+            INavigationCoordinator navigation)
         {
             List = list;
             DetailEditor = detailEditor;

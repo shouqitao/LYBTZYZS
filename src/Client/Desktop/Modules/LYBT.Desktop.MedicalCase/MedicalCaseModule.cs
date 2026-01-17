@@ -1,4 +1,5 @@
 // OpenSpec: standardize-module-structure - Components已合并到Services
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 // OpenSpec: migrate-views-to-role-modules - AuditLogDialog/AuditReasonDialog已删除，审计功能后续单独规划
 using LYBT.Desktop.MedicalCase.Dialogs;
@@ -50,19 +51,24 @@ namespace LYBT.Desktop.MedicalCase
             // OpenSpec: standardize-service-layer - 统一使用Service命名
             containerRegistry.Register<IMedicalCaseService, MedicalCaseService>();
 
+            // OpenSpec: refactor-frontend-srp-patterns (ADR-1) - SRP职责分离接口注册
+            // 遵循依赖倒置原则：其他模块可按需依赖特定职责的接口
+            containerRegistry.Register<IMedicalCaseQueryService, MedicalCaseService>();
+            containerRegistry.Register<IMedicalCaseCommandService, MedicalCaseService>();
+            containerRegistry.Register<IMedicalCaseLifecycleService, MedicalCaseService>();
+
             // Issue #1806: 注册MedicalCaseFlowViewModel组件化服务（Epic #1805 Phase 2）
             // [已移除] MedicalCaseFlowManager - 三步流程已取消
             // OpenSpec: simplify-medicalcase-module - MedicalCaseLifecycleHandler已合并到IMedicalCaseService
-            containerRegistry.RegisterScoped<MedicalCaseDataLoader>();
+            // OpenSpec: simplify-workspace-architecture - MedicalCaseDataLoader已合并到MedicalCaseWorkspaceCoordinator
 
-            // OpenSpec: refactor-viewmodel-layer - 工作区协调器
+            // OpenSpec: refactor-viewmodel-layer - 工作区协调器（整合了数据加载功能）
             containerRegistry.RegisterScoped<ViewModels.Components.MedicalCaseWorkspaceCoordinator>();
 
             // OpenSpec: refactor-viewmodel-layer Phase 1 - 编辑模式状态机
             containerRegistry.RegisterScoped<ViewModels.Components.MedicalCaseEditModeStateMachine>();
 
-            // OpenSpec: refactor-viewmodel-layer Phase 5 - 导航处理器
-            containerRegistry.RegisterScoped<MedicalCaseNavigationHandler>();
+            // OpenSpec: simplify-workspace-architecture - MedicalCaseNavigationHandler已删除，逻辑内联到MedicalCaseWorkspaceViewModel
 
             // OpenSpec: cleanup-ui-layer - Phase 1.1 PrescriptionPanel Components
             // OpenSpec: slim-medicalcase-workspace-viewmodel - Phase 5 移除 PrescriptionItemHandler
@@ -70,7 +76,7 @@ namespace LYBT.Desktop.MedicalCase
             // [已移除] PrescriptionValidator - 死代码，功能由ViewModel内部Adapter实现 (OpenSpec: simplify-medicalcase-module)
             // [已移除] PrescriptionItemHandler - 功能由 HerbListControl 内部处理
             // [已移除] PrescriptionSaveHandler - 死代码，从未被使用 (OpenSpec: simplify-medicalcase-module)
-            containerRegistry.Register<ViewModels.Components.PrescriptionImportHandler>();
+            // OpenSpec: simplify-workspace-architecture - PrescriptionImportHandler已删除，使用PrescriptionImportExtensions扩展方法替代
             // [已移除] PrescriptionDataLoader - 死代码，从未被使用 (OpenSpec: simplify-medicalcase-module)
 
             // Issue #1807: 注册PrescriptionEditorViewModel组件化服务 Phase 2
@@ -85,8 +91,7 @@ namespace LYBT.Desktop.MedicalCase
             // 注册视图模型 - MVP核心功能
             // Issue #1549: MedicalCaseEntryViewModel已删除（由MedicalCaseFlowView的4步流程替代）
             // Epic #1583: PatientSelectionViewModel已移至PatientsModule（三区域布局）
-            // OpenSpec: unify-frontend-backend-types Phase 8 - PrescriptionItemViewModel已合并到PrescriptionHerbItem
-            // PrescriptionHerbItem已被HerbItemDto替代，由HerbListControl内部管理
+            // OpenSpec: unify-frontend-backend-types Phase 8 - PrescriptionItemViewModel已删除，由PrescriptionItemDto替代
             // OpenSpec: refactor-medicalcase-ui - 废弃注册已清理
 
             // Epic #2210 Phase 4: 4:6统一工作区视图模型

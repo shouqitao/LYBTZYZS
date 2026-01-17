@@ -4,6 +4,7 @@ using LYBT.Desktop.Users.Mappers;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.Models.Items;
 using LYBT.Desktop.Users.Repositories;
+using LYBT.Desktop.Users.ViewModels.Handlers;
 using LYBT.Shared.Models.Contracts.Users;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -34,6 +35,12 @@ namespace LYBT.Desktop.Users
             // Issue #1785: 注册Users模块组件化组件（Epic #1773 Component-Based架构）
             // OpenSpec: standardize-service-layer - 统一使用Service命名
             containerRegistry.Register<ViewModels.Components.UserService>();
+
+            // OpenSpec: refactor-frontend-srp-patterns - 注册Handler组件
+            containerRegistry.Register<IUserPasswordHandler, UserPasswordHandler>();
+            containerRegistry.Register<IUserStatusHandler, UserStatusHandler>();
+            containerRegistry.Register<IUserAuditHandler, UserAuditHandler>();
+            containerRegistry.Register<IUserImportExportHandler, UserImportExportHandler>();
 
             // OpenSpec: migrate-views-to-role-modules - UserDetailView已删除（无调用）
 

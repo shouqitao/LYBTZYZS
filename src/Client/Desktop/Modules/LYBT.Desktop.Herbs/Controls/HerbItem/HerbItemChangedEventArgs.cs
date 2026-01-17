@@ -1,4 +1,4 @@
-using LYBT.Desktop.Herbs.Models.Items;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Herbs.Controls.HerbItem
 {
@@ -16,14 +16,14 @@ namespace LYBT.Desktop.Herbs.Controls.HerbItem
         /// <summary>
         /// 变更后的药材数据
         /// </summary>
-        public HerbItemDto Item { get; }
+        public PrescriptionItemDto Item { get; }
 
         /// <summary>
         /// 项目在列表中的索引(如适用)
         /// </summary>
         public int Index { get; }
 
-        public HerbItemChangedEventArgs(HerbItemChangeType changeType, HerbItemDto item, int index = -1)
+        public HerbItemChangedEventArgs(HerbItemChangeType changeType, PrescriptionItemDto item, int index = -1)
         {
             ChangeType = changeType;
             Item = item;

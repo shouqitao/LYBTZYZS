@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using LYBT.Desktop.Herbs.Models.Items;
 using LYBT.Shared.Components;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Herbs.Controls.HerbItem
@@ -149,7 +149,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbItem
         /// <summary>
         /// 从DTO加载数据
         /// </summary>
-        public void LoadFromDto(HerbItemDto dto)
+        public void LoadFromDto(PrescriptionItemDto dto)
         {
             HerbId = dto.HerbId;
 #pragma warning disable MVVMTK0034
@@ -165,9 +165,9 @@ namespace LYBT.Desktop.Herbs.Controls.HerbItem
         /// <summary>
         /// 导出为DTO
         /// </summary>
-        public HerbItemDto ToDto()
+        public PrescriptionItemDto ToDto()
         {
-            return new HerbItemDto
+            return new PrescriptionItemDto
             {
                 HerbId = HerbId,
                 HerbName = HerbName,

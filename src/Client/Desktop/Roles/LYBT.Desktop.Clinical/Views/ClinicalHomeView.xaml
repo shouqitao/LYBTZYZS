@@ -5,121 +5,34 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <!-- OpenSpec: cleanup-ui-dead-code - 使用共享HomePageStyles -->
     <UserControl.Resources>
-        <!--  主功能卡片样式（开始接诊）  -->
-        <Style x:Key="PrimaryCardStyle" TargetType="Border">
-            <Setter Property="Width" Value="320" />
-            <Setter Property="Height" Value="200" />
-            <Setter Property="CornerRadius" Value="16" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect
-                        BlurRadius="12"
-                        Opacity="0.25"
-                        ShadowDepth="3"
-                        Color="{StaticResource PrimaryColor}" />
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Background">
-                <Setter.Value>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Offset="0" Color="{StaticResource PrimaryLightColor}" />
-                        <GradientStop Offset="1" Color="{StaticResource PrimaryDarkColor}" />
-                    </LinearGradientBrush>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/HomePageStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
 
-        <!--  统计卡片样式  -->
-        <Style x:Key="StatsCardStyle" TargetType="Border">
-            <Setter Property="Width" Value="200" />
-            <Setter Property="Height" Value="200" />
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect
-                        BlurRadius="8"
-                        Opacity="0.1"
-                        ShadowDepth="2"
-                        Color="Black" />
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!--  辅助功能卡片样式（与Admin保持一致）  -->
-        <Style x:Key="SecondaryCardStyle" TargetType="Border">
-            <Setter Property="Width" Value="200" />
-            <Setter Property="Height" Value="180" />
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect
-                        BlurRadius="8"
-                        Opacity="0.1"
-                        ShadowDepth="2"
-                        Color="Black" />
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource HoverBrush}" />
-                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect
-                                BlurRadius="16"
-                                Opacity="0.2"
-                                ShadowDepth="4"
-                                Color="{StaticResource PrimaryColor}" />
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!--  辅助卡片图标样式（与Admin保持一致）  -->
-        <Style x:Key="SecondaryCardIconStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="56" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,0,0,16" />
-        </Style>
-
-        <!--  辅助卡片标题样式（与Admin保持一致）  -->
-        <Style x:Key="SecondaryCardTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-        </Style>
-
-        <!--  透明按钮样式（无hover直角覆盖）  -->
-        <Style x:Key="TransparentButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+            <!--  透明按钮样式（无hover直角覆盖）- Clinical专用  -->
+            <Style x:Key="TransparentButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <!--  全屏居中布局  -->
-    <Grid Background="{StaticResource BackgroundBrush}">
+    <Grid Background="{StaticResource SurfaceBackgroundBrush}">
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
@@ -130,7 +43,7 @@
                 HorizontalAlignment="Center"
                 FontSize="28"
                 FontWeight="Bold"
-                Foreground="{StaticResource PrimaryBrush}"
+                Foreground="{StaticResource BrandPrimaryBrush}"
                 Text="临床工作站" />
             <TextBlock
                 Margin="0,0,0,40"
@@ -145,7 +58,7 @@
                 Orientation="Horizontal">
 
                 <!--  主卡片：开始接诊  -->
-                <Border Margin="12" Style="{StaticResource PrimaryCardStyle}">
+                <Border Margin="12" Style="{StaticResource PrimaryFunctionCardStyle}">
                     <Button
                         Style="{StaticResource TransparentButtonStyle}"
                         Command="{Binding StartMedicalCaseCommand}">
@@ -154,7 +67,7 @@
                                 Margin="0,0,0,16"
                                 HorizontalAlignment="Center"
                                 FontSize="64"
-                                Text="🧑‍⚕️" />
+                                Text="&#x1F9D1;&#x200D;&#x2695;&#xFE0F;" />
                             <TextBlock
                                 Margin="0,0,0,8"
                                 HorizontalAlignment="Center"
@@ -194,7 +107,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="36"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource PrimaryBrush}"
+                                Foreground="{StaticResource BrandPrimaryBrush}"
                                 Text="{Binding TodayConsultationCount, FallbackValue=0}" />
                             <TextBlock
                                 Margin="4,0,0,0"
@@ -215,7 +128,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="20"
                                 FontWeight="SemiBold"
-                                Foreground="{StaticResource ErrorBrush}"
+                                Foreground="{StaticResource SemanticErrorBrush}"
                                 Text="{Binding PendingCaseCount, FallbackValue=0}" />
                             <TextBlock
                                 Margin="4,0,0,0"
@@ -235,49 +148,49 @@
                 Orientation="Horizontal">
 
                 <!--  辅助卡片1：患者管理  -->
-                <Border Margin="12" Style="{StaticResource SecondaryCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Button
                         Style="{StaticResource TransparentButtonStyle}"
                         Command="{Binding NavigateToPatientManagementCommand}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource SecondaryCardIconStyle}" Text="👤" />
-                            <TextBlock Style="{StaticResource SecondaryCardTitleStyle}" Text="患者管理" />
+                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F464;" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="患者管理" />
                         </StackPanel>
                     </Button>
                 </Border>
 
                 <!--  辅助卡片2：病历查询  -->
-                <Border Margin="12" Style="{StaticResource SecondaryCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Button
                         Style="{StaticResource TransparentButtonStyle}"
                         Command="{Binding NavigateToMedicalCaseQueryCommand}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource SecondaryCardIconStyle}" Text="📋" />
-                            <TextBlock Style="{StaticResource SecondaryCardTitleStyle}" Text="病历查询" />
+                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4CB;" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="病历查询" />
                         </StackPanel>
                     </Button>
                 </Border>
 
                 <!--  辅助卡片3：药材库  -->
-                <Border Margin="12" Style="{StaticResource SecondaryCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Button
                         Style="{StaticResource TransparentButtonStyle}"
                         Command="{Binding NavigateToHerbLibraryCommand}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource SecondaryCardIconStyle}" Text="🌿" />
-                            <TextBlock Style="{StaticResource SecondaryCardTitleStyle}" Text="药材库" />
+                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F33F;" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="药材库" />
                         </StackPanel>
                     </Button>
                 </Border>
 
                 <!--  辅助卡片4：验方库  -->
-                <Border Margin="12" Style="{StaticResource SecondaryCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Button
                         Style="{StaticResource TransparentButtonStyle}"
                         Command="{Binding NavigateToFormulaLibraryCommand}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource SecondaryCardIconStyle}" Text="📖" />
-                            <TextBlock Style="{StaticResource SecondaryCardTitleStyle}" Text="验方库" />
+                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4D6;" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="验方库" />
                         </StackPanel>
                     </Button>
                 </Border>

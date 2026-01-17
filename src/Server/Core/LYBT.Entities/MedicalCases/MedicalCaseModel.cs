@@ -86,9 +86,10 @@ namespace LYBT.Entities.MedicalCases
 
         /// <summary>
         /// 是否已锁定
-        /// 锁定条件：已完成 或 非当天创建
+        /// 锁定条件：已完成状态 且 非当天（完成或创建）
+        /// Draft/Active状态不受跨日限制，可随时编辑
         /// </summary>
-        public bool IsLocked => CompletedAt.HasValue || CreatedAt.Date < DateTime.Today;
+        public bool IsLocked => IsCompleted && (CompletedAt ?? CreatedAt).Date < DateTime.Today;
 
         /// <summary>
         /// 是否活跃（可编辑状态）

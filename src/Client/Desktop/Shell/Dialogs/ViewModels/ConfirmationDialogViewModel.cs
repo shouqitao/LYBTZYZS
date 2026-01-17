@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
@@ -81,10 +81,12 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 
         #region 构造函数
 
-        public ConfirmationDialogViewModel(
-            ILoggerFactory loggerFactory,
-            IEventAggregator eventAggregator)
-            : base(loggerFactory, eventAggregator)
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
+        public ConfirmationDialogViewModel(IViewModelServices services)
+            : base(services)
         {
             Title = "确认操作";
         }

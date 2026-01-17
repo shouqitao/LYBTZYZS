@@ -2,8 +2,8 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using LYBT.Desktop.Herbs.Models.Items;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Herbs.Controls.HerbItem
 {
@@ -116,7 +116,10 @@ namespace LYBT.Desktop.Herbs.Controls.HerbItem
         {
             _viewModel = new HerbItemControlViewModel();
             _viewModel.ItemChanged += OnViewModelItemChanged;
-            DataContext = _viewModel;
+            // 重要: 设置根元素(LayoutRoot)的DataContext，而不是UserControl自身的DataContext
+            // 这样外部绑定 AllHerbs="{Binding AllHerbs}" 会从父级DataContext(Items中的项)解析
+            // 而内部绑定 Text="{Binding HerbName}" 会从LayoutRoot的DataContext解析
+            LayoutRoot.DataContext = _viewModel;
         }
 
         private void OnViewModelItemChanged(object? sender, HerbItemChangedEventArgs e)
@@ -132,7 +135,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbItem
         /// <summary>
         /// 从DTO加载数据
         /// </summary>
-        public void LoadFromDto(HerbItemDto dto)
+        public void LoadFromDto(PrescriptionItemDto dto)
         {
             _viewModel?.LoadFromDto(dto);
         }
@@ -140,9 +143,9 @@ namespace LYBT.Desktop.Herbs.Controls.HerbItem
         /// <summary>
         /// 导出为DTO
         /// </summary>
-        public HerbItemDto ToDto()
+        public PrescriptionItemDto ToDto()
         {
-            return _viewModel?.ToDto() ?? HerbItemDto.CreateEmpty();
+            return _viewModel?.ToDto() ?? new PrescriptionItemDto();
         }
 
         /// <summary>

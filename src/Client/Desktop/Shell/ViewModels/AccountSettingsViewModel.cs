@@ -86,21 +86,19 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         /// <summary>
         /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
         public AccountSettingsViewModel(
+            IViewModelServices services,
             IAuthenticationService authService,
             IUserRepository userRepository,
-            ISessionManager sessionManager,
-            IEventAggregator eventAggregator,
-            IRegionManager regionManager,
-            ILoggerFactory loggerFactory,
             IUserNotificationService? userNotificationService = null)
-            : base(loggerFactory, eventAggregator)
+            : base(services)
         {
             _authService = authService;
             _userRepository = userRepository;
-            _sessionManager = sessionManager;
-            _regionManager = regionManager;
+            _sessionManager = services.SessionManager;
+            _regionManager = services.RegionManager;
             _userNotificationService = userNotificationService;
 
             LoadUserProfile();

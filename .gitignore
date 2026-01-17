@@ -159,6 +159,9 @@ nul
 !.claude/guides/
 .serena/
 .ai/*
+
+# Planning with Files 临时规划目录
+.planning/
 !.ai/rules.json
 ai/
 ai-starter/

@@ -1,4 +1,4 @@
-<UserControl x:Class="LYBT.Desktop.Clinical.Views.PatientSelectionView"
+﻿<UserControl x:Class="LYBT.Desktop.Clinical.Views.PatientSelectionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,7 +14,7 @@
          位于Clinical模块，使用Patients模块的PatientSelectionControl
          医生工作台专用 -->
 
-    <Grid Background="{StaticResource BackgroundBrush}">
+    <Grid Background="{StaticResource SurfaceBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>   <!-- 顶部导航栏 -->
             <RowDefinition Height="*"/>    <!-- 患者选择控件 -->
@@ -23,8 +23,8 @@
 
         <!-- 顶部导航栏 -->
         <Border Grid.Row="0"
-                Background="{StaticResource SurfaceBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{StaticResource SurfaceCardBrush}"
+                BorderBrush="{StaticResource BorderDefaultBrush}"
                 BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
                 <TextBlock Text="患者选择"
@@ -36,26 +36,19 @@
             </Grid>
         </Border>
 
-        <!-- 患者选择控件 (来自Patients模块) -->
+        <!-- 患者选择控件 (来自Patients模块)
+             OpenSpec: fix-elementname-binding-architecture
+             控件通过DataContext透传直接绑定PatientSelectionViewModel属性 -->
         <patientControls:PatientSelectionControl
             Grid.Row="1"
             Margin="20"
-            Patients="{Binding Patients}"
-            SelectedPatient="{Binding SelectedPatient, Mode=TwoWay}"
-            PatientDetail="{Binding PatientDetail, Mode=TwoWay}"
-            SearchText="{Binding SearchKeyword, Mode=TwoWay}"
-            CreateNewCommand="{Binding NewPatientCommand}"
-            RefreshCommand="{Binding RefreshCommand}"
-            SearchCommand="{Binding SearchCommand}"
-            SelectCommand="{Binding StartMedicalCaseCommand}"
-            IsLoading="{Binding IsBusy}"
             PatientDoubleClicked="PatientSelectionControl_PatientDoubleClicked"/>
 
         <!-- 底部操作栏 -->
         <Border Grid.Row="2"
-                Background="{StaticResource SurfaceBrush}"
+                Background="{StaticResource SurfaceCardBrush}"
                 Padding="20"
-                BorderBrush="{StaticResource BorderBrush}"
+                BorderBrush="{StaticResource BorderDefaultBrush}"
                 BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -74,7 +67,7 @@
                             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsError}" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource SemanticErrorBrush}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>

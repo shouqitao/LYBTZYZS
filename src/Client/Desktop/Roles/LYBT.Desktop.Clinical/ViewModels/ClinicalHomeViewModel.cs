@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -7,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
+
+// OpenSpec: unify-navigation-architecture Phase 6 - 整合INavigationCoordinator
 
 namespace LYBT.Desktop.Clinical.ViewModels
 {
@@ -24,6 +27,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         private readonly IAuthenticationService _authService;
         private readonly IDialogService _dialogService;
+        private readonly INavigationCoordinator _navigationCoordinator;
 
         #endregion 依赖服务
 
@@ -51,16 +55,20 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         #region 构造函数
 
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
         public ClinicalHomeViewModel(
-            IRegionManager regionManager,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
+            IViewModelServices services,
             IAuthenticationService authService,
-            IDialogService dialogService)
-            : base(loggerFactory, eventAggregator, regionManager)
+            IDialogService dialogService,
+            INavigationCoordinator navigationCoordinator)
+            : base(services)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
 
             // 加载当前用户信息
             LoadCurrentUser();
@@ -84,22 +92,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("开始看诊，导航到患者选择视图");
-
-                RegionManager.RequestNavigate("ContentRegion", ViewNames.PatientSelection, navigationResult =>
-                {
-                    if (navigationResult.Result == true)
-                    {
-                        Logger.LogInformation("导航成功：{ViewName}", ViewNames.PatientSelection);
-                    }
-                    else
-                    {
-                        Logger.LogError("导航失败：{ViewName}，错误：{Error}", ViewNames.PatientSelection, navigationResult.Error?.Message ?? "未知错误");
-                        if (navigationResult.Error != null)
-                        {
-                            Logger.LogError(navigationResult.Error, "导航异常详情");
-                        }
-                    }
-                });
+                _navigationCoordinator.NavigateTo(ViewNames.PatientSelection);
             }
             catch (Exception ex)
             {
@@ -117,7 +110,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到患者管理视图");
-                RegionManager.RequestNavigate("ContentRegion", ViewNames.PatientManagement);
+                _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
             }
             catch (Exception ex)
             {
@@ -135,7 +128,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到医案管理视图");
-                RegionManager.RequestNavigate("ContentRegion", ViewNames.MedicalCaseManagement);
+                _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseManagement);
             }
             catch (Exception ex)
             {
@@ -153,7 +146,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到药材管理视图");
-                RegionManager.RequestNavigate("ContentRegion", ViewNames.HerbManagement);
+                _navigationCoordinator.NavigateTo(ViewNames.HerbManagement);
             }
             catch (Exception ex)
             {
@@ -171,7 +164,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到经验方管理视图");
-                RegionManager.RequestNavigate("ContentRegion", ViewNames.FormulaManagement);
+                _navigationCoordinator.NavigateTo(ViewNames.FormulaManagement);
             }
             catch (Exception ex)
             {
@@ -189,7 +182,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到账户设置页面(个人资料)");
-                RegionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.AccountSettings);
+                _navigationCoordinator.NavigateTo(ViewNames.AccountSettings);
             }
             catch (Exception ex)
             {
@@ -207,8 +200,8 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到账户设置页面(修改密码)");
-                var parameters = new NavigationParameters { { "Tab", "Password" } };
-                RegionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.AccountSettings, parameters);
+                var parameters = new Dictionary<string, object> { { "Tab", "Password" } };
+                _navigationCoordinator.NavigateTo(ViewNames.AccountSettings, parameters);
             }
             catch (Exception ex)
             {

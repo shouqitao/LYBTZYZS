@@ -1,11 +1,11 @@
-<!--
+﻿<!--
     FormulaMasterDetailControl - 验方Master-Detail控件
     OpenSpec: refactor-admin-workspace
 
     可复用业务控件，供Admin和Clinical角色台使用
     从FormulaMasterDetailView重构而来
 -->
-<UserControl x:Class="LYBT.Desktop.Formula.Controls.FormulaMasterDetailControl"
+<controls:MasterDetailControlBase x:Class="LYBT.Desktop.Formula.Controls.FormulaMasterDetailControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
@@ -14,13 +14,13 @@
              xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
              xmlns:formulaControls="clr-namespace:LYBT.Desktop.Formula.Controls">
 
-    <UserControl.Resources>
+    <controls:MasterDetailControlBase.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </UserControl.Resources>
+    </controls:MasterDetailControlBase.Resources>
 
     <controls:MasterDetailLayout HasSelection="{Binding HasSelection}">
         <!-- ========================================
@@ -53,7 +53,7 @@
                           ItemsSource="{Binding Items}"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                           behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
-                          behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+                          behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=OneWay}"
                           Style="{StaticResource MasterDetailDataGridStyle}"
                           RowHeaderWidth="0"
                           Margin="0,0,0,8">
@@ -64,7 +64,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="Padding" Value="8,0"/>
                                 </Style>
@@ -76,7 +76,7 @@
                                             Width="80">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -87,7 +87,7 @@
                                             Width="50">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="TextAlignment" Value="Center"/>
                                 </Style>
@@ -144,14 +144,14 @@
                         </TextBlock>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="每页" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="每页" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             <ComboBox ItemsSource="{Binding PageSizes}"
                                       SelectedItem="{Binding PageSize, Mode=TwoWay}"
                                       Width="60"
                                       Margin="6,0"
                                       VerticalAlignment="Center"
                                       IsEditable="False"/>
-                            <TextBlock Text="条" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="条" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="3"
@@ -208,30 +208,32 @@
                                         DeleteCommand="{Binding DeleteCommand}"/>
 
                 <!-- 查看模式内容 -->
+                <!-- OpenSpec: unify-vm-view-binding-patterns - 统一使用CurrentDetail -->
                 <formulaControls:FormulaViewControl
                     Grid.Row="1"
                     Visibility="{Binding IsEditMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                    Formula="{Binding ViewFormulaDto}"
+                    Formula="{Binding CurrentDetail}"
                     ShowAuditInfo="True"
                     Margin="16"/>
 
                 <!-- 编辑模式内容 -->
                 <!-- OpenSpec: unify-herb-controls-to-herbs-module - 使用HerbListControl替代HerbListEditor -->
+                <!-- OpenSpec: unify-vm-view-binding-patterns - 统一使用CurrentDetail替代EditDetail -->
                 <formulaControls:FormulaEditControl
                     Grid.Row="1"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    FormulaName="{Binding EditDetail.Name, Mode=TwoWay}"
-                    Category="{Binding EditDetail.Category, Mode=TwoWay}"
-                    Property="{Binding EditDetail.Property, Mode=TwoWay}"
-                    FormulaEffect="{Binding EditDetail.Effect, Mode=TwoWay}"
-                    Usage="{Binding EditDetail.Usage, Mode=TwoWay}"
-                    Remark="{Binding EditDetail.Remark, Mode=TwoWay}"
-                    CreatedAt="{Binding EditDetail.CreatedAt}"
-                    UpdatedAt="{Binding EditDetail.UpdatedAt}"
+                    FormulaName="{Binding CurrentDetail.Name, Mode=TwoWay}"
+                    Category="{Binding CurrentDetail.Category, Mode=TwoWay}"
+                    Property="{Binding CurrentDetail.Property, Mode=TwoWay}"
+                    FormulaEffect="{Binding CurrentDetail.Effect, Mode=TwoWay}"
+                    Usage="{Binding CurrentDetail.Usage, Mode=TwoWay}"
+                    Remark="{Binding CurrentDetail.Remark, Mode=TwoWay}"
+                    CreatedAt="{Binding CurrentDetail.CreatedAt}"
+                    UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
                     HerbCount="{Binding HerbCount}"
                     AllHerbs="{Binding AllHerbs}"
                     HerbItems="{Binding HerbItems, Mode=TwoWay}"
-                    ErrorsSource="{Binding EditDetail.Errors}"
+                    ErrorsSource="{Binding CurrentDetail.Errors}"
                     Margin="16"/>
 
                 <!-- 详情加载遮罩 -->
@@ -252,4 +254,4 @@
                 ActionCommand="{Binding CreateNewCommand}"/>
         </controls:MasterDetailLayout.EmptyContent>
     </controls:MasterDetailLayout>
-</UserControl>
+</controls:MasterDetailControlBase>

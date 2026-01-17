@@ -13,8 +13,9 @@ namespace LYBT.Desktop.Admin.ViewModels
     /// 系统设置视图模型
     /// Issue #1831 UI统一化 - 接入UnifiedViewModelBase
     /// Epic #1832 Phase 2 - 完成真实功能实现
+    /// OpenSpec: refactor-viewmodel-base-classes - 从UnifiedViewModelBase迁移到NavigableViewModelBase
     /// </summary>
-    public class SystemSettingsViewModel : UnifiedViewModelBase
+    public class SystemSettingsViewModel : NavigableViewModelBase
     {
         #region 服务依赖
 
@@ -71,14 +72,14 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         #region 构造函数
 
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
         public SystemSettingsViewModel(
-            ISystemSettingsService settingsService,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
-            IRegionManager regionManager,
-            ISessionManager? sessionManager = null,
-            IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+            IViewModelServices services,
+            ISystemSettingsService settingsService)
+            : base(services)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
 
@@ -88,7 +89,6 @@ namespace LYBT.Desktop.Admin.ViewModels
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync());
             ResetCommand = new DelegateCommand(async () => await ExecuteResetAsync());
             BrowseBackupPathCommand = new DelegateCommand(async () => await ExecuteBrowseBackupPathAsync());
-            // NavigateToHomeCommand 已由基类 UnifiedViewModelBase 提供
         }
 
         #endregion
@@ -98,7 +98,7 @@ namespace LYBT.Desktop.Admin.ViewModels
         /// <summary>
         /// 异步初始化 - 加载系统设置
         /// </summary>
-        protected override Task InitializeAsync(NavigationParameters parameters)
+        protected override Task InitializeAsync(NavigationContext context)
         {
             Logger.LogInformation("加载系统设置");
 
@@ -116,7 +116,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载系统设置失败");
-                HandleError(ex, "加载系统设置");
+                SetError($"加载系统设置失败: {ex.Message}");
             }
 
             return Task.CompletedTask;
@@ -134,7 +134,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             try
             {
                 Logger.LogInformation("保存系统设置");
-                SetIsBusy(true, "正在保存系统设置...");
+                SetBusy(true, "正在保存系统设置...");
 
                 // 保存到服务
                 _settingsService.SystemName = SystemName;
@@ -155,7 +155,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             }
             finally
             {
-                SetIsBusy(false);
+                SetBusy(false);
             }
         }
 
@@ -166,14 +166,14 @@ namespace LYBT.Desktop.Admin.ViewModels
         {
             try
             {
-                var confirmed = await ShowConfirmationAsync("确定要重置为默认设置吗？所有自定义配置将丢失。", "确认重置");
+                var confirmed = await ShowConfirmMessageAsync("确定要重置为默认设置吗？所有自定义配置将丢失。", "确认重置");
                 if (!confirmed)
                 {
                     return;
                 }
 
                 Logger.LogInformation("重置系统设置为默认值");
-                SetIsBusy(true, "正在重置系统设置...");
+                SetBusy(true, "正在重置系统设置...");
 
                 // 重置服务
                 _settingsService.ResetToDefaults();
@@ -195,7 +195,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             }
             finally
             {
-                SetIsBusy(false);
+                SetBusy(false);
             }
         }
 

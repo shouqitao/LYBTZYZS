@@ -1,0 +1,17 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        LYBTZYZS 主题入口 - 浅色主题
+        OpenSpec: desktop-ui-ux-optimization
+        
+        合并所有设计Token资源
+    -->
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/LYBT.Desktop.Shell;component/Resources/DesignTokens/Colors.Light.xaml" />
+        <ResourceDictionary Source="/LYBT.Desktop.Shell;component/Resources/DesignTokens/Typography.xaml" />
+        <ResourceDictionary Source="/LYBT.Desktop.Shell;component/Resources/DesignTokens/Spacing.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

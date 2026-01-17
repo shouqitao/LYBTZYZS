@@ -26,9 +26,9 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("手机号脱敏")]
         public string PhoneMasked { get; set; } = string.Empty;
 
-        /// <summary>待处理类型</summary>
-        [DisplayName("类型")]
-        public PendingCaseType Type { get; set; }
+        /// <summary>医案状态</summary>
+        [DisplayName("状态")]
+        public MedicalCaseStatus CaseStatus { get; set; }
 
         /// <summary>医案ID（如果有未完成医案，则有值；挂号患者为null）</summary>
         [DisplayName("医案ID")]

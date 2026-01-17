@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using Prism.Ioc;
 
@@ -18,9 +19,12 @@ namespace LYBT.Desktop.Infrastructure.DependencyInjection
         /// <returns>容器注册表实例</returns>
         public static IContainerRegistry AddViewModelServices(this IContainerRegistry containerRegistry)
         {
+            // OpenSpec: enhance-viewmodel-architecture - ViewModel服务聚合
+            containerRegistry.RegisterSingleton<IViewModelServices, ViewModelServices>();
+
             // 共享服务 - Singleton
             containerRegistry.RegisterSingleton<IDialogManager, DialogManager>();
-            containerRegistry.RegisterSingleton<IViewNavigationService, ViewNavigationService>();
+            // [已删除] IViewNavigationService - OpenSpec: unify-navigation-architecture (ADR-7)
             containerRegistry.RegisterSingleton<IAsyncExecutor, AsyncExecutor>();
 
             // 有状态服务 - Transient (每个ViewModel实例独立)

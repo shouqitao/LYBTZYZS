@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     MedicalCaseViewControl - 医案预览控件
     OpenSpec: refactor-medicalcase-workspace V2
     OpenSpec: refactor-medicalcase-management
@@ -27,8 +27,8 @@
 
             <!-- Compact模式区域边框样式 -->
             <Style x:Key="CompactSectionBorderStyle" TargetType="Border">
-                <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+                <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderDividerBrush}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="CornerRadius" Value="8"/>
                 <Setter Property="Padding" Value="16,12"/>
@@ -115,7 +115,7 @@
                             <!-- 中医诊断 -->
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="中医诊断" Style="{StaticResource DetailLabelStyle}"/>
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Detail.TcmDiagnosis, TargetNullValue='-'}"
-                                       Style="{StaticResource DetailValueStyle}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
+                                       Style="{StaticResource DetailValueStyle}" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimaryBrush}"/>
                         </Grid>
                     </controls:InfoCard.Content>
                 </controls:InfoCard>
@@ -186,7 +186,7 @@
 
                             <!-- 无处方提示 -->
                             <TextBlock Text="暂无处方药材"
-                                       Foreground="{StaticResource TertiaryTextBrush}"
+                                       Foreground="{StaticResource TextTertiaryBrush}"
                                        FontStyle="Italic"
                                        Visibility="{Binding Detail.HasPrescriptionItems, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                         </StackPanel>
@@ -249,31 +249,31 @@
                 <RowDefinition Height="Auto"/>  <!-- 底部信息 -->
             </Grid.RowDefinitions>
 
-            <!-- 诊断信息 -->
+            <!-- 诊断信息 - OpenSpec: unify-control-data-binding 对象绑定 -->
             <Border Grid.Row="0" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Margin="0,0,0,8">
                         <Run Text="现病史: " FontWeight="SemiBold"/>
-                        <Run Text="{Binding PresentIllness, TargetNullValue='-'}"/>
+                        <Run Text="{Binding Consultation.PresentIllness, TargetNullValue='-'}"/>
                     </TextBlock>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock>
                             <Run Text="舌诊: " FontWeight="SemiBold"/>
-                            <Run Text="{Binding TongueDiagnosis, TargetNullValue='-'}"/>
+                            <Run Text="{Binding Consultation.TongueDiagnosis, TargetNullValue='-'}"/>
                         </TextBlock>
                         <TextBlock Margin="24,0,0,0">
                             <Run Text="脉诊: " FontWeight="SemiBold"/>
-                            <Run Text="{Binding PulseDiagnosis, TargetNullValue='-'}"/>
+                            <Run Text="{Binding Consultation.PulseDiagnosis, TargetNullValue='-'}"/>
                         </TextBlock>
                     </StackPanel>
                     <TextBlock>
                         <Run Text="中医诊断: " FontWeight="SemiBold"/>
-                        <Run Text="{Binding TcmDiagnosis, TargetNullValue='-'}" Foreground="{StaticResource PrimaryBrush}" FontWeight="SemiBold"/>
+                        <Run Text="{Binding Consultation.TcmDiagnosis, TargetNullValue='-'}" Foreground="{StaticResource BrandPrimaryBrush}" FontWeight="SemiBold"/>
                     </TextBlock>
                 </StackPanel>
             </Border>
 
-            <!-- 处方内容 -->
+            <!-- 处方内容 - OpenSpec: unify-control-data-binding 对象绑定 -->
             <Border Grid.Row="1" Style="{StaticResource CompactSectionBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -285,14 +285,14 @@
 
                     <!-- 使用HerbListControl只读模式 -->
                     <herbList:HerbListControl Grid.Row="1"
-                        HerbItems="{Binding HerbItems}"
+                        HerbItems="{Binding Prescription.Items}"
                         AllHerbs="{Binding AllHerbs}"
                         IsEditMode="False"
                         Columns="4"/>
                 </Grid>
             </Border>
 
-            <!-- 底部信息 -->
+            <!-- 底部信息 - OpenSpec: unify-control-data-binding 对象绑定 -->
             <Border Grid.Row="2" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,12,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -305,16 +305,16 @@
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock VerticalAlignment="Center">
                             <Run Text="付数: "/>
-                            <Run Text="{Binding DoseCount, TargetNullValue=0}" FontWeight="SemiBold"/>
+                            <Run Text="{Binding Prescription.DosageCount, TargetNullValue=0}" FontWeight="SemiBold"/>
                             <Run Text="付"/>
                         </TextBlock>
                         <TextBlock Margin="24,0,0,0" VerticalAlignment="Center">
                             <Run Text="用法: "/>
-                            <Run Text="{Binding Usage, TargetNullValue='-'}"/>
+                            <Run Text="{Binding Prescription.Usage, TargetNullValue='-'}"/>
                         </TextBlock>
                         <TextBlock Margin="24,0,0,0" VerticalAlignment="Center">
                             <Run Text="总价: "/>
-                            <Run Text="{Binding TotalPrice, StringFormat='{}{0:F2}元'}" FontWeight="SemiBold" Foreground="{StaticResource SuccessBrush}"/>
+                            <Run Text="{Binding Prescription.SingleDosePrice, StringFormat='{}{0:F2}元'}" FontWeight="SemiBold" Foreground="{StaticResource SemanticSuccessBrush}"/>
                         </TextBlock>
                     </StackPanel>
 

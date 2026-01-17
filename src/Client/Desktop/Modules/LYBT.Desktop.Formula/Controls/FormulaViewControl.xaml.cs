@@ -1,12 +1,13 @@
 using System.Windows;
 using System.Windows.Controls;
-using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Desktop.Formula.Models;
 
 namespace LYBT.Desktop.Formula.Controls
 {
     /// <summary>
     /// 验方预览控件 - OpenSpec: extract-detail-controls Task 1.1
     /// 独立的验方预览控件，可在FormulaDetailView和FormulaImportDialog中复用
+    /// OpenSpec: unify-vm-view-binding-patterns - 重构为接受FormulaDetailModel类型
     /// </summary>
     public partial class FormulaViewControl : UserControl
     {
@@ -16,19 +17,19 @@ namespace LYBT.Desktop.Formula.Controls
         }
 
         /// <summary>
-        /// 验方详情数据（接受FormulaDetailDto或其子类FormulaDetailDto）
-        /// OpenSpec: extract-detail-controls - 使用基类FormulaDetailDto支持更广泛复用
+        /// 验方详情数据
+        /// OpenSpec: unify-vm-view-binding-patterns - 统一使用FormulaDetailModel类型
         /// </summary>
         public static readonly DependencyProperty FormulaProperty =
             DependencyProperty.Register(
                 nameof(Formula),
-                typeof(FormulaDetailDto),
+                typeof(FormulaDetailModel),
                 typeof(FormulaViewControl),
                 new PropertyMetadata(null));
 
-        public FormulaDetailDto? Formula
+        public FormulaDetailModel? Formula
         {
-            get => (FormulaDetailDto?)GetValue(FormulaProperty);
+            get => (FormulaDetailModel?)GetValue(FormulaProperty);
             set => SetValue(FormulaProperty, value);
         }
 

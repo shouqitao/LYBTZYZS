@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Infrastructure.ViewModels
@@ -10,27 +12,51 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
     /// <summary>
     /// Master-Detail视图ViewModel基类V2（组合模式）
     /// OpenSpec: refactor-viewmodel-composition
+    /// OpenSpec: enhance-viewmodel-architecture - 添加IViewModelServices参数
     ///
-    /// 使用IMasterDetailServices进行组合，委托功能给注入的服务
+    /// 注意：由于项目依赖顺序(Models → Infrastructure)，无法直接继承CoreViewModelBase
+    /// 采用组合模式：保持ObservableObject继承 + IViewModelServices参数获取通用服务
+    /// TODO: 后续提案重构项目结构，将CoreViewModelBase移到更底层项目
     /// </summary>
     /// <typeparam name="TListItem">列表项类型</typeparam>
     /// <typeparam name="TDetail">详情模型类型</typeparam>
-    public abstract partial class MasterDetailViewModelBase<TListItem, TDetail> : ObservableObject, INavigationAware, IRegionMemberLifetime, IDisposable
+    public abstract partial class MasterDetailViewModelBase<TListItem, TDetail> : ObservableObject, INavigationAware, IRegionMemberLifetime, IDisposable, IAsyncInitializable
         where TListItem : class
         where TDetail : class
     {
-        private readonly IMasterDetailServices<TListItem, TDetail> _services;
+        private readonly IMasterDetailServices<TListItem, TDetail> _masterDetailServices;
+        private readonly IViewModelServices _viewModelServices;
         private bool _disposed;
 
         /// <summary>
-        /// 日志记录器
+        /// 日志记录器（来自IViewModelServices）
         /// </summary>
         protected ILogger Logger { get; }
 
         /// <summary>
+        /// 事件聚合器（来自IViewModelServices）
+        /// </summary>
+        protected IEventAggregator EventAggregator => _viewModelServices.EventAggregator;
+
+        /// <summary>
+        /// Region管理器（来自IViewModelServices）
+        /// </summary>
+        protected IRegionManager RegionManager => _viewModelServices.RegionManager;
+
+        /// <summary>
+        /// 会话管理器（来自IViewModelServices）
+        /// </summary>
+        protected ISessionManager SessionManager => _viewModelServices.SessionManager;
+
+        /// <summary>
+        /// 通用对话框服务（来自IViewModelServices）
+        /// </summary>
+        protected ICommonDialogService CommonDialogService => _viewModelServices.CommonDialogService;
+
+        /// <summary>
         /// Master-Detail服务
         /// </summary>
-        protected IMasterDetailServices<TListItem, TDetail> Services => _services;
+        protected IMasterDetailServices<TListItem, TDetail> MasterDetailServices => _masterDetailServices;
 
         /// <summary>
         /// 数据列表
@@ -48,17 +74,17 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading => _services.Loading.IsLoading;
+        public bool IsLoading => _masterDetailServices.Loading.IsLoading;
 
         /// <summary>
         /// 是否正在执行操作
         /// </summary>
-        public bool IsBusy => _services.Loading.IsBusy;
+        public bool IsBusy => _masterDetailServices.Loading.IsBusy;
 
         /// <summary>
         /// 忙碌提示信息
         /// </summary>
-        public string? BusyMessage => _services.Loading.BusyMessage;
+        public string? BusyMessage => _masterDetailServices.Loading.BusyMessage;
 
         #endregion
 
@@ -67,31 +93,31 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// <summary>
         /// 当前页码
         /// </summary>
-        public int CurrentPage => _services.Pagination.CurrentPage;
+        public int CurrentPage => _masterDetailServices.Pagination.CurrentPage;
 
         /// <summary>
         /// 每页大小
         /// </summary>
         public int PageSize
         {
-            get => _services.Pagination.PageSize;
-            set => _services.Pagination.PageSize = value;
+            get => _masterDetailServices.Pagination.PageSize;
+            set => _masterDetailServices.Pagination.PageSize = value;
         }
 
         /// <summary>
         /// 总记录数
         /// </summary>
-        public int TotalCount => _services.Pagination.TotalCount;
+        public int TotalCount => _masterDetailServices.Pagination.TotalCount;
 
         /// <summary>
         /// 总页数
         /// </summary>
-        public int TotalPages => _services.Pagination.TotalPages;
+        public int TotalPages => _masterDetailServices.Pagination.TotalPages;
 
         /// <summary>
         /// 可用的页面大小选项
         /// </summary>
-        public IReadOnlyList<int> PageSizes => _services.Pagination.PageSizes;
+        public IReadOnlyList<int> PageSizes => _masterDetailServices.Pagination.PageSizes;
 
         #endregion
 
@@ -102,14 +128,14 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// </summary>
         public string SearchText
         {
-            get => _services.Search.SearchText;
-            set => _services.Search.SearchText = value;
+            get => _masterDetailServices.Search.SearchText;
+            set => _masterDetailServices.Search.SearchText = value;
         }
 
         /// <summary>
         /// 是否正在搜索
         /// </summary>
-        public bool IsSearching => _services.Search.IsSearching;
+        public bool IsSearching => _masterDetailServices.Search.IsSearching;
 
         #endregion
 
@@ -120,19 +146,19 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// </summary>
         public TListItem? SelectedItem
         {
-            get => _services.Selection.SelectedItem;
-            set => _services.Selection.Select(value);
+            get => _masterDetailServices.Selection.SelectedItem;
+            set => _masterDetailServices.Selection.Select(value);
         }
 
         /// <summary>
         /// 选中项集合
         /// </summary>
-        public ObservableCollection<TListItem> SelectedItems => _services.Selection.SelectedItems;
+        public ObservableCollection<TListItem> SelectedItems => _masterDetailServices.Selection.SelectedItems;
 
         /// <summary>
         /// 是否有选中项
         /// </summary>
-        public bool HasSelection => _services.Selection.HasSelection;
+        public bool HasSelection => _masterDetailServices.Selection.HasSelection;
 
         #endregion
 
@@ -141,22 +167,22 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// <summary>
         /// 当前详情
         /// </summary>
-        public TDetail? CurrentDetail => _services.DetailEditor.CurrentDetail;
+        public TDetail? CurrentDetail => _masterDetailServices.DetailEditor.CurrentDetail;
 
         /// <summary>
         /// 是否处于编辑模式
         /// </summary>
-        public bool IsEditMode => _services.DetailEditor.IsEditMode;
+        public bool IsEditMode => _masterDetailServices.DetailEditor.IsEditMode;
 
         /// <summary>
         /// 是否有未保存的更改
         /// </summary>
-        public bool HasUnsavedChanges => _services.DetailEditor.HasUnsavedChanges;
+        public bool HasUnsavedChanges => _masterDetailServices.DetailEditor.HasUnsavedChanges;
 
         /// <summary>
         /// 是否是新建
         /// </summary>
-        public bool IsNew => _services.DetailEditor.IsNew;
+        public bool IsNew => _masterDetailServices.DetailEditor.IsNew;
 
         #endregion
 
@@ -165,23 +191,28 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// <summary>
         /// 错误消息
         /// </summary>
-        public string? ErrorMessage => _services.ErrorHandler.ErrorMessage;
+        public string? ErrorMessage => _masterDetailServices.ErrorHandler.ErrorMessage;
 
         /// <summary>
         /// 是否有错误
         /// </summary>
-        public bool HasError => _services.ErrorHandler.HasErrors;
+        public bool HasError => _masterDetailServices.ErrorHandler.HasErrors;
 
         #endregion
 
         public virtual bool KeepAlive => false;
 
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
         protected MasterDetailViewModelBase(
-            IMasterDetailServices<TListItem, TDetail> services,
-            ILoggerFactory loggerFactory)
+            IViewModelServices services,
+            IMasterDetailServices<TListItem, TDetail> masterDetailServices)
         {
-            _services = services ?? throw new ArgumentNullException(nameof(services));
-            Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _viewModelServices = services ?? throw new ArgumentNullException(nameof(services));
+            _masterDetailServices = masterDetailServices ?? throw new ArgumentNullException(nameof(masterDetailServices));
+            Logger = services.LoggerFactory.CreateLogger(GetType());
 
             // 订阅服务事件以转发属性变更通知
             SubscribeToServiceEvents();
@@ -190,47 +221,47 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         private void SubscribeToServiceEvents()
         {
             // Loading状态变更
-            _services.Loading.PropertyChanged += (s, e) =>
+            _masterDetailServices.Loading.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(e.PropertyName);
             };
 
             // Pagination变更
-            _services.Pagination.PropertyChanged += (s, e) =>
+            _masterDetailServices.Pagination.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(e.PropertyName);
             };
 
-            _services.Pagination.PageChanged += async (s, e) =>
+            _masterDetailServices.Pagination.PageChanged += async (s, e) =>
             {
                 await LoadListAsync();
             };
 
             // Search变更
-            _services.Search.PropertyChanged += (s, e) =>
+            _masterDetailServices.Search.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(e.PropertyName);
             };
 
             // Selection变更
-            _services.Selection.PropertyChanged += (s, e) =>
+            _masterDetailServices.Selection.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(e.PropertyName);
             };
 
-            _services.Selection.SelectionChanged += async (s, e) =>
+            _masterDetailServices.Selection.SelectionChanged += async (s, e) =>
             {
                 await OnSelectionChangedAsync(e);
             };
 
             // DetailEditor变更
-            _services.DetailEditor.PropertyChanged += (s, e) =>
+            _masterDetailServices.DetailEditor.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(e.PropertyName);
             };
 
             // Error变更
-            _services.ErrorHandler.PropertyChanged += (s, e) =>
+            _masterDetailServices.ErrorHandler.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(e.PropertyName);
             };
@@ -256,7 +287,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand]
         protected virtual async Task RefreshAsync()
         {
-            _services.Pagination.Reset();
+            _masterDetailServices.Pagination.Reset();
             await LoadListAsync();
         }
 
@@ -266,9 +297,9 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand]
         protected virtual async Task SearchAsync()
         {
-            await _services.Search.ExecuteSearchAsync(async _ =>
+            await _masterDetailServices.Search.ExecuteSearchAsync(async _ =>
             {
-                _services.Pagination.Reset();
+                _masterDetailServices.Pagination.Reset();
                 await LoadListAsync();
             });
         }
@@ -279,8 +310,8 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand]
         protected virtual async Task ClearSearchAsync()
         {
-            _services.Search.ClearSearch();
-            _services.Pagination.Reset();
+            _masterDetailServices.Search.ClearSearch();
+            _masterDetailServices.Pagination.Reset();
             await LoadListAsync();
         }
 
@@ -290,7 +321,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanGoToFirstPage))]
         protected virtual async Task GoToFirstPageAsync()
         {
-            _services.Pagination.GoToFirstPage();
+            _masterDetailServices.Pagination.GoToFirstPage();
             await LoadListAsync();
         }
 
@@ -300,7 +331,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanGoToPreviousPage))]
         protected virtual async Task GoToPreviousPageAsync()
         {
-            _services.Pagination.GoToPreviousPage();
+            _masterDetailServices.Pagination.GoToPreviousPage();
             await LoadListAsync();
         }
 
@@ -310,7 +341,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanGoToNextPage))]
         protected virtual async Task GoToNextPageAsync()
         {
-            _services.Pagination.GoToNextPage();
+            _masterDetailServices.Pagination.GoToNextPage();
             await LoadListAsync();
         }
 
@@ -320,14 +351,14 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanGoToLastPage))]
         protected virtual async Task GoToLastPageAsync()
         {
-            _services.Pagination.GoToLastPage();
+            _masterDetailServices.Pagination.GoToLastPage();
             await LoadListAsync();
         }
 
-        private bool CanGoToFirstPage() => _services.Pagination.CanGoToFirstPage;
-        private bool CanGoToPreviousPage() => _services.Pagination.CanGoToPreviousPage;
-        private bool CanGoToNextPage() => _services.Pagination.CanGoToNextPage;
-        private bool CanGoToLastPage() => _services.Pagination.CanGoToLastPage;
+        private bool CanGoToFirstPage() => _masterDetailServices.Pagination.CanGoToFirstPage;
+        private bool CanGoToPreviousPage() => _masterDetailServices.Pagination.CanGoToPreviousPage;
+        private bool CanGoToNextPage() => _masterDetailServices.Pagination.CanGoToNextPage;
+        private bool CanGoToLastPage() => _masterDetailServices.Pagination.CanGoToLastPage;
 
         #endregion
 
@@ -339,7 +370,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanCreateNew))]
         protected virtual async Task CreateNewAsync()
         {
-            _services.DetailEditor.CreateNew(CreateNewDetail);
+            _masterDetailServices.DetailEditor.CreateNew(CreateNewDetail);
             if (CurrentDetail != null)
             {
                 await OnDetailCreatedAsync(CurrentDetail);
@@ -352,7 +383,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanEdit))]
         protected virtual void Edit()
         {
-            _services.DetailEditor.EnterEditMode();
+            _masterDetailServices.DetailEditor.EnterEditMode();
         }
 
         /// <summary>
@@ -366,7 +397,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             var success = await SaveDetailAsync(CurrentDetail);
             if (success)
             {
-                _services.DetailEditor.ConfirmSaved();
+                _masterDetailServices.DetailEditor.ConfirmSaved();
                 await RefreshAsync();
                 await OnDetailSavedAsync(CurrentDetail);
             }
@@ -380,14 +411,14 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         {
             if (HasUnsavedChanges)
             {
-                var confirmed = await _services.Dialog.ShowConfirmAsync(
+                var confirmed = await _masterDetailServices.Dialog.ShowConfirmAsync(
                     "确认取消",
                     "有未保存的更改，确定要取消吗？");
 
                 if (!confirmed) return;
             }
 
-            _services.DetailEditor.CancelEdit();
+            _masterDetailServices.DetailEditor.CancelEdit();
         }
 
         /// <summary>
@@ -398,7 +429,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         {
             if (SelectedItem == null) return;
 
-            var confirmed = await _services.Dialog.ShowConfirmAsync(
+            var confirmed = await _masterDetailServices.Dialog.ShowConfirmAsync(
                 "确认删除",
                 "确定要删除选中的记录吗？");
 
@@ -479,6 +510,21 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         #endregion
 
+        #region 初始化
+
+        /// <summary>
+        /// 初始化ViewModel - 供Control的Loaded事件调用
+        /// 当Control通过DI容器解析ViewModel时，OnNavigatedTo不会被调用
+        /// 此方法提供替代的初始化入口
+        /// </summary>
+        public virtual async Task InitializeAsync()
+        {
+            Logger.LogDebug("初始化Master-Detail视图: {ViewType}", GetType().Name);
+            await LoadListAsync();
+        }
+
+        #endregion
+
         #region INavigationAware
 
         public virtual bool IsNavigationTarget(NavigationContext navigationContext) => true;
@@ -507,7 +553,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
             if (disposing)
             {
-                _services.Dispose();
+                _masterDetailServices.Dispose();
             }
 
             _disposed = true;

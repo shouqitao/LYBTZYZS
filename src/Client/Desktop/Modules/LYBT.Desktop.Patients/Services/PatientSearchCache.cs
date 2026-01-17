@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -8,6 +9,7 @@ namespace LYBT.Desktop.Patients.Services
     /// <summary>
     /// 患者搜索缓存服务实现
     /// 使用LRU策略，缓存最近搜索结果
+    /// OpenSpec: refactor-frontend-srp-patterns - 添加用户隔离
     /// </summary>
     public class PatientSearchCache : IPatientSearchCache
     {
@@ -16,10 +18,26 @@ namespace LYBT.Desktop.Patients.Services
         private readonly LinkedList<CacheEntry> _cache = new();
         private readonly object _lock = new();
         private readonly ILogger<PatientSearchCache> _logger;
+        private readonly ISessionManager _sessionManager;
 
-        public PatientSearchCache(ILogger<PatientSearchCache> logger)
+        public PatientSearchCache(
+            ILogger<PatientSearchCache> logger,
+            ISessionManager sessionManager)
         {
             _logger = logger;
+            _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
+
+            // 订阅会话变化事件，用户切换或登出时清理缓存
+            _sessionManager.SessionChanged += OnSessionChanged;
+        }
+
+        /// <summary>
+        /// 会话变化时清理缓存（用户切换或登出）
+        /// </summary>
+        private void OnSessionChanged(object? sender, SessionChangedEventArgs e)
+        {
+            Invalidate();
+            _logger.LogInformation("会话变化，已清空患者搜索缓存");
         }
 
         /// <inheritdoc/>
@@ -133,11 +151,13 @@ namespace LYBT.Desktop.Patients.Services
         }
 
         /// <summary>
-        /// 生成缓存Key
+        /// 生成缓存Key（包含用户ID实现隔离）
+        /// 格式: {userId}:{keyword}:{page}
         /// </summary>
-        private static string GenerateKey(string keyword, int page)
+        private string GenerateKey(string keyword, int page)
         {
-            return $"{keyword?.ToLowerInvariant() ?? string.Empty}:{page}";
+            var userId = _sessionManager.CurrentUserId?.ToString() ?? "anonymous";
+            return $"{userId}:{keyword?.ToLowerInvariant() ?? string.Empty}:{page}";
         }
 
         /// <summary>

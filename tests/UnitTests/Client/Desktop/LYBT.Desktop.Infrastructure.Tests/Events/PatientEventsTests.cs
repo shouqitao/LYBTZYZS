@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Enums;
 using Prism.Events;
 
 namespace LYBT.Desktop.Infrastructure.Tests.Events;
@@ -35,7 +36,7 @@ public class PatientEventsTests
         {
             Id = Guid.NewGuid(),
             Name = "测试患者",
-            Gender = "男",
+            Gender = Gender.Male,
             PhoneNumber = "13800138000"
         };
 
@@ -71,7 +72,7 @@ public class PatientEventsTests
             Patient = new PatientDetailDto
             {
                 Name = "测试",
-                Gender = "男",
+                Gender = Gender.Male,
                 PhoneNumber = "13800138000"
             }
         };
@@ -100,7 +101,7 @@ public class PatientEventsTests
         {
             Id = Guid.NewGuid(),
             Name = "更新后的患者",
-            Gender = "女",
+            Gender = Gender.Female,
             PhoneNumber = "13900139000"
         };
 
@@ -115,7 +116,7 @@ public class PatientEventsTests
         // Assert
         receivedPayload.Should().NotBeNull();
         receivedPayload!.Patient.Name.Should().Be("更新后的患者");
-        receivedPayload.Patient.Gender.Should().Be("女");
+        receivedPayload.Patient.Gender.Should().Be(Gender.Female);
     }
 
     #endregion
@@ -137,7 +138,7 @@ public class PatientEventsTests
         {
             PatientId = Guid.NewGuid(),
             PatientName = "选中的患者",
-            Gender = "男",
+            Gender = Gender.Male,
             Age = 35,
             PhoneNumber = "13800138000",
             AllergyHistory = "无",
@@ -174,7 +175,7 @@ public class PatientEventsTests
             Patient = new PatientDetailDto
             {
                 Name = "测试",
-                Gender = "男",
+                Gender = Gender.Male,
                 PhoneNumber = "13800138000"
             }
         };
@@ -202,7 +203,7 @@ public class PatientEventsTests
             Patient = new PatientDetailDto
             {
                 Name = "测试",
-                Gender = "男",
+                Gender = Gender.Male,
                 PhoneNumber = "13800138000"
             }
         };

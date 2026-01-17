@@ -68,10 +68,12 @@ public partial class ApiConnectionFailedDialogViewModel : DialogViewModelBase
 
     #region 构造函数
 
-    public ApiConnectionFailedDialogViewModel(
-        IEventAggregator eventAggregator,
-        ILoggerFactory loggerFactory)
-        : base(loggerFactory, eventAggregator)
+    /// <summary>
+    /// 构造函数
+    /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+    /// </summary>
+    public ApiConnectionFailedDialogViewModel(IViewModelServices services)
+        : base(services)
     {
         Title = "无法连接到服务器";
     }

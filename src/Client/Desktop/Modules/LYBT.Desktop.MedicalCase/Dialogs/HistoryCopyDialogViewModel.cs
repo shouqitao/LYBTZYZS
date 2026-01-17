@@ -83,10 +83,9 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         /// <summary>
         /// 选中医案的详情（用于右栏MedicalCaseViewControl绑定）
+        /// OpenSpec: unify-control-data-binding - 删除NotifyPropertyChangedFor(SelectedCaseHasConsultation/SelectedCaseHasPrescription)
         /// </summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(SelectedCaseHasConsultation))]
-        [NotifyPropertyChangedFor(nameof(SelectedCaseHasPrescription))]
         [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
         private MedicalCaseDetailDto? _selectedCaseDetail;
 
@@ -123,15 +122,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         #region 计算属性
 
-        /// <summary>
-        /// 选中医案是否有诊疗记录（用于MedicalCaseViewControl绑定）
-        /// </summary>
-        public bool SelectedCaseHasConsultation => SelectedCaseDetail?.Consultation != null;
-
-        /// <summary>
-        /// 选中医案是否有处方（用于MedicalCaseViewControl绑定）
-        /// </summary>
-        public bool SelectedCaseHasPrescription => SelectedCaseDetail?.Prescription != null;
+        // OpenSpec: unify-control-data-binding - 删除SelectedCaseHasConsultation/SelectedCaseHasPrescription属性
 
         /// <summary>
         /// 选中医案的处方药材列表（用于复制）

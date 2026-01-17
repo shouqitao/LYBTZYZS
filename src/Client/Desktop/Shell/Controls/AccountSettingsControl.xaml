@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     AccountSettingsControl - 账户设置控件
     OpenSpec: migrate-views-to-role-modules
 
@@ -13,7 +13,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1400"
-             Background="{StaticResource SurfaceBrush}">
+             Background="{StaticResource SurfaceCardBrush}">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -36,7 +36,7 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Path x:Name="Icon"
                                           Width="22" Height="22"
-                                          Fill="{StaticResource SecondaryTextBrush}"
+                                          Fill="{StaticResource TextSecondaryBrush}"
                                           Stretch="Uniform"
                                           Data="{TemplateBinding Tag}"
                                           VerticalAlignment="Center"/>
@@ -44,7 +44,7 @@
                                                Text="{TemplateBinding Content}"
                                                FontSize="{StaticResource FontSizeBody}"
                                                FontFamily="{StaticResource PrimaryFontFamily}"
-                                               Foreground="{StaticResource SecondaryTextBrush}"
+                                               Foreground="{StaticResource TextSecondaryBrush}"
                                                VerticalAlignment="Center"
                                                Margin="16,0,0,0"/>
                                 </StackPanel>
@@ -55,9 +55,9 @@
                                 </Trigger>
                                 <Trigger Property="IsChecked" Value="True">
                                     <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource DataGridSelectedBrush}"/>
-                                    <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-                                    <Setter TargetName="Icon" Property="Fill" Value="{StaticResource PrimaryBrush}"/>
-                                    <Setter TargetName="Label" Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                                    <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}"/>
+                                    <Setter TargetName="Icon" Property="Fill" Value="{StaticResource BrandPrimaryBrush}"/>
+                                    <Setter TargetName="Label" Property="Foreground" Value="{StaticResource BrandPrimaryBrush}"/>
                                     <Setter TargetName="Label" Property="FontWeight" Value="SemiBold"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
@@ -99,14 +99,14 @@
                 <Setter Property="FontSize" Value="{StaticResource FontSizeSubtitle}"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-                <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             </Style>
 
             <!-- 表单描述文字样式 -->
             <Style x:Key="FormDescriptionStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
                 <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-                <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
 
@@ -115,7 +115,7 @@
                 <Setter Property="FontSize" Value="13"/>
                 <Setter Property="FontWeight" Value="Medium"/>
                 <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-                <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
                 <Setter Property="Margin" Value="0,0,0,8"/>
             </Style>
 
@@ -129,11 +129,11 @@
                 <Setter Property="Padding" Value="12,10"/>
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="MinWidth" Value="280"/>
-                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
                 <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-                <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                 <Setter Property="Background" Value="White"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="Template">
@@ -150,10 +150,10 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsFocused" Value="True">
-                                    <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                    <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                    <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -183,8 +183,8 @@
              左侧导航面板
              ======================================== -->
         <Border Grid.Column="0"
-                Background="{StaticResource BackgroundBrush}"
-                BorderBrush="{StaticResource DividerBrush}"
+                Background="{StaticResource SurfaceBackgroundBrush}"
+                BorderBrush="{StaticResource BorderDividerBrush}"
                 BorderThickness="0,0,1,0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -201,13 +201,13 @@
                         Style="{StaticResource BackButtonStyle}"
                         Margin="16,20,16,12">
                     <StackPanel Orientation="Horizontal">
-                        <Path Fill="{StaticResource SecondaryTextBrush}"
+                        <Path Fill="{StaticResource TextSecondaryBrush}"
                               Width="18" Height="18" Stretch="Uniform"
                               Data="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                         <TextBlock Text="返回"
                                    FontSize="{StaticResource FontSizeBody}"
                                    FontFamily="{StaticResource PrimaryFontFamily}"
-                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
                                    VerticalAlignment="Center"
                                    Margin="10,0,0,0"/>
                     </StackPanel>
@@ -219,7 +219,7 @@
                         <!-- 头像 -->
                         <Border Width="80" Height="80"
                                 CornerRadius="40"
-                                Background="{StaticResource PrimaryBrush}"
+                                Background="{StaticResource BrandPrimaryBrush}"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,16"
                                 Effect="{StaticResource SubtleShadow}">
@@ -236,20 +236,20 @@
                                    FontSize="18"
                                    FontWeight="SemiBold"
                                    FontFamily="{StaticResource PrimaryFontFamily}"
-                                   Foreground="{StaticResource PrimaryTextBrush}"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
                                    HorizontalAlignment="Center"/>
                         <!-- 角色 -->
                         <TextBlock Text="{Binding Role}"
                                    FontSize="{StaticResource FontSizeCaption}"
                                    FontFamily="{StaticResource PrimaryFontFamily}"
-                                   Foreground="{StaticResource TertiaryTextBrush}"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,6,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <!-- 分隔线 -->
-                <Border Grid.Row="2" Height="1" Background="{StaticResource DividerBrush}" Margin="20,0"/>
+                <Border Grid.Row="2" Height="1" Background="{StaticResource BorderDividerBrush}" Margin="20,0"/>
 
                 <!-- 导航菜单 -->
                 <StackPanel Grid.Row="3" Margin="0,12,0,0">
@@ -280,7 +280,7 @@
                 <StackPanel Visibility="{Binding IsProfileSelected, Converter={StaticResource BoolToVis}}">
 
                     <!-- 顶部标题栏 -->
-                    <Border BorderBrush="{StaticResource DividerBrush}"
+                    <Border BorderBrush="{StaticResource BorderDividerBrush}"
                             BorderThickness="0,0,0,1"
                             Padding="48,32,48,24">
                         <StackPanel>
@@ -288,7 +288,7 @@
                                        FontSize="24"
                                        FontWeight="SemiBold"
                                        FontFamily="{StaticResource PrimaryFontFamily}"
-                                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
                             <TextBlock Text="管理您的个人信息，部分字段不可修改"
                                        Style="{StaticResource FormDescriptionStyle}"
                                        Margin="0,8,0,0"/>
@@ -319,7 +319,7 @@
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Style="{StaticResource FormFieldLabelStyle}">
                                 <Run Text="姓名"/>
-                                <Run Text=" *" Foreground="{StaticResource DangerBrush}"/>
+                                <Run Text=" *" Foreground="{StaticResource SemanticErrorBrush}"/>
                             </TextBlock>
                             <TextBox Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource FormInputStyle}"
@@ -336,8 +336,8 @@
                     </StackPanel>
 
                     <!-- 底部操作栏 -->
-                    <Border Background="{StaticResource SurfaceBrush}"
-                            BorderBrush="{StaticResource DividerBrush}"
+                    <Border Background="{StaticResource SurfaceCardBrush}"
+                            BorderBrush="{StaticResource BorderDividerBrush}"
                             BorderThickness="0,1,0,0"
                             Padding="48,20">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -358,7 +358,7 @@
                 <StackPanel Visibility="{Binding IsPasswordSelected, Converter={StaticResource BoolToVis}}">
 
                     <!-- 顶部标题栏 -->
-                    <Border BorderBrush="{StaticResource DividerBrush}"
+                    <Border BorderBrush="{StaticResource BorderDividerBrush}"
                             BorderThickness="0,0,0,1"
                             Padding="48,32,48,24">
                         <StackPanel>
@@ -366,7 +366,7 @@
                                        FontSize="24"
                                        FontWeight="SemiBold"
                                        FontFamily="{StaticResource PrimaryFontFamily}"
-                                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
                             <TextBlock Text="定期修改密码可以提高账户安全性"
                                        Style="{StaticResource FormDescriptionStyle}"
                                        Margin="0,8,0,0"/>
@@ -379,7 +379,7 @@
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Style="{StaticResource FormFieldLabelStyle}">
                                 <Run Text="当前密码"/>
-                                <Run Text=" *" Foreground="{StaticResource DangerBrush}"/>
+                                <Run Text=" *" Foreground="{StaticResource SemanticErrorBrush}"/>
                             </TextBlock>
                             <PasswordBox x:Name="OldPasswordBox"
                                          Style="{StaticResource FormPasswordStyle}"
@@ -390,14 +390,14 @@
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Style="{StaticResource FormFieldLabelStyle}">
                                 <Run Text="新密码"/>
-                                <Run Text=" *" Foreground="{StaticResource DangerBrush}"/>
+                                <Run Text=" *" Foreground="{StaticResource SemanticErrorBrush}"/>
                             </TextBlock>
                             <PasswordBox x:Name="NewPasswordBox"
                                          Style="{StaticResource FormPasswordStyle}"
                                          MinWidth="0"/>
                             <TextBlock Text="密码长度至少6位"
                                        FontSize="11"
-                                       Foreground="{StaticResource TertiaryTextBrush}"
+                                       Foreground="{StaticResource TextTertiaryBrush}"
                                        Margin="0,6,0,0"/>
                         </StackPanel>
 
@@ -405,7 +405,7 @@
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Style="{StaticResource FormFieldLabelStyle}">
                                 <Run Text="确认密码"/>
-                                <Run Text=" *" Foreground="{StaticResource DangerBrush}"/>
+                                <Run Text=" *" Foreground="{StaticResource SemanticErrorBrush}"/>
                             </TextBlock>
                             <PasswordBox x:Name="ConfirmPasswordBox"
                                          Style="{StaticResource FormPasswordStyle}"
@@ -414,8 +414,8 @@
                     </StackPanel>
 
                     <!-- 底部操作栏 -->
-                    <Border Background="{StaticResource SurfaceBrush}"
-                            BorderBrush="{StaticResource DividerBrush}"
+                    <Border Background="{StaticResource SurfaceCardBrush}"
+                            BorderBrush="{StaticResource BorderDividerBrush}"
                             BorderThickness="0,1,0,0"
                             Padding="48,20">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -435,7 +435,7 @@
             </ScrollViewer>
 
             <!-- 错误提示区域 -->
-            <Border Background="{StaticResource DangerBrush}"
+            <Border Background="{StaticResource SemanticErrorBrush}"
                     CornerRadius="{StaticResource CornerRadiusSmall}"
                     Padding="16,12"
                     Margin="48,0,48,32"
@@ -470,7 +470,7 @@
                         <TextBlock Text="处理中..."
                                    FontSize="{StaticResource FontSizeBody}"
                                    FontFamily="{StaticResource PrimaryFontFamily}"
-                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>

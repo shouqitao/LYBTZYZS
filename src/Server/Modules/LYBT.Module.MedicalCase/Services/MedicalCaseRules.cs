@@ -43,8 +43,10 @@ namespace LYBT.Module.MedicalCases.Services
         ///
         /// 权限规则:
         /// - 管理员(isAdmin=true)可以编辑所有医案
-        /// - 医生只能编辑自己创建的Draft/Active状态医案
-        /// - 已完成(Completed)医案医生不可编辑
+        /// - 医生只能编辑自己创建的医案
+        /// - Draft/Active状态：不受跨日限制，随时可编辑
+        /// - Completed状态：当天可编辑，跨日后锁定
+        /// - Cancelled状态：不可编辑
         /// </summary>
         /// <param name="medicalCase">医案实体</param>
         /// <param name="currentUserId">当前用户ID</param>
@@ -55,14 +57,21 @@ namespace LYBT.Module.MedicalCases.Services
             // 管理员权限 - 可以编辑所有医案
             if (isAdmin) return true;
 
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             // 非创建者无权编辑
             if (medicalCase.UserId != currentUserId) return false;
 
-            // OpenSpec: refactor-medicalcase-management
-            // 医生只能编辑自己的Draft/Active状态医案
-            return medicalCase.CaseStatus == MedicalCaseStatus.Draft
-                || medicalCase.CaseStatus == MedicalCaseStatus.Active;
+            // Draft/Active 状态：随时可编辑，不受跨日限制
+            if (medicalCase.IsActive) return true;
+
+            // Completed 状态：当天可编辑，跨日后锁定
+            if (medicalCase.IsCompleted)
+            {
+                var completionDate = (medicalCase.CompletedAt ?? medicalCase.CreatedAt).Date;
+                return completionDate == DateTime.Today;
+            }
+
+            // Cancelled 状态：不可编辑
+            return false;
         }
 
         /// <summary>

@@ -797,8 +797,7 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DoctorId");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 

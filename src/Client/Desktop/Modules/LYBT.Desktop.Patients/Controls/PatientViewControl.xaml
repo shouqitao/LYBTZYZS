@@ -56,9 +56,9 @@
                         <TextBlock Grid.Row="0" Grid.Column="2" Text="拼音码" Style="{StaticResource DetailLabelStyle}"/>
                         <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding PinYinCode, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
 
-                        <!-- 性别 - OpenSpec: unify-frontend-backend-types Phase 1 -->
+                        <!-- 性别 - OpenSpec: fix-elementname-binding-architecture - 使用EnumDescriptionConverter替代GenderDisplay -->
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="性别" Style="{StaticResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding GenderDisplay}" Style="{StaticResource DetailValueStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Gender, Converter={StaticResource EnumDescriptionConverter}}" Style="{StaticResource DetailValueStyle}"/>
 
                         <!-- 年龄 -->
                         <TextBlock Grid.Row="1" Grid.Column="2" Text="年龄" Style="{StaticResource DetailLabelStyle}"/>

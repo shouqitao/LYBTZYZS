@@ -14,7 +14,10 @@ namespace LYBT.Desktop.Infrastructure.Behaviors;
 ///
 /// 使用方式:
 /// <DataGrid behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
-///           behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=TwoWay}"/>
+///           behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=OneWay}"/>
+///
+/// 注意: 使用 Mode=OneWay 因为 Behavior 直接修改集合内容（添加/移除项），
+/// 而非替换整个集合。TwoWay 绑定会导致只读属性绑定错误。
 /// </summary>
 public static class DataGridSelectionBehavior
 {

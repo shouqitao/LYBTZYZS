@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     PatientEditControl - 患者编辑控件
     OpenSpec: extract-detail-controls Task 3.2
 
@@ -86,7 +86,7 @@
                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="年龄" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox IsReadOnly="True"
-                                 Background="{StaticResource BackgroundBrush}"
+                                 Background="{StaticResource SurfaceBackgroundBrush}"
                                  MinHeight="44"
                                  Padding="12,10">
                             <TextBox.Text>

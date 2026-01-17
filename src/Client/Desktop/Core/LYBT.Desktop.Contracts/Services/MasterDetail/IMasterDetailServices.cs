@@ -1,3 +1,5 @@
+using LYBT.Desktop.Contracts.Services;
+
 namespace LYBT.Desktop.Contracts.Services.MasterDetail;
 
 /// <summary>
@@ -38,9 +40,10 @@ public interface IMasterDetailServices
     IDialogManager DialogManager { get; }
 
     /// <summary>
-    /// 视图导航服务
+    /// 导航协调器
+    /// OpenSpec: unify-navigation-architecture (ADR-7)
     /// </summary>
-    IViewNavigationService ViewNavigationService { get; }
+    INavigationCoordinator Navigation { get; }
 
     /// <summary>
     /// 错误处理

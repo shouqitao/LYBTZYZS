@@ -1,4 +1,4 @@
-using LYBT.Desktop.Herbs.Models.Items;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Herbs.Controls.HerbList
 {
@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <summary>
         /// 受影响的药材项(如适用)
         /// </summary>
-        public HerbItemDto? AffectedItem { get; }
+        public PrescriptionItemDto? AffectedItem { get; }
 
         /// <summary>
         /// 受影响项的索引(如适用)
@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         public HerbListChangedEventArgs(
             HerbListChangeType changeType,
             int itemCount,
-            HerbItemDto? affectedItem = null,
+            PrescriptionItemDto? affectedItem = null,
             int affectedIndex = -1)
         {
             ChangeType = changeType;

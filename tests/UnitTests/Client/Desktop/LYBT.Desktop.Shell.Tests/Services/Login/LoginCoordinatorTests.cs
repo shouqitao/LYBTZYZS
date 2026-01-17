@@ -26,7 +26,7 @@ public class LoginCoordinatorTests
     private readonly Mock<ITokenStorageService> _tokenStorageMock;
     private readonly Mock<ISessionLifecycleManager> _sessionManagerMock;
     private readonly Mock<IModuleLoadingService> _moduleLoadingMock;
-    private readonly Mock<IRoleNavigationService> _roleNavigationMock;
+    private readonly Mock<INavigationCoordinator> _navigationCoordinatorMock;
     private readonly Mock<IAuthenticationStateMachine> _stateMachineMock;
     private readonly LoginCoordinator _sut;
     private AuthState _currentMockState = AuthState.Idle;
@@ -57,7 +57,7 @@ public class LoginCoordinatorTests
         _tokenStorageMock = new Mock<ITokenStorageService>();
         _sessionManagerMock = new Mock<ISessionLifecycleManager>();
         _moduleLoadingMock = new Mock<IModuleLoadingService>();
-        _roleNavigationMock = new Mock<IRoleNavigationService>();
+        _navigationCoordinatorMock = new Mock<INavigationCoordinator>();
         _stateMachineMock = new Mock<IAuthenticationStateMachine>();
 
         // 配置状态机Mock - 使用回调跟踪状态变化
@@ -85,7 +85,7 @@ public class LoginCoordinatorTests
             _tokenStorageMock.Object,
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
-            _roleNavigationMock.Object,
+            _navigationCoordinatorMock.Object,
             _stateMachineMock.Object);
     }
 
@@ -110,7 +110,7 @@ public class LoginCoordinatorTests
             _tokenStorageMock.Object,
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
-            _roleNavigationMock.Object,
+            _navigationCoordinatorMock.Object,
             _stateMachineMock.Object);
 
         // Assert
@@ -128,7 +128,7 @@ public class LoginCoordinatorTests
             _tokenStorageMock.Object,
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
-            _roleNavigationMock.Object,
+            _navigationCoordinatorMock.Object,
             _stateMachineMock.Object);
 
         // Assert
@@ -573,7 +573,7 @@ public class LoginCoordinatorTests
 
     private void SetupNavigationService()
     {
-        // IRoleNavigationService.NavigateToRoleHome is synchronous, no setup needed for Moq
+        // INavigationCoordinator.NavigateToHome is synchronous, no setup needed for Moq
     }
 
     #endregion

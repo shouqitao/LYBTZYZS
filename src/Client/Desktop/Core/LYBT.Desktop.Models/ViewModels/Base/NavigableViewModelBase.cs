@@ -6,15 +6,13 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
-using Prism.Ioc;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
     /// 可导航ViewModel基类
-    /// OpenSpec: standardize-viewmodel-framework
+    /// OpenSpec: enhance-viewmodel-architecture
     ///
     /// 继承CoreViewModelBase，添加:
     /// - Prism导航支持 (INavigationAware, IRegionMemberLifetime, IConfirmNavigationRequest)
@@ -27,11 +25,30 @@ namespace LYBT.Desktop.Models.ViewModels.Base
     {
         #region 服务
 
-        protected readonly IRegionManager RegionManager;
-        protected readonly ISessionManager? SessionManager;
-        protected readonly IUserNotificationService? UserNotificationService;
-        protected readonly ICommonDialogService? CommonDialogService;
-        protected readonly IRoleRegistry? RoleRegistry;
+        /// <summary>
+        /// 区域管理器
+        /// </summary>
+        protected IRegionManager RegionManager { get; }
+
+        /// <summary>
+        /// 会话管理器
+        /// </summary>
+        protected ISessionManager SessionManager { get; }
+
+        /// <summary>
+        /// 用户通知服务
+        /// </summary>
+        protected IUserNotificationService UserNotificationService { get; }
+
+        /// <summary>
+        /// 通用对话框服务
+        /// </summary>
+        protected ICommonDialogService CommonDialogService { get; }
+
+        /// <summary>
+        /// 角色注册表
+        /// </summary>
+        protected IRoleRegistry RoleRegistry { get; }
 
         #endregion
 
@@ -65,8 +82,12 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// <summary>
         /// 是否有未保存的变更
         /// </summary>
-        [ObservableProperty]
         private bool _hasUnsavedChanges;
+        protected virtual bool HasUnsavedChanges
+        {
+            get => _hasUnsavedChanges;
+            set => SetProperty(ref _hasUnsavedChanges, value);
+        }
 
         #endregion
 
@@ -86,21 +107,19 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         #region 构造函数
 
-        protected NavigableViewModelBase(
-            ILoggerFactory loggerFactory,
-            IEventAggregator eventAggregator,
-            IRegionManager regionManager,
-            ISessionManager? sessionManager = null,
-            IUserNotificationService? userNotificationService = null,
-            ICommonDialogService? commonDialogService = null,
-            IRoleRegistry? roleRegistry = null)
-            : base(loggerFactory, eventAggregator)
+        /// <summary>
+        /// 构造函数 - 使用IViewModelServices聚合服务
+        /// OpenSpec: enhance-viewmodel-architecture
+        /// </summary>
+        /// <param name="services">ViewModel服务聚合</param>
+        protected NavigableViewModelBase(IViewModelServices services)
+            : base(services)
         {
-            RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-            SessionManager = sessionManager;
-            UserNotificationService = userNotificationService;
-            CommonDialogService = commonDialogService;
-            RoleRegistry = roleRegistry;
+            RegionManager = services.RegionManager;
+            SessionManager = services.SessionManager;
+            UserNotificationService = services.UserNotificationService;
+            CommonDialogService = services.CommonDialogService;
+            RoleRegistry = services.RoleRegistry;
         }
 
         #endregion
@@ -197,12 +216,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// <returns>true表示继续导航，false表示取消</returns>
         protected virtual async Task<bool> ShowUnsavedChangesDialogAsync()
         {
-            if (CommonDialogService == null)
-            {
-                Logger.LogWarning("CommonDialogService不可用，允许导航");
-                return true;
-            }
-
             return await CommonDialogService.ShowConfirmAsync(
                 "有未保存的更改，确定要离开吗？",
                 "未保存的更改");
@@ -351,53 +364,12 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 获取主页视图名称
-        /// OpenSpec: unify-navigation-architecture - 使用RoleRegistry作为权威源
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices中的RoleRegistry
         /// </summary>
         protected virtual string GetHomeViewName()
         {
-            // 尝试获取角色
-            var sessionManager = SessionManager;
-            if (sessionManager == null)
-            {
-                try
-                {
-                    sessionManager = ContainerLocator.Container?.Resolve<ISessionManager>();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning(ex, "无法从容器获取 SessionManager");
-                }
-            }
-
-            var role = sessionManager?.CurrentUser?.Role ?? UserRole.Admin;
-
-            // 优先使用RoleRegistry
-            var roleRegistry = RoleRegistry;
-            if (roleRegistry == null)
-            {
-                try
-                {
-                    roleRegistry = ContainerLocator.Container?.Resolve<IRoleRegistry>();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning(ex, "无法从容器获取 RoleRegistry");
-                }
-            }
-
-            if (roleRegistry != null)
-            {
-                return roleRegistry.GetHomeViewName(role);
-            }
-
-            // OpenSpec: unify-navigation-architecture - 回退时使用ViewNames常量
-            Logger.LogWarning("RoleRegistry不可用，使用默认主页映射");
-            return role switch
-            {
-                UserRole.Admin or UserRole.SuperAdmin => ViewNames.AdminHome,
-                UserRole.Doctor => ViewNames.ClinicalHome,
-                _ => ViewNames.AdminHome
-            };
+            var role = SessionManager.CurrentUser?.Role ?? UserRole.Admin;
+            return RoleRegistry.GetHomeViewName(role);
         }
 
         #endregion
@@ -409,12 +381,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected virtual async Task ShowSuccessMessageAsync(string message)
         {
-            if (CommonDialogService != null)
-            {
-                await CommonDialogService.ShowInfoAsync(message, "成功");
-                return;
-            }
-            Logger.LogWarning("CommonDialogService不可用，成功消息未显示: {Message}", message);
+            await CommonDialogService.ShowInfoAsync(message, "成功");
         }
 
         /// <summary>
@@ -422,12 +389,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected virtual async Task ShowErrorMessageAsync(string message)
         {
-            if (CommonDialogService != null)
-            {
-                await CommonDialogService.ShowErrorAsync(message, "错误");
-                return;
-            }
-            Logger.LogError("CommonDialogService不可用，错误消息未显示: {Message}", message);
+            await CommonDialogService.ShowErrorAsync(message, "错误");
         }
 
         /// <summary>
@@ -435,12 +397,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected virtual async Task ShowWarningMessageAsync(string message)
         {
-            if (CommonDialogService != null)
-            {
-                await CommonDialogService.ShowWarningAsync(message, "警告");
-                return;
-            }
-            Logger.LogWarning("CommonDialogService不可用，警告消息未显示: {Message}", message);
+            await CommonDialogService.ShowWarningAsync(message, "警告");
         }
 
         /// <summary>
@@ -448,12 +405,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected virtual async Task<bool> ShowConfirmMessageAsync(string message, string title = "确认")
         {
-            if (CommonDialogService != null)
-            {
-                return await CommonDialogService.ShowConfirmAsync(message, title);
-            }
-            Logger.LogWarning("CommonDialogService不可用，确认对话框未显示: {Message}", message);
-            return false;
+            return await CommonDialogService.ShowConfirmAsync(message, title);
         }
 
         #endregion
@@ -465,7 +417,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected virtual string GetCurrentUserInfo()
         {
-            return SessionManager?.CurrentUser?.RealName ?? "未知用户";
+            return SessionManager.CurrentUser?.RealName ?? "未知用户";
         }
 
         /// <summary>
@@ -473,7 +425,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected virtual bool IsUserLoggedIn()
         {
-            return SessionManager?.IsAuthenticated ?? false;
+            return SessionManager.IsAuthenticated;
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 using NSubstitute;

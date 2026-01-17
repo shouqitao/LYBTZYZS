@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     MedicalCaseEditControl - 医案编辑控件
     OpenSpec: refactor-medicalcase-workspace V2
     OpenSpec: refactor-medicalcase-management
@@ -17,7 +17,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:herbList="clr-namespace:LYBT.Desktop.Herbs.Controls.HerbList;assembly=LYBT.Desktop.Herbs"
-             xmlns:converters="clr-namespace:LYBT.Desktop.MedicalCase.Converters"
              x:Name="Root">
 
     <UserControl.Resources>
@@ -26,14 +25,10 @@
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- OpenSpec: simplify-workspace-event-architecture - PanelStatus Converters -->
-            <converters:PanelStatusToTextConverter x:Key="PanelStatusToText"/>
-            <converters:PanelStatusToColorConverter x:Key="PanelStatusToColor"/>
-
             <!-- Compact模式区域边框样式 -->
             <Style x:Key="CompactSectionBorderStyle" TargetType="Border">
-                <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+                <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderDividerBrush}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="CornerRadius" Value="8"/>
                 <Setter Property="Padding" Value="16,12"/>
@@ -102,10 +97,10 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <!-- 第一行：现病史（跨两列） -->
+                            <!-- 第一行：现病史（跨两列）- OpenSpec: unify-control-data-binding -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                                 <TextBlock Text="现病史" Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource EditableTextBoxStyle}"
                                          TextWrapping="Wrap"
                                          AcceptsReturn="True"
@@ -116,7 +111,7 @@
                             <!-- 第二行：舌诊、脉诊 -->
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
                                 <TextBlock Text="舌诊" Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource EditableTextBoxStyle}"
                                          MinHeight="44"
                                          Padding="12,10"/>
@@ -124,7 +119,7 @@
 
                             <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
                                 <TextBlock Text="脉诊" Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource EditableTextBoxStyle}"
                                          MinHeight="44"
                                          Padding="12,10"/>
@@ -133,7 +128,7 @@
                             <!-- 第三行：中医诊断（跨两列） -->
                             <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                                 <TextBlock Text="中医诊断" Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource EditableTextBoxStyle}"
                                          MinHeight="44"
                                          Padding="12,10"/>
@@ -144,8 +139,9 @@
 
                 <!-- ========================================
                      处方信息卡片（可编辑）- Full模式
+                     OpenSpec: unify-control-data-binding
                      ======================================== -->
-                <controls:InfoCard Title="{Binding HerbCount, StringFormat=处方药材 (共{0}味)}" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard Title="{Binding Prescription.ItemCount, StringFormat=处方药材 (共{0}味)}" ShowTitle="True" Margin="0,12,0,0">
                     <controls:InfoCard.Content>
                         <StackPanel>
                             <!-- 处方统计信息 -->
@@ -159,7 +155,7 @@
 
                                 <TextBlock Grid.Column="0" Text="剂数" Style="{StaticResource DetailLabelStyle}"/>
                                 <TextBlock Grid.Column="1" Style="{StaticResource DetailValueStyle}">
-                                    <Run Text="{Binding DoseCount, TargetNullValue=0, Mode=OneWay}"/>
+                                    <Run Text="{Binding Prescription.DosageCount, Mode=OneWay}"/>
                                     <Run Text="剂"/>
                                 </TextBlock>
 
@@ -171,7 +167,7 @@
                             <!-- 药材组成 - 使用HerbListControl统一编辑控件 -->
                             <herbList:HerbListControl
                                 AllHerbs="{Binding AllHerbs}"
-                                HerbItems="{Binding HerbItems, Mode=TwoWay}"
+                                HerbItems="{Binding Prescription.Items, Mode=TwoWay}"
                                 IsEditMode="True"
                                 Columns="4"/>
                         </StackPanel>
@@ -180,12 +176,13 @@
 
                 <!-- ========================================
                      备注卡片（可编辑）- Full模式
+                     OpenSpec: unify-control-data-binding
                      ======================================== -->
                 <controls:InfoCard Title="备注" ShowTitle="True" Margin="0,12,0,0">
                     <controls:InfoCard.Content>
                         <StackPanel>
                             <TextBlock Text="备注" Style="{StaticResource FormLabelStyle}"/>
-                            <TextBox Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <TextBox Text="{Binding Prescription.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource EditableTextBoxStyle}"
                                      TextWrapping="Wrap"
                                      AcceptsReturn="True"
@@ -212,7 +209,7 @@
                                 <TextBlock Text="创建时间" Style="{StaticResource FormLabelStyle}"/>
                                 <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
                                            Style="{StaticResource ValueDisplayStyle}"
-                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
                             </StackPanel>
 
                             <!-- 更新时间 -->
@@ -220,7 +217,7 @@
                                 <TextBlock Text="更新时间" Style="{StaticResource FormLabelStyle}"/>
                                 <TextBlock Text="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
                                            Style="{StaticResource ValueDisplayStyle}"
-                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
                             </StackPanel>
                         </Grid>
                     </controls:InfoCard.Content>
@@ -251,11 +248,11 @@
                         Margin="0,0,8,0"/>
                 <Button Content="清空"
                         Command="{Binding ClearAllCommand}"
-                        Style="{StaticResource LinkButton}"
+                        Style="{StaticResource LinkButtonStyle}"
                         Foreground="#DC3545"/>
             </StackPanel>
 
-            <!-- 诊断区 -->
+            <!-- 诊断区 - OpenSpec: unify-control-data-binding -->
             <Border Grid.Row="1" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12">
                 <StackPanel>
                     <!-- Row1: 现病史 -->
@@ -266,7 +263,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="现病史" VerticalAlignment="Center" FontWeight="Medium"/>
                         <TextBox Grid.Column="1"
-                                 Text="{Binding PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource EditableTextBoxStyle}"
                                  MinHeight="36"/>
                     </Grid>
@@ -285,7 +282,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="舌诊" VerticalAlignment="Center" FontWeight="Medium"/>
                             <TextBox Grid.Column="1"
-                                     Text="{Binding TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource EditableTextBoxStyle}"
                                      MinHeight="36"/>
                         </Grid>
@@ -296,7 +293,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="脉诊" VerticalAlignment="Center" FontWeight="Medium"/>
                             <TextBox Grid.Column="1"
-                                     Text="{Binding PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource EditableTextBoxStyle}"
                                      MinHeight="36"/>
                         </Grid>
@@ -312,7 +309,7 @@
                             <Run Text="中医诊断"/><Run Text="*" Foreground="#DC3545"/>
                         </TextBlock>
                         <TextBox Grid.Column="1"
-                                 Text="{Binding TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource ValidatingTextBoxStyle}"
                                  MinHeight="36"/>
                     </Grid>
@@ -327,16 +324,16 @@
                         <RowDefinition Height="Auto"/>  <!-- 底部信息栏 -->
                     </Grid.RowDefinitions>
 
-                    <!-- 药材列表 -->
+                    <!-- 药材列表 - OpenSpec: unify-control-data-binding -->
                     <herbList:HerbListControl Grid.Row="0"
                         AllHerbs="{Binding AllHerbs}"
-                        HerbItems="{Binding HerbItems, Mode=TwoWay}"
+                        HerbItems="{Binding Prescription.Items, Mode=TwoWay}"
                         IsEditMode="True"
                         Columns="4"/>
 
                     <!-- 底部信息栏 -->
                     <Border Grid.Row="1"
-                            Background="{StaticResource BackgroundBrush}"
+                            Background="{StaticResource SurfaceBackgroundBrush}"
                             CornerRadius="6"
                             Padding="12,8"
                             Margin="0,12,0,0">
@@ -348,38 +345,38 @@
                                 <ColumnDefinition Width="*"/>     <!-- 单价 -->
                             </Grid.ColumnDefinitions>
 
-                            <!-- 药材数 -->
+                            <!-- 药材数 - OpenSpec: unify-control-data-binding -->
                             <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
                                 <Run Text="共"/>
-                                <Run Text="{Binding HerbCount}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
+                                <Run Text="{Binding Prescription.ItemCount}" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimaryBrush}"/>
                                 <Run Text="味药材"/>
                             </TextBlock>
 
-                            <!-- 付数 -->
+                            <!-- 付数 - OpenSpec: unify-control-data-binding -->
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
                                 <TextBlock Text="付数:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <TextBox Width="60"
-                                         Text="{Binding DoseCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Text="{Binding Prescription.DosageCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource EditableTextBoxStyle}"
                                          MinHeight="28"
                                          Padding="8,4"/>
                                 <TextBlock Text="付" VerticalAlignment="Center" Margin="4,0,0,0"/>
                             </StackPanel>
 
-                            <!-- 用法 -->
+                            <!-- 用法 - OpenSpec: unify-control-data-binding -->
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
                                 <TextBlock Text="用法:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <ComboBox Width="120"
-                                          SelectedItem="{Binding Usage, Mode=TwoWay}"
+                                          SelectedItem="{Binding Prescription.Usage, Mode=TwoWay}"
                                           ItemsSource="{Binding UsageOptions}"
-                                          Style="{StaticResource ModernComboBoxStyle}"/>
+                                          Style="{StaticResource FilterComboBox}"/>
                             </StackPanel>
 
-                            <!-- 单价 -->
+                            <!-- 单价 - OpenSpec: unify-control-data-binding -->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <TextBlock Text="单价:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource SuccessBrush}">
-                                    <Run Text="{Binding TotalPrice, StringFormat='{}{0:F2}'}"/>
+                                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource SemanticSuccessBrush}">
+                                    <Run Text="{Binding Prescription.TotalPrice, StringFormat='{}{0:F2}'}"/>
                                     <Run Text="元"/>
                                 </TextBlock>
                             </StackPanel>

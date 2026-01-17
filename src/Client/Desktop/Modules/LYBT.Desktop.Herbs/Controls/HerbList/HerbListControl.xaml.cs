@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using LYBT.Desktop.Herbs.Controls.HerbItem;
 using LYBT.Desktop.Herbs.Models.Items;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Herbs.Controls.HerbList
 {
@@ -124,16 +125,16 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         public static readonly DependencyProperty HerbItemsProperty =
             DependencyProperty.Register(
                 nameof(HerbItems),
-                typeof(IList<HerbItemDto>),
+                typeof(IList<PrescriptionItemDto>),
                 typeof(HerbListControl),
                 new FrameworkPropertyMetadata(
                     null,
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     OnHerbItemsPropertyChanged));
 
-        public IList<HerbItemDto>? HerbItems
+        public IList<PrescriptionItemDto>? HerbItems
         {
-            get => (IList<HerbItemDto>?)GetValue(HerbItemsProperty);
+            get => (IList<PrescriptionItemDto>?)GetValue(HerbItemsProperty);
             set => SetValue(HerbItemsProperty, value);
         }
 
@@ -141,14 +142,14 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         {
             if (d is HerbListControl control)
             {
-                control.OnHerbItemsChanged(e.NewValue as IList<HerbItemDto>);
+                control.OnHerbItemsChanged(e.NewValue as IList<PrescriptionItemDto>);
             }
         }
 
         /// <summary>
         /// 外部数据源变更时加载到控件
         /// </summary>
-        private void OnHerbItemsChanged(IList<HerbItemDto>? items)
+        private void OnHerbItemsChanged(IList<PrescriptionItemDto>? items)
         {
             // 防止循环更新：内部变更触发的DP更新不应再次加载
             if (_isSyncingFromInternal)
@@ -181,7 +182,10 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         {
             _viewModel = new HerbListControlViewModel();
             _viewModel.ListChanged += OnViewModelListChanged;
-            DataContext = _viewModel;
+            // 重要: 设置根元素(LayoutRoot)的DataContext，而不是UserControl自身的DataContext
+            // 这样外部绑定 HerbItems="{Binding HerbItems}" 会从父级DataContext解析
+            // 而内部绑定 ItemsSource="{Binding Items}" 会从LayoutRoot的DataContext解析
+            LayoutRoot.DataContext = _viewModel;
         }
 
         private void OnViewModelListChanged(object? sender, HerbListChangedEventArgs e)
@@ -222,7 +226,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <summary>
         /// 药材列表(只读输出)
         /// </summary>
-        public IReadOnlyList<HerbItemDto> HerbList => _viewModel?.ToDto() ?? Array.Empty<HerbItemDto>();
+        public IReadOnlyList<PrescriptionItemDto> HerbList => _viewModel?.ToDto() ?? Array.Empty<PrescriptionItemDto>();
 
         /// <summary>
         /// 有效药材数量
@@ -246,7 +250,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <summary>
         /// 从DTO列表加载数据
         /// </summary>
-        public void LoadFromDto(IEnumerable<HerbItemDto> items)
+        public void LoadFromDto(IEnumerable<PrescriptionItemDto> items)
         {
             _viewModel?.LoadFromDto(items);
         }
@@ -255,8 +259,8 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// 批量添加药材(异步版本，支持重复确认回调)
         /// </summary>
         public async Task AddHerbsAsync(
-            IEnumerable<HerbItemDto> herbs,
-            Func<HerbItemDto, HerbItemDto, Task<bool>>? onDuplicateFound = null)
+            IEnumerable<PrescriptionItemDto> herbs,
+            Func<PrescriptionItemDto, PrescriptionItemDto, Task<bool>>? onDuplicateFound = null)
         {
             if (_viewModel != null)
             {
@@ -267,7 +271,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <summary>
         /// 批量添加药材(同步版本，自动合并重复)
         /// </summary>
-        public void AddHerbs(IEnumerable<HerbItemDto> herbs)
+        public void AddHerbs(IEnumerable<PrescriptionItemDto> herbs)
         {
             _viewModel?.AddHerbs(herbs);
         }

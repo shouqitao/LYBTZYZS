@@ -1,6 +1,5 @@
 // OpenSpec: create-printing-module - 使用新的独立打印模块
 using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -15,25 +14,27 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 /// 负责处方打印预览和DTO构建
 /// OpenSpec: slim-medicalcase-viewmodel (Phase 2)
 /// OpenSpec: create-printing-module - 更新为使用独立Printing模块
+/// OpenSpec: simplify-workspace-architecture - 使用Coordinator替代DataLoader
 /// </summary>
 public class PrescriptionPrintHandler
 {
     #region 字段
 
     private readonly IPrintService<PrescriptionPrintModel>? _printService;
-    private readonly MedicalCaseDataLoader _dataLoader;
+    private readonly MedicalCaseWorkspaceCoordinator _coordinator;
     private readonly ILogger<PrescriptionPrintHandler> _logger;
 
     #endregion
 
     #region 构造函数
 
+    // OpenSpec: simplify-workspace-architecture - 使用Coordinator替代DataLoader
     public PrescriptionPrintHandler(
-        MedicalCaseDataLoader dataLoader,
+        MedicalCaseWorkspaceCoordinator coordinator,
         ILoggerFactory loggerFactory,
         IPrintService<PrescriptionPrintModel>? printService = null)
     {
-        _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
+        _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
         _logger = loggerFactory.CreateLogger<PrescriptionPrintHandler>();
         _printService = printService;
     }
@@ -169,7 +170,8 @@ public class PrescriptionPrintHandler
         IDataProvider? prescriptionProvider)
     {
         // 优先使用缓存的处方数据
-        var cachedPrescription = _dataLoader.GetCachedPrescription();
+        // OpenSpec: simplify-workspace-architecture - 使用Coordinator缓存
+        var cachedPrescription = _coordinator.CachedPrescription;
         if (cachedPrescription != null)
         {
             return cachedPrescription;

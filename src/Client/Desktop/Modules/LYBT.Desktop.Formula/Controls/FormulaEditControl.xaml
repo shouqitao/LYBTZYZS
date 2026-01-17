@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     FormulaEditControl - 验方编辑控件
     OpenSpec: extract-detail-controls Task 1.2
     OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑处方
@@ -107,14 +107,14 @@
                         <TextBlock Text="创建时间" Style="{StaticResource FormLabelStyle}"/>
                         <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
                                    Style="{StaticResource ValueDisplayStyle}"
-                                   Foreground="{StaticResource SecondaryTextBrush}"/>
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="5" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="更新时间" Style="{StaticResource FormLabelStyle}"/>
                         <TextBlock Text="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
                                    Style="{StaticResource ValueDisplayStyle}"
-                                   Foreground="{StaticResource SecondaryTextBrush}"/>
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
                     </StackPanel>
                 </Grid>
             </controls:InfoCard.Content>

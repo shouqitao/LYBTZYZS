@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     InfoCard - 信息卡片控件
     OpenSpec: refactor-detail-view-container
 
@@ -36,7 +36,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource SurfaceBrush}"
+    <Border Background="{StaticResource SurfaceCardBrush}"
             CornerRadius="16"
             Padding="40,32"
             Effect="{StaticResource CardShadow}"
@@ -47,7 +47,7 @@
                        Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontSize="18"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource PrimaryTextBrush}"
+                       Foreground="{StaticResource TextPrimaryBrush}"
                        Margin="0,0,0,24"
                        Visibility="{Binding ShowTitle, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 

@@ -1,4 +1,4 @@
-using LYBT.Desktop.MedicalCase.Services;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 
@@ -9,9 +9,13 @@ namespace LYBT.Desktop.Patients.Services;
 /// Issue #1790: 从PatientSelectionViewModel提取未完成医案处理逻辑(~250行)
 /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[HDL]前缀
 /// </summary>
+/// <summary>
+/// OpenSpec: rationalize-module-architecture - 遵循依赖倒置原则
+/// 依赖IMedicalCaseQueryService接口而非MedicalCaseService具体类
+/// </summary>
 public class UnfinishedCaseHandler
 {
-    private readonly MedicalCaseService _medicalCaseDataManager;
+    private readonly IMedicalCaseQueryService _medicalCaseQueryService;
     private readonly ILogger<UnfinishedCaseHandler> _logger;
 
     private readonly Dictionary<Guid, Guid> _pendingCaseCache = new();
@@ -27,10 +31,10 @@ public class UnfinishedCaseHandler
     public event EventHandler<CaseClosedEventArgs>? CaseClosed;
 
     public UnfinishedCaseHandler(
-        MedicalCaseService medicalCaseDataManager,
+        IMedicalCaseQueryService medicalCaseQueryService,
         ILogger<UnfinishedCaseHandler> logger)
     {
-        _medicalCaseDataManager = medicalCaseDataManager ?? throw new ArgumentNullException(nameof(medicalCaseDataManager));
+        _medicalCaseQueryService = medicalCaseQueryService ?? throw new ArgumentNullException(nameof(medicalCaseQueryService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -61,7 +65,7 @@ public class UnfinishedCaseHandler
                 patientId, doctorId, checkAllDoctors);
 
             // OpenSpec: multi-doctor-unfinished-case - 查询所有医生的未完成医案
-            var unfinishedCase = await _medicalCaseDataManager.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors);
+            var unfinishedCase = await _medicalCaseQueryService.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors);
 
             if (unfinishedCase != null)
             {
@@ -107,7 +111,7 @@ public class UnfinishedCaseHandler
             _logger.LogInformation("[HDL] UnfinishedCase.CloseAndCreate started - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
 
             // 1. 关闭旧医案
-            var response = await _medicalCaseDataManager.CloseCaseAsync(oldMedicalCaseId);
+            var response = await _medicalCaseQueryService.CloseCaseAsync(oldMedicalCaseId);
 
             if (response.Success)
             {
@@ -149,7 +153,7 @@ public class UnfinishedCaseHandler
             _logger.LogInformation("[HDL] UnfinishedCase.CloseOnly started - OldMedicalCaseId={OldMedicalCaseId}", oldMedicalCaseId);
 
             // 1. 关闭旧医案
-            var response = await _medicalCaseDataManager.CloseCaseAsync(oldMedicalCaseId);
+            var response = await _medicalCaseQueryService.CloseCaseAsync(oldMedicalCaseId);
 
             if (response.Success)
             {

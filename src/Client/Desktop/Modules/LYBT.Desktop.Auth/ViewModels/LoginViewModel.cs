@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Auth.Models;
@@ -10,20 +10,21 @@ using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Auth.ViewModels
 {
-    /// <summary>登录视图模型 - 使用LoginCoordinator编排登录流程</summary>
-    public class LoginViewModel : UnifiedViewModelBase
+    /// <summary>
+    /// 登录视图模型 - 使用LoginCoordinator编排登录流程
+    /// OpenSpec: refactor-viewmodel-base-classes - 从UnifiedViewModelBase迁移到NavigableViewModelBase
+    /// </summary>
+    public class LoginViewModel : NavigableViewModelBase
     {
         private readonly ILoginCoordinator _loginCoordinator;
         private readonly IApplicationStateService _applicationStateService;
         private readonly IUsernameStorageService? _usernameStorage;
         private readonly ISecureCredentialStorage? _credentialStorage;
         private readonly IConnectionSettingsService? _connectionSettingsService;
-        private readonly ICommonDialogService? _dialogService;
 
         private string _username = string.Empty;
         private string _password = string.Empty;
@@ -50,7 +51,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         public bool RememberPassword { get => _rememberPassword; set { if (SetProperty(ref _rememberPassword, value) && value && !RememberMe) RememberMe = true; } }
         public bool HasMessage => !string.IsNullOrWhiteSpace(StatusMessage) || !string.IsNullOrWhiteSpace(ErrorMessage);
         public bool HasSavedPassword { get => _hasSavedPassword; set => SetProperty(ref _hasSavedPassword, value); }
-        public ApiHealthStatus ApiStatus { get => _apiStatus; set { if (SetProperty(ref _apiStatus, value)) { RaisePropertyChanged(nameof(IsApiUnhealthy)); (RetryApiCheckCommand as DelegateCommand)?.RaiseCanExecuteChanged(); } } }
+        public ApiHealthStatus ApiStatus { get => _apiStatus; set { if (SetProperty(ref _apiStatus, value)) { OnPropertyChanged(nameof(IsApiUnhealthy)); (RetryApiCheckCommand as DelegateCommand)?.RaiseCanExecuteChanged(); } } }
         public string ApiStatusMessage { get => _apiStatusMessage; set => SetProperty(ref _apiStatusMessage, value); }
         public bool IsApiUnhealthy => ApiStatus == ApiHealthStatus.Unhealthy;
 
@@ -61,7 +62,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             {
                 if (SetProperty(ref _connectionMode, value))
                 {
-                    RaisePropertyChanged(nameof(IsRemoteModeSelected)); RaisePropertyChanged(nameof(IsLocalModeSelected)); RaisePropertyChanged(nameof(ConnectionModeDisplay));
+                    OnPropertyChanged(nameof(IsRemoteModeSelected)); OnPropertyChanged(nameof(IsLocalModeSelected)); OnPropertyChanged(nameof(ConnectionModeDisplay));
                     _connectionSettingsService?.SaveConnectionMode(value); UpdateConnectionStatus();
                 }
             }
@@ -84,22 +85,24 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// </summary>
         public ICommand RetryApiCheckCommand { get; }
 
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
         public LoginViewModel(
+            IViewModelServices services,
             ILoginCoordinator loginCoordinator,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
-            IRegionManager regionManager,
             IApplicationStateService applicationStateService,
             IUsernameStorageService? usernameStorage = null,
             ISecureCredentialStorage? credentialStorage = null,
-            IConnectionSettingsService? connectionSettingsService = null,
-            ICommonDialogService? dialogService = null)
-            : base(eventAggregator, loggerFactory, regionManager, null, null)
+            IConnectionSettingsService? connectionSettingsService = null)
+            : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
             _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
-            _usernameStorage = usernameStorage; _credentialStorage = credentialStorage; _connectionSettingsService = connectionSettingsService;
-            _dialogService = dialogService;
+            _usernameStorage = usernameStorage;
+            _credentialStorage = credentialStorage;
+            _connectionSettingsService = connectionSettingsService;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
@@ -205,12 +208,11 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// <summary>
         /// 关闭应用程序
         /// remove-titlebar-add-close-button: 使用ICommonDialogService显示确认框后退出程序
+        /// OpenSpec: enhance-viewmodel-architecture - 使用基类CommonDialogService
         /// </summary>
         private async Task ExecuteCloseApplicationAsync()
         {
-            var confirmed = _dialogService != null
-                ? await _dialogService.ShowConfirmAsync("确定要退出程序吗？", "退出确认")
-                : MessageBox.Show("确定要退出程序吗？", "退出确认", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+            var confirmed = await CommonDialogService.ShowConfirmAsync("确定要退出程序吗？", "退出确认");
 
             if (confirmed)
             {

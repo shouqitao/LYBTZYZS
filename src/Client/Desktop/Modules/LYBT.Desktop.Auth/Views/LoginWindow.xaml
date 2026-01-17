@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow"
-        Background="{DynamicResource BackgroundBrush}"
+        Background="{DynamicResource SurfaceBackgroundBrush}"
         UseLayoutRounding="True"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
@@ -169,10 +169,10 @@
                                AutomationProperties.AutomationId="ApiStatusText">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource SemanticErrorBrush}" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsApiOnline}" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource SemanticSuccessBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

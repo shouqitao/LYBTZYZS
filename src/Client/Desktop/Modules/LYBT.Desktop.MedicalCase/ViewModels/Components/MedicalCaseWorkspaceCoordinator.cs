@@ -1,25 +1,54 @@
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Services;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 
 /// <summary>
 /// 医案工作区协调器
-/// 负责协调面板保存、生命周期操作和审计检查
+/// 负责协调面板保存、生命周期操作、审计检查和数据加载
 /// OpenSpec: refactor-viewmodel-layer - VM-002 Components Pattern
 /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.4) - 支持聚合保存
+/// OpenSpec: simplify-workspace-architecture - 合并DataLoader功能
 /// </summary>
 public class MedicalCaseWorkspaceCoordinator
 {
     #region 字段
 
     private readonly IMedicalCaseService _medicalCaseService;
-    private readonly MedicalCaseDataLoader _dataLoader;
+    private readonly MedicalCaseService _dataManager;
     private readonly IMedicalCaseRepository _repository;
     private readonly ILogger<MedicalCaseWorkspaceCoordinator> _logger;
+
+    #endregion
+
+    #region 缓存属性 (合并自DataLoader)
+
+    /// <summary>
+    /// 缓存的医案详情
+    /// OpenSpec: simplify-workspace-architecture - 从DataLoader合并
+    /// </summary>
+    public MedicalCaseDetailDto? CachedMedicalCase { get; private set; }
+
+    /// <summary>
+    /// 缓存的诊疗记录
+    /// </summary>
+    public ConsultationDetailDto? CachedConsultation { get; private set; }
+
+    /// <summary>
+    /// 缓存的处方信息
+    /// </summary>
+    public PrescriptionDetailDto? CachedPrescription { get; private set; }
+
+    /// <summary>
+    /// 数据加载完成事件
+    /// </summary>
+    public event EventHandler<DataLoadedEventArgs>? DataLoaded;
 
     #endregion
 
@@ -27,14 +56,83 @@ public class MedicalCaseWorkspaceCoordinator
 
     public MedicalCaseWorkspaceCoordinator(
         IMedicalCaseService medicalCaseService,
-        MedicalCaseDataLoader dataLoader,
+        MedicalCaseService dataManager,
         IMedicalCaseRepository repository,
         ILoggerFactory loggerFactory)
     {
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
-        _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
+        _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = loggerFactory.CreateLogger<MedicalCaseWorkspaceCoordinator>();
+    }
+
+    #endregion
+
+    #region 数据加载 (合并自DataLoader)
+
+    /// <summary>
+    /// 加载医案详情及关联数据
+    /// OpenSpec: simplify-workspace-architecture - 从DataLoader合并
+    /// </summary>
+    public async Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadMedicalCaseDetailsAsync(Guid medicalCaseId)
+    {
+        try
+        {
+            _logger.LogInformation("开始加载医案详情，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+            var medicalCaseDetail = await _dataManager.GetByIdSimpleAsync(medicalCaseId);
+
+            if (medicalCaseDetail == null)
+            {
+                _logger.LogWarning("未找到医案数据，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return (false, null, "未找到医案数据");
+            }
+
+            // 缓存数据
+            CachedMedicalCase = medicalCaseDetail;
+            CachedConsultation = medicalCaseDetail.Consultation;
+            CachedPrescription = medicalCaseDetail.Prescription;
+
+            _logger.LogInformation("医案数据加载完成");
+
+            // 触发事件
+            DataLoaded?.Invoke(this, new DataLoadedEventArgs
+            {
+                Success = true,
+                MedicalCaseId = medicalCaseId,
+                HasConsultation = CachedConsultation != null,
+                HasPrescription = CachedPrescription != null
+            });
+
+            return (true, medicalCaseDetail, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "加载医案数据失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载医案数据", ex);
+
+            DataLoaded?.Invoke(this, new DataLoadedEventArgs
+            {
+                Success = false,
+                MedicalCaseId = medicalCaseId,
+                ErrorMessage = errorMsg
+            });
+
+            return (false, null, errorMsg);
+        }
+    }
+
+    // OpenSpec: cleanup-medicalcase-dead-code - FormatPatientInfo已删除（0调用，患者信息由WorkspaceState.UpdateFromPatient处理）
+
+    /// <summary>
+    /// 清除所有缓存数据
+    /// </summary>
+    public void ClearCache()
+    {
+        _logger.LogInformation("清除数据缓存");
+        CachedMedicalCase = null;
+        CachedConsultation = null;
+        CachedPrescription = null;
     }
 
     #endregion
@@ -195,21 +293,7 @@ public class MedicalCaseWorkspaceCoordinator
 
     #endregion
 
-    #region 审计检查
-
-    /// <summary>
-    /// 检查是否需要审计
-    /// </summary>
-    /// <param name="currentUserId">当前用户ID</param>
-    /// <returns>是否需要审计（当前始终返回false）</returns>
-    /// <remarks>OpenSpec: migrate-views-to-role-modules - 审计功能后续单独规划</remarks>
-    public bool CheckAuditRequired(Guid currentUserId)
-    {
-        // TODO: 审计功能将来单独创建project实现
-        return false;
-    }
-
-    #endregion
+    // OpenSpec: cleanup-medicalcase-dead-code - 审计检查region已删除（CheckAuditRequired 0调用，审计功能后续单独规划）
 }
 
 #region 结果类型
@@ -251,6 +335,19 @@ public class AggregateSaveResult
 
     public static AggregateSaveResult Failed(string errorMessage)
         => new(false, errorMessage, null);
+}
+
+/// <summary>
+/// 数据加载完成事件参数
+/// OpenSpec: simplify-workspace-architecture - 从DataLoader合并
+/// </summary>
+public class DataLoadedEventArgs : EventArgs
+{
+    public bool Success { get; set; }
+    public Guid MedicalCaseId { get; set; }
+    public bool HasConsultation { get; set; }
+    public bool HasPrescription { get; set; }
+    public string? ErrorMessage { get; set; }
 }
 
 #endregion

@@ -57,62 +57,46 @@ public partial class MedicalCaseViewControl : UserControl
 
     #endregion
 
-    #region 诊断信息 - Compact模式
+    #region 诊断信息 - Compact模式 (对象绑定)
 
-    public static readonly DependencyProperty PresentIllnessProperty =
-        DependencyProperty.Register(nameof(PresentIllness), typeof(string), typeof(MedicalCaseViewControl));
+    /// <summary>
+    /// 诊断数据对象 - 对象化绑定
+    /// OpenSpec: unify-control-data-binding
+    /// 替代原有 PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis 四个分散属性
+    /// 类型为object以支持ConsultationItem等具有相同属性的类型
+    /// </summary>
+    public static readonly DependencyProperty ConsultationProperty =
+        DependencyProperty.Register(nameof(Consultation), typeof(object), typeof(MedicalCaseViewControl),
+            new PropertyMetadata(null));
 
-    public string? PresentIllness
+    public object? Consultation
     {
-        get => (string?)GetValue(PresentIllnessProperty);
-        set => SetValue(PresentIllnessProperty, value);
-    }
-
-    public static readonly DependencyProperty TongueDiagnosisProperty =
-        DependencyProperty.Register(nameof(TongueDiagnosis), typeof(string), typeof(MedicalCaseViewControl));
-
-    public string? TongueDiagnosis
-    {
-        get => (string?)GetValue(TongueDiagnosisProperty);
-        set => SetValue(TongueDiagnosisProperty, value);
-    }
-
-    public static readonly DependencyProperty PulseDiagnosisProperty =
-        DependencyProperty.Register(nameof(PulseDiagnosis), typeof(string), typeof(MedicalCaseViewControl));
-
-    public string? PulseDiagnosis
-    {
-        get => (string?)GetValue(PulseDiagnosisProperty);
-        set => SetValue(PulseDiagnosisProperty, value);
-    }
-
-    public static readonly DependencyProperty TcmDiagnosisProperty =
-        DependencyProperty.Register(nameof(TcmDiagnosis), typeof(string), typeof(MedicalCaseViewControl));
-
-    public string? TcmDiagnosis
-    {
-        get => (string?)GetValue(TcmDiagnosisProperty);
-        set => SetValue(TcmDiagnosisProperty, value);
+        get => GetValue(ConsultationProperty);
+        set => SetValue(ConsultationProperty, value);
     }
 
     #endregion
 
-    #region 处方信息 - Compact模式
+    #region 处方信息 - Compact模式 (对象绑定)
 
     /// <summary>
-    /// 药材列表 - Compact模式使用HerbListControl
+    /// 处方数据对象 - 对象化绑定
+    /// OpenSpec: unify-control-data-binding
+    /// 替代原有 HerbItems, DoseCount, Usage, TotalPrice 等分散属性
+    /// 类型为object以支持PrescriptionItem等具有相同属性的类型
     /// </summary>
-    public static readonly DependencyProperty HerbItemsProperty =
-        DependencyProperty.Register(nameof(HerbItems), typeof(IEnumerable), typeof(MedicalCaseViewControl));
+    public static readonly DependencyProperty PrescriptionProperty =
+        DependencyProperty.Register(nameof(Prescription), typeof(object), typeof(MedicalCaseViewControl),
+            new PropertyMetadata(null));
 
-    public IEnumerable? HerbItems
+    public object? Prescription
     {
-        get => (IEnumerable?)GetValue(HerbItemsProperty);
-        set => SetValue(HerbItemsProperty, value);
+        get => GetValue(PrescriptionProperty);
+        set => SetValue(PrescriptionProperty, value);
     }
 
     /// <summary>
-    /// 所有可用药材列表
+    /// 所有可用药材列表 - HerbListControl需要
     /// </summary>
     public static readonly DependencyProperty AllHerbsProperty =
         DependencyProperty.Register(nameof(AllHerbs), typeof(IEnumerable), typeof(MedicalCaseViewControl));
@@ -121,43 +105,6 @@ public partial class MedicalCaseViewControl : UserControl
     {
         get => (IEnumerable?)GetValue(AllHerbsProperty);
         set => SetValue(AllHerbsProperty, value);
-    }
-
-    /// <summary>
-    /// 剂数
-    /// </summary>
-    public static readonly DependencyProperty DoseCountProperty =
-        DependencyProperty.Register(nameof(DoseCount), typeof(int?), typeof(MedicalCaseViewControl));
-
-    public int? DoseCount
-    {
-        get => (int?)GetValue(DoseCountProperty);
-        set => SetValue(DoseCountProperty, value);
-    }
-
-    /// <summary>
-    /// 用法
-    /// </summary>
-    public static readonly DependencyProperty UsageProperty =
-        DependencyProperty.Register(nameof(Usage), typeof(string), typeof(MedicalCaseViewControl));
-
-    public string? Usage
-    {
-        get => (string?)GetValue(UsageProperty);
-        set => SetValue(UsageProperty, value);
-    }
-
-    /// <summary>
-    /// 总价
-    /// </summary>
-    public static readonly DependencyProperty TotalPriceProperty =
-        DependencyProperty.Register(nameof(TotalPrice), typeof(decimal), typeof(MedicalCaseViewControl),
-            new PropertyMetadata(0m));
-
-    public decimal TotalPrice
-    {
-        get => (decimal)GetValue(TotalPriceProperty);
-        set => SetValue(TotalPriceProperty, value);
     }
 
     #endregion
@@ -191,68 +138,7 @@ public partial class MedicalCaseViewControl : UserControl
 
     #endregion
 
-    #region MedicalCaseDetail 依赖属性（向后兼容）
-
-    public static readonly DependencyProperty MedicalCaseDetailProperty =
-        DependencyProperty.Register(
-            nameof(MedicalCaseDetail),
-            typeof(MedicalCaseDetailModel),
-            typeof(MedicalCaseViewControl),
-            new PropertyMetadata(null, OnMedicalCaseDetailChanged));
-
-    /// <summary>医案详情数据（向后兼容，等同于Detail）</summary>
-    public MedicalCaseDetailModel? MedicalCaseDetail
-    {
-        get => (MedicalCaseDetailModel?)GetValue(MedicalCaseDetailProperty);
-        set => SetValue(MedicalCaseDetailProperty, value);
-    }
-
-    private static void OnMedicalCaseDetailChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is MedicalCaseViewControl control)
-        {
-            // 同步到Detail属性
-            control.Detail = e.NewValue as MedicalCaseDetailModel;
-        }
-    }
-
-    #endregion
-
-    #region HasConsultation 依赖属性（向后兼容）
-
-    public static readonly DependencyProperty HasConsultationProperty =
-        DependencyProperty.Register(
-            nameof(HasConsultation),
-            typeof(bool),
-            typeof(MedicalCaseViewControl),
-            new PropertyMetadata(false));
-
-    /// <summary>是否有诊断信息（向后兼容，供外部绑定使用）</summary>
-    public bool HasConsultation
-    {
-        get => (bool)GetValue(HasConsultationProperty);
-        set => SetValue(HasConsultationProperty, value);
-    }
-
-    #endregion
-
-    #region HasPrescription 依赖属性（向后兼容）
-
-    public static readonly DependencyProperty HasPrescriptionProperty =
-        DependencyProperty.Register(
-            nameof(HasPrescription),
-            typeof(bool),
-            typeof(MedicalCaseViewControl),
-            new PropertyMetadata(false));
-
-    /// <summary>是否有处方信息（向后兼容，供外部绑定使用）</summary>
-    public bool HasPrescription
-    {
-        get => (bool)GetValue(HasPrescriptionProperty);
-        set => SetValue(HasPrescriptionProperty, value);
-    }
-
-    #endregion
+    // OpenSpec: unify-control-data-binding - 已删除向后兼容属性 (MedicalCaseDetail, HasConsultation, HasPrescription)
 
     #region ShowAuditInfo 依赖属性 - Full模式
 

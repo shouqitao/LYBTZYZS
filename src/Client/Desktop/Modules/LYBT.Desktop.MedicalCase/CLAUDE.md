@@ -8,9 +8,9 @@ MedicalCase是医案管理的**聚合根模块**，整合了处方、诊断等�
 
 ### 2025-01 迁入的功能
 
-| 来源模块 | 迁入组件 | 位置 |
-|----------|----------|------|
-| Prescriptions | `PrescriptionHerbItem` | `Models/Items/` |
+| 来源模块 | 迁入组件 | 位置 | 状态 |
+|----------|----------|------|------|
+| Prescriptions | `PrescriptionHerbItem` | `Models/Items/` | 已删除 - 由PrescriptionItemDto替代 |
 
 ### OpenSpec: create-printing-module (2025-01) 迁出的功能
 
@@ -63,24 +63,25 @@ MedicalCase作为聚合根，持有诊断和处方的Item类：
 
 核心属性:
 - `DosageCount`, `Usage`, `Advice`, `ReferencedFormulas`, `Remark`
-- `Items` (ObservableCollection<HerbItemDto>) - 药材列表
+- `Items` (ObservableCollection<PrescriptionItemDto>) - 药材列表 (OpenSpec: unify-control-data-binding)
 - `ItemCount`, `SingleDosePrice`, `TotalPrice`, `HasItems`, `IsValid`
 
 方法:
 - ~~`FromDto()`, `ToDto()`~~ - 已废弃，请使用 `PrescriptionMapper`
 - `ToInputDto()`, `Clear()`
 
-### PrescriptionHerbItem (已废弃)
+### 处方药材项类型演进 (OpenSpec: unify-control-data-binding)
 
-位置: `Models/Items/PrescriptionHerbItem.cs`
+**当前架构**: 统一使用 `PrescriptionItemDto` (LYBT.Shared.Models.Contracts.Prescriptions)
 
-处方药材项ViewModel，继承自`HerbItemViewModelBase`（Herbs模块）。
+**已删除的类型**:
+- `PrescriptionHerbItem` - 旧版处方药材项ViewModel (2026-01已从代码库移除)
+- `HerbItemDto` (LYBT.Desktop.Herbs.Models.Items) - 桌面端中间类型，已由PrescriptionItemDto替代
 
-被以下组件使用:
-- `MedicalCaseMasterDetailViewModel` - 药材列表绑定
-- `PrescriptionCalculator` - 价格计算
-- `PrescriptionValidator` - 处方验证
-- `PrescriptionDataLoader` - 数据加载
+**类型流向**:
+```
+API Response → PrescriptionItemDto → PrescriptionItem.Items → HerbListControl → UI
+```
 
 **注意**: PrescriptionPanelViewModel已删除，改用PrescriptionItem
 

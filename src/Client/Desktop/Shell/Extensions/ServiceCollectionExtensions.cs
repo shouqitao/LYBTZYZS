@@ -41,6 +41,7 @@ using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
 using LYBT.Desktop.Printing.Services;
 using LYBT.Desktop.Patients.Repositories;
+using LYBT.Desktop.Patients.Services; // PatientService
 using LYBT.Desktop.Patients.ViewModels.Components;
 // [已删除] using LYBT.Desktop.Prescriptions - 模块已移除
 // [已删除] using LYBT.Desktop.Prescriptions.Services - 服务已迁移到MedicalCase
@@ -134,7 +135,7 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterInfrastructureLoggers(IContainerRegistry containerRegistry)
         {
             RegisterLogger<MainWindowServicesFacade>(containerRegistry);
-            RegisterLogger<RoleNavigationService>(containerRegistry);
+            // [已删除] RegisterLogger<RoleNavigationService> - OpenSpec: unify-navigation-architecture (ADR-7)
             RegisterLogger<ActiveConsultationService>(containerRegistry);
             RegisterLogger<ApplicationTickService>(containerRegistry);
             RegisterLogger<UserActivityTracker>(containerRegistry);
@@ -169,7 +170,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<ApplicationInitializationService>(containerRegistry);
             RegisterLogger<ApplicationBootstrapper>(containerRegistry);
             RegisterLogger<ApplicationStateService>(containerRegistry);
-            RegisterLogger<NavigationManager>(containerRegistry);
+            // [已删除] RegisterLogger<NavigationManager> - OpenSpec: unify-navigation-architecture (ADR-7)
             RegisterLogger<MenuManager>(containerRegistry);
             RegisterLogger<NavigationCoordinator>(containerRegistry);
 
@@ -334,9 +335,9 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             containerRegistry.RegisterSingleton<INotificationService, NotificationService>();
             containerRegistry.RegisterSingleton<IDesktopExceptionHandler, DesktopExceptionHandler>();
-            containerRegistry.RegisterSingleton<NavigationManager>();
+            // [已删除] NavigationManager - OpenSpec: unify-navigation-architecture (ADR-7)
             containerRegistry.RegisterSingleton<MenuManager>();
-            // OpenSpec: unify-navigation-architecture (ADR-3) - 统一导航入口
+            // OpenSpec: unify-navigation-architecture (ADR-3 + ADR-7) - 统一导航入口
             containerRegistry.RegisterSingleton<INavigationCoordinator, NavigationCoordinator>();
         }
 
@@ -366,7 +367,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IMainWindowServicesFacade, MainWindowServicesFacade>();
             containerRegistry.RegisterSingleton<IPrescriptionSettingsService, PrescriptionSettingsService>(); // OpenSpec: enhance-duplicate-herb-dialog
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>(); // OpenSpec: print-prescription-slip
-            containerRegistry.RegisterSingleton<IRoleNavigationService, RoleNavigationService>();
+            // [已删除] IRoleNavigationService - OpenSpec: unify-navigation-architecture (ADR-7)
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
 
             // OpenSpec: create-printing-module - 注册独立打印模块服务

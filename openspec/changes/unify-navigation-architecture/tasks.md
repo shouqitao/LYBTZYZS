@@ -184,15 +184,140 @@ Phase 4 ─────────────────────┘
 Phase 1-4可以并行开发，但建议按顺序执行以降低风险。
 Phase 5依赖所有前序Phase完成。
 
+## Phase 6: Roles层ViewModel整合INavigationCoordinator (追加)
+
+> **追加原因**: Phase 4创建了INavigationCoordinator，但Roles层ViewModel未完成迁移。
+> 发现时间: 2026-01-12，诊断"暂存医案导航失败"问题时发现。
+
+### 6.1 整合PatientSelectionViewModel
+- **文件**: `src/Client/Desktop/Roles/LYBT.Desktop.Clinical/ViewModels/PatientSelectionViewModel.cs`
+- **变更**:
+  1. 注入`INavigationCoordinator`依赖
+  2. 替换`RegionManager.RequestNavigate()`为`_navigationCoordinator.NavigateTo()`
+  3. 添加`MedicalCaseId`为空时的错误处理（解决静默失败问题）
+- **验证**: 导航失败时有明确错误提示
+
+### 6.2 整合其他Clinical层ViewModel
+- **文件**: `src/Client/Desktop/Roles/LYBT.Desktop.Clinical/ViewModels/*.cs`
+- **变更**: 检查并迁移所有直接使用`RegionManager.RequestNavigate()`的调用
+- **验证**: 编译通过
+
+### 6.3 整合Admin层ViewModel
+- **文件**: `src/Client/Desktop/Roles/LYBT.Desktop.Admin/ViewModels/*.cs`
+- **变更**: 检查并迁移所有直接使用`RegionManager.RequestNavigate()`的调用
+- **验证**: 编译通过
+
+### 6.4 Phase 6编译验证
+- 运行 `dotnet build LYBT.All.sln -c Release --no-restore`
+- 确保零编译错误
+- 测试暂存医案导航流程
+
+## Phase 7: 完整统一导航服务架构 (ADR-7)
+
+> **追加原因**: 架构优先原则。发现4个导航服务存在功能重叠、层级混乱问题，决定完整统一到INavigationCoordinator。
+> 追加时间: 2026-01-12
+
+### 7.1 扩展INavigationCoordinator接口
+
+- **文件**: `src/Client/Desktop/Contracts/Services/INavigationCoordinator.cs`
+- **变更**:
+  1. 添加 `NavigationHistory` 属性 (从ViewNavigationService)
+  2. 添加 `ClearHistory()` 方法 (从ViewNavigationService)
+  3. 添加 `NavigationChanged` 事件 (从ViewNavigationService)
+  4. 添加 `ShowLoginDialog()` 方法 (从NavigationManager)
+  5. 添加 `ClearLoginRegion()` 方法 (从NavigationManager)
+  6. 添加 `ClearContentRegion()` 方法 (从NavigationManager)
+  7. 添加 `SubscribeToRegionCollection()` 方法 (从NavigationManager)
+  8. 添加 `UnsubscribeFromRegionCollection()` 方法 (从NavigationManager)
+- **验证**: 编译通过
+
+### 7.2 实现NavigationCoordinator新功能
+
+- **文件**: `src/Client/Desktop/Shell/Services/NavigationCoordinator.cs`
+- **变更**:
+  1. 实现导航历史管理 (List<string> + Push/Pop逻辑)
+  2. 实现NavigationChanged事件
+  3. 实现ShowLoginDialog (从NavigationManager移植)
+  4. 实现ClearLoginRegion/ClearContentRegion (从NavigationManager移植)
+  5. 实现Subscribe/Unsubscribe (从NavigationManager移植)
+- **验证**: 编译通过
+
+### 7.3 更新MasterDetailServices依赖
+
+- **文件**: `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Services/MasterDetailServices.cs`
+- **变更**:
+  1. 将 `IViewNavigationService` 依赖改为 `INavigationCoordinator`
+  2. 更新 `Navigation` 属性类型为 `INavigationCoordinator`
+- **验证**: 5个MasterDetail ViewModel导航正常
+
+### 7.4 更新MainWindowViewModel依赖
+
+- **文件**: `src/Client/Desktop/Shell/ViewModels/MainWindowViewModel.cs`
+- **变更**:
+  1. 移除 `INavigationManager` 依赖
+  2. 使用 `INavigationCoordinator` 替代所有导航调用
+- **验证**: 主窗口导航功能正常
+
+### 7.5 更新LoginCoordinator依赖
+
+- **文件**: `src/Client/Desktop/Shell/Services/LoginCoordinator.cs`
+- **变更**:
+  1. 移除 `INavigationManager` 依赖
+  2. 使用 `INavigationCoordinator.ShowLoginDialog()` 和 `ClearLoginRegion()`
+- **验证**: 登录/登出流程正常
+
+### 7.6 删除NavigationManager
+
+- **文件**: `src/Client/Desktop/Shell/Services/NavigationManager.cs`
+- **操作**: 确认无引用后删除
+- **验证**: 编译通过
+
+### 7.7 删除ViewNavigationService
+
+- **文件**: `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Services/ViewNavigationService.cs`
+- **操作**: 确认无引用后删除
+- **验证**: 编译通过
+
+### 7.8 删除RoleNavigationService
+
+- **文件**: `src/Client/Desktop/Shell/Services/RoleNavigationService.cs`
+- **操作**: 确认无引用后删除
+- **验证**: 编译通过
+
+### 7.9 删除冗余接口定义
+
+- **文件**:
+  - `src/Client/Desktop/Contracts/Services/INavigationManager.cs`
+  - `src/Client/Desktop/Contracts/Services/IViewNavigationService.cs`
+  - `src/Client/Desktop/Contracts/Services/IRoleNavigationService.cs`
+- **操作**: 确认无引用后删除
+- **验证**: 编译通过
+
+### 7.10 清理DI注册
+
+- **文件**: `src/Client/Desktop/Shell/Extensions/ServiceCollectionExtensions.cs`
+- **变更**: 移除已删除服务的注册代码
+- **验证**: 应用启动正常
+
+### 7.11 Phase 7编译验证
+
+- 运行 `dotnet build LYBT.All.sln -c Release --no-restore`
+- 确保零编译错误
+- 搜索确认无遗留引用 (`INavigationManager`, `IViewNavigationService`, `IRoleNavigationService`)
+
 ## Notes
 
-- 保持向后兼容：不删除现有公开API，仅标记Obsolete
+- ~~保持向后兼容：不删除现有公开API，仅标记Obsolete~~ (Phase 7改为完整清理)
 - 渐进式迁移：新代码使用新架构，旧代码逐步迁移
 - 每个Phase独立验证：确保可回滚
 - ADR-6视图合并：UserProfileView/ChangePasswordView合并到AccountSettingsView
+- **Phase 6追加**: Roles层ViewModel需整合INavigationCoordinator，解决导航静默失败问题
+- **Phase 7追加**: 完整统一所有导航服务到INavigationCoordinator，删除冗余服务和接口
 
 ---
 
 **生成时间**: 2026-01-10
-**执行完成时间**: 2026-01-10
-**状态**: 已完成 (所有Phase执行完毕，编译验证通过)
+**执行完成时间**: 2026-01-10 (Phase 1-5)
+**Phase 6追加时间**: 2026-01-12
+**Phase 7追加时间**: 2026-01-12
+**状态**: 进行中 (Phase 6执行中, Phase 7待执行)

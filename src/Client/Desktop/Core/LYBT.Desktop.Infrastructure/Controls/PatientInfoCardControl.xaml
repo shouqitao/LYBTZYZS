@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     PatientInfoCardControl - 患者信息卡片控件
     OpenSpec: refactor-medicalcase-workspace
 
@@ -39,7 +39,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource SurfaceBrush}"
+    <Border Background="{StaticResource SurfaceCardBrush}"
             CornerRadius="16"
             Padding="24,20"
             Effect="{StaticResource CardShadow}">
@@ -49,7 +49,7 @@
                 <!-- 头像占位 -->
                 <Border Width="48" Height="48"
                         CornerRadius="24"
-                        Background="{StaticResource PrimaryBrush}"
+                        Background="{StaticResource BrandPrimaryBrush}"
                         Margin="0,0,16,0">
                     <TextBlock Text="{Binding Patient.Name, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource FirstCharacterConverter}}"
                                FontSize="20"
@@ -64,15 +64,15 @@
                     <TextBlock Text="{Binding Patient.Name, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                FontSize="18"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                         <TextBlock Text="{Binding Patient.Gender, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    FontSize="14"
-                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
                                    Margin="0,0,12,0"/>
                         <TextBlock Text="{Binding Patient.AgeDisplay, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    FontSize="14"
-                                   Foreground="{StaticResource SecondaryTextBrush}"/>
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
@@ -96,7 +96,7 @@
                 </StackPanel.Style>
 
                 <!-- 分隔线 -->
-                <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8,0,12"/>
+                <Border Height="1" Background="{StaticResource BorderDefaultBrush}" Margin="0,8,0,12"/>
 
                 <!-- 联系电话 -->
                 <Grid Margin="0,0,0,8">
@@ -107,11 +107,11 @@
                     <TextBlock Grid.Column="0"
                                Text="联系电话"
                                FontSize="14"
-                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
                     <TextBlock Grid.Column="1"
                                Text="{Binding Patient.PhoneNumber, RelativeSource={RelativeSource AncestorType=UserControl}, TargetNullValue='-'}"
                                FontSize="14"
-                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
                 </Grid>
 
                 <!-- 挂号时间 -->
@@ -123,11 +123,11 @@
                     <TextBlock Grid.Column="0"
                                Text="挂号时间"
                                FontSize="14"
-                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
                     <TextBlock Grid.Column="1"
                                Text="{Binding Patient.RegistrationTimeDisplay, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                FontSize="14"
-                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
                 </Grid>
 
                 <!-- 就诊次数 -->
@@ -149,10 +149,10 @@
                     <TextBlock Grid.Column="0"
                                Text="就诊次数"
                                FontSize="14"
-                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
                     <TextBlock Grid.Column="1"
                                FontSize="14"
-                               Foreground="{StaticResource PrimaryTextBrush}">
+                               Foreground="{StaticResource TextPrimaryBrush}">
                         <Run Text="{Binding Patient.VisitCount, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Run Text="次"/>
                     </TextBlock>

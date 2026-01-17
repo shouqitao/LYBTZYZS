@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     BaseMasterDataListView - 基础数据管理视图模板
     Issue #1998 - Task 2.5: 创建统一的XAML视图模板
 
@@ -16,7 +16,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls"
-             Background="{StaticResource BackgroundBrush}">
+             Background="{StaticResource SurfaceBackgroundBrush}">
 
     <Grid>
         <Grid.RowDefinitions>

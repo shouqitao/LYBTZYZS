@@ -10,14 +10,13 @@
         <ResourceDictionary>
             <!--  合并全局样式系统资源 (Issue #1484)  -->
             <ResourceDictionary.MergedDictionaries>
-                <!--  统一设计系统 (Issue #1831: 修复管理界面XAML资源引用)  -->
-                <ResourceDictionary Source="/LYBT.Desktop.Shell;component/Resources/UnifiedDesignSystem.xaml" />
+                <!--  设计Token系统 (OpenSpec: desktop-ui-ux-optimization)  -->
+                <ResourceDictionary Source="/LYBT.Desktop.Shell;component/Resources/Themes/Theme.Light.xaml" />
 
                 <!--  UI统一化组件样式 (Issue #1840: Desktop端管理界面UI统一化)  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml" />
 
                 <!--  全局样式系统 (OpenSpec: cleanup-ui-layer)  -->
-                <ResourceDictionary Source="Styles/Colors.xaml" />
                 <ResourceDictionary Source="Styles/Typography.xaml" />
                 <ResourceDictionary Source="Styles/Controls.xaml" />
 

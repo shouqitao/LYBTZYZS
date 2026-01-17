@@ -14,10 +14,17 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.MedicalCase.Services;
 
 /// <summary>
-/// 病案Service - 聚合根模式实现
+/// 病案Service - 聚合根门面模式实现
 /// OpenSpec: standardize-service-layer - 统一使用Service命名
 /// OpenSpec: simplify-medicalcase-api - 统一管理Consultation和Prescription
+/// OpenSpec: refactor-frontend-srp-patterns (ADR-1) - 实现SRP职责分离的门面接口
 /// </summary>
+/// <remarks>
+/// 实现三个专职接口：
+/// - IMedicalCaseQueryService: 查询职责
+/// - IMedicalCaseCommandService: 命令职责
+/// - IMedicalCaseLifecycleService: 生命周期职责
+/// </remarks>
 public class MedicalCaseService : IMedicalCaseService
 {
     private readonly IMedicalCaseRepository _repository;
@@ -377,81 +384,11 @@ public class MedicalCaseService : IMedicalCaseService
 
     #endregion
 
-    #region 聚合根专用方法
-
-    public void UpdateConsultation(ConsultationDetailDto consultation)
-    {
-        if (_currentDetail == null) throw new InvalidOperationException("当前病案数据为空");
-        _currentDetail.Consultation = consultation ?? throw new ArgumentNullException(nameof(consultation));
-        _logger.LogDebug("[SVC] MedicalCase.UpdateConsultation - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-    }
-
-    /// <summary>
-    /// 创建处方（通过聚合保存）
-    /// OpenSpec: simplify-medicalcase-api - 通过SaveAsync创建处方
-    /// </summary>
-    public virtual async Task<PrescriptionDetailDto?> CreatePrescriptionAsync(PrescriptionInputDto createDto)
-    {
-        if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.CreatePrescription → NoData"); return null; }
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.CreatePrescription started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            // 构建包含Prescription的InputDto
-            var inputDto = _currentDetail.ToInputDto();
-            inputDto.Prescription = createDto;
-            inputDto.NeedsPrescription = true;
-
-            var updated = await _repository.SaveAsync(_currentDetail.Id, inputDto);
-            if (updated?.Prescription != null)
-            {
-                _currentDetail.Prescription = updated.Prescription;
-                _currentDetail.PrescriptionId = updated.PrescriptionId;
-                _logger.LogInformation("[SVC] MedicalCase.CreatePrescription completed - PrescriptionId={PrescriptionId}", updated.Prescription.Id);
-                return updated.Prescription;
-            }
-            _logger.LogWarning("[SVC] MedicalCase.CreatePrescription → NoPrescriptionReturned - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            return null;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CreatePrescription failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return null; }
-    }
-
-    public void UpdatePrescription(PrescriptionDetailDto prescription)
-    {
-        if (_currentDetail == null) throw new InvalidOperationException("当前病案数据为空");
-        _currentDetail.Prescription = prescription ?? throw new ArgumentNullException(nameof(prescription));
-        _logger.LogDebug("[SVC] MedicalCase.UpdatePrescription - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}", _currentDetail.Id, prescription.Id);
-    }
-
-    /// <summary>
-    /// 删除处方（通过聚合保存设置NeedsPrescription=false）
-    /// OpenSpec: simplify-medicalcase-api - 通过SaveAsync删除处方
-    /// </summary>
-    public virtual async Task<bool> DeletePrescriptionAsync()
-    {
-        if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → NoData"); return false; }
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.DeletePrescription started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            // 设置NeedsPrescription=false触发服务端软删除
-            var inputDto = _currentDetail.ToInputDto();
-            inputDto.NeedsPrescription = false;
-            inputDto.Prescription = null;
-
-            var updated = await _repository.SaveAsync(_currentDetail.Id, inputDto);
-            if (updated != null)
-            {
-                _currentDetail.Prescription = null;
-                _currentDetail.PrescriptionId = null;
-                _logger.LogInformation("[SVC] MedicalCase.DeletePrescription completed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-                return true;
-            }
-            _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → Failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            return false;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeletePrescription failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return false; }
-    }
-
-    #endregion
+    // OpenSpec: cleanup-medicalcase-dead-code - 聚合根专用方法已删除（0调用，功能由SaveAsync替代）
+    // - UpdateConsultation: 直接修改Current.Consultation即可
+    // - CreatePrescriptionAsync: 通过SaveAsync创建
+    // - UpdatePrescription: 直接修改Current.Prescription即可
+    // - DeletePrescriptionAsync: 通过SaveAsync设置NeedsPrescription=false触发
 
     #region 私有方法 - 变更检测
 

@@ -76,6 +76,9 @@ public class MenuManager
     /// <summary>导航到主页命令 - OpenSpec: fix-button-navigation-system</summary>
     public DelegateCommand NavigateToHomeCommand { get; private set; } = null!;
 
+    /// <summary>导航到系统设置命令 - OpenSpec: unify-navigation-architecture (ADR-5修正: Sidebar全局入口)</summary>
+    public DelegateCommand NavigateToSystemSettingsCommand { get; private set; } = null!;
+
     #endregion 命令属性
 
     /// <summary>初始化所有命令</summary>
@@ -94,6 +97,9 @@ public class MenuManager
         // OpenSpec: fix-button-navigation-system - 导航到主页命令
         NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
 
+        // OpenSpec: unify-navigation-architecture (ADR-5修正) - 导航到系统设置命令
+        NavigateToSystemSettingsCommand = new DelegateCommand(ExecuteNavigateToSystemSettings);
+
         _logger.LogDebug("菜单命令系统已初始化");
     }
 
@@ -111,6 +117,14 @@ public class MenuManager
     {
         _logger.LogInformation("导航到主页");
         _navigationCoordinator.NavigateToHome();
+    }
+
+    /// <summary>OpenSpec: unify-navigation-architecture (ADR-5修正) - 导航到系统设置</summary>
+    /// <remarks>ADR-5修正: 系统设置从HomeView移至Sidebar全局入口，角色自适应内容</remarks>
+    private void ExecuteNavigateToSystemSettings()
+    {
+        _logger.LogInformation("导航到系统设置");
+        _navigationCoordinator.NavigateTo(ViewNames.SystemSettings);
     }
 
     /// <summary>显示控件示例</summary>

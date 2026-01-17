@@ -183,13 +183,10 @@
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
 
-    <!-- 颜色资源 -->
-    <SolidColorBrush x:Key="PrimaryColor" Color="#007BFF" />
-    <SolidColorBrush x:Key="SuccessColor" Color="#28A745" />
-    <SolidColorBrush x:Key="InfoColor" Color="#17A2B8" />
-    <SolidColorBrush x:Key="WarningColor" Color="#FFC107" />
-    <SolidColorBrush x:Key="DangerColor" Color="#DC3545" />
-    <SolidColorBrush x:Key="SecondaryColor" Color="#6C757D" />
-    <SolidColorBrush x:Key="LightColor" Color="#F8F9FA" />
-    <SolidColorBrush x:Key="DarkColor" Color="#343A40" />
+    <!--
+        ====================================================================
+        颜色定义已迁移到 DesignTokens/Colors.Light.xaml
+        OpenSpec: desktop-ui-ux-optimization
+        ====================================================================
+    -->
 </ResourceDictionary>

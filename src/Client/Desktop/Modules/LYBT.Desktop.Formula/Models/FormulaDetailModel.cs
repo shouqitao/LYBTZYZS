@@ -28,6 +28,7 @@ namespace LYBT.Desktop.Formula.Models
         private DateTime? _createdAt;
         private DateTime? _updatedAt;
         private Guid? _createdBy;
+        private string? _source;
         private ObservableCollection<FormulaHerbItemDto> _herbs = new();
 
         /// <summary>验方ID</summary>
@@ -119,6 +120,13 @@ namespace LYBT.Desktop.Formula.Models
             set => SetProperty(ref _createdBy, value);
         }
 
+        /// <summary>来源</summary>
+        public string? Source
+        {
+            get => _source;
+            set => SetProperty(ref _source, value);
+        }
+
         /// <summary>药材列表</summary>
         public ObservableCollection<FormulaHerbItemDto> Herbs
         {
@@ -161,7 +169,8 @@ namespace LYBT.Desktop.Formula.Models
                 Status = Status,
                 CreatedAt = CreatedAt,
                 UpdatedAt = UpdatedAt,
-                CreatedBy = CreatedBy
+                CreatedBy = CreatedBy,
+                Source = Source
             };
 
             foreach (var herb in Herbs)

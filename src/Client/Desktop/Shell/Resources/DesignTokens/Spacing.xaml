@@ -1,0 +1,106 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--
+        LYBTZYZS 设计Token系统 - 间距与尺寸规范
+        OpenSpec: desktop-ui-ux-optimization
+        
+        基于4px网格系统
+    -->
+
+    <!-- ==================== 间距系统 (4px Grid) ==================== -->
+    <Thickness x:Key="SpacingNone">0</Thickness>
+    <Thickness x:Key="SpacingXXS">2</Thickness>
+    <Thickness x:Key="SpacingXS">4</Thickness>
+    <Thickness x:Key="SpacingSM">8</Thickness>
+    <Thickness x:Key="SpacingMD">12</Thickness>
+    <Thickness x:Key="SpacingLG">16</Thickness>
+    <Thickness x:Key="SpacingXL">24</Thickness>
+    <Thickness x:Key="SpacingXXL">32</Thickness>
+    <Thickness x:Key="SpacingXXXL">48</Thickness>
+
+    <!-- 数值间距 -->
+    <sys:Double x:Key="SpaceNone">0</sys:Double>
+    <sys:Double x:Key="SpaceXXS">2</sys:Double>
+    <sys:Double x:Key="SpaceXS">4</sys:Double>
+    <sys:Double x:Key="SpaceSM">8</sys:Double>
+    <sys:Double x:Key="SpaceMD">12</sys:Double>
+    <sys:Double x:Key="SpaceLG">16</sys:Double>
+    <sys:Double x:Key="SpaceXL">24</sys:Double>
+    <sys:Double x:Key="SpaceXXL">32</sys:Double>
+    <sys:Double x:Key="SpaceXXXL">48</sys:Double>
+
+    <!-- ==================== 圆角系统 ==================== -->
+    <CornerRadius x:Key="RadiusNone">0</CornerRadius>
+    <CornerRadius x:Key="RadiusSM">2</CornerRadius>
+    <CornerRadius x:Key="RadiusMD">4</CornerRadius>
+    <CornerRadius x:Key="RadiusLG">6</CornerRadius>
+    <CornerRadius x:Key="RadiusXL">8</CornerRadius>
+    <CornerRadius x:Key="RadiusXXL">12</CornerRadius>
+    <CornerRadius x:Key="RadiusFull">9999</CornerRadius>
+
+    <!-- ==================== 控件高度 ==================== -->
+    <sys:Double x:Key="ControlHeightXS">24</sys:Double>
+    <sys:Double x:Key="ControlHeightSM">28</sys:Double>
+    <sys:Double x:Key="ControlHeightMD">32</sys:Double>
+    <sys:Double x:Key="ControlHeightLG">40</sys:Double>
+    <sys:Double x:Key="ControlHeightXL">48</sys:Double>
+
+    <!-- ==================== 输入框宽度 ==================== -->
+    <sys:Double x:Key="InputWidthXS">100</sys:Double>
+    <sys:Double x:Key="InputWidthSM">150</sys:Double>
+    <sys:Double x:Key="InputWidthMD">200</sys:Double>
+    <sys:Double x:Key="InputWidthLG">250</sys:Double>
+    <sys:Double x:Key="InputWidthXL">300</sys:Double>
+
+    <!-- ==================== 图标尺寸 ==================== -->
+    <sys:Double x:Key="IconSizeXS">12</sys:Double>
+    <sys:Double x:Key="IconSizeSM">16</sys:Double>
+    <sys:Double x:Key="IconSizeMD">20</sys:Double>
+    <sys:Double x:Key="IconSizeLG">24</sys:Double>
+    <sys:Double x:Key="IconSizeXL">32</sys:Double>
+    <sys:Double x:Key="IconSizeXXL">48</sys:Double>
+
+    <!-- ==================== 边框宽度 ==================== -->
+    <Thickness x:Key="BorderNone">0</Thickness>
+    <Thickness x:Key="BorderThin">1</Thickness>
+    <Thickness x:Key="BorderMedium">2</Thickness>
+    <Thickness x:Key="BorderThick">3</Thickness>
+
+    <!-- ==================== 内边距预设 ==================== -->
+    <Thickness x:Key="PaddingButton">16,8</Thickness>
+    <Thickness x:Key="PaddingButtonSM">12,6</Thickness>
+    <Thickness x:Key="PaddingButtonLG">20,10</Thickness>
+    <Thickness x:Key="PaddingInput">12,8</Thickness>
+    <Thickness x:Key="PaddingCard">16,12</Thickness>
+    <Thickness x:Key="PaddingCardLG">24,20</Thickness>
+    <Thickness x:Key="PaddingToolbar">16,12</Thickness>
+    <Thickness x:Key="PaddingContent">24,20</Thickness>
+    <Thickness x:Key="PaddingDialog">24,24</Thickness>
+
+    <!-- ==================== DataGrid列宽度 ==================== -->
+    <sys:Double x:Key="DataGridColumnWidthXS">50</sys:Double>
+    <sys:Double x:Key="DataGridColumnWidthSM">80</sys:Double>
+    <sys:Double x:Key="DataGridColumnWidthMD">120</sys:Double>
+    <sys:Double x:Key="DataGridColumnWidthLG">160</sys:Double>
+    <sys:Double x:Key="DataGridColumnWidthXL">200</sys:Double>
+    <sys:Double x:Key="DataGridColumnWidthAction">240</sys:Double>
+
+    <!-- ==================== 阴影参数 ==================== -->
+    <sys:Double x:Key="ShadowBlurSM">4</sys:Double>
+    <sys:Double x:Key="ShadowBlurMD">8</sys:Double>
+    <sys:Double x:Key="ShadowBlurLG">16</sys:Double>
+    <sys:Double x:Key="ShadowDepthSM">1</sys:Double>
+    <sys:Double x:Key="ShadowDepthMD">2</sys:Double>
+    <sys:Double x:Key="ShadowDepthLG">4</sys:Double>
+    <sys:Double x:Key="ShadowOpacity">0.15</sys:Double>
+
+    <!-- ==================== 动画时长 ==================== -->
+    <Duration x:Key="DurationInstant">0:0:0.05</Duration>
+    <Duration x:Key="DurationFast">0:0:0.1</Duration>
+    <Duration x:Key="DurationNormal">0:0:0.2</Duration>
+    <Duration x:Key="DurationSlow">0:0:0.3</Duration>
+    <Duration x:Key="DurationVerySlow">0:0:0.5</Duration>
+
+</ResourceDictionary>

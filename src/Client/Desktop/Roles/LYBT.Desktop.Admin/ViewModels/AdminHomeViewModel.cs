@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -23,6 +24,7 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         private readonly IAuthenticationService _authService;
         private readonly IDialogService _dialogService;
+        private readonly INavigationCoordinator _navigationCoordinator;
 
         #endregion 依赖服务
 
@@ -54,16 +56,20 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         #region 构造函数
 
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
         public AdminHomeViewModel(
-            IRegionManager regionManager,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
+            IViewModelServices services,
             IAuthenticationService authService,
-            IDialogService dialogService)
-            : base(loggerFactory, eventAggregator, regionManager)
+            IDialogService dialogService,
+            INavigationCoordinator navigationCoordinator)
+            : base(services)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
 
             // 加载当前用户信息
             LoadCurrentUser();
@@ -138,8 +144,8 @@ namespace LYBT.Desktop.Admin.ViewModels
             try
             {
                 Logger.LogInformation("导航到账户设置页面(修改密码)");
-                var parameters = new NavigationParameters { { "Tab", "Password" } };
-                RegionManager.RequestNavigate(RegionNames.ContentRegion, ViewNames.AccountSettings, parameters);
+                var parameters = new Dictionary<string, object> { { "Tab", "Password" } };
+                _navigationCoordinator.NavigateTo(ViewNames.AccountSettings, parameters);
             }
             catch (Exception ex)
             {
@@ -153,6 +159,7 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         /// <summary>
         /// 导航到指定视图
+        /// OpenSpec: unify-navigation-architecture Phase 6 - 使用INavigationCoordinator
         /// </summary>
         /// <param name="viewName">视图名称</param>
         private void NavigateTo(string viewName)
@@ -160,21 +167,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             try
             {
                 Logger.LogInformation("导航到 {ViewName}", viewName);
-                RegionManager.RequestNavigate("ContentRegion", viewName, navigationResult =>
-                {
-                    if (navigationResult.Result == true)
-                    {
-                        Logger.LogInformation("导航成功：{ViewName}", viewName);
-                    }
-                    else
-                    {
-                        Logger.LogError("导航失败：{ViewName}，错误：{Error}", viewName, navigationResult.Error?.Message ?? "未知错误");
-                        if (navigationResult.Error != null)
-                        {
-                            Logger.LogError(navigationResult.Error, "导航异常详情");
-                        }
-                    }
-                });
+                _navigationCoordinator.NavigateTo(viewName);
             }
             catch (Exception ex)
             {

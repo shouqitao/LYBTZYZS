@@ -30,7 +30,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     private readonly IMainWindowServicesFacade _servicesFacade;
     private readonly IHealthCheckCoordinator _healthCheckCoordinator;
-    private readonly NavigationManager _navigationManager;
+    private readonly INavigationCoordinator _navigationCoordinator;
     private readonly MenuManager _menuManager;
     private readonly IActiveConsultationService _activeConsultationService;
     private readonly IApplicationTickService _tickService;
@@ -111,32 +111,30 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     /// <summary>
     /// 构造函数
+    /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
     /// </summary>
     public MainWindowViewModel(
-        IRegionManager regionManager,
-        IEventAggregator eventAggregator,
+        IViewModelServices services,
         IMainWindowServicesFacade servicesFacade,
-        ILoggerFactory loggerFactory,
         IUserNotificationService userNotificationService,
         IHealthCheckCoordinator healthCheckCoordinator,
-        NavigationManager navigationManager,
+        INavigationCoordinator navigationCoordinator,
         MenuManager menuManager,
         IActiveConsultationService activeConsultationService,
         IApplicationTickService tickService,
         IUserActivityTracker userActivityTracker,
         ITokenLifecycleService tokenLifecycleService,
         ITokenStorageService tokenStorageService,
-        ILoginCoordinator loginCoordinator,
-        ICommonDialogService commonDialogService)
-        : base(loggerFactory, eventAggregator)
+        ILoginCoordinator loginCoordinator)
+        : base(services)
     {
-        RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-        CommonDialogService = commonDialogService;
+        RegionManager = services.RegionManager;
+        CommonDialogService = services.CommonDialogService;
         UserNotificationService = userNotificationService;
 
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _healthCheckCoordinator = healthCheckCoordinator ?? throw new ArgumentNullException(nameof(healthCheckCoordinator));
-        _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
+        _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
@@ -221,6 +219,11 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// 导航到主页命令 - OpenSpec: fix-button-navigation-system
     /// </summary>
     public ICommand NavigateToHomeCommand => _menuManager.NavigateToHomeCommand;
+
+    /// <summary>
+    /// 导航到系统设置命令 - OpenSpec: unify-navigation-architecture (ADR-5修正: Sidebar全局入口)
+    /// </summary>
+    public ICommand NavigateToSystemSettingsCommand => _menuManager.NavigateToSystemSettingsCommand;
 
     #endregion
 
@@ -340,7 +343,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         // OpenSpec: unify-event-system - 使用AuthEvents聚合类
         Events.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
         Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(OnTokenLifecycleStateChanged);
-        _navigationManager.SubscribeToRegionCollection();
+        _navigationCoordinator.SubscribeToRegionCollection();
     }
 
     #endregion
@@ -436,7 +439,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
             Title = $"凌隐宝堂中医诊所诊疗系统 - {userDisplayName} ({(isAdmin ? "管理员" : "医生")})";
 
             // 清理登录区域
-            _navigationManager.ClearLoginRegion();
+            _navigationCoordinator.ClearLoginRegion();
 
             // 启动用户活动追踪
             _userActivityTracker.StartTracking();
@@ -461,8 +464,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
             CurrentUser = null;
             IsLoggedIn = false;
             Title = "凌隐宝堂中医诊所诊疗系统";
-            _navigationManager.ClearContentRegion();
-            _navigationManager.ShowLoginDialog();
+            _navigationCoordinator.ClearContentRegion();
+            _navigationCoordinator.ShowLoginDialog();
         });
     }
 
@@ -497,8 +500,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IsLoggedIn = false;
         Title = "凌隐宝堂中医诊所诊疗系统";
 
-        _navigationManager.ClearContentRegion();
-        _navigationManager.ShowLoginDialog();
+        _navigationCoordinator.ClearContentRegion();
+        _navigationCoordinator.ShowLoginDialog();
         _ = Task.Run(async () =>
         {
             try
@@ -547,8 +550,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     private async Task CheckLoginStatusAsync()
     {
-        try { _navigationManager.ShowLoginDialog(); }
-        catch (Exception ex) { await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("初始化登录界面", ex)); _navigationManager.ShowLoginDialog(); }
+        try { _navigationCoordinator.ShowLoginDialog(); }
+        catch (Exception ex) { await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("初始化登录界面", ex)); _navigationCoordinator.ShowLoginDialog(); }
     }
 
     #endregion
@@ -649,7 +652,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
             CleanupTickSubscription();
             CleanupHealthCheckCoordinator();
             UnsubscribeLoginEvent();
-            _navigationManager.UnsubscribeFromRegionCollection();
+            _navigationCoordinator.UnsubscribeFromRegionCollection();
             _tokenLifecycleService.Dispose(); // Issue #1864: 释放Token生命周期服务
         }
         catch (Exception ex) { Logger.LogError(ex, "资源清理异常"); }

@@ -250,6 +250,88 @@ ClinicalHomeView (诊疗主页)
 - 正面: 统一后缀模式便于快速识别视图类型，合并功能重叠的视图减少维护成本
 - 负面: 需删除视图文件并迁移功能
 
+### ADR-7: 完整统一所有导航服务
+
+**状态**: 已采纳
+
+**背景**: 当前存在4个导航相关服务，职责重叠、层级混乱：
+
+| 服务 | 层级 | 功能 | 问题 |
+|------|------|------|------|
+| NavigationCoordinator | Shell | NavigateTo, NavigateToHome, NavigateBack | 新标准入口 |
+| NavigationManager | Shell | NavigateTo, ShowLoginDialog, ClearRegions | NavigateTo重复 |
+| ViewNavigationService | Infrastructure | NavigateToAsync, NavigationHistory | 历史功能独立 |
+| RoleNavigationService | Shell | NavigateToRoleHome | 与NavigateToHome重复 |
+
+**问题分析**:
+1. **功能重叠**: NavigateTo在3处实现，NavigateBack在2处实现
+2. **层级混乱**: 4个服务分散在Shell和Infrastructure层
+3. **接口碎片化**: INavigationCoordinator、IViewNavigationService、IRoleNavigationService职责边界模糊
+
+**决策**: 将所有导航功能完整统一到INavigationCoordinator，删除其他3个导航服务。
+
+**统一后的INavigationCoordinator接口**:
+```csharp
+public interface INavigationCoordinator
+{
+    // === 基础导航 (原有) ===
+    void NavigateTo(string viewName, IDictionary<string, object>? parameters = null);
+    void NavigateToHome();
+    string CurrentView { get; }
+
+    // === 历史导航 (从ViewNavigationService整合) ===
+    void NavigateBack();
+    bool CanNavigateBack { get; }
+    IReadOnlyList<string> NavigationHistory { get; }
+    void ClearHistory();
+    event EventHandler<NavigationChangedEventArgs>? NavigationChanged;
+
+    // === Region管理 (从NavigationManager整合) ===
+    void ShowLoginDialog();
+    void ClearLoginRegion();
+    void ClearContentRegion();
+
+    // === 事件订阅 (从NavigationManager整合) ===
+    void SubscribeToRegionCollection();
+    void UnsubscribeFromRegionCollection();
+}
+```
+
+**迁移策略**:
+
+| 原服务 | 功能 | 迁移到 |
+|--------|------|--------|
+| NavigationManager.NavigateTo | 基础导航 | 已在NavigationCoordinator |
+| NavigationManager.ShowLoginDialog | 登录区域管理 | NavigationCoordinator |
+| NavigationManager.ClearLoginRegion | 登录区域清理 | NavigationCoordinator |
+| NavigationManager.ClearContentRegion | 内容区域清理 | NavigationCoordinator |
+| NavigationManager.Subscribe* | 事件订阅 | NavigationCoordinator |
+| ViewNavigationService.NavigationHistory | 历史管理 | NavigationCoordinator |
+| ViewNavigationService.NavigateBackAsync | 返回导航 | NavigationCoordinator.NavigateBack |
+| ViewNavigationService.NavigationChanged | 导航事件 | NavigationCoordinator |
+| RoleNavigationService.NavigateToRoleHome | 角色首页 | 已等效NavigateToHome |
+
+**依赖更新**:
+
+| 消费者 | 当前依赖 | 更新后 |
+|--------|----------|--------|
+| MainWindowViewModel | INavigationManager | INavigationCoordinator |
+| LoginCoordinator | INavigationManager | INavigationCoordinator |
+| MasterDetailServices | IViewNavigationService | INavigationCoordinator |
+| 5个MasterDetail ViewModel | IMasterDetailServices | 无变化(透传) |
+| MenuManager | IRoleNavigationService | 已是INavigationCoordinator |
+
+**删除文件**:
+- `Shell/Services/NavigationManager.cs`
+- `Infrastructure/Services/ViewNavigationService.cs`
+- `Shell/Services/RoleNavigationService.cs`
+- `Contracts/Services/IViewNavigationService.cs`
+- `Contracts/Services/IRoleNavigationService.cs`
+
+**后果**:
+- 正面: 单一导航入口，职责清晰，代码量减少约300行，层级统一
+- 负面: 需更新所有消费者依赖，MasterDetailServices接口变更
+
 ## 实现策略
 
 ### 策略选择

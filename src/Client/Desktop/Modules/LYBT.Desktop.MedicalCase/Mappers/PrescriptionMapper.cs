@@ -5,7 +5,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using LYBT.Desktop.Herbs.Models.Items;
 using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Riok.Mapperly.Abstractions;
@@ -22,7 +21,7 @@ namespace LYBT.Desktop.MedicalCase.Mappers;
 /// - PrescriptionItem → PrescriptionInputDto (保存到API)
 ///
 /// OpenSpec: adopt-mapperly-unified-mapping - PrescriptionItem使用BindableBase，支持Mapperly源生成
-/// 注意：Items集合需要手动映射，因为HerbItemDto与PrescriptionItemDto类型不同。
+/// OpenSpec: unify-control-data-binding - Items集合统一使用PrescriptionItemDto，类型已一致。
 /// </remarks>
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class PrescriptionMapper
@@ -48,6 +47,8 @@ public partial class PrescriptionMapper
     [MapperIgnoreTarget(nameof(PrescriptionItem.IsValid))]
     [MapperIgnoreTarget(nameof(PrescriptionItem.TotalPrice))]
     [MapperIgnoreTarget(nameof(PrescriptionItem.DisplayText))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.ValidationEnabled))] // OpenSpec: simplify-workspace-architecture
+    [MapperIgnoreTarget(nameof(PrescriptionItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
     private partial PrescriptionItem ToItemCore(PrescriptionDetailDto dto);
 
     /// <summary>
@@ -65,12 +66,12 @@ public partial class PrescriptionMapper
             item.Usage = "水煎服，一日一剂，分早晚两次温服";
         }
 
-        // 手动映射Items集合：PrescriptionItemDto → HerbItemDto
+        // OpenSpec: unify-control-data-binding - 类型统一，直接添加PrescriptionItemDto
         if (dto.Items != null)
         {
-            foreach (var herbDto in dto.Items)
+            foreach (var prescriptionItem in dto.Items)
             {
-                item.Items.Add(HerbItemDto.FromPrescriptionItemDto(herbDto));
+                item.Items.Add(prescriptionItem);
             }
         }
 
@@ -94,6 +95,8 @@ public partial class PrescriptionMapper
     [MapperIgnoreSource(nameof(PrescriptionItem.HasItems))]
     [MapperIgnoreSource(nameof(PrescriptionItem.IsValid))]
     [MapperIgnoreSource(nameof(PrescriptionItem.DisplayText))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationEnabled))] // OpenSpec: simplify-workspace-architecture
+    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
     [MapperIgnoreTarget(nameof(PrescriptionDetailDto.Items))]
     private partial PrescriptionDetailDto ToDtoCore(PrescriptionItem item);
 
@@ -106,8 +109,8 @@ public partial class PrescriptionMapper
     {
         var dto = ToDtoCore(item);
 
-        // 手动映射Items集合：HerbItemDto → PrescriptionItemDto
-        dto.Items = item.Items?.Select(h => h.ToPrescriptionItemDto()).ToList() ?? new();
+        // OpenSpec: unify-control-data-binding - 类型统一，直接复制列表
+        dto.Items = item.Items?.ToList() ?? new();
 
         return dto;
     }
@@ -142,6 +145,8 @@ public partial class PrescriptionMapper
     [MapperIgnoreSource(nameof(PrescriptionItem.HasItems))]
     [MapperIgnoreSource(nameof(PrescriptionItem.IsValid))]
     [MapperIgnoreSource(nameof(PrescriptionItem.DisplayText))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationEnabled))] // OpenSpec: simplify-workspace-architecture
+    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
     [MapperIgnoreTarget(nameof(PrescriptionInputDto.Id))]
     [MapperIgnoreTarget(nameof(PrescriptionInputDto.NeedsPrescription))]
     [MapperIgnoreTarget(nameof(PrescriptionInputDto.TotalPrice))]
@@ -162,8 +167,17 @@ public partial class PrescriptionMapper
         dto.NeedsPrescription = item.HasItems;
         dto.TotalPrice = item.TotalPrice;
 
-        // 手动映射Items集合：HerbItemDto → PrescriptionItemInputDto
-        dto.Items = item.Items?.Select(h => h.ToPrescriptionItemInputDto()).ToList() ?? new();
+        // OpenSpec: unify-control-data-binding - 类型统一，直接转换为InputDto
+        dto.Items = item.Items?.Select(h => new PrescriptionItemInputDto
+        {
+            HerbId = h.HerbId,
+            HerbName = h.HerbName ?? string.Empty,
+            Dosage = h.Dosage,
+            Unit = h.Unit ?? "g",
+            UnitPrice = h.UnitPrice,
+            Subtotal = h.Dosage * h.UnitPrice,
+            DecocteMethod = h.DecocteMethod
+        }).ToList() ?? new();
 
         return dto;
     }

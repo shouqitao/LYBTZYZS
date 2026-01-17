@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Herbs.Controls.HerbItem;
 using LYBT.Desktop.Herbs.Models.Items;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Herbs.Controls.HerbList
 {
@@ -102,11 +103,12 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <summary>
         /// 从DTO列表加载数据
         /// </summary>
-        public void LoadFromDto(IEnumerable<HerbItemDto> items)
+        public void LoadFromDto(IEnumerable<PrescriptionItemDto> items)
         {
             Items.Clear();
 
-            foreach (var dto in items.Where(i => !i.IsEmpty))
+            // OpenSpec: unify-control-data-binding - PrescriptionItemDto无IsEmpty，用HerbId判断
+            foreach (var dto in items.Where(i => i.HerbId != Guid.Empty))
             {
                 var vm = CreateItemViewModel();
                 vm.LoadFromDto(dto);
@@ -120,7 +122,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <summary>
         /// 导出为DTO列表
         /// </summary>
-        public IReadOnlyList<HerbItemDto> ToDto()
+        public IReadOnlyList<PrescriptionItemDto> ToDto()
         {
             return Items
                 .Where(i => !i.IsEmpty)
@@ -135,10 +137,11 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <param name="herbs">要添加的药材列表</param>
         /// <param name="onDuplicateFound">发现重复时的回调(返回true则合并，false则跳过)</param>
         public async Task AddHerbsAsync(
-            IEnumerable<HerbItemDto> herbs,
-            Func<HerbItemDto, HerbItemDto, Task<bool>>? onDuplicateFound = null)
+            IEnumerable<PrescriptionItemDto> herbs,
+            Func<PrescriptionItemDto, PrescriptionItemDto, Task<bool>>? onDuplicateFound = null)
         {
-            foreach (var herb in herbs.Where(h => !h.IsEmpty))
+            // OpenSpec: unify-control-data-binding - PrescriptionItemDto无IsEmpty，用HerbId判断
+            foreach (var herb in herbs.Where(h => h.HerbId != Guid.Empty))
             {
                 var existingIndex = FindHerbIndex(herb.HerbId);
                 if (existingIndex >= 0)
@@ -171,9 +174,10 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <summary>
         /// 同步版本的批量添加(无重复确认)
         /// </summary>
-        public void AddHerbs(IEnumerable<HerbItemDto> herbs)
+        public void AddHerbs(IEnumerable<PrescriptionItemDto> herbs)
         {
-            foreach (var herb in herbs.Where(h => !h.IsEmpty))
+            // OpenSpec: unify-control-data-binding - PrescriptionItemDto无IsEmpty，用HerbId判断
+            foreach (var herb in herbs.Where(h => h.HerbId != Guid.Empty))
             {
                 var existingIndex = FindHerbIndex(herb.HerbId);
                 if (existingIndex >= 0)
@@ -302,7 +306,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <summary>
         /// 添加单个药材
         /// </summary>
-        private void AddItem(HerbItemDto dto)
+        private void AddItem(PrescriptionItemDto dto)
         {
             // 从药材库同步最新信息
             // OpenSpec: herb-editor-control-refactoring - 导入时使用药材库最新数据
@@ -432,7 +436,7 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         /// <summary>
         /// 触发ListChanged事件
         /// </summary>
-        private void OnListChanged(HerbListChangeType changeType, HerbItemDto? item = null, int index = -1)
+        private void OnListChanged(HerbListChangeType changeType, PrescriptionItemDto? item = null, int index = -1)
         {
             OnPropertyChanged(nameof(ValidItemCount));
             ClearAllCommand.NotifyCanExecuteChanged();

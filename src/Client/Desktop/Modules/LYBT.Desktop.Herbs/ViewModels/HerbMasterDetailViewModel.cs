@@ -25,7 +25,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
         // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，统一使用IHerbRepository
         private readonly IHerbRepository _herbRepository;
         private readonly IDialogService _prismDialogService;
-        private readonly ISessionManager? _sessionManager;
 
         #region 扩展属性
 
@@ -33,7 +32,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public bool IsNameEditable => IsNew;
 
         /// <summary>是否为管理员</summary>
-        public bool IsAdmin => _sessionManager?.HasPermission(UserRole.Admin) == true;
+        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
 
         /// <summary>状态选项</summary>
         public ObservableCollection<CommonStatus> StatusOptions { get; }
@@ -51,18 +50,20 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         #endregion
 
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
         public HerbMasterDetailViewModel(
-            IMasterDetailServices<HerbListDto, HerbDetailModel> services,
+            IViewModelServices viewModelServices,
+            IMasterDetailServices<HerbListDto, HerbDetailModel> masterDetailServices,
             IHerbRepository herbRepository,
-            IDialogService prismDialogService,
-            ILoggerFactory loggerFactory,
-            ISessionManager? sessionManager = null)
-            : base(services, loggerFactory)
+            IDialogService prismDialogService)
+            : base(viewModelServices, masterDetailServices)
         {
             // OpenSpec: simplify-desktop-data-layer - 移除IHerbService依赖
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
-            _sessionManager = sessionManager;
 
             PageTitle = "药材管理";
             StatusOptions = new ObservableCollection<CommonStatus>(Enum.GetValues<CommonStatus>());
@@ -78,10 +79,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             try
             {
-                await Services.Loading.ExecuteWithLoadingAsync(async () =>
+                await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
                     var pagedData = await _herbRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                    Services.Pagination.TotalCount = pagedData.TotalCount;
+                    MasterDetailServices.Pagination.TotalCount = pagedData.TotalCount;
 
                     Items.Clear();
                     foreach (var item in pagedData.Items ?? Enumerable.Empty<HerbListDto>())
@@ -93,7 +94,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "获取药材列表时发生异常");
-                Services.ErrorHandler.HandleException(ex, "获取药材列表");
+                MasterDetailServices.ErrorHandler.HandleException(ex, "获取药材列表");
             }
         }
 
@@ -104,7 +105,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             var result = await _herbRepository.GetByIdWithResultAsync(item.Id);
             if (!result.success || result.data == null)
             {
-                Services.ErrorHandler.SetError("LoadDetail", result.error ?? "加载药材详情失败");
+                MasterDetailServices.ErrorHandler.SetError("LoadDetail", result.error ?? "加载药材详情失败");
                 return;
             }
 
@@ -125,7 +126,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 Status = herb.Status
             };
 
-            Services.DetailEditor.LoadDetail(detail);
+            MasterDetailServices.DetailEditor.LoadDetail(detail);
             OnPropertyChanged(nameof(DetailTitle));
             OnPropertyChanged(nameof(IsNameEditable));
         }
@@ -144,25 +145,25 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             if (string.IsNullOrWhiteSpace(detail.Name))
             {
-                await Services.Dialog.ShowErrorAsync("药材名称不能为空", "验证失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("药材名称不能为空", "验证失败");
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(detail.Unit))
             {
-                await Services.Dialog.ShowErrorAsync("单位不能为空", "验证失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("单位不能为空", "验证失败");
                 return false;
             }
 
             if (detail.Price <= 0)
             {
-                await Services.Dialog.ShowErrorAsync("售价必须大于0", "验证失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("售价必须大于0", "验证失败");
                 return false;
             }
 
             if (detail.CostPrice.HasValue && detail.CostPrice <= 0)
             {
-                await Services.Dialog.ShowErrorAsync("成本价必须大于0", "验证失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("成本价必须大于0", "验证失败");
                 return false;
             }
 
@@ -188,7 +189,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             if (!result.success)
             {
-                Services.ErrorHandler.SetError("Save", result.error ?? "保存药材失败");
+                MasterDetailServices.ErrorHandler.SetError("Save", result.error ?? "保存药材失败");
                 return false;
             }
 
@@ -220,7 +221,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             var result = await _herbRepository.DeleteWithResultAsync(item.Id);
             if (!result.success)
             {
-                Services.ErrorHandler.SetError("Delete", result.error ?? "删除药材失败");
+                MasterDetailServices.ErrorHandler.SetError("Delete", result.error ?? "删除药材失败");
             }
             return result.success;
         }
@@ -239,25 +240,25 @@ namespace LYBT.Desktop.Herbs.ViewModels
             {
                 var herb = SelectedItem;
                 var newStatus = herb.Status == CommonStatus.Enabled ? "禁用" : "启用";
-                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认{newStatus}药材 [{herb.Name}] 吗？", "状态切换确认");
+                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认{newStatus}药材 [{herb.Name}] 吗？", "状态切换确认");
                 if (!confirmed) return;
 
                 var result = await _herbRepository.ToggleStatusAsync(herb.Id);
                 if (result != null)
                 {
                     Logger.LogInformation("药材状态已切换: {HerbName} -> {NewStatus}", herb.Name, result.Status);
-                    await Services.Dialog.ShowSuccessAsync($"药材 '{herb.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}", "操作成功");
+                    await MasterDetailServices.Dialog.ShowSuccessAsync($"药材 '{herb.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}", "操作成功");
                     await RefreshAsync();
                 }
                 else
                 {
-                    await Services.Dialog.ShowErrorAsync("切换药材状态失败", "操作失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync("切换药材状态失败", "操作失败");
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "切换药材状态失败");
-                await Services.Dialog.ShowErrorAsync("切换药材状态失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("切换药材状态失败", "操作失败");
             }
         }
 
@@ -275,7 +276,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             copy.PinYinCode = PinYinHelper.GetPinYinCode(copy.Name);
             copy.Status = CommonStatus.Enabled;
 
-            Services.DetailEditor.CreateNew(() => copy);
+            MasterDetailServices.DetailEditor.CreateNew(() => copy);
             OnPropertyChanged(nameof(DetailTitle));
 
             Logger.LogInformation("复制药材: {SourceName} -> {CopyName}", SelectedItem?.Name, copy.Name);
@@ -292,25 +293,25 @@ namespace LYBT.Desktop.Herbs.ViewModels
             try
             {
                 var herb = SelectedItem;
-                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认恢复药材 [{herb.Name}] 吗？", "恢复确认");
+                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认恢复药材 [{herb.Name}] 吗？", "恢复确认");
                 if (!confirmed) return;
 
                 var result = await _herbRepository.RestoreAsync(herb.Id);
                 if (result != null)
                 {
                     Logger.LogInformation("药材已恢复: {HerbName}", herb.Name);
-                    await Services.Dialog.ShowSuccessAsync($"药材 '{herb.Name}' 已恢复", "操作成功");
+                    await MasterDetailServices.Dialog.ShowSuccessAsync($"药材 '{herb.Name}' 已恢复", "操作成功");
                     await RefreshAsync();
                 }
                 else
                 {
-                    await Services.Dialog.ShowErrorAsync("恢复药材失败", "操作失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync("恢复药材失败", "操作失败");
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "恢复药材失败");
-                await Services.Dialog.ShowErrorAsync("恢复药材失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("恢复药材失败", "操作失败");
             }
         }
 
@@ -322,7 +323,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
-                await Services.Loading.ExecuteWithLoadingAsync(async () =>
+                await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
                     // TODO: 需要ICommonDialogService来选择文件
                     // var filePath = await _dialogService.ShowOpenFileDialogAsync(filter: "Excel文件|*.xlsx", title: "选择药材导入文件");
@@ -333,7 +334,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导入药材失败");
-                await Services.Dialog.ShowErrorAsync("导入药材失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("导入药材失败", "操作失败");
             }
         }
 
@@ -345,7 +346,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
-                await Services.Loading.ExecuteWithLoadingAsync(async () =>
+                await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
                     // TODO: 需要ICommonDialogService来保存文件
                     Logger.LogInformation("导出药材数据，关键词：{Keyword}", SearchText);
@@ -353,7 +354,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
                     if (bytes == null || bytes.Length == 0)
                     {
-                        await Services.Dialog.ShowErrorAsync("导出失败，请稍后重试", "导出药材");
+                        await MasterDetailServices.Dialog.ShowErrorAsync("导出失败，请稍后重试", "导出药材");
                         return;
                     }
 
@@ -364,7 +365,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导出药材失败");
-                await Services.Dialog.ShowErrorAsync("导出药材失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("导出药材失败", "操作失败");
             }
         }
 

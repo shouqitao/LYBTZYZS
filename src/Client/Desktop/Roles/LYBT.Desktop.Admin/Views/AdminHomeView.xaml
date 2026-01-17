@@ -5,60 +5,17 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <!-- OpenSpec: cleanup-ui-dead-code - 使用共享HomePageStyles -->
     <UserControl.Resources>
-        <!--  功能卡片样式 - 放大版  -->
-        <Style x:Key="LargeFunctionCardStyle" TargetType="Border">
-            <Setter Property="Width" Value="200" />
-            <Setter Property="Height" Value="180" />
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect
-                        BlurRadius="8"
-                        Opacity="0.1"
-                        ShadowDepth="2"
-                        Color="Black" />
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource HoverBrush}" />
-                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect
-                                BlurRadius="16"
-                                Opacity="0.2"
-                                ShadowDepth="4"
-                                Color="{StaticResource PrimaryColor}" />
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!--  卡片图标样式 - 放大  -->
-        <Style x:Key="LargeCardIconStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="56" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,0,0,16" />
-        </Style>
-
-        <!--  卡片标题样式  -->
-        <Style x:Key="CardTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/HomePageStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <!--  全屏居中布局  -->
-    <Grid Background="{StaticResource BackgroundBrush}">
+    <Grid Background="{StaticResource SurfaceBackgroundBrush}">
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
@@ -69,7 +26,7 @@
                 HorizontalAlignment="Center"
                 FontSize="28"
                 FontWeight="Bold"
-                Foreground="{StaticResource PrimaryBrush}"
+                Foreground="{StaticResource BrandPrimaryBrush}"
                 Text="系统管理工作台" />
             <TextBlock
                 Margin="0,0,0,40"
@@ -78,74 +35,74 @@
                 Foreground="{StaticResource TextSecondaryBrush}"
                 Text="凌隐宝堂中医诊所" />
 
-            <!--  6个功能卡片（3×2网格）- 居中  -->
+            <!--  6个功能卡片（3x2网格）- 居中  -->
             <UniformGrid
                 HorizontalAlignment="Center"
                 Columns="3"
                 Rows="2">
 
                 <!--  卡片1: 用户管理  -->
-                <Border Margin="12" Style="{StaticResource LargeFunctionCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Border.InputBindings>
                         <MouseBinding Command="{Binding NavigateToUserManagementCommand}" Gesture="LeftClick" />
                     </Border.InputBindings>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource LargeCardIconStyle}" Text="👤" />
+                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F464;" />
                         <TextBlock Style="{StaticResource CardTitleStyle}" Text="用户管理" />
                     </StackPanel>
                 </Border>
 
                 <!--  卡片2: 药材管理  -->
-                <Border Margin="12" Style="{StaticResource LargeFunctionCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Border.InputBindings>
                         <MouseBinding Command="{Binding NavigateToHerbManagementCommand}" Gesture="LeftClick" />
                     </Border.InputBindings>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource LargeCardIconStyle}" Text="🌿" />
+                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F33F;" />
                         <TextBlock Style="{StaticResource CardTitleStyle}" Text="药材管理" />
                     </StackPanel>
                 </Border>
 
                 <!--  卡片3: 患者管理  -->
-                <Border Margin="12" Style="{StaticResource LargeFunctionCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Border.InputBindings>
                         <MouseBinding Command="{Binding NavigateToPatientManagementCommand}" Gesture="LeftClick" />
                     </Border.InputBindings>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource LargeCardIconStyle}" Text="🏥" />
+                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F3E5;" />
                         <TextBlock Style="{StaticResource CardTitleStyle}" Text="患者管理" />
                     </StackPanel>
                 </Border>
 
                 <!--  卡片4: 验方管理  -->
-                <Border Margin="12" Style="{StaticResource LargeFunctionCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Border.InputBindings>
                         <MouseBinding Command="{Binding NavigateToFormulaManagementCommand}" Gesture="LeftClick" />
                     </Border.InputBindings>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource LargeCardIconStyle}" Text="📋" />
+                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4CB;" />
                         <TextBlock Style="{StaticResource CardTitleStyle}" Text="验方管理" />
                     </StackPanel>
                 </Border>
 
                 <!--  卡片5: 病历管理  -->
-                <Border Margin="12" Style="{StaticResource LargeFunctionCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Border.InputBindings>
                         <MouseBinding Command="{Binding NavigateToMedicalCaseManagementCommand}" Gesture="LeftClick" />
                     </Border.InputBindings>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource LargeCardIconStyle}" Text="📁" />
+                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4C1;" />
                         <TextBlock Style="{StaticResource CardTitleStyle}" Text="病历管理" />
                     </StackPanel>
                 </Border>
 
                 <!--  卡片6: 系统设置  -->
-                <Border Margin="12" Style="{StaticResource LargeFunctionCardStyle}">
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Border.InputBindings>
                         <MouseBinding Command="{Binding NavigateToSystemSettingsCommand}" Gesture="LeftClick" />
                     </Border.InputBindings>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource LargeCardIconStyle}" Text="⚙️" />
+                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x2699;" />
                         <TextBlock Style="{StaticResource CardTitleStyle}" Text="系统设置" />
                     </StackPanel>
                 </Border>

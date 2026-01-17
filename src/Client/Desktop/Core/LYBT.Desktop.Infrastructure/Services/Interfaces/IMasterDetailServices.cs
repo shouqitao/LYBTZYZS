@@ -1,3 +1,5 @@
+using LYBT.Desktop.Contracts.Services;
+
 namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
@@ -21,8 +23,8 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <summary>对话框管理服务</summary>
         IDialogManager Dialog { get; }
 
-        /// <summary>视图导航服务</summary>
-        IViewNavigationService Navigation { get; }
+        /// <summary>导航协调器 (OpenSpec: unify-navigation-architecture ADR-7)</summary>
+        INavigationCoordinator Navigation { get; }
 
         // === 便捷属性委托 ===
 

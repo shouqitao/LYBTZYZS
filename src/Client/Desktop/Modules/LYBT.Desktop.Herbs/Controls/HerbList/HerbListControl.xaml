@@ -14,7 +14,9 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="#E0E0E0"
+    <!-- x:Name="LayoutRoot" 用于内部DataContext绑定，避免覆盖UserControl的DataContext -->
+    <Border x:Name="LayoutRoot"
+            BorderBrush="#E0E0E0"
             BorderThickness="1"
             CornerRadius="4"
             Background="#FAFAFA"
@@ -40,9 +42,10 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
+                            <!-- OpenSpec: fix-elementname-binding-architecture - 使用具体类型避免UserControl歧义 -->
                             <herbItem:HerbItemControl
                                 AllHerbs="{Binding AllHerbs}"
-                                IsEditMode="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                                IsEditMode="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:HerbListControl}}, Path=IsEditMode}"
                                 ItemIndex="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
                                 ItemChanged="OnHerbItemChanged"
                                 DeleteRequested="OnHerbItemDeleteRequested"

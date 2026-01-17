@@ -30,7 +30,6 @@ namespace LYBT.Desktop.Formula.ViewModels
         private readonly IDialogService _prismDialogService;
         // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，改用IHerbRepository
         private readonly IHerbRepository _herbRepository;
-        private readonly ISessionManager? _sessionManager;
         private readonly FormulaDetailModelMapper _mapper = new();
 
         // 编辑模式下的药材列表
@@ -42,7 +41,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 扩展属性
 
         /// <summary>是否为管理员</summary>
-        public bool IsAdmin => _sessionManager?.HasPermission(UserRole.Admin) == true;
+        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
 
         /// <summary>编辑模式下的药材列表</summary>
         public ObservableCollection<FormulaHerbItemViewModel> EditHerbItems
@@ -53,12 +52,6 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         /// <summary>药材数量</summary>
         public int HerbCount => EditHerbItems?.Count(h => h.HerbId != Guid.Empty) ?? 0;
-
-        /// <summary>查看模式下的FormulaDto</summary>
-        public FormulaDetailDto? ViewFormulaDto => CurrentDetail != null ? _mapper.ToDto(CurrentDetail) : null;
-
-        /// <summary>编辑模式下的详情模型</summary>
-        public FormulaDetailModel? EditDetail => CurrentDetail;
 
         /// <summary>详情标题</summary>
         public string DetailTitle
@@ -73,40 +66,36 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #endregion
 
+        /// <summary>
+        /// 构造函数
+        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// </summary>
         public FormulaMasterDetailViewModel(
-            IMasterDetailServices<FormulaListDto, FormulaDetailModel> services,
+            IViewModelServices viewModelServices,
+            IMasterDetailServices<FormulaListDto, FormulaDetailModel> masterDetailServices,
             IFormulaRepository formulaRepository,
             IFormulaService formulaService,
             IDialogService prismDialogService,
             // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，改用IHerbRepository
-            IHerbRepository herbRepository,
-            ILoggerFactory loggerFactory,
-            ISessionManager? sessionManager = null)
-            : base(services, loggerFactory)
+            IHerbRepository herbRepository)
+            : base(viewModelServices, masterDetailServices)
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
-            // OpenSpec: standardize-api-architecture - 使用直接Mapper实例替代MappingService
-            _sessionManager = sessionManager;
 
             PageTitle = "验方管理";
 
             // 监听属性变化
+            // OpenSpec: unify-vm-view-binding-patterns - 移除ViewFormulaDto相关逻辑
             PropertyChanged += (s, e) =>
             {
                 switch (e.PropertyName)
                 {
-                    case nameof(CurrentDetail):
-                        OnPropertyChanged(nameof(ViewFormulaDto));
-                        OnPropertyChanged(nameof(EditDetail));
-                        break;
                     case nameof(IsEditMode):
                         if (IsEditMode)
                             PopulateEditHerbItems();
-                        else
-                            OnPropertyChanged(nameof(ViewFormulaDto));
                         OnPropertyChanged(nameof(DetailTitle));
                         break;
                 }
@@ -123,10 +112,10 @@ namespace LYBT.Desktop.Formula.ViewModels
 
             try
             {
-                await Services.Loading.ExecuteWithLoadingAsync(async () =>
+                await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
                     var pagedData = await _formulaRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                    Services.Pagination.TotalCount = pagedData.TotalCount;
+                    MasterDetailServices.Pagination.TotalCount = pagedData.TotalCount;
 
                     Items.Clear();
                     foreach (var item in pagedData.Items ?? Enumerable.Empty<FormulaListDto>())
@@ -138,7 +127,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "获取验方列表时发生异常");
-                Services.ErrorHandler.HandleException(ex, "获取验方列表");
+                MasterDetailServices.ErrorHandler.HandleException(ex, "获取验方列表");
             }
         }
 
@@ -150,19 +139,18 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var dto = await _formulaRepository.GetByIdAsync(item.Id);
                 if (dto == null)
                 {
-                    await Services.Dialog.ShowErrorAsync($"验方 '{item.Name}' 不存在或已被删除", "加载失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync($"验方 '{item.Name}' 不存在或已被删除", "加载失败");
                     return;
                 }
 
                 var detail = _mapper.ToItem(dto);
-                Services.DetailEditor.LoadDetail(detail);
+                MasterDetailServices.DetailEditor.LoadDetail(detail);
                 OnPropertyChanged(nameof(DetailTitle));
-                OnPropertyChanged(nameof(ViewFormulaDto));
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载验方详情失败: {FormulaId}", item.Id);
-                Services.ErrorHandler.HandleException(ex, "加载验方详情");
+                MasterDetailServices.ErrorHandler.HandleException(ex, "加载验方详情");
             }
         }
 
@@ -179,7 +167,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             if (string.IsNullOrWhiteSpace(detail.Name))
             {
-                await Services.Dialog.ShowErrorAsync("验方名称不能为空", "验证失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("验方名称不能为空", "验证失败");
                 return false;
             }
 
@@ -225,7 +213,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 Logger.LogError(ex, "保存验方失败: {FormulaName}", detail.Name);
                 var errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
                     IsNew ? "创建验方" : "更新验方", ex);
-                Services.ErrorHandler.SetError("Save", errorMessage);
+                MasterDetailServices.ErrorHandler.SetError("Save", errorMessage);
                 return false;
             }
         }
@@ -237,7 +225,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             var success = await _formulaRepository.DeleteAsync(item.Id);
             if (!success)
             {
-                Services.ErrorHandler.SetError("Delete", $"删除验方 '{item.Name}' 失败");
+                MasterDetailServices.ErrorHandler.SetError("Delete", $"删除验方 '{item.Name}' 失败");
             }
             else
             {
@@ -294,25 +282,25 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 var formula = SelectedItem;
                 var newStatus = formula.Status == CommonStatus.Enabled ? "禁用" : "启用";
-                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认{newStatus}验方 [{formula.Name}] 吗？", "状态切换确认");
+                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认{newStatus}验方 [{formula.Name}] 吗？", "状态切换确认");
                 if (!confirmed) return;
 
                 var result = await _formulaRepository.ToggleStatusAsync(formula.Id);
                 if (result != null)
                 {
                     Logger.LogInformation("验方状态已切换: {FormulaName} -> {NewStatus}", formula.Name, result.Status);
-                    await Services.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}", "操作成功");
+                    await MasterDetailServices.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}", "操作成功");
                     await RefreshAsync();
                 }
                 else
                 {
-                    await Services.Dialog.ShowErrorAsync("切换验方状态失败", "操作失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync("切换验方状态失败", "操作失败");
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "切换验方状态失败");
-                await Services.Dialog.ShowErrorAsync("切换验方状态失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("切换验方状态失败", "操作失败");
             }
         }
 
@@ -326,25 +314,25 @@ namespace LYBT.Desktop.Formula.ViewModels
 
             try
             {
-                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认复制验方 [{SelectedItem.Name}] 吗？", "复制确认");
+                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认复制验方 [{SelectedItem.Name}] 吗？", "复制确认");
                 if (!confirmed) return;
 
                 var result = await _formulaRepository.CloneFormulaAsync(SelectedItem.Id);
                 if (result != null)
                 {
                     Logger.LogInformation("验方复制成功: {SourceName} -> {NewName}", SelectedItem.Name, result.Name);
-                    await Services.Dialog.ShowSuccessAsync($"验方已复制为 '{result.Name}'", "操作成功");
+                    await MasterDetailServices.Dialog.ShowSuccessAsync($"验方已复制为 '{result.Name}'", "操作成功");
                     await RefreshAsync();
                 }
                 else
                 {
-                    await Services.Dialog.ShowErrorAsync("复制验方失败", "操作失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync("复制验方失败", "操作失败");
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "复制验方失败");
-                await Services.Dialog.ShowErrorAsync("复制验方失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("复制验方失败", "操作失败");
             }
         }
 
@@ -359,25 +347,25 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 var formula = SelectedItem;
-                var confirmed = await Services.Dialog.ShowConfirmAsync($"确认恢复验方 [{formula.Name}] 吗？", "恢复确认");
+                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认恢复验方 [{formula.Name}] 吗？", "恢复确认");
                 if (!confirmed) return;
 
                 var result = await _formulaRepository.RestoreAsync(formula.Id);
                 if (result != null)
                 {
                     Logger.LogInformation("验方已恢复: {FormulaName}", formula.Name);
-                    await Services.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已恢复", "操作成功");
+                    await MasterDetailServices.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已恢复", "操作成功");
                     await RefreshAsync();
                 }
                 else
                 {
-                    await Services.Dialog.ShowErrorAsync("恢复验方失败", "操作失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync("恢复验方失败", "操作失败");
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "恢复验方失败");
-                await Services.Dialog.ShowErrorAsync("恢复验方失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("恢复验方失败", "操作失败");
             }
         }
 

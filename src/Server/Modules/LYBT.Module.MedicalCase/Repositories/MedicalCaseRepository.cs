@@ -311,7 +311,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             // Epic #2210 Phase 3: 按医生ID过滤，实现多医生数据隔离
             // Bug Fix: 包含Draft和Active两种未完成状态，暂存后的医案应显示在待诊队列
             // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
-            // OpenSpec: redesign-pending-queue - 根据CaseStatus动态判定PendingCaseType
+            // OpenSpec: unify-case-status - 直接使用CaseStatus，已移除PendingCaseType枚举
             var query = _dbSet
                 .Where(m => !m.IsDeleted
                     && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active)
@@ -323,28 +323,37 @@ namespace LYBT.Module.MedicalCases.Repositories
                 query = query.Where(m => m.PatientId == patientId.Value);
             }
 
-            var result = await query
+            // Bug Fix: MaskPhoneNumber无法在EF Core查询中翻译，先查询原始数据再在内存中处理
+            var rawData = await query
                 .Join(
                     _context.Set<Patient>(),
                     m => m.PatientId,
                     p => p.Id,
                     (m, p) => new { MedicalCase = m, Patient = p })
                 .OrderBy(r => r.MedicalCase.CreatedAt) // 按创建时间升序
-                .Select(r => new PendingMedicalCaseDto
+                .Select(r => new
                 {
                     PatientId = r.Patient.Id,
                     PatientName = r.Patient.Name,
                     PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
-                    PhoneMasked = MaskPhoneNumber(r.Patient.PhoneNumber ?? string.Empty),
-                    // OpenSpec: redesign-pending-queue - 根据医案状态判定队列类型
-                    // Active → InProgress（正在看诊）, Draft → Suspended（暂存草稿）
-                    Type = r.MedicalCase.CaseStatus == MedicalCaseStatus.Active
-                        ? PendingCaseType.InProgress
-                        : PendingCaseType.Suspended,
+                    // OpenSpec: unify-case-status - 直接使用MedicalCaseStatus，移除PendingCaseType映射
+                    CaseStatus = r.MedicalCase.CaseStatus,
                     MedicalCaseId = r.MedicalCase.Id,
                     CreatedAt = r.MedicalCase.CreatedAt
                 })
                 .ToListAsync();
+
+            // 在内存中应用电话脱敏并转换为DTO
+            var result = rawData.Select(r => new PendingMedicalCaseDto
+            {
+                PatientId = r.PatientId,
+                PatientName = r.PatientName,
+                PhoneNumber = r.PhoneNumber,
+                PhoneMasked = MaskPhoneNumber(r.PhoneNumber),
+                CaseStatus = r.CaseStatus,
+                MedicalCaseId = r.MedicalCaseId,
+                CreatedAt = r.CreatedAt
+            }).ToList();
 
             // OpenSpec: redesign-pending-queue - 添加队列序号（基于查询结果顺序）
             for (int i = 0; i < result.Count; i++)
@@ -354,7 +363,7 @@ namespace LYBT.Module.MedicalCases.Repositories
 
             _logger?.LogInformation("获取待看诊列表（DoctorId: {DoctorId}），共 {Count} 条记录",
                 doctorId, result.Count);
-            return result ?? new List<PendingMedicalCaseDto>();
+            return result;
         }
 
         /// <summary>
@@ -365,8 +374,9 @@ namespace LYBT.Module.MedicalCases.Repositories
         public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
         {
             // Bug Fix: 包含Draft和Active两种未完成状态
-            // OpenSpec: redesign-pending-queue - 根据CaseStatus动态判定PendingCaseType
-            var result = await _dbSet
+            // OpenSpec: unify-case-status - 直接使用CaseStatus，已移除PendingCaseType枚举
+            // Bug Fix: MaskPhoneNumber无法在EF Core查询中翻译，先查询原始数据再在内存中处理
+            var rawData = await _dbSet
                 .Where(m => !m.IsDeleted && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active))
                 .Join(
                     _context.Set<Patient>(),
@@ -374,20 +384,29 @@ namespace LYBT.Module.MedicalCases.Repositories
                     p => p.Id,
                     (m, p) => new { MedicalCase = m, Patient = p })
                 .OrderBy(r => r.MedicalCase.CreatedAt) // 按创建时间升序
-                .Select(r => new PendingMedicalCaseDto
+                .Select(r => new
                 {
                     PatientId = r.Patient.Id,
                     PatientName = r.Patient.Name,
                     PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
-                    PhoneMasked = MaskPhoneNumber(r.Patient.PhoneNumber ?? string.Empty),
-                    // OpenSpec: redesign-pending-queue - 根据医案状态判定队列类型
-                    Type = r.MedicalCase.CaseStatus == MedicalCaseStatus.Active
-                        ? PendingCaseType.InProgress
-                        : PendingCaseType.Suspended,
+                    // OpenSpec: unify-case-status - 直接使用MedicalCaseStatus，移除PendingCaseType映射
+                    CaseStatus = r.MedicalCase.CaseStatus,
                     MedicalCaseId = r.MedicalCase.Id,
                     CreatedAt = r.MedicalCase.CreatedAt
                 })
                 .ToListAsync();
+
+            // 在内存中应用电话脱敏并转换为DTO
+            var result = rawData.Select(r => new PendingMedicalCaseDto
+            {
+                PatientId = r.PatientId,
+                PatientName = r.PatientName,
+                PhoneNumber = r.PhoneNumber,
+                PhoneMasked = MaskPhoneNumber(r.PhoneNumber),
+                CaseStatus = r.CaseStatus,
+                MedicalCaseId = r.MedicalCaseId,
+                CreatedAt = r.CreatedAt
+            }).ToList();
 
             // OpenSpec: redesign-pending-queue - 添加队列序号
             for (int i = 0; i < result.Count; i++)
@@ -396,7 +415,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             }
 
             _logger?.LogInformation("获取所有待看诊列表（管理员），共 {Count} 条记录", result.Count);
-            return result ?? new List<PendingMedicalCaseDto>();
+            return result;
         }
 
         /// <summary>

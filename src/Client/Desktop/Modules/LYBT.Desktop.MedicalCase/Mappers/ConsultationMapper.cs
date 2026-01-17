@@ -41,6 +41,7 @@ public partial class ConsultationMapper
     [MapperIgnoreTarget(nameof(ConsultationItem.IsExpanded))]
     [MapperIgnoreTarget(nameof(ConsultationItem.IsDiagnosisComplete))]
     [MapperIgnoreTarget(nameof(ConsultationItem.DisplayText))]
+    [MapperIgnoreTarget(nameof(ConsultationItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture - IValidatable实现
     private partial ConsultationItem ToItemCore(ConsultationDetailDto dto);
 
     /// <summary>
@@ -81,6 +82,7 @@ public partial class ConsultationMapper
     [MapperIgnoreSource(nameof(ConsultationItem.IsExpanded))]
     [MapperIgnoreSource(nameof(ConsultationItem.IsDiagnosisComplete))]
     [MapperIgnoreSource(nameof(ConsultationItem.DisplayText))]
+    [MapperIgnoreSource(nameof(ConsultationItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
     [MapperIgnoreTarget(nameof(ConsultationDetailDto.CreatedBy))]
     private partial ConsultationDetailDto ToDtoCore(ConsultationItem item);
 
@@ -116,6 +118,7 @@ public partial class ConsultationMapper
     [MapperIgnoreSource(nameof(ConsultationItem.IsExpanded))]
     [MapperIgnoreSource(nameof(ConsultationItem.IsDiagnosisComplete))]
     [MapperIgnoreSource(nameof(ConsultationItem.DisplayText))]
+    [MapperIgnoreSource(nameof(ConsultationItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
     public partial ConsultationInputDto ToInputDto(ConsultationItem item);
 
     #endregion

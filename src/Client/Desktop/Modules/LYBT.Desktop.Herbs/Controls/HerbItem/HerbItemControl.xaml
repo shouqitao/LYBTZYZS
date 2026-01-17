@@ -21,7 +21,9 @@
     </UserControl.Resources>
 
     <!-- 单行布局: 药材名 + 剂量 + 煎法 (右键菜单删除) -->
-    <Border BorderBrush="#E0E0E0"
+    <!-- x:Name="LayoutRoot" 用于内部DataContext绑定，避免覆盖UserControl的DataContext -->
+    <Border x:Name="LayoutRoot"
+            BorderBrush="#E0E0E0"
             BorderThickness="1"
             CornerRadius="4"
             Background="White"
@@ -107,7 +109,7 @@
                         BorderBrush="#E0E0E0"
                         BorderThickness="1"
                         MaxHeight="200"
-                        MinWidth="{Binding ActualWidth, ElementName=HerbNameTextBox}">
+                        MinWidth="{Binding ActualWidth, Source={x:Reference HerbNameTextBox}}">
                     <ListBox x:Name="SuggestionsListBox"
                              ItemsSource="{Binding FilteredHerbs}"
                              DisplayMemberPath="Name"

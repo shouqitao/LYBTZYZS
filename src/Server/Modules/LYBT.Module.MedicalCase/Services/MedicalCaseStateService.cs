@@ -280,13 +280,8 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new InvalidOperationException("医案已经是取消状态");
             }
 
-            // 检查是否需要审计理由（非当天本人操作时）
-            var requiresAuditReason = !MedicalCaseRules.IsSameDayByCreator(medicalCase, operatorId);
-            if (requiresAuditReason && string.IsNullOrWhiteSpace(reason))
-            {
-                _logger.LogWarning("[SVC] MedicalCase.Cancel → ReasonRequired - MedicalCaseId={MedicalCaseId}", id);
-                throw new InvalidOperationException("取消非当天本人创建的医案需要提供原因");
-            }
+            // Draft/Active 状态不受跨日限制，取消时不强制要求原因
+            // 原因仅用于审计记录（可选）
 
             // 设置状态为Cancelled
             medicalCase.CaseStatus = MedicalCaseStatus.Cancelled;

@@ -17,9 +17,9 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
 
         builder.ToTable("MedicalCases");
 
-        // OpenSpec: simplify-medicalcase-dataflow - 实体字段UserId映射到数据库列DoctorId
-        // 保持数据库列名不变，避免数据迁移风险
-        builder.Property(m => m.UserId).HasColumnName("DoctorId");
+        // OpenSpec: fix-doctorid-to-userid - 统一使用UserId列名
+        // 移除旧的DoctorId映射，数据库列名将与属性名一致
+        // 需要运行迁移将DoctorId列重命名为UserId
 
         // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
         // Epic #2175 BF-002: NeedsPrescription字段配置（nullable支持三态）

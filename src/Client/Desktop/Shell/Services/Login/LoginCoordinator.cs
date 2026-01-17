@@ -27,7 +27,7 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly ITokenStorageService _tokenStorageService;
     private readonly ISessionLifecycleManager _sessionLifecycleManager;
     private readonly IModuleLoadingService _moduleLoadingService;
-    private readonly IRoleNavigationService _roleNavigationService;
+    private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ICredentialVault? _credentialVault;
     private readonly IUsernameStorageService? _usernameStorage;
     private readonly IAuthenticationStateMachine _stateMachine;
@@ -45,7 +45,7 @@ public class LoginCoordinator : ILoginCoordinator
         ITokenStorageService tokenStorageService,
         ISessionLifecycleManager sessionLifecycleManager,
         IModuleLoadingService moduleLoadingService,
-        IRoleNavigationService roleNavigationService,
+        INavigationCoordinator navigationCoordinator,
         IAuthenticationStateMachine stateMachine,
         ICredentialVault? credentialVault = null,
         IUsernameStorageService? usernameStorage = null)
@@ -55,7 +55,7 @@ public class LoginCoordinator : ILoginCoordinator
         _tokenStorageService = tokenStorageService ?? throw new ArgumentNullException(nameof(tokenStorageService));
         _sessionLifecycleManager = sessionLifecycleManager ?? throw new ArgumentNullException(nameof(sessionLifecycleManager));
         _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
-        _roleNavigationService = roleNavigationService ?? throw new ArgumentNullException(nameof(roleNavigationService));
+        _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         _credentialVault = credentialVault;
         _usernameStorage = usernameStorage;
@@ -451,22 +451,24 @@ public class LoginCoordinator : ILoginCoordinator
 
     /// <summary>
     /// 导航到角色首页
+    /// OpenSpec: unify-navigation-architecture (ADR-7) - 使用统一NavigationCoordinator
     /// </summary>
     private Task NavigateToRoleHomeAsync(UserDetailDto user)
     {
-        var roleName = user.Role.ToString();
+        var role = user.Role;
 
         // 在单元测试中，Application.Current 为 null，直接调用导航服务
         if (Application.Current?.Dispatcher is null)
         {
             try
             {
-                _roleNavigationService.NavigateToRoleHome(roleName);
-                _logger.LogDebug("角色导航完成 [角色: {Role}]", roleName);
+                // 直接使用用户角色导航，避免依赖SessionManager延迟加载
+                _navigationCoordinator.NavigateToHome(role);
+                _logger.LogDebug("角色导航完成 [角色: {Role}]", role);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "角色导航失败 [角色: {Role}]", roleName);
+                _logger.LogError(ex, "角色导航失败 [角色: {Role}]", role);
                 throw;
             }
             return Task.CompletedTask;
@@ -476,12 +478,13 @@ public class LoginCoordinator : ILoginCoordinator
         {
             try
             {
-                _roleNavigationService.NavigateToRoleHome(roleName);
-                _logger.LogDebug("角色导航完成 [角色: {Role}]", roleName);
+                // 直接使用用户角色导航，避免依赖SessionManager延迟加载
+                _navigationCoordinator.NavigateToHome(role);
+                _logger.LogDebug("角色导航完成 [角色: {Role}]", role);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "角色导航失败 [角色: {Role}]", roleName);
+                _logger.LogError(ex, "角色导航失败 [角色: {Role}]", role);
                 throw;
             }
         }).Task;

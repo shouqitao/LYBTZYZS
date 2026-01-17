@@ -6,20 +6,19 @@
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:local="clr-namespace:LYBT.Desktop.Patients.Controls"
              mc:Ignorable="d"
-             x:Name="Root"
              d:DesignHeight="600" d:DesignWidth="1000">
 
     <!-- 患者选择控件
-         OpenSpec: refactor-clinical-workflow
-         可复用的患者选择控件，使用Master-Detail布局
-         左侧：患者列表（工具栏+搜索+列表）
-         右侧：患者详情（使用PatientViewControl）
+         OpenSpec: fix-elementname-binding-architecture
 
-         修复: 使用ElementName=Root替代RelativeSource，
-               确保绑定在任何视觉树场景下都能正确工作 -->
+         架构优化：移除ElementName=Root绑定，改用DataContext透传模式
+         预期 DataContext: PatientSelectionViewModel
+
+         左侧：患者列表（工具栏+搜索+列表）
+         右侧：患者详情（使用PatientViewControl）-->
 
     <controls:MasterDetailLayout
-        HasSelection="{Binding HasSelection, ElementName=Root}"
+        HasSelection="{Binding HasSelection}"
         MasterWidth="2*"
         DetailWidth="3*">
 
@@ -34,19 +33,19 @@
 
                 <!-- 工具栏 -->
                 <controls:DataGridToolbar Grid.Row="0"
-                    CreateCommand="{Binding CreateNewCommand, ElementName=Root}"
-                    RefreshCommand="{Binding RefreshCommand, ElementName=Root}"/>
+                    CreateCommand="{Binding NewPatientCommand}"
+                    RefreshCommand="{Binding RefreshCommand}"/>
 
                 <!-- 搜索框 -->
                 <controls:SearchBox Grid.Row="1"
-                    SearchText="{Binding SearchText, Mode=TwoWay, ElementName=Root}"
-                    SearchCommand="{Binding SearchCommand, ElementName=Root}"
+                    SearchText="{Binding SearchKeyword, Mode=TwoWay}"
+                    SearchCommand="{Binding SearchCommand}"
                     Placeholder="搜索患者姓名或拼音码..."/>
 
                 <!-- 患者列表 -->
                 <DataGrid Grid.Row="2"
-                    ItemsSource="{Binding Patients, ElementName=Root}"
-                    SelectedItem="{Binding SelectedPatient, ElementName=Root, Mode=TwoWay}"
+                    ItemsSource="{Binding Patients}"
+                    SelectedItem="{Binding SelectedPatient, Mode=TwoWay}"
                     AutoGenerateColumns="False"
                     IsReadOnly="True"
                     SelectionMode="Single"
@@ -74,29 +73,29 @@
         <!-- Detail: 患者详情区域 -->
         <controls:MasterDetailLayout.DetailContent>
             <local:PatientViewControl
-                PatientName="{Binding PatientDetail.Name, ElementName=Root}"
-                PinYinCode="{Binding PatientDetail.PinYinCode, ElementName=Root}"
-                Gender="{Binding PatientDetail.Gender, ElementName=Root}"
-                BirthDate="{Binding PatientDetail.BirthDate, ElementName=Root}"
-                Age="{Binding PatientDetail.Age, ElementName=Root}"
-                IdNumber="{Binding PatientDetail.IdNumber, ElementName=Root}"
-                IdType="{Binding PatientDetail.IdType, ElementName=Root}"
-                MaritalStatus="{Binding PatientDetail.MaritalStatus, ElementName=Root}"
-                BloodType="{Binding PatientDetail.BloodType, ElementName=Root}"
-                PhoneNumber="{Binding PatientDetail.PhoneNumber, ElementName=Root}"
-                Address="{Binding PatientDetail.Address, ElementName=Root}"
-                EmergencyContactName="{Binding PatientDetail.EmergencyContactName, ElementName=Root}"
-                EmergencyContactPhone="{Binding PatientDetail.EmergencyContactPhone, ElementName=Root}"
-                EmergencyContactRelation="{Binding PatientDetail.EmergencyContactRelation, ElementName=Root}"
-                AllergyHistory="{Binding PatientDetail.AllergyHistory, ElementName=Root}"
-                MedicalHistory="{Binding PatientDetail.MedicalHistory, ElementName=Root}"
-                LastVisitTime="{Binding PatientDetail.LastVisitTime, ElementName=Root}"
-                VisitCount="{Binding PatientDetail.VisitCount, ElementName=Root}"
-                Status="{Binding PatientDetail.Status, ElementName=Root}"
+                PatientName="{Binding PatientDetail.Name}"
+                PinYinCode="{Binding PatientDetail.PinYinCode}"
+                Gender="{Binding PatientDetail.Gender}"
+                BirthDate="{Binding PatientDetail.BirthDate}"
+                Age="{Binding PatientDetail.Age}"
+                IdNumber="{Binding PatientDetail.IdNumber}"
+                IdType="{Binding PatientDetail.IdType}"
+                MaritalStatus="{Binding PatientDetail.MaritalStatus}"
+                BloodType="{Binding PatientDetail.BloodType}"
+                PhoneNumber="{Binding PatientDetail.PhoneNumber}"
+                Address="{Binding PatientDetail.Address}"
+                EmergencyContactName="{Binding PatientDetail.EmergencyContactName}"
+                EmergencyContactPhone="{Binding PatientDetail.EmergencyContactPhone}"
+                EmergencyContactRelation="{Binding PatientDetail.EmergencyContactRelation}"
+                AllergyHistory="{Binding PatientDetail.AllergyHistory}"
+                MedicalHistory="{Binding PatientDetail.MedicalHistory}"
+                LastVisitTime="{Binding PatientDetail.LastVisitTime}"
+                VisitCount="{Binding PatientDetail.VisitCount}"
+                Status="{Binding PatientDetail.Status}"
                 ShowStatus="False"
-                DisableReason="{Binding PatientDetail.DisableReason, ElementName=Root}"
-                CreatedAt="{Binding PatientDetail.CreatedAt, ElementName=Root}"
-                UpdatedAt="{Binding PatientDetail.UpdatedAt, ElementName=Root}"/>
+                DisableReason="{Binding PatientDetail.DisableReason}"
+                CreatedAt="{Binding PatientDetail.CreatedAt}"
+                UpdatedAt="{Binding PatientDetail.UpdatedAt}"/>
         </controls:MasterDetailLayout.DetailContent>
 
         <!-- Empty: 空状态 -->
@@ -105,7 +104,7 @@
                 Title="请选择患者"
                 Subtitle="从左侧列表选择患者，或点击新建创建新患者"
                 ActionText="新建患者"
-                ActionCommand="{Binding CreateNewCommand, ElementName=Root}"/>
+                ActionCommand="{Binding NewPatientCommand}"/>
         </controls:MasterDetailLayout.EmptyContent>
 
     </controls:MasterDetailLayout>

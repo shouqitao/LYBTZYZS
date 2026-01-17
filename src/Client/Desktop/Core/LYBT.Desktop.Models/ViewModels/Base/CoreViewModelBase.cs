@@ -1,6 +1,7 @@
 using System.Reactive.Disposables;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -9,10 +10,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
     /// 核心ViewModel基类 - 提供最小必要功能
-    /// OpenSpec: migrate-to-communitytoolkit-mvvm
+    /// OpenSpec: enhance-viewmodel-architecture
     ///
     /// 设计原则:
-    /// - 最小依赖: 仅需ILoggerFactory
+    /// - 服务聚合: 使用IViewModelServices简化构造函数
     /// - 源生成器优先: 使用[ObservableProperty]
     /// - 单一职责: 仅提供基础状态管理
     /// </summary>
@@ -27,6 +28,12 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         #endregion
 
         #region 受保护属性
+
+        /// <summary>
+        /// ViewModel服务聚合
+        /// OpenSpec: enhance-viewmodel-architecture
+        /// </summary>
+        protected IViewModelServices Services { get; }
 
         /// <summary>
         /// 日志记录器
@@ -91,11 +98,17 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         #region 构造函数
 
-        protected CoreViewModelBase(ILoggerFactory loggerFactory, IEventAggregator eventAggregator)
+        /// <summary>
+        /// 构造函数 - 使用IViewModelServices聚合服务
+        /// OpenSpec: enhance-viewmodel-architecture
+        /// </summary>
+        /// <param name="services">ViewModel服务聚合</param>
+        protected CoreViewModelBase(IViewModelServices services)
         {
-            LoggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-            EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
-            Logger = loggerFactory.CreateLogger(GetType());
+            Services = services ?? throw new ArgumentNullException(nameof(services));
+            LoggerFactory = services.LoggerFactory;
+            EventAggregator = services.EventAggregator;
+            Logger = services.LoggerFactory.CreateLogger(GetType());
         }
 
         #endregion
