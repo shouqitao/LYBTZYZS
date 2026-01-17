@@ -1,10 +1,8 @@
 using System.Collections;
-using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.MedicalCase.Controls;
@@ -87,70 +85,47 @@ public partial class MedicalCaseEditControl : UserControl
 
     #region 诊断信息（可编辑）
 
-    public static readonly DependencyProperty PresentIllnessProperty =
-        DependencyProperty.Register(nameof(PresentIllness), typeof(string), typeof(MedicalCaseEditControl),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    /// <summary>
+    /// 诊断数据对象 - 对象化绑定
+    /// OpenSpec: unify-control-data-binding
+    /// OpenSpec: unify-medicalcase-item-editmodel - 统一使用 ConsultationItem
+    /// 替代原有 PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis 四个分散属性
+    /// 类型为object以支持duck typing绑定
+    /// </summary>
+    public static readonly DependencyProperty ConsultationProperty =
+        DependencyProperty.Register(nameof(Consultation), typeof(object), typeof(MedicalCaseEditControl),
+            new PropertyMetadata(null));
 
-    public string? PresentIllness
+    public object? Consultation
     {
-        get => (string?)GetValue(PresentIllnessProperty);
-        set => SetValue(PresentIllnessProperty, value);
-    }
-
-    public static readonly DependencyProperty TongueDiagnosisProperty =
-        DependencyProperty.Register(nameof(TongueDiagnosis), typeof(string), typeof(MedicalCaseEditControl),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    public string? TongueDiagnosis
-    {
-        get => (string?)GetValue(TongueDiagnosisProperty);
-        set => SetValue(TongueDiagnosisProperty, value);
-    }
-
-    public static readonly DependencyProperty PulseDiagnosisProperty =
-        DependencyProperty.Register(nameof(PulseDiagnosis), typeof(string), typeof(MedicalCaseEditControl),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    public string? PulseDiagnosis
-    {
-        get => (string?)GetValue(PulseDiagnosisProperty);
-        set => SetValue(PulseDiagnosisProperty, value);
-    }
-
-    public static readonly DependencyProperty TcmDiagnosisProperty =
-        DependencyProperty.Register(nameof(TcmDiagnosis), typeof(string), typeof(MedicalCaseEditControl),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    public string? TcmDiagnosis
-    {
-        get => (string?)GetValue(TcmDiagnosisProperty);
-        set => SetValue(TcmDiagnosisProperty, value);
+        get => GetValue(ConsultationProperty);
+        set => SetValue(ConsultationProperty, value);
     }
 
     #endregion
 
     #region 处方信息（可编辑）
 
-    public static readonly DependencyProperty HerbCountProperty =
-        DependencyProperty.Register(nameof(HerbCount), typeof(int), typeof(MedicalCaseEditControl),
-            new PropertyMetadata(0));
+    /// <summary>
+    /// 处方数据对象 - 对象化绑定
+    /// OpenSpec: unify-control-data-binding
+    /// OpenSpec: unify-medicalcase-item-editmodel - 统一使用 PrescriptionItem
+    /// 替代原有 HerbCount, DoseCount, HerbItems, Usage, TotalPrice 等分散属性
+    /// 类型为object以支持duck typing绑定
+    /// </summary>
+    public static readonly DependencyProperty PrescriptionProperty =
+        DependencyProperty.Register(nameof(Prescription), typeof(object), typeof(MedicalCaseEditControl),
+            new PropertyMetadata(null));
 
-    public int HerbCount
+    public object? Prescription
     {
-        get => (int)GetValue(HerbCountProperty);
-        set => SetValue(HerbCountProperty, value);
+        get => GetValue(PrescriptionProperty);
+        set => SetValue(PrescriptionProperty, value);
     }
 
-    public static readonly DependencyProperty DoseCountProperty =
-        DependencyProperty.Register(nameof(DoseCount), typeof(int?), typeof(MedicalCaseEditControl),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    public int? DoseCount
-    {
-        get => (int?)GetValue(DoseCountProperty);
-        set => SetValue(DoseCountProperty, value);
-    }
-
+    /// <summary>
+    /// 方源 - 处方来源描述
+    /// </summary>
     public static readonly DependencyProperty FormulaSourceProperty =
         DependencyProperty.Register(nameof(FormulaSource), typeof(string), typeof(MedicalCaseEditControl));
 
@@ -174,36 +149,6 @@ public partial class MedicalCaseEditControl : UserControl
     }
 
     /// <summary>
-    /// 药材列表 - 用于HerbListControl编辑(双向绑定)
-    /// </summary>
-    public static readonly DependencyProperty HerbItemsProperty =
-        DependencyProperty.Register(nameof(HerbItems), typeof(IEnumerable), typeof(MedicalCaseEditControl),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    public IEnumerable? HerbItems
-    {
-        get => (IEnumerable?)GetValue(HerbItemsProperty);
-        set => SetValue(HerbItemsProperty, value);
-    }
-
-    #endregion
-
-    #region Compact模式专用属性
-
-    /// <summary>
-    /// 用法 - Compact模式编辑
-    /// </summary>
-    public static readonly DependencyProperty UsageProperty =
-        DependencyProperty.Register(nameof(Usage), typeof(string), typeof(MedicalCaseEditControl),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    public string? Usage
-    {
-        get => (string?)GetValue(UsageProperty);
-        set => SetValue(UsageProperty, value);
-    }
-
-    /// <summary>
     /// 用法选项列表
     /// </summary>
     public static readonly DependencyProperty UsageOptionsProperty =
@@ -213,19 +158,6 @@ public partial class MedicalCaseEditControl : UserControl
     {
         get => (IEnumerable?)GetValue(UsageOptionsProperty);
         set => SetValue(UsageOptionsProperty, value);
-    }
-
-    /// <summary>
-    /// 总价 - Compact模式显示
-    /// </summary>
-    public static readonly DependencyProperty TotalPriceProperty =
-        DependencyProperty.Register(nameof(TotalPrice), typeof(decimal), typeof(MedicalCaseEditControl),
-            new PropertyMetadata(0m));
-
-    public decimal TotalPrice
-    {
-        get => (decimal)GetValue(TotalPriceProperty);
-        set => SetValue(TotalPriceProperty, value);
     }
 
     #endregion
@@ -266,42 +198,6 @@ public partial class MedicalCaseEditControl : UserControl
     {
         get => (ICommand?)GetValue(ClearAllCommandProperty);
         set => SetValue(ClearAllCommandProperty, value);
-    }
-
-    #endregion
-
-    #region 兼容性属性（保留用于View模式）
-
-    public static readonly DependencyProperty PrescriptionItemsProperty =
-        DependencyProperty.Register(nameof(PrescriptionItems), typeof(ObservableCollection<PrescriptionItemDto>), typeof(MedicalCaseEditControl));
-
-    public ObservableCollection<PrescriptionItemDto>? PrescriptionItems
-    {
-        get => (ObservableCollection<PrescriptionItemDto>?)GetValue(PrescriptionItemsProperty);
-        set => SetValue(PrescriptionItemsProperty, value);
-    }
-
-    public static readonly DependencyProperty HasPrescriptionItemsProperty =
-        DependencyProperty.Register(nameof(HasPrescriptionItems), typeof(bool), typeof(MedicalCaseEditControl));
-
-    public bool HasPrescriptionItems
-    {
-        get => (bool)GetValue(HasPrescriptionItemsProperty);
-        set => SetValue(HasPrescriptionItemsProperty, value);
-    }
-
-    #endregion
-
-    #region 备注（可编辑）- Full模式
-
-    public static readonly DependencyProperty RemarkProperty =
-        DependencyProperty.Register(nameof(Remark), typeof(string), typeof(MedicalCaseEditControl),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    public string? Remark
-    {
-        get => (string?)GetValue(RemarkProperty);
-        set => SetValue(RemarkProperty, value);
     }
 
     #endregion

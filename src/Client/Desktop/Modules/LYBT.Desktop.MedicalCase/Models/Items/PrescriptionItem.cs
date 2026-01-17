@@ -1,5 +1,8 @@
 using System.Collections.ObjectModel;
-using LYBT.Desktop.Herbs.Models.Items;
+using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Mappers;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
@@ -9,6 +12,7 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 /// 处方数据Item - 用于UI绑定的处方数据模型
 /// OpenSpec: consolidate-panel-viewmodels - 遵循Entity-DTO-Item模式
 /// OpenSpec: adopt-mapperly-unified-mapping - 使用BindableBase确保Mapperly兼容
+/// OpenSpec: simplify-workspace-architecture - 直接实现IDataProvider和IValidatable
 ///
 /// 遵循Entity-DTO-Item模式：
 /// - Entity: 服务端Prescription实体
@@ -17,8 +21,16 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 ///
 /// 属性名与PrescriptionDetailDto保持一致，确保XAML绑定兼容
 /// </summary>
-public class PrescriptionItem : BindableBase
+public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
 {
+    private static readonly PrescriptionMapper s_mapper = new();
+
+    /// <summary>
+    /// 默认用法
+    /// OpenSpec: unify-medicalcase-item-editmodel - 从 PrescriptionEditModel 合并
+    /// </summary>
+    public const string DefaultUsage = "水煎服，一日一剂，分早晚两次温服";
+
     #region 基础标识字段
 
     private Guid _id = Guid.Empty;
@@ -77,7 +89,7 @@ public class PrescriptionItem : BindableBase
         }
     }
 
-    private string _usage = "水煎服，一日一剂，分早晚两次温服";
+    private string _usage = DefaultUsage;
     /// <summary>
     /// 用法
     /// </summary>
@@ -161,11 +173,12 @@ public class PrescriptionItem : BindableBase
 
     #region 药材列表
 
-    private ObservableCollection<HerbItemDto> _items = new();
+    private ObservableCollection<PrescriptionItemDto> _items = new();
     /// <summary>
     /// 处方药材列表
+    /// OpenSpec: unify-control-data-binding - 统一使用PrescriptionItemDto
     /// </summary>
-    public ObservableCollection<HerbItemDto> Items
+    public ObservableCollection<PrescriptionItemDto> Items
     {
         get => _items;
         set
@@ -313,14 +326,14 @@ public class PrescriptionItem : BindableBase
     #region 方法
 
     /// <summary>
-    /// 清空处方数据
+    /// 清空处方数据（包括ID）
     /// </summary>
     public void Clear()
     {
         Id = Guid.Empty;
         PrescriptionNumber = null;
         DosageCount = 7;
-        Usage = "水煎服，一日一剂，分早晚两次温服";
+        Usage = DefaultUsage;
         Advice = null;
         ReferencedFormulas = null;
         Remark = null;
@@ -339,6 +352,22 @@ public class PrescriptionItem : BindableBase
     }
 
     /// <summary>
+    /// 重置可编辑字段（保留ID和MedicalCaseId）
+    /// OpenSpec: unify-medicalcase-item-editmodel - 从 PrescriptionEditModel 合并
+    /// 用于"清空处方"命令，区别于 Clear() 清空所有字段
+    /// </summary>
+    public void Reset()
+    {
+        DosageCount = 7;
+        Usage = DefaultUsage;
+        Advice = null;
+        Remark = null;
+        SingleDosePrice = 0;
+        Items.Clear();
+        NotifyItemsChanged();
+    }
+
+    /// <summary>
     /// 通知药材列表相关属性更新
     /// </summary>
     public void NotifyItemsChanged()
@@ -348,6 +377,67 @@ public class PrescriptionItem : BindableBase
         RaisePropertyChanged(nameof(IsValid));
         RaisePropertyChanged(nameof(TotalPrice));
         RaisePropertyChanged(nameof(DisplayText));
+    }
+
+    #endregion
+
+    #region IDataProvider实现
+
+    /// <inheritdoc />
+    public ConsultationInputDto? GetConsultationData() => null;
+
+    /// <inheritdoc />
+    public PrescriptionInputDto? GetPrescriptionData()
+    {
+        // 如果验证被禁用或没有药材，返回null表示无处方数据
+        if (!ValidationEnabled || !HasItems)
+        {
+            return null;
+        }
+        return s_mapper.ToInputDto(this);
+    }
+
+    #endregion
+
+    #region IValidatable实现
+
+    private bool _validationEnabled = true;
+    /// <summary>
+    /// 是否启用验证（某些情况下处方可能不需要）
+    /// </summary>
+    public bool ValidationEnabled
+    {
+        get => _validationEnabled;
+        set => SetProperty(ref _validationEnabled, value);
+    }
+
+    private string _validationMessage = string.Empty;
+    /// <inheritdoc />
+    public string ValidationMessage
+    {
+        get => _validationMessage;
+        set => SetProperty(ref _validationMessage, value);
+    }
+
+    /// <inheritdoc />
+    public bool Validate()
+    {
+        // 如果验证被禁用，直接通过
+        if (!ValidationEnabled)
+        {
+            ValidationMessage = string.Empty;
+            return true;
+        }
+
+        // 如果需要处方但没有药材
+        if (!HasItems)
+        {
+            ValidationMessage = "请添加至少一味药材";
+            return false;
+        }
+
+        ValidationMessage = string.Empty;
+        return true;
     }
 
     #endregion

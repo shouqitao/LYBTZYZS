@@ -1,3 +1,7 @@
+using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Mappers;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.MedicalCase.Models.Items;
@@ -6,6 +10,7 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 /// 诊断数据Item - 用于UI绑定的诊断数据模型
 /// OpenSpec: consolidate-panel-viewmodels - 从Consultation模块迁移到MedicalCase聚合根模块
 /// OpenSpec: adopt-mapperly-unified-mapping - 使用BindableBase确保Mapperly兼容
+/// OpenSpec: simplify-workspace-architecture - 直接实现IDataProvider和IValidatable
 ///
 /// 遵循Entity-DTO-Item模式：
 /// - Entity: 服务端Consultation实体
@@ -14,8 +19,10 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 ///
 /// 属性名与ConsultationDetailDto保持一致，确保XAML绑定兼容
 /// </summary>
-public class ConsultationItem : BindableBase
+public class ConsultationItem : BindableBase, IDataProvider, IValidatable
 {
+    private static readonly ConsultationMapper s_mapper = new();
+
     #region 基础标识字段
 
     private Guid _id = Guid.Empty;
@@ -203,6 +210,56 @@ public class ConsultationItem : BindableBase
     /// </summary>
     public string DisplayText =>
         $"{PatientName} - {TcmDiagnosis ?? "未诊断"}";
+
+    #endregion
+
+    #region 方法
+
+    /// <summary>
+    /// 重置可编辑字段（保留ID）
+    /// OpenSpec: unify-medicalcase-item-editmodel - 从 ConsultationEditModel 合并
+    /// </summary>
+    public void Reset()
+    {
+        PresentIllness = null;
+        TongueDiagnosis = null;
+        PulseDiagnosis = null;
+        TcmDiagnosis = null;
+    }
+
+    #endregion
+
+    #region IDataProvider实现
+
+    /// <inheritdoc />
+    public ConsultationInputDto? GetConsultationData() => s_mapper.ToInputDto(this);
+
+    /// <inheritdoc />
+    public PrescriptionInputDto? GetPrescriptionData() => null;
+
+    #endregion
+
+    #region IValidatable实现
+
+    private string _validationMessage = string.Empty;
+    /// <inheritdoc />
+    public string ValidationMessage
+    {
+        get => _validationMessage;
+        set => SetProperty(ref _validationMessage, value);
+    }
+
+    /// <inheritdoc />
+    public bool Validate()
+    {
+        if (!IsDiagnosisComplete)
+        {
+            ValidationMessage = "请填写中医诊断";
+            return false;
+        }
+        ValidationMessage = string.Empty;
+        return true;
+    }
 
     #endregion
 }

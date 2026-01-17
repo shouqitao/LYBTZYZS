@@ -9,6 +9,7 @@ using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Modules.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -28,7 +29,6 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 {
     private readonly IMedicalCaseRepository _repository;
     private readonly IHerbRepository _herbRepository;
-    private readonly ISessionManager? _sessionManager;
     private readonly MedicalCaseDetailModelMapper _mapper = new();
 
     #region 扩展属性
@@ -48,10 +48,31 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 
     #endregion
 
-    #region 处方编辑属性
+    #region 数据模型属性 - OpenSpec: unify-medicalcase-item-editmodel
 
+    private ConsultationItem? _consultation;
+    private PrescriptionItem? _prescription;
     private ObservableCollection<HerbListDto> _allHerbs = new();
-    private ObservableCollection<PrescriptionHerbItem> _herbItems = new();
+
+    /// <summary>
+    /// 诊断数据模型
+    /// OpenSpec: unify-medicalcase-item-editmodel - 统一使用 ConsultationItem
+    /// </summary>
+    public ConsultationItem? Consultation
+    {
+        get => _consultation;
+        private set => SetProperty(ref _consultation, value);
+    }
+
+    /// <summary>
+    /// 处方数据模型
+    /// OpenSpec: unify-medicalcase-item-editmodel - 统一使用 PrescriptionItem
+    /// </summary>
+    public PrescriptionItem? Prescription
+    {
+        get => _prescription;
+        private set => SetProperty(ref _prescription, value);
+    }
 
     /// <summary>所有药材列表 - 用于拼音自动补全</summary>
     public ObservableCollection<HerbListDto> AllHerbs
@@ -60,31 +81,21 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         private set => SetProperty(ref _allHerbs, value);
     }
 
-    /// <summary>处方药材编辑列表</summary>
-    public ObservableCollection<PrescriptionHerbItem> HerbItems
-    {
-        get => _herbItems;
-        private set => SetProperty(ref _herbItems, value);
-    }
-
-    /// <summary>药材数量</summary>
-    public int HerbCount => HerbItems?.Count(x => x.HerbId != Guid.Empty) ?? 0;
-
     #endregion
 
+    /// <summary>
+    /// 构造函数
+    /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+    /// </summary>
     public MedicalCaseMasterDetailViewModel(
-        IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> services,
+        IViewModelServices viewModelServices,
+        IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> masterDetailServices,
         IMedicalCaseRepository repository,
-        IHerbRepository herbRepository,
-        
-        ILoggerFactory loggerFactory,
-        ISessionManager? sessionManager = null)
-        : base(services, loggerFactory)
+        IHerbRepository herbRepository)
+        : base(viewModelServices, masterDetailServices)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
-        // OpenSpec: standardize-api-architecture - 使用直接Mapper实例替代MappingService
-        _sessionManager = sessionManager;
 
         PageTitle = "医案管理";
 
@@ -108,10 +119,10 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 
         try
         {
-            await Services.Loading.ExecuteWithLoadingAsync(async () =>
+            await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
             {
                 var pagedData = await _repository.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                Services.Pagination.TotalCount = pagedData.TotalCount;
+                MasterDetailServices.Pagination.TotalCount = pagedData.TotalCount;
 
                 Items.Clear();
                 foreach (var item in pagedData.Items ?? Enumerable.Empty<MedicalCaseListDto>())
@@ -123,11 +134,12 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         catch (Exception ex)
         {
             Logger.LogError(ex, "获取医案列表时发生异常");
-            Services.ErrorHandler.HandleException(ex, "获取医案列表");
+            MasterDetailServices.ErrorHandler.HandleException(ex, "获取医案列表");
         }
     }
 
     /// <summary>加载详情数据</summary>
+    /// <remarks>OpenSpec: unify-control-data-binding - 使用对象化编辑模型</remarks>
     protected override async Task LoadDetailAsync(MedicalCaseListDto item)
     {
         try
@@ -147,16 +159,16 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 
             var detail = _mapper.ToItem(dto);
 
-            // 初始化处方编辑列表
-            InitializeHerbItems(detail);
+            // OpenSpec: unify-control-data-binding - 初始化对象化编辑模型
+            InitializeEditModels(detail);
 
-            Services.DetailEditor.LoadDetail(detail);
+            MasterDetailServices.DetailEditor.LoadDetail(detail);
             OnPropertyChanged(nameof(DetailTitle));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "加载医案详情失败: {MedicalCaseId}", item.Id);
-            Services.ErrorHandler.HandleException(ex, "加载医案详情");
+            MasterDetailServices.ErrorHandler.HandleException(ex, "加载医案详情");
         }
     }
 
@@ -168,45 +180,52 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     }
 
     /// <summary>保存详情</summary>
+    /// <remarks>OpenSpec: unify-control-data-binding - 使用对象化编辑模型</remarks>
     protected override async Task<bool> SaveDetailAsync(MedicalCaseDetailModel detail)
     {
         try
         {
+            // 从编辑模型构建输入DTO
+            var prescriptionItems = Prescription?.Items
+                .Where(x => x.HerbId != Guid.Empty && x.Dosage > 0)
+                .Select(x => new PrescriptionItemInputDto
+                {
+                    HerbId = x.HerbId,
+                    HerbName = x.HerbName ?? string.Empty,
+                    Dosage = x.Dosage,
+                    Unit = x.Unit ?? "g",
+                    UnitPrice = x.UnitPrice,
+                    Subtotal = x.Dosage * x.UnitPrice,
+                    DecocteMethod = x.DecocteMethod
+                })
+                .ToList() ?? [];
+
             var aggregateDto = new MedicalCaseInputDto
             {
                 Id = detail.Id,
                 PatientId = detail.PatientId,
-                UserId = _sessionManager?.CurrentUser?.Id ?? Guid.Empty,
-                Remark = detail.Remark,
-                Consultation = detail.ToConsultationInputDto(),
+                UserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
+                Remark = Prescription?.Remark,
+                Consultation = new ConsultationInputDto
+                {
+                    PresentIllness = Consultation?.PresentIllness,
+                    TongueDiagnosis = Consultation?.TongueDiagnosis,
+                    PulseDiagnosis = Consultation?.PulseDiagnosis,
+                    TcmDiagnosis = Consultation?.TcmDiagnosis
+                },
                 Prescription = new PrescriptionInputDto
                 {
-                    NeedsPrescription = HerbItems.Any(x => x.HerbId != Guid.Empty && x.Dosage > 0),
-                    DosageCount = detail.DoseCount ?? 7,
+                    NeedsPrescription = prescriptionItems.Count > 0,
+                    DosageCount = Prescription?.DosageCount ?? 7,
                     ReferencedFormulas = detail.ReferencedFormulas,
-                    Items = HerbItems
-                        .Where(x => x.HerbId != Guid.Empty && x.Dosage > 0)
-                        .Select(x => new PrescriptionItemInputDto
-                        {
-                            HerbId = x.HerbId,
-                            HerbName = x.HerbName,
-                            Dosage = x.Dosage,
-                            Unit = x.Unit,
-                            UnitPrice = x.UnitPrice,
-                            Subtotal = x.ItemAmount,
-                            DecocteMethod = x.DecocteMethod
-                        })
-                        .ToList()
+                    Items = prescriptionItems
                 }
             };
 
             await _repository.SaveAsync(detail.Id, aggregateDto);
 
-            // 更新DetailModel的处方数据
-            detail.HerbCount = aggregateDto.Prescription.Items.Count;
-
             Logger.LogInformation("医案保存成功: {MedicalCaseId}, 药材数量: {HerbCount}",
-                detail.Id, detail.HerbCount);
+                detail.Id, prescriptionItems.Count);
 
             OnPropertyChanged(nameof(DetailTitle));
             return true;
@@ -215,7 +234,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         {
             Logger.LogError(ex, "保存医案失败: {MedicalCaseId}", detail.Id);
             var errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存医案", ex);
-            Services.ErrorHandler.SetError("Save", errorMessage);
+            MasterDetailServices.ErrorHandler.SetError("Save", errorMessage);
             return false;
         }
     }
@@ -226,7 +245,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         var success = await _repository.DeleteAsync(item.Id);
         if (!success)
         {
-            Services.ErrorHandler.SetError("Delete", $"删除医案失败");
+            MasterDetailServices.ErrorHandler.SetError("Delete", $"删除医案失败");
         }
         else
         {
@@ -234,64 +253,6 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         }
         return success;
     }
-
-    #endregion
-
-    #region 处方编辑命令
-
-    /// <summary>删除药材</summary>
-    [RelayCommand(CanExecute = nameof(CanDeleteHerb))]
-    private void DeleteHerb(PrescriptionHerbItem? item)
-    {
-        if (item == null) return;
-
-        // 不能删除最后一个空行
-        if (HerbItems.Count == 1 && item.HerbId == Guid.Empty) return;
-
-        HerbItems.Remove(item);
-
-        // 如果删除后没有空行，添加一个
-        if (!HerbItems.Any(x => x.HerbId == Guid.Empty))
-        {
-            AddEmptyRow();
-        }
-
-        OnPropertyChanged(nameof(HerbCount));
-        Logger.LogDebug("删除药材: {HerbName}", item.HerbName);
-    }
-
-    private bool CanDeleteHerb(PrescriptionHerbItem? item) => item != null && IsEditMode;
-
-    /// <summary>剂量输入完成 - 自动添加新行</summary>
-    [RelayCommand]
-    private void DosageCompleted(PrescriptionHerbItem? item)
-    {
-        if (item == null || item.HerbId == Guid.Empty) return;
-
-        // 如果当前行是最后一行且已有数据，添加新空行
-        var index = HerbItems.IndexOf(item);
-        if (index == HerbItems.Count - 1)
-        {
-            AddEmptyRow();
-        }
-
-        OnPropertyChanged(nameof(HerbCount));
-    }
-
-    /// <summary>添加新行</summary>
-    [RelayCommand(CanExecute = nameof(CanAddNewRow))]
-    private void AddNewRow()
-    {
-        // 确保只有一个空行
-        if (!HerbItems.Any(x => x.HerbId == Guid.Empty))
-        {
-            AddEmptyRow();
-        }
-
-        OnPropertyChanged(nameof(HerbCount));
-    }
-
-    private bool CanAddNewRow() => IsEditMode;
 
     #endregion
 
@@ -312,50 +273,47 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         }
     }
 
-    /// <summary>初始化处方编辑列表</summary>
-    private void InitializeHerbItems(MedicalCaseDetailModel detail)
+    /// <summary>
+    /// 初始化数据模型
+    /// OpenSpec: unify-medicalcase-item-editmodel - 统一使用 Item 类
+    /// </summary>
+    private void InitializeEditModels(MedicalCaseDetailModel detail)
     {
-        HerbItems.Clear();
+        // 初始化诊断数据模型
+        // OpenSpec: unify-medicalcase-item-editmodel - 统一使用 ConsultationItem
+        Consultation = new ConsultationItem
+        {
+            PresentIllness = detail.PresentIllness,
+            TongueDiagnosis = detail.TongueDiagnosis,
+            PulseDiagnosis = detail.PulseDiagnosis,
+            TcmDiagnosis = detail.TcmDiagnosis
+        };
 
+        // 初始化处方数据模型
+        // OpenSpec: unify-medicalcase-item-editmodel - 统一使用 PrescriptionItem
+        Prescription = new PrescriptionItem
+        {
+            DosageCount = detail.DoseCount ?? 7,
+            Remark = detail.Remark
+        };
+
+        // 加载处方药材列表（直接使用PrescriptionItemDto）
+        // OpenSpec: unify-control-data-binding - 统一类型，无需转换
         if (detail.PrescriptionItems != null)
         {
-            foreach (var dto in detail.PrescriptionItems)
+            foreach (var prescriptionItem in detail.PrescriptionItems)
             {
-                var vm = CreatePrescriptionHerbItem();
-                vm.HerbId = dto.HerbId;
-                vm.HerbName = dto.HerbName ?? string.Empty;
-                vm.Dosage = dto.Dosage;
-                vm.Unit = dto.Unit;
-                if (string.IsNullOrEmpty(dto.Unit))
-                {
-                    Logger.LogWarning("药材 {HerbName} 的单位为空，HerbId: {HerbId}", dto.HerbName, dto.HerbId);
-                }
-                vm.SetUnitPrice(dto.UnitPrice);
-                vm.DecocteMethod = dto.DecocteMethod;
-                HerbItems.Add(vm);
+                Prescription.Items.Add(prescriptionItem);
             }
         }
 
-        // 添加一个空行用于新增
-        AddEmptyRow();
+        // 计算单帖价格
+        Prescription.SingleDosePrice = Prescription.Items.Sum(x => x.Dosage * x.UnitPrice);
 
-        OnPropertyChanged(nameof(HerbCount));
-    }
-
-    /// <summary>创建处方条目ViewModel</summary>
-    private PrescriptionHerbItem CreatePrescriptionHerbItem()
-    {
-        return new PrescriptionHerbItem
-        {
-            AllHerbs = AllHerbs
-        };
-    }
-
-    /// <summary>添加空行</summary>
-    private void AddEmptyRow()
-    {
-        var emptyVm = CreatePrescriptionHerbItem();
-        HerbItems.Add(emptyVm);
+        Prescription.NotifyItemsChanged();
+        Logger.LogDebug("编辑模型初始化完成: 诊断={HasConsultation}, 处方药材数={ItemCount}",
+            !string.IsNullOrEmpty(Consultation.TcmDiagnosis),
+            Prescription.Items.Count);
     }
 
     #endregion
