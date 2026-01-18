@@ -1,4 +1,3 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Formula.Interfaces
@@ -6,6 +5,7 @@ namespace LYBT.Desktop.Formula.Interfaces
     /// <summary>
     /// 配方Service接口
     /// OpenSpec: standardize-service-layer - 统一使用Service命名
+    /// OpenSpec: cleanup-formula-dead-code - 清理未使用的占位方法和FormulaValidation方法
     /// 提供配方CRUD和业务操作的统一处理
     /// </summary>
     public interface IFormulaService
@@ -36,30 +36,7 @@ namespace LYBT.Desktop.Formula.Interfaces
         Task<(bool success, string? errorMessage)> DeleteFormulaAsync(Guid formulaId);
 
         // OpenSpec: simplify-desktop-data-layer - 已删除DeleteAsync/CreateAsync/UpdateAsync，ViewModel直接使用Repository
-
-        /// <summary>
-        /// 打印配方
-        /// </summary>
-        Task<(bool success, string? errorMessage)> PrintFormulaAsync(FormulaDetailDto formula);
-
-        // OpenSpec: simplify-desktop-data-layer - 已删除GetPagedAsync/GetByIdAsync，ViewModel直接使用Repository
-
-        /// <summary>
-        /// 查看使用历史
-        /// </summary>
-        Task<(bool success, string? errorMessage)> ViewUsageHistoryAsync(Guid formulaId);
-
-        /// <summary>
-        /// 获取待校验的验方列表
-        /// </summary>
-        /// <remarks>Issue #1787原为FormulaValidationViewModel设计，该ViewModel已删除（OpenSpec: migrate-views-to-role-modules）</remarks>
-        Task<(bool success, List<FormulaDetailDto>? data, string? errorMessage)> GetPendingValidationFormulasAsync();
-
-        /// <summary>
-        /// 验证验方药材 - 手动绑定药材到系统药材库
-        /// </summary>
-        /// <remarks>Issue #1787原为FormulaValidationViewModel设计，该ViewModel已删除（OpenSpec: migrate-views-to-role-modules）</remarks>
-        Task<(bool success, string? errorMessage)> ValidateFormulaHerbAsync(
-            Guid formulaId, Guid herbItemId, Guid selectedHerbId);
+        // OpenSpec: cleanup-formula-dead-code - 已删除PrintFormulaAsync/ViewUsageHistoryAsync占位方法
+        // OpenSpec: cleanup-formula-dead-code - 已删除GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync（FormulaValidationViewModel已删除）
     }
 }

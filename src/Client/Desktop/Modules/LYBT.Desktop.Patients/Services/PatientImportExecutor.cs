@@ -162,14 +162,14 @@ public class PatientImportExecutor : IDisposable
             var patientDto = _dataMapper.CreatePatientDtoFromRow(row);
             var result = await _commandHandler.CreatePatientAsync(patientDto);
 
-            if (result.IsSuccess && result.Data != null)
+            if (result.Success && result.Data != null)
             {
                 _logger.LogInformation($"成功导入患者: {currentName} (第{rowIndex + 2}行)");
                 return ImportRowResult.CreateSuccess();
             }
             else
             {
-                var error = $"第{rowIndex + 2}行 ({currentName})：创建失败 - {result.ErrorMessage}";
+                var error = $"第{rowIndex + 2}行 ({currentName})：创建失败 - {result.Error}";
                 _logger.LogWarning(error);
                 return ImportRowResult.CreateFail(error);
             }

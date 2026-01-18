@@ -1,6 +1,5 @@
-﻿using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 
@@ -9,6 +8,7 @@ namespace LYBT.Desktop.Formula.Services
     /// <summary>
     /// 配方Service实现
     /// OpenSpec: standardize-service-layer - 统一使用Service命名
+    /// OpenSpec: cleanup-formula-dead-code - 清理未使用的占位方法和FormulaValidation方法
     /// 提供配方CRUD和业务操作的统一处理
     /// </summary>
     public class FormulaService : IFormulaService
@@ -156,92 +156,11 @@ namespace LYBT.Desktop.Formula.Services
                 return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除配方", ex));
             }
         }
-        // OpenSpec: simplify-desktop-data-layer - 已删除DeleteAsync(Guid)，ViewModel直接使用Repository.DeleteAsync
 
         #endregion
 
         // OpenSpec: simplify-desktop-data-layer - 已删除基本CRUD操作(CreateAsync/UpdateAsync)，ViewModel直接使用Repository
-
-#region 其他操作
-
-        /// <summary>
-        /// 打印配方（占位实现）
-        /// </summary>
-        public Task<(bool success, string? errorMessage)> PrintFormulaAsync(FormulaDetailDto formula)
-        {
-            _logger.LogDebug("[SVC] Formula.Print - FormulaId={FormulaId} Name={FormulaName}", formula.Id, formula.Name);
-
-            // TODO: 实现打印逻辑
-            return Task.FromResult<(bool, string?)>((true, "打印功能开发中"));
-        }
-
-        // OpenSpec: simplify-desktop-data-layer - 已删除GetPagedAsync和GetByIdAsync，ViewModel直接使用Repository
-
-        /// <summary>
-        /// 查看使用历史（占位实现）
-        /// </summary>
-        public Task<(bool success, string? errorMessage)> ViewUsageHistoryAsync(Guid formulaId)
-        {
-            _logger.LogDebug("[SVC] Formula.ViewUsageHistory - FormulaId={FormulaId}", formulaId);
-
-            // TODO: 实现查看使用历史逻辑
-            return Task.FromResult<(bool, string?)>((true, "查看使用历史功能开发中"));
-        }
-
-        /// <summary>
-        /// 获取待校验的验方列表
-        /// </summary>
-        /// <remarks>Issue #1787原为FormulaValidationViewModel设计，该ViewModel已删除（OpenSpec: migrate-views-to-role-modules）</remarks>
-        public async Task<(bool success, List<FormulaDetailDto>? data, string? errorMessage)> GetPendingValidationFormulasAsync()
-        {
-            try
-            {
-                _logger.LogDebug("[SVC] Formula.GetPendingValidation started");
-
-                var formulas = await _repository.GetPendingValidationFormulasAsync();
-
-                _logger.LogDebug("[SVC] Formula.GetPendingValidation completed - Count={Count}", formulas.Count);
-                return (true, formulas, null);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.GetPendingValidation failed");
-                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询待校验验方列表", ex));
-            }
-        }
-
-        /// <summary>
-        /// 验证验方药材 - 手动绑定药材到系统药材库
-        /// </summary>
-        /// <remarks>Issue #1787原为FormulaValidationViewModel设计，该ViewModel已删除（OpenSpec: migrate-views-to-role-modules）</remarks>
-        public async Task<(bool success, string? errorMessage)> ValidateFormulaHerbAsync(
-            Guid formulaId, Guid herbItemId, Guid selectedHerbId)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Formula.ValidateHerb started - FormulaId={FormulaId} HerbItemId={HerbItemId} SelectedHerbId={SelectedHerbId}",
-                    formulaId, herbItemId, selectedHerbId);
-
-                var result = await _repository.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
-
-                if (result)
-                {
-                    _logger.LogInformation("[SVC] Formula.ValidateHerb completed");
-                    return (true, null);
-                }
-                else
-                {
-                    _logger.LogWarning("[SVC] Formula.ValidateHerb failed");
-                    return (false, "配方药材验证失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.ValidateHerb failed");
-                return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证配方药材", ex));
-            }
-        }
-
-        #endregion
+        // OpenSpec: cleanup-formula-dead-code - 已删除PrintFormulaAsync/ViewUsageHistoryAsync占位方法
+        // OpenSpec: cleanup-formula-dead-code - 已删除GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync（FormulaValidationViewModel已删除）
     }
 }

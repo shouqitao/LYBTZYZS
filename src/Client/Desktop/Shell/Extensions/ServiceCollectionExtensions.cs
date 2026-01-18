@@ -231,7 +231,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<PatientService>(containerRegistry);
             // OpenSpec: simplify-desktop-data-layer - HerbService已删除，功能合并到HerbRepository
             RegisterLogger<MedicalCaseService>(containerRegistry);
-            RegisterLogger<PatientStateManager>(containerRegistry);
+            // OpenSpec: cleanup-patient-dead-code - PatientStateManager已删除（死代码）
             RegisterLogger<PatientValidator>(containerRegistry);
             // LOG-012: LoggingHttpHandler日志
             RegisterLogger<LoggingHttpHandler>(containerRegistry);

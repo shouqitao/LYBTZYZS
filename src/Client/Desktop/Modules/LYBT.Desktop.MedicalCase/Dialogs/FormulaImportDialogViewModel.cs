@@ -2,8 +2,10 @@ using System.Collections.ObjectModel;
 using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using Prism.Services.Dialogs;
@@ -14,14 +16,14 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
     /// 验方导入弹窗ViewModel - 重新设计版本
     /// OpenSpec: redesign-formula-import-ui
     /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
+    /// OpenSpec: refactor-frontend-srp-patterns - 迁移到DialogViewModelBase
     /// 用于从经验方库搜索选择验方，批量导入药材到处方
     /// </summary>
-    public partial class FormulaImportDialogViewModel : ObservableObject, IDialogAware
+    public partial class FormulaImportDialogViewModel : DialogViewModelBase
     {
         #region 服务依赖
 
         private readonly IFormulaRepository _formulaRepository;
-        private readonly ILogger<FormulaImportDialogViewModel> _logger;
         private List<FormulaListDto> _allFormulas = new();
 
         #endregion
@@ -79,12 +81,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         private string _statusMessage = string.Empty;
 
         /// <summary>
-        /// 是否正在加载
-        /// </summary>
-        [ObservableProperty]
-        private bool _isLoading;
-
-        /// <summary>
         /// 加载提示消息
         /// </summary>
         [ObservableProperty]
@@ -120,65 +116,54 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         #endregion
 
-        #region IDialogAware
-
-        public string Title => "从经验方导入";
-
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-            LoadFormulasAsync();
-        }
-
-        #endregion
-
         #region 构造函数
 
+        /// <summary>
+        /// 构造函数 - 使用IViewModelServices聚合服务
+        /// OpenSpec: refactor-frontend-srp-patterns - 迁移到DialogViewModelBase
+        /// </summary>
         public FormulaImportDialogViewModel(
-            IFormulaRepository formulaRepository,
-            ILogger<FormulaImportDialogViewModel> logger)
+            IViewModelServices services,
+            IFormulaRepository formulaRepository)
+            : base(services)
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            Title = "从经验方导入";
 
             // 初始化分类列表
             InitializeCategories();
 
-            _logger.LogInformation("FormulaImportDialogViewModel已初始化");
+            Logger.LogInformation("FormulaImportDialogViewModel已初始化");
         }
 
         #endregion
 
-        #region 命令
+        #region DialogViewModelBase重写
 
         /// <summary>
-        /// 确认导入命令
+        /// 对话框打开时的核心处理
         /// </summary>
-        [RelayCommand(CanExecute = nameof(CanConfirm))]
-        private void Confirm()
+        protected override void OnDialogOpenedCore(IDialogParameters? parameters)
+        {
+            LoadFormulasAsync();
+        }
+
+        /// <summary>
+        /// 是否可以确认（子类重写）
+        /// </summary>
+        protected override bool CanConfirm() => SelectedFormula != null && SelectedFormulaHerbs.Any();
+
+        /// <summary>
+        /// 确认命令（子类重写）
+        /// </summary>
+        protected override void Confirm()
         {
             var parameters = new DialogParameters
             {
                 { "SelectedFormula", SelectedFormula },
                 { "SelectedHerbs", SelectedFormulaHerbs.ToList() }
             };
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
-        }
-
-        private bool CanConfirm() => SelectedFormula != null && SelectedFormulaHerbs.Any();
-
-        /// <summary>
-        /// 取消命令
-        /// </summary>
-        [RelayCommand]
-        private void Cancel()
-        {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+            CloseDialog(parameters, ButtonResult.OK);
         }
 
         #endregion
@@ -235,17 +220,17 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 {
                     StatusMessage = "暂无经验方数据，请先在经验方管理中添加";
                 }
-                _logger.LogInformation("加载了 {Count} 个验方", _allFormulas.Count);
+                Logger.LogInformation("加载了 {Count} 个验方", _allFormulas.Count);
             }
             catch (HttpRequestException ex)
             {
                 StatusMessage = "网络连接失败，请确认后端服务已启动";
-                _logger.LogError(ex, "加载验方列表失败: 网络连接问题");
+                Logger.LogError(ex, "加载验方列表失败: 网络连接问题");
             }
             catch (Exception ex)
             {
                 StatusMessage = "加载验方失败，请检查后端服务";
-                _logger.LogError(ex, "加载验方列表失败");
+                Logger.LogError(ex, "加载验方列表失败");
             }
             finally
             {
@@ -333,7 +318,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             {
                 SelectedFormulaDetail = null;
                 LoadingMessage = "加载药材失败";
-                _logger.LogError(ex, "加载验方预览失败，验方ID: {FormulaId}", SelectedFormula.Id);
+                Logger.LogError(ex, "加载验方预览失败，验方ID: {FormulaId}", SelectedFormula.Id);
             }
             finally
             {

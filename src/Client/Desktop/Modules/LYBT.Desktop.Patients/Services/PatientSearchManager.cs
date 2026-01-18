@@ -104,9 +104,9 @@ public class PatientSearchManager
             // 缓存未命中，调用API
             var response = await _commandHandler.GetPatientsPagedAsync(CurrentPage, PageSize, searchKeyword);
 
-            if (!response.IsSuccess || response.Data == null)
+            if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("搜索患者失败：{ErrorMessage}", response.ErrorMessage);
+                _logger.LogWarning("搜索患者失败：{ErrorMessage}", response.Error);
                 return false;
             }
 
@@ -147,9 +147,9 @@ public class PatientSearchManager
 
             var response = await _commandHandler.GetPatientsPagedAsync(CurrentPage, PageSize, string.Empty);
 
-            if (!response.IsSuccess || response.Data == null)
+            if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("加载初始患者列表失败：{ErrorMessage}", response.ErrorMessage);
+                _logger.LogWarning("加载初始患者列表失败：{ErrorMessage}", response.Error);
                 return;
             }
 
@@ -187,9 +187,9 @@ public class PatientSearchManager
             // 缓存未命中，调用API
             var response = await _commandHandler.GetPatientsPagedAsync(CurrentPage, PageSize, searchKeyword);
 
-            if (!response.IsSuccess || response.Data == null)
+            if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("加载当前页失败：{ErrorMessage}", response.ErrorMessage);
+                _logger.LogWarning("加载当前页失败：{ErrorMessage}", response.Error);
                 return;
             }
 

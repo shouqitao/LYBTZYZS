@@ -44,15 +44,8 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// </summary>
         Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId);
 
-        /// <summary>
-        /// 获取待校验的验方列表 (Issue #1349)
-        /// </summary>
-        Task<List<FormulaDetailDto>> GetPendingValidationFormulasAsync();
-
-        /// <summary>
-        /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
-        /// </summary>
-        Task<bool> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId);
+        // OpenSpec: cleanup-formula-dead-code - 已删除GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync
+        // 原Issue #1349/#1348为FormulaValidationViewModel设计，该ViewModel已删除（OpenSpec: migrate-views-to-role-modules）
 
         #region 状态切换、恢复和批量操作
 

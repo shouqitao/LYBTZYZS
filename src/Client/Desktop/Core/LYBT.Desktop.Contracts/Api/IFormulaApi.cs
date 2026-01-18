@@ -48,21 +48,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Post("/api/v1/formulas/{id}/clone")]
         Task<ApiResponse<FormulaDetailDto>> CloneFormulaAsync(Guid id);
 
-        /// <summary>
-        /// 获取待校验的验方列表 (Issue #1349)
-        /// </summary>
-        [Refit.Get("/api/v1/formulas/pending-validation")]
-        Task<ApiResponse<List<FormulaDetailDto>>> GetPendingValidationFormulasAsync();
-
-        /// <summary>
-        /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
-        /// OpenSpec: standardize-desktop-api-layer - 返回类型修正
-        /// </summary>
-        [Refit.Post("/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate")]
-        Task<ApiResponse> ValidateFormulaHerbAsync(
-            Guid formulaId,
-            Guid herbItemId,
-            [Refit.Body] Guid selectedHerbId);
+        // OpenSpec: cleanup-formula-dead-code - 已删除GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync
+        // 原Issue #1349/#1348为FormulaValidationViewModel设计，该ViewModel已删除（OpenSpec: migrate-views-to-role-modules）
 
         // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
 

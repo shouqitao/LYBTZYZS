@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
@@ -14,6 +16,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
     /// <summary>
     /// OpenSpec: redesign-history-copy-ui
     /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
+    /// OpenSpec: refactor-frontend-srp-patterns - 迁移到DialogViewModelBase
     /// 历史医案复制弹窗ViewModel - 支持左右双栏布局
     /// 用于从历史医案中选择复制药材组合到当前处方
     ///
@@ -22,7 +25,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
     /// - 支持"显示更多"展开本患者全部记录
     /// - 支持"查看全部患者"切换到全局查询模式
     /// </summary>
-    public partial class HistoryCopyDialogViewModel : ObservableObject, IDialogAware
+    public partial class HistoryCopyDialogViewModel : DialogViewModelBase
     {
         #region 常量
 
@@ -34,7 +37,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         #region 服务依赖
 
         private readonly IMedicalCaseRepository _medicalCaseRepository;
-        private readonly ILogger<HistoryCopyDialogViewModel> _logger;
         private List<MedicalCaseDetailDto> _allCases = new();
         private List<MedicalCaseDetailDto> _currentPatientCases = new();
         private Guid _patientId;
@@ -88,12 +90,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
         private MedicalCaseDetailDto? _selectedCaseDetail;
-
-        /// <summary>
-        /// 是否正在加载详情
-        /// </summary>
-        [ObservableProperty]
-        private bool _isLoading;
 
         /// <summary>
         /// 状态消息
@@ -210,18 +206,34 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         #endregion
 
-        #region IDialogAware
+        #region 构造函数
 
-        public string Title => "从历史医案复制";
-
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
+        /// <summary>
+        /// 构造函数 - 使用IViewModelServices聚合服务
+        /// OpenSpec: refactor-frontend-srp-patterns - 迁移到DialogViewModelBase
+        /// </summary>
+        public HistoryCopyDialogViewModel(
+            IViewModelServices services,
+            IMedicalCaseRepository medicalCaseRepository)
+            : base(services)
         {
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            Title = "从历史医案复制";
+
+            Logger.LogInformation("HistoryCopyDialogViewModel已初始化");
+        }
+
+        #endregion
+
+        #region DialogViewModelBase重写
+
+        /// <summary>
+        /// 对话框打开时的核心处理
+        /// </summary>
+        protected override void OnDialogOpenedCore(IDialogParameters? parameters)
+        {
+            if (parameters == null) return;
+
             if (parameters.TryGetValue("PatientId", out Guid patientId))
             {
                 _patientId = patientId;
@@ -235,48 +247,27 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             LoadCasesAsync();
         }
 
-        #endregion
-
-        #region 构造函数
-
-        public HistoryCopyDialogViewModel(
-            IMedicalCaseRepository medicalCaseRepository,
-            ILogger<HistoryCopyDialogViewModel> logger)
-        {
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            _logger.LogInformation("HistoryCopyDialogViewModel已初始化");
-        }
-
-        #endregion
-
-        #region 命令
+        /// <summary>
+        /// 是否可以确认（子类重写）
+        /// </summary>
+        protected override bool CanConfirm() => SelectedCase != null && SelectedPrescriptionItems.Any();
 
         /// <summary>
-        /// 确认复制命令
+        /// 确认命令（子类重写）
         /// </summary>
-        [RelayCommand(CanExecute = nameof(CanConfirm))]
-        private void Confirm()
+        protected override void Confirm()
         {
             var parameters = new DialogParameters
             {
                 { "SelectedCase", SelectedCase },
                 { "SelectedItems", SelectedPrescriptionItems }
             };
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+            CloseDialog(parameters, ButtonResult.OK);
         }
 
-        private bool CanConfirm() => SelectedCase != null && SelectedPrescriptionItems.Any();
+        #endregion
 
-        /// <summary>
-        /// 取消命令
-        /// </summary>
-        [RelayCommand]
-        private void Cancel()
-        {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
-        }
+        #region 命令
 
         /// <summary>
         /// 显示更多当前患者记录命令
@@ -352,12 +343,12 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
                 ApplyCurrentPatientFilter();
 
-                _logger.LogInformation("加载了患者 {PatientId} 的 {Count} 条已完成历史医案", _patientId, _currentPatientCases.Count);
+                Logger.LogInformation("加载了患者 {PatientId} 的 {Count} 条已完成历史医案", _patientId, _currentPatientCases.Count);
             }
             catch (Exception ex)
             {
                 StatusMessage = "加载历史医案失败";
-                _logger.LogError(ex, "加载患者历史医案失败，患者ID: {PatientId}", _patientId);
+                Logger.LogError(ex, "加载患者历史医案失败，患者ID: {PatientId}", _patientId);
             }
         }
 
@@ -403,7 +394,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                     // 安全阀：最多获取10页（1000条记录）
                     if (currentPage > 10)
                     {
-                        _logger.LogWarning("加载全部患者历史医案已达到最大页数限制(10页)");
+                        Logger.LogWarning("加载全部患者历史医案已达到最大页数限制(10页)");
                         break;
                     }
                 }
@@ -417,13 +408,13 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 FilteredCases = new ObservableCollection<MedicalCaseDetailDto>(_allCases);
                 StatusMessage = $"全部患者共 {_allCases.Count} 条已完成历史医案";
 
-                _logger.LogInformation("加载了全部患者的 {Count} 条已完成历史医案（共{TotalPages}页）",
+                Logger.LogInformation("加载了全部患者的 {Count} 条已完成历史医案（共{TotalPages}页）",
                     _allCases.Count, currentPage);
             }
             catch (Exception ex)
             {
                 StatusMessage = "加载全部患者历史医案失败";
-                _logger.LogError(ex, "加载全部患者历史医案失败");
+                Logger.LogError(ex, "加载全部患者历史医案失败");
             }
             finally
             {
@@ -544,7 +535,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             {
                 SelectedCaseDetail = null;
                 SelectedPrescriptionItems = new List<PrescriptionItemDto>();
-                _logger.LogError(ex, "加载医案详情失败，医案ID: {CaseId}", SelectedCase.Id);
+                Logger.LogError(ex, "加载医案详情失败，医案ID: {CaseId}", SelectedCase.Id);
             }
             finally
             {

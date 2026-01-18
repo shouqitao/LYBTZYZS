@@ -217,15 +217,15 @@ namespace LYBT.Desktop.Patients.ViewModels
         protected override async Task<bool> DeleteItemAsync(PatientListDto item)
         {
             var result = await _commandHandler.DeletePatientAsync(item.Id);
-            if (!result.IsSuccess)
+            if (!result.Success)
             {
-                MasterDetailServices.ErrorHandler.SetError("Delete", result.ErrorMessage ?? $"删除患者 '{item.Name}' 失败");
+                MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? $"删除患者 '{item.Name}' 失败");
             }
             else
             {
                 Logger.LogInformation("患者删除成功: {PatientId} - {PatientName}", item.Id, item.Name);
             }
-            return result.IsSuccess;
+            return result.Success;
         }
 
         #endregion

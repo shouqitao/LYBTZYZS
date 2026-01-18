@@ -53,7 +53,7 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<ViewModels.Components.MedicalCaseStartCoordinator>();
 
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
-            containerRegistry.Register<ViewModels.Components.PatientStateManager>();
+            // OpenSpec: cleanup-patient-dead-code - PatientStateManager已删除（死代码，从未被使用）
             containerRegistry.Register<Services.PatientService>();
             containerRegistry.Register<ViewModels.Components.PatientValidator>();
 

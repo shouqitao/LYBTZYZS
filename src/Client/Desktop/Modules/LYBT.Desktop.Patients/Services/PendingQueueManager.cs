@@ -115,7 +115,7 @@ public class PendingQueueManager : IPendingQueueManager
 
             // 通过CommandHandler加载完整详情
             var result = await _commandHandler.GetByIdAsync(patientId);
-            if (result.IsSuccess && result.Data != null)
+            if (result.Success && result.Data != null)
             {
                 _logger.LogInformation("从API加载患者成功：{PatientName}", result.Data.Name);
 
@@ -130,7 +130,7 @@ public class PendingQueueManager : IPendingQueueManager
             }
             else
             {
-                _logger.LogWarning("加载患者详情失败：{ErrorMessage}", result.ErrorMessage);
+                _logger.LogWarning("加载患者详情失败：{ErrorMessage}", result.Error);
                 return null;
             }
         }
