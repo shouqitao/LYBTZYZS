@@ -59,6 +59,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 使用 `InitializeViewModel<TViewModel>()` 泛型方法模式
   - 重构5个MasterDetailControl继承基类
 
+- **DialogViewModel迁移** (M3任务，2026-01-18补充):
+  - HistoryCopyDialogViewModel 迁移到 DialogViewModelBase
+  - FormulaImportDialogViewModel 迁移到 DialogViewModelBase
+  - UnsavedChangesDialogViewModel 跳过（YAGNI原则：简单对话框无需重型基类）
+
+- **死代码清理** (2026-01-18补充):
+  - 删除 PatientStateManager.cs（从未被使用）
+  - 清理 IPatientService/PatientService 冗余方法
+  - 清理 IFormulaApi/FormulaRepository 死代码
+  - 清理 ICommandHandlerBase 重复类型定义
+
 - **架构风险修复**:
   - HerbItemControl.xaml Popup绑定改用RelativeSource
   - PatientSearchCache添加用户隔离（键格式：`{userId}:{keyword}:{page}`）
