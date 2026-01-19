@@ -29,10 +29,10 @@
     <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
     <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
     <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
-    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
+    <!-- OpenSpec: refactor-server-srp-patterns - Consultation模块已删除 -->
     <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
     <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
-    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
+    <!-- OpenSpec: refactor-server-srp-patterns - Prescriptions模块已删除 -->
     <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
   </ItemGroup>
 

@@ -5,12 +5,10 @@ using System.Text.Json.Serialization;
 using FluentValidation.AspNetCore;
 using LYBT.Infrastructure.Serialization;
 using LYBT.Module.Auth;
-using LYBT.Module.Consultations;
 using LYBT.Module.Formulas;
 using LYBT.Module.Herbs;
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Patients;
-using LYBT.Module.Prescriptions;
 using LYBT.Module.Users;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.WebAPI.Filters;
@@ -91,16 +89,13 @@ public static class ServiceCollectionExtensions
         // 4. 中药模块
         services.AddHerbsModule(configuration);
 
-        // 5. 问诊模块
-        services.AddConsultationModule(configuration);
-
-        // 6. 处方模块（保持原有注册，等待后续改造）
-        services.AddPrescriptionsModule();
-
-        // 7. 配方模块（保持原有注册，等待后续改造）
+        // 5. 配方模块
         services.AddFormulaModule();
 
-        // 8. 病例模块（保持原有注册，等待后续改造）
+        // OpenSpec: refactor-server-srp-patterns - Consultation/Prescriptions模块已删除
+        // 诊断和处方功能已整合到MedicalCase聚合根
+
+        // 6. 病例模块
         services.AddMedicalCaseModule();
 
         return services;

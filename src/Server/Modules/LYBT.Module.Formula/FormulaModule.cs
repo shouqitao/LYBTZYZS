@@ -26,6 +26,8 @@ namespace LYBT.Module.Formulas
             services.AddScoped<IFormulaRepository, FormulaRepository>();
             // 统一服务 - 合并查询和业务逻辑
             services.AddScoped<IFormulaService, FormulaService>();
+            // OpenSpec: refactor-server-srp-patterns - 导入导出服务（从FormulaService拆分）
+            services.AddScoped<IFormulaImportExportService, FormulaImportExportService>();
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<FormulaInputDtoValidator>();
             // OpenSpec: add-global-audit-system - 审计服务

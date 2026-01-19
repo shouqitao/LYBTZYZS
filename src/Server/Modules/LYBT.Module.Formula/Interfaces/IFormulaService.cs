@@ -56,22 +56,7 @@ namespace LYBT.Module.Formulas.Interfaces
         /// </summary>
         Task<Result<List<FormulaDetailDto>>> SearchAsync(string keyword);
 
-        /// <summary>
-        /// 从已解析的验方数据导入（Issue #1166, #1347, #1758）
-        /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
-        /// 返回FormulaBatchImportResultDto包含药材匹配统计
-        /// </summary>
-        Task<Result<FormulaBatchImportResultDto>> ImportFromDataAsync(List<FormulaImportItemDto> formulas, string? fileName = null);
-
-        /// <summary>
-        /// 导出验方数据到Excel (Issue #1166)
-        /// </summary>
-        Task<MemoryStream> ExportAsync(string? category = null);
-
-        /// <summary>
-        /// 生成验方导入模板 (Issue #1166)
-        /// </summary>
-        MemoryStream GenerateImportTemplate();
+        // OpenSpec: refactor-server-srp-patterns - Import/Export方法已迁移到IFormulaImportExportService
 
         /// <summary>
         /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)

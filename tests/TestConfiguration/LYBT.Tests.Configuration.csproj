@@ -45,9 +45,8 @@
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
-    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
+    <!-- OpenSpec: refactor-server-srp-patterns - Prescriptions/Consultation模块已删除 -->
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
-    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
@@ -62,9 +61,8 @@
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
-    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
+    <!-- OpenSpec: refactor-server-srp-patterns - Prescriptions/Consultation模块已删除 -->
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
-    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

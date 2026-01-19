@@ -3,6 +3,7 @@ using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Mapping;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -34,6 +35,7 @@ namespace LYBT.WebAPI.Controllers
         private readonly IMedicalCasePermissionService _permissionService;
         private readonly IMedicalCaseAuditService _auditService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly MedicalCaseMapper _mapper;
 
         public MedicalCaseController(
             IMedicalCaseCommandService commandService,
@@ -42,6 +44,7 @@ namespace LYBT.WebAPI.Controllers
             IMedicalCasePermissionService permissionService,
             IMedicalCaseAuditService auditService,
             IAuthorizationService authorizationService,
+            MedicalCaseMapper mapper,
             ILogger<MedicalCaseController> logger)
             : base(logger)
         {
@@ -51,6 +54,7 @@ namespace LYBT.WebAPI.Controllers
             _permissionService = permissionService;
             _auditService = auditService;
             _authorizationService = authorizationService;
+            _mapper = mapper;
         }
 
         // ========== Write Layer（写操作，通过聚合根）==========
@@ -89,7 +93,7 @@ namespace LYBT.WebAPI.Controllers
                 entity.Id, entity.DoctorName, entity.PatientName);
 
             // Entity → MedicalCaseDetailDto 映射
-            var responseDto = MapToMedicalCaseDetailDto(entity);
+            var responseDto = _mapper.MapToMedicalCaseDetailDto(entity);
 
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(responseDto, "病案创建成功"));
         }
@@ -135,7 +139,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             // Entity → DTO映射
-            var dto = MapToMedicalCaseDetailDto(result);
+            var dto = _mapper.MapToMedicalCaseDetailDto(result);
 
             _logger.LogInformation("处方标记更新成功，MedicalCaseId: {Id}, NeedsPrescription: {Flag}",
                 id, request.NeedsPrescription);
@@ -147,72 +151,6 @@ namespace LYBT.WebAPI.Controllers
         // - CreatePrescription, CreatePrescriptionSimple: 通过SaveAsync创建
         // - UpdatePrescription, UpdatePrescriptionSimple: 通过SaveAsync更新
         // - DeletePrescription: 通过SaveAsync设置NeedsPrescription=false触发软删除
-
-        /// <summary>
-        /// 将处方实体映射为DTO
-        /// OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
-        /// </summary>
-        private static PrescriptionDetailDto MapToPrescriptionDetailDto(Prescription entity, Guid medicalCaseId)
-        {
-            return new PrescriptionDetailDto
-            {
-                Id = entity.Id,
-                MedicalCaseId = medicalCaseId,
-                // OpenSpec: PatientId/UserId已移除，客户端通过MedicalCaseId获取
-                PrescriptionNumber = entity.PrescriptionNumber,
-                // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
-                // Indication = entity.Indication,
-                DosageCount = entity.DosageCount,
-                Discount = entity.Discount,
-                Advice = entity.Advice,
-                // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
-                // FormulaSource = entity.FormulaSource,
-                ReferencedFormulas = entity.ReferencedFormulas,
-                Remark = entity.Remark,
-                Items = entity.Items?.Select(item => new PrescriptionItemDto
-                {
-                    Id = item.Id,
-                    HerbId = item.HerbId,
-                    HerbName = item.HerbName,
-                    Dosage = item.Dosage,
-                    Unit = item.Unit,
-                    UnitPrice = item.UnitPrice,
-                    Subtotal = item.Amount, // Amount是计算属性，映射到Subtotal
-                    Usage = item.Usage,
-                    Remark = item.Remark,
-                    DecocteMethod = item.DecocteMethod
-                }).ToList() ?? new List<PrescriptionItemDto>(),
-                SingleDosePrice = entity.Items?.Sum(x => x.Amount) ?? 0,
-                TotalPrice = (entity.Items?.Sum(x => x.Amount) ?? 0) * entity.DosageCount * entity.Discount,
-                TotalWeight = entity.Items?.Sum(x => x.Dosage) ?? 0,
-                Status = CommonStatus.Enabled, // 子实体状态由聚合根MedicalCase控制
-                CreatedAt = entity.CreatedAt,
-                UpdatedAt = entity.UpdatedAt
-            };
-        }
-
-        /// <summary>
-        /// 将医案实体映射为DTO
-        /// </summary>
-        private static MedicalCaseDetailDto MapToMedicalCaseDto(MedicalCase entity)
-        {
-            return new MedicalCaseDetailDto
-            {
-                Id = entity.Id,
-                PatientId = entity.PatientId,
-                PatientName = entity.PatientName,
-                UserId = entity.UserId,
-                DoctorName = entity.DoctorName,
-                // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
-                // ConsultationDate = entity.CreatedAt,
-                CaseStatus = entity.CaseStatus,
-                Remark = entity.Remark,
-                Diagnosis = entity.Consultation?.TcmDiagnosis,
-                CreatedAt = entity.CreatedAt,
-                // Issue #2231: 添加ConsultationId字段（共享主键，值等于MedicalCase.Id）
-                ConsultationId = entity.Id
-            };
-        }
 
         #region 聚合保存端点
 
@@ -266,91 +204,10 @@ namespace LYBT.WebAPI.Controllers
             }
 
             // Entity → MedicalCaseDetailDto 映射
-            var detailDto = MapToMedicalCaseDetailDto(result);
+            var detailDto = _mapper.MapToMedicalCaseDetailDto(result);
 
             _logger.LogInformation("医案聚合保存成功，MedicalCaseId: {MedicalCaseId}", id);
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(detailDto, "保存成功"));
-        }
-
-        /// <summary>
-        /// 将医案实体映射为详情DTO（包含Consultation和Prescription）
-        /// </summary>
-        private static MedicalCaseDetailDto MapToMedicalCaseDetailDto(MedicalCase entity)
-        {
-            return new MedicalCaseDetailDto
-            {
-                // 基础字段
-                Id = entity.Id,
-                PatientId = entity.PatientId,
-                PatientName = entity.PatientName,
-                UserId = entity.UserId,
-                DoctorName = entity.DoctorName,
-                // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
-                // ConsultationDate = entity.CreatedAt,
-                CaseStatus = entity.CaseStatus,
-                Remark = entity.Remark,
-                Diagnosis = entity.Consultation?.TcmDiagnosis,
-                CreatedAt = entity.CreatedAt,
-
-                // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
-                PresentIllness = entity.Consultation?.PresentIllness,
-
-                // Consultation - OpenSpec: refactor-diagnosis-fields 精简为4个核心字段
-                Consultation = entity.Consultation != null ? new ConsultationDetailDto
-                {
-                    Id = entity.Consultation.Id,
-                    MedicalCaseId = entity.Id,
-                    PatientId = entity.PatientId,
-                    UserId = entity.UserId,
-                    PatientName = entity.PatientName,
-                    DoctorName = entity.DoctorName,
-                    PresentIllness = entity.Consultation.PresentIllness,
-                    TongueDiagnosis = entity.Consultation.TongueDiagnosis,
-                    PulseDiagnosis = entity.Consultation.PulseDiagnosis,
-                    TcmDiagnosis = entity.Consultation.TcmDiagnosis,
-                    CreatedAt = entity.Consultation.CreatedAt,
-                    UpdatedAt = entity.Consultation.UpdatedAt
-                } : null,
-
-                // Prescription
-                // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
-                Prescription = entity.Prescription != null && !entity.Prescription.IsDeleted ? new PrescriptionDetailDto
-                {
-                    Id = entity.Prescription.Id,
-                    MedicalCaseId = entity.Id,
-                    PrescriptionNumber = entity.Prescription.PrescriptionNumber,
-                    // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
-                    // Indication = entity.Prescription.Indication,
-                    DosageCount = entity.Prescription.DosageCount,
-                    Discount = entity.Prescription.Discount,
-                    Advice = entity.Prescription.Advice,
-                    // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
-                    // FormulaSource = entity.Prescription.FormulaSource,
-                    ReferencedFormulas = entity.Prescription.ReferencedFormulas,
-                    Remark = entity.Prescription.Remark,
-                    Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
-                    {
-                        Id = item.Id,
-                        HerbId = item.HerbId,
-                        HerbName = item.HerbName,
-                        Dosage = item.Dosage,
-                        Unit = item.Unit,
-                        UnitPrice = item.UnitPrice,
-                        TotalPrice = item.Amount,
-                        TotalWeight = item.Dosage,
-                        Subtotal = item.Amount,
-                        Usage = item.Usage,
-                        Remark = item.Remark,
-                        DecocteMethod = item.DecocteMethod
-                    }).ToList() ?? new List<PrescriptionItemDto>(),
-                    SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0,
-                    TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount,
-                    TotalWeight = entity.Prescription.Items?.Sum(x => x.Dosage) ?? 0,
-                    Status = CommonStatus.Enabled,
-                    CreatedAt = entity.Prescription.CreatedAt,
-                    UpdatedAt = entity.Prescription.UpdatedAt
-                } : null
-            };
         }
 
         #endregion
@@ -374,7 +231,7 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
 
             // Entity → DTO映射
-            var dto = MapToMedicalCaseDto(result);
+            var dto = _mapper.MapToMedicalCaseDto(result);
 
             _logger.LogInformation("病案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}",
                 id, request.Status);
@@ -472,7 +329,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var entities = await _queryService.GetBatchAsync(dto.Ids);
-            var dtos = entities.Select(MapToMedicalCaseDetailDto).ToList();
+            var dtos = entities.Select(e => _mapper.MapToMedicalCaseDetailDto(e)).ToList();
 
             return Success(dtos, $"查询成功，共{dtos.Count}条记录");
         }
@@ -494,7 +351,7 @@ namespace LYBT.WebAPI.Controllers
             if (result == null)
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
 
-            var dto = MapToMedicalCaseDetailDto(result);
+            var dto = _mapper.MapToMedicalCaseDetailDto(result);
             _logger.LogInformation("病案关闭，MedicalCaseId: {Id}", id);
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "病案已关闭"));
         }
@@ -537,7 +394,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             // Entity → DTO映射
-            var dto = MapToMedicalCaseDto(result);
+            var dto = _mapper.MapToMedicalCaseDto(result);
 
             _logger.LogInformation("病案暂存成功，MedicalCaseId: {Id}", id);
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "病案已暂存"));
@@ -581,7 +438,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             // Entity → DTO映射
-            var dto = MapToMedicalCaseDto(result);
+            var dto = _mapper.MapToMedicalCaseDto(result);
 
             _logger.LogInformation("病案取消成功，MedicalCaseId: {Id}", id);
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "病案已取消"));
@@ -606,7 +463,7 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
 
             // Entity → DTO映射 - 使用MapToMedicalCaseDetailDto返回完整详情
-            var dto = MapToMedicalCaseDetailDto(result);
+            var dto = _mapper.MapToMedicalCaseDetailDto(result);
 
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "查询成功"));
         }

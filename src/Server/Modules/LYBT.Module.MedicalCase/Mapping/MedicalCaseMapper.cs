@@ -222,4 +222,161 @@ public partial class MedicalCaseMapper
     /// PrescriptionItemInputDto列表转换为PrescriptionItem实体列表
     /// </summary>
     public partial List<PrescriptionItem> ToPrescriptionItemEntities(List<PrescriptionItemInputDto> dtos);
+
+
+    // ========== Controller迁移的详情映射方法 ==========
+    // OpenSpec: refactor-server-srp-patterns - 从Controller迁移到Mapper
+
+    /// <summary>
+    /// 处方实体转换为PrescriptionDetailDto（包含价格计算）
+    /// </summary>
+    /// <param name="entity">处方实体</param>
+    /// <param name="medicalCaseId">关联的医案ID</param>
+    /// <returns>处方详情DTO</returns>
+    public PrescriptionDetailDto MapToPrescriptionDetailDto(Prescription entity, Guid medicalCaseId)
+    {
+        return new PrescriptionDetailDto
+        {
+            Id = entity.Id,
+            MedicalCaseId = medicalCaseId,
+            // OpenSpec: PatientId/UserId已移除，客户端通过MedicalCaseId获取
+            PrescriptionNumber = entity.PrescriptionNumber,
+            // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
+            // Indication = entity.Indication,
+            DosageCount = entity.DosageCount,
+            Discount = entity.Discount,
+            Advice = entity.Advice,
+            // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
+            // FormulaSource = entity.FormulaSource,
+            ReferencedFormulas = entity.ReferencedFormulas,
+            Remark = entity.Remark,
+            Items = entity.Items?.Select(item => new PrescriptionItemDto
+            {
+                Id = item.Id,
+                HerbId = item.HerbId,
+                HerbName = item.HerbName,
+                Dosage = item.Dosage,
+                Unit = item.Unit,
+                UnitPrice = item.UnitPrice,
+                Subtotal = item.Amount, // Amount是计算属性，映射到Subtotal
+                Usage = item.Usage,
+                Remark = item.Remark,
+                DecocteMethod = item.DecocteMethod
+            }).ToList() ?? new List<PrescriptionItemDto>(),
+            SingleDosePrice = entity.Items?.Sum(x => x.Amount) ?? 0,
+            TotalPrice = (entity.Items?.Sum(x => x.Amount) ?? 0) * entity.DosageCount * entity.Discount,
+            TotalWeight = entity.Items?.Sum(x => x.Dosage) ?? 0,
+            Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled, // 子实体状态由聚合根MedicalCase控制
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt
+        };
+    }
+
+    /// <summary>
+    /// 医案实体转换为MedicalCaseDetailDto（简化版，无嵌套DTO）
+    /// </summary>
+    /// <param name="entity">医案实体</param>
+    /// <returns>医案详情DTO（仅基础字段）</returns>
+    public MedicalCaseDetailDto MapToMedicalCaseDto(MedicalCase entity)
+    {
+        return new MedicalCaseDetailDto
+        {
+            Id = entity.Id,
+            PatientId = entity.PatientId,
+            PatientName = entity.PatientName,
+            UserId = entity.UserId,
+            DoctorName = entity.DoctorName,
+            // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
+            // ConsultationDate = entity.CreatedAt,
+            CaseStatus = entity.CaseStatus,
+            Remark = entity.Remark,
+            Diagnosis = entity.Consultation?.TcmDiagnosis,
+            CreatedAt = entity.CreatedAt,
+            // Issue #2231: 添加ConsultationId字段（共享主键，值等于MedicalCase.Id）
+            ConsultationId = entity.Id
+        };
+    }
+
+    /// <summary>
+    /// 医案实体转换为MedicalCaseDetailDto（完整版，包含嵌套Consultation和Prescription）
+    /// </summary>
+    /// <param name="entity">医案实体（需包含导航属性）</param>
+    /// <returns>医案完整详情DTO</returns>
+    public MedicalCaseDetailDto MapToMedicalCaseDetailDto(MedicalCase entity)
+    {
+        return new MedicalCaseDetailDto
+        {
+            // 基础字段
+            Id = entity.Id,
+            PatientId = entity.PatientId,
+            PatientName = entity.PatientName,
+            UserId = entity.UserId,
+            DoctorName = entity.DoctorName,
+            // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
+            // ConsultationDate = entity.CreatedAt,
+            CaseStatus = entity.CaseStatus,
+            Remark = entity.Remark,
+            Diagnosis = entity.Consultation?.TcmDiagnosis,
+            CreatedAt = entity.CreatedAt,
+
+            // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
+            PresentIllness = entity.Consultation?.PresentIllness,
+
+            // Consultation - OpenSpec: refactor-diagnosis-fields 精简为4个核心字段
+            Consultation = entity.Consultation != null ? new ConsultationDetailDto
+            {
+                Id = entity.Consultation.Id,
+                MedicalCaseId = entity.Id,
+                PatientId = entity.PatientId,
+                UserId = entity.UserId,
+                PatientName = entity.PatientName,
+                DoctorName = entity.DoctorName,
+                PresentIllness = entity.Consultation.PresentIllness,
+                TongueDiagnosis = entity.Consultation.TongueDiagnosis,
+                PulseDiagnosis = entity.Consultation.PulseDiagnosis,
+                TcmDiagnosis = entity.Consultation.TcmDiagnosis,
+                CreatedAt = entity.Consultation.CreatedAt,
+                UpdatedAt = entity.Consultation.UpdatedAt
+            } : null,
+
+            // Prescription
+            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
+            Prescription = entity.Prescription != null && !entity.Prescription.IsDeleted ? new PrescriptionDetailDto
+            {
+                Id = entity.Prescription.Id,
+                MedicalCaseId = entity.Id,
+                PrescriptionNumber = entity.Prescription.PrescriptionNumber,
+                // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
+                // Indication = entity.Prescription.Indication,
+                DosageCount = entity.Prescription.DosageCount,
+                Discount = entity.Prescription.Discount,
+                Advice = entity.Prescription.Advice,
+                // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
+                // FormulaSource = entity.Prescription.FormulaSource,
+                ReferencedFormulas = entity.Prescription.ReferencedFormulas,
+                Remark = entity.Prescription.Remark,
+                Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
+                {
+                    Id = item.Id,
+                    HerbId = item.HerbId,
+                    HerbName = item.HerbName,
+                    Dosage = item.Dosage,
+                    Unit = item.Unit,
+                    UnitPrice = item.UnitPrice,
+                    TotalPrice = item.Amount,
+                    TotalWeight = item.Dosage,
+                    Subtotal = item.Amount,
+                    Usage = item.Usage,
+                    Remark = item.Remark,
+                    DecocteMethod = item.DecocteMethod
+                }).ToList() ?? new List<PrescriptionItemDto>(),
+                SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0,
+                TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount,
+                TotalWeight = entity.Prescription.Items?.Sum(x => x.Dosage) ?? 0,
+                Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
+                CreatedAt = entity.Prescription.CreatedAt,
+                UpdatedAt = entity.Prescription.UpdatedAt
+            } : null
+        };
+    }
 }

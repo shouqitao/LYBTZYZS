@@ -22,11 +22,16 @@ namespace LYBT.WebAPI.Controllers
     public class FormulasController : BaseApiController
     {
         private readonly IFormulaService _service;
+        private readonly IFormulaImportExportService _importExportService;
 
-        public FormulasController(IFormulaService service, ILogger<FormulasController> logger)
+        public FormulasController(
+            IFormulaService service, 
+            IFormulaImportExportService importExportService,
+            ILogger<FormulasController> logger)
             : base(logger)
         {
             _service = service;
+            _importExportService = importExportService;
         }
 
         /// <summary>
@@ -160,7 +165,8 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("导入数据不能为空");
             }
 
-            var result = await _service.ImportFromDataAsync(request.Formulas, request.FileName);
+            // OpenSpec: refactor-server-srp-patterns - 使用独立的导入导出服务
+            var result = await _importExportService.ImportFromDataAsync(request.Formulas, request.FileName);
 
             if (!result.IsSuccess || result.Data == null)
             {
@@ -183,7 +189,8 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> Export([FromQuery] string? category = null)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var stream = await _service.ExportAsync(category);
+            // OpenSpec: refactor-server-srp-patterns - 使用独立的导入导出服务
+            var stream = await _importExportService.ExportAsync(category);
             var fileName = string.IsNullOrWhiteSpace(category)
                 ? $"验方数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
                 : $"验方数据_{category}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
@@ -205,7 +212,8 @@ namespace LYBT.WebAPI.Controllers
         public IActionResult ExportTemplate()
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var stream = _service.GenerateImportTemplate();
+            // OpenSpec: refactor-server-srp-patterns - 使用独立的导入导出服务
+            var stream = _importExportService.GenerateImportTemplate();
             var fileName = $"验方导入模板_{DateTime.Now:yyyyMMdd}.xlsx";
 
             return File(stream,
