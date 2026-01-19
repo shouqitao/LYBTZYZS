@@ -20,18 +20,16 @@ public class FormulaImportExportService : IFormulaImportExportService
 {
     private readonly IFormulaRepository _repository;
     private readonly ICrossModuleQueryService _crossModuleQuery;
-    private readonly FormulaMapper _mapper;
     private readonly ILogger<FormulaImportExportService> _logger;
+    private readonly FormulaMapper _mapper = new();
 
     public FormulaImportExportService(
         IFormulaRepository repository,
         ICrossModuleQueryService crossModuleQuery,
-        FormulaMapper mapper,
         ILogger<FormulaImportExportService> logger)
     {
         _repository = repository;
         _crossModuleQuery = crossModuleQuery;
-        _mapper = mapper;
         _logger = logger;
     }
 
