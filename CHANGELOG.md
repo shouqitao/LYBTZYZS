@@ -37,6 +37,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Server层SRP架构重构 (OpenSpec: refactor-server-srp-patterns) - 2026-01-19
+
+**背景**: Server层存在8个架构问题（3 HIGH + 3 MEDIUM + 2 LOW），核心服务违反SRP原则。
+
+**核心改进**:
+- **H1: MedicalCaseController Mapping提取**:
+  - MedicalCaseMapper新增3个Mapping方法
+  - Controller删除内联Mapping方法，调用Mapper
+
+- **M1: 死代码清理**:
+  - 删除`LYBT.Module.Consultation`模块（功能已整合到MedicalCase聚合根）
+  - 删除`LYBT.Module.Prescriptions`模块（功能已整合到MedicalCase聚合根）
+  - 清理解决方案(.sln)和测试项目引用
+  - 净减少4255行死代码
+
+- **M2: FormulaService职责拆分**:
+  - 新增`IFormulaImportExportService`接口
+  - 新增`FormulaImportExportService`实现（~280行）
+  - FormulaService从792行减少到约512行
+
+**影响模块**: Module.Formula, Module.MedicalCase, WebAPI
+
+**架构决策**: 记录于Serena记忆系统
+
+**状态**: 已完成
+
 #### 前端架构SRP模式重构 (OpenSpec: refactor-frontend-srp-patterns) - 2026-01-17
 
 **背景**: 前端架构存在16个架构问题，核心服务违反SRP原则（MedicalCaseService 605行/4职责，UserMasterDetailViewModel 584行/8职责）。
