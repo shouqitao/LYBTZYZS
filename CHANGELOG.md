@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### 身份证读卡器集成 (OpenSpec: integrate-cardreader-module) - 2026-01-20
+
+**背景**: 需要在挂号/就诊工作台集成身份证读卡器，实现患者身份快速识别。
+
+**核心改进**:
+- **新建CardReader模块**:
+  - 位置: `src/Client/Desktop/Modules/LYBT.Desktop.CardReader/`
+  - 策略模式: 支持多厂商读卡器扩展
+  - 完整实现: 华大HD100适配器 + MockCardReader（开发测试用）
+
+- **集成接口设计**:
+  - `IPatientCardReaderIntegration` - 患者模块集成接口
+  - `PatientCardReaderIntegration` - 查找/创建患者服务
+
+- **UI集成**:
+  - `CardReaderStatusControl` - 读卡器状态控件
+  - 就诊工作台: 完整读卡器控制面板
+  - 患者管理页: "刷卡录入"快捷按钮
+
+**影响模块**: Desktop.CardReader(新), Desktop.Patients, Desktop.Clinical, Desktop.Infrastructure, Desktop.Shell
+
+**状态**: 已归档
+
 #### 独立打印模块 (OpenSpec: create-printing-module) - 2026-01-05
 
 **背景**: 处方打印服务位于MedicalCase模块内，耦合过紧，扩展困难。
