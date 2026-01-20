@@ -87,8 +87,8 @@
     <ProjectReference Include="..\..\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
     <ProjectReference Include="..\..\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\..\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
-    <!-- OpenSpec: integrate-cardreader-module - 身份证读卡器集成 -->
-    <ProjectReference Include="..\..\Modules\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj" />
+    <!-- OpenSpec: integrate-cardreader-module - 身份证读卡器集成 (已迁移到Core目录) -->
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj" />
   </ItemGroup>
 
 </Project>

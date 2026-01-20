@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Foundation", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Contracts", "src\Client\Desktop\Core\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj", "{8F4BA2EB-C809-4204-922E-94A2DDDA04CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.CardReader", "src\Client\Desktop\Modules\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj", "{BB7B2635-3603-4FC7-9D18-A5DD7D38DBD9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.CardReader", "src\Client\Desktop\Core\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj", "{BB7B2635-3603-4FC7-9D18-A5DD7D38DBD9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

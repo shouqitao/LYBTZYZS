@@ -86,8 +86,8 @@
   <ItemGroup Label="Module Dependencies">
     <!-- Epic #1676 Phase 4 Task 4.4: PatientSelectionViewModel需要IMedicalCaseRepository -->
     <ProjectReference Include="..\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
-    <!-- OpenSpec: integrate-cardreader-module - 身份证读卡器集成 -->
-    <ProjectReference Include="..\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj" />
+    <!-- OpenSpec: integrate-cardreader-module - 身份证读卡器集成 (已迁移到Core目录) -->
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj" />
   </ItemGroup>
 
 </Project>

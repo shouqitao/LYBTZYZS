@@ -1,6 +1,8 @@
 # LYBT.Desktop.CardReader 模块
 
 **功能**: 身份证读卡器集成模块
+**位置**: `src/Client/Desktop/Core/LYBT.Desktop.CardReader/`
+**架构定位**: Core基础设施层（与Printing模块并列）
 **状态**: 开发中
 **创建时间**: 2026-01-19
 
@@ -9,6 +11,8 @@
 ## 模块概述
 
 提供身份证读卡器硬件集成，支持多厂商读卡器，用于挂号/就诊工作站快速识别患者身份。
+
+**架构说明**: 本模块属于Core基础设施层，提供硬件抽象能力，不包含业务逻辑。与`LYBT.Desktop.Printing`模块职责定位一致（硬件抽象层）。
 
 ## 目录结构
 
@@ -168,4 +172,4 @@ private void OnCardRead(object? sender, CardReadResult e)
 ---
 
 **维护者**: Claude Code
-**最后更新**: 2026-01-19
+**最后更新**: 2026-01-20 (迁移到Core目录)

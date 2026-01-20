@@ -163,7 +163,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Printing", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BusinessModules", "BusinessModules", "{56701CFB-D2A9-427C-82D9-8EAE08A06688}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.CardReader", "src\Client\Desktop\Modules\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj", "{66E24925-C561-4740-89FC-4925D1C7EE33}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.CardReader", "src\Client\Desktop\Core\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj", "{66E24925-C561-4740-89FC-4925D1C7EE33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
