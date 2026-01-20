@@ -60,6 +60,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### CardReader模块迁移到Core目录 (OpenSpec: relocate-cardreader-to-core) - 2026-01-20
+
+**背景**: CardReader模块提供硬件抽象能力（身份证读卡器集成），属于Core基础设施层而非Modules业务模块层，需与Printing模块保持一致的架构定位。
+
+**核心改进**:
+- **目录迁移**:
+  - 从: `src/Client/Desktop/Modules/LYBT.Desktop.CardReader/`
+  - 到: `src/Client/Desktop/Core/LYBT.Desktop.CardReader/`
+  - 使用git mv保留完整历史记录
+
+- **引用更新**:
+  - `LYBT.Desktop.sln` - 项目路径更新
+  - `LYBT.All.sln` - 项目路径更新
+  - `Shell/LYBT.Desktop.Shell.csproj` - 项目引用路径
+  - `Roles/LYBT.Desktop.Clinical/LYBT.Desktop.Clinical.csproj` - 项目引用路径
+  - `Modules/LYBT.Desktop.Patients/LYBT.Desktop.Patients.csproj` - 项目引用路径
+
+**架构说明**: Core目录存放基础设施（Printing, CardReader等硬件抽象），Modules存放业务模块。
+
+**状态**: 已归档
+
 #### Server层SRP架构重构 (OpenSpec: refactor-server-srp-patterns) - 2026-01-19
 
 **背景**: Server层存在8个架构问题（3 HIGH + 3 MEDIUM + 2 LOW），核心服务违反SRP原则。
