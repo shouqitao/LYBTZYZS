@@ -54,6 +54,54 @@ namespace LYBT.Desktop.Patients.Repositories
 
         #endregion
 
+        #region 身份证号查询 - OpenSpec: integrate-cardreader-module
+
+        /// <summary>
+        /// 根据身份证号获取患者详情
+        /// 实现策略：使用身份证号作为关键词搜索，然后精确匹配IdNumber
+        /// </summary>
+        public async Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber)
+        {
+            if (string.IsNullOrWhiteSpace(idNumber))
+                return null;
+
+            try
+            {
+                _logger.LogInformation("根据身份证号查询患者：{IdNumber}", idNumber[..Math.Min(6, idNumber.Length)] + "****");
+
+                // 使用身份证号作为关键词搜索候选列表
+                var candidates = await SearchAsync(idNumber);
+                if (candidates == null || candidates.Count == 0)
+                {
+                    _logger.LogInformation("未找到匹配的患者");
+                    return null;
+                }
+
+                // 逐个获取详情并精确匹配身份证号
+                foreach (var candidate in candidates)
+                {
+                    var detail = await GetByIdAsync(candidate.Id);
+                    if (detail != null &&
+                        !string.IsNullOrEmpty(detail.IdNumber) &&
+                        detail.IdNumber.Equals(idNumber, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogInformation("找到匹配患者：{PatientId}, {Name}", detail.Id, detail.Name);
+                        return detail;
+                    }
+                }
+
+                _logger.LogInformation("候选列表中未找到身份证号精确匹配的患者");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据身份证号查询患者时发生异常");
+                return null;
+            }
+        }
+
+        #endregion
+
         #region 批量导入/导出功能
 
         /// <summary>

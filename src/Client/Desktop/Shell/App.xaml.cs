@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Auth;
+using LYBT.Desktop.CardReader;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Contracts.Services;
 // [已删除] using LYBT.Desktop.Consultation; - 模块已废弃，功能已迁移到MedicalCase模块
@@ -326,6 +327,9 @@ public partial class App : PrismApplication
         // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块的ConsultationItem（Entity→DTO→Item模式）
         // [已删除] PrescriptionsModule - 空壳模块已移除，功能已迁移到MedicalCase
         moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.WhenAvailable);
+
+        // OpenSpec: integrate-cardreader-module - 身份证读卡模块
+        moduleCatalog.AddModule<CardReaderModule>(InitializationMode.WhenAvailable);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }

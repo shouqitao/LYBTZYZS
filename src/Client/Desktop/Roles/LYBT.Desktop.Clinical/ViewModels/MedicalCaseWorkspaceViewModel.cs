@@ -1,4 +1,8 @@
 ﻿using System.Collections.ObjectModel;
+using LYBT.Desktop.CardReader.Integration;
+using LYBT.Desktop.CardReader.Models;
+using LYBT.Desktop.CardReader.Services;
+using LYBT.Desktop.Clinical.Handlers; // OpenSpec: refactor-workspace-srp - Handler提取
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
@@ -50,8 +54,12 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     // OpenSpec: create-printing-module - IPrescriptionPrintService已移除，打印功能通过PrescriptionPrintHandler使用
     private readonly IPendingQueueManager _pendingQueueManager;
     private readonly PrescriptionPrintHandler _printHandler;
-    // OpenSpec: simplify-workspace-architecture - WorkspacePendingQueueHandler已删除，逻辑内联到ViewModel
-    // OpenSpec: simplify-workspace-architecture - PrescriptionImportHandler已删除，使用扩展方法替代
+    // OpenSpec: refactor-workspace-srp - Handler提取
+    private readonly PendingQueueHandler _pendingQueueHandler;
+    private readonly PrescriptionImportHandler _prescriptionImportHandler;
+    // OpenSpec: integrate-cardreader-module - 读卡器Handler
+    private readonly CardReaderWorkspaceHandler _cardReaderHandler;
+    private readonly IPatientCardReaderIntegration _patientCardReaderIntegration;
 
     // OpenSpec: simplify-workspace-architecture - StatusDisplay已合并到WorkspaceState
 
@@ -262,6 +270,41 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     /// </summary>
     public bool HasNoPendingCases => PendingQueue == null || PendingQueue.Count == 0;
 
+    #region 读卡器属性 - OpenSpec: integrate-cardreader-module
+
+    /// <summary>
+    /// 读卡器是否已连接
+    /// </summary>
+    public bool IsCardReaderConnected => _cardReaderHandler?.IsConnected ?? false;
+
+    /// <summary>
+    /// 是否启用自动读卡
+    /// </summary>
+    public bool IsAutoReadEnabled
+    {
+        get => _cardReaderHandler?.IsAutoReadEnabled ?? false;
+        set
+        {
+            if (_cardReaderHandler != null && _cardReaderHandler.IsAutoReadEnabled != value)
+            {
+                _cardReaderHandler.ToggleAutoRead();
+                OnPropertyChanged(nameof(IsAutoReadEnabled));
+            }
+        }
+    }
+
+    /// <summary>
+    /// 是否正在读卡
+    /// </summary>
+    public bool IsReading => _cardReaderHandler?.IsReading ?? false;
+
+    /// <summary>
+    /// 读卡器状态信息
+    /// </summary>
+    public string CardReaderStatusMessage => _cardReaderHandler?.StatusMessage ?? "读卡器未连接";
+
+    #endregion
+
     #endregion
 
     #region 命令
@@ -311,6 +354,17 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     /// </summary>
     public DelegateCommand ClearHerbItemsCommand { get; }
 
+    // OpenSpec: integrate-cardreader-module - 读卡器命令
+    /// <summary>
+    /// 手动读卡命令
+    /// </summary>
+    public DelegateCommand ReadCardCommand { get; }
+
+    /// <summary>
+    /// 切换自动读卡命令
+    /// </summary>
+    public DelegateCommand ToggleAutoReadCommand { get; }
+
     #endregion
 
     #region 构造函数
@@ -319,6 +373,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     // OpenSpec: simplify-medicalcase-module - MedicalCaseLifecycleHandler已合并到IMedicalCaseService
     // OpenSpec: simplify-workspace-architecture - DataLoader合并到Coordinator, NavigationHandler逻辑内联, ImportHandler使用扩展方法
     // OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+    // OpenSpec: integrate-cardreader-module - 添加读卡器服务依赖
     public MedicalCaseWorkspaceViewModel(
         IViewModelServices services,
         MedicalCaseService dataManager,
@@ -329,6 +384,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         IActiveConsultationService activeConsultationService,
         IPendingQueueManager pendingQueueManager,
         PrescriptionPrintHandler printHandler,
+        ICardReaderService cardReaderService,
+        IPatientCardReaderIntegration patientCardReaderIntegration,
         IDialogService? dialogService = null)
         : base(services)
     {
@@ -346,8 +403,66 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         _pendingQueueManager = pendingQueueManager;
         _printHandler = printHandler;
 
-        // OpenSpec: simplify-workspace-architecture - WorkspacePendingQueueHandler已删除，逻辑内联到ViewModel
-        // OpenSpec: simplify-workspace-architecture - MedicalCaseNavigationHandler已删除，逻辑内联到ViewModel
+        // OpenSpec: refactor-workspace-srp - 初始化Handler
+        _pendingQueueHandler = new PendingQueueHandler(
+            medicalCaseService,
+            pendingQueueManager,
+            navigationCoordinator,
+            services.LoggerFactory);
+        _pendingQueueHandler.GetCommonDialogService = () => CommonDialogService;
+        _pendingQueueHandler.SetBusy = (busy, msg) => SetBusy(busy, msg);
+        _pendingQueueHandler.ShowErrorMessage = ShowErrorMessageAsync;
+        _pendingQueueHandler.GetCurrentMedicalCaseId = () => MedicalCaseId;
+        _pendingQueueHandler.GetCurrentPatient = () => CurrentPatient;
+        _pendingQueueHandler.GetIsReadOnly = () => IsReadOnly;
+        _pendingQueueHandler.SaveDraftOnly = SaveDraftOnlyAsync;
+        _pendingQueueHandler.OnPropertyChanged = OnPropertyChanged;
+
+        _prescriptionImportHandler = new PrescriptionImportHandler(
+            dialogService,
+            services.LoggerFactory);
+        _prescriptionImportHandler.GetCommonDialogService = () => CommonDialogService;
+        _prescriptionImportHandler.SetBusy = (busy, msg) => SetBusy(busy, msg);
+        _prescriptionImportHandler.ShowErrorMessage = ShowErrorMessageAsync;
+        _prescriptionImportHandler.ShowSuccessMessage = ShowSuccessMessageAsync;
+        _prescriptionImportHandler.ShowConfirmMessage = ShowConfirmMessageAsync;
+        _prescriptionImportHandler.GetCurrentPatient = () => CurrentPatient;
+        _prescriptionImportHandler.GetPrescription = () => Prescription;
+
+        // OpenSpec: integrate-cardreader-module - 保存读卡器集成服务引用
+        _patientCardReaderIntegration = patientCardReaderIntegration ?? throw new ArgumentNullException(nameof(patientCardReaderIntegration));
+
+        // OpenSpec: integrate-cardreader-module - 初始化读卡器Handler
+        _cardReaderHandler = new CardReaderWorkspaceHandler(
+            cardReaderService,
+            patientCardReaderIntegration,
+            medicalCaseService,
+            navigationCoordinator,
+            services.LoggerFactory);
+        _cardReaderHandler.GetCommonDialogService = () => CommonDialogService;
+        _cardReaderHandler.SetBusy = (busy, msg) => SetBusy(busy, msg);
+        _cardReaderHandler.ShowErrorMessage = ShowErrorMessageAsync;
+        _cardReaderHandler.ShowSuccessMessage = ShowSuccessMessageAsync;
+        _cardReaderHandler.OnPropertyChanged = propertyName =>
+        {
+            // 转发Handler属性变更到ViewModel
+            switch (propertyName)
+            {
+                case nameof(CardReaderWorkspaceHandler.IsConnected):
+                    OnPropertyChanged(nameof(IsCardReaderConnected));
+                    break;
+                case nameof(CardReaderWorkspaceHandler.IsAutoReadEnabled):
+                    OnPropertyChanged(nameof(IsAutoReadEnabled));
+                    break;
+                case nameof(CardReaderWorkspaceHandler.IsReading):
+                    OnPropertyChanged(nameof(IsReading));
+                    break;
+                case nameof(CardReaderWorkspaceHandler.StatusMessage):
+                    OnPropertyChanged(nameof(CardReaderStatusMessage));
+                    break;
+            }
+        };
+        _cardReaderHandler.OnPatientReadyForMedicalCase = HandlePatientReadyForMedicalCaseAsync;
 
         // 订阅事件
         _editModeStateMachine.EditStateChanged += OnEditStateChanged;
@@ -367,14 +482,18 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         EnterEditModeCommand = new DelegateCommand(ExecuteEnterEditMode, () => _editModeStateMachine.CanEnterEditMode);
         ViewPatientHistoryCommand = new DelegateCommand(ExecuteViewPatientHistory, () => CurrentPatient != null).ObservesProperty(() => CurrentPatient);
 
-        // OpenSpec: refactor-medicalcase-workspace V2 TASK-V2-010 - 待诊队列命令初始化
-        RefreshQueueCommand = new DelegateCommand(async () => await ExecuteRefreshQueueAsync());
-        SelectPendingCaseCommand = new DelegateCommand<PendingMedicalCaseDto>(async p => await ExecuteSelectPendingCaseAsync(p));
+        // OpenSpec: refactor-workspace-srp - 待诊队列命令委托给Handler
+        RefreshQueueCommand = new DelegateCommand(async () => await _pendingQueueHandler.RefreshQueueAsync(v => IsRefreshingPendingQueue = v));
+        SelectPendingCaseCommand = new DelegateCommand<PendingMedicalCaseDto>(async p => await _pendingQueueHandler.SelectPendingCaseAsync(p));
 
-        // OpenSpec: consolidate-panel-viewmodels - 处方编辑命令初始化
-        OpenFormulaImportDialogCommand = new DelegateCommand(ExecuteOpenFormulaImportDialog);
-        OpenHistoryCopyDialogCommand = new DelegateCommand(ExecuteOpenHistoryCopyDialog);
-        ClearHerbItemsCommand = new DelegateCommand(ExecuteClearHerbItems);
+        // OpenSpec: refactor-workspace-srp - 处方导入命令委托给Handler
+        OpenFormulaImportDialogCommand = new DelegateCommand(() => _prescriptionImportHandler.OpenFormulaImportDialog());
+        OpenHistoryCopyDialogCommand = new DelegateCommand(() => _prescriptionImportHandler.OpenHistoryCopyDialog());
+        ClearHerbItemsCommand = new DelegateCommand(async () => await _prescriptionImportHandler.ClearHerbItemsAsync());
+
+        // OpenSpec: integrate-cardreader-module - 读卡器命令初始化
+        ReadCardCommand = new DelegateCommand(async () => await _cardReaderHandler.ManualReadCardAsync(), () => _cardReaderHandler?.IsConnected == true);
+        ToggleAutoReadCommand = new DelegateCommand(() => _cardReaderHandler?.ToggleAutoRead(), () => _cardReaderHandler?.IsConnected == true);
 
         // 订阅Prism事件 - OpenSpec: unify-event-system
         EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Subscribe(OnConsultationCompleted, ThreadOption.UIThread);
@@ -592,8 +711,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
             {
                 _editModeStateMachine.EnterReadOnlyMode();
                 await ShowSuccessMessageAsync("医案已暂存，可随时点击'修改医案'继续编辑");
-                // OpenSpec: simplify-workspace-architecture - 使用内联方法刷新待诊队列
-                await ExecuteRefreshQueueAsync();
+                // OpenSpec: simplify-workspace-architecture - 委托Handler刷新待诊队列
+                await _pendingQueueHandler.RefreshQueueAsync(v => IsRefreshingPendingQueue = v);
             }
             else
             {
@@ -665,455 +784,9 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
     }
 
-    #region 待诊队列操作 - OpenSpec: refactor-medicalcase-workspace V2 TASK-V2-010
+    // OpenSpec: refactor-workspace-srp - 待诊队列操作已迁移到PendingQueueHandler
 
-    /// <summary>
-    /// 刷新待诊队列
-    /// OpenSpec: simplify-workspace-architecture - 逻辑从WorkspacePendingQueueHandler内联
-    /// </summary>
-    private async Task ExecuteRefreshQueueAsync()
-    {
-        try
-        {
-            IsRefreshingPendingQueue = true;
-            await _pendingQueueManager.LoadPendingCasesAsync();
-            Logger.LogInformation("待诊队列加载完成，共{Count}条", _pendingQueueManager.PendingQueue.Count);
-            OnPropertyChanged(nameof(PendingQueue));
-            OnPropertyChanged(nameof(HasNoPendingCases));
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "加载待诊队列失败");
-        }
-        finally
-        {
-            IsRefreshingPendingQueue = false;
-        }
-    }
-
-    /// <summary>
-    /// 选择待诊队列中的患者，切换到该患者的医案
-    /// OpenSpec: simplify-workspace-architecture - 逻辑从WorkspacePendingQueueHandler内联
-    /// OpenSpec: redesign-pending-queue - 简化切换逻辑（自动暂存+双选项弹窗）
-    /// </summary>
-    private async Task ExecuteSelectPendingCaseAsync(PendingMedicalCaseDto? pendingCase)
-    {
-        if (pendingCase == null) return;
-
-        try
-        {
-            // OpenSpec: unify-case-status - 使用CaseStatus替代Type
-            Logger.LogInformation("选择待诊患者：{PatientName}，CaseStatus: {CaseStatus}，MedicalCaseId: {MedicalCaseId}",
-                pendingCase.PatientName, pendingCase.CaseStatus, pendingCase.MedicalCaseId);
-
-            // 1. 正在看诊(Active) -> 不可操作
-            if (pendingCase.CaseStatus == Shared.Models.Enums.MedicalCaseStatus.Active)
-            {
-                Logger.LogInformation("选择的是当前正在看诊的患者，不可切换");
-                return;
-            }
-
-            // 如果选择的是当前医案，无需切换
-            if (pendingCase.MedicalCaseId == MedicalCaseId && MedicalCaseId != Guid.Empty)
-            {
-                Logger.LogInformation("选择的是当前医案，无需切换");
-                return;
-            }
-
-            var hasCurrentCase = MedicalCaseId != Guid.Empty;
-
-            // OpenSpec: redesign-pending-queue - 自动暂存，无需弹窗确认
-            // 2. 当前有医案 -> 自动暂存后切换
-            if (hasCurrentCase)
-            {
-                SetBusy(true, "正在暂存当前医案...");
-                if (!IsReadOnly)
-                {
-                    // 编辑模式：执行暂存回调（保存当前编辑内容）
-                    await SaveDraftOnlyAsync();
-                    Logger.LogInformation("编辑模式，自动暂存后切换到患者：{PatientName}", pendingCase.PatientName);
-                }
-                else
-                {
-                    // 查看模式：调用Service暂存
-                    var switchResult = await _medicalCaseService.SaveDraftAsync(MedicalCaseId);
-                    if (!switchResult.success)
-                    {
-                        Logger.LogWarning("切换时暂存当前医案失败：{Error}", switchResult.errorMessage);
-                    }
-                    Logger.LogInformation("查看模式，直接切换到患者：{PatientName}", pendingCase.PatientName);
-                }
-            }
-            else
-            {
-                SetBusy(true, "正在切换患者...");
-                Logger.LogInformation("当前无医案，直接切换到患者：{PatientName}", pendingCase.PatientName);
-            }
-
-            // 3. 处理目标患者 - OpenSpec: unify-case-status
-            if (pendingCase.CaseStatus == Shared.Models.Enums.MedicalCaseStatus.Draft)
-            {
-                SetBusy(false, null);
-                await HandleSuspendedCaseAsync(pendingCase);
-            }
-            else
-            {
-                await NavigateToNewMedicalCaseAsync(pendingCase);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "切换患者失败");
-            await ShowErrorMessageAsync("切换患者失败，请重试");
-        }
-        finally
-        {
-            SetBusy(false, null);
-        }
-    }
-
-
-    /// <summary>
-    /// 处理挂起医案（暂存状态的医案）
-    /// OpenSpec: simplify-workspace-architecture - 逻辑从WorkspacePendingQueueHandler内联
-    /// OpenSpec: redesign-pending-queue - 简化为双选项弹窗（继续看诊/新建医案）
-    /// </summary>
-    private async Task HandleSuspendedCaseAsync(PendingMedicalCaseDto pendingCase)
-    {
-        if (CommonDialogService == null)
-        {
-            Logger.LogWarning("CommonDialogService为空，无法显示弹窗");
-            return;
-        }
-
-        Logger.LogInformation("显示双选项弹窗，患者：{PatientName}，挂起医案：{MedicalCaseId}",
-            pendingCase.PatientName, pendingCase.MedicalCaseId);
-
-        // OpenSpec: redesign-pending-queue - 简化为双选项确认
-        // 使用ShowConfirmAsync: 确认=继续看诊，取消=新建医案
-        var message = $"患者 {pendingCase.PatientName ?? "未知"} 有未完成的医案。\n\n" +
-            "点击「确定」继续看诊原医案\n" +
-            "点击「取消」关闭原医案并新建";
-
-        var choice = await CommonDialogService.ShowConfirmAsync(message, "选择操作");
-
-        if (choice)
-        {
-            // 用户选择"继续看诊"
-            Logger.LogInformation("用户选择继续看诊，导航到挂起医案");
-            await NavigateToExistingMedicalCaseAsync(pendingCase);
-        }
-        else
-        {
-            // 用户选择"新建医案" - 需要先关闭旧医案
-            Logger.LogInformation("用户选择新建医案，关闭挂起医案并创建新医案");
-            SetBusy(true, "正在关闭旧医案...");
-            if (pendingCase.MedicalCaseId.HasValue)
-            {
-                var cancelResult = await _medicalCaseService.CancelMedicalCaseAsync(pendingCase.MedicalCaseId.Value);
-                if (!cancelResult.success)
-                {
-                    Logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.errorMessage);
-                    await ShowErrorMessageAsync("关闭旧医案失败：" + cancelResult.errorMessage);
-                    SetBusy(false);
-                    return;
-                }
-            }
-            await NavigateToNewMedicalCaseAsync(pendingCase);
-        }
-    }
-
-    /// <summary>
-    /// 导航到新医案 - 为患者创建新医案并导航
-    /// OpenSpec: optimize-medicalcase-navigation
-    /// </summary>
-    private async Task NavigateToNewMedicalCaseAsync(PendingMedicalCaseDto pendingCase)
-    {
-        try
-        {
-            SetBusy(true, "正在创建新医案...");
-            Logger.LogInformation("为患者创建新医案：{PatientName}", pendingCase.PatientName);
-
-            // 创建新医案
-            var createResult = await _medicalCaseService.CreateMedicalCaseAsync(pendingCase.PatientId);
-            if (!createResult.success)
-            {
-                Logger.LogWarning("创建医案失败：{Error}", createResult.errorMessage);
-                await ShowErrorMessageAsync("创建医案失败：" + createResult.errorMessage);
-                return;
-            }
-
-            // 获取患者详情
-            var patientDetail = await GetPatientDetailAsync(pendingCase.PatientId);
-            if (patientDetail is null)
-            {
-                Logger.LogWarning("获取患者详情失败：PatientId={PatientId}", pendingCase.PatientId);
-                await ShowErrorMessageAsync("获取患者信息失败，请重试");
-                return;
-            }
-
-            // 导航到医案工作台
-            var parameters = new Dictionary<string, object>
-            {
-                { "MedicalCaseId", createResult.medicalCaseId },
-                { "CurrentPatient", patientDetail },
-                { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
-            };
-
-            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
-            Logger.LogInformation("已导航到新医案：{MedicalCaseId}", createResult.medicalCaseId);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "创建新医案并导航失败");
-            await ShowErrorMessageAsync("创建医案失败，请重试");
-        }
-        finally
-        {
-            SetBusy(false);
-        }
-    }
-
-    /// <summary>
-    /// 导航到已存在的医案
-    /// OpenSpec: optimize-medicalcase-navigation
-    /// </summary>
-    private async Task NavigateToExistingMedicalCaseAsync(PendingMedicalCaseDto pendingCase)
-    {
-        try
-        {
-            SetBusy(true, "正在加载医案...");
-
-            if (!pendingCase.MedicalCaseId.HasValue)
-            {
-                Logger.LogWarning("挂起医案ID为空，无法导航");
-                await ShowErrorMessageAsync("医案数据异常，请刷新后重试");
-                return;
-            }
-
-            // 获取患者详情
-            var patientDetail = await GetPatientDetailAsync(pendingCase.PatientId);
-            if (patientDetail is null)
-            {
-                Logger.LogWarning("获取患者详情失败：PatientId={PatientId}", pendingCase.PatientId);
-                await ShowErrorMessageAsync("获取患者信息失败，请重试");
-                return;
-            }
-
-            // 导航到医案工作台
-            var parameters = new Dictionary<string, object>
-            {
-                { "MedicalCaseId", pendingCase.MedicalCaseId.Value },
-                { "CurrentPatient", patientDetail },
-                { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
-            };
-
-            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
-            Logger.LogInformation("已导航到挂起医案：{MedicalCaseId}", pendingCase.MedicalCaseId.Value);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "导航到已存在医案失败");
-            await ShowErrorMessageAsync("加载医案失败，请重试");
-        }
-        finally
-        {
-            SetBusy(false);
-        }
-    }
-
-    /// <summary>
-    /// 获取患者详情
-    /// </summary>
-    private Task<PatientDetailDto?> GetPatientDetailAsync(Guid patientId)
-    {
-        try
-        {
-            // 如果当前患者就是目标患者，直接返回
-            if (CurrentPatient?.Id == patientId)
-            {
-                return Task.FromResult<PatientDetailDto?>(CurrentPatient);
-            }
-
-            // 否则通过服务获取患者详情
-            // 注：这里假设有一个PatientService可以获取患者详情
-            // 如果没有，可以通过PendingQueueManager或其他方式获取
-            Logger.LogDebug("需要获取患者详情：{PatientId}", patientId);
-            return Task.FromResult<PatientDetailDto?>(null); // 暂时返回null，OnNavigatedTo会处理
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "获取患者详情失败：{PatientId}", patientId);
-            return Task.FromResult<PatientDetailDto?>(null);
-        }
-    }
-
-    #endregion
-
-    #region 处方编辑命令 - OpenSpec: consolidate-panel-viewmodels
-
-    /// <summary>
-    /// 打开验方导入对话框
-    /// </summary>
-    private void ExecuteOpenFormulaImportDialog()
-    {
-        if (_dialogService == null)
-        {
-            Logger.LogWarning("DialogService为空，无法打开验方导入对话框");
-            return;
-        }
-
-        _dialogService.ShowDialog("FormulaImportDialog", null, async r =>
-        {
-            if (r.Result == ButtonResult.OK)
-                await HandleFormulaImportResultAsync(r.Parameters);
-        });
-    }
-
-    /// <summary>
-    /// 打开历史处方复制对话框
-    /// </summary>
-    private void ExecuteOpenHistoryCopyDialog()
-    {
-        if (_dialogService == null)
-        {
-            Logger.LogWarning("DialogService为空，无法打开历史复制对话框");
-            return;
-        }
-
-        var parameters = new DialogParameters
-        {
-            { "PatientId", CurrentPatient?.Id ?? Guid.Empty },
-            { "PatientName", CurrentPatient?.Name ?? string.Empty }
-        };
-
-        _dialogService.ShowDialog("HistoryCopyDialog", parameters, async r =>
-        {
-            if (r.Result == ButtonResult.OK)
-                await HandleHistoryCopyResultAsync(r.Parameters);
-        });
-    }
-
-    /// <summary>
-    /// 清空药材列表
-    /// </summary>
-    private async void ExecuteClearHerbItems()
-    {
-        // OpenSpec: unify-control-data-binding - PrescriptionItemDto无IsValid属性，使用HerbId判断
-        var validItemCount = Prescription.Items.Count(h => h.HerbId != Guid.Empty);
-        if (validItemCount == 0)
-        {
-            await ShowSuccessMessageAsync("当前没有可清空的药材");
-            return;
-        }
-
-        if (!await ShowConfirmMessageAsync($"确定要清空当前所有药材（共{validItemCount}项）吗？", "清空药材"))
-            return;
-
-        Prescription.Items.Clear();
-        Logger.LogInformation("已清空处方药材，共{Count}项", validItemCount);
-        await ShowSuccessMessageAsync($"已清空{validItemCount}项药材");
-    }
-
-    /// <summary>
-    /// 处理验方导入结果
-    /// </summary>
-    private async Task HandleFormulaImportResultAsync(IDialogParameters parameters)
-    {
-        try
-        {
-            SetBusy(true, "正在导入验方...");
-
-            if (!parameters.TryGetValue<FormulaDetailDto>("SelectedFormula", out var formula) || formula == null)
-                return;
-
-            if (!parameters.TryGetValue<List<FormulaHerbItemDto>>("SelectedHerbs", out var herbs) || herbs?.Any() != true)
-            {
-                await ShowErrorMessageAsync("验方无药材信息");
-                return;
-            }
-
-            // 转换为PrescriptionItemDto并添加到Prescription.Items
-            // OpenSpec: unify-control-data-binding - 使用扩展方法
-            var herbItems = formula.ToPrescriptionItemDtos(herbs);
-            if (!herbItems.Any())
-            {
-                await ShowErrorMessageAsync("验方无有效药材");
-                return;
-            }
-
-            foreach (var item in herbItems)
-            {
-                Prescription.Items.Add(item);
-            }
-
-            // 记录引用的验方名称
-            if (!string.IsNullOrEmpty(formula.Name))
-            {
-                if (string.IsNullOrEmpty(Prescription.ReferencedFormulas))
-                    Prescription.ReferencedFormulas = formula.Name;
-                else if (!Prescription.ReferencedFormulas.Contains(formula.Name))
-                    Prescription.ReferencedFormulas = $"{Prescription.ReferencedFormulas}, {formula.Name}";
-            }
-
-            await ShowSuccessMessageAsync($"已导入验方「{formula.Name}」，共 {herbItems.Count} 味药材");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "处理验方导入结果异常");
-            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入", ex));
-        }
-        finally
-        {
-            SetBusy(false);
-        }
-    }
-
-    /// <summary>
-    /// 处理历史处方复制结果
-    /// </summary>
-    private async Task HandleHistoryCopyResultAsync(IDialogParameters parameters)
-    {
-        try
-        {
-            SetBusy(true, "正在复制处方...");
-
-            if (!parameters.TryGetValue<List<PrescriptionItemDto>>("SelectedItems", out var items) || items?.Any() != true)
-            {
-                await ShowErrorMessageAsync("历史处方无药材记录");
-                return;
-            }
-
-            // 转换为PrescriptionItemDto并添加到Prescription.Items
-            // OpenSpec: unify-control-data-binding - 使用扩展方法
-            var herbItems = items.ToPrescriptionItemDtos();
-            if (!herbItems.Any())
-            {
-                await ShowErrorMessageAsync("历史处方无有效药材");
-                return;
-            }
-
-            foreach (var item in herbItems)
-            {
-                Prescription.Items.Add(item);
-            }
-
-            await ShowSuccessMessageAsync($"已复制 {herbItems.Count} 味药材");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "处理历史复制结果异常");
-            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("复制", ex));
-        }
-        finally
-        {
-            SetBusy(false);
-        }
-    }
-
-    #endregion
+    // OpenSpec: refactor-workspace-srp - 处方编辑命令已迁移到PrescriptionImportHandler
 
     /// <summary>
     /// 执行打印处方笺
@@ -1175,8 +848,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
                 await ShowSuccessMessageAsync("医案已完成，请从待诊列表选择下一位患者");
                 // 进入只读模式
                 _editModeStateMachine.EnterReadOnlyMode();
-                // OpenSpec: simplify-workspace-architecture - 使用内联方法刷新待诊队列
-                await ExecuteRefreshQueueAsync();
+                // OpenSpec: simplify-workspace-architecture - 委托Handler刷新待诊队列
+                await _pendingQueueHandler.RefreshQueueAsync(v => IsRefreshingPendingQueue = v);
                 // 更新按钮状态
                 OnPropertyChanged(nameof(ShowCompleteButton));
                 OnPropertyChanged(nameof(ShowDraftButton));
@@ -1220,8 +893,11 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         InitializeChildViewModels();
         await DetermineEditModeAsync(initialEditState, isHistoricalEdit);
 
-        // OpenSpec: simplify-workspace-architecture - 使用内联方法加载待诊队列
-        _ = ExecuteRefreshQueueAsync();
+        // OpenSpec: simplify-workspace-architecture - 委托Handler加载待诊队列
+        _ = _pendingQueueHandler.RefreshQueueAsync(v => IsRefreshingPendingQueue = v);
+
+        // OpenSpec: integrate-cardreader-module - 初始化读卡器
+        _ = _cardReaderHandler.InitializeAsync();
     }
 
     private async Task DetermineEditModeAsync(EditState initialEditState = EditState.Editing, bool isHistoricalEdit = false)
@@ -1306,6 +982,85 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
             {
                 Logger.LogWarning("[CMD] ResumeDraft failed → {ErrorMessage}", result.errorMessage);
             }
+        }
+    }
+
+
+    /// <summary>
+    /// 处理读卡成功后的患者就绪事件
+    /// OpenSpec: integrate-cardreader-module - 读卡器集成回调处理
+    /// </summary>
+    /// <param name="patient">从读卡获取的患者信息</param>
+    /// <param name="cardResult">读卡原始结果</param>
+    private async Task HandlePatientReadyForMedicalCaseAsync(PatientFromCardResult patient, CardReadResult cardResult)
+    {
+        try
+        {
+            SetBusy(true, "正在准备就诊...");
+            Logger.LogInformation("[CardReader] 患者就绪：{PatientId}, {Name}, 新建={IsNew}",
+                patient.PatientId, patient.Name, patient.IsNewlyCreated);
+
+            // 获取患者详情 - OpenSpec: integrate-cardreader-module
+            var patientDetail = await _patientCardReaderIntegration.GetPatientDetailByIdAsync(patient.PatientId);
+            if (patientDetail == null)
+            {
+                Logger.LogWarning("[CardReader] 获取患者详情失败：{PatientId}", patient.PatientId);
+                await ShowErrorMessageAsync("获取患者信息失败，请重试");
+                return;
+            }
+
+            // 检查患者是否有未完成的医案 - OpenSpec: integrate-cardreader-module
+            var currentDoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
+            var existingCase = await _medicalCaseService.GetUnfinishedCaseByPatientIdAsync(patient.PatientId, currentDoctorId);
+            if (existingCase != null)
+            {
+                // 有未完成的医案，直接加载
+                Logger.LogInformation("[CardReader] 找到未完成医案：{MedicalCaseId}", existingCase.Id);
+                await ShowSuccessMessageAsync($"找到未完成医案，正在加载...");
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "MedicalCaseId", existingCase.Id },
+                    { "CurrentPatient", patientDetail },
+                    { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
+                    { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
+                };
+                _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
+            }
+            else
+            {
+                // 没有未完成的医案，创建新医案
+                Logger.LogInformation("[CardReader] 创建新医案：{PatientId}", patient.PatientId);
+                var createResult = await _medicalCaseService.CreateMedicalCaseAsync(patient.PatientId);
+
+                if (!createResult.success)
+                {
+                    Logger.LogWarning("[CardReader] 创建医案失败：{Error}", createResult.errorMessage);
+                    await ShowErrorMessageAsync("创建医案失败：" + createResult.errorMessage);
+                    return;
+                }
+
+                Logger.LogInformation("[CardReader] 医案创建成功：{MedicalCaseId}", createResult.medicalCaseId);
+                await ShowSuccessMessageAsync("医案创建成功，正在打开...");
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "MedicalCaseId", createResult.medicalCaseId },
+                    { "CurrentPatient", patientDetail },
+                    { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
+                    { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
+                };
+                _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[CardReader] 处理患者就绪事件失败");
+            await ShowErrorMessageAsync("处理患者信息失败，请重试");
+        }
+        finally
+        {
+            SetBusy(false, null);
         }
     }
 
@@ -1513,6 +1268,9 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
             EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Unsubscribe(OnConsultationCompleted);
             EventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>().Unsubscribe(OnPrescriptionCompleted);
             // OpenSpec: simplify-workspace-event-architecture (Phase 4) - PrescriptionSavedEvent已改用回调模式
+
+            // OpenSpec: integrate-cardreader-module - 清理读卡器Handler
+            _cardReaderHandler?.Dispose();
         }
         base.Dispose(disposing);
     }

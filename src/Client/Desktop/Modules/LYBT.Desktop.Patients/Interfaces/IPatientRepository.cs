@@ -39,6 +39,14 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// </summary>
         Task<List<PatientListDto>> SearchAsync(string keyword);
 
+        /// <summary>
+        /// 根据身份证号获取患者详情
+        /// OpenSpec: integrate-cardreader-module - 支持读卡器查找患者
+        /// </summary>
+        /// <param name="idNumber">身份证号</param>
+        /// <returns>患者详情（如找到），否则返回null</returns>
+        Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber);
+
         #region 批量导入/导出功能
 
         /// <summary>

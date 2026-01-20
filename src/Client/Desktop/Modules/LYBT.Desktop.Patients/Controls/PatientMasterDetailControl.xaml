@@ -57,6 +57,14 @@
                                     Command="{Binding DownloadTemplateCommand}"
                                     Padding="12,6"
                                     Margin="4,0,0,0"/>
+                            <!-- OpenSpec: integrate-cardreader-module - 刷卡录入按钮 -->
+                            <Button Content="刷卡录入"
+                                    Style="{StaticResource SuccessButton}"
+                                    Command="{Binding ReadCardCommand}"
+                                    IsEnabled="{Binding IsCardReaderConnected}"
+                                    ToolTip="使用身份证读卡器快速录入患者信息"
+                                    Padding="12,6"
+                                    Margin="8,0,0,0"/>
                         </StackPanel>
                     </controls:DataGridToolbar.AdditionalContent>
                 </controls:DataGridToolbar>

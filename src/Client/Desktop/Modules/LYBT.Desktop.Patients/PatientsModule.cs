@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 // OpenSpec: standardize-module-structure - Components已合并到Services
@@ -33,6 +34,9 @@ namespace LYBT.Desktop.Patients
         {
             // Phase 2：Repository由模块自己注册
             containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
+
+            // OpenSpec: integrate-cardreader-module - 患者读卡器集成服务
+            containerRegistry.RegisterSingleton<IPatientCardReaderIntegration, PatientCardReaderIntegration>();
 
             // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 

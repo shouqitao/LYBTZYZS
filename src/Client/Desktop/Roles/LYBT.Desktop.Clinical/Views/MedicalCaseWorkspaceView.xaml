@@ -41,16 +41,28 @@
         </Grid.ColumnDefinitions>
 
         <!-- ========================================
-             左侧: 患者信息卡片 + 待诊队列
+             左侧: 读卡器状态 + 患者信息卡片 + 待诊队列
+             OpenSpec: integrate-cardreader-module
              ======================================== -->
         <Grid Grid.Column="0" Margin="12,12,0,12">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>  <!-- 读卡器状态控件 -->
                 <RowDefinition Height="Auto"/>  <!-- 患者信息卡片 -->
                 <RowDefinition Height="*"/>     <!-- 待诊队列 -->
             </Grid.RowDefinitions>
 
+            <!-- 读卡器状态控件 - OpenSpec: integrate-cardreader-module -->
+            <infraControls:CardReaderStatusControl Grid.Row="0"
+                IsConnected="{Binding IsCardReaderConnected}"
+                IsAutoReadEnabled="{Binding IsAutoReadEnabled, Mode=TwoWay}"
+                IsReading="{Binding IsReading}"
+                StatusMessage="{Binding CardReaderStatusMessage}"
+                ReadCardCommand="{Binding ReadCardCommand}"
+                ToggleAutoReadCommand="{Binding ToggleAutoReadCommand}"
+                Margin="0,0,0,12"/>
+
             <!-- 患者信息卡片 -->
-            <infraControls:PatientInfoCardControl Grid.Row="0"
+            <infraControls:PatientInfoCardControl Grid.Row="1"
                 Patient="{Binding CurrentPatientDisplayModel}"
                 DisplayMode="Compact"
                 ShowHistoryButton="True"
@@ -58,7 +70,7 @@
                 Margin="0,0,0,12"/>
 
             <!-- 待诊队列 - OpenSpec: refactor-medicalcase-workspace V2 -->
-            <infraControls:PendingQueueControl Grid.Row="1"
+            <infraControls:PendingQueueControl Grid.Row="2"
                 Title="待看诊队列"
                 PendingQueue="{Binding PendingQueue}"
                 SelectedItem="{Binding SelectedPendingCase, Mode=TwoWay}"

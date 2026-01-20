@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Foundation", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Contracts", "src\Client\Desktop\Core\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj", "{8F4BA2EB-C809-4204-922E-94A2DDDA04CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.CardReader", "src\Client\Desktop\Modules\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj", "{BB7B2635-3603-4FC7-9D18-A5DD7D38DBD9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +97,10 @@ Global
 		{8F4BA2EB-C809-4204-922E-94A2DDDA04CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F4BA2EB-C809-4204-922E-94A2DDDA04CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F4BA2EB-C809-4204-922E-94A2DDDA04CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB7B2635-3603-4FC7-9D18-A5DD7D38DBD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB7B2635-3603-4FC7-9D18-A5DD7D38DBD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB7B2635-3603-4FC7-9D18-A5DD7D38DBD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB7B2635-3603-4FC7-9D18-A5DD7D38DBD9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,6 +119,7 @@ Global
 		{CE7094CA-1795-7D22-C606-2BE51D5620F4} = {B1234567-1234-1234-1234-123456789999}
 		{3CDE3D2B-F2F7-FA0E-51BC-0F4CD9831411} = {B1234567-1234-1234-1234-123456789999}
 		{8F4BA2EB-C809-4204-922E-94A2DDDA04CC} = {A1234567-1234-1234-1234-123456789020}
+		{BB7B2635-3603-4FC7-9D18-A5DD7D38DBD9} = {B1234567-1234-1234-1234-123456789999}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F1234567-1234-1234-1234-123456789000}

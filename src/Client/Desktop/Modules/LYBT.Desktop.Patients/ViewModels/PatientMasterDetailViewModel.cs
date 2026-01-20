@@ -16,6 +16,9 @@ using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
 using Prism.Services.Dialogs;
+using LYBT.Desktop.CardReader.Integration;
+using LYBT.Desktop.CardReader.Models;
+using LYBT.Desktop.CardReader.Services;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
@@ -31,6 +34,10 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IPatientRepository _patientRepository;
         private readonly IDialogService _prismDialogService;
         private readonly ICommonDialogService? _commonDialogService;
+
+        // OpenSpec: integrate-cardreader-module - 读卡器服务
+        private readonly ICardReaderService _cardReaderService;
+        private readonly IPatientCardReaderIntegration _patientCardReaderIntegration;
 
         #region 扩展属性
 
@@ -56,22 +63,43 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #endregion
 
+        #region 读卡器属性 - OpenSpec: integrate-cardreader-module
+
+        /// <summary>是否已连接读卡器</summary>
+        public bool IsCardReaderConnected => _cardReaderService.IsConnected;
+
+        /// <summary>是否正在读卡</summary>
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        private bool _isReadingCard;
+        public bool IsReadingCard
+        {
+            get => _isReadingCard;
+            private set => SetProperty(ref _isReadingCard, value);
+        }
+
+        #endregion
+
         /// <summary>
         /// 构造函数
         /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
+        // OpenSpec: integrate-cardreader-module - 添加读卡器服务依赖
         public PatientMasterDetailViewModel(
             IViewModelServices viewModelServices,
             IMasterDetailServices<PatientListDto, PatientDetailModel> masterDetailServices,
             PatientService commandHandler,
             IPatientRepository patientRepository,
             IDialogService prismDialogService,
+            ICardReaderService cardReaderService,
+            IPatientCardReaderIntegration patientCardReaderIntegration,
             ICommonDialogService? commonDialogService = null)
             : base(viewModelServices, masterDetailServices)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
+            _cardReaderService = cardReaderService ?? throw new ArgumentNullException(nameof(cardReaderService));
+            _patientCardReaderIntegration = patientCardReaderIntegration ?? throw new ArgumentNullException(nameof(patientCardReaderIntegration));
             _commonDialogService = commonDialogService;
 
             PageTitle = "患者管理";
@@ -417,6 +445,111 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         private bool CanNewConsultation() => HasSelection;
+
+        #endregion
+
+        #region 读卡器命令 - OpenSpec: integrate-cardreader-module
+
+        /// <summary>刷卡录入命令</summary>
+        [RelayCommand(CanExecute = nameof(CanReadCard))]
+        private async Task ReadCardAsync()
+        {
+            if (!_cardReaderService.IsConnected)
+            {
+                // 尝试初始化读卡器
+                var initialized = await _cardReaderService.InitializeAsync();
+                if (!initialized)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync("读卡器未连接，请检查设备", "读卡器未连接");
+                    return;
+                }
+            }
+
+            try
+            {
+                IsReadingCard = true;
+                MasterDetailServices.Loading.BeginLoading("正在读取身份证...");
+
+                var result = await _cardReaderService.ReadCardAsync();
+                if (!result.IsSuccess)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync($"读卡失败：{result.ErrorMessage}", "读卡失败");
+                    return;
+                }
+
+                Logger.LogInformation("读卡成功：{Name}，身份证号：{IdNumber}", result.Name, MaskIdNumber(result.IdNumber));
+
+                // 查找患者
+                var existingPatient = await _patientCardReaderIntegration.FindPatientByIdNumberAsync(result.IdNumber);
+                if (existingPatient != null)
+                {
+                    // 找到患者，选中并显示
+                    await MasterDetailServices.Dialog.ShowSuccessAsync($"找到患者：{existingPatient.Name}", "查找成功");
+                    await SearchAndSelectPatientAsync(existingPatient.PatientId);
+                }
+                else
+                {
+                    // 未找到患者，询问是否创建
+                    await HandleNewPatientFromCardAsync(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "读卡时发生异常");
+                await MasterDetailServices.Dialog.ShowErrorAsync("读卡失败，请重试", "读卡失败");
+            }
+            finally
+            {
+                IsReadingCard = false;
+                MasterDetailServices.Loading.EndLoading();
+            }
+        }
+
+        private bool CanReadCard() => !IsReadingCard;
+
+        /// <summary>处理新患者（从读卡结果创建）</summary>
+        private async Task HandleNewPatientFromCardAsync(CardReadResult cardResult)
+        {
+            var message = $"未找到患者记录：{cardResult.Name}\n" +
+                         $"身份证号：{MaskIdNumber(cardResult.IdNumber)}\n\n" +
+                         "是否创建新患者档案？";
+
+            var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync(message, "创建新患者");
+
+            if (confirmed)
+            {
+                // 创建新患者并选中
+                var patientResult = await _patientCardReaderIntegration.FindOrCreatePatientAsync(cardResult);
+                Logger.LogInformation("患者创建成功：{PatientId}, {Name}", patientResult.PatientId, patientResult.Name);
+                await MasterDetailServices.Dialog.ShowSuccessAsync($"患者 {patientResult.Name} 创建成功", "创建成功");
+
+                // 刷新列表并选中新患者
+                await RefreshAsync();
+                await SearchAndSelectPatientAsync(patientResult.PatientId);
+            }
+        }
+
+        /// <summary>搜索并选中患者</summary>
+        private async Task SearchAndSelectPatientAsync(Guid patientId)
+        {
+            // 刷新列表
+            await RefreshAsync();
+
+            // 在列表中查找并选中
+            var patient = Items.FirstOrDefault(p => p.Id == patientId);
+            if (patient != null)
+            {
+                SelectedItem = patient;
+            }
+        }
+
+        /// <summary>掩码身份证号（保护隐私）</summary>
+        private static string MaskIdNumber(string idNumber)
+        {
+            if (string.IsNullOrEmpty(idNumber) || idNumber.Length < 10)
+                return idNumber;
+            return idNumber[..6] + "****" + idNumber[^4..];
+        }
 
         #endregion
     }
