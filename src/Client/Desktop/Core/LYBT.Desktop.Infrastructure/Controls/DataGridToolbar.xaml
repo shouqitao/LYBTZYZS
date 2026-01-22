@@ -16,18 +16,17 @@
 <UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.DataGridToolbar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
              x:Name="Root">
 
+    <!--
+        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        - Converter使用 x:Static 引用静态实例，绕过资源字典查找
+        - 本地定义的图标 Geometry 资源
+    -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
-            <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
-
-            <!-- 工具栏按钮图标 -->
+            <!-- 工具栏按钮图标 - 本地定义 -->
             <Geometry x:Key="AddIcon">M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z</Geometry>
             <Geometry x:Key="RefreshIcon">M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z</Geometry>
             <Geometry x:Key="ExportIcon">M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z</Geometry>
@@ -35,8 +34,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource SurfaceCardBrush}"
-            BorderBrush="{StaticResource BorderDefaultBrush}"
+    <Border Background="{DynamicResource SecondaryRegionBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="0,0,0,1"
             Padding="12,8">
         <!-- 注意：不设置Grid的DataContext，以便AdditionalContent能继承父级的ViewModel DataContext -->
@@ -52,8 +51,8 @@
                         Orientation="Horizontal">
                 <!-- 新增按钮 -->
                 <Button Command="{Binding CreateCommand, ElementName=Root}"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        Visibility="{Binding CreateCommand, ElementName=Root, Converter={StaticResource NullToVisibilityConverter}}"
+                        Style="{DynamicResource PrimaryButtonStyle}"
+                        Visibility="{Binding CreateCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="新增"
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
@@ -70,13 +69,13 @@
 
                 <!-- 刷新按钮 -->
                 <Button Command="{Binding RefreshCommand, ElementName=Root}"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        Visibility="{Binding RefreshCommand, ElementName=Root, Converter={StaticResource NullToVisibilityConverter}}"
+                        Style="{DynamicResource SecondaryButtonStyle}"
+                        Visibility="{Binding RefreshCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="刷新"
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource RefreshIcon}"
-                              Fill="{StaticResource TextSecondaryBrush}"
+                              Fill="{DynamicResource SecondaryTextBrush}"
                               Width="16" Height="16"
                               Stretch="Uniform"
                               VerticalAlignment="Center"/>
@@ -91,13 +90,13 @@
 
                 <!-- 导出按钮 - 放在导入等附加按钮后面 -->
                 <Button Command="{Binding ExportCommand, ElementName=Root}"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        Visibility="{Binding ExportCommand, ElementName=Root, Converter={StaticResource NullToVisibilityConverter}}"
+                        Style="{DynamicResource SecondaryButtonStyle}"
+                        Visibility="{Binding ExportCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="导出"
                         Margin="4,0,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource ExportIcon}"
-                              Fill="{StaticResource TextSecondaryBrush}"
+                              Fill="{DynamicResource SecondaryTextBrush}"
                               Width="16" Height="16"
                               Stretch="Uniform"
                               VerticalAlignment="Center"/>
@@ -113,8 +112,8 @@
                         Orientation="Horizontal">
                 <!-- 批量删除按钮 -->
                 <Button Command="{Binding BatchDeleteCommand, ElementName=Root}"
-                        Style="{StaticResource DangerButtonStyle}"
-                        Visibility="{Binding BatchDeleteCommand, ElementName=Root, Converter={StaticResource NullToVisibilityConverter}}"
+                        Style="{DynamicResource DangerButtonStyle}"
+                        Visibility="{Binding BatchDeleteCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="批量删除">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource DeleteIcon}"

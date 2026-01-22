@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="40" d:DesignWidth="800">
 
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
+    <!-- 转换器使用x:Static模式 (OpenSpec: cleanup-control-resource-merging) -->
     <UserControl.Resources>
         <!-- 页大小选项 -->
         <x:Array x:Key="PageSizeOptions" Type="sys:Int32">
@@ -59,7 +59,7 @@
                         Command="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource PaginationControlButton}"
                         Margin="{StaticResource SpacingSmall}"
-                        Visibility="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullToVisibilityConverter}}" />
+                        Visibility="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.NullToVis}}" />
 
                 <!-- 上一页 -->
                 <Button Content="&lt; 上一页"
@@ -91,7 +91,7 @@
                         Command="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource PaginationControlButton}"
                         Margin="{StaticResource SpacingSmall}"
-                        Visibility="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullToVisibilityConverter}}" />
+                        Visibility="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.NullToVis}}" />
             </StackPanel>
         </Grid>
     </Border>

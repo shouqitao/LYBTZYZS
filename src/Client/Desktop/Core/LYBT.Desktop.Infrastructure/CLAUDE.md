@@ -33,6 +33,79 @@ Themes/
 2. 跨文件继承时，检查资源字典合并顺序
 3. 优先在 `UnifiedComponents.xaml` 中定义有继承关系的样式
 
+### 资源引用方式规范 (OpenSpec: cleanup-control-resource-merging, 2026-01-21)
+
+**关键规则**：
+
+| 资源类型 | 引用方式 | 原因 |
+|----------|----------|------|
+| **Style** | `DynamicResource` | 支持主题切换 |
+| **Style.BasedOn** | `StaticResource` | **必须！** BasedOn不是DependencyProperty |
+| **Converter** | `StaticResource` | **必须！** Binding.Converter不是DependencyProperty |
+| **Brush/Color** | `DynamicResource` | 支持主题切换 |
+
+**详细指南**: 见 `XAML-RESOURCE-GUIDE.md`
+
+### 资源架构 (OpenSpec: migrate-to-handycontrol, 2026-01-22)
+
+**资源层级**:
+```
+Shell/App.xaml (资源入口 - Application.Resources)
+├── HandyControl SkinDefault.xaml + Theme.xaml  ← HC基础皮肤和控件样式
+├── TCM.Theme.xaml          ← 中医五行配色覆盖 (PrimaryBrush等)
+├── Theme.Light.xaml        ← 项目间距定义 (Spacing.xaml)
+├── UnifiedComponents.xaml  ← 项目组件样式
+├── Typography.xaml         ← 文本样式 (H1TextBlock等)
+└── Controls.xaml           ← 按钮/控件样式别名
+
+Infrastructure/Themes/ (资源定义)
+├── TCM.Theme.xaml          ← 中医主题 (覆盖HC颜色键: PrimaryBrush, DangerBrush等)
+├── DesignTokens/
+│   └── Spacing.xaml        ← 间距定义 (唯一保留的DesignToken)
+├── Theme.Light.xaml        ← 主题入口 (仅合并 Spacing.xaml)
+└── UnifiedComponents.xaml  ← 组件样式 (合并 Converters/PreviewStyles/ValidationStyles)
+```
+
+**颜色来源**: HandyControl + TCM.Theme.xaml (五行配色覆盖)
+- `PrimaryBrush` = 木(青) #2E8B57 - 主色调
+- `DangerBrush` = 火(赤) #DC143C - 危险/错误
+- `WarningBrush` = 土(黄) #DAA520 - 警告
+- `SuccessBrush` = 木(青) #228B22 - 成功
+- `InfoBrush` = 水(黑) #4682B4 - 信息
+
+### 资源引用架构原则 (2026-01-22定稿)
+
+**核心原则**: 所有资源通过 `Application.Resources` 统一提供，控件级别**禁止**合并资源字典。
+
+**资源查找顺序** (WPF标准):
+```
+当前元素 → 父元素 → ... → 根元素 → Application.Resources
+```
+
+**为什么控件级合并会导致崩溃**:
+1. 重复合并相同资源字典可能导致资源键冲突
+2. ContentPresenter 创建独立视觉树，但 DynamicResource 仍会向上查找到 Application.Resources
+3. 控件级合并打破了统一的资源查找路径
+
+**正确做法**:
+
+| 资源类型 | 引用方式 | 来源 |
+|----------|----------|------|
+| **Style** | `DynamicResource` | Application.Resources |
+| **Style.BasedOn** | `StaticResource` | Application.Resources |
+| **Converter** | `x:Static converters:Cvt.XXX` | 静态实例 |
+| **Brush/Color** | `DynamicResource` | Application.Resources |
+| **本地样式** | 定义在控件 Resources 中 | 控件自身 |
+
+**控件开发规范**:
+- 控件可以定义本地样式 (x:Key)，但**不要**合并外部资源字典
+- 本地样式中的 DynamicResource 会自动从 Application.Resources 获取
+- StaticResource 按钮样式等也从 Application.Resources 获取
+
+**已修复的控件** (移除了资源字典合并):
+- `MasterDetailLayout.xaml` - 保留本地样式定义，移除 Theme.Light.xaml 合并
+- `BaseDetailContainer.xaml` - 保留本地样式定义，移除 UnifiedComponents.xaml 合并
+
 ---
 
 ## Mapperly 直接映射架构 (OpenSpec: standardize-api-architecture)

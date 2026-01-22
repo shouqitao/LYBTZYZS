@@ -9,16 +9,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              x:Name="Root">
 
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!--
+        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
+        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
+        - 此控件无本地资源，所有样式来自全局
+    -->
 
     <StackPanel DataContext="{Binding ElementName=Root}">
         <!-- 用户信息卡片 -->
@@ -40,64 +39,64 @@
                     <!-- 第一行：用户名、真实姓名 -->
                     <!-- OpenSpec: ui-validation-framework - 添加验证绑定 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Style="{StaticResource FormLabelStyle}">
-                            <Run Text="用户名"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        <TextBlock Style="{DynamicResource FormLabelStyle}">
+                            <Run Text="用户名"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{StaticResource ValidatingTextBoxStyle}"
+                                 Style="{DynamicResource ValidatingTextBoxStyle}"
                                  IsReadOnly="{Binding IsUserNameReadOnly}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[UserName]}"
-                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
+                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Style="{StaticResource FormLabelStyle}">
-                            <Run Text="真实姓名"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        <TextBlock Style="{DynamicResource FormLabelStyle}">
+                            <Run Text="真实姓名"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{StaticResource ValidatingTextBoxStyle}"
+                                 Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[RealName]}"
-                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
+                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <!-- 第二行：拼音码、手机号码 -->
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="拼音码（可修正）" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="拼音码（可修正）" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"
                                  ToolTip="自动根据真实姓名生成，如有多音字错误可手动修正"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="手机号码" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="手机号码" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{StaticResource ValidatingTextBoxStyle}"
+                                 Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[PhoneNumber]}"
-                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
+                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <!-- 第三行：邮箱地址、用户角色 -->
                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="邮箱地址" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="邮箱地址" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{StaticResource ValidatingTextBoxStyle}"
+                                 Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Email]}"
-                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
+                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Style="{StaticResource FormLabelStyle}">
-                            <Run Text="用户角色"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        <TextBlock Style="{DynamicResource FormLabelStyle}">
+                            <Run Text="用户角色"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <ComboBox SelectedItem="{Binding Role, Mode=TwoWay}"
                                   ItemsSource="{Binding RoleOptions}"
@@ -105,7 +104,7 @@
                                   Padding="12,10">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock Text="{Binding Converter={x:Static converters:Cvt.EnumDesc}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
@@ -113,15 +112,15 @@
 
                     <!-- 第四行：账户状态 -->
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20"
-                                Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <TextBlock Text="账户状态" Style="{StaticResource FormLabelStyle}"/>
+                                Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}">
+                        <TextBlock Text="账户状态" Style="{DynamicResource FormLabelStyle}"/>
                         <ComboBox SelectedItem="{Binding Status, Mode=TwoWay}"
                                   ItemsSource="{Binding StatusOptions}"
                                   MinHeight="44"
                                   Padding="12,10">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock Text="{Binding Converter={x:Static converters:Cvt.EnumDesc}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>

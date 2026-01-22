@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:prism="http://prismlibrary.com/"
+        xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
         mc:Ignorable="d"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding Title}"
@@ -38,7 +39,7 @@
 
         <!-- 删除选项（软删除/物理删除） -->
         <StackPanel Grid.Row="2" Margin="0,0,0,15"
-                    Visibility="{Binding ShowDeleteOptions, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    Visibility="{Binding ShowDeleteOptions, Converter={x:Static converters:Cvt.BoolToVis}}">
             <RadioButton Content="软删除（标记为已删除，可恢复）"
                          IsChecked="{Binding IsSoftDelete}"
                          Margin="0,5"

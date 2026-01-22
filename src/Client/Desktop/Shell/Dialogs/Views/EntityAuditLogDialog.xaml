@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:prism="http://prismlibrary.com/"
+        xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
         mc:Ignorable="d"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding Title}"
@@ -143,7 +144,7 @@
 
         <!-- 加载中提示 -->
         <Grid Grid.Row="1" Background="#80FFFFFF"
-              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+              Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="正在加载..." FontSize="14" Foreground="#666"/>
             </StackPanel>
@@ -151,7 +152,7 @@
 
         <!-- 空数据提示 -->
         <Grid Grid.Row="1"
-              Visibility="{Binding ShowEmptyMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
+              Visibility="{Binding ShowEmptyMessage, Converter={x:Static converters:Cvt.BoolToVis}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="暂无变更记录" FontSize="14" Foreground="#999"/>
             </StackPanel>

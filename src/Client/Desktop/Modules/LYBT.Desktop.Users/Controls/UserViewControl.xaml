@@ -16,17 +16,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              x:Name="Root">
 
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!--
+        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
+        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
+        - 此控件无本地资源，所有样式来自全局
+    -->
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" DataContext="{Binding ElementName=Root}">
         <StackPanel>
@@ -49,31 +47,31 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- 用户名 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="用户名" Style="{StaticResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding UserName}" Style="{StaticResource DetailValueStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="用户名" Style="{DynamicResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding UserName}" Style="{DynamicResource DetailValueStyle}" FontWeight="SemiBold"/>
 
                         <!-- 真实姓名 -->
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="真实姓名" Style="{StaticResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding RealName}" Style="{StaticResource DetailValueStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="真实姓名" Style="{DynamicResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding RealName}" Style="{DynamicResource DetailValueStyle}"/>
 
                         <!-- 拼音码 -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="拼音码" Style="{StaticResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PinYinCode, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="拼音码" Style="{DynamicResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PinYinCode, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}" FontFamily="Consolas"/>
 
                         <!-- 用户角色 -->
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="用户角色" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="用户角色" Style="{DynamicResource DetailLabelStyle}"/>
                         <TextBlock Grid.Row="1" Grid.Column="3"
-                                   Text="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"
-                                   Style="{StaticResource DetailValueStyle}"/>
+                                   Text="{Binding Role, Converter={x:Static converters:Cvt.EnumDesc}}"
+                                   Style="{DynamicResource DetailValueStyle}"/>
 
                         <!-- 账户状态 -->
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="账户状态" Style="{StaticResource DetailLabelStyle}"
-                                   Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="账户状态" Style="{DynamicResource DetailLabelStyle}"
+                                   Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}"/>
                         <controls:StatusBadge Grid.Row="2" Grid.Column="1"
                                               Status="{Binding Status}"
                                               HorizontalAlignment="Left"
                                               Margin="0,4,0,4"
-                                              Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                              Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}"/>
                     </Grid>
                 </controls:InfoCard.Content>
             </controls:InfoCard>
@@ -96,12 +94,12 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- 手机号码 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="手机号码" Style="{StaticResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PhoneNumber, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="手机号码" Style="{DynamicResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PhoneNumber, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}" FontFamily="Consolas"/>
 
                         <!-- 邮箱地址 -->
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="邮箱地址" Style="{StaticResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="1" Text="{Binding Email, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="邮箱地址" Style="{DynamicResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="1" Text="{Binding Email, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}" TextWrapping="Wrap"/>
                     </Grid>
                 </controls:InfoCard.Content>
             </controls:InfoCard>
@@ -124,22 +122,22 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- 最后登录时间 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="最后登录" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="最后登录" Style="{DynamicResource DetailLabelStyle}"/>
                         <TextBlock Grid.Row="0" Grid.Column="1"
                                    Text="{Binding LastLoginTime, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='从未登录'}"
-                                   Style="{StaticResource DetailValueStyle}"/>
+                                   Style="{DynamicResource DetailValueStyle}"/>
 
                         <!-- 创建时间 -->
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="创建时间" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="创建时间" Style="{DynamicResource DetailLabelStyle}"/>
                         <TextBlock Grid.Row="0" Grid.Column="3"
                                    Text="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
-                                   Style="{StaticResource DetailValueStyle}"/>
+                                   Style="{DynamicResource DetailValueStyle}"/>
 
                         <!-- 更新时间 -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="更新时间" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="更新时间" Style="{DynamicResource DetailLabelStyle}"/>
                         <TextBlock Grid.Row="1" Grid.Column="1"
                                    Text="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
-                                   Style="{StaticResource DetailValueStyle}"/>
+                                   Style="{DynamicResource DetailValueStyle}"/>
                     </Grid>
                 </controls:InfoCard.Content>
             </controls:InfoCard>

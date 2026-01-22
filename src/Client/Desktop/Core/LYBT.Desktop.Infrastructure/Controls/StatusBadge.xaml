@@ -17,12 +17,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root">
 
+    <!--
+        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
+        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
+        - 仅保留本地定义的徽章颜色资源
+    -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
             <!-- 状态徽章颜色 -->
             <SolidColorBrush x:Key="BadgeSuccessBackground" Color="#E6F4EA"/>
             <SolidColorBrush x:Key="BadgeSuccessForeground" Color="#1E7D34"/>

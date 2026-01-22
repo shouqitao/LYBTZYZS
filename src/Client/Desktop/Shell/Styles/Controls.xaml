@@ -15,7 +15,7 @@
 
     <!--  主按钮 (Primary Button) - Fluent Design #0078D4  -->
     <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource BrandPrimaryBrush}" />
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Height" Value="36" />
@@ -40,13 +40,13 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BrandPrimaryHoverBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DarkPrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource BrandPrimaryPressedBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DarkPrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{StaticResource StateDisabledBrush}" />
+                            <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
                             <Setter Property="Foreground" Value="#757575" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -58,8 +58,8 @@
     <!--  次级按钮 (Secondary Button) - Fluent Design  -->
     <Style x:Key="SecondaryButton" TargetType="Button">
         <Setter Property="Background" Value="White" />
-        <Setter Property="Foreground" Value="{StaticResource BrandPrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Height" Value="36" />
         <Setter Property="Padding" Value="16,0" />
@@ -83,14 +83,14 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource StateHoverBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource StatePressedBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource ThirdlyRegionBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="BorderBrush" Value="{StaticResource StateDisabledBrush}" />
-                            <Setter Property="Foreground" Value="{StaticResource StateDisabledBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource SecondaryRegionBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource SecondaryRegionBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -100,7 +100,7 @@
 
     <!--  危险按钮 (Danger Button) - #D32F2F, Hover: #B71C1C  -->
     <Style x:Key="DangerButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SemanticErrorBrush}" />
+        <Setter Property="Background" Value="{StaticResource DangerBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Height" Value="36" />
@@ -125,13 +125,13 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource SemanticErrorHoverBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DarkDangerBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource SemanticErrorHoverBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DarkDangerBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{StaticResource StateDisabledBrush}" />
+                            <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
                             <Setter Property="Foreground" Value="#757575" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -149,7 +149,7 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontFamily" Value="Microsoft YaHei" />
         <Setter Property="Background" Value="White" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template">
@@ -168,15 +168,15 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                             <Setter TargetName="border" Property="BorderThickness" Value="2" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Background" Value="#F5F5F5" />
-                            <Setter Property="Foreground" Value="{StaticResource StateDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource SecondaryRegionBrush}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -188,9 +188,9 @@
     <Style x:Key="FormTextBox" TargetType="TextBox">
         <Setter Property="Padding" Value="10,8" />
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+        <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="MinHeight" Value="36" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -213,15 +213,15 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                             <Setter TargetName="border" Property="BorderThickness" Value="2" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource SurfaceBackgroundBrush}" />
-                            <Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource RegionBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource ThirdlyTextBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -267,7 +267,7 @@
                                 Margin="10,0,5,0"
                                 VerticalAlignment="Center"
                                 FontSize="16"
-                                Foreground="{StaticResource TextSecondaryBrush}"
+                                Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text="" />
 
                             <!--  输入区域  -->
@@ -280,15 +280,15 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                             <Setter TargetName="border" Property="BorderThickness" Value="2" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Background" Value="#F5F5F5" />
-                            <Setter Property="Foreground" Value="{StaticResource StateDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource SecondaryRegionBrush}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -303,7 +303,7 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontFamily" Value="Microsoft YaHei" />
         <Setter Property="Background" Value="White" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
@@ -318,8 +318,8 @@
         <Setter Property="SelectionMode" Value="Single" />
         <Setter Property="SelectionUnit" Value="FullRow" />
         <Setter Property="GridLinesVisibility" Value="Horizontal" />
-        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderDefaultBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="White" />
         <Setter Property="RowBackground" Value="White" />
@@ -335,7 +335,7 @@
 
     <!--  DataGrid列头样式  -->
     <Style x:Key="StandardDataGridColumnHeader" TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="{StaticResource BrandPrimaryBrush}" />
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontSize" Value="14" />
@@ -352,7 +352,7 @@
 
     <!--  成功按钮 (Success Button) - #388E3C, Hover: #2E7D32  -->
     <Style x:Key="SuccessButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SemanticSuccessBrush}" />
+        <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Height" Value="36" />
@@ -377,13 +377,13 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource SemanticSuccessHoverBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DarkSuccessBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource SemanticSuccessHoverBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DarkSuccessBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{StaticResource StateDisabledBrush}" />
+                            <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
                             <Setter Property="Foreground" Value="#757575" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -448,8 +448,8 @@
 
     <!--  面板卡片样式  -->
     <Style x:Key="PanelCard" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
     </Style>
@@ -457,22 +457,22 @@
     <!--  面板头部样式  -->
     <Style x:Key="PanelHeader" TargetType="Border">
         <Setter Property="Background" Value="#F8F9FA" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="Padding" Value="16,12" />
     </Style>
 
     <!--  操作栏样式  -->
     <Style x:Key="ActionBar" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="0,1,0,0" />
         <Setter Property="Height" Value="64" />
     </Style>
 
     <!--  信息栏样式  -->
     <Style x:Key="InfoBar" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource BrandPrimaryLightBrush}" />
+        <Setter Property="Background" Value="{StaticResource LightPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="#90CAF9" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="Height" Value="50" />
@@ -480,15 +480,15 @@
 
     <!--  分隔线样式  -->
     <Style x:Key="Divider" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource BorderDividerBrush}" />
+        <Setter Property="Background" Value="{StaticResource SecondaryBorderBrush}" />
         <Setter Property="Height" Value="1" />
         <Setter Property="Margin" Value="0,12" />
     </Style>
 
     <!--  卡片样式 (带阴影)  -->
     <Style x:Key="Card" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="5" />
         <Setter Property="Margin" Value="5" />
@@ -508,7 +508,7 @@
 
     <!--  警告按钮 (Warning Button) - #F57C00, Hover: #E65100  -->
     <Style x:Key="WarningButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SemanticWarningBrush}" />
+        <Setter Property="Background" Value="{StaticResource WarningBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Height" Value="36" />
@@ -533,13 +533,13 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource SemanticWarningHoverBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DarkWarningBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource SemanticWarningHoverBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DarkWarningBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{StaticResource StateDisabledBrush}" />
+                            <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
                             <Setter Property="Foreground" Value="#757575" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -551,8 +551,8 @@
     <!--  轮廓按钮 (Outline Button) - Fluent Design  -->
     <Style x:Key="OutlineButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource BrandPrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Height" Value="36" />
         <Setter Property="Padding" Value="16,0" />
@@ -576,14 +576,14 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource StateHoverBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource StatePressedBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource ThirdlyRegionBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="BorderBrush" Value="{StaticResource StateDisabledBrush}" />
-                            <Setter Property="Foreground" Value="{StaticResource StateDisabledBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource SecondaryRegionBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource SecondaryRegionBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

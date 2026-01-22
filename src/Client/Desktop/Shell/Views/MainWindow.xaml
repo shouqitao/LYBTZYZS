@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
         xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+        xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding Title}"
         Height="800" Width="1200"
@@ -24,13 +25,13 @@
 
     <Grid>
         <!-- 登录界面 -->
-        <Grid Visibility="{Binding IsNotLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid Visibility="{Binding IsNotLoggedIn, Converter={x:Static converters:Cvt.BoolToVis}}">
             <ContentControl prism:RegionManager.RegionName="LoginRegion" />
         </Grid>
 
         <!-- 登录后主界面：侧边栏 + 工作区 -->
         <!-- OpenSpec: refactor-role-navigation - 侧边栏已提取为SidebarControl -->
-        <Grid Visibility="{Binding IsLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid Visibility="{Binding IsLoggedIn, Converter={x:Static converters:Cvt.BoolToVis}}">
             <Grid.ColumnDefinitions>
                 <!-- 侧边栏：宽度由SidebarControl内部控制 -->
                 <ColumnDefinition Width="Auto" />
@@ -50,7 +51,7 @@
                 LogoutCommand="{Binding LogoutCommand}" />
 
             <!-- 右侧工作区 -->
-            <Grid Grid.Column="1" Background="{StaticResource SurfaceCardBrush}">
+            <Grid Grid.Column="1" Background="{DynamicResource SecondaryRegionBrush}">
                 <Border Background="White" Margin="12" CornerRadius="8">
                     <Border.Effect>
                         <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="2" Opacity="0.15" BlurRadius="8" />

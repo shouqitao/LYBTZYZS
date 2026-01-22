@@ -1,16 +1,16 @@
 ﻿<!--
-    MedicalCaseWorkspaceView - 医案工作区视图
+    MedicalCaseWorkspaceView - 医案工作台视图
     OpenSpec: refactor-clinical-workflow
     OpenSpec: refactor-medicalcase-workspace V2
 
-    医生工作台专用视图 V2布局
+    医案工作台专用视图 V2布局
     - 左侧25%: 患者信息卡片 + 待诊队列
     - 右侧75%: BaseDetailContainer (查看/编辑模式)
       - ViewContent: 只读模式，使用MedicalCaseViewControl紧凑模式
       - EditContent: 编辑模式，使用MedicalCaseEditControl紧凑模式
-        - 诊断三行布局: 现病史 / 舌诊+脉诊 / 中医诊断
-        - 右上角工具栏: 经验方/历史处方/清空
-      - FooterContent: 自定义底部操作栏（备注、修改原因、操作按钮）
+        - 诊断内容布局: 现病史 / 舌象+脉象 / 中医诊断
+        - 右上角工具栏: 导验方/历史处方/清空
+      - FooterContent: 自定义底部（备注、修改原因、操作按钮）
 -->
 <UserControl x:Class="LYBT.Desktop.Clinical.Views.MedicalCaseWorkspaceView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -19,16 +19,15 @@
              xmlns:views="clr-namespace:LYBT.Desktop.Infrastructure.Views;assembly=LYBT.Desktop.Infrastructure"
              xmlns:controls="clr-namespace:LYBT.Desktop.MedicalCase.Controls;assembly=LYBT.Desktop.MedicalCase"
              xmlns:infraControls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!--
+        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
+        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
+        - 此控件无本地资源，所有样式来自全局
+    -->
 
     <!-- ========================================
          V2布局: 左25% + 右75%
@@ -71,7 +70,7 @@
 
             <!-- 待诊队列 - OpenSpec: refactor-medicalcase-workspace V2 -->
             <infraControls:PendingQueueControl Grid.Row="2"
-                Title="待看诊队列"
+                Title="待诊患者队列"
                 PendingQueue="{Binding PendingQueue}"
                 SelectedItem="{Binding SelectedPendingCase, Mode=TwoWay}"
                 SelectCommand="{Binding SelectPendingCaseCommand}"
@@ -101,9 +100,9 @@
                  ======================================== -->
             <views:BaseDetailContainer.ActionButtons>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
-                    <TextBlock Text="患者：" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding PatientName}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                    <TextBlock Text="{Binding PatientInfo}" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    <TextBlock Text="患者：" FontSize="14" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding PatientName}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                    <TextBlock Text="{Binding PatientInfo}" FontSize="13" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                 </StackPanel>
             </views:BaseDetailContainer.ActionButtons>
 
@@ -114,7 +113,7 @@
                  ======================================== -->
             <views:BaseDetailContainer.ViewContent>
                 <!-- V2布局: 使用MedicalCaseViewControl紧凑模式 -->
-                <!-- OpenSpec: unify-control-data-binding - 对象绑定模式 -->
+                <!-- OpenSpec: unify-control-data-binding - 对象化模式 -->
                 <controls:MedicalCaseViewControl
                     IsCompactMode="True"
                     Consultation="{Binding Consultation}"
@@ -126,12 +125,12 @@
             <!-- ========================================
                  EditContent - 编辑模式内容
                  OpenSpec: refactor-medicalcase-workspace V2
-                 OpenSpec: unify-control-data-binding - 使用对象绑定
+                 OpenSpec: unify-control-data-binding - 使用对象化
                  使用MedicalCaseEditControl统一诊断+处方编辑
                  ======================================== -->
             <views:BaseDetailContainer.EditContent>
                 <!-- V2布局: 使用MedicalCaseEditControl紧凑模式 -->
-                <!-- OpenSpec: unify-control-data-binding - 对象绑定模式 -->
+                <!-- OpenSpec: unify-control-data-binding - 对象化模式 -->
                 <controls:MedicalCaseEditControl
                     IsCompactMode="True"
                     Consultation="{Binding Consultation}"
@@ -145,7 +144,7 @@
             </views:BaseDetailContainer.EditContent>
 
             <!-- ========================================
-                 FooterContent - 自定义底部操作栏
+                 FooterContent - 自定义底部内容
                  备注、修改原因、操作按钮
                  ======================================== -->
             <views:BaseDetailContainer.FooterContent>
@@ -162,14 +161,14 @@
                     <TextBlock Grid.Column="0"
                                Text="备注："
                                FontSize="13"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0"/>
 
                     <!-- 备注输入框 -->
                     <TextBox Grid.Column="1"
                              Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource EditableTextBoxStyle}"
+                             Style="{DynamicResource EditableTextBoxStyle}"
                              MinHeight="36"
                              MaxLength="500"
                              ToolTip="医案备注信息（最多500字）"
@@ -177,20 +176,20 @@
                              HorizontalAlignment="Stretch"
                              IsReadOnly="{Binding IsReadOnly}"/>
 
-                    <!-- 修改原因输入区域（历史修改模式显示） -->
+                    <!-- 修改原因（仅在历史修改模式显示） -->
                     <StackPanel Grid.Column="2"
                                 Orientation="Horizontal"
                                 VerticalAlignment="Center"
-                                Visibility="{Binding IsHistoricalEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Visibility="{Binding IsHistoricalEditMode, Converter={x:Static converters:Cvt.BoolToVis}}"
                                 Margin="16,0,0,0">
-                        <TextBlock Text="修改原因："
+                        <TextBlock Text="修改原因"
                                    FontSize="13"
-                                   Foreground="{StaticResource SemanticWarningBrush}"
+                                   Foreground="{DynamicResource WarningBrush}"
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
                         <TextBox Text="{Binding EditReason, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  Width="200"
                                  MinHeight="36"
                                  MaxLength="200"
@@ -206,23 +205,23 @@
                         <!-- Clinical只读模式: 修改医案按钮 -->
                         <Button Content="修改医案"
                                 Command="{Binding EnterEditModeCommand}"
-                                Style="{StaticResource SuccessButton}"
+                                Style="{DynamicResource SuccessButton}"
                                 ToolTip="进入编辑模式，可修改诊断和处方内容"
-                                Visibility="{Binding ShowEditButton, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Visibility="{Binding ShowEditButton, Converter={x:Static converters:Cvt.BoolToVis}}"
                                 Margin="0,0,8,0"/>
 
                         <!-- Clinical编辑模式: 暂存医案按钮 -->
                         <Button Content="暂存医案"
                                 Command="{Binding SaveDraftCommand}"
-                                Style="{StaticResource WarningButton}"
-                                ToolTip="保存当前进度，可随时点击'修改医案'继续编辑"
-                                Visibility="{Binding ShowDraftButton, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Style="{DynamicResource WarningButton}"
+                                ToolTip="保存当前进度，稍后点击'修改医案'继续编辑"
+                                Visibility="{Binding ShowDraftButton, Converter={x:Static converters:Cvt.BoolToVis}}"
                                 Margin="0,0,8,0"/>
 
-                        <!-- 所有模式: 打印处方笺按钮 -->
-                        <Button Content="打印处方笺"
+                        <!-- 通用模式: 打印处方单按钮 -->
+                        <Button Content="打印处方单"
                                 Command="{Binding PrintPrescriptionCommand}"
-                                Style="{StaticResource SecondaryButton}"
+                                Style="{DynamicResource SecondaryButton}"
                                 IsEnabled="{Binding CanPrintPrescription}"
                                 ToolTip="打印当前处方"
                                 Margin="0,0,8,0"/>
@@ -230,17 +229,17 @@
                         <!-- Clinical编辑模式: 完成看诊按钮 -->
                         <Button Content="完成看诊"
                                 Command="{Binding CompleteMedicalCaseCommand}"
-                                Style="{StaticResource SuccessButton}"
+                                Style="{DynamicResource SuccessButton}"
                                 IsEnabled="{Binding CanComplete}"
-                                ToolTip="完成本次看诊，关闭医案"
-                                Visibility="{Binding ShowCompleteButton, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                ToolTip="完成本次看诊并关闭医案"
+                                Visibility="{Binding ShowCompleteButton, Converter={x:Static converters:Cvt.BoolToVis}}"/>
 
                         <!-- Management编辑模式: 保存医案按钮 -->
                         <Button Content="保存医案"
                                 Command="{Binding SaveDraftCommand}"
-                                Style="{StaticResource SuccessButton}"
+                                Style="{DynamicResource SuccessButton}"
                                 ToolTip="保存修改并留在当前界面"
-                                Visibility="{Binding ShowSaveButton, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                Visibility="{Binding ShowSaveButton, Converter={x:Static converters:Cvt.BoolToVis}}"/>
                     </StackPanel>
                 </Grid>
             </views:BaseDetailContainer.FooterContent>

@@ -268,7 +268,7 @@
                                 FontSize="13"
                                 Foreground="#6D4C41"
                                 Text="（已保存）"
-                                Visibility="{Binding HasSavedPassword, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                Visibility="{Binding HasSavedPassword, Converter={x:Static converters:Cvt.BoolToVis}}" />
                         </Grid>
                         <PasswordBox
                             x:Name="PasswordBox"
@@ -369,7 +369,7 @@
                                     Grid.Column="2"
                                     Orientation="Horizontal"
                                     VerticalAlignment="Center"
-                                    Visibility="{Binding IsRemoteModeSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    Visibility="{Binding IsRemoteModeSelected, Converter={x:Static converters:Cvt.BoolToVis}}">
                                     <Ellipse
                                         Width="8"
                                         Height="8"
@@ -510,7 +510,7 @@
                         Padding="14,10"
                         Background="#F8F5F3"
                         CornerRadius="8"
-                        Visibility="{Binding HasMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        Visibility="{Binding HasMessage, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <StackPanel>
                             <!--  状态消息  -->
                             <TextBlock
@@ -520,7 +520,7 @@
                                 Foreground="#059669"
                                 Text="{Binding StatusMessage}"
                                 TextWrapping="Wrap"
-                                Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                                Visibility="{Binding StatusMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
 
                             <!--  错误消息  -->
                             <TextBlock
@@ -530,7 +530,7 @@
                                 Foreground="#DC2626"
                                 Text="{Binding ErrorMessage}"
                                 TextWrapping="Wrap"
-                                Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                                Visibility="{Binding ErrorMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -538,7 +538,7 @@
         </Grid>
 
         <!--  加载遮罩  -->
-        <Grid Background="#B0000000" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid Background="#B0000000" Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}">
             <Border
                 Padding="40,32"
                 HorizontalAlignment="Center"

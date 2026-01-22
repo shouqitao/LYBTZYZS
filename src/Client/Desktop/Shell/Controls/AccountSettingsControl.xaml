@@ -11,16 +11,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1400"
-             Background="{StaticResource SurfaceCardBrush}">
+             Background="{DynamicResource SecondaryRegionBrush}">
 
+    <!--
+        资源加载说明 (OpenSpec: migrate-to-handycontrol):
+        - 所有资源通过 App.xaml 全局加载，控件级别不再合并资源字典
+        - BasedOn 的 StaticResource 引用通过 Application.Resources 解析
+    -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
             <!-- 导航项样式 - 基于统一设计系统 -->
             <Style x:Key="NavItemStyle" TargetType="RadioButton">
                 <Setter Property="Height" Value="48"/>
@@ -36,28 +38,28 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Path x:Name="Icon"
                                           Width="22" Height="22"
-                                          Fill="{StaticResource TextSecondaryBrush}"
+                                          Fill="{DynamicResource SecondaryTextBrush}"
                                           Stretch="Uniform"
                                           Data="{TemplateBinding Tag}"
                                           VerticalAlignment="Center"/>
                                     <TextBlock x:Name="Label"
                                                Text="{TemplateBinding Content}"
-                                               FontSize="{StaticResource FontSizeBody}"
-                                               FontFamily="{StaticResource PrimaryFontFamily}"
-                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               FontSize="{DynamicResource FontSizeBody}"
+                                               FontFamily="{DynamicResource PrimaryFontFamily}"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
                                                VerticalAlignment="Center"
                                                Margin="16,0,0,0"/>
                                 </StackPanel>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource DataGridHoverBrush}"/>
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource RegionBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsChecked" Value="True">
-                                    <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource DataGridSelectedBrush}"/>
-                                    <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}"/>
-                                    <Setter TargetName="Icon" Property="Fill" Value="{StaticResource BrandPrimaryBrush}"/>
-                                    <Setter TargetName="Label" Property="Foreground" Value="{StaticResource BrandPrimaryBrush}"/>
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource LightPrimaryBrush}"/>
+                                    <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                    <Setter TargetName="Icon" Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
+                                    <Setter TargetName="Label" Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
                                     <Setter TargetName="Label" Property="FontWeight" Value="SemiBold"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
@@ -77,16 +79,16 @@
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="ButtonBorder"
                                     Background="{TemplateBinding Background}"
-                                    CornerRadius="{StaticResource CornerRadiusSmall}"
+                                    CornerRadius="{DynamicResource CornerRadiusSmall}"
                                     Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource DataGridHoverBrush}"/>
+                                    <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource RegionBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource DataGridSelectedBrush}"/>
+                                    <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource LightPrimaryBrush}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -96,17 +98,17 @@
 
             <!-- 表单分组标题样式 -->
             <Style x:Key="FormSectionTitleStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="{StaticResource FontSizeSubtitle}"/>
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeSubtitle}"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="FontFamily" Value="{DynamicResource PrimaryFontFamily}"/>
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
             </Style>
 
             <!-- 表单描述文字样式 -->
             <Style x:Key="FormDescriptionStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
-                <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeCaption}"/>
+                <Setter Property="FontFamily" Value="{DynamicResource PrimaryFontFamily}"/>
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
 
@@ -114,8 +116,8 @@
             <Style x:Key="FormFieldLabelStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="13"/>
                 <Setter Property="FontWeight" Value="Medium"/>
-                <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                <Setter Property="FontFamily" Value="{DynamicResource PrimaryFontFamily}"/>
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
                 <Setter Property="Margin" Value="0,0,0,8"/>
             </Style>
 
@@ -129,11 +131,11 @@
                 <Setter Property="Padding" Value="12,10"/>
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="MinWidth" Value="280"/>
-                <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
                 <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
-                <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
+                <Setter Property="FontFamily" Value="{DynamicResource PrimaryFontFamily}"/>
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
                 <Setter Property="Background" Value="White"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="Template">
@@ -143,17 +145,17 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="{StaticResource CornerRadiusSmall}">
+                                    CornerRadius="{DynamicResource CornerRadiusSmall}">
                                 <ScrollViewer x:Name="PART_ContentHost"
                                               Margin="{TemplateBinding Padding}"
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsFocused" Value="True">
-                                    <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}"/>
+                                    <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}"/>
+                                    <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -164,12 +166,12 @@
             <!-- 内容卡片样式 -->
             <Style x:Key="FormCardStyle" TargetType="Border">
                 <Setter Property="Background" Value="White"/>
-                <Setter Property="CornerRadius" Value="{StaticResource CornerRadiusMedium}"/>
+                <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}"/>
                 <Setter Property="Padding" Value="32,28"/>
-                <Setter Property="Effect" Value="{StaticResource CardShadow}"/>
+                <Setter Property="Effect" Value="{DynamicResource CardShadow}"/>
             </Style>
 
-            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+            <!-- 本地BoolToVis转换器已移除，改用x:Static converters:Cvt.BoolToVis -->
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -183,8 +185,8 @@
              左侧导航面板
              ======================================== -->
         <Border Grid.Column="0"
-                Background="{StaticResource SurfaceBackgroundBrush}"
-                BorderBrush="{StaticResource BorderDividerBrush}"
+                Background="{DynamicResource RegionBrush}"
+                BorderBrush="{DynamicResource SecondaryBorderBrush}"
                 BorderThickness="0,0,1,0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -201,13 +203,13 @@
                         Style="{StaticResource BackButtonStyle}"
                         Margin="16,20,16,12">
                     <StackPanel Orientation="Horizontal">
-                        <Path Fill="{StaticResource TextSecondaryBrush}"
+                        <Path Fill="{DynamicResource SecondaryTextBrush}"
                               Width="18" Height="18" Stretch="Uniform"
                               Data="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                         <TextBlock Text="返回"
-                                   FontSize="{StaticResource FontSizeBody}"
-                                   FontFamily="{StaticResource PrimaryFontFamily}"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="{DynamicResource FontSizeBody}"
+                                   FontFamily="{DynamicResource PrimaryFontFamily}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
                                    VerticalAlignment="Center"
                                    Margin="10,0,0,0"/>
                     </StackPanel>
@@ -219,14 +221,14 @@
                         <!-- 头像 -->
                         <Border Width="80" Height="80"
                                 CornerRadius="40"
-                                Background="{StaticResource BrandPrimaryBrush}"
+                                Background="{DynamicResource PrimaryBrush}"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,16"
-                                Effect="{StaticResource SubtleShadow}">
-                            <TextBlock Text="{Binding RealName, Converter={StaticResource FirstCharacterConverter}}"
+                                Effect="{DynamicResource SubtleShadow}">
+                            <TextBlock Text="{Binding RealName, Converter={x:Static converters:Cvt.FirstChar}}"
                                        FontSize="32"
                                        FontWeight="Medium"
-                                       FontFamily="{StaticResource PrimaryFontFamily}"
+                                       FontFamily="{DynamicResource PrimaryFontFamily}"
                                        Foreground="White"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
@@ -235,21 +237,21 @@
                         <TextBlock Text="{Binding RealName}"
                                    FontSize="18"
                                    FontWeight="SemiBold"
-                                   FontFamily="{StaticResource PrimaryFontFamily}"
-                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   FontFamily="{DynamicResource PrimaryFontFamily}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
                                    HorizontalAlignment="Center"/>
                         <!-- 角色 -->
                         <TextBlock Text="{Binding Role}"
-                                   FontSize="{StaticResource FontSizeCaption}"
-                                   FontFamily="{StaticResource PrimaryFontFamily}"
-                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   FontFamily="{DynamicResource PrimaryFontFamily}"
+                                   Foreground="{DynamicResource ThirdlyTextBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,6,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <!-- 分隔线 -->
-                <Border Grid.Row="2" Height="1" Background="{StaticResource BorderDividerBrush}" Margin="20,0"/>
+                <Border Grid.Row="2" Height="1" Background="{DynamicResource SecondaryBorderBrush}" Margin="20,0"/>
 
                 <!-- 导航菜单 -->
                 <StackPanel Grid.Row="3" Margin="0,12,0,0">
@@ -277,18 +279,18 @@
                           HorizontalScrollBarVisibility="Disabled">
                 <Grid>
                 <!-- ============ 个人资料表单 - 单行全宽布局 ============ -->
-                <StackPanel Visibility="{Binding IsProfileSelected, Converter={StaticResource BoolToVis}}">
+                <StackPanel Visibility="{Binding IsProfileSelected, Converter={x:Static converters:Cvt.BoolToVis}}">
 
                     <!-- 顶部标题栏 -->
-                    <Border BorderBrush="{StaticResource BorderDividerBrush}"
+                    <Border BorderBrush="{DynamicResource SecondaryBorderBrush}"
                             BorderThickness="0,0,0,1"
                             Padding="48,32,48,24">
                         <StackPanel>
                             <TextBlock Text="个人资料"
                                        FontSize="24"
                                        FontWeight="SemiBold"
-                                       FontFamily="{StaticResource PrimaryFontFamily}"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                       FontFamily="{DynamicResource PrimaryFontFamily}"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
                             <TextBlock Text="管理您的个人信息，部分字段不可修改"
                                        Style="{StaticResource FormDescriptionStyle}"
                                        Margin="0,8,0,0"/>
@@ -319,7 +321,7 @@
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Style="{StaticResource FormFieldLabelStyle}">
                                 <Run Text="姓名"/>
-                                <Run Text=" *" Foreground="{StaticResource SemanticErrorBrush}"/>
+                                <Run Text=" *" Foreground="{DynamicResource DangerBrush}"/>
                             </TextBlock>
                             <TextBox Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource FormInputStyle}"
@@ -336,18 +338,18 @@
                     </StackPanel>
 
                     <!-- 底部操作栏 -->
-                    <Border Background="{StaticResource SurfaceCardBrush}"
-                            BorderBrush="{StaticResource BorderDividerBrush}"
+                    <Border Background="{DynamicResource SecondaryRegionBrush}"
+                            BorderBrush="{DynamicResource SecondaryBorderBrush}"
                             BorderThickness="0,1,0,0"
                             Padding="48,20">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="取消"
                                     Command="{Binding GoBackCommand}"
-                                    Style="{StaticResource SecondaryButton}"
+                                    Style="{DynamicResource SecondaryButton}"
                                     Padding="32,12"/>
                             <Button Content="保存修改"
                                     Command="{Binding SaveProfileCommand}"
-                                    Style="{StaticResource PrimaryButton}"
+                                    Style="{DynamicResource PrimaryButton}"
                                     Padding="32,12"
                                     Margin="16,0,0,0"/>
                         </StackPanel>
@@ -355,18 +357,18 @@
                 </StackPanel>
 
                 <!-- ============ 修改密码表单 - 单行全宽布局 ============ -->
-                <StackPanel Visibility="{Binding IsPasswordSelected, Converter={StaticResource BoolToVis}}">
+                <StackPanel Visibility="{Binding IsPasswordSelected, Converter={x:Static converters:Cvt.BoolToVis}}">
 
                     <!-- 顶部标题栏 -->
-                    <Border BorderBrush="{StaticResource BorderDividerBrush}"
+                    <Border BorderBrush="{DynamicResource SecondaryBorderBrush}"
                             BorderThickness="0,0,0,1"
                             Padding="48,32,48,24">
                         <StackPanel>
                             <TextBlock Text="修改密码"
                                        FontSize="24"
                                        FontWeight="SemiBold"
-                                       FontFamily="{StaticResource PrimaryFontFamily}"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                       FontFamily="{DynamicResource PrimaryFontFamily}"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
                             <TextBlock Text="定期修改密码可以提高账户安全性"
                                        Style="{StaticResource FormDescriptionStyle}"
                                        Margin="0,8,0,0"/>
@@ -379,7 +381,7 @@
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Style="{StaticResource FormFieldLabelStyle}">
                                 <Run Text="当前密码"/>
-                                <Run Text=" *" Foreground="{StaticResource SemanticErrorBrush}"/>
+                                <Run Text=" *" Foreground="{DynamicResource DangerBrush}"/>
                             </TextBlock>
                             <PasswordBox x:Name="OldPasswordBox"
                                          Style="{StaticResource FormPasswordStyle}"
@@ -390,14 +392,14 @@
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Style="{StaticResource FormFieldLabelStyle}">
                                 <Run Text="新密码"/>
-                                <Run Text=" *" Foreground="{StaticResource SemanticErrorBrush}"/>
+                                <Run Text=" *" Foreground="{DynamicResource DangerBrush}"/>
                             </TextBlock>
                             <PasswordBox x:Name="NewPasswordBox"
                                          Style="{StaticResource FormPasswordStyle}"
                                          MinWidth="0"/>
                             <TextBlock Text="密码长度至少6位"
                                        FontSize="11"
-                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       Foreground="{DynamicResource ThirdlyTextBrush}"
                                        Margin="0,6,0,0"/>
                         </StackPanel>
 
@@ -405,7 +407,7 @@
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Style="{StaticResource FormFieldLabelStyle}">
                                 <Run Text="确认密码"/>
-                                <Run Text=" *" Foreground="{StaticResource SemanticErrorBrush}"/>
+                                <Run Text=" *" Foreground="{DynamicResource DangerBrush}"/>
                             </TextBlock>
                             <PasswordBox x:Name="ConfirmPasswordBox"
                                          Style="{StaticResource FormPasswordStyle}"
@@ -414,18 +416,18 @@
                     </StackPanel>
 
                     <!-- 底部操作栏 -->
-                    <Border Background="{StaticResource SurfaceCardBrush}"
-                            BorderBrush="{StaticResource BorderDividerBrush}"
+                    <Border Background="{DynamicResource SecondaryRegionBrush}"
+                            BorderBrush="{DynamicResource SecondaryBorderBrush}"
                             BorderThickness="0,1,0,0"
                             Padding="48,20">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="取消"
                                     Command="{Binding GoBackCommand}"
-                                    Style="{StaticResource SecondaryButton}"
+                                    Style="{DynamicResource SecondaryButton}"
                                     Padding="32,12"/>
                             <Button Content="确认修改"
                                     Command="{Binding ChangePasswordCommand}"
-                                    Style="{StaticResource PrimaryButton}"
+                                    Style="{DynamicResource PrimaryButton}"
                                     Padding="32,12"
                                     Margin="16,0,0,0"/>
                         </StackPanel>
@@ -435,23 +437,23 @@
             </ScrollViewer>
 
             <!-- 错误提示区域 -->
-            <Border Background="{StaticResource SemanticErrorBrush}"
-                    CornerRadius="{StaticResource CornerRadiusSmall}"
+            <Border Background="{DynamicResource DangerBrush}"
+                    CornerRadius="{DynamicResource CornerRadiusSmall}"
                     Padding="16,12"
                     Margin="48,0,48,32"
                     VerticalAlignment="Bottom"
                     HorizontalAlignment="Center"
                     MaxWidth="600"
-                    Effect="{StaticResource CardShadow}"
-                    Visibility="{Binding HasValidationError, Converter={StaticResource BoolToVis}}">
+                    Effect="{DynamicResource CardShadow}"
+                    Visibility="{Binding HasValidationError, Converter={x:Static converters:Cvt.BoolToVis}}">
                 <StackPanel Orientation="Horizontal">
                     <Path Fill="White" Width="20" Height="20" Stretch="Uniform"
                           Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
                           VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding ValidationError}"
                                Foreground="White"
-                               FontSize="{StaticResource FontSizeBody}"
-                               FontFamily="{StaticResource PrimaryFontFamily}"
+                               FontSize="{DynamicResource FontSizeBody}"
+                               FontFamily="{DynamicResource PrimaryFontFamily}"
                                VerticalAlignment="Center"
                                Margin="12,0,0,0"/>
                 </StackPanel>
@@ -459,18 +461,18 @@
 
             <!-- 加载遮罩 -->
             <Grid Background="#80FFFFFF"
-                  Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+                  Visibility="{Binding IsBusy, Converter={x:Static converters:Cvt.BoolToVis}}">
                 <Border Background="White"
-                        CornerRadius="{StaticResource CornerRadiusMedium}"
+                        CornerRadius="{DynamicResource CornerRadiusMedium}"
                         Padding="32,24"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        Effect="{StaticResource FloatingShadow}">
+                        Effect="{DynamicResource FloatingShadow}">
                     <StackPanel HorizontalAlignment="Center">
                         <TextBlock Text="处理中..."
-                                   FontSize="{StaticResource FontSizeBody}"
-                                   FontFamily="{StaticResource PrimaryFontFamily}"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="{DynamicResource FontSizeBody}"
+                                   FontFamily="{DynamicResource PrimaryFontFamily}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>

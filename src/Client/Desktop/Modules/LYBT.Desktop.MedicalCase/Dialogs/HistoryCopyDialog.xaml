@@ -6,7 +6,7 @@
              xmlns:viewmodels="clr-namespace:LYBT.Desktop.MedicalCase.Dialogs"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:medicalCaseControls="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
-             xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              mc:Ignorable="d"
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              d:DesignHeight="680" d:DesignWidth="1100"
@@ -33,11 +33,11 @@
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#F5F9FF" />
-                    <Setter Property="BorderBrush" Value="{DynamicResource BrandPrimaryBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                 </Trigger>
                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
                     <Setter Property="Background" Value="#E3F2FD" />
-                    <Setter Property="BorderBrush" Value="{DynamicResource BrandPrimaryBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                     <Setter Property="BorderThickness" Value="2" />
                 </DataTrigger>
             </Style.Triggers>
@@ -52,7 +52,7 @@
         </Grid.RowDefinitions>
 
         <!-- Row 0: 标题栏 -->
-        <Border Grid.Row="0" Background="{DynamicResource BrandPrimaryBrush}" Padding="20,12">
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,12">
             <Grid>
                 <TextBlock Text="从历史医案复制" Foreground="White" FontSize="18" FontWeight="Bold" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -102,9 +102,9 @@
                                 FontSize="12"
                                 Cursor="Hand"
                                 Background="Transparent"
-                                BorderBrush="{DynamicResource BrandPrimaryBrush}"
+                                BorderBrush="{DynamicResource PrimaryBrush}"
                                 BorderThickness="1"
-                                Foreground="{DynamicResource BrandPrimaryBrush}">
+                                Foreground="{DynamicResource PrimaryBrush}">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Content" Value="查看全部患者" />
@@ -224,14 +224,14 @@
                                             <Border Background="#4CAF50"
                                                     CornerRadius="3"
                                                     Padding="6,2"
-                                                    Visibility="{Binding HasConsultation, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    Visibility="{Binding HasConsultation, Converter={x:Static converters:Cvt.BoolToVis}}">
                                                 <TextBlock Text="已诊疗" FontSize="10" Foreground="White" />
                                             </Border>
                                             <Border Background="#2196F3"
                                                     CornerRadius="3"
                                                     Padding="6,2"
                                                     Margin="4,0,0,0"
-                                                    Visibility="{Binding HasPrescription, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    Visibility="{Binding HasPrescription, Converter={x:Static converters:Cvt.BoolToVis}}">
                                                 <TextBlock Text="已开方" FontSize="10" Foreground="White" />
                                             </Border>
                                         </StackPanel>
@@ -254,7 +254,7 @@
                             BorderBrush="#999"
                             BorderThickness="1"
                             Foreground="#666"
-                            Visibility="{Binding CanShowMoreCurrentPatient, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            Visibility="{Binding CanShowMoreCurrentPatient, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
                     <!-- 统计信息 -->
                     <TextBlock Grid.Row="5"
@@ -273,12 +273,12 @@
                            Foreground="#999"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Visibility="{Binding SelectedCaseDetail, Converter={StaticResource InverseNullToVisibilityConverter}}" />
+                           Visibility="{Binding SelectedCaseDetail, Converter={x:Static converters:Cvt.InverseNullToVis}}" />
 
                 <!-- 加载状态提示 -->
                 <StackPanel HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}">
                     <TextBlock Text="正在加载详情..."
                                FontSize="14"
                                Foreground="#666"
@@ -289,7 +289,7 @@
                 <!-- OpenSpec: unify-control-data-binding - 删除向后兼容属性 -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled"
-                              Visibility="{Binding SelectedCaseDetail, Converter={StaticResource NullToVisibilityConverter}}">
+                              Visibility="{Binding SelectedCaseDetail, Converter={x:Static converters:Cvt.NullToVis}}">
                     <medicalCaseControls:MedicalCaseViewControl
                         Detail="{Binding SelectedCaseDetail}"/>
                 </ScrollViewer>
@@ -305,7 +305,7 @@
                             Width="100"
                             Padding="12,8"
                             FontSize="14"
-                            Background="{DynamicResource BrandPrimaryBrush}"
+                            Background="{DynamicResource PrimaryBrush}"
                             Foreground="White"
                             Margin="0,0,12,0" />
                     <Button Content="取消"

@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:LYBT.Desktop.Infrastructure.Controls"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
              mc:Ignorable="d"
              Height="32">
 
@@ -88,7 +89,7 @@
                 <!-- 加载指示器 -->
                 <StackPanel Grid.Column="0"
                            Orientation="Horizontal"
-                           Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                           Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}">
                     <Ellipse x:Name="LoadingEllipse"
                              Width="16" Height="16"
                              Stroke="#4CAF50"
@@ -112,7 +113,7 @@
                 <TextBlock Grid.Column="2"
                            Text="{Binding OperationProgress, StringFormat={}{0}%}"
                            Style="{StaticResource StatusTextStyle}"
-                           Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                           Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
                 <!-- 系统时间 -->
                 <TextBlock Grid.Column="3"
@@ -125,7 +126,7 @@
             <ProgressBar Grid.Row="1"
                          Style="{StaticResource StatusProgressBarStyle}"
                          Value="{Binding OperationProgress}"
-                         Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                         Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}" />
         </Grid>
     </Border>
 </UserControl>

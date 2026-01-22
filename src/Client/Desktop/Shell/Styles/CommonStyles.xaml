@@ -52,7 +52,7 @@
         x:Key="PrimaryButtonStyle"
         BasedOn="{StaticResource BaseButtonStyle}"
         TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource BrandPrimaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -61,7 +61,7 @@
         x:Key="SuccessButtonStyle"
         BasedOn="{StaticResource BaseButtonStyle}"
         TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SemanticSuccessBrush}" />
+        <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -70,7 +70,7 @@
         x:Key="WarningButtonStyle"
         BasedOn="{StaticResource BaseButtonStyle}"
         TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SemanticWarningBrush}" />
+        <Setter Property="Background" Value="{StaticResource WarningBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -79,7 +79,7 @@
         x:Key="DangerButtonStyle"
         BasedOn="{StaticResource BaseButtonStyle}"
         TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SemanticErrorBrush}" />
+        <Setter Property="Background" Value="{StaticResource DangerBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -87,8 +87,8 @@
 
     <!--  卡片样式  -->
     <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="5" />
         <Setter Property="Margin" Value="5" />
@@ -108,7 +108,7 @@
     <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
         <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
         <Setter Property="Padding" Value="10,8" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="White" />
         <Setter Property="Template">
@@ -127,7 +127,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrandPrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                             <Setter TargetName="border" Property="BorderThickness" Value="2" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
@@ -144,7 +144,7 @@
     <Style x:Key="PageTitleStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{StaticResource FontSizeXLarge}" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
         <Setter Property="Margin" Value="0,0,0,20" />
     </Style>
 
@@ -152,13 +152,13 @@
     <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{StaticResource FontSizeLarge}" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{StaticResource BrandPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         <Setter Property="Margin" Value="0,10,0,10" />
     </Style>
 
     <!--  GroupBox样式  -->
     <Style x:Key="ModernGroupBoxStyle" TargetType="GroupBox">
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Margin" Value="5" />
         <Setter Property="Padding" Value="10" />
@@ -186,12 +186,12 @@
                             Margin="10,0,0,0"
                             Padding="5,0"
                             HorizontalAlignment="Left"
-                            Background="{StaticResource SurfaceCardBrush}">
+                            Background="{DynamicResource SecondaryRegionBrush}">
                             <ContentPresenter ContentSource="Header">
                                 <ContentPresenter.Resources>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="FontWeight" Value="Bold" />
-                                        <Setter Property="Foreground" Value="{StaticResource BrandPrimaryBrush}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
                                     </Style>
                                 </ContentPresenter.Resources>
                             </ContentPresenter>
@@ -207,8 +207,8 @@
         <Setter Property="AutoGenerateColumns" Value="False" />
         <Setter Property="CanUserAddRows" Value="False" />
         <Setter Property="GridLinesVisibility" Value="Horizontal" />
-        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderDefaultBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="White" />
         <Setter Property="RowBackground" Value="White" />
@@ -220,7 +220,7 @@
 
     <!--  DataGrid列头样式  -->
     <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="{StaticResource BrandPrimaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />

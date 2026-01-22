@@ -14,13 +14,12 @@
              xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
              xmlns:herbControls="clr-namespace:LYBT.Desktop.Herbs.Controls">
 
-    <controls:MasterDetailControlBase.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </controls:MasterDetailControlBase.Resources>
+    <!--
+        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
+        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
+        - 此控件无本地资源，所有样式来自全局
+    -->
 
     <controls:MasterDetailLayout HasSelection="{Binding HasSelection}">
         <!-- ========================================
@@ -44,7 +43,7 @@
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">
                             <Button Content="导入"
-                                    Style="{StaticResource SecondaryButton}"
+                                    Style="{DynamicResource SecondaryButton}"
                                     Command="{Binding ImportHerbsCommand}"
                                     Padding="12,6"
                                     Margin="4,0,0,0"/>
@@ -65,7 +64,7 @@
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                           behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
                           behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=OneWay}"
-                          Style="{StaticResource MasterDetailDataGridStyle}"
+                          Style="{DynamicResource MasterDetailDataGridStyle}"
                           RowHeaderWidth="0"
                           Margin="0,0,0,8">
                     <DataGrid.Columns>
@@ -75,7 +74,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="Padding" Value="8,0"/>
                                 </Style>
@@ -87,7 +86,7 @@
                                             Width="80">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="FontFamily" Value="Consolas"/>
                                     <Setter Property="FontSize" Value="11"/>
@@ -100,7 +99,7 @@
                                             Width="60">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -111,7 +110,7 @@
                                             Width="50">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -122,7 +121,7 @@
                                             Width="70">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="TextAlignment" Value="Right"/>
                                     <Setter Property="Padding" Value="0,0,8,0"/>
@@ -139,7 +138,7 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
 
-                    <!-- 行右键菜单 -->
+                    <!-- 右键菜单 -->
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="编辑" Command="{Binding EditCommand}"/>
@@ -156,7 +155,7 @@
                 </DataGrid>
 
                 <!-- 分页控件 -->
-                <Border Grid.Row="3" Style="{StaticResource MasterDetailPaginationPanelStyle}">
+                <Border Grid.Row="3" Style="{DynamicResource MasterDetailPaginationPanelStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -165,45 +164,45 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Column="0" Style="{StaticResource MasterDetailPaginationInfoStyle}">
+                        <TextBlock Grid.Column="0" Style="{DynamicResource MasterDetailPaginationInfoStyle}">
                             <Run Text="共"/>
                             <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="Medium"/>
                             <Run Text="条记录"/>
                         </TextBlock>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="每页" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                            <TextBlock Text="每页" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
                             <ComboBox ItemsSource="{Binding PageSizes}"
                                       SelectedItem="{Binding PageSize, Mode=TwoWay}"
                                       Width="60"
                                       Margin="6,0"
                                       VerticalAlignment="Center"
                                       IsEditable="False"/>
-                            <TextBlock Text="条" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                            <TextBlock Text="条" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="3"
                                     Orientation="Horizontal"
                                     HorizontalAlignment="Right">
                             <Button Content="首页"
-                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Style="{DynamicResource MasterDetailPaginationButtonStyle}"
                                     Command="{Binding GoToFirstPageCommand}"
                                     Margin="0,0,4,0"/>
                             <Button Content="上一页"
-                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Style="{DynamicResource MasterDetailPaginationButtonStyle}"
                                     Command="{Binding GoToPreviousPageCommand}"
                                     Margin="0,0,4,0"/>
-                            <TextBlock Style="{StaticResource MasterDetailPaginationPageStyle}">
+                            <TextBlock Style="{DynamicResource MasterDetailPaginationPageStyle}">
                                 <Run Text="{Binding CurrentPage, Mode=OneWay}"/>
                                 <Run Text="/"/>
                                 <Run Text="{Binding TotalPages, Mode=OneWay}"/>
                             </TextBlock>
                             <Button Content="下一页"
-                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Style="{DynamicResource MasterDetailPaginationButtonStyle}"
                                     Command="{Binding GoToNextPageCommand}"
                                     Margin="0,0,4,0"/>
                             <Button Content="末页"
-                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Style="{DynamicResource MasterDetailPaginationButtonStyle}"
                                     Command="{Binding GoToLastPageCommand}"/>
                         </StackPanel>
                     </Grid>
@@ -238,7 +237,7 @@
                 <!-- 查看模式内容 -->
                 <herbControls:HerbViewControl
                     Grid.Row="1"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}"
                     HerbName="{Binding CurrentDetail.Name}"
                     PinYinCode="{Binding CurrentDetail.PinYinCode}"
                     Category="{Binding CurrentDetail.Category}"
@@ -260,7 +259,7 @@
                 <!-- 编辑模式内容 -->
                 <herbControls:HerbEditControl
                     Grid.Row="1"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}"
                     HerbName="{Binding CurrentDetail.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     IsNameEditable="{Binding IsNameEditable}"
                     PinYinCode="{Binding CurrentDetail.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -281,17 +280,17 @@
                 <!-- 详情加载遮罩 -->
                 <controls:LoadingOverlay Grid.RowSpan="2"
                                          IsLoading="{Binding IsBusy}"
-                                         LoadingText="加载详情中..."/>
+                                         LoadingText="正在处理..."/>
             </Grid>
         </controls:MasterDetailLayout.DetailContent>
 
         <!-- ========================================
-             空状态: 未选中药材时显示
+             空状态: 未选择药材时显示
              ======================================== -->
         <controls:MasterDetailLayout.EmptyContent>
             <controls:EmptyState
                 Title="请选择药材"
-                Subtitle="从左侧列表中选择一种药材查看详情，或点击新增按钮创建新药材"
+                Subtitle="在左侧列表中选择一个药材查看详情，或点击新增按钮创建药材"
                 ActionText="新增药材"
                 ActionCommand="{Binding CreateNewCommand}"/>
         </controls:MasterDetailLayout.EmptyContent>

@@ -6,7 +6,7 @@
              xmlns:viewmodels="clr-namespace:LYBT.Desktop.MedicalCase.Dialogs"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:formulaControls="clr-namespace:LYBT.Desktop.Formula.Controls;assembly=LYBT.Desktop.Formula"
-             xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              mc:Ignorable="d"
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              d:DesignHeight="650" d:DesignWidth="900"
@@ -33,11 +33,11 @@
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#F5F9FF" />
-                    <Setter Property="BorderBrush" Value="{DynamicResource BrandPrimaryBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                 </Trigger>
                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
                     <Setter Property="Background" Value="#E3F2FD" />
-                    <Setter Property="BorderBrush" Value="{DynamicResource BrandPrimaryBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                     <Setter Property="BorderThickness" Value="2" />
                 </DataTrigger>
             </Style.Triggers>
@@ -54,7 +54,7 @@
         </Grid.RowDefinitions>
 
         <!-- Row 0: 标题栏 -->
-        <Border Grid.Row="0" Background="{DynamicResource BrandPrimaryBrush}" Padding="20,12">
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,12">
             <TextBlock Text="从经验方导入" Foreground="White" FontSize="18" FontWeight="Bold" />
         </Border>
 
@@ -223,7 +223,7 @@
                 <!-- 有选中时显示详情 - 使用FormulaViewControl -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled"
-                              Visibility="{Binding SelectedFormulaDetail, Converter={StaticResource NullToVisibilityConverter}}">
+                              Visibility="{Binding SelectedFormulaDetail, Converter={x:Static converters:Cvt.NullToVis}}">
                     <formulaControls:FormulaViewControl
                         Formula="{Binding SelectedFormulaDetail}"
                         ShowAuditInfo="False"/>
@@ -236,7 +236,7 @@
                            HorizontalAlignment="Center"
                            VerticalAlignment="Bottom"
                            Margin="0,0,0,10"
-                           Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                           Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}" />
             </Grid>
         </Grid>
 
@@ -249,7 +249,7 @@
                             Width="100"
                             Padding="12,8"
                             FontSize="14"
-                            Background="{DynamicResource BrandPrimaryBrush}"
+                            Background="{DynamicResource PrimaryBrush}"
                             Foreground="White"
                             Margin="0,0,12,0" />
                     <Button Content="取消"

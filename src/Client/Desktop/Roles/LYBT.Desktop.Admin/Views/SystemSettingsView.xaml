@@ -1,6 +1,6 @@
 ﻿<!--
     SystemSettingsView - 系统设置视图
-    统一风格: 与其他管理界面保持一致的工具栏布局
+    统一规范: 提供保存配置和重置的功能按钮操作
 -->
 <UserControl
     x:Class="LYBT.Desktop.Admin.Views.SystemSettingsView"
@@ -9,13 +9,13 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <Grid Background="{StaticResource SurfaceBackgroundBrush}">
+    <Grid Background="{DynamicResource RegionBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!--  工具栏: 与其他管理界面保持一致  -->
+        <!--  工具栏: 提供保存配置和重置  -->
         <Border Grid.Row="0" Style="{StaticResource ToolBarContainer}">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -31,13 +31,13 @@
                     Text="系统设置" />
 
                 <!--  右侧: 操作按钮  -->
-                <!-- 返回主页按钮已移除 - 使用左侧侧边栏"主页"按钮统一返回 -->
+                <!-- 返回首页按钮已移除 - 使用导航栏的"首页"按钮统一导航 -->
                 <StackPanel
                     Grid.Column="1"
                     Orientation="Horizontal">
                     <Button
                         Command="{Binding SaveCommand}"
-                        Content="保存设置"
+                        Content="保存配置"
                         Style="{StaticResource SuccessButton}"
                         Margin="{StaticResource SpacingSmall}" />
                     <Button
@@ -49,7 +49,7 @@
             </Grid>
         </Border>
 
-        <!--  内容区域  -->
+        <!--  设置内容  -->
         <ScrollViewer
             Grid.Row="1"
             Padding="{StaticResource SpacingLarge}"
@@ -119,10 +119,10 @@
                     </StackPanel>
                 </Border>
 
-                <!--  数据库设置  -->
+                <!--  数据库配置  -->
                 <Border Style="{StaticResource ContentContainer}">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource TitleText}" Text="数据库设置" />
+                        <TextBlock Style="{StaticResource TitleText}" Text="数据库配置" />
 
                         <!--  数据库备份  -->
                         <Grid Margin="{StaticResource SpacingMedium}">
@@ -140,7 +140,7 @@
                                 VerticalAlignment="Center"
                                 Content="启用数据库自动备份"
                                 FontSize="{StaticResource FontSizeNormal}"
-                                Foreground="{StaticResource TextPrimaryBrush}"
+                                Foreground="{DynamicResource PrimaryTextBrush}"
                                 IsChecked="{Binding AutoBackupEnabled}" />
                         </Grid>
 

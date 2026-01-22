@@ -1,10 +1,10 @@
 ﻿<!--
     FormulaEditControl - 验方编辑控件
     OpenSpec: extract-detail-controls Task 1.2
-    OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑处方
+    OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑药材
 
-    独立的验方编辑控件，可在FormulaDetailView中复用
-    通过DependencyProperty接收数据，支持双向绑定
+    可复用验方编辑控件，从FormulaDetailView中复用
+    通过DependencyProperty传递数据，支持双向绑定
 -->
 <UserControl x:Class="LYBT.Desktop.Formula.Controls.FormulaEditControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -13,13 +13,12 @@
              xmlns:herbList="clr-namespace:LYBT.Desktop.Herbs.Controls.HerbList;assembly=LYBT.Desktop.Herbs"
              x:Name="Root">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!--
+        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
+        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
+        - 此控件无本地资源，所有样式来自全局
+    -->
 
     <StackPanel DataContext="{Binding ElementName=Root}">
         <!-- 基本信息卡片 -->
@@ -41,32 +40,32 @@
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：名称、分类 -->
-                    <!-- OpenSpec: ui-validation-framework - 添加验证绑定 -->
+                    <!-- OpenSpec: ui-validation-framework - 添加验证框 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Style="{StaticResource FormLabelStyle}">
-                            <Run Text="名称"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        <TextBlock Style="{DynamicResource FormLabelStyle}">
+                            <Run Text="名称"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox Text="{Binding FormulaName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{StaticResource ValidatingTextBoxStyle}"
+                                 Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Name]}"
-                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
+                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="分类" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="分类" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
 
                     <!-- 第二行：性味归经 -->
                     <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
-                        <TextBlock Text="性味归经" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="性味归经" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Property, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  MinHeight="60"
                                  Padding="12,10"/>
@@ -74,9 +73,9 @@
 
                     <!-- 第三行：功效 -->
                     <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
-                        <TextBlock Text="功效" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="功效" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding FormulaEffect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  MinHeight="60"
                                  Padding="12,10"/>
@@ -84,9 +83,9 @@
 
                     <!-- 第四行：用法 -->
                     <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
-                        <TextBlock Text="用法" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="用法" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  MinHeight="60"
                                  Padding="12,10"/>
@@ -94,9 +93,9 @@
 
                     <!-- 第五行：备注 -->
                     <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
-                        <TextBlock Text="备注" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="备注" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  MinHeight="50"
                                  Padding="12,10"/>
@@ -104,17 +103,17 @@
 
                     <!-- 第六行：创建时间、更新时间（只读显示） -->
                     <StackPanel Grid.Row="5" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="创建时间" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="创建时间" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
-                                   Style="{StaticResource ValueDisplayStyle}"
-                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                   Style="{DynamicResource ValueDisplayStyle}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="5" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="更新时间" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="更新时间" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBlock Text="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
-                                   Style="{StaticResource ValueDisplayStyle}"
-                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                   Style="{DynamicResource ValueDisplayStyle}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
                     </StackPanel>
                 </Grid>
             </controls:InfoCard.Content>

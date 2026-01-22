@@ -9,17 +9,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              x:Name="Root">
 
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!--
+        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
+        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
+        - 此控件无本地资源，所有样式来自全局
+    -->
 
     <StackPanel DataContext="{Binding ElementName=Root}">
         <!-- 基本信息卡片 -->
@@ -41,22 +39,22 @@
                     <!-- 第一行：药材名称、拼音码 -->
                     <!-- OpenSpec: ui-validation-framework - 添加验证绑定 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Style="{StaticResource FormLabelStyle}">
-                            <Run Text="药材名称"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        <TextBlock Style="{DynamicResource FormLabelStyle}">
+                            <Run Text="药材名称"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox Text="{Binding HerbName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{StaticResource ValidatingTextBoxStyle}"
-                                 IsReadOnly="{Binding IsNameEditable, Converter={StaticResource InverseBooleanConverter}}"
+                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 IsReadOnly="{Binding IsNameEditable, Converter={x:Static converters:Cvt.InverseBool}}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Name]}"
-                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
+                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="拼音码（可修正）" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="拼音码（可修正）" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"
                                  ToolTip="自动根据名称生成，如有多音字错误可手动修正"/>
@@ -64,56 +62,56 @@
 
                     <!-- 第二行：产地、规格 -->
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="产地" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="产地" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Origin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="规格" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="规格" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Spec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
 
                     <!-- 第三行：单位、零售价 -->
                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Style="{StaticResource FormLabelStyle}">
-                            <Run Text="单位"/><Run Text=" *" Style="{StaticResource RequiredIndicatorStyle}"/>
+                        <TextBlock Style="{DynamicResource FormLabelStyle}">
+                            <Run Text="单位"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox Text="{Binding Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{StaticResource ValidatingTextBoxStyle}"
+                                 Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Unit]}"
-                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
+                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="零售价" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="零售价" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Price, Mode=TwoWay, StringFormat={}{0:0.##}, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{StaticResource ValidatingTextBoxStyle}"
+                                 Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Price]}"
-                                   Style="{StaticResource ValidationErrorMessageVisibleStyle}"/>
+                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
                     <!-- 第四行：成本价、状态 -->
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="成本价" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="成本价" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding CostPrice, Mode=TwoWay, StringFormat={}{0:0.##}, TargetNullValue=''}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,20"
-                                Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <TextBlock Text="状态" Style="{StaticResource FormLabelStyle}"/>
+                                Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}">
+                        <TextBlock Text="状态" Style="{DynamicResource FormLabelStyle}"/>
                         <ComboBox SelectedItem="{Binding Status, Mode=TwoWay}"
                                   ItemsSource="{Binding StatusOptions}"
                                   IsEnabled="False"
@@ -121,7 +119,7 @@
                                   Padding="12,10">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                    <TextBlock Text="{Binding Converter={x:Static converters:Cvt.EnumDesc}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
@@ -135,9 +133,9 @@
             <controls:InfoCard.Content>
                 <StackPanel>
                     <StackPanel Margin="0,0,0,20">
-                        <TextBlock Text="功效" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="功效" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding HerbEffect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
                                  MinHeight="80"
@@ -145,9 +143,9 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,0,20">
-                        <TextBlock Text="用法用量" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="用法用量" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
                                  MinHeight="80"
@@ -155,9 +153,9 @@
                     </StackPanel>
 
                     <StackPanel>
-                        <TextBlock Text="备注" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBlock Text="备注" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
                                  MinHeight="60"

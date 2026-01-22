@@ -13,21 +13,23 @@
             ... 内容 ...
         </Grid>
     </controls:InfoCard>
+
+    注意：
+    - 此控件依赖 App 级别加载的 Design Tokens (SecondaryRegionBrush, PrimaryTextBrush 等)
+    - 不要在此控件中合并 UnifiedComponents.xaml，避免资源加载顺序问题
 -->
 <UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.InfoCard"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters">
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters">
 
+    <!--
+        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        - Converter使用 x:Static 引用静态实例，绕过资源字典查找
+    -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
-            <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
-
-            <!-- 卡片阴影 -->
+            <!-- 卡片阴影 - 本地定义，不依赖外部资源 -->
             <DropShadowEffect x:Key="CardShadow"
                               BlurRadius="16"
                               ShadowDepth="2"
@@ -36,7 +38,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource SurfaceCardBrush}"
+    <!-- 使用DynamicResource：SecondaryRegionBrush定义在Shell/DesignTokens/Colors.Light.xaml，通过App级别加载 -->
+    <Border Background="{DynamicResource SecondaryRegionBrush}"
             CornerRadius="16"
             Padding="40,32"
             Effect="{StaticResource CardShadow}"
@@ -47,9 +50,9 @@
                        Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontSize="18"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource TextPrimaryBrush}"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
                        Margin="0,0,0,24"
-                       Visibility="{Binding ShowTitle, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                       Visibility="{Binding ShowTitle, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}"/>
 
             <!-- 卡片内容 -->
             <ContentPresenter Content="{Binding Content, RelativeSource={RelativeSource AncestorType=UserControl}}" />

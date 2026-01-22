@@ -3,27 +3,35 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
     mc:Ignorable="d">
     <Application.Resources>
         <ResourceDictionary>
-            <!--  合并全局样式系统资源 (Issue #1484)  -->
+            <!--  合并全局样式系统资源 (OpenSpec: migrate-to-handycontrol)  -->
             <ResourceDictionary.MergedDictionaries>
-                <!--  设计Token系统 (OpenSpec: desktop-ui-ux-optimization)  -->
-                <ResourceDictionary Source="/LYBT.Desktop.Shell;component/Resources/Themes/Theme.Light.xaml" />
+                <!--  1. HandyControl 基础皮肤和控件样式  -->
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
 
-                <!--  UI统一化组件样式 (Issue #1840: Desktop端管理界面UI统一化)  -->
+                <!--  2. TCM中医主题覆盖 (覆盖HC颜色，五行配色)  -->
+                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/TCM.Theme.xaml" />
+
+                <!--  3. 项目特定设计Token (间距等)  -->
+                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/Theme.Light.xaml" />
+
+                <!--  4. UI统一化组件样式  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml" />
 
-                <!--  全局样式系统 (OpenSpec: cleanup-ui-layer)  -->
+                <!--  5. Shell全局样式  -->
                 <ResourceDictionary Source="Styles/Typography.xaml" />
                 <ResourceDictionary Source="Styles/Controls.xaml" />
 
-                <!--  对话框窗口样式 (OpenSpec: add-prescription-import-dialogs)  -->
+                <!--  6. 对话框窗口样式  -->
                 <ResourceDictionary Source="Styles/DialogStyles.xaml" />
 
-                <!--  统一转换器资源字典 (OpenSpec: consolidate-wpf-converters)  -->
+                <!--  7. 统一转换器资源字典  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Converters/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
 

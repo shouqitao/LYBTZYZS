@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow"
-        Background="{DynamicResource SurfaceBackgroundBrush}"
+        Background="{DynamicResource RegionBrush}"
         UseLayoutRounding="True"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
@@ -42,7 +42,7 @@
     <Grid>
         <!-- 主容器 -->
         <Border x:Name="MainContainer"
-                Background="{DynamicResource CardBrush}"
+                Background="{DynamicResource SecondaryRegionBrush}"
                 CornerRadius="12"
                 Margin="24"
                 UseLayoutRounding="True"
@@ -169,10 +169,10 @@
                                AutomationProperties.AutomationId="ApiStatusText">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{DynamicResource SemanticErrorBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsApiOnline}" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource SemanticSuccessBrush}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -201,7 +201,7 @@
                                HorizontalAlignment="Center"
                                TextAlignment="Center"
                                TextWrapping="Wrap"
-                               Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"
+                               Visibility="{Binding StatusMessage, Converter={x:Static converters:Cvt.StringToVis}}"
                                AutomationProperties.AutomationId="SuccessMessage"
                                AutomationProperties.Name="成功状态消息" />
 
@@ -211,7 +211,7 @@
                                HorizontalAlignment="Center"
                                TextAlignment="Center"
                                TextWrapping="Wrap"
-                               Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"
+                               Visibility="{Binding ErrorMessage, Converter={x:Static converters:Cvt.StringToVis}}"
                                AutomationProperties.AutomationId="ErrorMessage"
                                AutomationProperties.Name="错误状态消息" />
                 </StackPanel>
@@ -220,7 +220,7 @@
 
         <!-- 加载遮罩层 -->
         <Grid Style="{DynamicResource LoadingOverlayStyle}"
-              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+              Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}"
               AutomationProperties.AutomationId="LoadingOverlay"
               AutomationProperties.Name="正在加载">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">

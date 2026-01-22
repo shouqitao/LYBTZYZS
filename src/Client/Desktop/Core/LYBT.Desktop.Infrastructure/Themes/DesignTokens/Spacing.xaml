@@ -4,9 +4,10 @@
 
     <!--
         LYBTZYZS 设计Token系统 - 间距与尺寸规范
-        OpenSpec: desktop-ui-ux-optimization
+        OpenSpec: cleanup-control-resource-merging
         
         基于4px网格系统
+        注意: 此文件从 Shell 迁移到 Infrastructure
     -->
 
     <!-- ==================== 间距系统 (4px Grid) ==================== -->

@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="LYBT.Desktop.Admin.Views.AdminHomeView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,7 +15,7 @@
     </UserControl.Resources>
 
     <!--  全屏居中布局  -->
-    <Grid Background="{StaticResource SurfaceBackgroundBrush}">
+    <Grid Background="{DynamicResource RegionBrush}">
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
@@ -26,16 +26,16 @@
                 HorizontalAlignment="Center"
                 FontSize="28"
                 FontWeight="Bold"
-                Foreground="{StaticResource BrandPrimaryBrush}"
+                Foreground="{DynamicResource PrimaryBrush}"
                 Text="系统管理工作台" />
             <TextBlock
                 Margin="0,0,0,40"
                 HorizontalAlignment="Center"
                 FontSize="14"
-                Foreground="{StaticResource TextSecondaryBrush}"
+                Foreground="{DynamicResource SecondaryTextBrush}"
                 Text="凌隐宝堂中医诊所" />
 
-            <!--  6个功能卡片（3x2网格）- 居中  -->
+            <!--  6个功能卡片（3x2网格）居中  -->
             <UniformGrid
                 HorizontalAlignment="Center"
                 Columns="3"

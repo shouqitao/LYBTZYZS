@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        Background="{StaticResource SurfaceBackgroundBrush}">
+        Background="{DynamicResource RegionBrush}">
 
     <!-- OpenSpec: optimize-medicalcase-navigation - 统一四选项弹窗 -->
     <Window.DataContext>
@@ -17,8 +17,8 @@
     <Window.Resources>
         <!-- 主按钮样式 -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource BrandPrimaryBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource SurfaceCardBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryRegionBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="14"/>
@@ -29,8 +29,8 @@
 
         <!-- 次要按钮样式 -->
         <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource TextSecondaryBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource SurfaceCardBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SecondaryTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryRegionBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="14"/>
@@ -41,8 +41,8 @@
 
         <!-- 取消按钮样式 -->
         <Style x:Key="CancelButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource StateDisabledBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="14"/>
@@ -62,28 +62,28 @@
         <!-- 消息区域 -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
             <TextBlock Text="?" FontSize="32" FontWeight="Bold" VerticalAlignment="Top" Margin="0,0,15,0"
-                       Foreground="{StaticResource BrandPrimaryBrush}"/>
+                       Foreground="{DynamicResource PrimaryBrush}"/>
             <TextBlock Text="{Binding Message}"
                       FontSize="16"
                       TextWrapping="Wrap"
                       VerticalAlignment="Center"
-                      Foreground="{StaticResource TextPrimaryBrush}"/>
+                      Foreground="{DynamicResource PrimaryTextBrush}"/>
         </StackPanel>
 
         <!-- 选项说明区域 -->
         <Border Grid.Row="1"
-                Background="{StaticResource SurfaceCardBrush}"
+                Background="{DynamicResource SecondaryRegionBrush}"
                 Padding="15"
                 CornerRadius="5"
-                BorderBrush="{StaticResource BorderDefaultBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1"
                 Margin="0,0,0,20">
             <StackPanel>
                 <!-- 选项1 -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <TextBlock Text=">" FontSize="14" FontWeight="Bold" Margin="0,0,10,0"
-                               Foreground="{StaticResource BrandPrimaryBrush}"/>
-                    <TextBlock FontSize="14" Foreground="{StaticResource TextPrimaryBrush}">
+                               Foreground="{DynamicResource PrimaryBrush}"/>
+                    <TextBlock FontSize="14" Foreground="{DynamicResource PrimaryTextBrush}">
                         <Run Text="继续看诊：" FontWeight="Bold"/>
                         <Run Text="恢复之前的医案，继续编辑"/>
                     </TextBlock>
@@ -92,8 +92,8 @@
                 <!-- 选项2 -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <TextBlock Text="+" FontSize="14" FontWeight="Bold" Margin="0,0,10,0"
-                               Foreground="{StaticResource SemanticSuccessBrush}"/>
-                    <TextBlock FontSize="14" Foreground="{StaticResource TextPrimaryBrush}">
+                               Foreground="{DynamicResource SuccessBrush}"/>
+                    <TextBlock FontSize="14" Foreground="{DynamicResource PrimaryTextBrush}">
                         <Run Text="新建医案：" FontWeight="Bold"/>
                         <Run Text="关闭旧医案后创建新的"/>
                     </TextBlock>
@@ -102,8 +102,8 @@
                 <!-- 选项3 -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <TextBlock Text="x" FontSize="14" FontWeight="Bold" Margin="0,0,10,0"
-                               Foreground="{StaticResource SemanticWarningBrush}"/>
-                    <TextBlock FontSize="14" Foreground="{StaticResource TextPrimaryBrush}">
+                               Foreground="{DynamicResource WarningBrush}"/>
+                    <TextBlock FontSize="14" Foreground="{DynamicResource PrimaryTextBrush}">
                         <Run Text="仅关闭：" FontWeight="Bold"/>
                         <Run Text="关闭旧医案（从待看诊列表移除）"/>
                     </TextBlock>
@@ -112,8 +112,8 @@
                 <!-- 选项4 -->
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="-" FontSize="14" FontWeight="Bold" Margin="0,0,10,0"
-                               Foreground="{StaticResource TextSecondaryBrush}"/>
-                    <TextBlock FontSize="14" Foreground="{StaticResource TextSecondaryBrush}">
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    <TextBlock FontSize="14" Foreground="{DynamicResource SecondaryTextBrush}">
                         <Run Text="取消：" FontWeight="Bold"/>
                         <Run Text="什么都不做，关闭对话框"/>
                     </TextBlock>
