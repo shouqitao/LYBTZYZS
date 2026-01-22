@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### 迁移到HandyControl + TCM中医主题 (OpenSpec: migrate-to-handycontrol) - 2026-01-22
+
+**背景**: 解决WPF资源架构导致的`DependencyProperty.UnsetValue`崩溃问题，简化资源管理并提供现代化UI组件库支持。
+
+**核心改进**:
+- **引入HandyControl 3.5.1**:
+  - 替代自定义控件样式架构
+  - 提供统一的颜色键系统(PrimaryBrush, DangerBrush等)
+  - 减少XAML资源维护复杂度
+
+- **TCM中医主题设计**:
+  - 新增: `TCM.Theme.xaml` 基于五行配色理论
+  - 木(青) #2E8B57 - 主色调(PrimaryBrush)
+  - 火(赤) #DC143C - 危险/错误(DangerBrush)
+  - 土(黄) #DAA520 - 警告(WarningBrush)
+  - 金(白) #F5F5F5 - 背景辅助
+  - 水(黑) #4682B4 - 信息(InfoBrush)
+
+- **资源架构重构**:
+  - 统一使用Application.Resources加载所有资源
+  - 新增: `ConverterInstances.cs` 静态转换器实例
+  - 迁移: `Spacing.xaml` 从Shell到Infrastructure
+  - 移除: `Colors.Light.xaml`, `Typography.xaml` (DesignTokens)
+  - 移除: Theme.Light.xaml (Shell/Styles)
+
+- **资源引用规范化** (254处替换):
+  - 样式: DynamicResource (支持主题切换)
+  - Style.BasedOn: StaticResource (必须)
+  - Converter: x:Static converters:Cvt.XXX (必须)
+  - 控件级别禁止合并外部资源字典
+
+**影响模块**: Shell, Infrastructure, 全部业务模块XAML
+
+**技术债务清理**: 75个文件变更，-2000+行冗余代码
+
+**新增规范文档**: `XAML-RESOURCE-GUIDE.md`
+
+**状态**: 已归档
+
 ### Added
 
 #### 身份证读卡器集成 (OpenSpec: integrate-cardreader-module) - 2026-01-20

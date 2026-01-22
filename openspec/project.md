@@ -22,6 +22,8 @@
 
 ### Frontend (Desktop)
 - **UI Framework**: WPF (Windows Presentation Foundation)
+- **UI Component Library**: HandyControl 3.5.1 (现代化WPF控件库)
+- **Theme**: TCM中医主题 (基于五行配色理论: 木青/火赤/土黄/金白/水黑)
 - **MVVM Framework**: Prism 9.0
 - **DI Container**: DryIoc (via Prism)
 - **Target OS**: Windows only
@@ -412,5 +414,5 @@ DELETE /api/{resource}/{id}      # 删除
 
 ---
 
-**最后更新**: 2026-01-07
-**文档版本**: v2.1
+**最后更新**: 2026-01-22
+**文档版本**: v2.2
