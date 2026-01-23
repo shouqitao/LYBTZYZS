@@ -144,7 +144,7 @@
                      处方信息卡片（可编辑）- Full模式
                      OpenSpec: unify-control-data-binding
                      ======================================== -->
-                <controls:InfoCard Title="{Binding Prescription.ItemCount, StringFormat=处方药材 (共{0}味)}" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard Title="{Binding Prescription.ItemCount, StringFormat=处方药材 (共{0}味), Mode=OneWay}" ShowTitle="True" Margin="0,12,0,0">
                     <controls:InfoCard.Content>
                         <StackPanel>
                             <!-- 处方统计信息 -->
@@ -351,7 +351,7 @@
                             <!-- 药材数 - OpenSpec: unify-control-data-binding -->
                             <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
                                 <Run Text="共"/>
-                                <Run Text="{Binding Prescription.ItemCount}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                <Run Text="{Binding Prescription.ItemCount, Mode=OneWay}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}"/>
                                 <Run Text="味药材"/>
                             </TextBlock>
 
@@ -379,7 +379,7 @@
                             <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <TextBlock Text="总价:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}">
-                                    <Run Text="{Binding Prescription.TotalPrice, StringFormat='{}{0:F2}'}"/>
+                                    <Run Text="{Binding Prescription.TotalPrice, StringFormat='{}{0:F2}', Mode=OneWay}"/>
                                     <Run Text="元"/>
                                 </TextBlock>
                             </StackPanel>
