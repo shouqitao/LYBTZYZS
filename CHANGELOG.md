@@ -48,6 +48,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **状态**: 已归档
 
+#### StaticResource→DynamicResource修复 + 死代码清理 (OpenSpec: migrate-to-handycontrol Phase 2) - 2026-01-23
+
+**问题修复**:
+- 修复患者详情页`DependencyProperty.UnsetValue`崩溃问题
+- 根因: Setter.Value中的Brush使用StaticResource，XAML解析时资源尚未加载
+
+**变更内容**:
+- MedicalCaseStyles.xaml: 23处StaticResource→DynamicResource
+- CommonStyles.xaml: 10处StaticResource→DynamicResource
+- 其他样式文件: 若干处修复
+
+**死代码清理** (3个未使用文件):
+- Resources/UnifiedDesignSystem.xaml (50+ StaticResource引用)
+- Resources/ManagementModuleStyles.xaml
+- Resources/Styles.xaml
+
+**验证结果**: 编译通过，患者/药材/验方详情页正常
+
+**状态**: 已归档
+
 ### Added
 
 #### 身份证读卡器集成 (OpenSpec: integrate-cardreader-module) - 2026-01-20
