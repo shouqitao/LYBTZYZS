@@ -4,6 +4,8 @@ using LYBT.Desktop.Auth;
 using LYBT.Desktop.CardReader;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Foundation.Security;
+using Microsoft.Extensions.Caching.Memory;
 // [已删除] using LYBT.Desktop.Consultation; - 模块已废弃，功能已迁移到MedicalCase模块
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Herbs;
@@ -37,9 +39,23 @@ public partial class App : PrismApplication
     private StartupPerformanceMonitor? _performanceMonitor;
     private SplashScreenWindow? _splashScreen;
 
+    // OpenSpec: implement-single-instance-mode - 单实例模式支持
+    private static Mutex? _instanceMutex;
+    private const string MutexName = "Global\\LYBTZYZS_Shell_Instance";
+    private const string MainWindowTitle = "凌隐宝堂中医诊所管理系统";
+
     /// <summary>应用程序启动入口</summary>
     protected override void OnStartup(StartupEventArgs e)
     {
+        // OpenSpec: implement-single-instance-mode - 单实例检查（必须在任何初始化之前）
+        if (!TryAcquireSingleInstance())
+        {
+            // 尝试激活已有窗口
+            NativeMethods.ActivateExistingWindow(MainWindowTitle);
+            Shutdown();
+            return;
+        }
+
         // 设置控制台编码为UTF-8（必须在Serilog初始化前，否则Console sink无法正确显示中文）
         SetConsoleEncoding();
 
@@ -53,11 +69,69 @@ public partial class App : PrismApplication
         base.OnStartup(e);
     }
 
+    /// <summary>尝试获取单实例锁</summary>
+    /// <returns>true表示当前是唯一实例，false表示已有实例运行</returns>
+    private static bool TryAcquireSingleInstance()
+    {
+        _instanceMutex = new Mutex(true, MutexName, out var createdNew);
+        if (!createdNew)
+        {
+            // 已有实例，释放当前创建的Mutex句柄
+            _instanceMutex.Dispose();
+            _instanceMutex = null;
+            return false;
+        }
+        return true;
+    }
+
     /// <summary>应用程序退出</summary>
     protected override void OnExit(ExitEventArgs e)
     {
-        Log.Information("应用程序退出");
+        Log.Information("应用程序退出，开始释放资源");
+
+        // OpenSpec: implement-single-instance-mode - 按依赖顺序释放资源
+
+        // 1. 停止定时服务
+        SafeDispose(() =>
+        {
+            var tickService = Container.Resolve<IApplicationTickService>();
+            tickService.Stop();
+            (tickService as IDisposable)?.Dispose();
+        }, "ApplicationTickService");
+
+        SafeDispose(() =>
+        {
+            var tokenService = Container.Resolve<ITokenLifecycleService>();
+            tokenService.StopMonitoring();
+            tokenService.Dispose();
+        }, "TokenLifecycleService");
+
+        // 2. 释放用户活动追踪
+        SafeDispose(() =>
+        {
+            var activityTracker = Container.Resolve<IUserActivityTracker>();
+            (activityTracker as IDisposable)?.Dispose();
+        }, "UserActivityTracker");
+
+        // 3. 释放缓存
+        SafeDispose(() =>
+        {
+            var cache = Container.Resolve<IMemoryCache>();
+            cache.Dispose();
+        }, "MemoryCache");
+
+        // 4. 释放Mutex
+        SafeDispose(() =>
+        {
+            _instanceMutex?.ReleaseMutex();
+            _instanceMutex?.Dispose();
+            _instanceMutex = null;
+        }, "InstanceMutex");
+
+        // 5. 关闭日志（最后执行）
+        Log.Information("资源释放完成");
         DesktopSerilogConfiguration.CloseAndFlush();
+
         base.OnExit(e);
     }
 
@@ -307,6 +381,22 @@ public partial class App : PrismApplication
     {
         try { System.Diagnostics.Process.Start("explorer.exe", System.IO.Path.Combine(AppContext.BaseDirectory, "logs")); }
         catch { }
+    }
+
+
+    /// <summary>安全执行释放操作，捕获异常确保后续清理继续</summary>
+    /// <remarks>OpenSpec: implement-single-instance-mode - 资源释放保护</remarks>
+    private static void SafeDispose(Action disposeAction, string resourceName)
+    {
+        try
+        {
+            disposeAction();
+            Log.Debug("已释放资源: {ResourceName}", resourceName);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "释放资源失败: {ResourceName}", resourceName);
+        }
     }
 
     /// <summary>配置模块目录 - 基于角色的智能模块加载策略</summary>
