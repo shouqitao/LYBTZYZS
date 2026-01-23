@@ -5,30 +5,27 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <!-- OpenSpec: cleanup-ui-dead-code - 使用共享HomePageStyles -->
+    <!--
+        OpenSpec: migrate-to-handycontrol
+        HomePageStyles已通过Application.Resources全局提供，控件级别禁止合并
+    -->
     <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/HomePageStyles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
-            <!--  透明按钮样式（无hover直角覆盖）Clinical专用  -->
-            <Style x:Key="TransparentButtonStyle" TargetType="Button">
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="Padding" Value="0" />
-                <Setter Property="Cursor" Value="Hand" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-        </ResourceDictionary>
+        <!--  透明按钮样式（无hover直角覆盖）Clinical专用  -->
+        <Style x:Key="TransparentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <!--  全屏居中布局  -->

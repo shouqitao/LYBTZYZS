@@ -76,6 +76,10 @@
     <Color x:Key="DarkMaskColor">#20000000</Color>
     <Color x:Key="DarkOpacityColor">#40000000</Color>
 
+    <!-- Mask/Opacity Brushes (项目特有，HC不提供) -->
+    <SolidColorBrush x:Key="DarkMaskBrush" Color="{StaticResource DarkMaskColor}"/>
+    <SolidColorBrush x:Key="DarkOpacityBrush" Color="{StaticResource DarkOpacityColor}"/>
+
     <!-- ==================== 项目自定义颜色 (非HC标准) ==================== -->
 
     <!-- 侧边栏色 (水青 - 项目特有) -->

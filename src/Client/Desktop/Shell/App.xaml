@@ -24,14 +24,17 @@
                 <!--  4. UI统一化组件样式  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml" />
 
-                <!--  5. Shell全局样式  -->
+                <!--  5. 首页共享样式 (Admin/Clinical)  -->
+                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/HomePageStyles.xaml" />
+
+                <!--  6. Shell全局样式  -->
                 <ResourceDictionary Source="Styles/Typography.xaml" />
                 <ResourceDictionary Source="Styles/Controls.xaml" />
 
-                <!--  6. 对话框窗口样式  -->
+                <!--  7. 对话框窗口样式  -->
                 <ResourceDictionary Source="Styles/DialogStyles.xaml" />
 
-                <!--  7. 统一转换器资源字典  -->
+                <!--  8. 统一转换器资源字典  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Converters/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
 

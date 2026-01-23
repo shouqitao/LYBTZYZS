@@ -61,7 +61,7 @@
         x:Key="SuccessButtonStyle"
         BasedOn="{StaticResource BaseButtonStyle}"
         TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -70,7 +70,7 @@
         x:Key="WarningButtonStyle"
         BasedOn="{StaticResource BaseButtonStyle}"
         TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource WarningBrush}" />
+        <Setter Property="Background" Value="{DynamicResource WarningBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -79,7 +79,7 @@
         x:Key="DangerButtonStyle"
         BasedOn="{StaticResource BaseButtonStyle}"
         TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource DangerBrush}" />
+        <Setter Property="Background" Value="{DynamicResource DangerBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -87,8 +87,8 @@
 
     <!--  卡片样式  -->
     <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="5" />
         <Setter Property="Margin" Value="5" />
@@ -108,7 +108,7 @@
     <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
         <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
         <Setter Property="Padding" Value="10,8" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="White" />
         <Setter Property="Template">
@@ -144,7 +144,7 @@
     <Style x:Key="PageTitleStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{StaticResource FontSizeXLarge}" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="Margin" Value="0,0,0,20" />
     </Style>
 
@@ -158,7 +158,7 @@
 
     <!--  GroupBox样式  -->
     <Style x:Key="ModernGroupBoxStyle" TargetType="GroupBox">
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Margin" Value="5" />
         <Setter Property="Padding" Value="10" />
@@ -207,8 +207,8 @@
         <Setter Property="AutoGenerateColumns" Value="False" />
         <Setter Property="CanUserAddRows" Value="False" />
         <Setter Property="GridLinesVisibility" Value="Horizontal" />
-        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="White" />
         <Setter Property="RowBackground" Value="White" />
@@ -228,7 +228,7 @@
         <Setter Property="Height" Value="40" />
     </Style>
 
-    <!--  转换器：移除重复定义，统一使用全局 UnifiedDesignSystem.xaml 中的资源  -->
+    <!--  转换器：使用 Infrastructure/Converters/ 中的静态实例  -->
 
     <!--  反向布尔转换器  -->
     <Style x:Key="NotNullToBooleanConverter" TargetType="FrameworkElement">

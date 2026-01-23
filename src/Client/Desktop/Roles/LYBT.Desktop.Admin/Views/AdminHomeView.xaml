@@ -5,14 +5,10 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <!-- OpenSpec: cleanup-ui-dead-code - 使用共享HomePageStyles -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/HomePageStyles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!--
+        OpenSpec: migrate-to-handycontrol
+        HomePageStyles已通过Application.Resources全局提供，控件级别禁止合并
+    -->
 
     <!--  全屏居中布局  -->
     <Grid Background="{DynamicResource RegionBrush}">

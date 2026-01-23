@@ -34,18 +34,13 @@
              x:Name="Root">
 
     <!--
-        资源架构说明 (OpenSpec: cleanup-control-resource-merging, 2026-01-22):
+        资源架构说明 (OpenSpec: migrate-to-handycontrol, 2026-01-22):
 
-        重要：本地样式必须使用 StaticResource 引用全局资源！
-
-        原因：
-        1. DynamicResource 在样式应用时解析，此时逻辑树可能不完整
-        2. 导致 DynamicResource 解析返回 UnsetValue，引发崩溃
-        3. StaticResource 在 XAML 解析时（应用已启动）可正确解析 Application.Resources
+        本地样式使用 DynamicResource 引用全局资源（Brush/Color/CornerRadius/Effect）
 
         资源来源：
-        - Brush: App.xaml → Theme.Light.xaml → Colors.Light.xaml
-        - 样式元素: App.xaml → UnifiedComponents.xaml
+        - Brush/Color: App.xaml → HandyControl Theme.xaml + TCM.Theme.xaml
+        - CornerRadius/Effect: App.xaml → TCM.Theme.xaml
 
         Converter 使用 x:Static 引用静态实例，无需资源字典。
     -->
@@ -102,21 +97,20 @@
 
             <!-- ====================================================================
                  Detail面板样式 - 浮动卡片效果
-                 使用 StaticResource 避免逻辑树不完整时的解析失败
                  ==================================================================== -->
             <Style x:Key="DetailPanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{StaticResource RegionBrush}"/>
-                <Setter Property="CornerRadius" Value="{StaticResource CornerRadiusMedium}"/>
+                <Setter Property="Background" Value="{DynamicResource RegionBrush}"/>
+                <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}"/>
                 <Setter Property="Margin" Value="8,12,12,12"/>
-                <Setter Property="Effect" Value="{StaticResource CardShadow}"/>
+                <Setter Property="Effect" Value="{DynamicResource CardShadow}"/>
             </Style>
 
             <!-- ====================================================================
                  Master面板样式 - 简洁列表区域
                  ==================================================================== -->
             <Style x:Key="MasterPanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{StaticResource SecondaryRegionBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource SecondaryBorderBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}"/>
                 <Setter Property="BorderThickness" Value="0,0,1,0"/>
             </Style>
 
@@ -124,8 +118,8 @@
                  空状态面板样式
                  ==================================================================== -->
             <Style x:Key="EmptyStatePanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{StaticResource RegionBrush}"/>
-                <Setter Property="CornerRadius" Value="{StaticResource CornerRadiusMedium}"/>
+                <Setter Property="Background" Value="{DynamicResource RegionBrush}"/>
+                <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}"/>
                 <Setter Property="Margin" Value="8,12,12,12"/>
             </Style>
         </ResourceDictionary>
