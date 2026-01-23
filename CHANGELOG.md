@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+#### MedicalCase模块Bug修复 - 2026-01-23
+
+**修复问题**:
+1. **MedicalCaseMapper DI注入错误** (`46bfa4e16`)
+   - 问题: 医案管理API返回500错误 (`Unable to resolve service for type 'MedicalCaseMapper'`)
+   - 原因: Mapperly映射器未注册到DI容器
+   - 修复: 在`MedicalCaseModule.cs`添加`services.AddSingleton<MedicalCaseMapper>()`
+
+2. **PrescriptionItem只读属性绑定崩溃** (`226db646e`)
+   - 问题: 点击医案详情时Shell崩溃 (`InvalidOperationException: 无法对只读属性进行TwoWay绑定`)
+   - 原因: WPF `Run.Text`属性默认TwoWay绑定，但`ItemCount`和`TotalPrice`是只读计算属性
+   - 修复: 为三处绑定添加`Mode=OneWay`
+
+**影响模块**: Server/MedicalCase, Desktop/MedicalCase
+
+**状态**: 已验证，已提交
+
+---
+
 ### Changed
 
 #### 迁移到HandyControl + TCM中医主题 (OpenSpec: migrate-to-handycontrol) - 2026-01-22
