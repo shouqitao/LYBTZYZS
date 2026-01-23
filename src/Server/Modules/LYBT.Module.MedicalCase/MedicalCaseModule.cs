@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Mapping;
 using LYBT.Module.MedicalCases.Repositories;
 using LYBT.Module.MedicalCases.Services;
 using LYBT.Shared.Validators.MedicalCase;
@@ -38,7 +39,8 @@ namespace LYBT.Module.MedicalCases
             // Epic #1961: 注册验证器 - 使用统一的 MedicalCaseInputDtoValidator
             services.AddValidatorsFromAssemblyContaining<MedicalCaseInputDtoValidator>();
 
-            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
+            // Mapperly映射器 - 无状态单例
+            services.AddSingleton<MedicalCaseMapper>();
 
             return services;
         }
