@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### 单实例模式 (OpenSpec: implement-single-instance-mode) - 2026-01-23
+
+**背景**: 解决WebAPI和WPF Shell后台多进程驻留问题，用户多次点击启动会创建多个进程。
+
+**核心改进**:
+- **Mutex单实例检查**:
+  - 使用 `Global\LYBTZYZS_Shell_Instance` 命名Mutex
+  - 第二次启动时自动激活已有窗口并退出
+  - 跨用户会话保证单实例
+
+- **完善资源释放机制**:
+  - 新增 `SafeDispose` 模式确保资源释放不相互影响
+  - 按依赖顺序释放: Timer服务 → 缓存 → Mutex → 日志
+  - 独立try-catch确保单个失败不阻塞整体清理
+
+**技术实现**:
+- 新增 `NativeMethods.cs`: Windows API P/Invoke封装
+- 修改 `App.xaml.cs`: OnStartup添加单实例检查, OnExit完善资源释放
+
+**提交**: `99f2a802c`
+
+**状态**: 已验证，已推送
+
+---
+
 ### Fixed
 
 #### MedicalCase模块Bug修复 - 2026-01-23
