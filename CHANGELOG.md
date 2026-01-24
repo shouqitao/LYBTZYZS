@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+#### MasterDetail命令状态刷新 (OpenSpec: refactor-masterdetail-command-refresh) - 2026-01-24
+
+**背景**: 用户反馈新建药材后取消按钮无响应。根因是CommunityToolkit.Mvvm的RelayCommand在服务状态变化时不会自动刷新CanExecute状态。
+
+**核心改进**:
+- **ShowDetailPanel属性**: 新增计算属性 `HasSelection || IsEditMode`，修复新建模式下DetailContent不显示问题
+- **NotifyCommandsCanExecuteChanged()**: 新增方法统一刷新所有命令状态
+- **服务事件订阅增强**: IsBusy、SelectedItem、IsEditMode变化时自动刷新命令状态
+
+**影响范围**:
+- MasterDetailViewModelBase.cs (核心修复)
+- 5个MasterDetailControl.xaml (绑定HasSelection改为ShowDetailPanel)
+
+**提交**: `29f847107`
+
+**状态**: 已验证，已推送
+
+---
+
 ### Added
 
 #### 管理界面新建逻辑完善 (OpenSpec: complete-management-create-logic) - 2026-01-24
