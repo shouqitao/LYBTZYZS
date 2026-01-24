@@ -102,6 +102,47 @@
     <Color x:Key="DataGridAlternateRowColor">#F9F9F9</Color>
     <SolidColorBrush x:Key="SecondaryRegionBrush" Color="{StaticResource DataGridAlternateRowColor}"/>
 
+    <!-- ==================== 标准 Brushes (确保存在，用于兼容性) ==================== -->
+
+    <!-- Primary Brushes -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+    <SolidColorBrush x:Key="LightPrimaryBrush" Color="{StaticResource LightPrimaryColor}"/>
+    <SolidColorBrush x:Key="DarkPrimaryBrush" Color="{StaticResource DarkPrimaryColor}"/>
+
+    <!-- Danger Brushes -->
+    <SolidColorBrush x:Key="LightDangerBrush" Color="{StaticResource LightDangerColor}"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+    <SolidColorBrush x:Key="DarkDangerBrush" Color="{StaticResource DarkDangerColor}"/>
+
+    <!-- Warning Brushes -->
+    <SolidColorBrush x:Key="LightWarningBrush" Color="{StaticResource LightWarningColor}"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+    <SolidColorBrush x:Key="DarkWarningBrush" Color="{StaticResource DarkWarningColor}"/>
+
+    <!-- Info Brushes -->
+    <SolidColorBrush x:Key="LightInfoBrush" Color="{StaticResource LightInfoColor}"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
+    <SolidColorBrush x:Key="DarkInfoBrush" Color="{StaticResource DarkInfoColor}"/>
+
+    <!-- Success Brushes -->
+    <SolidColorBrush x:Key="LightSuccessBrush" Color="{StaticResource LightSuccessColor}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="DarkSuccessBrush" Color="{StaticResource DarkSuccessColor}"/>
+
+    <!-- Text Brushes -->
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="{StaticResource PrimaryTextColor}"/>
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="{StaticResource SecondaryTextColor}"/>
+    <SolidColorBrush x:Key="ThirdlyTextBrush" Color="{StaticResource ThirdlyTextColor}"/>
+
+    <!-- Region Brushes -->
+    <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+    <SolidColorBrush x:Key="ThirdlyRegionBrush" Color="{StaticResource ThirdlyRegionColor}"/>
+
+    <!-- Border Brushes -->
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+    <SolidColorBrush x:Key="SecondaryBorderBrush" Color="{StaticResource SecondaryBorderColor}"/>
+
     <!-- ==================== 项目特定设计Token ==================== -->
 
     <!-- 圆角 -->

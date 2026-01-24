@@ -323,18 +323,40 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
+                // 选择文件
+                var filePath = await CommonDialogService.ShowOpenFileDialogAsync(
+                    filter: "Excel文件|*.xlsx;*.xls",
+                    title: "选择药材导入文件");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
                 await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
-                    // TODO: 需要ICommonDialogService来选择文件
-                    // var filePath = await _dialogService.ShowOpenFileDialogAsync(filter: "Excel文件|*.xlsx", title: "选择药材导入文件");
-                    // 暂时跳过文件选择逻辑
-                    await Task.CompletedTask;
+                    await using var fileStream = File.OpenRead(filePath);
+                    var fileName = Path.GetFileName(filePath);
+                    var result = await _herbRepository.BatchImportAsync(fileStream, fileName);
+
+                    if (result != null && result.SuccessCount > 0)
+                    {
+                        await MasterDetailServices.Dialog.ShowSuccessAsync(
+                            $"成功导入 {result.SuccessCount} 条药材记录", "导入成功");
+                        await RefreshAsync();
+                    }
+                    else
+                    {
+                        await MasterDetailServices.Dialog.ShowWarningAsync(
+                            "没有导入任何记录，请检查文件格式", "导入提示");
+                    }
                 }, "导入药材");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导入药材失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("导入药材失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync(
+                    $"导入药材失败: {ex.Message}", "操作失败");
             }
         }
 
@@ -346,26 +368,40 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
+                // 选择保存位置
+                var defaultFileName = $"药材导出_{DateTime.Now:yyyyMMdd}.xlsx";
+                var filePath = await CommonDialogService.ShowSaveFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "导出药材数据",
+                    defaultFileName: defaultFileName);
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
                 await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
-                    // TODO: 需要ICommonDialogService来保存文件
                     Logger.LogInformation("导出药材数据，关键词：{Keyword}", SearchText);
                     var bytes = await _herbRepository.ExportHerbsAsync(SearchText);
 
                     if (bytes == null || bytes.Length == 0)
                     {
-                        await MasterDetailServices.Dialog.ShowErrorAsync("导出失败，请稍后重试", "导出药材");
+                        await MasterDetailServices.Dialog.ShowErrorAsync(
+                            "导出失败，没有数据可导出", "导出药材");
                         return;
                     }
 
-                    // TODO: 保存到文件
-                    await Task.CompletedTask;
+                    await File.WriteAllBytesAsync(filePath, bytes);
+                    await MasterDetailServices.Dialog.ShowSuccessAsync(
+                        $"药材数据已导出到：{filePath}", "导出成功");
                 }, "导出药材");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导出药材失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("导出药材失败", "操作失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync(
+                    $"导出药材失败: {ex.Message}", "操作失败");
             }
         }
 
