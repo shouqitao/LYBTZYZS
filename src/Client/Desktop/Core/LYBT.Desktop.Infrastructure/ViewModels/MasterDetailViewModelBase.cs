@@ -160,6 +160,12 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// </summary>
         public bool HasSelection => _masterDetailServices.Selection.HasSelection;
 
+        /// <summary>
+        /// 是否应显示详情面板（有选中项或正在编辑/新建时显示）
+        /// OpenSpec: refactor-masterdetail-command-refresh - 修复新建时DetailContent不显示的问题
+        /// </summary>
+        public bool ShowDetailPanel => HasSelection || IsEditMode;
+
         #endregion
 
         #region 委托属性 - DetailEditor
@@ -216,6 +222,10 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
             // 订阅服务事件以转发属性变更通知
             SubscribeToServiceEvents();
+
+            // OpenSpec: refactor-masterdetail-command-refresh - 初始化时刷新命令状态
+            // 初始化时服务状态都是默认值，不会触发PropertyChanged，需要主动刷新
+            NotifyCommandsCanExecuteChanged();
         }
 
         private void SubscribeToServiceEvents()
@@ -224,6 +234,10 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             _masterDetailServices.Loading.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(e.PropertyName);
+                if (e.PropertyName == nameof(ILoadingStateManager.IsBusy))
+                {
+                    NotifyCommandsCanExecuteChanged();
+                }
             };
 
             // Pagination变更
@@ -247,6 +261,12 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             _masterDetailServices.Selection.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(e.PropertyName);
+                if (e.PropertyName == nameof(ISelectionService<TListItem>.SelectedItem))
+                {
+                    NotifyCommandsCanExecuteChanged();
+                    // OpenSpec: refactor-masterdetail-command-refresh - 选择变化时刷新ShowDetailPanel
+                    OnPropertyChanged(nameof(ShowDetailPanel));
+                }
             };
 
             _masterDetailServices.Selection.SelectionChanged += async (s, e) =>
@@ -257,7 +277,16 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             // DetailEditor变更
             _masterDetailServices.DetailEditor.PropertyChanged += (s, e) =>
             {
+                Logger.LogDebug("[DEBUG] DetailEditor.PropertyChanged: Property={Property}, IsEditMode={IsEditMode}, Type={Type}", 
+                    e.PropertyName, IsEditMode, GetType().Name);
                 OnPropertyChanged(e.PropertyName);
+                if (e.PropertyName == nameof(IDetailEditorService<TDetail>.IsEditMode))
+                {
+                    Logger.LogDebug("[DEBUG] IsEditMode changed, calling NotifyCommandsCanExecuteChanged()");
+                    NotifyCommandsCanExecuteChanged();
+                    // OpenSpec: refactor-masterdetail-command-refresh - 编辑模式变化时刷新ShowDetailPanel
+                    OnPropertyChanged(nameof(ShowDetailPanel));
+                }
             };
 
             // Error变更
@@ -370,11 +399,15 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanCreateNew))]
         protected virtual async Task CreateNewAsync()
         {
+            Logger.LogDebug("[DEBUG] CreateNewAsync() ENTERED: Type={Type}", GetType().Name);
             _masterDetailServices.DetailEditor.CreateNew(CreateNewDetail);
+            Logger.LogDebug("[DEBUG] CreateNewAsync() after CreateNew: IsEditMode={IsEditMode}, CurrentDetail={CurrentDetailType}", 
+                IsEditMode, CurrentDetail?.GetType().Name ?? "null");
             if (CurrentDetail != null)
             {
                 await OnDetailCreatedAsync(CurrentDetail);
             }
+            Logger.LogDebug("[DEBUG] CreateNewAsync() completed");
         }
 
         /// <summary>
@@ -409,16 +442,25 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanCancel))]
         protected virtual async Task CancelAsync()
         {
+            Logger.LogDebug("[DEBUG] CancelAsync() ENTERED: Type={Type}, IsEditMode={IsEditMode}, HasUnsavedChanges={HasUnsavedChanges}", 
+                GetType().Name, IsEditMode, HasUnsavedChanges);
+            
             if (HasUnsavedChanges)
             {
                 var confirmed = await _masterDetailServices.Dialog.ShowConfirmAsync(
                     "确认取消",
                     "有未保存的更改，确定要取消吗？");
 
-                if (!confirmed) return;
+                if (!confirmed)
+                {
+                    Logger.LogDebug("[DEBUG] CancelAsync() user cancelled confirmation");
+                    return;
+                }
             }
 
+            Logger.LogDebug("[DEBUG] CancelAsync() calling CancelEdit()");
             _masterDetailServices.DetailEditor.CancelEdit();
+            Logger.LogDebug("[DEBUG] CancelAsync() completed");
         }
 
         /// <summary>
@@ -446,8 +488,28 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         private bool CanCreateNew() => !IsEditMode && !IsBusy;
         private bool CanEdit() => HasSelection && !IsEditMode && !IsBusy;
         private bool CanSave() => IsEditMode && CurrentDetail != null && !IsBusy;
-        private bool CanCancel() => IsEditMode;
+        private bool CanCancel()
+        {
+            var result = IsEditMode;
+            Logger.LogDebug("[DEBUG] CanCancel() called: IsEditMode={IsEditMode}, Result={Result}, Type={Type}", 
+                IsEditMode, result, GetType().Name);
+            return result;
+        }
         private bool CanDelete() => HasSelection && !IsEditMode && !IsBusy;
+
+        /// <summary>
+        /// 通知所有命令刷新CanExecute状态
+        /// </summary>
+        private void NotifyCommandsCanExecuteChanged()
+        {
+            Logger.LogDebug("[DEBUG] NotifyCommandsCanExecuteChanged() called: Type={Type}, IsEditMode={IsEditMode}", 
+                GetType().Name, IsEditMode);
+            CreateNewCommand.NotifyCanExecuteChanged();
+            EditCommand.NotifyCanExecuteChanged();
+            SaveCommand.NotifyCanExecuteChanged();
+            CancelCommand.NotifyCanExecuteChanged();
+            DeleteCommand.NotifyCanExecuteChanged();
+        }
 
         #endregion
 

@@ -21,7 +21,7 @@
         - 此控件无本地资源，所有样式来自全局
     -->
 
-    <controls:MasterDetailLayout HasSelection="{Binding HasSelection}">
+    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}">
         <!-- ========================================
              Master区域: 药材列表
              ======================================== -->
