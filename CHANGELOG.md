@@ -9,6 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### 管理界面新建逻辑完善 (OpenSpec: complete-management-create-logic) - 2026-01-24
+
+**背景**: 通过brainstorm审查发现管理界面新建逻辑存在多处不完善，包括验证规则缺失、导入导出功能未完成等。
+
+**核心改进**:
+- **UserInputDtoValidator验证完善**:
+  - 添加RealName必填验证（创建时）
+  - 添加Role枚举有效性验证
+  - 添加Password长度验证（6-100字符）
+  - 添加ConfirmPassword匹配验证
+  - 添加Email格式验证（可选字段）
+  - 添加PhoneNumber正则验证（中国手机号格式）
+  - 添加Remark长度限制
+
+- **Herbs导入导出功能完成**:
+  - 实现ImportHerbsAsync文件选择和批量导入
+  - 实现ExportHerbsAsync文件保存和Excel导出
+  - 添加成功/失败消息提示
+
+- **API版本格式统一**:
+  - UsersController: `ApiVersion("1.0")` → `ApiVersion("1")`
+
+**Bug修复**:
+- **Border.Background DependencyProperty.UnsetValue崩溃**
+  - 原因: TCM.Theme.xaml未定义Light/Dark Brush变体，导致Controls.xaml按钮样式Trigger失败
+  - 修复: 添加LightDangerBrush、DarkDangerBrush等12个Brush定义
+
+**提交**: `a6dd0f008`
+
+**状态**: 已验证，已推送
+
+---
+
 #### 单实例模式 (OpenSpec: implement-single-instance-mode) - 2026-01-23
 
 **背景**: 解决WebAPI和WPF Shell后台多进程驻留问题，用户多次点击启动会创建多个进程。
