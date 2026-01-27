@@ -18,7 +18,7 @@
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):
         - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
         - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
-        - 此控件无本地资源，所有样式来自全局
+        - ContextMenu通过PlacementTarget.DataContext获取ViewModel
     -->
 
     <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}">
@@ -138,16 +138,14 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
 
-                    <!-- 右键菜单 -->
+                    <!-- 右键菜单 - ContextMenu需通过PlacementTarget获取DataContext -->
                     <DataGrid.ContextMenu>
-                        <ContextMenu>
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem Header="编辑" Command="{Binding EditCommand}"/>
                             <MenuItem Header="复制" Command="{Binding CopyHerbCommand}"/>
                             <Separator/>
                             <MenuItem Header="切换状态" Command="{Binding ToggleStatusCommand}"/>
                             <MenuItem Header="恢复" Command="{Binding RestoreCommand}"/>
-                            <Separator/>
-                            <MenuItem Header="审计日志" Command="{Binding ShowAuditLogCommand}"/>
                             <Separator/>
                             <MenuItem Header="删除" Command="{Binding DeleteCommand}"/>
                         </ContextMenu>

@@ -1,21 +1,31 @@
-﻿using System.Windows;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Views;
+using LYBT.Desktop.Infrastructure.ViewModels;
 using Microsoft.Win32;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 通用对话框服务实现 - Epic #1934
     /// MVP阶段基于WPF原生对话框的简单实现
+    /// OpenSpec: unify-dialog-to-prism - 统一使用Prism DialogService
     /// </summary>
     public class CommonDialogService : ICommonDialogService
     {
+        private readonly IDialogService _dialogService;
+
+        public CommonDialogService(IDialogService dialogService)
+        {
+            _dialogService = dialogService;
+        }
+
         /// <summary>
         /// 显示信息消息
         /// </summary>
         public Task ShowInfoAsync(string message, string? title = null)
         {
-            MessageBox.Show(message, title ?? "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(message, title ?? "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             return Task.CompletedTask;
         }
 
@@ -24,7 +34,7 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// </summary>
         public Task ShowWarningAsync(string message, string? title = null)
         {
-            MessageBox.Show(message, title ?? "警告", MessageBoxButton.OK, MessageBoxImage.Warning);
+            System.Windows.MessageBox.Show(message, title ?? "警告", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             return Task.CompletedTask;
         }
 
@@ -33,7 +43,7 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// </summary>
         public Task ShowErrorAsync(string message, string? title = null)
         {
-            MessageBox.Show(message, title ?? "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(message, title ?? "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             return Task.CompletedTask;
         }
 
@@ -42,8 +52,8 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// </summary>
         public Task<bool> ShowConfirmAsync(string message, string? title = null)
         {
-            var result = MessageBox.Show(message, title ?? "确认", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            return Task.FromResult(result == MessageBoxResult.Yes);
+            var result = System.Windows.MessageBox.Show(message, title ?? "确认", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+            return Task.FromResult(result == System.Windows.MessageBoxResult.Yes);
         }
 
         /// <summary>
@@ -52,11 +62,11 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// </summary>
         public Task<TripleChoiceResult> ShowTripleChoiceAsync(string message, string? title = null)
         {
-            var result = MessageBox.Show(message, title ?? "确认", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+            var result = System.Windows.MessageBox.Show(message, title ?? "确认", System.Windows.MessageBoxButton.YesNoCancel, System.Windows.MessageBoxImage.Question);
             var choice = result switch
             {
-                MessageBoxResult.Yes => TripleChoiceResult.Yes,
-                MessageBoxResult.No => TripleChoiceResult.No,
+                System.Windows.MessageBoxResult.Yes => TripleChoiceResult.Yes,
+                System.Windows.MessageBoxResult.No => TripleChoiceResult.No,
                 _ => TripleChoiceResult.Cancel
             };
             return Task.FromResult(choice);
@@ -107,16 +117,34 @@ namespace LYBT.Desktop.Infrastructure.Services
 
         /// <summary>
         /// 显示未完成医案四选项对话框
-        /// OpenSpec: optimize-medicalcase-navigation
-        /// 使用自定义UnfinishedCaseDialog实现四选项交互
+        /// OpenSpec: optimize-medicalcase-navigation - 统一四选项弹窗
+        /// OpenSpec: unify-dialog-to-prism - 迁移到Prism DialogService
         /// </summary>
         public Task<UnfinishedCaseChoice> ShowUnfinishedCaseDialogAsync(string patientName)
         {
-            var dialog = new Views.UnfinishedCaseDialog();
-            dialog.SetPatientName(patientName);
-            dialog.Owner = Application.Current.MainWindow;
-            dialog.ShowDialog();
-            return Task.FromResult(dialog.Result);
+            var tcs = new TaskCompletionSource<UnfinishedCaseChoice>();
+
+            var parameters = new DialogParameters
+            {
+                { "PatientName", patientName }
+            };
+
+            _dialogService.ShowDialog(
+                nameof(UnfinishedCaseDialog),
+                parameters,
+                result =>
+                {
+                    if (result.Parameters.TryGetValue<UnfinishedCaseChoice>("Result", out var choice))
+                    {
+                        tcs.SetResult(choice);
+                    }
+                    else
+                    {
+                        tcs.SetResult(UnfinishedCaseChoice.Cancel);
+                    }
+                });
+
+            return tcs.Task;
         }
     }
 }

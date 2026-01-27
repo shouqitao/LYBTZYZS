@@ -113,9 +113,9 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
 
-                    <!-- 右键菜单 -->
+                    <!-- 右键菜单 - ContextMenu需通过PlacementTarget获取DataContext -->
                     <DataGrid.ContextMenu>
-                        <ContextMenu>
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem Command="{Binding EditCommand}" Header="查看详情" />
                             <Separator />
                             <MenuItem Command="{Binding DeleteCommand}" Header="删除" />

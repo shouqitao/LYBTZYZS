@@ -151,16 +151,14 @@
                         </DataGridTextColumn>
                     </DataGrid.Columns>
 
-                    <!-- 右键菜单 -->
+                    <!-- 右键菜单 - ContextMenu需通过PlacementTarget获取DataContext -->
                     <DataGrid.ContextMenu>
-                        <ContextMenu>
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem Header="编辑" Command="{Binding EditCommand}"/>
                             <Separator/>
                             <MenuItem Header="查看病历" Command="{Binding ViewMedicalRecordsCommand}"/>
                             <MenuItem Header="新建就诊" Command="{Binding NewConsultationCommand}"/>
                             <MenuItem Header="恢复" Command="{Binding RestoreCommand}"/>
-                            <Separator/>
-                            <MenuItem Header="审计日志" Command="{Binding ShowAuditLogCommand}"/>
                             <Separator/>
                             <MenuItem Header="删除" Command="{Binding DeleteCommand}"/>
                         </ContextMenu>

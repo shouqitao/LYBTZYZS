@@ -1,17 +1,21 @@
-<Window x:Class="LYBT.Desktop.Shell.Dialogs.Views.ConfirmationDialog"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:prism="http://prismlibrary.com/"
-        xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
-        mc:Ignorable="d"
-        prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="{Binding Title}"
-        Height="300" Width="450"
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
-        ShowInTaskbar="False">
+<!--
+    ConfirmationDialog - Prism 确认对话框
+
+    重要: Prism DialogService 要求 Dialog 视图必须是 UserControl，
+    DialogService 会将其嵌入到 DialogWindow 容器中显示。
+    使用 Window 会导致 "Window 不能作为其他 Visual 的子元素" 错误。
+-->
+<UserControl x:Class="LYBT.Desktop.Shell.Dialogs.Views.ConfirmationDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             mc:Ignorable="d"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             MinWidth="400" MinHeight="200"
+             d:DesignWidth="450" d:DesignHeight="300">
 
     <!-- Epic #1676 Phase 2: 通用确认对话框，支持删除选项 -->
     <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
@@ -59,13 +63,11 @@
                     Command="{Binding ConfirmCommand}"
                     Width="100" Height="32"
                     Margin="0,0,10,0"
-                    FontSize="14"
-                    IsDefault="True"/>
+                    FontSize="14"/>
             <Button Content="{Binding CancelButtonText}"
                     Command="{Binding CancelCommand}"
                     Width="100" Height="32"
-                    FontSize="14"
-                    IsCancel="True"/>
+                    FontSize="14"/>
         </StackPanel>
     </Grid>
-</Window>
+</UserControl>

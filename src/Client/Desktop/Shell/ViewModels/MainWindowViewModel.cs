@@ -440,8 +440,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
             // Issue #1864: 启动Token生命周期监控
             _ = StartTokenLifecycleMonitoringAsync();
 
-            Logger.LogInformation("登录成功UI更新完成 [用户: {Username}, 自动登录: {IsAutoLogin}]",
-                user.UserName, args.IsAutoLogin);
+            Logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", user.UserName);
         });
     }
 
@@ -485,7 +484,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// <summary>
     /// 执行实际的退出登录操作
     /// </summary>
-    private Task PerformLogoutAsync()
+    private async Task PerformLogoutAsync()
     {
         _userActivityTracker.StopTracking();
         _tokenLifecycleService.Reset(); // Issue #1864: 重置Token生命周期
@@ -493,23 +492,26 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IsLoggedIn = false;
         Title = "凌隐宝堂中医诊所诊疗系统";
 
+        try
+        {
+            // OpenSpec: simplify-login-options - 使用LoginCoordinator统一处理登出
+            await _loginCoordinator.LogoutAsync();
+            
+            // OpenSpec: unify-event-system - 使用AuthEvents聚合类
+            EventAggregator.GetEvent<AuthEvents.LogoutCompletedEvent>().Publish(new LogoutCompletedPayload
+            {
+                LocalLogoutCompleted = true,
+                ServerLogoutCompleted = true
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "登出处理异常");
+        }
+        
+        // 登出完成后再导航到登录页
         _navigationCoordinator.ClearContentRegion();
         _navigationCoordinator.ShowLoginDialog();
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await _servicesFacade.AuthenticationService.LogoutAsync();
-                // OpenSpec: unify-event-system - 使用AuthEvents聚合类
-                EventAggregator.GetEvent<AuthEvents.LogoutCompletedEvent>().Publish(new LogoutCompletedPayload
-                {
-                    LocalLogoutCompleted = true,
-                    ServerLogoutCompleted = true
-                });
-            }
-            catch (Exception ex) { Logger.LogWarning(ex, "后台登出处理异常"); }
-        });
-        return Task.CompletedTask;
     }
 
     /// <summary>

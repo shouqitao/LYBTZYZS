@@ -37,7 +37,7 @@ public class LoginCoordinator : ILoginCoordinator
     private DateTime? _loginTime;
     private DateTime? _lastStateChangeTime;
     private int _loginAttemptCount;
-    private int _autoLoginAttemptCount;
+    // OpenSpec: simplify-login-options - 移除 _autoLoginAttemptCount 和 _suppressAutoLogin
 
     public LoginCoordinator(
         ILogger<LoginCoordinator> logger,
@@ -92,7 +92,8 @@ public class LoginCoordinator : ILoginCoordinator
     public event EventHandler? LogoutCompleted;
 
     /// <inheritdoc />
-    public async Task<LoginResult> LoginAsync(string username, string password, bool rememberCredentials = false)
+    /// OpenSpec: simplify-login-options - 移除rememberCredentials参数，凭证保存由ViewModel处理
+    public async Task<LoginResult> LoginAsync(string username, string password)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(username);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
@@ -110,8 +111,8 @@ public class LoginCoordinator : ILoginCoordinator
 
         try
         {
-            // Step 1: 认证
-            var loginRequest = new LoginRequest { UserName = username, Password = password };
+            // Step 1: 认证（不再传递RememberMe，由ViewModel决定是否保存密码）
+            var loginRequest = new LoginRequest { UserName = username, Password = password, RememberMe = false };
             var result = await _authenticationService.LoginAsync(loginRequest);
 
             if (!result.IsSuccess || result.Data == null)
@@ -127,22 +128,8 @@ public class LoginCoordinator : ILoginCoordinator
             // 凭证验证成功，进入LoadingProfile阶段
             _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
 
-            // Step 2: 保存认证信息
-            await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberCredentials);
-
-            // 当rememberCredentials=true且有AutoLoginToken时，保存到CredentialVault
-            if (rememberCredentials && !string.IsNullOrEmpty(loginResponse.AutoLoginToken) && _credentialVault != null)
-            {
-                var saved = await _credentialVault.SaveAutoLoginTokenAsync(user.UserName!, loginResponse.AutoLoginToken);
-                if (saved)
-                {
-                    _logger.LogInformation("AutoLoginToken已保存到CredentialVault - UserName: {UserName}", user.UserName);
-                }
-                else
-                {
-                    _logger.LogWarning("保存AutoLoginToken失败 - UserName: {UserName}", user.UserName);
-                }
-            }
+            // Step 2: 保存JWT Token认证信息（始终保存用于当前会话）
+            await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberMe: false);
 
             // Step 3: 启动会话
             await StartSessionAsync(user, loginResponse.ExpiresAt);
@@ -157,7 +144,7 @@ public class LoginCoordinator : ILoginCoordinator
             _stateMachine.Fire(AuthEvent.NavigationCompleted);
 
             // 完成登录
-            LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt, isAutoLogin: false));
+            LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt));
 
             _logger.LogInformation("登录流程完成 [用户: {Username}, 角色: {Role}]",
                 user.UserName, user.Role);
@@ -169,129 +156,6 @@ public class LoginCoordinator : ILoginCoordinator
             _logger.LogError(ex, "登录流程异常 [用户: {Username}]", username);
             _stateMachine.Fire(AuthEvent.LoginFailure, ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
             return LoginResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> TryAutoLoginAsync()
-    {
-        lock (_stateLock)
-        {
-            _autoLoginAttemptCount++;
-        }
-
-        _logger.LogDebug("尝试自动登录 [尝试次数: {AttemptCount}]", _autoLoginAttemptCount);
-
-        // OpenSpec: refactor-auth-role-system - 使用统一状态机
-        _stateMachine.Fire(AuthEvent.StartAutoLogin, "正在验证Token...");
-
-        try
-        {
-            // 策略1: 尝试使用存储的JWT Token进行验证
-            var token = await _tokenStorageService.GetTokenAsync();
-            if (!string.IsNullOrEmpty(token))
-            {
-                var validationResult = await _authenticationService.ValidateTokenAsync(token);
-
-                if (validationResult.IsSuccess && validationResult.Data?.IsValid == true)
-                {
-                    var loginResponse = await _tokenStorageService.GetLoginResponseAsync();
-                    if (loginResponse?.User != null)
-                    {
-                        var user = loginResponse.User;
-
-                        // Token验证成功，进入LoadingProfile
-                        _stateMachine.Fire(AuthEvent.TokenValidated, "正在启动会话...");
-
-                        await StartSessionAsync(user, loginResponse.ExpiresAt);
-                        _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
-
-                        await LoadModulesForUserAsync(user);
-                        _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
-
-                        await NavigateToRoleHomeAsync(user);
-                        _stateMachine.Fire(AuthEvent.NavigationCompleted);
-
-                        LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt, isAutoLogin: true));
-                        _logger.LogInformation("JWT Token验证成功，自动登录完成 [用户: {Username}]", user.UserName);
-                        return true;
-                    }
-                }
-
-                _logger.LogDebug("JWT Token无效，尝试使用AutoLoginToken");
-            }
-
-            // 策略2: 尝试使用CredentialVault中的AutoLoginToken
-            if (_credentialVault != null && _usernameStorage != null)
-            {
-                var savedUsername = await _usernameStorage.GetSavedUsernameAsync();
-                if (!string.IsNullOrEmpty(savedUsername))
-                {
-                    var autoLoginToken = await _credentialVault.GetAutoLoginTokenAsync(savedUsername);
-                    if (!string.IsNullOrEmpty(autoLoginToken))
-                    {
-                        _logger.LogDebug("发现AutoLoginToken，尝试自动登录 [用户: {Username}]", savedUsername);
-
-                        var autoLoginRequest = new AutoLoginRequest
-                        {
-                            UserName = savedUsername,
-                            AutoLoginToken = autoLoginToken
-                        };
-
-                        var result = await _authenticationService.LoginWithAutoTokenAsync(autoLoginRequest);
-                        if (result.IsSuccess && result.Data != null)
-                        {
-                            var loginResponse = result.Data;
-                            var user = loginResponse.User;
-
-                            // Token验证成功
-                            _stateMachine.Fire(AuthEvent.TokenValidated, "正在启动会话...");
-
-                            // 保存新的认证信息
-                            await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberMe: true);
-
-                            // 保存新的AutoLoginToken（Token轮换）
-                            if (!string.IsNullOrEmpty(loginResponse.AutoLoginToken))
-                            {
-                                await _credentialVault.SaveAutoLoginTokenAsync(user.UserName!, loginResponse.AutoLoginToken);
-                                _logger.LogDebug("AutoLoginToken已轮换 [用户: {Username}]", user.UserName);
-                            }
-
-                            // 执行登录后流程
-                            await StartSessionAsync(user, loginResponse.ExpiresAt);
-                            _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
-
-                            await LoadModulesForUserAsync(user);
-                            _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
-
-                            await NavigateToRoleHomeAsync(user);
-                            _stateMachine.Fire(AuthEvent.NavigationCompleted);
-
-                            LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt, isAutoLogin: true));
-                            _logger.LogInformation("AutoLoginToken自动登录成功 [用户: {Username}]", user.UserName);
-                            return true;
-                        }
-                        else
-                        {
-                            _logger.LogWarning("AutoLoginToken自动登录失败: {Message}", result.Message);
-                            // AutoLoginToken无效，清除本地存储
-                            await _credentialVault.ClearCredentialsAsync(savedUsername);
-                        }
-                    }
-                }
-            }
-
-            // 所有自动登录策略都失败
-            _logger.LogDebug("无可用的自动登录凭据");
-            _stateMachine.Fire(AuthEvent.LoginFailure);
-            await ClearInvalidTokenAsync();
-            return false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "自动登录异常");
-            _stateMachine.Fire(AuthEvent.LoginFailure);
-            return false;
         }
     }
 
@@ -384,8 +248,7 @@ public class LoginCoordinator : ILoginCoordinator
                 UserRole: _currentUser?.Role.ToString(),
                 LoginTime: _loginTime,
                 LastStateChangeTime: _lastStateChangeTime,
-                LoginAttemptCount: _loginAttemptCount,
-                AutoLoginAttemptCount: _autoLoginAttemptCount
+                LoginAttemptCount: _loginAttemptCount
             );
         }
     }

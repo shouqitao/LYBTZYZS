@@ -158,6 +158,12 @@ public partial class App : PrismApplication
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.EntityAuditLogDialog, Dialogs.ViewModels.EntityAuditLogDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.ApiConnectionFailedDialog, Dialogs.ViewModels.ApiConnectionFailedDialogViewModel>();
+        // OpenSpec: fix-missing-dialogs - 统一消息对话框和输入对话框
+        containerRegistry.RegisterDialog<Dialogs.Views.MessageDialog, Dialogs.ViewModels.MessageDialogViewModel>();
+        containerRegistry.RegisterDialog<Dialogs.Views.InputDialog, Dialogs.ViewModels.InputDialogViewModel>();
+        // OpenSpec: unify-dialog-to-prism - 统一到Prism DialogService
+        containerRegistry.RegisterDialog<LYBT.Desktop.Infrastructure.Views.UnfinishedCaseDialog,
+            LYBT.Desktop.Infrastructure.ViewModels.UnfinishedCaseDialogViewModel>();
 
         // OpenSpec: migrate-views-to-role-modules - 账户设置（合并个人资料+修改密码）
         containerRegistry.Register<ViewModels.AccountSettingsViewModel>();

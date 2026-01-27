@@ -1,0 +1,90 @@
+<UserControl x:Class="LYBT.Desktop.Shell.Dialogs.Views.MessageDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:prism="http://prismlibrary.com/"
+             mc:Ignorable="d"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             MinWidth="350" MinHeight="150"
+             d:DesignWidth="400" d:DesignHeight="200">
+
+    <!--
+        MessageDialog - Prism 统一消息对话框
+        OpenSpec: fix-missing-dialogs - 系统性设计
+
+        统一处理 Success/Error/Warning/Info 四种消息类型。
+        重要: Prism DialogService 要求 Dialog 视图必须是 UserControl。
+    -->
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>   <!-- Row 0: 图标和消息 -->
+            <RowDefinition Height="*"/>      <!-- Row 1: 弹性空间 -->
+            <RowDefinition Height="Auto"/>   <!-- Row 2: 按钮 -->
+        </Grid.RowDefinitions>
+
+        <!-- 图标和消息区域 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+            <!-- 图标 (使用简单的几何形状) -->
+            <Border Width="40" Height="40" CornerRadius="20" Margin="0,0,16,0"
+                    VerticalAlignment="Top">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="{DynamicResource InfoBrush}"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MessageType}" Value="Success">
+                                <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding MessageType}" Value="Error">
+                                <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding MessageType}" Value="Warning">
+                                <Setter Property="Background" Value="{DynamicResource WarningBrush}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+
+                <!-- 图标符号 -->
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="20" FontWeight="Bold" Foreground="White">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Text" Value="i"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MessageType}" Value="Success">
+                                    <Setter Property="Text" Value="&#x2714;"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding MessageType}" Value="Error">
+                                    <Setter Property="Text" Value="&#x2716;"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding MessageType}" Value="Warning">
+                                    <Setter Property="Text" Value="!"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Border>
+
+            <!-- 消息文本 -->
+            <TextBlock Text="{Binding Message}"
+                       TextWrapping="Wrap"
+                       FontSize="14"
+                       VerticalAlignment="Center"
+                       MaxWidth="280"/>
+        </StackPanel>
+
+        <!-- 按钮区域 -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0">
+            <Button Content="{Binding OkButtonText}"
+                    Command="{Binding ConfirmCommand}"
+                    Width="80" Height="32"
+                    FontSize="14"
+                    Style="{DynamicResource ButtonPrimary}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

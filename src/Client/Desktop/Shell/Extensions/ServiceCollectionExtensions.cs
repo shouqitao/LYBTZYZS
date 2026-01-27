@@ -154,7 +154,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<AuthenticationStateMachine>(containerRegistry); // OpenSpec: refactor-auth-role-system (Phase 1.1)
             RegisterLogger<LogoutService>(containerRegistry); // OpenSpec: refactor-login-authentication (Phase 2.3)
             RegisterLogger<UsernameStorageService>(containerRegistry);
-            RegisterLogger<SecureCredentialStorage>(containerRegistry);
+            // OpenSpec: remove-secure-credential-storage - SecureCredentialStorage已移除
             RegisterLogger<LocalTokenValidator>(containerRegistry);
             RegisterLogger<ModuleLoadingService>(containerRegistry);
             RegisterLogger<StartupOptimizationService>(containerRegistry);
@@ -321,7 +321,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ILogoutService, LogoutService>(); // OpenSpec: refactor-login-authentication (Phase 2.3)
             containerRegistry.RegisterSingleton<ITokenValidator, LocalTokenValidator>();
             containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();
-            containerRegistry.RegisterSingleton<ISecureCredentialStorage, SecureCredentialStorage>();
+            // OpenSpec: remove-secure-credential-storage - ISecureCredentialStorage已移除
             containerRegistry.RegisterSingleton<IConnectionSettingsService, ConnectionSettingsService>();
             containerRegistry.RegisterSingleton<ISystemSettingsService, SystemSettingsService>();
             containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();

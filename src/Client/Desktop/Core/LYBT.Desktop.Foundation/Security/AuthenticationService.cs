@@ -19,17 +19,20 @@ namespace LYBT.Desktop.Foundation.Security
         private readonly IAuthApi _authApi;
         private readonly ITokenStorageService _tokenStorage;
         private readonly ITokenValidator _tokenValidator;
+        private readonly ICredentialVault _credentialVault;
         private readonly ILogger<AuthenticationService> _logger;
 
         public AuthenticationService(
             IAuthApi authApi,
             ITokenStorageService tokenStorage,
             ITokenValidator tokenValidator,
+            ICredentialVault credentialVault,
             ILogger<AuthenticationService> logger)
         {
             _authApi = authApi;
             _tokenStorage = tokenStorage;
             _tokenValidator = tokenValidator;
+            _credentialVault = credentialVault;
             _logger = logger;
         }
 
@@ -84,6 +87,8 @@ namespace LYBT.Desktop.Foundation.Security
                 {
                     _logger.LogInformation("Token已过期，跳过服务端登出API调用");
                     await _tokenStorage.ClearAuthenticationAsync();
+                    // OpenSpec: simplify-auth-architecture - 登出时保留AutoLoginToken
+                    // 用户主动登出不清除自动登录凭据，只有取消勾选"自动登录"时才清除
                     return ServiceResult.Success("本地登出成功");
                 }
 
@@ -96,8 +101,11 @@ namespace LYBT.Desktop.Foundation.Security
 
                 var apiResponse = await _authApi.LogoutAsync(logoutRequest);
 
-                // 清除本地 Token
+                // 清除本地 Token（JWT会话Token）
                 await _tokenStorage.ClearAuthenticationAsync();
+                
+                // OpenSpec: simplify-auth-architecture - 登出时保留AutoLoginToken
+                // 用户主动登出不清除自动登录凭据，只有取消勾选"自动登录"时才清除
 
                 if (apiResponse.Success)
                 {
@@ -112,7 +120,7 @@ namespace LYBT.Desktop.Foundation.Security
             catch (Exception ex)
             {
                 _logger.LogError(ex, "登出失败");
-                // 即使异常,也清除本地 Token
+                // 即使异常,也清除本地 Token（但保留AutoLoginToken）
                 await _tokenStorage.ClearAuthenticationAsync();
                 return ServiceResult.Success("本地登出成功");
             }

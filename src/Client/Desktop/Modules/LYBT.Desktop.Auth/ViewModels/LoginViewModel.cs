@@ -17,20 +17,22 @@ namespace LYBT.Desktop.Auth.ViewModels
     /// <summary>
     /// 登录视图模型 - 使用LoginCoordinator编排登录流程
     /// OpenSpec: refactor-viewmodel-base-classes - 从UnifiedViewModelBase迁移到NavigableViewModelBase
+    /// OpenSpec: remove-secure-credential-storage - 移除废弃的SecureCredentialStorage依赖
     /// </summary>
     public class LoginViewModel : NavigableViewModelBase
     {
         private readonly ILoginCoordinator _loginCoordinator;
         private readonly IApplicationStateService _applicationStateService;
         private readonly IUsernameStorageService? _usernameStorage;
-        private readonly ISecureCredentialStorage? _credentialStorage;
         private readonly IConnectionSettingsService? _connectionSettingsService;
+        private readonly ICredentialVault? _credentialVault;
 
         private string _username = string.Empty;
         private string _password = string.Empty;
-        private bool _rememberMe;
+
+        // OpenSpec: simplify-login-options - 记住账号+记住密码
+        private bool _rememberUsername;
         private bool _rememberPassword;
-        private bool _hasSavedPassword;
         private string? _savedUsername;
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
@@ -47,10 +49,89 @@ namespace LYBT.Desktop.Auth.ViewModels
         }
 
         public string Password { get => _password; set { SetProperty(ref _password, value); (LoginCommand as DelegateCommand)?.RaiseCanExecuteChanged(); } }
-        public bool RememberMe { get => _rememberMe; set => SetProperty(ref _rememberMe, value); }
-        public bool RememberPassword { get => _rememberPassword; set { if (SetProperty(ref _rememberPassword, value) && value && !RememberMe) RememberMe = true; } }
+
+        #region 记住账号+记住密码 (OpenSpec: simplify-login-options)
+
+        /// <summary>
+        /// 记住账号 - 勾选后保存用户名，下次启动自动填充
+        /// </summary>
+        public bool RememberUsername
+        {
+            get => _rememberUsername;
+            set
+            {
+                var oldValue = _rememberUsername;
+                if (SetProperty(ref _rememberUsername, value))
+                {
+                    // 取消勾选时清除已保存的用户名
+                    if (oldValue && !value)
+                    {
+                        _ = ClearSavedUsernameAsync();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 记住密码 - 勾选后保存密码（DPAPI加密），下次启动自动填充
+        /// </summary>
+        public bool RememberPassword
+        {
+            get => _rememberPassword;
+            set
+            {
+                var oldValue = _rememberPassword;
+                if (SetProperty(ref _rememberPassword, value))
+                {
+                    // 取消勾选时清除已保存的密码
+                    if (oldValue && !value)
+                    {
+                        _ = ClearSavedPasswordAsync();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 清除已保存的用户名
+        /// </summary>
+        private async Task ClearSavedUsernameAsync()
+        {
+            try
+            {
+                if (_usernameStorage != null)
+                {
+                    await _usernameStorage.ClearUsernameAsync();
+                    Logger.LogInformation("[VM] Login.ClearSavedUsername - 已清除保存的用户名");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "[VM] Login.ClearSavedUsername failed");
+            }
+        }
+
+        /// <summary>
+        /// 清除已保存的密码
+        /// </summary>
+        private async Task ClearSavedPasswordAsync()
+        {
+            try
+            {
+                if (_credentialVault != null && !string.IsNullOrEmpty(Username))
+                {
+                    await _credentialVault.ClearPasswordAsync(Username);
+                    Logger.LogInformation("[VM] Login.ClearSavedPassword - 已清除用户 {Username} 的保存密码", Username);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "[VM] Login.ClearSavedPassword failed");
+            }
+        }
+
+        #endregion
         public bool HasMessage => !string.IsNullOrWhiteSpace(StatusMessage) || !string.IsNullOrWhiteSpace(ErrorMessage);
-        public bool HasSavedPassword { get => _hasSavedPassword; set => SetProperty(ref _hasSavedPassword, value); }
         public ApiHealthStatus ApiStatus { get => _apiStatus; set { if (SetProperty(ref _apiStatus, value)) { OnPropertyChanged(nameof(IsApiUnhealthy)); (RetryApiCheckCommand as DelegateCommand)?.RaiseCanExecuteChanged(); } } }
         public string ApiStatusMessage { get => _apiStatusMessage; set => SetProperty(ref _apiStatusMessage, value); }
         public bool IsApiUnhealthy => ApiStatus == ApiHealthStatus.Unhealthy;
@@ -88,21 +169,22 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// <summary>
         /// 构造函数
         /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// OpenSpec: remove-secure-credential-storage - 移除废弃的SecureCredentialStorage依赖
         /// </summary>
         public LoginViewModel(
             IViewModelServices services,
             ILoginCoordinator loginCoordinator,
             IApplicationStateService applicationStateService,
             IUsernameStorageService? usernameStorage = null,
-            ISecureCredentialStorage? credentialStorage = null,
-            IConnectionSettingsService? connectionSettingsService = null)
+            IConnectionSettingsService? connectionSettingsService = null,
+            ICredentialVault? credentialVault = null)
             : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
             _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
             _usernameStorage = usernameStorage;
-            _credentialStorage = credentialStorage;
             _connectionSettingsService = connectionSettingsService;
+            _credentialVault = credentialVault;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
@@ -115,7 +197,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         public override void OnNavigatedTo(NavigationContext navigationContext)
         {
             base.OnNavigatedTo(navigationContext);
-            _ = Task.Run(async () => await TryAutoLoginWithTokenAsync());
+            // OpenSpec: simplify-login-options - 移除自动登录，用户始终看到登录界面
         }
 
         private async Task LoadApiStatusFromStateServiceAsync()
@@ -131,36 +213,61 @@ namespace LYBT.Desktop.Auth.ViewModels
             catch (Exception ex) { Logger.LogError(ex, "[VM] Login.LoadApiStatus failed"); await Application.Current.Dispatcher.InvokeAsync(() => { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = "加载API状态失败，请稍后重试"; }); }
         }
 
-        private async Task TryAutoLoginWithTokenAsync()
-        {
-            // 委托给LoginCoordinator处理自动登录流程
-            // LoginCoordinator会负责Token验证、会话启动、模块加载和导航
-            await _loginCoordinator.TryAutoLoginAsync();
-        }
-
+        /// <summary>
+        /// 加载已保存的用户名
+        /// OpenSpec: remove-secure-credential-storage - 简化为仅从UsernameStorageService加载
+        /// 自动登录功能由LoginCoordinator通过CredentialVault处理
+        /// </summary>
         private async Task LoadSavedCredentialsAsync()
         {
             try
             {
-                if (_credentialStorage != null)
-                {
-                    var credentials = await _credentialStorage.LoadCredentialsAsync();
-                    var isRememberPasswordEnabled = await _credentialStorage.IsRememberPasswordEnabledAsync();
-                    if (credentials.HasValue && !string.IsNullOrEmpty(credentials.Value.Username))
-                    {
-                        await Application.Current.Dispatcher.InvokeAsync(() => { _savedUsername = credentials.Value.Username; Username = credentials.Value.Username; Password = credentials.Value.Password; RememberMe = true; RememberPassword = isRememberPasswordEnabled; });
-                        return;
-                    }
-                }
                 if (_usernameStorage != null)
                 {
                     var savedUsername = await _usernameStorage.GetSavedUsernameAsync();
                     var isRememberMeEnabled = await _usernameStorage.IsRememberMeEnabledAsync();
-                    if (!string.IsNullOrEmpty(savedUsername)) await Application.Current.Dispatcher.InvokeAsync(() => { _savedUsername = savedUsername; Username = savedUsername; RememberMe = isRememberMeEnabled; });
+                    if (!string.IsNullOrEmpty(savedUsername))
+                    {
+                        // OpenSpec: redesign-login-remember-password - 加载已保存的密码
+                        string? savedPassword = null;
+                        bool hasSavedPassword = false;
+                        if (_credentialVault != null)
+                        {
+                            hasSavedPassword = await _credentialVault.HasSavedPasswordAsync(savedUsername);
+                            if (hasSavedPassword)
+                            {
+                                savedPassword = await _credentialVault.GetPasswordAsync(savedUsername);
+                            }
+                        }
+
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            _savedUsername = savedUsername;
+                            Username = savedUsername;
+                            RememberUsername = isRememberMeEnabled;
+
+                            // OpenSpec: redesign-login-remember-password - 填充密码
+                            if (!string.IsNullOrEmpty(savedPassword))
+                            {
+                                Password = savedPassword;
+                                RememberPassword = true;
+                                // 密码已加载，勾选"记住密码"
+                                Logger.LogInformation("[VM] Login.LoadCredentials - 已加载用户 {Username} 的保存密码", savedUsername);
+                            }
+                            else
+                            {
+                                // 没有保存密码，不勾选"记住密码"
+                                RememberPassword = false;
+                            }
+                        });
+                    }
                 }
             }
             catch (Exception ex) { Logger.LogError(ex, "[VM] Login.LoadCredentials failed"); }
         }
+
+
+        
 
         private void UpdateConnectionStatus()
         {
@@ -175,19 +282,47 @@ namespace LYBT.Desktop.Auth.ViewModels
                 IsLoading = true; ErrorMessage = string.Empty; StatusMessage = "正在登录...";
                 if (ConnectionMode == ConnectionMode.Local) { ErrorMessage = "本地模式暂未实现，请切换到\"远程模式\""; return; }
 
-                // 使用LoginCoordinator执行完整登录流程（认证→会话→模块→导航）
-                var result = await _loginCoordinator.LoginAsync(Username, Password, RememberMe);
+                // 保存密码用于后续存储（登录成功后才保存）
+                var passwordToSave = RememberPassword ? Password : null;
+
+                // OpenSpec: simplify-login-options - 使用LoginCoordinator执行登录（不再传递RememberMe）
+                var result = await _loginCoordinator.LoginAsync(Username, Password);
 
                 if (result.Success)
                 {
-                    // 登录成功，处理用户名存储（Remember Me功能）
-                    // OpenSpec: refactor-login-authentication (CVT-001)
-                    // AutoLoginToken由LoginCoordinator负责保存到CredentialVault
-                    // 这里只需要保存用户名用于下次登录时填充
-                    if (_usernameStorage != null && (RememberMe || RememberPassword))
+                    // OpenSpec: simplify-login-options - 根据勾选状态保存用户名
+                    if (_usernameStorage != null)
                     {
-                        await _usernameStorage.SaveUsernameAsync(Username, RememberMe || RememberPassword);
+                        if (RememberUsername)
+                        {
+                            await _usernameStorage.SaveUsernameAsync(Username, rememberMe: true);
+                            Logger.LogInformation("[VM] Login.Execute - 已保存用户名 {Username}", Username);
+                        }
+                        else
+                        {
+                            await _usernameStorage.ClearUsernameAsync();
+                        }
                     }
+
+                    // OpenSpec: redesign-login-remember-password - 保存密码
+                    if (_credentialVault != null)
+                    {
+                        if (!string.IsNullOrEmpty(passwordToSave))
+                        {
+                            // 勾选"记住密码"，保存密码
+                            var saveResult = await _credentialVault.SavePasswordAsync(Username, passwordToSave);
+                            if (saveResult)
+                            {
+                                Logger.LogInformation("[VM] Login.Execute - 已保存用户 {Username} 的密码", Username);
+                            }
+                        }
+                        else
+                        {
+                            // 未勾选"记住密码"，清除已保存的密码
+                            await _credentialVault.ClearPasswordAsync(Username);
+                        }
+                    }
+
                     // LoginCoordinator已处理会话启动、模块加载和导航
                 }
                 else

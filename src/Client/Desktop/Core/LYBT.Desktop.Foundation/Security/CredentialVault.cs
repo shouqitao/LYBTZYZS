@@ -50,6 +50,214 @@ namespace LYBT.Desktop.Foundation.Security
             _hmacKeySource = SHA256.HashData(Encoding.UTF8.GetBytes(keyMaterial));
         }
 
+        #region 密码存储 (OpenSpec: redesign-login-remember-password)
+
+        /// <summary>
+        /// 保存密码（DPAPI加密）
+        /// </summary>
+        public async Task<bool> SavePasswordAsync(string username, string password)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentException("用户名不能为空", nameof(username));
+            }
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException("密码不能为空", nameof(password));
+            }
+
+            try
+            {
+                _logger.LogInformation("开始保存密码 - UserName: {UserName}", username);
+
+                // 1. 加载现有数据
+                var vault = await LoadVaultAsync() ?? new VaultStorage();
+
+                // 2. 加密密码
+                var encryptedPassword = EncryptWithDpapi(password);
+
+                // 3. 计算HMAC
+                var hmac = ComputeHmac(username + "_password", encryptedPassword);
+
+                // 4. 查找或创建条目
+                var entry = vault.Entries.Find(e =>
+                    string.Equals(e.Username, username, StringComparison.OrdinalIgnoreCase));
+
+                if (entry == null)
+                {
+                    entry = new VaultEntry { Username = username, CreatedAt = DateTime.UtcNow };
+                    vault.Entries.Add(entry);
+                }
+
+                // 5. 更新密码字段
+                entry.EncryptedPassword = encryptedPassword;
+                entry.PasswordHmac = hmac;
+                entry.PasswordSavedAt = DateTime.UtcNow;
+
+                // 6. 保存到文件
+                await SaveVaultAsync(vault);
+
+                _logger.LogInformation("密码已保存 - UserName: {UserName}", username);
+                return true;
+            }
+            catch (CryptographicException ex)
+            {
+                _logger.LogError(ex, "DPAPI加密失败");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "保存密码失败 - UserName: {UserName}", username);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 获取已保存的密码
+        /// </summary>
+        public async Task<string?> GetPasswordAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return null;
+            }
+
+            try
+            {
+                var vault = await LoadVaultAsync();
+                if (vault == null)
+                {
+                    return null;
+                }
+
+                var entry = vault.Entries.Find(e =>
+                    string.Equals(e.Username, username, StringComparison.OrdinalIgnoreCase));
+
+                if (entry == null || string.IsNullOrEmpty(entry.EncryptedPassword))
+                {
+                    _logger.LogDebug("未找到已保存的密码 - UserName: {UserName}", username);
+                    return null;
+                }
+
+                // 验证HMAC完整性
+                var expectedHmac = ComputeHmac(username + "_password", entry.EncryptedPassword);
+                if (!string.Equals(entry.PasswordHmac, expectedHmac, StringComparison.Ordinal))
+                {
+                    _logger.LogWarning("密码HMAC校验失败，数据可能被篡改 - UserName: {UserName}", username);
+                    return null;
+                }
+
+                // 解密密码
+                var password = DecryptWithDpapi(entry.EncryptedPassword);
+                _logger.LogDebug("密码已加载 - UserName: {UserName}", username);
+                return password;
+            }
+            catch (CryptographicException ex)
+            {
+                _logger.LogError(ex, "DPAPI解密失败（可能是其他Windows用户的数据）- UserName: {UserName}", username);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取密码失败 - UserName: {UserName}", username);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 检查是否存在已保存的密码
+        /// </summary>
+        public async Task<bool> HasSavedPasswordAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return false;
+            }
+
+            try
+            {
+                var vault = await LoadVaultAsync();
+                if (vault == null)
+                {
+                    return false;
+                }
+
+                var entry = vault.Entries.Find(e =>
+                    string.Equals(e.Username, username, StringComparison.OrdinalIgnoreCase));
+
+                if (entry == null || string.IsNullOrEmpty(entry.EncryptedPassword))
+                {
+                    return false;
+                }
+
+                // 验证HMAC完整性
+                var expectedHmac = ComputeHmac(username + "_password", entry.EncryptedPassword);
+                if (!string.Equals(entry.PasswordHmac, expectedHmac, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                // 尝试解密验证
+                try
+                {
+                    var password = DecryptWithDpapi(entry.EncryptedPassword);
+                    return !string.IsNullOrEmpty(password);
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "检查已保存密码失败 - UserName: {UserName}", username);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 清除已保存的密码
+        /// </summary>
+        public async Task<bool> ClearPasswordAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return false;
+            }
+
+            try
+            {
+                var vault = await LoadVaultAsync();
+                if (vault == null)
+                {
+                    return true;
+                }
+
+                var entry = vault.Entries.Find(e =>
+                    string.Equals(e.Username, username, StringComparison.OrdinalIgnoreCase));
+
+                if (entry != null && !string.IsNullOrEmpty(entry.EncryptedPassword))
+                {
+                    entry.EncryptedPassword = string.Empty;
+                    entry.PasswordHmac = string.Empty;
+                    entry.PasswordSavedAt = null;
+                    await SaveVaultAsync(vault);
+                    _logger.LogInformation("已清除已保存的密码 - UserName: {UserName}", username);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "清除密码失败 - UserName: {UserName}", username);
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region AutoLoginToken存储
+
         /// <summary>
         /// 保存AutoLoginToken
         /// </summary>
@@ -351,6 +559,8 @@ namespace LYBT.Desktop.Foundation.Security
             }
         }
 
+        #endregion
+
         #region 私有辅助方法
 
         /// <summary>
@@ -457,6 +667,7 @@ namespace LYBT.Desktop.Foundation.Security
 
         /// <summary>
         /// 单个用户的Vault条目
+        /// OpenSpec: redesign-login-remember-password - 添加密码存储
         /// </summary>
         private class VaultEntry
         {
@@ -464,6 +675,11 @@ namespace LYBT.Desktop.Foundation.Security
             public string EncryptedAutoLoginToken { get; set; } = string.Empty;
             public string Hmac { get; set; } = string.Empty;
             public DateTime CreatedAt { get; set; }
+
+            // OpenSpec: redesign-login-remember-password - 密码存储字段
+            public string EncryptedPassword { get; set; } = string.Empty;
+            public string PasswordHmac { get; set; } = string.Empty;
+            public DateTime? PasswordSavedAt { get; set; }
         }
 
         /// <summary>

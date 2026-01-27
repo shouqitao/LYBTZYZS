@@ -241,9 +241,21 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             };
 
             // Pagination变更
+            // OpenSpec: refactor-masterdetail-command-refresh - 修复翻页按钮不生效问题
             _masterDetailServices.Pagination.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(e.PropertyName);
+                // 分页状态变化时刷新分页命令的CanExecute状态
+                if (e.PropertyName is nameof(IPaginationService.CurrentPage)
+                    or nameof(IPaginationService.TotalPages)
+                    or nameof(IPaginationService.TotalCount)
+                    or nameof(IPaginationService.CanGoToFirstPage)
+                    or nameof(IPaginationService.CanGoToPreviousPage)
+                    or nameof(IPaginationService.CanGoToNextPage)
+                    or nameof(IPaginationService.CanGoToLastPage))
+                {
+                    NotifyPaginationCommandsCanExecuteChanged();
+                }
             };
 
             _masterDetailServices.Pagination.PageChanged += async (s, e) =>
@@ -502,13 +514,25 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// </summary>
         private void NotifyCommandsCanExecuteChanged()
         {
-            Logger.LogDebug("[DEBUG] NotifyCommandsCanExecuteChanged() called: Type={Type}, IsEditMode={IsEditMode}", 
+            Logger.LogDebug("[DEBUG] NotifyCommandsCanExecuteChanged() called: Type={Type}, IsEditMode={IsEditMode}",
                 GetType().Name, IsEditMode);
             CreateNewCommand.NotifyCanExecuteChanged();
             EditCommand.NotifyCanExecuteChanged();
             SaveCommand.NotifyCanExecuteChanged();
             CancelCommand.NotifyCanExecuteChanged();
             DeleteCommand.NotifyCanExecuteChanged();
+        }
+
+        /// <summary>
+        /// 通知分页命令刷新CanExecute状态
+        /// OpenSpec: refactor-masterdetail-command-refresh - 修复翻页按钮不生效问题
+        /// </summary>
+        private void NotifyPaginationCommandsCanExecuteChanged()
+        {
+            GoToFirstPageCommand.NotifyCanExecuteChanged();
+            GoToPreviousPageCommand.NotifyCanExecuteChanged();
+            GoToNextPageCommand.NotifyCanExecuteChanged();
+            GoToLastPageCommand.NotifyCanExecuteChanged();
         }
 
         #endregion
