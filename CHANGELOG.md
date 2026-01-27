@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### 简化认证架构 (OpenSpec: simplify-auth-architecture) - 2026-01-27
+
+**背景**: 认证架构中存在死代码，Expiring状态及相关事件实际未使用。采用静默登出模式，会话超时不再显示警告对话框。
+
+**核心改进**:
+- **状态机简化**: SessionState从6状态简化为5状态（移除Expiring）
+- **死代码清理**: 移除SessionExpiring事件及相关处理器
+- **规范更新**: login-state-machine规范同步更新
+
+**移除内容**:
+- `SessionState.Expiring` 枚举值
+- `SessionExpiringWarningEventArgs`, `SessionExpiringEventArgs` 类
+- `TokenEvents.ExpiringEvent`, `AuthEvents.SessionExpiringEvent` 事件
+- `MainWindowViewModel.OnSessionExpiring` 处理器
+
+**行为变更**: 会话超时采用静默登出，Active状态直接转换到Expired
+
+**提交**: `373035bd1`
+
+**状态**: 已验证，已推送
+
+---
+
 ### Fixed
 
 #### MasterDetail命令状态刷新 (OpenSpec: refactor-masterdetail-command-refresh) - 2026-01-24
