@@ -27,10 +27,7 @@ public interface IUserActivityTracker
     /// </summary>
     bool IsTracking { get; }
 
-    /// <summary>
-    /// 会话即将过期事件(提前警告)
-    /// </summary>
-    event EventHandler<SessionExpiringEventArgs>? SessionExpiring;
+    // OpenSpec: simplify-auth-architecture - 移除SessionExpiring事件，不再显示警告
 
     /// <summary>
     /// 会话已过期事件(需要登出)
@@ -53,18 +50,4 @@ public interface IUserActivityTracker
     void ResetActivity();
 }
 
-/// <summary>
-/// 会话即将过期事件参数
-/// </summary>
-public class SessionExpiringEventArgs : EventArgs
-{
-    /// <summary>
-    /// 剩余时间
-    /// </summary>
-    public TimeSpan RemainingTime { get; init; }
-
-    /// <summary>
-    /// 是否已显示警告(避免重复显示)
-    /// </summary>
-    public bool WarningShown { get; set; }
-}
+// OpenSpec: simplify-auth-architecture - SessionExpiringEventArgs已移除

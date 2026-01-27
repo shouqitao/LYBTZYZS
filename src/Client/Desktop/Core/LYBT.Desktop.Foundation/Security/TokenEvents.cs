@@ -33,10 +33,7 @@ public static class TokenEvents
     /// </summary>
     public class LifecycleChangedEvent : PubSubEvent<TokenLifecycleChangedPayload> { }
 
-    /// <summary>
-    /// Token即将过期事件
-    /// </summary>
-    public class ExpiringEvent : PubSubEvent<SessionExpiringPayload> { }
+    // OpenSpec: simplify-auth-architecture - ExpiringEvent已移除，不再显示过期警告
 
     /// <summary>
     /// Token已过期事件

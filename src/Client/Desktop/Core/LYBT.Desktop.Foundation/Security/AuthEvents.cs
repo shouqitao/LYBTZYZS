@@ -71,11 +71,7 @@ public static class AuthEvents
     /// </summary>
     public class TokenRefreshFailedEvent : PubSubEvent<TokenRefreshFailedPayload> { }
 
-    /// <summary>
-    /// 会话即将过期事件
-    /// 当Token接近过期时触发，用于提醒用户
-    /// </summary>
-    public class SessionExpiringEvent : PubSubEvent<SessionExpiringPayload> { }
+    // OpenSpec: simplify-auth-architecture - 移除SessionExpiringEvent，不再显示警告
 
     /// <summary>
     /// 会话已过期事件
@@ -326,26 +322,7 @@ public record TokenRefreshFailedPayload
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 }
 
-/// <summary>
-/// 会话即将过期载荷
-/// </summary>
-public record SessionExpiringPayload
-{
-    /// <summary>
-    /// 剩余时间
-    /// </summary>
-    public required TimeSpan RemainingTime { get; init; }
-
-    /// <summary>
-    /// 过期时间
-    /// </summary>
-    public required DateTime ExpiresAt { get; init; }
-
-    /// <summary>
-    /// 时间戳
-    /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
+// OpenSpec: simplify-auth-architecture - SessionExpiringPayload已移除
 
 /// <summary>
 /// 会话已过期载荷

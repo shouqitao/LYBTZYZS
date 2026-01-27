@@ -3,6 +3,7 @@ namespace LYBT.Desktop.Shell.Services.Session;
 /// <summary>
 /// 会话状态枚举
 /// 定义用户会话的各个状态
+/// OpenSpec: simplify-auth-architecture - 移除Expiring状态，简化为4状态
 /// </summary>
 public enum SessionState
 {
@@ -17,19 +18,14 @@ public enum SessionState
     Authenticated = 1,
 
     /// <summary>
-    /// 即将过期 - Token即将过期，需要刷新
-    /// </summary>
-    Expiring = 2,
-
-    /// <summary>
     /// 已过期 - Token已过期，需要重新登录
     /// </summary>
-    Expired = 3,
+    Expired = 2,
 
     /// <summary>
     /// 刷新中 - 正在刷新Token
     /// </summary>
-    Refreshing = 4
+    Refreshing = 3
 }
 
 /// <summary>
@@ -70,12 +66,8 @@ public interface ISessionLifecycleManager
     event EventHandler<SessionStateChangedEventArgs>? StateChanged;
 
     /// <summary>
-    /// 会话即将过期事件（用于显示警告）
-    /// </summary>
-    event EventHandler<SessionExpiringWarningEventArgs>? SessionExpiring;
-
-    /// <summary>
     /// 会话已过期事件（用于触发重新登录）
+    /// OpenSpec: simplify-auth-architecture - 移除SessionExpiring事件，直接静默过期
     /// </summary>
     event EventHandler? SessionExpired;
 
@@ -143,27 +135,7 @@ public class SessionStateChangedEventArgs : EventArgs
     }
 }
 
-/// <summary>
-/// 会话即将过期警告事件参数
-/// </summary>
-public class SessionExpiringWarningEventArgs : EventArgs
-{
-    /// <summary>
-    /// 剩余时间
-    /// </summary>
-    public TimeSpan RemainingTime { get; }
-
-    /// <summary>
-    /// 是否因为用户不活跃
-    /// </summary>
-    public bool DueToInactivity { get; }
-
-    public SessionExpiringWarningEventArgs(TimeSpan remainingTime, bool dueToInactivity = false)
-    {
-        RemainingTime = remainingTime;
-        DueToInactivity = dueToInactivity;
-    }
-}
+// OpenSpec: simplify-auth-architecture - SessionExpiringWarningEventArgs已移除，不再显示过期警告
 
 /// <summary>
 /// 会话诊断信息（用于调试和问题排查）

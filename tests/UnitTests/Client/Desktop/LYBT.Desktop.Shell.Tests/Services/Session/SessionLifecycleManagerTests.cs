@@ -314,26 +314,9 @@ public class SessionLifecycleManagerTests : IDisposable
 
     #endregion
 
-    #region SessionExpiring/Expired事件测试
+    #region SessionExpired事件测试
 
-    [Fact]
-    public async Task SessionExpiring_FromUserActivity_ShouldRaiseEvent()
-    {
-        // Arrange
-        await _sut.StartSessionAsync("testuser", "Doctor", DateTime.Now.AddHours(1));
-
-        SessionExpiringWarningEventArgs? warningArgs = null;
-        _sut.SessionExpiring += (sender, args) => warningArgs = args;
-
-        // Act - 模拟UserActivityTracker触发SessionExpiring事件
-        _userActivityTrackerMock.Raise(
-            t => t.SessionExpiring += null,
-            new SessionExpiringEventArgs { RemainingTime = TimeSpan.FromMinutes(1) });
-
-        // Assert
-        warningArgs.Should().NotBeNull();
-        warningArgs!.DueToInactivity.Should().BeTrue();
-    }
+    // OpenSpec: simplify-auth-architecture - SessionExpiring测试已移除
 
     [Fact]
     public async Task SessionExpired_FromUserActivity_ShouldTransitionToExpiredState()

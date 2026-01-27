@@ -45,7 +45,7 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
             .Subscribe(OnTokenLifecycleStateChanged, ThreadOption.UIThread);
 
         // 订阅用户活动事件
-        _userActivityTracker.SessionExpiring += OnUserActivitySessionExpiring;
+        // OpenSpec: simplify-auth-architecture - 移除SessionExpiring订阅，不再显示过期警告
         _userActivityTracker.SessionExpired += OnUserActivitySessionExpired;
     }
 
@@ -68,8 +68,8 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
         {
             lock (_stateLock)
             {
+                // OpenSpec: simplify-auth-architecture - 移除Expiring状态检查
                 return _currentState == SessionState.Authenticated ||
-                       _currentState == SessionState.Expiring ||
                        _currentState == SessionState.Refreshing;
             }
         }
@@ -105,8 +105,7 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
     /// <inheritdoc />
     public event EventHandler<SessionStateChangedEventArgs>? StateChanged;
 
-    /// <inheritdoc />
-    public event EventHandler<SessionExpiringWarningEventArgs>? SessionExpiring;
+    // OpenSpec: simplify-auth-architecture - SessionExpiring事件已移除
 
     /// <inheritdoc />
     public event EventHandler? SessionExpired;
@@ -286,9 +285,9 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
         switch (args.CurrentState)
         {
             case TokenLifecycleState.Warning:
-                TransitionTo(SessionState.Expiring);
-                var remainingTime = _tokenLifecycleService.RemainingTime ?? TimeSpan.Zero;
-                SessionExpiring?.Invoke(this, new SessionExpiringWarningEventArgs(remainingTime, dueToInactivity: false));
+                // OpenSpec: simplify-auth-architecture - Warning状态直接过期，不再显示警告
+                // 让Token继续自然过期，或在后台静默刷新
+                _logger.LogDebug("Token进入Warning状态，等待自动刷新或过期");
                 break;
 
             case TokenLifecycleState.Expired:
@@ -297,7 +296,8 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
                 break;
 
             case TokenLifecycleState.Active:
-                if (CurrentState == SessionState.Expiring || CurrentState == SessionState.Refreshing)
+                // OpenSpec: simplify-auth-architecture - 移除Expiring状态检查
+                if (CurrentState == SessionState.Refreshing)
                 {
                     TransitionTo(SessionState.Authenticated);
                 }
@@ -305,14 +305,7 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
         }
     }
 
-    /// <summary>
-    /// 用户活动会话即将过期处理
-    /// </summary>
-    private void OnUserActivitySessionExpiring(object? sender, Contracts.Services.SessionExpiringEventArgs e)
-    {
-        _logger.LogDebug("用户不活跃，会话即将过期，剩余时间: {RemainingTime}", e.RemainingTime);
-        SessionExpiring?.Invoke(this, new SessionExpiringWarningEventArgs(e.RemainingTime, dueToInactivity: true));
-    }
+    // OpenSpec: simplify-auth-architecture - OnUserActivitySessionExpiring方法已移除
 
     /// <summary>
     /// 用户活动会话已过期处理
@@ -335,7 +328,7 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
         _tokenLifecycleSubscription?.Dispose();
 
         // 取消用户活动事件订阅
-        _userActivityTracker.SessionExpiring -= OnUserActivitySessionExpiring;
+        // OpenSpec: simplify-auth-architecture - SessionExpiring订阅已移除
         _userActivityTracker.SessionExpired -= OnUserActivitySessionExpired;
 
         _disposed = true;

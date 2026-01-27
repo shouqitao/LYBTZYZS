@@ -179,34 +179,7 @@ public class TokenEventsTests
 
     #endregion
 
-    #region ExpiringEvent测试
-
-    /// <summary>
-    /// 测试：ExpiringEvent可正常订阅和发布
-    /// </summary>
-    [Fact]
-    public void ExpiringEvent_CanSubscribeAndPublish()
-    {
-        // Arrange
-        SessionExpiringPayload? receivedPayload = null;
-        var expiringEvent = _eventAggregator.GetEvent<TokenEvents.ExpiringEvent>();
-        expiringEvent.Subscribe(payload => receivedPayload = payload);
-
-        var payload = new SessionExpiringPayload
-        {
-            ExpiresAt = DateTime.UtcNow.AddMinutes(5),
-            RemainingTime = TimeSpan.FromMinutes(5)
-        };
-
-        // Act
-        expiringEvent.Publish(payload);
-
-        // Assert
-        receivedPayload.Should().NotBeNull();
-        receivedPayload!.RemainingTime.Should().Be(TimeSpan.FromMinutes(5));
-    }
-
-    #endregion
+    // OpenSpec: simplify-auth-architecture - ExpiringEvent测试已移除
 
     #region ExpiredEvent测试
 

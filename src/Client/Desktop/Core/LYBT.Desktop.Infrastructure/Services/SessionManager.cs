@@ -15,8 +15,8 @@ namespace LYBT.Desktop.Infrastructure.Services
         private readonly IAuthenticationService _authService;
         private UserDetailDto? _cachedUser;
 
+        // OpenSpec: simplify-auth-architecture - SessionExpiring事件已移除
 #pragma warning disable CS0067
-        public event EventHandler? SessionExpiring;
         public event EventHandler? SessionExpired;
 #pragma warning restore CS0067
         public event EventHandler<SessionChangedEventArgs>? SessionChanged;

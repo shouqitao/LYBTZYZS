@@ -320,7 +320,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         _tickService.Tick += OnTick;
         _tickService.Start();
-        _userActivityTracker.SessionExpiring += OnSessionExpiring;
+        // OpenSpec: simplify-auth-architecture - SessionExpiring订阅已移除
         _userActivityTracker.SessionExpired += OnSessionExpired;
     }
 
@@ -367,14 +367,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         Application.Current?.Dispatcher.BeginInvoke(() => ApiStatus = e.CurrentStatus);
     }
 
-    /// <summary>
-    /// 会话即将过期事件处理 - 仅记录日志，不弹窗打扰用户
-    /// </summary>
-    private void OnSessionExpiring(object? sender, SessionExpiringEventArgs e)
-    {
-        // 静默处理，等待会话自然过期后自动登出
-        Logger.LogDebug("会话即将过期，剩余时间: {RemainingTime}", e.RemainingTime);
-    }
+    // OpenSpec: simplify-auth-architecture - OnSessionExpiring方法已移除
 
     /// <summary>
     /// 会话已过期事件处理 - 执行自动登出
@@ -665,7 +658,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private void CleanupTickSubscription()
     {
         _tickService.Tick -= OnTick;
-        _userActivityTracker.SessionExpiring -= OnSessionExpiring;
+        // OpenSpec: simplify-auth-architecture - SessionExpiring订阅已移除
         _userActivityTracker.SessionExpired -= OnSessionExpired;
         _userActivityTracker.StopTracking();
     }

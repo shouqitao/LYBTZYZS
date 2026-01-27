@@ -20,6 +20,7 @@ public class AuthenticationServiceTests
     private readonly IAuthApi _authApi;
     private readonly ITokenStorageService _tokenStorage;
     private readonly ITokenValidator _tokenValidator;
+    private readonly ICredentialVault _credentialVault;
     private readonly ILogger<AuthenticationService> _logger;
     private readonly AuthenticationService _authService;
 
@@ -28,12 +29,14 @@ public class AuthenticationServiceTests
         _authApi = Substitute.For<IAuthApi>();
         _tokenStorage = Substitute.For<ITokenStorageService>();
         _tokenValidator = Substitute.For<ITokenValidator>();
+        _credentialVault = Substitute.For<ICredentialVault>();
         _logger = Substitute.For<ILogger<AuthenticationService>>();
 
         _authService = new AuthenticationService(
             _authApi,
             _tokenStorage,
             _tokenValidator,
+            _credentialVault,
             _logger
         );
     }

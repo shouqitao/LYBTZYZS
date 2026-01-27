@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Contracts.Services;
 using Microsoft.Extensions.Logging;
@@ -26,8 +27,7 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
     private bool _disposed;
     private long _lastCheckTickCount;
 
-    /// <inheritdoc />
-    public event EventHandler<SessionExpiringEventArgs>? SessionExpiring;
+    // OpenSpec: simplify-auth-architecture - SessionExpiring事件已移除
 
     /// <inheritdoc />
     public event EventHandler? SessionExpired;
@@ -112,6 +112,10 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// OpenSpec: remove-secure-credential-storage - 修复STA线程问题
+    /// InputManager.Current需要在UI线程访问，使用Dispatcher确保线程安全
+    /// </remarks>
     public void StartTracking()
     {
         lock (_lock)
@@ -131,8 +135,15 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
             _lastActivityTime = DateTime.Now;
             _lastCheckTickCount = _tickService.TickCount;
 
-            // 订阅输入事件
-            InputManager.Current.PreProcessInput += OnPreProcessInput;
+            // 订阅输入事件 - 必须在UI线程执行
+            // InputManager.Current需要STA线程，使用Dispatcher确保在UI线程执行
+            if (Application.Current?.Dispatcher != null)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    InputManager.Current.PreProcessInput += OnPreProcessInput;
+                });
+            }
 
             // 订阅Tick服务
             _tickService.Tick += OnTick;
@@ -144,6 +155,10 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// OpenSpec: remove-secure-credential-storage - 修复STA线程问题
+    /// InputManager.Current需要在UI线程访问，使用Dispatcher确保线程安全
+    /// </remarks>
     public void StopTracking()
     {
         lock (_lock)
@@ -153,8 +168,14 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
                 return;
             }
 
-            // 取消订阅
-            InputManager.Current.PreProcessInput -= OnPreProcessInput;
+            // 取消订阅 - 必须在UI线程执行
+            if (Application.Current?.Dispatcher != null)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    InputManager.Current.PreProcessInput -= OnPreProcessInput;
+                });
+            }
             _tickService.Tick -= OnTick;
 
             _isTracking = false;
@@ -242,22 +263,7 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
         // SessionExpiring事件不再触发，会话直接过期后再提示用户重新登录
     }
 
-    private void OnSessionExpiring(TimeSpan remainingTime)
-    {
-        var args = new SessionExpiringEventArgs
-        {
-            RemainingTime = remainingTime
-        };
-
-        try
-        {
-            SessionExpiring?.Invoke(this, args);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "SessionExpiring事件处理器执行出错");
-        }
-    }
+    // OpenSpec: simplify-auth-architecture - OnSessionExpiring方法已移除
 
     private void OnSessionExpired()
     {

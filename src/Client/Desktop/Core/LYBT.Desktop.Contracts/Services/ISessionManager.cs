@@ -95,11 +95,7 @@ namespace LYBT.Desktop.Contracts.Services
         string GetCurrentUserRoleDisplay();
 
         // ==================== 会话事件 ====================
-
-        /// <summary>
-        /// 会话即将过期事件
-        /// </summary>
-        event EventHandler? SessionExpiring;
+        // OpenSpec: simplify-auth-architecture - 移除SessionExpiring事件
 
         /// <summary>
         /// 会话已过期事件

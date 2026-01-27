@@ -16,8 +16,8 @@ TBD - created by archiving change refactor-login-authentication. Update Purpose 
   - Validating: 正在验证凭据
   - Refreshing: 正在刷新Token
   - Active: 已登录，会话活跃
-  - Expiring: 会话即将过期
   - Expired: 会话已过期
+  <!-- OpenSpec: simplify-auth-architecture - Expiring状态已移除，采用静默登出 -->
 
 #### Scenario: 初始状态
 
@@ -50,13 +50,7 @@ TBD - created by archiving change refactor-login-authentication. Update Purpose 
 - **THEN** 状态转换为Idle
 - **AND** 触发LoginFailed事件
 
-#### Scenario: Active到Expiring
-
-- **GIVEN** 当前状态为Active
-- **AND** 配置的警告提前时间为2分钟
-- **WHEN** 会话将在2分钟内过期
-- **THEN** 状态转换为Expiring
-- **AND** 触发SessionExpiring事件
+<!-- OpenSpec: simplify-auth-architecture - Active到Expiring转换已移除，采用静默登出 -->
 
 #### Scenario: Active到Refreshing
 
@@ -70,13 +64,16 @@ TBD - created by archiving change refactor-login-authentication. Update Purpose 
 - **WHEN** Token刷新成功
 - **THEN** 状态转换为Active
 
-#### Scenario: Expiring到Expired
+<!-- OpenSpec: simplify-auth-architecture - Expiring到Expired转换已移除，Active直接到Expired -->
 
-- **GIVEN** 当前状态为Expiring
-- **AND** 用户未响应保持登录
+#### Scenario: Active到Expired（静默超时）
+
+- **GIVEN** 当前状态为Active
+- **AND** 用户不活跃超过配置的超时时间
 - **WHEN** 会话超时
 - **THEN** 状态转换为Expired
 - **AND** 触发SessionExpired事件
+- **AND** 不显示警告对话框（静默登出）
 
 #### Scenario: Expired到Idle
 
@@ -87,10 +84,11 @@ TBD - created by archiving change refactor-login-authentication. Update Purpose 
 
 #### Scenario: 任意状态到Idle（登出）
 
-- **GIVEN** 当前状态为Active/Expiring/Refreshing
+- **GIVEN** 当前状态为Active/Refreshing
 - **WHEN** 用户执行登出
 - **THEN** 状态转换为Idle
 - **AND** 触发LogoutCompleted事件
+<!-- OpenSpec: simplify-auth-architecture - 移除Expiring状态 -->
 
 ---
 
