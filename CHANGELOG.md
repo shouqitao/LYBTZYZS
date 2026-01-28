@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 简化登录选项 (OpenSpec: simplify-login-options) - 2026-01-28
+
+**背景**: 原"自动登录"功能存在概念混淆，用户勾选后密码未正确保存。重新设计为"记住账号"+"记住密码"双复选框模式。
+
+**核心改进**:
+- **UI重构**: 登录界面改为两个独立复选框，功能边界清晰
+- **凭证存储**: 新增CredentialVault使用DPAPI安全存储密码
+- **架构简化**: 移除LoginCoordinator中的TryAutoLoginAsync逻辑
+
+**移除内容**:
+- `SecureCredentialStorage` 及其接口（废弃实现）
+- `ILoginCoordinator.TryAutoLoginAsync` 方法
+- `LoginSuccessEventArgs.IsAutoLogin` 属性
+
+**行为变更**: 用户始终看到登录界面，勾选"记住密码"后凭证自动预填充
+
+**提交**: `bb3091705`
+
+**状态**: 已验证，已推送
+
+---
+
 #### 简化认证架构 (OpenSpec: simplify-auth-architecture) - 2026-01-27
 
 **背景**: 认证架构中存在死代码，Expiring状态及相关事件实际未使用。采用静默登出模式，会话超时不再显示警告对话框。
