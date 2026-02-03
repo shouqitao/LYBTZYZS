@@ -1,6 +1,7 @@
 using System.Windows;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -9,6 +10,7 @@ using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Login;
@@ -18,6 +20,7 @@ namespace LYBT.Desktop.Shell.Services.Login;
 /// 编排完整的登录流程，包括认证、会话启动、模块加载和导航
 /// OpenSpec: refactor-auth-role-system (Phase 1.1)
 /// 使用统一的 AuthenticationStateMachine 替代原有的双状态机架构
+/// OpenSpec: implement-local-mode - 支持本地模式认证
 /// </summary>
 public class LoginCoordinator : ILoginCoordinator
 {
@@ -30,6 +33,8 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly ICredentialVault? _credentialVault;
     private readonly IUsernameStorageService? _usernameStorage;
     private readonly IAuthenticationStateMachine _stateMachine;
+    private readonly ILocalAuthService? _localAuthService;
+    private readonly ConnectionMode _connectionMode;
     private readonly object _stateLock = new();
 
     private UserDetailDto? _currentUser;
@@ -46,8 +51,10 @@ public class LoginCoordinator : ILoginCoordinator
         IModuleLoadingService moduleLoadingService,
         INavigationCoordinator navigationCoordinator,
         IAuthenticationStateMachine stateMachine,
+        IConfiguration configuration,
         ICredentialVault? credentialVault = null,
-        IUsernameStorageService? usernameStorage = null)
+        IUsernameStorageService? usernameStorage = null,
+        ILocalAuthService? localAuthService = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
@@ -58,6 +65,13 @@ public class LoginCoordinator : ILoginCoordinator
         _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         _credentialVault = credentialVault;
         _usernameStorage = usernameStorage;
+        _localAuthService = localAuthService;
+
+        // OpenSpec: implement-local-mode - 读取连接模式
+        var modeString = configuration?["ConnectionMode"];
+        _connectionMode = Enum.TryParse<ConnectionMode>(modeString, ignoreCase: true, out var mode)
+            ? mode
+            : ConnectionMode.Remote;
 
         // 订阅状态机事件，转发给外部订阅者
         _stateMachine.StateChanged += OnStateMachineStateChanged;
@@ -102,53 +116,23 @@ public class LoginCoordinator : ILoginCoordinator
             _loginAttemptCount++;
         }
 
-        _logger.LogInformation("开始登录流程 [用户: {Username}, 尝试次数: {AttemptCount}]",
-            username, _loginAttemptCount);
+        _logger.LogInformation("开始登录流程 [用户: {Username}, 尝试次数: {AttemptCount}, 模式: {Mode}]",
+            username, _loginAttemptCount, _connectionMode);
 
         // OpenSpec: refactor-auth-role-system - 使用统一状态机
         _stateMachine.Fire(AuthEvent.StartLogin, "正在验证身份...");
 
         try
         {
-            // Step 1: 认证（不再传递RememberMe，由ViewModel决定是否保存密码）
-            var loginRequest = new LoginRequest { UserName = username, Password = password, RememberMe = false };
-            var result = await _authenticationService.LoginAsync(loginRequest);
-
-            if (!result.IsSuccess || result.Data == null)
+            // OpenSpec: implement-local-mode - 根据连接模式选择认证方式
+            if (_connectionMode == ConnectionMode.Local)
             {
-                _logger.LogWarning("登录认证失败 [用户: {Username}]", username);
-                _stateMachine.Fire(AuthEvent.LoginFailure, result.Message ?? "认证失败");
-                return LoginResult.Failed(result.Message ?? "认证失败");
+                return await LoginLocalAsync(username, password);
             }
-
-            var loginResponse = result.Data;
-            var user = loginResponse.User;
-
-            // 凭证验证成功，进入LoadingProfile阶段
-            _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
-
-            // Step 2: 保存JWT Token认证信息（始终保存用于当前会话）
-            await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberMe: false);
-
-            // Step 3: 启动会话
-            await StartSessionAsync(user, loginResponse.ExpiresAt);
-            _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
-
-            // Step 4: 加载模块
-            await LoadModulesForUserAsync(user);
-            _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
-
-            // Step 5: 导航到首页
-            await NavigateToRoleHomeAsync(user);
-            _stateMachine.Fire(AuthEvent.NavigationCompleted);
-
-            // 完成登录
-            LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, loginResponse.ExpiresAt));
-
-            _logger.LogInformation("登录流程完成 [用户: {Username}, 角色: {Role}]",
-                user.UserName, user.Role);
-
-            return LoginResult.Succeeded(user);
+            else
+            {
+                return await LoginRemoteAsync(username, password);
+            }
         }
         catch (Exception ex)
         {
@@ -156,6 +140,107 @@ public class LoginCoordinator : ILoginCoordinator
             _stateMachine.Fire(AuthEvent.LoginFailure, ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
             return LoginResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
         }
+    }
+
+
+    /// <summary>
+    /// 远程模式登录（通过 WebAPI）
+    /// </summary>
+    private async Task<LoginResult> LoginRemoteAsync(string username, string password)
+    {
+        // Step 1: 认证（不再传递RememberMe，由ViewModel决定是否保存密码）
+        var loginRequest = new LoginRequest { UserName = username, Password = password, RememberMe = false };
+        var result = await _authenticationService.LoginAsync(loginRequest);
+
+        if (!result.IsSuccess || result.Data == null)
+        {
+            _logger.LogWarning("登录认证失败 [用户: {Username}]", username);
+            _stateMachine.Fire(AuthEvent.LoginFailure, result.Message ?? "认证失败");
+            return LoginResult.Failed(result.Message ?? "认证失败");
+        }
+
+        var loginResponse = result.Data;
+        var user = loginResponse.User;
+
+        // 凭证验证成功，进入LoadingProfile阶段
+        _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
+
+        // Step 2: 保存JWT Token认证信息（始终保存用于当前会话）
+        await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberMe: false);
+
+        // Step 3-5: 完成登录流程
+        return await CompleteLoginFlowAsync(user, loginResponse.ExpiresAt);
+    }
+
+    /// <summary>
+    /// 本地模式登录（SQLite 认证）
+    /// OpenSpec: implement-local-mode
+    /// </summary>
+    private async Task<LoginResult> LoginLocalAsync(string username, string password)
+    {
+        if (_localAuthService == null)
+        {
+            _logger.LogError("本地模式登录失败：LocalAuthService 未注册");
+            _stateMachine.Fire(AuthEvent.LoginFailure, "本地认证服务未配置");
+            return LoginResult.Failed("本地认证服务未配置");
+        }
+
+        // Step 1: 本地认证
+        var userEntity = await _localAuthService.ValidateAsync(username, password);
+
+        if (userEntity == null)
+        {
+            _logger.LogWarning("本地登录认证失败 [用户: {Username}]", username);
+            _stateMachine.Fire(AuthEvent.LoginFailure, "用户名或密码错误");
+            return LoginResult.Failed("用户名或密码错误");
+        }
+
+        // 将 Entity 转换为 DTO
+        var user = new UserDetailDto
+        {
+            Id = userEntity.Id,
+            UserName = userEntity.UserName,
+            RealName = userEntity.RealName,
+            Role = userEntity.Role,
+            Status = userEntity.Status,
+            PhoneNumber = userEntity.PhoneNumber,
+            Email = userEntity.Email
+        };
+
+        // 凭证验证成功，进入LoadingProfile阶段
+        _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
+
+        // 本地模式不需要保存 JWT Token，设置一个长期有效的过期时间
+        var expiresAt = DateTime.Now.AddYears(1);
+
+        // Step 3-5: 完成登录流程
+        return await CompleteLoginFlowAsync(user, expiresAt);
+    }
+
+    /// <summary>
+    /// 完成登录流程的公共步骤（会话启动、模块加载、导航）
+    /// </summary>
+    private async Task<LoginResult> CompleteLoginFlowAsync(UserDetailDto user, DateTime tokenExpiresAt)
+    {
+        // Step 3: 启动会话
+        await StartSessionAsync(user, tokenExpiresAt);
+        _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
+
+        // Step 4: 加载模块
+        await LoadModulesForUserAsync(user);
+        _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
+
+        // Step 5: 导航到首页
+        await NavigateToRoleHomeAsync(user);
+        _stateMachine.Fire(AuthEvent.NavigationCompleted);
+
+        // 完成登录
+        LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, tokenExpiresAt));
+
+        _logger.LogInformation("登录流程完成 [用户: {Username}, 角色: {Role}]",
+            user.UserName, user.Role);
+
+        return LoginResult.Succeeded(user);
     }
 
     /// <inheritdoc />

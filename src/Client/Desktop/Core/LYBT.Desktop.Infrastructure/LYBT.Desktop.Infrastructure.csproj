@@ -74,6 +74,9 @@
   <!-- Core Dependencies -->
   <ItemGroup Label="Core Dependencies">
     <ProjectReference Include="..\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
+    <!-- OpenSpec: implement-local-mode - DataSource 实现需要 Contracts 接口和 Entities -->
+    <ProjectReference Include="..\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
   </ItemGroup>
 
   <!-- Core_New Dependencies -->

@@ -77,6 +77,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### 本地模式支持 (OpenSpec: implement-local-mode) - 2026-02-03
+
+**背景**: 为支持离线场景和单机部署，实现桌面应用的本地模式，通过DataSource抽象层实现远程/本地模式无缝切换。
+
+**核心改进**:
+- **DataSource抽象层**: 新增IDataSource接口族（Patient/Herb/Formula/MedicalCase/User），Repository通过依赖注入获取数据源
+- **本地存储**: SQLite + EF Core，数据库路径 `%APPDATA%\LYBTZYZS\lybtzyzs.db`
+- **本地认证**: LocalAuthService实现BCrypt密码验证、账户锁定机制
+- **模式切换**: 通过配置文件 `ConnectionMode: Local/Remote` 控制
+
+**新增文件**:
+- `LYBT.Desktop.LocalData` 项目（Context、DataSources、Services）
+- `LYBT.Desktop.Contracts/DataSources/` 接口定义（6个接口）
+- `LYBT.Desktop.Infrastructure/DataSources/` Remote实现（5个DataSource + 5个Mapper）
+- `DataSourceRegistrationExtensions.cs` DI注册扩展
+- `SessionBasedCurrentUserProvider.cs` 当前用户提供者
+
+**修改文件**:
+- 5个Repository重构为DataSource模式（Patient/Herb/Formula/MedicalCase/User）
+- LoginCoordinator支持本地模式认证
+- HealthCheckCoordinator本地模式跳过API检查
+
+**测试覆盖**:
+- 单元测试: 47个（LocalPatientDataSource/LocalAuthService/LocalHerbDataSource）
+- 集成测试: 16个（DI解析、CRUD端到端、登录流程、账户锁定）
+
+**配置方式**:
+```json
+{
+  "ConnectionMode": "Local"
+}
+```
+
+**默认本地账号**: admin / admin123
+
+**状态**: 已验证，63测试全通过
+
+---
+
 #### 管理界面新建逻辑完善 (OpenSpec: complete-management-create-logic) - 2026-01-24
 
 **背景**: 通过brainstorm审查发现管理界面新建逻辑存在多处不完善，包括验证规则缺失、导入导出功能未完成等。

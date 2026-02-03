@@ -77,6 +77,12 @@ namespace LYBT.Desktop.Shell.Extensions
             var configuration = RegisterConfiguration(containerRegistry);
             RegisterLogging(containerRegistry);
             RegisterCacheServices(containerRegistry);
+
+            // OpenSpec: implement-local-mode - 读取连接模式并注册对应的 DataSource
+            var connectionMode = GetConnectionMode(configuration);
+            containerRegistry.RegisterDataSources(connectionMode);
+            RegisterDataSourceLoggers(containerRegistry, connectionMode);
+
             RegisterHttpServices(containerRegistry, configuration);
             RegisterFoundationServices(containerRegistry);
             RegisterPresentationServices(containerRegistry);
@@ -86,6 +92,51 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // OpenSpec: refactor-viewmodel-composition - 注册ViewModel组合服务
             containerRegistry.AddViewModelServices();
+        }
+
+        /// <summary>
+        /// 从配置文件获取连接模式
+        /// OpenSpec: implement-local-mode
+        /// </summary>
+        private static ConnectionMode GetConnectionMode(IConfiguration configuration)
+        {
+            var modeString = configuration["ConnectionMode"];
+            if (Enum.TryParse<ConnectionMode>(modeString, ignoreCase: true, out var mode))
+            {
+                Log.Information("[LocalMode] 使用配置文件指定的连接模式: {Mode}", mode);
+                return mode;
+            }
+
+            // 默认使用远程模式
+            Log.Information("[LocalMode] 未指定连接模式，使用默认远程模式");
+            return ConnectionMode.Remote;
+        }
+
+        /// <summary>
+        /// 注册 DataSource 相关 Logger
+        /// OpenSpec: implement-local-mode
+        /// </summary>
+        private static void RegisterDataSourceLoggers(IContainerRegistry containerRegistry, ConnectionMode mode)
+        {
+            if (mode == ConnectionMode.Local)
+            {
+                RegisterLogger<LYBT.Desktop.LocalData.Context.LocalDbContext>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.LocalData.Services.LocalAuthService>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalPatientDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalHerbDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalFormulaDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalMedicalCaseDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalUserDataSource>(containerRegistry);
+            }
+            else
+            {
+                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemotePatientDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteHerbDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteFormulaDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteMedicalCaseDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteUserDataSource>(containerRegistry);
+            }
         }
 
         /// <summary>注册配置服务</summary>

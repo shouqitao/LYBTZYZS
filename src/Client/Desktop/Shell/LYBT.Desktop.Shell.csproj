@@ -71,6 +71,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
 
+  <!-- OpenSpec: implement-local-mode - SQLite 支持 -->
+  <ItemGroup Label="Entity Framework SQLite">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+
   <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除，使用Mapperly -->
 
   <!-- Project References -->
@@ -81,6 +86,8 @@
     <ProjectReference Include="..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
     <!-- OpenSpec: create-printing-module - 独立打印模块 -->
     <ProjectReference Include="..\Core\LYBT.Desktop.Printing\LYBT.Desktop.Printing.csproj" />
+    <!-- OpenSpec: implement-local-mode - 本地数据存储层 -->
+    <ProjectReference Include="..\Core\LYBT.Desktop.LocalData\LYBT.Desktop.LocalData.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Business Modules">

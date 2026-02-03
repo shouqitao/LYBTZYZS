@@ -1,66 +1,207 @@
-﻿using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.Repositories;
+using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.DataSources;
+using LYBT.Desktop.Infrastructure.DataSources.Mappers;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.Repositories
 {
     /// <summary>
-    /// 医案数据仓储实现 - RESTful设计
-    /// List返回轻量MedicalCaseListDto，Detail返回完整MedicalCaseDetailDto
+    /// 医案数据仓储实现 - DataSource 抽象层重构
+    /// OpenSpec: implement-local-mode - 支持 Local/Remote 模式切换
     /// </summary>
-    public class MedicalCaseRepository : RepositoryBase<MedicalCaseDetailDto, MedicalCaseListDto, MedicalCaseInputDto, MedicalCaseInputDto, IMedicalCaseApi>, IMedicalCaseRepository
+    public class MedicalCaseRepository : IMedicalCaseRepository
     {
-        public MedicalCaseRepository(
-            IMedicalCaseApi medicalCaseApi,
-            ILogger<MedicalCaseRepository> logger)
-            : base(medicalCaseApi, logger)
-        {
-        }
-
-        // OpenSpec: consolidate-medicalcase-detail-queries - 废弃方法已删除
-        // - GetByIdWithDetailsAsync: 使用GetByIdAsync
-        // - GetByPatientIdAsync: 使用QueryAsync(QueryType=ByPatient)
+        private readonly IMedicalCaseDataSource _dataSource;
+        private readonly IMedicalCaseApi? _api; // 可选，用于高级查询等 Remote 模式特有功能
+        private readonly ILogger<MedicalCaseRepository> _logger;
+        private readonly MedicalCaseDataSourceMapper _mapper = new();
 
         /// <summary>
-        /// 统一查询医案
-        /// OpenSpec: optimize-medicalcase-api
+        /// 初始化 MedicalCaseRepository
         /// </summary>
-        public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query)
+        /// <param name="dataSource">医案数据源（Local 或 Remote）</param>
+        /// <param name="logger">日志记录器</param>
+        /// <param name="api">可选的 API 接口（仅 Remote 模式下注入，用于高级查询）</param>
+        public MedicalCaseRepository(
+            IMedicalCaseDataSource dataSource,
+            ILogger<MedicalCaseRepository> logger,
+            IMedicalCaseApi? api = null)
+        {
+            _dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _api = api;
+        }
+
+        #region 标准 CRUD 操作
+
+        /// <summary>
+        /// 分页查询医案列表
+        /// </summary>
+        public async Task<PagedResult<MedicalCaseListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
             try
             {
-                var response = await _api.QueryMedicalCasesAsync(
-                    queryType: query.QueryType,
-                    patientId: query.PatientId,
-                    doctorId: query.DoctorId,
-                    keyword: query.Keyword,
-                    pageIndex: query.PageIndex,
-                    pageSize: query.PageSize,
-                    includeAllDoctors: query.IncludeAllDoctors,
-                    limit: query.Limit);
-                return response.Data ?? new PagedResult<MedicalCaseListDto>();
+                _logger.LogDebug("[REPO] MedicalCase.GetPaged started - Page={Page} PageSize={PageSize} Keyword={Keyword}",
+                    page, pageSize, keyword);
+
+                var (items, total) = await _dataSource.GetPagedAsync(page, pageSize, keyword);
+
+                var listDtos = items.Select(e => new MedicalCaseListDto
+                {
+                    Id = e.Id,
+                    PatientId = e.PatientId,
+                    PatientName = e.PatientName ?? string.Empty,
+                    PatientGender = default, // 需要从Patient获取，暂时默认
+                    PatientAge = null, // 需要从Patient获取，暂时默认
+                    UserId = e.UserId,
+                    DoctorName = e.DoctorName ?? string.Empty,
+                    CaseStatus = e.CaseStatus,
+                    HasConsultation = e.Consultation != null,
+                    HasPrescription = e.Prescription != null,
+                    CreatedAt = e.CreatedAt,
+                    CompletedAt = e.CompletedAt
+                }).ToList();
+
+                var result = new PagedResult<MedicalCaseListDto>
+                {
+                    Items = listDtos,
+                    TotalCount = total,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+
+                _logger.LogDebug("[REPO] MedicalCase.GetPaged completed - TotalCount={TotalCount}", result.TotalCount);
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询医案失败，QueryType: {QueryType}", query.QueryType);
+                _logger.LogError(ex, "[REPO] MedicalCase.GetPaged failed");
                 throw;
             }
         }
 
-        // ========== CreateWithDetailsAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
-        // Server端点POST /api/v1/medicalcases/with-details 不存在，且无调用者
+        /// <summary>
+        /// 根据 ID 获取医案详情
+        /// </summary>
+        public async Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogDebug("[REPO] MedicalCase.GetById started - Id={Id}", id);
 
-        // OpenSpec: simplify-medicalcase-api - UpdateConsultationAsync已删除
-        // 诊断更新通过聚合保存 SaveAsync 处理
+                var entity = await _dataSource.GetWithDetailsAsync(id);
+                if (entity == null)
+                {
+                    _logger.LogWarning("[REPO] MedicalCase.GetById -> NotFound - Id={Id}", id);
+                    return null;
+                }
+
+                var dto = _mapper.ToDetailDto(entity);
+                _logger.LogDebug("[REPO] MedicalCase.GetById completed - Id={Id}", id);
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] MedicalCase.GetById failed - Id={Id}", id);
+                throw;
+            }
+        }
 
         /// <summary>
-        /// 搜索医案（返回DetailDto，支持跨医生查询）
-        /// OpenSpec: fix-history-copy-all-patients - 用于历史医案复制查看全部患者功能
+        /// 创建新医案
+        /// </summary>
+        public async Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            try
+            {
+                _logger.LogInformation("[REPO] MedicalCase.Create started - PatientId={PatientId}", dto.PatientId);
+
+                var entity = _mapper.ToEntity(dto);
+                var created = await _dataSource.CreateAsync(entity);
+                var result = _mapper.ToDetailDto(created);
+
+                _logger.LogInformation("[REPO] MedicalCase.Create completed - Id={Id}", result.Id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] MedicalCase.Create failed");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 更新医案信息
+        /// </summary>
+        public async Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (dto.Id == null || dto.Id == Guid.Empty)
+                throw new ArgumentException("更新DTO必须包含有效的ID", nameof(dto));
+
+            try
+            {
+                _logger.LogInformation("[REPO] MedicalCase.Update started - Id={Id}", dto.Id);
+
+                var entity = _mapper.ToEntity(dto);
+                var updated = await _dataSource.UpdateAsync(entity);
+                var result = _mapper.ToDetailDto(updated);
+
+                _logger.LogInformation("[REPO] MedicalCase.Update completed - Id={Id}", result.Id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] MedicalCase.Update failed - Id={Id}", dto.Id);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 删除医案
+        /// </summary>
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("[REPO] MedicalCase.Delete started - Id={Id}", id);
+
+                var result = await _dataSource.DeleteAsync(id);
+
+                if (result)
+                {
+                    _logger.LogInformation("[REPO] MedicalCase.Delete completed - Id={Id}", id);
+                }
+                else
+                {
+                    _logger.LogWarning("[REPO] MedicalCase.Delete -> Failed - Id={Id}", id);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] MedicalCase.Delete failed - Id={Id}", id);
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region 高级查询方法 - 优先使用 API
+
+        /// <summary>
+        /// 搜索医案（返回 DetailDto，支持跨医生查询）
+        /// 注意：仅 Remote 模式支持此功能
         /// </summary>
         public async Task<PagedResult<MedicalCaseDetailDto>> SearchAsync(
             string? patientName = null,
@@ -70,6 +211,18 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             int page = 1,
             int pageSize = 20)
         {
+            if (_api == null)
+            {
+                _logger.LogWarning("[REPO] MedicalCase.Search -> NotSupported - 本地模式不支持高级搜索");
+                return new PagedResult<MedicalCaseDetailDto>
+                {
+                    Items = new List<MedicalCaseDetailDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+
             try
             {
                 _logger.LogInformation("搜索医案，条件：患者={PatientName}, 诊断={DiagnosisKeyword}, 日期={StartDate}~{EndDate}",
@@ -91,30 +244,76 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        #region RepositoryBase抽象方法实现
+        /// <summary>
+        /// 统一查询医案
+        /// 注意：仅 Remote 模式支持此功能
+        /// </summary>
+        public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query)
+        {
+            if (_api == null)
+            {
+                // 本地模式：使用 DataSource 的 QueryAsync
+                _logger.LogInformation("[REPO] MedicalCase.Query（本地模式）");
+                var (items, total) = await _dataSource.QueryAsync(
+                    patientId: query.PatientId,
+                    userId: query.DoctorId,
+                    status: null, // 本地模式暂不支持状态过滤
+                    startDate: null,
+                    endDate: null,
+                    page: query.PageIndex,
+                    pageSize: query.PageSize);
 
-        // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
+                var listDtos = items.Select(e => new MedicalCaseListDto
+                {
+                    Id = e.Id,
+                    PatientId = e.PatientId,
+                    PatientName = e.PatientName ?? string.Empty,
+                    PatientGender = default, // 需要从Patient获取，暂时默认
+                    PatientAge = null, // 需要从Patient获取，暂时默认
+                    UserId = e.UserId,
+                    DoctorName = e.DoctorName ?? string.Empty,
+                    CaseStatus = e.CaseStatus,
+                    HasConsultation = e.Consultation != null,
+                    HasPrescription = e.Prescription != null,
+                    CreatedAt = e.CreatedAt,
+                    CompletedAt = e.CompletedAt
+                }).ToList();
 
-        // CompleteStep1Async和ResetConsultationStepsAsync已移除 - 简化业务流程，移除Step概念
+                return new PagedResult<MedicalCaseListDto>
+                {
+                    Items = listDtos,
+                    TotalCount = total,
+                    CurrentPage = query.PageIndex,
+                    PageSize = query.PageSize
+                };
+            }
 
-        // OpenSpec: simplify-medicalcase-api - Ghost APIs已删除
-        // - ClearPrescriptionAsync: Server端从未实现
-        // - ImportFormulaIntoPrescriptionAsync: Server端从未实现
+            try
+            {
+                var response = await _api.QueryMedicalCasesAsync(
+                    queryType: query.QueryType,
+                    patientId: query.PatientId,
+                    doctorId: query.DoctorId,
+                    keyword: query.Keyword,
+                    pageIndex: query.PageIndex,
+                    pageSize: query.PageSize,
+                    includeAllDoctors: query.IncludeAllDoctors,
+                    limit: query.Limit);
+                return response.Data ?? new PagedResult<MedicalCaseListDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询医案失败，QueryType: {QueryType}", query.QueryType);
+                throw;
+            }
+        }
 
-        // OpenSpec: simplify-medicalcase-api - 独立Prescription CRUD方法已删除
-        // - CreatePrescriptionAsync: 通过SaveAsync创建
-        // - UpdatePrescriptionAsync: 通过SaveAsync更新
-        // - DeletePrescriptionAsync: 通过SaveAsync设置NeedsPrescription=false触发
+        #endregion
 
-        // ========== Epic #1676 Phase 4 Task 4.4 - Desktop端新增方法 ==========
-
-        // OpenSpec: consolidate-medicalcase-detail-queries - GetUnfinishedCaseByPatientIdAsync已删除
-        // 使用QueryAsync(QueryType=Unfinished)
+        #region 医案管理方法
 
         /// <summary>
-        /// 关闭病案（直接标记为Completed）
-        /// Epic #1676 Phase 4 Task 4.4
-        /// 业务规则：直接设置状态为Completed，不验证三步流程
+        /// 关闭病案（直接标记为 Completed）
         /// </summary>
         public async Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId)
         {
@@ -125,20 +324,23 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             {
                 _logger.LogInformation("关闭病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
-                // OpenSpec: optimize-medicalcase-api - 返回完整医案详情
-                var response = await _api.CloseCaseAsync(medicalCaseId);
-
-                if (response.Success)
+                var result = await _dataSource.CompleteAsync(medicalCaseId);
+                if (!result)
                 {
-                    _logger.LogInformation("病案关闭成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    return response.Data;
-                }
-                else
-                {
-                    _logger.LogWarning("病案关闭失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
-                        medicalCaseId, response.Message);
+                    _logger.LogWarning("病案关闭失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     return null;
                 }
+
+                // 重新获取更新后的数据
+                var entity = await _dataSource.GetWithDetailsAsync(medicalCaseId);
+                if (entity == null)
+                {
+                    return null;
+                }
+
+                var dto = _mapper.ToDetailDto(entity);
+                _logger.LogInformation("病案关闭成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return dto;
             }
             catch (Exception ex)
             {
@@ -149,12 +351,24 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
         /// <summary>
         /// 获取当前用户对指定医案的权限
-        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
+        /// 注意：仅 Remote 模式支持此功能
         /// </summary>
         public async Task<MedicalCasePermissionDto?> GetPermissionsAsync(Guid medicalCaseId)
         {
             if (medicalCaseId == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+
+            if (_api == null)
+            {
+                // 本地模式：返回完全权限
+                _logger.LogDebug("[REPO] MedicalCase.GetPermissions（本地模式）- 返回完全权限");
+                return new MedicalCasePermissionDto
+                {
+                    CanEdit = true,
+                    CanDelete = true,
+                    RequiresEditReason = false
+                };
+            }
 
             try
             {
@@ -182,8 +396,6 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
         /// <summary>
         /// 聚合保存医案（诊断+处方一次性保存）
-        /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
-        /// 简化前端保存逻辑，减少API调用次数
         /// </summary>
         public async Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto)
         {
@@ -199,27 +411,13 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                     dto.Consultation != null,
                     dto.Prescription != null);
 
-                // 确保DTO的ID与参数一致
                 dto.Id = medicalCaseId;
+                var entity = _mapper.ToEntity(dto);
+                var saved = await _dataSource.SaveAsync(entity);
+                var result = _mapper.ToDetailDto(saved);
 
-                var response = await _api.SaveAsync(medicalCaseId, dto);
-
-                if (response.Success && response.Data != null)
-                {
-                    _logger.LogInformation("聚合保存医案成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    return response.Data;
-                }
-
-                throw new InvalidOperationException($"聚合保存医案失败: {response.Message}");
-            }
-            catch (Refit.ApiException apiEx) when (apiEx.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity ||
-                                                    apiEx.StatusCode == System.Net.HttpStatusCode.BadRequest)
-            {
-                // 422/400 表示验证失败，从响应体中提取实际错误消息
-                var errorMessage = ExtractErrorMessage(apiEx);
-                _logger.LogWarning(apiEx, "聚合保存医案验证失败，MedicalCaseId: {MedicalCaseId}, StatusCode: {StatusCode}, Message: {Message}",
-                    medicalCaseId, apiEx.StatusCode, errorMessage);
-                throw new InvalidOperationException(errorMessage, apiEx);
+                _logger.LogInformation("聚合保存医案成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return result;
             }
             catch (Exception ex)
             {
@@ -229,141 +427,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         }
 
         /// <summary>
-        /// 从Refit ApiException中提取错误消息
-        /// 支持ApiResponse和ValidationProblemDetails两种格式
-        /// </summary>
-        private string ExtractErrorMessage(Refit.ApiException apiEx)
-        {
-            const string defaultMessage = "保存失败，请稍后重试";
-
-            try
-            {
-                if (string.IsNullOrWhiteSpace(apiEx.Content))
-                    return defaultMessage;
-
-                // 添加调试日志
-                _logger.LogDebug("[调试] 服务端响应内容: {Content}", apiEx.Content);
-
-                var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-                // 首先尝试解析ApiResponse格式
-                try
-                {
-                    var errorResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<object>>(apiEx.Content, jsonOptions);
-                    if (errorResponse != null && !string.IsNullOrWhiteSpace(errorResponse.Message))
-                    {
-                        return errorResponse.Message;
-                    }
-                }
-                catch (System.Text.Json.JsonException)
-                {
-                    // ApiResponse解析失败，继续尝试其他格式
-                }
-
-                // 尝试解析ValidationProblemDetails格式（FluentValidation返回的格式）
-                try
-                {
-                    using var doc = System.Text.Json.JsonDocument.Parse(apiEx.Content);
-                    var root = doc.RootElement;
-
-                    // 检查是否是ProblemDetails格式
-                    if (root.TryGetProperty("errors", out var errorsElement) && errorsElement.ValueKind == System.Text.Json.JsonValueKind.Object)
-                    {
-                        var errorMessages = new List<string>();
-                        foreach (var property in errorsElement.EnumerateObject())
-                        {
-                            foreach (var errorMsg in property.Value.EnumerateArray())
-                            {
-                                errorMessages.Add(errorMsg.GetString() ?? "验证失败");
-                            }
-                        }
-                        if (errorMessages.Count > 0)
-                        {
-                            var combinedMessage = string.Join("；", errorMessages);
-                            _logger.LogWarning("[调试] 验证错误: {Errors}", combinedMessage);
-                            return combinedMessage;
-                        }
-                    }
-
-                    // 检查detail字段
-                    if (root.TryGetProperty("detail", out var detailElement))
-                    {
-                        var detail = detailElement.GetString();
-                        if (!string.IsNullOrWhiteSpace(detail))
-                            return detail;
-                    }
-
-                    // 检查title字段
-                    if (root.TryGetProperty("title", out var titleElement))
-                    {
-                        var title = titleElement.GetString();
-                        if (!string.IsNullOrWhiteSpace(title))
-                            return title;
-                    }
-                }
-                catch (System.Text.Json.JsonException)
-                {
-                    // JSON解析失败
-                }
-
-                // 返回原始内容（如果是简短的错误消息）
-                if (apiEx.Content.Length < 500)
-                {
-                    return apiEx.Content;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "解析错误响应失败");
-            }
-
-            return defaultMessage;
-        }
-
-        protected override Task<ApiResponse<MedicalCaseDetailDto>> CallApiGetByIdAsync(Guid id)
-        {
-            return _api.GetMedicalCaseByIdAsync(id);
-        }
-
-        protected override Task<ApiResponse<PagedResult<MedicalCaseListDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
-        {
-            return _api.GetMedicalCasesAsync(page, pageSize, keyword);
-        }
-
-
-        protected override Task<ApiResponse<MedicalCaseDetailDto>> CallApiCreateAsync(MedicalCaseInputDto dto)
-        {
-            return _api.CreateMedicalCaseAsync(dto);
-        }
-
-        protected override Task<ApiResponse<MedicalCaseDetailDto>> CallApiUpdateAsync(Guid id, MedicalCaseInputDto dto)
-        {
-            // OpenSpec: simplify-medicalcase-api - PUT /api/v1/medicalcases/{id} 现已可用
-            // 通过聚合保存端点更新医案（包含诊断和处方）
-            return _api.SaveAsync(id, dto);
-        }
-
-        protected override async Task<ApiResponse> CallApiDeleteAsync(Guid id)
-        {
-            // OpenSpec: standardize-api-naming - 使用统一的ApiResponse返回类型
-            var response = await _api.DeleteMedicalCaseAsync(id);
-            return response.Success
-                ? new ApiResponse { Success = true, Message = "删除成功" }
-                : new ApiResponse { Success = false, Message = $"删除失败: {response.Message}" };
-        }
-
-        protected override Guid? GetIdFromUpdateDto(MedicalCaseInputDto dto)
-        {
-            return dto?.Id;
-        }
-
-        #endregion
-
-        // ========== OpenSpec: consolidate-medicalcase-detail-queries ==========
-
-        /// <summary>
-        /// 批量获取医案详情（解决N+1查询问题）
-        /// 用于历史处方选择等需要批量获取详情的场景
+        /// 批量获取医案详情
         /// </summary>
         public async Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync(List<Guid> ids)
         {
@@ -372,6 +436,25 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
             if (ids.Count > 50)
                 throw new ArgumentException("单次最多查询50个医案", nameof(ids));
+
+            if (_api == null)
+            {
+                // 本地模式：逐个获取
+                _logger.LogInformation("批量获取医案详情（本地模式），ID数量: {Count}", ids.Count);
+                var results = new List<MedicalCaseDetailDto>();
+
+                foreach (var id in ids)
+                {
+                    var entity = await _dataSource.GetWithDetailsAsync(id);
+                    if (entity != null)
+                    {
+                        results.Add(_mapper.ToDetailDto(entity));
+                    }
+                }
+
+                _logger.LogInformation("批量获取医案详情完成，返回数量: {Count}", results.Count);
+                return results;
+            }
 
             try
             {
@@ -396,13 +479,13 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
+        #endregion
 
-        // ========================================
-        // OpenSpec: simplify-desktop-data-layer - Phase 1
-        // 以下方法从Service层迁移，统一数据访问入口
-        // ========================================
+        #region 状态管理方法 - 仅 Remote 模式支持
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 设置处方标志
+        /// </summary>
         public async Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request)
         {
             if (id == Guid.Empty)
@@ -410,6 +493,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
+
+            if (_api == null)
+            {
+                _logger.LogWarning("[REPO] MedicalCase.SetPrescriptionFlag -> NotSupported - 本地模式不支持此操作");
+                return null;
+            }
 
             try
             {
@@ -437,7 +526,9 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 更新医案状态
+        /// </summary>
         public async Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request)
         {
             if (id == Guid.Empty)
@@ -445,6 +536,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
+
+            if (_api == null)
+            {
+                _logger.LogWarning("[REPO] MedicalCase.UpdateStatus -> NotSupported - 本地模式不支持此操作");
+                return null;
+            }
 
             try
             {
@@ -472,7 +569,9 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 取消医案
+        /// </summary>
         public async Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request)
         {
             if (id == Guid.Empty)
@@ -483,19 +582,23 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                 _logger.LogInformation("[REPO] 取消医案，MedicalCaseId: {MedicalCaseId}, Reason: {Reason}",
                     id, request?.Reason ?? "无");
 
-                var response = await _api.CancelMedicalCaseAsync(id, request);
-
-                if (response.Success)
+                var result = await _dataSource.CancelAsync(id, request?.Reason);
+                if (!result)
                 {
-                    _logger.LogInformation("[REPO] 取消医案成功，MedicalCaseId: {MedicalCaseId}", id);
-                    return response.Data;
-                }
-                else
-                {
-                    _logger.LogWarning("[REPO] 取消医案失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
-                        id, response.Message);
+                    _logger.LogWarning("[REPO] 取消医案失败，MedicalCaseId: {MedicalCaseId}", id);
                     return null;
                 }
+
+                // 重新获取更新后的数据
+                var entity = await _dataSource.GetWithDetailsAsync(id);
+                if (entity == null)
+                {
+                    return null;
+                }
+
+                var dto = _mapper.ToDetailDto(entity);
+                _logger.LogInformation("[REPO] 取消医案成功，MedicalCaseId: {MedicalCaseId}", id);
+                return dto;
             }
             catch (Exception ex)
             {
@@ -504,11 +607,19 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 暂存医案草稿
+        /// </summary>
         public async Task<MedicalCaseDetailDto?> SaveDraftAsync(Guid id, ConsultationInputDto? request)
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(id));
+
+            if (_api == null)
+            {
+                _logger.LogWarning("[REPO] MedicalCase.SaveDraft -> NotSupported - 本地模式不支持此操作");
+                return null;
+            }
 
             try
             {
@@ -534,5 +645,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                 throw;
             }
         }
+
+        #endregion
     }
 }

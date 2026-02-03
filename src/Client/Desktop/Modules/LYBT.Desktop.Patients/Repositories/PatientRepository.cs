@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.Repositories;
+using LYBT.Desktop.Contracts.DataSources;
+using LYBT.Desktop.Infrastructure.DataSources.Mappers;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -8,48 +9,223 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Patients.Repositories
 {
     /// <summary>
-    /// 患者数据仓储实现 - RESTful设计
-    /// List返回轻量ListDto，Detail返回完整DetailDto
+    /// 患者数据仓储实现 - DataSource 抽象层重构
+    /// OpenSpec: implement-local-mode - 支持 Local/Remote 模式切换
     /// </summary>
-    public class PatientRepository : RepositoryBase<PatientDetailDto, PatientListDto, PatientInputDto, PatientInputDto, IPatientApi>, IPatientRepository
+    public class PatientRepository : IPatientRepository
     {
+        private readonly IPatientDataSource _dataSource;
+        private readonly IPatientApi? _api; // 可选，仅用于批量导入/导出（Remote 模式特有功能）
+        private readonly ILogger<PatientRepository> _logger;
+        private readonly PatientDataSourceMapper _mapper = new();
+
+        /// <summary>
+        /// 初始化 PatientRepository
+        /// </summary>
+        /// <param name="dataSource">患者数据源（Local 或 Remote）</param>
+        /// <param name="logger">日志记录器</param>
+        /// <param name="api">可选的 API 接口（仅 Remote 模式下注入，用于批量导入/导出）</param>
         public PatientRepository(
-            IPatientApi patientApi,
-            ILogger<PatientRepository> logger)
-            : base(patientApi, logger)
+            IPatientDataSource dataSource,
+            ILogger<PatientRepository> logger,
+            IPatientApi? api = null)
         {
+            _dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _api = api;
         }
 
-        #region RepositoryBase抽象方法实现
+        #region 标准 CRUD 操作
 
-        protected override Task<ApiResponse<PatientDetailDto>> CallApiGetByIdAsync(Guid id)
+        /// <summary>
+        /// 分页查询患者列表（返回轻量级 ListDto）
+        /// </summary>
+        public async Task<PagedResult<PatientListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
-            return _api.GetPatientByIdAsync(id);
+            try
+            {
+                _logger.LogDebug("[REPO] Patient.GetPaged started - Page={Page} PageSize={PageSize} Keyword={Keyword}", page, pageSize, keyword);
+
+                var (items, total) = await _dataSource.GetPagedAsync(page, pageSize, keyword);
+
+                var listDtos = items.Select(e => new PatientListDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Gender = e.Gender,
+                    Age = e.Age,
+                    PhoneNumber = e.PhoneNumber,
+                    Address = e.Address,
+                    LastVisitTime = e.LastVisitTime,
+                    VisitCount = e.VisitCount,
+                    PinYinCode = e.PinYinCode,
+                    Status = e.Status,
+                    CreatedAt = e.CreatedAt
+                }).ToList();
+
+                var result = new PagedResult<PatientListDto>
+                {
+                    Items = listDtos,
+                    TotalCount = total,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+
+                _logger.LogDebug("[REPO] Patient.GetPaged completed - TotalCount={TotalCount}", result.TotalCount);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Patient.GetPaged failed - Page={Page} PageSize={PageSize} Keyword={Keyword}", page, pageSize, keyword);
+                throw;
+            }
         }
 
-        protected override Task<ApiResponse<PagedResult<PatientListDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        /// <summary>
+        /// 根据 ID 获取患者详情（返回完整 DetailDto）
+        /// </summary>
+        public async Task<PatientDetailDto?> GetByIdAsync(Guid id)
         {
-            return _api.GetPatientsAsync(page, pageSize, keyword);
+            try
+            {
+                _logger.LogDebug("[REPO] Patient.GetById started - Id={Id}", id);
+
+                var entity = await _dataSource.GetByIdAsync(id);
+                if (entity == null)
+                {
+                    _logger.LogWarning("[REPO] Patient.GetById → NotFound - Id={Id}", id);
+                    return null;
+                }
+
+                var dto = _mapper.ToDetailDto(entity);
+                _logger.LogDebug("[REPO] Patient.GetById completed - Id={Id}", id);
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Patient.GetById failed - Id={Id}", id);
+                throw;
+            }
         }
 
-        protected override Task<ApiResponse<PatientDetailDto>> CallApiCreateAsync(PatientInputDto dto)
+        /// <summary>
+        /// 创建新患者
+        /// </summary>
+        public async Task<PatientDetailDto> CreateAsync(PatientInputDto patient)
         {
-            return _api.CreatePatientAsync(dto);
+            if (patient == null)
+                throw new ArgumentNullException(nameof(patient));
+
+            try
+            {
+                _logger.LogInformation("[REPO] Patient.Create started");
+
+                var entity = _mapper.ToEntity(patient);
+                var created = await _dataSource.CreateAsync(entity);
+                var dto = _mapper.ToDetailDto(created);
+
+                _logger.LogInformation("[REPO] Patient.Create completed - Id={Id}", dto.Id);
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Patient.Create failed");
+                throw;
+            }
         }
 
-        protected override Task<ApiResponse<PatientDetailDto>> CallApiUpdateAsync(Guid id, PatientInputDto dto)
+        /// <summary>
+        /// 更新患者信息
+        /// </summary>
+        public async Task<PatientDetailDto> UpdateAsync(PatientInputDto patient)
         {
-            return _api.UpdatePatientAsync(id, dto);
+            if (patient == null)
+                throw new ArgumentNullException(nameof(patient));
+
+            if (patient.Id == null || patient.Id == Guid.Empty)
+                throw new ArgumentException("更新DTO必须包含有效的ID", nameof(patient));
+
+            try
+            {
+                _logger.LogInformation("[REPO] Patient.Update started - Id={Id}", patient.Id);
+
+                var entity = _mapper.ToEntity(patient);
+                var updated = await _dataSource.UpdateAsync(entity);
+                var dto = _mapper.ToDetailDto(updated);
+
+                _logger.LogInformation("[REPO] Patient.Update completed - Id={Id}", dto.Id);
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Patient.Update failed - Id={Id}", patient.Id);
+                throw;
+            }
         }
 
-        protected override Task<ApiResponse> CallApiDeleteAsync(Guid id)
+        /// <summary>
+        /// 删除患者（软删除）
+        /// </summary>
+        public async Task<bool> DeleteAsync(Guid id)
         {
-            return _api.DeletePatientAsync(id);
+            try
+            {
+                _logger.LogInformation("[REPO] Patient.Delete started - Id={Id}", id);
+
+                var result = await _dataSource.DeleteAsync(id);
+
+                if (result)
+                {
+                    _logger.LogInformation("[REPO] Patient.Delete completed - Id={Id}", id);
+                }
+                else
+                {
+                    _logger.LogWarning("[REPO] Patient.Delete → Failed - Id={Id}", id);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Patient.Delete failed - Id={Id}", id);
+                return false;
+            }
         }
 
-        protected override Guid? GetIdFromUpdateDto(PatientInputDto dto)
+        /// <summary>
+        /// 搜索患者（基于关键词，返回 ListDto）
+        /// </summary>
+        public async Task<List<PatientListDto>> SearchAsync(string keyword)
         {
-            return dto?.Id;
+            try
+            {
+                _logger.LogDebug("[REPO] Patient.Search started - Keyword={Keyword}", keyword);
+
+                var entities = await _dataSource.SearchAsync(keyword);
+
+                var listDtos = entities.Select(e => new PatientListDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Gender = e.Gender,
+                    Age = e.Age,
+                    PhoneNumber = e.PhoneNumber,
+                    Address = e.Address,
+                    LastVisitTime = e.LastVisitTime,
+                    VisitCount = e.VisitCount,
+                    PinYinCode = e.PinYinCode,
+                    Status = e.Status,
+                    CreatedAt = e.CreatedAt
+                }).ToList();
+
+                _logger.LogDebug("[REPO] Patient.Search completed - Count={Count}", listDtos.Count);
+                return listDtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] Patient.Search failed - Keyword={Keyword}", keyword);
+                throw;
+            }
         }
 
         #endregion
@@ -58,7 +234,6 @@ namespace LYBT.Desktop.Patients.Repositories
 
         /// <summary>
         /// 根据身份证号获取患者详情
-        /// 实现策略：使用身份证号作为关键词搜索，然后精确匹配IdNumber
         /// </summary>
         public async Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber)
         {
@@ -69,29 +244,16 @@ namespace LYBT.Desktop.Patients.Repositories
             {
                 _logger.LogInformation("根据身份证号查询患者：{IdNumber}", idNumber[..Math.Min(6, idNumber.Length)] + "****");
 
-                // 使用身份证号作为关键词搜索候选列表
-                var candidates = await SearchAsync(idNumber);
-                if (candidates == null || candidates.Count == 0)
+                var entity = await _dataSource.GetByIdNumberAsync(idNumber);
+                if (entity == null)
                 {
                     _logger.LogInformation("未找到匹配的患者");
                     return null;
                 }
 
-                // 逐个获取详情并精确匹配身份证号
-                foreach (var candidate in candidates)
-                {
-                    var detail = await GetByIdAsync(candidate.Id);
-                    if (detail != null &&
-                        !string.IsNullOrEmpty(detail.IdNumber) &&
-                        detail.IdNumber.Equals(idNumber, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _logger.LogInformation("找到匹配患者：{PatientId}, {Name}", detail.Id, detail.Name);
-                        return detail;
-                    }
-                }
-
-                _logger.LogInformation("候选列表中未找到身份证号精确匹配的患者");
-                return null;
+                var dto = _mapper.ToDetailDto(entity);
+                _logger.LogInformation("找到匹配患者：{PatientId}, {Name}", dto.Id, dto.Name);
+                return dto;
             }
             catch (Exception ex)
             {
@@ -102,13 +264,20 @@ namespace LYBT.Desktop.Patients.Repositories
 
         #endregion
 
-        #region 批量导入/导出功能
+        #region 批量导入/导出功能 - 仅 Remote 模式支持
 
         /// <summary>
         /// 批量导入患者数据
+        /// 注意：仅 Remote 模式支持此功能
         /// </summary>
         public async Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request)
         {
+            if (_api == null)
+            {
+                _logger.LogWarning("[REPO] Patient.BatchImport → NotSupported - 本地模式不支持批量导入");
+                return null;
+            }
+
             try
             {
                 var response = await _api.BatchImportAsync(request);
@@ -123,9 +292,16 @@ namespace LYBT.Desktop.Patients.Repositories
 
         /// <summary>
         /// 下载患者导入模板
+        /// 注意：仅 Remote 模式支持此功能
         /// </summary>
         public async Task<byte[]?> ExportTemplateAsync()
         {
+            if (_api == null)
+            {
+                _logger.LogWarning("[REPO] Patient.ExportTemplate → NotSupported - 本地模式不支持导出模板");
+                return null;
+            }
+
             try
             {
                 _logger.LogInformation("下载患者导入模板");
@@ -149,10 +325,17 @@ namespace LYBT.Desktop.Patients.Repositories
         }
 
         /// <summary>
-        /// 导出患者数据到Excel
+        /// 导出患者数据到 Excel
+        /// 注意：仅 Remote 模式支持此功能
         /// </summary>
         public async Task<byte[]?> ExportPatientsAsync(string? keyword = null)
         {
+            if (_api == null)
+            {
+                _logger.LogWarning("[REPO] Patient.ExportPatients → NotSupported - 本地模式不支持导出患者数据");
+                return null;
+            }
+
             try
             {
                 _logger.LogInformation("导出患者数据，关键词：{Keyword}", keyword ?? "全部");
@@ -187,16 +370,17 @@ namespace LYBT.Desktop.Patients.Repositories
             try
             {
                 _logger.LogInformation("恢复患者：{Id}", id);
-                var response = await _api.RestoreAsync(id);
 
-                if (!response.Success || response.Data == null)
+                var entity = await _dataSource.RestoreAsync(id);
+                if (entity == null)
                 {
-                    _logger.LogError("恢复患者失败：{Message}", response.Message);
+                    _logger.LogError("恢复患者失败：{Id}", id);
                     return null;
                 }
 
+                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("患者已恢复：{Id}", id);
-                return response.Data;
+                return dto;
             }
             catch (Exception ex)
             {
@@ -213,17 +397,12 @@ namespace LYBT.Desktop.Patients.Repositories
             try
             {
                 _logger.LogInformation("批量删除患者：{Count}个", ids.Count);
-                var response = await _api.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
 
-                if (!response.Success || response.Data == null)
-                {
-                    _logger.LogError("批量删除患者失败：{Message}", response.Message);
-                    return null;
-                }
+                var result = await _dataSource.BatchDeleteAsync(ids);
 
                 _logger.LogInformation("批量删除患者完成：成功{SuccessCount}，失败{FailureCount}",
-                    response.Data.SuccessCount, response.Data.FailureCount);
-                return response.Data;
+                    result.SuccessCount, result.FailureCount);
+                return result;
             }
             catch (Exception ex)
             {
