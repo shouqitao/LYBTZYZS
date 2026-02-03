@@ -1,4 +1,5 @@
 ﻿using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using Microsoft.Extensions.Logging;
 
@@ -12,6 +13,7 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
 {
     private readonly IApiHealthCheckService _apiHealthCheckService;
     private readonly IApplicationTickService _tickService;
+    private readonly IApplicationStateService _applicationStateService;
     private readonly ILogger<HealthCheckCoordinator> _logger;
 
     private ApiHealthStatus _currentStatus = ApiHealthStatus.Checking;
@@ -29,10 +31,12 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
     public HealthCheckCoordinator(
         IApiHealthCheckService apiHealthCheckService,
         IApplicationTickService tickService,
+        IApplicationStateService applicationStateService,
         ILogger<HealthCheckCoordinator> logger)
     {
         _apiHealthCheckService = apiHealthCheckService ?? throw new ArgumentNullException(nameof(apiHealthCheckService));
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
+        _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -112,6 +116,9 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
                 RaiseStatusChanged(previousStatus, _currentStatus);
             }
 
+            // OpenSpec: refactor-startup-connection-resilience - 同步状态到ApplicationStateService
+            SyncToApplicationState(status);
+
             if (status == ApiHealthStatus.Unhealthy)
             {
                 _logger.LogWarning("API健康检查失败: {ErrorMessage}", _apiHealthCheckService.LastErrorMessage);
@@ -128,6 +135,9 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
             {
                 RaiseStatusChanged(previousStatus, _currentStatus);
             }
+
+            // OpenSpec: refactor-startup-connection-resilience - 异常时也同步状态
+            SyncToApplicationState(ApiHealthStatus.Unhealthy, ex.Message);
         }
     }
 
@@ -154,6 +164,39 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
             PreviousStatus = previousStatus,
             CurrentStatus = currentStatus
         });
+    }
+
+    /// <summary>
+    /// 同步健康检查结果到ApplicationStateService
+    /// OpenSpec: refactor-startup-connection-resilience - 状态中枢同步
+    /// </summary>
+    private void SyncToApplicationState(ApiHealthStatus status, string? errorOverride = null)
+    {
+        try
+        {
+            _applicationStateService.IsApiHealthy = status == ApiHealthStatus.Healthy;
+            _applicationStateService.LastHealthCheckTime = DateTime.Now;
+
+            switch (status)
+            {
+                case ApiHealthStatus.Healthy:
+                    _applicationStateService.ConnectionStatus = "已连接";
+                    _applicationStateService.LastError = null;
+                    break;
+                case ApiHealthStatus.Unhealthy:
+                    var error = errorOverride ?? _apiHealthCheckService.LastErrorMessage ?? "连接失败";
+                    _applicationStateService.ConnectionStatus = $"连接失败: {error}";
+                    _applicationStateService.LastError = error;
+                    break;
+                default:
+                    _applicationStateService.ConnectionStatus = "正在检查...";
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "同步状态到ApplicationStateService失败");
+        }
     }
 
     /// <inheritdoc />

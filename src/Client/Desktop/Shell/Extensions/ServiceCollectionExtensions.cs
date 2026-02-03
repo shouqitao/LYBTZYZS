@@ -6,8 +6,6 @@ using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.Infrastructure.Http;
 using LYBT.Desktop.Auth;
-using LYBT.Desktop.Auth.Interfaces;
-using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Roles;
@@ -184,9 +182,6 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // Shell架构整合 - HealthCheckCoordinator Logger
             RegisterLogger<HealthCheckCoordinator>(containerRegistry);
-
-            // enhance-shell-connection-dialog: API连接恢复服务Logger
-            RegisterLogger<ApiConnectionRecoveryService>(containerRegistry);
         }
 
         /// <summary>注册业务模块Logger</summary>
@@ -322,7 +317,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ITokenValidator, LocalTokenValidator>();
             containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();
             // OpenSpec: remove-secure-credential-storage - ISecureCredentialStorage已移除
-            containerRegistry.RegisterSingleton<IConnectionSettingsService, ConnectionSettingsService>();
+            // OpenSpec: refactor-startup-connection-resilience - IConnectionSettingsService已移除
             containerRegistry.RegisterSingleton<ISystemSettingsService, SystemSettingsService>();
             containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();
             containerRegistry.RegisterSingleton<IApiService, ApiService>();
@@ -421,9 +416,6 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // Shell架构整合 - HealthCheckCoordinator服务
             containerRegistry.RegisterSingleton<IHealthCheckCoordinator, HealthCheckCoordinator>();
-
-            // enhance-shell-connection-dialog: API连接恢复服务
-            containerRegistry.RegisterSingleton<IApiConnectionRecoveryService, ApiConnectionRecoveryService>();
         }
     }
 }

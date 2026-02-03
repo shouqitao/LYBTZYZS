@@ -1,7 +1,5 @@
 using System.Windows;
 using System.Windows.Input;
-using LYBT.Desktop.Auth.Interfaces;
-using LYBT.Desktop.Auth.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -24,7 +22,6 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly ILoginCoordinator _loginCoordinator;
         private readonly IApplicationStateService _applicationStateService;
         private readonly IUsernameStorageService? _usernameStorage;
-        private readonly IConnectionSettingsService? _connectionSettingsService;
         private readonly ICredentialVault? _credentialVault;
 
         private string _username = string.Empty;
@@ -36,7 +33,9 @@ namespace LYBT.Desktop.Auth.ViewModels
         private string? _savedUsername;
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
-        private ConnectionMode _connectionMode;
+
+        // OpenSpec: refactor-startup-connection-resilience - 连接模式选择（预留本地模式入口）
+        private ConnectionMode _selectedConnectionMode = ConnectionMode.Remote;
 
         public string Username
         {
@@ -131,27 +130,54 @@ namespace LYBT.Desktop.Auth.ViewModels
         }
 
         #endregion
+
+        #region 连接模式 (OpenSpec: refactor-startup-connection-resilience)
+
+        /// <summary>
+        /// 当前选择的连接模式
+        /// 默认远程模式，本地模式待独立提案实现
+        /// </summary>
+        public ConnectionMode SelectedConnectionMode
+        {
+            get => _selectedConnectionMode;
+            set
+            {
+                if (value == ConnectionMode.Local)
+                {
+                    // 本地模式尚未实现，提示用户并恢复远程模式
+                    _ = CommonDialogService.ShowInfoAsync("本地模式正在开发中，敬请期待。", "功能提示");
+                    return;
+                }
+
+                SetProperty(ref _selectedConnectionMode, value);
+            }
+        }
+
+        /// <summary>
+        /// 是否选择远程模式（用于RadioButton绑定）
+        /// </summary>
+        public bool IsRemoteMode
+        {
+            get => _selectedConnectionMode == ConnectionMode.Remote;
+            set { if (value) SelectedConnectionMode = ConnectionMode.Remote; }
+        }
+
+        /// <summary>
+        /// 是否选择本地模式（用于RadioButton绑定）
+        /// </summary>
+        public bool IsLocalMode
+        {
+            get => _selectedConnectionMode == ConnectionMode.Local;
+            set { if (value) SelectedConnectionMode = ConnectionMode.Local; }
+        }
+
+        #endregion
+
         public bool HasMessage => !string.IsNullOrWhiteSpace(StatusMessage) || !string.IsNullOrWhiteSpace(ErrorMessage);
         public ApiHealthStatus ApiStatus { get => _apiStatus; set { if (SetProperty(ref _apiStatus, value)) { OnPropertyChanged(nameof(IsApiUnhealthy)); (RetryApiCheckCommand as DelegateCommand)?.RaiseCanExecuteChanged(); } } }
         public string ApiStatusMessage { get => _apiStatusMessage; set => SetProperty(ref _apiStatusMessage, value); }
         public bool IsApiUnhealthy => ApiStatus == ApiHealthStatus.Unhealthy;
 
-        public ConnectionMode ConnectionMode
-        {
-            get => _connectionMode;
-            set
-            {
-                if (SetProperty(ref _connectionMode, value))
-                {
-                    OnPropertyChanged(nameof(IsRemoteModeSelected)); OnPropertyChanged(nameof(IsLocalModeSelected)); OnPropertyChanged(nameof(ConnectionModeDisplay));
-                    _connectionSettingsService?.SaveConnectionMode(value); UpdateConnectionStatus();
-                }
-            }
-        }
-
-        public bool IsRemoteModeSelected { get => ConnectionMode == ConnectionMode.Remote; set { if (value && ConnectionMode != ConnectionMode.Remote) ConnectionMode = ConnectionMode.Remote; } }
-        public bool IsLocalModeSelected { get => ConnectionMode == ConnectionMode.Local; set { if (value && ConnectionMode != ConnectionMode.Local) ConnectionMode = ConnectionMode.Local; } }
-        public string ConnectionModeDisplay => ConnectionMode switch { ConnectionMode.Remote => "远程模式 - 连接到WebAPI服务", ConnectionMode.Local => "本地模式 - 使用本地数据库（v2.0）", _ => "未知模式" };
         public ICommand LoginCommand { get; }
 
         /// <summary>
@@ -169,27 +195,27 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// <summary>
         /// 构造函数
         /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
-        /// OpenSpec: remove-secure-credential-storage - 移除废弃的SecureCredentialStorage依赖
+        /// OpenSpec: refactor-startup-connection-resilience - 移除ConnectionMode，事件驱动状态更新
         /// </summary>
         public LoginViewModel(
             IViewModelServices services,
             ILoginCoordinator loginCoordinator,
             IApplicationStateService applicationStateService,
             IUsernameStorageService? usernameStorage = null,
-            IConnectionSettingsService? connectionSettingsService = null,
             ICredentialVault? credentialVault = null)
             : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
             _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
             _usernameStorage = usernameStorage;
-            _connectionSettingsService = connectionSettingsService;
             _credentialVault = credentialVault;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
             RetryApiCheckCommand = new DelegateCommand(async () => await ExecuteRetryApiCheckAsync(), () => ApiStatus == ApiHealthStatus.Unhealthy);
-            _connectionMode = _connectionSettingsService?.GetConnectionMode() ?? ConnectionMode.Remote;
+
+            // OpenSpec: refactor-startup-connection-resilience - 订阅状态变更事件，事件驱动UI更新
+            _applicationStateService.StatusChanged += OnApiStatusChanged;
 
             _ = Task.Run(async () => { await Task.Delay(100); await LoadSavedCredentialsAsync(); await LoadApiStatusFromStateServiceAsync(); });
         }
@@ -266,13 +292,33 @@ namespace LYBT.Desktop.Auth.ViewModels
             catch (Exception ex) { Logger.LogError(ex, "[VM] Login.LoadCredentials failed"); }
         }
 
-
-        
-
-        private void UpdateConnectionStatus()
+        /// <summary>
+        /// API状态变更事件处理器
+        /// OpenSpec: refactor-startup-connection-resilience - 事件驱动UI更新
+        /// </summary>
+        private void OnApiStatusChanged(object? sender, ApiStatusChangedEventArgs e)
         {
-            if (ConnectionMode == ConnectionMode.Local) { ApiStatusMessage = "本地模式 - 无需连接API（v2.0功能）"; ApiStatus = ApiHealthStatus.Healthy; }
-            else if (ApiStatus == ApiHealthStatus.Checking) ApiStatusMessage = "正在检查远程API连接...";
+            try
+            {
+                if (Application.Current?.Dispatcher is null) return;
+                Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (e.IsHealthy)
+                    {
+                        ApiStatus = ApiHealthStatus.Healthy;
+                        ApiStatusMessage = "WebAPI 已连接";
+                    }
+                    else
+                    {
+                        ApiStatus = ApiHealthStatus.Unhealthy;
+                        ApiStatusMessage = $"WebAPI 连接失败: {e.LastError ?? e.ConnectionStatus}";
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "[VM] Login.OnApiStatusChanged failed");
+            }
         }
 
         private async Task ExecuteLoginAsync()
@@ -280,7 +326,6 @@ namespace LYBT.Desktop.Auth.ViewModels
             try
             {
                 IsLoading = true; ErrorMessage = string.Empty; StatusMessage = "正在登录...";
-                if (ConnectionMode == ConnectionMode.Local) { ErrorMessage = "本地模式暂未实现，请切换到\"远程模式\""; return; }
 
                 // 保存密码用于后续存储（登录成功后才保存）
                 var passwordToSave = RememberPassword ? Password : null;

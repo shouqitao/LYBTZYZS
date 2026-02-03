@@ -41,11 +41,20 @@ namespace LYBT.Desktop.Foundation.Application
         public DateTime? LastHealthCheckTime { get; set; }
 
         /// <summary>
+        /// 最后一次错误信息
+        /// OpenSpec: refactor-startup-connection-resilience
+        /// </summary>
+        public string? LastError { get; set; }
+
+        /// <summary>
+        /// API状态变更事件
+        /// OpenSpec: refactor-startup-connection-resilience - 事件驱动状态更新
+        /// </summary>
+        public event EventHandler<ApiStatusChangedEventArgs>? StatusChanged;
+
+        /// <summary>
         /// 构造函数
         /// </summary>
-        /// <param name="apiHealthCheckService">API健康检查服务</param>
-        /// <param name="configuration">配置服务</param>
-        /// <param name="logger">日志服务</param>
         public ApplicationStateService(
             IApiHealthCheckService? apiHealthCheckService,
             IConfiguration configuration,
@@ -72,9 +81,7 @@ namespace LYBT.Desktop.Foundation.Application
             if (_apiHealthCheckService == null)
             {
                 _logger.LogWarning("API健康检查服务未配置");
-                IsApiHealthy = false;
-                ConnectionStatus = "健康检查服务未配置";
-                LastHealthCheckTime = DateTime.Now;
+                UpdateState(false, "健康检查服务未配置", "健康检查服务未配置");
                 return false;
             }
 
@@ -90,22 +97,20 @@ namespace LYBT.Desktop.Foundation.Application
                 switch (status)
                 {
                     case ApiHealthStatus.Healthy:
-                        IsApiHealthy = true;
-                        ConnectionStatus = "已连接";
+                        UpdateState(true, "已连接", null);
                         _logger.LogInformation("API健康检查成功: {ApiBaseUrl}", _apiBaseUrl);
                         return true;
 
                     case ApiHealthStatus.Unhealthy:
-                        IsApiHealthy = false;
-                        ConnectionStatus = $"连接失败: {_apiHealthCheckService.LastErrorMessage}";
+                        var errorMsg = _apiHealthCheckService.LastErrorMessage;
+                        UpdateState(false, $"连接失败: {errorMsg}", errorMsg);
                         _logger.LogWarning("API健康检查失败: {ApiBaseUrl}, 错误: {Error}",
-                            _apiBaseUrl, _apiHealthCheckService.LastErrorMessage);
+                            _apiBaseUrl, errorMsg);
                         return false;
 
                     case ApiHealthStatus.Checking:
                     default:
-                        IsApiHealthy = false;
-                        ConnectionStatus = "正在检查连接...";
+                        UpdateState(false, "正在检查连接...", null);
                         _logger.LogWarning("API健康检查状态异常: {Status}", status);
                         return false;
                 }
@@ -113,10 +118,29 @@ namespace LYBT.Desktop.Foundation.Application
             catch (Exception ex)
             {
                 _logger.LogError(ex, "API健康检查发生异常: {ApiBaseUrl}", _apiBaseUrl);
-                IsApiHealthy = false;
-                ConnectionStatus = "健康检查失败，请稍后重试";
-                LastHealthCheckTime = DateTime.Now;
+                UpdateState(false, "健康检查失败，请稍后重试", ex.Message);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 更新状态并触发事件
+        /// OpenSpec: refactor-startup-connection-resilience
+        /// </summary>
+        private void UpdateState(bool isHealthy, string connectionStatus, string? lastError)
+        {
+            var previousHealthy = IsApiHealthy;
+            var previousStatus = ConnectionStatus;
+
+            IsApiHealthy = isHealthy;
+            ConnectionStatus = connectionStatus;
+            LastError = lastError;
+            LastHealthCheckTime = DateTime.Now;
+
+            // 状态变化时触发事件
+            if (previousHealthy != isHealthy || previousStatus != connectionStatus)
+            {
+                StatusChanged?.Invoke(this, new ApiStatusChangedEventArgs(isHealthy, connectionStatus, lastError));
             }
         }
     }

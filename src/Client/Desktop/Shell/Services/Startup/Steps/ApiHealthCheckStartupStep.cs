@@ -32,7 +32,7 @@ public class ApiHealthCheckStartupStep : IStartupStep
     public int Order => 40;
 
     /// <inheritdoc />
-    public bool IsRequired => true;
+    public bool IsRequired => false;
 
     /// <inheritdoc />
     public async Task<StartupStepResult> ExecuteAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default)

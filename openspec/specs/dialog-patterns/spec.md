@@ -183,82 +183,80 @@ ViewModel中 MUST NOT 直接使用MessageBox.Show。
 - **AND** NOT 使用`MessageBox.Show()`
 - **EXCEPTION** DI容器初始化之前的致命错误仍允许使用MessageBox
 
-### Requirement: DLG-006 Startup Connection Recovery Dialog
+### Requirement: DLG-006 Startup Connection Resilience
 
-启动时API连接失败 MUST 通过专用恢复对话框处理，而非直接退出。
+启动时API连接失败 MUST 直接进入登录页，登录页内联显示连接状态，而非阻塞启动。
 
-**规范**:
-- 使用`ApiConnectionFailedDialog`显示连接错误
-- 提供[重试]、[查看日志]、[退出]操作按钮
-- 预留[离线模式]入口(v2.0启用)
-- 错误信息采用简洁模式，技术详情可展开
+**规范** (OpenSpec: refactor-startup-connection-resilience):
+- 启动管道中`ApiHealthCheckStartupStep.IsRequired = false`，API不可达时不阻塞启动
+- 无论API是否可达，始终进入登录页(LoginView)
+- 登录页内联三色API连接状态Banner替代独立对话框
+- 状态通过`ApplicationStateService.StatusChanged`事件驱动更新
+- `HealthCheckCoordinator`后台轮询(10秒间隔)同步状态到`ApplicationStateService`
 
 #### Scenario: API health check fails during startup
 - **GIVEN** 应用启动时执行API健康检查
 - **WHEN** 健康检查失败(连接超时、服务不可用等)
-- **THEN** 显示`ApiConnectionFailedDialog`
-- **AND** 对话框标题为"无法连接到服务器"
-- **AND** 显示友好的错误摘要和可能原因列表
-- **AND** 提供[重试]按钮(IsDefault=true)
-- **AND** 提供[退出]按钮(IsCancel=true)
-- **AND** NOT 使用`MessageBox.Show()`
+- **THEN** 启动流程继续，正常显示登录页
+- **AND** 登录页Banner显示橙色Unhealthy状态
+- **AND** Banner文本显示"WebAPI 连接失败: {错误信息}"
+- **AND** Banner提供[重试]按钮
+- **AND** NOT 显示阻塞式对话框
 
-#### Scenario: User clicks Retry button
-- **GIVEN** 显示ApiConnectionFailedDialog
+#### Scenario: API becomes available after startup
+- **GIVEN** 启动时API不可达，登录页Banner显示Unhealthy
+- **WHEN** API服务恢复可用
+- **THEN** `HealthCheckCoordinator`在下一次轮询(最多10秒)检测到恢复
+- **AND** 通过`ApplicationStateService.StatusChanged`事件通知LoginViewModel
+- **AND** Banner自动更新为绿色Healthy状态
+- **AND** Banner文本显示"WebAPI 已连接"
+
+#### Scenario: User clicks Retry button on Banner
+- **GIVEN** 登录页Banner显示Unhealthy状态
 - **WHEN** 用户点击[重试]按钮
-- **THEN** 对话框关闭并返回`RecoveryAction.Retry`
-- **AND** 启动管道重新执行API健康检查步骤
-- **AND** 如果成功则继续正常启动流程
+- **THEN** Banner切换为蓝色Checking状态
+- **AND** 触发`ApplicationStateService.CheckApiHealthAsync()`
+- **AND** 检查结果通过StatusChanged事件更新Banner
 
-#### Scenario: User clicks Exit button
-- **GIVEN** 显示ApiConnectionFailedDialog
-- **WHEN** 用户点击[退出]按钮
-- **THEN** 对话框关闭并返回`RecoveryAction.Exit`
-- **AND** 应用程序以退出码1终止
+#### Scenario: Login attempt when API unavailable
+- **GIVEN** 登录页Banner显示Unhealthy状态
+- **WHEN** 用户尝试登录
+- **THEN** 登录请求正常执行(依赖应用层Polly重试)
+- **AND** 如果失败，ErrorMessage显示友好的连接错误提示
 
-#### Scenario: User clicks View Logs button
-- **GIVEN** 显示ApiConnectionFailedDialog
-- **WHEN** 用户点击[查看日志]按钮
-- **THEN** 打开logs文件夹(文件资源管理器)
-- **AND** 对话框保持显示状态
+### Requirement: DLG-007 Connection Status Display Pattern
 
-#### Scenario: Offline mode button state in v1.0
-- **GIVEN** 当前版本为v1.0
-- **WHEN** 显示ApiConnectionFailedDialog
-- **THEN** [离线模式(v2.0)]按钮为禁用状态(IsEnabled=false)
-- **AND** 按钮ToolTip显示"离线模式将在v2.0版本中启用"
+登录页连接状态 MUST 采用内联三色Banner展示模式。
 
-### Requirement: DLG-007 Error Information Display Pattern
+**规范** (OpenSpec: refactor-startup-connection-resilience):
+- Banner位于登录表单下方，作为登录页固定组成部分
+- 三种状态对应三种配色方案
+- 状态由`ApiHealthStatus`枚举驱动(Healthy/Checking/Unhealthy)
+- 通过DataTrigger绑定`ApiStatus`属性切换样式
 
-连接错误对话框 MUST 采用分层信息展示模式。
+#### Scenario: Display Healthy status
+- **GIVEN** `ApplicationStateService.IsApiHealthy == true`
+- **WHEN** `StatusChanged`事件触发
+- **THEN** Banner背景色为绿色(#E8F5E9)
+- **AND** 状态圆点为绿色(#66BB6A)
+- **AND** 文本显示"WebAPI 已连接"
+- **AND** [重试]按钮隐藏
 
-**规范**:
-- L1标题层：简洁的错误标题
-- L2摘要层：用户友好的错误描述
-- L3原因层：可能原因列表(3-4项)
-- L4详情层：技术详情(可展开)
+#### Scenario: Display Checking status
+- **GIVEN** 正在执行API健康检查
+- **WHEN** 检查进行中
+- **THEN** Banner背景色为蓝色(#E3F2FD)
+- **AND** 状态圆点为蓝色(#42A5F5)
+- **AND** 文本显示"正在检查连接..."
+- **AND** [重试]按钮隐藏
 
-#### Scenario: Display layered error information
-- **GIVEN** 需要显示连接错误
-- **WHEN** 构建对话框内容
-- **THEN** 标题显示"无法连接到服务器"
-- **AND** 摘要显示"无法连接到凌隐宝堂服务，请检查："
-- **AND** 原因列表显示:
-  - WebAPI服务是否已启动
-  - 网络连接是否正常
-  - 防火墙是否阻止连接
-- **AND** 详情区包含服务地址、错误类型、详细信息
-- **AND** 详情区默认折叠(Expander.IsExpanded=false)
-
-#### Scenario: Expand technical details
-- **GIVEN** 对话框已显示
-- **WHEN** 用户点击"展开详情"
-- **THEN** 显示技术详情区域
-- **AND** 内容使用等宽字体(Consolas)
-- **AND** 包含:
-  - 服务地址: {apiEndpoint}
-  - 错误类型: {exception.GetType().Name}
-  - 详细信息: {exception.Message}
+#### Scenario: Display Unhealthy status
+- **GIVEN** `ApplicationStateService.IsApiHealthy == false`
+- **WHEN** `StatusChanged`事件触发
+- **THEN** Banner背景色为橙色(#FFF3E0)
+- **AND** 状态圆点为橙色(#FFA726)
+- **AND** 文本显示"WebAPI 连接失败: {LastError}"
+- **AND** [重试]按钮可见(Command=RetryApiCheckCommand)
 
 ## 核心接口
 

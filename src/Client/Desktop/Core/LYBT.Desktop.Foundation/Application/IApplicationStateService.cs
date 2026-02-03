@@ -29,6 +29,18 @@ namespace LYBT.Desktop.Foundation.Application
         DateTime? LastHealthCheckTime { get; set; }
 
         /// <summary>
+        /// 最后一次错误信息
+        /// OpenSpec: refactor-startup-connection-resilience
+        /// </summary>
+        string? LastError { get; set; }
+
+        /// <summary>
+        /// API状态变更事件
+        /// OpenSpec: refactor-startup-connection-resilience - 事件驱动状态更新
+        /// </summary>
+        event EventHandler<ApiStatusChangedEventArgs>? StatusChanged;
+
+        /// <summary>
         /// 执行API健康检查
         /// </summary>
         /// <param name="timeoutSeconds">超时时间（秒），默认10秒</param>

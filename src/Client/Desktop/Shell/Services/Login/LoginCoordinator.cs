@@ -1,5 +1,4 @@
 using System.Windows;
-using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;

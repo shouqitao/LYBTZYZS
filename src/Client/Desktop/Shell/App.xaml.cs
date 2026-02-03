@@ -157,7 +157,7 @@ public partial class App : PrismApplication
         containerRegistry.Register<MainWindowViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.EntityAuditLogDialog, Dialogs.ViewModels.EntityAuditLogDialogViewModel>();
-        containerRegistry.RegisterDialog<Dialogs.Views.ApiConnectionFailedDialog, Dialogs.ViewModels.ApiConnectionFailedDialogViewModel>();
+        // [已删除] ApiConnectionFailedDialog - OpenSpec: refactor-startup-connection-resilience
         // OpenSpec: fix-missing-dialogs - 统一消息对话框和输入对话框
         containerRegistry.RegisterDialog<Dialogs.Views.MessageDialog, Dialogs.ViewModels.MessageDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.InputDialog, Dialogs.ViewModels.InputDialogViewModel>();
@@ -205,54 +205,18 @@ public partial class App : PrismApplication
 
             var progress = new Progress<string>(message => _splashScreen?.UpdateStatus(message));
 
-            // enhance-shell-connection-dialog: 循环执行支持重试
-            while (true)
+            // OpenSpec: refactor-startup-connection-resilience - 非阻塞启动，API检查已设为非必需
+            var result = await _startupPipeline.ExecuteAsync(progress);
+
+            if (result.Success)
             {
-                var result = await _startupPipeline.ExecuteAsync(progress);
-
-                if (result.Success)
-                {
-                    await ShowMainWindowAfterInitializationAsync();
-                    return;
-                }
-
-                // API健康检查失败时显示恢复对话框
-                if (result.FailedStepName == "API健康检查")
-                {
-                    // 获取失败步骤的详细异常信息
-                    Exception? stepException = null;
-                    if (result.StepResults.TryGetValue(result.FailedStepName, out var stepResult))
-                    {
-                        stepException = stepResult.Exception;
-                    }
-
-                    var action = await HandleApiConnectionFailureAsync(
-                        result.ErrorMessage ?? "API服务不可用",
-                        stepException);
-
-                    switch (action)
-                    {
-                        case RecoveryAction.Retry:
-                            // 重置管道状态，继续循环
-                            _startupPipeline.Reset();
-                            _splashScreen?.UpdateStatus("正在重试连接...");
-                            continue;
-
-                        case RecoveryAction.OfflineMode:
-                            // v2.0: 启动离线模式
-                            throw new NotImplementedException("离线模式将在v2.0实现");
-
-                        case RecoveryAction.Exit:
-                        default:
-                            Application.Current.Shutdown(1);
-                            return;
-                    }
-                }
-
-                // 其他步骤失败，使用原有处理
-                throw new InvalidOperationException(
-                    $"启动步骤 '{result.FailedStepName}' 执行失败: {result.ErrorMessage}");
+                await ShowMainWindowAfterInitializationAsync();
+                return;
             }
+
+            // API健康检查失败不再阻塞启动（IsRequired=false），其他必需步骤失败仍抛异常
+            throw new InvalidOperationException(
+                $"启动步骤 '{result.FailedStepName}' 执行失败: {result.ErrorMessage}");
         }
         catch (Exception ex)
         {
@@ -260,43 +224,8 @@ public partial class App : PrismApplication
         }
     }
 
-    /// <summary>处理API连接失败</summary>
-    /// <remarks>enhance-shell-connection-dialog: 显示恢复对话框并返回用户选择的操作</remarks>
-    private async Task<RecoveryAction> HandleApiConnectionFailureAsync(string errorMessage, Exception? exception)
-    {
-        // 临时隐藏启动画面，显示对话框
-        await Dispatcher.InvokeAsync(() => _splashScreen?.Hide());
-
-        try
-        {
-            var recoveryService = Container.Resolve<IApiConnectionRecoveryService>();
-            var apiEndpoint = GetApiEndpoint();
-
-            return await recoveryService.ShowConnectionFailedDialogAsync(
-                errorMessage,
-                exception,
-                apiEndpoint);
-        }
-        finally
-        {
-            // 如果用户选择重试，重新显示启动画面
-            await Dispatcher.InvokeAsync(() => _splashScreen?.Show());
-        }
-    }
-
-    /// <summary>获取API端点地址</summary>
-    private string GetApiEndpoint()
-    {
-        try
-        {
-            var apiOptions = Container.Resolve<ApiClientOptions>();
-            return apiOptions.BaseUrl;
-        }
-        catch
-        {
-            return "未知";
-        }
-    }
+    // [已删除] HandleApiConnectionFailureAsync - OpenSpec: refactor-startup-connection-resilience
+    // [已删除] GetApiEndpoint - OpenSpec: refactor-startup-connection-resilience
 
     /// <summary>注册启动步骤到管道</summary>
     private void RegisterStartupSteps()
