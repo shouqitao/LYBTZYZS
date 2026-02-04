@@ -59,6 +59,7 @@ LYBTZYZS/
 │   │   │   ├── LYBT.Desktop.Herbs/          # 药材模块
 │   │   │   ├── LYBT.Desktop.MedicalCase/    # 医案模块 (核心，含处方功能)
 │   │   │   ├── LYBT.Desktop.Patients/       # 患者模块
+│   │   │   ├── LYBT.Desktop.Sync/           # 数据同步模块 (2026-02新增)
 │   │   │   └── LYBT.Desktop.Users/          # 用户模块
 │   │   ├── Roles/                # 角色入口
 │   │   │   ├── LYBT.Desktop.Admin/          # 管理员端
@@ -77,6 +78,7 @@ LYBTZYZS/
 │   │   │   ├── LYBT.Module.MedicalCase/
 │   │   │   ├── LYBT.Module.Patients/
 │   │   │   ├── LYBT.Module.Prescriptions/
+│   │   │   ├── LYBT.Module.Sync/              # 数据同步模块 (2026-02新增)
 │   │   │   └── LYBT.Module.Users/
 │   │   └── Services/
 │   │       └── LYBT.WebAPI/                 # Web API 入口
@@ -414,5 +416,5 @@ DELETE /api/{resource}/{id}      # 删除
 
 ---
 
-**最后更新**: 2026-01-22
-**文档版本**: v2.2
+**最后更新**: 2026-02-04
+**文档版本**: v2.3

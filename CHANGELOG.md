@@ -105,7 +105,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 37 个单元测试（ChecksumHelper + SyncService）全部通过
 - 17 个集成测试用例已编写
 
-**状态**: 功能完成，OpenSpec 已归档，代码未提交
+**提交**: `8a6ea944c`
+
+**状态**: 已验证，已推送
 
 ---
 
