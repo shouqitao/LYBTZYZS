@@ -1,0 +1,627 @@
+<UserControl
+    x:Class="LYBT.Desktop.Sync.Views.SyncView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+    xmlns:prism="http://prismlibrary.com/"
+    prism:ViewModelLocator.AutoWireViewModel="True"
+    Background="#F5F5F5">
+
+    <UserControl.Resources>
+        <!-- 列表项样式 -->
+        <Style x:Key="SyncItemStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <!-- 主按钮样式 -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#5D4037" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="24,12" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#4E342E" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#3E2723" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#BCAAA4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 次要按钮样式 -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="#5D4037" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="BorderBrush" Value="#5D4037" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#EFEBE9" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#BCAAA4" />
+                                <Setter Property="BorderBrush" Value="#BCAAA4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 分组标题样式 -->
+        <Style x:Key="GroupHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#3E2723" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!-- 标题区 -->
+            <RowDefinition Height="Auto" /> <!-- 操作区 -->
+            <RowDefinition Height="*" />    <!-- 内容区 -->
+            <RowDefinition Height="Auto" /> <!-- 底部操作区 -->
+        </Grid.RowDefinitions>
+
+        <!-- 标题区 -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock
+                FontSize="28"
+                FontWeight="Bold"
+                Foreground="#3E2723"
+                Text="数据同步" />
+            <TextBlock
+                Margin="0,8,0,0"
+                FontSize="14"
+                Foreground="#6D4C41"
+                Text="同步本地数据与服务器数据，确保数据一致性" />
+        </StackPanel>
+
+        <!-- 操作区 -->
+        <Border
+            Grid.Row="1"
+            Margin="0,0,0,24"
+            Padding="20"
+            Background="White"
+            CornerRadius="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 实体类型选择 -->
+                <StackPanel
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Foreground="#475569"
+                        Text="数据类型:" />
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        Padding="12,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="14"
+                        ItemsSource="{Binding EntityTypes}"
+                        SelectedItem="{Binding SelectedEntityType}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- 统计信息 -->
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="32,0"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+                    <Border
+                        Margin="0,0,16,0"
+                        Padding="16,8"
+                        Background="#E3F2FD"
+                        CornerRadius="6">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="0,0,8,0"
+                                FontSize="14"
+                                Foreground="#1565C0"
+                                Text="待上传:" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="#1565C0"
+                                Text="{Binding UploadCount}" />
+                        </StackPanel>
+                    </Border>
+                    <Border
+                        Margin="0,0,16,0"
+                        Padding="16,8"
+                        Background="#E8F5E9"
+                        CornerRadius="6">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="0,0,8,0"
+                                FontSize="14"
+                                Foreground="#2E7D32"
+                                Text="待下载:" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="#2E7D32"
+                                Text="{Binding DownloadCount}" />
+                        </StackPanel>
+                    </Border>
+                    <Border
+                        Padding="16,8"
+                        Background="#FFF3E0"
+                        CornerRadius="6">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="0,0,8,0"
+                                FontSize="14"
+                                Foreground="#E65100"
+                                Text="冲突:" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="#E65100"
+                                Text="{Binding ConflictCount}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- 检查按钮 -->
+                <Button
+                    Grid.Column="2"
+                    Command="{Binding CheckDifferencesCommand}"
+                    Content="检查差异"
+                    Style="{StaticResource PrimaryButtonStyle}" />
+            </Grid>
+        </Border>
+
+        <!-- 内容区 - 差异列表 -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 待上传列表 -->
+            <Border
+                Grid.Column="0"
+                Padding="16"
+                Background="White"
+                CornerRadius="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel
+                        Grid.Row="0"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Style="{StaticResource GroupHeaderStyle}"
+                            Text="待上传" />
+                        <TextBlock
+                            Margin="8,0,0,12"
+                            FontSize="14"
+                            Foreground="#6D4C41"
+                            VerticalAlignment="Bottom"
+                            Text="{Binding LocalOnlyItems.Count, StringFormat='({0})'}" />
+                    </StackPanel>
+
+                    <Button
+                        Grid.Row="1"
+                        Margin="0,0,0,12"
+                        Padding="12,6"
+                        HorizontalAlignment="Left"
+                        Command="{Binding SelectAllUploadCommand}"
+                        Content="全选"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+
+                    <ScrollViewer
+                        Grid.Row="2"
+                        VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding LocalOnlyItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource SyncItemStyle}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox
+                                                Grid.Column="0"
+                                                Margin="0,0,12,0"
+                                                VerticalAlignment="Center"
+                                                IsChecked="{Binding IsSelected}" />
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Foreground="#1E293B"
+                                                    Text="{Binding EntityName}" />
+                                                <TextBlock
+                                                    Margin="0,4,0,0"
+                                                    FontSize="12"
+                                                    Foreground="#64748B"
+                                                    Text="{Binding ChangedAtDisplay}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- 空状态 -->
+                    <TextBlock
+                        Grid.Row="2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Foreground="#9CA3AF"
+                        Text="无待上传数据"
+                        Visibility="{Binding LocalOnlyItems.Count, Converter={x:Static converters:Cvt.ZeroToVis}}" />
+                </Grid>
+            </Border>
+
+            <!-- 待下载列表 -->
+            <Border
+                Grid.Column="2"
+                Padding="16"
+                Background="White"
+                CornerRadius="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel
+                        Grid.Row="0"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Style="{StaticResource GroupHeaderStyle}"
+                            Text="待下载" />
+                        <TextBlock
+                            Margin="8,0,0,12"
+                            FontSize="14"
+                            Foreground="#6D4C41"
+                            VerticalAlignment="Bottom"
+                            Text="{Binding ServerOnlyItems.Count, StringFormat='({0})'}" />
+                    </StackPanel>
+
+                    <Button
+                        Grid.Row="1"
+                        Margin="0,0,0,12"
+                        Padding="12,6"
+                        HorizontalAlignment="Left"
+                        Command="{Binding SelectAllDownloadCommand}"
+                        Content="全选"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+
+                    <ScrollViewer
+                        Grid.Row="2"
+                        VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding ServerOnlyItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource SyncItemStyle}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox
+                                                Grid.Column="0"
+                                                Margin="0,0,12,0"
+                                                VerticalAlignment="Center"
+                                                IsChecked="{Binding IsSelected}" />
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Foreground="#1E293B"
+                                                    Text="{Binding EntityName}" />
+                                                <TextBlock
+                                                    Margin="0,4,0,0"
+                                                    FontSize="12"
+                                                    Foreground="#64748B"
+                                                    Text="{Binding ChangedAtDisplay}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- 空状态 -->
+                    <TextBlock
+                        Grid.Row="2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Foreground="#9CA3AF"
+                        Text="无待下载数据"
+                        Visibility="{Binding ServerOnlyItems.Count, Converter={x:Static converters:Cvt.ZeroToVis}}" />
+                </Grid>
+            </Border>
+
+            <!-- 冲突列表 -->
+            <Border
+                Grid.Column="4"
+                Padding="16"
+                Background="White"
+                CornerRadius="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel
+                        Grid.Row="0"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Style="{StaticResource GroupHeaderStyle}"
+                            Text="数据冲突" />
+                        <TextBlock
+                            Margin="8,0,0,12"
+                            FontSize="14"
+                            Foreground="#E65100"
+                            VerticalAlignment="Bottom"
+                            Text="{Binding ConflictItems.Count, StringFormat='({0})'}" />
+                    </StackPanel>
+
+                    <ScrollViewer
+                        Grid.Row="1"
+                        VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding ConflictItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Margin="0,0,0,8"
+                                        Padding="16,12"
+                                        Background="#FFF8E1"
+                                        BorderBrush="#FFCC80"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox
+                                                Grid.Column="0"
+                                                Margin="0,0,12,0"
+                                                VerticalAlignment="Center"
+                                                IsChecked="{Binding IsSelected}" />
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Foreground="#E65100"
+                                                    Text="{Binding EntityName}" />
+                                                <TextBlock
+                                                    Margin="0,4,0,0"
+                                                    FontSize="12"
+                                                    Foreground="#64748B"
+                                                    Text="{Binding ChangedAtDisplay}" />
+                                                <TextBlock
+                                                    Margin="0,4,0,0"
+                                                    FontSize="12"
+                                                    FontStyle="Italic"
+                                                    Foreground="#FB8C00">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="未处理" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ResolutionDecision}" Value="True">
+                                                                    <Setter Property="Text" Value="使用本地版本" />
+                                                                    <Setter Property="Foreground" Value="#1565C0" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ResolutionDecision}" Value="False">
+                                                                    <Setter Property="Text" Value="使用服务器版本" />
+                                                                    <Setter Property="Foreground" Value="#2E7D32" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- 空状态 -->
+                    <TextBlock
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Foreground="#9CA3AF"
+                        Text="无数据冲突"
+                        Visibility="{Binding ConflictItems.Count, Converter={x:Static converters:Cvt.ZeroToVis}}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 底部操作区 -->
+        <Border
+            Grid.Row="3"
+            Margin="0,24,0,0"
+            Padding="20"
+            Background="White"
+            CornerRadius="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 状态信息 -->
+                <StackPanel
+                    Grid.Column="0"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="14"
+                        Foreground="#64748B"
+                        Text="{Binding StatusMessage}"
+                        Visibility="{Binding StatusMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
+                    <TextBlock
+                        FontSize="14"
+                        Foreground="#DC2626"
+                        Text="{Binding ErrorMessage}"
+                        Visibility="{Binding ErrorMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Visibility="{Binding LastSyncTime, Converter={x:Static converters:Cvt.NotNullToVis}}">
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="#9CA3AF"
+                            Text="上次同步: " />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="#9CA3AF"
+                            Text="{Binding LastSyncTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                    </StackPanel>
+
+                    <!-- 同步进度条 -->
+                    <ProgressBar
+                        Margin="0,8,0,0"
+                        Height="4"
+                        Maximum="100"
+                        Value="{Binding SyncProgress}"
+                        Visibility="{Binding IsSyncing, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                </StackPanel>
+
+                <!-- 操作按钮 -->
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Horizontal">
+                    <Button
+                        Margin="0,0,12,0"
+                        Command="{Binding DeselectAllCommand}"
+                        Content="取消全选"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button
+                        Margin="0,0,12,0"
+                        Command="{Binding RefreshCommand}"
+                        Content="刷新"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button
+                        Command="{Binding ExecuteSyncCommand}"
+                        Content="执行同步"
+                        Style="{StaticResource PrimaryButtonStyle}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 加载遮罩 -->
+        <Grid
+            Grid.Row="0"
+            Grid.RowSpan="4"
+            Background="#80FFFFFF"
+            Visibility="{Binding IsBusy, Converter={x:Static converters:Cvt.BoolToVis}}">
+            <Border
+                Padding="40,32"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="16">
+                <Border.Effect>
+                    <DropShadowEffect
+                        BlurRadius="20"
+                        Opacity="0.2"
+                        ShadowDepth="4"
+                        Color="#000000" />
+                </Border.Effect>
+                <StackPanel>
+                    <ProgressBar
+                        Width="200"
+                        Height="6"
+                        Background="#E5E7EB"
+                        BorderThickness="0"
+                        Foreground="#5D4037"
+                        IsIndeterminate="True" />
+                    <TextBlock
+                        Margin="0,16,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="14"
+                        FontWeight="Medium"
+                        Foreground="#475569"
+                        Text="{Binding StatusMessage, FallbackValue='处理中...'}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

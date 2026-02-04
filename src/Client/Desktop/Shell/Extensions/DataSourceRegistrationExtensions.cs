@@ -8,6 +8,7 @@ using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.DataSources;
 using LYBT.Desktop.LocalData.Initialization;
 using LYBT.Desktop.LocalData.Services;
+using SyncService = LYBT.Desktop.LocalData.Services.SyncService;
 using LYBT.Desktop.Shell.Services.Session;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -77,6 +78,9 @@ public static class DataSourceRegistrationExtensions
 
         // 注册本地认证服务
         containerRegistry.RegisterSingleton<ILocalAuthService, LocalAuthService>();
+
+        // OpenSpec: implement-data-sync - 注册同步服务
+        containerRegistry.RegisterSingleton<ISyncService, SyncService>();
 
         // 注册 DataSource
         containerRegistry.Register<IPatientDataSource, LocalPatientDataSource>();

@@ -123,6 +123,8 @@ namespace LYBT.Desktop.Shell.Extensions
                 RegisterLogger<LYBT.Desktop.LocalData.Context.LocalDbContext>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.Services.LocalAuthService>(containerRegistry);
+                // OpenSpec: implement-data-sync
+                RegisterLogger<LYBT.Desktop.LocalData.Services.SyncService>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalPatientDataSource>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalHerbDataSource>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalFormulaDataSource>(containerRegistry);
@@ -354,6 +356,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IHerbApi>(r => RestService.For<IHerbApi>(r.Resolve<HttpClient>(), refitSettings));
             containerRegistry.RegisterSingleton<IFormulaApi>(r => RestService.For<IFormulaApi>(r.Resolve<HttpClient>(), refitSettings));
             containerRegistry.RegisterSingleton<IMedicalCaseApi>(r => RestService.For<IMedicalCaseApi>(r.Resolve<HttpClient>(), refitSettings));
+            // OpenSpec: implement-data-sync - 同步API客户端
+            containerRegistry.RegisterSingleton<ISyncApi>(r => RestService.For<ISyncApi>(r.Resolve<HttpClient>(), refitSettings));
         }
 
         /// <summary>注册Foundation层服务</summary>

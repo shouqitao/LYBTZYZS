@@ -1,12 +1,14 @@
 ﻿using FluentAssertions;
 using FluentValidation;
 using LYBT.Entities.Patients;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -23,6 +25,7 @@ namespace LYBT.Module.Patients.Tests.Services
         private readonly Mock<IPatientRepository> _repositoryMock;
         private readonly Mock<ILogger<PatientService>> _loggerMock;
         private readonly Mock<IValidator<PatientInputDto>> _validatorMock;
+        private readonly AppDbContext _dbContext;
 
         public PatientServiceTests()
         {
@@ -35,11 +38,27 @@ namespace LYBT.Module.Patients.Tests.Services
                 .Setup(x => x.ValidateAsync(It.IsAny<PatientInputDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
+            // 使用 InMemory SQLite 创建真实 DbContext
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseSqlite($"DataSource=:memory:")
+                .Options;
+            _dbContext = new AppDbContext(options);
+            _dbContext.Database.OpenConnection();
+            _dbContext.Database.EnsureCreated();
+
             // 创建PatientService实例（Mapperly迁移后，Service内部使用私有Mapper）
             _patientService = new PatientService(
                 _repositoryMock.Object,
                 _loggerMock.Object,
-                _validatorMock.Object);
+                _validatorMock.Object,
+                _dbContext);
+        }
+
+        public override void Dispose()
+        {
+            _dbContext.Database.CloseConnection();
+            _dbContext.Dispose();
+            base.Dispose();
         }
 
 

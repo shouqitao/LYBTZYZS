@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -28,6 +29,7 @@ public class LoginCoordinatorTests
     private readonly Mock<IModuleLoadingService> _moduleLoadingMock;
     private readonly Mock<INavigationCoordinator> _navigationCoordinatorMock;
     private readonly Mock<IAuthenticationStateMachine> _stateMachineMock;
+    private readonly Mock<IConfiguration> _configurationMock;
     private readonly LoginCoordinator _sut;
     private AuthState _currentMockState = AuthState.Idle;
 
@@ -59,6 +61,7 @@ public class LoginCoordinatorTests
         _moduleLoadingMock = new Mock<IModuleLoadingService>();
         _navigationCoordinatorMock = new Mock<INavigationCoordinator>();
         _stateMachineMock = new Mock<IAuthenticationStateMachine>();
+        _configurationMock = new Mock<IConfiguration>();
 
         // 配置状态机Mock - 使用回调跟踪状态变化
         _stateMachineMock.Setup(m => m.Fire(It.IsAny<AuthEvent>(), It.IsAny<string?>()))
@@ -86,7 +89,8 @@ public class LoginCoordinatorTests
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
             _navigationCoordinatorMock.Object,
-            _stateMachineMock.Object);
+            _stateMachineMock.Object,
+            _configurationMock.Object);
     }
 
     #region 初始状态测试
@@ -111,7 +115,8 @@ public class LoginCoordinatorTests
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
             _navigationCoordinatorMock.Object,
-            _stateMachineMock.Object);
+            _stateMachineMock.Object,
+            _configurationMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -129,7 +134,8 @@ public class LoginCoordinatorTests
             _sessionManagerMock.Object,
             _moduleLoadingMock.Object,
             _navigationCoordinatorMock.Object,
-            _stateMachineMock.Object);
+            _stateMachineMock.Object,
+            _configurationMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -268,7 +274,7 @@ public class LoginCoordinatorTests
         // Assert
         eventArgs.Should().NotBeNull();
         eventArgs!.User.Should().Be(user);
-        eventArgs.IsAutoLogin.Should().BeFalse();
+        // IsAutoLogin 属性已在 simplify-login-options 重构中移除
     }
 
     [Theory]
@@ -299,75 +305,8 @@ public class LoginCoordinatorTests
 
     #endregion
 
-    #region TryAutoLoginAsync测试
-
-    [Fact]
-    public async Task TryAutoLoginAsync_WithNoToken_ShouldReturnFalse()
-    {
-        // Arrange
-        _tokenStorageMock.Setup(t => t.GetTokenAsync()).ReturnsAsync((string?)null);
-
-        // Act
-        var result = await _sut.TryAutoLoginAsync();
-
-        // Assert
-        result.Should().BeFalse();
-        _sut.CurrentState.Should().Be(AuthState.Idle);
-    }
-
-    [Fact]
-    public async Task TryAutoLoginAsync_WithInvalidToken_ShouldReturnFalse()
-    {
-        // Arrange
-        _tokenStorageMock.Setup(t => t.GetTokenAsync()).ReturnsAsync("invalid-token");
-        _authServiceMock.Setup(a => a.ValidateTokenAsync(It.IsAny<string>()))
-            .ReturnsAsync(ServiceResult<ValidateTokenResponse>.Failure("Token无效"));
-
-        // Act
-        var result = await _sut.TryAutoLoginAsync();
-
-        // Assert
-        result.Should().BeFalse();
-        _sut.CurrentState.Should().Be(AuthState.Idle);
-        _authServiceMock.Verify(a => a.ClearAuthInfo(), Times.Once);
-    }
-
-    [Fact]
-    public async Task TryAutoLoginAsync_WithValidToken_ShouldReturnTrue()
-    {
-        // Arrange
-        var user = CreateTestUser();
-        var loginResponse = CreateLoginResponse(user);
-        SetupSuccessfulAutoLogin(loginResponse);
-
-        // Act
-        var result = await _sut.TryAutoLoginAsync();
-
-        // Assert
-        result.Should().BeTrue();
-        _sut.CurrentState.Should().Be(AuthState.Authenticated);
-        _sut.CurrentUser.Should().Be(user);
-    }
-
-    [Fact]
-    public async Task TryAutoLoginAsync_Success_ShouldRaiseLoginSucceededWithAutoLoginFlag()
-    {
-        // Arrange
-        var user = CreateTestUser();
-        var loginResponse = CreateLoginResponse(user);
-        SetupSuccessfulAutoLogin(loginResponse);
-        LoginSuccessEventArgs? eventArgs = null;
-        _sut.LoginSucceeded += (_, args) => eventArgs = args;
-
-        // Act
-        await _sut.TryAutoLoginAsync();
-
-        // Assert
-        eventArgs.Should().NotBeNull();
-        eventArgs!.IsAutoLogin.Should().BeTrue();
-    }
-
-    #endregion
+    // TryAutoLoginAsync 测试已移除 - 该功能在 simplify-login-options 重构中被删除
+    // 自动登录功能已重新设计为"记住密码"模式
 
     #region HandleLoginSuccessAsync测试
 

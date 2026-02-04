@@ -84,6 +84,8 @@
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
+		<!-- OpenSpec: implement-data-sync - 数据同步模块 -->
+		<ProjectReference Include="..\..\Modules\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
 	</ItemGroup>
 
 </Project>

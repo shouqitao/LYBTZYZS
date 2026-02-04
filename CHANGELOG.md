@@ -77,6 +77,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### 数据同步功能 (OpenSpec: implement-data-sync) - 2026-02-04
+
+**背景**: 支持基础数据（药材、患者、方剂）在本地与服务器之间双向同步，解决离线编辑后的数据一致性问题。
+
+**核心功能**:
+- **Checksum 差异检测**: SHA256 哈希比对，排除审计字段避免"假差异"
+- **引用检查保护**: Herb 检查处方引用，Patient 检查医案引用，有引用时拒绝删除
+- **三向同步 UI**: 待上传/待下载/冲突三列展示，支持批量操作
+- **冲突处理对话框**: 逐条对比本地与服务器版本，支持批量使用本地/服务器
+
+**新增模块**:
+- `LYBT.Module.Sync` - 服务器端同步模块 (API + Service + ChecksumHelper)
+- `LYBT.Desktop.Sync` - 客户端同步 UI 模块 (SyncView + ConflictDialog)
+- `ISyncService` + `SyncService` - 客户端同步服务
+- `ISyncApi` - Refit API 接口
+
+**API 端点**:
+- `GET /api/v1/sync/entity-types` - 获取支持的实体类型
+- `GET /api/v1/sync/metadata` - 获取元数据 (ID + Checksum)
+- `POST /api/v1/sync/compare` - 比对本地与服务器差异
+- `POST /api/v1/sync/upload` - 上传本地变更
+- `POST /api/v1/sync/download` - 下载服务器数据
+- `POST /api/v1/sync/delete` - 同步删除（带引用检查）
+
+**测试覆盖**:
+- 37 个单元测试（ChecksumHelper + SyncService）全部通过
+- 17 个集成测试用例已编写
+
+**状态**: 功能完成，OpenSpec 已归档，代码未提交
+
+---
+
 #### 本地模式支持 (OpenSpec: implement-local-mode) - 2026-02-03
 
 **背景**: 为支持离线场景和单机部署，实现桌面应用的本地模式，通过DataSource抽象层实现远程/本地模式无缝切换。

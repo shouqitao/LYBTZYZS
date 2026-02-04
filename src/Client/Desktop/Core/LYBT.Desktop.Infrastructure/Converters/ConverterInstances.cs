@@ -79,6 +79,18 @@ namespace LYBT.Desktop.Infrastructure.Converters
         /// </summary>
         public static readonly IValueConverter InverseNullToVis = new InverseNullToVisibilityConverter();
 
+        /// <summary>
+        /// Object -> Visibility (null=Collapsed, otherwise=Visible)
+        /// 别名: 与 NullToVis 相同功能，语义更清晰
+        /// </summary>
+        public static readonly IValueConverter NotNullToVis = new NullToVisibilityConverter();
+
+        /// <summary>
+        /// int/long -> Visibility (0=Visible, otherwise=Collapsed)
+        /// 用于显示空状态：当集合为空时显示"无数据"提示
+        /// </summary>
+        public static readonly IValueConverter ZeroToVis = new ZeroToVisibilityConverter();
+
         // ========== Enum/Status Converters ==========
 
         /// <summary>

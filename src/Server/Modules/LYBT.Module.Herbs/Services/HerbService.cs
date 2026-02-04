@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using LYBT.Entities.Herbs;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Mapping;
@@ -8,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 
@@ -24,15 +26,18 @@ namespace LYBT.Module.Herbs.Services
         private readonly IHerbRepository _repository;
         private readonly IValidator<HerbInputDto> _validator;
         private readonly HerbMapper _mapper = new();
+        private readonly AppDbContext _dbContext;
 
         public HerbService(
             IHerbRepository repository,
             ILogger<HerbService> logger,
-            IValidator<HerbInputDto> validator)
+            IValidator<HerbInputDto> validator,
+            AppDbContext dbContext)
             : base(logger)
         {
             _repository = repository;
             _validator = validator;
+            _dbContext = dbContext;
         }
 
         public async Task<Result<PagedResult<HerbListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
@@ -497,6 +502,7 @@ namespace LYBT.Module.Herbs.Services
 
         /// <summary>
         /// 检查药材是否被处方引用（Epic #1962 Task 4.2）
+        /// OpenSpec: implement-data-sync - 实现处方引用检查
         /// </summary>
         public async Task<Result<HerbReferenceCheckDto>> CheckReferenceAsync(Guid herbId)
         {
@@ -507,20 +513,43 @@ namespace LYBT.Module.Herbs.Services
                 return Result<HerbReferenceCheckDto>.Failure("药材不存在");
             }
 
+            // 查询处方引用计数
+            var referenceCount = await _dbContext.PrescriptionItems
+                .CountAsync(pi => pi.HerbId == herbId);
+
+            // 获取最近5条引用记录（使用 Join 查询，因为 PrescriptionItem 没有导航属性）
+            var recentReferences = await (
+                from pi in _dbContext.PrescriptionItems
+                join p in _dbContext.Prescriptions on pi.PrescriptionId equals p.Id
+                join mc in _dbContext.MedicalCases on p.MedicalCaseId equals mc.Id
+                join patient in _dbContext.Patients on mc.PatientId equals patient.Id
+                where pi.HerbId == herbId
+                orderby p.CreatedAt descending
+                select new PrescriptionReferenceDto
+                {
+                    PrescriptionId = p.Id,
+                    PrescriptionNumber = p.PrescriptionNumber ?? string.Empty,
+                    PatientName = patient.Name,
+                    CreatedAt = p.CreatedAt,
+                    Status = p.IsPrinted ? "已打印" : "未打印"
+                })
+                .Take(5)
+                .ToListAsync();
+
+            var hasReferences = referenceCount > 0;
             var result = new HerbReferenceCheckDto
             {
                 HerbId = herbId,
                 HerbName = herb.Name,
-                HasReferences = false,
-                ReferenceCount = 0,
+                HasReferences = hasReferences,
+                ReferenceCount = referenceCount,
                 CanDelete = true, // BR-007: 支持软删除，始终可删除
-                RecentReferences = new List<PrescriptionReferenceDto>()
+                DeleteWarning = hasReferences ? $"该药材已被 {referenceCount} 个处方引用，删除后将标记为已删除状态" : null,
+                RecentReferences = recentReferences
             };
 
-            // TODO: 实现处方引用检查
-            // 当前版本暂不检查，直接返回无引用
-            // 后续迭代中需要查询 PrescriptionItems 表
-            _logger.LogInformation("[SVC] Herb.CheckReference completed - HerbName={HerbName} HasReferences=false", herb.Name);
+            _logger.LogInformation("[SVC] Herb.CheckReference completed - HerbName={HerbName} HasReferences={HasReferences} ReferenceCount={ReferenceCount}",
+                herb.Name, hasReferences, referenceCount);
 
             return Result<HerbReferenceCheckDto>.Success(result);
         }

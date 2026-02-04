@@ -1,0 +1,601 @@
+using System.Text.Json;
+using LYBT.Entities.Formulas;
+using LYBT.Entities.Herbs;
+using LYBT.Entities.Patients;
+using LYBT.Infrastructure.Data;
+using LYBT.Module.Herbs.Interfaces;
+using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Sync.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Sync;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace LYBT.Module.Sync.Services;
+
+/// <summary>
+/// 同步服务实现 - 处理 Herb/Patient/Formula 的双向同步
+/// OpenSpec: implement-data-sync
+/// </summary>
+public class SyncService : ISyncService
+{
+    private readonly AppDbContext _dbContext;
+    private readonly IHerbService _herbService;
+    private readonly IPatientService _patientService;
+    private readonly ILogger<SyncService> _logger;
+
+    private static readonly IReadOnlyList<string> SupportedTypes = new[] { "Herb", "Patient", "Formula" };
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+
+    public SyncService(
+        AppDbContext dbContext,
+        IHerbService herbService,
+        IPatientService patientService,
+        ILogger<SyncService> logger)
+    {
+        _dbContext = dbContext;
+        _herbService = herbService;
+        _patientService = patientService;
+        _logger = logger;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetSupportedEntityTypes() => SupportedTypes;
+
+    /// <inheritdoc />
+    public async Task<ServiceResult<List<SyncMetadataDto>>> GetMetadataAsync(string entityType)
+    {
+        if (!ValidateEntityType(entityType, out var errorMessage))
+        {
+            return ServiceResult<List<SyncMetadataDto>>.Failure(errorMessage!);
+        }
+
+        var metadata = entityType switch
+        {
+            "Herb" => await GetHerbMetadataAsync(),
+            "Patient" => await GetPatientMetadataAsync(),
+            "Formula" => await GetFormulaMetadataAsync(),
+            _ => new List<SyncMetadataDto>()
+        };
+
+        _logger.LogInformation("获取 {EntityType} 元数据完成，共 {Count} 条", entityType, metadata.Count);
+        return ServiceResult<List<SyncMetadataDto>>.Success(metadata);
+    }
+
+    /// <inheritdoc />
+    public async Task<ServiceResult<SyncCompareResultDto>> CompareAsync(SyncCompareInputDto input)
+    {
+        if (!ValidateEntityType(input.EntityType, out var errorMessage))
+        {
+            return ServiceResult<SyncCompareResultDto>.Failure(errorMessage!);
+        }
+
+        // 获取服务器端所有元数据
+        var serverMetadataResult = await GetMetadataAsync(input.EntityType);
+        if (!serverMetadataResult.IsSuccess)
+        {
+            return ServiceResult<SyncCompareResultDto>.Failure(serverMetadataResult.ErrorMessage!);
+        }
+
+        var serverMetadata = serverMetadataResult.Data!;
+        var serverDict = serverMetadata.ToDictionary(m => m.EntityId);
+        var localDict = input.LocalEntities.ToDictionary(e => e.EntityId);
+
+        var diffs = new List<SyncDiffDto>();
+
+        // 检查服务器端实体
+        foreach (var server in serverMetadata)
+        {
+            if (localDict.TryGetValue(server.EntityId, out var local))
+            {
+                // 双方都有，比较 Checksum
+                if (server.Checksum != local.Checksum)
+                {
+                    diffs.Add(new SyncDiffDto
+                    {
+                        EntityType = input.EntityType,
+                        EntityId = server.EntityId,
+                        DiffType = SyncDiffType.Modified,
+                        LocalChecksum = local.Checksum,
+                        ServerChecksum = server.Checksum,
+                        LocalChangedAt = local.LastModifiedAt,
+                        ServerChangedAt = server.LastModifiedAt
+                    });
+                }
+                // Checksum 相同则不加入差异列表
+            }
+            else
+            {
+                // 仅服务器有
+                diffs.Add(new SyncDiffDto
+                {
+                    EntityType = input.EntityType,
+                    EntityId = server.EntityId,
+                    DiffType = SyncDiffType.ServerOnly,
+                    ServerChecksum = server.Checksum,
+                    ServerChangedAt = server.LastModifiedAt
+                });
+            }
+        }
+
+        // 检查仅本地有的实体
+        foreach (var local in input.LocalEntities)
+        {
+            if (!serverDict.ContainsKey(local.EntityId))
+            {
+                diffs.Add(new SyncDiffDto
+                {
+                    EntityType = input.EntityType,
+                    EntityId = local.EntityId,
+                    DiffType = SyncDiffType.LocalOnly,
+                    LocalChecksum = local.Checksum,
+                    LocalChangedAt = local.LastModifiedAt
+                });
+            }
+        }
+
+        var result = new SyncCompareResultDto
+        {
+            Diffs = diffs,
+            ServerTotalCount = serverMetadata.Count,
+            ComparedAt = DateTime.UtcNow
+        };
+
+        _logger.LogInformation(
+            "比对 {EntityType} 完成: LocalOnly={LocalOnly}, ServerOnly={ServerOnly}, Modified={Modified}",
+            input.EntityType,
+            diffs.Count(d => d.DiffType == SyncDiffType.LocalOnly),
+            diffs.Count(d => d.DiffType == SyncDiffType.ServerOnly),
+            diffs.Count(d => d.DiffType == SyncDiffType.Modified));
+
+        return ServiceResult<SyncCompareResultDto>.Success(result);
+    }
+
+    /// <inheritdoc />
+    public async Task<ServiceResult<SyncUploadResultDto>> UploadAsync(SyncUploadInputDto input)
+    {
+        if (!ValidateEntityType(input.EntityType, out var errorMessage))
+        {
+            return ServiceResult<SyncUploadResultDto>.Failure(errorMessage!);
+        }
+
+        var results = new List<SyncUploadItemResult>();
+        var successCount = 0;
+        var conflictCount = 0;
+        var errorCount = 0;
+
+        foreach (var entityJson in input.Entities)
+        {
+            var result = input.EntityType switch
+            {
+                "Herb" => await UploadHerbAsync(entityJson, input.OverwriteConflicts),
+                "Patient" => await UploadPatientAsync(entityJson, input.OverwriteConflicts),
+                "Formula" => await UploadFormulaAsync(entityJson, input.OverwriteConflicts),
+                _ => new SyncUploadItemResult { Success = false, ErrorMessage = "不支持的实体类型" }
+            };
+
+            results.Add(result);
+            if (result.Success) successCount++;
+            else if (result.IsConflict) conflictCount++;
+            else errorCount++;
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "上传 {EntityType} 完成: Success={Success}, Conflict={Conflict}, Error={Error}",
+            input.EntityType, successCount, conflictCount, errorCount);
+
+        return ServiceResult<SyncUploadResultDto>.Success(new SyncUploadResultDto
+        {
+            SuccessCount = successCount,
+            ConflictCount = conflictCount,
+            ErrorCount = errorCount,
+            Results = results
+        });
+    }
+
+    /// <inheritdoc />
+    public async Task<ServiceResult<SyncDownloadResultDto>> DownloadAsync(SyncDownloadInputDto input)
+    {
+        if (!ValidateEntityType(input.EntityType, out var errorMessage))
+        {
+            return ServiceResult<SyncDownloadResultDto>.Failure(errorMessage!);
+        }
+
+        var entities = new List<JsonElement>();
+
+        foreach (var entityId in input.EntityIds)
+        {
+            var entity = input.EntityType switch
+            {
+                "Herb" => await GetHerbJsonAsync(entityId),
+                "Patient" => await GetPatientJsonAsync(entityId),
+                "Formula" => await GetFormulaJsonAsync(entityId),
+                _ => null
+            };
+
+            if (entity.HasValue)
+            {
+                entities.Add(entity.Value);
+            }
+        }
+
+        _logger.LogInformation("下载 {EntityType} 完成，共 {Count} 条", input.EntityType, entities.Count);
+
+        return ServiceResult<SyncDownloadResultDto>.Success(new SyncDownloadResultDto
+        {
+            EntityType = input.EntityType,
+            Entities = entities,
+            Count = entities.Count
+        });
+    }
+
+    /// <inheritdoc />
+    public async Task<ServiceResult<SyncDeleteResultDto>> DeleteAsync(SyncDeleteInputDto input)
+    {
+        if (!ValidateEntityType(input.EntityType, out var errorMessage))
+        {
+            return ServiceResult<SyncDeleteResultDto>.Failure(errorMessage!);
+        }
+
+        var successIds = new List<Guid>();
+        var rejected = new List<SyncDeleteRejectedItem>();
+
+        foreach (var entityId in input.EntityIds)
+        {
+            var canDelete = input.EntityType switch
+            {
+                "Herb" => await CanDeleteHerbAsync(entityId),
+                "Patient" => await CanDeletePatientAsync(entityId),
+                "Formula" => (true, (string?)null), // Formula 无引用检查
+                _ => (false, "不支持的实体类型")
+            };
+
+            if (canDelete.Item1)
+            {
+                // 执行软删除
+                var deleted = await SoftDeleteEntityAsync(input.EntityType, entityId);
+                if (deleted)
+                {
+                    successIds.Add(entityId);
+                }
+                else
+                {
+                    rejected.Add(new SyncDeleteRejectedItem
+                    {
+                        EntityId = entityId,
+                        Reason = "实体不存在或已删除"
+                    });
+                }
+            }
+            else
+            {
+                rejected.Add(new SyncDeleteRejectedItem
+                {
+                    EntityId = entityId,
+                    Reason = canDelete.Item2 ?? "有引用数据，无法删除"
+                });
+            }
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "删除 {EntityType} 完成: Success={Success}, Rejected={Rejected}",
+            input.EntityType, successIds.Count, rejected.Count);
+
+        return ServiceResult<SyncDeleteResultDto>.Success(new SyncDeleteResultDto
+        {
+            Success = successIds,
+            Rejected = rejected
+        });
+    }
+
+    #region 私有方法 - 元数据获取
+
+    private async Task<List<SyncMetadataDto>> GetHerbMetadataAsync()
+    {
+        var herbs = await _dbContext.Herbs
+            .AsNoTracking()
+            .ToListAsync();
+
+        return herbs.Select(h => new SyncMetadataDto
+        {
+            EntityId = h.Id,
+            Checksum = ChecksumHelper.ComputeHerbChecksum(h),
+            LastModifiedAt = h.UpdatedAt ?? h.CreatedAt,
+            IsDeleted = h.IsDeleted
+        }).ToList();
+    }
+
+    private async Task<List<SyncMetadataDto>> GetPatientMetadataAsync()
+    {
+        var patients = await _dbContext.Patients
+            .AsNoTracking()
+            .ToListAsync();
+
+        return patients.Select(p => new SyncMetadataDto
+        {
+            EntityId = p.Id,
+            Checksum = ChecksumHelper.ComputePatientChecksum(p),
+            LastModifiedAt = p.UpdatedAt ?? p.CreatedAt,
+            IsDeleted = p.IsDeleted
+        }).ToList();
+    }
+
+    private async Task<List<SyncMetadataDto>> GetFormulaMetadataAsync()
+    {
+        var formulas = await _dbContext.Formulas
+            .Include(f => f.Herbs)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return formulas.Select(f => new SyncMetadataDto
+        {
+            EntityId = f.Id,
+            Checksum = ChecksumHelper.ComputeFormulaChecksum(f),
+            LastModifiedAt = f.UpdatedAt ?? f.CreatedAt,
+            IsDeleted = f.IsDeleted
+        }).ToList();
+    }
+
+    #endregion
+
+    #region 私有方法 - 上传处理
+
+    private async Task<SyncUploadItemResult> UploadHerbAsync(JsonElement json, bool overwriteConflicts)
+    {
+        try
+        {
+            var herb = json.Deserialize<Herb>(JsonOptions);
+            if (herb == null)
+            {
+                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON 反序列化失败" };
+            }
+
+            var existing = await _dbContext.Herbs.FindAsync(herb.Id);
+            if (existing != null)
+            {
+                if (!overwriteConflicts)
+                {
+                    return new SyncUploadItemResult
+                    {
+                        EntityId = herb.Id,
+                        Success = false,
+                        IsConflict = true,
+                        ErrorMessage = "服务器已存在该数据"
+                    };
+                }
+
+                // 覆盖更新
+                _dbContext.Entry(existing).CurrentValues.SetValues(herb);
+            }
+            else
+            {
+                _dbContext.Herbs.Add(herb);
+            }
+
+            return new SyncUploadItemResult { EntityId = herb.Id, Success = true };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "上传 Herb 失败");
+            return new SyncUploadItemResult { Success = false, ErrorMessage = ex.Message };
+        }
+    }
+
+    private async Task<SyncUploadItemResult> UploadPatientAsync(JsonElement json, bool overwriteConflicts)
+    {
+        try
+        {
+            var patient = json.Deserialize<Patient>(JsonOptions);
+            if (patient == null)
+            {
+                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON 反序列化失败" };
+            }
+
+            var existing = await _dbContext.Patients.FindAsync(patient.Id);
+            if (existing != null)
+            {
+                if (!overwriteConflicts)
+                {
+                    return new SyncUploadItemResult
+                    {
+                        EntityId = patient.Id,
+                        Success = false,
+                        IsConflict = true,
+                        ErrorMessage = "服务器已存在该数据"
+                    };
+                }
+
+                _dbContext.Entry(existing).CurrentValues.SetValues(patient);
+            }
+            else
+            {
+                _dbContext.Patients.Add(patient);
+            }
+
+            return new SyncUploadItemResult { EntityId = patient.Id, Success = true };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "上传 Patient 失败");
+            return new SyncUploadItemResult { Success = false, ErrorMessage = ex.Message };
+        }
+    }
+
+    private async Task<SyncUploadItemResult> UploadFormulaAsync(JsonElement json, bool overwriteConflicts)
+    {
+        try
+        {
+            var formula = json.Deserialize<Formula>(JsonOptions);
+            if (formula == null)
+            {
+                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON 反序列化失败" };
+            }
+
+            var existing = await _dbContext.Formulas
+                .Include(f => f.Herbs)
+                .FirstOrDefaultAsync(f => f.Id == formula.Id);
+
+            if (existing != null)
+            {
+                if (!overwriteConflicts)
+                {
+                    return new SyncUploadItemResult
+                    {
+                        EntityId = formula.Id,
+                        Success = false,
+                        IsConflict = true,
+                        ErrorMessage = "服务器已存在该数据"
+                    };
+                }
+
+                // 删除旧的 Herbs 并添加新的
+                _dbContext.RemoveRange(existing.Herbs);
+                _dbContext.Entry(existing).CurrentValues.SetValues(formula);
+                if (formula.Herbs != null)
+                {
+                    foreach (var herb in formula.Herbs)
+                    {
+                        herb.FormulaId = formula.Id;
+                        _dbContext.Add(herb);
+                    }
+                }
+            }
+            else
+            {
+                _dbContext.Formulas.Add(formula);
+            }
+
+            return new SyncUploadItemResult { EntityId = formula.Id, Success = true };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "上传 Formula 失败");
+            return new SyncUploadItemResult { Success = false, ErrorMessage = ex.Message };
+        }
+    }
+
+    #endregion
+
+    #region 私有方法 - 下载处理
+
+    private async Task<JsonElement?> GetHerbJsonAsync(Guid id)
+    {
+        var herb = await _dbContext.Herbs.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id);
+        if (herb == null) return null;
+
+        var json = JsonSerializer.Serialize(herb, JsonOptions);
+        return JsonDocument.Parse(json).RootElement.Clone();
+    }
+
+    private async Task<JsonElement?> GetPatientJsonAsync(Guid id)
+    {
+        var patient = await _dbContext.Patients.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+        if (patient == null) return null;
+
+        var json = JsonSerializer.Serialize(patient, JsonOptions);
+        return JsonDocument.Parse(json).RootElement.Clone();
+    }
+
+    private async Task<JsonElement?> GetFormulaJsonAsync(Guid id)
+    {
+        var formula = await _dbContext.Formulas
+            .Include(f => f.Herbs)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(f => f.Id == id);
+        if (formula == null) return null;
+
+        var json = JsonSerializer.Serialize(formula, JsonOptions);
+        return JsonDocument.Parse(json).RootElement.Clone();
+    }
+
+    #endregion
+
+    #region 私有方法 - 删除检查
+
+    private async Task<(bool canDelete, string? reason)> CanDeleteHerbAsync(Guid herbId)
+    {
+        var result = await _herbService.CheckReferenceAsync(herbId);
+        if (!result.IsSuccess || result.Data == null)
+        {
+            return (false, "无法检查引用关系");
+        }
+
+        if (result.Data.HasReferences)
+        {
+            return (false, $"药材被 {result.Data.ReferenceCount} 个处方引用，请先禁用");
+        }
+
+        return (true, null);
+    }
+
+    private async Task<(bool canDelete, string? reason)> CanDeletePatientAsync(Guid patientId)
+    {
+        var result = await _patientService.CheckReferenceAsync(patientId);
+        if (!result.IsSuccess || result.Data == null)
+        {
+            return (false, "无法检查引用关系");
+        }
+
+        if (result.Data.HasReferences)
+        {
+            return (false, $"患者有 {result.Data.ReferenceCount} 条医案记录，请先禁用");
+        }
+
+        return (true, null);
+    }
+
+    private async Task<bool> SoftDeleteEntityAsync(string entityType, Guid entityId)
+    {
+        switch (entityType)
+        {
+            case "Herb":
+                var herb = await _dbContext.Herbs.FindAsync(entityId);
+                if (herb == null || herb.IsDeleted) return false;
+                herb.IsDeleted = true;
+                return true;
+
+            case "Patient":
+                var patient = await _dbContext.Patients.FindAsync(entityId);
+                if (patient == null || patient.IsDeleted) return false;
+                patient.IsDeleted = true;
+                return true;
+
+            case "Formula":
+                var formula = await _dbContext.Formulas.FindAsync(entityId);
+                if (formula == null || formula.IsDeleted) return false;
+                formula.IsDeleted = true;
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    #endregion
+
+    #region 辅助方法
+
+    private bool ValidateEntityType(string entityType, out string? errorMessage)
+    {
+        if (!SupportedTypes.Contains(entityType))
+        {
+            _logger.LogWarning("不支持的实体类型: {EntityType}", entityType);
+            errorMessage = $"不支持的实体类型: {entityType}，支持的类型: {string.Join(", ", SupportedTypes)}";
+            return false;
+        }
+
+        errorMessage = null;
+        return true;
+    }
+
+    #endregion
+}

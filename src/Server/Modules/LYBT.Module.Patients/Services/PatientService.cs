@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using LYBT.Entities.Patients;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Mapping;
@@ -8,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 
@@ -24,15 +26,18 @@ namespace LYBT.Module.Patients.Services
         private readonly IPatientRepository _repository;
         private readonly IValidator<PatientInputDto> _validator;
         private readonly PatientMapper _mapper = new();
+        private readonly AppDbContext _dbContext;
 
         public PatientService(
             IPatientRepository repository,
             ILogger<PatientService> logger,
-            IValidator<PatientInputDto> validator)
+            IValidator<PatientInputDto> validator,
+            AppDbContext dbContext)
             : base(logger)
         {
             _repository = repository;
             _validator = validator;
+            _dbContext = dbContext;
         }
 
         public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -700,6 +705,86 @@ namespace LYBT.Module.Patients.Services
             result.Message = $"批量删除完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
 
             return Result<BatchOperationResultDto>.Success(result);
+        }
+
+        // ========== OpenSpec: implement-data-sync - 引用检查 ==========
+
+        /// <summary>
+        /// 检查患者是否被医案引用
+        /// </summary>
+        public async Task<Result<PatientReferenceCheckDto>> CheckReferenceAsync(Guid patientId)
+        {
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理
+            var patient = await _repository.GetByIdAsync(patientId);
+            if (patient == null)
+            {
+                return Result<PatientReferenceCheckDto>.Failure("患者不存在");
+            }
+
+            // 查询医案引用计数
+            var referenceCount = await _dbContext.MedicalCases
+                .CountAsync(mc => mc.PatientId == patientId && !mc.IsDeleted);
+
+            // 获取最近5条引用记录
+            var recentMedicalCases = await _dbContext.MedicalCases
+                .Where(mc => mc.PatientId == patientId && !mc.IsDeleted)
+                .OrderByDescending(mc => mc.CreatedAt)
+                .Take(5)
+                .Select(mc => new MedicalCaseReferenceDto
+                {
+                    MedicalCaseId = mc.Id,
+                    CaseNumber = mc.CaseNumber ?? string.Empty,
+                    CreatedAt = mc.CreatedAt,
+                    Status = mc.CaseStatus.ToString()
+                })
+                .ToListAsync();
+
+            var hasReferences = referenceCount > 0;
+            var result = new PatientReferenceCheckDto
+            {
+                PatientId = patientId,
+                PatientName = patient.Name,
+                HasReferences = hasReferences,
+                ReferenceCount = referenceCount,
+                CanDelete = true, // 支持软删除，始终可删除
+                DeleteWarning = hasReferences ? $"该患者已有 {referenceCount} 个医案记录，删除后将标记为已删除状态" : null,
+                RecentMedicalCases = recentMedicalCases
+            };
+
+            _logger.LogInformation("[SVC] Patient.CheckReference completed - PatientName={PatientName} HasReferences={HasReferences} ReferenceCount={ReferenceCount}",
+                patient.Name, hasReferences, referenceCount);
+
+            return Result<PatientReferenceCheckDto>.Success(result);
+        }
+
+        /// <summary>
+        /// 批量检查患者引用关系
+        /// </summary>
+        public async Task<Result<List<PatientReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> patientIds)
+        {
+            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理
+            const int MAX_CHECK_SIZE = 100;
+
+            // 批量检查数量限制
+            if (patientIds.Count > MAX_CHECK_SIZE)
+            {
+                return Result<List<PatientReferenceCheckDto>>.Failure($"批量检查最多支持{MAX_CHECK_SIZE}条记录");
+            }
+
+            var results = new List<PatientReferenceCheckDto>();
+
+            foreach (var patientId in patientIds)
+            {
+                var checkResult = await CheckReferenceAsync(patientId);
+                if (checkResult.IsSuccess && checkResult.Data != null)
+                {
+                    results.Add(checkResult.Data);
+                }
+            }
+
+            _logger.LogInformation("[SVC] Patient.BatchCheckReference completed - Count={Count}", results.Count);
+
+            return Result<List<PatientReferenceCheckDto>>.Success(results);
         }
     }
 }

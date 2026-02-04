@@ -108,5 +108,21 @@ namespace LYBT.Module.Patients.Interfaces
         /// 批量删除患者
         /// </summary>
         Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
+
+        // ========== OpenSpec: implement-data-sync - 引用检查 ==========
+
+        /// <summary>
+        /// 检查患者是否被医案引用
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>引用检查结果</returns>
+        Task<Result<PatientReferenceCheckDto>> CheckReferenceAsync(Guid patientId);
+
+        /// <summary>
+        /// 批量检查患者引用关系
+        /// </summary>
+        /// <param name="patientIds">患者ID列表</param>
+        /// <returns>引用检查结果列表</returns>
+        Task<Result<List<PatientReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> patientIds);
     }
 }
