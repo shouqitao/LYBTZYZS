@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using BCrypt.Net;
 using FluentAssertions;
 using FluentValidation;
 using LYBT.Entities.Users;
@@ -523,6 +524,449 @@ namespace LYBT.Module.Users.Tests.Services
                 () => _userService.DeleteAsync(userId));
 
             thrownException.Message.Should().Be("数据库错误");
+        }
+
+        #endregion
+
+        #region ResetPasswordAsync 测试
+
+        [Fact]
+        public async Task ResetPasswordAsync_WithExistingUser_ShouldResetPassword()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = CreateTestUser(userId);
+            var request = new ResetPasswordRequestDto();
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.ResetPasswordAsync(userId, request);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.TemporaryPassword.Should().NotBeNullOrEmpty();
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_WithNonExistingUser_ShouldReturnFailure()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var request = new ResetPasswordRequestDto();
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync((User?)null);
+
+            // Act
+            var result = await _userService.ResetPasswordAsync(userId, request);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户不存在");
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+        }
+
+        #endregion
+
+        #region ChangePasswordAsync 测试
+
+        [Fact]
+        public async Task ChangePasswordAsync_WithValidOldPassword_ShouldChangePassword()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var oldPassword = "OldPass@123";
+            var newPassword = "NewPass@456";
+            var user = CreateTestUser(userId);
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(oldPassword);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.ChangePasswordAsync(userId, oldPassword, newPassword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_WithInvalidOldPassword_ShouldReturnFailure()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var oldPassword = "WrongPass@123";
+            var newPassword = "NewPass@456";
+            var user = CreateTestUser(userId);
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword("CorrectPass@123");
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.ChangePasswordAsync(userId, oldPassword, newPassword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("原密码");
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_WithNonExistingUser_ShouldReturnFailure()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync((User?)null);
+
+            // Act
+            var result = await _userService.ChangePasswordAsync(userId, "old", "new");
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户不存在");
+        }
+
+        #endregion
+
+        #region ChangeProfileAsync 测试
+
+        [Fact]
+        public async Task ChangeProfileAsync_WithValidInput_ShouldUpdateProfile()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = CreateTestUser(userId);
+            var dto = new ChangeProfileDto
+            {
+                RealName = "更新的名字",
+                PhoneNumber = "13900139000"
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.ChangeProfileAsync(userId, dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ChangeProfileAsync_WithNonExistingUser_ShouldReturnFailure()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var dto = new ChangeProfileDto { RealName = "Test" };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync((User?)null);
+
+            // Act
+            var result = await _userService.ChangeProfileAsync(userId, dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户不存在");
+        }
+
+        #endregion
+
+        #region ToggleStatusAsync 测试
+
+        [Fact]
+        public async Task ToggleStatusAsync_EnabledToDisabled_ShouldToggle()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = CreateTestUser(userId);
+            user.Status = CommonStatus.Enabled;
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.ToggleStatusAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Status.Should().Be(CommonStatus.Disabled);
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ToggleStatusAsync_DisabledToEnabled_ShouldToggle()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = CreateTestUser(userId);
+            user.Status = CommonStatus.Disabled;
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.ToggleStatusAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Status.Should().Be(CommonStatus.Enabled);
+        }
+
+        [Fact]
+        public async Task ToggleStatusAsync_WithNonExistingUser_ShouldReturnFailure()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync((User?)null);
+
+            // Act
+            var result = await _userService.ToggleStatusAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户不存在");
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+        }
+
+        #endregion
+
+        #region RestoreAsync 测试
+
+        [Fact]
+        public async Task RestoreAsync_WithDeletedUser_ShouldRestore()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = CreateTestUser(userId);
+            user.IsDeleted = true;
+
+            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(userId)).ReturnsAsync(user);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.RestoreAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            user.IsDeleted.Should().BeFalse();
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RestoreAsync_WithNonDeletedUser_ShouldReturnFailure()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = CreateTestUser(userId);
+            user.IsDeleted = false;
+
+            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(userId)).ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.RestoreAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("未被删除");
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task RestoreAsync_WithNonExistingUser_ShouldReturnFailure()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(userId)).ReturnsAsync((User?)null);
+
+            // Act
+            var result = await _userService.RestoreAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户不存在");
+        }
+
+        #endregion
+
+        #region BatchDeleteAsync 测试
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithValidIds_ShouldDeleteAll()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+
+            var user1 = CreateTestUser(id1);
+            var user2 = CreateTestUser(id2);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(user1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(user2);
+            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .ReturnsAsync(new List<User> { new User(), new User(), new User() }); // 多于要删除的数量
+            _repositoryMock.Setup(x => x.DeleteAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+
+            // Act
+            var result = await _userService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(2);
+            result.Data!.FailureCount.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithEmptyList_ShouldReturnFailure()
+        {
+            // Arrange
+            var ids = new List<Guid>();
+
+            // Act
+            var result = await _userService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("至少选择一个");
+        }
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithSomeNonExistent_ShouldReportPartial()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+
+            var user1 = CreateTestUser(id1);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(user1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((User?)null);
+            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .ReturnsAsync(new List<User> { new User(), new User() });
+            _repositoryMock.Setup(x => x.DeleteAsync(id1)).ReturnsAsync(true);
+
+            // Act
+            var result = await _userService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(1);
+            result.Data!.FailureCount.Should().Be(1);
+        }
+
+        #endregion
+
+        #region BatchUpdateStatusAsync 测试
+
+        [Fact]
+        public async Task BatchUpdateStatusAsync_WithValidIds_ShouldUpdateAll()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+            var targetStatus = CommonStatus.Disabled;
+
+            var user1 = CreateTestUser(id1);
+            var user2 = CreateTestUser(id2);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(user1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(user2);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
+
+            // Act
+            var result = await _userService.BatchUpdateStatusAsync(ids, targetStatus);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(2);
+            result.Data!.FailureCount.Should().Be(0);
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task BatchUpdateStatusAsync_WithEmptyList_ShouldReturnEmptyResult()
+        {
+            // Arrange
+            var ids = new List<Guid>();
+            var targetStatus = CommonStatus.Disabled;
+
+            _repositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
+
+            // Act
+            var result = await _userService.BatchUpdateStatusAsync(ids, targetStatus);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(0);
+            result.Data!.FailureCount.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task BatchUpdateStatusAsync_WithMixedResults_ShouldReportPartial()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+            var targetStatus = CommonStatus.Disabled;
+
+            var user1 = CreateTestUser(id1);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(user1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((User?)null);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
+
+            // Act
+            var result = await _userService.BatchUpdateStatusAsync(ids, targetStatus);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(1);
+            result.Data!.FailureCount.Should().Be(1);
         }
 
         #endregion

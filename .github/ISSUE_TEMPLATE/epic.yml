@@ -47,7 +47,7 @@ body:
         - [ ] 功能点2
         
         **排除项** (明确不做):
-        - ❌ 超出MVP的功能X
+        - ❌ 超出当前版本范围的功能X
         - ❌ 依赖外部系统Y
     validations:
       required: true
@@ -168,7 +168,7 @@ body:
           required: true
         - label: 异步方法正确使用async/await
           required: true
-        - label: 符合MVP范围,无私自扩展功能
+        - label: 符合当前版本范围,无私自扩展功能
           required: true
 
   - type: markdown

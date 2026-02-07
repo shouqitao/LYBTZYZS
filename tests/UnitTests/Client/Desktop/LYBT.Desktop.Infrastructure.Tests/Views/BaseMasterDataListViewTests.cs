@@ -10,6 +10,7 @@ namespace LYBT.Desktop.Infrastructure.Tests.Views;
 /// BaseMasterDataListView控件测试
 /// Issue #2153 - Task 1.3: 控件层单元测试
 /// </summary>
+[Trait("Category", "WPF")]
 public class BaseMasterDataListViewTests
 {
     /// <summary>

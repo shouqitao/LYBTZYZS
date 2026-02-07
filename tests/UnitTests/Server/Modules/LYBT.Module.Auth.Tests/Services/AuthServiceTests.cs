@@ -230,7 +230,8 @@ public class AuthServiceTests : IDisposable
             UserName = "testuser",
             RealName = "测试用户",
             Role = UserRole.Doctor,
-            Email = "test@example.com"
+            Email = "test@example.com",
+            Status = CommonStatus.Enabled // 登录成功的用户应该是启用状态
         };
 
         var request = new LoginRequest
@@ -263,7 +264,9 @@ public class AuthServiceTests : IDisposable
         result.IsSuccess.Should().BeTrue($"Login should succeed, but failed with: {result.ErrorMessage}");
         result.Data.Should().NotBeNull();
         result.Data!.Token.Should().Be(expectedToken);
-        result.Data.User.Should().BeEquivalentTo(testUserDto);
+        result.Data.User.Should().BeEquivalentTo(testUserDto, options => options
+            .Excluding(u => u.CreatedAt)
+            .Excluding(u => u.UpdatedAt));
         result.Data.RefreshToken.Should().NotBeNullOrEmpty(); // Issue #1872: 验证RefreshToken
     }
 

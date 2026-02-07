@@ -47,7 +47,6 @@ namespace LYBT.Module.Formulas.Tests.Services
             _formulaService = new FormulaService(
                 _repositoryMock.Object,
                 _crossModuleQueryMock.Object,
-                Mapper,
                 _loggerMock.Object);
         }
 
@@ -564,7 +563,6 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
-                Mapper,
                 _loggerMock.Object);
 
             _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
@@ -648,7 +646,6 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
-                Mapper,
                 _loggerMock.Object);
 
             _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
@@ -684,7 +681,6 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
-                Mapper,
                 _loggerMock.Object);
 
             // Act
@@ -728,7 +724,6 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
-                Mapper,
                 _loggerMock.Object);
 
             // Act
@@ -773,7 +768,6 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
-                Mapper,
                 _loggerMock.Object);
 
             // Act
@@ -817,7 +811,6 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
-                Mapper,
                 _loggerMock.Object);
 
             // Act
@@ -831,6 +824,356 @@ namespace LYBT.Module.Formulas.Tests.Services
             // 验证未调用更新操作（因为已校验，应该直接返回）
             _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
             _repositoryMock.Verify(x => x.SaveChangesAsync(), Times.Never);
+        }
+
+        #endregion
+
+        #region 状态切换测试
+
+        [Fact]
+        public async Task ToggleStatusAsync_EnabledToDisabled_ShouldToggle()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+            var formula = new FormulaEntity
+            {
+                Id = formulaId,
+                Name = "测试方剂",
+                Effect = "测试功效",
+                Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+                .ReturnsAsync(formula);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
+                .ReturnsAsync((FormulaEntity f) => f);
+
+            // Act
+            var result = await _formulaService.ToggleStatusAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Disabled);
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ToggleStatusAsync_DisabledToEnabled_ShouldToggle()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+            var formula = new FormulaEntity
+            {
+                Id = formulaId,
+                Name = "测试方剂",
+                Effect = "测试功效",
+                Status = LYBT.Shared.Models.Enums.CommonStatus.Disabled
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+                .ReturnsAsync(formula);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
+                .ReturnsAsync((FormulaEntity f) => f);
+
+            // Act
+            var result = await _formulaService.ToggleStatusAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Enabled);
+        }
+
+        [Fact]
+        public async Task ToggleStatusAsync_WithNonExistentId_ShouldReturnFailure()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+                .ReturnsAsync((FormulaEntity?)null);
+
+            // Act
+            var result = await _formulaService.ToggleStatusAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("验方不存在");
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
+        }
+
+        #endregion
+
+        #region 恢复测试
+
+        [Fact]
+        public async Task RestoreAsync_WithDeletedFormula_ShouldRestore()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+            var formula = new FormulaEntity
+            {
+                Id = formulaId,
+                Name = "已删除方剂",
+                Effect = "测试功效",
+                IsDeleted = true
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(formulaId))
+                .ReturnsAsync(formula);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
+                .ReturnsAsync((FormulaEntity f) => f);
+
+            // Act
+            var result = await _formulaService.RestoreAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            formula.IsDeleted.Should().BeFalse();
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RestoreAsync_WithNonDeletedFormula_ShouldReturnFailure()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+            var formula = new FormulaEntity
+            {
+                Id = formulaId,
+                Name = "未删除方剂",
+                Effect = "测试功效",
+                IsDeleted = false
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(formulaId))
+                .ReturnsAsync(formula);
+
+            // Act
+            var result = await _formulaService.RestoreAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("未被删除");
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task RestoreAsync_WithNonExistentId_ShouldReturnFailure()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(formulaId))
+                .ReturnsAsync((FormulaEntity?)null);
+
+            // Act
+            var result = await _formulaService.RestoreAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("验方不存在");
+        }
+
+        #endregion
+
+        #region 批量删除测试
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithValidIds_ShouldSoftDeleteAll()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+
+            var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1" };
+            var formula2 = new FormulaEntity { Id = id2, Name = "方剂2", Effect = "功效2" };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(formula2);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
+                .ReturnsAsync((FormulaEntity f) => f);
+
+            // Act
+            var result = await _formulaService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(2);
+            result.Data.FailureCount.Should().Be(0);
+
+            // 验证使用软删除
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithSomeNonExistent_ShouldReportPartial()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+
+            var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1" };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((FormulaEntity?)null);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
+                .ReturnsAsync((FormulaEntity f) => f);
+
+            // Act
+            var result = await _formulaService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(1);
+            result.Data.FailureCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithEmptyList_ShouldReturnEmptyResult()
+        {
+            // Arrange
+            var ids = new List<Guid>();
+
+            // Act
+            var result = await _formulaService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.TotalCount.Should().Be(0);
+            result.Data.SuccessCount.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithException_ShouldIsolateErrors()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+
+            var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1" };
+            var formula2 = new FormulaEntity { Id = id2, Name = "方剂2", Effect = "功效2" };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(formula2);
+
+            // 第一个成功，第二个抛异常
+            _repositoryMock.SetupSequence(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
+                .ReturnsAsync(formula1)
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _formulaService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(1);
+            result.Data.FailureCount.Should().Be(1);
+        }
+
+        #endregion
+
+        #region 批量更新状态测试
+
+        [Fact]
+        public async Task BatchUpdateStatusAsync_WithValidIds_ShouldUpdateAll()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+            var targetStatus = LYBT.Shared.Models.Enums.CommonStatus.Disabled;
+
+            var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1", Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled };
+            var formula2 = new FormulaEntity { Id = id2, Name = "方剂2", Effect = "功效2", Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(formula2);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
+                .ReturnsAsync((FormulaEntity f) => f);
+            _repositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
+
+            // Act
+            var result = await _formulaService.BatchUpdateStatusAsync(ids, targetStatus);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(2);
+            result.Data.FailureCount.Should().Be(0);
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task BatchUpdateStatusAsync_WithMixedResults_ShouldReportPartial()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+            var targetStatus = LYBT.Shared.Models.Enums.CommonStatus.Disabled;
+
+            var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1", Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((FormulaEntity?)null);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
+                .ReturnsAsync((FormulaEntity f) => f);
+            _repositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
+
+            // Act
+            var result = await _formulaService.BatchUpdateStatusAsync(ids, targetStatus);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(1);
+            result.Data.FailureCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task BatchUpdateStatusAsync_WithEmptyList_ShouldReturnEmptyResult()
+        {
+            // Arrange
+            var ids = new List<Guid>();
+            var targetStatus = LYBT.Shared.Models.Enums.CommonStatus.Disabled;
+
+            _repositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
+
+            // Act
+            var result = await _formulaService.BatchUpdateStatusAsync(ids, targetStatus);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.TotalCount.Should().Be(0);
+            result.Data.SuccessCount.Should().Be(0);
         }
 
         #endregion

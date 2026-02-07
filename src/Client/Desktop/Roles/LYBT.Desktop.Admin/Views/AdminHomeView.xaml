@@ -102,6 +102,17 @@
                         <TextBlock Style="{StaticResource CardTitleStyle}" Text="系统设置" />
                     </StackPanel>
                 </Border>
+
+                <!--  卡片7: 数据同步  -->
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
+                    <Border.InputBindings>
+                        <MouseBinding Command="{Binding NavigateToSyncCommand}" Gesture="LeftClick" />
+                    </Border.InputBindings>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F504;" />
+                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="数据同步" />
+                    </StackPanel>
+                </Border>
             </UniformGrid>
         </StackPanel>
     </Grid>

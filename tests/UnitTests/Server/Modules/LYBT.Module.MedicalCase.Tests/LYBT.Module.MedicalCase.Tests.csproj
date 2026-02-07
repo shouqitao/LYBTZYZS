@@ -19,6 +19,7 @@
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="AutoMapper" />
     <!-- SQLite InMemory由Directory.Build.props提供 -->
   </ItemGroup>
 

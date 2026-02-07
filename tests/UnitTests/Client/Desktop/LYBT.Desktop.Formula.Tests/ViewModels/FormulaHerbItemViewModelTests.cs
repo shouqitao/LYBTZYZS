@@ -15,9 +15,9 @@ public class FormulaHerbItemViewModelTests
 {
     #region Test Data
 
-    private static HerbDto CreateTestHerb(decimal price = 0.5m)
+    private static HerbListDto CreateTestHerb(decimal price = 0.5m)
     {
-        return new HerbDto
+        return new HerbListDto
         {
             Id = Guid.NewGuid(),
             Name = "当归",
@@ -27,9 +27,9 @@ public class FormulaHerbItemViewModelTests
         };
     }
 
-    private static ObservableCollection<HerbDto> CreateTestHerbs()
+    private static ObservableCollection<HerbListDto> CreateTestHerbs()
     {
-        return new ObservableCollection<HerbDto>
+        return new ObservableCollection<HerbListDto>
         {
             new() { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g", Price = 0.5m },
             new() { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Unit = "g", Price = 0.8m },
@@ -77,7 +77,7 @@ public class FormulaHerbItemViewModelTests
     [InlineData(1)]
     [InlineData(10)]
     [InlineData(100)]
-    public void UnitPrice_WithAnyDosage_ShouldStillBeZero(decimal dosage)
+    public void UnitPrice_WithAnyDosage_ShouldStillBeZero(int dosage)
     {
         // Arrange
         var viewModel = new FormulaHerbItemViewModel();
@@ -209,13 +209,13 @@ public class FormulaHerbItemViewModelTests
     {
         // Arrange
         var viewModel = new FormulaHerbItemViewModel();
-        viewModel.Dosage = 15m;
+        viewModel.Dosage = 15;
 
         // Act
         var dto = viewModel.ToDto();
 
         // Assert
-        dto.Quantity.Should().Be(15m, "因为Dosage应映射到Quantity");
+        dto.Dosage.Should().Be(15, "因为Dosage应映射到Quantity");
     }
 
     /// <summary>
@@ -294,16 +294,17 @@ public class FormulaHerbItemViewModelTests
     }
 
     /// <summary>
-    /// 测试：默认Unit为g
+    /// 测试：默认Unit为空字符串（由SelectedHerb赋值时从药材数据获取）
+    /// OpenSpec: unify-herb-list-controls
     /// </summary>
     [Fact]
-    public void Unit_ByDefault_ShouldBeG()
+    public void Unit_ByDefault_ShouldBeEmpty()
     {
         // Arrange & Act
         var viewModel = new FormulaHerbItemViewModel();
 
         // Assert
-        viewModel.Unit.Should().Be("g", "因为默认单位应为克(g)");
+        viewModel.Unit.Should().BeEmpty("因为默认Unit为空，由SelectedHerb赋值时从药材数据获取");
     }
 
     #endregion

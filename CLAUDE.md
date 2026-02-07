@@ -21,7 +21,7 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 **项目**: 凌隐宝堂中医诊所管理系统
 **技术栈**: .NET 8 + WPF + Prism + EF Core + SQL Server
-**阶段**: 架构功能完善期
+**阶段**: 正式版开发阶段
 
 ---
 

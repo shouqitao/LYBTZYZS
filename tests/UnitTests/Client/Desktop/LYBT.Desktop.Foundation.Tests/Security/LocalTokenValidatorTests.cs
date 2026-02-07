@@ -28,16 +28,17 @@ public class LocalTokenValidatorTests
     {
         _logger = Substitute.For<ILogger<LocalTokenValidator>>();
 
-        // Mock IConfiguration
-        _configuration = Substitute.For<IConfiguration>();
-        _configuration["Lybt:Jwt:SecretKey"].Returns(SecretKey);
-        _configuration["Lybt:Jwt:Issuer"].Returns(Issuer);
-        _configuration["Lybt:Jwt:Audience"].Returns(Audience);
-
-        // 正确配置 GetValue 方法 - 使用 GetSection mock
-        var clockSkewSection = Substitute.For<IConfigurationSection>();
-        clockSkewSection.Value.Returns("300");
-        _configuration.GetSection("Lybt:Jwt:ClockSkewSeconds").Returns(clockSkewSection);
+        // 使用内存配置，支持 GetSection().Bind()
+        // JwtOptions.SectionName = "Jwt"
+        var configurationBuilder = new ConfigurationBuilder();
+        configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Jwt:SecretKey"] = SecretKey,
+            ["Jwt:Issuer"] = Issuer,
+            ["Jwt:Audience"] = Audience,
+            ["Jwt:ClockSkewSeconds"] = "300"
+        });
+        _configuration = configurationBuilder.Build();
 
         _validator = new LocalTokenValidator(_configuration, _logger);
     }

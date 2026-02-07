@@ -117,7 +117,8 @@ public class LocalFormulaDataSource : IFormulaDataSource
         _context.Entry(existing).CurrentValues.SetValues(entity);
 
         // 更新药材项（删除旧的，添加新的）
-        _context.FormulaHerbItems.RemoveRange(existing.Herbs);
+        // 注意：必须先 ToList() 避免迭代时修改集合
+        _context.FormulaHerbItems.RemoveRange(existing.Herbs.ToList());
 
         foreach (var herb in entity.Herbs)
         {

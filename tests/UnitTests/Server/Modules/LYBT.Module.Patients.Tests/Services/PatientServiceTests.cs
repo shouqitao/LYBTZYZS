@@ -582,6 +582,262 @@ namespace LYBT.Module.Patients.Tests.Services
 
         #endregion
 
+        #region RestoreAsync 测试
+
+        [Fact]
+        public async Task RestoreAsync_WithDeletedPatient_ShouldRestore()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var patient = CreateTestPatient(patientId);
+            patient.IsDeleted = true;
+
+            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(patientId)).ReturnsAsync(patient);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Patient>())).ReturnsAsync(patient);
+
+            // Act
+            var result = await _patientService.RestoreAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            patient.IsDeleted.Should().BeFalse();
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RestoreAsync_WithNonDeletedPatient_ShouldReturnFailure()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var patient = CreateTestPatient(patientId);
+            patient.IsDeleted = false;
+
+            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(patientId)).ReturnsAsync(patient);
+
+            // Act
+            var result = await _patientService.RestoreAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("未被删除");
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task RestoreAsync_WithNonExistingPatient_ShouldReturnFailure()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(patientId)).ReturnsAsync((Patient?)null);
+
+            // Act
+            var result = await _patientService.RestoreAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("患者不存在");
+        }
+
+        #endregion
+
+        #region BatchDeleteAsync 测试
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithValidIds_ShouldSoftDeleteAll()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+
+            var patient1 = CreateTestPatient(id1);
+            var patient2 = CreateTestPatient(id2);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(patient1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(patient2);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Patient>()))
+                .ReturnsAsync((Patient p) => p);
+
+            // Act
+            var result = await _patientService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(2);
+            result.Data!.FailureCount.Should().Be(0);
+
+            // 验证使用软删除
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithEmptyList_ShouldReturnEmptyResult()
+        {
+            // Arrange
+            var ids = new List<Guid>();
+
+            // Act
+            var result = await _patientService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.TotalCount.Should().Be(0);
+            result.Data!.SuccessCount.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithSomeNonExistent_ShouldReportPartial()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+
+            var patient1 = CreateTestPatient(id1);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(patient1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((Patient?)null);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Patient>()))
+                .ReturnsAsync((Patient p) => p);
+
+            // Act
+            var result = await _patientService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(1);
+            result.Data!.FailureCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task BatchDeleteAsync_WithException_ShouldIsolateErrors()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+
+            var patient1 = CreateTestPatient(id1);
+            var patient2 = CreateTestPatient(id2);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(patient1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(patient2);
+
+            // 第一个成功，第二个抛异常
+            _repositoryMock.SetupSequence(x => x.UpdateAsync(It.IsAny<Patient>()))
+                .ReturnsAsync(patient1)
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _patientService.BatchDeleteAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Data.Should().NotBeNull();
+            result.Data!.SuccessCount.Should().Be(1);
+            result.Data!.FailureCount.Should().Be(1);
+        }
+
+        #endregion
+
+        #region CheckReferenceAsync 测试
+
+        [Fact]
+        public async Task CheckReferenceAsync_WithNoReferences_ShouldReturnFalse()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var patient = CreateTestPatient(patientId);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(patientId)).ReturnsAsync(patient);
+
+            // 模拟没有医案引用 - 通过DbContext查询
+            // 由于使用InMemory数据库，默认为空
+
+            // Act
+            var result = await _patientService.CheckReferenceAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.HasReferences.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task CheckReferenceAsync_WithNonExistingPatient_ShouldReturnFailure()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(patientId)).ReturnsAsync((Patient?)null);
+
+            // Act
+            var result = await _patientService.CheckReferenceAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("患者不存在");
+        }
+
+        #endregion
+
+        #region BatchCheckReferenceAsync 测试
+
+        [Fact]
+        public async Task BatchCheckReferenceAsync_WithValidIds_ShouldReturnAll()
+        {
+            // Arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var ids = new List<Guid> { id1, id2 };
+
+            var patient1 = CreateTestPatient(id1);
+            var patient2 = CreateTestPatient(id2);
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(patient1);
+            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(patient2);
+
+            // Act
+            var result = await _patientService.BatchCheckReferenceAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public async Task BatchCheckReferenceAsync_WithEmptyList_ShouldReturnEmpty()
+        {
+            // Arrange
+            var ids = new List<Guid>();
+
+            // Act
+            var result = await _patientService.BatchCheckReferenceAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Should().BeEmpty();
+        }
+
+        #endregion
+
         #region 辅助方法
 
         private Patient CreateTestPatient(Guid? id = null)

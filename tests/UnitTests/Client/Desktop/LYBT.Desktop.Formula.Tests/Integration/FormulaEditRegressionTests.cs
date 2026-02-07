@@ -15,9 +15,9 @@ public class FormulaEditRegressionTests
 {
     #region Test Data
 
-    private static ObservableCollection<HerbDto> CreateHerbCatalog()
+    private static ObservableCollection<HerbListDto> CreateHerbCatalog()
     {
-        return new ObservableCollection<HerbDto>
+        return new ObservableCollection<HerbListDto>
         {
             new() { Id = Guid.NewGuid(), Name = "当归", PinYinCode = "danggui", Unit = "g", Price = 0.5m },
             new() { Id = Guid.NewGuid(), Name = "黄芪", PinYinCode = "huangqi", Unit = "g", Price = 0.8m },
@@ -46,12 +46,12 @@ public class FormulaEditRegressionTests
         // Act - 添加多味药材（药材本身有价格）
         var item1 = new FormulaHerbItemViewModel { AllHerbs = herbCatalog };
         item1.SelectedHerb = herbCatalog.First(h => h.Name == "当归"); // Price = 0.5
-        item1.Dosage = 10m;
+        item1.Dosage = 10;
         herbItems.Add(item1);
 
         var item2 = new FormulaHerbItemViewModel { AllHerbs = herbCatalog };
         item2.SelectedHerb = herbCatalog.First(h => h.Name == "黄芪"); // Price = 0.8
-        item2.Dosage = 15m;
+        item2.Dosage = 15;
         herbItems.Add(item2);
 
         // Assert - 所有药材的UnitPrice都应为0
@@ -129,7 +129,7 @@ public class FormulaEditRegressionTests
         var targetHerb = herbCatalog.First(h => h.Name == "白术");
         var item = new FormulaHerbItemViewModel { AllHerbs = herbCatalog };
         item.SelectedHerb = targetHerb;
-        item.Dosage = 12m;
+        item.Dosage = 12;
         item.Remark = "炒用";
 
         // Act
@@ -138,7 +138,7 @@ public class FormulaEditRegressionTests
         // Assert
         dto.HerbId.Should().Be(targetHerb.Id);
         dto.HerbName.Should().Be("白术");
-        dto.Quantity.Should().Be(12m);
+        dto.Dosage.Should().Be(12);
         dto.Unit.Should().Be("g");
         dto.ProcessingMethod.Should().Be("炒用");
     }
@@ -163,28 +163,28 @@ public class FormulaEditRegressionTests
         var item1 = new FormulaHerbItemViewModel { AllHerbs = herbCatalog };
         item1.HerbName = "ds";
         item1.SelectedHerb = item1.FilteredHerbs.FirstOrDefault(h => h.Name == "党参");
-        item1.Dosage = 9m;
+        item1.Dosage = 9;
         formulaHerbs.Add(item1);
 
         // 白术 9g
         var item2 = new FormulaHerbItemViewModel { AllHerbs = herbCatalog };
         item2.HerbName = "bz";
         item2.SelectedHerb = item2.FilteredHerbs.FirstOrDefault(h => h.Name == "白术");
-        item2.Dosage = 9m;
+        item2.Dosage = 9;
         formulaHerbs.Add(item2);
 
         // 茯苓 9g
         var item3 = new FormulaHerbItemViewModel { AllHerbs = herbCatalog };
         item3.HerbName = "fl";
         item3.SelectedHerb = item3.FilteredHerbs.FirstOrDefault(h => h.Name == "茯苓");
-        item3.Dosage = 9m;
+        item3.Dosage = 9;
         formulaHerbs.Add(item3);
 
         // 甘草 6g（炙用）
         var item4 = new FormulaHerbItemViewModel { AllHerbs = herbCatalog };
         item4.HerbName = "gc";
         item4.SelectedHerb = item4.FilteredHerbs.FirstOrDefault(h => h.Name == "甘草");
-        item4.Dosage = 6m;
+        item4.Dosage = 6;
         item4.Remark = "炙用";
         formulaHerbs.Add(item4);
 
@@ -203,7 +203,7 @@ public class FormulaEditRegressionTests
         // Assert - 转换为DTO验证
         var dtos = formulaHerbs.Select(h => h.ToDto()).ToList();
         dtos.Should().HaveCount(4);
-        dtos.Sum(d => d.Quantity).Should().Be(33m, "总剂量为 9+9+9+6 = 33g");
+        dtos.Sum(d => d.Dosage).Should().Be(33, "总剂量为 9+9+9+6 = 33g");
     }
 
     /// <summary>
@@ -216,7 +216,7 @@ public class FormulaEditRegressionTests
         var herbCatalog = CreateHerbCatalog();
         var item = new FormulaHerbItemViewModel { AllHerbs = herbCatalog };
         item.SelectedHerb = herbCatalog.First(h => h.Name == "当归");
-        item.Dosage = 10m;
+        item.Dosage = 10;
         var originalHerbId = item.HerbId;
 
         // Act - 更换药材

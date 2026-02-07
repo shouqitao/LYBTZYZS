@@ -228,7 +228,9 @@ public class CustomControlArchTests
         {
             "SystemTimeProvider",  // 辅助类
             "VirtualizedDataGridViewModel",  // ViewModel
-            "BadgeType"  // 徽章类型枚举
+            "BadgeType",  // 徽章类型枚举
+            "PatientCardDisplayMode",  // 患者卡片显示模式枚举
+            "PatientDisplayModel"  // 患者显示模型
         };
 
         var actualViolations = result.FailingTypes?

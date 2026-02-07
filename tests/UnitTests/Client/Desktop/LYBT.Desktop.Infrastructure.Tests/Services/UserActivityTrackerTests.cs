@@ -13,13 +13,7 @@ namespace LYBT.Desktop.Infrastructure.Tests.Services;
 /// </summary>
 public class UserActivityTrackerTests
 {
-    /// <summary>
-    /// 静态构造函数：初始化WPF资源
-    /// </summary>
-    static UserActivityTrackerTests()
-    {
-        WpfTestInitializer.Initialize();
-    }
+
 
     private readonly ILogger<UserActivityTracker> _mockLogger;
     private readonly IApplicationTickService _mockTickService;
@@ -36,7 +30,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：构造函数传入null logger应该抛出异常
     /// </summary>
-    [StaFact]
+    [Fact]
     public void Constructor_WithNullLogger_ShouldThrowArgumentNullException()
     {
         // Arrange & Act
@@ -50,7 +44,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：构造函数传入null tickService应该抛出异常
     /// </summary>
-    [StaFact]
+    [Fact]
     public void Constructor_WithNullTickService_ShouldThrowArgumentNullException()
     {
         // Arrange & Act
@@ -64,7 +58,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：构造函数应该使用默认配置值
     /// </summary>
-    [StaFact]
+    [Fact]
     public void Constructor_ShouldUseDefaultConfigValues()
     {
         // Arrange & Act
@@ -78,7 +72,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：构造函数应该接受自定义配置值
     /// </summary>
-    [StaFact]
+    [Fact]
     public void Constructor_WithCustomConfig_ShouldAcceptValues()
     {
         // Arrange & Act
@@ -101,7 +95,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：StartTracking应该设置IsTracking为true
     /// </summary>
-    [StaFact]
+    [Fact]
     public void StartTracking_ShouldSetIsTrackingToTrue()
     {
         // Arrange
@@ -117,7 +111,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：StartTracking应该订阅TickService的Tick事件
     /// </summary>
-    [StaFact]
+    [Fact]
     public void StartTracking_ShouldSubscribeToTickEvent()
     {
         // Arrange
@@ -133,7 +127,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：重复调用StartTracking不应该重复订阅
     /// </summary>
-    [StaFact]
+    [Fact]
     public void StartTracking_WhenAlreadyTracking_ShouldNotSubscribeAgain()
     {
         // Arrange
@@ -151,7 +145,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：StartTracking应该重置LastActivityTime
     /// </summary>
-    [StaFact]
+    [Fact]
     public void StartTracking_ShouldResetLastActivityTime()
     {
         // Arrange
@@ -174,7 +168,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：StopTracking应该设置IsTracking为false
     /// </summary>
-    [StaFact]
+    [Fact]
     public void StopTracking_ShouldSetIsTrackingToFalse()
     {
         // Arrange
@@ -191,7 +185,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：StopTracking应该取消订阅TickService的Tick事件
     /// </summary>
-    [StaFact]
+    [Fact]
     public void StopTracking_ShouldUnsubscribeFromTickEvent()
     {
         // Arrange
@@ -209,7 +203,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：未启动时调用StopTracking不应该抛出异常
     /// </summary>
-    [StaFact]
+    [Fact]
     public void StopTracking_WhenNotTracking_ShouldNotThrow()
     {
         // Arrange
@@ -229,7 +223,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：ResetActivity应该更新LastActivityTime
     /// </summary>
-    [StaFact]
+    [Fact]
     public void ResetActivity_ShouldUpdateLastActivityTime()
     {
         // Arrange
@@ -252,7 +246,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：ResetActivity应该使IsUserActive返回true
     /// </summary>
-    [StaFact]
+    [Fact]
     public void ResetActivity_ShouldSetIsUserActiveToTrue()
     {
         // Arrange
@@ -272,7 +266,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：刚创建的tracker应该返回IsUserActive=true
     /// </summary>
-    [StaFact]
+    [Fact]
     public void IsUserActive_WhenJustCreated_ShouldReturnTrue()
     {
         // Arrange
@@ -289,7 +283,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：刚创建的tracker应该返回接近完整超时时间
     /// </summary>
-    [StaFact]
+    [Fact]
     public void TimeUntilInactive_WhenJustCreated_ShouldReturnNearFullTimeout()
     {
         // Arrange
@@ -307,7 +301,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：ResetActivity后应该返回接近完整超时时间
     /// </summary>
-    [StaFact]
+    [Fact]
     public void TimeUntilInactive_AfterResetActivity_ShouldReturnNearFullTimeout()
     {
         // Arrange
@@ -332,7 +326,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：Dispose应该停止追踪
     /// </summary>
-    [StaFact]
+    [Fact]
     public void Dispose_ShouldStopTracking()
     {
         // Arrange
@@ -349,7 +343,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：多次调用Dispose不应该抛出异常
     /// </summary>
-    [StaFact]
+    [Fact]
     public void Dispose_WhenCalledMultipleTimes_ShouldNotThrow()
     {
         // Arrange
@@ -370,7 +364,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：Dispose后调用StartTracking不应该启动追踪
     /// </summary>
-    [StaFact]
+    [Fact]
     public void StartTracking_AfterDispose_ShouldNotTrack()
     {
         // Arrange
@@ -391,7 +385,7 @@ public class UserActivityTrackerTests
     /// <summary>
     /// 测试：UserActivityTracker应该实现IUserActivityState接口
     /// </summary>
-    [StaFact]
+    [Fact]
     public void UserActivityTracker_ShouldImplementIUserActivityState()
     {
         // Arrange

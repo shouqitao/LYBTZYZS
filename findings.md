@@ -1,448 +1,413 @@
-# Research Findings: implement-data-sync
+# Research Findings: 测试体系全面重写计划
 
-## Overview
-数据同步功能的调研发现和技术设计。
+## 1. 测试项目现状统计
 
----
+### 1.1 Server 模块单元测试 (8个项目, 228个测试)
 
-## 设计决策汇总
+| 项目 | 现有测试 | 预估目标 | 差距 | 优先级 |
+|------|----------|----------|------|--------|
+| LYBT.Module.Auth.Tests | 67 | 80 | +13 | P2 |
+| LYBT.Module.Patients.Tests | 36 | 50 | +14 | P2 |
+| LYBT.Module.Sync.Tests | 35 | 60 | **+25** | **P0** |
+| LYBT.Module.MedicalCase.Tests | 32 | 50 | +18 | P3 |
+| LYBT.Module.Herbs.Tests | 22 | 40 | +18 | P1 |
+| LYBT.Module.Formula.Tests | 22 | 40 | +18 | P2 |
+| LYBT.Module.Users.Tests | 14 | 30 | +16 | P2 |
+| LYBT.WebAPI.Tests | ? | 30 | ? | P3 |
 
-| 决策点 | 选择 | 原因 |
-|--------|------|------|
-| 数据量级 | 小数据量（<1000条） | 全量 Checksum 比对，简单可靠 |
-| 同步触发 | 纯手动 | 完全可控，用户明确知道何时同步 |
-| 删除策略 | 软删除 + 引用检查 | 有引用数据只能禁用，无引用可删除 |
-| Checksum 范围 | 业务字段 + Status + IsDeleted | 排除审计字段避免"假差异" |
-| 冲突处理 | 批量选择 + 预览对比 | 用户决定，直观高效 |
-| 同步粒度 | 实体级 | 简单实现，字段级太复杂 |
+### 1.2 Desktop 模块单元测试 (11个项目, 553个测试)
 
----
+| 项目 | 现有测试 | 预估目标 | 差距 | 优先级 |
+|------|----------|----------|------|--------|
+| LYBT.Desktop.Shell.Tests | 136 | 150 | +14 | P3 |
+| LYBT.Desktop.Foundation.Tests | 120 | 130 | +10 | P2 |
+| LYBT.Desktop.MedicalCase.Tests | 117 | 130 | +13 | P3 |
+| LYBT.Desktop.Infrastructure.Tests | 67 | 80 | +13 | P2 |
+| LYBT.Desktop.LocalData.Tests | 47 | 60 | +13 | P1 |
+| LYBT.Desktop.Formula.Tests | 24 | 35 | +11 | P2 |
+| LYBT.Desktop.Herbs.Tests | 18 | 30 | +12 | P2 |
+| LYBT.Desktop.Auth.Tests | 10 | 25 | +15 | P2 |
+| LYBT.Desktop.Patients.Tests | 7 | 25 | **+18** | **P1** |
+| LYBT.Desktop.Models.Tests | 6 | 15 | +9 | P3 |
+| LYBT.Desktop.Users.Tests | 1 | 20 | **+19** | **P1** |
 
-## 引用检查设计
+### 1.3 Shared 单元测试 (5个项目, 284个测试)
 
-### 引用关系
+| 项目 | 现有测试 | 预估目标 | 差距 | 优先级 |
+|------|----------|----------|------|--------|
+| LYBT.Shared.Utilities.Tests | 184 | 200 | +16 | P3 |
+| LYBT.Shared.ExceptionHandling.Tests | 53 | 60 | +7 | P3 |
+| LYBT.Shared.Configuration.Tests | 43 | 50 | +7 | P3 |
+| LYBT.Shared.Models.Tests | 4 | 20 | +16 | P2 |
+| LYBT.Shared.Validators.Tests | 0 | 30 | **+30** | **P1** |
 
-```
-Patient ←───── MedicalCase ←───── Prescription ←───── PrescriptionItem ─────→ Herb
-                                        │
-                                        └─ ReferencedFormulas (文本描述，非外键)
-                                                    │
-                                              Formula (模板)
-```
+### 1.4 架构测试 (58个测试)
 
-### 检查策略
-
-| 实体 | 引用检查 | 删除策略 |
-|------|---------|----------|
-| **Herb** | 查询 `PrescriptionItem.HerbId` | 有引用→禁用；无引用→软删除 |
-| **Patient** | 查询 `MedicalCase.PatientId` | 有医案→禁用；无医案→软删除 |
-| **Formula** | 不需要（文本描述引用） | 可直接软删除 |
-
-### 实现任务
-
-| 任务 | 当前状态 | 本次需完成 |
-|------|---------|-----------|
-| Herb 引用检查 | 框架存在，逻辑 TODO | 实现查询 `PrescriptionItem` |
-| Patient 引用检查 | 不存在 | 新增 `CheckReferenceAsync` 方法 |
-
----
-
-## SyncLog 表设计
-
-### 本地表 (SQLite)
-
-```sql
-CREATE TABLE SyncLog (
-    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    -- 实体标识
-    EntityType TEXT NOT NULL,           -- Herb/Patient/Formula
-    EntityId TEXT NOT NULL,             -- GUID
-
-    -- 变更信息
-    Operation TEXT NOT NULL,            -- Create/Update/Delete
-    ChangedFields TEXT,                 -- 变更字段列表(JSON)，用于冲突展示
-    LocalChecksum TEXT NOT NULL,        -- 本地数据Checksum (SHA256)
-
-    -- 时间戳
-    LocalChangedAt DATETIME NOT NULL,   -- 本地变更时间
-
-    -- 同步状态
-    SyncStatus TEXT NOT NULL DEFAULT 'Pending',
-        -- Pending: 待同步
-        -- Synced: 已同步
-        -- Conflict: 冲突待处理
-        -- Skipped: 用户跳过
-
-    SyncedAt DATETIME,                  -- 同步完成时间
-    ErrorMessage TEXT                   -- 错误信息
-);
-
-CREATE INDEX IX_SyncLog_Status ON SyncLog(SyncStatus);
-CREATE INDEX IX_SyncLog_Entity ON SyncLog(EntityType, EntityId);
-```
-
-### 服务器表 (SQL Server)
-
-```sql
-CREATE TABLE SyncMetadata (
-    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    EntityType NVARCHAR(50) NOT NULL,
-    EntityId UNIQUEIDENTIFIER NOT NULL,
-    LastModifiedAt DATETIME2 NOT NULL,
-    ModifiedBy UNIQUEIDENTIFIER,
-    Checksum NVARCHAR(64) NOT NULL,     -- SHA256
-    IsDeleted BIT DEFAULT 0,
-
-    INDEX IX_SyncMetadata_Entity (EntityType, EntityId),
-    INDEX IX_SyncMetadata_Modified (LastModifiedAt)
-);
-```
+| 项目 | 现有测试 | 预估目标 | 差距 | 优先级 |
+|------|----------|----------|------|--------|
+| LYBT.ArchTests | 58 | 70 | +12 | P3 |
+| LYBT.Server.ArchTests | ? | 30 | ? | P3 |
 
 ---
 
-## Checksum 计算
+## 2. 重写优先级分析
 
-### 算法
+### P0 - Critical (立即处理)
+
+| 项目 | 原因 |
+|------|------|
+| **LYBT.Module.Sync.Tests** | 缺少 UploadAsync 测试，核心同步功能无覆盖 |
+
+### P1 - High (优先处理)
+
+| 项目 | 原因 |
+|------|------|
+| LYBT.Module.Herbs.Tests | 基础数据模块，被多处依赖 |
+| LYBT.Desktop.LocalData.Tests | 本地模式核心，与 Sync 相关 |
+| LYBT.Desktop.Patients.Tests | 仅 7 个测试，严重不足 |
+| LYBT.Desktop.Users.Tests | 仅 1 个测试，基本为空 |
+| LYBT.Shared.Validators.Tests | 0 个测试，验证器无覆盖 |
+
+### P2 - Medium (后续处理)
+
+| 项目 | 原因 |
+|------|------|
+| LYBT.Module.Auth.Tests | 已有 67 个测试，需完善 |
+| LYBT.Module.Patients.Tests | 已有 36 个测试，需完善 |
+| LYBT.Module.Formula.Tests | 已有 22 个测试，需完善 |
+| LYBT.Module.Users.Tests | 已有 14 个测试，需完善 |
+| LYBT.Desktop.Infrastructure.Tests | 已有 67 个测试，需完善 |
+| LYBT.Desktop.Foundation.Tests | 已有 120 个测试，需完善 |
+| LYBT.Shared.Models.Tests | 仅 4 个测试，DTO 验证不足 |
+
+### P3 - Low (稳定后处理)
+
+| 项目 | 原因 |
+|------|------|
+| LYBT.Module.MedicalCase.Tests | 已有 32 个测试 |
+| LYBT.Desktop.Shell.Tests | 已有 136 个测试 |
+| LYBT.Desktop.MedicalCase.Tests | 已有 117 个测试 |
+| LYBT.Shared.Utilities.Tests | 已有 184 个测试 |
+| 架构测试 | 已有 58 个测试 |
+
+---
+
+## 3. 工作量估算
+
+### 3.1 按优先级估算
+
+| 优先级 | 项目数 | 新增测试数 | 预估工时 |
+|--------|--------|------------|----------|
+| P0 | 1 | ~25 | 2-3h |
+| P1 | 5 | ~100 | 8-10h |
+| P2 | 8 | ~100 | 8-10h |
+| P3 | 10+ | ~100 | 8-10h |
+| **总计** | **24+** | **~325** | **26-33h** |
+
+### 3.2 建议执行顺序
+
+**Week 1 - Critical + High**
+1. LYBT.Module.Sync.Tests (P0) - 2-3h
+2. LYBT.Shared.Validators.Tests (P1) - 2h
+3. LYBT.Module.Herbs.Tests (P1) - 2h
+4. LYBT.Desktop.LocalData.Tests (P1) - 2h
+5. LYBT.Desktop.Users.Tests (P1) - 1h
+6. LYBT.Desktop.Patients.Tests (P1) - 1h
+
+**Week 2 - Medium**
+7. Server 模块 (P2) - Auth, Patients, Formula, Users
+8. Desktop 模块 (P2) - Infrastructure, Foundation, Auth
+
+**Week 3 - Low + 优化**
+9. 剩余 P3 模块
+10. 集成测试优化
+11. 架构测试完善
+12. 测试覆盖率报告
+
+---
+
+## 4. SyncServiceTests 详细重写计划
+
+### 4.1 当前测试 (35个)
+
+| 类别 | 数量 | 覆盖 |
+|------|------|------|
+| GetSupportedEntityTypes | 1 | 完整 |
+| GetMetadataAsync | 3 | 基本 |
+| CompareAsync | 5 | 基本 |
+| DownloadAsync | 3 | 基本 |
+| DeleteAsync | 7 | 较好 |
+| **UploadAsync** | **0** | **无** |
+| ChecksumHelper | 16 | 60% |
+
+### 4.2 需新增测试 (~25个)
+
+**UploadAsync 测试 (10个)** - Critical
+```
+UploadAsync_WithNewHerb_ShouldCreateEntity
+UploadAsync_WithExistingHerb_OverwriteTrue_ShouldUpdate
+UploadAsync_WithExistingHerb_OverwriteFalse_ShouldReturnConflict
+UploadAsync_WithInvalidJson_ShouldReturnError
+UploadAsync_WithBatchEntities_ShouldProcessAll
+UploadAsync_WithNewPatient_ShouldCreateEntity
+UploadAsync_WithNewFormula_ShouldCreateWithHerbs
+UploadAsync_WithExistingFormula_ShouldUpdateHerbs
+UploadAsync_WithInvalidEntityType_ShouldReturnFailure
+UploadAsync_WithMixedResults_ShouldReportCorrectly
+```
+
+**CompareAsync 补充 (5个)**
+```
+CompareAsync_WithMixedDiffs_ShouldReturnAllTypes
+CompareAsync_WithLargeBatch_ShouldHandleEfficiently
+CompareAsync_WithNullLocalEntities_ShouldHandleGracefully
+CompareAsync_WithDeletedEntities_ShouldIncludeInComparison
+CompareAsync_TimeStampComparison_ShouldBeCorrect
+```
+
+**ChecksumHelper 补充 (10个)**
+```
+ComputeHerbChecksum_WithAllFieldsChanged_ShouldReturnDifferent
+ComputeHerbChecksum_WithNullFields_ShouldNotThrow
+ComputeHerbChecksum_WithSpecialCharacters_ShouldHandle
+ComputePatientChecksum_WithAllFieldsChanged_ShouldReturnDifferent
+ComputePatientChecksum_WithDateBoundaries_ShouldHandle
+ComputeFormulaChecksum_WithLargeHerbsList_ShouldHandle
+ComputeFormulaChecksum_WithHerbRemark_ShouldAffectChecksum
+ComputeChecksum_WithNullEntity_ShouldThrow
+ComputeChecksum_MultipleCallsSameData_ShouldReturnSame
+ComputeChecksum_DecimalPrecision_ShouldBeConsistent
+```
+
+---
+
+## 5. ChecksumHelperTests 逻辑问题修复
+
+### 5.1 问题 1: First() 调用
+```csharp
+// 当前代码
+formula2.Herbs!.First().Dosage = 20;
+
+// 修复方案
+var targetHerb = formula2.Herbs!.Single(h => h.HerbId == herbId1);
+targetHerb.Dosage = 20;
+```
+
+### 5.2 问题 2: 硬编码 Id
+```csharp
+// 当前代码
+Id = Guid.Parse("11111111-1111-1111-1111-111111111111")
+
+// 修复方案 - 使用 Builder
+public class HerbBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    public HerbBuilder WithId(Guid id) { _id = id; return this; }
+    public Herb Build() => new Herb { Id = _id, ... };
+}
+```
+
+### 5.3 问题 3: 缺少 Null Entity 测试
+```csharp
+// 新增测试
+[Fact]
+public void ComputeHerbChecksum_WithNullEntity_ShouldThrowArgumentNullException()
+{
+    // Act
+    var act = () => ChecksumHelper.ComputeHerbChecksum(null!);
+
+    // Assert
+    act.Should().Throw<ArgumentNullException>();
+}
+```
+
+---
+
+## 6. 测试基础设施改进
+
+### 6.1 新增 TestDataBuilder
+```
+tests/TestConfiguration/TestDataBuilders/
+├── HerbBuilder.cs
+├── PatientBuilder.cs
+├── FormulaBuilder.cs
+├── UserBuilder.cs
+└── SyncInputBuilder.cs
+```
+
+### 6.2 新增 MockFactory
+```
+tests/TestConfiguration/Mocks/
+├── MockServiceFactory.cs
+└── MockRepositoryFactory.cs
+```
+
+---
+
+---
+
+## 7. Phase 3.1 执行发现
+
+### 7.1 现有测试分析
+
+**ChecksumHelperTests** (35个测试):
+- 质量较好，遵循 AAA 模式
+- **问题**: 第 441 行使用 `FormulaType.Custom`，但实际枚举只有 `Classic=1, Experience=2`
+
+**SyncServiceTests** (19个测试):
+- GetSupportedEntityTypes: 1
+- GetMetadataAsync: 3
+- CompareAsync: 5
+- DownloadAsync: 3
+- DeleteAsync: 7
+- **UploadAsync: 0** (Critical 缺失)
+
+### 7.2 SyncService.UploadAsync 逻辑
 
 ```csharp
-public static class ChecksumHelper
-{
-    /// <summary>
-    /// 计算实体 Checksum（排除审计字段）
-    /// </summary>
-    public static string ComputeChecksum<T>(T entity) where T : class
-    {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
+// 输入: SyncUploadInputDto { EntityType, Entities(JsonElement[]), OverwriteConflicts }
+// 输出: SyncUploadResultDto { SuccessCount, ConflictCount, ErrorCount, Results }
 
-        // 序列化为 JSON（排除审计字段）
-        var json = JsonSerializer.Serialize(entity, options);
-
-        // 计算 SHA256
-        using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(json));
-        return Convert.ToHexString(hash);
-    }
-}
+// 业务逻辑:
+1. 验证 EntityType
+2. 遍历 Entities:
+   - 反序列化 JSON
+   - 如果已存在 && !overwriteConflicts → IsConflict
+   - 如果已存在 && overwriteConflicts → 覆盖更新
+   - 如果不存在 → 新增
+3. SaveChangesAsync
 ```
 
-### Checksum 字段配置
+### 7.3 需修复的测试问题
 
-| 实体 | 纳入字段 | 排除字段 |
-|------|---------|---------|
-| **Herb** | Name, PinYinCode, Category, Origin, Spec, Unit, Price, CostPrice, Effect, Usage, Remark, Status | CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted* |
-| **Patient** | Name, PinYinCode, Gender, BirthDate, IdNumber, PhoneNumber, Address, AllergyHistory, MedicalHistory, Status, DisableReason | 同上 |
-| **Formula** | Name, PinYinCode, Category, Effect, Usage, Remark, Status, Items[] | 同上 |
-
-*注：IsDeleted 单独处理，删除操作有专门的同步逻辑
+| 位置 | 问题 | 修复方案 |
+|------|------|----------|
+| ChecksumHelperTests:441 | `FormulaType.Custom` 不存在 | 改为 `FormulaType.Experience` |
 
 ---
 
-## 差异检测算法
-
-### 流程
-
-```
-1. 本地获取所有实体的 (EntityId, LocalChecksum, LocalChangedAt)
-2. 调用服务器 API 获取 (EntityId, ServerChecksum, ServerChangedAt)
-3. 比对生成差异列表：
-
-   LocalOnly:   本地有，服务器无 → 待上传
-   ServerOnly:  服务器有，本地无 → 待下载
-   Modified:    双方都有但 Checksum 不同 → 冲突
-   Identical:   Checksum 相同 → 无需同步
-```
-
-### 数据结构
-
-```csharp
-public class SyncDiff
-{
-    public string EntityType { get; set; }
-    public Guid EntityId { get; set; }
-    public DiffType Type { get; set; }
-
-    // 用于冲突展示
-    public string? EntityName { get; set; }        // 实体名称（如药材名）
-    public string? LocalChecksum { get; set; }
-    public string? ServerChecksum { get; set; }
-    public DateTime? LocalChangedAt { get; set; }
-    public DateTime? ServerChangedAt { get; set; }
-    public List<string>? ChangedFields { get; set; } // 变更字段列表
-}
-
-public enum DiffType
-{
-    LocalOnly,      // 仅本地有（待上传）
-    ServerOnly,     // 仅服务器有（待下载）
-    Modified,       // 双方都有但不同（冲突）
-    Identical       // 完全相同（无需同步）
-}
-```
-
 ---
 
-## 同步 API 设计
+## 8. Phase 4 Desktop P1 模块探索发现
 
-### 基础数据同步
+### 8.1 LYBT.Desktop.Users.Tests (最严重不足)
 
+**现状**: 仅 1 个占位符测试，实际功能测试为 0
+
+**被测对象**:
+- `UserRepository`: GetPaged/ById/Create/Update/Delete/ResetPassword/ChangeStatus
+- `UserService`: 业务逻辑封装，返回 (success, error) 元组
+- `UserListViewModel`: 列表展示和交互
+- `UserMapper`: Entity ↔ DTO 映射
+- `UserPasswordHandler/UserStatusHandler`: 处理器
+
+**需新增测试**: 19 个
 ```
-GET  /api/v1/sync/metadata
-     Query: entityType=Herb
-     Response: [{ entityId, checksum, lastModifiedAt, isDeleted }]
+UserRepository (8-10个)
+├── GetPagedAsync_ReturnsPagedResult
+├── GetByIdAsync_ExistingUser_Returns
+├── GetByIdAsync_NonExisting_ReturnsNull
+├── CreateAsync_ValidUser_GeneratesId
+├── UpdateAsync_ExistingUser_Updates
+├── DeleteAsync_SetsIsDeleted
+├── ResetPasswordAsync_SetsNewPassword
+└── ChangeStatusAsync_TogglesStatus
 
-POST /api/v1/sync/compare
-     Body: { entityType, localEntities: [{ entityId, checksum }] }
-     Response: { diffs: [{ entityId, diffType, serverChecksum, serverChangedAt }] }
+UserService (6-8个)
+├── CreateAsync_ValidInput_ReturnsSuccess
+├── CreateAsync_DuplicateUsername_ReturnsError
+├── UpdateAsync_ValidInput_ReturnsSuccess
+├── DeleteAsync_RemovesUser
+├── ResetPasswordAsync_GeneratesNewPassword
+└── ExceptionHandling_LogsAndReturns
 
-POST /api/v1/sync/upload
-     Body: { entityType, entities: [...] }
-     Response: { success: [...], conflicts: [...], errors: [...] }
-
-POST /api/v1/sync/download
-     Body: { entityType, entityIds: [...] }
-     Response: { entities: [...] }
-```
-
-### 删除同步
-
-```
-POST /api/v1/sync/delete
-     Body: { entityType, entityIds: [...] }
-     Response: {
-       success: [...],
-       rejected: [{ entityId, reason: "有引用数据，请先禁用" }]
-     }
-```
-
----
-
-## UI 流程设计
-
-### 同步主界面
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 数据同步                                    [检查同步]       │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  上次同步：2026-02-03 10:30:00                              │
-│  本地待同步：5 条                                            │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ 药材 (Herb)           本地: 3条   服务器: 2条        │   │
-│  │ 患者 (Patient)        本地: 1条   服务器: 0条        │   │
-│  │ 经验方 (Formula)      本地: 1条   服务器: 1条        │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│                              [开始同步]                      │
-└─────────────────────────────────────────────────────────────┘
+UserListViewModel (3-5个)
+├── Initialize_LoadsUserList
+├── Search_FiltersByKeyword
+└── Pagination_WorksCorrectly
 ```
 
-### 差异预览界面
+### 8.2 LYBT.Desktop.Patients.Tests (中等成熟)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 同步预览                                                    │
-├─────────────────────────────────────────────────────────────┤
-│ 待上传 (3)                                                  │
-│ ┌─────────────────────────────────────────────────────┐    │
-│ │ ☑ 黄芪 (Herb) - 新增                                │    │
-│ │ ☑ 当归 (Herb) - 修改：价格 45→50                    │    │
-│ │ ☑ 张三 (Patient) - 新增                             │    │
-│ └─────────────────────────────────────────────────────┘    │
-│                                                             │
-│ 待下载 (2)                                                  │
-│ ┌─────────────────────────────────────────────────────┐    │
-│ │ ☑ 人参 (Herb) - 新增                                │    │
-│ │ ☑ 逍遥散 (Formula) - 修改：用法说明                  │    │
-│ └─────────────────────────────────────────────────────┘    │
-│                                                             │
-│            [全选上传] [全选下载] [执行同步] [取消]           │
-└─────────────────────────────────────────────────────────────┘
-```
+**现状**: 7 个测试 (6 个展示模型 + 1 占位符)
 
-### 冲突处理界面
+**已覆盖**:
+- `PatientDetailDisplayModel`: AgeDisplay, GenderDisplay, Summary, VisitInfo
 
+**被测对象**:
+- `PatientRepository`: CRUD + 分页 + 关系查询
+- `PatientService`: 业务逻辑 + 验证 + 异常处理
+- `PatientListViewModel`: 列表交互
+- `PatientMapper`: Entity ↔ DTO
+
+**需新增测试**: 18 个
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ 检测到 2 条数据冲突                                          │
-├─────────────────────────────────────────────────────────────┤
-│ 黄芪 (Herb)                                                 │
-│ ┌───────────────────────┬───────────────────────┐          │
-│ │ 本地版本              │ 服务器版本             │          │
-│ │ 价格: 50元/克         │ 价格: 55元/克          │          │
-│ │ 修改: 02-03 10:30     │ 修改: 02-03 09:15      │          │
-│ └───────────────────────┴───────────────────────┘          │
-│                    [使用本地] [使用服务器] [跳过]            │
-├─────────────────────────────────────────────────────────────┤
-│ 张三 (Patient)                                              │
-│ ┌───────────────────────┬───────────────────────┐          │
-│ │ 本地版本              │ 服务器版本             │          │
-│ │ 地址: 北京市朝阳区    │ 地址: 北京市海淀区      │          │
-│ │ 修改: 02-03 11:00     │ 修改: 02-03 10:45      │          │
-│ └───────────────────────┴───────────────────────┘          │
-│                    [使用本地] [使用服务器] [跳过]            │
-├─────────────────────────────────────────────────────────────┤
-│        [全部使用本地] [全部使用服务器] [完成]                │
-└─────────────────────────────────────────────────────────────┘
+PatientRepository (8-10个)
+├── GetPagedAsync_ReturnsPagedResult
+├── GetPagedAsync_Filtering_ByKeyword
+├── GetByIdAsync_ExistingPatient_Returns
+├── CreateAsync_ValidPatient_GeneratesId
+├── UpdateAsync_ExistingPatient_Updates
+├── DeleteAsync_SetsIsDeleted
+├── GetWithRelationsAsync_IncludesMedicalCases
+└── BatchOperations_HandleErrors
+
+PatientService (6-8个)
+├── CreateAsync_ValidInput_ReturnsSuccess
+├── CreateAsync_InvalidInput_ReturnsError
+├── UpdateAsync_ReturnsSuccess
+├── DeleteAsync_CascadeWorks
+└── ExceptionHandling_SafeMessage
+
+PatientListViewModel (2-3个)
+├── Initialize_LoadsPatientList
+├── Search_FiltersByKeyword
+└── SelectPatient_NavigatesToDetail
 ```
 
----
+### 8.3 LYBT.Desktop.LocalData.Tests (最成熟)
 
-## 架构设计
+**现状**: 47 个测试
+- `LocalAuthServiceTests`: 16 个 (完善)
+- `LocalHerbDataSourceTests`: 16 个 (完善)
+- `LocalPatientDataSourceTests`: 15 个 (完善)
 
-### 服务层架构
+**优势**:
+- 命名规范一致
+- 严格 AAA 模式
+- SQLite 内存数据库隔离
+- FluentAssertions
 
+**缺失**:
+- `LocalFormulaDataSource`: 0 个测试
+- `LocalMedicalCaseDataSource`: 0 个测试
+- `LocalUserDataSource`: 0 个测试
+- `SyncService/ChecksumHelper`: 0 个测试
+
+**需新增测试**: 13 个
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     SyncViewModel                            │
-│              (UI 绑定、用户交互、进度展示)                    │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────┐
-│                      ISyncService                            │
-│   CheckDiffAsync / UploadAsync / DownloadAsync / Resolve    │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-         ┌────────────────┼────────────────┐
-         │                │                │
-┌────────▼────────┐ ┌─────▼─────┐ ┌────────▼────────┐
-│ ISyncApiClient  │ │ ISyncLog  │ │ IDataSource     │
-│ (远程 API 调用) │ │ Repository│ │ (本地数据访问)  │
-└─────────────────┘ └───────────┘ └─────────────────┘
-```
+LocalFormulaDataSource (8-10个)
+├── GetByIdAsync_ExistingFormula_Returns
+├── GetWithHerbsAsync_IncludesRelatedHerbs
+├── GetPagedAsync_FiltersByKeyword
+├── GetPagedAsync_Pagination_Works
+├── CreateAsync_WithHerbs_CreatesRelationships
+├── UpdateAsync_ValidFormula_Updates
+├── DeleteAsync_SoftDelete_Works
+└── RestoreAsync_UndeleteWorks
 
-### 新增文件清单
-
-**Desktop 端**:
-```
-src/Client/Desktop/Core/LYBT.Desktop.LocalData/
-├── Entities/
-│   └── SyncLog.cs
-├── Repositories/
-│   └── SyncLogRepository.cs
-
-src/Client/Desktop/Core/LYBT.Desktop.Contracts/
-├── Services/
-│   ├── ISyncService.cs
-│   └── ISyncApiClient.cs
-├── Models/
-│   ├── SyncDiff.cs
-│   └── SyncResult.cs
-
-src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/
-├── Services/
-│   ├── SyncService.cs
-│   ├── SyncApiClient.cs
-│   └── ChecksumHelper.cs
-
-src/Client/Desktop/Modules/LYBT.Desktop.Sync/  (新模块)
-├── ViewModels/
-│   ├── SyncViewModel.cs
-│   └── ConflictResolutionViewModel.cs
-├── Views/
-│   ├── SyncView.xaml
-│   └── ConflictResolutionDialog.xaml
-└── SyncModule.cs
+SyncService/ChecksumHelper (3-5个)
+├── ChecksumHelper_ComputeHerbChecksum
+├── ChecksumHelper_VerifyConsistency
+└── SyncService_IncrementalSync
 ```
 
-**Server 端**:
-```
-src/Server/Modules/LYBT.Module.Sync/  (新模块)
-├── Controllers/
-│   └── SyncController.cs
-├── Services/
-│   ├── ISyncService.cs
-│   ├── SyncService.cs
-│   └── ChecksumHelper.cs
-├── Entities/
-│   └── SyncMetadata.cs
-├── Repositories/
-│   └── SyncMetadataRepository.cs
-└── SyncModule.cs
-```
+### 8.4 执行优先级建议
 
----
+| 顺序 | 模块 | 原因 |
+|------|------|------|
+| 1 | Users | 测试覆盖最低 (5%), 完全从零开始 |
+| 2 | Patients | Repository/Service 层完全缺失 |
+| 3 | LocalData | 已有良好基础，仅需补充 |
 
-## 同步流程时序图
-
-```
-┌──────┐          ┌──────────┐          ┌──────────┐          ┌────────┐
-│ User │          │ Desktop  │          │  Server  │          │   DB   │
-└──┬───┘          └────┬─────┘          └────┬─────┘          └───┬────┘
-   │                   │                     │                    │
-   │ 点击[检查同步]    │                     │                    │
-   │──────────────────>│                     │                    │
-   │                   │                     │                    │
-   │                   │ 获取本地实体Checksum │                    │
-   │                   │────────────────────────────────────────>│
-   │                   │<────────────────────────────────────────│
-   │                   │                     │                    │
-   │                   │ POST /sync/compare  │                    │
-   │                   │────────────────────>│                    │
-   │                   │                     │ 获取服务器Checksum  │
-   │                   │                     │───────────────────>│
-   │                   │                     │<───────────────────│
-   │                   │   返回差异列表       │                    │
-   │                   │<────────────────────│                    │
-   │                   │                     │                    │
-   │   展示差异预览    │                     │                    │
-   │<──────────────────│                     │                    │
-   │                   │                     │                    │
-   │ 确认同步/处理冲突 │                     │                    │
-   │──────────────────>│                     │                    │
-   │                   │                     │                    │
-   │                   │ POST /sync/upload   │                    │
-   │                   │────────────────────>│                    │
-   │                   │                     │───────────────────>│
-   │                   │<────────────────────│                    │
-   │                   │                     │                    │
-   │                   │ POST /sync/download │                    │
-   │                   │────────────────────>│                    │
-   │                   │<────────────────────│                    │
-   │                   │                     │                    │
-   │                   │ 更新本地数据         │                    │
-   │                   │────────────────────────────────────────>│
-   │                   │                     │                    │
-   │   同步完成        │                     │                    │
-   │<──────────────────│                     │                    │
-   │                   │                     │                    │
-```
-
----
-
-## 风险与缓解
-
-| 风险 | 缓解措施 |
-|------|----------|
-| 网络中断 | 同步操作支持重试，每条记录独立处理 |
-| 数据丢失 | 软删除机制，同步前本地备份 |
-| 冲突过多 | 清晰的冲突展示UI，批量处理选项 |
-| 引用检查遗漏 | 服务器端再次验证，拒绝非法删除 |
-
----
-
-## Open Questions (已解决)
-
-1. ~~同步粒度：实体级 vs 字段级？~~ → 实体级
-2. ~~同步触发：手动 vs 自动？~~ → 手动
-3. ~~删除策略？~~ → 软删除 + 引用检查
-4. ~~Checksum 字段范围？~~ → 业务字段 + Status，排除审计字段
-5. ~~冲突处理交互？~~ → 批量选择 + 预览对比
-
----
-
-## References
-
-- [implement-local-mode 归档](openspec/changes/archive/2026-02-03-implement-local-mode/)
-- [Offline-First Architecture Best Practices](https://developer.android.com/topic/architecture/data-layer/offline-first)
-- [Conflict Resolution Strategies](https://mobterest.medium.com/conflict-resolution-strategies-in-data-synchronization-2a10be5b82bc)
-
----
-*Created: 2026-02-03*
-*Last Updated: 2026-02-04*
+*Updated: 2026-02-05*

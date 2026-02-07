@@ -238,10 +238,11 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 
 ## Important Constraints
 
-### MVP 原则
-- 最小可行产品，避免过度设计
+### 开发原则
+- 避免过度设计，保持代码简洁
 - 不添加未明确要求的功能
 - 简单解决方案优先
+- 正式版开发阶段，注重代码质量和可维护性
 
 ### 三层对齐
 - View / ViewModel / Service / Repository 命名保持一致

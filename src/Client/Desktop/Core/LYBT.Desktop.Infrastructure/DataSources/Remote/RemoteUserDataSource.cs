@@ -204,31 +204,31 @@ public class RemoteUserDataSource : IUserDataSource
         }
     }
 
-    public async Task<bool> UpdateLastLoginTimeAsync(Guid id, CancellationToken ct = default)
+    public Task<bool> UpdateLastLoginTimeAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] User.UpdateLastLoginTime - Id={Id}", id);
 
         // Remote模式下，登录时间由服务端自动更新
         // 此方法仅用于Local模式
-        return true;
+        return Task.FromResult(true);
     }
 
-    public async Task<bool> ResetFailedLoginCountAsync(Guid id, CancellationToken ct = default)
+    public Task<bool> ResetFailedLoginCountAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] User.ResetFailedLoginCount - Id={Id}", id);
 
         // Remote模式下，失败次数由服务端管理
         // 此方法仅用于Local模式
-        return true;
+        return Task.FromResult(true);
     }
 
-    public async Task<int> IncrementFailedLoginCountAsync(Guid id, CancellationToken ct = default)
+    public Task<int> IncrementFailedLoginCountAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] User.IncrementFailedLoginCount - Id={Id}", id);
 
         // Remote模式下，失败次数由服务端管理
         // 此方法仅用于Local模式
-        return 0;
+        return Task.FromResult(0);
     }
 
     public async Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)

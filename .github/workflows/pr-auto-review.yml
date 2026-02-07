@@ -177,7 +177,7 @@ jobs:
               reviewBody += `### 文档与测试\n`;
               reviewBody += `- [ ] 架构变更已更新文档\n`;
               reviewBody += `- [ ] 接口变更已更新文档\n`;
-              reviewBody += `- [ ] 核心逻辑已添加单元测试（MVP 阶段可选）\n\n`;
+              reviewBody += `- [ ] 核心逻辑已添加单元测试\n\n`;
 
               reviewBody += `### 增量原则\n`;
               reviewBody += `- [ ] 遵循最小变更原则\n`;

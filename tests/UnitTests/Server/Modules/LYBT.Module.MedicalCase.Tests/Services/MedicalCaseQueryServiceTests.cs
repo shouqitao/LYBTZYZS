@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentAssertions;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Common;
@@ -22,18 +21,15 @@ namespace LYBT.Module.MedicalCases.Tests.Services
     {
         private readonly MedicalCaseQueryService _service;
         private readonly Mock<IMedicalCaseRepository> _repositoryMock;
-        private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<MedicalCaseQueryService>> _loggerMock;
 
         public MedicalCaseQueryServiceTests()
         {
             _repositoryMock = CreateMock<IMedicalCaseRepository>();
-            _mapperMock = CreateMock<IMapper>();
             _loggerMock = CreateLoggerMock<MedicalCaseQueryService>();
 
             _service = new MedicalCaseQueryService(
                 _repositoryMock.Object,
-                _mapperMock.Object,
                 _loggerMock.Object);
         }
 

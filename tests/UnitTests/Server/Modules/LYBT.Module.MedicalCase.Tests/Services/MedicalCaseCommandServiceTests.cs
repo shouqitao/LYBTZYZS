@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentAssertions;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -35,7 +34,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         private readonly Mock<IPatientRepository> _patientRepositoryMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IMedicalCaseAuditService> _auditServiceMock;
-        private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<MedicalCaseCommandService>> _loggerMock;
 
         public MedicalCaseCommandServiceTests()
@@ -44,7 +42,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _patientRepositoryMock = CreateMock<IPatientRepository>();
             _userRepositoryMock = CreateMock<IUserRepository>();
             _auditServiceMock = CreateMock<IMedicalCaseAuditService>();
-            _mapperMock = CreateMock<IMapper>();
             _loggerMock = CreateLoggerMock<MedicalCaseCommandService>();
 
             _service = new MedicalCaseCommandService(
@@ -52,7 +49,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 _patientRepositoryMock.Object,
                 _userRepositoryMock.Object,
                 _auditServiceMock.Object,
-                _mapperMock.Object,
                 _loggerMock.Object);
         }
 
@@ -171,8 +167,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
-            _mapperMock.Setup(x => x.Map(request, medicalCase.Consultation));
-
             _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
                 .ReturnsAsync(medicalCase);
 
@@ -193,11 +187,14 @@ namespace LYBT.Module.MedicalCases.Tests.Services
 
             // OpenSpec: simplify-medicalcase-dataflow - 测试非管理员不能编辑已完成医案
             // UserId设为当前用户，确保不会因为"非创建者"而被拒绝
+            // 规则：Completed 状态当天可编辑，跨日后锁定，所以需要设置为过去的日期
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
                 UserId = doctorId,
                 CaseStatus = MedicalCaseStatus.Completed,
+                CreatedAt = DateTime.Today.AddDays(-1), // 昨天创建，跨日锁定
+                CompletedAt = DateTime.Today.AddDays(-1), // 昨天完成
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
 
@@ -286,9 +283,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
-
-            _mapperMock.Setup(x => x.Map<PrescriptionEntity>(request))
-                .Returns(prescription);
 
             _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
                 .ReturnsAsync(medicalCase);

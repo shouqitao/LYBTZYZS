@@ -173,6 +173,23 @@ namespace LYBT.Desktop.Clinical.ViewModels
         }
 
         /// <summary>
+        /// 导航到数据同步
+        /// </summary>
+        [RelayCommand]
+        private void NavigateToSync()
+        {
+            try
+            {
+                Logger.LogInformation("导航到数据同步视图");
+                _navigationCoordinator.NavigateTo(ViewNames.Sync);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航到数据同步时发生异常");
+            }
+        }
+
+        /// <summary>
         /// 编辑个人资料 (Issue #1887-1891)
         /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>

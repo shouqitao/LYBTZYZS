@@ -1,4 +1,6 @@
+using System.Text.Json;
 using FluentAssertions;
+using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
@@ -558,6 +560,437 @@ public class SyncServiceTests : TestBase
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.ErrorMessage.Should().Contain("不支持的实体类型");
+    }
+
+    #endregion
+
+    #region UploadAsync 测试
+
+    [Fact]
+    public async Task UploadAsync_WithNewHerb_ShouldCreate()
+    {
+        // Arrange
+        var herbId = Guid.NewGuid();
+        var herb = new Herb
+        {
+            Id = herbId,
+            Name = "黄芪",
+            PinYinCode = "HQ",
+            Unit = "g",
+            Price = 50m,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+        var json = SerializeToJsonElement(herb);
+
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "Herb",
+            Entities = new List<JsonElement> { json },
+            OverwriteConflicts = false
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.SuccessCount.Should().Be(1);
+        result.Data.ConflictCount.Should().Be(0);
+        result.Data.ErrorCount.Should().Be(0);
+
+        // 验证数据库中已创建
+        var createdHerb = await _dbContext.Herbs.FindAsync(herbId);
+        createdHerb.Should().NotBeNull();
+        createdHerb!.Name.Should().Be("黄芪");
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithExistingHerb_OverwriteTrue_ShouldUpdate()
+    {
+        // Arrange
+        var herbId = Guid.NewGuid();
+        var existingHerb = new Herb
+        {
+            Id = herbId,
+            Name = "黄芪",
+            PinYinCode = "HQ",
+            Unit = "g",
+            Price = 50m,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+        _dbContext.Herbs.Add(existingHerb);
+        await _dbContext.SaveChangesAsync();
+
+        // 上传更新后的数据
+        var updatedHerb = new Herb
+        {
+            Id = herbId,
+            Name = "黄芪（蜜炙）",
+            PinYinCode = "HQMZ",
+            Unit = "g",
+            Price = 60m,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+        var json = SerializeToJsonElement(updatedHerb);
+
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "Herb",
+            Entities = new List<JsonElement> { json },
+            OverwriteConflicts = true // 覆盖冲突
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.SuccessCount.Should().Be(1);
+        result.Data.ConflictCount.Should().Be(0);
+
+        // 验证数据库中已更新
+        var herb = await _dbContext.Herbs.FindAsync(herbId);
+        herb!.Name.Should().Be("黄芪（蜜炙）");
+        herb.Price.Should().Be(60m);
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithExistingHerb_OverwriteFalse_ShouldReturnConflict()
+    {
+        // Arrange
+        var herbId = Guid.NewGuid();
+        var existingHerb = new Herb
+        {
+            Id = herbId,
+            Name = "黄芪",
+            Unit = "g",
+            Price = 50m,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+        _dbContext.Herbs.Add(existingHerb);
+        await _dbContext.SaveChangesAsync();
+
+        var uploadHerb = new Herb
+        {
+            Id = herbId,
+            Name = "黄芪（修改）",
+            Unit = "g",
+            Price = 60m,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+        var json = SerializeToJsonElement(uploadHerb);
+
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "Herb",
+            Entities = new List<JsonElement> { json },
+            OverwriteConflicts = false // 不覆盖冲突
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.SuccessCount.Should().Be(0);
+        result.Data.ConflictCount.Should().Be(1);
+        result.Data.Results[0].IsConflict.Should().BeTrue();
+
+        // 验证数据库中未更新
+        var herb = await _dbContext.Herbs.FindAsync(herbId);
+        herb!.Name.Should().Be("黄芪"); // 原值
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithNewPatient_ShouldCreate()
+    {
+        // Arrange
+        var patientId = Guid.NewGuid();
+        var patient = new Patient
+        {
+            Id = patientId,
+            Name = "张三",
+            PinYinCode = "ZS",
+            Gender = Gender.Male,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+        var json = SerializeToJsonElement(patient);
+
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "Patient",
+            Entities = new List<JsonElement> { json },
+            OverwriteConflicts = false
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.SuccessCount.Should().Be(1);
+
+        var createdPatient = await _dbContext.Patients.FindAsync(patientId);
+        createdPatient.Should().NotBeNull();
+        createdPatient!.Name.Should().Be("张三");
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithNewFormula_ShouldCreateWithHerbs()
+    {
+        // Arrange
+        var formulaId = Guid.NewGuid();
+        var formula = new Formula
+        {
+            Id = formulaId,
+            Name = "补中益气汤",
+            Category = "补益剂",
+            Effect = "补中益气",
+            Status = CommonStatus.Enabled,
+            FormulaType = FormulaType.Classic,
+            CreatedAt = DateTime.UtcNow,
+            Herbs = new List<FormulaHerbItem>
+            {
+                new() { Id = Guid.NewGuid(), FormulaId = formulaId, HerbId = Guid.NewGuid(), HerbName = "黄芪", Dosage = 15, Unit = "g" },
+                new() { Id = Guid.NewGuid(), FormulaId = formulaId, HerbId = Guid.NewGuid(), HerbName = "党参", Dosage = 10, Unit = "g" }
+            }
+        };
+        var json = SerializeToJsonElement(formula);
+
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "Formula",
+            Entities = new List<JsonElement> { json },
+            OverwriteConflicts = false
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.SuccessCount.Should().Be(1);
+
+        var createdFormula = await _dbContext.Formulas
+            .Include(f => f.Herbs)
+            .FirstOrDefaultAsync(f => f.Id == formulaId);
+        createdFormula.Should().NotBeNull();
+        createdFormula!.Name.Should().Be("补中益气汤");
+        createdFormula.Herbs.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithExistingFormula_OverwriteTrue_ShouldUpdateHerbs()
+    {
+        // Arrange
+        var formulaId = Guid.NewGuid();
+        var oldHerbItemId = Guid.NewGuid();
+        var existingFormula = new Formula
+        {
+            Id = formulaId,
+            Name = "补中益气汤",
+            Status = CommonStatus.Enabled,
+            FormulaType = FormulaType.Classic,
+            CreatedAt = DateTime.UtcNow,
+            Herbs = new List<FormulaHerbItem>
+            {
+                new() { Id = oldHerbItemId, FormulaId = formulaId, HerbId = Guid.NewGuid(), HerbName = "旧药材", Dosage = 5, Unit = "g" }
+            }
+        };
+        _dbContext.Formulas.Add(existingFormula);
+        await _dbContext.SaveChangesAsync();
+
+        // 上传更新后的方剂
+        var updatedFormula = new Formula
+        {
+            Id = formulaId,
+            Name = "补中益气汤（加减）",
+            Status = CommonStatus.Enabled,
+            FormulaType = FormulaType.Experience,
+            CreatedAt = DateTime.UtcNow,
+            Herbs = new List<FormulaHerbItem>
+            {
+                new() { Id = Guid.NewGuid(), FormulaId = formulaId, HerbId = Guid.NewGuid(), HerbName = "新药材1", Dosage = 10, Unit = "g" },
+                new() { Id = Guid.NewGuid(), FormulaId = formulaId, HerbId = Guid.NewGuid(), HerbName = "新药材2", Dosage = 15, Unit = "g" }
+            }
+        };
+        var json = SerializeToJsonElement(updatedFormula);
+
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "Formula",
+            Entities = new List<JsonElement> { json },
+            OverwriteConflicts = true
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.SuccessCount.Should().Be(1);
+
+        var formula = await _dbContext.Formulas
+            .Include(f => f.Herbs)
+            .FirstOrDefaultAsync(f => f.Id == formulaId);
+        formula!.Name.Should().Be("补中益气汤（加减）");
+        formula.FormulaType.Should().Be(FormulaType.Experience);
+        formula.Herbs.Should().HaveCount(2);
+        formula.Herbs.Should().Contain(h => h.HerbName == "新药材1");
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithBatchEntities_ShouldProcessAll()
+    {
+        // Arrange
+        var herbs = Enumerable.Range(1, 5)
+            .Select(i => new Herb
+            {
+                Id = Guid.NewGuid(),
+                Name = $"药材{i}",
+                Unit = "g",
+                Price = i * 10m,
+                Status = CommonStatus.Enabled,
+                CreatedAt = DateTime.UtcNow
+            })
+            .ToList();
+
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "Herb",
+            Entities = herbs.Select(SerializeToJsonElement).ToList(),
+            OverwriteConflicts = false
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.SuccessCount.Should().Be(5);
+        result.Data.Results.Should().HaveCount(5);
+
+        var count = await _dbContext.Herbs.CountAsync();
+        count.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithInvalidJson_ShouldReturnError()
+    {
+        // Arrange - 使用 JSON 数组而不是对象，会导致反序列化为 Herb 失败
+        var invalidJson = JsonDocument.Parse("[1, 2, 3]").RootElement;
+
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "Herb",
+            Entities = new List<JsonElement> { invalidJson },
+            OverwriteConflicts = false
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue(); // 整体操作成功，但单项失败
+        result.Data!.ErrorCount.Should().Be(1);
+        result.Data.SuccessCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithInvalidEntityType_ShouldReturnFailure()
+    {
+        // Arrange
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "InvalidType",
+            Entities = new List<JsonElement>(),
+            OverwriteConflicts = false
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("不支持的实体类型");
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithMixedResults_ShouldReportCorrectly()
+    {
+        // Arrange
+        var existingHerbId = Guid.NewGuid();
+        var existingHerb = new Herb
+        {
+            Id = existingHerbId,
+            Name = "已存在药材",
+            Unit = "g",
+            Price = 50m,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+        _dbContext.Herbs.Add(existingHerb);
+        await _dbContext.SaveChangesAsync();
+
+        var newHerb = new Herb
+        {
+            Id = Guid.NewGuid(),
+            Name = "新药材",
+            Unit = "g",
+            Price = 30m,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var conflictHerb = new Herb
+        {
+            Id = existingHerbId, // 与已存在的 ID 相同
+            Name = "冲突药材",
+            Unit = "g",
+            Price = 40m,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var input = new SyncUploadInputDto
+        {
+            EntityType = "Herb",
+            Entities = new List<JsonElement>
+            {
+                SerializeToJsonElement(newHerb),
+                SerializeToJsonElement(conflictHerb)
+            },
+            OverwriteConflicts = false
+        };
+
+        // Act
+        var result = await _syncService.UploadAsync(input);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.SuccessCount.Should().Be(1);
+        result.Data.ConflictCount.Should().Be(1);
+    }
+
+    #endregion
+
+    #region 辅助方法
+
+    private static JsonElement SerializeToJsonElement<T>(T obj)
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
+        var json = JsonSerializer.Serialize(obj, options);
+        return JsonDocument.Parse(json).RootElement.Clone();
     }
 
     #endregion

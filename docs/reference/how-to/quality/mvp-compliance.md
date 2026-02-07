@@ -1,20 +1,21 @@
 ---
-name: lybtzyzs-mvp-compliance
-description: 检查LYBTZYZS项目代码是否符合MVP原则和Constitution约束，自动检测技术黑名单违规和过度设计模式
-version: v1.0
-last_updated: 2025-10-21
+name: lybtzyzs-arch-compliance
+description: 检查LYBTZYZS项目代码是否符合架构约束，自动检测技术黑名单违规和过度设计模式
+version: v2.0
+last_updated: 2026-02-05
 ---
 
-# LYBTZYZS MVP合规检查
+# LYBTZYZS 架构合规检查
 
 ## 变更记录
+- v2.0 (2026-02-05): 正式版开发阶段更新，重命名为架构合规检查
 - v1.0 (2025-10-21): 初始版本
 
 ---
 
 ## 检查目标
 
-本Skill用于自动检测违反项目Constitution的代码设计，确保遵循MVP原则和技术约束。
+本Skill用于自动检测违反项目架构约束的代码设计，确保遵循开发原则和技术规范。
 
 **检查范围**：
 - 技术黑名单违规（自动检测）
@@ -22,7 +23,7 @@ last_updated: 2025-10-21
 - 依赖注入规范（自动检测）
 
 **参考文档**：
-- Constitution: `.spec-workflow/steering/constitution.md`
+- 开发约束理念: `.claude/explanation/mvp-philosophy.md`
 - 技术决策: `docs/architecture/shared/technical-decisions.md`
 
 ---
@@ -49,17 +50,17 @@ grep -r "IDistributedCache\|MediatR\|IMediator\|GraphQL\|RabbitMQ\|Kafka" --incl
 
 **如发现违规**：
 - 直接报告违规文件和行号
-- 说明违反的Constitution条款
-- 提供符合MVP的替代方案
+- 说明违反的架构约束
+- 提供符合规范的替代方案
 
 **示例报告**：
 ```
-❌ 违规检测：技术黑名单
+违规检测：技术黑名单
 
 文件：src/Server/Services/CacheService.cs:15
 代码：private readonly IDistributedCache _cache;
-违规：使用Redis分布式缓存（Constitution 1.3禁用）
-说明：MVP阶段暂无分布式缓存需求
+违规：使用Redis分布式缓存（技术黑名单禁用）
+说明：当前规模暂无分布式缓存需求
 
 建议替代方案：
 1. 使用内存缓存（MemoryCache）
@@ -116,36 +117,6 @@ grep -r "Container\.Resolve\|ServiceProvider\.GetService\|\[Inject\]" --include=
 4. 列出优缺点对比
 5. **等待用户确认**是否需要简化
 
-**报告格式**：
-```
-⚠️ 可疑设计检测：过度抽象
-
-文件：src/Server/Services/UserService.cs
-分析：用户CRUD功能使用Event Sourcing模式
-
-当前设计：
-- Event Store存储所有用户操作事件
-- Event Handler处理事件并更新读模型
-- 3个额外的抽象层
-
-简化方案：
-- 使用Repository模式直接操作数据库
-- 1个Service层 + 1个Repository层
-
-对比分析：
-优势：
-- 当前设计：完整的事件溯源，可回放历史
-- 简化方案：代码简洁，易于维护
-
-劣势：
-- 当前设计：复杂度高，维护成本大（MVP阶段不需要）
-- 简化方案：无法回溯历史操作（当前需求不需要）
-
-建议：简化为Repository模式（节省60%代码）
-
-❓ 请确认是否接受简化建议？
-```
-
 ---
 
 ### 第四步：生成合规报告
@@ -154,12 +125,12 @@ grep -r "Container\.Resolve\|ServiceProvider\.GetService\|\[Inject\]" --include=
 
 **报告结构**：
 ```markdown
-# MVP合规检查报告
+# 架构合规检查报告
 
 生成时间：[时间戳]
 检查范围：[文件路径]
 
-## ❌ 自动检测违规（需立即修复）
+## 自动检测违规（需立即修复）
 
 ### 1. 技术黑名单违规
 - 文件：xxx.cs:行号
@@ -171,7 +142,7 @@ grep -r "Container\.Resolve\|ServiceProvider\.GetService\|\[Inject\]" --include=
 - 违规：使用ServiceLocator
 - 修复建议：改为构造函数注入
 
-## ⚠️ 建议确认项（需人工决策）
+## 建议确认项（需人工决策）
 
 ### 1. 过度设计
 - 文件：xxx.cs
@@ -179,7 +150,7 @@ grep -r "Container\.Resolve\|ServiceProvider\.GetService\|\[Inject\]" --include=
 - 建议：[简化方案]
 - 状态：等待确认
 
-## ✅ 通过检查
+## 通过检查
 
 - 无技术黑名单违规
 - 无依赖注入违规
@@ -195,80 +166,11 @@ grep -r "Container\.Resolve\|ServiceProvider\.GetService\|\[Inject\]" --include=
 1. **grep** - 扫描技术黑名单关键字
 2. **serena** - 分析代码结构和复杂度
 3. **sequential-thinking** - 深度推理设计合理性
-4. **filesystem** - 读取Constitution文档
+4. **filesystem** - 读取架构约束文档
 
 **执行顺序**：
 ```
 grep（黑名单扫描）→ serena（代码分析）→ sequential-thinking（设计评估）→ 生成报告
-```
-
----
-
-## 测试场景
-
-### 场景1：检测Redis黑名单
-
-**测试代码**：
-```csharp
-using Microsoft.Extensions.Caching.Distributed;
-
-public class CacheService
-{
-    private readonly IDistributedCache _cache;
-
-    public CacheService(IDistributedCache cache)
-    {
-        _cache = cache;
-    }
-}
-```
-
-**预期输出**：
-```
-❌ 违规检测：技术黑名单
-
-文件：测试代码
-代码：IDistributedCache
-违规：使用Redis分布式缓存（Constitution 1.3禁用）
-建议：使用MemoryCache替代
-```
-
----
-
-### 场景2：检测过度设计
-
-**测试代码**：
-```csharp
-// 简单的用户列表查询功能，却使用了复杂的CQRS模式
-
-public class GetUsersQuery : IRequest<List<User>> { }
-
-public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, List<User>>
-{
-    private readonly IMediator _mediator;
-    // ... 复杂的查询处理逻辑
-}
-```
-
-**预期输出**：
-```
-⚠️ 可疑设计检测：过度设计
-
-分析：简单用户列表查询使用CQRS + MediatR
-违规：
-1. 使用MediatR（技术黑名单）
-2. 过度设计（简单查询不需要CQRS）
-
-建议简化方案：
-public class UserService : IUserService
-{
-    public async Task<List<User>> GetUsersAsync()
-    {
-        return await _repository.GetAllAsync();
-    }
-}
-
-❓ 请确认是否接受简化建议？
 ```
 
 ---
@@ -278,10 +180,10 @@ public class UserService : IUserService
 ### 触发时机
 
 当用户提出以下请求时，自动触发本Skill：
-- "检查代码是否符合MVP原则"
+- "检查代码是否符合架构规范"
 - "验证是否使用了禁用技术"
 - "分析设计是否过度复杂"
-- "Constitution合规性检查"
+- "架构合规性检查"
 
 ### 执行步骤
 
@@ -305,12 +207,11 @@ public class UserService : IUserService
 - 本Skill仅检测明显的违规模式，无法覆盖所有边界情况
 - 过度设计判断依赖启发式分析，可能存在误判
 - 最终决策权在用户，本Skill仅提供建议
-- 建议定期更新Skill以适应Constitution变化
+- 建议定期更新Skill以适应架构约束变化
 
 ---
 
 ## 相关资源
 
-- Constitution文档：`.spec-workflow/steering/constitution.md`
-- MVP原则：`docs/architecture/shared/mvp-principles.md`
+- 开发约束理念：`.claude/explanation/mvp-philosophy.md`
 - 技术决策：`docs/architecture/shared/technical-decisions.md`

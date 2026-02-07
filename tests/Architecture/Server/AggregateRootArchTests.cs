@@ -19,10 +19,9 @@ public class AggregateRootArchTests
         Assembly.Load("LYBT.Module.Users"),
         Assembly.Load("LYBT.Module.Patients"),
         Assembly.Load("LYBT.Module.MedicalCases"),
-        Assembly.Load("LYBT.Module.Consultations"),
-        Assembly.Load("LYBT.Module.Prescriptions"),
         Assembly.Load("LYBT.Module.Herbs"),
-        Assembly.Load("LYBT.Module.Formulas")
+        Assembly.Load("LYBT.Module.Formulas"),
+        Assembly.Load("LYBT.Module.Sync")
     ];
 
     /// <summary>

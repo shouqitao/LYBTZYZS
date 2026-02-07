@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Infrastructure.Tests.Services;
 /// ApplicationTickService单元测试
 /// OpenSpec: refactor-token-sliding-expiration - Task 7.1
 /// </summary>
+[Trait("Category", "WPF")]
 public class ApplicationTickServiceTests
 {
     /// <summary>

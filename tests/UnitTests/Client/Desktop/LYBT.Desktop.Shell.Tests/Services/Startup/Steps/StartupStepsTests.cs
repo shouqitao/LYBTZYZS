@@ -245,7 +245,8 @@ public class StartupStepsTests
         {
             _sut.Name.Should().Be("API健康检查");
             _sut.Order.Should().Be(40);
-            _sut.IsRequired.Should().BeTrue();
+            // OpenSpec: implement-local-mode - API健康检查为非必需，支持离线模式
+            _sut.IsRequired.Should().BeFalse();
         }
 
         [Fact]

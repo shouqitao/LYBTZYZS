@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentAssertions;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -29,7 +28,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         private readonly Mock<IMedicalCaseRepository> _repositoryMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IMedicalCaseAuditService> _auditServiceMock;
-        private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<MedicalCaseStateService>> _loggerMock;
 
         public MedicalCaseStateServiceTests()
@@ -37,14 +35,12 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _repositoryMock = CreateMock<IMedicalCaseRepository>();
             _userRepositoryMock = CreateMock<IUserRepository>();
             _auditServiceMock = CreateMock<IMedicalCaseAuditService>();
-            _mapperMock = CreateMock<IMapper>();
             _loggerMock = CreateLoggerMock<MedicalCaseStateService>();
 
             _service = new MedicalCaseStateService(
                 _repositoryMock.Object,
                 _userRepositoryMock.Object,
                 _auditServiceMock.Object,
-                _mapperMock.Object,
                 _loggerMock.Object);
         }
 
@@ -222,11 +218,12 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var result = await _service.CloseCaseAsync(medicalCaseId);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().NotBeNull();
+            result!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
         [Fact]
-        public async Task CloseCaseAsync_WhenNotFound_ShouldReturnFalse()
+        public async Task CloseCaseAsync_WhenNotFound_ShouldReturnNull()
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
@@ -239,7 +236,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var result = await _service.CloseCaseAsync(medicalCaseId);
 
             // Assert
-            result.Should().BeFalse();
+            result.Should().BeNull();
         }
 
         #endregion
@@ -270,8 +267,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
-
-            _mapperMock.Setup(x => x.Map(request, medicalCase.Consultation));
 
             _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
                 .ReturnsAsync(medicalCase);

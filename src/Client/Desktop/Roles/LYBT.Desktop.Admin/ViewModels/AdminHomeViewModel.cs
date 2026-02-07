@@ -117,6 +117,12 @@ namespace LYBT.Desktop.Admin.ViewModels
         private void NavigateToSystemSettings() => NavigateTo(ViewNames.SystemSettings);
 
         /// <summary>
+        /// 导航到数据同步
+        /// </summary>
+        [RelayCommand]
+        private void NavigateToSync() => NavigateTo(ViewNames.Sync);
+
+        /// <summary>
         /// 修改个人信息命令 (Issue #1887-1892)
         /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>

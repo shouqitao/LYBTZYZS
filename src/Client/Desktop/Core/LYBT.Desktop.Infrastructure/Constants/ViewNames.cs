@@ -73,6 +73,13 @@ public static class ViewNames
 
     #endregion
 
+    #region 同步视图
+
+    /// <summary>数据同步</summary>
+    public const string Sync = "SyncView";
+
+    #endregion
+
     #region 认证视图
 
     /// <summary>登录页面</summary>
