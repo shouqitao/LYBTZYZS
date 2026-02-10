@@ -1,111 +1,39 @@
-# Task Plan: 文档体系重构
+# Task Plan: 需求文档深化 -- 回填待讨论标记
 
 ## Goal
-基于已确认的文档体系标准，将 docs/ 从 608 个文件/17 个目录重构为约 35 个高质量文档/6 个目录。以产品需求文档 (PRD) 为核心，建立清晰、无冗余、可维护的文档体系。
+消除 docs/ 中全部 57 处"待讨论/TBD/待扩展"标记，基于代码事实回填明确决策。
 
 ## Current Phase
-ALL PHASES COMPLETE. 40/40 Tasks done.
+ALL PHASES COMPLETE. 12/12 Tasks done.
 
 ## Design Reference
-- 设计文档: `docs/plans/2026-02-10-documentation-system-design.md`
-- 实施计划: `docs/plans/2026-02-10-documentation-system-plan.md` (40 Tasks)
-
----
-
-## Executive Summary
-
-| 指标 | 当前 | 目标 |
-|------|------|------|
-| **文件数** | 608 | ~35 |
-| **目录数** | 17 (含18个空目录) | 6 + assets/ + plans/ |
-| **总行数** | 444,670 | TBD (精炼后) |
-| **分类体系** | Diataxis (执行不一致) | 6层递进 (product→requirements→architecture→api→dev→ops) |
-| **需求文档** | 分散在48个OpenSpec spec中 | 统一PRD (8个模块文件) |
+- 设计文档: `docs/plans/2026-02-10-requirements-deepening-design.md` (22 决策点)
+- 实施计划: `docs/plans/2026-02-10-requirements-deepening-plan.md` (12 Tasks)
 
 ---
 
 ## Phases
 
-### Phase 1: 目录骨架 + 01-product/ (Task 1-5)
-- [x] Task 1: 创建 6 个新目录骨架
-- [x] Task 2: docs/01-product/README.md - 产品概述
-- [x] Task 3: docs/01-product/vision.md - 产品愿景与目标
-- [x] Task 4: docs/01-product/glossary.md - 术语表 (中英文对照)
-- [x] Task 5: docs/01-product/user-roles.md - 用户角色与权限定义
+### Phase 1: 需求文档回填 (Task 1-8, 并行)
+- [x] Task 1: auth.md - 4 处标记 (B-1, B-2: 自动登录/会话超时)
+- [x] Task 2: users.md - 14 处标记 (A-2, A-3: 用户管理/Receptionist)
+- [x] Task 3: patients.md - 5 处标记 (D-1, D-2: 导入导出/加密)
+- [x] Task 4: herbs.md - 6 处标记 (D-1, F-1: 导入导出/价格快照)
+- [x] Task 5: formulas.md - 5 处标记 (D-1, F-2: 导入导出/价格计算)
+- [x] Task 6: medical-cases.md - 5 处标记 (E-1~E-3: 审计/编号/搜索)
+- [x] Task 7: sync.md - 5 处标记 (C-1~C-5: 冲突/同步范围)
+- [x] Task 8: printing.md - 4 处标记 (F-3~F-5: PDF/模板/批量)
 - **Status:** complete
-- **Parallelism:** Task 2-5 可并行
 
-### Phase 2: 02-requirements/ (Task 6-15)
-- [x] Task 6: docs/02-requirements/README.md - 需求总览
-- [x] Task 7: docs/02-requirements/auth.md - 认证与会话管理 (FR-AUTH-001~013)
-- [x] Task 8: docs/02-requirements/users.md - 用户管理 (FR-USER-001~012)
-- [x] Task 9: docs/02-requirements/patients.md - 患者管理 (FR-PAT-001~012)
-- [x] Task 10: docs/02-requirements/herbs.md - 药材管理 (FR-HERB-001~013)
-- [x] Task 11: docs/02-requirements/formulas.md - 验方管理 (FR-FORM-001~013)
-- [x] Task 12: docs/02-requirements/medical-cases.md - 医案管理 (FR-MC-001~017, 核心)
-- [x] Task 13: docs/02-requirements/sync.md - 数据同步 (FR-SYNC-001~008)
-- [x] Task 14: docs/02-requirements/printing.md - 打印功能 (FR-PRINT-001~004)
-- [x] Task 15: 回填 README.md 功能数 (总计 92 个 FR)
+### Phase 2: 汇总与架构文档 (Task 9-11)
+- [x] Task 9: README.md (requirements) - 2 处标记
+- [x] Task 10: dual-mode.md - 6 处标记 (A-1, C-1~C-5)
+- [x] Task 11: ADR-0002 - 1 处标记
 - **Status:** complete
-- **Parallelism:** Task 7-14 可并行 (核心产出)
 
-### Phase 3: 03-architecture/ (Task 16-23)
-- [x] Task 16: docs/03-architecture/README.md - 架构总览
-- [x] Task 17: docs/03-architecture/system-overview.md - 系统架构图
-- [x] Task 18: docs/03-architecture/server.md - 服务端架构
-- [x] Task 19: docs/03-architecture/desktop.md - 桌面端架构
-- [x] Task 20: docs/03-architecture/shared.md - 共享层架构
-- [x] Task 21: docs/03-architecture/dual-mode.md - 双模式架构 (本地+远程)
-- [x] Task 22: docs/03-architecture/data-model.md - 数据模型
-- [x] Task 23: docs/03-architecture/decisions/ - ADR 提取 (6 个 ADR)
+### Phase 3: 全量验证 (Task 12)
+- [x] Task 12: 全量验证 + planning-with-files 更新
 - **Status:** complete
-- **Parallelism:** Task 17-22 可并行
-
-### Phase 4: 04-api-reference/ (Task 24-30)
-- [x] Task 24: docs/04-api-reference/README.md - API 总览
-- [x] Task 25: docs/04-api-reference/auth.md - 认证 API
-- [x] Task 26: docs/04-api-reference/users.md - 用户 API
-- [x] Task 27: docs/04-api-reference/patients.md - 患者 API
-- [x] Task 28: docs/04-api-reference/herbs.md - 药材 API
-- [x] Task 29: docs/04-api-reference/formulas.md - 验方 API
-- [x] Task 30: docs/04-api-reference/medical-cases.md - 医案 API + sync.md
-- **Status:** complete
-- **Parallelism:** Task 25-30 可并行
-
-### Phase 5: 05-development/ + 06-operations/ (Task 31-36)
-- [x] Task 31: docs/05-development/README.md - 快速开始
-- [x] Task 32: docs/05-development/setup.md - 环境搭建
-- [x] Task 33: docs/05-development/code-standards.md - 编码规范
-- [x] Task 34: docs/05-development/patterns.md - 设计模式速查
-- [x] Task 35: docs/05-development/testing.md - 测试指南
-- [x] Task 36: docs/06-operations/ (README + deployment + configuration)
-- **Status:** complete
-- **Parallelism:** 全部可并行
-
-### Phase 6: 清理旧文档 + 更新引用 (Task 37-40)
-- [x] Task 37: 编写 docs/README.md 导航入口
-- [x] Task 38: 删除全部旧目录 (17个旧目录已删除)
-- [x] Task 39: 精简项目根 README.md (416行 -> 88行)
-- [x] Task 40: 更新 CLAUDE.md 引用路径 (已确认无需修改)
-- **Status:** complete
-- **Parallelism:** 顺序执行
-
----
-
-## Task 依赖关系
-
-```
-Task 1 (目录骨架)
-  ├→ Task 2-5 (01-product/, 可并行)
-  │    └→ Task 6-14 (02-requirements/, 可并行)
-  │         ├→ Task 15 (回填 README 功能数)
-  │         └→ Task 16-23 (03-architecture/, 可并行)
-  │              └→ Task 24-30 (04-api-reference/, 可并行)
-  │                   └→ Task 31-36 (05-dev + 06-ops, 可并行)
-  │                        └→ Task 37 (docs/README.md)
-  │                             └→ Task 38 (清理旧文档)
-  │                                  └→ Task 39-40 (更新根目录)
-```
 
 ---
 
@@ -113,13 +41,10 @@ Task 1 (目录骨架)
 
 | Decision | Rationale | Date |
 |----------|-----------|------|
-| 6 目录扁平结构 | 消除 17 目录嵌套混乱，数字前缀保证排序 | 2026-02-10 |
-| 需求文档双模式对比 | 本地+远程是核心特性，每个功能必须明确两种模式行为 | 2026-02-10 |
-| FR 编号体系 | 全局唯一功能编号，可追踪 | 2026-02-10 |
-| OpenSpec 合并后废弃 | 48 个 spec 的业务规则合并到需求层，架构规则合并到架构层 | 2026-02-10 |
-| 过程文档全删 | 有标准后过程文档不再需要，git history 已记录一切 | 2026-02-10 |
-| 中文正文 + 英文技术标识 | 不翻译代码标识符，保持一致性 | 2026-02-10 |
-| 40 Task 实施计划 | 细粒度可并行，每 Phase 内部最大化并行 | 2026-02-10 |
+| 全部决策基于代码事实 | 15+ 核心源文件逆向分析，非猜测 | 2026-02-10 |
+| 按文件分组 Task | 一个 Task 一个文件，原子性强 | 2026-02-10 |
+| 最大化并行 | Task 1-8+10 无依赖，可 9 路并行 | 2026-02-10 |
+| 3 批次执行 | Batch1: 5文件, Batch2: 4文件, Batch3: 2文件+验证 | 2026-02-10 |
 
 ## Errors Encountered
 
@@ -129,4 +54,4 @@ Task 1 (目录骨架)
 
 ---
 **Started**: 2026-02-10
-**Last Updated**: 2026-02-10 (ALL COMPLETE - 40/40 Tasks)
+**Last Updated**: 2026-02-10 (ALL COMPLETE - 12/12 Tasks)

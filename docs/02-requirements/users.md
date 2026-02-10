@@ -32,7 +32,7 @@
   5. 自动生成拼音码 (PinYinCode) 用于快速搜索
   6. 默认状态为 Enabled，默认角色为 Doctor
 - **远程模式**: POST `/api/v1/users`，返回 UserDetailDto (201)
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 用户名重复时返回错误
   - [ ] 保留用户名被拒绝
@@ -48,7 +48,7 @@
   3. 默认分页: page=1, pageSize=20
   4. 返回 UserListDto (不含敏感信息)
 - **远程模式**: GET `/api/v1/users?keyword=&role=&status=&page=&pageSize=`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 分页参数正确
   - [ ] 搜索按用户名和真实姓名匹配
@@ -60,7 +60,7 @@
   1. 返回 UserDetailDto (含审计字段，不含密码)
   2. 用户不存在返回 404
 - **远程模式**: GET `/api/v1/users/{id}`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 返回完整用户信息
   - [ ] 不返回 PasswordHash
@@ -74,7 +74,7 @@
   3. Admin 只能更新 Doctor/Receptionist
   4. 不能修改比自己权限高的角色
 - **远程模式**: PUT `/api/v1/users/{id}`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 用户名字段忽略修改
   - [ ] 拼音码随姓名自动更新
@@ -91,7 +91,7 @@
   6. 清理所有 RefreshToken
   7. 记录审计日志
 - **远程模式**: DELETE `/api/v1/users/{id}`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 删除后用户无法登录
   - [ ] 删除最后一个 Admin 被拒绝
@@ -105,7 +105,7 @@
   2. 恢复 IsDeleted=false
   3. 状态恢复为之前的值
 - **远程模式**: POST `/api/v1/users/{id}/restore`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 恢复后用户可正常登录
   - [ ] 非已删除用户调用恢复返回错误
@@ -119,7 +119,7 @@
   3. 返回详细的成功/失败报告 (BatchOperationResultDto)
   4. 部分失败不影响其他用户的删除
 - **远程模式**: POST `/api/v1/users/batch-delete`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 返回成功数、失败数和失败原因
   - [ ] 不能批量删除自己
@@ -134,7 +134,7 @@
   4. 用户需要重新登录
   5. 可设置 MustChangeOnNextLogin 标记
 - **远程模式**: POST `/api/v1/users/{id}/reset-password`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 重置后返回临时密码
   - [ ] 旧 Token 全部失效
@@ -149,7 +149,7 @@
   3. 修改后所有 Token Family 失效
   4. 用户需要重新登录
 - **远程模式**: PUT `/api/v1/users/{id}/change-password`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 旧密码错误时拒绝修改
   - [ ] 新密码不符合策略时返回明确提示
@@ -162,7 +162,7 @@
   1. 仅可修改 RealName 和 PhoneNumber
   2. UserName、Email 等字段暂不支持自助修改
 - **远程模式**: PUT `/api/v1/users/{id}/profile`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 修改后拼音码自动更新
   - [ ] 其他字段忽略修改
@@ -176,7 +176,7 @@
   3. 禁用用户尝试登录返回 UserDisabled 错误
   4. 支持批量启用/禁用
 - **远程模式**: POST `/api/v1/users/{id}/toggle-status`，批量: POST `/api/v1/users/batch-enable` 或 `/batch-disable`
-- **本地模式**: 待讨论
+- **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
   - [ ] 禁用后立即生效
   - [ ] 批量操作返回详细结果
@@ -220,12 +220,12 @@
 
 ---
 
-## 待讨论项
+## 决策记录
 
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
-| 1 | 本地模式下用户管理的支持范围 | 所有 FR-USER | 待讨论 |
-| 2 | Receptionist 角色的具体功能边界 | FR-USER-001 | 待讨论 |
+| 1 | 本地模式下用户管理的支持范围 | 所有 FR-USER | 已确定: 完整支持。LocalUserDataSource 11/11 方法全覆盖，DI 注册为 IUserDataSource 本地实现 |
+| 2 | Receptionist 角色的具体功能边界 | FR-USER-001 | 已确定: 仅查看权限 (患者列表 + 医案列表)。不在 DoctorOrAdmin / AdminOnly 策略中，无任何写操作权限 |
 
 ---
 

@@ -28,11 +28,17 @@
 - 支持 Herb、Patient、Formula 实体同步
 - 冲突需用户手动解决
 
-## 待讨论
+## 已确定的决策
 
-- 本地模式功能受限范围
-- MedicalCase 同步 (聚合根复杂度高)
-- 冲突自动解决策略
+以下事项已基于代码逆向分析确定:
+
+1. **本地模式功能矩阵**: 全模块完整支持 (6 个 LocalDataSource 100% 方法覆盖)
+2. **同步冲突解决**: 手动逐条选择 (SyncConflictDialog)
+3. **MedicalCase 同步**: v1.0 不支持，v2.0 规划
+4. **User 同步**: v1.0 不支持，初始化时下载
+5. **SQLite 加密**: v1.0 不加密，依赖 OS 权限
+
+详见 `docs/plans/2026-02-10-requirements-deepening-design.md`
 
 ## 变更记录
 
