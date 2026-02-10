@@ -1,416 +1,87 @@
-﻿# 凌隐宝堂中医诊所管理系统
+# 凌隐宝堂中医诊所管理系统
 
-<div align="center">
-  
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=.net)](https://dotnet.microsoft.com)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Build Status](https://img.shields.io/badge/Build-Passing-success)](https://github.com/shouqitao/LYBTZYZS)
-[![Documentation](https://img.shields.io/badge/Docs-Latest-blue)](docs/)
 
 **面向中医诊所的企业级管理解决方案**
 
-[快速开始](#快速开始) • [文档中心](docs/index.md) • [架构设计](docs/explanation/architecture/README.md) • [开发指南](docs/how-to-guides/README.md) • [API文档](docs/api/)
+## 简介
 
-</div>
+凌隐宝堂中医诊所管理系统 (LYBTZYZS) 是一个专为中医诊所设计的综合管理平台，采用 .NET 8 + WPF + ASP.NET Core + EF Core 技术栈，支持远程 (SQL Server) 和本地 (SQLite) 双运行模式。
 
-## 📋 项目概览
+## 核心功能
 
-凌隐宝堂中医诊所管理系统 (LYBTZYZS) 是一个专为中医诊所设计的综合管理平台，采用 .NET 8 + WPF + EF Core 技术栈，提供从患者档案、诊疗记录到处方管理的完整解决方案。
+| 模块 | 功能 |
+|------|------|
+| **患者管理** | 档案管理、Excel 批量导入导出、历史记录 |
+| **医案管理** | 聚合根 (Consultation + Prescription)、三步流程 |
+| **诊断管理** | 四诊合参 (望闻问切)、中医辨证 |
+| **处方管理** | 表格编辑、快速录入、验方导入、历史复制 |
+| **药材管理** | 完整药材库、拼音码检索、引用检查 |
+| **验方管理** | 经验方模板、分类管理、延迟绑定验证 |
+| **用户管理** | 角色体系 (Doctor/Admin/SuperAdmin) |
+| **认证授权** | JWT + RefreshToken、资源级权限 |
+| **数据同步** | 本地与远程双向同步 (Herb/Patient/Formula) |
 
-> **项目说明**:
-> - **项目全称**: 凌隐宝堂中医诊所管理系统
-> - **项目简称**: LYBTZYZS (Ling Yin Bao Tang Zhong Yi Zhen Suo)
-> - **描述规范**: 在描述性场合统一使用"凌隐宝堂中医诊所项目"，技术文档中使用LYBTZYZS简称
+## 快速开始
 
-### 核心特性
-
-- 🏥 **患者档案管理** - 完整的患者信息管理，支持Excel批量导入
-- 📝 **诊疗工作台** - 四诊合参，中医特色诊疗流程
-- 💊 **智能处方系统** - 四种录入方式，支持方剂模板
-- 🌿 **药材库管理** - 完整药材字典，拼音码快速检索
-- 📊 **数据统计分析** - 经营分析，处方统计
-- 🔐 **安全认证** - 双轨认证架构，超级管理员物理隔离，JWT+RefreshToken机制
-- 💾 **三级缓存策略** - 客户端/API/数据库分层缓存
-- 📴 **本地模式** - 支持离线运行，SQLite本地存储，无需服务器即可使用
-
-## 🏗️ 系统架构
-
-```
-┌─────────────────────────────────────────────────┐
-│             WPF Desktop Client                   │
-│         (Prism.DryIoc + MVVM)                   │
-└─────────────────┬───────────────────────────────┘
-                  │
-         ┌───────┴───────┐
-         │  DataSource   │  ← 抽象层，支持远程/本地切换
-         │   抽象层      │
-         └───────┬───────┘
-                 │
-    ┌────────────┼────────────┐
-    │            │            │
-    ▼            │            ▼
-┌────────┐       │       ┌────────┐
-│ Remote │       │       │ Local  │
-│  Mode  │       │       │  Mode  │
-└───┬────┘       │       └───┬────┘
-    │            │            │
-    ▼            │            ▼
-┌─────────────┐  │  ┌─────────────┐
-│ Web API     │  │  │   SQLite    │
-│ (REST/JWT)  │  │  │  Database   │
-└─────┬───────┘  │  └─────────────┘
-      │          │
-      ▼          │
-┌─────────────┐  │
-│ SQL Server  │  │
-│  Database   │  │
-└─────────────┘  │
-```
-
-### 技术栈
-
-| 层次 | 技术选型 | 版本 |
-|------|----------|------|
-| **前端** | WPF + Prism.DryIoc | .NET 8 |
-| **后端** | ASP.NET Core Web API | 8.0 |
-| **ORM** | Entity Framework Core | 8.0 |
-| **数据库** | SQL Server | 2019+ |
-| **认证** | JWT + RefreshToken | - |
-| **缓存** | MemoryCache | 内置 |
-| **日志** | Serilog | 8.0 |
-| **测试** | MSTest + Moq + FluentAssertions | 3.0 |
-
-## 📦 项目结构
-
-```
-LYBTZYZS/
-├── 📁 src/
-│   ├── 📁 Server/                     # 服务器端代码
-│   │   ├── 📁 Core/                   # 核心层
-│   │   │   ├── LYBT.Entities/         # 实体模型（聚合根：MedicalCase）
-│   │   │   └── LYBT.Infrastructure/   # 基础设施（DbContext、缓存、安全）
-│   │   ├── 📁 Modules/                # 业务模块（8个）
-│   │   │   ├── LYBT.Module.Auth/      # 认证授权模块
-│   │   │   ├── LYBT.Module.Patients/  # 患者管理模块
-│   │   │   ├── LYBT.Module.MedicalCase/# 病历管理模块（聚合根）
-│   │   │   ├── LYBT.Module.Consultation/# 诊疗管理模块
-│   │   │   ├── LYBT.Module.Prescriptions/# 处方管理模块
-│   │   │   ├── LYBT.Module.Herbs/     # 药材管理模块
-│   │   │   ├── LYBT.Module.Formula/   # 方剂管理模块
-│   │   │   └── LYBT.Module.Users/     # 用户管理模块
-│   │   └── 📁 Services/
-│   │       └── LYBT.WebAPI/           # Web API服务（统一入口）
-│   ├── 📁 Client/                     # 客户端代码
-│   │   └── 📁 Desktop/                # WPF桌面客户端（Issue #815 Core_New架构）
-│   │       ├── 📁 Core_New/           # 三层基础架构
-│   │       │   ├── LYBT.Desktop.Infrastructure/  # 基础设施层（Commands, Events, Interfaces, Themes）
-│   │       │   ├── LYBT.Desktop.Models/          # 模型层（ViewModels基类, Mapping, Validation）
-│   │       │   └── LYBT.Desktop.Services/        # 服务层（Business, Repositories, Http, Navigation等）
-│   │       ├── 📁 Modules/            # 业务模块层（8个模块）
-│   │       │   ├── LYBT.Desktop.Auth/            # 认证模块
-│   │       │   ├── LYBT.Desktop.Patients/        # 患者管理
-│   │       │   ├── LYBT.Desktop.MedicalCase/     # 病历管理
-│   │       │   ├── LYBT.Desktop.Consultation/    # 诊疗管理
-│   │       │   ├── LYBT.Desktop.Prescriptions/   # 处方管理
-│   │       │   ├── LYBT.Desktop.Herbs/           # 药材管理
-│   │       │   ├── LYBT.Desktop.Formula/         # 方剂管理
-│   │       │   └── LYBT.Desktop.Users/           # 用户管理
-│   │       ├── 📁 Workstations/       # 工作台层（聚合层）
-│   │       │   ├── LYBT.Desktop.ClinicalWorkstation/  # 诊疗工作台
-│   │       │   └── LYBT.Desktop.AdminWorkstation/     # 管理工作台
-│   │       └── 📁 Shell/              # 启动层
-│   │           └── LYBT.Desktop.Shell/           # 主程序壳、DI注册、启动引导
-│   └── 📁 Shared/                     # 共享代码
-│       ├── LYBT.Shared.Models/        # DTO和契约模型
-│       ├── LYBT.Shared.Interfaces/    # 服务接口定义
-│       └── LYBT.Shared.Utilities/     # 工具类库
-├── 📁 tests/                          # 测试项目
-│   ├── UnitTests/                     # 单元测试
-│   └── IntegrationTests/              # 集成测试
-├── 📁 docs/                           # 文档
-│   ├── architecture/                  # 架构设计文档
-│   ├── development/                   # 开发规范文档
-│   └── requirements/                  # 需求文档
-└── 📁 scripts/                        # 部署脚本
-```
-
-## 🚀 快速开始
-
-### 环境要求
-
-- Windows 10/11 或 Windows Server 2019+
-- .NET 8.0 SDK 或更高版本
-- SQL Server 2019 或更高版本
-- Visual Studio 2022 (17.4+) 或 VS Code
-
-### 安装步骤
-
-1. **克隆代码库**
-```powershell
-git clone https://github.com/shouqitao/LYBTZYZS.git
-cd LYBTZYZS
-```
-
-2. **还原NuGet包**
-```powershell
+```bash
+# 克隆、编译、运行
+git clone <repo-url> && cd LYBTZYZS
 dotnet restore LYBT.All.sln
+dotnet build LYBT.All.sln
+
+# 启动服务端
+dotnet run --project src/Server/Services/LYBT.WebAPI
+
+# 测试
+dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 ```
 
-3. **配置数据库连接**
+详细步骤见 [开发指南](docs/05-development/README.md)。
 
-编辑 `src/Server/Services/LYBT.WebAPI/appsettings.json`:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=true;TrustServerCertificate=true"
-  }
-}
-```
+## 技术栈
 
-4. **初始化数据库**
-```powershell
-cd src/Server/Services/LYBT.WebAPI
-dotnet ef database update
-```
+| 层 | 技术 |
+|----|------|
+| Desktop 客户端 | WPF + Prism.DryIoc (.NET 8) |
+| 服务端 API | ASP.NET Core WebAPI (.NET 8) |
+| ORM | Entity Framework Core 8.0 |
+| 远程数据库 | SQL Server 2019+ |
+| 本地数据库 | SQLite |
+| 认证 | JWT + RefreshToken + AutoLoginToken |
+| 日志 | Serilog (Console + File + SQL Server) |
+| 测试 | xUnit + NSubstitute |
 
-5. **运行项目**
+## 文档
 
-启动Web API（终端1）:
-```powershell
-cd src/Server/Services/LYBT.WebAPI
-dotnet run --launch-profile https
-```
+**[文档中心](docs/README.md)** -- 完整文档导航
 
-启动桌面客户端（终端2）:
-```powershell
-cd src/Client/Desktop/LYBT.Desktop.Shell
-dotnet run
-```
+| 文档 | 内容 |
+|------|------|
+| [产品文档](docs/01-product/) | 愿景、功能概览、角色、词汇表 |
+| [需求文档](docs/02-requirements/) | PRD (9 模块, 92 条功能需求) |
+| [架构文档](docs/03-architecture/) | 系统架构、数据模型、安全、ADR |
+| [API 参考](docs/04-api-reference/) | 99 个 API 端点文档 |
+| [开发指南](docs/05-development/) | 快速开始、编码规范、测试 |
+| [运维文档](docs/06-operations/) | 部署、配置、监控 |
 
-### 默认账号
-
-**远程模式（需要服务器）**:
-- **管理员**: admin / Admin123@SecurePass!
-- **医生**: doctor / Doctor123@SecurePass!
-
-**本地模式（离线使用）**:
-- **管理员**: admin / admin123
-
-### 本地模式配置
-
-如果不需要连接服务器，可以启用本地模式（数据存储在本地SQLite数据库）：
-
-1. 编辑 `src/Client/Desktop/Shell/appsettings.json`：
-```json
-{
-  "ConnectionMode": "Local"
-}
-```
-
-2. 启动桌面客户端：
-```powershell
-cd src/Client/Desktop/Shell/LYBT.Desktop.Shell
-dotnet run
-```
-
-**本地模式特点**：
-- 无需启动Web API服务器
-- 数据存储在 `%APPDATA%\LYBTZYZS\lybtzyzs.db`
-- 首次启动自动创建数据库和管理员账号
-- 适合单机使用、演示或离线场景
-
-## 🔧 开发指南
-
-### 编译项目
-
-```powershell
-# 完整编译
-dotnet build LYBT.All.sln -c Release
-
-# 分别编译
-dotnet build LYBT.Server.sln -c Release
-dotnet build LYBT.Desktop.sln -c Release
-```
-
-### 运行测试
-
-```powershell
-# 运行所有测试
-dotnet test LYBT.All.sln
-
-# 带覆盖率报告
-dotnet test --collect:"XPlat Code Coverage"
-```
-
-### 代码格式化
-
-```powershell
-# 格式化代码
-dotnet format LYBT.All.sln
-```
-
-## 📊 核心功能模块
-
-### 1. 病历管理（MedicalCase - 聚合根）
-
-- 一病历一诊断，一病历至多一处方
-- 当天可改，过期锁定业务规则
-- 管理员可编辑所有病历
-
-### 2. 诊疗管理（Consultation）
-
-- 四诊合参：望闻问切
-- 中医诊断：辨证论治
-- 医嘱建议：用药指导
-
-### 3. 处方管理（Prescriptions）
-
-四种录入方式：
-- 📝 表格编辑 - 传统表格输入
-- ⚡ 快速录入 - 拼音码搜索
-- 📋 方剂导入 - 从模板导入
-- 📑 历史复制 - 从历史处方复制
-
-### 4. 药材管理（Herbs）
-
-- 完整药材字典（2000+药材）
-- 拼音码生成与检索
-- 价格实时维护
-- 库存预警提醒
-
-### 5. 患者档案（Patients）
-
-- 基础信息管理
-- 病历历史查询
-- Excel批量导入
-- 就诊统计分析
-
-## 🔒 安全特性
-
-### 双轨认证架构
-- **超级管理员隔离**: AdminSecrets表物理隔离，用户名配置驱动
-- **普通用户认证**: Users表标准认证流程
-- **用户名保护**: 保留用户名列表，防止冲突
-
-### 认证机制
-- **JWT认证**: AccessToken有效期2小时
-- **RefreshToken**: 有效期7天，支持撤销
-- **密码加密**: BCrypt哈希算法
-- **隐藏端点**: `/api/v1/auth/admin/login` 超级管理员专用
-
-### 权限管控
-- **角色权限**: Admin/Doctor角色体系
-- **审计日志**: 完整操作记录
-- **登录保护**: 速率限制防暴力破解
-
-## 🚫 技术约束
-
-为保持系统简洁高效，本项目**明确禁止**使用以下技术：
-
-- ❌ CQRS/MediatR（过度工程）
-- ❌ 微服务架构（单体足够）
-- ❌ Redis（MemoryCache足够）
-- ❌ 消息队列（同步处理足够）
-- ❌ Docker/K8s（传统部署足够）
-- ❌ GraphQL（RESTful足够）
-
-## 📈 性能指标
-
-- 并发用户：<10人
-- 日处方量：20-100张
-- 响应时间：<200ms（缓存命中）
-- 数据规模：<10万条记录
-
-## 📚 文档资源 ⭐Phase 1完成 (20/20)
-
-**最后更新**：2025-10-30 - Phase 1文档全部完成
-
-### 📋 文档导航
-- **[文档中心](docs/index.md)** - 统一文档导航入口（v5.1彻底重构版）⭐
-- **[架构设计](docs/explanation/architecture/README.md)** - Server/Client/Shared三层架构
-- **[开发指南](docs/how-to-guides/README.md)** - 开发规范与最佳实践
-- **[API文档](docs/api/)** - RESTful接口文档
-
-### 🎯 Phase 1 架构设计文档 (8/8)
-
-**Shared层架构**:
-- **[DTO设计标准](docs/explanation/architecture/shared/dto-design-standard.md)** - 跨端数据传输对象设计规范
-
-**Client端架构**:
-- **[Models层设计](docs/explanation/architecture/client/models-layer-design.md)** - ViewModel与领域模型设计
-- **[Infrastructure层设计](docs/explanation/architecture/client/infrastructure-layer-design.md)** - 客户端基础设施架构
-- **[Foundation层设计](docs/explanation/architecture/client/foundation-design.md)** - Prism框架与MVVM基础
-- **[病案管理(Client)设计](docs/explanation/architecture/client/medical-case-design.md)** - 客户端病案模块架构
-
-**Server端架构**:
-- **[Interfaces层设计](docs/explanation/architecture/server/interfaces-layer-design.md)** - 服务接口定义规范
-- **[WebAPI设计](docs/explanation/architecture/server/webapi-design.md)** - REST API架构与最佳实践
-- **[病案管理(Server)设计](docs/explanation/architecture/server/medical-case-design.md)** - 服务端病案模块架构
-
-### 🛠️ Phase 1 开发指南 (12/12)
-
-**Shared层开发**:
-- **[DTO开发指南](docs/how-to-guides/shared/dto-development.md)** - DTO创建、验证与映射实践
-
-**Client端开发**:
-- **[Models层使用指南](docs/how-to-guides/client/models-usage.md)** - ViewModel开发与数据绑定
-- **[Infrastructure层使用指南](docs/how-to-guides/client/infrastructure-usage.md)** - 依赖注入、导航、事件总线
-- **[Foundation层开发指南](docs/how-to-guides/client/foundation-development.md)** - Prism应用开发与模块化
-- **[病案管理(Client)开发指南](docs/how-to-guides/client/medical-case-development.md)** - 客户端病案功能实现
-- **[打印功能指南](docs/how-to-guides/client/print-functionality.md)** - WPF打印框架与实践
-
-**Server端开发**:
-- **[Interfaces层使用指南](docs/how-to-guides/server/interfaces-usage.md)** - 服务接口实现规范
-- **[WebAPI开发指南](docs/how-to-guides/server/webapi-development.md)** - Controller、Service、Repository开发
-- **[认证集成指南](docs/how-to-guides/server/auth-integration.md)** - JWT认证、授权与安全实践
-- **[病案管理(Server)开发指南](docs/how-to-guides/server/medical-case-development.md)** - 服务端病案功能实现
-- **[事件总线集成指南](docs/how-to-guides/server/eventbus-integration.md)** - 领域事件与异步通信
-- **[WebAPI部署指南](docs/how-to-guides/server/webapi-deployment.md)** - Kestrel/Windows Service/IIS部署 ⭐新增
-
-### 📚 传统文档资源
-- **[测试指南](docs/how-to-guides/shared/testing-guide.md)** - 测试架构与实施
-- **[代码规范](docs/how-to-guides/shared/standards.md)** - 编码标准
-- **[文档规范](docs/how-to-guides/shared/documentation-guidelines.md)** - 文档编写标准
-
-## 🤝 贡献指南
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'feat: 添加某某功能 - Issue #123'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
-
-### 提交规范
+## 提交规范
 
 ```
 feat(模块): 功能描述 - Issue #编号
 fix(模块): 缺陷修复 - Issue #编号
-docs: 文档更新 - Issue #编号
-refactor: 代码重构 - Issue #编号
-test: 测试相关 - Issue #编号
+docs: 文档更新
+refactor: 代码重构
+test: 测试相关
 ```
 
-## 📄 许可证
+## 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
-
-## 👥 团队
-
-- **架构设计**: 技术架构组
-- **开发团队**: 1-3人小型团队
-- **维护方式**: GitHub Issues驱动
-
-## 📞 联系方式
-
-- **GitHub Issues**: [创建Issue](https://github.com/shouqitao/LYBTZYZS/issues)
-- **技术讨论**: 通过Issue进行技术讨论
+MIT License - 查看 [LICENSE](LICENSE)
 
 ---
 
-<div align="center">
-  
 **凌隐宝堂中医诊所管理系统** - 专注中医，服务健康
 
-Copyright © 2025 LYBT. All rights reserved.
-
-</div>
+Copyright 2025-2026 LYBT. All rights reserved.

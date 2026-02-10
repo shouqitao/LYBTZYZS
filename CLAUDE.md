@@ -1,79 +1,119 @@
-<!-- OPENSPEC:START -->
-# OpenSpec Instructions
+# LYBTZYZS 凌隐宝堂中医诊所管理系统
 
-These instructions are for AI assistants working in this project.
-
-Always open `@/openspec/AGENTS.md` when the request:
-- Mentions planning or proposals (words like proposal, spec, change, plan)
-- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
-- Sounds ambiguous and you need the authoritative spec before coding
-
-Use `@/openspec/AGENTS.md` to learn:
-- How to create and apply change proposals
-- Spec format and conventions
-- Project structure and guidelines
-
-Keep this managed block so 'openspec update' can refresh the instructions.
-
-<!-- OPENSPEC:END -->
-
-# LYBTZYZS项目配置
-
-**项目**: 凌隐宝堂中医诊所管理系统
-**技术栈**: .NET 8 + WPF + Prism + EF Core + SQL Server
+**技术栈**: .NET 8 + WPF/Prism + ASP.NET Core + EF Core + SQL Server/SQLite (双模式)
 **阶段**: 正式版开发阶段
+
+---
+
+## 构建与测试
+
+```bash
+# 编译
+dotnet build LYBT.All.sln
+
+# 测试 (5个测试项目, 1472 tests)
+dotnet test tests/LYBT.Tests.Unit/
+dotnet test tests/LYBT.Tests.Desktop.Unit/
+dotnet test tests/LYBT.Tests.Architecture/
+dotnet test tests/LYBT.Tests.Server.Integration/
+dotnet test tests/LYBT.Tests.Desktop.Integration/
+
+# 全量测试
+dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
+```
+
+---
+
+## 双工具协作体系
+
+本项目使用 **Superpowers** + **Planning-with-files** 协同开发。
+
+**IMPORTANT: 每次 Superpowers 操作完成后，必须将结果同步写入 planning-with-files 三文件 (task_plan.md / findings.md / progress.md)。**
+
+| Superpowers 操作 | 同步目标 |
+|------------------|----------|
+| `brainstorming` | task_plan.md + findings.md |
+| `writing-plans` | task_plan.md + progress.md |
+| `executing-plans` / `subagent-driven-development` | task_plan.md + progress.md |
+| `requesting-code-review` / `receiving-code-review` | findings.md + progress.md |
+| `verification-before-completion` / `finishing-a-development-branch` | progress.md + task_plan.md |
+
+标准流程: `BRAINSTORM → PLAN → EXECUTE → REVIEW → VERIFY`
+
+详细同步规则见 @.claude/rules/development-flow.md
+
+---
+
+## 架构要点
+
+- **三层架构**: Controller → Service → Repository → DbContext
+- **MVVM**: View (XAML) ← 绑定 → ViewModel → Repository → API
+- **DDD**: MedicalCase 是唯一聚合根 (Consultation + Prescription 是内部实体)
+- **双模式**: 远程 (HTTP API → SQL Server) + 本地 (DataSource → SQLite)，手动切换
+
+## 术语铁律
+
+- **Consultation** = 仅指中医诊断部分，不是"问诊"或"就诊"
+- **MedicalCase** = 医案，不是"病历"
+- **Formula** = 验方/经验方
 
 ---
 
 ## 开发准则
 
-1. **Architecture First** - 架构完善优先，符合既定架构模式
+1. **Architecture First** - 架构完善优先
 2. **Root Cause Analysis** - 定位根因，禁止表面修补
 3. **Test Coverage** - 新功能必须编写测试
-4. **Documentation** - 架构决策和API变更必须更新文档
+4. **Documentation** - 架构决策和 API 变更必须更新 `docs/` 文档
 
----
+## 修改前必查
 
-## 修改前必查 (铁律)
+1. **查记忆**: `mcp__serena__list_memories()`
+2. **查文档**: context7 / microsoft_docs_mcp
+3. **查案例**: WebSearch
+4. **问用户**: 方案确认后再执行
 
-**出方案或修改代码前，必须完成:**
-
-1. **查记忆**: `mcp__serena__list_memories()` → `read_memory("记忆名")`
-2. **查文档**: context7 / microsoft_docs_mcp 查官方文档
-3. **查案例**: tavily-search / brave-search 查业界实现
-4. **问用户**: 方案确认后再执行，不确定必问
-
-**禁止**: 未经调研直接编码 | 猜测方案 | 跳过用户确认
-
----
-
-## 详细规则 (按需读取)
-
-| 文件 | 内容 | 何时读取 |
-|------|------|----------|
-| `.claude/rules/tools.md` | Serena/Claude工具体系、选择优先级 | 需要使用工具时 |
-| `.claude/rules/development-flow.md` | 统一开发流程、OpenSpec Skills | 开始新功能/重构时 |
-| `.claude/rules/code-standards.md` | 代码变更标准、死代码识别 | 修改代码前 |
+**IMPORTANT: 禁止未经调研直接编码 | 禁止猜测方案 | 禁止跳过用户确认**
 
 ---
 
 ## 核心约束
 
-- **TodoWrite必用** - 复杂任务必须创建任务列表
-- **Serena记忆优先** - 重要决策存入记忆系统
+- **Planning-with-files 必用** - 复杂任务(3+步骤)必须创建 task_plan.md / findings.md / progress.md
+- **2-Action Rule** - 每2次搜索/浏览操作后，立即更新 findings.md
 - **兼容代码临时** - 必须添加注释标记，有明确移除计划
 
----
+## 常见陷阱
 
-## 架构索引
-
-```
-mcp__serena__list_memories()  # 查看架构记忆文件
-```
-
-**主要架构**: WPF + Prism + MVVM | ASP.NET Core 三层 | EF Core + SQL Server | DDD聚合根
+- EF Core 8 的 `FindAsync` 在实体不在 ChangeTracker 中时会应用全局查询过滤器 (IsDeleted)，需要用 `IgnoreQueryFilters()` 查询软删除记录
+- WPF Desktop 测试需要 net8.0-windows 目标框架，不能和 Server 测试混在同一个项目
+- MedicalCase 的 `HasPrescription` 是计算属性，依赖 `PrescriptionId.HasValue`，Mapper 必须显式设置
 
 ---
 
-最后更新: 2026-01-17
-文档版本: v4.0-simplified
+## 文档体系
+
+```
+docs/
+├── 01-product/          # 产品层
+├── 02-requirements/     # 需求层 (PRD)
+├── 03-architecture/     # 架构层
+├── 04-api-reference/    # API 参考
+├── 05-development/      # 开发指南
+└── 06-operations/       # 运维
+```
+
+文档标准见 `docs/plans/2026-02-10-documentation-system-design.md`
+
+---
+
+## 详细规则
+
+@.claude/rules/tools.md
+@.claude/rules/development-flow.md
+@.claude/rules/code-standards.md
+
+---
+
+最后更新: 2026-02-10
+文档版本: v6.1-optimized
