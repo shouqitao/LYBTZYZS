@@ -293,25 +293,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
 
-        /// <summary>查看审计日志</summary>
-        [RelayCommand(CanExecute = nameof(CanShowAuditLog))]
-        private void ShowAuditLog()
-        {
-            if (SelectedItem == null) return;
-
-            Logger.LogInformation("查看患者审计日志：{PatientId}", SelectedItem.Id);
-            _prismDialogService.ShowDialog("EntityAuditLogDialog",
-                new DialogParameters
-                {
-                    { "EntityType", "patient" },
-                    { "EntityId", SelectedItem.Id },
-                    { "EntityDescription", $"患者：{SelectedItem.Name}" }
-                },
-                _ => { });
-        }
-
-        private bool CanShowAuditLog() => HasSelection;
-
         /// <summary>导入患者</summary>
         [RelayCommand]
         private async Task ImportAsync()

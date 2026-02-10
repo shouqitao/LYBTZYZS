@@ -407,25 +407,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         private bool CanExport() => !IsBusy && !IsLoading && Items.Count > 0;
 
-        /// <summary>查看审计日志</summary>
-        [RelayCommand(CanExecute = nameof(CanShowAuditLog))]
-        private void ShowAuditLog()
-        {
-            if (SelectedItem == null) return;
-
-            Logger.LogInformation("查看药材审计日志：{HerbId}", SelectedItem.Id);
-            _prismDialogService.ShowDialog("EntityAuditLogDialog",
-                new DialogParameters
-                {
-                    { "EntityType", "herb" },
-                    { "EntityId", SelectedItem.Id },
-                    { "EntityDescription", $"药材：{SelectedItem.Name}" }
-                },
-                _ => { });
-        }
-
-        private bool CanShowAuditLog() => HasSelection;
-
         /// <summary>按分类搜索</summary>
         [RelayCommand]
         private async Task SearchByCategoryAsync(string? category)

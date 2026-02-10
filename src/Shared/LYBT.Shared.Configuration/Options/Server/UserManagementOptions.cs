@@ -37,8 +37,4 @@ public sealed class UserManagementOptions
     [Range(1, 1000)]
     public int MaxBatchOperationSize { get; set; } = 100;
 
-    /// <summary>
-    /// 是否启用详细审计日志
-    /// </summary>
-    public bool EnableDetailedAuditLogging { get; set; } = false;
 }

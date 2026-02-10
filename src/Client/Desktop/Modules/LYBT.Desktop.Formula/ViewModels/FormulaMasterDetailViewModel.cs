@@ -371,25 +371,6 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
 
-        /// <summary>查看审计日志</summary>
-        [RelayCommand(CanExecute = nameof(CanShowAuditLog))]
-        private void ShowAuditLog()
-        {
-            if (SelectedItem == null) return;
-
-            Logger.LogInformation("查看验方审计日志：{FormulaId}", SelectedItem.Id);
-            _prismDialogService.ShowDialog("EntityAuditLogDialog",
-                new DialogParameters
-                {
-                    { "EntityType", "formula" },
-                    { "EntityId", SelectedItem.Id },
-                    { "EntityDescription", $"验方：{SelectedItem.Name}" }
-                },
-                _ => { });
-        }
-
-        private bool CanShowAuditLog() => HasSelection;
-
         /// <summary>添加药材行</summary>
         [RelayCommand(CanExecute = nameof(CanAddHerb))]
         private void AddHerb()

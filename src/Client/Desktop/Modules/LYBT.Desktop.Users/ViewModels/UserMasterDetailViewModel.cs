@@ -24,7 +24,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     private readonly UserService _commandHandler;
     private readonly IUserPasswordHandler _passwordHandler;
     private readonly IUserStatusHandler _statusHandler;
-    private readonly IUserAuditHandler _auditHandler;
     private readonly IUserImportExportHandler _importExportHandler;
 
     #region 筛选属性
@@ -116,14 +115,12 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         UserService commandHandler,
         IUserPasswordHandler passwordHandler,
         IUserStatusHandler statusHandler,
-        IUserAuditHandler auditHandler,
         IUserImportExportHandler importExportHandler)
         : base(viewModelServices, masterDetailServices)
     {
         _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
         _passwordHandler = passwordHandler ?? throw new ArgumentNullException(nameof(passwordHandler));
         _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
-        _auditHandler = auditHandler ?? throw new ArgumentNullException(nameof(auditHandler));
         _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
 
         PageTitle = "用户管理";
@@ -366,16 +363,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     }
 
     private bool CanToggleUserStatus() => _statusHandler.CanToggleUserStatus(SelectedItem, IsBusy);
-
-    /// <summary>查看审计日志</summary>
-    [RelayCommand(CanExecute = nameof(CanShowAuditLog))]
-    private void ShowAuditLog()
-    {
-        if (SelectedItem == null) return;
-        _auditHandler.ShowAuditLog(SelectedItem);
-    }
-
-    private bool CanShowAuditLog() => _auditHandler.CanShowAuditLog(SelectedItem);
 
     /// <summary>恢复软删除</summary>
     [RelayCommand(CanExecute = nameof(CanRestore))]

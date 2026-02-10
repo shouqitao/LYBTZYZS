@@ -33,15 +33,12 @@ LYBT.Desktop.Shell/
 │   ├── HomeViewModel.cs                        # 首页视图模型（快速操作、统计信息）
 │   └── PlaceholderViewModels.cs                # 占位符视图模型
 │
-├── Dialogs/                                    # 对话框系统（2个标准对话框）
+├── Dialogs/                                    # 对话框系统（1个标准对话框）
 │   ├── Views/                                  # 对话框视图
 │   │   ├── ConfirmationDialog.xaml             # 确认对话框（是/否选择）
-│   │   ├── ConfirmationDialog.xaml.cs          # 确认对话框后台代码
-│   │   ├── EntityAuditLogDialog.xaml           # 审计日志对话框
-│   │   └── EntityAuditLogDialog.xaml.cs        # 审计日志对话框后台代码
+│   │   └── ConfirmationDialog.xaml.cs          # 确认对话框后台代码
 │   └── ViewModels/                             # 对话框视图模型
-│       ├── ConfirmationDialogViewModel.cs      # 确认对话框视图模型（IDialogAware实现）
-│       └── EntityAuditLogDialogViewModel.cs    # 审计日志对话框视图模型
+│       └── ConfirmationDialogViewModel.cs      # 确认对话框视图模型（IDialogAware实现）
 │
 ├── Extensions/                                 # 扩展方法（2个扩展类）
 │   ├── ServiceCollectionExtensions.cs          # 服务注册扩展（批量服务注册）
@@ -167,7 +164,6 @@ public partial class App : PrismApplication
 
         // 3. 注册对话框（Prism对话框服务）
         containerRegistry.RegisterDialog<ConfirmationDialog, ConfirmationDialogViewModel>();
-        containerRegistry.RegisterDialog<EntityAuditLogDialog, EntityAuditLogDialogViewModel>();
 
         // 4. 注册导航视图
         containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
@@ -1452,7 +1448,6 @@ _regionManager.RequestNavigate("ContentRegion", "PatientsManagement"); // 可能
 ```csharp
 //  正确：在App.xaml.cs中注册
 containerRegistry.RegisterDialog<ConfirmationDialog, ConfirmationDialogViewModel>();
-containerRegistry.RegisterDialog<EntityAuditLogDialog, EntityAuditLogDialogViewModel>();
 ```
 
 **对话框调用规范**：

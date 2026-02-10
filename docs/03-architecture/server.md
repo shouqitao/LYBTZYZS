@@ -100,7 +100,6 @@ LYBT.Infrastructure/
   Services/
     ICrossModuleQueryService.cs
     CrossModuleQueryService.cs
-    EntityAuditService.cs
   DependencyInjection/       # DI 扩展方法
   Logging/                   # 日志相关
   Migrations/                # EF Core 迁移

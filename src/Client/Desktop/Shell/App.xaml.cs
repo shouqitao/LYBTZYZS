@@ -157,7 +157,6 @@ public partial class App : PrismApplication
         containerRegistry.RegisterAllServices();
         containerRegistry.Register<MainWindowViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
-        containerRegistry.RegisterDialog<Dialogs.Views.EntityAuditLogDialog, Dialogs.ViewModels.EntityAuditLogDialogViewModel>();
         // [已删除] ApiConnectionFailedDialog - OpenSpec: refactor-startup-connection-resilience
         // OpenSpec: fix-missing-dialogs - 统一消息对话框和输入对话框
         containerRegistry.RegisterDialog<Dialogs.Views.MessageDialog, Dialogs.ViewModels.MessageDialogViewModel>();

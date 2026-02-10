@@ -118,7 +118,7 @@ public class ServerArchTests
         var invalidNames = serviceTypes
             .Where(t =>
             {
-                // 去掉泛型后缀（如 EntityAuditService`1 → EntityAuditService）
+                // 去掉泛型后缀（如 GenericService`1 → GenericService）
                 var baseName = t.Name.Contains('`') ? t.Name[..t.Name.IndexOf('`')] : t.Name;
                 return !baseName.EndsWith("Service") &&
                        !baseName.EndsWith("Manager") &&

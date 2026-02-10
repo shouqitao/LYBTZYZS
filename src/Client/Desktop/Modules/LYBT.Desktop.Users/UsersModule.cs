@@ -39,7 +39,6 @@ namespace LYBT.Desktop.Users
             // OpenSpec: refactor-frontend-srp-patterns - 注册Handler组件
             containerRegistry.Register<IUserPasswordHandler, UserPasswordHandler>();
             containerRegistry.Register<IUserStatusHandler, UserStatusHandler>();
-            containerRegistry.Register<IUserAuditHandler, UserAuditHandler>();
             containerRegistry.Register<IUserImportExportHandler, UserImportExportHandler>();
 
             // OpenSpec: migrate-views-to-role-modules - UserDetailView已删除（无调用）

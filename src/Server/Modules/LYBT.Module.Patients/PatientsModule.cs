@@ -1,7 +1,4 @@
 ﻿using FluentValidation;
-using LYBT.Entities.Patients;
-using LYBT.Infrastructure.Interfaces;
-using LYBT.Infrastructure.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
@@ -33,9 +30,6 @@ namespace LYBT.Module.Patients
 
             // Epic #1731: 注册Patients模块Validators
             services.AddValidatorsFromAssemblyContaining<PatientInputDtoValidator>();
-
-            // OpenSpec: add-global-audit-system - 审计服务
-            services.AddScoped<IAuditService<Patient>, EntityAuditService<Patient>>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

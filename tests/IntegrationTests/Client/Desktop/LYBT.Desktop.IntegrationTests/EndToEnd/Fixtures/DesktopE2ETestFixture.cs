@@ -164,7 +164,6 @@ public class DesktopE2ETestFixture : IDisposable
         services.AddScoped<UserService>();
         services.AddScoped<IUserPasswordHandler, UserPasswordHandler>();
         services.AddScoped<IUserStatusHandler, UserStatusHandler>();
-        services.AddScoped<IUserAuditHandler, UserAuditHandler>();
         services.AddScoped<IUserImportExportHandler, UserImportExportHandler>();
 
         // 14. ViewModel

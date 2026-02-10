@@ -188,7 +188,7 @@
   4. 支持分页查看审计日志
   5. 变更字段和值以 JSON 格式存储
 - **远程模式**: GET `/api/v1/medicalcases/{id}/audit-logs?page=&pageSize=`
-- **本地模式**: 不支持完整审计日志。仅保留实体级审计字段 (CreatedAt/UpdatedAt/CreatedBy/UpdatedBy)。EntityAuditController 仅远程模式可用
+- **本地模式**: 不支持完整审计日志。仅保留实体级审计字段 (CreatedAt/UpdatedAt/CreatedBy/UpdatedBy)
 - **验收标准**:
   - [ ] 每次变更都有审计记录
   - [ ] 修改原因正确记录

@@ -1,43 +1,90 @@
-# Research Findings: 需求文档深化
+# Research Findings: 文档-代码对齐审计
 
-## 代码调研关键发现
+## 审计范围
+- 10 个 Controller (104 个 API 端点)
+- 8 个 Desktop 模块 (含Core基础设施)
+- 8 个需求文档 (92 个 FR)
+- 7 个 API 参考文档 (86 个端点记录)
+- 6 个架构文档
+- 运维文档 (1个README)
 
-### 1. 本地模式实现完整度 (颠覆性发现)
-- **所有 5 个 LocalXxxDataSource 方法覆盖率均为 100%**
-- LocalUserDataSource 已完整实现 (此前假设不存在)
-- LocalAuthService: BCrypt 登录 + 密码修改 + 5次锁定/15分钟
-- LocalDbContext: 9 个 DbSet，与远程 100% 对齐
+## 核心发现
 
-### 2. 同步模块
-- 仅支持 Herb / Patient / Formula (硬编码 switch)
-- MedicalCase / User 同步: 无代码支持
-- 冲突解决: 手动 (SyncConflictDialog)
-- 无网络状态检测
+### 1. 8个业务模块 100% 对齐
+Auth, Users, Patients, Herbs, Formulas, MedicalCases, Sync, Printing 所有代码端点均有对应需求文档和API参考文档。MedicalCaseController 的 5 个废弃端点也正确标注。
 
-### 3. 打印模块
-- 批量打印已实现 (BatchPrintAsync)
-- PDF 导出不支持 (降级为 XPS)
-- 诊所信息硬编码 ("中医门诊")
+### 2. 系统级功能缺口 (4个模块) -> 已补全
 
-### 4. 价格模型
-- PrescriptionItem.UnitPrice = 快照值
-- 药材价格变更不影响已有处方
-- FormulaHerbItem 不含价格字段
+**EntityAuditController (7端点, 0文档)**:
+- 支持 7 种实体审计: Patient, Herb, Formula, User, Consultation, Prescription + 通用
+- 代码中每个实体有独立快捷端点 + 1个通用查询端点
+- 仅在 medical-cases.md FR-MC-012 概述提及
+- **决策**: 技术债务，不补文档，后续清除代码
 
-### 5. 医案编号
-- 格式: MC + yyyyMMdd + 3位序号
-- 本地生成，查当天记录数 + 1
-- CaseNumber 非唯一约束，Guid Id 为真正标识
+**HealthController (3端点)**: -> 已创建 health.md
+- GET /health (匿名探活)
+- GET /health/ping (Ping/Pong)
+- GET /health/details (认证+数据库检查)
 
-## 回填完成统计
-- 回填文件: 11 个
-- 原始标记: 57 处 (待讨论 + TBD + 待扩展)
-- 回填后残留: 0 处
-- 决策记录: 24 处"已确定"标记
+**DiagnosticsController (4端点)**: -> 已创建 diagnostics.md
+- GET /diagnostics/logging/status
+- POST /diagnostics/logging/debug/enable (临时调试，最长120分钟)
+- POST /diagnostics/logging/debug/disable
+- POST /diagnostics/logging/level
+- 权限: SuperAdmin only
 
-## 决策产出
-- 设计文档: docs/plans/2026-02-10-requirements-deepening-design.md (22 决策点)
-- 实施计划: docs/plans/2026-02-10-requirements-deepening-plan.md (12 Tasks)
+**LYBT.Desktop.CardReader (Desktop模块)**: -> 已创建 card-reader.md + desktop.md 章节
+- ICardReaderService: 身份证读卡器连接/读取
+- IPatientCardReaderIntegration: 读卡数据填充到患者表单
+- 在 PatientMasterDetailViewModel 中通过 ReadCardCommand 调用
+
+### 3. 代码验证修正 (执行阶段发现)
+
+**CardReadResult 数据模型差异**:
+- 计划中仅列出 7 个字段，实际代码含 17 个字段 (含计算属性 Age)
+- Gender 类型: 计划写 `string`，实际为 `Gender` 枚举 (Male/Female/Unknown)
+- BirthDate 类型: 计划写 `DateTime`，实际为 `DateTime?`
+- 新增字段: IssuingAuthority, ValidFrom, ValidTo, CardType, PhotoData, ReadTime, IsSuccess, ErrorMessage, ErrorCode
+- PhotoPath 应为 PhotoFilePath
+- 已修正 card-reader.md 数据模型表
+
+**ICardReader 接口差异**:
+- 缺少 Name, Vendor, Model 三个属性
+- ConnectAsync 有可选 connectionString 参数
+- ReadCardAsync 有 savePhoto, photoPath, cancellationToken 参数
+- 已修正
+
+**IPatientCardReaderIntegration 接口差异**:
+- 缺少 GetPatientDetailByIdAsync 方法
+- 有 CardReaderIntegrationEventType 事件枚举
+- 已修正
+
+### 4. 架构文档组件层 -> 已补全
+
+desktop.md 新增三个章节:
+- 可复用业务控件 (HerbListControl, HerbItemControl)
+- 业务弹窗 (5个: FormulaImport, HistoryCopy, UnsavedChanges, SyncConflict, UnfinishedCase)
+- CardReader 集成 (架构图 + 接口 + 事件)
+
+### 5. 运维文档 -> 已拆分
+
+docs/06-operations/ 拆分为:
+- README.md (概述 + 索引 + 日志 + 健康检查)
+- deployment.md (服务端/客户端部署 + 数据库运维)
+- configuration.md (10个配置节完整说明)
+
+### 6. 残留文件 -> 已清理
+
+docs/mapperly-warning-fix-plan.md 已删除。
+
+## 补全后统计
+
+| 维度 | 补全前 | 补全后 | 覆盖率 |
+|------|--------|--------|--------|
+| 需求文档 (FR) | 92 | 94 (+2 CARD) | 95% -> 95% (EntityAudit 待清除后为 100%) |
+| API 参考 (端点) | 86 | 93 (+3 Health +4 Diagnostics) | 86% -> 93% (EntityAudit 待清除后为 100%) |
+| 架构文档 (模块) | 8 | 8 + Controls/Dialogs/CardReader | 89% -> 100% |
+| 文档文件总数 | 41 | 46 (+5 新建 -1 删除 = +4 净增) | - |
 
 ---
-*Updated: 2026-02-10 (FINAL)*
+*Updated: 2026-02-10 (DOCUMENTATION ALIGNMENT COMPLETE)*
