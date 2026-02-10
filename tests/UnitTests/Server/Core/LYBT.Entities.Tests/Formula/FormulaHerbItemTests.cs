@@ -1,11 +1,16 @@
 using FluentAssertions;
 using LYBT.Entities.Formulas;
+using LYBT.Shared.Models.Enums;
 using Xunit;
 
 namespace LYBT.Entities.Tests.Formula
 {
     /// <summary>
     /// FormulaHerbItem实体单元测试 - 测试验方药材明细实体的所有属性和默认值
+    /// FormulaHerbItem不继承BaseEntity，有独立的Id
+    /// 属性：Id, FormulaId, HerbId (Guid?), OriginalHerbName, IsValidated,
+    ///       HerbName, Dosage (int), Unit, Usage, Remark, ProcessingMethod, DecocteMethod
+    /// 导航属性：Formula
     /// </summary>
     public class FormulaHerbItemTests
     {
@@ -16,12 +21,16 @@ namespace LYBT.Entities.Tests.Formula
             var formulaHerbItem = new FormulaHerbItem();
 
             // Assert
-            formulaHerbItem.HerbId.Should().Be(Guid.Empty);
+            formulaHerbItem.HerbId.Should().BeNull("HerbId为可空Guid，默认为null");
             formulaHerbItem.HerbName.Should().Be(string.Empty);
-            formulaHerbItem.Quantity.Should().Be(1);
+            formulaHerbItem.Dosage.Should().Be(1);
             formulaHerbItem.Unit.Should().Be("g");
             formulaHerbItem.Usage.Should().BeNull();
             formulaHerbItem.Remark.Should().BeNull();
+            formulaHerbItem.ProcessingMethod.Should().BeNull();
+            formulaHerbItem.OriginalHerbName.Should().BeNull();
+            formulaHerbItem.IsValidated.Should().BeFalse();
+            formulaHerbItem.DecocteMethod.Should().Be(DecocteMethod.Default);
         }
 
         [Fact]
@@ -39,6 +48,20 @@ namespace LYBT.Entities.Tests.Formula
         }
 
         [Fact]
+        public void HerbId_CanBeSetToNull()
+        {
+            // Arrange
+            var formulaHerbItem = new FormulaHerbItem();
+            formulaHerbItem.HerbId = Guid.NewGuid();
+
+            // Act
+            formulaHerbItem.HerbId = null;
+
+            // Assert
+            formulaHerbItem.HerbId.Should().BeNull("HerbId支持延迟绑定，可以为null");
+        }
+
+        [Fact]
         public void HerbName_PropertyCanBeSetAndGet()
         {
             // Arrange
@@ -53,27 +76,27 @@ namespace LYBT.Entities.Tests.Formula
         }
 
         [Fact]
-        public void Quantity_PropertyCanBeSetAndGet()
+        public void Dosage_PropertyCanBeSetAndGet()
         {
             // Arrange
             var formulaHerbItem = new FormulaHerbItem();
-            const decimal testQuantity = 12.5m;
+            const int testDosage = 12;
 
             // Act
-            formulaHerbItem.Quantity = testQuantity;
+            formulaHerbItem.Dosage = testDosage;
 
             // Assert
-            formulaHerbItem.Quantity.Should().Be(testQuantity);
+            formulaHerbItem.Dosage.Should().Be(testDosage);
         }
 
         [Fact]
-        public void Quantity_DefaultValueShouldBeOne()
+        public void Dosage_DefaultValueShouldBeOne()
         {
             // Arrange & Act
             var formulaHerbItem = new FormulaHerbItem();
 
             // Assert
-            formulaHerbItem.Quantity.Should().Be(1);
+            formulaHerbItem.Dosage.Should().Be(1);
         }
 
         [Fact]
@@ -137,10 +160,16 @@ namespace LYBT.Entities.Tests.Formula
             // Act
             formulaHerbItem.Usage = null;
             formulaHerbItem.Remark = null;
+            formulaHerbItem.ProcessingMethod = null;
+            formulaHerbItem.OriginalHerbName = null;
+            formulaHerbItem.HerbId = null;
 
             // Assert
             formulaHerbItem.Usage.Should().BeNull();
             formulaHerbItem.Remark.Should().BeNull();
+            formulaHerbItem.ProcessingMethod.Should().BeNull();
+            formulaHerbItem.OriginalHerbName.Should().BeNull();
+            formulaHerbItem.HerbId.Should().BeNull();
         }
 
         [Fact]
@@ -153,45 +182,36 @@ namespace LYBT.Entities.Tests.Formula
             // Act
             formulaHerbItem.HerbId = herbId;
             formulaHerbItem.HerbName = "当归";
-            formulaHerbItem.Quantity = 12;
+            formulaHerbItem.Dosage = 12;
             formulaHerbItem.Unit = "克";
             formulaHerbItem.Usage = "酒洗";
             formulaHerbItem.Remark = "补血圣药";
+            formulaHerbItem.ProcessingMethod = "酒炙";
+            formulaHerbItem.IsValidated = true;
 
             // Assert
             formulaHerbItem.HerbId.Should().Be(herbId);
             formulaHerbItem.HerbName.Should().Be("当归");
-            formulaHerbItem.Quantity.Should().Be(12);
+            formulaHerbItem.Dosage.Should().Be(12);
             formulaHerbItem.Unit.Should().Be("克");
             formulaHerbItem.Usage.Should().Be("酒洗");
             formulaHerbItem.Remark.Should().Be("补血圣药");
+            formulaHerbItem.ProcessingMethod.Should().Be("酒炙");
+            formulaHerbItem.IsValidated.Should().BeTrue();
         }
 
         [Fact]
-        public void Quantity_ShouldHandleDecimalPrecision()
-        {
-            // Arrange
-            var formulaHerbItem = new FormulaHerbItem();
-
-            // Act
-            formulaHerbItem.Quantity = 12.345m;
-
-            // Assert
-            formulaHerbItem.Quantity.Should().Be(12.345m);
-        }
-
-        [Fact]
-        public void Quantity_ShouldHandleZeroAndNegativeValues()
+        public void Dosage_ShouldHandleZeroAndNegativeValues()
         {
             // Arrange
             var formulaHerbItem = new FormulaHerbItem();
 
             // Act & Assert
-            formulaHerbItem.Quantity = 0;
-            formulaHerbItem.Quantity.Should().Be(0);
+            formulaHerbItem.Dosage = 0;
+            formulaHerbItem.Dosage.Should().Be(0);
 
-            formulaHerbItem.Quantity = -5;
-            formulaHerbItem.Quantity.Should().Be(-5);
+            formulaHerbItem.Dosage = -5;
+            formulaHerbItem.Dosage.Should().Be(-5);
         }
 
         [Fact]
@@ -202,20 +222,20 @@ namespace LYBT.Entities.Tests.Formula
             {
                 HerbId = Guid.NewGuid(),
                 HerbName = "当归",
-                Quantity = 12
+                Dosage = 12
             };
 
             var item2 = new FormulaHerbItem
             {
                 HerbId = Guid.NewGuid(),
                 HerbName = "白芍",
-                Quantity = 15
+                Dosage = 15
             };
 
             // Assert
-            item1.HerbId.Should().NotBe(item2.HerbId);
+            item1.HerbId.Should().NotBe(item2.HerbId!.Value);
             item1.HerbName.Should().NotBe(item2.HerbName);
-            item1.Quantity.Should().NotBe(item2.Quantity);
+            item1.Dosage.Should().NotBe(item2.Dosage);
         }
 
         [Fact]
@@ -301,6 +321,31 @@ namespace LYBT.Entities.Tests.Formula
 
             formulaHerbItem.Unit = "ml";
             formulaHerbItem.Unit.Should().Be("ml");
+        }
+
+        [Fact]
+        public void DecocteMethod_PropertyCanBeSetAndGet()
+        {
+            // Arrange
+            var formulaHerbItem = new FormulaHerbItem();
+
+            // Act & Assert
+            formulaHerbItem.DecocteMethod = DecocteMethod.Default;
+            formulaHerbItem.DecocteMethod.Should().Be(DecocteMethod.Default);
+        }
+
+        [Fact]
+        public void FormulaId_PropertyCanBeSetAndGet()
+        {
+            // Arrange
+            var formulaHerbItem = new FormulaHerbItem();
+            var testFormulaId = Guid.NewGuid();
+
+            // Act
+            formulaHerbItem.FormulaId = testFormulaId;
+
+            // Assert
+            formulaHerbItem.FormulaId.Should().Be(testFormulaId);
         }
     }
 }

@@ -18,12 +18,12 @@ namespace LYBT.UnitTests.Core.Entities
             // Arrange & Act
             var printLog = new PrescriptionPrintLog();
 
-            // Assert
-            printLog.Id.Should().Be(Guid.Empty, "Id应该由外部设置");
+            // Assert - BaseEntity defaults
+            printLog.Id.Should().NotBe(Guid.Empty, "Id由BaseEntity自动生成");
             printLog.PrescriptionId.Should().Be(Guid.Empty, "PrescriptionId应该由外部设置");
             printLog.PrintVersion.Should().Be(0);
-            printLog.IsSuccess.Should().BeFalse();
-            printLog.PrintedAt.Should().Be(default(DateTime));
+            printLog.IsSuccess.Should().BeTrue("IsSuccess默认为true");
+            printLog.PrintedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1), "PrintedAt默认为当前UTC时间");
         }
 
         #endregion

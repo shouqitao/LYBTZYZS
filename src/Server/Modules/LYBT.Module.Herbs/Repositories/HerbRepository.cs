@@ -112,7 +112,10 @@ namespace LYBT.Module.Herbs.Repositories
         /// </summary>
         public async Task<Herb?> GetByIdIncludingDeletedAsync(Guid id)
         {
-            return await _dbSet.FindAsync(id);
+            // FindAsync在EF Core 8中受全局查询过滤器影响，改用IgnoreQueryFilters
+            return await _dbSet
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(e => e.Id == id);
         }
 
         #endregion

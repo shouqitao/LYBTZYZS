@@ -243,9 +243,10 @@ namespace LYBT.Tests.Common
         protected virtual string GenerateTestToken()
         {
             // 生成真实的JWT Token用于集成测试认证（Issue #1668 Solution A）
-            //  密钥、Issuer、Audience必须与LYBT.WebAPI/appsettings.Test.json完全一致
+            // 密钥、Issuer、Audience必须与LYBT.WebAPI/appsettings.Test.json完全一致
+            // 注意：Auth middleware 使用 Encoding.UTF8.GetBytes(configValue) 作为签名密钥
             var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-            var key = System.Text.Encoding.ASCII.GetBytes("TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789");
+            var key = System.Text.Encoding.UTF8.GetBytes("VGVzdFNlY3JldEtleV9NaW5MZW5ndGgzMkNoYXJzX0ZvckpXVFRva2VuR2VuX0xZQlRfMTIzNDU2");
 
             //  Issue #1669: NameIdentifier必须是有效的Guid，用于填充CreatedBy审计字段
             var testUserId = Guid.NewGuid();

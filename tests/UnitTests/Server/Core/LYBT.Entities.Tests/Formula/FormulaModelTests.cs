@@ -1,13 +1,17 @@
 using FluentAssertions;
 using LYBT.Shared.Models.Enums;
 using Xunit;
-using FormulaEntity = LYBT.Entities.Formula.Formula;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
 using LYBT.Entities.Formulas;
 
 namespace LYBT.Entities.Tests.Formula
 {
     /// <summary>
     /// Formula实体单元测试 - 测试验方实体的所有属性和默认值
+    /// Formula继承BaseEntity
+    /// 属性：Name, Effect, Indication, Usage, Remark, Property,
+    ///       Status, IsShared, ValidationStatus, Category, FormulaType, UserId
+    /// 导航属性：Herbs (FormulaHerbItem)
     /// </summary>
     public class FormulaModelTests
     {
@@ -17,8 +21,10 @@ namespace LYBT.Entities.Tests.Formula
             // Arrange & Act
             var formula = new FormulaEntity();
 
-            // Assert
-            formula.Id.Should().Be(Guid.Empty);
+            // Assert - BaseEntity defaults
+            formula.Id.Should().NotBe(Guid.Empty, "Id由BaseEntity自动生成");
+
+            // Assert - Formula-specific defaults
             formula.Name.Should().Be(string.Empty);
             formula.Effect.Should().BeNull();
             formula.Usage.Should().BeNull();
@@ -168,8 +174,8 @@ namespace LYBT.Entities.Tests.Formula
             var formula = new FormulaEntity();
             var testHerbs = new List<FormulaHerbItem>
             {
-                new() { HerbName = "当归", Quantity = 1 },
-                new() { HerbName = "白芍", Quantity = 1 }
+                new() { HerbName = "当归", Dosage = 1 },
+                new() { HerbName = "白芍", Dosage = 1 }
             };
 
             // Act
@@ -218,10 +224,10 @@ namespace LYBT.Entities.Tests.Formula
             var formulaId = Guid.NewGuid();
             var herbs = new List<FormulaHerbItem>
             {
-                new() { HerbName = "当归", Quantity = 12, Unit = "克" },
-                new() { HerbName = "白芍", Quantity = 12, Unit = "克" },
-                new() { HerbName = "川芎", Quantity = 9, Unit = "克" },
-                new() { HerbName = "熟地黄", Quantity = 15, Unit = "克" }
+                new() { HerbName = "当归", Dosage = 12, Unit = "克" },
+                new() { HerbName = "白芍", Dosage = 12, Unit = "克" },
+                new() { HerbName = "川芎", Dosage = 9, Unit = "克" },
+                new() { HerbName = "熟地黄", Dosage = 15, Unit = "克" }
             };
 
             // Act
@@ -245,7 +251,7 @@ namespace LYBT.Entities.Tests.Formula
             formula.Status.Should().Be(CommonStatus.Enabled);
             formula.IsShared.Should().BeTrue();
             formula.Herbs.Should().HaveCount(4);
-            formula.Herbs.Should().Contain(h => h.HerbName == "当归" && h.Quantity == 12);
+            formula.Herbs.Should().Contain(h => h.HerbName == "当归" && h.Dosage == 12);
         }
 
         [Fact]
@@ -277,8 +283,8 @@ namespace LYBT.Entities.Tests.Formula
         {
             // Arrange
             var formula = new FormulaEntity();
-            var herb1 = new FormulaHerbItem { HerbName = "当归", Quantity = 12 };
-            var herb2 = new FormulaHerbItem { HerbName = "白芍", Quantity = 12 };
+            var herb1 = new FormulaHerbItem { HerbName = "当归", Dosage = 12 };
+            var herb2 = new FormulaHerbItem { HerbName = "白芍", Dosage = 12 };
 
             // Act
             formula.Herbs.Add(herb1);

@@ -1,16 +1,19 @@
 using FluentAssertions;
+using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
-using LYBT.Entities.Patients;
-using LYBT.Entities.Users;
+using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace LYBT.UnitTests.Core.Entities
 {
     /// <summary>
     /// MedicalCase实体单元测试
+    /// MedicalCase是聚合根，继承BaseEntity
+    /// 属性：PatientId, PatientName, UserId, DoctorName, CaseNumber, CaseStatus,
+    ///       NeedsPrescription, CompletedAt, Remark
+    /// 导航属性：Consultation, Prescription
+    /// 计算属性：IsLocked, IsActive, IsCompleted
     /// </summary>
     public class MedicalCaseModelTests
     {
@@ -25,80 +28,98 @@ namespace LYBT.UnitTests.Core.Entities
             // Assert
             medicalCase.Id.Should().NotBe(Guid.Empty);
             medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Active);
-            medicalCase.Status.Should().Be(CommonStatus.Enabled);
             medicalCase.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+            medicalCase.PatientName.Should().Be(string.Empty);
+            medicalCase.DoctorName.Should().Be(string.Empty);
+            medicalCase.NeedsPrescription.Should().BeNull("默认未标记是否需要处方");
+            medicalCase.CompletedAt.Should().BeNull();
+            medicalCase.Remark.Should().BeNull();
         }
 
         #endregion
 
-        #region CanEdit Permission Tests
+        #region IsLocked Computed Property Tests
 
-        [Theory]
-        [InlineData(true, null, true)]  // 管理员可以编辑
-        [InlineData(false, "doctor123", true)]  // 当天的医生可以编辑
-        [InlineData(false, "otherDoctor", false)]  // 其他医生不能编辑
-        public void CanEdit_ShouldReturnCorrectPermission(bool isAdmin, string currentUserId, bool expected)
+        [Fact]
+        public void IsLocked_ShouldReturnFalse_WhenActive()
         {
             // Arrange
-            var doctorId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-            var medicalCase = new MedicalCase
-            {
-                UserId = doctorId,
-                CreatedAt = DateTime.UtcNow.AddHours(-1) // 1小时前创建
-            };
+            var medicalCase = new MedicalCase { CaseStatus = MedicalCaseStatus.Active };
 
-            // 设置用户ID
-            if (currentUserId == "doctor123")
-            {
-                currentUserId = doctorId.ToString();
-            }
-            else if (currentUserId == "otherDoctor")
-            {
-                currentUserId = Guid.NewGuid().ToString();
-            }
-
-            // Act
-            var result = medicalCase.CanEdit(isAdmin, currentUserId);
-
-            // Assert
-            result.Should().Be(expected);
+            // Act & Assert
+            medicalCase.IsLocked.Should().BeFalse("Active状态不应被锁定");
         }
 
         [Fact]
-        public void CanEdit_ShouldReturnFalse_WhenCaseIsOlderThanOneDay()
+        public void IsLocked_ShouldReturnFalse_WhenDraft()
+        {
+            // Arrange
+            var medicalCase = new MedicalCase { CaseStatus = MedicalCaseStatus.Draft };
+
+            // Act & Assert
+            medicalCase.IsLocked.Should().BeFalse("Draft状态不应被锁定");
+        }
+
+        [Fact]
+        public void IsLocked_ShouldReturnFalse_WhenCompletedToday()
         {
             // Arrange
             var medicalCase = new MedicalCase
             {
-                UserId = Guid.NewGuid(),
-                CreatedAt = DateTime.UtcNow.AddDays(-2) // 2天前创建
+                CaseStatus = MedicalCaseStatus.Completed,
+                CompletedAt = DateTime.Today.AddHours(1) // 今天完成
             };
 
-            // Act
-            var result = medicalCase.CanEdit(false, medicalCase.UserId.ToString());
+            // Act & Assert
+            medicalCase.IsLocked.Should().BeFalse("当天完成的医案不应被锁定");
+        }
 
-            // Assert
-            result.Should().BeFalse("医疗案例超过24小时后不能编辑");
+        [Fact]
+        public void IsLocked_ShouldReturnTrue_WhenCompletedBeforeToday()
+        {
+            // Arrange
+            var medicalCase = new MedicalCase
+            {
+                CaseStatus = MedicalCaseStatus.Completed,
+                CompletedAt = DateTime.Today.AddDays(-1) // 昨天完成
+            };
+
+            // Act & Assert
+            medicalCase.IsLocked.Should().BeTrue("非当天完成的医案应该被锁定");
         }
 
         #endregion
 
-        #region IsLocked Status Tests
+        #region IsActive Computed Property Tests
+
+        [Theory]
+        [InlineData(MedicalCaseStatus.Draft, true)]
+        [InlineData(MedicalCaseStatus.Active, true)]
+        [InlineData(MedicalCaseStatus.Completed, false)]
+        public void IsActive_ShouldReturnCorrectValue(MedicalCaseStatus status, bool expected)
+        {
+            // Arrange
+            var medicalCase = new MedicalCase { CaseStatus = status };
+
+            // Act & Assert
+            medicalCase.IsActive.Should().Be(expected);
+        }
+
+        #endregion
+
+        #region IsCompleted Computed Property Tests
 
         [Theory]
         [InlineData(MedicalCaseStatus.Active, false)]
+        [InlineData(MedicalCaseStatus.Draft, false)]
         [InlineData(MedicalCaseStatus.Completed, true)]
-        // Issue #2242: Cancelled状态已废弃，移除测试用例
-        public void IsLocked_ShouldReturnCorrectStatus(MedicalCaseStatus caseStatus, bool expected)
+        public void IsCompleted_ShouldReturnCorrectValue(MedicalCaseStatus status, bool expected)
         {
             // Arrange
-            var medicalCase = new MedicalCase { CaseStatus = caseStatus };
+            var medicalCase = new MedicalCase { CaseStatus = status };
 
-            // Act
-            var result = medicalCase.IsLocked();
-
-            // Assert
-            result.Should().Be(expected);
+            // Act & Assert
+            medicalCase.IsCompleted.Should().Be(expected);
         }
 
         #endregion
@@ -112,9 +133,8 @@ namespace LYBT.UnitTests.Core.Entities
             var medicalCase = new MedicalCase();
 
             // Assert
-            medicalCase.Patient.Should().BeNull("导航属性默认为null");
-            medicalCase.Doctor.Should().BeNull("导航属性默认为null");
             medicalCase.Consultation.Should().BeNull("一对一关系默认为null");
+            medicalCase.Prescription.Should().BeNull("一对零或一关系默认为null");
         }
 
         [Fact]
@@ -126,10 +146,9 @@ namespace LYBT.UnitTests.Core.Entities
                 Id = Guid.NewGuid()
             };
 
-            var consultation = new Consultation.Consultation
+            var consultation = new Consultation
             {
-                MedicalCaseId = medicalCase.Id,
-                MedicalCase = medicalCase
+                Id = medicalCase.Id
             };
 
             // Act
@@ -137,8 +156,29 @@ namespace LYBT.UnitTests.Core.Entities
 
             // Assert
             medicalCase.Consultation.Should().NotBeNull();
-            medicalCase.Consultation.MedicalCaseId.Should().Be(medicalCase.Id);
-            medicalCase.Consultation.MedicalCase.Should().Be(medicalCase);
+            medicalCase.Consultation.Id.Should().Be(medicalCase.Id, "Consultation使用共享主键");
+        }
+
+        [Fact]
+        public void MedicalCase_ShouldSupportOptionalPrescription()
+        {
+            // Arrange
+            var medicalCase = new MedicalCase
+            {
+                Id = Guid.NewGuid()
+            };
+
+            var prescription = new Prescription
+            {
+                MedicalCaseId = medicalCase.Id
+            };
+
+            // Act
+            medicalCase.Prescription = prescription;
+
+            // Assert
+            medicalCase.Prescription.Should().NotBeNull();
+            medicalCase.Prescription.MedicalCaseId.Should().Be(medicalCase.Id);
         }
 
         #endregion
@@ -163,7 +203,7 @@ namespace LYBT.UnitTests.Core.Entities
             var medicalCase = new MedicalCase
             {
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid()
+                UserId = Guid.NewGuid()
             };
 
             // Act
@@ -220,6 +260,28 @@ namespace LYBT.UnitTests.Core.Entities
 
         #endregion
 
+        #region NeedsPrescription Tests
+
+        [Fact]
+        public void NeedsPrescription_ShouldSupportThreeStates()
+        {
+            // Arrange
+            var medicalCase = new MedicalCase();
+
+            // Assert - 默认为null（未标记）
+            medicalCase.NeedsPrescription.Should().BeNull();
+
+            // Act - 设置为需要处方
+            medicalCase.NeedsPrescription = true;
+            medicalCase.NeedsPrescription.Should().BeTrue();
+
+            // Act - 设置为不需要处方
+            medicalCase.NeedsPrescription = false;
+            medicalCase.NeedsPrescription.Should().BeFalse();
+        }
+
+        #endregion
+
         #region Soft Delete Tests
 
         [Fact]
@@ -236,6 +298,27 @@ namespace LYBT.UnitTests.Core.Entities
 
             // Assert
             medicalCase.IsDeleted.Should().BeTrue();
+        }
+
+        #endregion
+
+        #region Denormalized Name Fields Tests
+
+        [Fact]
+        public void DenormalizedNames_ShouldBeStoredCorrectly()
+        {
+            // Arrange & Act
+            var medicalCase = new MedicalCase
+            {
+                PatientId = Guid.NewGuid(),
+                PatientName = "张三",
+                UserId = Guid.NewGuid(),
+                DoctorName = "李医生"
+            };
+
+            // Assert
+            medicalCase.PatientName.Should().Be("张三");
+            medicalCase.DoctorName.Should().Be("李医生");
         }
 
         #endregion

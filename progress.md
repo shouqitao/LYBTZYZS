@@ -1,546 +1,365 @@
-# Progress Log: 测试体系重构
+# Progress Log: 文档体系重构
 
-## Session: 2026-02-05
+## Session: 2026-02-10 - 设计与计划
 
-### 已完成阶段
+### Phase 0: Brainstorm / Design - COMPLETE
 
-| Phase | 状态 | 产出 |
-|-------|------|------|
-| Phase 1: 测试现状分析 | `complete` | findings.md |
-| Phase 2: 测试规范设计 | `complete` | testing-standards.md |
-| Phase 2.5: 测试分层策略 | `complete` | test-layer-strategy.md |
-| **Phase 2.6: 测试设计方案** | **`complete`** | **test-design-plan.md** |
+- **Status:** complete
+- **Started:** 2026-02-10
 
----
+- Actions taken:
+  - 探索 docs/ 目录现状 (608 文件, 444K 行, 17 个目录)
+  - 收集项目全部业务信息 (project.md, 48 个 OpenSpec 规范, 实体模型, API 端点, Desktop 客户端)
+  - 与用户进行 brainstorm 交互式讨论 (6 轮提问)
+  - 确认目录结构: 6 个目录 + 数字前缀
+  - 确认模板标准: 6 类文档模板
+  - 确认核心规则: 8 条 (R-01 到 R-08)
+  - 确认迁移策略: 提取 → 合并 → 删除
+  - 确认执行顺序: 6 个 Phase
+  - 写入设计文档: docs/plans/2026-02-10-documentation-system-design.md
 
-### 参考文档查询
+- Files created:
+  - docs/plans/2026-02-10-documentation-system-design.md (设计文档)
+  - task_plan.md (计划)
+  - findings.md (发现)
+  - progress.md (进度)
 
-**已查询的最佳实践**:
-1. Microsoft .NET Unit Testing Best Practices
-2. xUnit.net 官方文档 (Theory, InlineData, Fact)
-3. FluentAssertions 官方文档 (Should, BeEquivalentTo)
+### Phase 0.5: Writing-Plans / 实施计划 - COMPLETE
 
-**核心原则**:
-- 测试命名: `{MethodName}_{Scenario}_{ExpectedBehavior}`
-- AAA 模式: Arrange → Act → Assert
-- 每个测试只测试一件事
-- 使用 Builder 模式创建测试数据
-- 单元测试与集成测试职责分离
+- **Status:** complete
+- **Started:** 2026-02-10
 
----
+- Actions taken:
+  - 使用 superpowers:writing-plans 编写详细实施计划
+  - 40 个 Task，6 个 Phase
+  - 标注每个 Task 的信息源 (spec 文件 + 代码路径)
+  - 标注并行依赖关系
+  - 同步到 planning-with-files 三文件
 
-### 实体结构确认
+- Files created:
+  - docs/plans/2026-02-10-documentation-system-plan.md (实施计划, 40 Tasks)
 
-**枚举值 (重要!)**:
-```csharp
-FormulaType: Classic=1, Experience=2 (没有 Custom!)
-CommonStatus: Disabled=0, Enabled=1
-Gender: Unknown=0, Male, Female
-```
-
-**业务字段确认**:
-- Herb: Name, PinYinCode, Category, Origin, Spec, Unit, Price, CostPrice, Effect, Usage, Remark, Status, IsDeleted
-- Patient: Name, PinYinCode, Gender, BirthDate, IdNumber, PhoneNumber, Address, AllergyHistory, MedicalHistory, Status, DisableReason, IsDeleted
-- Formula: Name, Effect, Indication, Usage, Remark, Property, Category, Status, FormulaType, IsDeleted, Herbs[]
-
----
-
-### 测试设计方案摘要
-
-#### ChecksumHelperTests (~56个测试)
-
-| 类别 | 数量 | 描述 |
-|------|------|------|
-| Herb 算法正确性 | 12 | 每个业务字段变更 |
-| Herb 审计字段排除 | 4 | 审计字段不影响 |
-| Patient 算法正确性 | 15 | 所有业务字段 |
-| Patient 审计字段排除 | 1 | 综合测试 |
-| Formula 算法正确性 | 10 | 含 Herbs 集合 |
-| 边界条件 | 10 | Null/特殊字符/数值精度 |
-| 类型路由 | 4 | 有效/无效类型 |
-
-#### SyncServiceTests (~40个测试)
-
-| API 方法 | 现有 | 目标 | 新增 |
-|----------|------|------|------|
-| GetSupportedEntityTypes | 1 | 2 | +1 |
-| GetMetadataAsync | 3 | 5 | +2 |
-| CompareAsync | 5 | 8 | +3 |
-| **UploadAsync** | **0** | **10** | **+10** |
-| DownloadAsync | 3 | 5 | +2 |
-| DeleteAsync | 7 | 10 | +3 |
+- Implementation plan 信息源索引:
+  | 信息类型 | 来源 |
+  |----------|------|
+  | 项目概述 | openspec/project.md |
+  | 认证规范 | openspec/specs/authentication/ + login-state-machine/ + login-ui/ + login-credential-handling/ + token-management/ + credential-vault/ + auth-events/ |
+  | 用户管理 | openspec/specs/user-management/ + api-authorization/ |
+  | 医案管理 | openspec/specs/medicalcase-lifecycle/ + medicalcase-edit-modes/ + medicalcase-ui-layout/ + global-audit/ |
+  | 验方管理 | openspec/specs/formula-copy-flow/ |
+  | 打印 | openspec/specs/printing-infrastructure/ |
+  | 架构 | openspec/specs/project-architecture/ + server-layer-architecture/ + client-layer-architecture/ + shared-layer-architecture/ + desktop-architecture/ |
+  | 模式规范 | openspec/specs/repository-patterns/ + service-conventions/ + viewmodel-conventions/ + dto-architecture/ + error-handling/ |
+  | 实体模型 | src/Server/Core/LYBT.Entities/ |
+  | API 端点 | src/Server/Services/LYBT.WebAPI/Controllers/ |
+  | Desktop | src/Client/Desktop/Modules/ |
 
 ---
 
-### 用户决策记录
+## 5-Question Reboot Check
 
-| 决策 | 选择 | 日期 |
-|------|------|------|
-| 重构范围 | 全项目测试 (36个项目) | 2026-02-05 |
-| 执行策略 | 全面重写 | 2026-02-05 |
-
----
-
-## Phase 2.6 完成: 全项目测试设计文档
-
-**完成时间**: 2026-02-05
-
-### 已创建的设计文档 (16份)
-
-| 优先级 | 文档 | 测试数目标 |
-|--------|------|------------|
-| **P0** | test-design-plan.md (Sync) | 96 |
-| **P1** | test-design-herbs.md | 87 |
-| **P1** | test-design-localdata.md | 120 |
-| **P1** | test-design-desktop-patients.md | 81 |
-| **P1** | test-design-desktop-users.md | 76 |
-| **P1** | test-design-validators.md | 139 |
-| **P2** | test-design-auth.md | 90 |
-| **P2** | test-design-server-patients.md | 75 |
-| **P2** | test-design-formula.md | 62 |
-| **P2** | test-design-server-users.md | 50 |
-| **P2** | test-design-infrastructure.md | 98 |
-| **P2** | test-design-foundation.md | 100 |
-| **P2** | test-design-desktop-auth.md | 40 |
-| **P2** | test-design-models.md | 49 |
-| **P3** | test-design-p3-modules.md (综合) | 122 |
-| **集成** | test-design-integration.md | 115 |
-| **架构** | test-design-arch.md | 110 |
-
-### 测试数目标总计
-
-| 分类 | 现有测试 | 目标测试 | 新增 |
-|------|----------|----------|------|
-| P0-P1 | ~200 | ~600 | +400 |
-| P2 | ~220 | ~560 | +340 |
-| P3 | ~613 | ~735 | +122 |
-| 集成测试 | ~55 | ~115 | +60 |
-| 架构测试 | ~68 | ~110 | +42 |
-| **总计** | **~1,156** | **~2,120** | **+964** |
+| Question | Answer |
+|----------|--------|
+| Where am I? | Phase 0 + 0.5 完成 (设计+计划)，准备进入 Phase 1 执行 |
+| Where am I going? | Phase 1: Task 1-5 (目录骨架 + 01-product/ 4个文件) |
+| What's the goal? | 608 文件 → ~35 文件，建立以 PRD 为核心的文档体系 |
+| What have I learned? | 见 findings.md |
+| What have I done? | 设计文档 + 实施计划 (40 Tasks) 完成 |
 
 ---
 
-## Phase 3.1 完成: LYBT.Module.Sync.Tests
+## Session: 2026-02-10 - Phase 1 执行
 
-**完成时间**: 2026-02-05
+### Batch 1: Task 1-3 - COMPLETE
 
-### 执行结果
+- **Status:** complete
 
-| 指标 | 结果 |
-|------|------|
-| 测试总数 | 89 |
-| 通过数 | 89 |
-| 失败数 | 0 |
-| 新增测试 | 10 (UploadAsync) |
-| 修复测试 | 9 (ChecksumHelperTests) |
+- Actions taken:
+  - Task 1: 创建 8 个目录骨架 (01-product ~ 06-operations + assets + decisions)
+  - Task 2: 编写 docs/01-product/README.md (产品概述，含核心功能、双模式特性、技术栈)
+  - Task 3: 编写 docs/01-product/vision.md (产品愿景、业务目标、核心流程图、系统边界)
 
-### 修复的问题
+- Files created:
+  - docs/01-product/README.md
+  - docs/01-product/vision.md
 
-| 问题 | 修复方案 |
-|------|----------|
-| `FormulaType.Custom` 不存在 | 改为 `FormulaType.Experience` |
-| `CreateTestXXX()` 每次生成新 Id | 在测试中显式设置 `sharedId` |
-| 审计字段测试 Id 不一致 | 修复 9 个测试，确保相同 Id |
+- Verification:
+  - 目录骨架: 全部 8 个目录存在
+  - README.md: 符合模板 (概述 + 正文 + 变更记录)
+  - vision.md: 符合模板，含 Mermaid 流程图
 
-### 新增的 UploadAsync 测试 (10个)
+### Batch 2: Task 4-5 - COMPLETE (Phase 1 Done)
 
-```
-1. UploadAsync_WithNewHerb_ShouldCreate
-2. UploadAsync_WithExistingHerb_OverwriteTrue_ShouldUpdate
-3. UploadAsync_WithExistingHerb_OverwriteFalse_ShouldReturnConflict
-4. UploadAsync_WithNewPatient_ShouldCreate
-5. UploadAsync_WithNewFormula_ShouldCreateWithHerbs
-6. UploadAsync_WithExistingFormula_OverwriteTrue_ShouldUpdateHerbs
-7. UploadAsync_WithBatchEntities_ShouldProcessAll
-8. UploadAsync_WithInvalidJson_ShouldReturnError
-9. UploadAsync_WithInvalidEntityType_ShouldReturnFailure
-10. UploadAsync_WithMixedResults_ShouldReportCorrectly
-```
+- **Status:** complete
 
----
+- Actions taken:
+  - Task 4: 编写 docs/01-product/glossary.md (术语表，含业务术语 17 项 + 技术术语 11 项 + 枚举 7 组)
+  - Task 5: 编写 docs/01-product/user-roles.md (4 角色定义 + 模块权限矩阵 + 医案资源级权限 + 工作区模式)
 
-## Phase 3.2 完成: LYBT.Shared.Validators.Tests
+- Information sources:
+  - 实体模型: src/Server/Core/LYBT.Entities/ (全部实体类和枚举)
+  - 权限 spec: openspec/specs/api-authorization/spec.md
+  - 用户管理 spec: openspec/specs/user-management/spec.md
+  - 医案编辑模式 spec: openspec/specs/medicalcase-edit-modes/spec.md
+  - Controller 源码: [Authorize] 属性配置
 
-**完成时间**: 2026-02-05
+- Files created:
+  - docs/01-product/glossary.md
+  - docs/01-product/user-roles.md
 
-### 执行结果
+- **Phase 1 Summary:**
+  - 5/5 Tasks 完成
+  - 4 个文档 + 8 个目录创建
+  - 01-product/ 目录完整
 
-| 指标 | 结果 |
-|------|------|
-| 测试总数 | 214 |
-| 通过数 | 214 |
-| 失败数 | 0 |
-| 新增测试 | 214 (从0开始) |
+### Batch 3: Task 6-8 - COMPLETE
 
-### 创建的测试文件 (8个)
+- **Status:** complete
 
-| 目录 | 文件 | 测试数 |
-|------|------|--------|
-| Auth/ | LoginRequestValidatorTests.cs | 16 |
-| Auth/ | ChangePasswordRequestValidatorTests.cs | 16 |
-| Auth/ | SuperAdminLoginRequestValidatorTests.cs | 4 |
-| Patients/ | PatientInputDtoValidatorTests.cs | 27 |
-| Users/ | UserInputDtoValidatorTests.cs | 30 |
-| Herbs/ | HerbInputDtoValidatorTests.cs | 27 |
-| Formula/ | FormulaInputDtoValidatorTests.cs | 32 |
-| MedicalCase/ | MedicalCaseInputDtoValidatorTests.cs | 8 |
-| Consultation/ | ConsultationInputDtoValidatorTests.cs | 8 |
-| Prescriptions/ | PrescriptionInputDtoValidatorTests.cs | 46 |
+- Actions taken:
+  - Task 6: 编写 docs/02-requirements/README.md (需求总览，含模块索引、FR编号规则、双模式标注说明)
+  - Task 7: 编写 docs/02-requirements/auth.md (FR-AUTH-001~013, 从7个认证spec+AuthController提取)
+  - Task 8: 编写 docs/02-requirements/users.md (FR-USER-001~012, 从user-management spec+UsersController提取)
 
-### 修复的问题
+- Information sources:
+  - 7个认证spec: authentication, login-state-machine, login-credential-handling, token-management, credential-vault, auth-events, login-ui
+  - AuthController.cs: 6个API端点
+  - user-management spec: 密码验证、修改、状态联动
+  - UsersController.cs: 13个API端点
+  - UserModel.cs + UserService: 实体定义和业务逻辑
 
-| 问题 | 修复方案 |
-|------|----------|
-| 邮箱长度边界测试 | 92+9=101 > 100 |
-| 价格边界测试 | 使用0.02而非0.01 (GreaterThan) |
+- Files created:
+  - docs/02-requirements/README.md
+  - docs/02-requirements/auth.md (13个FR, 8个错误码, 8个配置参数)
+  - docs/02-requirements/users.md (12个FR, 批量操作3种)
 
----
+### Batch 4: Task 9-11 - COMPLETE
 
-## Phase 3.3 完成: LYBT.Module.Herbs.Tests
+- **Status:** complete
 
-**完成时间**: 2026-02-05
+- Actions taken:
+  - Task 9: 编写 docs/02-requirements/patients.md (FR-PAT-001~012, 12端点, 敏感数据保护, Excel导入导出)
+  - Task 10: 编写 docs/02-requirements/herbs.md (FR-HERB-001~013, Excel+JSON双导入, 引用检查, 重复策略)
+  - Task 11: 编写 docs/02-requirements/formulas.md (FR-FORM-001~013, 延迟绑定, 验证工作流, 共享机制)
 
-| 指标 | 结果 |
-|------|------|
-| 测试总数 | 52 |
-| 通过数 | 52 |
-| 新增测试 | 28 (HerbServiceTests) |
+- Information sources:
+  - PatientsController: 12个端点, PatientModel: 20+字段(含5个敏感字段)
+  - HerbsController: 18个端点, HerbModel: 13字段, herb-card-control spec
+  - FormulasController: 16个端点, FormulaModel+FormulaHerbItem, formula-copy-flow spec
+  - 各模块 Service/Repository 方法签名
 
----
+- Files created:
+  - docs/02-requirements/patients.md (12 FR)
+  - docs/02-requirements/herbs.md (13 FR)
+  - docs/02-requirements/formulas.md (13 FR)
 
-## Phase 4 准备: Desktop P1 模块探索
+### Batch 5: Task 12-15 - COMPLETE (Phase 2 Done)
 
-**完成时间**: 2026-02-05
+- **Status:** complete
 
-### 探索发现
+- Actions taken:
+  - Task 12: 编写 docs/02-requirements/medical-cases.md (FR-MC-001~017, 17个FR, 状态机, 聚合根, CQRS, 审计系统)
+  - Task 13: 编写 docs/02-requirements/sync.md (FR-SYNC-001~008, Checksum比对, 冲突解决, 3种实体类型)
+  - Task 14: 编写 docs/02-requirements/printing.md (FR-PRINT-001~004, A5模板, 版本管理, 打印日志)
+  - Task 15: 回填 README.md 功能数 (8模块, 总计92个FR)
 
-| 模块 | 现有 | 目标 | 缺口 | 覆盖率 |
-|------|------|------|------|--------|
-| Users | 1 | 20 | +19 | 5% |
-| Patients | 7 | 25 | +18 | 28% |
-| LocalData | 47 | 60 | +13 | 78% |
+- Information sources:
+  - MedicalCase: 4个spec + MedicalCasesController (23端点) + 5个实体
+  - Sync: SyncController (6端点) + Desktop.Sync + Desktop.LocalData
+  - Printing: printing-infrastructure spec + Desktop.Printing + PrescriptionPrintLog
 
-### 执行计划
+- Files created/modified:
+  - docs/02-requirements/medical-cases.md (17 FR, 最大最复杂文档)
+  - docs/02-requirements/sync.md (8 FR)
+  - docs/02-requirements/printing.md (4 FR)
+  - docs/02-requirements/README.md (回填功能数)
 
-1. **LYBT.Desktop.Users.Tests** - 完全从零开始 (19个新测试)
-   - UserRepository: 8-10个
-   - UserService: 6-8个
-   - UserListViewModel: 3-5个
-
-2. **LYBT.Desktop.Patients.Tests** - Repository/Service 缺失 (18个新测试)
-   - PatientRepository: 8-10个
-   - PatientService: 6-8个
-   - PatientListViewModel: 2-3个
-
-3. **LYBT.Desktop.LocalData.Tests** - 补充 Formula 和 Sync (13个新测试)
-   - LocalFormulaDataSource: 8-10个
-   - SyncService/ChecksumHelper: 3-5个
+- **Phase 2 Summary:**
+  - 10/10 Tasks 完成
+  - 9 个文档 (1 README + 8 模块需求)
+  - 92 个功能需求 (FR) 编号完成
+  - 8 个业务模块需求规格全部覆盖
 
 ---
 
-## Phase 4.1 完成: LYBT.Desktop.Users.Tests
+## Session: 2026-02-10 - Phase 3 执行
 
-**完成时间**: 2026-02-05
+### Batch 1: Task 16-18 - COMPLETE
 
-| 指标 | 结果 |
-|------|------|
-| 测试总数 | 44 |
-| 通过数 | 44 |
-| 新增测试 | 43 (Repository 21 + Service 22) |
+- **Status:** complete
 
----
+- Actions taken:
+  - Task 16: 编写 docs/03-architecture/README.md (架构总览，含技术栈版本表、文档索引、核心架构原则)
+  - Task 17: 编写 docs/03-architecture/system-overview.md (系统架构图、解决方案结构、依赖方向图、模块通信)
+  - Task 18: 编写 docs/03-architecture/server.md (三层架构、CQRS vs 传统模式、异常处理链、错误码体系)
 
-## Phase 4.2 完成: LYBT.Desktop.Patients.Tests
+- Information sources:
+  - openspec/project.md: 项目概述和技术栈
+  - openspec/specs/project-architecture/spec.md: 三层架构定义
+  - openspec/specs/server-layer-architecture/spec.md: Server层详细架构
+  - openspec/specs/repository-patterns/spec.md: Repository模式规范
+  - openspec/specs/service-conventions/spec.md: Service约定规范
+  - openspec/specs/error-handling/spec.md: 错误处理规范
+  - src/Server/Services/LYBT.WebAPI/Program.cs: 实际启动配置
 
-**完成时间**: 2026-02-05
+- Files created:
+  - docs/03-architecture/README.md
+  - docs/03-architecture/system-overview.md
+  - docs/03-architecture/server.md
 
-| 指标 | 结果 |
-|------|------|
-| 测试总数 | 42 |
-| 通过数 | 42 |
-| 新增测试 | 35 (Repository 18 + Service 17) |
+### Batch 2: Task 19-21 - COMPLETE
 
----
+- **Status:** complete
 
-## Phase 4.3 完成: LYBT.Desktop.LocalData.Tests
+- Actions taken:
+  - Task 19: 编写 docs/03-architecture/desktop.md (MVVM+Prism架构、模块注册、ViewModel基类体系、Components分层)
+  - Task 20: 编写 docs/03-architecture/shared.md (DTO继承层次、Models/Utilities/Components分工、验证一致性)
+  - Task 21: 编写 docs/03-architecture/dual-mode.md (策略模式切换、LocalDbContext/SyncService、Checksum同步)
 
-**完成时间**: 2026-02-05
+- Information sources:
+  - openspec/specs/client-layer-architecture/spec.md
+  - openspec/specs/desktop-architecture/spec.md
+  - openspec/specs/shared-layer-architecture/spec.md
+  - openspec/specs/viewmodel-conventions/spec.md
+  - openspec/specs/dto-architecture/spec.md
+  - src/Client/Desktop/Core/LYBT.Desktop.LocalData/ (代码逆向)
+  - src/Client/Desktop/Modules/LYBT.Desktop.Sync/ (代码逆向)
+  - src/Client/Desktop/Shell/Extensions/ (DI注册逻辑)
 
-| 指标 | 结果 |
-|------|------|
-| 测试总数 | 70 |
-| 通过数 | 70 |
-| 新增测试 | 22 (LocalFormulaDataSourceTests) |
+- Files created:
+  - docs/03-architecture/desktop.md
+  - docs/03-architecture/shared.md
+  - docs/03-architecture/dual-mode.md
 
-### 创建的测试文件
+### Batch 3: Task 22-23 - COMPLETE (Phase 3 Done)
 
-| 文件 | 测试数 | 覆盖方法 |
-|------|--------|----------|
-| LocalFormulaDataSourceTests.cs | 22 | GetByIdAsync, GetWithHerbsAsync, GetPagedAsync, CreateAsync, UpdateAsync, DeleteAsync, CloneAsync, ToggleStatusAsync, RestoreAsync |
+- **Status:** complete
 
-### 修复的 Bug
+- Actions taken:
+  - Task 22: 编写 docs/03-architecture/data-model.md (ER图、13个实体完整字段表、7个枚举、聚合根边界)
+  - Task 23: 提取 6 个 ADR 到 docs/03-architecture/decisions/ (从 13+ 个旧 ADR 精选合并)
 
-| 问题 | 位置 | 修复方案 |
-|------|------|----------|
-| 集合迭代时修改异常 | LocalFormulaDataSource.UpdateAsync:120 | RemoveRange 前先 ToList() |
+- Information sources:
+  - src/Server/Core/LYBT.Entities/ (全部实体定义)
+  - docs/state/architecture/decisions/ (11个旧ADR)
+  - docs/architecture/decisions/ (1个旧ADR)
+  - docs/state/adr/ (1个旧ADR)
 
----
+- Files created:
+  - docs/03-architecture/data-model.md
+  - docs/03-architecture/decisions/0001-medicalcase-aggregate-root.md
+  - docs/03-architecture/decisions/0002-dual-mode-architecture.md
+  - docs/03-architecture/decisions/0003-integration-first-testing.md
+  - docs/03-architecture/decisions/0004-user-context-propagation.md
+  - docs/03-architecture/decisions/0005-superadmin-auth-module.md
+  - docs/03-architecture/decisions/0006-component-decomposition-pattern.md
 
-## Phase 4.4 完成: LYBT.Desktop.Infrastructure.Tests
+- **Phase 3 Summary:**
+  - 8/8 Tasks 完成
+  - 7 个架构文档 + 6 个 ADR = 13 个文件
+  - 03-architecture/ 目录完整
 
-**完成时间**: 2026-02-05
+## 5-Question Reboot Check
 
-### Mapper 测试 (25个)
-
-| 测试文件 | 测试数 | 状态 |
-|----------|--------|------|
-| HerbDataSourceMapperTests | 6 | PASS |
-| UserDataSourceMapperTests | 6 | PASS |
-| PatientDataSourceMapperTests | 6 | PASS |
-| FormulaDataSourceMapperTests | 5 | PASS |
-| MedicalCaseDataSourceMapperTests | 6 | PASS |
-| **Mapper 总计** | **25** | **PASS** |
-
-### Services 测试 (63个新增)
-
-| 测试文件 | 测试数 | 状态 |
-|----------|--------|------|
-| PaginationServiceTests | 20 | PASS |
-| SelectionServiceTests | 22 | PASS |
-| LoadingStateManagerTests | 11 | PASS |
-| SearchServiceTests | 10 | PASS |
-| **Services 总计** | **63** | **PASS** |
-
-### 本次新增总计
-
-| 分类 | 新增测试 |
-|------|----------|
-| LocalData.Tests (Phase 4.3) | +22 |
-| Infrastructure Mappers | +25 |
-| Infrastructure Services | +63 |
-| **会话总计** | **+110** |
-
----
-*Updated: 2026-02-05*
-
----
-
-## Session: 2026-02-06 P2 Server模块测试补充
-
-### 完成工作
-
-| 模块 | 新增测试 | 通过/总计 | 状态 |
-|------|----------|-----------|------|
-| Formula Service | +13 | 28/35 | 大部分通过 |
-| Users Service | +19 | 31/33 | 大部分通过 |
-| Patients Service | +11 | 43/47 | 大部分通过 |
-
-### 本次会话: +43 测试
-
-### 新增测试覆盖
-
-**FormulaServiceTests 新增:**
-- ToggleStatusAsync (3个)
-- RestoreAsync (3个)
-- BatchDeleteAsync (4个)
-- BatchUpdateStatusAsync (3个)
-
-**UserServiceTests 新增:**
-- ResetPasswordAsync (2个)
-- ChangePasswordAsync (3个)
-- ChangeProfileAsync (2个)
-- ToggleStatusAsync (3个)
-- RestoreAsync (3个)
-- BatchDeleteAsync (3个)
-- BatchUpdateStatusAsync (3个)
-
-**PatientServiceTests 新增:**
-- RestoreAsync (3个)
-- BatchDeleteAsync (4个)
-- CheckReferenceAsync (2个)
-- BatchCheckReferenceAsync (2个)
-
-### 待修复测试 (13个) - **已全部修复**
-- ~~Formula: ValidateFormulaHerbAsync系列、ToggleStatusAsync/RestoreAsync~~
-- ~~Users: ChangePasswordAsync、RestoreAsync~~
-- ~~Patients: BatchDeleteAsync、RestoreAsync、CheckReferenceAsync~~
-
-### 技术发现
-- BatchOperationResultDto 使用 `FailureCount` 而非 `FailCount`
-- FormulaService.BatchDeleteAsync 使用软删除(GetByIdAsync + UpdateAsync)
-- UserService.ToggleStatusAsync 使用 GetByIdAsync
-- ChangeProfileDto 只有 RealName/PhoneNumber 两个字段
-- ResetPasswordResponseDto 使用 TemporaryPassword 而非 NewPassword
+| Question | Answer |
+|----------|--------|
+| Where am I? | Phase 1 + Phase 2 + Phase 3 完成，准备进入 Phase 4 |
+| Where am I going? | Phase 4: Task 24-30 (04-api-reference/ API参考) |
+| What's the goal? | 608 文件 -> ~35 文件，建立以 PRD 为核心的文档体系 |
+| What have I learned? | 见 findings.md |
+| What have I done? | Phase 1 (4 产品文档) + Phase 2 (9 需求文档, 92 FR) + Phase 3 (7 架构文档 + 6 ADR) |
 
 ---
 
-## Session: 2026-02-06 (续) Server模块测试完成
+## Session: 2026-02-10 - Phase 4 执行
 
-### 修复工作
+### Batch 1: Task 24-27 - COMPLETE
 
-| 问题 | 修复方案 |
-|------|----------|
-| Auth.LoginAsync 测试失败 | testUserDto 添加 Status=Enabled，排除审计字段比较 |
-| MedicalCase 编译失败 | 添加 AutoMapper 包，删除不需要的 IMapper 参数 |
-| MedicalCase.CloseCaseAsync 断言错误 | BeTrue→NotBeNull，返回类型是 MedicalCase? |
-| MedicalCase 跨日编辑规则测试 | 设置 CreatedAt/CompletedAt 为昨天 |
+- **Status:** complete
 
-### Server 模块最终状态
+- Actions taken:
+  - Task 24: 编写 docs/04-api-reference/README.md (API总览，含基本信息、通用响应格式、分页规范、10个Controller全端点索引、错误码速查、授权策略、废弃端点)
+  - Task 25: 编写 docs/04-api-reference/auth.md (5个端点，含限流、AutoLoginToken轮换、过期Token登出)
+  - Task 26: 编写 docs/04-api-reference/users.md (14个端点，含AdminOnly策略、SuperAdmin特殊处理、批量操作)
+  - Task 27: 编写 docs/04-api-reference/patients.md (10个端点，含Excel导入导出、所有权检查、软删除恢复)
 
-| 模块 | 测试数 | 状态 |
-|------|--------|------|
-| Auth | 81 | ✅ 通过 |
-| Herbs | 52 | ✅ 通过 |
-| Patients | 47 | ✅ 通过 |
-| Users | 33 | ✅ 通过 |
-| Sync | 89 | ✅ 通过 |
-| MedicalCase | 32 | ✅ 通过 |
-| Formula | 35 | ✅ 通过 |
-| **总计** | **369** | ✅ **全部通过** |
+- Information sources:
+  - AuthController.cs: 5个端点 (login, auto-login, logout, refresh, validate)
+  - UsersController.cs: 14个端点 (CRUD + 密码 + 状态 + 批量)
+  - PatientsController.cs: 10个端点 (CRUD + import/export + restore + batch)
+  - BaseApiController.cs: 通用响应方法、所有权检查、认证错误码映射
 
-### Phase 3 完成标志
-- [x] 所有 Server 模块测试通过
-- [x] 编译无错误
-- [x] 无遗留失败测试
+- Files created:
+  - docs/04-api-reference/README.md
+  - docs/04-api-reference/auth.md
+  - docs/04-api-reference/users.md
+  - docs/04-api-reference/patients.md
 
----
+### Batch 2: Task 28-30 - COMPLETE (Phase 4 Done)
 
-## Session: 2026-02-06 (续2) Desktop模块测试修复
+- **Status:** complete
 
-### 修复工作
+- Actions taken:
+  - Task 28: 编写 docs/04-api-reference/herbs.md (17个端点，含Excel+JSON双导入、引用检查、状态切换)
+  - Task 29: 编写 docs/04-api-reference/formulas.md (15个端点，含延迟绑定验证、角色过滤、FormulaAuthorizationHandler)
+  - Task 30: 编写 docs/04-api-reference/medical-cases.md (18+端点，CQRS架构，聚合根保存，5个废弃端点记录)
+  - Task 30: 编写 docs/04-api-reference/sync.md (6个端点，完整同步工作流)
 
-| 问题 | 修复方案 |
-|------|----------|
-| Foundation.LocalTokenValidatorTests 失败 | 配置键从 `Lybt:Jwt:*` 改为 `Jwt:*`，使用 ConfigurationBuilder 替代 NSubstitute mock |
+- Information sources:
+  - HerbsController.cs: 17个端点 (CRUD + import/export + reference-check + batch)
+  - FormulasController.cs: 15个端点 (CRUD + batch-import + validation + batch)
+  - MedicalCaseController.cs: 18+端点 (Command/Query分离，聚合保存，权限/审计)
+  - SyncController.cs: 6个端点 (entity-types + metadata + compare + upload + download + delete)
+  - HealthController.cs: 3个端点
+  - EntityAuditController.cs: 7个端点
+  - DiagnosticsController.cs: 4个端点
 
-### Desktop 模块当前状态
+- Files created:
+  - docs/04-api-reference/herbs.md
+  - docs/04-api-reference/formulas.md
+  - docs/04-api-reference/medical-cases.md
+  - docs/04-api-reference/sync.md
 
-| 模块 | 测试数 | 状态 | 备注 |
-|------|--------|------|------|
-| Foundation | 130 | ✅ 通过 | 包含 LocalTokenValidator 8个测试 |
-| LocalData | 70 | ✅ 通过 | |
-| Users | 44 | ✅ 通过 | (之前完成) |
-| Patients | 42 | ✅ 通过 | (之前完成) |
-| Infrastructure | ~150 | ⚠️ 部分 | WPF控件测试需特殊配置 |
+- **Phase 4 Summary:**
+  - 7/7 Tasks 完成
+  - 8 个 API 文档 (1 README + 7 模块)
+  - 覆盖全部 10 个 Controller
+  - 端点总数: 5+14+10+17+15+18+6+3+7+4 = 99 个端点
 
-### 待处理 (P3)
-- Infrastructure 的 WPF 控件/视图测试需要 Application 资源上下文
-- 这类测试应归类为集成测试而非单元测试
+## Session: 2026-02-10 - Phase 5 + Phase 6 执行
 
-### 本会话总结
+### Batch 3: Task 31-36 (Phase 5) - COMPLETE
 
-**Server 模块**: 369 个测试全部通过
-**Desktop 模块**: 583 个测试通过
+- Actions taken:
+  - Task 31: docs/05-development/README.md (5分钟快速开始、项目结构、运行模式)
+  - Task 32: docs/05-development/setup.md (.NET SDK/VS/SQL Server/Git配置)
+  - Task 33: docs/05-development/code-standards.md (命名、架构、DDD/MVVM规范)
+  - Task 34: docs/05-development/patterns.md (Repository/Service/ViewModel/DI 4大模式速查)
+  - Task 35: docs/05-development/testing.md (Diamond Model策略、5项目结构)
+  - Task 36: docs/06-operations/README.md (部署、配置、日志、健康检查、运维)
 
----
+### Batch 4: Task 37-40 (Phase 6 - 清理) - COMPLETE
 
-## Session: 2026-02-06 (续3) Desktop模块完整检查
+- Actions taken:
+  - Task 37: docs/README.md (文档导航入口)
+  - Task 38: 删除17个旧目录
+  - Task 39: 精简根 README.md (416行 -> 88行)
+  - Task 40: CLAUDE.md 检查 (已确认路径正确)
 
-### Desktop 已通过模块
+- Noted: src/ 下各模块 README.md 仍引用旧路径 (标注"待创建")，属后续维护范围
 
-| 模块 | 测试数 | 状态 |
-|------|--------|------|
-| Foundation | 130 | ✅ 通过 |
-| LocalData | 70 | ✅ 通过 |
-| Users | 44 | ✅ 通过 |
-| Patients | 42 | ✅ 通过 |
-| Shell | 152 | ✅ 通过 |
-| Auth | 10 | ✅ 通过 |
-| MedicalCase | 135 | ✅ 通过 |
-| **已通过总计** | **583** | ✅ |
+## Final Summary - ALL COMPLETE
 
-### Desktop 需修复模块 (P3)
+| 指标 | 改进前 | 改进后 |
+|------|--------|--------|
+| 文档目录数 | 17 | 7 (6新 + plans) |
+| 文档文件数 | ~608 | ~36 |
+| 需求覆盖率 | 分散在OpenSpec中 | 92条FR统一编号 |
+| API文档 | 无 | 99个端点完整覆盖 |
+| ADR | 无 | 6个架构决策记录 |
+| 根README | 416行过期信息 | 88行精准导航 |
 
-| 模块 | 问题 | 优先级 |
-|------|------|--------|
-| Infrastructure | WPF 控件测试需 Application 资源 | P3 |
-| Formula | DTO 类型变更 (HerbDto→HerbListDto, Quantity等) | P3 |
-| Herbs | DTO 类型变更 (HerbDetailDto→HerbListDto) | P3 |
-| Models | 类型重命名 (UnifiedListViewModelBase) | P3 |
-
-### 修复记录
-
-| 问题 | 修复方案 |
-|------|----------|
-| Shell.ApiHealthCheckStartupStep.IsRequired | 从 BeTrue 改为 BeFalse (支持离线模式) |
-
----
-
-## 全项目测试最终汇总 (2026-02-06)
-
-### 已通过模块
-
-| 层级 | 模块数 | 通过测试 | 状态 |
-|------|--------|----------|------|
-| **Server** | 7 | 369 | ✅ 全部通过 |
-| **Desktop** | 7 | 583 | ✅ 已通过 |
-| **Shared** | 5 | 680 | ✅ 全部通过 |
-| **总计** | **19** | **1,632** | ✅ |
-
-### 待修复 (P3)
-
-| 类型 | 问题数 | 说明 |
-|------|--------|------|
-| Desktop 编译 | 4个模块 | DTO 类型变更、WPF 资源 |
-| 架构测试 | 26个失败 | 规则与代码不匹配 |
-
-### Phase 完成状态
-
-| Phase | 状态 | 说明 |
-|-------|------|------|
-| Phase 1-2 | complete | 分析与规范设计 |
-| Phase 3 | complete | Server 模块 369 测试 |
-| Phase 4 | complete | Desktop 11/11 模块通过 |
-| Phase 5 | complete | Shared 680 测试 |
-| Phase 6 | complete | 架构测试 60/60 通过 |
-| Phase 7 | complete | 全量验证 1,800+ 测试通过 |
-
-*Updated: 2026-02-07*
+**40/40 Tasks COMPLETE - 文档体系重构全部完成**
 
 ---
-
-## Session: 2026-02-07 Phase 4/6/7 完成
-
-### Phase 4 Desktop P3 模块修复
-
-| 问题 | 修复方案 |
-|------|----------|
-| Formula: `Unit_ByDefault_ShouldBeG` 测试失败 | 改为 `Unit_ByDefault_ShouldBeEmpty` (设计意图: Unit 由 SelectedHerb 赋值) |
-| Models: `UnifiedListViewModelBase` 已删除 | 删除过时测试文件 (功能已迁移到 MasterDetailViewModelBase) |
-| Infrastructure: WPF 测试在 headless 环境卡住 | UserActivityTrackerTests 移除不必要的 WPF 依赖; WPF 控件测试添加 `[Trait("Category", "WPF")]` |
-| Herbs: 18 tests | 无需修改，直接通过 |
-
-### Phase 6 架构测试修复
-
-**根因**: 3 个架构测试文件引用了已删除的 `LYBT.Module.Consultations` 和 `LYBT.Module.Prescriptions` 程序集
-
-| 修复项 | 详情 |
-|--------|------|
-| ArchTests.cs 程序集列表 | 移除 Consultations/Prescriptions, 添加 Sync |
-| ServerArchTests.cs 程序集列表 | 同上 |
-| AggregateRootArchTests.cs 程序集列表 | 同上 |
-| Desktop_Should_Not_Use_Entity_Classes | 添加 Repository/Mapper/DataSource/LoginCoordinator 排除规则 |
-| Services_Should_Have_Service_Suffix | 处理泛型类名（backtick），添加 Helper/Base/Validation 排除 |
-| Service_IO_Methods_Should_Be_Async | 排除 Permission 服务和 CanXxx/GetSupportedXxx 同步方法 |
-| Modules_Should_Not_Have_Circular_Dependencies | 排除 MedicalCase 内部 Service 协作和 Sync 模块 |
-| All_Controls_Should_Inherit_From_UserControl | 添加 PatientCardDisplayMode/PatientDisplayModel 排除 |
-
-### Phase 7 全量验证结果
-
-| 层级 | 项目数 | 通过测试 | 状态 |
-|------|--------|----------|------|
-| Server 单元测试 | 7 | 369 | PASS |
-| Desktop 单元测试 | 11 | 780+ | PASS |
-| Shared 单元测试 | 5 | 680 | PASS |
-| 架构测试 | 3 | 60 | PASS |
-| WebAPI 测试 | 1 | 50 | PASS |
-| 集成测试 | 1 | 18/20 | 2 failures (ICredentialVault DI) |
-
-**总计**: 1,800+ 测试通过, 2 个集成测试失败 (P3 技术债务)
-
-### 已知遗留问题
-
-1. Foundation.IntegrationTests: 2 个 AuthenticationIntegrationTests 失败 - `ICredentialVault` 未注册到集成测试 DI
-2. WPF 控件测试 (40个): 标记为 `Category=WPF`, 需要 STA 线程和 GUI 环境运行
-3. Shared.Utilities.Tests: 14 个 skipped (预期行为)
-
+*Updated: 2026-02-10*

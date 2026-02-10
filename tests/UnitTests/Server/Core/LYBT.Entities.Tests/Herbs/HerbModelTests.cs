@@ -17,7 +17,7 @@ namespace LYBT.Entities.Tests.Herbs
             var herb = new Herb();
 
             // Assert
-            herb.Id.Should().Be(Guid.Empty);
+            herb.Id.Should().NotBe(Guid.Empty); // BaseEntity 使用 Guid.NewGuid()
             herb.Name.Should().Be(string.Empty);
             herb.PinYinCode.Should().BeNull();
             herb.Origin.Should().BeNull();

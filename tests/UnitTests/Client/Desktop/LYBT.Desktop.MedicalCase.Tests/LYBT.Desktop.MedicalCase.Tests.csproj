@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\src\Client\Desktop\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Client\Desktop\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
     <!-- [已删除] LYBT.Desktop.Prescriptions - 模块已移除 -->
     <ProjectReference Include="..\..\..\..\..\src\Client\Desktop\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\..\TestConfiguration\LYBT.Tests.Configuration.csproj" />

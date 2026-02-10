@@ -1,48 +1,48 @@
 using FluentAssertions;
 using LYBT.Entities.Consultations;
-using LYBT.Entities.MedicalCases;
-using LYBT.Shared.Models.Enums;
-using System;
 using Xunit;
 
 namespace LYBT.UnitTests.Core.Entities
 {
     /// <summary>
     /// Consultation实体单元测试
+    /// Consultation继承BaseEntity，使用共享主键（Id与MedicalCase相同）
+    /// 当前字段：PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis
+    /// 审计字段继承自BaseEntity
     /// </summary>
     public class ConsultationModelTests
     {
-        #region Shared Primary Key Tests
+        #region Constructor Tests
 
         [Fact]
-        public void Consultation_ShouldSharePrimaryKey_WithMedicalCase()
-        {
-            // Arrange
-            var medicalCaseId = Guid.NewGuid();
-            var medicalCase = new MedicalCase { Id = medicalCaseId };
-            
-            // Act
-            var consultation = new Consultation
-            {
-                MedicalCaseId = medicalCaseId,
-                MedicalCase = medicalCase
-            };
-
-            // Assert
-            consultation.MedicalCaseId.Should().Be(medicalCaseId);
-            consultation.MedicalCase.Should().Be(medicalCase);
-            consultation.MedicalCaseId.Should().Be(consultation.MedicalCase.Id, "共享主键应该相同");
-        }
-
-        [Fact]
-        public void Consultation_ShouldNotHaveOwnId()
+        public void Constructor_ShouldInitializeWithDefaultValues()
         {
             // Arrange & Act
             var consultation = new Consultation();
 
+            // Assert - BaseEntity defaults
+            consultation.Id.Should().NotBe(Guid.Empty, "Id由BaseEntity自动生成");
+            consultation.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+            consultation.IsDeleted.Should().BeFalse();
+
+            // Assert - Consultation-specific fields default to null
+            consultation.PresentIllness.Should().BeNull();
+            consultation.TongueDiagnosis.Should().BeNull();
+            consultation.PulseDiagnosis.Should().BeNull();
+            consultation.TcmDiagnosis.Should().BeNull();
+        }
+
+        [Fact]
+        public void Consultation_ShouldInheritBaseEntityId()
+        {
+            // Arrange
+            var sharedId = Guid.NewGuid();
+
+            // Act
+            var consultation = new Consultation { Id = sharedId };
+
             // Assert
-            consultation.GetType().GetProperty("Id").Should().BeNull("Consultation不应该有独立的Id属性");
-            consultation.MedicalCaseId.Should().Be(Guid.Empty, "MedicalCaseId是主键");
+            consultation.Id.Should().Be(sharedId, "Consultation的Id与MedicalCase共享主键");
         }
 
         #endregion
@@ -50,100 +50,20 @@ namespace LYBT.UnitTests.Core.Entities
         #region Cascade Delete Tests
 
         [Fact]
-        public void Consultation_ShouldBeDeleted_WhenMedicalCaseIsDeleted()
+        public void Consultation_SoftDelete_ShouldSetIsDeletedFlag()
         {
             // Arrange
-            var medicalCase = new MedicalCase
+            var consultation = new Consultation
             {
                 Id = Guid.NewGuid(),
                 IsDeleted = false
             };
 
-            var consultation = new Consultation
-            {
-                MedicalCaseId = medicalCase.Id,
-                MedicalCase = medicalCase,
-                IsDeleted = false
-            };
-
-            medicalCase.Consultation = consultation;
-
             // Act
-            // 模拟级联删除行为
-            medicalCase.IsDeleted = true;
-            if (medicalCase.IsDeleted && medicalCase.Consultation != null)
-            {
-                medicalCase.Consultation.IsDeleted = true;
-            }
+            consultation.IsDeleted = true;
 
             // Assert
-            consultation.IsDeleted.Should().BeTrue("Consultation应该随MedicalCase一起被删除");
-        }
-
-        #endregion
-
-        #region Status Tests
-
-        [Theory]
-        [InlineData(ConsultationStatus.Pending)]
-        [InlineData(ConsultationStatus.InProgress)]
-        [InlineData(ConsultationStatus.Completed)]
-        public void Consultation_ShouldSupportDifferentStatuses(ConsultationStatus status)
-        {
-            // Arrange
-            var consultation = new Consultation();
-
-            // Act
-            consultation.Status = status;
-
-            // Assert
-            consultation.Status.Should().Be(status);
-        }
-
-        [Fact]
-        public void StatusTransition_ShouldUpdateCompletedAt_WhenCompleted()
-        {
-            // Arrange
-            var consultation = new Consultation
-            {
-                Status = ConsultationStatus.InProgress
-            };
-
-            // Act
-            consultation.Status = ConsultationStatus.Completed;
-            consultation.CompletedAt = DateTime.UtcNow;
-
-            // Assert
-            consultation.Status.Should().Be(ConsultationStatus.Completed);
-            consultation.CompletedAt.Should().NotBeNull();
-            consultation.CompletedAt.Value.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        }
-
-        #endregion
-
-        #region Medical Information Tests
-
-        [Fact]
-        public void MedicalInformation_ShouldBeStoredCorrectly()
-        {
-            // Arrange
-            var consultation = new Consultation();
-
-            // Act
-            consultation.ChiefComplaint = "头痛、发热3天";
-            consultation.PresentIllness = "患者3天前开始出现头痛，伴有发热，体温最高38.5℃";
-            consultation.PastHistory = "既往体健，否认高血压、糖尿病史";
-            consultation.PersonalHistory = "无吸烟饮酒史";
-            consultation.FamilyHistory = "父母体健";
-            consultation.AllergyHistory = "青霉素过敏";
-
-            // Assert
-            consultation.ChiefComplaint.Should().NotBeEmpty();
-            consultation.PresentIllness.Should().Contain("发热");
-            consultation.PastHistory.Should().Contain("既往体健");
-            consultation.PersonalHistory.Should().Contain("无吸烟");
-            consultation.FamilyHistory.Should().Contain("父母");
-            consultation.AllergyHistory.Should().Contain("青霉素");
+            consultation.IsDeleted.Should().BeTrue("Consultation应该支持软删除");
         }
 
         #endregion
@@ -156,52 +76,62 @@ namespace LYBT.UnitTests.Core.Entities
             // Arrange
             var consultation = new Consultation();
 
-            // Act - 新字段结构：四诊、舌诊、脉诊
-            consultation.FourDiagnosis = "面色红润，声音洪亮，主诉头痛，睡眠欠佳";
+            // Act - 舌诊、脉诊
             consultation.TongueDiagnosis = "舌淡红，苔薄白";
             consultation.PulseDiagnosis = "脉象浮数";
 
             // Assert
-            consultation.FourDiagnosis.Should().Contain("面色");
-            consultation.FourDiagnosis.Should().Contain("主诉");
             consultation.TongueDiagnosis.Should().Contain("舌");
             consultation.PulseDiagnosis.Should().Contain("脉");
         }
 
         [Fact]
-        public void TcmDiagnosis_ShouldIncludeSyndromeAndTreatmentPrinciple()
+        public void TcmDiagnosis_ShouldStoreCorrectly()
         {
             // Arrange
             var consultation = new Consultation();
 
             // Act
             consultation.TcmDiagnosis = "风寒感冒";
-            consultation.Syndrome = "外感风寒证";
-            consultation.TreatmentPrinciple = "疏风散寒，宣肺解表";
 
             // Assert
             consultation.TcmDiagnosis.Should().Contain("感冒");
-            consultation.Syndrome.Should().Contain("风寒");
-            consultation.TreatmentPrinciple.Should().Contain("疏风散寒");
         }
 
         #endregion
 
-        #region Navigation Property Tests
+        #region Medical Information Tests
 
         [Fact]
-        public void Consultation_ShouldHavePrescriptionReference()
+        public void PresentIllness_ShouldBeStoredCorrectly()
         {
             // Arrange
             var consultation = new Consultation();
-            var prescriptionId = Guid.NewGuid();
 
             // Act
-            consultation.PrescriptionId = prescriptionId;
+            consultation.PresentIllness = "患者3天前开始出现头痛，伴有发热，体温最高38.5\u2103";
 
             // Assert
-            consultation.PrescriptionId.Should().Be(prescriptionId);
-            consultation.Prescription.Should().BeNull("导航属性需要通过EF Core加载");
+            consultation.PresentIllness.Should().Contain("发热");
+        }
+
+        [Fact]
+        public void AllFields_ShouldBeIndependent()
+        {
+            // Arrange & Act
+            var consultation = new Consultation
+            {
+                PresentIllness = "现病史内容",
+                TongueDiagnosis = "舌红苔黄",
+                PulseDiagnosis = "脉弦数",
+                TcmDiagnosis = "肝火上炎"
+            };
+
+            // Assert
+            consultation.PresentIllness.Should().Be("现病史内容");
+            consultation.TongueDiagnosis.Should().Be("舌红苔黄");
+            consultation.PulseDiagnosis.Should().Be("脉弦数");
+            consultation.TcmDiagnosis.Should().Be("肝火上炎");
         }
 
         #endregion
@@ -227,28 +157,48 @@ namespace LYBT.UnitTests.Core.Entities
 
         #endregion
 
-        #region Validation Tests
+        #region Nullable Properties Tests
 
         [Fact]
-        public void RequiredRelationship_MedicalCaseId_ShouldNotBeEmpty()
+        public void NullableProperties_CanBeSetToNull()
         {
             // Arrange
-            var consultation = new Consultation();
-
-            // Act & Assert
-            consultation.MedicalCaseId.Should().Be(Guid.Empty, "MedicalCaseId必须由外部设置");
-            
-            // 验证规则
-            Action act = () =>
+            var consultation = new Consultation
             {
-                if (consultation.MedicalCaseId == Guid.Empty)
-                {
-                    throw new InvalidOperationException("Consultation必须关联到MedicalCase");
-                }
+                PresentIllness = "有内容",
+                TongueDiagnosis = "有内容",
+                PulseDiagnosis = "有内容",
+                TcmDiagnosis = "有内容"
             };
 
-            act.Should().Throw<InvalidOperationException>()
-                .WithMessage("Consultation必须关联到MedicalCase");
+            // Act
+            consultation.PresentIllness = null;
+            consultation.TongueDiagnosis = null;
+            consultation.PulseDiagnosis = null;
+            consultation.TcmDiagnosis = null;
+
+            // Assert
+            consultation.PresentIllness.Should().BeNull();
+            consultation.TongueDiagnosis.Should().BeNull();
+            consultation.PulseDiagnosis.Should().BeNull();
+            consultation.TcmDiagnosis.Should().BeNull();
+        }
+
+        #endregion
+
+        #region Shared Primary Key Tests
+
+        [Fact]
+        public void Consultation_Id_CanBeSetToMatchMedicalCase()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+
+            // Act
+            var consultation = new Consultation { Id = medicalCaseId };
+
+            // Assert
+            consultation.Id.Should().Be(medicalCaseId, "Consultation使用与MedicalCase相同的Id作为共享主键");
         }
 
         #endregion

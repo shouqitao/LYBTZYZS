@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Desktop Core -->
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.LocalData\LYBT.Desktop.LocalData.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
+    <!-- Desktop Modules -->
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Auth\LYBT.Desktop.Auth.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Sync\LYBT.Desktop.Sync.csproj" />
+    <!-- Shared -->
+    <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+  </ItemGroup>
+</Project>

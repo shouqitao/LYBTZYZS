@@ -20,7 +20,7 @@ namespace LYBT.Entities.Tests.Auth
             authSession.Id.Should().Be(Guid.Empty);
             authSession.UserId.Should().Be(Guid.Empty);
             authSession.TokenHash.Should().Be(string.Empty);
-            authSession.LoginTime.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
+            authSession.LoginTime.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
             authSession.LogoutTime.Should().BeNull();
             authSession.ExpiryTime.Should().Be(default(DateTime));
             authSession.IpAddress.Should().Be(string.Empty);

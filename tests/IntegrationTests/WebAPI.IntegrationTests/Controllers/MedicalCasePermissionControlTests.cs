@@ -53,7 +53,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         private string GenerateTokenForDoctor(Guid doctorId, string doctorName)
         {
             var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-            var key = System.Text.Encoding.ASCII.GetBytes("TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789");
+            var key = System.Text.Encoding.UTF8.GetBytes("VGVzdFNlY3JldEtleV9NaW5MZW5ndGgzMkNoYXJzX0ZvckpXVFRva2VuR2VuX0xZQlRfMTIzNDU2");
 
             var tokenDescriptor = new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor
             {

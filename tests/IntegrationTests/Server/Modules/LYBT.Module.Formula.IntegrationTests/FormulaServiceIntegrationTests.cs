@@ -2,20 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Formulas;
 using LYBT.Module.Formulas.Interfaces;
-using LYBT.Module.Formulas.Mapping;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace LYBT.Module.Formulas.IntegrationTests
@@ -25,12 +22,14 @@ namespace LYBT.Module.Formulas.IntegrationTests
     /// Issue #1357: 验证导入→验证→使用的端到端流程
     /// 使用真实SQL Server数据库(LYBTDB)和真实药材库
     /// </summary>
+    [Trait("Category", "RequiresSqlServer")]
     public class FormulaServiceIntegrationTests : IDisposable
     {
         private readonly ServiceProvider _serviceProvider;
         private readonly IServiceScope _scope;
         private readonly AppDbContext _context;
         private readonly IFormulaService _formulaService;
+        private readonly IFormulaImportExportService _importExportService;
         private readonly IFormulaRepository _formulaRepository;
 
         // 存储测试创建的验方ID，用于清理
@@ -54,10 +53,7 @@ namespace LYBT.Module.Formulas.IntegrationTests
                 options.EnableSensitiveDataLogging();
             });
 
-            // 配置AutoMapper
-            services.AddAutoMapper(typeof(FormulaMappingProfile));
-
-            // 注册Formula模块服务
+            // 注册Formula模块服务 (Mapperly编译时生成，无需DI注册mapper)
             services.AddFormulaModule();
 
             // 注册跨模块查询服务（FormulaService依赖）
@@ -71,6 +67,7 @@ namespace LYBT.Module.Formulas.IntegrationTests
 
             _context = _scope.ServiceProvider.GetRequiredService<AppDbContext>();
             _formulaService = _scope.ServiceProvider.GetRequiredService<IFormulaService>();
+            _importExportService = _scope.ServiceProvider.GetRequiredService<IFormulaImportExportService>();
             _formulaRepository = _scope.ServiceProvider.GetRequiredService<IFormulaRepository>();
         }
 
@@ -140,7 +137,7 @@ namespace LYBT.Module.Formulas.IntegrationTests
             }
 
             // Act - 导入验方
-            var importResult = await _formulaService.ImportFromDataAsync(importData);
+            var importResult = await _importExportService.ImportFromDataAsync(importData);
 
             // Assert
             importResult.Should().NotBeNull();
@@ -170,7 +167,7 @@ namespace LYBT.Module.Formulas.IntegrationTests
             var importData = await CreateTestImportDataAsync(useRealHerbs: false);
 
             // Act - 导入验方
-            var importResult = await _formulaService.ImportFromDataAsync(importData);
+            var importResult = await _importExportService.ImportFromDataAsync(importData);
 
             // Assert
             importResult.Should().NotBeNull();

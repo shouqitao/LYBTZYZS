@@ -7,6 +7,9 @@ namespace LYBT.Entities.Tests.Users
 {
     /// <summary>
     /// User实体单元测试 - 测试用户实体的所有属性和默认值
+    /// User继承BaseEntity，属性：UserName, RealName, PinYinCode, PhoneNumber,
+    ///   Email, Role, Status, PasswordHash, FailedLoginCount, LockoutEnd,
+    ///   LastLoginTime, Remark
     /// </summary>
     public class UserModelTests
     {
@@ -16,9 +19,15 @@ namespace LYBT.Entities.Tests.Users
             // Arrange & Act
             var user = new User();
 
-            // Assert
-            user.Id.Should().Be(Guid.Empty);
-            user.Username.Should().Be(string.Empty);
+            // Assert - BaseEntity defaults
+            user.Id.Should().NotBe(Guid.Empty, "Id由BaseEntity自动生成");
+            user.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+            user.UpdatedAt.Should().BeNull();
+            user.IsDeleted.Should().BeFalse();
+            user.RowVersion.Should().BeNull("RowVersion由数据库管理，默认为null");
+
+            // Assert - User-specific defaults
+            user.UserName.Should().Be(string.Empty);
             user.RealName.Should().Be(string.Empty);
             user.PinYinCode.Should().BeNull();
             user.PhoneNumber.Should().BeNull();
@@ -28,12 +37,8 @@ namespace LYBT.Entities.Tests.Users
             user.PasswordHash.Should().Be(string.Empty);
             user.FailedLoginCount.Should().Be(0);
             user.LockoutEnd.Should().BeNull();
-            user.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
-            user.UpdatedAt.Should().BeNull();
             user.LastLoginTime.Should().BeNull();
             user.Remark.Should().BeNull();
-            user.RowVersion.Should().NotBeNull();
-            user.RowVersion.Should().HaveCount(8);
         }
 
         [Fact]
@@ -51,17 +56,17 @@ namespace LYBT.Entities.Tests.Users
         }
 
         [Fact]
-        public void Username_PropertyCanBeSetAndGet()
+        public void UserName_PropertyCanBeSetAndGet()
         {
             // Arrange
             var user = new User();
-            const string testUsername = "testuser";
+            const string testUserName = "testuser";
 
             // Act
-            user.Username = testUsername;
+            user.UserName = testUserName;
 
             // Assert
-            user.Username.Should().Be(testUsername);
+            user.UserName.Should().Be(testUserName);
         }
 
         [Fact]
@@ -181,7 +186,7 @@ namespace LYBT.Entities.Tests.Users
         {
             // Arrange
             var user = new User();
-            var testLockoutEnd = DateTime.Now.AddHours(1);
+            var testLockoutEnd = DateTime.UtcNow.AddHours(1);
 
             // Act
             user.LockoutEnd = testLockoutEnd;
@@ -195,7 +200,7 @@ namespace LYBT.Entities.Tests.Users
         {
             // Arrange
             var user = new User();
-            var testTime = new DateTime(2024, 1, 1, 10, 0, 0);
+            var testTime = new DateTime(2024, 1, 1, 10, 0, 0, DateTimeKind.Utc);
 
             // Act
             user.CreatedAt = testTime;
@@ -209,7 +214,7 @@ namespace LYBT.Entities.Tests.Users
         {
             // Arrange
             var user = new User();
-            var testTime = new DateTime(2024, 1, 2, 15, 30, 0);
+            var testTime = new DateTime(2024, 1, 2, 15, 30, 0, DateTimeKind.Utc);
 
             // Act
             user.UpdatedAt = testTime;
@@ -223,7 +228,7 @@ namespace LYBT.Entities.Tests.Users
         {
             // Arrange
             var user = new User();
-            var testTime = new DateTime(2024, 1, 3, 9, 15, 0);
+            var testTime = new DateTime(2024, 1, 3, 9, 15, 0, DateTimeKind.Utc);
 
             // Act
             user.LastLoginTime = testTime;
@@ -291,11 +296,11 @@ namespace LYBT.Entities.Tests.Users
             // Arrange
             var user = new User();
             var userId = Guid.NewGuid();
-            var createdTime = DateTime.Now;
+            var createdTime = DateTime.UtcNow;
 
             // Act
             user.Id = userId;
-            user.Username = "doctor001";
+            user.UserName = "doctor001";
             user.RealName = "李医生";
             user.PinYinCode = "lys";
             user.PhoneNumber = "13912345678";
@@ -309,7 +314,7 @@ namespace LYBT.Entities.Tests.Users
 
             // Assert
             user.Id.Should().Be(userId);
-            user.Username.Should().Be("doctor001");
+            user.UserName.Should().Be("doctor001");
             user.RealName.Should().Be("李医生");
             user.PinYinCode.Should().Be("lys");
             user.PhoneNumber.Should().Be("13912345678");

@@ -17,7 +17,7 @@ namespace LYBT.Entities.Tests.Patients
             var patient = new Patient();
 
             // Assert
-            patient.Id.Should().Be(Guid.Empty);
+            patient.Id.Should().NotBe(Guid.Empty); // BaseEntity 使用 Guid.NewGuid()
             patient.Name.Should().Be(string.Empty);
             patient.PinYinCode.Should().BeNull();
             patient.Gender.Should().Be(Gender.Unknown);
@@ -36,12 +36,11 @@ namespace LYBT.Entities.Tests.Patients
             patient.DisableReason.Should().BeNull();
             patient.LastVisitTime.Should().BeNull();
             patient.VisitCount.Should().Be(0);
-            patient.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
+            patient.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
             patient.UpdatedAt.Should().BeNull();
             patient.CreatedBy.Should().BeNull();
             patient.UpdatedBy.Should().BeNull();
-            patient.RowVersion.Should().NotBeNull();
-            patient.RowVersion.Should().HaveCount(8);
+            patient.RowVersion.Should().BeNull(); // RowVersion 由 EF Core 管理
             patient.Age.Should().BeNull();
         }
 

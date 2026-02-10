@@ -90,11 +90,14 @@ namespace LYBT.Module.Users.Repositories
 
         /// <summary>
         /// 根据ID获取实体（包括已软删除的）
-        /// 使用EF Core FindAsync直接通过主键查询，绕过软删除过滤器
+        /// 使用IgnoreQueryFilters绕过全局软删除过滤器
+        /// 注: FindAsync在EF Core 8中会应用全局查询过滤器，无法查到已删除记录
         /// </summary>
         public async Task<User?> GetByIdIncludingDeletedAsync(Guid id)
         {
-            return await _dbSet.FindAsync(id);
+            return await _dbSet
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(e => e.Id == id);
         }
 
         #endregion

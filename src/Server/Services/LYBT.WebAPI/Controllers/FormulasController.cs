@@ -305,10 +305,11 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> Restore(Guid id)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // 使用统一的所有权检查方法
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
-            if (ownershipError != null) return ownershipError;
+            if (ValidateGuid(id, "验方ID") is { } error) return error;
 
+            // 注: Restore不能使用GetEntityWithOwnershipCheckAsync，因为GetByIdAsync
+            // 受全局软删除过滤器影响无法找到已删除记录。
+            // RestoreAsync内部使用GetByIdIncludingDeletedAsync绕过过滤器。
             var result = await _service.RestoreAsync(id);
             if (!result.IsSuccess || result.Data == null)
             {

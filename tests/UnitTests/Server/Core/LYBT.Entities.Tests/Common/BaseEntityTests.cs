@@ -22,12 +22,11 @@ namespace LYBT.Entities.Tests.Common
 
             // Assert
             entity.Id.Should().NotBe(Guid.Empty);
-            entity.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
+            entity.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
             entity.UpdatedAt.Should().BeNull();
             entity.CreatedBy.Should().BeNull();
             entity.UpdatedBy.Should().BeNull();
-            entity.RowVersion.Should().NotBeNull();
-            entity.RowVersion.Should().HaveCount(8);
+            entity.RowVersion.Should().BeNull(); // RowVersion 由 EF Core 管理，默认为 null
             entity.IsDeleted.Should().BeFalse();
         }
 
@@ -139,14 +138,13 @@ namespace LYBT.Entities.Tests.Common
         }
 
         [Fact]
-        public void RowVersion_DefaultValueShouldBeByteArrayWithLength8()
+        public void RowVersion_DefaultValueShouldBeNull()
         {
             // Arrange & Act
             var entity = new TestEntity();
 
-            // Assert
-            entity.RowVersion.Should().NotBeNull();
-            entity.RowVersion.Should().HaveCount(8);
+            // Assert - RowVersion 由 EF Core [Timestamp] 管理，内存中默认为 null
+            entity.RowVersion.Should().BeNull();
         }
 
         [Fact]

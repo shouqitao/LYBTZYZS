@@ -349,6 +349,10 @@ public class AuthenticationIntegrationTests
         var mockAuthApi = Substitute.For<IAuthApi>();
         services.AddSingleton(mockAuthApi);
 
+        // Mock ICredentialVault（文件系统依赖，集成测试不需要真实DPAPI加密）
+        var mockCredentialVault = Substitute.For<ICredentialVault>();
+        services.AddSingleton(mockCredentialVault);
+
         // 真实实现（集成测试的核心）
         services.AddSingleton<ITokenStorageService, TokenStorageService>();
         services.AddSingleton<ITokenValidator, LocalTokenValidator>();

@@ -244,4 +244,174 @@ public class DataSourceIntegrationTests : IClassFixture<LocalModeTestFixture>
     }
 
     #endregion
+
+    #region Herb DataSource CRUD 集成测试
+
+    [Fact]
+    public async Task HerbDataSource_CRUD_EndToEnd()
+    {
+        // Arrange
+        var serviceProvider = _fixture.CreateServiceProvider();
+        serviceProvider.GetRequiredService<LocalDbContext>().Database.EnsureCreated();
+        var dataSource = serviceProvider.GetRequiredService<IHerbDataSource>();
+
+        // Create
+        var herb = new LYBT.Entities.Herbs.Herb
+        {
+            Name = "黄芪集成测试",
+            PinYinCode = "HQJCCS",
+            Category = "补益药",
+            Unit = "克",
+            Price = 3.5m,
+            Effect = "补气固表"
+        };
+
+        var created = await dataSource.CreateAsync(herb);
+        created.Should().NotBeNull();
+        created.Id.Should().NotBe(Guid.Empty);
+        created.Name.Should().Be("黄芪集成测试");
+
+        // Read
+        var read = await dataSource.GetByIdAsync(created.Id);
+        read.Should().NotBeNull();
+        read!.PinYinCode.Should().Be("HQJCCS");
+
+        // Update
+        read.Effect = "补气固表，利尿托毒";
+        var updated = await dataSource.UpdateAsync(read);
+        updated.Should().NotBeNull();
+        updated.Effect.Should().Contain("利尿托毒");
+
+        // Delete (Soft)
+        var deleteResult = await dataSource.DeleteAsync(created.Id);
+        deleteResult.Should().BeTrue();
+
+        var afterDelete = await dataSource.GetByIdAsync(created.Id);
+        afterDelete.Should().BeNull("软删除后应该查不到");
+    }
+
+    #endregion
+
+    #region Formula DataSource CRUD 集成测试
+
+    [Fact]
+    public async Task FormulaDataSource_CRUD_EndToEnd()
+    {
+        // Arrange
+        var serviceProvider = _fixture.CreateServiceProvider();
+        serviceProvider.GetRequiredService<LocalDbContext>().Database.EnsureCreated();
+        var dataSource = serviceProvider.GetRequiredService<IFormulaDataSource>();
+
+        // Create
+        var formula = new LYBT.Entities.Formulas.Formula
+        {
+            Name = "四君子汤集成测试",
+            Effect = "益气健脾",
+            Indication = "脾胃气虚证",
+            Status = CommonStatus.Enabled,
+        };
+
+        var created = await dataSource.CreateAsync(formula);
+        created.Should().NotBeNull();
+        created.Id.Should().NotBe(Guid.Empty);
+
+        // Read
+        var read = await dataSource.GetByIdAsync(created.Id);
+        read.Should().NotBeNull();
+        read!.Name.Should().Be("四君子汤集成测试");
+
+        // Update
+        read.Effect = "益气健脾和胃";
+        var updated = await dataSource.UpdateAsync(read);
+        updated.Should().NotBeNull();
+        updated.Effect.Should().Be("益气健脾和胃");
+
+        // Delete (Soft)
+        var deleteResult = await dataSource.DeleteAsync(created.Id);
+        deleteResult.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region User DataSource CRUD 集成测试
+
+    [Fact]
+    public async Task UserDataSource_CRUD_EndToEnd()
+    {
+        // Arrange
+        var serviceProvider = _fixture.CreateServiceProvider();
+        serviceProvider.GetRequiredService<LocalDbContext>().Database.EnsureCreated();
+        var dataSource = serviceProvider.GetRequiredService<IUserDataSource>();
+
+        // Create
+        var user = new LYBT.Entities.Users.User
+        {
+            UserName = "testdoctor_crud",
+            RealName = "测试医生",
+            Role = UserRole.Doctor,
+            Status = CommonStatus.Enabled,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("TestPass123!"),
+        };
+
+        var created = await dataSource.CreateAsync(user);
+        created.Should().NotBeNull();
+        created.Id.Should().NotBe(Guid.Empty);
+        created.UserName.Should().Be("testdoctor_crud");
+
+        // Read
+        var read = await dataSource.GetByIdAsync(created.Id);
+        read.Should().NotBeNull();
+        read!.Role.Should().Be(UserRole.Doctor);
+
+        // Update
+        read.RealName = "更新医生名";
+        var updated = await dataSource.UpdateAsync(read);
+        updated.Should().NotBeNull();
+        updated.RealName.Should().Be("更新医生名");
+
+        // Delete (Soft)
+        var deleteResult = await dataSource.DeleteAsync(created.Id);
+        deleteResult.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region MedicalCase DataSource CRUD 集成测试
+
+    [Fact]
+    public async Task MedicalCaseDataSource_CRUD_EndToEnd()
+    {
+        // Arrange
+        var serviceProvider = _fixture.CreateServiceProvider();
+        serviceProvider.GetRequiredService<LocalDbContext>().Database.EnsureCreated();
+        var dataSource = serviceProvider.GetRequiredService<IMedicalCaseDataSource>();
+
+        // Create
+        var mc = new LYBT.Entities.MedicalCases.MedicalCase
+        {
+            PatientId = Guid.NewGuid(),
+            PatientName = "医案测试患者",
+            UserId = Guid.NewGuid(),
+            DoctorName = "医案测试医生",
+            CaseStatus = MedicalCaseStatus.Active,
+        };
+
+        var created = await dataSource.CreateAsync(mc);
+        created.Should().NotBeNull();
+        created.Id.Should().NotBe(Guid.Empty);
+
+        // Read
+        var read = await dataSource.GetByIdAsync(created.Id);
+        read.Should().NotBeNull();
+        read!.PatientName.Should().Be("医案测试患者");
+
+        // Update
+        read.CaseStatus = MedicalCaseStatus.Completed;
+        read.CompletedAt = DateTime.UtcNow;
+        var updated = await dataSource.UpdateAsync(read);
+        updated.Should().NotBeNull();
+        updated.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
+    }
+
+    #endregion
 }

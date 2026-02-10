@@ -1,14 +1,16 @@
 using FluentAssertions;
 using LYBT.Entities.Prescriptions;
-using LYBT.Shared.Models.Enums;
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace LYBT.UnitTests.Core.Entities
 {
     /// <summary>
     /// Prescription实体单元测试 - 包含打印版本管理功能
+    /// Prescription继承BaseEntity
+    /// 属性：MedicalCaseId, PrescriptionNumber, DosageCount, Discount,
+    ///       Usage, Advice, ReferencedFormulas, Remark,
+    ///       PrintVersion, LastPrintedAt, PrintCount, IsPrinted
+    /// 导航属性：Items (PrescriptionItem), PrintLogs (PrescriptionPrintLog)
     /// </summary>
     public class PrescriptionModelTests
     {
@@ -25,7 +27,26 @@ namespace LYBT.UnitTests.Core.Entities
             prescription.PrintCount.Should().Be(0, "默认打印次数为0");
             prescription.PrintVersion.Should().Be(1, "默认打印版本为1");
             prescription.LastPrintedAt.Should().BeNull("默认无打印时间");
-            prescription.PrintLogs.Should().BeNull("导航属性默认为null");
+            prescription.Items.Should().NotBeNull("Items集合应初始化为空列表");
+            prescription.Items.Should().BeEmpty();
+            prescription.PrintLogs.Should().NotBeNull("PrintLogs集合应初始化为空列表");
+            prescription.PrintLogs.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void Constructor_ShouldInitializeBusinessFields()
+        {
+            // Arrange & Act
+            var prescription = new Prescription();
+
+            // Assert
+            prescription.DosageCount.Should().Be(7, "默认帖数为7");
+            prescription.Discount.Should().Be(1.0m, "默认折扣为1（不打折）");
+            prescription.PrescriptionNumber.Should().BeNull();
+            prescription.Usage.Should().BeNull();
+            prescription.Advice.Should().BeNull();
+            prescription.ReferencedFormulas.Should().BeNull();
+            prescription.Remark.Should().BeNull();
         }
 
         #endregion
@@ -163,7 +184,7 @@ namespace LYBT.UnitTests.Core.Entities
             // Assert
             prescription.PrintLogs.Should().NotBeNull();
             prescription.PrintLogs.Should().HaveCount(2);
-            prescription.PrintLogs.Should().AllSatisfy(log => 
+            prescription.PrintLogs.Should().AllSatisfy(log =>
                 log.PrescriptionId.Should().Be(prescription.Id));
         }
 
@@ -186,7 +207,7 @@ namespace LYBT.UnitTests.Core.Entities
 
             // Act - 模拟处方内容修改
             prescription.UpdatedAt = DateTime.UtcNow;
-            
+
             // 业务逻辑：如果已打印的处方被修改，应增加版本号
             if (prescription.IsPrinted && prescription.UpdatedAt > prescription.LastPrintedAt)
             {
@@ -208,37 +229,81 @@ namespace LYBT.UnitTests.Core.Entities
             var prescription = new Prescription();
 
             // Act
-            prescription.PrescriptionNo = $"RX{DateTime.Now:yyyyMMdd}{new Random().Next(1000, 9999)}";
-            prescription.Type = "中药饮片";
+            prescription.PrescriptionNumber = $"RX-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
             prescription.DosageCount = 7;
-            prescription.DailyDose = 1;
+            prescription.Discount = 0.8m;
             prescription.Usage = "水煎服，每日一剂，分两次温服";
-            prescription.PayableAmount = 168.50m;
+            prescription.Advice = "忌辛辣生冷";
+            prescription.ReferencedFormulas = "逍遥散,六味地黄丸";
 
             // Assert
-            prescription.PrescriptionNo.Should().StartWith("RX");
-            prescription.Type.Should().Be("中药饮片");
+            prescription.PrescriptionNumber.Should().StartWith("RX-");
             prescription.DosageCount.Should().Be(7);
-            prescription.DailyDose.Should().Be(1);
+            prescription.Discount.Should().Be(0.8m);
             prescription.Usage.Should().Contain("水煎服");
-            prescription.PayableAmount.Should().Be(168.50m);
+            prescription.Advice.Should().Contain("忌辛辣");
+            prescription.ReferencedFormulas.Should().Contain("逍遥散");
         }
 
         #endregion
 
-        #region Navigation Properties Tests
+        #region Items Navigation Property Tests
 
         [Fact]
-        public void NavigationProperties_ShouldBeInitialized()
+        public void Items_ShouldBeInitializedAsEmptyCollection()
         {
             // Arrange & Act
             var prescription = new Prescription();
 
             // Assert
-            prescription.Patient.Should().BeNull("导航属性默认为null");
-            prescription.Doctor.Should().BeNull("导航属性默认为null");
-            prescription.PrescriptionItems.Should().BeNull("集合导航属性默认为null");
-            prescription.PrintLogs.Should().BeNull("集合导航属性默认为null");
+            prescription.Items.Should().NotBeNull("Items集合应初始化为空列表");
+            prescription.Items.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void Items_ShouldSupportAddingPrescriptionItems()
+        {
+            // Arrange
+            var prescription = new Prescription { Id = Guid.NewGuid() };
+            var item = new PrescriptionItem
+            {
+                Id = Guid.NewGuid(),
+                PrescriptionId = prescription.Id,
+                HerbId = Guid.NewGuid(),
+                HerbName = "当归",
+                Dosage = 12,
+                Unit = "g",
+                UnitPrice = 2.5m
+            };
+
+            // Act
+            prescription.Items.Add(item);
+
+            // Assert
+            prescription.Items.Should().HaveCount(1);
+            prescription.Items.First().HerbName.Should().Be("当归");
+            prescription.Items.First().PrescriptionId.Should().Be(prescription.Id);
+        }
+
+        #endregion
+
+        #region MedicalCaseId Tests
+
+        [Fact]
+        public void MedicalCaseId_ShouldBeRequired()
+        {
+            // Arrange
+            var prescription = new Prescription();
+
+            // Assert - 默认为空Guid
+            prescription.MedicalCaseId.Should().Be(Guid.Empty, "MedicalCaseId必须由外部设置");
+
+            // Act
+            var caseId = Guid.NewGuid();
+            prescription.MedicalCaseId = caseId;
+
+            // Assert
+            prescription.MedicalCaseId.Should().Be(caseId);
         }
 
         #endregion
@@ -261,7 +326,7 @@ namespace LYBT.UnitTests.Core.Entities
 
             // Assert
             prescription.CreatedAt.Should().BeBefore(prescription.UpdatedAt.Value);
-            prescription.CreatedBy.Should().NotBe(prescription.UpdatedBy);
+            prescription.CreatedBy.Should().NotBe(prescription.UpdatedBy!.Value);
         }
 
         #endregion

@@ -320,6 +320,10 @@ public partial class MedicalCaseMapper
             Remark = entity.Remark,
             Diagnosis = entity.Consultation?.TcmDiagnosis,
             CreatedAt = entity.CreatedAt,
+            // Fix: ConsultationId/PrescriptionId 需要手动设置，HasConsultation/HasPrescription 依赖这些值
+            ConsultationId = entity.Consultation != null ? entity.Id : null,
+            PrescriptionId = entity.Prescription != null && !entity.Prescription.IsDeleted ? entity.Prescription.Id : null,
+            CompletedAt = entity.CompletedAt,
 
             // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
             PresentIllness = entity.Consultation?.PresentIllness,
