@@ -211,18 +211,22 @@ Token 获取方式见 [认证 API](auth.md)。
 | POST | `/sync/download` | 下载服务端数据 |
 | POST | `/sync/delete` | 同步删除 |
 
-### 系统模块 (非业务)
+### 健康检查 ([health.md](health.md))
 
 | 方法 | 路径 | 权限 | 说明 |
 |------|------|------|------|
 | GET | `/health` | 匿名 | 基础健康检查 |
 | GET | `/health/ping` | 匿名 | Ping |
 | GET | `/health/details` | 已认证 | 详细健康检查 (含数据库) |
-| GET | `/entityaudit/{entityType}/{entityId}` | 已认证 | 通用实体审计日志 |
-| GET | `/diagnostics/logging/status` | SuperAdmin | 日志级别状态 |
-| POST | `/diagnostics/logging/debug/enable` | SuperAdmin | 启用调试模式 |
-| POST | `/diagnostics/logging/debug/disable` | SuperAdmin | 禁用调试模式 |
-| POST | `/diagnostics/logging/level` | SuperAdmin | 设置日志级别 |
+
+### 诊断工具 ([diagnostics.md](diagnostics.md)) -- SuperAdmin
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/diagnostics/logging/status` | 日志级别状态 |
+| POST | `/diagnostics/logging/debug/enable` | 启用调试模式 |
+| POST | `/diagnostics/logging/debug/disable` | 禁用调试模式 |
+| POST | `/diagnostics/logging/level` | 设置日志级别 |
 
 ## 认证错误码
 

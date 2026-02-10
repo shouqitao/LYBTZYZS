@@ -252,8 +252,127 @@ private bool CanSave() => !IsBusy && !HasErrors;
 - **导航确认**: `IConfirmNavigationRequest` (未保存数据提示)
 - **事件通信**: `IEventAggregator` + `EventSubscriptionManager` 自动生命周期管理
 
+## 可复用业务控件
+
+Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱动模式。
+
+### HerbListControl (药材列表编辑器)
+
+**位置**: `Modules/LYBT.Desktop.Herbs/Controls/HerbList/`
+**使用场景**: 处方药材编辑 (MedicalCase)、验方药材编辑 (Formula)
+
+| 职责 | 说明 |
+|------|------|
+| 药材项管理 | 增删移动药材项 (ObservableCollection) |
+| 重复检测 | 检测相同药材重复添加，支持合并策略 (DuplicateDosageStrategy) |
+| 数据转换 | LoadFromDto / ToDto 与 PrescriptionItemDto 互转 |
+| 空槽管理 | 自动创建空槽 (RequestNewSlot, GetNextEmptySlotIndex) |
+
+**关键接口**:
+- `ListChanged` 事件: 药材列表变更通知
+- `Validate()`: 全部项验证
+- `CanAddHerb(herbId)`: 重复检查
+
+### HerbItemControl (单味药材编辑器)
+
+**位置**: `Modules/LYBT.Desktop.Herbs/Controls/HerbItem/`
+**使用场景**: HerbListControl 内部子组件
+
+| 职责 | 说明 |
+|------|------|
+| 药材选择 | 下拉自动补全 (AllHerbs -> FilteredHerbs -> SelectedHerb) |
+| 剂量验证 | 实时验证剂量有效性 (IsDosageValid, ValidationMessage) |
+| 煎法选择 | DecocteMethod 枚举选择 |
+| 状态判断 | IsEmpty (未选择药材), IsValid (已选择且剂量有效) |
+
+**关键接口**:
+- `ItemChanged` 事件: 单项变更通知
+- `LoadFromDto(PrescriptionItemDto)` / `ToDto()`: 数据转换
+
+---
+
+## 业务弹窗
+
+所有业务弹窗继承 `DialogViewModelBase`，通过 `IDialogService.ShowDialog` 调用。
+
+| 弹窗 | 位置 | 用途 | 基类 |
+|------|------|------|------|
+| FormulaImportDialog | Modules/MedicalCase/Dialogs | 从验方库导入药材到处方 | DialogViewModelBase |
+| HistoryCopyDialog | Modules/MedicalCase/Dialogs | 从历史医案复制处方 | DialogViewModelBase |
+| UnsavedChangesDialog | Modules/MedicalCase/Dialogs | 未保存修改确认 (保存/放弃/取消) | ObservableObject |
+| SyncConflictDialog | Modules/Sync/ViewModels | 同步冲突逐条处理 | DialogViewModelBase |
+| UnfinishedCaseDialog | Core/Infrastructure/ViewModels | 未完成医案处理 (继续/新建/关闭) | ObservableObject |
+
+### FormulaImportDialog
+
+从验方库中搜索和选择验方，将验方中的药材导入到当前处方。
+
+**交互流程**: 分类筛选 -> 关键词搜索 -> 选择验方 -> 预览药材列表 -> 确认导入
+
+**关键属性**: SearchText, SelectedCategory, FilteredFormulas, SelectedFormula, SelectedFormulaHerbs
+
+### HistoryCopyDialog
+
+从患者历史医案中选择处方进行复制。
+
+**交互流程**: 选择患者 -> 时间范围筛选 -> 选择医案 -> 预览处方药材 -> 确认复制
+
+**关键属性**: PatientName, FilteredCases, SelectedCase, SelectedPrescriptionItems, IsShowingAllPatients
+
+### SyncConflictDialog
+
+逐条处理本地-服务端数据冲突。
+
+**交互流程**: 查看冲突详情 -> 选择策略 (保留本地/使用服务端/跳过) -> 下一条 -> 全部处理完成
+
+**关键命令**: UseLocalCommand, UseServerCommand, SkipCommand, UseAllLocalCommand, UseAllServerCommand
+
+---
+
+## CardReader 集成
+
+**位置**: `Core/LYBT.Desktop.CardReader/`
+
+身份证读卡器硬件集成模块，通过策略模式支持多厂商设备。
+
+### 架构
+
+```
+PatientMasterDetailViewModel
+    |-- ReadCardCommand
+        |-- IPatientCardReaderIntegration
+            |-- FindPatientByIdNumberAsync (按身份证号查患者)
+            |-- QuickCreatePatientAsync (快速创建)
+            |-- FindOrCreatePatientAsync (查找或创建)
+            |-- GetPatientDetailByIdAsync (获取患者详情)
+                |-- ICardReader
+                    |-- ConnectAsync / DisconnectAsync
+                    |-- ReadCardAsync -> CardReadResult
+                    |-- DetectCardAsync
+```
+
+### 接口
+
+| 接口 | 职责 |
+|------|------|
+| ICardReader | 硬件层: 设备连接、读卡、探测，包含 Name/Vendor/Model 设备信息 |
+| IPatientCardReaderIntegration | 业务层: 患者匹配、创建、数据映射、患者详情获取 |
+
+### 事件
+
+| 事件 | 触发时机 |
+|------|----------|
+| ConnectionStateChanged | 读卡器连接/断开 |
+| CardDetected | 检测到卡片插入 |
+| CardReaderIntegrationEventType | 集成结果 (PatientFound/PatientNotFound/PatientCreated/ReadFailed) |
+
+需求详见 [card-reader.md](../02-requirements/card-reader.md)。
+
+---
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-02-10 | v1.1 | 新增可复用业务控件、业务弹窗、CardReader 集成章节 |
 | 2026-02-10 | v1.0 | 初始版本，从 client-layer-architecture/desktop-architecture/viewmodel-conventions specs 整合 |

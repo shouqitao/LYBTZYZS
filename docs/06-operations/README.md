@@ -14,108 +14,14 @@
 
 ---
 
-## 服务端部署
+## 概述
 
-### 运行环境
+本目录包含 LYBT 系统的运维相关文档，涵盖部署、配置、日志和健康检查。
 
-| 组件 | 要求 |
+| 文档 | 内容 |
 |------|------|
-| 运行时 | .NET 8.0 Runtime |
-| 数据库 | SQL Server 2019+ |
-| 操作系统 | Windows Server 2019+ / Linux |
-| 端口 | 5000 (HTTP) / 5001 (HTTPS) |
-
-### 发布命令
-
-```bash
-# 发布为自包含 (推荐)
-dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-contained
-
-# 发布为框架依赖
-dotnet publish src/Server/Services/LYBT.WebAPI -c Release
-```
-
-### 目录结构
-
-```
-deploy/
-  LYBT.WebAPI.exe          # 主程序
-  appsettings.json         # 主配置
-  appsettings.Production.json  # 生产环境覆盖
-  logs/                    # 日志目录 (自动创建)
-```
-
----
-
-## 配置说明
-
-### 关键配置项
-
-| 配置节 | 说明 | 文件 |
-|--------|------|------|
-| `ConnectionStrings` | 数据库连接 | appsettings.json |
-| `Jwt` | Token 签名密钥、过期时间 | appsettings.json |
-| `PasswordPolicy` | 密码复杂度要求 | appsettings.json |
-| `Session` | 会话超时、并发控制 | appsettings.json |
-| `Security.RateLimiting` | 限流策略 | appsettings.json |
-| `Database` | 连接池、重试策略 | appsettings.json |
-| `Serilog` | 日志级别、输出目标 | appsettings.json |
-
-### JWT 配置
-
-```json
-{
-  "Jwt": {
-    "SecretKey": "...",                      // 生产环境必须更换
-    "Issuer": "LYBT.WebAPI",
-    "Audience": "LYBT.Client",
-    "AccessTokenExpirationMinutes": 30,      // Access Token 有效期
-    "RefreshTokenExpirationDays": 7,         // Refresh Token 有效期
-    "ClockSkewSeconds": 300                  // 时钟偏差容忍
-  }
-}
-```
-
-### 限流配置
-
-```json
-{
-  "Security": {
-    "RateLimiting": {
-      "Enabled": true,
-      "GlobalLimit": { "PermitLimit": 200, "WindowSeconds": 60 },
-      "LoginLimit": { "PermitLimit": 5, "WindowSeconds": 60 },
-      "ApiLimit": { "PermitLimit": 100, "WindowSeconds": 60 },
-      "WhitelistedIPs": ["127.0.0.1", "::1"]
-    }
-  }
-}
-```
-
-### 数据库配置
-
-```json
-{
-  "Database": {
-    "AutoMigrate": false,                    // 生产环境关闭自动迁移
-    "ConnectionPool": {
-      "MaxConnections": 20,
-      "MinConnections": 2,
-      "ConnectionTimeoutSeconds": 30,
-      "CommandTimeoutSeconds": 30
-    },
-    "RetryPolicy": {
-      "MaxRetryCount": 3,
-      "BaseDelayMs": 1000,
-      "MaxDelayMs": 10000
-    },
-    "Monitoring": {
-      "Enabled": true,
-      "SlowQueryThresholdMs": 1000
-    }
-  }
-}
-```
+| [deployment.md](./deployment.md) | 服务端部署、客户端部署、数据库运维 |
+| [configuration.md](./configuration.md) | 完整配置项说明 (JWT/密码策略/会话/限流/数据库/缓存/Kestrel) |
 
 ---
 
@@ -138,7 +44,7 @@ deploy/
 
 ### 运行时日志调整
 
-通过 Diagnostics API 动态调整日志级别 (需 SuperAdmin 权限):
+通过 Diagnostics API 动态调整日志级别 (需 SuperAdmin 权限)，详见 [API 参考 - Diagnostics](../04-api-reference/README.md):
 
 ```bash
 # 查看当前日志级别
@@ -182,50 +88,7 @@ POST /api/v1/diagnostics/logging/debug/disable
 
 状态值: `Healthy` / `Degraded` / `Unhealthy`。`Degraded` 返回 503。
 
----
-
-## 数据库运维
-
-### 迁移
-
-```bash
-# 生成迁移
-dotnet ef migrations add <MigrationName> -p src/Server/Core/LYBT.Infrastructure -s src/Server/Services/LYBT.WebAPI
-
-# 应用迁移
-dotnet ef database update -s src/Server/Services/LYBT.WebAPI
-```
-
-### 日志清理
-
-系统内置日志自动清理:
-
-```json
-{
-  "Logging": {
-    "Cleanup": {
-      "Enabled": true,
-      "RetentionDays": 90,
-      "CleanupIntervalHours": 24,
-      "BatchSize": 1000
-    }
-  }
-}
-```
-
----
-
-## 客户端部署
-
-### Desktop 安装包
-
-WPF Desktop 客户端通过 ClickOnce 或 MSI 分发。
-
-### 本地模式数据
-
-- SQLite 数据库: `%APPDATA%\LYBT\data\lybt-local.db`
-- 日志文件: `%APPDATA%\LYBT\logs\`
-- 配置文件: `%APPDATA%\LYBT\config\`
+详见 [API 参考 - Health](../04-api-reference/README.md)。
 
 ---
 
@@ -233,4 +96,5 @@ WPF Desktop 客户端通过 ClickOnce 或 MSI 分发。
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-02-10 | v1.1 | 拆分部署和配置内容到独立文档，精简为索引+日志+健康检查 |
 | 2026-02-10 | v1.0 | 初始版本 |

@@ -18,8 +18,9 @@
 | 医案管理 | [medical-cases.md](medical-cases.md) | FR-MC-001 ~ 017 | 17 |
 | 数据同步 | [sync.md](sync.md) | FR-SYNC-001 ~ 008 | 8 |
 | 打印 | [printing.md](printing.md) | FR-PRINT-001 ~ 004 | 4 |
+| 身份证读卡器 | [card-reader.md](card-reader.md) | FR-CARD-001 ~ 002 | 2 |
 
-> **总计: 92 个功能需求**
+> **总计: 94 个功能需求**
 
 ---
 
