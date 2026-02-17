@@ -34,10 +34,10 @@
 - **远程模式**: POST `/api/v1/users`，返回 UserDetailDto (201)
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 用户名重复时返回错误
-  - [ ] 保留用户名被拒绝
-  - [ ] Admin 创建 Admin 角色时被拒绝
-  - [ ] 拼音码自动生成
+  - [ ] 用户名已存在 -> 返回 409 + ERR-10002
+  - [ ] 使用 admin/root 等保留名 -> 返回 400
+  - [ ] Admin 创建 Admin 角色 -> 返回 403
+  - [ ] 创建成功 -> 拼音码自动生成
 
 ### FR-USER-002: 查看用户列表
 
@@ -50,8 +50,8 @@
 - **远程模式**: GET `/api/v1/users?keyword=&role=&status=&page=&pageSize=`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 分页参数正确
-  - [ ] 搜索按用户名和真实姓名匹配
+  - [ ] page=1, pageSize=20 -> 返回前20条用户
+  - [ ] keyword="张" -> 返回用户名或真实姓名包含"张"的结果
 
 ### FR-USER-003: 查看用户详情
 
@@ -62,8 +62,8 @@
 - **远程模式**: GET `/api/v1/users/{id}`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 返回完整用户信息
-  - [ ] 不返回 PasswordHash
+  - [ ] 有效ID -> 返回 200 + UserDetailDto (含审计字段)
+  - [ ] 响应 JSON 中 -> 不包含 PasswordHash 字段
 
 ### FR-USER-004: 更新用户信息
 
@@ -73,11 +73,12 @@
   2. 真实姓名变更时自动重新生成拼音码
   3. Admin 只能更新 Doctor/Receptionist
   4. 不能修改比自己权限高的角色
+  5. **角色变更时立即撤销该用户 Token Family，强制重登录** (AUTH-D07，见 [auth.md](auth.md))
 - **远程模式**: PUT `/api/v1/users/{id}`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 用户名字段忽略修改
-  - [ ] 拼音码随姓名自动更新
+  - [ ] 请求体含 UserName 修改 -> 忽略，UserName 不变
+  - [ ] RealName 变更 -> PinYinCode 自动重新生成
 
 ### FR-USER-005: 删除用户
 
@@ -93,9 +94,9 @@
 - **远程模式**: DELETE `/api/v1/users/{id}`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 删除后用户无法登录
-  - [ ] 删除最后一个 Admin 被拒绝
-  - [ ] 删除自己被拒绝
+  - [ ] 删除后用户登录 -> 返回 404 (软删除过滤)
+  - [ ] 删除最后一个 Admin -> 返回 403
+  - [ ] 删除当前登录用户 -> 返回 400
 
 ### FR-USER-006: 恢复已删除用户
 
@@ -107,8 +108,8 @@
 - **远程模式**: POST `/api/v1/users/{id}/restore`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 恢复后用户可正常登录
-  - [ ] 非已删除用户调用恢复返回错误
+  - [ ] 恢复成功 -> 用户可正常登录，状态恢复
+  - [ ] 对未删除用户调用恢复 -> 返回 400 "该用户未被删除，无需恢复"
 
 ### FR-USER-007: 批量删除
 
@@ -121,8 +122,8 @@
 - **远程模式**: POST `/api/v1/users/batch-delete`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 返回成功数、失败数和失败原因
-  - [ ] 不能批量删除自己
+  - [ ] 批量删除 -> 返回 BatchOperationResultDto (successCount/failureCount/failedItems)
+  - [ ] 批量中包含自己 -> 该项失败，原因"不能删除自己"
 
 ### FR-USER-008: 管理员重置密码
 
@@ -136,9 +137,9 @@
 - **远程模式**: POST `/api/v1/users/{id}/reset-password`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 重置后返回临时密码
-  - [ ] 旧 Token 全部失效
-  - [ ] 用户可使用临时密码登录
+  - [ ] 重置成功 -> 返回临时密码或使用配置默认密码
+  - [ ] 重置后 -> 该用户所有 Token Family 失效
+  - [ ] 使用临时密码登录 -> 登录成功
 
 ### FR-USER-009: 用户修改密码
 
@@ -151,9 +152,9 @@
 - **远程模式**: PUT `/api/v1/users/{id}/change-password`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 旧密码错误时拒绝修改
-  - [ ] 新密码不符合策略时返回明确提示
-  - [ ] 修改后旧 Token 失效
+  - [ ] 旧密码错误 -> 返回 401 + ERR-10004
+  - [ ] 新密码不符合策略 -> 返回 400 + 具体不满足项
+  - [ ] 修改成功后 -> 所有 Token Family 失效，需重新登录
 
 ### FR-USER-010: 修改个人资料
 
@@ -164,22 +165,23 @@
 - **远程模式**: PUT `/api/v1/users/{id}/profile`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 修改后拼音码自动更新
-  - [ ] 其他字段忽略修改
+  - [ ] RealName 变更 -> PinYinCode 自动重新生成
+  - [ ] 请求体含 UserName/Email 修改 -> 忽略
 
 ### FR-USER-011: 启用/禁用用户
 
 - **描述**: 切换用户的启用/禁用状态
 - **业务规则**:
-  1. 禁用用户时所有 Token Family 失效
-  2. 禁用后当前会话立即失效
-  3. 禁用用户尝试登录返回 UserDisabled 错误
-  4. 支持批量启用/禁用
+  1. **不能禁用最后一个 SuperAdmin/Admin** (USER-D03，与删除保护一致)
+  2. 禁用用户时所有 Token Family 失效
+  3. 禁用后当前会话立即失效
+  4. 禁用用户尝试登录返回 UserDisabled 错误
+  5. 支持批量启用/禁用
 - **远程模式**: POST `/api/v1/users/{id}/toggle-status`，批量: POST `/api/v1/users/batch-enable` 或 `/batch-disable`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
-  - [ ] 禁用后立即生效
-  - [ ] 批量操作返回详细结果
+  - [ ] 禁用用户 -> 当前会话立即失效，Token Family 作废
+  - [ ] 批量启用/禁用 -> 返回 BatchOperationResultDto
 
 ### FR-USER-012: 获取当前用户
 
@@ -191,8 +193,8 @@
 - **远程模式**: GET `/api/v1/users/current`
 - **本地模式**: 从本地会话获取
 - **验收标准**:
-  - [ ] 返回当前用户完整信息
-  - [ ] 未认证时返回 401
+  - [ ] 已认证用户 -> 返回 200 + UserDetailDto
+  - [ ] 未携带 Token -> 返回 401
 
 ---
 
@@ -220,12 +222,55 @@
 
 ---
 
+## 错误码
+
+> 错误码分区: 1xxxx (Users 模块)。Service 层采用 Result 模式统一返回，由 IExceptionHandler 映射为 HTTP 响应。
+
+### 结构化错误码
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-10001 | UserNotFound | 404 | 用户不存在 | GetById/Update/Delete/ResetPassword/ChangePassword/ChangeProfile/ToggleStatus/Restore 时 ID 无效 |
+| ERR-10002 | UserNameExists | 409 | 用户名已被使用 | 创建时用户名已存在 |
+| ERR-10004 | InvalidPassword | 401 | 用户名或密码错误 | 登录密码错误、修改密码时旧密码错误 |
+| ERR-10006 | UserDisabled | 403 | 用户账号已被禁用，请联系管理员 | 已禁用用户尝试登录 |
+| ERR-00003 | ValidationFailed | 400 | 输入数据验证失败，请检查后重试 | FluentValidation 验证不通过 |
+
+### 业务规则错误
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 保留用户名 | 400 | 用户名 '{UserName}' 为系统保留用户名，不可使用 | 使用 admin/root/system 等保留名 |
+| 无权创建角色 | 403 | 您没有权限创建{角色}账户 | Admin 创建 Admin，Doctor 创建任意角色 |
+| 无权更新用户 | 403 | 您没有权限更新该用户 | 低权限用户修改高权限用户 |
+| 无权修改角色 | 403 | 您没有权限将用户角色修改为该级别 | 角色提升越权 |
+| 无权删除用户 | 403 | 您没有权限删除该用户 | 低权限用户删除高权限用户 |
+| 无权修改状态 | 403 | 您没有权限修改该用户状态 | 低权限用户修改高权限用户状态 |
+| 无权恢复用户 | 403 | 您没有权限恢复该用户 | 低权限用户恢复高权限用户 |
+| 最后管理员保护 (删除) | 403 | 不能删除最后一个{超级管理员\|管理员} | 删除后无 SuperAdmin 或 Admin |
+| 最后管理员保护 (禁用) | 403 | 不能禁用最后一个{超级管理员\|管理员} | 禁用后无可用 SuperAdmin 或 Admin (USER-D03) |
+| 不能删除自己 | 400 | 不能删除自己 | 当前用户尝试删除自己 |
+| 不能修改自己状态 | 400 | 不能{启用\|禁用}当前登录用户 | 批量操作中包含自己 |
+| 用户未被删除 | 400 | 该用户未被删除，无需恢复 | 恢复未软删除的用户 |
+| 批量操作为空 | 400 | 请至少选择一个用户 | 批量删除/启用/禁用时 ID 列表为空 |
+| 空值验证 | 400 | 用户名不能为空 / 密码不能为空 / 真实姓名不能为空 | 必填字段为空 |
+| 删除失败 | 500 | 删除失败 | 数据库操作异常 |
+
+### 安全设计
+
+- **登录失败隐藏策略**: 用户不存在和密码错误统一返回 "用户名或密码错误"，防止用户名枚举攻击
+- **批量操作部分失败**: 返回 BatchOperationResultDto，单项失败不中断整个操作
+
+---
+
 ## 决策记录
 
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | 1 | 本地模式下用户管理的支持范围 | 所有 FR-USER | 已确定: 完整支持。LocalUserDataSource 11/11 方法全覆盖，DI 注册为 IUserDataSource 本地实现 |
 | 2 | Receptionist 角色的具体功能边界 | FR-USER-001 | 已确定: 仅查看权限 (患者列表 + 医案列表)。不在 DoctorOrAdmin / AdminOnly 策略中，无任何写操作权限 |
+| USER-D03 | 最后一个 Admin/SuperAdmin 禁用保护 | FR-USER-011 | 已确定: 与删除保护一致，禁止禁用最后一个管理员 |
+| AUTH-D07 | 角色变更即时生效 | FR-USER-004 | 已确定: 角色变更时立即撤销 Token Family，强制重登录 (见 auth.md AUTH-D07) |
 
 ---
 
@@ -234,3 +279,5 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 user-management spec + UsersController 代码提取 |
+| 2026-02-11 | v1.1 | 新增错误码章节，从 UserService.cs + ErrorCode.cs 提取 19 个错误场景 |
+| 2026-02-17 | v1.2 | Round 10: FR-USER-004 补充角色变更即时生效 (AUTH-D07)，FR-USER-011 补充最后管理员禁用保护 (USER-D03)，新增错误码 |

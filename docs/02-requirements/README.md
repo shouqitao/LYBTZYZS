@@ -19,8 +19,15 @@
 | 数据同步 | [sync.md](sync.md) | FR-SYNC-001 ~ 008 | 8 |
 | 打印 | [printing.md](printing.md) | FR-PRINT-001 ~ 004 | 4 |
 | 身份证读卡器 | [card-reader.md](card-reader.md) | FR-CARD-001 ~ 002 | 2 |
+| 系统健康与诊断 | [health-diagnostics.md](health-diagnostics.md) | FR-SYS-001 ~ 007 | 7 |
+| 异常处理策略 | [error-handling.md](error-handling.md) | FR-ERR-001 ~ 005 | 5 |
+| 日志与审计 | [logging.md](logging.md) | FR-LOG-001 ~ 004 | 4 |
+| Desktop Shell | [desktop-shell.md](desktop-shell.md) | FR-SHELL-001 ~ 007 | 7 |
+| 配置参数 | [configuration.md](configuration.md) | FR-CFG-001 ~ 003 | 3 |
+| **非功能性需求** | **[nfr.md](nfr.md)** | **NFR-PERF/DATA/AVAIL/SEC** | **跨模块** |
+| **UI/UX 交互规范** | **[ui-patterns.md](ui-patterns.md)** | **UI-D01~D06** | **跨模块** |
 
-> **总计: 94 个功能需求**
+> **总计: 120 个功能需求 (14 个模块) + NFR 文档 (性能/数据量/可用性/安全)**
 
 ---
 
@@ -29,7 +36,7 @@
 | 组成 | 格式 | 示例 |
 |------|------|------|
 | 前缀 | `FR` | 固定 |
-| 模块缩写 | `AUTH` / `USER` / `PAT` / `HERB` / `FORM` / `MC` / `SYNC` / `PRINT` | 见模块索引 |
+| 模块缩写 | `AUTH` / `USER` / `PAT` / `HERB` / `FORM` / `MC` / `SYNC` / `PRINT` / `CARD` / `SYS` / `ERR` / `LOG` / `SHELL` / `CFG` | 见模块索引 |
 | 序号 | 三位数字 | `001`, `002`, ... |
 | 完整格式 | `FR-{MODULE}-{NNN}` | `FR-MC-005` |
 
@@ -60,6 +67,7 @@
 ## 用户角色 (权限矩阵)
 ## 功能清单 (FR-xxx-NNN 列表)
 ## 数据模型 (涉及的实体)
+## 错误码 (错误场景/HTTP状态码/用户消息/触发条件)
 ## 决策记录
 ## 变更记录
 ```
@@ -71,3 +79,6 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
+| 2026-02-11 | v1.1 | 新增5个模块索引 (SYS/ERR/LOG/SHELL/CFG)，总计从94更新到120个FR。模板新增"错误码"章节 |
+| 2026-02-17 | v1.2 | 新增非功能性需求 (NFR) 文档索引 |
+| 2026-02-17 | v1.3 | 新增 UI/UX 交互规范 (ui-patterns.md) 文档索引 |

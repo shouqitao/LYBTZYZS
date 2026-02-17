@@ -32,6 +32,10 @@ flowchart LR
     D -->|是| E[开具处方]
     D -->|否| F[完成医案]
     E --> F
+    F --> G{打印处方?}
+    G -->|是| H[打印]
+    G -->|否| I[结束]
+    H --> I
 
     subgraph 诊断 Consultation
         C1[现病史] --> C2[望诊]
@@ -45,7 +49,7 @@ flowchart LR
 
     subgraph 处方 Prescription
         E1[选择药材] --> E2[设置剂量]
-        E2 --> E3[导入验方]
+        E2 --> E3[导入验方/复制历史处方]
     end
 
     E --> E1
@@ -58,8 +62,191 @@ flowchart LR
 | 患者登记 | 创建或选择已有患者 | Patient |
 | 创建医案 | 为患者创建新的诊疗记录 | MedicalCase (聚合根) |
 | 中医诊断 | 填写望闻问切、辨证信息 | Consultation |
-| 开具处方 | 选择药材、设置剂量，可导入验方 | Prescription + PrescriptionItem |
+| 开具处方 | 选择药材、设置剂量，可导入验方或复制历史处方 | Prescription + PrescriptionItem |
 | 完成医案 | 保存完整诊疗记录，锁定编辑 | MedicalCase 状态变更 |
+| 打印处方 | 保存后提示打印，也可稍后从医案列表打印 | PrescriptionPrintLog |
+
+---
+
+## 详细业务流程
+
+### 流程 1: 患者首次就诊
+
+```mermaid
+sequenceDiagram
+    participant R as 前台/医生
+    participant S as 系统
+    participant P as 打印机
+
+    R->>S: 1. 搜索患者 (姓名/拼音码/手机号)
+    S-->>R: 未找到匹配患者
+    R->>S: 2. 创建新患者 (姓名/性别/年龄/手机号)
+    Note over R,S: 可选: 身份证读卡器自动填充
+    S-->>R: 患者创建成功，跳转患者详情
+    R->>S: 3. 点击"创建医案"
+    S-->>R: 进入医案编辑页 (状态: Draft)
+    R->>S: 4. 填写诊断 (现病史/望闻问切/辨证)
+    R->>S: 5. 标记"需要处方"
+    R->>S: 6. 添加药材到处方 (搜索药材/设置剂量/单位)
+    Note over R,S: 可选: 从验方导入药材列表
+    R->>S: 7. 保存医案 (聚合保存: 医案+诊断+处方)
+    S-->>R: 保存成功，弹出"是否打印处方?"
+    R->>S: 8. 确认打印
+    S->>P: 9. 发送打印任务 (A5 模板)
+    S-->>R: 打印完成，记录打印日志
+```
+
+**涉及模块**: 患者管理 (FR-PAT) -> 身份证读卡器 (FR-CARD) -> 医案管理 (FR-MC) -> 药材管理 (FR-HERB) -> 验方管理 (FR-FORM) -> 打印 (FR-PRINT)
+
+### 流程 2: 患者复诊
+
+```mermaid
+sequenceDiagram
+    participant D as 医生
+    participant S as 系统
+
+    D->>S: 1. 搜索并选择患者
+    S-->>D: 显示患者详情 + 历史医案列表
+    D->>S: 2. 查看上次医案 (诊断/处方详情)
+    D->>S: 3. 点击"创建新医案"
+    S-->>D: 进入新医案编辑页
+    D->>S: 4. 填写本次诊断
+    D->>S: 5. 选择"复制历史处方"
+    S-->>D: 从上次医案复制处方到当前医案
+    D->>S: 6. 修改药材/剂量 (根据本次情况调整)
+    D->>S: 7. 保存医案
+    S-->>D: 保存成功，提示打印
+```
+
+**关键点**: 复制历史处方功能 -- 从患者历史医案中选择一个处方，复制其药材列表到当前新医案的处方中，医生可在此基础上增减药材和调整剂量。
+
+### 流程 3: 验方创建与使用
+
+```mermaid
+sequenceDiagram
+    participant D as 医生
+    participant S as 系统
+
+    Note over D,S: 创建验方
+    D->>S: 1. 进入验方管理
+    D->>S: 2. 创建新验方 (名称/描述)
+    D->>S: 3. 添加药材 (搜索/设置默认剂量)
+    Note over D,S: 药材使用延迟绑定 (通过名称匹配)
+    D->>S: 4. 保存验方 (ValidationStatus 流转)
+
+    Note over D,S: 使用验方
+    D->>S: 5. 在医案处方中点击"导入验方"
+    S-->>D: 显示验方列表 (个人 + 共享)
+    D->>S: 6. 选择验方
+    S-->>D: 将验方药材导入处方 (绑定当前价格)
+    D->>S: 7. 可继续调整药材/剂量
+```
+
+### 流程 4: 药材管理
+
+```mermaid
+sequenceDiagram
+    participant A as 管理员
+    participant S as 系统
+
+    Note over A,S: 单条录入
+    A->>S: 1. 进入药材管理
+    A->>S: 2. 新增药材 (名称/拼音码/分类/单位/价格)
+    S-->>A: 自动生成拼音码，检查重名
+
+    Note over A,S: 批量导入
+    A->>S: 3. 选择 Excel/JSON 文件导入
+    S-->>A: 预览导入数据，显示重复处理策略
+    A->>S: 4. 确认导入
+    S-->>A: 导入结果汇总 (成功/跳过/失败)
+
+    Note over A,S: 禁用药材
+    A->>S: 5. 禁用某药材
+    S->>S: 6. 检查处方引用
+    S-->>A: 提示: "该药材已被 N 个处方引用，禁用后历史处方标记'已禁用'"
+```
+
+---
+
+## 模块依赖关系
+
+### 模块依赖矩阵
+
+```mermaid
+graph TD
+    MC[医案管理<br/>MedicalCase] -->|PatientId| PAT[患者管理<br/>Patient]
+    MC -->|UserId| USER[用户管理<br/>User]
+    MC -->|HerbId, Price| HERB[药材管理<br/>Herb]
+
+    FORM[验方管理<br/>Formula] -->|HerbId 延迟绑定| HERB
+
+    PRINT[打印<br/>Printing] -->|处方数据| MC
+
+    SYNC[数据同步<br/>Sync] -->|同步实体| PAT
+    SYNC -->|同步实体| HERB
+    SYNC -->|同步实体| FORM
+
+    AUTH[认证<br/>Auth] -->|用户凭据| USER
+    SHELL[Desktop Shell] -->|导航/菜单| AUTH
+    SHELL -->|区域管理| MC
+    SHELL -->|区域管理| PAT
+    SHELL -->|区域管理| HERB
+    SHELL -->|区域管理| FORM
+
+    CARD[读卡器<br/>CardReader] -->|自动填充| PAT
+
+    SYS[系统健康] -->|数据库检查| DB[(数据库)]
+    LOG[日志审计] -->|记录操作| DB
+
+    CFG[配置参数] -.->|配置| AUTH
+    CFG -.->|配置| MC
+    CFG -.->|配置| HERB
+    CFG -.->|配置| SYNC
+    ERR[异常处理] -.->|兜底| MC
+    ERR -.->|兜底| PAT
+    ERR -.->|兜底| HERB
+```
+
+### 依赖方向说明
+
+| 依赖关系 | 类型 | 说明 |
+|----------|------|------|
+| MedicalCase -> Patient | 数据依赖 (外键) | 医案必须关联一个患者 (PatientId) |
+| MedicalCase -> User | 数据依赖 (外键) | 医案必须关联创建医生 (UserId) |
+| Prescription -> Herb | 数据依赖 (外键) | 处方项通过 HerbId 引用药材，记录当时价格 |
+| Formula -> Herb | 延迟绑定 | 验方通过药材名称匹配，不存储外键 |
+| Printing -> MedicalCase | 功能依赖 | 打印处方需要读取医案+处方数据 |
+| Sync -> Patient/Herb/Formula | 同步依赖 | v1.0 三种实体可同步 |
+| Auth -> User | 认证依赖 | 登录验证需要查询用户信息 |
+| CardReader -> Patient | 功能集成 | 读取身份证自动填充患者信息 |
+
+### 跨模块数据规则
+
+| 规则 | 描述 | 实现方式 |
+|------|------|---------|
+| 患者引用保护 | 存在历史医案的患者不可删除 | 删除前检查 MedicalCase 引用 |
+| 药材引用保护 | 被处方引用的药材不可删除，仅可禁用 | 删除前检查 PrescriptionItem 引用 |
+| 药材价格快照 | 处方保存时记录当时药材价格 | PrescriptionItem 存储 UnitPrice 副本 |
+| 禁用药材标记 | 历史处方中禁用药材标注"已禁用" | 展示时比对 Herb.IsEnabled 状态 |
+| 聚合根事务 | MedicalCase + Consultation + Prescription 原子保存 | EF Core 事务 (SaveChangesAsync) |
+| 验方延迟绑定 | 验方药材通过名称匹配而非外键 | 导入处方时按名称查找 HerbId |
+
+---
+
+## Desktop 端事件架构
+
+Desktop 客户端使用 Prism IEventAggregator 实现模块间松耦合通信：
+
+| 事件 | 载荷 | 触发场景 | 消费者 |
+|------|------|---------|--------|
+| ConsultationCompletedEvent | MedicalCaseId, ConsultationId, NeedsPrescription | 诊断填写完成 | 医案工作区 (切换到处方区) |
+| PrescriptionCompletedEvent | PrescriptionId, TotalItems, TotalAmount, IsDraft | 处方保存完成 | 医案工作区 (更新状态) |
+| WorkspaceChangedEvent | MedicalCaseFlowId, WorkspaceState | 工作区视图切换 | Shell (更新导航状态) |
+| PatientCreatedEvent | PatientDetailDto | 新患者创建 | 患者列表 (刷新) |
+| PatientUpdatedEvent | PatientDetailDto | 患者信息更新 | 患者详情/列表 (刷新) |
+| PatientSelectedEvent | PatientSelectedPayload | 选择患者 | 医案模块 (加载患者医案) |
+| TokenLifecycleStateChangedEvent | State (Active/Warning/Expired) | Token 状态变更 | Shell (显示超时警告/跳转登录) |
+| LogoutCompletedEvent | LogoutCompletedPayload | 用户登出 | Shell (返回登录页) |
 
 ---
 
@@ -89,8 +276,43 @@ flowchart LR
 
 ---
 
+## 版本路线图
+
+### v1.0 -- 核心诊疗流程 (当前)
+
+**范围**: 14 个模块 / 120 个功能需求 (FR) + NFR 文档
+
+**核心功能**:
+- 完整的中医诊疗流程 (患者登记 -> 创建医案 -> 诊断 -> 处方 -> 打印)
+- 复诊流程 (复制历史处方到新医案)
+- 四层角色权限体系 (SuperAdmin > Admin > Doctor > Receptionist)
+- 本地/远程双模式运行 (SQLite / SQL Server)
+- 基础数据同步 (药材/患者/验方，手动触发)
+- 身份证读卡器集成 (HuaDaHD100，策略模式可扩展)
+- JWT 认证 + AutoLoginToken + 重放攻击检测
+- 结构化日志 + 安全审计 + 敏感数据脱敏
+- 系统健康检查 + 运行时诊断
+
+**模块清单**:
+认证(13 FR) | 用户管理(12) | 患者管理(12) | 药材管理(13) | 验方管理(13) | 医案管理(17) | 数据同步(8) | 打印(4) | 身份证读卡器(2) | 系统健康与诊断(7) | 异常处理(5) | 日志与审计(4) | Desktop Shell(7) | 配置参数(3)
+
+### v2.0 -- 扩展与集成 (规划中)
+
+| 功能 | 来源 | 说明 |
+|------|------|------|
+| MedicalCase 数据同步 | FR-SYNC 决策#3 | 聚合根多表级联同步，需保证聚合完整性 |
+| PDF 处方导出 | FR-PRINT 决策#1 | PdfSharp 或 XPS->PDF 转换 |
+| 自动同步提示 | FR-SYNC 决策#4 | NetworkStatusService + 状态栏指示器 |
+| 诊所信息配置化 | FR-PRINT 决策#2 | 从 appsettings.json 或数据库读取，替代硬编码 |
+| User 数据同步 | FR-SYNC 决策#2 | User 实体加入同步范围 |
+| SQLite 字段级加密 | NFR-D03 | AES-256 + DPAPI 加密 IdCardNumber/PhoneNumber (替代原 SQLCipher 方案) |
+
+---
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
+| 2026-02-11 | v1.1 | 新增版本路线图 (v1.0 范围 + v2.0 规划) |
+| 2026-02-17 | v2.0 | Round 2 深化: 新增详细业务流程 (首诊/复诊/验方/药材)、模块依赖矩阵、跨模块数据规则、Desktop 事件架构 |

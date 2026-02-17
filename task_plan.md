@@ -1,52 +1,42 @@
-# Task Plan: 文档-代码对齐补全 + EntityAudit 技术债务清理
+# Task Plan: PRD 深化讨论与补全
 
 ## Goal
-1. 补全代码已有但文档缺失的模块 (CardReader/Health/Diagnostics) -- COMPLETE
-2. 全量清除通用实体审计 (EntityAudit) 代码、DTO、测试和 DI 注册 -- COMPLETE
+通过多轮结构化讨论，深化每个重要模块和整体系统的设计，使 PRD 从 "可指导开发" 提升到 "可直接验收" 水平。
 
 ## Current Phase
-ALL PHASES COMPLETE
+Phase 3: Round 10 -- 快速扫描完成 (核心模块补强) [complete]
 
 ## Design Reference
-- 设计文档: `docs/plans/2026-02-10-doc-code-alignment-design.md`
-- 文档补全计划: `docs/plans/2026-02-10-doc-code-alignment-plan.md` (7 Tasks)
-- 审计清理计划: `docs/plans/2026-02-10-remove-entity-audit-plan.md` (8 Tasks)
+- 深化讨论提纲: docs/plans/2026-02-12-prd-deepening-outline.md
 
 ---
 
 ## Phases
 
-### Phase 1: 文档创建 (Task 1-3)
-- [x] Task 1: 创建 card-reader.md 需求 + 修正数据模型
-- [x] Task 2: 创建 health.md API参考
-- [x] Task 3: 创建 diagnostics.md API参考
+### Phase 0: 深化讨论提纲编制
+- [x] 全量评估 14 个 PRD 文档深度
+- [x] 识别 5 大系统级薄弱面
+- [x] 逐模块质量分级 (最完善/完善/良好)
+- [x] 编制结构化讨论提纲 (10 轮)
 - **Status:** complete
 
-### Phase 2: 架构+运维文档 (Task 4-5)
-- [x] Task 4: desktop.md 新增 Controls/Dialogs/CardReader 章节
-- [x] Task 5: 拆分 06-operations/ 三文件
+### Phase 1: 系统级主题讨论 (R1~R3)
+- [x] R1: 非功能性需求 (NFR) -- 性能/数据量/可用性/安全
+- [x] R2: 核心业务流程与模块交互
+- [x] R3: UI/UX 交互模式与规范
 - **Status:** complete
 
-### Phase 3: 索引更新与清理 (Task 6-7)
-- [x] Task 6: 更新 README 索引
-- [x] Task 7: 删除残留 + 全量验证
+### Phase 2: 薄弱模块深化 (R4~R8)
+- [x] R4: 数据同步
+- [x] R5: Desktop Shell
+- [x] R6: 打印模块
+- [x] R7: 日志 + 健康诊断
+- [x] R8: 配置 + 异常处理
 - **Status:** complete
 
-### Phase 4: EntityAudit Server 端清理 (Task A1-A3)
-- [x] Task A1: 删除 EntityAuditLog, IAuditService, EntityAuditService, Configuration; 修改 AppDbContext
-- [x] Task A2: 4 个 Module 移除 DI 注册 + using
-- [x] Task A3: 删除 EntityAuditController, EntityAuditLogDto; 修改 appsettings.json, UserManagementOptions
-- **Status:** complete
-
-### Phase 5: EntityAudit Desktop/测试清理 (Task A4-A5)
-- [x] Task A4: 删除 5 文件 (Dialog+ViewModel+Handlers); 修改 App.xaml.cs + 4 个 MasterDetailViewModel + UsersModule
-- [x] Task A5: 删除 4 测试文件; 修改 ArchTests + AggregateRootArchTests 排除列表 + DesktopE2ETestFixture
-- **Status:** complete
-
-### Phase 6: Migration + 文档 + 验证 (Task A6-A8)
-- [x] Task A6: 生成 RemoveEntityAuditLogsTable migration (仅 DropTable)
-- [x] Task A7: 更新 server.md, api-reference/README, medical-cases.md, Shell/README
-- [x] Task A8: 全量编译 0 errors, 全量测试 1431 passed 0 failed, 残留搜索仅 migration 历史
+### Phase 3: 核心模块补强 (R9~R10)
+- [x] R9: 医案管理 -- 边界条件深化 (8 条决策: MC-D04~D11)
+- [x] R10: 认证/用户/患者/药材/验方 -- 快速扫描 (6 条决策: AUTH-D06~D07, USER-D03, PAT-D03~D04, MC-D12)
 - **Status:** complete
 
 ---
@@ -55,18 +45,42 @@ ALL PHASES COMPLETE
 
 | Decision | Rationale | Date |
 |----------|-----------|------|
-| EntityAudit 为技术债务，不补文档 | 审计功能未正式开发，代码待清除 | 2026-02-10 |
-| 保留 AuditOperationType 枚举 | 被 MedicalCaseAudit 使用 | 2026-02-10 |
-| 保留 MedicalCaseAudit + SecurityAudit | 正式功能，不清除 | 2026-02-10 |
-| 不修改历史 migration | 创建新 migration 删表 | 2026-02-10 |
-
-## Errors Encountered
-
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-| DesktopE2ETestFixture 残留 IUserAuditHandler 注册 | 1 | 计划未覆盖，编译发现后补充修复 |
-| Desktop UsersModule 残留 DI 注册 | 1 | 计划未覆盖 Desktop Module，grep 发现后补充修复 |
+| 讨论分 "系统级" + "模块级" 两类 | 系统级问题 (NFR/交互/UX) 影响全局，需先统一再深入各模块 | 2026-02-12 |
+| 模块讨论按薄弱程度排序 | 薄弱模块 (Sync/Shell/Printing) 优先，已完善模块 (Auth/Users/MC) 后补 | 2026-02-12 |
+| 复诊支持复制历史处方 | 从患者历史医案复制处方到新医案，可修改药材/剂量 | 2026-02-17 |
+| 保存后提示打印 | 医案保存后弹出打印提示，也可从列表稍后打印 | 2026-02-17 |
+| 药材价格快照 | 处方保存时记录当时价格，历史处方不受后续价格变更影响 | 2026-02-17 |
+| 患者引用保护 | 有历史医案的患者禁止删除，仅可禁用 | 2026-02-17 |
+| 禁用药材标记展示 | 历史处方中禁用药材标注"已禁用"，新处方不可选 | 2026-02-17 |
+| 聚合根事务边界 | MedicalCase + Consultation + Prescription 原子保存，其他实体独立事务 | 2026-02-17 |
+| 即时搜索+300ms防抖 | 诊疗场景追求效率，即时反馈更好 | 2026-02-17 |
+| 保存后返回列表 | 统一行为，医案特殊处理(打印提示) | 2026-02-17 |
+| Clinical/Management菜单过滤 | Doctor默认Clinical(患者/医案/验方/打印)，Admin默认Management(全部) | 2026-02-17 |
+| 双列表单+失焦校验 | 充分利用屏幕宽度，即时反馈帮助纠错 | 2026-02-17 |
+| 安全审计保留以 NFR 365天为准 | 代码原30天与NFR矛盾，改为可配置默认365天。医疗合规要求 | 2026-02-17 |
+| 6个未文档化功能全部补充PRD | 后台清理/启动诊断/API日志等已实现功能必须文档化，确保代码-文档100%对齐 | 2026-02-17 |
+| 医案审计归属medical-cases.md | MedicalCaseAuditLog为业务审计，归FR-MC-012；logging.md交叉引用 | 2026-02-17 |
+| 异常告警明确v2.0范围 | v1.0仅Error/Fatal永久保留供查询，不实现主动告警 | 2026-02-17 |
+| FeatureToggle=false 隐藏 | 对应UI按钮/菜单项完全隐藏(Collapsed)，用户不可见 | 2026-02-17 |
+| 配置分两类管理 | 安全配置需重启(ValidateOnStart)，运维配置(Logging)支持热更新 | 2026-02-17 |
+| 生产环境启动强制验证 | Critical配置缺失阻止启动(Exit 1)，仅Production环境触发 | 2026-02-17 |
+| 异常展示遵循UI规范分层 | 业务错误用Toast，系统错误用对话框+追踪码，遵循ui-patterns.md 3.3节 | 2026-02-17 |
+| 追踪码纳入v1.0 | 系统错误附加8位短追踪码，业务错误不附加 | 2026-02-17 |
+| MC-D04: 患者删除引用检查 | 有关联医案的患者禁止删除(422)，仅可禁用 | 2026-02-17 |
+| MC-D05: 草稿不自动清理 | v1.0依赖BR-001卡点+用户手动处理 | 2026-02-17 |
+| MC-D06: DB索引接受现状 | 仅Active唯一索引，NFR 1-3并发风险极低 | 2026-02-17 |
+| MC-D07: 禁用药材展示 | 名称后缀"(已停用)"，历史处方仅查看不可改剂量 | 2026-02-17 |
+| MC-D08: 验方导入过滤 | 仅Validated验方可导入处方，Draft不出现 | 2026-02-17 |
+| MC-D09: 禁用药材跳过导入 | 跳过+提示"已停用，已跳过" | 2026-02-17 |
+| MC-D10: 并发编辑策略 | 乐观锁RowVersion+3次重试，不增加悲观锁 | 2026-02-17 |
+| MC-D11: 排序规则 | 列表CreatedAt DESC，待诊CreatedAt ASC | 2026-02-17 |
+| MC-D12: 验方导入独立性 | 数据复制，处方修改不影响原验方 | 2026-02-17 |
+| AUTH-D06: 单会话登录 | 新设备登录撤销旧设备Token Family | 2026-02-17 |
+| AUTH-D07: 角色变更即时生效 | 变更角色时撤销Token Family，强制重登录 | 2026-02-17 |
+| USER-D03: 最后Admin禁用保护 | 与删除保护一致，禁止禁用最后一个管理员 | 2026-02-17 |
+| PAT-D03: 身份证号必填+唯一 | IdNumber改为Required+Unique | 2026-02-17 |
+| PAT-D04: 无患者合并 | v1.0不包含，先查后建防重复 | 2026-02-17 |
 
 ---
-**Started**: 2026-02-10
-**Last Updated**: 2026-02-10 (ALL 15 TASKS COMPLETE - 7 文档 + 8 审计清理)
+**Started**: 2026-02-12
+**Last Updated**: 2026-02-17

@@ -13,7 +13,7 @@
 | 超级管理员 | SuperAdmin | 100 | 最高权限，系统初始化和诊断专用 |
 | 管理员 | Admin | 10 | 系统管理、用户管理、全局数据查看与编辑 |
 | 医生 | Doctor | 1 | 日常诊疗、开方、患者管理 |
-| 前台接待 | Receptionist | 0 | 患者登记、预约管理 |
+| 前台接待 | Receptionist | 0 | v1.0 仅查看权限。不在 DoctorOrAdmin/AdminOnly 策略中，无任何写操作权限 |
 
 ---
 
@@ -35,7 +35,7 @@
 | 认证 | `/api/v1/auth` | 登录/登出 | 登录/登出 | 登录/登出 | 登录/登出 |
 | 用户管理 | `/api/v1/users` | CRUD | CRUD | 禁止 | 禁止 |
 | 患者管理 | `/api/v1/patients` | CRUD | CRUD | CRUD | 禁止 |
-| 药材管理 | `/api/v1/herbs` | CRUD | CRUD | 查看 | 禁止 |
+| 药材管理 | `/api/v1/herbs` | CRUD | CRUD | 查看+创建 | 禁止 |
 | 验方管理 | `/api/v1/formulas` | CRUD | CRUD | CRUD (受限) | 禁止 |
 | 医案管理 | `/api/v1/medicalcases` | 查看全部 | CRUD 全部 | CRUD (受限) | 禁止 |
 | 数据同步 | `/api/v1/sync` | 全部 | 全部 | 全部 | 禁止 |
@@ -142,3 +142,5 @@ Desktop 客户端根据角色提供不同的工作区入口:
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 api-authorization spec、user-management spec 和 Controller 代码提取 |
+| 2026-02-11 | v1.1 | 修正 Receptionist 角色描述，从"患者登记、预约管理"改为"仅查看权限" |
+| 2026-02-11 | v1.2 | 修正药材管理 Doctor 权限从"查看"到"查看+创建"，与 herbs.md PRD 对齐 |

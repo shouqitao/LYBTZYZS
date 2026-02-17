@@ -34,8 +34,8 @@
 - **远程模式**: POST `/api/v1/medicalcases`
 - **本地模式**: DataSource 本地存储
 - **验收标准**:
-  - [ ] Admin 创建医案返回 403
-  - [ ] Consultation 自动创建
+  - [ ] Admin 角色调用 POST -> 返回 403 (仅 Doctor 可创建)
+  - [ ] 创建医案成功 -> Consultation 实体自动创建 (共享主键)
 
 ### FR-MC-002: 填写诊断
 
@@ -47,7 +47,7 @@
 - **远程模式**: PUT `/api/v1/medicalcases/{id}` (聚合保存，含 Consultation)
 - **本地模式**: 本地更新
 - **验收标准**:
-  - [ ] 无 TcmDiagnosis 时保存失败
+  - [ ] TcmDiagnosis 为空时完成医案 -> 返回 422
 
 ### FR-MC-003: 标记处方需求
 
@@ -59,8 +59,8 @@
 - **远程模式**: PUT `/api/v1/medicalcases/{id}/prescription-flag`
 - **本地模式**: 本地标记
 - **验收标准**:
-  - [ ] 标记为 false 后处方被清除
-  - [ ] 标记为 true 后可创建处方
+  - [ ] NeedsPrescription=false -> 已有 Prescription 被清除
+  - [ ] NeedsPrescription=true -> 允许创建 Prescription
 
 ### FR-MC-004: 开具处方
 
@@ -75,8 +75,8 @@
 - **远程模式**: PUT `/api/v1/medicalcases/{id}` (聚合保存，含 Prescription + Items)
 - **本地模式**: 本地存储
 - **验收标准**:
-  - [ ] 无药材项时保存失败
-  - [ ] 金额正确计算
+  - [ ] 处方 Items 为空 -> 返回 400 验证失败
+  - [ ] UnitPrice=10, Dosage=15 -> Amount=150
 
 ### FR-MC-005: 聚合保存
 
@@ -90,8 +90,8 @@
 - **远程模式**: PUT `/api/v1/medicalcases/{id}`
 - **本地模式**: 本地保存
 - **验收标准**:
-  - [ ] 需要审计理由时未提供返回错误
-  - [ ] 处方项完整替换
+  - [ ] 编辑锁定医案未提供 EditReason -> 返回 422
+  - [ ] 更新处方 Items -> 原有 Items 全部替换为新列表
 
 ### FR-MC-006: 暂存草稿
 
@@ -103,8 +103,8 @@
 - **远程模式**: PUT `/api/v1/medicalcases/{id}/draft`
 - **本地模式**: 本地暂存
 - **验收标准**:
-  - [ ] 暂存后可继续编辑
-  - [ ] 不验证必填字段
+  - [ ] 暂存成功 -> 状态=Draft，可继续编辑
+  - [ ] TcmDiagnosis 为空 -> 暂存成功 (不验证)
 
 ### FR-MC-007: 完成医案
 
@@ -117,8 +117,8 @@
 - **远程模式**: PUT `/api/v1/medicalcases/{id}/close`
 - **本地模式**: 本地完成
 - **验收标准**:
-  - [ ] CompletedAt 正确记录
-  - [ ] 隔天锁定生效
+  - [ ] 完成医案 -> CompletedAt 记录当前时间
+  - [ ] CompletedAt.Date < Today -> IsLocked=true
 
 ### FR-MC-008: 取消医案
 
@@ -132,8 +132,8 @@
 - **远程模式**: PUT `/api/v1/medicalcases/{id}/cancel`
 - **本地模式**: 本地取消
 - **验收标准**:
-  - [ ] 取消后不可恢复编辑
-  - [ ] 数据保留用于审计
+  - [ ] 取消后 -> IsDeleted=true，医案不可再编辑
+  - [ ] 取消后 -> 诊断/处方数据保留在数据库中
 
 ### FR-MC-009: 医案列表查询
 
@@ -143,11 +143,12 @@
   2. Admin 查看全部，Doctor 仅查看自己的
   3. 默认分页: page=1, pageSize=20
   4. 统一查询端点支持多种 QueryType
+  5. 排序规则: CreatedAt DESC (最新优先)
 - **远程模式**: GET `/api/v1/medicalcases?status=&patientId=&keyword=&page=&pageSize=` 或 GET `/api/v1/medicalcases/query`
 - **本地模式**: 本地查询
 - **验收标准**:
-  - [ ] Doctor 只能看到自己的医案
-  - [ ] 筛选条件正确过滤
+  - [ ] Doctor 查询 -> 仅返回 UserId=自己的医案
+  - [ ] status=Completed -> 仅返回已完成医案
 
 ### FR-MC-010: 跨医案搜索
 
@@ -160,7 +161,7 @@
 - **远程模式**: GET `/api/v1/medicalcases/search?patientName=&diagnosisKeyword=&startDate=&endDate=`
 - **本地模式**: 本地搜索
 - **验收标准**:
-  - [ ] 诊断关键词匹配正确
+  - [ ] diagnosisKeyword="风寒" -> 返回 TcmDiagnosis 含"风寒"的医案
 
 ### FR-MC-011: 编辑模式
 
@@ -175,23 +176,47 @@
 - **远程模式**: 客户端 UI 逻辑
 - **本地模式**: 同远程模式
 - **验收标准**:
-  - [ ] 工作区正确切换
-  - [ ] 按钮按模式显示
+  - [ ] Clinical 模式默认 Editing，Management 模式默认 ReadOnly
+  - [ ] Clinical: [暂存][打印][完成]，Management: [打印][保存] 或 [编辑]
 
 ### FR-MC-012: 审计日志
 
-- **描述**: 记录医案所有变更的完整审计历史
+- **描述**: 记录医案所有变更的完整审计历史，MedicalCaseAuditService 自动检测字段级变更并记录前后值
 - **业务规则**:
   1. 记录操作人 (ID/姓名/角色)、操作类型、变更字段、前后值
   2. 操作类型: Create/Update/StatusChange/SoftDelete/Cancel
   3. 修改原因: 历史医案修改时必填
   4. 支持分页查看审计日志
-  5. 变更字段和值以 JSON 格式存储
+  5. 变更字段和值以 JSON 格式存储 (CamelCase)
+  6. 创建操作: 仅记录 NewValues (无 OldValues)
+  7. 更新操作: 自动比较前后值，仅记录实际变更的字段
+  8. 删除操作: 记录 IsDeleted=true 变更
+  9. 审计记录写入失败不影响主业务流程 (异常隔离)
 - **远程模式**: GET `/api/v1/medicalcases/{id}/audit-logs?page=&pageSize=`
 - **本地模式**: 不支持完整审计日志。仅保留实体级审计字段 (CreatedAt/UpdatedAt/CreatedBy/UpdatedBy)
+- **数据模型 (MedicalCaseAuditLog)**:
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| Id | Guid | PK | 主键 |
+| MedicalCaseId | Guid | FK, Required | 关联医案 |
+| OperatorId | Guid | Required | 操作者 ID |
+| OperatorName | string | Required, MaxLength(100) | 操作者姓名 |
+| OperatorRole | string | Required, MaxLength(50) | 操作者角色 |
+| OperationType | string | Required, MaxLength(20) | Create/Update/Delete |
+| ChangedFields | string? | JSON | 变更字段列表 `["PatientId","CaseStatus"]` |
+| OldValues | string? | JSON | 变更前值 `{"PatientId":"guid1"}` |
+| NewValues | string? | JSON | 变更后值 `{"PatientId":"guid2"}` |
+| Reason | string? | MaxLength(500) | 操作原因 (历史医案修改时必填) |
+| CreatedAt | DateTime | Default=UtcNow | 审计记录时间 |
+
 - **验收标准**:
-  - [ ] 每次变更都有审计记录
-  - [ ] 修改原因正确记录
+  - [ ] Create -> 生成 MedicalCaseAuditLog，OperationType="Create"，OldValues 为空
+  - [ ] Update/StatusChange -> ChangedFields 仅包含实际变更的字段
+  - [ ] 提供 EditReason -> AuditLog.Reason 字段包含该值
+  - [ ] 审计写入异常 -> 主业务保存成功，仅记录 Error 日志
+
+> **交叉引用**: 安全审计日志 (SecurityAuditLog) 见 [logging.md](logging.md) FR-LOG-002；日志保留策略见 [nfr.md](nfr.md) NFR-SEC-005。
 
 ### FR-MC-013: 权限控制
 
@@ -206,8 +231,8 @@
 - **远程模式**: GET `/api/v1/medicalcases/{id}/permissions`，返回 MedicalCasePermissionDto
 - **本地模式**: 本地权限检查
 - **验收标准**:
-  - [ ] Doctor 编辑他人医案返回 403
-  - [ ] 权限端点正确返回
+  - [ ] Doctor 编辑 UserId!=自己的医案 -> 返回 403
+  - [ ] GET permissions -> 返回 CanEdit/CanDelete/RequiresEditReason/DenialReason
 
 ### FR-MC-014: 锁定规则
 
@@ -219,8 +244,8 @@
 - **远程模式**: 服务端权限检查
 - **本地模式**: 本地检查
 - **验收标准**:
-  - [ ] 当天完成的医案不锁定
-  - [ ] 隔天自动锁定
+  - [ ] CompletedAt.Date == Today -> IsLocked=false
+  - [ ] CompletedAt.Date < Today -> IsLocked=true, Doctor 不可编辑
 
 ### FR-MC-015: 处方打印
 
@@ -233,35 +258,40 @@
 - **远程模式**: 客户端打印 + 服务端记录日志
 - **本地模式**: 本地打印
 - **验收标准**:
-  - [ ] 打印版本正确递增
-  - [ ] 打印日志正确记录
+  - [ ] 内容修改后打印 -> PrintVersion 递增
+  - [ ] 打印操作 -> 生成 PrescriptionPrintLog 记录
 
 ### FR-MC-016: 验方导入到处方
 
 - **描述**: 将经验方模板导入为处方药材
 - **业务规则**:
   1. 从验方列表选择导入
-  2. 导入验方的药材组成到处方 Items
-  3. 价格从药材库实时获取
-  4. 记录引用的验方名称 (ReferencedFormulas)
+  2. **仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方** (MC-D08)
+  3. 导入验方的药材组成到处方 Items
+  4. 价格从药材库实时获取
+  5. 记录引用的验方名称 (ReferencedFormulas)
+  6. **已禁用药材 (Status=Disabled) 自动跳过，提示"以下药材已停用，已跳过: xxx"** (MC-D09)
+  7. **导入为数据复制，修改处方中的药材不影响原验方** (MC-D12)
 - **远程模式**: 客户端操作，药材价格从 API 获取
 - **本地模式**: 从本地药材库获取价格
 - **验收标准**:
-  - [ ] 药材正确导入
-  - [ ] 价格从药材库获取
+  - [ ] 验方导入列表 -> 仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方
+  - [ ] 选择验方导入 -> 处方 Items 包含验方所有启用药材
+  - [ ] 导入时 -> UnitPrice 从药材库当前价格获取
+  - [ ] 验方含已禁用药材 -> 跳过禁用药材 + 弹出提示
 
 ### FR-MC-017: 待诊队列
 
 - **描述**: 显示当前医生的待看诊患者列表
 - **业务规则**:
-  1. 筛选状态为 Active 的医案
-  2. 按创建时间排序
+  1. 筛选状态为 Draft 或 Active 的医案
+  2. 排序规则: CreatedAt ASC (先到先看)
   3. 显示患者姓名、创建时间
   4. 支持按患者 ID 过滤
 - **远程模式**: GET `/api/v1/medicalcases/pending?doctorId=&patientId=`
 - **本地模式**: 本地查询
 - **验收标准**:
-  - [ ] 仅显示 Active 状态的医案
+  - [ ] 查询待诊队列 -> 仅返回 CaseStatus=Active 的医案
 
 ---
 
@@ -384,6 +414,107 @@ stateDiagram-v2
 
 ---
 
+## 错误码
+
+> MedicalCase 模块采用 CQRS + 聚合根模式。异常由全局 IExceptionHandler 统一处理。并发场景使用 3 次重试机制。
+
+### 创建医案错误
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 患者不存在 | 404 | 患者不存在 | PatientRepository 查询失败 |
+| 医生不存在 | 404 | 医生不存在 | UserRepository 查询失败 |
+| 已有进行中医案 | 422 | 该患者已有进行中的医案，请先完成现有医案 | 患者有 Active 状态医案 (BR-001) |
+| 已有暂存医案 | 422 | 该患者已有暂存的医案，请先处理现有医案（继续或关闭） | 患者有 Draft 状态医案 (BR-001) |
+
+### 权限错误
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 无权编辑医案 | 403 | 无权限编辑此病案 | Doctor 编辑他人医案 / 状态不允许编辑 |
+| 无权删除医案 | 403 | 无权限删除此病案 | Doctor 删除他人医案 |
+| 无权取消医案 | 403 | 无权限取消此病案 | Doctor 取消他人医案 |
+| 无权删除处方 | 403 | 无权限删除此病案的处方 | Doctor 删除他人医案处方 |
+| 无权暂存 | 403 | 无权限编辑此病案 | Doctor 暂存他人医案 |
+
+### 状态转换错误
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 无效状态转换 | 422 | 不允许从{oldStatus}状态转换到{newStatus}状态 | 不符合状态机规则 |
+| 处方需求未标记 | 422 | 请先标记是否需要开处方 | Complete 时 NeedsPrescription 为 null (BF-002) |
+| 需要处方但不存在 | 422 | 已标记需要开处方，但处方不存在，无法完成病案 | NeedsPrescription=true 但 Prescription 为 null |
+| 已完成不可暂存 | 422 | 已完成的医案不可暂存 | SaveDraft 时状态为 Completed |
+| 已取消不可暂存 | 422 | 已取消的医案不可暂存 | SaveDraft 时状态为 Cancelled |
+| 已完成不可取消 | 422 | 已完成的医案不可取消 | Cancel 时状态为 Completed |
+| 已取消 | 422 | 医案已经是取消状态 | Cancel 时已是 Cancelled |
+
+### 处方错误
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 未标记需要处方 | 422 | 未标记需要开处方，请先设置处方需求标记 | NeedsPrescription != true 时创建处方 |
+| 已有处方 | 422 | 病案已存在处方，请使用更新接口 | Prescription 已存在且未删除 (AR-003) |
+| 处方已打印不可修改 | 422 | 处方已打印，不允许修改 | IsPrinted == true 时更新 |
+| 处方已打印不可删除 | 422 | 处方已打印，不允许删除 | IsPrinted == true 时删除 |
+| 诊断信息不存在 | 500 | (内部错误) | Consultation 为 null |
+
+### 并发和系统错误
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 处方创建重试失败 | 500 | 创建处方失败，请稍后重试 | DbUpdateConcurrencyException 重试 3 次仍失败 |
+| 保存重试失败 | 500 | 保存失败，请稍后重试 | SaveAsync 重试 3 次仍失败 |
+
+### 参数验证错误
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 请求 ID 不匹配 | 400 | (ValidationFail) | request.Id != 路由 id |
+| 页码参数无效 | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 |
+| 批量查询超限 | 400 | 单次最多查询50个医案 | batch-details ids.Count > 50 |
+| 批量操作为空 | 400 | 请至少选择一个医案 | batch-delete ids 为空 |
+| 患者 ID 无效 | 400 | (BadRequest) | patientId == Guid.Empty |
+| 返回数量无效 | 400 | 返回数量参数无效（1-50） | count<=0 或 count>50 |
+| 医案不存在 | 404 | 病案不存在 | GetByIdAsync 返回 null |
+
+---
+
+## 边界条件 (Round 9 补强)
+
+### 医案生命周期边界
+
+| 场景 | 行为 | 决策编号 |
+|------|------|---------|
+| 患者被删除 | 有关联医案的患者禁止删除 (返回 422)，仅可禁用。见 [patients.md](patients.md) FR-PAT-005 | MC-D04 |
+| 草稿积压 | v1.0 不实现自动清理。BR-001 阻止同一患者多个 Draft/Active，形成天然卡点提醒 | MC-D05 |
+| 并发创建重复草稿 | 代码层 BR-001 检查 + DB 唯一索引 (仅 Active)。NFR 1-3 并发用户，并发风险极低，接受现状 | MC-D06 |
+
+### 处方与药材联动边界
+
+| 场景 | 行为 | 决策编号 |
+|------|------|---------|
+| 禁用药材在历史处方展示 | 名称后缀标注"(已停用)"，仅可查看不可修改剂量 | MC-D07 |
+| 验方导入处方过滤 | 仅展示 ValidationStatus=Validated 的验方，Draft 不出现在导入列表 | MC-D08 |
+| 验方含禁用药材导入 | 自动跳过禁用药材 + 弹出提示"以下药材已停用，已跳过: xxx" | MC-D09 |
+
+### 并发与锁定
+
+| 场景 | 行为 | 决策编号 |
+|------|------|---------|
+| 两人同时编辑同一医案 | 乐观并发控制 (RowVersion)。后保存者触发 DbUpdateConcurrencyException，3 次重试后返回 500 | MC-D10 |
+| 隔天自动锁定时间点 | 计算属性 `IsLocked = IsCompleted && CompletedAt.Date < Today`，0 点自动生效，无后台任务 | FR-MC-014 |
+| 管理员编辑锁定医案 | 无显式解锁接口，管理员直接编辑 (需 EditReason) | FR-MC-013 |
+
+### 排序规则
+
+| 查询场景 | 排序规则 | 决策编号 |
+|----------|---------|---------|
+| 医案列表 (FR-MC-009) | CreatedAt DESC (最新优先) | MC-D11 |
+| 待诊队列 (FR-MC-017) | CreatedAt ASC (先到先看) | MC-D11 |
+
+---
+
 ## 决策记录
 
 | 编号 | 问题 | 影响范围 | 状态 |
@@ -391,6 +522,15 @@ stateDiagram-v2
 | 1 | 本地模式下审计日志的存储和同步策略 | FR-MC-012 | 已确定: 仅实体级审计字段。本地模式为单用户操作，字段级变更审计价值有限 |
 | 2 | 本地模式下医案编号的生成规则 | FR-MC-001 | 已确定: MC+yyyyMMdd+3位序号。CaseNumber 为展示用编号 (非唯一约束)，Guid Id 为实际唯一标识。同日本地/远程可能重号，不影响数据完整性 |
 | 3 | 本地模式下跨医案搜索的性能 | FR-MC-010 | 已确定: 满足需求。诊所场景 (百~千级) SQLite 性能良好，已应用 AsNoTracking + 分页优化 |
+| MC-D04 | 患者删除引用检查 | FR-MC-001 + patients.md FR-PAT-005 | 已确定: 有关联医案的患者禁止删除 (422)，仅可禁用 |
+| MC-D05 | 草稿自动清理 | FR-MC-006 | 已确定: v1.0 不实现。BR-001 卡点 + 用户手动处理 |
+| MC-D06 | DB 唯一索引范围 | FR-MC-001 | 已确定: 仅 Active 唯一索引，接受低概率并发风险 (NFR 1-3 用户) |
+| MC-D07 | 禁用药材历史处方展示 | FR-MC-004 | 已确定: 名称后缀"(已停用)"，仅可查看不可修改剂量 |
+| MC-D08 | 验方导入处方过滤 | FR-MC-016 | 已确定: 仅展示 Validated 验方，Draft 不出现在导入列表 |
+| MC-D09 | 禁用药材导入处理 | FR-MC-016 | 已确定: 跳过禁用药材 + 提示 |
+| MC-D10 | 并发编辑策略 | FR-MC-005 | 已确定: 乐观锁 (RowVersion) + 3 次重试，不增加悲观锁 |
+| MC-D11 | 排序规则 | FR-MC-009 + FR-MC-017 | 已确定: 列表 CreatedAt DESC，待诊队列 CreatedAt ASC |
+| MC-D12 | 验方导入独立性 | FR-MC-016 | 已确定: 导入为数据复制，修改处方中药材的剂量/增减不影响原验方 |
 
 ---
 
@@ -399,3 +539,8 @@ stateDiagram-v2
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 4 个 spec + MedicalCasesController + 5 个实体提取 |
+| 2026-02-11 | v1.1 | 新增错误码章节，含创建 4 个 + 权限 5 个 + 状态转换 7 个 + 处方 5 个 + 并发 2 个 + 参数 6 个场景 |
+| 2026-02-11 | v1.2 | 验收标准格式统一为 [场景] -> [预期结果] 格式，增加具体参数和返回值描述 |
+| 2026-02-17 | v1.3 | Round 7: FR-MC-012 深化 -- 补充 MedicalCaseAuditLog 数据模型、自动字段级 diff 规则、审计异常隔离、交叉引用 |
+| 2026-02-17 | v1.4 | Round 9: 边界条件补强 -- 新增边界条件章节 (生命周期/药材联动/并发锁定/排序规则)，FR-MC-016 增加 Validated 过滤 + 禁用药材跳过，FR-MC-009/017 补充排序规则，8 条新决策 (MC-D04~D11) |
+| 2026-02-17 | v1.5 | Round 10: FR-MC-016 补充验方导入独立性说明 (MC-D12) |

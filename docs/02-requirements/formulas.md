@@ -35,8 +35,8 @@
 - **远程模式**: POST `/api/v1/formulas`，返回 FormulaDetailDto
 - **本地模式**: DataSource 本地存储
 - **验收标准**:
-  - [ ] 无药材时创建失败
-  - [ ] 初始状态为 Draft
+  - [ ] 药材列表为空 -> 返回 400 验证失败
+  - [ ] 创建成功 -> ValidationStatus=Draft
 
 ### FR-FORM-002: 查看验方列表
 
@@ -50,8 +50,8 @@
 - **远程模式**: GET `/api/v1/formulas?keyword=&category=&page=&pageSize=`
 - **本地模式**: 本地查询
 - **验收标准**:
-  - [ ] Doctor 只能看到自己的和共享的
-  - [ ] Admin 能看到全部
+  - [ ] Doctor 查询 -> 仅返回 CreatedBy=自己 或 IsShared=true 的验方
+  - [ ] Admin 查询 -> 返回全部验方
 
 ### FR-FORM-003: 查看验方详情
 
@@ -62,7 +62,7 @@
 - **远程模式**: GET `/api/v1/formulas/{id}`
 - **本地模式**: 本地查询
 - **验收标准**:
-  - [ ] 返回完整药材组成
+  - [ ] 有效ID -> 返回 FormulaDetailDto + Herbs 列表 (含 IsValidated)
 
 ### FR-FORM-004: 更新验方
 
@@ -74,8 +74,8 @@
 - **远程模式**: PUT `/api/v1/formulas/{id}`
 - **本地模式**: 本地更新
 - **验收标准**:
-  - [ ] Doctor 编辑他人验方返回 403
-  - [ ] 药材组成完整替换
+  - [ ] Doctor 编辑 CreatedBy!=自己的验方 -> 返回 403
+  - [ ] 更新 Herbs 列表 -> 原有 Herbs 全部替换为新列表
 
 ### FR-FORM-005: 删除验方
 
@@ -87,19 +87,20 @@
 - **远程模式**: DELETE `/api/v1/formulas/{id}`，批量: POST `/api/v1/formulas/batch-delete`
 - **本地模式**: 本地软删除
 - **验收标准**:
-  - [ ] Doctor 删除他人验方返回 403
+  - [ ] Doctor 删除 CreatedBy!=自己的验方 -> 返回 403
 
 ### FR-FORM-006: 启用/禁用验方
 
 - **描述**: 切换验方启用/禁用状态
 - **业务规则**:
   1. 统一所有权检查
-  2. 禁用后开方时不可导入
+  2. 禁用后开方时不可导入 (验方导入对话框过滤 Status=Enabled)
   3. 支持批量启用/禁用
+  4. **处方导入对话框仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方** (MC-D08，见 [medical-cases.md](medical-cases.md) FR-MC-016)
 - **远程模式**: POST `/api/v1/formulas/{id}/toggle-status`，批量: POST `/api/v1/formulas/batch-enable` 或 `/batch-disable`
 - **本地模式**: 本地状态切换
 - **验收标准**:
-  - [ ] 禁用验方不出现在导入列表中
+  - [ ] 验方 Status=Disabled -> 开方时验方导入列表不显示
 
 ### FR-FORM-007: 恢复已删除验方
 
@@ -109,7 +110,7 @@
 - **远程模式**: POST `/api/v1/formulas/{id}/restore`
 - **本地模式**: 本地恢复
 - **验收标准**:
-  - [ ] 恢复后验方重新出现
+  - [ ] 恢复成功 -> 验方重新出现在默认列表查询中
 
 ### FR-FORM-008: 共享验方
 
@@ -121,8 +122,8 @@
 - **远程模式**: 通过 Update 修改 IsShared 字段
 - **本地模式**: 本地标记
 - **验收标准**:
-  - [ ] 共享后其他 Doctor 可在列表中看到
-  - [ ] 其他 Doctor 不可编辑共享验方
+  - [ ] IsShared=true -> 其他 Doctor 列表查询可见
+  - [ ] Doctor 编辑他人共享验方 -> 返回 403
 
 ### FR-FORM-009: 延迟绑定
 
@@ -137,9 +138,9 @@
 - **远程模式**: POST `/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate`，请求体含 selectedHerbId
 - **本地模式**: 本地验证
 - **验收标准**:
-  - [ ] 未绑定药材显示 OriginalHerbName
-  - [ ] 绑定后 IsValidated 更新
-  - [ ] 全部绑定后 ValidationStatus 自动更新
+  - [ ] HerbId=null -> 显示 OriginalHerbName
+  - [ ] validate 成功 -> IsValidated=true, HerbId 填充
+  - [ ] 所有 HerbItem.IsValidated=true -> Formula.ValidationStatus=Validated
 
 ### FR-FORM-010: 获取待验证验方
 
@@ -150,7 +151,7 @@
 - **远程模式**: GET `/api/v1/formulas/pending-validation`
 - **本地模式**: 本地查询
 - **验收标准**:
-  - [ ] 仅返回含未验证药材的验方
+  - [ ] 查询 -> 仅返回 ValidationStatus=Draft 的验方
 
 ### FR-FORM-011: 批量导入
 
@@ -162,7 +163,7 @@
 - **远程模式**: POST `/api/v1/formulas/batch-import`
 - **本地模式**: 支持。客户端 NPOI 本地解析 Excel，直接写入 LocalDbContext
 - **验收标准**:
-  - [ ] 返回匹配和未匹配药材统计
+  - [ ] 导入完成 -> 返回 successCount/failureCount/matchedCount/unmatchedCount
 
 ### FR-FORM-012: 导出验方
 
@@ -172,7 +173,7 @@
 - **远程模式**: GET `/api/v1/formulas/export?category=`
 - **本地模式**: 支持。从 LocalDbContext 查询，客户端 NPOI 本地生成 Excel 文件
 - **验收标准**:
-  - [ ] 导出包含药材组成
+  - [ ] 导出 Excel -> 每行验方包含药材组成详情
 
 ### FR-FORM-013: 下载导入模板
 
@@ -182,7 +183,7 @@
 - **远程模式**: GET `/api/v1/formulas/import-template` (AllowAnonymous)
 - **本地模式**: 内置模板
 - **验收标准**:
-  - [ ] 模板格式正确
+  - [ ] GET 请求 -> 返回 .xlsx 模板文件
 
 ---
 
@@ -228,12 +229,60 @@
 
 ---
 
+## 错误码
+
+> Service 层采用 Result 模式统一返回。所有权检查: Admin/SuperAdmin 可操作全部，Doctor 仅可操作自己创建的验方。
+
+### 核心错误
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 验方不存在 | 404 | 验方不存在 | GetById/Update/Delete/ToggleStatus/Restore 时 ID 无效或已被软删除 |
+| 验方 ID 无效 | 400 | 验方ID不能为空 | 传入 Guid.Empty |
+| 无权操作 | 403 | 您没有权限操作此验方，只能操作自己创建的数据 | Doctor 编辑/删除/切换状态他人创建的验方 |
+| 创建失败 | 200 (success=false) | 新增验方失败 | Service 返回 Failure |
+| 更新失败 | 200 (success=false) | 更新验方失败 | Service 返回 Failure |
+| 删除失败 | 404 | 验方不存在 | Repository.DeleteAsync() 返回 false |
+| 验方未被删除 | 200 (success=false) | 该验方未被删除，无需恢复 | 恢复未软删除的验方 |
+| 页码无效 | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 |
+
+### 药材验证错误 (FR-FORM-009)
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 药材项 ID 无效 | 400 | {paramName}不能为空 | formulaId/herbItemId/selectedHerbId 为 Guid.Empty |
+| 药材项不存在 | 200 (success=false) | 药材项不存在 | formula.Herbs 中未找到 herbItemId |
+| 药材已验证 | 200 (success=false) | 该药材已校验，无需重复操作 | herbItem.IsValidated == true |
+| 系统药材不存在 | 200 (success=false) | 所选药材不存在 | 跨模块查询 GetHerbBasicInfoAsync 返回 null |
+| 获取待验证列表失败 | 200 (success=false) | 获取待校验验方列表失败 | 查询异常 |
+
+### 批量操作错误
+
+| 场景 | HTTP | 用户消息 | 触发条件 |
+|------|------|----------|----------|
+| 批量操作为空 | 400 | 请至少选择一个方剂 | 批量删除/启用/禁用时 ID 列表为空 |
+| 导入数据为空 | 400 | 导入数据不能为空 | BatchImport 请求体为空 |
+| 单项不存在 | 200 (部分失败) | 方剂不存在 | 批量删除/状态切换时单项不存在 |
+| 单项操作异常 | 200 (部分失败) | 删除操作失败 / 状态更新失败 | 数据库异常，使用安全消息 |
+
+### 导入行级错误 (FR-FORM-011)
+
+| 失败原因 | 类型 | 触发条件 |
+|----------|------|----------|
+| 验方名称不能为空 | 验证失败 | 名称字段为空 |
+| 数据处理异常 | 技术异常 | 行级 try-catch 捕获 |
+
+**药材匹配机制**: 导入时通过 ICrossModuleQueryService.GetHerbByNameOrPinyinAsync() 匹配系统药材，匹配失败则 HerbId=null、IsValidated=false，保存供后续手动绑定。
+
+---
+
 ## 决策记录
 
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | 1 | 本地模式下导入导出的支持方式 | FR-FORM-011 ~ 013 | 已确定: 支持。客户端 NPOI 本地处理，不依赖 API |
 | 2 | 验方复制到处方时的价格计算规则 | FR-FORM-008 | 已确定: 根据 HerbId 查药材库当前价格。FormulaHerbItem 不含价格字段，价格始终以药材库为准 |
+| MC-D08 | 处方导入对话框的验方过滤 | FR-FORM-006 + FR-MC-016 | 已确定: 仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方。Draft 验方需先完成药材绑定验证 |
 
 ---
 
@@ -242,3 +291,6 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 FormulasController + Formula 实体 + formula-copy-flow spec 提取 |
+| 2026-02-11 | v1.1 | 新增错误码章节，含核心错误 8 个 + 药材验证 5 个 + 批量/导入错误 6 个场景 |
+| 2026-02-11 | v1.2 | 验收标准格式统一为 [场景] -> [预期结果] 格式，增加具体参数和返回值描述 |
+| 2026-02-17 | v1.3 | Round 9: FR-FORM-006 补充处方导入过滤规则 (Validated + Enabled)，新增决策 MC-D08 |
