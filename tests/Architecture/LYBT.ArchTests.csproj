@@ -22,17 +22,6 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Server\**" />
-    <EmbeddedResource Remove="Server\**" />
-    <None Remove="Server\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- 显式包含Server目录下的架构测试文件 -->
-    <Compile Include="Server\AggregateRootArchTests.cs" />
-  </ItemGroup>
-
   <!-- Server References -->
   <ItemGroup Label="Server References">
     <ProjectReference Include="..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />

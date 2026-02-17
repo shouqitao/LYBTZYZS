@@ -40,6 +40,18 @@ dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 标准流程: `BRAINSTORM → PLAN → EXECUTE → REVIEW → VERIFY`
 
+### 三文件生命周期 (每任务重置)
+
+三文件是**施工脚手架**，不是项目交付物。每个新任务从空白状态开始。
+
+| 时机 | 操作 |
+|------|------|
+| **新任务开始** (BRAINSTORM) | 覆盖重建三文件，内容清空为当前任务 |
+| **任务执行中** | 按同步规则持续更新 |
+| **任务完成** (VERIFY) | 重要决策 -> Serena 记忆；设计产出 -> `docs/plans/`；三文件等待下一任务覆盖 |
+
+**禁止**: 三文件跨任务累积增长 (膨胀文件会浪费 PreToolUse hook 读取的 token)
+
 详细同步规则见 @.claude/rules/development-flow.md
 
 ---
@@ -80,6 +92,7 @@ dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 ## 核心约束
 
 - **Planning-with-files 必用** - 复杂任务(3+步骤)必须创建 task_plan.md / findings.md / progress.md
+- **新任务必重置** - 开始新任务时覆盖三文件，禁止跨任务累积
 - **2-Action Rule** - 每2次搜索/浏览操作后，立即更新 findings.md
 - **兼容代码临时** - 必须添加注释标记，有明确移除计划
 
@@ -115,5 +128,5 @@ docs/
 
 ---
 
-最后更新: 2026-02-10
-文档版本: v6.1-optimized
+最后更新: 2026-02-12
+文档版本: v6.2-lifecycle
