@@ -183,7 +183,7 @@
 
 | 实体 | 加密字段 | 加密方式 | 理由 |
 |------|---------|---------|------|
-| Patient | IdCardNumber | AES-256 + DPAPI 密钥保护 | 身份证号为高敏感个人信息 |
+| Patient | IdNumber | AES-256 + DPAPI 密钥保护 | 身份证号为高敏感个人信息 |
 | Patient | PhoneNumber | AES-256 + DPAPI 密钥保护 | 电话号码为敏感联系方式 |
 
 - **非加密字段**: 姓名、性别、年龄、医案内容等非直接标识信息保持明文，保证查询性能
@@ -195,6 +195,77 @@
   - [ ] DPAPI 密钥绑定当前 Windows 用户，更换用户需重新同步数据
 
 > **已确定**: v1.0 采用字段级加密而非整库加密 (SQLCipher)。理由: (1) 仅 2 个字段需保护，整库加密性价比低; (2) DPAPI 密钥管理基础设施已有 (CredentialVault); (3) 不影响非敏感字段的查询性能。
+
+#### 敏感数据分级标准
+
+| 级别 | 定义 | 字段示例 | 所属实体 | 存储保护 | 日志保护 |
+|------|------|---------|---------|---------|---------|
+| L1-高敏感 | 可直接标识个人身份或联系方式 | IdNumber, PhoneNumber | Patient | AES-256 加密存储 (仅 SQLite) | 完全脱敏 / 部分脱敏 |
+| L2-一般敏感 (个人) | 个人敏感信息 | Address, AllergyHistory, MedicalHistory | Patient | 明文存储 + 访问控制 | 摘要脱敏 |
+| L2-一般敏感 (医疗) | 医疗诊断信息 | TcmDiagnosis, PresentIllness, TongueDiagnosis, PulseDiagnosis | Consultation | 明文存储 + 访问控制 | 不记录到日志 |
+| L3-普通 | 业务标识信息 | Name, Gender, BirthDate, HerbName | 各实体 | 明文存储 | 正常记录 |
+
+> L1 字段在 SQLite 本地库中加密存储；SQL Server 远程库依靠网络传输加密 (HTTPS) + 数据库访问控制保护，不做字段级加密。
+
+#### 日志脱敏规则
+
+| 敏感级别 | 脱敏方式 | 示例 |
+|----------|---------|------|
+| L1 (IdNumber) | 保留前3后4，中间星号 | `320***********1234` |
+| L1 (PhoneNumber) | 保留前3后4，中间星号 | `138****5678` |
+| L2 (Address) | 保留前6字符，其余星号 | `南京市鼓楼区***` |
+| L2 (AllergyHistory/MedicalHistory) | 仅记录字段有值/无值 | `[已填写]` / `[未填写]` |
+| L2 (TcmDiagnosis 等诊断字段) | 不记录到日志 | - |
+| L3 | 正常记录 | 原文 |
+
+> 日志脱敏在 Serilog Enricher 层实现，对业务代码透明。已有 SensitiveDataMaskingEnricher 基础设施，需扩展支持上述规则。
+
+#### 实现路径: EF Core Value Converter
+
+```
+SQLite DbContext 配置:
+  Patient.IdNumber     → EncryptedStringConverter (写入加密 / 读取解密)
+  Patient.PhoneNumber  → EncryptedStringConverter (写入加密 / 读取解密)
+
+EncryptedStringConverter:
+  ConvertToProviderExpression = plainText => AesEncrypt(plainText, key)
+  ConvertFromProviderExpression = cipherText => AesDecrypt(cipherText, key)
+
+密钥获取:
+  IEncryptionKeyProvider.GetKey() → DPAPI 解密存储的 AES 密钥
+```
+
+- 仅在 SQLite DbContext 中配置 Value Converter，SQL Server DbContext 不加密
+- 对 Repository/Service 层完全透明，无需修改业务代码
+- 加密字段在数据库中存储为 Base64 编码的密文字符串
+- 搜索限制: 加密字段仅支持精确匹配 (先加密搜索值再比对) 或内存过滤
+
+#### 密钥生命周期管理
+
+| 阶段 | 操作 | 说明 |
+|------|------|------|
+| 首次启动 | 自动生成 AES-256 密钥 | 256-bit 随机密钥，Base64 编码 |
+| 密钥存储 | DPAPI 加密后写入 CredentialVault | 绑定当前 Windows 用户账户 |
+| 运行时使用 | IEncryptionKeyProvider 按需获取 | 启动时解密一次，内存缓存 |
+| 密钥丢失 | 重新同步数据 | 从 Server 端下载患者数据，本地重新加密写入 |
+| 用户切换 | 密钥不可跨用户 | Windows 用户变更后，本地加密数据不可读，需重新同步 |
+
+> v1.0 不实现密钥轮换 (Key Rotation)。如需轮换，需要解密全部数据 → 生成新密钥 → 重新加密，复杂度较高，待 v2.0 评估。
+
+#### 数据迁移策略 (明文 -> 加密)
+
+- **场景**: 已有本地 SQLite 数据库中的 IdCardNumber/PhoneNumber 为明文，升级后需加密
+- **方式**: EF Core Migration 脚本
+- **流程**:
+  1. 读取所有 Patient 记录的 IdCardNumber/PhoneNumber 明文值
+  2. 使用 AES-256 加密
+  3. 更新回数据库
+  4. 验证: 随机抽样解密确认数据完整性
+- **回退**: 保留迁移前的 SQLite 备份文件
+- **验收标准**:
+  - [ ] 迁移后所有患者记录的加密字段可正常解密
+  - [ ] 迁移过程 < 30 秒 (5000 条患者记录)
+  - [ ] 迁移失败自动回退，不影响现有数据
 
 ### NFR-SEC-005: 审计日志保留
 
@@ -250,3 +321,4 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-17 | v1.0 | 初始版本。Round 1 讨论产出，涵盖性能/数据量/可用性/安全 4 大维度 |
+| 2026-02-18 | v1.1 | 信息保护深化: NFR-SEC-004 扩展 -- 敏感数据3级分级标准(L1/L2/L3)、日志脱敏规则(6种模式)、EF Core Value Converter实现路径、密钥生命周期管理(生成/存储/使用/丢失/切换)、明文到加密数据迁移策略 |

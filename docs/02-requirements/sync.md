@@ -25,12 +25,12 @@
 
 - **描述**: 查询系统支持同步的实体类型列表
 - **业务规则**:
-  1. 当前支持: Herb (药材)、Patient (患者)、Formula (验方)
+  1. 当前支持: Herb (药材)、Patient (患者)、Formula (验方)、MedicalCase (医案, 含 Consultation + Prescription + Items)
   2. 返回实体类型名称列表
 - **远程模式**: GET `/api/v1/sync/entity-types`
 - **本地模式**: 不适用 (本功能需要网络)
 - **验收标准**:
-  - [ ] GET 请求 -> 返回 ["Herb", "Patient", "Formula"]
+  - [ ] GET 请求 -> 返回 ["Herb", "Patient", "Formula", "MedicalCase"]
 
 ### FR-SYNC-002: 获取同步元数据
 
@@ -298,8 +298,235 @@ SyncFailedItemDto {
 | Herb | Name, Unit, Price, Category, Origin, Spec, Effect, Usage |
 | Patient | Name, Gender, BirthDate, IdNumber, PhoneNumber, Address |
 | Formula | Name, Effect, Indication, Usage, Herbs 组成 |
+| MedicalCase | 聚合级计算，详见下方 MedicalCase 同步设计章节 |
 
 算法: SHA256 哈希
+
+---
+
+## MedicalCase 同步设计
+
+### 核心场景: 外出看诊离线工作流
+
+```
+出诊前 (在线)                 外出看诊 (离线)                返回诊所 (在线)
+─────────────────────    ─────────────────────────    ─────────────────────
+1. 药材全量同步 (基础数据)    4. 查看历史医案 (参考)         7. 上传新建医案
+2. 患者同步 (可能忘记)       5. 本地新建医案               8. 患者去重 / 新建
+3. 验方同步 (可选, 提高效率)  6. 开具处方 (用本地药材)       9. 数据一致性校验
+   下载目标患者历史医案
+```
+
+- 药材作为基础数据，必须同步
+- 患者可以同步，忘记同步时可在本地新建，返回后通过 IdCardNumber 去重
+- 验方可以同步，忘记同步仅牺牲快捷导入便利性
+- 医案是同步的**主要焦点**: 离线创建 → 联网后上传到 Server
+
+### 同步粒度: 聚合级原子同步
+
+MedicalCase 以 DDD 聚合为同步单位，包含:
+
+```
+MedicalCase (聚合根)
+├── Consultation (1:1, 共享主键) -- 诊断信息
+├── Prescription (1:0..1) -- 处方信息
+│   └── PrescriptionItem[] (1:N) -- 药材明细
+└── 跨聚合引用: PatientId, UserId, HerbId (Items)
+```
+
+上传/下载时，整个聚合作为一个 JSON 对象传输。Server 端使用单数据库事务写入全部实体，任何一部分失败则整体回滚。
+
+### 同步状态约束
+
+| 医案状态 | 上传 | 下载 | 冲突解决 | 说明 |
+|---------|------|------|---------|------|
+| Draft | 可以 | 可以 | 允许 | 离线创建的草稿 |
+| Active | 可以 | 可以 | 允许 | 离线正在进行的医案 |
+| Completed | 可以 | 可以 | 允许上传新建，已存在的 Completed 不可被覆盖 | 已完成医案保持不变 |
+
+全状态双向同步，确保离线创建的任何状态医案都能同步回 Server。
+
+### MedicalCase 同步 DTO
+
+```
+MedicalCaseSyncDto {
+    // MedicalCase 聚合根
+    Id: Guid
+    PatientId: Guid
+    UserId: Guid
+    PatientName: string
+    DoctorName: string
+    CaseNumber: string?           // 本地编号，Server 会重新分配
+    CaseStatus: MedicalCaseStatus // Draft / Active / Completed
+    NeedsPrescription: bool?
+    CompletedAt: DateTime?
+    Remark: string?
+    IsDeleted: bool               // 软删除标记，用于同步删除操作
+    CreatedAt: DateTime           // 保留本地创建时间
+    UpdatedAt: DateTime           // 保留本地更新时间
+
+    // Consultation (内嵌, Id 与 MedicalCase 共享主键，无需单独传递)
+    Consultation: ConsultationSyncDto? {
+        PresentIllness: string?
+        TongueDiagnosis: string?
+        PulseDiagnosis: string?
+        TcmDiagnosis: string?
+    }
+
+    // Prescription (内嵌, 可选)
+    Prescription: PrescriptionSyncDto? {
+        PrescriptionNumber: string?  // 本地编号，Server 会重新分配
+        DosageCount: int
+        Discount: decimal
+        Usage: string?
+        Advice: string?
+        ReferencedFormulas: string?
+        Remark: string?
+        Items: PrescriptionItemSyncDto[] {
+            Id: Guid
+            HerbId: Guid
+            HerbName: string
+            Dosage: int
+            Unit: string
+            DecocteMethod: DecocteMethod
+            UnitPrice: decimal
+            Usage: string?
+            Remark: string?
+        }
+    }
+}
+```
+
+> 打印相关字段 (IsPrinted, PrintCount, PrintVersion, LastPrintedAt, PrintLogs) 不参与同步。打印是本地行为，每台设备独立记录。
+
+### MedicalCase Checksum 计算
+
+聚合级哈希，合并 4 层实体的业务字段:
+
+| 层级 | 参与计算字段 | 排除字段 |
+|------|------------|---------|
+| MedicalCase | PatientId, UserId, CaseStatus, NeedsPrescription, CompletedAt, Remark | CaseNumber (可变), PatientName/DoctorName (冗余), 审计字段 |
+| Consultation | PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis | 审计字段 |
+| Prescription | DosageCount, Discount, Usage, Advice, ReferencedFormulas, Remark | PrescriptionNumber (可变), 打印字段, 审计字段 |
+| PrescriptionItem | HerbId, Dosage, Unit, DecocteMethod, UnitPrice, Usage, Remark | Id, PrescriptionId (结构字段) |
+
+- PrescriptionItem 按 HerbId 排序后参与计算，保证哈希确定性
+- 无 Prescription 时，该层哈希贡献为空
+- 算法同其他实体: SHA256
+
+### 依赖顺序: 自动强制
+
+```
+用户勾选 MedicalCase 同步
+       ↓
+系统自动编排执行顺序:
+  Step 1: Herb 同步 (基础药材数据)
+  Step 2: Patient 同步 (含患者去重)
+  Step 3: MedicalCase 同步
+```
+
+- 用户无需关心依赖顺序，系统自动处理
+- 同步进度 UI 依次显示每个步骤的进展
+- 如果 Herb/Patient 同步失败，MedicalCase 同步不执行，提示失败原因
+
+### 患者去重流程 (忘记同步患者时)
+
+```
+本地新建患者 (GUID-A) + 本地新建医案 (PatientId=GUID-A)
+                    ↓ 上传患者
+Server 按 IdCardNumber 检查:
+    ├─ 不存在 → 新建患者 (保留 GUID-A) → 医案正常上传
+    └─ 已存在 (GUID-B) → 返回 Server 端 PatientId (GUID-B)
+                          → 客户端重映射:
+                            MedicalCase.PatientId: GUID-A → GUID-B
+                            MedicalCase.PatientName: 以 Server 端为准
+                          → 上传医案 (PatientId=GUID-B)
+                          → 本地患者 GUID-A 标记为"已合并"
+```
+
+- 去重匹配键: **IdCardNumber** (Required + Unique，PRD PAT-D03)
+- Server 端在 Patient 上传接口中增加去重检查逻辑
+- 客户端收到重映射信号后，自动替换所有关联 MedicalCase 的 PatientId
+
+### BR-001 冲突处理 (同一患者单活跃医案)
+
+```
+上传 Active/Draft 医案
+       ↓
+Server 检查: 该患者是否已有 Active/Draft 医案?
+    ├─ 无 → 正常创建
+    └─ 有 (冲突) → 返回冲突信息
+                    → 客户端提示医生选择:
+                      [a] 将本地医案标记为 Completed 再上传
+                      [b] 关闭 Server 端旧医案后上传本地版本
+                      [c] 跳过该医案，稍后手动处理
+```
+
+### 编号重分配
+
+| 编号字段 | 本地生成 | 上传后处理 |
+|---------|---------|-----------|
+| MedicalCase.CaseNumber | 本地按日期+序号生成 (如 MC20260218001) | Server 重新分配，保持全局唯一序列 |
+| Prescription.PrescriptionNumber | 本地按日期+序号生成 (如 RX-20260218-0001) | Server 重新分配 |
+| 各实体 Id (GUID) | 本地生成 GUID | **保留不变** (GUID 全局唯一，无冲突) |
+
+> Server 分配的新编号通过上传响应返回客户端，客户端更新本地记录。
+
+### 引用完整性校验
+
+上传 MedicalCase 前，Server 端自动校验:
+
+| 引用字段 | 校验方式 | 失败处理 |
+|---------|---------|---------|
+| PatientId | 查询 Patient 表是否存在 | 拒绝上传，提示 "患者不存在，请先同步患者" |
+| PrescriptionItem.HerbId | 批量查询 Herb 表 | 拒绝上传，提示 "药材 {HerbName} 不存在，请先同步药材" |
+| UserId | 查询 User 表是否存在 | 应始终存在 (登录用户)；不存在则拒绝 |
+
+> 由于采用自动强制依赖顺序，正常流程中不会触发引用校验失败。此校验为防御性措施。
+
+### MedicalCase 冲突解决 UI
+
+复用现有冲突解决 UI (SyncConflictDialog)，左右对比布局:
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  冲突解决: 医案 "张三 - MC20260218001" (1/2)                           │
+├────────────────────────────────┬─────────────────────────────────────┤
+│  本地版本                       │  服务端版本                          │
+│  修改时间: 2026-02-18 10:30     │  修改时间: 2026-02-18 14:20         │
+│  状态: Completed                │  状态: Active                       │
+├────────────────────────────────┼─────────────────────────────────────┤
+│  中医辨证: **肝气郁结**          │  中医辨证: **肝郁脾虚**              │
+│  现病史: 胁肋胀痛...             │  现病史: 胁肋胀痛...                │
+│  处方:                          │  处方:                              │
+│    甘草 10g                     │    甘草 10g                         │
+│    **柴胡 12g**                 │    **柴胡 15g**                     │
+│    白芍 15g                     │    白芍 15g                         │
+├────────────────────────────────┴─────────────────────────────────────┤
+│  [保留本地版本]    [使用服务端版本]    [跳过]                             │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+变更字段检测跨整个聚合 (诊断 + 处方 + 药材明细)，差异字段高亮显示。
+
+### MedicalCase 同步错误
+
+#### 服务端新增错误
+
+| 场景 | 错误消息 | 触发条件 |
+|------|----------|----------|
+| MedicalCase 上传失败 | (异常原始消息) | 医案上传过程异常 |
+| 患者不存在 | 患者 {PatientId} 不存在，请先同步患者 | PatientId 引用的患者在 Server 端不存在 |
+| 药材不存在 | 药材 {HerbName} ({HerbId}) 不存在，请先同步药材 | PrescriptionItem.HerbId 引用的药材不存在 |
+| BR-001 冲突 | 患者 {PatientName} 已有活跃医案 | 上传 Active/Draft 医案时该患者已有活跃医案 |
+| MedicalCase 有引用 | 医案已完成且已锁定，无法通过同步覆盖 | 尝试覆盖已锁定的 Completed 医案 |
+
+#### 客户端新增错误
+
+| 场景 | 错误消息 | 触发条件 |
+|------|----------|----------|
+| 依赖未同步 | 请先同步药材和患者数据 | MedicalCase 同步前依赖检查失败 |
+| 患者重映射失败 | 无法匹配患者 {PatientName}，请手动处理 | IdCardNumber 匹配失败 (本地患者无身份证号) |
 
 ---
 
@@ -322,12 +549,17 @@ SyncFailedItemDto {
 
 | 场景 | 错误消息 | 触发条件 |
 |------|----------|----------|
-| 不支持的实体类型 | 不支持的实体类型: {EntityType}，支持的类型: Herb, Patient, Formula | 传入非 Herb/Patient/Formula 的实体类型 |
+| 不支持的实体类型 | 不支持的实体类型: {EntityType}，支持的类型: Herb, Patient, Formula, MedicalCase | 传入非支持的实体类型 |
 | JSON 反序列化失败 | JSON 反序列化失败 | 上传数据格式错误 |
 | 数据冲突 | 服务器已存在该数据 | 上传时数据冲突且 OverwriteConflicts=false |
 | Herb 上传失败 | (异常原始消息) | 药材上传过程异常 |
 | Patient 上传失败 | (异常原始消息) | 患者上传过程异常 |
 | Formula 上传失败 | (异常原始消息) | 验方上传过程异常 |
+| MedicalCase 上传失败 | (异常原始消息) | 医案上传过程异常 |
+| 患者不存在 | 患者 {PatientId} 不存在，请先同步患者 | MedicalCase 上传时 PatientId 引用的患者不存在 |
+| 药材不存在 | 药材 {HerbName} ({HerbId}) 不存在，请先同步药材 | MedicalCase 上传时 PrescriptionItem.HerbId 不存在 |
+| BR-001 冲突 | 患者 {PatientName} 已有活跃医案 | 上传 Active/Draft 医案时该患者已有活跃医案 |
+| 医案已锁定 | 医案已完成且已锁定，无法通过同步覆盖 | 尝试覆盖已锁定的 Completed 医案 |
 | 引用检查失败 | 无法检查引用关系 | 删除前引用检查异常 |
 | Herb 有引用 | 药材被 {ReferenceCount} 个处方引用，请先禁用 | 删除药材时被处方引用 |
 | Patient 有引用 | 患者有 {ReferenceCount} 条医案记录，请先禁用 | 删除患者时有关联医案 |
@@ -340,6 +572,8 @@ SyncFailedItemDto {
 | 未选择数据类型 | 请选择要同步的数据类型 | UI 中未选择 EntityType |
 | 同步失败 | 同步失败: {错误列表} | 服务返回失败结果 |
 | Checksum 类型错误 | 不支持的实体类型: {entityType} | 计算 Checksum 时类型无效 |
+| 依赖未同步 | 请先同步药材和患者数据 | MedicalCase 同步前依赖检查失败 |
+| 患者重映射失败 | 无法匹配患者 {PatientName}，请手动处理 | IdCardNumber 匹配失败 (本地患者无身份证号) |
 
 ### 上传结果结构
 
@@ -355,8 +589,8 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | 1 | 冲突解决策略 | FR-SYNC-003, 007 | 已确定: 手动逐条选择 (保留本地 / 使用服务端 / 跳过)。医疗数据需人工确认，不适合自动覆盖 |
-| 2 | 本地模式功能受限范围 | 全部 FR-SYNC | 已确定: 同步需网络连接。不可用项: 自动登录 / Token刷新 / 审计日志查询 / MedicalCase同步 / User同步。详见 dual-mode.md |
-| 3 | MedicalCase 同步 | FR-SYNC-001 | 已确定: v1.0 不支持 (聚合根复杂度高，需多表级联 + 聚合完整性)。v2.0 规划 |
+| 2 | 本地模式功能受限范围 | 全部 FR-SYNC | 已确定: 同步需网络连接。不可用项: 自动登录 / Token刷新 / 审计日志查询 / User同步。MedicalCase同步已支持 (决策3)。详见 dual-mode.md |
+| 3 | MedicalCase 同步 | FR-SYNC-001 | 已确定: 详细设计已完成。聚合级原子同步 (MC+Consultation+Prescription+Items); 全状态双向同步; 自动强制依赖顺序 (Herb->Patient->MC); 患者 IdCardNumber 去重+PatientId 重映射; CaseNumber/PrescriptionNumber Server 重分配; 打印字段不参与同步; BR-001 冲突提示医生选择。详见 "MedicalCase 同步设计" 章节 |
 | 4 | 自动同步提示 | FR-SYNC-007 | 已确定: v1.0 不实现。用户手动进入同步模块触发。v2.0 考虑 NetworkStatusService + 状态栏指示器 |
 | 5 | 同步进度 UI | FR-SYNC-007 | 已确定: 步骤指示器 (4步) + 当前实体类型 + 进度条。结果汇总按实体类型分组 |
 | 6 | 同步失败恢复策略 | FR-SYNC-007 | 已确定: 重新开始。已同步数据通过 Checksum 比对自动跳过不重复 |
@@ -373,3 +607,5 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 2026-02-11 | v1.1 | 新增错误码章节，含服务端 10 个 + 客户端 3 个错误场景 |
 | 2026-02-11 | v1.2 | 验收标准格式统一为 [场景] -> [预期结果] 格式 |
 | 2026-02-17 | v2.0 | Round 4 深化: 新增 DTO 定义 (4个)、冲突解决 UI (左右对比)、同步进度 UI (步骤指示器)、模式切换前检查和回退策略、失败恢复策略 |
+| 2026-02-17 | v2.1 | PRD审查修复: E1-MedicalCase同步必须支持(决策3更新+FR-SYNC-001实体类型扩展), A7-FR-SYNC-006删除策略已对齐BR-DEL-001 |
+| 2026-02-18 | v3.0 | MedicalCase同步详细设计: 外出看诊离线工作流、聚合级原子同步、MedicalCaseSyncDto定义、聚合Checksum计算、自动依赖顺序(Herb->Patient->MC)、患者IdCardNumber去重+PatientId重映射、BR-001冲突处理、编号重分配、引用完整性校验、冲突解决UI、新增错误码(服务端6个+客户端2个) |

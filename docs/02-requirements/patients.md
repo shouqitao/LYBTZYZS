@@ -13,9 +13,9 @@
 | SuperAdmin | CRUD 全部患者 |
 | Admin | CRUD 全部患者 |
 | Doctor | CRUD 全部患者 |
-| Receptionist | 无权限 |
+| Receptionist | 创建、查看列表/详情、更新患者 (CRU，无删除权限) |
 
-> 端点受 `DoctorOrAdmin` 策略保护。
+> Doctor/Admin 端点受 `DoctorOrAdmin` 策略保护；Receptionist 端点受 `Authenticated` 策略保护，仅限 CRU 操作。
 
 ---
 
@@ -126,7 +126,7 @@
   4. 失败恢复机制: 返回行号、失败原因、修复建议、数据快照
   5. 手机号重复检查
   6. 自动生成拼音码
-  7. 导入列: 姓名\*、性别、出生日期、身份证号、手机号码、地址、过敏史、既往病史
+  7. 导入列: 姓名\*、性别、出生日期、身份证号\*、手机号码\*、地址\*、过敏史、既往病史
 - **远程模式**: POST `/api/v1/patients/import` (multipart/form-data)
 - **本地模式**: 支持。使用客户端 NPOI (ExcelHelper) 本地解析 Excel 文件，直接写入 LocalDbContext，不依赖服务端 API
 - **验收标准**:
@@ -166,7 +166,7 @@
 - **远程模式**: POST `/api/v1/patients/{id}/check-reference`
 - **本地模式**: 本地检查
 - **验收标准**:
-  - [ ] 患者有3条医案 -> 返回 referenceCount=3, canDelete=true
+  - [ ] 患者有3条医案 -> 返回 referenceCount=3, canDelete=false
 
 ### FR-PAT-012: 批量检查患者引用
 
@@ -193,8 +193,8 @@
 | Gender | Gender | Enum | 性别 (Unknown/Male/Female) |
 | BirthDate | DateTime? | - | 出生日期 |
 | IdNumber | string(50) | Required, Unique, 敏感 | 证件号码 (IdentityInfo, 部分掩码) (PAT-D03) |
-| PhoneNumber | string(20)? | 敏感 | 手机号码 (ContactInfo, 部分掩码) |
-| Address | string(256)? | 敏感 | 地址 (PersonalInfo, 默认掩码) |
+| PhoneNumber | string(20) | Required, 敏感 | 手机号码 (ContactInfo, 部分掩码) |
+| Address | string(256) | Required, 敏感 | 地址 (PersonalInfo, 默认掩码) |
 | AllergyHistory | string(500)? | 敏感 | 过敏史 (MedicalInfo, 哈希掩码) |
 | MedicalHistory | string(1000)? | 敏感 | 既往病史 (MedicalInfo, 哈希掩码) |
 | BloodType | int | Default: 0 | 血型 |
@@ -210,13 +210,15 @@
 
 ### 敏感数据保护
 
-| 字段 | 数据类型 | 掩码模式 |
-|------|----------|----------|
-| IdNumber | IdentityInfo | 部分掩码 |
-| PhoneNumber | ContactInfo | 部分掩码 |
-| Address | PersonalInfo | 默认掩码 |
-| AllergyHistory | MedicalInfo | 哈希掩码 |
-| MedicalHistory | MedicalInfo | 哈希掩码 |
+| 字段 | 数据类型 | 掩码模式 | 敏感级别 | SQLite 加密 |
+|------|----------|----------|---------|------------|
+| IdNumber | IdentityInfo | 部分掩码 (前3后4) | L1-高敏感 | AES-256 加密存储 |
+| PhoneNumber | ContactInfo | 部分掩码 (前3后4) | L1-高敏感 | AES-256 加密存储 |
+| Address | PersonalInfo | 默认掩码 (前6字符) | L2-一般敏感 | 明文 |
+| AllergyHistory | MedicalInfo | 哈希掩码 | L2-一般敏感 | 明文 |
+| MedicalHistory | MedicalInfo | 哈希掩码 | L2-一般敏感 | 明文 |
+
+> L1 字段在本地 SQLite 中通过 EF Core Value Converter 透明加密 (AES-256 + DPAPI 密钥保护)。加密字段不支持 SQLite LIKE 搜索，搜索在解密后的内存中执行。详见 nfr.md NFR-SEC-004。
 
 ---
 
@@ -274,7 +276,7 @@
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | 1 | 本地模式下导入导出的支持方式 | FR-PAT-008 ~ 010 | 已确定: 支持。客户端 NPOI 本地读写 Excel，不经过 API |
-| 2 | 敏感数据在本地模式下的加密策略 | 所有敏感字段 | 已确定: v1.0 不加密 SQLite，依赖 OS 用户权限 + 物理设备安全。v2.0 评估 SQLCipher |
+| 2 | 敏感数据加密策略 | 所有敏感字段 | 已确定: v1.0 采用字段级加密 (以 [nfr.md](nfr.md) 为准)。详细方案见"信息保护深化"独立任务 |
 | PAT-D03 | 身份证号必填 + 唯一性检查 | FR-PAT-001 + 数据模型 | 已确定: IdNumber 改为 Required + Unique，创建/更新时验证重复 |
 | PAT-D04 | 患者合并功能 | - | 已确定: v1.0 不包含。操作流程"先查后建"防重复 |
 
@@ -289,3 +291,5 @@
 | 2026-02-11 | v1.2 | 验收标准格式统一为 [场景] -> [预期结果]，12 个 FR 共 18 条验收标准 |
 | 2026-02-17 | v1.3 | Round 9: FR-PAT-005 增加引用检查 (有医案禁止删除)，FR-PAT-011 CanDelete 规则变更，ERR-20004 更新 |
 | 2026-02-17 | v1.4 | Round 10: FR-PAT-001 身份证号改必填+唯一性检查 (PAT-D03)，数据模型 IdNumber 约束变更，ERR-20002 更新，PAT-D04 确认无患者合并 |
+| 2026-02-17 | v1.5 | PRD审查修复: A2-Receptionist改为CRU权限, A6-加密策略对齐nfr.md, B1-canDelete=false修复, C2-PhoneNumber/Address改Required(患者四必填) |
+| 2026-02-18 | v1.6 | 信息保护深化: 敏感数据保护表增加敏感级别(L1/L2)和SQLite加密标注，关联nfr.md NFR-SEC-004 |
