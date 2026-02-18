@@ -19,15 +19,15 @@
 | 数据同步 | [sync.md](sync.md) | FR-SYNC-001 ~ 008 | 8 |
 | 打印 | [printing.md](printing.md) | FR-PRINT-001 ~ 004 | 4 |
 | 身份证读卡器 | [card-reader.md](card-reader.md) | FR-CARD-001 ~ 002 | 2 |
-| 系统健康与诊断 | [health-diagnostics.md](health-diagnostics.md) | FR-SYS-001 ~ 007 | 7 |
-| 异常处理策略 | [error-handling.md](error-handling.md) | FR-ERR-001 ~ 005 | 5 |
-| 日志与审计 | [logging.md](logging.md) | FR-LOG-001 ~ 004 | 4 |
+| 系统健康与诊断 | [health-diagnostics.md](health-diagnostics.md) | FR-SYS-001 ~ 009 | 9 |
+| 异常处理策略 | [error-handling.md](error-handling.md) | FR-ERR-001 ~ 008 | 8 |
+| 日志与审计 | [logging.md](logging.md) | FR-LOG-001 ~ 007 | 7 |
 | Desktop Shell | [desktop-shell.md](desktop-shell.md) | FR-SHELL-001 ~ 007 | 7 |
-| 配置参数 | [configuration.md](configuration.md) | FR-CFG-001 ~ 003 | 3 |
+| 配置参数 | [configuration.md](configuration.md) | FR-CFG-001 ~ 004 | 4 |
 | **非功能性需求** | **[nfr.md](nfr.md)** | **NFR-PERF/DATA/AVAIL/SEC** | **跨模块** |
 | **UI/UX 交互规范** | **[ui-patterns.md](ui-patterns.md)** | **UI-D01~D06** | **跨模块** |
 
-> **总计: 120 个功能需求 (14 个模块) + NFR 文档 (性能/数据量/可用性/安全)**
+> **总计: 129 个功能需求 (14 个模块) + NFR 文档 (性能/数据量/可用性/安全)**
 
 ---
 
@@ -82,3 +82,4 @@
 | 2026-02-11 | v1.1 | 新增5个模块索引 (SYS/ERR/LOG/SHELL/CFG)，总计从94更新到120个FR。模板新增"错误码"章节 |
 | 2026-02-17 | v1.2 | 新增非功能性需求 (NFR) 文档索引 |
 | 2026-02-17 | v1.3 | 新增 UI/UX 交互规范 (ui-patterns.md) 文档索引 |
+| 2026-02-17 | v1.4 | PRD审查Phase3: FR数量更新120->129 (SYS+2/ERR+3/LOG+3/CFG+1)，编号范围修正 |

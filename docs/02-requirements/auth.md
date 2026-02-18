@@ -35,7 +35,7 @@
 - **本地模式**: LocalAuthService 本地验证，不生成 JWT
 - **验收标准**:
   - [ ] 正确凭据 -> 返回 200 + AccessToken + RefreshToken + UserDetailDto
-  - [ ] 错误凭据 -> 返回 401 + ErrorCode=InvalidCredentials(101)
+  - [ ] 错误凭据 -> 返回 401 + ErrorCode=InvalidCredentials(10101)
   - [ ] 禁用用户登录 -> 返回 403 + ErrorCode=UserDisabled
   - [ ] 60秒内第6次登录 -> 返回 429 Too Many Requests
 
@@ -140,7 +140,7 @@
 - **本地模式**: 不适用
 - **验收标准**:
   - [ ] 有效 Token -> 返回 200 + valid=true + 剩余有效时间
-  - [ ] 过期 Token -> 返回 401 + ErrorCode=TokenExpired(201)
+  - [ ] 过期 Token -> 返回 401 + ErrorCode=TokenExpired(10201)
 
 ### FR-AUTH-009: 凭证本地存储
 
@@ -279,15 +279,17 @@
 
 ## 错误码
 
+> 认证错误码归入用户模块命名空间 (1xxxx)，与 [users.md](users.md) 统一编号体系。
+
 | 错误码 | 编号 | HTTP | 说明 |
 |--------|------|------|------|
-| InvalidCredentials | 101 | 401 | 用户名或密码错误 |
-| TokenExpired | 201 | 401 | AccessToken 已过期 |
-| TokenInvalid | 202 | 401 | Token 格式或签名无效 |
-| TokenRevoked | 203 | 401 | Token 已被撤销 |
-| RefreshTokenExpired | 204 | 401 | RefreshToken 已过期 |
-| RefreshTokenInvalid | 205 | 401 | RefreshToken 无效 |
-| UnauthorizedAccess | 300 | 403 | 权限不足 |
+| InvalidCredentials | 10101 | 401 | 用户名或密码错误 |
+| TokenExpired | 10201 | 401 | AccessToken 已过期 |
+| TokenInvalid | 10202 | 401 | Token 格式或签名无效 |
+| TokenRevoked | 10203 | 401 | Token 已被撤销 |
+| RefreshTokenExpired | 10204 | 401 | RefreshToken 已过期 |
+| RefreshTokenInvalid | 10205 | 401 | RefreshToken 无效 |
+| UnauthorizedAccess | 10300 | 403 | 权限不足 |
 
 ---
 
@@ -296,7 +298,7 @@
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | 1 | 本地模式下自动登录的实现方式 | FR-AUTH-002 | 已确定: 不支持 (无 Token 机制，每次手动登录) |
-| 2 | 本地模式下的会话超时策略 | FR-AUTH-006 | 已确定: 不适用。本地模式无 Token 超时，登录状态持续到应用退出。安全保障: 5次失败锁定15分钟 |
+| 2 | 本地模式下的会话超时策略 | FR-AUTH-006 | 已确定: 本地模式有不活跃超时，同远程模式 (防止医生离开后他人操作导致信息泄露)。不活跃 15 分钟自动登出，无 Token 刷新 |
 | AUTH-D06 | 单会话登录策略 | FR-AUTH-001 | 已确定: 同一账号仅允许一台设备登录。新设备登录时撤销旧设备所有 Token Family，旧设备下次请求/刷新时触发 TokenRevoked → 强制登出 |
 | AUTH-D07 | 角色变更即时生效 | FR-AUTH-003 + users.md FR-USER-004 | 已确定: 用户角色变更时立即撤销该用户 Token Family，强制重登录。复用 AUTH-D06 的 Token Family 撤销逻辑 |
 
@@ -308,3 +310,4 @@
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 7 个认证 spec + AuthController 代码提取 |
 | 2026-02-17 | v1.1 | Round 10: FR-AUTH-001 补充单会话登录规则 (AUTH-D06)，新增角色变更即时生效决策 (AUTH-D07) |
+| 2026-02-17 | v1.2 | PRD审查修复: A4-本地模式有不活跃超时(防泄露), D2-错误码对齐5位数体系(1xxxx) |

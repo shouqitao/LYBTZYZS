@@ -13,6 +13,7 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 9.0 模块化架�
 | 所有角色 | 使用 Shell 基础设施 (启动、登录、导航、菜单、对话框) |
 | Admin | 进入管理员工作台 (Admin Role)，可见管理菜单 |
 | Doctor | 进入临床工作台 (Clinical Role)，可见临床菜单 |
+| Receptionist | 使用基础设施，可见患者管理 + 读卡器 + 未完成医案简要提示 |
 
 > Shell 基础设施对所有角色透明提供服务，角色差异体现在菜单可见性和导航目标。
 
@@ -66,13 +67,13 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 9.0 模块化架�
   1. 会话状态: 未认证 -> 已认证 -> 会话活跃 -> 会话过期/登出
   2. Token 生命周期监控: TokenRemainingTime 属性
   3. 用户活跃度追踪: IUserActivityTracker 监测键盘/鼠标活动
-  4. 无活动超时: InactivityTimeoutMinutes (默认 5 分钟，可配置)
-  5. 超时前警告: WarningBeforeTimeoutMinutes (默认 0 分钟)
+  4. 无活动超时: InactivityTimeoutMinutes (默认 15 分钟，可配置)
+  5. 超时前警告: WarningBeforeTimeoutMinutes (默认 2 分钟)
   6. 自动刷新 Token: 用户活跃时自动调用 RefreshTokenAsync
   7. 会话过期事件: SessionExpired 触发自动登出
   8. 实现 IDisposable: 释放 Timer 和事件订阅
 - **远程模式**: JWT Token 滑动刷新 + 不活跃超时登出
-- **本地模式**: 简化会话状态，无 Token 刷新
+- **本地模式**: 简化会话状态，无 Token 刷新。不活跃超时同远程模式 (防信息泄露)
 - **验收标准**:
   - [ ] 登录成功 -> CurrentState 变为已认证
   - [ ] 用户无活动超过 InactivityTimeoutMinutes -> 触发 SessionExpired
@@ -159,7 +160,7 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 9.0 模块化架�
 顶部菜单栏
 ├── 文件 (File)
 │   ├── 新建患者          Ctrl+N       所有角色
-│   ├── 新建医案          Ctrl+Shift+C Doctor+
+│   ├── 新建医案          Ctrl+Shift+C Doctor
 │   ├── ─────────────
 │   ├── 打印              Ctrl+P       Doctor+
 │   ├── ─────────────
@@ -202,7 +203,7 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 9.0 模块化架�
 | 菜单项 | SuperAdmin | Admin | Doctor | Receptionist |
 |--------|:---:|:---:|:---:|:---:|
 | 新建患者 | O | O | O | O |
-| 新建医案 | O | O | O | X |
+| 新建医案 | X | X | O | X |
 | 打印 | O | O | O | X |
 | 患者管理 | O | O | O | O |
 | 医案管理 | O | O | O | X |
@@ -377,3 +378,4 @@ Unauthenticated -> Authenticating -> Authenticated -> Active -> Expired -> Unaut
 |------|------|----------|
 | 2026-02-11 | v1.0 | 初始版本，从代码实现逆向工程 |
 | 2026-02-17 | v2.0 | Round 5 深化: 新增完整菜单层级+角色可见性矩阵、Prism Region定义+导航参数、状态栏信息、启动画面规格+失败降级、账户设置详细、导航历史规范 |
+| 2026-02-17 | v2.1 | PRD审查修复: A2-Receptionist角色定义, A3-超时15min/警告2min, A4-本地模式同远程超时, E3-新建医案仅Doctor可见 |

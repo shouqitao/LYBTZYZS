@@ -232,7 +232,9 @@
 |--------|--------|------|----------|----------|
 | ERR-10001 | UserNotFound | 404 | 用户不存在 | GetById/Update/Delete/ResetPassword/ChangePassword/ChangeProfile/ToggleStatus/Restore 时 ID 无效 |
 | ERR-10002 | UserNameExists | 409 | 用户名已被使用 | 创建时用户名已存在 |
+| ERR-10003 | EmailExists | 409 | 邮箱已被使用 | 创建/更新时邮箱已存在 |
 | ERR-10004 | InvalidPassword | 401 | 用户名或密码错误 | 登录密码错误、修改密码时旧密码错误 |
+| ERR-10005 | PasswordPolicyViolation | 400 | 密码不符合安全策略 | 密码不满足长度/复杂度要求 |
 | ERR-10006 | UserDisabled | 403 | 用户账号已被禁用，请联系管理员 | 已禁用用户尝试登录 |
 | ERR-00003 | ValidationFailed | 400 | 输入数据验证失败，请检查后重试 | FluentValidation 验证不通过 |
 
@@ -268,7 +270,7 @@
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | 1 | 本地模式下用户管理的支持范围 | 所有 FR-USER | 已确定: 完整支持。LocalUserDataSource 11/11 方法全覆盖，DI 注册为 IUserDataSource 本地实现 |
-| 2 | Receptionist 角色的具体功能边界 | FR-USER-001 | 已确定: 仅查看权限 (患者列表 + 医案列表)。不在 DoctorOrAdmin / AdminOnly 策略中，无任何写操作权限 |
+| 2 | Receptionist 角色的具体功能边界 | FR-USER-001 | 已确定: 患者 CRU (创建/查看/更新，无删除) + 读卡器使用 + 未完成医案简要提示 (时间+医生，不含诊断/处方详情)。不在 AdminOnly 策略中 |
 | USER-D03 | 最后一个 Admin/SuperAdmin 禁用保护 | FR-USER-011 | 已确定: 与删除保护一致，禁止禁用最后一个管理员 |
 | AUTH-D07 | 角色变更即时生效 | FR-USER-004 | 已确定: 角色变更时立即撤销 Token Family，强制重登录 (见 auth.md AUTH-D07) |
 
@@ -281,3 +283,4 @@
 | 2026-02-10 | v1.0 | 初始版本，从 user-management spec + UsersController 代码提取 |
 | 2026-02-11 | v1.1 | 新增错误码章节，从 UserService.cs + ErrorCode.cs 提取 19 个错误场景 |
 | 2026-02-17 | v1.2 | Round 10: FR-USER-004 补充角色变更即时生效 (AUTH-D07)，FR-USER-011 补充最后管理员禁用保护 (USER-D03)，新增错误码 |
+| 2026-02-17 | v1.3 | PRD审查修复: A2-Receptionist功能边界更新(患者CRU+读卡器+医案提示), D3-补全ERR-10003(EmailExists)+ERR-10005(PasswordPolicyViolation) |

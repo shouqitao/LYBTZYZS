@@ -259,7 +259,7 @@
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | 1 | PDF 导出功能 | FR-PRINT-002 | 已确定: v1.0 不支持，使用 XPS 格式导出。v2.0 评估 PdfSharp 或 XPS->PDF 转换方案 |
-| 2 | 打印模板配置 (诊所信息来源) | FR-PRINT-001 | 已确定: v1.0 硬编码 (ClinicName="中医门诊", Department="中医科")。v2.0 改为 appsettings.json 或数据库配置 |
+| 2 | 打印模板配置 (诊所信息来源) | FR-PRINT-001 | 已确定: 从 ClinicSettings 配置读取 (Name/Department/Address/Phone)。可配置信息统一从配置文件获取，见 [configuration.md](configuration.md) FR-CFG-002 ClinicSettings |
 | 3 | 批量打印 | FR-PRINT-001 | 已确定: 已实现。BatchPrintAsync 支持多处方连续打印，默认静默模式 (ShowDialog=false)，返回成功计数 |
 | 4 | 排版规格 | FR-PRINT-001 | 已确定: 标准中医处方笺格式，宋体为主，A5 上下 10mm 左右 8mm 边距 |
 | 5 | 分页规则 | FR-PRINT-001 | 已确定: A5 单页最多 12 味药，超出自动分页，第二页标注"续上页" |
@@ -275,3 +275,4 @@
 | 2026-02-11 | v1.1 | 新增错误码章节，含参数验证 4 个 + 运行时错误 3 个场景 |
 | 2026-02-11 | v1.2 | 验收标准格式统一为 [场景] -> [预期结果] 格式 |
 | 2026-02-17 | v2.0 | Round 6 深化: 新增 A5 处方笺排版规格 (布局/边距/字体/分页规则/内容规则) |
+| 2026-02-17 | v2.1 | PRD审查修复: A8-诊所信息从ClinicSettings配置读取(不再硬编码) |

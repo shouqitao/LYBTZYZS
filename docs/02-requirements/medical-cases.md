@@ -13,9 +13,9 @@
 | SuperAdmin | 查看/编辑全部医案，无时间限制 |
 | Admin | 查看/编辑全部医案，无时间限制 |
 | Doctor | 创建医案；查看/编辑自己的未完成医案 |
-| Receptionist | 无权限 |
+| Receptionist | 查看未完成医案简要提示 (创建时间 + 主治医生，不含诊断/处方详情) |
 
-> 整体受 `DoctorOrAdmin` 策略保护。创建医案仅 Doctor: `[Authorize(Roles = "Doctor")]`。
+> 创建/编辑/完成/取消等写操作受 `DoctorOrAdmin` 策略保护。创建医案仅 Doctor: `[Authorize(Roles = "Doctor")]`。Receptionist 仅可访问简要提示端点。
 
 ---
 
@@ -291,7 +291,7 @@
 - **远程模式**: GET `/api/v1/medicalcases/pending?doctorId=&patientId=`
 - **本地模式**: 本地查询
 - **验收标准**:
-  - [ ] 查询待诊队列 -> 仅返回 CaseStatus=Active 的医案
+  - [ ] 查询待诊队列 -> 仅返回 CaseStatus=Draft 或 Active 的医案
 
 ---
 
@@ -411,6 +411,60 @@ stateDiagram-v2
 | 取消医案 (非当天本人) | 需要 |
 
 预置修改原因选项: 补充遗漏信息 / 更正录入错误 / 患者要求修改 / 医嘱调整
+
+---
+
+## 业务规则
+
+### BR-001: 同一患者单活跃医案约束
+
+- **规则**: 同一患者在同一时间只能有一个 Draft 或 Active 状态的医案
+- **触发时机**: 创建医案 (FR-MC-001)
+- **碰撞处理**: 当患者已有 Draft/Active 医案时，提示用户选择:
+  1. **重开现有医案** - 导航到已有的 Draft/Active 医案继续编辑
+  2. **关闭旧的后新建** - 将已有医案软删除 (Cancelled)，然后创建新医案
+  3. **取消操作** - 放弃创建
+- **技术实现**: 代码层检查 + DB 唯一索引 (仅 Active 状态)
+
+### BR-002: 医案离开界面操作
+
+- **规则**: 离开医案编辑界面时，必须选择一种处置方式
+- **处置选项**:
+  1. **挂起** - 状态设为 Draft，数据保存，稍后可继续
+  2. **关闭** - 执行软删除 (IsDeleted=true, CaseStatus=Cancelled)
+  3. **完成** - 状态设为 Completed，需通过完成校验 (BR-003)
+- **异常状态** (崩溃/断网/强制关闭): 统一按挂起处理，医案保持当前状态
+
+### BR-003: 医案完成校验规则
+
+- **规则**: 完成医案 (FR-MC-007) 时必须通过以下校验
+- **校验项**:
+
+| 校验项 | 条件 | 错误消息 |
+|--------|------|----------|
+| 中医辨证 | TcmDiagnosis 非空 | 请填写中医辨证 |
+| 处方需求标记 | NeedsPrescription 非 null | 请先标记是否需要开处方 |
+| 处方存在性 | NeedsPrescription=true 时 Prescription 非 null | 已标记需要开处方，但处方不存在 |
+| 处方药材 | NeedsPrescription=true 时 Items.Count > 0 | 处方至少包含一味药材 |
+| 处方必填字段 | NeedsPrescription=true 时 DosageCount > 0 | 请填写帖数 |
+
+- **校验时机**: 调用 FR-MC-007 (完成医案) 时服务端统一校验
+- **校验失败**: 返回 422，包含所有未通过校验项的错误消息列表
+
+### BR-DEL-001: 统一删除策略
+
+- **适用范围**: 全系统实体删除行为统一规范
+- **规则**:
+  - **有引用关系** -> 禁止删除，仅可禁用 (Status=Disabled)
+  - **无引用关系** -> 允许软删除 (IsDeleted=true)
+- **各模块适用**:
+
+| 模块 | 被引用关系 | 删除行为 |
+|------|-----------|----------|
+| Patients | 被 MedicalCase 引用 | 有医案: 禁止删除 (422)，建议禁用; 无医案: 软删除 |
+| Herbs | 被 PrescriptionItem 引用 | 有处方引用: 禁止删除，建议禁用; 无引用: 软删除 |
+| Formulas | 无被引用关系 (导入为复制) | 直接软删除 |
+| Users | 特殊规则 | 保持现有逻辑 (参见 [users.md](users.md)) |
 
 ---
 
@@ -544,3 +598,4 @@ stateDiagram-v2
 | 2026-02-17 | v1.3 | Round 7: FR-MC-012 深化 -- 补充 MedicalCaseAuditLog 数据模型、自动字段级 diff 规则、审计异常隔离、交叉引用 |
 | 2026-02-17 | v1.4 | Round 9: 边界条件补强 -- 新增边界条件章节 (生命周期/药材联动/并发锁定/排序规则)，FR-MC-016 增加 Validated 过滤 + 禁用药材跳过，FR-MC-009/017 补充排序规则，8 条新决策 (MC-D04~D11) |
 | 2026-02-17 | v1.5 | Round 10: FR-MC-016 补充验方导入独立性说明 (MC-D12) |
+| 2026-02-17 | v1.6 | PRD审查修复: A2-Receptionist改为简要提示, B2-FR-MC-017验收标准补充Draft, D1-新增业务规则章节(BR-001/BR-002/BR-003/BR-DEL-001) |

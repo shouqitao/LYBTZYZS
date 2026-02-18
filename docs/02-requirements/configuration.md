@@ -127,7 +127,7 @@
 
 | 参数 | 类型 | 默认值 | 约束 | 说明 |
 |------|------|--------|------|------|
-| DefaultRole | string | "Staff" | Required | 默认角色 |
+| DefaultRole | string | "Doctor" | Required | 默认角色 |
 | AllowSelfRegistration | bool | false | - | 允许自注册 |
 | RequireEmailConfirmation | bool | true | - | 需要邮箱确认 |
 | EnableUserCache | bool | true | - | 启用用户缓存 |
@@ -207,8 +207,8 @@
 
 | 参数 | 类型 | 默认值 | 约束 | 说明 |
 |------|------|--------|------|------|
-| InactivityTimeoutMinutes | int | 5 | 1-120 | 无活动超时 (分钟) |
-| WarningBeforeTimeoutMinutes | int | 0 | 0-10 | 超时前警告 (分钟) |
+| InactivityTimeoutMinutes | int | 15 | 1-120 | 无活动超时 (分钟) |
+| WarningBeforeTimeoutMinutes | int | 2 | 0-10 | 超时前警告 (分钟) |
 | ActivityCheckIntervalSeconds | int | 30 | 10-120 | 活动检查间隔 (秒) |
 
 **FeatureToggles (功能开关)**
@@ -376,3 +376,4 @@ CRITICAL 错误（必须修复）:
 |------|------|----------|
 | 2026-02-11 | v1.0 | 初始版本，从代码实现逆向工程 |
 | 2026-02-17 | v2.0 | R8 深化: 新增 FR-CFG-004 (生产环境启动验证)、配置变更行为表、FeatureToggle UI 行为规则和 v1.0 默认状态表、CardReader 开关、3 条新决策 |
+| 2026-02-17 | v2.1 | PRD审查修复: A3-InactivityTimeout 5->15min/Warning 0->2min, A5-DefaultRole Staff->Doctor |

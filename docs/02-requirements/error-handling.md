@@ -235,7 +235,7 @@ Exception
 | status | int | HTTP 状态码 |
 | detail | string | 用户友好的详细描述 |
 | instance | string | 请求路径 |
-| errorCode | string | 类型化错误码 (如 "AUTH-101") |
+| errorCode | string | 类型化错误码 (如 "ERR-10101"，5位数编号体系) |
 | correlationId | string | 请求关联ID |
 | traceId | string | 请求追踪ID |
 | timestamp | DateTimeOffset | 时间戳 |
@@ -324,3 +324,4 @@ Exception
 |------|------|----------|
 | 2026-02-11 | v1.0 | 初始版本，从代码实现逆向工程 |
 | 2026-02-17 | v2.0 | R8 深化: 新增 FR-ERR-006 (错误消息映射体系)、FR-ERR-007 (追踪码)、FR-ERR-008 (异常通知类型映射)、3 条新决策 |
+| 2026-02-17 | v2.1 | PRD审查修复: D2-errorCode示例格式对齐5位数体系(AUTH-101->ERR-10101) |
