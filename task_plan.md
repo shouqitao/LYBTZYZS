@@ -1,60 +1,74 @@
 # Task Plan
 
 ## Goal
-完成两个遗留独立任务: (1) 信息保护深化 -- 统一敏感数据保护策略; (2) MedicalCase 同步设计 -- 扩展同步模块支持医案聚合。
+全面分析全部 PRD 文档，验证功能和逻辑是否闭环，识别所有不一致和缺失，逐段确认后修复。
 
 ## Current Phase
-Phase 5: VERIFY -> complete
+Phase 1: BRAINSTORM -> complete (全四段已完成)
 
 ---
 
 ## Phases
 
-### Phase 1: BRAINSTORM - 需求讨论与方案设计
+### Phase 1: BRAINSTORM - 全量 PRD 闭环分析
 - Status: complete
 - Tasks:
-  - [x] 收集上下文 (NFR/sync.md/架构文档/Serena记忆/代码现状)
-  - [x] 任务 A: 信息保护深化 - 3级分级+Value Converter+日志脱敏
-  - [x] 任务 B: MedicalCase 同步设计 - 外出看诊工作流, 9 项决策
-
-### Phase 2: PLAN - 详细实施计划
-- Status: complete
-- 确认修改 3 个文档: nfr.md + patients.md + sync.md
-
-### Phase 3: EXECUTE - 文档编写
-- Status: complete
-- nfr.md v1.1, patients.md v1.6, sync.md v3.0
-
-### Phase 4: REVIEW - 审查
-- Status: complete
-- 修复 4 个审查问题
-
-### Phase 5: VERIFY - 验证
-- Status: complete
+  - [x] 读取全部 20 个文档 (4 product + 16 requirements)
+  - [x] 系统性分析：FR编号/数量/跨引用/角色/数据模型/错误码/业务规则
+  - [x] 第一段呈现并修复 (功能缺失 -- 2 个问题)
+  - [x] 第二段呈现并修复 (数据模型缺陷 -- 6 个问题)
+  - [x] 第三段呈现并修复 (错误码体系 + 双模式覆盖 -- 3 个问题)
+    - [x] 问题 9: 错误码全量分配 90 个 (决策 A, 已执行)
+    - [x] 问题 10: FR-AUTH-007 本地模式修复 (已执行)
+    - [x] 问题 11: 降级为非问题
+  - [x] 第四段呈现并修复 (边界条件 + 其他 -- 5 个问题)
+    - [x] 问题 12: 打印保护策略 (MC-D15, IsPrinted 提升到 MedicalCase)
+    - [x] 问题 13: 患者禁用规则 (FR-PAT-013, MC-D16, 角色脱敏)
+    - [x] 问题 14: 缓存失效策略 (nfr.md 完整重写 + 客户端配置)
+    - [x] 问题 15: 分页参数统一 (NFR-API-001)
+    - [x] 问题 16: 身份证脱敏示例 (降级为非问题)
+  - [x] 用户最终确认 (2026-02-18)
 
 ---
 
 ## Decisions Made
 
-| # | Decision | Rationale | Date |
-|---|----------|-----------|------|
-| A1 | 3级敏感数据分级 (L1/L2/L3) | 区分保护力度，避免过度加密 | 2026-02-18 |
-| A2 | EF Core Value Converter 实现加密 | 对业务层透明，无需改 Repository/Service | 2026-02-18 |
-| A3 | DPAPI 密钥生命周期: 生成→保护→丢失重同步 | 利用已有 CredentialVault 基础设施 | 2026-02-18 |
-| A4 | 产出为需求文档补充 | 当前阶段完善 PRD 规格 | 2026-02-18 |
-| B1 | 全状态双向同步 | 离线创建任何状态医案都能同步 | 2026-02-18 |
-| B2 | 聚合级原子同步 | DDD 聚合一致性 | 2026-02-18 |
-| B3 | 打印字段不参与同步 | 打印是本地行为 | 2026-02-18 |
-| B4 | 自动强制依赖顺序 Herb→Patient→MC | 用户无需关心顺序 | 2026-02-18 |
-| B5 | 患者去重: IdCardNumber匹配+PatientId重映射 | 忘记同步患者的恢复路径 | 2026-02-18 |
-| B6 | CaseNumber/PrescriptionNumber Server重分配 | 全局序列一致 | 2026-02-18 |
-| B7 | GUID保留本地生成值 | 全局唯一无冲突 | 2026-02-18 |
-| B8 | BR-001冲突提示医生选择 | 单活跃医案约束 | 2026-02-18 |
-| B9 | Checksum排除审计/打印/编号/冗余字段 | 避免假差异 | 2026-02-18 |
+### 第一段修复 (v1.7)
+- MC-D13: 历史处方复制价格策略 = 实时获取 (与 FR-MC-016 一致)
+- MC-D14: 总价计算公式 = SingleDosePrice x DosageCount x Discount
+- 新增 FR-MC-018 复制历史处方 (10 条业务规则)
+- FR-MC-004 补充总价计算公式
+
+### 第二段修复 (v1.8)
+- Prescription 补充 LastPrintedAt 字段
+- DecocteMethod 新增完整枚举定义 (7 种煎法)
+- Dosage/UnitPrice/Amount 补充单位语义
+- ReferencedFormulas 改为 JSON 数组格式
+- DoctorName/PatientName 标注创建时快照语义
+- 错误消息"病案"全部修正为"医案"
+
+### 第三段修复
+- 问题 9: 错误码全量分配 90 个编号到 6 个文件 (MCCEE 体系)
+- 问题 10: FR-AUTH-007 本地模式 "保持登录" 明确为重置计时器
+- 问题 11: sync.md 矛盾降级为非问题
+
+## Errors Encountered
+(无)
 
 ---
 
-## Errors Encountered
+## 待呈现的分析结果 (第四段)
 
-| Error | Attempt | Resolution |
-|-------|---------|------------|
+### 第四段: 边界条件 + 其他
+已分析完成，核心发现:
+
+**高严重度:**
+- 打印与编辑并发策略缺失 (PrintVersion 递增规则不清; 聚合保存是否绕过打印保护)
+- 患者禁用规则缺失 (无 FR-PAT-006; 禁用后能否创建医案未定义)
+
+**中严重度:**
+- 缓存失效策略不完整 (写操作后何时清除缓存未列表化)
+- 分页参数统一性 (各文档默认值一致但验证规则未统一)
+- 身份证脱敏示例错误 (nfr.md 示例为 22 位，应为 18 位)
+
+**下一步**: 呈现第四段详细分析，逐个问题决策并修复。

@@ -47,6 +47,8 @@
   2. 默认分页: page=1, pageSize=20
   3. 列表缓存: OutputCache("PatientsCache")
   4. 年龄由 Service 层计算 (基于 BirthDate)
+  5. **Receptionist 查询自动过滤 Status=Disabled 的患者**; Doctor/Admin 可见全部 (含禁用，列表标注状态)
+  6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](nfr.md) NFR-API-001)
 - **远程模式**: GET `/api/v1/patients?keyword=&page=&pageSize=`
 - **本地模式**: 本地 SQLite 查询
 - **验收标准**:
@@ -179,6 +181,28 @@
 - **验收标准**:
   - [ ] 101个ID -> 返回 400 "批量检查最多支持100条记录"
 
+### FR-PAT-013: 患者状态管理
+
+- **描述**: 切换患者状态 (启用/禁用)，禁用后患者不可创建新医案
+- **业务规则**:
+  1. 仅 Admin/SuperAdmin 可执行状态切换
+  2. 禁用时: 检查患者是否有 Draft/Active 医案，有则拒绝 (需先完成或取消活跃医案)
+  3. 禁用后: 禁止为该患者创建新医案 (见 [medical-cases.md](medical-cases.md) FR-MC-001)
+  4. 禁用后: 历史医案可查阅，PatientName 按角色脱敏 -- Admin/SuperAdmin 看完整姓名，Doctor 看掩码 (如 "张*")
+  5. 启用后: 所有限制解除，脱敏自动取消
+  6. v1.0 主要禁用场景: 患者已故
+  7. **查询可见性**: Receptionist 查询自动过滤禁用患者 (不可见); Doctor/Admin 可见禁用患者 (列表中标注状态)
+- **远程模式**: PUT `/api/v1/patients/{id}/status`，Body: `{ status: "Enabled"|"Disabled", reason: "string" }`
+- **本地模式**: 本地状态切换
+- **验收标准**:
+  - [ ] Doctor 调用状态切换 -> 返回 403
+  - [ ] 患者有 Active 医案时禁用 -> 返回 422 "该患者有进行中的医案，请先完成或取消"
+  - [ ] 禁用成功 -> Status=Disabled
+  - [ ] 禁用后为该患者创建医案 -> 返回 422 (见 medical-cases.md ERR-30105)
+  - [ ] 禁用后 Doctor 查看历史医案 -> PatientName 掩码显示
+  - [ ] 禁用后 Admin 查看历史医案 -> PatientName 完整显示
+  - [ ] 禁用后 Receptionist 查询患者列表 -> 禁用患者不出现
+
 ---
 
 ## 数据模型
@@ -234,28 +258,29 @@
 | ERR-20002 | PatientIdCardExists | 409 | 系统中已存在该身份证 | 创建/更新/导入时身份证号重复 (PAT-D03) |
 | ERR-20003 | PatientPhoneExists | 409 | 患者电话已存在 | 创建/更新时手机号重复 |
 | ERR-20004 | PatientHasReferencedCases | 422 | 该患者有历史医案，无法删除，请使用禁用功能 | 删除时有关联医案 (任何状态) (MC-D04) |
-| ERR-20005 | PatientDisabled | 403 | 患者已被禁用 | 患者状态无效 |
+| ERR-20005 | PatientDisabled | 403 | 患者已被禁用 | 对 Status=Disabled 的患者执行需启用状态的操作 |
 | ERR-20006 | InvalidPatientStatus | 400 | 无效的患者状态 | 状态转换非法 |
 | ERR-00003 | ValidationFailed | 400 | 参数验证失败 | FluentValidation 验证不通过 |
 
-### 业务规则错误
+### 业务规则错误 (207xx)
 
-| 场景 | HTTP | 用户消息 | 触发条件 |
-|------|------|----------|----------|
-| 手机号重复 | 400 | 手机号 {PhoneNumber} 已存在 | 创建/更新时同一手机号已被占用 |
-| 患者未被删除 | 200 (success=false) | 该患者未被删除，无需恢复 | 恢复未软删除的患者 |
-| 批量操作为空 | 400 | 请至少选择一个患者 | 批量删除时 ID 列表为空 |
-| 批量检查超限 | 400 | 批量检查最多支持100条记录 | BatchCheckReference 超过 100 条 |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-20701 | PhoneDuplicate | 400 | 手机号 {PhoneNumber} 已存在 | 创建/更新时同一手机号已被占用 |
+| ERR-20702 | PatientNotDeleted | 200 | 该患者未被删除，无需恢复 | 恢复未软删除的患者 |
+| ERR-20703 | BatchOperationEmpty | 400 | 请至少选择一个患者 | 批量删除时 ID 列表为空 |
+| ERR-20704 | BatchCheckExceeded | 400 | 批量检查最多支持100条记录 | BatchCheckReference 超过 100 条 |
+| ERR-20705 | InvalidPagination | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 ([nfr.md](nfr.md) NFR-API-001) |
 
-### 导入错误 (FR-PAT-008)
+### 导入错误 (FR-PAT-008, 208xx)
 
-| 场景 | HTTP | 用户消息 | 触发条件 |
-|------|------|----------|----------|
-| 文件为空 | 400 | 文件不能为空 | file==null 或 file.Length==0 |
-| 文件格式错误 | 400 | 仅支持.xlsx格式的Excel文件 | 扩展名不是 .xlsx |
-| 文件过大 | 400 | 文件大小不能超过10MB | file.Length > 10MB |
-| 无工作表 | 400 | Excel文件中没有工作表 | Workbook 无 Worksheets |
-| 数据行超限 | 400 | 导入数据超过限制（最大1000行） | rowCount > 1000 |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-20801 | ImportFileEmpty | 400 | 文件不能为空 | file==null 或 file.Length==0 |
+| ERR-20802 | ImportFileFormat | 400 | 仅支持.xlsx格式的Excel文件 | 扩展名不是 .xlsx |
+| ERR-20803 | ImportFileSize | 400 | 文件大小不能超过10MB | file.Length > 10MB |
+| ERR-20804 | ImportNoWorksheet | 400 | Excel文件中没有工作表 | Workbook 无 Worksheets |
+| ERR-20805 | ImportRowExceeded | 400 | 导入数据超过限制（最大1000行） | rowCount > 1000 |
 
 ### 导入行级错误 (部分成功模式)
 
@@ -279,6 +304,8 @@
 | 2 | 敏感数据加密策略 | 所有敏感字段 | 已确定: v1.0 采用字段级加密 (以 [nfr.md](nfr.md) 为准)。详细方案见"信息保护深化"独立任务 |
 | PAT-D03 | 身份证号必填 + 唯一性检查 | FR-PAT-001 + 数据模型 | 已确定: IdNumber 改为 Required + Unique，创建/更新时验证重复 |
 | PAT-D04 | 患者合并功能 | - | 已确定: v1.0 不包含。操作流程"先查后建"防重复 |
+| PAT-D05 | 禁用场景与原因 | FR-PAT-013 | 已确定: v1.0 主要禁用场景为患者已故。"长期未就诊"不作为禁用条件。重复录入由身份证唯一性 (PAT-D03) 防止 |
+| PAT-D06 | 重复患者关系转移 | - | 已确定: v2.0 规划。功能: 将 A2 的医案关系转移到 A1，然后禁用 A2。v1.0 不包含 |
 
 ---
 
@@ -293,3 +320,6 @@
 | 2026-02-17 | v1.4 | Round 10: FR-PAT-001 身份证号改必填+唯一性检查 (PAT-D03)，数据模型 IdNumber 约束变更，ERR-20002 更新，PAT-D04 确认无患者合并 |
 | 2026-02-17 | v1.5 | PRD审查修复: A2-Receptionist改为CRU权限, A6-加密策略对齐nfr.md, B1-canDelete=false修复, C2-PhoneNumber/Address改Required(患者四必填) |
 | 2026-02-18 | v1.6 | 信息保护深化: 敏感数据保护表增加敏感级别(L1/L2)和SQLite加密标注，关联nfr.md NFR-SEC-004 |
+| 2026-02-18 | v1.7 | 错误码全量分配: 业务规则错误补充207xx编号(4个)，导入错误补充208xx编号(5个) |
+| 2026-02-18 | v1.8 | 新增 FR-PAT-013 患者状态管理 (启用/禁用); 明确禁用场景 (PAT-D05: 患者已故); v2.0 规划关系转移 (PAT-D06); ERR-20005 触发条件明确化 |
+| 2026-02-18 | v1.9 | FR-PAT-002 补充分页验证规则 (NFR-API-001); 新增 ERR-20705 分页错误码 |

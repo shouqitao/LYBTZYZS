@@ -49,7 +49,28 @@
   - [ ] 热启动 (最小化恢复) < 1s
   - [ ] 模块间导航无白屏闪烁
 
-### NFR-PERF-003: 并发能力
+### NFR-PERF-003: 客户端运行环境
+
+| 级别 | 内存 | 说明 |
+|------|------|------|
+| 最低 | 4 GB | Windows 10 自身占 ~2 GB，可运行但较紧张 |
+| **推荐** | **8 GB** | 舒适运行，可同时开其他办公软件 |
+| 理想 | 16 GB | 无任何顾虑 |
+
+| 组件 | 要求 |
+|------|------|
+| 操作系统 | Windows 10 及以上 |
+| 运行时 | .NET 8 Desktop Runtime |
+| 磁盘 | 应用 ~100 MB + SQLite 数据库 (本地模式) |
+| 网络 | 远程模式需局域网连接到 Server |
+
+> Desktop 应用典型内存占用: ~90-160 MB (WPF 框架 + Prism + 数据 + 缓存)。缓存部分 < 5 MB。
+
+- **验收标准**:
+  - [ ] 4 GB 内存 PC 上可正常启动和使用全部功能
+  - [ ] 应用内存占用不超过 200 MB (日常使用)
+
+### NFR-PERF-004: 并发能力
 
 | 指标 | 目标 | 当前配置 |
 |------|------|---------|
@@ -283,23 +304,124 @@ EncryptedStringConverter:
 
 ## 5. 缓存策略
 
-> 已实现，此处记录为 NFR 基线。
+### 5.1 Server 端 OutputCache 策略
 
-| 缓存目标 | 过期时间 | 标签 | 说明 |
-|----------|---------|------|------|
-| 药材列表 | 30 分钟 | herbs | 药材数据变动频率低 |
-| 验方列表 | 2 小时 | formulas | 验方数据相对稳定 |
-| 患者列表 | 30 分钟 | patients | - |
-| 医案列表 | 20 分钟 | medicalcases | 变动较频繁 |
-| 处方 | 10 分钟 | prescriptions | 编辑中可能频繁变更 |
-| 用户权限 | 10 分钟 | permissions | 权限变更需较快生效 |
-| 默认 | 5 分钟 | - | OutputCache 默认策略 |
-| 内存缓存上限 | 100MB | - | MemoryCacheOptions.SizeLimit |
+> 基于 ASP.NET Core OutputCache 中间件，按标签分组管理。
 
-- **缓存失效**: 写操作 (Create/Update/Delete) 时应主动清除对应缓存标签
+| 缓存策略 | 过期时间 | 标签 | 挂载端点 |
+|----------|---------|------|---------|
+| HerbsCache | 30 分钟 | `herbs` | GET /api/v1/herbs (列表) |
+| FormulasCache | 2 小时 | `formulas` | GET /api/v1/formulas (列表) |
+| PatientsCache | 30 分钟 | `patients` | GET /api/v1/patients (列表) |
+| MedicalCaseCache | 20 分钟 | `medicalcases` | GET /api/v1/medicalcases (列表/搜索) |
+| UserPermissionsCache | 10 分钟 | `permissions` | GET /api/v1/users (列表) |
+| (默认策略) | 5 分钟 | - | 全局兜底 |
+
+> PrescriptionsCache 策略已删除 -- 处方通过 MedicalCase 聚合根访问，无独立列表端点。
+
+### 5.2 Server 端 MemoryCache 配置
+
+| 参数 | 值 | 说明 |
+|------|-----|------|
+| SizeLimit | 100 MB | 硬上限，超过时自动压缩 |
+| CompactionPercentage | 5% | 触发压缩时释放比例 |
+| ExpirationScanFrequency | 60 秒 | 过期扫描频率 |
+| DefaultExpiration | 5 分钟 | 默认过期时间 |
+
+> 实际占用估算: < 7 MB (诊所数据量百~千级，远达不到上限)。
+
+### 5.3 Server 端缓存失效映射
+
+**原则**: 写操作成功后，调用 `IOutputCacheStore.EvictByTagAsync(tag)` 主动清除受影响的缓存标签。
+
+| 模块 | 写操作 | 清除标签 | 跨模块原因 |
+|------|--------|---------|-----------|
+| Patient | 创建/更新/删除/恢复患者 | `patients` | - |
+| Patient | 批量删除/导入 | `patients` | - |
+| Patient | 状态切换 (FR-PAT-013) | `patients` | - |
+| Herb | 创建/更新/删除/状态切换 | `herbs` | - |
+| Formula | 创建/更新/删除 | `formulas` | - |
+| MedicalCase | 创建医案 | `medicalcases`, `patients` | 患者 LastVisitTime/VisitCount 更新 |
+| MedicalCase | 聚合保存/暂存草稿 | `medicalcases` | - |
+| MedicalCase | 完成医案 | `medicalcases`, `patients` | 患者统计更新 |
+| MedicalCase | 取消医案 | `medicalcases` | - |
+| MedicalCase | 设置处方标记 | `medicalcases` | - |
+| MedicalCase | 打印操作 | `medicalcases` | IsPrinted 变更 |
+| User | 创建/更新/删除/角色变更 | `permissions` | - |
+
+### 5.4 Desktop 端缓存策略
+
+**ApiService GET 缓存** (全局):
+
+| 参数 | 值 |
+|------|-----|
+| 缓存容量 | 1000 条 (逻辑单位) |
+| 过期时间 | 5 分钟 (绝对过期) |
+| 缓存键格式 | `GET:{url}` |
+
+**写后失效规则**: 写操作 (POST/PUT/DELETE) 成功后，按模块前缀清除相关 GET 缓存。
+
+| 写操作模块 | 清除缓存前缀 | 方式 |
+|-----------|-------------|------|
+| Patient | `GET:*/patients*` | `RemoveByPrefix` |
+| Herb | `GET:*/herbs*` | `RemoveByPrefix` |
+| Formula | `GET:*/formulas*` | `RemoveByPrefix` |
+| MedicalCase | `GET:*/medicalcases*`, `GET:*/patients*` | `RemoveByPrefix` |
+| 打印操作 | `GET:*/medicalcases*` | `RemoveByPrefix` |
+| User | `GET:*/users*` | `RemoveByPrefix` |
+
+**PatientSearchCache** (专用 LRU):
+- 容量: 10 条，5 分钟过期
+- 患者写操作后调用 `Invalidate()` 清除
+- 会话切换时自动清理
+
+### 5.5 内存占用估算
+
+| 缓存层 | 上限 | 典型占用 | 说明 |
+|--------|------|---------|------|
+| Server OutputCache | TTL 自然淘汰 | < 2 MB | 1-3 用户，有限查询组合 |
+| Server MemoryCache | 100 MB | < 5 MB | 诊所数据量百~千级 |
+| Desktop ApiService | 1000 条 | < 2 MB | 单用户实际 50-100 个 GET |
+| Desktop PatientSearchCache | 10 条 | < 0.1 MB | 极小 |
+
+> 缓存总占用 (< 10 MB) 相对于应用本身 (~100 MB) 和系统内存 (4-16 GB) 完全可忽略。
+
 - **验收标准**:
-  - [ ] 数据修改后，同一用户下次查询获取到最新数据
+  - [ ] 数据修改后，同一用户下次查询获取到最新数据 (主动失效)
   - [ ] 内存缓存不超过 100MB 上限
+  - [ ] Desktop 写操作后，相关模块的 GET 缓存被清除
+
+---
+
+## 6. API 公共约定
+
+### NFR-API-001: 分页参数规范
+
+所有分页查询端点统一遵循以下规范:
+
+| 参数 | 类型 | 默认值 | 约束 | 说明 |
+|------|------|--------|------|------|
+| page | int | 1 | >= 1 | 页码 |
+| pageSize | int | 20 | 1-100 | 每页条数 |
+
+**验证规则**:
+- `page < 1` 或 `pageSize < 1` 或 `pageSize > 100` -> 返回 HTTP 400
+- 各模块使用本模块错误码范围内的分页错误码 (如 ERR-30602, ERR-60108)
+
+**适用端点**:
+
+| 模块 | 端点 | 分页错误码 |
+|------|------|-----------|
+| 患者管理 | GET /api/v1/patients | ERR-20705 |
+| 药材管理 | GET /api/v1/herbs | ERR-50106 |
+| 验方管理 | GET /api/v1/formulas | ERR-60108 |
+| 医案管理 | GET /api/v1/medicalcases | ERR-30602 |
+| 用户管理 | GET /api/v1/users | (FluentValidation) |
+
+- **验收标准**:
+  - [ ] 所有列表端点 page=0 -> 返回 400
+  - [ ] 所有列表端点 pageSize=101 -> 返回 400
+  - [ ] 所有列表端点未传分页参数 -> 使用默认值 page=1, pageSize=20
 
 ---
 
@@ -313,6 +435,10 @@ EncryptedStringConverter:
 | NFR-D04 | 安全审计日志保留 1 年 | 医疗行业常见合规要求；系统日志 90 天足以满足日常排查需求 | 2026-02-17 | 已确定 |
 | NFR-D05 | RTO=30min, RPO=24h | 诊所场景，本地模式提供即时降级兜底 | 2026-02-17 | 已确定 |
 | NFR-D06 | 数据备份: SQL Server 日备 30 天 + SQLite 启动备份 7 天 | 平衡数据安全与存储成本 | 2026-02-17 | 已确定 |
+| NFR-D07 | 缓存失效策略: 主动标签失效 + TTL 双保险 | 纯 TTL 不满足"修改后下次查询即更新"要求; 主动失效开销可忽略 (内存操作) | 2026-02-18 | 已确定 |
+| NFR-D08 | PrescriptionsCache 策略删除 | 处方通过 MedicalCase 聚合根访问，无独立列表端点，缓存策略为死配置 | 2026-02-18 | 已确定 |
+| NFR-D09 | 客户端推荐 8 GB 内存 | 应用典型占用 ~100-160 MB; 4 GB 可运行但紧张; 8 GB 可同时运行办公软件 | 2026-02-18 | 已确定 |
+| NFR-D10 | 分页参数全局统一 | page>=1, pageSize 1-100, 默认 20。各模块使用本模块错误码范围，避免重复定义 | 2026-02-18 | 已确定 |
 
 ---
 
@@ -322,3 +448,5 @@ EncryptedStringConverter:
 |------|------|----------|
 | 2026-02-17 | v1.0 | 初始版本。Round 1 讨论产出，涵盖性能/数据量/可用性/安全 4 大维度 |
 | 2026-02-18 | v1.1 | 信息保护深化: NFR-SEC-004 扩展 -- 敏感数据3级分级标准(L1/L2/L3)、日志脱敏规则(6种模式)、EF Core Value Converter实现路径、密钥生命周期管理(生成/存储/使用/丢失/切换)、明文到加密数据迁移策略 |
+| 2026-02-18 | v1.2 | 缓存策略完整重写: 5 个子章节 (OutputCache 策略/MemoryCache 配置/失效映射表/Desktop 端策略/内存占用估算); 删除 PrescriptionsCache (NFR-D08); 新增 NFR-PERF-003 客户端运行环境 (推荐 8GB); 并发能力编号调整为 NFR-PERF-004 |
+| 2026-02-18 | v1.3 | 新增 NFR-API-001 分页参数全局规范 (page>=1, pageSize 1-100); 各模块分页错误码统一注册 (ERR-20705/50106/60108/30602) |

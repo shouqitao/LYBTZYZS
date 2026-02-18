@@ -45,11 +45,13 @@
   3. 默认分页: page=1, pageSize=20
   4. 列表缓存: OutputCache("HerbsCache")
   5. 默认按名称升序排列
+  6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](nfr.md) NFR-API-001)
 - **远程模式**: GET `/api/v1/herbs?keyword=&category=&page=&pageSize=`
 - **本地模式**: 本地 SQLite 查询
 - **验收标准**:
   - [ ] category="补血药" -> 仅返回补血药分类
   - [ ] keyword="DG" -> 返回拼音码包含 DG 的药材
+  - [ ] pageSize=101 -> 返回 400 (ERR-50106)
 
 ### FR-HERB-003: 查看药材详情
 
@@ -210,37 +212,38 @@
 
 ## 错误码
 
-> Service 层采用 Result 模式统一返回。所有权检查: Admin/SuperAdmin 可操作全部，Doctor 仅可操作自己创建的数据。
+> Service 层采用 Result 模式统一返回。错误码分区: 5xxxx，编号体系: MCCEE (M=模块5, CC=子类别, EE=序号)。所有权检查: Admin/SuperAdmin 可操作全部，Doctor 仅可操作自己创建的数据。
 
-### 核心错误
+### 核心错误 (501xx)
 
-| 场景 | HTTP | 用户消息 | 触发条件 |
-|------|------|----------|----------|
-| 药材不存在 | 404 | 药材不存在 | GetById/Update/Delete/Restore 时 ID 无效或已被软删除 |
-| 验证失败 | 400 | (FluentValidation 错误列表) | 名称/单位/价格等字段验证不通过 |
-| 无权操作 | 403 | 您没有权限操作此药材，只能操作自己创建的数据 | Doctor 操作他人创建的药材 (Update/Delete/ToggleStatus/Restore) |
-| 药材未被删除 | 200 (success=false) | 该药材未被删除，无需恢复 | 恢复未软删除的药材 |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-50101 | HerbNotFound | 404 | 药材不存在 | GetById/Update/Delete/Restore 时 ID 无效或已被软删除 |
+| ERR-50102 | HerbValidationFailed | 400 | (FluentValidation 错误列表) | 名称/单位/价格等字段验证不通过 |
+| ERR-50103 | HerbNoPermission | 403 | 您没有权限操作此药材，只能操作自己创建的数据 | Doctor 操作他人创建的药材 (Update/Delete/ToggleStatus/Restore) |
+| ERR-50104 | HerbNotDeleted | 200 | 该药材未被删除，无需恢复 | 恢复未软删除的药材 |
+| ERR-50106 | HerbInvalidPagination | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 ([nfr.md](nfr.md) NFR-API-001) |
 
-### 批量操作错误
+### 批量操作错误 (502xx)
 
-| 场景 | HTTP | 用户消息 | 触发条件 |
-|------|------|----------|----------|
-| 批量操作为空 | 400 | 请至少选择一个药材 | 批量删除/启用/禁用时 ID 列表为空 |
-| 批量导入超限 | 400 | 批量导入最多支持10000条记录 | BatchImport herbs.Count > 10000 |
-| 批量检查超限 | 400 | 批量检查最多支持100条记录 | BatchCheckReference herbIds.Count > 100 |
-| 单项不存在 | 200 (部分失败) | 药材不存在 | 批量删除/状态切换时单项不存在 |
-| 单项不存在或已删除 | 200 (部分失败) | 药材不存在或已删除 | 批量状态更新时实体不存在或已软删除 |
-| 单项操作异常 | 200 (部分失败) | 删除操作失败 / 状态更新失败 | 数据库异常，使用安全消息 |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-50201 | HerbBatchEmpty | 400 | 请至少选择一个药材 | 批量删除/启用/禁用时 ID 列表为空 |
+| ERR-50202 | HerbBatchImportExceeded | 400 | 批量导入最多支持10000条记录 | BatchImport herbs.Count > 10000 |
+| ERR-50203 | HerbBatchCheckExceeded | 400 | 批量检查最多支持100条记录 | BatchCheckReference herbIds.Count > 100 |
+| ERR-50204 | HerbBatchItemNotFound | 200 | 药材不存在 | 批量删除/状态切换时单项不存在 |
+| ERR-50205 | HerbBatchItemDeletedOrMissing | 200 | 药材不存在或已删除 | 批量状态更新时实体不存在或已软删除 |
+| ERR-50206 | HerbBatchItemError | 200 | 删除操作失败 / 状态更新失败 | 数据库异常，使用安全消息 |
 
-### Excel 导入错误 (FR-HERB-009)
+### Excel 导入错误 (FR-HERB-009, 503xx)
 
-| 场景 | HTTP | 用户消息 | 触发条件 |
-|------|------|----------|----------|
-| 文件为空 | 400 | 文件不能为空 | file==null 或 file.Length==0 |
-| 文件格式错误 | 400 | 仅支持.xlsx格式的Excel文件 | 扩展名不是 .xlsx |
-| 文件过大 | 400 | 文件大小不能超过10MB | file.Length > 10MB |
-| Excel格式错误 | 200 (success=false) | Excel文件格式错误 | 无工作表 |
-| 无数据行 | 200 (success=true) | Excel文件中没有数据行 | 行数<=1 |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-50301 | HerbImportFileEmpty | 400 | 文件不能为空 | file==null 或 file.Length==0 |
+| ERR-50302 | HerbImportFileFormat | 400 | 仅支持.xlsx格式的Excel文件 | 扩展名不是 .xlsx |
+| ERR-50303 | HerbImportFileSize | 400 | 文件大小不能超过10MB | file.Length > 10MB |
+| ERR-50304 | HerbImportExcelError | 200 | Excel文件格式错误 | 无工作表 |
+| ERR-50305 | HerbImportNoData | 200 | Excel文件中没有数据行 | 行数<=1 |
 
 ### 导入行级错误 (部分成功模式)
 
@@ -271,3 +274,5 @@
 | 2026-02-11 | v1.1 | 新增错误码章节，含核心错误 4 个 + 批量操作 6 个 + 导入错误 10 个场景 |
 | 2026-02-11 | v1.2 | 验收标准格式统一为 [场景] -> [预期结果]，13 个 FR 共 19 条验收标准 |
 | 2026-02-17 | v1.3 | PRD审查修复: A7-FR-HERB-005/013 对齐统一删除策略(BR-DEL-001)，有处方引用时禁止删除 |
+| 2026-02-18 | v1.4 | 错误码全量分配: 3 个子类别 (501xx~503xx) 共 15 个错误码，统一 ERR-MCCEE 格式 + 枚举名 |
+| 2026-02-18 | v1.5 | FR-HERB-002 补充分页验证规则 (NFR-API-001); 新增 ERR-50106 分页错误码 |

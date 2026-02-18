@@ -47,6 +47,7 @@
   3. Admin 返回全部验方
   4. Doctor 返回自己创建的 + 共享的验方
   5. 列表包含 HerbCount 和 TotalPrice
+  6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](nfr.md) NFR-API-001)
 - **远程模式**: GET `/api/v1/formulas?keyword=&category=&page=&pageSize=`
 - **本地模式**: 本地查询
 - **验收标准**:
@@ -218,10 +219,10 @@
 | OriginalHerbName | string(100)? | - | 原始药材名称 |
 | IsValidated | bool | Default: false | 是否已验证绑定 |
 | HerbName | string(100) | Required | 药材名称 |
-| Dosage | int | Required | 剂量 (整数) |
-| Unit | string(16) | Required | 单位 |
+| Dosage | int | Required | 剂量 (数值部分，单位由 Unit 指定) |
+| Unit | string(16) | Required | 单位 (克/g/ml/条/粒 等) |
 | ProcessingMethod | string(100)? | - | 炮制方法 |
-| DecocteMethod | DecocteMethod | Default: Default | 煎法 |
+| DecocteMethod | DecocteMethod | Default: Normal | 煎法 (定义见 [medical-cases.md](medical-cases.md) DecocteMethod 枚举) |
 | Usage | string(200)? | - | 用法 |
 | Remark | string(200)? | - | 备注 |
 
@@ -231,39 +232,39 @@
 
 ## 错误码
 
-> Service 层采用 Result 模式统一返回。所有权检查: Admin/SuperAdmin 可操作全部，Doctor 仅可操作自己创建的验方。
+> Service 层采用 Result 模式统一返回。错误码分区: 6xxxx，编号体系: MCCEE (M=模块6, CC=子类别, EE=序号)。所有权检查: Admin/SuperAdmin 可操作全部，Doctor 仅可操作自己创建的验方。
 
-### 核心错误
+### 核心错误 (601xx)
 
-| 场景 | HTTP | 用户消息 | 触发条件 |
-|------|------|----------|----------|
-| 验方不存在 | 404 | 验方不存在 | GetById/Update/Delete/ToggleStatus/Restore 时 ID 无效或已被软删除 |
-| 验方 ID 无效 | 400 | 验方ID不能为空 | 传入 Guid.Empty |
-| 无权操作 | 403 | 您没有权限操作此验方，只能操作自己创建的数据 | Doctor 编辑/删除/切换状态他人创建的验方 |
-| 创建失败 | 200 (success=false) | 新增验方失败 | Service 返回 Failure |
-| 更新失败 | 200 (success=false) | 更新验方失败 | Service 返回 Failure |
-| 删除失败 | 404 | 验方不存在 | Repository.DeleteAsync() 返回 false |
-| 验方未被删除 | 200 (success=false) | 该验方未被删除，无需恢复 | 恢复未软删除的验方 |
-| 页码无效 | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-60101 | FormulaNotFound | 404 | 验方不存在 | GetById/Update/Delete/ToggleStatus/Restore 时 ID 无效或已被软删除 |
+| ERR-60102 | FormulaIdInvalid | 400 | 验方ID不能为空 | 传入 Guid.Empty |
+| ERR-60103 | FormulaNoPermission | 403 | 您没有权限操作此验方，只能操作自己创建的数据 | Doctor 编辑/删除/切换状态他人创建的验方 |
+| ERR-60104 | FormulaCreateFailed | 200 | 新增验方失败 | Service 返回 Failure |
+| ERR-60105 | FormulaUpdateFailed | 200 | 更新验方失败 | Service 返回 Failure |
+| ERR-60106 | FormulaDeleteFailed | 404 | 验方不存在 | Repository.DeleteAsync() 返回 false |
+| ERR-60107 | FormulaNotDeleted | 200 | 该验方未被删除，无需恢复 | 恢复未软删除的验方 |
+| ERR-60108 | FormulaInvalidPagination | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 |
 
-### 药材验证错误 (FR-FORM-009)
+### 药材验证错误 (FR-FORM-009, 602xx)
 
-| 场景 | HTTP | 用户消息 | 触发条件 |
-|------|------|----------|----------|
-| 药材项 ID 无效 | 400 | {paramName}不能为空 | formulaId/herbItemId/selectedHerbId 为 Guid.Empty |
-| 药材项不存在 | 200 (success=false) | 药材项不存在 | formula.Herbs 中未找到 herbItemId |
-| 药材已验证 | 200 (success=false) | 该药材已校验，无需重复操作 | herbItem.IsValidated == true |
-| 系统药材不存在 | 200 (success=false) | 所选药材不存在 | 跨模块查询 GetHerbBasicInfoAsync 返回 null |
-| 获取待验证列表失败 | 200 (success=false) | 获取待校验验方列表失败 | 查询异常 |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-60201 | HerbItemIdInvalid | 400 | {paramName}不能为空 | formulaId/herbItemId/selectedHerbId 为 Guid.Empty |
+| ERR-60202 | HerbItemNotFound | 200 | 药材项不存在 | formula.Herbs 中未找到 herbItemId |
+| ERR-60203 | HerbItemAlreadyValidated | 200 | 该药材已校验，无需重复操作 | herbItem.IsValidated == true |
+| ERR-60204 | SystemHerbNotFound | 200 | 所选药材不存在 | 跨模块查询 GetHerbBasicInfoAsync 返回 null |
+| ERR-60205 | PendingValidationListFailed | 200 | 获取待校验验方列表失败 | 查询异常 |
 
-### 批量操作错误
+### 批量操作错误 (603xx)
 
-| 场景 | HTTP | 用户消息 | 触发条件 |
-|------|------|----------|----------|
-| 批量操作为空 | 400 | 请至少选择一个方剂 | 批量删除/启用/禁用时 ID 列表为空 |
-| 导入数据为空 | 400 | 导入数据不能为空 | BatchImport 请求体为空 |
-| 单项不存在 | 200 (部分失败) | 方剂不存在 | 批量删除/状态切换时单项不存在 |
-| 单项操作异常 | 200 (部分失败) | 删除操作失败 / 状态更新失败 | 数据库异常，使用安全消息 |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-60301 | FormulaBatchEmpty | 400 | 请至少选择一个方剂 | 批量删除/启用/禁用时 ID 列表为空 |
+| ERR-60302 | FormulaBatchImportEmpty | 400 | 导入数据不能为空 | BatchImport 请求体为空 |
+| ERR-60303 | FormulaBatchItemNotFound | 200 | 方剂不存在 | 批量删除/状态切换时单项不存在 |
+| ERR-60304 | FormulaBatchItemError | 200 | 删除操作失败 / 状态更新失败 | 数据库异常，使用安全消息 |
 
 ### 导入行级错误 (FR-FORM-011)
 
@@ -295,3 +296,4 @@
 | 2026-02-11 | v1.2 | 验收标准格式统一为 [场景] -> [预期结果] 格式，增加具体参数和返回值描述 |
 | 2026-02-17 | v1.3 | Round 9: FR-FORM-006 补充处方导入过滤规则 (Validated + Enabled)，新增决策 MC-D08 |
 | 2026-02-17 | v1.4 | PRD审查修复: C1-FR-FORM-001 Effect/Usage改为选填(以Server端为准)，长度统一500 |
+| 2026-02-18 | v1.5 | 错误码全量分配: 3 个子类别 (601xx~603xx) 共 17 个错误码，统一 ERR-MCCEE 格式 + 枚举名 |

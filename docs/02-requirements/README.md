@@ -12,10 +12,10 @@
 |------|------|------------|--------|
 | 认证与会话管理 | [auth.md](auth.md) | FR-AUTH-001 ~ 013 | 13 |
 | 用户管理 | [users.md](users.md) | FR-USER-001 ~ 012 | 12 |
-| 患者管理 | [patients.md](patients.md) | FR-PAT-001 ~ 012 | 12 |
+| 患者管理 | [patients.md](patients.md) | FR-PAT-001 ~ 013 | 13 |
 | 药材管理 | [herbs.md](herbs.md) | FR-HERB-001 ~ 013 | 13 |
 | 验方管理 | [formulas.md](formulas.md) | FR-FORM-001 ~ 013 | 13 |
-| 医案管理 | [medical-cases.md](medical-cases.md) | FR-MC-001 ~ 017 | 17 |
+| 医案管理 | [medical-cases.md](medical-cases.md) | FR-MC-001 ~ 018 | 18 |
 | 数据同步 | [sync.md](sync.md) | FR-SYNC-001 ~ 008 | 8 |
 | 打印 | [printing.md](printing.md) | FR-PRINT-001 ~ 004 | 4 |
 | 身份证读卡器 | [card-reader.md](card-reader.md) | FR-CARD-001 ~ 002 | 2 |
@@ -27,7 +27,7 @@
 | **非功能性需求** | **[nfr.md](nfr.md)** | **NFR-PERF/DATA/AVAIL/SEC** | **跨模块** |
 | **UI/UX 交互规范** | **[ui-patterns.md](ui-patterns.md)** | **UI-D01~D06** | **跨模块** |
 
-> **总计: 129 个功能需求 (14 个模块) + NFR 文档 (性能/数据量/可用性/安全)**
+> **总计: 131 个功能需求 (14 个模块) + NFR 文档 (性能/数据量/可用性/安全)**
 
 ---
 

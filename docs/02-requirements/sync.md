@@ -543,37 +543,52 @@ Server 检查: 该患者是否已有 Active/Draft 医案?
 
 ## 错误码
 
-> 同步模块采用 ServiceResult 模式处理错误。服务端和客户端分层处理。
+> 同步模块采用 ServiceResult 模式处理错误。错误码分区: 7xxxx，编号体系: MCCEE (M=模块7, CC=子类别, EE=序号)。服务端和客户端分层处理。
 
-### 服务端错误
+### 服务端通用错误 (701xx)
 
-| 场景 | 错误消息 | 触发条件 |
-|------|----------|----------|
-| 不支持的实体类型 | 不支持的实体类型: {EntityType}，支持的类型: Herb, Patient, Formula, MedicalCase | 传入非支持的实体类型 |
-| JSON 反序列化失败 | JSON 反序列化失败 | 上传数据格式错误 |
-| 数据冲突 | 服务器已存在该数据 | 上传时数据冲突且 OverwriteConflicts=false |
-| Herb 上传失败 | (异常原始消息) | 药材上传过程异常 |
-| Patient 上传失败 | (异常原始消息) | 患者上传过程异常 |
-| Formula 上传失败 | (异常原始消息) | 验方上传过程异常 |
-| MedicalCase 上传失败 | (异常原始消息) | 医案上传过程异常 |
-| 患者不存在 | 患者 {PatientId} 不存在，请先同步患者 | MedicalCase 上传时 PatientId 引用的患者不存在 |
-| 药材不存在 | 药材 {HerbName} ({HerbId}) 不存在，请先同步药材 | MedicalCase 上传时 PrescriptionItem.HerbId 不存在 |
-| BR-001 冲突 | 患者 {PatientName} 已有活跃医案 | 上传 Active/Draft 医案时该患者已有活跃医案 |
-| 医案已锁定 | 医案已完成且已锁定，无法通过同步覆盖 | 尝试覆盖已锁定的 Completed 医案 |
-| 引用检查失败 | 无法检查引用关系 | 删除前引用检查异常 |
-| Herb 有引用 | 药材被 {ReferenceCount} 个处方引用，请先禁用 | 删除药材时被处方引用 |
-| Patient 有引用 | 患者有 {ReferenceCount} 条医案记录，请先禁用 | 删除患者时有关联医案 |
-| 实体不存在 | 实体不存在或已删除 | 软删除时实体已不存在 |
+| 错误码 | 枚举名 | HTTP | 错误消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-70101 | UnsupportedEntityType | 400 | 不支持的实体类型: {EntityType}，支持的类型: Herb, Patient, Formula, MedicalCase | 传入非支持的实体类型 |
+| ERR-70102 | JsonDeserializeFailed | 400 | JSON 反序列化失败 | 上传数据格式错误 |
+| ERR-70103 | SyncDataConflict | 409 | 服务器已存在该数据 | 上传时数据冲突且 OverwriteConflicts=false |
 
-### 客户端错误
+### 服务端上传错误 (702xx)
 
-| 场景 | 错误消息 | 触发条件 |
-|------|----------|----------|
-| 未选择数据类型 | 请选择要同步的数据类型 | UI 中未选择 EntityType |
-| 同步失败 | 同步失败: {错误列表} | 服务返回失败结果 |
-| Checksum 类型错误 | 不支持的实体类型: {entityType} | 计算 Checksum 时类型无效 |
-| 依赖未同步 | 请先同步药材和患者数据 | MedicalCase 同步前依赖检查失败 |
-| 患者重映射失败 | 无法匹配患者 {PatientName}，请手动处理 | IdCardNumber 匹配失败 (本地患者无身份证号) |
+| 错误码 | 枚举名 | HTTP | 错误消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-70201 | HerbUploadFailed | 500 | (异常原始消息) | 药材上传过程异常 |
+| ERR-70202 | PatientUploadFailed | 500 | (异常原始消息) | 患者上传过程异常 |
+| ERR-70203 | FormulaUploadFailed | 500 | (异常原始消息) | 验方上传过程异常 |
+| ERR-70204 | MedicalCaseUploadFailed | 500 | (异常原始消息) | 医案上传过程异常 |
+
+### 服务端 MedicalCase 特有错误 (703xx)
+
+| 错误码 | 枚举名 | HTTP | 错误消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-70301 | SyncPatientNotFound | 422 | 患者 {PatientId} 不存在，请先同步患者 | MedicalCase 上传时 PatientId 引用的患者不存在 |
+| ERR-70302 | SyncHerbNotFound | 422 | 药材 {HerbName} ({HerbId}) 不存在，请先同步药材 | MedicalCase 上传时 PrescriptionItem.HerbId 不存在 |
+| ERR-70303 | SyncActiveCaseConflict | 409 | 患者 {PatientName} 已有活跃医案 | 上传 Active/Draft 医案时该患者已有活跃医案 |
+| ERR-70304 | SyncCaseLocked | 422 | 医案已完成且已锁定，无法通过同步覆盖 | 尝试覆盖已锁定的 Completed 医案 |
+
+### 服务端删除错误 (704xx)
+
+| 错误码 | 枚举名 | HTTP | 错误消息 | 触发条件 |
+|--------|--------|------|----------|----------|
+| ERR-70401 | SyncReferenceCheckFailed | 500 | 无法检查引用关系 | 删除前引用检查异常 |
+| ERR-70402 | SyncHerbHasReference | 422 | 药材被 {ReferenceCount} 个处方引用，请先禁用 | 删除药材时被处方引用 |
+| ERR-70403 | SyncPatientHasReference | 422 | 患者有 {ReferenceCount} 条医案记录，请先禁用 | 删除患者时有关联医案 |
+| ERR-70404 | SyncEntityNotFound | 404 | 实体不存在或已删除 | 软删除时实体已不存在 |
+
+### 客户端错误 (705xx)
+
+| 错误码 | 枚举名 | 错误消息 | 触发条件 |
+|--------|--------|----------|----------|
+| ERR-70501 | SyncNoEntityTypeSelected | 请选择要同步的数据类型 | UI 中未选择 EntityType |
+| ERR-70502 | SyncFailed | 同步失败: {错误列表} | 服务返回失败结果 |
+| ERR-70503 | SyncChecksumTypeError | 不支持的实体类型: {entityType} | 计算 Checksum 时类型无效 |
+| ERR-70504 | SyncDependencyNotSynced | 请先同步药材和患者数据 | MedicalCase 同步前依赖检查失败 |
+| ERR-70505 | SyncPatientRemapFailed | 无法匹配患者 {PatientName}，请手动处理 | IdCardNumber 匹配失败 (本地患者无身份证号) |
 
 ### 上传结果结构
 
@@ -609,3 +624,4 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 2026-02-17 | v2.0 | Round 4 深化: 新增 DTO 定义 (4个)、冲突解决 UI (左右对比)、同步进度 UI (步骤指示器)、模式切换前检查和回退策略、失败恢复策略 |
 | 2026-02-17 | v2.1 | PRD审查修复: E1-MedicalCase同步必须支持(决策3更新+FR-SYNC-001实体类型扩展), A7-FR-SYNC-006删除策略已对齐BR-DEL-001 |
 | 2026-02-18 | v3.0 | MedicalCase同步详细设计: 外出看诊离线工作流、聚合级原子同步、MedicalCaseSyncDto定义、聚合Checksum计算、自动依赖顺序(Herb->Patient->MC)、患者IdCardNumber去重+PatientId重映射、BR-001冲突处理、编号重分配、引用完整性校验、冲突解决UI、新增错误码(服务端6个+客户端2个) |
+| 2026-02-18 | v3.1 | 错误码全量分配: 新增7xxxx范围，5个子类别(701xx~705xx)共20个错误码，服务端错误补充HTTP状态码，统一ERR-MCCEE格式+枚举名 |

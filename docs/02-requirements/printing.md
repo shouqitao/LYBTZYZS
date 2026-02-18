@@ -35,13 +35,13 @@
      - 费用信息 (单剂价格、总价、折扣)
      - 签名区 (医生、审核人、调配人)
   4. 打印后 Prescription.PrintCount 递增
-  5. 打印后 Prescription.IsPrinted = true
+  5. 打印后 MedicalCase.IsPrinted = true (打印保护标记，见 [medical-cases.md](medical-cases.md) MC-D15)
   6. 打印后 Prescription.LastPrintedAt 更新
 - **远程模式**: Desktop 客户端打印，日志记录到服务端
 - **本地模式**: Desktop 本地打印
 - **验收标准**:
   - [ ] 打印预览 -> 内容在 148x210mm (A5) 范围内正确排版
-  - [ ] 打印操作 -> Prescription.PrintCount += 1, IsPrinted=true
+  - [ ] 打印操作 -> Prescription.PrintCount += 1, MedicalCase.IsPrinted=true
 
 ### FR-PRINT-002: 打印预览
 
@@ -59,16 +59,18 @@
 
 ### FR-PRINT-003: 打印版本管理
 
-- **描述**: 跟踪处方内容修改后的打印版本
+- **描述**: 跟踪处方笺内容变更的版本号，支持打印溯源
 - **业务规则**:
-  1. 处方内容修改后，PrintVersion 递增
-  2. 每次打印记录当前 PrintVersion
-  3. 可追溯打印的是第几个版本的内容
+  1. 初始 PrintVersion=1，首次打印记录版本 1
+  2. 打印后修改医案内容 (Consultation 或 Prescription) -> PrintVersion 递增 (同时 MedicalCase.IsPrinted 重置为 false)
+  3. 每次打印记录当前 PrintVersion 到 PrescriptionPrintLog
+  4. 可追溯每次打印对应的内容版本
 - **远程模式**: 服务端记录版本号
 - **本地模式**: 本地记录
 - **验收标准**:
-  - [ ] 处方内容变更后打印 -> PrintVersion += 1
-  - [ ] PrescriptionPrintLog.PrintVersion == 当前 PrintVersion
+  - [ ] 首次打印 -> PrescriptionPrintLog.PrintVersion=1
+  - [ ] 打印后修改内容 -> PrintVersion += 1, MedicalCase.IsPrinted=false
+  - [ ] 再次打印 -> PrescriptionPrintLog.PrintVersion == 递增后的版本号
 
 ### FR-PRINT-004: 打印日志
 
@@ -220,9 +222,22 @@
 | 诊所信息 | ClinicName, Department, ClinicAddress, ClinicPhone | 标题和机构信息 |
 | 患者信息 | PatientName, Gender, Age, ConsultationDate | 患者基本信息 |
 | 诊断信息 | PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis | 中医四诊 |
-| 处方内容 | Items (药材列表), DosageCount, Usage | 药材明细和用法 |
-| 费用信息 | SingleDosePrice, TotalPrice, ConsultationFee | 价格汇总 |
-| 签名区 | DoctorName, PrescriptionDate, Reviewer, Dispenser | 医生签名 |
+| 处方内容 | Items (药材列表), DosageCount, Usage, Advice | 药材明细、用法和医嘱 |
+| 费用信息 | SingleDosePrice, TotalPrice, ConsultationFee | 价格汇总 (计算规则见下方) |
+| 签名区 | DoctorName, PrescriptionDate, Reviewer, Dispenser | 签名 (见下方来源说明) |
+
+> **签名区字段来源**: DoctorName 来自 MedicalCase.DoctorName (创建时快照，保持历史一致性)；Reviewer/Dispenser 为打印时手动填写或留空。
+> **煎法显示**: 药材表格中 DecocteMethod=Normal 不标注；其他煎法在药材名称后追加括号标注 (如 "红参(另炖)")。煎法枚举定义见 [medical-cases.md](medical-cases.md) DecocteMethod。
+
+**费用计算规则** (定义于 [medical-cases.md](medical-cases.md) FR-MC-004):
+
+| 字段 | 计算公式 | 说明 |
+|------|---------|------|
+| Items[i].Amount | UnitPrice x Dosage | 单味药小计 |
+| SingleDosePrice | SUM(Items.Amount) | 一剂所有药材小计之和 |
+| TotalPrice | SingleDosePrice x DosageCount x Discount | 最终总价 (含帖数和折扣) |
+
+> 示例: 3 味药 Amount 分别 100/150/200, DosageCount=7, Discount=1.0 -> SingleDosePrice=450, TotalPrice=3150
 
 ---
 
@@ -276,3 +291,6 @@
 | 2026-02-11 | v1.2 | 验收标准格式统一为 [场景] -> [预期结果] 格式 |
 | 2026-02-17 | v2.0 | Round 6 深化: 新增 A5 处方笺排版规格 (布局/边距/字体/分页规则/内容规则) |
 | 2026-02-17 | v2.1 | PRD审查修复: A8-诊所信息从ClinicSettings配置读取(不再硬编码) |
+| 2026-02-18 | v2.2 | 补充 PrescriptionPrintModel 费用计算规则 (SingleDosePrice/TotalPrice 计算公式)，交叉引用 medical-cases.md FR-MC-004 |
+| 2026-02-18 | v2.3 | PrescriptionPrintModel 补充 Advice 字段; 签名区字段来源说明 (DoctorName 为快照); 煎法显示规则 (DecocteMethod 枚举交叉引用) |
+| 2026-02-18 | v2.4 | 对齐 MC-D15: IsPrinted 改为 MedicalCase 聚合根字段; FR-PRINT-003 明确 PrintVersion 递增时机 (打印后修改时递增) |
