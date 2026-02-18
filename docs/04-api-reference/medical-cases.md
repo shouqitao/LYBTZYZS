@@ -70,7 +70,18 @@
 
 **请求体**: `MedicalCaseInputDto` (同创建，但 `id` 必须与路由一致)
 
+额外字段:
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `editReason` | string? | 修改原因。以下场景必填: 编辑已完成医案、隔天编辑、非本人编辑、**打印后编辑** (MC-D15) |
+
 **授权**: 资源级授权 (Edit 操作)
+
+**打印保护规则** (MC-D15):
+- 当 `MedicalCase.IsPrinted=true` 时，修改 Consultation 或 Prescription 内容需提供 `editReason`，否则返回 ERR-30403
+- 修改成功后: `IsPrinted=false`、`Prescription.PrintVersion++` (标记需重新打印)
+- 打印后删除处方始终禁止 (ERR-30404)
 
 **成功响应** (200): `ApiResponse<MedicalCaseDetailDto>`
 
@@ -78,6 +89,7 @@
 - 400: 请求 ID 与路由 ID 不一致
 - 403: 无权编辑此病案
 - 404: 病案不存在
+- 422: 打印后修改未提供 editReason (ERR-30403)
 
 ---
 
@@ -407,6 +419,35 @@
 
 ---
 
+## 复制历史处方 (FR-MC-018)
+
+复制历史处方无专用端点，通过现有 API 组合实现 (客户端驱动模式):
+
+```
+步骤 1: GET /medicalcases?patientId={patientId}&status=Completed
+         → 获取同一患者的历史已完成医案列表
+
+步骤 2: GET /medicalcases/{historicalCaseId}
+         → 获取历史医案完整详情 (含 Prescription.Items)
+
+步骤 3: 客户端组装
+         → 用户预览并选择处方药材
+         → 禁用药材跳过并提示 (MC-D09)
+         → UnitPrice 从药材库实时获取 (MC-D13)
+         → ReferencedFormulas 记录来源
+
+步骤 4: PUT /medicalcases/{currentId}
+         → 聚合保存，Prescription.Items 包含复制的药材
+```
+
+**业务规则** (来自 PRD FR-MC-018):
+- 价格策略: 从药材库实时获取，历史价格仅作预览参考 (MC-D13)
+- 禁用药材: 跳过并提示用户 (MC-D09)
+- 数据独立: 复制后的处方与原医案无关联，修改不影响原数据
+- 总价公式: SingleDosePrice = SUM(Items.Amount); TotalPrice = SingleDosePrice x DosageCount x Discount (MC-D14)
+
+---
+
 ## 废弃端点
 
 以下端点已标记 `[Obsolete]`，请迁移到统一查询端点:
@@ -426,3 +467,4 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，18+ 端点 (含 5 个废弃) |
+| 2026-02-18 | v1.1 | PRD同步: PUT /medicalcases/{id} 补充打印保护规则 (MC-D15, editReason/ERR-30403/ERR-30404); 新增"复制历史处方"组合API实现路径文档 (FR-MC-018) |

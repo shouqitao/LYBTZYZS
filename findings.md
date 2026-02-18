@@ -1,76 +1,60 @@
 # Findings
 
-## 分析范围
-- 4 个产品层文档: vision.md, glossary.md, user-roles.md, README.md
-- 16 个需求层文档: auth/users/patients/herbs/formulas/medical-cases/sync/printing/card-reader/health-diagnostics/error-handling/logging/desktop-shell/configuration/ui-patterns/nfr
+## PRD 变更清单 (需要设计文档承接)
 
-## 已确认并修复的问题
-
-### 第一段: 功能缺失 -- 业务流程断链 (2 个问题, 已修复)
-
-| # | 问题 | 修复内容 | 版本 |
-|---|------|---------|------|
-| 1 | "复制历史处方"功能缺失 FR | 新增 FR-MC-018 (10 条业务规则 + 6 条验收标准) | v1.7 |
-| 2 | 处方总价计算公式未定义 | FR-MC-004 补充规则 7-9 (SingleDosePrice/TotalPrice/Discount) | v1.7 |
-
-### 第二段: 数据模型缺陷 (6 个问题, 已修复)
-
-| # | 问题 | 修复内容 | 版本 |
-|---|------|---------|------|
-| 3 | Prescription.LastPrintedAt 缺失 | 数据模型补充 LastPrintedAt 字段 | v1.8 |
-| 4 | DecocteMethod 枚举未定义 | 新增完整枚举表 (Normal/先煎/后下/包煎/另炖/烊化/冲服) + 打印规则 | v1.8 |
-| 5 | Dosage/UnitPrice 单位不明确 | 修正为"数值部分，单位由 Unit 指定"; UnitPrice 标注"元/单位"; Amount 标注 decimal(18,2) | v1.8 |
-| 6 | ReferencedFormulas 格式模糊 | 改为 JSON 数组 + 格式示例 (type/id/name/importedAt) | v1.8 |
-| 7 | 错误消息"病案"术语混用 | 全文替换为"医案" | v1.8 |
-| 8 | DoctorName/PatientName 更新策略未定义 | 标注"创建时快照，后续改名不影响历史医案" | v1.8 |
-
-### 第三段: 错误码体系 + 双模式覆盖 (3 个问题, 2 修复 + 1 非问题)
-
-| # | 问题 | 处理结果 |
-|---|------|---------|
-| 9 | 4 个模块约 85 个错误场景缺数字编号 | 已修复: 全量分配 90 个编号 (MCCEE 体系) 到 6 个文件 |
-| 10 | FR-AUTH-007 本地模式"保持登录"行为不明确 | 已修复: 明确为重置计时器 (无 Token 刷新), 验收标准拆分远程/本地 |
-| 11 | sync.md "不适用" vs "已支持" 看似矛盾 | 降级: 两个不同层面 (API 端点 vs 实体类型支持), 逻辑自洽 |
-
-**问题 9 详情** -- 错误码分配汇总:
-
-| 文件 | 范围 | 子类别 | 编号数 | 版本 |
-|------|------|--------|--------|------|
-| patients.md | 2xxxx | 207xx 业务 / 208xx 导入 | +9 (补全) | v1.7 |
-| medical-cases.md | 3xxxx | 301xx~306xx (6 组) | 29 | v1.9 |
-| herbs.md | 5xxxx | 501xx~503xx (3 组) | 15 | v1.4 |
-| formulas.md | 6xxxx | 601xx~603xx (3 组) | 17 | v1.5 |
-| sync.md | 7xxxx (新) | 701xx~705xx (5 组) | 20 | v3.1 |
-| error-handling.md | - | 范围表更新 + "90+ 场景" | - | v2.2 |
-
-排除项: 导入行级验证消息不分配编号 (与 patients.md 已有模式一致)。
+| # | PRD 变更 | 来源 | 设计影响 |
+|---|----------|------|---------|
+| 1 | FR-MC-018 复制历史处方 | medical-cases.md v1.7 | API + DTO + Service |
+| 2 | FR-PAT-013 患者状态管理 | patients.md v1.8 | API + 实体 + 查询 |
+| 3 | MC-D15 IsPrinted 提升到聚合根 | medical-cases.md v2.0 | 数据模型迁移 |
+| 4 | MC-D16 角色脱敏 | medical-cases.md v2.1 | 查询权限过滤 |
+| 5 | 90 错误码 (MCCEE体系) | 6个PRD文件 | 错误码常量设计 |
+| 6 | 缓存失效策略重写 | nfr.md v1.2 | 架构层缓存设计 |
+| 7 | NFR-API-001 全局分页规范 | nfr.md v1.3 | API基类设计 |
 
 ---
 
-## 已确认并修复的问题 (第四段)
+## 现有设计文档调研
 
-### 第四段: 边界条件 + 其他
+### 03-architecture/ (7个文档 + 6个ADR)
 
-| # | 问题 | 处理结果 |
-|---|------|---------|
-| 12 | 打印与编辑并发策略缺失 | 已修复: IsPrinted 提升到 MedicalCase 聚合根; 打印后修改任何内容需 EditReason; 修改后 IsPrinted=false + PrintVersion++ (MC-D15) |
-| 13 | 患者禁用规则缺失 | 已修复: 新增 FR-PAT-013 患者状态管理; FR-MC-001 增加患者状态检查 (ERR-30105); 禁用场景=患者已故 (PAT-D05); Receptionist 查询过滤禁用患者; 历史医案按角色脱敏 (MC-D16); v2.0 规划关系转移 (PAT-D06) |
+| 文档 | 版本 | 核心内容 | 与PRD变更的差距 |
+|------|------|---------|----------------|
+| data-model.md | v1.0 | 12实体字段定义、8枚举、EF Core约定 | **高**: IsPrinted 在 Prescription 上，PRD要求提升到 MedicalCase; Patient 用 Status:CommonStatus 非 IsDisabled |
+| server.md | v1.0 | 三层架构、CQRS、错误码(5位前缀制)、DI规范 | **中**: 错误码前缀分配与PRD的MCCEE体系需对齐; 无缓存策略 |
+| desktop.md | v1.1 | MVVM+Prism、ViewModel体系、Components模式 | 低 |
+| shared.md | v1.0 | DTO层次、验证规则、敏感字段脱敏 | **中**: 角色脱敏(MC-D16)需补充 |
+| dual-mode.md | v1.0 | 双模式策略、同步架构 | 低 |
+| system-overview.md | v1.0 | 整体架构、33项目、依赖方向 | 低 |
+| ADR-0001~0006 | - | 聚合根、双模式、测试、用户上下文、SuperAdmin、组件化 | 低 |
 
-| 14 | 缓存失效策略不完整 | 已修复: nfr.md 缓存章节完整重写 -- OutputCache 失效映射表 (12 类写操作); Desktop 写后失效规则; 删除 PrescriptionsCache; 新增客户端配置 (NFR-PERF-003); 内存占用估算 |
+### 04-api-reference/ (9个模块文档 + README)
 
-| 15 | 分页参数统一性 | 已修复: nfr.md 新增 NFR-API-001 全局分页规范; patients.md 补 ERR-20705; herbs.md 补 ERR-50106; formulas.md/medical-cases.md 加交叉引用 |
+| 文档 | 端点数 | 与PRD差距 |
+|------|--------|----------|
+| patients.md | 10 | **高**: 缺 FR-PAT-013 状态管理端点 (PUT /patients/{id}/status) |
+| medical-cases.md | 18 | **中**: 缺 FR-MC-018 专用端点，但可通过现有API组合实现 |
+| README.md | 索引 | 需更新端点总数、错误码引用 |
+| 其他7个模块 | 64 | 100% 覆盖，无差距 |
 
-| 16 | 身份证脱敏示例错误 | 降级: nfr.md 示例 `320***********1234` 共 18 位，格式正确。原分析误判 |
+**总计**: 92 个 API 端点
 
 ---
 
----
+## 差距分析结论
 
-## 排除项 (非真实问题)
-- MC-D13 与 vision.md "价格快照" 不矛盾 (都是操作时取实时价存快照)
-- FR-MC-018 禁用药材处理已明确复用 MC-D09
-- CaseNumber 重号风险已在 MC-D02 决策接受
-- sync.md FR-SYNC "不适用" vs 决策 3 "已支持": 不同层面，自洽
-- auth.md 错误码 ERR- 前缀: 已在 v1.2 修复
-- FR-MC-012 本地模式审计: 已在 v1.8 明确
-- nfr.md 身份证脱敏示例: `320***********1234` 共 18 位，格式正确，原分析误判
+### 必须更新的设计文档 (4项)
+
+| 优先级 | 目标文档 | 更新内容 | 原因 |
+|--------|---------|---------|------|
+| P0 | data-model.md | IsPrinted 迁移 + Patient Status 语义 + LastPrintedAt/PrintVersion | 数据模型变更是其他设计的基础 |
+| P0 | 04-api-reference/patients.md | FR-PAT-013 状态管理API设计 | 完全缺失，无法实现 |
+| P1 | 04-api-reference/medical-cases.md | FR-MC-018 复制历史处方实现路径 | 需明确组合API模式 |
+| P1 | server.md | 缓存失效策略 + 错误码MCCEE对齐 | 架构层缺失 |
+
+### 可选更新 (2项)
+
+| 优先级 | 目标文档 | 更新内容 | 原因 |
+|--------|---------|---------|------|
+| P2 | shared.md | MC-D16 角色脱敏DTO设计 | 涉及查询权限过滤 |
+| P2 | 04-api-reference/README.md | 端点总数、版本更新 | 索引同步 |

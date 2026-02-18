@@ -308,18 +308,20 @@ graph LR
 
 ### 错误码体系
 
-5 位数字格式: 模块 (2位) + 具体错误 (3位)
+5 位数字 MCCEE 格式: 模块 (1位) + 子类别 (2位) + 序号 (2位)
 
-| 模块前缀 | 模块 |
-|----------|------|
-| 00xxx | 通用错误 |
-| 10xxx | Auth |
-| 20xxx | Users |
-| 30xxx | Patients |
-| 40xxx | MedicalCase |
-| 50xxx | Consultation |
-| 60xxx | Prescriptions |
-| 70xxx | Herbs/Formula |
+| 模块前缀 | 模块 | 子类别范围 | 场景数 |
+|----------|------|-----------|--------|
+| 0xxxx | 通用错误 | 000xx | ~5 |
+| 1xxxx | 用户/认证 | 101xx~103xx | ~15 |
+| 2xxxx | 患者管理 | 200xx~208xx | ~18 |
+| 3xxxx | 医案管理 | 301xx~306xx | ~29 |
+| 4xxxx | 处方管理 (预留) | - | 当前归入 304xx |
+| 5xxxx | 药材管理 | 501xx~503xx | ~15 |
+| 6xxxx | 验方管理 | 601xx~603xx | ~17 |
+| 7xxxx | 数据同步 | 701xx~705xx | ~20 |
+
+> **总计**: 90+ 错误场景。详见各模块 PRD 文档的"错误码"章节和 [error-handling.md](../../02-requirements/error-handling.md)。
 
 ### 异常类型
 
@@ -401,8 +403,33 @@ if (!validationResult.IsValid)
 | Consultation | LYBT.Module.Consultation | `ConsultationEntity` |
 | MedicalCase | LYBT.Module.MedicalCase | `MedicalCaseEntity` |
 
+## 缓存策略
+
+> 详细缓存参数和失效映射见 [nfr.md](../../02-requirements/nfr.md) 第 5 章。
+
+### Server 端
+
+采用 ASP.NET Core OutputCache 中间件，按标签分组管理:
+
+| 缓存标签 | 过期时间 | 挂载端点 |
+|----------|---------|---------|
+| `herbs` | 30 分钟 | GET /api/v1/herbs |
+| `formulas` | 2 小时 | GET /api/v1/formulas |
+| `patients` | 30 分钟 | GET /api/v1/patients |
+| `medicalcases` | 20 分钟 | GET /api/v1/medicalcases |
+| `permissions` | 10 分钟 | GET /api/v1/users |
+
+**失效策略** (NFR-D07): 写操作成功后调用 `IOutputCacheStore.EvictByTagAsync(tag)` 主动清除。跨模块失效示例: 创建医案同时清除 `medicalcases` + `patients` (患者 LastVisitTime 更新)。
+
+### Desktop 端
+
+ApiService GET 缓存 (LRU, 1000 条, 5 分钟过期)。写操作后按模块前缀清除相关 GET 缓存 (`RemoveByPrefix`)。
+
+---
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 server-layer-architecture/repository-patterns/service-conventions/error-handling specs 整合 |
+| 2026-02-18 | v1.1 | PRD同步: 错误码体系更新为 MCCEE 格式 (模块1位+子类别2位+序号2位)，对齐PRD 90+场景; 新增缓存策略章节 (OutputCache + Desktop，引用 nfr.md) |

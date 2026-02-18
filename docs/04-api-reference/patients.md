@@ -183,8 +183,48 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
 ---
 
+## PUT /patients/{id}/status
+
+切换患者状态 (启用/禁用)。仅限 Admin/SuperAdmin。
+
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
+
+**路径参数**: `id` (Guid)
+
+**请求体** (`PatientStatusInputDto`):
+
+```json
+{
+  "status": "Enabled|Disabled",
+  "reason": "string"               // 禁用原因 (禁用时必填)
+}
+```
+
+**业务规则**:
+1. 仅 Admin/SuperAdmin 可执行状态切换
+2. 禁用时: 检查患者是否有 Draft/Active 医案，有则拒绝 (需先完成或取消)
+3. 禁用后: 禁止为该患者创建新医案 (见 medical-cases.md ERR-30105)
+4. 禁用后: 历史医案可查阅，PatientName 按角色脱敏 (Admin 完整/Doctor 掩码如 "张*")
+5. 启用后: 所有限制解除，脱敏自动取消
+6. v1.0 主要禁用场景: 患者已故 (PAT-D05)
+
+**成功响应** (200): `ApiResponse<PatientDetailDto>`
+
+响应 message 示例: "患者已禁用" 或 "患者已启用"
+
+**错误响应**:
+- 403: 权限不足 (非 Admin)
+- 404: 患者不存在 (ERR-20001)
+- 422: 患者有进行中的医案 (ERR-20005)
+- 400: 无效的状态值 (ERR-20006)
+
+> **交叉引用**: 禁用联动规则见 [medical-cases.md](medical-cases.md) MC-D16; 查询可见性见 patients PRD FR-PAT-002 规则 5 (Receptionist 不可见禁用患者)
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，10 个端点 |
+| 2026-02-18 | v1.1 | 新增 PUT /patients/{id}/status 端点 (FR-PAT-013 患者状态管理); 补充错误码 ERR-20005/20006 |

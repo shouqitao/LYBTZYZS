@@ -80,6 +80,7 @@ graph TB
 | NeedsPrescription | bool? | 否 | 是否需要处方 |
 | CompletedAt | DateTime? | 否 | 完成时间 |
 | Remark | string(500) | 否 | 备注 |
+| IsPrinted | bool | 是 | 是否已打印处方笺 (默认 false)。打印保护标记: 为 true 时修改 Consultation 或 Prescription 内容需提供 EditReason (MC-D15) |
 | Consultation | Consultation? | - | 导航属性 (1:1) |
 | Prescription | Prescription? | - | 导航属性 (1:0..1) |
 
@@ -108,10 +109,9 @@ graph TB
 | Advice | string(500) | 否 | 医嘱 |
 | ReferencedFormulas | string(500) | 否 | 引用验方 (逗号分隔) |
 | Remark | string(500) | 否 | 备注 |
-| PrintVersion | int | 是 | 打印版本 (默认 1) |
+| PrintVersion | int | 是 | 打印版本 (默认 1)。MedicalCase 内容修改后自增，标记需重新打印 |
 | LastPrintedAt | DateTime? | 否 | 最后打印时间 |
 | PrintCount | int | 是 | 打印次数 |
-| IsPrinted | bool | 是 | 是否已打印 |
 
 ### PrescriptionItem (处方药材项)
 
@@ -145,7 +145,7 @@ graph TB
 | AllergyHistory | string(500) | 否 | 过敏史 (敏感) |
 | MedicalHistory | string(1000) | 否 | 病史 (敏感) |
 | BloodType | int | 是 | 血型 |
-| Status | CommonStatus | 是 | 状态 |
+| Status | CommonStatus | 是 | 状态 (PAT-D05: 禁用主要场景为患者已故; 禁用后禁止创建新医案) |
 | LastVisitTime | DateTime? | 否 | 最后就诊 |
 | VisitCount | int | 是 | 就诊次数 |
 
@@ -342,3 +342,4 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 LYBT.Entities 代码逆向工程 |
+| 2026-02-18 | v1.1 | PRD同步: MedicalCase 新增 IsPrinted 字段 (MC-D15, 从 Prescription 提升到聚合根); Prescription 移除 IsPrinted (打印保护由聚合根统一管理); Patient.Status 补充禁用语义 (PAT-D05) |

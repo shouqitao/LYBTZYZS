@@ -133,6 +133,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | GET | `/patients/import-template` | 下载导入模板 |
 | GET | `/patients/export` | 导出 Excel |
 | POST | `/patients/{id}/restore` | 恢复已删除患者 |
+| PUT | `/patients/{id}/status` | 启用/禁用切换 (AdminOnly, FR-PAT-013) |
 | POST | `/patients/batch-delete` | 批量删除 |
 
 ### 药材模块 ([herbs.md](herbs.md)) -- DoctorOrAdmin
@@ -274,3 +275,4 @@ Token 获取方式见 [认证 API](auth.md)。
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，覆盖全部 10 个 Controller |
+| 2026-02-18 | v1.1 | PRD同步: 患者模块新增 PUT /patients/{id}/status (FR-PAT-013); 端点总数 92->93 |
