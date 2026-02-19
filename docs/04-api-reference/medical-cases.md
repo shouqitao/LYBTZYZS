@@ -462,9 +462,70 @@
 
 ---
 
+## 错误码
+
+> 完整错误码定义见 [medical-cases.md PRD](../02-requirements/medical-cases.md)。错误码分区: 3xxxx。
+
+### 创建医案 (301xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-30101 | PatientNotFound | 404 | 患者不存在 | POST / |
+| ERR-30102 | DoctorNotFound | 404 | 医生不存在 | POST / |
+| ERR-30103 | ActiveCaseExists | 422 | 该患者已有进行中的医案 | POST / (BR-001) |
+| ERR-30104 | DraftCaseExists | 422 | 该患者已有暂存的医案 | POST / (BR-001) |
+| ERR-30105 | PatientDisabled | 422 | 该患者已被禁用 | POST / |
+
+### 权限 (302xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-30201 | CannotEditCase | 403 | 无权限编辑此医案 | PUT /{id} |
+| ERR-30202 | CannotDeleteCase | 403 | 无权限删除此医案 | DELETE /{id} |
+| ERR-30203 | CannotCancelCase | 403 | 无权限取消此医案 | POST /{id}/cancel |
+| ERR-30204 | CannotDeletePrescription | 403 | 无权限删除处方 | DELETE /{id}/prescription |
+| ERR-30205 | CannotSaveDraft | 403 | 无权限编辑此医案 | POST /{id}/save-draft |
+
+### 状态转换 (303xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-30301 | InvalidStatusTransition | 422 | 不允许的状态转换 | POST /{id}/complete, POST /{id}/cancel |
+| ERR-30302 | PrescriptionFlagRequired | 422 | 请先标记是否需要开处方 | POST /{id}/complete (BR-003) |
+| ERR-30303 | PrescriptionRequired | 422 | 处方不存在，无法完成医案 | POST /{id}/complete (BR-003) |
+
+### 处方 (304xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-30401 | PrescriptionFlagNotSet | 422 | 未标记需要开处方 | POST /{id}/prescription |
+| ERR-30402 | PrescriptionAlreadyExists | 422 | 医案已存在处方 | POST /{id}/prescription |
+| ERR-30403 | PrintedRequiresReason | 422 | 医案已打印，修改需要提供修改原因 | PUT /{id} (MC-D15) |
+| ERR-30404 | PrintedCannotDelete | 422 | 医案已打印，不允许删除处方 | DELETE /{id}/prescription (MC-D15) |
+
+### 并发和系统 (305xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-30501 | PrescriptionCreateRetryFailed | 500 | 创建处方失败 | POST /{id}/prescription |
+| ERR-30502 | SaveRetryFailed | 500 | 保存失败 | PUT /{id}, POST /{id}/save-draft |
+
+### 参数验证 (306xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-30601 | RequestIdMismatch | 400 | 路由ID与请求体不一致 | PUT /{id} |
+| ERR-30602 | InvalidPagination | 400 | 分页参数无效 | GET / |
+| ERR-30603 | BatchQueryExceeded | 400 | 单次最多查询50个医案 | POST /batch-details |
+| ERR-30604 | BatchOperationEmpty | 400 | 请至少选择一个医案 | POST /batch-delete |
+| ERR-30607 | CaseNotFound | 404 | 医案不存在 | GET /{id}, PUT /{id}, DELETE /{id} |
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，18+ 端点 (含 5 个废弃) |
 | 2026-02-18 | v1.1 | PRD同步: PUT /medicalcases/{id} 补充打印保护规则 (MC-D15, editReason/ERR-30403/ERR-30404); 新增"复制历史处方"组合API实现路径文档 (FR-MC-018) |
+| 2026-02-18 | v1.2 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-30101~30607)，含创建/权限/状态/处方/并发/参数六类 |

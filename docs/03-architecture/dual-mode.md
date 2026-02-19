@@ -194,8 +194,36 @@ sequenceDiagram
 | Herb | 支持 |
 | Patient | 支持 |
 | Formula | 支持 (含 FormulaHerbItems) |
-| MedicalCase | v1.0 不支持 (聚合根复杂度高，需多表级联)。v2.0 规划 |
+| MedicalCase | 支持 (聚合级原子同步，含 Consultation + Prescription + PrescriptionItems)。详见 [sync.md](../02-requirements/sync.md) MedicalCase 同步设计章节 |
 | User | v1.0 不支持 (低频变更 + 密码安全)。缓解: 初始化时下载，人员变更后重新初始化 |
+
+### MedicalCase 同步设计
+
+MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。详细设计见 [sync.md](../02-requirements/sync.md) MedicalCase 同步设计章节。
+
+**核心场景**: 医生外出看诊离线工作流 -- 出诊前同步基础数据，离线创建医案，返回后上传。
+
+**同步粒度**: 以 DDD 聚合为单位，整个聚合 (MedicalCase + Consultation + Prescription + PrescriptionItems) 作为一个 JSON 对象传输，Server 端使用单事务写入，任何一部分失败整体回滚。
+
+**依赖顺序**: 系统自动强制编排 -- Herb 同步 → Patient 同步 (含 IdCardNumber 去重) → MedicalCase 同步。用户无需关心依赖顺序。
+
+**患者去重**: 本地新建患者上传时，Server 按 IdCardNumber 检查。已存在则返回 Server 端 PatientId，客户端自动重映射关联 MedicalCase 的 PatientId。
+
+**编号重分配**: CaseNumber 和 PrescriptionNumber 在上传后由 Server 重新分配，保持全局唯一序列。实体 Id (GUID) 保留不变。
+
+**打印字段排除**: IsPrinted、PrintCount、PrintVersion、LastPrintedAt、PrintLogs 不参与同步。打印是本地行为，每台设备独立记录。
+
+**Checksum 计算**: 聚合级哈希，合并 MedicalCase + Consultation + Prescription + PrescriptionItems 四层业务字段。排除可变编号、冗余名称、审计字段和打印字段。PrescriptionItems 按 HerbId 排序保证哈希确定性。
+
+**同步状态约束**:
+
+| 医案状态 | 上传 | 下载 | 说明 |
+|---------|------|------|------|
+| Draft | 可以 | 可以 | 离线创建的草稿 |
+| Active | 可以 | 可以 | 离线正在进行的医案 |
+| Completed | 可以 | 可以 | 已存在的 Completed 不可被覆盖 |
+
+**新增错误码**: 服务端 703xx (PatientNotFound / HerbNotFound / ActiveCaseConflict / CaseLocked)，客户端 705xx (DependencyNotSynced / PatientRemapFailed)。详见 [sync.md](../02-requirements/sync.md) 错误码章节。
 
 ### 冲突解决
 
@@ -203,6 +231,11 @@ sequenceDiagram
 1. 查看 ConflictItems 列表
 2. 为每个冲突选择保留版本 (本地 / 服务端)
 3. 未解决的冲突被跳过
+
+**MedicalCase 特有冲突规则**:
+- **BR-001 冲突** (同一患者单活跃医案): 上传 Active/Draft 医案时若该患者 Server 端已有活跃医案，客户端提示医生选择: (a) 将本地医案标记为 Completed 再上传 (b) 关闭 Server 端旧医案后上传本地版本 (c) 跳过该医案稍后手动处理
+- **已锁定医案**: 已完成且已锁定的 Completed 医案不可通过同步覆盖 (ERR-70304)
+- **变更字段检测**: 跨整个聚合 (诊断 + 处方 + 药材明细) 检测差异字段，冲突解决 UI 使用左右对比布局 + 差异高亮
 
 ## 模式切换流程
 
@@ -223,12 +256,14 @@ sequenceDiagram
 
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
-| TBD-01 | 本地模式功能受限范围 | 已确定 | 已确定: 不可用项: 自动登录 / Token刷新 / 审计日志查询 / MedicalCase同步 / User同步 / 服务端API导入导出 |
+| TBD-01 | 本地模式功能受限范围 | 已确定 | 已确定: 不可用项: 自动登录 / Token刷新 / 审计日志查询 / User同步 / 服务端API导入导出。不活跃超时: **15 分钟** (与远程模式一致，防信息泄露)，可配置 (Session:InactivityTimeoutMinutes)。见 [auth.md](../02-requirements/auth.md) FR-AUTH-006 |
 | TBD-02 | 数据同步冲突解决策略 | 已确定 | 已确定: 手动逐条选择 (保留本地 / 使用服务端 / 跳过)。SyncConflictDialog 已实现 |
-| TBD-03 | MedicalCase 同步支持 | v2.0 规划 | v2.0 规划: 需设计聚合根级 Checksum + 级联冲突解决方案 |
+| TBD-03 | MedicalCase 同步支持 | 已确定 | 已确定: 聚合级原子同步 (MC + Consultation + Prescription + Items)，全状态双向同步，自动强制依赖顺序。详见 [sync.md](../02-requirements/sync.md) MedicalCase 同步设计章节 |
 
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从代码逆向工程和 sync 模块分析整合 |
+| 2026-02-18 | v1.1 | PRD同步: MedicalCase 同步从 v2.0 规划更新为已确定 (对齐 sync.md v3.0)，新增 MedicalCase 同步设计章节 (聚合级原子同步/依赖顺序/患者去重/编号重分配/打印排除)，TBD-01 移除 MedicalCase 同步，TBD-03 更新为已确定，冲突解决扩展 BR-001 + 已锁定医案规则 |
+| 2026-02-19 | v1.2 | TBD-01 补充本地模式不活跃超时时间 (15分钟，可配置) |

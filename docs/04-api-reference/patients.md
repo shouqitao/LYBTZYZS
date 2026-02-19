@@ -222,9 +222,136 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
 ---
 
+## POST /patients/{id}/check-reference
+
+检查患者是否被医案引用，用于删除前确认。
+
+> 对应 [FR-PAT-011](../02-requirements/patients.md)。
+
+**路径参数**: `id` (Guid)
+
+**成功响应** (200): `ApiResponse<PatientReferenceCheckDto>`
+
+```json
+{
+  "data": {
+    "patientId": "guid",
+    "isReferenced": true,
+    "referenceCount": 3,
+    "canDelete": false,
+    "recentCases": [
+      {
+        "caseId": "guid",
+        "caseNumber": "MC-20260218-001",
+        "status": "Completed",
+        "doctorName": "张医生",
+        "createdAt": "2026-02-18T10:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+**业务规则**:
+1. referenceCount = 该患者关联的医案总数 (含所有状态)
+2. recentCases 返回最近 5 条医案摘要
+3. 有关联医案时 canDelete=false (MC-D04)，提示使用禁用功能替代删除
+
+**错误响应**:
+- 404: 患者不存在 (ERR-20001)
+
+---
+
+## POST /patients/batch-check-reference
+
+批量检查多个患者的引用关系。
+
+> 对应 [FR-PAT-012](../02-requirements/patients.md)。
+
+**请求体** (`PatientBatchCheckReferenceInputDto`):
+
+```json
+{
+  "patientIds": ["guid1", "guid2", ...]   // 最多 100 个
+}
+```
+
+**成功响应** (200): `ApiResponse<List<PatientReferenceCheckDto>>`
+
+```json
+{
+  "data": [
+    {
+      "patientId": "guid1",
+      "isReferenced": true,
+      "referenceCount": 3,
+      "canDelete": false,
+      "recentCases": [...]
+    },
+    {
+      "patientId": "guid2",
+      "isReferenced": false,
+      "referenceCount": 0,
+      "canDelete": true,
+      "recentCases": []
+    }
+  ]
+}
+```
+
+**业务规则**:
+1. 最多 100 个患者 ID (超出返回 ERR-20704)
+2. 不存在的 ID 跳过 (不返回错误)
+3. 结果顺序与请求顺序一致
+
+**错误响应**:
+- 400: 批量检查超限 (ERR-20704)
+
+---
+
+## 错误码
+
+> 完整错误码定义见 [patients.md PRD](../02-requirements/patients.md)。错误码分区: 2xxxx。
+
+### 核心错误 (200xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-20001 | PatientNotFound | 404 | 患者不存在 | GET/PUT/DELETE /{id}, POST /{id}/restore |
+| ERR-20002 | PatientIdCardExists | 409 | 系统中已存在该身份证 | POST /, PUT /{id}, POST /import |
+| ERR-20003 | PatientPhoneExists | 409 | 患者电话已存在 | POST /, PUT /{id} |
+| ERR-20004 | PatientHasReferencedCases | 422 | 该患者有历史医案，无法删除 | DELETE /{id}, POST /batch-delete |
+| ERR-20005 | PatientDisabled | 403 | 患者已被禁用 | 需启用状态的操作 |
+| ERR-20006 | InvalidPatientStatus | 400 | 无效的患者状态 | PUT /{id}/status |
+| ERR-00003 | ValidationFailed | 400 | 参数验证失败 | POST /, PUT /{id} |
+
+### 业务规则错误 (207xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-20701 | PhoneDuplicate | 400 | 手机号已存在 | POST /, PUT /{id} |
+| ERR-20702 | PatientNotDeleted | 200 | 该患者未被删除 | POST /{id}/restore |
+| ERR-20703 | BatchOperationEmpty | 400 | 请至少选择一个患者 | POST /batch-delete |
+| ERR-20704 | BatchCheckExceeded | 400 | 批量检查最多支持100条 | POST /batch-check-reference |
+| ERR-20705 | InvalidPagination | 400 | 分页参数无效 | GET / |
+
+### 导入错误 (208xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-20801 | ImportFileEmpty | 400 | 文件不能为空 | POST /import |
+| ERR-20802 | ImportFileFormat | 400 | 仅支持.xlsx格式 | POST /import |
+| ERR-20803 | ImportFileSize | 400 | 文件大小不能超过10MB | POST /import |
+| ERR-20804 | ImportNoWorksheet | 400 | 没有工作表 | POST /import |
+| ERR-20805 | ImportRowExceeded | 400 | 导入数据超过限制 | POST /import |
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，10 个端点 |
 | 2026-02-18 | v1.1 | 新增 PUT /patients/{id}/status 端点 (FR-PAT-013 患者状态管理); 补充错误码 ERR-20005/20006 |
+| 2026-02-18 | v1.2 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-20001~20805)，含核心/业务规则/导入三类 |
+| 2026-02-19 | v1.3 | 新增 check-reference + batch-check-reference 端点定义 (FR-PAT-011/012) |

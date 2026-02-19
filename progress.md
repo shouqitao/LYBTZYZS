@@ -1,59 +1,60 @@
 # Progress Log
 
-## Session: 2026-02-18 设计文档同步更新
+## Session: 2026-02-18 设计文档覆盖问题修复
 
-### Phase 1: BRAINSTORM - complete
-- [x] 三文件重置 (2026-02-18 13:30)
-- [x] 03-architecture/ 调研完成 (7文档+6ADR)
-- [x] 04-api-reference/ 调研完成 (9模块+README, 92端点)
-- [x] 差距分析: 4项必须更新 + 2项可选
-- [x] 工作计划制定: Phase 2~6
+### Phase 0: 任务清单生成 - complete
+- [x] 基于审查结果 (findings.md) 生成 6 Phase / 45 任务清单
 
-### Phase 2: 数据模型更新 - complete
-- [x] MedicalCase 新增 IsPrinted(bool) (MC-D15)
-- [x] Prescription 移除 IsPrinted (提升到聚合根)
-- [x] Patient.Status 补充禁用语义 (PAT-D05)
-- [x] 变更记录 v1.1
+### Phase 1: dual-mode.md CRITICAL 修复 - complete
+- 变更文件: `docs/03-architecture/dual-mode.md` (+40 行)
 
-### Phase 3: 患者API设计 - complete
-- [x] 新增 PUT /patients/{id}/status 端点 (FR-PAT-013)
-- [x] 完整的请求/响应/错误码/业务规则
-- [x] 变更记录 v1.1
+### Phase 2: server.md 设计补全 - complete
+- 变更文件: `docs/03-architecture/server.md` (+180 行)
 
-### Phase 4: 医案API补充 - complete
-- [x] PUT /medicalcases/{id} 补充打印保护规则 (editReason/ERR-30403/ERR-30404)
-- [x] 新增"复制历史处方"组合API实现路径 (FR-MC-018)
-- [x] 变更记录 v1.1
+### Phase 3: desktop.md 设计补全 - complete
+- 变更文件: `docs/03-architecture/desktop.md` (+386 行)
 
-### Phase 5: 架构设计补充 - complete
-- [x] 错误码体系更新为 MCCEE 格式 (对齐PRD 90+场景)
-- [x] 新增缓存策略章节 (OutputCache + Desktop)
-- [x] 变更记录 v1.1
+### Phase 4: API Reference 错误码补全 - partial
+- 变更文件: 7 个 API reference 文档 (+229 行)
+- 剩余: patients check-reference + sync 客户端码
 
-### Phase 6: 索引同步与交叉验证 - complete
-- [x] API README 新增 PUT /patients/{id}/status，端点 92->93
-- [x] 交叉验证: 7项PRD变更全部有设计文档覆盖
+---
 
-### 文件变更记录
+## Session: 2026-02-19 会话恢复 + 完成
 
-| 文件 | 版本 | 变更摘要 |
-|------|------|---------|
-| docs/03-architecture/data-model.md | v1.1 | MedicalCase +IsPrinted; Prescription -IsPrinted; Patient.Status 语义 |
-| docs/03-architecture/server.md | v1.1 | 错误码 MCCEE 对齐; 新增缓存策略章节 |
-| docs/04-api-reference/patients.md | v1.1 | +PUT /patients/{id}/status (FR-PAT-013) |
-| docs/04-api-reference/medical-cases.md | v1.1 | +打印保护规则; +复制历史处方组合API |
-| docs/04-api-reference/README.md | v1.1 | +患者状态端点索引; 端点 92->93 |
+### 上下文恢复
+- [x] session-catchup 执行
+- [x] 进度对齐: Phase 1-3 complete, Phase 4 partial, Phase 5-6 pending
 
-### 交叉验证结果
+### Phase 4 收尾 - complete
+- [x] patients.md: 新增 check-reference + batch-check-reference 端点定义 (FR-PAT-011/012)
+- [x] sync.md: 补充客户端错误码 (ERR-70501~70505)
 
-| # | PRD变更 | 设计文档覆盖 | 验证 |
-|---|--------|------------|------|
-| 1 | FR-MC-018 复制历史处方 | api/medical-cases.md | PASS |
-| 2 | FR-PAT-013 患者状态管理 | api/patients.md + api/README.md | PASS |
-| 3 | MC-D15 IsPrinted提升 | data-model.md + api/medical-cases.md | PASS |
-| 4 | MC-D16 角色脱敏 | api/patients.md (业务规则描述) | PASS |
-| 5 | 90错误码MCCEE | server.md | PASS |
-| 6 | 缓存失效策略 | server.md (引用nfr.md) | PASS |
-| 7 | NFR-API-001分页 | api/README.md (已有) | PASS |
+### Phase 5: 补充修复 - complete
+- [x] data-model.md: MC-D06 筛选唯一索引 (BR-001 Active-only)
+- [x] data-model.md: MC-D07 禁用药材显示规则 "(已停用)"
+- [x] data-model.md: MC-D14 处方总价计算公式
+- [x] dual-mode.md: TBD-01 补充不活跃超时 15分钟
+- [x] users.md API: toggle-status 补充 USER-D03 最后管理员保护
 
-**任务状态: 已完成**
+### Phase 6: 验证 - complete
+- [x] 交叉引用检查: 发现 40 个错误路径 (../../02-requirements/ -> ../02-requirements/)
+- [x] 批量修复: 10 个文件的链接路径
+- [x] 覆盖率抽检: 8 MISSING + 14 PARTIAL + 2 DISCREPANCY 全部验证通过
+- [x] planning files 最终更新
+
+### 变更文件汇总
+
+| 文件 | 变更类型 | Session |
+|------|----------|---------|
+| docs/03-architecture/dual-mode.md | 新增 MedicalCase 同步 + 超时标注 + 链接修复 | 18+19 |
+| docs/03-architecture/server.md | 新增运维安全章节 (9节) + 链接修复 | 18+19 |
+| docs/03-architecture/desktop.md | 新增 14 设计章节 + 链接修复 | 18+19 |
+| docs/03-architecture/data-model.md | 索引/显示规则/价格公式 | 19 |
+| docs/04-api-reference/patients.md | 错误码 + check-reference 端点 + 链接修复 | 18+19 |
+| docs/04-api-reference/sync.md | 错误码 (服务端+客户端) + 链接修复 | 18+19 |
+| docs/04-api-reference/users.md | 错误码 + toggle-status 业务规则 + 链接修复 | 18+19 |
+| docs/04-api-reference/herbs.md | 错误码 + 链接修复 | 18+19 |
+| docs/04-api-reference/formulas.md | 错误码 + 链接修复 | 18+19 |
+| docs/04-api-reference/medical-cases.md | 错误码 + 链接修复 | 18+19 |
+| docs/04-api-reference/README.md | 扩展码标注 + 链接修复 | 18+19 |

@@ -183,11 +183,24 @@
 
 切换用户状态 (启用/禁用)。
 
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
+
 **路径参数**: `id` (Guid)
+
+**业务规则**:
+1. **最后管理员保护** (USER-D03): 不能禁用最后一个 SuperAdmin 或最后一个 Admin (返回 403)
+2. 禁用用户时所有 Token Family 失效 (AUTH-D06 复用)
+3. 禁用后当前会话立即失效，尝试登录返回 ERR-10006 (UserDisabled)
+4. 不能修改自己的状态 (返回 400)
 
 **成功响应** (200): `ApiResponse<UserDetailDto>`
 
 响应 message 示例: "用户已启用" 或 "用户已禁用"
+
+**错误响应**:
+- 400: 不能修改自己的状态
+- 403: 最后管理员保护 -- "不能禁用最后一个{超级管理员|管理员}" (USER-D03)
+- 404: 用户不存在 (ERR-10001)
 
 ---
 
@@ -247,8 +260,26 @@
 
 ---
 
+## 错误码
+
+> 完整错误码定义见 [users.md PRD](../02-requirements/users.md)。错误码分区: 1xxxx。
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-10001 | UserNotFound | 404 | 用户不存在 | GET/PUT/DELETE /{id}, POST /reset-password, POST /change-password, POST /change-profile, PUT /{id}/toggle-status, POST /{id}/restore |
+| ERR-10002 | UserNameExists | 409 | 用户名已被使用 | POST / |
+| ERR-10003 | EmailExists | 409 | 邮箱已被使用 | POST /, PUT /{id} |
+| ERR-10004 | InvalidPassword | 401 | 用户名或密码错误 | POST /change-password |
+| ERR-10005 | PasswordPolicyViolation | 400 | 密码不符合安全策略 | POST /reset-password, POST /change-password |
+| ERR-10006 | UserDisabled | 403 | 用户账号已被禁用 | 登录验证 |
+| ERR-00003 | ValidationFailed | 400 | 输入数据验证失败 | POST /, PUT /{id} |
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，14 个端点 |
+| 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-10001~10006, ERR-00003) |
+| 2026-02-19 | v1.2 | toggle-status 端点补充业务规则: USER-D03 最后管理员保护、Token Family 失效、错误响应 |

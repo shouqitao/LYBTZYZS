@@ -248,6 +248,8 @@ Token 获取方式见 [认证 API](auth.md)。
 | InternalError | 内部错误 | 500 |
 | ServiceUnavailable | 服务不可用 | 503 |
 
+> 其中 PasswordExpired、SessionNotFound、SessionExpired、ConcurrentSessionLimit 为设计扩展 (不在 [auth.md](../02-requirements/auth.md) PRD 中定义)，作为安全防御性措施保留。
+
 ## 授权策略
 
 | 策略 | 角色 | 适用模块 |
@@ -276,3 +278,4 @@ Token 获取方式见 [认证 API](auth.md)。
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，覆盖全部 10 个 Controller |
 | 2026-02-18 | v1.1 | PRD同步: 患者模块新增 PUT /patients/{id}/status (FR-PAT-013); 端点总数 92->93 |
+| 2026-02-18 | v1.2 | 认证错误码章节补充注释: 标注 4 个设计扩展码 (PasswordExpired/SessionNotFound/SessionExpired/ConcurrentSessionLimit) |

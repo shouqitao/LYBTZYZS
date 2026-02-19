@@ -199,8 +199,63 @@
 
 ---
 
+## 错误码
+
+> 完整错误码定义见 [sync.md PRD](../02-requirements/sync.md)。错误码分区: 7xxxx。
+
+### 服务端通用 (701xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-70101 | UnsupportedEntityType | 400 | 不支持的实体类型 | GET /metadata, POST /compare, POST /upload |
+| ERR-70102 | JsonDeserializeFailed | 400 | JSON 反序列化失败 | POST /upload |
+| ERR-70103 | SyncDataConflict | 409 | 服务器已存在该数据 | POST /upload (OverwriteConflicts=false) |
+
+### 上传错误 (702xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-70201 | HerbUploadFailed | 500 | 上传异常 | POST /upload (Herb) |
+| ERR-70202 | PatientUploadFailed | 500 | 上传异常 | POST /upload (Patient) |
+| ERR-70203 | FormulaUploadFailed | 500 | 上传异常 | POST /upload (Formula) |
+| ERR-70204 | MedicalCaseUploadFailed | 500 | 上传异常 | POST /upload (MedicalCase) |
+
+### MedicalCase 特有 (703xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-70301 | SyncPatientNotFound | 422 | 患者不存在，请先同步患者 | POST /upload (MedicalCase) |
+| ERR-70302 | SyncHerbNotFound | 422 | 药材不存在，请先同步药材 | POST /upload (MedicalCase) |
+| ERR-70303 | SyncActiveCaseConflict | 409 | 患者已有活跃医案 | POST /upload (MedicalCase) |
+| ERR-70304 | SyncCaseLocked | 422 | 医案已锁定 | POST /upload (MedicalCase) |
+
+### 删除错误 (704xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-70401 | SyncReferenceCheckFailed | 500 | 引用检查异常 | POST /delete |
+| ERR-70402 | SyncHerbHasReference | 422 | 药材被处方引用 | POST /delete (Herb) |
+| ERR-70403 | SyncPatientHasReference | 422 | 患者有医案记录 | POST /delete (Patient) |
+| ERR-70404 | SyncEntityNotFound | 404 | 实体不存在或已删除 | POST /delete |
+
+### 客户端错误 (705xx)
+
+> 客户端同步流程中由 Desktop 端 SyncViewModel 检查和抛出的错误。
+
+| 错误码 | 枚举名 | 用户消息 | 触发条件 |
+|--------|--------|----------|----------|
+| ERR-70501 | SyncNoEntityTypeSelected | 请选择要同步的数据类型 | UI 中未选择 EntityType |
+| ERR-70502 | SyncFailed | 同步失败: {错误列表} | 服务返回失败结果 |
+| ERR-70503 | SyncChecksumTypeError | 不支持的实体类型: {entityType} | 计算 Checksum 时类型无效 |
+| ERR-70504 | SyncDependencyNotSynced | 请先同步药材和患者数据 | MedicalCase 同步前依赖检查失败 |
+| ERR-70505 | SyncPatientRemapFailed | 无法匹配患者 {PatientName}，请手动处理 | IdCardNumber 匹配失败 (本地患者无身份证号) |
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，6 个端点 |
+| 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-70101~70404)，含通用/上传/MedicalCase/删除四类 |
+| 2026-02-19 | v1.2 | 补充客户端错误码 (ERR-70501~70505)，含 UI 校验/同步失败/依赖检查/患者匹配 |

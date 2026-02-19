@@ -113,6 +113,12 @@ graph TB
 | LastPrintedAt | DateTime? | 否 | 最后打印时间 |
 | PrintCount | int | 是 | 打印次数 |
 
+**价格计算公式** (MC-D14):
+- Items[i].Amount = UnitPrice x Dosage (单味药小计，PrescriptionItem 计算属性)
+- SingleDosePrice = SUM(Items.Amount) (一剂所有药材小计之和，Prescription 计算属性)
+- TotalPrice = SingleDosePrice x DosageCount x Discount (最终总价)
+- Discount 语义: 1.0=无折扣, 0.9=九折, 0.85=八五折
+
 ### PrescriptionItem (处方药材项)
 
 不继承 BaseEntity:
@@ -183,6 +189,8 @@ graph TB
 | Effect | string(500) | 否 | 功效 |
 | Usage | string(500) | 否 | 用法 |
 | Status | CommonStatus | 是 | 状态 |
+
+**显示规则** (MC-D07): 禁用药材 (Status=Disabled) 在历史处方中展示时，名称后缀"(已停用)"，如"黄芪(已停用)"。禁用药材仅可查看不可修改剂量，不可添加到新处方中。
 
 ### Formula (验方)
 
@@ -321,6 +329,25 @@ graph TB
 - DateTime 统一 UTC
 - decimal 使用 `HasPrecision(18, 2)` 或 `HasPrecision(5, 4)`
 
+### 索引策略
+
+| 索引名 | 表 | 列 | 类型 | 说明 |
+|--------|----|-----|------|------|
+| IX_MedicalCases_PatientId | MedicalCases | PatientId | 普通索引 | 按患者查询医案 |
+| IX_MedicalCases_UserId | MedicalCases | UserId | 普通索引 | 按医生查询医案 |
+| IX_MedicalCases_PatientId_Active | MedicalCases | PatientId | **筛选唯一索引** | BR-001 同一患者单活跃医案约束 (MC-D06) |
+
+**BR-001 筛选唯一索引** (MC-D06): 仅对 `CaseStatus IN (Active, Draft)` 的记录建立唯一索引。EF Core 配置:
+
+```csharp
+entity.HasIndex(e => e.PatientId)
+    .HasFilter("[CaseStatus] IN (0, 1) AND [IsDeleted] = 0")
+    .IsUnique()
+    .HasDatabaseName("IX_MedicalCases_PatientId_Active");
+```
+
+> **设计取舍**: NFR 并发用户 1-3 人，并发创建重复草稿概率极低。代码层 BR-001 检查为主，DB 唯一索引为兜底保障。
+
 ### 敏感数据
 
 Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏:
@@ -343,3 +370,4 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 LYBT.Entities 代码逆向工程 |
 | 2026-02-18 | v1.1 | PRD同步: MedicalCase 新增 IsPrinted 字段 (MC-D15, 从 Prescription 提升到聚合根); Prescription 移除 IsPrinted (打印保护由聚合根统一管理); Patient.Status 补充禁用语义 (PAT-D05) |
+| 2026-02-19 | v1.2 | 设计补全: 索引策略章节 (BR-001 筛选唯一索引 MC-D06); Herb 禁用药材显示规则 (MC-D07); Prescription 价格计算公式 (MC-D14) |

@@ -370,9 +370,395 @@ PatientMasterDetailViewModel
 
 ---
 
+## UI 全局规范
+
+> 对应 [UI-D01~D06](../02-requirements/ui-patterns.md)。桌面端所有模块统一遵循以下交互规范。
+
+### 搜索行为 (UI-D01)
+
+即时搜索 + 300ms 防抖。输入停止 300ms 后自动触发搜索，无需按回车。搜索框右侧显示清除按钮 (X)。无结果显示"未找到匹配结果"空状态。
+
+**实现**: ViewModel 中使用 `_searchDebouncer.Debounce(300, () => SearchAsync())` 或 `Observable.Throttle(TimeSpan.FromMilliseconds(300))`。
+
+### 保存后导航 (UI-D02)
+
+新建/编辑保存成功后返回列表页 + 成功 Toast。医案保存例外: 弹出"是否打印处方?"提示。保存失败停留当前页。
+
+**实现**: `NavigationCoordinator.NavigateBack()` 或 `RegionManager.RequestNavigate(ContentRegion, listViewName)`。
+
+### 删除确认 (UI-D03)
+
+单条/批量删除统一弹出确认对话框。存在引用关系时显示引用详情 (如"该患者关联了 N 个历史医案，无法删除")。确认按钮为红色危险样式，默认焦点在取消按钮上。
+
+**实现**: `IDialogService.ShowDialog("ConfirmDeleteDialog", parameters)` 统一入口。
+
+### 工作区模式 (UI-D04)
+
+Clinical (诊疗) / Management (管理) 通过菜单过滤区分。Doctor 默认 Clinical，Admin 默认 Management。切换时刷新侧边栏菜单。
+
+**实现**: `MenuManager.SetWorkspaceMode(mode)` 控制 `MenuItems` 集合的 `Visibility`。
+
+### 表单布局 (UI-D05)
+
+双列布局: 短字段 (姓名/性别/年龄/电话) 同行排列，长字段 (地址/备注) 独占一行跨两列。必填字段标签前红色 * 号。字段间距统一 8px 或 12px。相关字段使用 GroupBox 分组。
+
+### 验证策略 (UI-D06)
+
+失焦即时校验 + 提交时全表单校验。错误提示在字段下方红色文字，错误字段边框变红。提交时校验失败滚动到第一个错误字段并聚焦。
+
+**实现**: ValidatingViewModelBase 提供 `INotifyDataErrorInfo` 基础，各模块 ViewModel 覆写 `ValidateProperty(propertyName)` 和 `ValidateAll()`。
+
+---
+
+## 凭证存储架构
+
+> 对应 [FR-AUTH-009](../02-requirements/auth.md)。
+
+### CredentialVault
+
+| 组件 | 职责 |
+|------|------|
+| ICredentialVault | 接口: SaveCredentials / LoadCredentials / ClearCredentials |
+| CredentialVault | DPAPI 加密实现，存储 AutoLoginToken |
+| IUsernameStorage | "记住用户名" 存储 (明文，IsolatedStorage) |
+
+**安全设计**:
+- AccessToken / RefreshToken 严格存储在内存中，不持久化
+- AutoLoginToken 使用 DPAPI 加密后存储，附加 HMAC-SHA256 完整性校验
+- 读取时验证 HMAC，失败则删除凭据 + 记录安全警告日志
+- 旧格式凭据 (无 HMAC) 登录成功后自动迁移到新格式
+
+**存储位置**: `%LOCALAPPDATA%\LYBTZYZS\credentials.dat`
+
+---
+
+## Token 刷新失败处理
+
+> 对应 [FR-AUTH-011](../02-requirements/auth.md)。
+
+分级处理策略:
+
+| 失败类型 | 策略 | 说明 |
+|----------|------|------|
+| 网络错误 (HttpRequestException / TimeoutException) | 指数退避重试 (1s → 2s → 4s，最多 3 次) | 网络恢复后自动恢复会话 |
+| TokenExpired | 尝试 AutoLogin | CredentialVault 有凭据时自动使用 AutoLoginToken 重登 |
+| TokenRevoked | 立即清除 Token + 强制登出 | 显示"会话已在其他设备终止" |
+
+**AutoLogin fallback 流程**: Token 刷新失败 (非 Revoked) → 检查 CredentialVault → 有凭据 → 调用 AutoLogin API → 成功则无感切换 → 失败则跳转手动登录。
+
+---
+
+## 客户端异常处理架构
+
+> 对应 [FR-ERR-003/005/008](../02-requirements/error-handling.md)。
+
+### DesktopExceptionHandler
+
+全局异常捕获注册:
+- `AppDomain.CurrentDomain.UnhandledException` (非UI线程)
+- `TaskScheduler.UnobservedTaskException` (异步任务未观察异常)
+- `DispatcherUnhandledException` (WPF UI 线程，可选)
+
+### 异常严重度分级 (FR-ERR-005)
+
+| 级别 | 异常类型示例 | 日志级别 | 说明 |
+|------|------------|---------|------|
+| Information (0) | HttpRequestException, TaskCanceledException | Information | 网络临时问题，可重试 |
+| Warning (1) | ArgumentException, InvalidOperationException | Warning | 参数/状态错误 |
+| Error (2) | UnauthorizedAccessException, OutOfMemoryException | Error | 授权/资源问题 |
+| Critical (3) | AppDomain.UnhandledException | Critical | 全局未处理异常 |
+
+### 异常到通知类型映射 (FR-ERR-008)
+
+遵循 [ui-patterns.md](../02-requirements/ui-patterns.md) 3.3 节通知规范:
+
+| 异常类型 | 通知方式 | 持续时间 |
+|----------|---------|---------|
+| ValidationException | Toast (红色) | 不自动消失 |
+| NotFoundException / BusinessException | Toast (红色) | 不自动消失 |
+| ConflictException | Toast (红色) | 不自动消失 |
+| UnauthorizedException | **对话框** | 手动关闭，需重新登录 |
+| HttpRequestException / TimeoutException | Toast (黄色/警告) | 5 秒，可重试 |
+| 系统错误 (Error/Critical) | **对话框** (含追踪码) | 手动关闭 |
+
+**SafeExecuteAsync**: 包裹异步操作，自动捕获异常转为 `ServiceResult<T>.Failure(userMessage)`。所有 ViewModel 的命令方法统一使用。
+
+---
+
+## 错误消息映射
+
+> 对应 [FR-ERR-006](../02-requirements/error-handling.md)。
+
+ClientErrorMessageMapper 将 HTTP 状态码和业务错误码映射为中文用户友好消息:
+
+**优先级**: 业务错误码 (MCCEE 5位) > HTTP 状态码 > 通用兜底
+
+| HTTP 状态码 | 用户消息 |
+|------------|---------|
+| 400 | 请求参数无效，请检查输入 |
+| 401 | 登录已过期，请重新登录 |
+| 403 | 您没有权限执行此操作 |
+| 404 | 请求的数据不存在 |
+| 409 | 数据已被其他用户修改，请刷新后重试 |
+| 500 | 服务器内部错误 |
+
+**业务错误码映射**: 覆盖 7 个模块 90+ 场景 (1xxxx~7xxxx)。解析服务端返回的 ProblemDetails 中的 `errorCode` 字段。未匹配到具体错误码时返回通用消息"操作失败，请稍后重试"。
+
+---
+
+## 错误追踪码
+
+> 对应 [FR-ERR-007](../02-requirements/error-handling.md)。
+
+**格式**: 8 位短码 (时间戳低位 + 随机数)，如 `A3F8B2C1`。
+
+**规则**:
+- 仅 Error/Critical 级别异常附加追踪码
+- 业务错误 (如"密码不正确") 不附加
+- 追踪码同时记录到日志，支持 CorrelationId 关联定位
+
+**UI 展示**: 系统错误对话框底部显示"如需帮助，请提供追踪码: XXXXXXXX"。
+
+---
+
+## 菜单结构
+
+> 对应 [FR-SHELL-005](../02-requirements/desktop-shell.md)。
+
+### 完整菜单层级
+
+```
+顶部菜单栏
+├── 文件: 新建患者(Ctrl+N) / 新建医案(Ctrl+Shift+C) / 打印(Ctrl+P) / 退出(Alt+F4)
+├── 编辑: 撤销(Ctrl+Z) / 重做(Ctrl+Y) / 保存(Ctrl+S)
+├── 视图: 刷新(F5) / 浅色主题 / 深色主题
+├── 导航: 首页 / 患者管理 / 医案管理 / 验方管理 / 药材管理 / 用户管理 / 数据同步 / 系统设置
+├── 工具: 数据同步 / 系统健康检查
+└── 帮助: 帮助文档(F1) / 关于
+```
+
+### 角色可见性矩阵
+
+| 菜单项 | SuperAdmin | Admin | Doctor | Receptionist |
+|--------|:---:|:---:|:---:|:---:|
+| 新建患者 | O | O | O | O |
+| 新建医案 | X | X | O | X |
+| 打印 | O | O | O | X |
+| 患者管理 | O | O | O | O |
+| 医案管理 | O | O | O | X |
+| 验方管理 | O | O | O | X |
+| 药材管理 | O | O | X | X |
+| 用户管理 | O | O | X | X |
+| 数据同步 | O | O | O | X |
+| 系统设置 | O | X | X | X |
+
+**实现**: `MenuManager` 在登录后根据用户角色过滤菜单项 `Visibility`。通过 `IApplicationCommands` 接口暴露全局命令。
+
+---
+
+## Desktop 启动诊断
+
+> 对应 [FR-SHELL-006](../02-requirements/desktop-shell.md)。
+
+StartupDiagnostics 记录 WPF 客户端各启动阶段耗时:
+
+**API**:
+- `BeginStartup()` / `EndStartup()`: 标记启动过程边界
+- `BeginStep(name)` / `EndStep()`: 记录单步耗时和成功/失败
+- `RecordMarker(name)`: 关键时间点标记 (如 "Prism初始化完成"、"首屏渲染")
+- `GetReport()`: 生成 StartupReport
+
+**慢步骤阈值**: 3 秒。超过标记为 Slow，便于定位性能瓶颈。
+
+**诊断报告内容**: 总启动时间、各步骤耗时列表 (按执行顺序)、慢步骤列表、失败步骤列表。报告输出到日志文件。
+
+---
+
+## 账户设置
+
+> 对应 [FR-SHELL-007](../02-requirements/desktop-shell.md)。
+
+AccountSettingsControl 通过 `MenuManager.EditProfileCommand` 进入:
+
+| 设置项 | 说明 | 模式 |
+|--------|------|------|
+| 修改密码 | 对话框: 旧密码 + 新密码 + 确认密码 | 远程: API 调用; 本地: 本地存储 |
+| 修改个人资料 | 显示名称 / 电话 / 邮箱 | 远程: API 调用 |
+| 查看登录信息 | 最后登录时间 / 登录 IP | 只读 |
+
+界面布局: 模态对话框或侧边滑出面板。
+
+---
+
+## 同步 UI 架构
+
+> 对应 [FR-SYNC-007](../02-requirements/sync.md)。
+
+### 同步进度 UI
+
+SyncViewModel 管理完整同步流程的 UI 状态:
+
+```
+[1. 检查差异] -> [2. 解决冲突] -> [3. 执行同步] -> [4. 完成]
+       ↓                ↓                ↓              ↓
+ 显示当前实体类型    冲突数量显示     进度条+当前项    结果汇总
+```
+
+**关键属性**: CurrentStep, CurrentEntityType, ProgressPercent, ConflictCount, SyncResults
+
+**结果汇总**: 按实体类型分组显示 (上传 N / 下载 N / 跳过 N / 失败 N)。失败项可展开查看失败原因。
+
+### 冲突解决 UI
+
+复用 SyncConflictDialog，左右对比布局 + 差异字段高亮:
+
+| 元素 | 说明 |
+|------|------|
+| 标题 | 冲突实体名称 + 进度 (如 "1/3") |
+| 左侧 | 本地版本字段值 + 修改时间 |
+| 右侧 | 服务端版本字段值 + 修改时间 |
+| 差异高亮 | 仅变更字段黄色背景高亮 |
+| 操作按钮 | 保留本地 / 使用服务端 / 跳过 |
+
+MedicalCase 冲突展示跨整个聚合 (诊断 + 处方 + 药材明细)，通过 `SyncConflictDetailDto.ChangedFields` 定位差异字段。
+
+---
+
+## 模式切换设计
+
+> 对应 [FR-SYNC-008](../02-requirements/sync.md)。
+
+### 切换前未同步检查
+
+1. 比对本地 Checksum 与上次同步时的 Checksum
+2. 有未同步变更 → 弹出提示: "本地有 N 条未同步数据，建议先同步再切换。是否继续?"
+3. 用户选择: "先同步" (跳转同步页面) / "继续切换" (忽略未同步数据) / "取消"
+
+### 远程 → 本地
+
+1. 检查 SQLite 数据库文件是否存在且完整
+2. 不存在 → 提示"本地数据库不存在，需先执行一次同步"
+3. 存在 → 切换 DataSource 为 SQLite → 状态栏显示"本地模式"
+
+### 本地 → 远程
+
+1. 检查网络连通性 (Ping 服务端)
+2. 网络不可用 → 提示"无法连接服务器，请检查网络"
+3. 检查 Token 有效性 → 过期则跳转登录页
+4. 认证有效 → 切换 DataSource 为 HTTP API → 状态栏显示"远程模式"
+
+### 切换失败回退
+
+切换过程中出现错误 → 自动回退到切换前模式 → 显示"切换失败: {原因}，已恢复到{当前模式}"。
+
+---
+
+## SQLite 加密集成
+
+> 对应 [NFR-SEC-004](../02-requirements/nfr.md)。
+
+### 架构位置
+
+```
+LocalDbContext (SQLite)
+  └── Patient 实体配置
+       ├── IdNumber     → EncryptedStringConverter (写入加密 / 读取解密)
+       └── PhoneNumber  → EncryptedStringConverter (写入加密 / 读取解密)
+
+EncryptedStringConverter
+  └── IEncryptionKeyProvider.GetKey()
+       └── CredentialVault (DPAPI 解密存储的 AES-256 密钥)
+```
+
+**关键设计**:
+- 仅在 LocalDbContext (SQLite) 中配置 Value Converter，AppDbContext (SQL Server) 不加密
+- 对 Repository/Service 层完全透明，无需修改业务代码
+- 加密字段在数据库中存储为 Base64 编码的密文字符串
+- 搜索限制: 加密字段仅支持精确匹配或内存过滤，不支持 LIKE
+
+### 密钥管理
+
+| 阶段 | 操作 |
+|------|------|
+| 首次启动 | 自动生成 AES-256 密钥 (256-bit 随机)，DPAPI 加密后存入 CredentialVault |
+| 运行时 | IEncryptionKeyProvider 启动时解密一次，内存缓存 |
+| 密钥丢失 | 重新从 Server 同步数据，本地重新加密写入 |
+| 用户切换 | DPAPI 密钥绑定 Windows 用户，换用户需重新同步 |
+
+---
+
+## 性能预算
+
+> 对应 [NFR-PERF-002/003](../02-requirements/nfr.md)。
+
+### 响应时间目标
+
+| 指标 | 目标 | 说明 |
+|------|------|------|
+| 启动时间 (双击 → 登录页) | < 5s | 非关键模块后台延迟加载 |
+| 页面切换 (导航到新模块) | < 1s | Prism Region 导航 + ViewModel 初始化 |
+| 表单保存响应 | < 2s | 含网络往返或本地写入 |
+| 搜索响应 (防抖后) | < 1s | 输入停止后触发搜索到结果渲染 |
+
+### 运行环境要求
+
+| 级别 | 内存 | 说明 |
+|------|------|------|
+| 最低 | 4 GB | 可运行但紧张 |
+| **推荐** | **8 GB** | 舒适运行，可同时开办公软件 |
+| 理想 | 16 GB | 无任何顾虑 |
+
+操作系统: Windows 10+。运行时: .NET 8 Desktop Runtime。应用内存占用目标: < 200 MB (日常使用)。
+
+---
+
+## UnsavedChangesDialog 交互流程
+
+> 对应 [BR-002](../02-requirements/medical-cases.md)。
+
+医案离开界面时的完整操作流程:
+
+### 触发条件
+
+用户在医案编辑页有未保存修改时执行以下操作: 导航离开、关闭标签页、切换患者、点击返回。
+
+### 对话框选项
+
+| 选项 | 行为 | 说明 |
+|------|------|------|
+| **保存** | 提交当前修改 → 保存成功后执行导航 | 主操作按钮 |
+| **暂存草稿** | 将当前状态标记为 Draft → 执行导航 | 保留修改到草稿，下次可恢复 |
+| **放弃修改** | 丢弃所有未保存修改 → 执行导航 | 不可逆操作 |
+| **取消** | 停留在当前页面 | 继续编辑 |
+
+### 实现
+
+通过 `IConfirmNavigationRequest` 接口拦截导航:
+
+```csharp
+// MedicalCaseEditViewModel
+public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continuationCallback)
+{
+    if (!HasUnsavedChanges) { continuationCallback(true); return; }
+    _dialogService.ShowDialog("UnsavedChangesDialog", result =>
+    {
+        switch (result.Parameters.GetValue<string>("Action"))
+        {
+            case "Save": SaveAsync().ContinueWith(_ => continuationCallback(true)); break;
+            case "SaveDraft": SaveDraftAsync().ContinueWith(_ => continuationCallback(true)); break;
+            case "Discard": continuationCallback(true); break;
+            case "Cancel": continuationCallback(false); break;
+        }
+    });
+}
+```
+
+---
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.1 | 新增可复用业务控件、业务弹窗、CardReader 集成章节 |
 | 2026-02-10 | v1.0 | 初始版本，从 client-layer-architecture/desktop-architecture/viewmodel-conventions specs 整合 |
+| 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (FR-AUTH-009)、Token 刷新失败 (FR-AUTH-011)、客户端异常处理 (FR-ERR-003/005/008)、错误消息映射 (FR-ERR-006)、错误追踪码 (FR-ERR-007)、菜单结构 (FR-SHELL-005)、Desktop 启动诊断 (FR-SHELL-006)、账户设置 (FR-SHELL-007)、同步 UI (FR-SYNC-007)、模式切换 (FR-SYNC-008)、SQLite 加密 (NFR-SEC-004)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |

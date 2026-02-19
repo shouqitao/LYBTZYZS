@@ -321,7 +321,7 @@ graph LR
 | 6xxxx | 验方管理 | 601xx~603xx | ~17 |
 | 7xxxx | 数据同步 | 701xx~705xx | ~20 |
 
-> **总计**: 90+ 错误场景。详见各模块 PRD 文档的"错误码"章节和 [error-handling.md](../../02-requirements/error-handling.md)。
+> **总计**: 90+ 错误场景。详见各模块 PRD 文档的"错误码"章节和 [error-handling.md](../02-requirements/error-handling.md)。
 
 ### 异常类型
 
@@ -405,7 +405,7 @@ if (!validationResult.IsValid)
 
 ## 缓存策略
 
-> 详细缓存参数和失效映射见 [nfr.md](../../02-requirements/nfr.md) 第 5 章。
+> 详细缓存参数和失效映射见 [nfr.md](../02-requirements/nfr.md) 第 5 章。
 
 ### Server 端
 
@@ -427,9 +427,189 @@ ApiService GET 缓存 (LRU, 1000 条, 5 分钟过期)。写操作后按模块前
 
 ---
 
+## 运维与安全
+
+### 敏感数据脱敏
+
+> 对应 [FR-LOG-003](../02-requirements/logging.md)，敏感数据分级标准见 [nfr.md](../02-requirements/nfr.md) NFR-SEC-004。
+
+通过 SensitiveDataMaskingEnricher (Serilog ILogEventEnricher) 在日志写入前自动脱敏，两层保护:
+
+**属性级脱敏**: `[SensitiveData(type, mode)]` 标记实体属性，Serilog 析构时通过 SensitiveDataDestructuringPolicy 自动触发。
+
+**文本级脱敏**: SensitiveDataMasker 正则匹配文本中的密码、Token、连接字符串、Bearer Token，自动替换。
+
+**脱敏模式**:
+
+| 模式 | 效果 | 示例 |
+|------|------|------|
+| Default | 中间用 * 替代 | `abc***xyz` |
+| Partial | 按类型智能脱敏 | 手机号: `138****1234`; 身份证: `110*******1234` |
+| Full | 完全隐藏 | `[已隐藏]` |
+| Hash | SHA256 短哈希 | `[REDACTED:A1B2C3D4]` |
+
+**敏感数据分级映射**:
+
+| 级别 | 字段示例 | 日志脱敏 |
+|------|---------|---------|
+| L1-高敏感 | IdNumber, PhoneNumber | Partial (保留前3后4) |
+| L2-一般敏感 | Address, TcmDiagnosis | 摘要 / 不记录 |
+| L3-普通 | Name, HerbName | 正常记录 |
+
+**敏感字段名检测**: Password, Token, AccessToken, RefreshToken, Secret, ConnectionString, CreditCard 等 30+ 字段名。URI 查询参数中的 password/token/key/secret 自动替换为 `***`。
+
+### API 请求日志
+
+> 对应 [FR-LOG-007](../02-requirements/logging.md)。
+
+ApiLoggingFilter 实现为 IAsyncActionFilter，全局注册，自动记录所有 Controller Action 执行信息:
+
+**日志格式**:
+- Action 开始: `[API] >>> {Action} started. CorrelationId={CorrelationId}` (Information)
+- Action 完成: `[API] <<< {Action} completed in {Duration}ms` (Information)
+- Action 异常: `[API] !!! {Action} failed after {Duration}ms` (Error)
+
+**参数记录** (Debug 级别):
+- 敏感字段名自动检测 (SensitiveDataMasker.IsSensitiveFieldName)
+- 复杂对象仅显示类型名 `[{TypeName}]`
+- 字符串值截断至 100 字符
+
+CorrelationId 从 HttpContext 中间件获取，自动注入到日志上下文，保证同一请求的所有日志可关联。
+
+### 启动配置验证
+
+> 对应 [FR-CFG-004](../02-requirements/configuration.md)。
+
+ProductionConfigurationValidator 在 `ASPNETCORE_ENVIRONMENT=Production` 时启动验证关键配置项:
+
+| 配置项 | 级别 | 验证规则 |
+|--------|------|---------|
+| ConnectionStrings:DefaultConnection | **Critical** | 必须非空 |
+| Lybt:Jwt:SecretKey | **Critical** | 必须非空，Base64 解码后 >= 32 字节 |
+| Lybt:DefaultPasswords:SysAdminPassword | Important | 必须非空 |
+| Lybt:DefaultPasswords:NewUserPassword | Important | 必须非空 |
+| Lybt:Business:SystemAdmin:UserName | Important | 必须非空 |
+| Lybt:Business:SystemAdmin:Email | Important | 必须非空，符合 Email 格式 |
+
+**处理策略**: Critical 缺失 → 输出详细错误到控制台 + Fatal 日志 → `Environment.Exit(1)` 阻止启动。Important 缺失 → Warning 日志，允许启动。
+
+**错误输出格式**: 包含配置路径、对应环境变量名、问题描述、修复命令示例。
+
+### 安全审计日志
+
+> 对应 [FR-LOG-002](../02-requirements/logging.md)。
+
+**SecurityAuditLog 表结构**:
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| Id | Guid (PK) | 主键 |
+| EventType | string(50), Required | Login / Logout / RefreshToken / TokenRevoked / LoginFailed / PasswordChange / UserDisabled |
+| UserId | Guid? | 用户 ID (LoginFailed 可能无已知用户) |
+| UserType | string(50)? | User / SuperAdmin |
+| UserName | string(256)? | 用户名称 |
+| IpAddress | string(50)? | 客户端 IP |
+| UserAgent | string(500)? | 客户端 UA |
+| Success | bool, Required | 操作是否成功 |
+| ErrorMessage | string(500)? | 错误消息 |
+| Metadata | string? | 扩展元数据 (JSON) |
+| CreatedAt | DateTime, Default=UtcNow | 创建时间 |
+
+**写入机制**: IAuditService 接口注入到 AuthService，认证事件触发时调用 `LogAsync(eventType, userId, ...)` 写入。审计日志仅追加，不可修改和删除。
+
+**写入策略**: fire-and-forget 模式，审计写入失败不影响业务操作 (异常隔离)。
+
+### 日志清理服务
+
+> 对应 [FR-LOG-005](../02-requirements/logging.md)，保留策略见 [nfr.md](../02-requirements/nfr.md) NFR-SEC-005。
+
+LogCleanupService 继承 BackgroundService，定期清理过期系统日志:
+
+| 参数 | 默认值 | 配置节 |
+|------|--------|--------|
+| 启动延迟 | 5 分钟 | `Lybt:Logging:Cleanup:InitialDelayMinutes` |
+| 执行周期 | 24 小时 | `Lybt:Logging:Cleanup:CleanupIntervalHours` |
+| 保留天数 | 90 天 | `Lybt:Logging:Cleanup:RetentionDays` |
+| 批量大小 | 1000 条 | `Lybt:Logging:Cleanup:BatchSize` |
+
+**关键规则**: **Error/Fatal 级别日志永久保留**，仅清理 Warning 及以下级别。分批删除 (每批 1000 条，批间延迟 100ms)，使用原生 SQL `DELETE TOP (@batchSize) FROM SystemLogs WHERE ...`，避免锁表。
+
+清理失败不影响应用运行 (异常隔离)。可通过配置 `Enabled=false` 完全禁用。
+
+### 审计日志清理服务
+
+> 对应 [FR-LOG-006](../02-requirements/logging.md)，保留期限 365 天 (NFR-D04)。
+
+SecurityAuditCleanupService 继承 BackgroundService:
+
+| 参数 | 默认值 | 配置节 |
+|------|--------|--------|
+| 执行时间 | 每日凌晨 3:00 | 固定 |
+| 保留天数 | **365 天** | `Lybt:SecurityAudit:Cleanup:RetentionDays` |
+| 批量大小 | 1000 条 | - |
+
+分批删除，清理失败异常隔离。执行日志记录清理条数和截止日期。
+
+> **注意**: 当前代码硬编码 30 天保留，需修改为可配置且默认 365 天以匹配 NFR-SEC-005。
+
+### Server 启动诊断
+
+> 对应 [FR-SYS-008](../02-requirements/health-diagnostics.md)。
+
+DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
+
+**检查项**:
+1. 数据库连接 (`CanConnectAsync`)
+2. 连接池配置验证
+
+**结果处理**:
+- 连接成功: Information 日志 (数据库名称 + 服务器地址 + 连接耗时)
+- 连接失败: Error 日志 + 故障排查建议列表:
+  - 检查 SQL Server 服务是否启动
+  - 检查连接字符串配置
+  - 检查网络连通性和防火墙
+  - 检查数据库权限
+
+**关键**: 诊断失败**不阻塞应用启动** (降级启动)。与 ProductionConfigurationValidator 的区别: 后者在配置缺失时阻止启动，前者在配置正确但连接失败时允许降级运行。
+
+### Token Family 管理
+
+> 对应 AUTH-D06 (单会话策略) + AUTH-D07 (角色变更即时生效)，详见 [auth.md](../02-requirements/auth.md)。
+
+**单会话登录** (AUTH-D06): 同一账号仅允许一台设备登录。新设备登录时，AuthService 撤销该用户所有现有 Token Family (按 FamilyId 批量标记 IsRevoked=true)。旧设备下次请求或刷新 Token 时触发 TokenRevoked → 强制登出。
+
+**角色变更即时生效** (AUTH-D07): 用户角色变更时，UserService 调用 AuthService 撤销该用户 Token Family，强制重登录。复用单会话的 Token Family 撤销逻辑。
+
+**实现要点**:
+- RefreshToken 表通过 FamilyId 字段追踪 Token 家族
+- 撤销操作为批量 UPDATE: `SET IsRevoked=true WHERE UserId=@userId AND IsRevoked=false`
+- 重放攻击检测: 已使用 (IsUsed=true) 的 RefreshToken 再次提交 → 整个 Family 失效 (ERR-10203 TokenRevoked)
+
+### 备份服务
+
+> 对应 [NFR-AVAIL-001](../02-requirements/nfr.md)。
+
+| 数据库 | 备份方式 | 频率 | 保留期 |
+|--------|---------|------|--------|
+| SQL Server | SQL Server Agent 自动全量备份 | 每日 | 30 天 |
+| SQLite | Desktop 启动时自动备份 | 每次启动 | 7 天 (最多 7 个备份文件) |
+
+**SQL Server 备份要点**:
+- 备份文件命名: `LYBTDB_{yyyyMMdd}.bak`
+- 通过 SQL Server Agent 维护计划配置，不在应用代码中实现
+- 恢复优先级: 本地模式降级 (即时) → 从备份还原 (30min 内，对应 RTO) → 重新部署
+
+**SQLite 备份要点**:
+- Desktop 启动时复制 `.db` 文件到 `{AppData}/LYBT/Backup/lybt_{yyyyMMdd}.db`
+- 后台异步执行，不阻塞用户操作
+- 超过 7 天的备份文件自动删除
+
+---
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 server-layer-architecture/repository-patterns/service-conventions/error-handling specs 整合 |
 | 2026-02-18 | v1.1 | PRD同步: 错误码体系更新为 MCCEE 格式 (模块1位+子类别2位+序号2位)，对齐PRD 90+场景; 新增缓存策略章节 (OutputCache + Desktop，引用 nfr.md) |
+| 2026-02-18 | v1.2 | 设计补全: 新增运维与安全章节 -- 敏感数据脱敏 (FR-LOG-003)、API请求日志 (FR-LOG-007)、启动配置验证 (FR-CFG-004)、安全审计日志 (FR-LOG-002)、日志清理服务 (FR-LOG-005)、审计日志清理 (FR-LOG-006)、Server启动诊断 (FR-SYS-008)、Token Family管理 (AUTH-D06/D07)、备份服务 (NFR-AVAIL-001) |

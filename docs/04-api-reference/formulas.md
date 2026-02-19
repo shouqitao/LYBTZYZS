@@ -236,8 +236,40 @@ JSON 批量导入验方 (Server 端只处理 DTO，Excel 解析由 Client 端负
 
 ---
 
+## 错误码
+
+> 完整错误码定义见 [formulas.md PRD](../02-requirements/formulas.md)。错误码分区: 6xxxx。
+
+### 核心错误 (601xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-60101 | FormulaNotFound | 404 | 验方不存在 | GET/PUT/DELETE /{id}, POST /{id}/restore |
+| ERR-60102 | FormulaIdInvalid | 400 | 验方ID不能为空 | 传入 Guid.Empty |
+| ERR-60103 | FormulaNoPermission | 403 | 无权限操作此验方 | PUT/DELETE /{id} |
+| ERR-60107 | FormulaNotDeleted | 200 | 该验方未被删除 | POST /{id}/restore |
+| ERR-60108 | FormulaInvalidPagination | 400 | 分页参数无效 | GET / |
+
+### 药材验证错误 (602xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-60201 | HerbItemIdInvalid | 400 | 参数不能为空 | POST /{id}/herbs/{herbItemId}/validate |
+| ERR-60202 | HerbItemNotFound | 200 | 药材项不存在 | POST /{id}/herbs/{herbItemId}/validate |
+| ERR-60204 | SystemHerbNotFound | 200 | 所选药材不存在 | POST /{id}/herbs/{herbItemId}/validate |
+
+### 批量操作错误 (603xx)
+
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-60301 | FormulaBatchEmpty | 400 | 请至少选择一个方剂 | POST /batch-delete, POST /batch-toggle-status |
+| ERR-60302 | FormulaBatchImportEmpty | 400 | 导入数据不能为空 | POST /batch-import |
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，15 个端点 |
+| 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-60101~60304)，含核心/药材验证/批量三类 |

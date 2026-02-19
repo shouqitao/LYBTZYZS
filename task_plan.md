@@ -1,67 +1,83 @@
 # Task Plan
 
 ## Goal
-基于PRD全量闭环分析(16个问题修复)的结果，更新设计文档(架构层+API层)，确保设计文档与PRD保持同步。
+基于设计文档全量覆盖审查结果，修复全部暴露的问题: 1 CRITICAL + 8 HIGH + 4 MEDIUM系统性 + 14 FR PARTIAL + 5 NFR PARTIAL + 6 其他。
 
 ## Current Phase
-Phase 1: BRAINSTORM -> complete
+ALL PHASES COMPLETE
 
 ---
 
 ## Phases
 
-### Phase 1: BRAINSTORM - 调研现有设计文档现状，识别差距
-- Status: complete
-- Tasks:
-  - [x] 读取 docs/03-architecture/ 全部文档，了解现有架构设计
-  - [x] 读取 docs/04-api-reference/ 关键文档，了解现有API设计
-  - [x] 对比PRD变更清单，识别设计文档差距
-  - [x] 形成分阶段工作计划
+### Phase 1: CRITICAL -- dual-mode.md MedicalCase 同步不一致修复
+- Status: **complete**
+- Tasks: [x] 1.1~1.5 全部完成
 
-### Phase 2: 数据模型更新 (data-model.md) [P0]
-- Status: pending
-- Tasks:
-  - [ ] MedicalCase 实体: 新增 IsPrinted(bool) 字段 (从 Prescription 提升, MC-D15)
-  - [ ] MedicalCase 实体: 新增 EditReason(string?) 字段 (打印后修改需填写原因)
-  - [ ] Patient 实体: 明确 Status:CommonStatus 语义 (PAT-D05 禁用=患者已故)
-  - [ ] Prescription 实体: 确认 LastPrintedAt/PrintVersion 字段描述与PRD一致
-  - [ ] 变更记录更新
+### Phase 2: server.md 设计补全 (9 项)
+- Status: **complete**
+- Tasks: [x] 2.1~2.9 全部完成
 
-### Phase 3: 患者API设计 (04-api-reference/patients.md) [P0]
-- Status: pending
-- Tasks:
-  - [ ] 新增 PUT /patients/{id}/status 端点 (FR-PAT-013)
-  - [ ] 补充请求/响应DTO、权限、错误码
-  - [ ] 变更记录更新
+### Phase 3: desktop.md 设计补全 (14 项)
+- Status: **complete**
+- Tasks: [x] 3.1~3.14 全部完成
 
-### Phase 4: 医案API补充 (04-api-reference/medical-cases.md) [P1]
-- Status: pending
-- Tasks:
-  - [ ] 文档化 FR-MC-018 复制历史处方的组合API实现路径
-  - [ ] 补充 IsPrinted 相关的业务规则说明 (MC-D15)
-  - [ ] 补充 EditReason 字段在更新API中的说明
-  - [ ] 变更记录更新
+### Phase 4: API Reference MCCEE 错误码补全 (8 文档)
+- Status: **complete**
+- Tasks: [x] 4.1~4.8 全部完成 (含 check-reference 端点 + 客户端错误码)
 
-### Phase 5: 架构设计补充 (server.md) [P1]
-- Status: pending
-- Tasks:
-  - [ ] 新增缓存失效策略章节 (OutputCache + Desktop缓存, 来自nfr.md v1.2)
-  - [ ] 错误码体系与MCCEE对齐验证 (确认前缀分配一致)
-  - [ ] 变更记录更新
+### Phase 5: 补充修复 (D维度 PARTIAL + data-model)
+- Status: **complete**
+- Tasks: [x] 5.1~5.5 全部完成
 
-### Phase 6: 索引同步与收尾 [P2]
-- Status: pending
+### Phase 6: 验证
+- Status: **complete**
 - Tasks:
-  - [ ] 04-api-reference/README.md 端点总数更新
-  - [ ] shared.md MC-D16 角色脱敏DTO补充 (如需要)
-  - [ ] 全量交叉验证: 确认7项PRD变更均有设计文档覆盖
-  - [ ] progress.md 最终总结
+  - [x] 6.1 交叉引用检查: 发现并修复 40 个错误路径 (../../ -> ../)
+  - [x] 6.2 覆盖率抽检: 全部 MISSING/PARTIAL 项已修复 (见下方)
+  - [x] 6.3 findings.md 最终覆盖率已更新
 
 ---
 
+## Task Statistics
+
+| Phase | 总任务 | 已完成 | 剩余 |
+|-------|--------|--------|------|
+| Phase 1 | 5 | 5 | 0 |
+| Phase 2 | 9 | 9 | 0 |
+| Phase 3 | 14 | 14 | 0 |
+| Phase 4 | 8 | 8 | 0 |
+| Phase 5 | 5 | 5 | 0 |
+| Phase 6 | 3 | 3 | 0 |
+| **合计** | **44** | **44** | **0** |
+
+## Verification Results
+
+### MISSING -> COVERED (8 items)
+- FR-PAT-011/012: check-reference 端点已添加到 patients.md API
+- FR-ERR-005/007/008: 客户端异常体系已设计在 desktop.md
+- FR-LOG-003: SensitiveDataMaskingEnricher 设计已添加到 server.md
+- FR-LOG-007: ApiLoggingFilter 设计已添加到 server.md
+- FR-CFG-004: ProductionConfigurationValidator 设计已添加到 server.md
+
+### PARTIAL -> COVERED (14 FR + 5 NFR + D items)
+- 全部 14 项 FR PARTIAL 已补全设计 (desktop.md + server.md)
+- 全部 5 项 NFR PARTIAL 已补全 (性能预算/加密/备份/清理)
+- MC-D06/D07/D14, AUTH timeout, USER-D03 已补全
+
+### DISCREPANCY -> RESOLVED (2 items)
+- MedicalCase 同步 PRD-设计文档不一致已修复 (dual-mode.md v1.1)
+
+### 链接修复
+- 40 个 ../../02-requirements/ 错误路径修正为 ../02-requirements/
+
 ## Decisions Made
-- FR-MC-018 不新增专用API端点，通过现有端点组合实现 (客户端驱动模式)
-- Patient 状态管理复用 toggle-status 模式 (参考 herbs/users 已有端点)
+- 任务按目标文件分组 (非按问题类型)，减少文件切换
+- API README 4 个多余错误码: 标注为设计扩展保留 (防御性措施)
+- diagnostics.md 确认无 MCCEE 码需要 (PRD 仅定义泛化 HTTP 状态码)
+- 交叉引用链接使用 ../02-requirements/ (同级目录间相对路径)
 
 ## Errors Encountered
-(无)
+| 错误 | 尝试 | 解决方案 |
+|------|------|----------|
+| 40个文档交叉引用路径错误 | 1 | 批量替换 ../../ -> ../ |
