@@ -29,6 +29,11 @@ namespace LYBT.Module.MedicalCases.Interfaces
         bool CanEdit(Guid userId, UserRole role, MedicalCase medicalCase);
 
         /// <summary>
+        /// 检查用户是否有权编辑指定医案 (isAdmin 重载，供 Service 层使用)
+        /// </summary>
+        bool CanEdit(Guid userId, bool isAdmin, MedicalCase medicalCase);
+
+        /// <summary>
         /// 检查用户是否有权创建医案
         /// </summary>
         /// <param name="userId">当前用户ID</param>
@@ -44,6 +49,11 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="medicalCase">医案实体</param>
         /// <returns>是否有删除权限</returns>
         bool CanDelete(Guid userId, UserRole role, MedicalCase medicalCase);
+
+        /// <summary>
+        /// 检查用户是否有权删除指定医案 (isAdmin 重载，供 Service 层使用)
+        /// </summary>
+        bool CanDelete(Guid userId, bool isAdmin, MedicalCase medicalCase);
 
         /// <summary>
         /// 检查是否需要提供修改原因

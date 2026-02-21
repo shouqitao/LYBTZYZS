@@ -340,10 +340,7 @@ public class MedicalCaseIntegrationTests
             .PutAsJsonAsync($"{BaseUrl}/{caseId}/cancel", cancelReq);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content
-            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
-        body!.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled, "取消后应为Cancelled");
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent, "取消操作返回204");
     }
 
     [Fact]

@@ -87,6 +87,17 @@ graph TB
 
 **计算属性**: IsLocked (跨日锁定), IsActive, IsCompleted
 
+**DDD 域方法** (聚合根行为):
+
+| 方法 | 说明 |
+|------|------|
+| `Complete()` | 设置 CaseStatus=Completed + CompletedAt=DateTime.Now |
+| `SaveAsDraft()` | 设置 CaseStatus=Draft |
+| `SoftDelete()` | 设置 IsDeleted=true (取消医案) |
+| `UpdateConsultation(request)` | 从 ConsultationInputDto 更新 Consultation 子实体字段 |
+
+> MedicalCase 是系统中唯一采用充血模型的实体，状态变更逻辑封装在聚合根域方法中，Service 层委托调用。
+
 ### Consultation (诊断)
 
 共享 MedicalCase 主键 (1:1 关系):
@@ -259,7 +270,8 @@ graph TB
 | 0 | Draft | 草稿/暂存 |
 | 1 | Active | 进行中 |
 | 2 | Completed | 已完成 |
-| 3 | Cancelled | 已取消 |
+
+> **注意**: `Cancelled` (原值=3) 已移除。取消操作统一通过 `IsDeleted=true` 软删除实现。
 
 ### UserRole
 
@@ -372,3 +384,4 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 | 2026-02-18 | v1.1 | PRD同步: MedicalCase 新增 IsPrinted 字段 (MC-D15, 从 Prescription 提升到聚合根); Prescription 移除 IsPrinted (打印保护由聚合根统一管理); Patient.Status 补充禁用语义 (PAT-D05) |
 | 2026-02-19 | v1.2 | 设计补全: 索引策略章节 (BR-001 筛选唯一索引 MC-D06); Herb 禁用药材显示规则 (MC-D07); Prescription 价格计算公式 (MC-D14) |
 | 2026-02-21 | v1.3 | 打印层级提升: ER 图和聚合根图 PrescriptionPrintLog->MedicalCasePrintLog (FK 改为 MedicalCase); MedicalCase 新增 PrintVersion; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt) |
+| 2026-02-21 | v1.4 | 深度重构同步: MedicalCaseStatus 移除 Cancelled=3 (取消统一为 IsDeleted=true); MedicalCase 新增 DDD 域方法 (Complete/SaveAsDraft/SoftDelete/UpdateConsultation)，从贫血模型演进为充血模型 |

@@ -150,6 +150,47 @@ namespace LYBT.Module.MedicalCases.Services
             CompareField("Remark", before.Remark, after.Remark, changedFields, oldValues, newValuesDict);
             CompareField("NeedsPrescription", before.NeedsPrescription, after.NeedsPrescription, changedFields, oldValues, newValuesDict);
             CompareField("IsDeleted", before.IsDeleted, after.IsDeleted, changedFields, oldValues, newValuesDict);
+            CompareField("CompletedAt", before.CompletedAt, after.CompletedAt, changedFields, oldValues, newValuesDict);
+
+            // 嵌套实体: Consultation 变更检测
+            if (before.Consultation != null && after.Consultation != null)
+            {
+                CompareField("Consultation.PresentIllness", before.Consultation.PresentIllness, after.Consultation.PresentIllness, changedFields, oldValues, newValuesDict);
+                CompareField("Consultation.TongueDiagnosis", before.Consultation.TongueDiagnosis, after.Consultation.TongueDiagnosis, changedFields, oldValues, newValuesDict);
+                CompareField("Consultation.PulseDiagnosis", before.Consultation.PulseDiagnosis, after.Consultation.PulseDiagnosis, changedFields, oldValues, newValuesDict);
+                CompareField("Consultation.TcmDiagnosis", before.Consultation.TcmDiagnosis, after.Consultation.TcmDiagnosis, changedFields, oldValues, newValuesDict);
+            }
+            else if (before.Consultation == null && after.Consultation != null)
+            {
+                changedFields.Add("Consultation");
+                newValuesDict["Consultation"] = "Created";
+            }
+
+            // 嵌套实体: Prescription 变更检测
+            if (before.Prescription != null && after.Prescription != null)
+            {
+                CompareField("Prescription.DosageCount", before.Prescription.DosageCount, after.Prescription.DosageCount, changedFields, oldValues, newValuesDict);
+                CompareField("Prescription.Discount", before.Prescription.Discount, after.Prescription.Discount, changedFields, oldValues, newValuesDict);
+                CompareField("Prescription.Advice", before.Prescription.Advice, after.Prescription.Advice, changedFields, oldValues, newValuesDict);
+                CompareField("Prescription.ReferencedFormulas", before.Prescription.ReferencedFormulas, after.Prescription.ReferencedFormulas, changedFields, oldValues, newValuesDict);
+                CompareField("Prescription.IsDeleted", before.Prescription.IsDeleted, after.Prescription.IsDeleted, changedFields, oldValues, newValuesDict);
+
+                // Items 数量变化
+                var beforeItemCount = before.Prescription.Items?.Count ?? 0;
+                var afterItemCount = after.Prescription.Items?.Count ?? 0;
+                CompareField("Prescription.ItemCount", beforeItemCount, afterItemCount, changedFields, oldValues, newValuesDict);
+            }
+            else if (before.Prescription == null && after.Prescription != null)
+            {
+                changedFields.Add("Prescription");
+                newValuesDict["Prescription"] = "Created";
+            }
+            else if (before.Prescription != null && after.Prescription == null)
+            {
+                changedFields.Add("Prescription");
+                oldValues["Prescription"] = "Existed";
+                newValuesDict["Prescription"] = "Removed";
+            }
 
             if (changedFields.Count == 0)
                 return (null, null, null);

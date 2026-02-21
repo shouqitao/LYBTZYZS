@@ -86,7 +86,8 @@
 | 0 | Draft | 暂存 | 用户暂时保存 |
 | 1 | Active | 进行中 | 正在诊疗 |
 | 2 | Completed | 已完成 | 诊疗流程全部完成，锁定编辑 |
-| 3 | Cancelled | 已取消 | 数据保留但标记取消 |
+
+> `Cancelled` (原值=3) 已移除。取消医案统一通过 `IsDeleted=true` 软删除实现，审计类型为 `SoftDelete`。
 
 ### FormulaType (方剂类型)
 
@@ -110,8 +111,7 @@
 | 1 | Create | 创建 |
 | 2 | Update | 更新 |
 | 3 | StatusChange | 状态变更 |
-| 4 | SoftDelete | 软删除 |
-| 5 | Cancel | 取消 |
+| 4 | SoftDelete | 软删除 (含取消操作) |
 
 ---
 
@@ -120,3 +120,4 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 openspec/project.md 和实体代码提取 |
+| 2026-02-21 | v1.1 | MedicalCaseStatus 移除 Cancelled=3 (取消统一为软删除); AuditOperationType 移除 Cancel=5 (合并到 SoftDelete) |

@@ -13,7 +13,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
     {
         /// <summary>
         /// 更新病案状态
-        /// Epic #1612: 支持Active/Completed/Cancelled状态流转
+        /// 支持 Draft/Active/Completed 状态流转
         /// </summary>
         /// <param name="medicalCaseId">病案ID</param>
         /// <param name="status">目标状态</param>
@@ -23,13 +23,15 @@ namespace LYBT.Module.MedicalCases.Interfaces
             MedicalCaseStatus status);
 
         /// <summary>
-        /// 完成病案（三步流程最后一步）
-        /// Epic #1612: 验证三步流程完整性后标记为Completed
-        /// 业务规则：BF-002（三步流程验证）
+        /// 统一完成病案入口
+        /// skipWorkflowValidation=false: 验证 NeedsPrescription + 处方存在性 (BR-003)
+        /// skipWorkflowValidation=true: 直接完成 (原 CloseCaseAsync 行为)
         /// </summary>
-        /// <param name="medicalCaseId">病案ID</param>
-        /// <returns>完成后的病案实体</returns>
-        Task<MedicalCase?> CompleteAsync(Guid medicalCaseId);
+        Task<MedicalCase?> CompleteAsync(
+            Guid medicalCaseId,
+            Guid operatorId,
+            bool isAdmin = false,
+            bool skipWorkflowValidation = false);
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）
@@ -65,7 +67,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <summary>
         /// 取消医案
         /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
-        /// 业务规则：设置状态为Cancelled，需要审计理由（非当天本人操作时）
+        /// 业务规则：统一为软删除(IsDeleted=true)，保留审计日志
         /// </summary>
         /// <param name="id">病案ID</param>
         /// <param name="operatorId">操作者ID</param>

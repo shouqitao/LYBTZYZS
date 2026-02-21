@@ -3,8 +3,8 @@ using System.ComponentModel;
 namespace LYBT.Shared.Models.Enums
 {
     /// <summary>
-    /// 医疗案例状态枚举 - Issue #2242简化版
-    /// 简化状态机：Draft ↔ Active → Completed，取消操作使用软删除（IsDeleted）
+    /// 医疗案例状态枚举 - 简化版
+    /// 状态机：Draft ↔ Active → Completed，取消操作统一使用软删除（IsDeleted）
     /// </summary>
     public enum MedicalCaseStatus
     {
@@ -18,11 +18,8 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>已完成（三步流程全部完成）</summary>
         [Description("已完成")]
-        Completed = 2,
-
-        /// <summary>已取消（用户主动取消或管理员关闭）</summary>
-        [Description("已取消")]
-        Cancelled = 3
+        Completed = 2
+        // Cancelled = 3 已移除，取消操作统一使用软删除（IsDeleted=true）
     }
 
     /// <summary>

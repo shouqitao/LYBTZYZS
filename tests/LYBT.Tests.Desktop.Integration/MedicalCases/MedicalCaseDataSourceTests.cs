@@ -212,9 +212,10 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
 
         // Assert
         result.Should().BeTrue();
-        var cancelled = await ds.GetByIdAsync(mc.Id);
-        cancelled.Should().NotBeNull();
-        cancelled!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
+        // 取消操作改为软删除，GetByIdAsync 默认过滤 IsDeleted，需用特殊查询验证
+        var cancelled = await ds.GetWithDetailsAsync(mc.Id);
+        // 软删除后通过标准查询应查不到
+        cancelled.Should().BeNull("取消操作为软删除，标准查询应过滤已删除记录");
     }
 
     #endregion

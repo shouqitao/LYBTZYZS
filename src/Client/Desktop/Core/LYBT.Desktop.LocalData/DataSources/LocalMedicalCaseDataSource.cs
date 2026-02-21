@@ -276,7 +276,8 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
         if (entity == null)
             return false;
 
-        entity.CaseStatus = MedicalCaseStatus.Cancelled;
+        // 取消操作统一为软删除
+        entity.IsDeleted = true;
         entity.Remark = string.IsNullOrEmpty(entity.Remark)
             ? $"取消原因: {reason}"
             : $"{entity.Remark}\n取消原因: {reason}";

@@ -26,7 +26,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// - 医生只能编辑自己创建的医案
         /// - Draft/Active状态：不受跨日限制，随时可编辑
         /// - Completed状态：当天可编辑，跨日后锁定
-        /// - Cancelled状态：不可编辑
+        /// - 已软删除(IsDeleted)：不可编辑（由 EF 全局过滤器排除）
         /// </summary>
         public bool CanEdit(Guid userId, UserRole role, MedicalCase medicalCase)
         {
@@ -84,8 +84,8 @@ namespace LYBT.Module.MedicalCases.Services
                     }
                 }
 
-                // Cancelled 状态：不可编辑
-                _logger.LogDebug("[SVC] MedicalCase.CheckPermission → CancelledDenied - MedicalCaseId={MedicalCaseId} Status={Status}",
+                // 其他状态：不可编辑（已软删除由 EF 全局过滤器排除）
+                _logger.LogDebug("[SVC] MedicalCase.CheckPermission → StatusDenied - MedicalCaseId={MedicalCaseId} Status={Status}",
                     medicalCase.Id, medicalCase.CaseStatus);
                 return false;
             }
@@ -93,6 +93,25 @@ namespace LYBT.Module.MedicalCases.Services
             // 其他角色默认无权编辑
             _logger.LogDebug("[SVC] MedicalCase.CheckPermission → RoleDenied - Role={Role}", role);
             return false;
+        }
+
+        /// <summary>
+        /// 检查用户是否有权编辑指定医案 (isAdmin 重载，供 Service 层使用)
+        /// 将 bool isAdmin 转换为 UserRole 后委托给主方法
+        /// </summary>
+        public bool CanEdit(Guid userId, bool isAdmin, MedicalCase medicalCase)
+        {
+            var role = isAdmin ? UserRole.Admin : UserRole.Doctor;
+            return CanEdit(userId, role, medicalCase);
+        }
+
+        /// <summary>
+        /// 检查用户是否有权删除指定医案 (isAdmin 重载，供 Service 层使用)
+        /// </summary>
+        public bool CanDelete(Guid userId, bool isAdmin, MedicalCase medicalCase)
+        {
+            var role = isAdmin ? UserRole.Admin : UserRole.Doctor;
+            return CanDelete(userId, role, medicalCase);
         }
 
         /// <summary>
@@ -196,11 +215,7 @@ namespace LYBT.Module.MedicalCases.Services
                     return "该医案已完成且已过当天编辑时间，医生无法编辑";
                 }
 
-                // Cancelled 状态
-                if (medicalCase.CaseStatus == MedicalCaseStatus.Cancelled)
-                {
-                    return "该医案已取消，无法编辑";
-                }
+                // 已软删除的医案由 EF 全局过滤器排除，正常不会到达此处
             }
 
             return "权限不足";

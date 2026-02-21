@@ -725,14 +725,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
                 null);
 
-            // Assert
-            response.ShouldBeOk();
+            // Assert - 取消操作现在返回204 NoContent（软删除）
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.NoContent);
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
-            apiResponse.Data.Should().NotBeNull();
-            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
-
-            _output.WriteLine($"✅ Cancel成功: 状态变更为Cancelled");
+            _output.WriteLine($"✅ Cancel成功: 医案已软删除");
         }
 
         /// <summary>
@@ -777,13 +773,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
                 cancelRequest);
 
-            // Assert
-            response.ShouldBeOk();
+            // Assert - 取消操作现在返回204 NoContent（软删除）
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.NoContent);
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
-            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
-
-            _output.WriteLine($"✅ Cancel带理由成功");
+            _output.WriteLine($"✅ Cancel带理由成功(软删除)");
         }
 
         /// <summary>
@@ -802,13 +795,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
                 null);
 
-            // Assert
-            response.ShouldBeOk();
+            // Assert - 取消操作现在返回204 NoContent（软删除）
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.NoContent);
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
-            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
-
-            _output.WriteLine($"✅ Cancel对Draft状态成功");
+            _output.WriteLine($"✅ Cancel对Draft状态成功(软删除)");
         }
 
         /// <summary>
@@ -827,10 +817,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
                 null);
 
-            // Assert - Cancelled状态不可编辑
-            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.Forbidden);
+            // Assert - 软删除后查不到，返回404
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.NotFound);
 
-            _output.WriteLine($"✅ Cancel正确拒绝已取消的医案");
+            _output.WriteLine($"✅ 已软删除的医案再次取消返回404");
         }
 
         #endregion

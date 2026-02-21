@@ -87,8 +87,8 @@
 
 **错误响应**:
 - 400: 请求 ID 与路由 ID 不一致
-- 403: 无权编辑此病案
-- 404: 病案不存在
+- 403: 无权编辑此医案
+- 404: 医案不存在
 - 422: 打印后修改未提供 editReason (ERR-30403)
 
 ---
@@ -115,7 +115,9 @@
 
 ### PUT /medicalcases/{id}/status
 
-更新病案状态。支持 Draft/Active/Completed/Cancelled 状态流转。
+更新医案状态。仅支持 Draft/Active 状态流转。
+
+> **重要**: `Completed` 状态不允许通过此端点设置，必须使用 `PUT /{id}/close` (完成医案专用入口)。`Cancelled` 状态已移除，取消操作请使用 `PUT /{id}/cancel` (软删除)。
 
 **路径参数**: `id` (Guid)
 
@@ -123,23 +125,25 @@
 
 ```json
 {
-  "status": "Draft|Active|Completed|Cancelled"
+  "status": "Draft|Active"
 }
 ```
 
 **成功响应** (200): `ApiResponse<MedicalCaseDetailDto>`
 
-**错误响应**: 422 (非法状态流转)
+**错误响应**:
+- 422: 非法状态流转
+- 422: 尝试设置 Completed 状态 (InvalidOperationException: 完成医案请使用专用的 Complete 接口)
 
 ---
 
 ### PUT /medicalcases/{id}/close
 
-关闭病案 (直接标记为 Completed，不验证三步流程)。
+完成医案 (统一入口)。底层调用 `CompleteAsync`，支持 `skipWorkflowValidation` 参数跳过三步流程校验。通过聚合根域方法 `MedicalCase.Complete()` 设置状态和 CompletedAt。
 
 **路径参数**: `id` (Guid)
 
-**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` ("病案已关闭")
+**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` ("医案已关闭")
 
 ---
 
@@ -153,7 +157,7 @@
 
 **授权**: 资源级授权 (Edit 操作)
 
-**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` ("病案已暂存")
+**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` ("医案已暂存")
 
 ---
 
@@ -173,13 +177,13 @@
 
 **授权**: 资源级授权 (Edit 操作)
 
-**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` ("病案已取消")
+**成功响应** (204): 无内容 (取消操作统一为软删除，不再返回 DTO)
 
 ---
 
 ### DELETE /medicalcases/{id}
 
-删除病案 (软删除)。
+删除医案 (软删除)。
 
 **路径参数**: `id` (Guid)
 
@@ -189,7 +193,7 @@
 
 **错误响应**:
 - 403: 无权删除
-- 404: 病案不存在
+- 404: 医案不存在
 
 ---
 
@@ -223,7 +227,7 @@
 
 ### GET /medicalcases/{id}
 
-获取病案详情 (含 Consultation + Prescription 完整数据)。
+获取医案详情 (含 Consultation + Prescription 完整数据)。
 
 **路径参数**: `id` (Guid)
 
@@ -236,7 +240,7 @@
   "patientName": "string",
   "userId": "guid",
   "doctorName": "string",
-  "caseStatus": "Draft|Active|Completed|Cancelled",
+  "caseStatus": "Draft|Active|Completed",
   "remark": "string",
   "diagnosis": "string",
   "createdAt": "datetime",
@@ -448,17 +452,16 @@
 
 ---
 
-## 废弃端点
+## 已移除端点
 
-以下端点已标记 `[Obsolete]`，请迁移到统一查询端点:
+以下端点已从代码中移除 (v2.3 深度重构):
 
-| 废弃端点 | 替代方案 |
-|----------|----------|
-| `GET /{id}/with-details` | `GET /{id}` (已统一返回完整详情) |
-| `GET /pending` | `GET /query?queryType=Pending` |
-| `GET /by-patient/{patientId}` | `GET /query?queryType=ByPatient&patientId=...` |
-| `GET /patient/{patientId}/recent` | `GET /query?queryType=Recent&patientId=...` |
-| `GET /patient/{patientId}/unfinished` | `GET /query?queryType=Unfinished&patientId=...` |
+| 已移除端点 | 替代方案 | 移除原因 |
+|----------|----------|----------|
+| `GET /{id}/with-details` | `GET /{id}` | 已统一返回完整详情，75 行内联映射冗余 |
+| `GET /by-patient/{patientId}` | `GET /query?queryType=ByPatient&patientId=...` | 统一查询端点已覆盖 |
+| `GET /patient/{patientId}/recent` | `GET /query?queryType=Recent&patientId=...` | 统一查询端点已覆盖 |
+| `GET /patient/{patientId}/unfinished` | `GET /query?queryType=Unfinished&patientId=...` | 统一查询端点已覆盖 |
 
 ---
 
@@ -529,3 +532,4 @@
 | 2026-02-10 | v1.0 | 初始版本，18+ 端点 (含 5 个废弃) |
 | 2026-02-18 | v1.1 | PRD同步: PUT /medicalcases/{id} 补充打印保护规则 (MC-D15, editReason/ERR-30403/ERR-30404); 新增"复制历史处方"组合API实现路径文档 (FR-MC-018) |
 | 2026-02-18 | v1.2 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-30101~30607)，含创建/权限/状态/处方/并发/参数六类 |
+| 2026-02-21 | v1.3 | 深度重构同步: PUT /status 移除 Cancelled/Completed 支持 (Completed 需用 /close); PUT /cancel 响应改为 204; 4 个废弃端点已从代码移除; caseStatus 枚举移除 Cancelled; /close 补充统一入口说明; 术语"病案"统一为"医案" |

@@ -28,6 +28,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         private readonly Mock<IMedicalCaseRepository> _repositoryMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IMedicalCaseAuditService> _auditServiceMock;
+        private readonly Mock<IMedicalCasePermissionService> _permissionServiceMock;
         private readonly Mock<ILogger<MedicalCaseStateService>> _loggerMock;
 
         public MedicalCaseStateServiceTests()
@@ -35,12 +36,18 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _repositoryMock = CreateMock<IMedicalCaseRepository>();
             _userRepositoryMock = CreateMock<IUserRepository>();
             _auditServiceMock = CreateMock<IMedicalCaseAuditService>();
+            _permissionServiceMock = CreateMock<IMedicalCasePermissionService>();
             _loggerMock = CreateLoggerMock<MedicalCaseStateService>();
+
+            // 默认: 权限检查通过
+            _permissionServiceMock.Setup(x => x.CanEdit(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<MedicalCaseEntity>()))
+                .Returns(true);
 
             _service = new MedicalCaseStateService(
                 _repositoryMock.Object,
                 _userRepositoryMock.Object,
                 _auditServiceMock.Object,
+                _permissionServiceMock.Object,
                 _loggerMock.Object);
         }
 
@@ -49,14 +56,14 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         [Fact]
         public async Task UpdateStatusAsync_WithValidStatus_ShouldUpdateStatus()
         {
-            // Arrange
+            // Arrange - 使用 Active 状态 (Phase 3: Completed 已禁止通过 UpdateStatusAsync 设置)
             var medicalCaseId = Guid.NewGuid();
-            var newStatus = MedicalCaseStatus.Completed;
+            var newStatus = MedicalCaseStatus.Active;
 
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                CaseStatus = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Draft,
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
 
@@ -75,9 +82,20 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         }
 
         [Fact]
+        public async Task UpdateStatusAsync_WithCompletedStatus_ShouldThrowInvalidOperationException()
+        {
+            // Arrange - Phase 3: 完成医案必须通过 CompleteAsync，不允许通过 UpdateStatusAsync
+            var medicalCaseId = Guid.NewGuid();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.UpdateStatusAsync(medicalCaseId, MedicalCaseStatus.Completed));
+        }
+
+        [Fact]
         public async Task UpdateStatusAsync_WhenNotFound_ShouldReturnNull()
         {
-            // Arrange
+            // Arrange - 使用 Active 状态 (Phase 3: Completed 会被 Guard 拦截)
             var medicalCaseId = Guid.NewGuid();
             MedicalCaseEntity? nullCase = null;
 
@@ -85,7 +103,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 .ReturnsAsync(nullCase!);
 
             // Act
-            var result = await _service.UpdateStatusAsync(medicalCaseId, MedicalCaseStatus.Completed);
+            var result = await _service.UpdateStatusAsync(medicalCaseId, MedicalCaseStatus.Active);
 
             // Assert
             result.Should().BeNull();
@@ -125,7 +143,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.CompleteAsync(medicalCaseId);
+            var result = await _service.CompleteAsync(medicalCaseId, Guid.NewGuid());
 
             // Assert
             result.Should().NotBeNull();
@@ -157,7 +175,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.CompleteAsync(medicalCaseId);
+            var result = await _service.CompleteAsync(medicalCaseId, Guid.NewGuid());
 
             // Assert
             result.Should().NotBeNull();
@@ -188,7 +206,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _service.CompleteAsync(medicalCaseId));
+                () => _service.CompleteAsync(medicalCaseId, Guid.NewGuid()));
         }
 
         #endregion
@@ -341,7 +359,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
+            result!.IsDeleted.Should().BeTrue("取消操作统一为软删除");
         }
 
         [Fact]

@@ -158,9 +158,7 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Body] ConsultationInputDto? request = null);
 
         /// <summary>
-        /// 取消医案
-        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
-        /// 设置状态为Cancelled，需要审计理由（非当天本人操作时）
+        /// 取消医案（统一为软删除 + 审计日志）
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}/cancel")]
         Task<ApiResponse<MedicalCaseDetailDto>> CancelMedicalCaseAsync(

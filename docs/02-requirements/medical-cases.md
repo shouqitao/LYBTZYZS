@@ -117,10 +117,12 @@
 
 - **描述**: 标记医案为已完成，锁定编辑
 - **业务规则**:
-  1. 状态设为 Completed
-  2. 记录 CompletedAt 时间
+  1. 状态设为 Completed，通过聚合根域方法 `MedicalCase.Complete()` 统一设置
+  2. 记录 CompletedAt 时间 (域方法内设置)
   3. 完成后当天内可编辑，隔天锁定
   4. 锁定后编辑需要 Admin 权限 + 修改原因
+  5. **统一入口**: 所有完成操作通过 `CompleteAsync` 统一入口 (含 `skipWorkflowValidation` 参数控制是否跳过三步流程校验)
+  6. **禁止通过状态更新完成**: `UpdateStatusAsync` 拒绝 `Completed` 状态，强制使用 `CompleteAsync`
 - **远程模式**: PUT `/api/v1/medicalcases/{id}/close`
 - **本地模式**: 本地完成
 - **验收标准**:
@@ -191,12 +193,12 @@
 - **描述**: 记录医案所有变更的完整审计历史，MedicalCaseAuditService 自动检测字段级变更并记录前后值
 - **业务规则**:
   1. 记录操作人 (ID/姓名/角色)、操作类型、变更字段、前后值
-  2. 操作类型: Create/Update/StatusChange/SoftDelete/Cancel
+  2. 操作类型: Create/Update/StatusChange/SoftDelete (取消操作统一为 SoftDelete)
   3. 修改原因: 历史医案修改时必填
   4. 支持分页查看审计日志
   5. 变更字段和值以 JSON 格式存储 (CamelCase)
   6. 创建操作: 仅记录 NewValues (无 OldValues)
-  7. 更新操作: 自动比较前后值，仅记录实际变更的字段
+  7. 更新操作: 自动比较前后值，仅记录实际变更的字段。覆盖 MedicalCase 顶层字段 + Consultation 4 字段 (PresentIllness/TongueDiagnosis/PulseDiagnosis/TcmDiagnosis) + Prescription 6 字段 + ItemCount，共计 19 个字段
   8. 删除操作: 记录 IsDeleted=true 变更
   9. 审计记录写入失败不影响主业务流程 (异常隔离)
 - **远程模式**: GET `/api/v1/medicalcases/{id}/audit-logs?page=&pageSize=`
@@ -336,22 +338,23 @@ stateDiagram-v2
     [*] --> Draft: 创建医案
     Draft --> Active: 开始诊疗
     Active --> Draft: 暂存草稿
+    Draft --> Completed: 完成看诊
     Active --> Completed: 完成看诊
-    Draft --> Cancelled: 取消
-    Active --> Cancelled: 取消
+    Draft --> [*]: 取消 (软删除)
+    Active --> [*]: 取消 (软删除)
     Completed --> [*]
-    Cancelled --> [*]
 
     note right of Completed: IsLocked = CompletedAt.Date < Today
-    note right of Cancelled: IsDeleted = true
+    note left of Draft: 取消 = IsDeleted=true
 ```
 
 | 状态 | 值 | 说明 | 允许操作 |
 |------|-----|------|----------|
-| Draft | 0 | 暂存 | 编辑、转 Active、取消 |
-| Active | 1 | 进行中 | 编辑、暂存、完成、取消 |
+| Draft | 0 | 暂存 | 编辑、转 Active、完成、取消 (软删除) |
+| Active | 1 | 进行中 | 编辑、暂存、完成、取消 (软删除) |
 | Completed | 2 | 已完成 | 查看 (Admin 可编辑需理由) |
-| Cancelled | 3 | 已取消 | 无 |
+
+> **取消操作**: 不再有独立的 Cancelled 状态值。取消医案统一通过 `IsDeleted=true` 软删除实现，审计类型为 `AuditOperationType.SoftDelete`。已完成的医案不可取消。
 
 ---
 
@@ -488,7 +491,7 @@ stateDiagram-v2
 - **规则**: 离开医案编辑界面时，必须选择一种处置方式
 - **处置选项**:
   1. **挂起** - 状态设为 Draft，数据保存，稍后可继续
-  2. **关闭** - 执行软删除 (IsDeleted=true, CaseStatus=Cancelled)
+  2. **关闭** - 执行软删除 (IsDeleted=true)
   3. **完成** - 状态设为 Completed，需通过完成校验 (BR-003)
 - **异常状态** (崩溃/断网/强制关闭): 统一按挂起处理，医案保持当前状态
 
@@ -557,9 +560,9 @@ stateDiagram-v2
 | ERR-30302 | PrescriptionFlagRequired | 422 | 请先标记是否需要开处方 | Complete 时 NeedsPrescription 为 null (BR-003) |
 | ERR-30303 | PrescriptionRequired | 422 | 已标记需要开处方，但处方不存在，无法完成医案 | NeedsPrescription=true 但 Prescription 为 null |
 | ERR-30304 | CompletedCannotDraft | 422 | 已完成的医案不可暂存 | SaveDraft 时状态为 Completed |
-| ERR-30305 | CancelledCannotDraft | 422 | 已取消的医案不可暂存 | SaveDraft 时状态为 Cancelled |
+| ERR-30305 | DeletedCannotDraft | 422 | 已删除的医案不可暂存 | SaveDraft 时 IsDeleted=true |
 | ERR-30306 | CompletedCannotCancel | 422 | 已完成的医案不可取消 | Cancel 时状态为 Completed |
-| ERR-30307 | AlreadyCancelled | 422 | 医案已经是取消状态 | Cancel 时已是 Cancelled |
+| ERR-30307 | AlreadyDeleted | 422 | 医案已经是删除状态 | Cancel 时 IsDeleted=true |
 
 ### 处方错误 (304xx)
 
@@ -678,3 +681,4 @@ stateDiagram-v2
 | 2026-02-18 | v2.0 | 打印保护策略 (MC-D15): IsPrinted 从 Prescription 提升到 MedicalCase 聚合根; FR-MC-005 增加打印保护规则; FR-MC-015 重写; ERR-30403 调整为需 EditReason; 边界条件新增打印后修改场景 |
 | 2026-02-18 | v2.1 | 患者禁用联动 (MC-D16): FR-MC-001 新增患者状态检查; ERR-30105; 边界条件新增患者状态联动 (禁用创建/历史查阅脱敏/活跃医案阻止禁用) |
 | 2026-02-21 | v2.2 | 打印层级提升到医案层: FR-MC-015 "处方打印"->"打印触发"; MedicalCase 新增 PrintVersion 字段; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt); FR-MC-005 打印保护规则 PrintVersion 引用改为 MedicalCase; MC-D15 更新打印日志重构说明; 边界条件打印场景明确 MedicalCase 前缀 |
+| 2026-02-21 | v2.3 | MedicalCase 深度重构同步: 移除 Cancelled 枚举 (取消统一为 IsDeleted=true 软删除); 状态机更新为 3 状态 (Draft/Active/Completed); FR-MC-007 补充统一完成入口 (CompleteAsync+skipWorkflowValidation) 和 UpdateStatusAsync Guard; FR-MC-012 审计覆盖范围扩展到 19 字段; ERR-30305/30307 更新为软删除触发条件 |

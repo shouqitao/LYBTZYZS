@@ -38,12 +38,14 @@ graph TB
 
 ### LYBT.Entities
 
-领域实体定义，采用贫血模型 (无业务逻辑)。
+领域实体定义，默认采用贫血模型。
 
 **职责**:
 - 定义所有领域实体 (继承 `BaseEntity`)
 - 定义领域枚举和值对象
 - 无外部依赖，仅引用 .NET BCL
+
+> **例外**: `MedicalCaseModel` 作为唯一 DDD 聚合根，包含域方法 (`Complete()`, `SaveAsDraft()`, `SoftDelete()`, `UpdateConsultation()`)，采用充血模型。其他实体保持贫血模型。
 
 **目录结构**:
 ```
@@ -164,11 +166,13 @@ MedicalCase 作为系统核心聚合根，业务复杂度高，采用 CQRS 拆�
 
 | Service | 职责 | 方法示例 |
 |---------|------|----------|
-| IMedicalCaseCommandService | 写操作 | Create, Update, Delete |
-| IMedicalCaseQueryService | 读操作 | GetById, GetPaged, Search |
-| IMedicalCaseStateService | 状态变更 | Submit, Archive, Revert |
-| IMedicalCasePermissionService | 权限检查 | CanEdit, CanDelete |
-| IMedicalCaseAuditService | 审计日志 | LogCreate, LogUpdate |
+| IMedicalCaseCommandService | 写操作 | CreateAsync, SaveAsync, CreatePrescriptionAsync |
+| IMedicalCaseQueryService | 读操作 | GetByIdAsync, GetPagedAsync, SearchAsync |
+| IMedicalCaseStateService | 状态变更 | CompleteAsync, SaveDraftAsync, CancelAsync, UpdateStatusAsync |
+| IMedicalCasePermissionService | 唯一权限权威 | CanEdit, CanDelete, GetPermissions |
+| IMedicalCaseAuditService | 审计日志 | LogAsync, DetectChanges |
+| MedicalCaseRules | 无状态策略 | CanCreateNewCase, HasActiveCase, IsValidStatusTransition |
+| MedicalCaseServiceHelper | 共享工具 | CloneMedicalCaseForAudit, ValidateAndFetchCreationContextAsync, EnsureCanEdit, ExecuteWithConcurrencyRetryAsync |
 
 **适用标准**: 读写复杂度差异大、细粒度权限控制、完整审计日志、复杂状态流转。
 
@@ -613,3 +617,5 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 | 2026-02-10 | v1.0 | 初始版本，从 server-layer-architecture/repository-patterns/service-conventions/error-handling specs 整合 |
 | 2026-02-18 | v1.1 | PRD同步: 错误码体系更新为 MCCEE 格式 (模块1位+子类别2位+序号2位)，对齐PRD 90+场景; 新增缓存策略章节 (OutputCache + Desktop，引用 nfr.md) |
 | 2026-02-18 | v1.2 | 设计补全: 新增运维与安全章节 -- 敏感数据脱敏 (FR-LOG-003)、API请求日志 (FR-LOG-007)、启动配置验证 (FR-CFG-004)、安全审计日志 (FR-LOG-002)、日志清理服务 (FR-LOG-005)、审计日志清理 (FR-LOG-006)、Server启动诊断 (FR-SYS-008)、Token Family管理 (AUTH-D06/D07)、备份服务 (NFR-AVAIL-001) |
+| 2026-02-21 | v1.3 | 深度重构同步: LYBT.Entities 补充 MedicalCaseModel 充血模型例外说明; CQRS 方法示例更新为实际方法签名; 新增 MedicalCaseServiceHelper 共享服务 |
+| 2026-02-21 | v1.4 | 模块全面简化: PermissionService 为唯一权限权威，Rules 精简为无状态策略(57行)，ServiceHelper 扩展(重试/权限验证/创建上下文)，ValidationHelper 合并到 Rules |

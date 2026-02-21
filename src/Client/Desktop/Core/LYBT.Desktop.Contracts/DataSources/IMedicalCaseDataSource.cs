@@ -20,7 +20,7 @@ public interface IMedicalCaseDataSource : IDataSourceBase<MedicalCase>
     Task<bool> CompleteAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
-    /// 取消医案（设置状态为 Cancelled）
+    /// 取消医案（软删除，设置 IsDeleted=true）
     /// </summary>
     Task<bool> CancelAsync(Guid id, string? reason = null, CancellationToken ct = default);
 

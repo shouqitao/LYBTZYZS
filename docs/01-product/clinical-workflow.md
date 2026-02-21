@@ -231,11 +231,11 @@ IsLocked = IsCompleted AND CompletedAt.Date < Today
 stateDiagram-v2
     [*] --> Draft: 创建医案 (FR-MC-001)
     Draft --> Active: 保存诊断 (FR-MC-002)
-    Draft --> Cancelled: 取消 (FR-MC-008)
+    Draft --> Completed: 完成看诊 (FR-MC-007)
+    Draft --> [*]: 取消/软删除 (FR-MC-008)
     Active --> Completed: 完成看诊 (FR-MC-007)
-    Active --> Cancelled: 取消 (FR-MC-008)
+    Active --> [*]: 取消/软删除 (FR-MC-008)
     Completed --> [*]
-    Cancelled --> [*]
 
     state Completed {
         [*] --> Editable: 当天
@@ -246,6 +246,8 @@ stateDiagram-v2
         note right of Locked: Doctor无权<br/>Admin需EditReason
     }
 ```
+
+> **取消操作**: 不再有独立的 Cancelled 状态。取消医案通过 `IsDeleted=true` 软删除实现，聚合根域方法 `MedicalCase.SoftDelete()` 统一处理。已完成的医案不可取消。
 
 ---
 
@@ -354,3 +356,4 @@ graph LR
 |------|------|----------|
 | 2026-02-21 | v1.0 | 初始版本，覆盖 GAP-FLOW-1 端到端临床工作流 |
 | 2026-02-21 | v1.1 | 打印层级提升: Section 2.6 补充医案级打印能力说明; PrescriptionPrintLog->MedicalCasePrintLog; 交互矩阵 MC->PRINT 描述更新 |
+| 2026-02-21 | v1.2 | 深度重构同步: 状态机移除 Cancelled (取消=软删除); 状态机补充 Draft->Completed 转换; 补充聚合根域方法说明 |

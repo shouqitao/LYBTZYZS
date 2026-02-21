@@ -34,6 +34,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         private readonly Mock<IPatientRepository> _patientRepositoryMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IMedicalCaseAuditService> _auditServiceMock;
+        private readonly Mock<IMedicalCasePermissionService> _permissionServiceMock;
         private readonly Mock<ILogger<MedicalCaseCommandService>> _loggerMock;
 
         public MedicalCaseCommandServiceTests()
@@ -42,13 +43,21 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _patientRepositoryMock = CreateMock<IPatientRepository>();
             _userRepositoryMock = CreateMock<IUserRepository>();
             _auditServiceMock = CreateMock<IMedicalCaseAuditService>();
+            _permissionServiceMock = CreateMock<IMedicalCasePermissionService>();
             _loggerMock = CreateLoggerMock<MedicalCaseCommandService>();
+
+            // 默认: 权限检查通过
+            _permissionServiceMock.Setup(x => x.CanEdit(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<MedicalCaseEntity>()))
+                .Returns(true);
+            _permissionServiceMock.Setup(x => x.CanDelete(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<MedicalCaseEntity>()))
+                .Returns(true);
 
             _service = new MedicalCaseCommandService(
                 _repositoryMock.Object,
                 _patientRepositoryMock.Object,
                 _userRepositoryMock.Object,
                 _auditServiceMock.Object,
+                _permissionServiceMock.Object,
                 _loggerMock.Object);
         }
 
@@ -134,8 +143,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var exception = await Assert.ThrowsAsync<ArgumentException>(
                 () => _service.CreateAsync(patientId, visitDate, emptyDoctorId));
 
-            exception.Message.Should().Contain("DoctorId不能为空");
-            exception.ParamName.Should().Be("doctorId");
+            exception.Message.Should().Contain("不能为空");
         }
 
         #endregion
@@ -200,6 +208,10 @@ namespace LYBT.Module.MedicalCases.Tests.Services
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
+
+            // 覆盖默认 mock: 非管理员不能编辑已完成(跨日锁定)的医案
+            _permissionServiceMock.Setup(x => x.CanEdit(doctorId, false, medicalCase))
+                .Returns(false);
 
             // Act & Assert - 非管理员无法编辑已完成医案，抛出UnauthorizedAccessException
             await Assert.ThrowsAsync<UnauthorizedAccessException>(

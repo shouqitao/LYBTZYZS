@@ -102,5 +102,50 @@ namespace LYBT.Entities.MedicalCases
         public bool IsCompleted => CaseStatus == MedicalCaseStatus.Completed;
 
         // CanEdit()方法已删除，权限判断移到MedicalCasePermissionService
+
+        // ========== DDD 聚合根域方法 ==========
+
+        /// <summary>
+        /// 完成医案 -- 设置状态为 Completed + CompletedAt
+        /// </summary>
+        public void Complete()
+        {
+            CaseStatus = MedicalCaseStatus.Completed;
+            CompletedAt = DateTime.Now;
+            UpdatedAt = DateTime.Now;
+        }
+
+        /// <summary>
+        /// 暂存医案 -- 设置状态为 Draft
+        /// </summary>
+        public void SaveAsDraft()
+        {
+            CaseStatus = MedicalCaseStatus.Draft;
+            UpdatedAt = DateTime.Now;
+        }
+
+        /// <summary>
+        /// 软删除医案 -- 设置 IsDeleted = true
+        /// </summary>
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+            UpdatedAt = DateTime.Now;
+        }
+
+        /// <summary>
+        /// 更新诊断信息（4 个核心字段）
+        /// </summary>
+        public void UpdateConsultation(string? presentIllness, string? tongueDiagnosis, string? pulseDiagnosis, string? tcmDiagnosis)
+        {
+            if (Consultation == null) return;
+
+            Consultation.PresentIllness = presentIllness;
+            Consultation.TongueDiagnosis = tongueDiagnosis;
+            Consultation.PulseDiagnosis = pulseDiagnosis;
+            Consultation.TcmDiagnosis = tcmDiagnosis;
+            Consultation.UpdatedAt = DateTime.Now;
+            UpdatedAt = DateTime.Now;
+        }
     }
 }
