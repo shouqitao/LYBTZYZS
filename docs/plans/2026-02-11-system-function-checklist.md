@@ -4,7 +4,7 @@
 >
 > **创建时间**: 2026-02-11
 > **最后更新**: 2026-02-21
-> **数据来源**: 代码扫描 + PRD 文档交叉验证 (893 源文件 / 39 项目 / 131 FR / ~1948 测试)
+> **数据来源**: 代码扫描 + PRD 文档交叉验证 (893 源文件 / 39 项目 / 131 FR / ~1948 测试) + PRD vs Code 深度扫描 (14 模块 / 257 偏差)
 
 ---
 
@@ -362,12 +362,15 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 
 ## 三、缺口汇总
 
-### 3.1 功能缺口 (3 项)
+### 3.1 功能缺口 (8 项)
 
 | 优先级 | 编号 | 缺口 | 层级 | FR | 影响评估 |
 |--------|------|------|------|-----|----------|
 | **P1** | GAP-1 | Desktop 修改密码调用链 | L2.08 | FR-USER-009 | Server API 已完整，Desktop 仅占位实现，需连接调用 |
 | **P1** | GAP-4 | 患者状态管理 (启用/禁用) | L3.15 | FR-PAT-013 | Patient 实体无 Status 字段，Server 无 ToggleStatus 端点。需新增字段+迁移+API+Desktop UI |
+| **P1** | GAP-6 | Token Family 撤销未联动 (5 场景) | L1-L2 | FR-USER-004~011 | 角色变更/删除/禁用/修改密码/重置密码后 Token 不失效，安全风险 |
+| **P1** | GAP-7 | 引用检查形同虚设 | L3-L4 | FR-PAT-005, FR-HERB-005 | CanDelete 硬编码 true，有引用的数据可被删除 |
+| **P1** | GAP-8 | 打印层级重构 (C6) | L6-L7 | FR-PRINT-001~004, FR-MC-015 | IsPrinted/PrintVersion 仍在 Prescription 上，打印回写链断开 |
 | **P2** | GAP-2 | 患者->病历/问诊导航 | L3.13~14 | - | UI 便捷入口，TODO 占位符，不影响核心 CRUD |
 | **P2** | GAP-3 | MedicalCase 查询 Repository 优化 | L6.22 | - | 功能可用 (内存过滤)，性能优化项 |
 | **P3** | GAP-5 | 异常通知类型映射 (Toast/对话框) | L0.23 | FR-ERR-008 | ExceptionSeverity 四级已有，缺少到 ui-patterns.md 通知层级的映射 |
@@ -443,6 +446,21 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 | LYBT.Desktop.Sync | 补充 SyncVM 单元测试 |
 | LYBT.Shared.Logging | 补充 LoggingLevelManager 测试 |
 
+### 4.5 PRD vs Code 实现质量 (深度扫描)
+
+> **详细报告**: [prd-code-deep-scan-report.md](2026-02-21-prd-code-deep-scan-report.md)
+
+| 指标 | 数值 | 说明 |
+|------|------|------|
+| 深度扫描偏差总数 | 257 | 四维度 (存在性/完整度/准确性/双模式) |
+| P1 (功能缺失/安全风险) | 73 | 需立即修复 |
+| P2 (部分实现/行为偏差) | 121 | 需近期修复 |
+| P3 (细节不一致) | 63 | 低优先级 |
+| 完全符合 PRD 的 FR | 45 / 131 (34.4%) | 四维度均无偏差 |
+| 横切面问题 | 8 | 影响多模块的共性问题 |
+| 偏差密度最高 | printing (6.75) | 打印层级重构未执行 |
+| 偏差密度最低 | nfr (0.45) | 大部分 NFR 达标 |
+
 ---
 
 ## 五、代码级 TODO 清单 (7处)
@@ -475,6 +493,63 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 
 ---
 
+## 七、PRD vs Code 实现质量深度分析
+
+> **扫描日期**: 2026-02-21
+> **详细报告**: [prd-code-deep-scan-report.md](2026-02-21-prd-code-deep-scan-report.md)
+> **扫描维度**: 存在性 / 完整度 / 准确性 / 双模式覆盖
+
+### 7.1 偏差统计总览
+
+| 模块 | 总 FR | 偏差数 | P1 | P2 | P3 | 通过 | 偏差密度 |
+|------|-------|--------|-----|-----|-----|------|----------|
+| auth | 13 | 21 | 2 | 11 | 8 | 3 | 1.62 |
+| users | 12 | 30 | 17 | 12 | 1 | 1 | 2.50 |
+| patients | 13 | 28 | 18 | 6 | 4 | 2 | 2.15 |
+| herbs | 13 | 24 | 3 | 16 | 5 | 1 | 1.85 |
+| formulas | 13 | 18 | 2 | 10 | 6 | 3 | 1.38 |
+| medical-cases | 18 | 37 | 7 | 22 | 8 | 2 | 2.06 |
+| printing | 4 | 27 | 12 | 10 | 5 | 0 | 6.75 |
+| sync | 8 | 18 | 5 | 8 | 5 | 1 | 2.25 |
+| card-reader | 2 | 1 | 0 | 0 | 1 | 2 | 0.50 |
+| desktop-shell | 7 | 14 | 1 | 9 | 4 | 1 | 2.00 |
+| configuration | 4 | 8 | 0 | 5 | 3 | 1 | 2.00 |
+| error-handling | 8 | 9 | 3 | 3 | 3 | 4 | 1.13 |
+| logging | 7 | 8 | 1 | 3 | 4 | 3 | 1.14 |
+| health-diagnostics | 9 | 5 | 0 | 2 | 3 | 7 | 0.56 |
+| nfr | ~20 | 9 | 2 | 4 | 3 | 14 | 0.45 |
+| **合计** | **~151** | **~257** | **73** | **121** | **63** | **45** | **1.70** |
+
+> 偏差密度 = 偏差数 / 总 FR。值越高表示实现质量偏离 PRD 越大。
+
+### 7.2 横切面问题 (影响多模块)
+
+| # | 问题 | 影响模块 | 严重度 | 建议修复方式 |
+|---|------|---------|--------|-------------|
+| X1 | 错误码体系脱节 (PRD 5位MCCEE vs 代码 int/text) | 几乎全部模块 | P1 | 统一 MCCEE 编码，一次性重构 |
+| X2 | 本地模式功能缺口 (IDataSource 方法缺失) | users, herbs, formulas, patients, sync | P2 | 逐模块补齐 IDataSource 方法 |
+| X3 | Token Family 撤销未联动 (5 场景) | users, auth | P1 | UserService 注入 TokenRevocationService |
+| X4 | Service 层未使用 ErrorCode 枚举 | users, herbs, formulas | P2 | Result.Failure 统一传入 ErrorCode |
+| X5 | 字段验证值与 PRD 不一致 | auth, users, herbs, formulas, configuration | P2 | 统一 ValidationConstants |
+| X6 | 分页筛选内存过滤 | users, herbs, formulas, medical-cases | P2 | 迁移到 Repository 层 IQueryable |
+| X7 | 引用检查 CanDelete 硬编码 true | patients, herbs | P1 | 实现实际引用计数查询 |
+| X8 | 打印层级重构 (C6) 未执行 | medical-cases, printing | P1 | 实体迁移到 MedicalCase 层 |
+
+### 7.3 实现率 vs 实现质量
+
+| 指标 | 数值 | 说明 |
+|------|------|------|
+| FR 存在率 (代码存在) | 96.9% (127/131) | Section 四统计: 功能代码已存在 |
+| FR 完全符合率 (无偏差) | 34.4% (45/131) | 深度扫描: 与 PRD 四维度完全一致 |
+| P1 偏差 (需立即修复) | 73 项 | 功能缺失/安全风险/数据完整性 |
+| P2 偏差 (需近期修复) | 121 项 | 部分实现/行为偏差 |
+| P3 偏差 (低优先级) | 63 项 | 细节不一致 |
+
+> **解读**: 系统 96.9% 的 FR 有对应代码，但仅 34.4% 的 FR 在四个维度上完全符合 PRD 定义。
+> 差距主要来自"完整度"和"双模式覆盖"两个维度。
+
+---
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
@@ -483,3 +558,4 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 | 2026-02-12 | v2.0 | 重大更新: (1) 新增 FR 编号映射列; (2) 新增 3 个 PRD 模块 (Error Handling/Logging/Configuration) 的 12 个 FR; (3) 验证 Printing 和 CardReader 已完全实现，关闭 2 个 GAP; (4) 编译警告从 15 降为 0; (5) 功能项从 ~110 增加到 140; (6) 缺口从 5 个减少到 3 个 |
 | 2026-02-21 | v3.0 | PRD 深化同步: (1) FR 总数 120->131 (6 个模块新增 11 FR); (2) 功能项 140->150; (3) 新增 GAP-4 (FR-PAT-013 患者状态管理) + GAP-5 (FR-ERR-008 通知类型映射); (4) L6.19 补充 FR-MC-018 编号; (5) L11 新增 FR-SYS-008/009; (6) 实现率 97.5%->96.9% (新 FR 中 2 GAP + 1 PARTIAL) |
 | 2026-02-21 | v3.1 | 打印层级提升: Layer 7 "打印"->"打印管理 (v1.0: 处方打印)"; 评估新增代码层重构说明 (PrescriptionPrintLog->MedicalCasePrintLog, PrintVersion 迁移) |
+| 2026-02-21 | v4.0 | PRD vs Code 深度扫描集成: (1) 新增 Section 七 实现质量分析 (257 偏差, 8 横切面问题); (2) 缺口汇总新增 GAP-6/7/8; (3) 统计新增 4.5 实现质量指标; (4) 链接深度扫描报告 |

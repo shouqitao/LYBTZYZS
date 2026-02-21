@@ -143,6 +143,9 @@
 | Cleanup.InitialDelayMinutes | int | 5 | 1-60 | 启动延迟 (分钟) |
 | Cleanup.BatchSize | int | 1000 | 100-10000 | 批量清理大小 |
 
+> **[已修订 2026-02-21]** Swagger/Json 注册方式要求简化，PRD 不再规定具体注册方式，由实现自行决定
+> 原因: 注册方式属实现细节，不影响功能  |  参考: CFG-06
+
 **Swagger (API 文档)**
 
 | 参数 | 类型 | 默认值 | 约束 | 说明 |
@@ -210,6 +213,9 @@
 | InactivityTimeoutMinutes | int | 15 | 1-120 | 无活动超时 (分钟) |
 | WarningBeforeTimeoutMinutes | int | 2 | 0-10 | 超时前警告 (分钟) |
 | ActivityCheckIntervalSeconds | int | 30 | 10-120 | 活动检查间隔 (秒) |
+
+> **[延期 2026-02-21]** FeatureToggle 热更新支持延期实现，当前需重启 Desktop 生效
+> 原因: MVP 阶段重启够用，热更新复杂度高  |  计划: 运维完善 Sprint  |  参考: CFG-07
 
 **FeatureToggles (功能开关)**
 
@@ -333,6 +339,9 @@ public bool CanCreateConsultation => _featureToggles.ConsultationCreate;
 
 > **已确定**: Critical 级别配置缺失直接阻止启动；Important 级别缺失输出警告但允许启动；Optional 级别仅建议。
 
+> **[已修订 2026-02-21]** 配置错误输出格式对齐代码实现，实际输出格式以代码为准
+> 原因: 输出格式细节差异不影响功能，PRD 对齐代码  |  参考: CFG-08
+
 #### 错误输出格式
 
 ```
@@ -377,3 +386,4 @@ CRITICAL 错误（必须修复）:
 | 2026-02-11 | v1.0 | 初始版本，从代码实现逆向工程 |
 | 2026-02-17 | v2.0 | R8 深化: 新增 FR-CFG-004 (生产环境启动验证)、配置变更行为表、FeatureToggle UI 行为规则和 v1.0 默认状态表、CardReader 开关、3 条新决策 |
 | 2026-02-17 | v2.1 | PRD审查修复: A3-InactivityTimeout 5->15min/Warning 0->2min, A5-DefaultRole Staff->Doctor |
+| 2026-02-21 | v2.2 | PRD vs Code 偏差分析修订: 2 项修订, 1 项延期标注 |

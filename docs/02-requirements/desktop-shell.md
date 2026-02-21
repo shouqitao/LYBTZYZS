@@ -39,6 +39,9 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 9.0 模块化架�
   - [ ] 进度条显示当前执行步骤名称
   - [ ] 支持取消启动过程
 
+> **[已修订 2026-02-21]** 登录协调依赖计数不匹配，PRD 对齐代码行为 (PRD 标注 11 个依赖含 3 个可选，以代码实际注入为准)
+> 原因: 代码重构后依赖数量可能变化，PRD 硬编码数字易过时  |  参考: SHELL-12
+
 ### FR-SHELL-002: 用户登录协调
 
 - **描述**: LoginCoordinator 协调完整的登录流程，包括远程/本地模式分发、会话启动和模块加载
@@ -59,6 +62,9 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 9.0 模块化架�
   - [ ] 登出 -> 返回登录页，清除会话和导航历史
   - [ ] Admin 登录 -> 加载管理员模块，导航到管理工作台
   - [ ] Doctor 登录 -> 加载临床模块，导航到临床工作台
+
+> **[已修订 2026-02-21]** 超时前警告已被 simplify-auth 移除，PRD 修订移除警告要求 (原规则5 WarningBeforeTimeoutMinutes)
+> 原因: simplify-auth 重构移除了超时前警告机制，仅保留静默登出  |  参考: SHELL-04
 
 ### FR-SHELL-003: 会话生命周期管理
 
@@ -134,6 +140,9 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 9.0 模块化架�
   - [ ] 启动完成后 GetReport 返回所有步骤的耗时
   - [ ] 步骤耗时>3秒 -> 标记为慢步骤
   - [ ] 步骤失败 -> 记录 errorMessage
+
+> **[延期 2026-02-21]** 缺少最后登录时间/IP 信息显示
+> 原因: 非 MVP 必要，账户设置核心功能 (修改密码/个人资料) 已实现  |  计划: Sprint 后续  |  参考: SHELL-08
 
 ### FR-SHELL-007: 账户设置
 
@@ -338,6 +347,9 @@ Unauthenticated -> Authenticating -> Authenticated -> Active -> Expired -> Unaut
 | Completed | 完成 |
 | Failed | 失败 |
 
+> **[已修订 2026-02-21]** 状态枚举命名差异，PRD 对齐代码命名 (代码实际枚举值以实现为准)
+> 原因: 确保 PRD 枚举命名与代码一致  |  参考: SHELL-11
+
 ### AuthState
 
 | 值 | 说明 |
@@ -346,6 +358,12 @@ Unauthenticated -> Authenticating -> Authenticated -> Active -> Expired -> Unaut
 | Authenticating | 认证中 |
 | Authenticated | 已认证 |
 | LoggingOut | 登出中 |
+
+> **[已修订 2026-02-21]** StartupReport 返回类型差异，PRD 对齐代码类型 (代码实际返回类型和字段以实现为准)
+> 原因: PRD 类型定义与代码实际实现不一致  |  参考: SHELL-13
+
+> **[已修订 2026-02-21]** 启动诊断信息格式差异，PRD 对齐代码格式 (诊断信息的具体格式以代码实现为准)
+> 原因: PRD 诊断信息格式规范与代码输出不一致  |  参考: SHELL-14
 
 ### StartupReport
 
@@ -379,3 +397,4 @@ Unauthenticated -> Authenticating -> Authenticated -> Active -> Expired -> Unaut
 | 2026-02-11 | v1.0 | 初始版本，从代码实现逆向工程 |
 | 2026-02-17 | v2.0 | Round 5 深化: 新增完整菜单层级+角色可见性矩阵、Prism Region定义+导航参数、状态栏信息、启动画面规格+失败降级、账户设置详细、导航历史规范 |
 | 2026-02-17 | v2.1 | PRD审查修复: A2-Receptionist角色定义, A3-超时15min/警告2min, A4-本地模式同远程超时, E3-新建医案仅Doctor可见 |
+| 2026-02-21 | v2.2 | PRD vs Code 偏差分析修订: 5 项修订, 1 项延期标注 |

@@ -21,6 +21,9 @@
 
 ## 功能清单
 
+> **[已修订 2026-02-21]** 保持 Active 初始状态，UI 层未保存表单替代 Draft 概念，PRD 修订初始状态为 Active (代码实际创建后立即设为 Active)
+> 原因: 代码使用 Active 作为初始状态，UI 层通过未保存表单实现草稿语义，无需 Draft 初始状态  |  参考: MC-08
+
 ### FR-MC-001: 创建医案
 
 - **描述**: 为患者创建新的诊疗记录 (MedicalCase 聚合根)
@@ -100,6 +103,9 @@
   - [ ] 编辑锁定医案未提供 EditReason -> 返回 422
   - [ ] 更新处方 Items -> 原有 Items 全部替换为新列表
 
+> **[已修订 2026-02-21]** PRD 过度细分错误消息，PRD 简化错误消息定义 (保留核心校验错误，移除过于细粒度的消息要求)
+> 原因: 代码使用统一校验框架返回错误，过度细分的错误消息增加维护成本  |  参考: MC-31
+
 ### FR-MC-006: 暂存草稿
 
 - **描述**: 保存当前进度为草稿，可稍后继续
@@ -128,6 +134,9 @@
 - **验收标准**:
   - [ ] 完成医案 -> CompletedAt 记录当前时间
   - [ ] CompletedAt.Date < Today -> IsLocked=true
+
+> **[延期 2026-02-21]** 取消前自动保存诊断数据未实现
+> 原因: UX 复杂度高需独立规划，取消前自动保存涉及表单脏检查和异步保存流程  |  计划: UX 完善 Sprint  |  参考: MC-16
 
 ### FR-MC-008: 取消医案
 
@@ -172,6 +181,12 @@
 - **验收标准**:
   - [ ] diagnosisKeyword="风寒" -> 返回 TcmDiagnosis 含"风寒"的医案
 
+> **[延期 2026-02-21]** EditModeStateMachine 不存在，编辑模式状态机未实现
+> 原因: 状态机复杂度高需独立设计，当前通过 ViewModel 属性管理编辑状态  |  计划: 编辑模式重构 Sprint  |  参考: MC-19
+
+> **[延期 2026-02-21]** Clinical/Management 模式区分未完整实现
+> 原因: 与 MC-19 同源，编辑模式状态机是模式区分的基础  |  计划: 编辑模式重构 Sprint  |  参考: MC-33
+
 ### FR-MC-011: 编辑模式
 
 - **描述**: 工作区模式 (Clinical/Management) 和编辑状态 (Editing/ReadOnly) 的管理
@@ -187,6 +202,9 @@
 - **验收标准**:
   - [ ] Clinical 模式默认 Editing，Management 模式默认 ReadOnly
   - [ ] Clinical: [暂存][打印][完成]，Management: [打印][保存] 或 [编辑]
+
+> **[已修订 2026-02-21]** OperationType 使用 int 枚举存储更高效，PRD 对齐代码存储格式 (代码使用 int 而非 string 存储 OperationType)
+> 原因: int 枚举比 string 存储更高效且类型安全  |  参考: MC-34
 
 ### FR-MC-012: 审计日志
 
@@ -682,3 +700,4 @@ stateDiagram-v2
 | 2026-02-18 | v2.1 | 患者禁用联动 (MC-D16): FR-MC-001 新增患者状态检查; ERR-30105; 边界条件新增患者状态联动 (禁用创建/历史查阅脱敏/活跃医案阻止禁用) |
 | 2026-02-21 | v2.2 | 打印层级提升到医案层: FR-MC-015 "处方打印"->"打印触发"; MedicalCase 新增 PrintVersion 字段; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt); FR-MC-005 打印保护规则 PrintVersion 引用改为 MedicalCase; MC-D15 更新打印日志重构说明; 边界条件打印场景明确 MedicalCase 前缀 |
 | 2026-02-21 | v2.3 | MedicalCase 深度重构同步: 移除 Cancelled 枚举 (取消统一为 IsDeleted=true 软删除); 状态机更新为 3 状态 (Draft/Active/Completed); FR-MC-007 补充统一完成入口 (CompleteAsync+skipWorkflowValidation) 和 UpdateStatusAsync Guard; FR-MC-012 审计覆盖范围扩展到 19 字段; ERR-30305/30307 更新为软删除触发条件 |
+| 2026-02-21 | v2.4 | PRD vs Code 偏差分析修订: 3 项修订, 3 项延期标注 |

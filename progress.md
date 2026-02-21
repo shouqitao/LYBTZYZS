@@ -1,75 +1,47 @@
 # Progress Log
 
-## Session: 2026-02-21 MedicalCase 模块全面简化
+## Session: 2026-02-21 偏差分类确认清单
 
-### Phase 1: 重置上下文 + 编译验证 -- complete
-- [x] 覆盖重建三文件
-- [x] 编译: 0 error | 测试: 33/33 pass
+### Phase 0: 准备
+- [x] 重置三文件
+- [x] 建立分类标准
 
-### Phase 2: 清理死代码 -- complete
-- [x] MedicalCaseRules.cs: 移除 CanComplete, IsSameDayByCreator, ValidationResult, ValidateNewCaseCreation, ValidateCaseUpdate (5个死方法)
-- [x] 合并 MedicalCaseValidationHelper.IsValidStatusTransition 到 MedicalCaseRules
-- [x] 删除 MedicalCaseValidationHelper.cs
-- 编译: 0 error | 测试: 33/33 pass
+### Phase 1: 分类标准 + 横切面确认
+- [x] 用户确认横切面 X1~X8 分类方向
+- [x] 建立 CODE/PRD/DEFER/BOTH 判断依据
 
-### Phase 3: 统一权限层 -- complete
-- [x] IMedicalCasePermissionService: 添加 CanEdit(userId, isAdmin, mc) 和 CanDelete(userId, isAdmin, mc) 重载
-- [x] MedicalCasePermissionService: 实现重载 (委托给主方法)
-- [x] CommandService: 注入 _permissionService, 替换 4 处 CanEdit + 1 处 CanDelete
-- [x] StateService: 注入 _permissionService, 替换 2 处 CanEdit
-- [x] MedicalCaseRules: 移除 CanEdit 和 CanDelete (不再需要)
-- [x] 测试: 更新 StateServiceTests 和 CommandServiceTests 构造函数
-- 编译: 0 error | 测试: 33/33 pass (修复 1 个权限测试)
+### Phase 2: 5 个并行 Agent 偏差分类
+- [x] Agent 1: auth(21) + users(30) + patients(28) = 79 项 -> CODE=69, PRD=6, DEFER=4
+- [x] Agent 2: herbs(24) + formulas(18) = 42 项 -> CODE=32, PRD=3, DEFER=7
+- [x] Agent 3: medical-cases(38) + printing(27) = 65 项 -> CODE=55, PRD=5, DEFER=4, BOTH=1
+- [x] Agent 4: sync(19) + card-reader(1) + desktop-shell(14) + configuration(8) = 42 项 -> CODE=20, PRD=11, DEFER=9, BOTH=2
+- [x] Agent 5: error-handling(9) + logging(8) + health-diagnostics(5) + nfr(9) = 31 项 -> CODE=17, PRD=13, DEFER=1
 
-### Phase 4: 合并创建逻辑 -- complete
-- [x] ServiceHelper: 新增 ValidateAndFetchCreationContextAsync (统一 Patient/Doctor/BR-001 验证)
-- [x] CreateAsync 简化为委托给 CreateFromInputDtoAsync (~85行->~10行)
-- [x] CreateFromInputDtoAsync 使用 Helper 验证 + CreateNewPrescription 统一处方创建
-- [x] 移除 ValidateSingleActiveCaseRule (已合并到 Helper)
-- 编译: 0 error | 测试: 33/33 pass (修复 1 个错误消息断言)
+### Phase 3: 汇总输出确认清单文档
+- [x] 生成 `docs/plans/2026-02-21-deviation-triage-checklist.md`
+- 文档结构: 分类摘要 + 横切面表 + 15 模块逐偏差分类表 + 修复优先级重排
 
-### Phase 5: 提取共享 Helper -- complete
-- [x] ServiceHelper: 新增 ExecuteWithConcurrencyRetryAsync (通用重试逻辑)
-- [x] ServiceHelper: 新增 EnsureCanEdit/EnsureCanDelete (权限验证 helper)
-- [x] SaveAsync 重试逻辑替换为 Helper
-- [x] CreatePrescriptionAsync 重试逻辑替换为 Helper
-- [x] 6 处权限检查 check+log+throw 替换为 EnsureCanEdit 单行调用
-- 编译: 0 error | 测试: 33/33 pass
+### Phase 4: 更新三文件
+- [x] task_plan.md 更新为 complete
+- [x] findings.md 更新分类标准和关键发现
+- [x] progress.md 更新执行日志
 
-### Phase 6: 精简日志 -- complete
-- [x] 移除 ~20 条冗余日志 (started/completed 配对中的 completed, 私有方法入口)
-- [x] "started" 简化为无 "started" 后缀的入口日志
-- [x] 合并重复的审计日志调用为 LogUpdateAuditAsync
-- 编译: 0 error 0 warning | 测试: 33/33 pass
+### Phase 5: 用户逐项确认
+- [x] 自动确认 244 项 (横切面/安全/Bug/simplify-auth 等依据明确)
+- [x] 人工确认 15 项:
+  - X2 本地导入导出 7 项: DEFER → CODE (v1.0 全部实现)
+  - MC-08 初始状态: BOTH → PRD (保持 Active，UI 层表单替代 Draft)
+  - SHELL-04 超时警告: BOTH → PRD (接受移除)
+  - SYNC-17 Checksum: BOTH → CODE (对齐 PRD)
+  - X5 字段值 5 项: 确认 Agent 建议方向
 
-### Phase 7: 全量验证 + 文档更新 -- complete
-- [x] 全量测试: 767/767 pass (LYBT.Tests.* 范围)
-- [x] MedicalCase 专项: 33/33 pass
-- [x] docs/03-architecture/server.md v1.4: CQRS 服务列表更新
+## 最终结果 (已确认)
 
-### 最终行数对比
-
-| 文件 | 变更前 | 变更后 | 变化 |
-|------|--------|--------|------|
-| CommandService | 1,026 | 714 | -312 (-30%) |
-| MedicalCaseRules | 172 | 57 | -115 (-67%) |
-| StateService | 290 | 277 | -13 (-4%) |
-| ServiceHelper | 97 | 222 | +125 (吸收公共逻辑) |
-| PermissionService | 207 | 226 | +19 (添加重载) |
-| ValidationHelper | 32 | 0 | -32 (删除/合并) |
-| **净减少** | | | **-328 行** |
-
-### 变更文件汇总
-
-| 文件 | Phase | 变更类型 |
-|------|-------|----------|
-| MedicalCaseRules.cs | 2,3 | 移除5个死方法+CanEdit/CanDelete, 添加IsValidStatusTransition |
-| MedicalCaseValidationHelper.cs | 2 | 删除 (合并到 Rules) |
-| MedicalCaseCommandService.cs | 3,4,5,6 | 注入PermissionService, 合并CreateAsync, 提取Helper, 精简日志 |
-| MedicalCaseStateService.cs | 2,3,5,6 | 更新引用, 注入PermissionService, EnsureCanEdit, 精简日志 |
-| MedicalCaseServiceHelper.cs | 4,5 | 新增 ValidateAndFetchCreationContextAsync, ExecuteWithConcurrencyRetryAsync, EnsureCanEdit/Delete |
-| MedicalCasePermissionService.cs | 3 | 添加 isAdmin 重载 |
-| IMedicalCasePermissionService.cs | 3 | 添加重载签名 |
-| MedicalCaseStateServiceTests.cs | 3 | 更新构造函数+mock |
-| MedicalCaseCommandServiceTests.cs | 3 | 更新构造函数+mock+断言 |
-| docs/03-architecture/server.md | 7 | v1.4 CQRS 服务列表更新 |
+| 指标 | 值 |
+|------|-----|
+| 总偏差数 | 259 (原报告 257 + 实际多 2) |
+| CODE (代码修复) | **201** (77.6%) |
+| PRD (文档修订) | **40** (15.4%) |
+| DEFER (延期) | **18** (6.9%) |
+| BOTH | **0** (全部已确认方向) |
+| 输出文档 | docs/plans/2026-02-21-deviation-triage-checklist.md v1.1 |
