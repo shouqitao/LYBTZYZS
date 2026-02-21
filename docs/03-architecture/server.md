@@ -54,7 +54,7 @@ LYBT.Entities/
   Herbs/             # Herb
   MedicalCases/      # MedicalCase
   Patients/          # Patient
-  Prescriptions/     # Prescription, PrescriptionItem, PrescriptionPrintLog
+  Prescriptions/     # Prescription, PrescriptionItem, MedicalCasePrintLog
   Users/             # User, UserRole 枚举
   Common/            # BaseEntity, 通用枚举
 ```

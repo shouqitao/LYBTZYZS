@@ -80,7 +80,7 @@
 
 **打印保护规则** (MC-D15):
 - 当 `MedicalCase.IsPrinted=true` 时，修改 Consultation 或 Prescription 内容需提供 `editReason`，否则返回 ERR-30403
-- 修改成功后: `IsPrinted=false`、`Prescription.PrintVersion++` (标记需重新打印)
+- 修改成功后: `MedicalCase.IsPrinted=false`、`MedicalCase.PrintVersion++` (标记需重新打印)
 - 打印后删除处方始终禁止 (ERR-30404)
 
 **成功响应** (200): `ApiResponse<MedicalCaseDetailDto>`

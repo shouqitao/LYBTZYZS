@@ -53,7 +53,7 @@ graph TB
 | LYBT.Desktop.Foundation | 基础设施 | HTTP 客户端、缓存、安全、配置、日志、ConnectionMode |
 | LYBT.Desktop.Infrastructure | WPF 服务 | DialogService、NavigationService、控件、转换器、主题 |
 | LYBT.Desktop.Models | 客户端模型 | ViewState、Item 模型、事件模型 |
-| LYBT.Desktop.Printing | 打印服务 | A5 处方打印模板、打印预览 |
+| LYBT.Desktop.Printing | 打印服务 | MedicalCase 聚合根打印能力 (v1.0: A5 处方打印模板、打印预览) |
 | LYBT.Desktop.Utilities | 工具类库 | 通用辅助方法 |
 
 **依赖方向**: Shell -> Roles -> Modules -> Infrastructure -> Foundation -> Contracts

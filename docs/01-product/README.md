@@ -17,7 +17,7 @@
 | **验方管理 (Formulas)** | 经验方模板的创建、药材组成编辑、共享与复用 |
 | **医案管理 (MedicalCase)** | 核心模块。完整诊疗记录管理，含诊断 (Consultation) 和处方 (Prescription) |
 | **数据同步 (Sync)** | 本地模式与远程服务端之间的双向数据同步 |
-| **打印 (Printing)** | 处方打印、打印版本管理、打印日志 |
+| **打印管理 (Printing)** | MedicalCase 聚合根能力，v1.0 处方打印、打印版本管理、打印日志 |
 
 ---
 
@@ -61,6 +61,7 @@
 | [vision.md](vision.md) | 产品愿景与业务目标 |
 | [glossary.md](glossary.md) | 术语表 (中英文对照) |
 | [user-roles.md](user-roles.md) | 用户角色与权限定义 |
+| [clinical-workflow.md](clinical-workflow.md) | 端到端临床工作流 (患者到达->挂号->诊疗->打印->完成) |
 
 ---
 
@@ -69,3 +70,4 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
+| 2026-02-21 | v1.1 | 新增 clinical-workflow.md (端到端临床工作流) |

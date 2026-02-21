@@ -397,7 +397,7 @@ MedicalCaseSyncDto {
 }
 ```
 
-> 打印相关字段 (IsPrinted, PrintCount, PrintVersion, LastPrintedAt, PrintLogs) 不参与同步。打印是本地行为，每台设备独立记录。
+> 打印相关字段 (MedicalCase.IsPrinted, MedicalCase.PrintVersion, Prescription.PrintCount, Prescription.LastPrintedAt, MedicalCasePrintLog) 不参与同步。打印是本地行为，每台设备独立记录。
 
 ### MedicalCase Checksum 计算
 

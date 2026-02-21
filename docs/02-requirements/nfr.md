@@ -174,7 +174,7 @@
 | AccessToken 有效期 | 30 分钟 | JWT |
 | RefreshToken 有效期 | 7 天 | 单次使用，Token Family 追踪 |
 | 会话绝对过期 | 30 天 | AbsoluteExpiration |
-| 不活跃超时 | 5 分钟 | 客户端检测，提前警告 |
+| 不活跃超时 | 15 分钟 | 客户端检测，静默登出 (FR-AUTH-006) |
 | 登录限流 | 5 次/窗口 | 防暴力破解 |
 
 ### NFR-SEC-002: 密码策略

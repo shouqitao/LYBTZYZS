@@ -36,7 +36,7 @@
 | PinYinCode | 拼音码 | 中文姓名的拼音首字母，用于快速检索 |
 | Prescription | 处方 | 药材配伍和剂量，MedicalCase 的可选内部实体 (1:0..1) |
 | PrescriptionItem | 处方项 | 处方中的单味药材: 药名、剂量、单价、煎法 |
-| PrescriptionPrintLog | 处方打印日志 | 记录处方的打印历史 |
+| MedicalCasePrintLog | 打印日志 | 记录医案打印历史 (含 PrintType 区分打印类型，v1.0: 处方打印) |
 | RefreshToken | 刷新令牌 | JWT 刷新令牌，支持令牌轮换和重放攻击检测 |
 | SecurityAuditLog | 安全审计日志 | 记录认证相关的安全事件 (登录、登出、令牌撤销等) |
 | User | 用户 | 系统用户，角色分为前台接待、医生、管理员、超级管理员 |

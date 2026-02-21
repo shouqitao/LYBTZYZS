@@ -93,7 +93,7 @@
   3. 编辑已完成/隔天/非本人医案需要提供 EditReason
   4. 处方药材采用粗粒度替换策略 (完整替换 Items 集合)
   5. 记录审计日志
-  6. **打印保护**: 若 `MedicalCase.IsPrinted=true` 且请求包含 Consultation 或 Prescription 内容变更，则 EditReason 必填 (ERR-30403)。修改成功后: `IsPrinted=false`、`Prescription.PrintVersion++` (需重新打印)
+  6. **打印保护**: 若 `MedicalCase.IsPrinted=true` 且请求包含 Consultation 或 Prescription 内容变更，则 EditReason 必填 (ERR-30403)。修改成功后: `MedicalCase.IsPrinted=false`、`MedicalCase.PrintVersion++` (需重新打印)
 - **远程模式**: PUT `/api/v1/medicalcases/{id}`
 - **本地模式**: 本地保存
 - **验收标准**:
@@ -254,22 +254,22 @@
   - [ ] CompletedAt.Date == Today -> IsLocked=false
   - [ ] CompletedAt.Date < Today -> IsLocked=true, Doctor 不可编辑
 
-### FR-MC-015: 处方打印
+### FR-MC-015: 打印触发
 
-- **描述**: 打印处方笺，管理打印版本和打印保护
+- **描述**: 触发医案内容打印，管理打印版本和打印保护。打印为 MedicalCase 聚合根的能力，v1.0 支持处方打印 (PrintType=Prescription)
 - **业务规则**:
   1. 打印操作设置 `MedicalCase.IsPrinted=true`，`Prescription.PrintCount++`，`Prescription.LastPrintedAt=now`
   2. 打印后修改任何内容 (Consultation 或 Prescription) 需提供 EditReason (MC-D15)
-  3. 修改成功后: `MedicalCase.IsPrinted=false`，`Prescription.PrintVersion++` (标记需重新打印)
-  4. 每次打印记录 PrescriptionPrintLog，含当前 `Prescription.PrintVersion`
+  3. 修改成功后: `MedicalCase.IsPrinted=false`，`MedicalCase.PrintVersion++` (标记需重新打印)
+  4. 每次打印记录 MedicalCasePrintLog，含当前 `MedicalCase.PrintVersion` 和 PrintType
   5. 打印模板为 A5 纸张，详见 [printing.md](printing.md)
 - **远程模式**: 客户端打印 + 服务端记录日志
 - **本地模式**: 本地打印
 - **验收标准**:
   - [ ] 打印操作 -> MedicalCase.IsPrinted=true, Prescription.PrintCount += 1
-  - [ ] IsPrinted=true 时修改 Consultation -> 需提供 EditReason，修改后 IsPrinted=false, PrintVersion++
-  - [ ] IsPrinted=true 时修改 Prescription -> 需提供 EditReason，修改后 IsPrinted=false, PrintVersion++
-  - [ ] 打印操作 -> 生成 PrescriptionPrintLog (PrintVersion=当前版本)
+  - [ ] IsPrinted=true 时修改 Consultation -> 需提供 EditReason，修改后 IsPrinted=false, MedicalCase.PrintVersion++
+  - [ ] IsPrinted=true 时修改 Prescription -> 需提供 EditReason，修改后 IsPrinted=false, MedicalCase.PrintVersion++
+  - [ ] 打印操作 -> 生成 MedicalCasePrintLog (PrintType=Prescription, PrintVersion=当前版本)
 
 ### FR-MC-016: 验方导入到处方
 
@@ -371,7 +371,8 @@ stateDiagram-v2
 | NeedsPrescription | bool? | - | 是否需要处方 |
 | CompletedAt | DateTime? | - | 完成时间 |
 | Remark | string(500)? | - | 备注 |
-| IsPrinted | bool | Default: false | 是否已打印处方笺 (打印保护标记，打印后任何内容修改需提供 EditReason) |
+| IsPrinted | bool | Default: false | 是否已打印 (聚合根级打印保护，打印后任何内容修改需提供 EditReason) |
+| PrintVersion | int | Default: 1 | 打印版本号 (内容变更时递增，用于打印溯源) |
 | Consultation | Consultation? | 1:1 | 诊断记录 (共享主键) |
 | Prescription | Prescription? | 1:0..1 | 处方 (可选) |
 
@@ -399,9 +400,8 @@ stateDiagram-v2
 | Usage | string(500)? | - | 用法 |
 | Advice | string(500)? | - | 医嘱 |
 | ReferencedFormulas | string(1000)? | - | 引用来源 (JSON 数组，见下方格式) |
-| PrintVersion | int | Default: 1 | 打印版本号 |
-| PrintCount | int | Default: 0 | 打印次数 |
-| LastPrintedAt | DateTime? | - | 最后打印时间 |
+| PrintCount | int | Default: 0 | 打印次数 (处方专属统计) |
+| LastPrintedAt | DateTime? | - | 最后打印时间 (处方专属统计) |
 | Items | ICollection | 导航 | 处方项列表 |
 
 > **ReferencedFormulas 格式**: JSON 数组，记录处方药材的导入来源，用于审计追溯。验方/历史处方被删除后不清除记录 (导入为数据复制，无强关联)。
@@ -627,7 +627,7 @@ stateDiagram-v2
 | 两人同时编辑同一医案 | 乐观并发控制 (RowVersion)。后保存者触发 DbUpdateConcurrencyException，3 次重试后返回 500 | MC-D10 |
 | 隔天自动锁定时间点 | 计算属性 `IsLocked = IsCompleted && CompletedAt.Date < Today`，0 点自动生效，无后台任务 | FR-MC-014 |
 | 管理员编辑锁定医案 | 无显式解锁接口，管理员直接编辑 (需 EditReason) | FR-MC-013 |
-| 打印后修改医案内容 | IsPrinted=true 时修改 Consultation 或 Prescription 均需 EditReason。修改后 IsPrinted=false、PrintVersion++，需重新打印 | MC-D15 |
+| 打印后修改医案内容 | MedicalCase.IsPrinted=true 时修改 Consultation 或 Prescription 均需 EditReason。修改后 MedicalCase.IsPrinted=false、MedicalCase.PrintVersion++，需重新打印 | MC-D15 |
 
 ### 排序规则
 
@@ -656,7 +656,7 @@ stateDiagram-v2
 | MC-D12 | 验方导入独立性 | FR-MC-016 | 已确定: 导入为数据复制，修改处方中药材的剂量/增减不影响原验方 |
 | MC-D13 | 历史处方复制价格策略 | FR-MC-018 | 已确定: 价格从药材库实时获取，与验方导入 (FR-MC-016) 保持一致。历史价格仅作预览参考，不作为新处方定价依据 |
 | MC-D14 | 处方总价计算公式 | FR-MC-004 | 已确定: SingleDosePrice = SUM(Items.Amount); TotalPrice = SingleDosePrice x DosageCount x Discount |
-| MC-D15 | 打印保护策略 | FR-MC-005 + FR-MC-015 | 已确定: IsPrinted 提升到 MedicalCase 聚合根层面。打印后修改任何内容 (Consultation/Prescription) 需 EditReason，修改后 IsPrinted=false + PrintVersion++。处方删除始终禁止 (ERR-30404) |
+| MC-D15 | 打印保护策略 | FR-MC-005 + FR-MC-015 | 已确定: IsPrinted 和 PrintVersion 均在 MedicalCase 聚合根上。打印后修改任何内容 (Consultation/Prescription) 需 EditReason，修改后 MedicalCase.IsPrinted=false + MedicalCase.PrintVersion++。打印日志从 PrescriptionPrintLog 重构为 MedicalCasePrintLog (FK=MedicalCaseId, 新增 PrintType)。处方删除始终禁止 (ERR-30404) |
 | MC-D16 | 患者禁用与医案联动 | FR-MC-001 + FR-PAT-013 | 已确定: 禁用患者 (主要场景: 已故) 禁止创建新医案 (ERR-30105); 历史医案可查阅但 PatientName 按角色脱敏 (Admin 完整/Doctor 掩码); 有活跃医案时阻止禁用 |
 
 ---
@@ -677,3 +677,4 @@ stateDiagram-v2
 | 2026-02-18 | v1.9 | 错误码全量分配: 6 个子类别 (301xx~306xx) 共 29 个错误码，统一 ERR-MCCEE 格式 + 枚举名 |
 | 2026-02-18 | v2.0 | 打印保护策略 (MC-D15): IsPrinted 从 Prescription 提升到 MedicalCase 聚合根; FR-MC-005 增加打印保护规则; FR-MC-015 重写; ERR-30403 调整为需 EditReason; 边界条件新增打印后修改场景 |
 | 2026-02-18 | v2.1 | 患者禁用联动 (MC-D16): FR-MC-001 新增患者状态检查; ERR-30105; 边界条件新增患者状态联动 (禁用创建/历史查阅脱敏/活跃医案阻止禁用) |
+| 2026-02-21 | v2.2 | 打印层级提升到医案层: FR-MC-015 "处方打印"->"打印触发"; MedicalCase 新增 PrintVersion 字段; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt); FR-MC-005 打印保护规则 PrintVersion 引用改为 MedicalCase; MC-D15 更新打印日志重构说明; 边界条件打印场景明确 MedicalCase 前缀 |

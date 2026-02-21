@@ -13,7 +13,7 @@ erDiagram
     MedicalCase }o--|| Patient : "N:1"
     MedicalCase }o--|| User : "N:1 (医生)"
     Prescription ||--o{ PrescriptionItem : "1:N"
-    Prescription ||--o{ PrescriptionPrintLog : "1:N"
+    MedicalCase ||--o{ MedicalCasePrintLog : "1:N"
     Formula ||--o{ FormulaHerbItem : "1:N"
     FormulaHerbItem }o--o| Herb : "N:0..1 (延迟绑定)"
     PrescriptionItem }o--|| Herb : "N:1"
@@ -30,11 +30,11 @@ graph TB
         C["Consultation<br>(内部实体, 1:1)"]
         P["Prescription<br>(内部实体, 1:0..1)"]
         PI["PrescriptionItem<br>(内部实体, 1:N)"]
-        PPL["PrescriptionPrintLog<br>(内部实体, 1:N)"]
+        MCPL["MedicalCasePrintLog<br>(内部实体, 1:N)"]
         MC --- C
         MC --- P
+        MC --- MCPL
         P --- PI
-        P --- PPL
     end
 
     subgraph Independent["独立实体"]
@@ -80,7 +80,8 @@ graph TB
 | NeedsPrescription | bool? | 否 | 是否需要处方 |
 | CompletedAt | DateTime? | 否 | 完成时间 |
 | Remark | string(500) | 否 | 备注 |
-| IsPrinted | bool | 是 | 是否已打印处方笺 (默认 false)。打印保护标记: 为 true 时修改 Consultation 或 Prescription 内容需提供 EditReason (MC-D15) |
+| IsPrinted | bool | 是 | 是否已打印 (默认 false)。聚合根级打印保护: 为 true 时修改 Consultation 或 Prescription 内容需提供 EditReason (MC-D15) |
+| PrintVersion | int | 是 | 打印版本号 (默认 1)。医案内容修改后自增，标记需重新打印 |
 | Consultation | Consultation? | - | 导航属性 (1:1) |
 | Prescription | Prescription? | - | 导航属性 (1:0..1) |
 
@@ -109,9 +110,8 @@ graph TB
 | Advice | string(500) | 否 | 医嘱 |
 | ReferencedFormulas | string(500) | 否 | 引用验方 (逗号分隔) |
 | Remark | string(500) | 否 | 备注 |
-| PrintVersion | int | 是 | 打印版本 (默认 1)。MedicalCase 内容修改后自增，标记需重新打印 |
-| LastPrintedAt | DateTime? | 否 | 最后打印时间 |
-| PrintCount | int | 是 | 打印次数 |
+| PrintCount | int | 是 | 打印次数 (处方专属统计) |
+| LastPrintedAt | DateTime? | 否 | 最后打印时间 (处方专属统计) |
 
 **价格计算公式** (MC-D14):
 - Items[i].Amount = UnitPrice x Dosage (单味药小计，PrescriptionItem 计算属性)
@@ -371,3 +371,4 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 | 2026-02-10 | v1.0 | 初始版本，从 LYBT.Entities 代码逆向工程 |
 | 2026-02-18 | v1.1 | PRD同步: MedicalCase 新增 IsPrinted 字段 (MC-D15, 从 Prescription 提升到聚合根); Prescription 移除 IsPrinted (打印保护由聚合根统一管理); Patient.Status 补充禁用语义 (PAT-D05) |
 | 2026-02-19 | v1.2 | 设计补全: 索引策略章节 (BR-001 筛选唯一索引 MC-D06); Herb 禁用药材显示规则 (MC-D07); Prescription 价格计算公式 (MC-D14) |
+| 2026-02-21 | v1.3 | 打印层级提升: ER 图和聚合根图 PrescriptionPrintLog->MedicalCasePrintLog (FK 改为 MedicalCase); MedicalCase 新增 PrintVersion; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt) |

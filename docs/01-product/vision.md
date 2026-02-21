@@ -32,10 +32,8 @@ flowchart LR
     D -->|是| E[开具处方]
     D -->|否| F[完成医案]
     E --> F
-    F --> G{打印处方?}
-    G -->|是| H[打印]
-    G -->|否| I[结束]
-    H --> I
+    F -.->|可选 独立于完成| G[打印<br/>MedicalCase 聚合根能力]
+    F --> I[结束]
 
     subgraph 诊断 Consultation
         C1[现病史] --> C2[望诊]
@@ -64,7 +62,7 @@ flowchart LR
 | 中医诊断 | 填写望闻问切、辨证信息 | Consultation |
 | 开具处方 | 选择药材、设置剂量，可导入验方或复制历史处方 | Prescription + PrescriptionItem |
 | 完成医案 | 保存完整诊疗记录，锁定编辑 | MedicalCase 状态变更 |
-| 打印处方 | 保存后提示打印，也可稍后从医案列表打印 | PrescriptionPrintLog |
+| 打印 | 保存后提示打印，也可稍后从医案列表打印 (MedicalCase 聚合根能力) | MedicalCasePrintLog |
 
 ---
 
@@ -215,7 +213,7 @@ graph TD
 | MedicalCase -> User | 数据依赖 (外键) | 医案必须关联创建医生 (UserId) |
 | Prescription -> Herb | 数据依赖 (外键) | 处方项通过 HerbId 引用药材，记录当时价格 |
 | Formula -> Herb | 延迟绑定 | 验方通过药材名称匹配，不存储外键 |
-| Printing -> MedicalCase | 功能依赖 | 打印处方需要读取医案+处方数据 |
+| Printing -> MedicalCase | 功能依赖 | 打印是 MedicalCase 聚合根能力，需读取医案+处方数据 |
 | Sync -> Patient/Herb/Formula | 同步依赖 | v1.0 三种实体可同步 |
 | Auth -> User | 认证依赖 | 登录验证需要查询用户信息 |
 | CardReader -> Patient | 功能集成 | 读取身份证自动填充患者信息 |

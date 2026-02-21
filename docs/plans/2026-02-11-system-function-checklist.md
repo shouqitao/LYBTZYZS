@@ -3,8 +3,8 @@
 > **目的**: 系统分析整个项目的结构和设计，按开发顺序形成由基础到复杂的功能清单，标注实现状态，映射 PRD 需求编号。
 >
 > **创建时间**: 2026-02-11
-> **最后更新**: 2026-02-12
-> **数据来源**: 代码扫描 + PRD 文档交叉验证 (893 源文件 / 39 项目 / 120 FR / ~1948 测试)
+> **最后更新**: 2026-02-21
+> **数据来源**: 代码扫描 + PRD 文档交叉验证 (893 源文件 / 39 项目 / 131 FR / ~1948 测试)
 
 ---
 
@@ -19,7 +19,7 @@
 | 源文件 (.cs) | ~893 |
 | 测试方法 | ~1,948 (新 1,278 + 遗留 670) |
 | 编译状态 | **0 错误 / 0 警告** |
-| PRD 文档 | 14 模块 / 120 个 FR |
+| PRD 文档 | 16 模块 / 131 个 FR |
 | EF Migrations | 32+ |
 
 ### 1.2 架构分层
@@ -47,19 +47,19 @@ Shared:   8 个共享库
 |------|---------|-------|--------|
 | 认证与会话管理 | FR-AUTH-001~013 | 13 | 100% |
 | 用户管理 | FR-USER-001~012 | 12 | 92% |
-| 患者管理 | FR-PAT-001~012 | 12 | 83% |
+| 患者管理 | FR-PAT-001~013 | 13 | 85% |
 | 药材管理 | FR-HERB-001~013 | 13 | 100% |
 | 验方管理 | FR-FORM-001~013 | 13 | 100% |
-| 医案管理 | FR-MC-001~017 | 17 | 94% |
+| 医案管理 | FR-MC-001~018 | 18 | 94% |
 | 数据同步 | FR-SYNC-001~008 | 8 | 100% |
-| 打印 | FR-PRINT-001~004 | 4 | 100% |
+| 打印管理 | FR-PRINT-001~004 | 4 | 100% |
 | 身份证读卡器 | FR-CARD-001~002 | 2 | 100% |
-| 系统健康与诊断 | FR-SYS-001~007 | 7 | 100% |
-| 异常处理策略 | FR-ERR-001~005 | 5 | 100% |
-| 日志与审计 | FR-LOG-001~004 | 4 | 100% |
+| 系统健康与诊断 | FR-SYS-001~009 | 9 | 100% |
+| 异常处理策略 | FR-ERR-001~008 | 8 | 100% |
+| 日志与审计 | FR-LOG-001~007 | 7 | 100% |
 | Desktop Shell | FR-SHELL-001~007 | 7 | 100% |
-| 配置参数 | FR-CFG-001~003 | 3 | 100% |
-| **合计** | | **120** | **97.5%** |
+| 配置参数 | FR-CFG-001~004 | 4 | 100% |
+| **合计** | | **131** | **96.9%** |
 
 ---
 
@@ -101,7 +101,15 @@ Shared:   8 个共享库
 | L0.19 | - | 共享模型 (DTO/枚举) | LYBT.Shared.Models | LYBT.Shared.Models | DONE | - |
 | L0.20 | - | 值对象/基元类型 | LYBT.Shared.Primitives | LYBT.Shared.Primitives | DONE | - |
 
-**Layer 0 评估**: 100% 完成 (20 项全 DONE)。覆盖 FR-ERR-001~005 + FR-LOG-001/003/004 + FR-CFG-001~003。
+| L0.21 | FR-ERR-006 | 客户端错误消息映射体系 | - | ClientErrorMessageMapper (HTTP状态码+业务错误码 -> 中文消息) | DONE | - |
+| L0.22 | FR-ERR-007 | 错误追踪码 (8位短码) | - | GetShortTrackingCode() (TraceId 前8位) | DONE | - |
+| L0.23 | FR-ERR-008 | 异常通知类型映射 | - | ExceptionSeverity 四级已有，Toast/对话框映射待补充 | PARTIAL | - |
+| L0.24 | FR-LOG-005 | 系统日志后台清理 | LogCleanupService (30天清理, Error/Fatal 永久保留) | - | DONE | - |
+| L0.25 | FR-LOG-006 | 安全审计日志后台清理 | SecurityAuditCleanupService (365天清理) | - | DONE | - |
+| L0.26 | FR-LOG-007 | API 请求自动日志 | ApiLoggingFilter (参数脱敏+耗时统计) | - | DONE | - |
+| L0.27 | FR-CFG-004 | 生产环境启动配置验证 | ProductionConfigurationValidator (Critical/Important/Optional 三级) | - | DONE | - |
+
+**Layer 0 评估**: 96% 完成 (26/27 DONE, 1 PARTIAL)。覆盖 FR-ERR-001~008 + FR-LOG-001/003~007 + FR-CFG-001~004。新增: PRD 深化 (2026-02-17) 拆分的 7 个 FR。
 
 ---
 
@@ -173,8 +181,9 @@ Shared:   8 个共享库
 | L3.12 | - | 年龄自动计算 (BirthDate) | Service 层计算 | - | DONE | 实体测试 |
 | L3.13 | **-** | **导航到病历查看页面** | - | **TODO: 占位符 (PatientMasterDetailVM:408)** | **GAP** | - |
 | L3.14 | **-** | **导航到问诊流程页面** | - | **TODO: 占位符 (PatientMasterDetailVM:418)** | **GAP** | - |
+| L3.15 | **FR-PAT-013** | **患者状态管理 (启用/禁用)** | **PatientsController 注释: "无Status字段，无ToggleStatus端点"** | **-** | **GAP** | - |
 
-**Layer 3 评估**: 86% (12/14 DONE)。两个导航入口为占位符 (L3.13/L3.14)，不影响核心 CRUD 功能。
+**Layer 3 评估**: 80% (12/15 DONE)。L3.13/L3.14 导航占位符不影响核心 CRUD; L3.15 患者状态管理 (FR-PAT-013) 需新增 Status 字段和 ToggleStatus 端点。
 
 ---
 
@@ -248,31 +257,31 @@ Shared:   8 个共享库
 | L6.12 | FR-MC-012 | 审计日志 (字段级变更) | AuditService (JSON 存储) | AuditLog 查看 | DONE | 集成测试 |
 | L6.13 | FR-MC-013 | 权限控制 (资源级) | PermissionService + MedicalCasePermissionDto | 权限查询 | DONE | 集成测试 |
 | L6.14 | FR-MC-014 | 锁定规则 (隔天锁定) | StateService (IsLocked = Completed && Date < Today) | - | DONE | 集成测试 |
-| L6.15 | FR-MC-015 | 处方打印触发 (PrintVersion管理) | PrintVersion/PrintCount/IsPrinted 字段 | 打印按钮 -> PrintService | DONE | 集成测试 |
+| L6.15 | FR-MC-015 | 打印触发 (MedicalCase.PrintVersion 管理) | MedicalCase.IsPrinted/PrintVersion + Prescription.PrintCount | 打印按钮 -> PrintService | DONE | 集成测试 |
 | L6.16 | FR-MC-016 | 验方导入到处方 | - | FormulaImportDialog (实时价格) | DONE | - |
 | L6.17 | FR-MC-017 | 待诊队列 | GetPending | - | DONE | 集成测试 |
 | L6.18 | - | 编辑理由 (锁定后修改) | EditReason 参数 | 修改原因对话框 | DONE | 集成测试 |
-| L6.19 | - | 历史处方复制 | - | HistoryCopyDialog | DONE | 7 PrescriptionEditFlow |
+| L6.19 | FR-MC-018 | 历史处方复制 (价格实时获取) | - | HistoryCopyDialog | DONE | 7 PrescriptionEditFlow |
 | L6.20 | - | 未保存修改提示 | - | UnsavedChangesDialog (保存/放弃/取消) | DONE | - |
 | L6.21 | - | 批量删除/批量详情 | BatchDelete / GetBatchDetails | - | DONE | 集成测试 |
 | L6.22 | **-** | **查询分页 Repository 层扩展** | **TODO: 内存过滤，应迁移到 Repository 层** | - | **PARTIAL** | - |
 
-**Layer 6 评估**: 95% (21/22 DONE)。覆盖 FR-MC-001~017。L6.22 已功能可用，仅优化项 (内存过滤 -> Repository 层)。
+**Layer 6 评估**: 95% (21/22 DONE)。覆盖 FR-MC-001~018 (L6.19 补充 FR-MC-018 编号)。L6.22 已功能可用，仅优化项 (内存过滤 -> Repository 层)。
 
 ---
 
-### Layer 7: 打印 (Printing)
+### Layer 7: 打印管理 (Printing, v1.0: 处方打印)
 
-处方打印是临床流程的最后一环，直接影响诊疗闭环。
+打印是 MedicalCase 聚合根的能力，v1.0 实现处方打印 (PrintType=Prescription)。临床流程的最后一环，直接影响诊疗闭环。
 
 | 编号 | FR | 功能 | Server 实现 | Desktop 实现 | 状态 | 测试 |
 |------|-----|------|------------|-------------|------|------|
 | L7.01 | FR-PRINT-001 | 处方打印 (A5/A4 模板) | - | PrescriptionPrintService (FixedDocument, 565行) | DONE | 0 |
 | L7.02 | FR-PRINT-002 | 打印预览 (设置+预览双面板) | - | PrintPreview 窗口 (打印机/份数/纸张选择) | DONE | 0 |
 | L7.03 | FR-PRINT-003 | 打印版本管理 | PrintVersion 字段 (实体) | PrintVersion 递增逻辑 | DONE | 0 |
-| L7.04 | FR-PRINT-004 | 打印日志 | PrescriptionPrintLog 实体 | 打印操作日志记录 | DONE | 0 |
+| L7.04 | FR-PRINT-004 | 打印日志 | MedicalCasePrintLog 实体 (含 PrintType) | 打印操作日志记录 | DONE | 0 |
 
-**Layer 7 评估**: 100% 完成 (4 项全 DONE)。覆盖 FR-PRINT-001~004。PrescriptionPrintService.cs 完整实现，含 XPS 导出和批量打印。零测试覆盖待补充。
+**Layer 7 评估**: 100% 完成 (4 项全 DONE)。覆盖 FR-PRINT-001~004。PrescriptionPrintService.cs 完整实现，含 XPS 导出和批量打印。零测试覆盖待补充。代码层面的打印层级重构 (PrescriptionPrintLog->MedicalCasePrintLog, PrintVersion 迁移到 MedicalCase) 见 gap-analysis C6 任务。
 
 ---
 
@@ -342,7 +351,12 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 | L11.06 | FR-SYS-006 | 禁用调试模式 | DisableDebugMode | - | DONE | - |
 | L11.07 | FR-SYS-007 | 手动设置日志级别 | SetLogLevel (仅 SuperAdmin) | - | DONE | - |
 
-**Layer 11 评估**: 100% 完成 (7 项全 DONE)。覆盖 FR-SYS-001~007。
+| L11.08 | FR-SYS-008 | Server 端数据库启动诊断 | DatabaseStartupDiagnostics (SQL Server 连接检测+故障排查建议) | - | DONE | - |
+| L11.09 | FR-SYS-009 | Desktop 端启动性能诊断 | - | StartupDiagnostics (各阶段耗时+瓶颈检测) | DONE | 20 测试 |
+
+> 注: FR-SYS-009 与 L10.06 (FR-SHELL-006) 实现共享 StartupDiagnostics 组件，此处补充 PRD 编号映射。
+
+**Layer 11 评估**: 100% 完成 (9 项全 DONE)。覆盖 FR-SYS-001~009。
 
 ---
 
@@ -353,16 +367,20 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 | 优先级 | 编号 | 缺口 | 层级 | FR | 影响评估 |
 |--------|------|------|------|-----|----------|
 | **P1** | GAP-1 | Desktop 修改密码调用链 | L2.08 | FR-USER-009 | Server API 已完整，Desktop 仅占位实现，需连接调用 |
+| **P1** | GAP-4 | 患者状态管理 (启用/禁用) | L3.15 | FR-PAT-013 | Patient 实体无 Status 字段，Server 无 ToggleStatus 端点。需新增字段+迁移+API+Desktop UI |
 | **P2** | GAP-2 | 患者->病历/问诊导航 | L3.13~14 | - | UI 便捷入口，TODO 占位符，不影响核心 CRUD |
 | **P2** | GAP-3 | MedicalCase 查询 Repository 优化 | L6.22 | - | 功能可用 (内存过滤)，性能优化项 |
+| **P3** | GAP-5 | 异常通知类型映射 (Toast/对话框) | L0.23 | FR-ERR-008 | ExceptionSeverity 四级已有，缺少到 ui-patterns.md 通知层级的映射 |
 
 ### 3.2 工作量估算
 
 | 缺口 | 预估复杂度 | 涉及文件 |
 |------|-----------|----------|
 | GAP-1 修改密码 | 低 (0.5天) | 连接 Desktop UserService -> ChangePassword API |
+| GAP-4 患者状态管理 | 中 (1-2天) | Patient 实体新增 Status + EF Migration + ToggleStatus API + Desktop UI + 测试 |
 | GAP-2 导航入口 | 低 (0.5天) | PatientMasterDetailVM -> NavigateTo 逻辑 |
 | GAP-3 查询优化 | 低 (0.5天) | Repository 扩展 + Service 适配 |
+| GAP-5 通知类型映射 | 低 (0.5天) | ExceptionSeverity -> NotificationDisplayMode (Toast/Dialog) 映射 |
 
 ### 3.3 已关闭的缺口 (上次会话识别，本次验证已完成)
 
@@ -379,27 +397,27 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 
 | Layer | 功能项数 | DONE | GAP | PARTIAL | 完成率 |
 |-------|---------|------|-----|---------|--------|
-| L0 基础设施 | 20 | 20 | 0 | 0 | 100% |
+| L0 基础设施 | 27 | 26 | 0 | 1 | 96% |
 | L1 认证安全 | 14 | 14 | 0 | 0 | 100% |
 | L2 用户管理 | 12 | 11 | 1 | 0 | 92% |
-| L3 患者管理 | 14 | 12 | 2 | 0 | 86% |
+| L3 患者管理 | 15 | 12 | 3 | 0 | 80% |
 | L4 药材管理 | 14 | 14 | 0 | 0 | 100% |
 | L5 验方管理 | 14 | 14 | 0 | 0 | 100% |
 | L6 医案管理 | 22 | 21 | 0 | 1 | 95% |
-| L7 打印 | 4 | 4 | 0 | 0 | 100% |
+| L7 打印管理 | 4 | 4 | 0 | 0 | 100% |
 | L8 读卡器 | 2 | 2 | 0 | 0 | 100% |
 | L9 数据同步 | 8 | 8 | 0 | 0 | 100% |
 | L10 Shell | 9 | 9 | 0 | 0 | 100% |
-| L11 运维 | 7 | 7 | 0 | 0 | 100% |
-| **合计** | **140** | **136** | **3** | **1** | **97.1%** |
+| L11 运维 | 9 | 9 | 0 | 0 | 100% |
+| **合计** | **150** | **144** | **4** | **2** | **96.0%** |
 
 ### 4.2 PRD FR 覆盖率
 
-- **总 FR**: 120
-- **已实现**: 117 (97.5%)
-- **未实现**: 1 (FR-USER-009 Desktop 部分)
-- **部分实现**: 0
-- **非 FR 功能项**: 20 (框架/基础设施级功能，无对应 FR 但已实现)
+- **总 FR**: 131
+- **已实现**: 127 (96.9%)
+- **未实现**: 2 (FR-USER-009 Desktop 部分, FR-PAT-013 患者状态管理)
+- **部分实现**: 1 (FR-ERR-008 异常通知类型映射)
+- **非 FR 功能项**: 19 (框架/基础设施级功能，无对应 FR 但已实现)
 
 ### 4.3 测试覆盖概况
 
@@ -463,3 +481,5 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 |------|------|----------|
 | 2026-02-11 | v1.0 | 初始版本，完整功能清单与缺口分析 |
 | 2026-02-12 | v2.0 | 重大更新: (1) 新增 FR 编号映射列; (2) 新增 3 个 PRD 模块 (Error Handling/Logging/Configuration) 的 12 个 FR; (3) 验证 Printing 和 CardReader 已完全实现，关闭 2 个 GAP; (4) 编译警告从 15 降为 0; (5) 功能项从 ~110 增加到 140; (6) 缺口从 5 个减少到 3 个 |
+| 2026-02-21 | v3.0 | PRD 深化同步: (1) FR 总数 120->131 (6 个模块新增 11 FR); (2) 功能项 140->150; (3) 新增 GAP-4 (FR-PAT-013 患者状态管理) + GAP-5 (FR-ERR-008 通知类型映射); (4) L6.19 补充 FR-MC-018 编号; (5) L11 新增 FR-SYS-008/009; (6) 实现率 97.5%->96.9% (新 FR 中 2 GAP + 1 PARTIAL) |
+| 2026-02-21 | v3.1 | 打印层级提升: Layer 7 "打印"->"打印管理 (v1.0: 处方打印)"; 评估新增代码层重构说明 (PrescriptionPrintLog->MedicalCasePrintLog, PrintVersion 迁移) |

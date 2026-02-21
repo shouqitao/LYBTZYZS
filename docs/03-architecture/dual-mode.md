@@ -211,7 +211,7 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 
 **编号重分配**: CaseNumber 和 PrescriptionNumber 在上传后由 Server 重新分配，保持全局唯一序列。实体 Id (GUID) 保留不变。
 
-**打印字段排除**: IsPrinted、PrintCount、PrintVersion、LastPrintedAt、PrintLogs 不参与同步。打印是本地行为，每台设备独立记录。
+**打印字段排除**: MedicalCase.IsPrinted、MedicalCase.PrintVersion、Prescription.PrintCount、Prescription.LastPrintedAt、MedicalCasePrintLog 不参与同步。打印是本地行为，每台设备独立记录。
 
 **Checksum 计算**: 聚合级哈希，合并 MedicalCase + Consultation + Prescription + PrescriptionItems 四层业务字段。排除可变编号、冗余名称、审计字段和打印字段。PrescriptionItems 按 HerbId 排序保证哈希确定性。
 

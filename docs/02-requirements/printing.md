@@ -1,8 +1,34 @@
-# 打印功能 需求规格
+# 打印管理 需求规格
 
 ## 概述
 
-打印模块负责处方笺的打印、预览和版本管理。基于 WPF FixedDocument 技术，使用 XAML 模板渲染处方内容，支持 A5 纸张打印。采用泛型打印服务 `IPrintService<TModel>` 架构，可扩展支持其他打印类型。
+打印模块是 MedicalCase 聚合根的能力之一，负责医案相关内容的打印、预览和版本管理。基于 WPF FixedDocument 技术，使用 XAML 模板渲染内容，支持 A5/A4 纸张打印。采用泛型打印服务 `IPrintService<TModel>` 架构，通过 PrintType 区分不同打印类型。
+
+**v1.0 范围**: 处方打印 (PrintType=Prescription)。诊断打印、医案摘要打印等类型预留扩展。
+
+### 打印层级模型
+
+```
+MedicalCase (聚合根)
+  ├─ IsPrinted              (聚合根级打印保护)
+  ├─ PrintVersion           (内容变更版本追踪)
+  └─ MedicalCasePrintLog[]  (打印日志)
+       ├─ PrintType         (Prescription / Consultation / CaseSummary)
+       ├─ PrintVersion      (打印时的版本号快照)
+       └─ ...
+
+Prescription (内部实体)
+  ├─ PrintCount             (处方专属统计)
+  └─ LastPrintedAt          (处方专属统计)
+```
+
+### PrintType (打印类型枚举)
+
+| 值 | 说明 | v1.0 状态 |
+|----|------|-----------|
+| Prescription (0) | 处方打印 (A5/A4) | 实现 |
+| Consultation (1) | 诊断打印 | 预留 |
+| CaseSummary (2) | 医案摘要打印 | 预留 |
 
 ---
 
@@ -21,9 +47,9 @@
 
 ## 功能清单
 
-### FR-PRINT-001: 处方打印
+### FR-PRINT-001: 处方打印 [PrintType=Prescription]
 
-- **描述**: 将处方内容打印到纸质处方笺
+- **描述**: 将处方内容打印到纸质处方笺 (v1.0 首个打印类型)
 - **业务规则**:
   1. 默认纸张: A5 (148mm x 210mm)
   2. 打印模板: PrescriptionPrintTemplate.xaml
@@ -34,16 +60,16 @@
      - 处方详情 (药材列表: 药名、剂量、单位、煎法)
      - 费用信息 (单剂价格、总价、折扣)
      - 签名区 (医生、审核人、调配人)
-  4. 打印后 Prescription.PrintCount 递增
-  5. 打印后 MedicalCase.IsPrinted = true (打印保护标记，见 [medical-cases.md](medical-cases.md) MC-D15)
-  6. 打印后 Prescription.LastPrintedAt 更新
+  4. 打印后 Prescription.PrintCount 递增 (处方专属统计)
+  5. 打印后 MedicalCase.IsPrinted = true (聚合根级打印保护，见 [medical-cases.md](medical-cases.md) MC-D15)
+  6. 打印后 Prescription.LastPrintedAt 更新 (处方专属统计)
 - **远程模式**: Desktop 客户端打印，日志记录到服务端
 - **本地模式**: Desktop 本地打印
 - **验收标准**:
   - [ ] 打印预览 -> 内容在 148x210mm (A5) 范围内正确排版
   - [ ] 打印操作 -> Prescription.PrintCount += 1, MedicalCase.IsPrinted=true
 
-### FR-PRINT-002: 打印预览
+### FR-PRINT-002: 打印预览 [PrintType=Prescription]
 
 - **描述**: 打印前预览处方笺内容和排版
 - **业务规则**:
@@ -59,30 +85,31 @@
 
 ### FR-PRINT-003: 打印版本管理
 
-- **描述**: 跟踪处方笺内容变更的版本号，支持打印溯源
+- **描述**: 跟踪医案内容变更的版本号，支持打印溯源
 - **业务规则**:
-  1. 初始 PrintVersion=1，首次打印记录版本 1
-  2. 打印后修改医案内容 (Consultation 或 Prescription) -> PrintVersion 递增 (同时 MedicalCase.IsPrinted 重置为 false)
-  3. 每次打印记录当前 PrintVersion 到 PrescriptionPrintLog
+  1. MedicalCase.PrintVersion 初始值=1，首次打印记录版本 1
+  2. 打印后修改医案内容 (Consultation 或 Prescription) -> MedicalCase.PrintVersion 递增 (同时 MedicalCase.IsPrinted 重置为 false)
+  3. 每次打印记录当前 MedicalCase.PrintVersion 到 MedicalCasePrintLog
   4. 可追溯每次打印对应的内容版本
 - **远程模式**: 服务端记录版本号
 - **本地模式**: 本地记录
 - **验收标准**:
-  - [ ] 首次打印 -> PrescriptionPrintLog.PrintVersion=1
-  - [ ] 打印后修改内容 -> PrintVersion += 1, MedicalCase.IsPrinted=false
-  - [ ] 再次打印 -> PrescriptionPrintLog.PrintVersion == 递增后的版本号
+  - [ ] 首次打印 -> MedicalCasePrintLog.PrintVersion=1
+  - [ ] 打印后修改内容 -> MedicalCase.PrintVersion += 1, MedicalCase.IsPrinted=false
+  - [ ] 再次打印 -> MedicalCasePrintLog.PrintVersion == 递增后的版本号
 
 ### FR-PRINT-004: 打印日志
 
 - **描述**: 记录每次打印操作的详细信息
 - **业务规则**:
-  1. 记录: 处方ID、打印版本、打印时间、打印人、打印机名称
+  1. 记录: 医案ID、打印类型 (PrintType)、打印版本、打印时间、打印人、打印机名称
   2. 记录: 是否成功、失败时的错误信息
-  3. 与 Prescription 关联 (PrescriptionId FK)
+  3. 与 MedicalCase 关联 (MedicalCaseId FK)
+  4. PrintType 标识本次打印的内容类型 (v1.0: 仅 Prescription)
 - **远程模式**: 服务端存储打印日志
 - **本地模式**: 本地存储
 - **验收标准**:
-  - [ ] 打印操作 -> 新增 PrescriptionPrintLog 记录
+  - [ ] 打印操作 -> 新增 MedicalCasePrintLog 记录，PrintType=Prescription
   - [ ] 打印失败 -> IsSuccess=false, ErrorMessage 包含错误详情
 
 ---
@@ -196,13 +223,14 @@
 
 ## 数据模型
 
-### PrescriptionPrintLog (打印日志)
+### MedicalCasePrintLog (打印日志)
 
 | 字段 | 类型 | 约束 | 说明 |
 |------|------|------|------|
 | Id | Guid | PK | 日志ID |
-| PrescriptionId | Guid | FK | 处方ID |
-| PrintVersion | int | Required | 打印版本号 |
+| MedicalCaseId | Guid | FK | 医案ID |
+| PrintType | PrintType | Required | 打印类型 (Prescription/Consultation/CaseSummary) |
+| PrintVersion | int | Required | 打印时的 MedicalCase.PrintVersion 快照 |
 | PrintedAt | DateTime | Required | 打印时间 |
 | PrintedBy | Guid? | - | 打印人ID |
 | PrintedByName | string(50)? | - | 打印人姓名 |
@@ -211,11 +239,11 @@
 | ErrorMessage | string(500)? | - | 错误信息 |
 | Remark | string(200)? | - | 备注 |
 
-> 继承 BaseEntity
+> 继承 BaseEntity。从 PrescriptionPrintLog 重命名，FK 从 PrescriptionId 改为 MedicalCaseId，新增 PrintType 字段。
 
-### PrescriptionPrintModel (打印数据模型)
+### PrescriptionPrintModel (处方打印数据模型)
 
-用于渲染打印模板的数据对象:
+用于渲染处方打印模板的数据对象 (PrintType=Prescription):
 
 | 类别 | 字段 | 说明 |
 |------|------|------|
@@ -279,6 +307,7 @@
 | 4 | 排版规格 | FR-PRINT-001 | 已确定: 标准中医处方笺格式，宋体为主，A5 上下 10mm 左右 8mm 边距 |
 | 5 | 分页规则 | FR-PRINT-001 | 已确定: A5 单页最多 12 味药，超出自动分页，第二页标注"续上页" |
 | 6 | 草稿打印 | FR-PRINT-001 | 已确定: 允许打印草稿医案处方，但标注"草稿"水印 |
+| 7 | 打印层级提升 | 全模块 | 已确定: 打印从处方层提升到医案层。IsPrinted/PrintVersion 在 MedicalCase 聚合根上，PrescriptionPrintLog 重命名为 MedicalCasePrintLog (FK 改为 MedicalCaseId)，新增 PrintType 枚举支持多种打印类型扩展。v1.0 仅实现 PrintType=Prescription |
 
 ---
 
@@ -294,3 +323,4 @@
 | 2026-02-18 | v2.2 | 补充 PrescriptionPrintModel 费用计算规则 (SingleDosePrice/TotalPrice 计算公式)，交叉引用 medical-cases.md FR-MC-004 |
 | 2026-02-18 | v2.3 | PrescriptionPrintModel 补充 Advice 字段; 签名区字段来源说明 (DoctorName 为快照); 煎法显示规则 (DecocteMethod 枚举交叉引用) |
 | 2026-02-18 | v2.4 | 对齐 MC-D15: IsPrinted 改为 MedicalCase 聚合根字段; FR-PRINT-003 明确 PrintVersion 递增时机 (打印后修改时递增) |
+| 2026-02-21 | v3.0 | 打印层级提升: 标题"打印功能"->"打印管理"; 概述重写 (MedicalCase 聚合根能力); 新增 PrintType 枚举和打印层级模型; PrescriptionPrintLog 重命名为 MedicalCasePrintLog (FK MedicalCaseId + PrintType); PrintVersion 明确为 MedicalCase 字段; FR-PRINT-001~004 标注为处方打印子类型; 新增决策 7 |
