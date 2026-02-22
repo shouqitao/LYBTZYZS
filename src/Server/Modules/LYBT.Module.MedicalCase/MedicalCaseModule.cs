@@ -36,6 +36,9 @@ namespace LYBT.Module.MedicalCases
             // OpenSpec: refactor-medicalcase-management - 审计服务 (LIFECYCLE-008)
             services.AddScoped<IMedicalCaseAuditService, MedicalCaseAuditService>();
 
+            // 门面服务 - 聚合5个CQRS服务，降低Controller依赖数量
+            services.AddScoped<IMedicalCaseFacade, MedicalCaseFacade>();
+
             // Epic #1961: 注册验证器 - 使用统一的 MedicalCaseInputDtoValidator
             services.AddValidatorsFromAssemblyContaining<MedicalCaseInputDtoValidator>();
 

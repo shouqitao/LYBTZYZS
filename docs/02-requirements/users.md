@@ -6,14 +6,35 @@
 
 ---
 
-## 用户角色
+## 用户角色与权限值模型
 
-| 角色 | 在本模块中的操作权限 |
-|------|---------------------|
-| SuperAdmin | CRUD 全部用户，可管理 Admin |
-| Admin | CRUD Doctor 和 Receptionist 用户，不可管理 Admin/SuperAdmin |
-| Doctor | 仅修改自己的密码和个人资料 |
-| Receptionist | 仅修改自己的密码和个人资料 |
+### 权限值层级 (USER-D04)
+
+| 角色 | 权限值 | 用户管理中可见的用户 | 自助操作 |
+|------|--------|---------------------|---------|
+| SuperAdmin (sysadmin) | 100 | Admin + Doctor + Receptionist (过滤自己) | 修改密码、邮箱等个人资料 |
+| Admin | 80 | Doctor + Receptionist (过滤自己 + sysadmin + 其他Admin) | 修改密码、个人资料 |
+| Doctor | 60 | 无权进入用户管理 | 修改密码、个人资料 |
+| Receptionist | 40 | 无权进入用户管理 | 修改密码、个人资料 |
+
+### 核心权限规则
+
+**统一判断公式**: `operator.PermissionLevel > target.PermissionLevel` → 允许操作
+
+- 用户管理列表中，**只显示权限值严格低于操作者的用户，且过滤自己**
+- 创建/编辑/删除/禁用/重置密码等操作均遵循此规则
+- 同级角色不可互相管理 (如 Admin 不能管理其他 Admin)
+
+### SuperAdmin (sysadmin) 特殊规则 (USER-D05)
+
+| 规则 | 说明 |
+|------|------|
+| 数量 | 系统唯一，固定账号，数据库种子数据预置 |
+| 作为操作者 | 拥有 Admin 全部权限，可创建/管理 Admin/Doctor/Receptionist |
+| 作为目标 | **不可被任何人管理** -- 不可修改角色、不可删除、不可禁用、不可重置密码 |
+| 自助操作 | 可通过 /profile 和 /change-password 修改自己的密码、邮箱等个人信息 |
+| 可见性 | Admin 用户管理列表中不可见 (权限值过滤)；sysadmin 自己的列表中也不显示自己 (过滤自己) |
+| 服务端硬规则 | API 层兜底: 任何以 sysadmin 为目标的用户管理操作一律拒绝 (防止绕过 UI 直接调 API) |
 
 > 整个 `/api/v1/users` 端点受 `AdminOnly` 策略保护，Doctor/Receptionist 访问返回 403。
 
@@ -28,7 +49,7 @@
   1. 用户名唯一，仅允许字母、数字、下划线 (3-32 字符)
   2. 系统保留用户名不可使用: admin, administrator, root, system, superadmin, sysadmin
   3. 不提供密码时使用配置默认密码
-  4. Admin 只能创建 Doctor/Receptionist，SuperAdmin 可创建任意角色
+  4. 权限值检查: 只能创建权限值低于自己的角色 (USER-D04)。Admin(80) 可创建 Doctor(60)/Receptionist(40)，SuperAdmin(100) 可创建 Admin(80)/Doctor(60)/Receptionist(40)
   5. 自动生成拼音码 (PinYinCode) 用于快速搜索
   6. 默认状态为 Enabled，默认角色为 Doctor
 - **远程模式**: POST `/api/v1/users`，返回 UserDetailDto (201)
@@ -71,9 +92,9 @@
 - **业务规则**:
   1. 用户名创建后不可修改
   2. 真实姓名变更时自动重新生成拼音码
-  3. Admin 只能更新 Doctor/Receptionist
-  4. 不能修改比自己权限高的角色
-  5. **角色变更时立即撤销该用户 Token Family，强制重登录** (AUTH-D07，见 [auth.md](auth.md))
+  3. 权限值检查: operator.PermissionLevel > target.PermissionLevel (USER-D04)
+  4. 不能修改 sysadmin (USER-D05: sysadmin 不可被管理)
+  5. **角色变更时通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销该用户 Token Family，强制重登录** (AUTH-D07，见 [auth.md](auth.md))
 - **远程模式**: PUT `/api/v1/users/{id}`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
@@ -85,12 +106,12 @@
 - **描述**: 软删除用户 (IsDeleted=true)
 - **业务规则**:
   1. 软删除，数据保留
-  2. 不能删除自己
-  3. 不能删除最后一个 SuperAdmin
-  4. 不能删除最后一个 Admin
-  5. 删除后所有 Token Family 失效
-  6. 清理所有 RefreshToken
-  7. 记录审计日志
+  2. 不能删除自己 (列表已过滤自己，API 层兜底校验)
+  3. 不能删除 sysadmin (USER-D05: sysadmin 不可被管理，列表不可见 + API 层兜底)
+  4. 权限值检查: operator.PermissionLevel > target.PermissionLevel (USER-D04)
+  5. 删除后通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销所有 Token Family (AUTH-D07)
+  6. 记录审计日志
+  7. 该医生名下的医案数据保留 (DoctorId 不变)，由管理员手动处理
 - **远程模式**: DELETE `/api/v1/users/{id}`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
@@ -115,10 +136,10 @@
 
 - **描述**: 批量软删除多个用户
 - **业务规则**:
-  1. 逐个检查权限和删除保护
-  2. 防止删除自己 (currentUserId 检查)
+  1. 逐个检查权限值 (USER-D04) 和 sysadmin 保护 (USER-D05)
+  2. 列表已过滤自己和不可操作的用户，API 层兜底校验
   3. 返回详细的成功/失败报告 (BatchOperationResultDto)
-  4. 部分失败不影响其他用户的删除
+  4. **单事务提交**: 业务规则检查在内存中完成，通过检查的一次性 SaveChanges，技术失败则整批回滚
 - **远程模式**: POST `/api/v1/users/batch-delete`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
@@ -131,7 +152,7 @@
 - **业务规则**:
   1. 无需提供旧密码
   2. 使用配置文件中的默认密码或自动生成临时密码
-  3. 重置后所有 Token Family 失效
+  3. 重置后通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销所有 Token Family (AUTH-D07)
   4. 用户需要重新登录
   5. 可设置 MustChangeOnNextLogin 标记
 - **远程模式**: POST `/api/v1/users/{id}/reset-password`
@@ -150,7 +171,7 @@
 - **业务规则**:
   1. 验证旧密码正确
   2. 密码策略: 最小 8 位，必须包含大小写字母、数字、特殊字符
-  3. 修改后所有 Token Family 失效
+  3. 修改后通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销所有 Token Family (AUTH-D07)
   4. 用户需要重新登录
 - **远程模式**: PUT `/api/v1/users/{id}/change-password`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
@@ -175,11 +196,12 @@
 
 - **描述**: 切换用户的启用/禁用状态
 - **业务规则**:
-  1. **不能禁用最后一个 SuperAdmin/Admin** (USER-D03，与删除保护一致)
-  2. 禁用用户时所有 Token Family 失效
-  3. 禁用后当前会话立即失效
-  4. 禁用用户尝试登录返回 UserDisabled 错误
-  5. 支持批量启用/禁用
+  1. 不能禁用 sysadmin (USER-D05: sysadmin 不可被管理)
+  2. 权限值检查: operator.PermissionLevel > target.PermissionLevel (USER-D04)
+  3. 禁用用户时通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销所有 Token Family
+  4. 禁用后当前会话立即失效
+  5. 禁用用户尝试登录返回 UserDisabled 错误
+  6. 支持批量启用/禁用
 - **远程模式**: POST `/api/v1/users/{id}/toggle-status`，批量: POST `/api/v1/users/batch-enable` 或 `/batch-disable`
 - **本地模式**: 支持 (LocalUserDataSource)。本地 SQLite 存储，功能与远程模式对等
 - **验收标准**:
@@ -246,14 +268,8 @@
 | 场景 | HTTP | 用户消息 | 触发条件 |
 |------|------|----------|----------|
 | 保留用户名 | 400 | 用户名 '{UserName}' 为系统保留用户名，不可使用 | 使用 admin/root/system 等保留名 |
-| 无权创建角色 | 403 | 您没有权限创建{角色}账户 | Admin 创建 Admin，Doctor 创建任意角色 |
-| 无权更新用户 | 403 | 您没有权限更新该用户 | 低权限用户修改高权限用户 |
-| 无权修改角色 | 403 | 您没有权限将用户角色修改为该级别 | 角色提升越权 |
-| 无权删除用户 | 403 | 您没有权限删除该用户 | 低权限用户删除高权限用户 |
-| 无权修改状态 | 403 | 您没有权限修改该用户状态 | 低权限用户修改高权限用户状态 |
-| 无权恢复用户 | 403 | 您没有权限恢复该用户 | 低权限用户恢复高权限用户 |
-| 最后管理员保护 (删除) | 403 | 不能删除最后一个{超级管理员\|管理员} | 删除后无 SuperAdmin 或 Admin |
-| 最后管理员保护 (禁用) | 403 | 不能禁用最后一个{超级管理员\|管理员} | 禁用后无可用 SuperAdmin 或 Admin (USER-D03) |
+| 权限不足 (统一) | 403 | 您没有权限执行此操作 | operator.PermissionLevel <= target.PermissionLevel (USER-D04) |
+| sysadmin 不可管理 | 403 | 系统管理员账号不可被修改 | 任何以 sysadmin 为目标的用户管理操作 (USER-D05) |
 | 不能删除自己 | 400 | 不能删除自己 | 当前用户尝试删除自己 |
 | 不能修改自己状态 | 400 | 不能{启用\|禁用}当前登录用户 | 批量操作中包含自己 |
 | 用户未被删除 | 400 | 该用户未被删除，无需恢复 | 恢复未软删除的用户 |
@@ -274,8 +290,11 @@
 |------|------|----------|------|
 | 1 | 本地模式下用户管理的支持范围 | 所有 FR-USER | 已确定: 完整支持。LocalUserDataSource 11/11 方法全覆盖，DI 注册为 IUserDataSource 本地实现 |
 | 2 | Receptionist 角色的具体功能边界 | FR-USER-001 | 已确定: 患者 CRU (创建/查看/更新，无删除) + 读卡器使用 + 未完成医案简要提示 (时间+医生，不含诊断/处方详情)。不在 AdminOnly 策略中 |
-| USER-D03 | 最后一个 Admin/SuperAdmin 禁用保护 | FR-USER-011 | 已确定: 与删除保护一致，禁止禁用最后一个管理员 |
-| AUTH-D07 | 角色变更即时生效 | FR-USER-004 | 已确定: 角色变更时立即撤销 Token Family，强制重登录 (见 auth.md AUTH-D07) |
+| ~~USER-D03~~ | ~~最后一个 Admin/SuperAdmin 禁用保护~~ | ~~FR-USER-011~~ | **已移除** (USER-D04/D05 替代): sysadmin 固定存在不可被管理，永远可以创建新 Admin，不可能出现"无管理员"状态 |
+| AUTH-D07 | 角色变更即时生效 | FR-USER-004 | 已确定: 角色变更时通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销 Token Family，强制重登录 (见 auth.md AUTH-D07) |
+| USER-D04 | 权限值层级模型 | 全部 FR-USER | 已确定: SuperAdmin=100, Admin=80, Doctor=60, Receptionist=40。统一判断: operator.Level > target.Level → 允许。用户管理列表只显示权限值严格低于操作者的用户，且过滤自己 |
+| USER-D05 | sysadmin 不可被管理 | FR-USER-004/005/007/008/011 | 已确定: sysadmin 是系统唯一固定账号 (数据库种子预置)。不可被任何人修改角色/删除/禁用/重置密码。仅可通过 /profile 和 /change-password 自助修改个人信息。API 层硬规则兜底 |
+| USER-D06 | 医生删除后医案不自动转移 | FR-USER-005 + MedicalCase | 已确定: 医生被禁用/删除后其名下医案数据保留 (DoctorId 不变)，由管理员手动处理。医案转移涉及医疗责任归属，不适合系统自动决定 |
 
 ---
 
@@ -288,3 +307,5 @@
 | 2026-02-17 | v1.2 | Round 10: FR-USER-004 补充角色变更即时生效 (AUTH-D07)，FR-USER-011 补充最后管理员禁用保护 (USER-D03)，新增错误码 |
 | 2026-02-17 | v1.3 | PRD审查修复: A2-Receptionist功能边界更新(患者CRU+读卡器+医案提示), D3-补全ERR-10003(EmailExists)+ERR-10005(PasswordPolicyViolation) |
 | 2026-02-21 | v1.4 | PRD vs Code 偏差分析修订: 1 项修订 (USER-30 旧密码错误消息对齐代码) |
+| 2026-02-21 | v1.5 | Phase 2 模块功能细化: 新增权限值层级模型 (USER-D04, 100/80/60/40)，sysadmin 不可被管理规则 (USER-D05)，移除最后管理员保护 (USER-D03)，批量删除改为单事务，医生删除后医案不自动转移 (USER-D06)，错误码简化为权限值统一判断，FR-USER-001/004/005/007/011 对齐权限值模型 |
+| 2026-02-22 | v1.6 | **Token 撤销接口统一 (A3)**: ICrossModuleService → ICrossModuleAuthService (ISP); FR-USER-008 (重置密码) + FR-USER-009 (修改密码) 补充 ICrossModuleAuthService 显式调用; 6 个撤销场景全部对齐 AUTH-D07 |

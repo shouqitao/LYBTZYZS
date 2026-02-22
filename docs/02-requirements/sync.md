@@ -186,12 +186,16 @@
   3. 存在 -> 切换 DataSource 为 SQLite
   4. 切换成功 -> 状态栏显示"本地模式"标识
 - **本地 -> 远程 切换**:
-  1. 检查网络连通性 (Ping 服务端)
-  2. 网络不可用 -> 提示: "无法连接服务器，请检查网络"
-  3. 检查认证状态 (Token 是否有效)
-  4. Token 过期 -> 跳转登录页重新认证
-  5. 认证有效 -> 切换 DataSource 为 HTTP API
-  6. 切换成功 -> 状态栏显示"远程模式"标识
+  1. **检查本地未完成医案 (SYNC-D01 前置约束)**:
+     - 查询本地 SQLite 中 CaseStatus = Active 或 Suspended 的医案数量
+     - 有未完成医案 -> 阻断切换，提示: "本地有 {N} 个未完成的医案，请先完成或取消后再切换模式" (ERR-70506)
+     - 无未完成医案 -> 继续
+  2. 检查网络连通性 (Ping 服务端)
+  3. 网络不可用 -> 提示: "无法连接服务器，请检查网络"
+  4. 检查认证状态 (Token 是否有效)
+  5. Token 过期 -> 跳转登录页重新认证
+  6. 认证有效 -> 切换 DataSource 为 HTTP API
+  7. 切换成功 -> 状态栏显示"远程模式"标识
 - **切换失败回退**:
   - 切换过程中出现错误 -> 自动回退到切换前的模式
   - 显示错误提示: "切换失败: {原因}，已恢复到{当前模式}"
@@ -203,6 +207,7 @@
   - [ ] 有未同步数据时切换 -> 弹出提示对话框
   - [ ] 网络不可用时切换到远程模式 -> 显示网络错误提示
   - [ ] 切换失败 -> 自动回退到切换前模式
+  - [ ] 本地有未完成医案时切换到远程模式 -> 阻断并提示完成或取消 (SYNC-D01)
 
 ---
 
@@ -369,15 +374,23 @@ MedicalCase (聚合根)
 
 上传/下载时，整个聚合作为一个 JSON 对象传输。Server 端使用单数据库事务写入全部实体，任何一部分失败则整体回滚。
 
-### 同步状态约束
+### 同步状态约束 (SYNC-D01)
 
-| 医案状态 | 上传 | 下载 | 冲突解决 | 说明 |
-|---------|------|------|---------|------|
-| Draft | 可以 | 可以 | 允许 | 离线创建的草稿 |
-| Active | 可以 | 可以 | 允许 | 离线正在进行的医案 |
-| Completed | 可以 | 可以 | 允许上传新建，已存在的 Completed 不可被覆盖 | 已完成医案保持不变 |
+| 医案状态 | 上传 | 下载 | 说明 |
+|---------|------|------|------|
+| Active | 不可 | 不可 | 正在诊疗中，应先完成再同步 |
+| Suspended | 不可 | 不可 | 已挂起，应先完成或取消再同步 |
+| Completed | 可以 | 可以 | 通过 BR-003 校验，数据完整，已存在的 Completed 不可被覆盖 |
 
-全状态双向同步，确保离线创建的任何状态医案都能同步回 Server。
+> 注: Draft 状态已替换为 Suspended (MC-D20)，医案状态: Active / Suspended / Completed。Suspended 亦不可同步。
+
+仅同步 Completed 医案。理由:
+1. **数据完整性** -- Completed 通过 BR-003 校验 (辨证+处方+帖数)，Server 端无需处理半成品数据
+2. **冲突处理极简** -- 完成的医案除 Admin 编辑外不会再变，上传后几乎不存在双向冲突
+3. **同步逻辑单向化** -- 本地 -> Server 单向推送，不需要回拉状态更新
+4. **符合业务语义** -- 本地模式定位为短期无网络应急，Active 的生命周期应在单一模式内闭合
+
+> 模式切换前，系统强制要求本地无 Active/Suspended 医案 (见 FR-SYNC-008 切换前检查)。
 
 ### MedicalCase 同步 DTO
 
@@ -390,7 +403,7 @@ MedicalCaseSyncDto {
     PatientName: string
     DoctorName: string
     CaseNumber: string?           // 本地编号，Server 会重新分配
-    CaseStatus: MedicalCaseStatus // Draft / Active / Completed
+    CaseStatus: MedicalCaseStatus // Active / Suspended / Completed (仅 Completed 参与同步)
     NeedsPrescription: bool?
     CompletedAt: DateTime?
     Remark: string?
@@ -430,7 +443,7 @@ MedicalCaseSyncDto {
 }
 ```
 
-> 打印相关字段 (MedicalCase.IsPrinted, MedicalCase.PrintVersion, Prescription.PrintCount, Prescription.LastPrintedAt, MedicalCasePrintLog) 不参与同步。打印是本地行为，每台设备独立记录。
+> 打印相关字段 (MedicalCase.IsPrinted, MedicalCase.PrintVersion, MedicalCase.PrintCount, MedicalCase.LastPrintedAt, MedicalCasePrintLog) 不参与同步。打印是本地行为，每台设备独立记录。
 
 ### MedicalCase Checksum 计算
 
@@ -481,19 +494,9 @@ Server 按 IdCardNumber 检查:
 - Server 端在 Patient 上传接口中增加去重检查逻辑
 - 客户端收到重映射信号后，自动替换所有关联 MedicalCase 的 PatientId
 
-### BR-001 冲突处理 (同一患者单活跃医案)
+### BR-001 约束 (同一患者单活跃医案)
 
-```
-上传 Active/Draft 医案
-       ↓
-Server 检查: 该患者是否已有 Active/Draft 医案?
-    ├─ 无 → 正常创建
-    └─ 有 (冲突) → 返回冲突信息
-                    → 客户端提示医生选择:
-                      [a] 将本地医案标记为 Completed 再上传
-                      [b] 关闭 Server 端旧医案后上传本地版本
-                      [c] 跳过该医案，稍后手动处理
-```
+> 由于 SYNC-D01 约束仅同步 Completed 医案，BR-001 (同一患者不可有多个活跃医案) 在同步场景下不会触发冲突。上传的 Completed 医案不受此规则限制。
 
 ### 编号重分配
 
@@ -551,7 +554,7 @@ Server 检查: 该患者是否已有 Active/Draft 医案?
 | MedicalCase 上传失败 | (异常原始消息) | 医案上传过程异常 |
 | 患者不存在 | 患者 {PatientId} 不存在，请先同步患者 | PatientId 引用的患者在 Server 端不存在 |
 | 药材不存在 | 药材 {HerbName} ({HerbId}) 不存在，请先同步药材 | PrescriptionItem.HerbId 引用的药材不存在 |
-| BR-001 冲突 | 患者 {PatientName} 已有活跃医案 | 上传 Active/Draft 医案时该患者已有活跃医案 |
+| BR-001 冲突 | 患者 {PatientName} 已有活跃医案 | SYNC-D01: 仅同步 Completed，此场景不再触发 |
 | MedicalCase 有引用 | 医案已完成且已锁定，无法通过同步覆盖 | 尝试覆盖已锁定的 Completed 医案 |
 
 #### 客户端新增错误
@@ -601,7 +604,7 @@ Server 检查: 该患者是否已有 Active/Draft 医案?
 |--------|--------|------|----------|----------|
 | ERR-70301 | SyncPatientNotFound | 422 | 患者 {PatientId} 不存在，请先同步患者 | MedicalCase 上传时 PatientId 引用的患者不存在 |
 | ERR-70302 | SyncHerbNotFound | 422 | 药材 {HerbName} ({HerbId}) 不存在，请先同步药材 | MedicalCase 上传时 PrescriptionItem.HerbId 不存在 |
-| ERR-70303 | SyncActiveCaseConflict | 409 | 患者 {PatientName} 已有活跃医案 | 上传 Active/Draft 医案时该患者已有活跃医案 |
+| ~~ERR-70303~~ | ~~SyncActiveCaseConflict~~ | - | ~~已移除~~ | SYNC-D01: 仅同步 Completed，不再上传 Active/Suspended |
 | ERR-70304 | SyncCaseLocked | 422 | 医案已完成且已锁定，无法通过同步覆盖 | 尝试覆盖已锁定的 Completed 医案 |
 
 ### 服务端删除错误 (704xx)
@@ -622,6 +625,7 @@ Server 检查: 该患者是否已有 Active/Draft 医案?
 | ERR-70503 | SyncChecksumTypeError | 不支持的实体类型: {entityType} | 计算 Checksum 时类型无效 |
 | ERR-70504 | SyncDependencyNotSynced | 请先同步药材和患者数据 | MedicalCase 同步前依赖检查失败 |
 | ERR-70505 | SyncPatientRemapFailed | 无法匹配患者 {PatientName}，请手动处理 | IdCardNumber 匹配失败 (本地患者无身份证号) |
+| ERR-70506 | SyncLocalActiveCasesExist | 本地有 {Count} 个未完成的医案，请先完成或取消后再切换模式 | 模式切换前检测到本地存在 Active/Suspended 医案 |
 
 ### 上传结果结构
 
@@ -638,12 +642,13 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 |------|------|----------|------|
 | 1 | 冲突解决策略 | FR-SYNC-003, 007 | 已确定: 手动逐条选择 (保留本地 / 使用服务端 / 跳过)。医疗数据需人工确认，不适合自动覆盖 |
 | 2 | 本地模式功能受限范围 | 全部 FR-SYNC | 已确定: 同步需网络连接。不可用项: 自动登录 / Token刷新 / 审计日志查询 / User同步。MedicalCase同步已支持 (决策3)。详见 dual-mode.md |
-| 3 | MedicalCase 同步 | FR-SYNC-001 | 已确定: 详细设计已完成。聚合级原子同步 (MC+Consultation+Prescription+Items); 全状态双向同步; 自动强制依赖顺序 (Herb->Patient->MC); 患者 IdCardNumber 去重+PatientId 重映射; CaseNumber/PrescriptionNumber Server 重分配; 打印字段不参与同步; BR-001 冲突提示医生选择。详见 "MedicalCase 同步设计" 章节 |
+| 3 | MedicalCase 同步 | FR-SYNC-001 | 已确定: 详细设计已完成。聚合级原子同步 (MC+Consultation+Prescription+Items); **仅 Completed 状态同步** (SYNC-D01); 自动强制依赖顺序 (Herb->Patient->MC); 患者 IdCardNumber 去重+PatientId 重映射; CaseNumber/PrescriptionNumber Server 重分配; 打印字段不参与同步; 模式切换前强制无 Active/Suspended 医案。详见 "MedicalCase 同步设计" 章节 |
 | 4 | 自动同步提示 | FR-SYNC-007 | 已确定: v1.0 不实现。用户手动进入同步模块触发。v2.0 考虑 NetworkStatusService + 状态栏指示器 |
 | 5 | 同步进度 UI | FR-SYNC-007 | 已确定: 步骤指示器 (4步) + 当前实体类型 + 进度条。结果汇总按实体类型分组 |
 | 6 | 同步失败恢复策略 | FR-SYNC-007 | 已确定: 重新开始。已同步数据通过 Checksum 比对自动跳过不重复 |
 | 7 | 冲突解决 UI | FR-SYNC-007 | 已确定: 左右对比布局，差异字段高亮，逐条解决 |
 | 8 | 模式切换前检查 | FR-SYNC-008 | 已确定: 检查未同步变更并提示用户，用户可选择先同步/继续切换/取消 |
+| SYNC-D01 | 医案同步范围 | FR-SYNC-004, 005, 008 | 已确定: 仅同步 CaseStatus==Completed 的医案。Active 生命周期在单一模式内闭合。模式切换前置校验: 本地无 Active/Suspended 医案才允许切换到远程模式。理由: 数据完整性保证 + 冲突处理极简 + 符合业务语义 (本地模式=短期应急)。注: Draft 已替换为 Suspended (MC-D20) |
 
 ---
 
@@ -659,3 +664,4 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 2026-02-18 | v3.0 | MedicalCase同步详细设计: 外出看诊离线工作流、聚合级原子同步、MedicalCaseSyncDto定义、聚合Checksum计算、自动依赖顺序(Herb->Patient->MC)、患者IdCardNumber去重+PatientId重映射、BR-001冲突处理、编号重分配、引用完整性校验、冲突解决UI、新增错误码(服务端6个+客户端2个) |
 | 2026-02-18 | v3.1 | 错误码全量分配: 新增7xxxx范围，5个子类别(701xx~705xx)共20个错误码，服务端错误补充HTTP状态码，统一ERR-MCCEE格式+枚举名 |
 | 2026-02-21 | v3.2 | PRD vs Code 偏差分析修订: 4 项修订, 7 项延期标注 |
+| 2026-02-21 | v3.3 | SYNC-D01: 医案同步仅限 Completed 状态。移除 BR-001 冲突处理和 ERR-70303; 新增 ERR-70506 (本地未完成医案阻断切换); FR-SYNC-008 新增 Active/Suspended 前置检查; Draft→Suspended 术语更新 (MC-D20) |

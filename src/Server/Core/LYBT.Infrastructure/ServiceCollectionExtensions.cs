@@ -144,7 +144,7 @@ namespace LYBT.Infrastructure
             // services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>(); // 移除过度工程
 
             // 添加跨模块查询服务 - 解耦模块间依赖
-            services.AddScoped<ICrossModuleQueryService, CrossModuleQueryService>();
+            services.AddScoped<ICrossModuleService, CrossModuleService>();
 
             // refactor-logging-system: 添加错误消息映射服务
             services.AddSingleton<IErrorMessageMapper, ConfigurableErrorMessageMapper>();

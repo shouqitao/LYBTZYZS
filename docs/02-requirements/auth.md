@@ -328,7 +328,72 @@
 | 1 | 本地模式下自动登录的实现方式 | FR-AUTH-002 | 已确定: 不支持 (无 Token 机制，每次手动登录) |
 | 2 | 本地模式下的会话超时策略 | FR-AUTH-006 | 已确定: 本地模式有不活跃超时，同远程模式 (防止医生离开后他人操作导致信息泄露)。不活跃 15 分钟自动登出，无 Token 刷新 |
 | AUTH-D06 | 单会话登录策略 | FR-AUTH-001 | 已确定: 同一账号仅允许一台设备登录。新设备登录时撤销旧设备所有 Token Family，旧设备下次请求/刷新时触发 TokenRevoked → 强制登出 |
-| AUTH-D07 | 角色变更即时生效 | FR-AUTH-003 + users.md FR-USER-004 | 已确定: 用户角色变更时立即撤销该用户 Token Family，强制重登录。复用 AUTH-D06 的 Token Family 撤销逻辑 |
+| AUTH-D07 | 角色变更即时生效 | FR-AUTH-003 + users.md FR-USER-004 | 已确定: 用户角色变更时立即撤销该用户 Token Family，强制重登录。复用 AUTH-D06 的 Token Family 撤销逻辑。通过 `ICrossModuleAuthService.RevokeAllUserTokensAsync()` 实现 Users → Auth 跨模块调用 (独立接口，ISP 原则，不污染 ICrossModuleQueryService) |
+| AUTH-D08 | 延迟踢出 (不引入JWT黑名单) | FR-AUTH-001 AUTH-D06 | 已确定: 新设备登录撤销旧Token Family后，旧设备在AccessToken有效期内 (最长30分钟) 仍可操作。JWT无状态，不引入黑名单机制。诊所场景30分钟延迟可接受 |
+| AUTH-D09 | 踢出提示统一泛化 | FR-AUTH-004 AUTH-D06 | 已确定: 客户端收到 TokenRevoked 统一显示"您的账号已在其他设备登录，请重新登录"，不区分撤销原因 (新设备登录/管理员撤销/角色变更)。安全原则: 不向客户端泄露撤销触发细节，具体原因记录在 SecurityAuditLog |
+| AUTH-D10 | 凭证存储采用 DPAPI LocalMachine + HMAC | FR-AUTH-009 | 已确定: AutoLoginToken 使用 DPAPI DataProtectionScope.LocalMachine 加密 + HMAC-SHA256 完整性校验。LocalMachine 作用域不绑定 Windows 用户账号，适合诊所共用电脑场景。HMAC 密钥为应用内嵌固定密钥。旧格式 (无HMAC) 透明迁移 |
+| AUTH-D11 | v2.0 预留 USB 加密狗扩展 | FR-AUTH-009 | 已确定: 凭证存储抽象为 ICredentialStore 接口。v1.0 实现 LocalFileCredentialStore (DPAPI)，v2.0 可新增 UsbKeyCredentialStore，DI 注册切换即可 |
+| AUTH-D12 | 并发Token刷新客户端互斥锁 | FR-AUTH-003 FR-AUTH-011 | 已确定: 客户端使用 SemaphoreSlim(1,1) 保证同一时刻仅一个刷新请求。第一个请求获取锁执行刷新，其他请求等待锁释放后使用新Token重试。防止多个并行API调用同时触发刷新导致误触发重放检测。业界标准 (MSAL/Auth0 SDK/Firebase Auth 均采用此模式) |
+
+---
+
+## 操作流程补充
+
+### 单会话登录踢出流程 (AUTH-D06 + AUTH-D08)
+
+设备B登录时的完整踢出时序:
+
+1. 设备B → POST /auth/login
+2. 服务端验证凭据成功
+3. 服务端查询该 UserId 所有未撤销的 RefreshToken → 批量 Revoke(reason="NewDeviceLogin")
+4. 服务端撤销该用户所有 AutoLoginToken Family
+5. 生成新 Token Family → 返回给设备B
+6. 设备A (后续): AccessToken 未过期 → 正常操作 (JWT无状态，延迟踢出)
+7. 设备A: AccessToken 过期 → 尝试 Refresh → 401 TokenRevoked
+8. 设备A: 尝试 AutoLogin → 401 TokenRevoked
+9. 设备A: 显示"您的账号已在其他设备登录，请重新登录" → 跳转登录页
+
+> 注意: LoginAsync 当前代码未实现步骤3-4 (撤销旧Token Family)，需在实现 AUTH-D06 时补充。
+
+### Token 刷新失败分级处理 (FR-AUTH-011)
+
+客户端检测 AccessToken 即将过期 (剩余<5分钟) 时的决策流程:
+
+1. 获取刷新互斥锁 (AUTH-D12)
+   - 获取失败 (其他请求正在刷新) → 等待结果 → 用新Token重试
+   - 获取成功 → POST /auth/refresh
+2. 根据响应分级处理:
+   - **200 OK** → 替换Token → 释放锁 → 继续
+   - **网络错误/5xx** → 指数退避重试 (1s→2s→4s，最多3次)
+     - 重试成功 → 替换Token → 释放锁
+     - 3次均失败 → 释放锁 → 保持当前Token → 用户下次操作再触发
+   - **401 RefreshTokenExpired (10204)** → 释放锁 → 尝试 AutoLogin
+     - AutoLogin 成功 → 获取全新Token
+     - AutoLogin 失败 → 跳转登录页
+   - **401 TokenRevoked (10203)** → 释放锁 → 立即清除所有本地Token → 显示踢出提示 (AUTH-D09) → 跳转登录页
+
+### 不活跃超时流程 (FR-AUTH-006)
+
+1. 登录成功 → 启动 InactivityTimer (默认15分钟，可配置)
+2. 用户操作 (键盘/鼠标) → 重置 Timer
+3. Timer 到期 → 静默登出:
+   - 远程模式: 清除内存Token → POST /auth/logout (Best-effort) → 清除 AutoLoginToken → 保留"记住用户名" → 跳转登录页
+   - 本地模式: 清除本地会话状态 → 保留"记住用户名" → 跳转登录页
+4. 无弹窗警告 (simplify-auth 已移除超时前警告)
+
+### 凭证本地存储流程 (FR-AUTH-009 + AUTH-D10)
+
+**写入** (登录成功 + RememberMe=true):
+AutoLoginToken → DPAPI Protect (LocalMachine + entropy) → HMAC-SHA256 签名 → 写入 %LOCALAPPDATA%/LYBT/credentials.dat
+
+**读取** (应用启动自动登录):
+1. 读取 credentials.dat → 检查 FormatFlags
+2. 有HMAC → 验证签名 → 匹配则 DPAPI Unprotect → 获取 AutoLoginToken → POST /auth/auto-login
+3. 无HMAC (旧格式) → DPAPI Unprotect → 登录成功后用新格式覆盖 (透明迁移)
+4. HMAC不匹配 → 删除文件 + 记录安全警告 + 回退手动登录
+
+**清除** (登出时):
+删除 AutoLoginToken → 保留"记住用户名"(如已勾选) → 保留连接模式设置
 
 ---
 
@@ -341,3 +406,5 @@
 | 2026-02-17 | v1.2 | PRD审查修复: A4-本地模式有不活跃超时(防泄露), D2-错误码对齐5位数体系(1xxxx) |
 | 2026-02-18 | v1.3 | FR-AUTH-007本地模式明确: "保持登录"仅重置计时器(无Token刷新)，验收标准拆分远程/本地 |
 | 2026-02-21 | v1.4 | PRD vs Code 偏差分析修订: 5 项修订, 4 项延期标注 |
+| 2026-02-21 | v1.5 | Phase 2 模块功能细化: 新增 AUTH-D08~D12 (延迟踢出/泛化提示/DPAPI LocalMachine/ICredentialStore/客户端互斥锁)，补充4个操作流程 (踢出时序/刷新分级/不活跃超时/凭证存储)，AUTH-D07 补充 ICrossModuleService 实现路径 |
+| 2026-02-22 | v1.6 | **Token Family 撤销接口重命名 (A3)**: AUTH-D07 ICrossModuleService → ICrossModuleAuthService (ISP 原则，Token 撤销独立接口); 6 个撤销场景 (T1-X3-01~06) 触发点全部明确; LoginAsync 内部撤销 + UserService 5 个跨模块调用点 |

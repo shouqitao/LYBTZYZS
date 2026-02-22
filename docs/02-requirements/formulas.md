@@ -276,7 +276,7 @@
 | 验方名称不能为空 | 验证失败 | 名称字段为空 |
 | 数据处理异常 | 技术异常 | 行级 try-catch 捕获 |
 
-**药材匹配机制**: 导入时通过 ICrossModuleQueryService.GetHerbByNameOrPinyinAsync() 匹配系统药材，匹配失败则 HerbId=null、IsValidated=false，保存供后续手动绑定。
+**药材匹配机制**: 导入时通过 ICrossModuleService.GetHerbByNameOrPinyinAsync() 匹配系统药材，匹配失败则 HerbId=null、IsValidated=false，保存供后续手动绑定。
 
 ---
 

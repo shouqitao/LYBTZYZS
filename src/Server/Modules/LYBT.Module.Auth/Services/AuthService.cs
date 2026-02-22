@@ -1,12 +1,13 @@
 ﻿using LYBT.Infrastructure.Data;
-using LYBT.Module.Users.Mapping;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
-using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -14,78 +15,96 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.Auth.Services
 {
     /// <summary>
-    /// 认证服务 - 简化版本（遵循适度设计原则）
-    /// Issue #1008: 改为直接使用IUserRepository，移除对IUserService的依赖
-    /// Issue #1864: 重新引入IUserService实现Auth/User职责分离，密码验证委托给UserService
-    /// 仅提供小型中医诊所系统所需的基础认证功能，移除企业级复杂功能
+    /// 认证服务 - 通过 ICrossModuleService 解耦 Users 模块依赖
+    /// 密码验证使用 PasswordHelper (LYBT.Shared.Utilities)，用户查询通过 CMQS 间接访问
+    /// 仅提供小型中医诊所系统所需的基础认证功能
     /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IJwtService _jwtService;
-        private readonly IUserRepository _userRepository;
-        private readonly IUserService _userService; // Issue #1864: 职责分离
-        private readonly UserMapper _mapper = new();
+        private readonly ICrossModuleService _crossModuleQuery;
         private readonly ILogger<AuthService> _logger;
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        private readonly ITokenRevocationService _revocationService; // Issue #1872
-        private readonly ISecurityAuditService _auditService; // Issue #1872
+        private readonly ITokenRevocationService _revocationService;
+        private readonly ISecurityAuditService _auditService;
 
         public AuthService(
             IJwtService jwtService,
-            IUserRepository userRepository,
-            IUserService userService, // Issue #1864: 职责分离
+            ICrossModuleService crossModuleQuery,
             ILogger<AuthService> logger,
             AppDbContext dbContext,
             IConfiguration configuration,
-            ITokenRevocationService revocationService, // Issue #1872
-            ISecurityAuditService auditService) // Issue #1872
+            ITokenRevocationService revocationService,
+            ISecurityAuditService auditService)
         {
             _jwtService = jwtService;
-            _userRepository = userRepository;
-            _userService = userService; // Issue #1864: 职责分离
+            _crossModuleQuery = crossModuleQuery;
             _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
-            _revocationService = revocationService; // Issue #1872
-            _auditService = auditService; // Issue #1872
+            _revocationService = revocationService;
+            _auditService = auditService;
         }
 
         #region 核心认证操作
 
         /// <summary>
         /// 验证用户凭据（统一认证）
-        /// Issue #1008: 改为直接使用IUserRepository和BCrypt验证
-        /// Issue #1909: 三角色统一认证（SuperAdmin/Admin/Doctor）
-        /// Issue #1864: 返回结构化错误码，职责分离委托给IUserService验证密码
+        /// 通过 ICrossModuleService + PasswordHelper 实现密码验证，解耦 Users 模块
         /// </summary>
         public async Task<Result<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
+            var result = await VerifyCredentialsInternalAsync(request);
+            if (!result.IsSuccess)
+                return Result<string>.Failure(result.ErrorCode ?? AuthErrorCode.InvalidCredentials, result.ErrorMessage);
+
+            return Result<string>.Success(result.Data!.Id.ToString());
+        }
+
+        /// <summary>
+        /// 内部凭据验证 - 返回 UserCredentialDto，供 LoginAsync 复用避免双重查询
+        /// </summary>
+        private async Task<Result<UserCredentialDto>> VerifyCredentialsInternalAsync(LoginRequest request)
+        {
             if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
-                return Result<string>.Failure(AuthErrorCode.InvalidCredentials, "用户名和密码不能为空");
+                return Result<UserCredentialDto>.Failure(AuthErrorCode.InvalidCredentials, "用户名和密码不能为空");
 
-            // Issue #1864: 职责分离 - 密码验证委托给UserService
-            var validationResult = await _userService.ValidatePasswordAsync(request.UserName, request.Password);
-
-            if (!validationResult.IsSuccess)
+            var user = await _crossModuleQuery.GetUserByUsernameAsync(request.UserName);
+            if (user == null)
             {
-                // 根据错误消息映射到对应的AuthErrorCode
-                var errorCode = validationResult.ErrorMessage switch
-                {
-                    "用户已被禁用" => AuthErrorCode.UserDisabled,
-                    _ => AuthErrorCode.InvalidCredentials
-                };
-
-                _logger.LogWarning("[SVC] Auth.VerifyCredentials → Failed - UserName={UserName} Reason={Reason}",
-                    request.UserName, validationResult.ErrorMessage);
-                return Result<string>.Failure(errorCode, validationResult.ErrorMessage);
+                _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=用户不存在",
+                    request.UserName);
+                return Result<UserCredentialDto>.Failure(AuthErrorCode.InvalidCredentials, "用户名或密码错误");
             }
 
-            var userDto = validationResult.Data!;
+            if (user.Status == CommonStatus.Disabled)
+            {
+                _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=用户已被禁用",
+                    request.UserName);
+                return Result<UserCredentialDto>.Failure(AuthErrorCode.UserDisabled, "用户已被禁用");
+            }
+
+            var verificationResult = PasswordHelper.VerifyPassword(
+                request.Password, user.PasswordHash,
+                user.Role, _logger);
+
+            if (!verificationResult.IsSuccess)
+            {
+                _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=密码错误",
+                    request.UserName);
+                return Result<UserCredentialDto>.Failure(AuthErrorCode.InvalidCredentials, "用户名或密码错误");
+            }
+
+            // BCrypt hash 升级
+            if (verificationResult.NewHashedPassword != null)
+            {
+                await _crossModuleQuery.UpdateUserPasswordHashAsync(user.Id, verificationResult.NewHashedPassword);
+            }
+
             _logger.LogInformation("[SVC] Auth.VerifyCredentials completed - UserName={UserName} Role={Role}",
-                request.UserName, userDto.Role);
-            return Result<string>.Success(userDto.Id.ToString());
+                request.UserName, user.Role);
+            return Result<UserCredentialDto>.Success(user);
         }
 
         // Issue #1909: ChangeSysAdminPasswordAsync方法已移除
@@ -103,8 +122,8 @@ namespace LYBT.Module.Auth.Services
         public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            // 验证凭据
-            var credentialsResult = await VerifyCredentialsAsync(request, cancellationToken);
+            // 验证凭据 (使用内部方法直接获取 UserBasicDto，避免双重数据库查询)
+            var credentialsResult = await VerifyCredentialsInternalAsync(request);
             if (!credentialsResult.IsSuccess)
             {
                 // Issue #1872: 记录登录失败审计日志
@@ -121,12 +140,9 @@ namespace LYBT.Module.Auth.Services
                     credentialsResult.ErrorMessage);
             }
 
-            // 统一用户登录流程（包括SuperAdmin） - 所有角色都从Users表获取
-            var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
-            if (userEntity == null)
-                return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound);
-
-            var userDto = _mapper.ToDetailDto(userEntity);
+            // 复用 VerifyCredentialsInternalAsync 返回的用户信息，无需二次查询
+            var userBasic = credentialsResult.Data!;
+            var userDto = MapToUserDetailDto(userBasic);
 
             // 确定用户类型（SuperAdmin特殊处理UserType）
             string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
@@ -215,7 +231,7 @@ namespace LYBT.Module.Auth.Services
                     // 从Token记录获取用户信息（用于审计日志）
                     if (tokenRecord != null && string.IsNullOrEmpty(userName))
                     {
-                        var user = await _userRepository.GetByIdAsync(tokenRecord.UserId);
+                        var user = await _crossModuleQuery.GetUserBasicInfoAsync(tokenRecord.UserId);
                         userName = user?.UserName;
                     }
 
@@ -351,12 +367,12 @@ namespace LYBT.Module.Auth.Services
                 _logger.LogWarning("[SVC] Auth.RefreshToken → AbnormalUsage - UsageCount={Count}", tokenRecord.UsageCount);
             }
 
-            // 4. 统一从Users表获取用户信息（包括SuperAdmin） - Issue #1909
-            var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
-            if (userEntity == null)
+            // 4. 通过 ICrossModuleService 获取用户信息
+            var userBasic = await _crossModuleQuery.GetUserBasicInfoAsync(tokenRecord.UserId);
+            if (userBasic == null)
                 return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound);
 
-            var userDto = _mapper.ToDetailDto(userEntity);
+            var userDto = MapToUserDetailDto(userBasic);
 
             // 确定用户类型（SuperAdmin特殊处理UserType）
             string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
@@ -558,20 +574,20 @@ namespace LYBT.Module.Auth.Services
                 return Result<LoginResponse>.Failure(AuthErrorCode.RefreshTokenExpired, $"AutoLoginToken{reason}，请重新登录");
             }
 
-            // 4. 获取用户信息
-            var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
-            if (userEntity == null)
+            // 4. 通过 ICrossModuleService 获取用户信息
+            var userBasic = await _crossModuleQuery.GetUserBasicInfoAsync(tokenRecord.UserId);
+            if (userBasic == null)
             {
                 return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound, "用户不存在");
             }
 
             // 检查用户是否被禁用
-            if (userEntity.Status != CommonStatus.Enabled)
+            if (userBasic.Status == CommonStatus.Disabled)
             {
                 return Result<LoginResponse>.Failure(AuthErrorCode.UserDisabled, "用户已被禁用");
             }
 
-            var userDto = _mapper.ToDetailDto(userEntity);
+            var userDto = MapToUserDetailDto(userBasic);
             string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
 
             // 5. 生成新的JWT Token
@@ -735,8 +751,28 @@ namespace LYBT.Module.Auth.Services
 
         #endregion 认证流程操作
 
-        // Issue #1008: 移除SaveAuthenticationAsync（Desktop特定方法，已迁移到ILocalAuthService）
-        // 移除私有密码验证方法，改为委托给用户服务进行验证
-        // 这样符合单一职责原则，认证服务专注于认证流程，密码验证交给用户服务
+        /// <summary>
+        /// 将 UserBasicDto 映射为 UserDetailDto (LoginResponse 需要)
+        /// 映射全部 UserDetailDto 字段，避免客户端功能退化
+        /// </summary>
+        private static UserDetailDto MapToUserDetailDto(UserBasicDto basic)
+        {
+            return new UserDetailDto
+            {
+                Id = basic.Id,
+                UserName = basic.UserName,
+                RealName = basic.RealName,
+                Role = basic.Role,
+                Status = basic.Status,
+                PhoneNumber = basic.PhoneNumber,
+                Email = basic.Email,
+                PinYinCode = basic.PinYinCode,
+                LastLoginTime = basic.LastLoginTime,
+                FailedLoginCount = basic.FailedLoginCount,
+                CreatedAt = basic.CreatedAt,
+                UpdatedAt = basic.UpdatedAt,
+                Remark = basic.Remark
+            };
+        }
     }
 }

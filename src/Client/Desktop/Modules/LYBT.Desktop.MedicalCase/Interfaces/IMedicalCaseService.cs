@@ -3,7 +3,7 @@ using LYBT.Desktop.Contracts.Services;
 namespace LYBT.Desktop.MedicalCase.Interfaces
 {
     /// <summary>
-    /// 病案Service接口 - 聚合根门面模式
+    /// 医案Service接口 - 聚合根门面模式
     /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// OpenSpec: simplify-medicalcase-api - 聚合根统一管理Consultation和Prescription
     /// OpenSpec: refactor-frontend-srp-patterns (ADR-1) - 门面接口，聚合Query/Command/Lifecycle职责

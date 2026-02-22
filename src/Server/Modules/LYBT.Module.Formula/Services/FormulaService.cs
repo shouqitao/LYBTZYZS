@@ -13,18 +13,18 @@ namespace LYBT.Module.Formulas.Services
 {
     /// <summary>
     /// 验方服务 - 简化版，只包含基础CRUD
-    /// OpenSpec: decouple-server-modules - 使用ICrossModuleQueryService替代IHerbRepository
+    /// OpenSpec: decouple-server-modules - 使用ICrossModuleService替代IHerbRepository
     /// </summary>
     public class FormulaService : IFormulaService
     {
         private readonly IFormulaRepository _repository;
-        private readonly ICrossModuleQueryService _crossModuleQuery;
+        private readonly ICrossModuleService _crossModuleQuery;
         private readonly FormulaMapper _mapper = new();
         private readonly ILogger<FormulaService> _logger;
 
         public FormulaService(
             IFormulaRepository repository,
-            ICrossModuleQueryService crossModuleQuery,
+            ICrossModuleService crossModuleQuery,
             ILogger<FormulaService> logger)
         {
             _repository = repository;
@@ -235,7 +235,7 @@ namespace LYBT.Module.Formulas.Services
                 return Result.Failure("该药材已校验，无需重复操作");
             }
 
-            // 4. 查询选定的药材 - OpenSpec: decouple-server-modules 使用ICrossModuleQueryService
+            // 4. 查询选定的药材 - OpenSpec: decouple-server-modules 使用ICrossModuleService
             var selectedHerb = await _crossModuleQuery.GetHerbBasicInfoAsync(selectedHerbId);
             if (selectedHerb == null)
             {

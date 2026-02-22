@@ -4,6 +4,7 @@ using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Validators.BusinessRules;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -130,6 +131,15 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
         entity.Id = Guid.NewGuid();
         entity.CaseStatus = MedicalCaseStatus.Draft;
 
+        // 业务规则: 患者同时只能有一个 Active/Draft 医案
+        var existingStatuses = await _context.MedicalCases
+            .Where(mc => mc.PatientId == entity.PatientId && !mc.IsDeleted)
+            .Select(mc => mc.CaseStatus)
+            .ToListAsync(ct);
+
+        if (!MedicalCaseBusinessRules.CanCreateNewCase(existingStatuses))
+            throw new InvalidOperationException("该患者已有进行中或暂存的医案，不能创建新医案");
+
         // 生成医案编号
         entity.CaseNumber = GenerateCaseNumber();
 
@@ -171,6 +181,14 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
                 .ThenInclude(p => p!.Items)
             .FirstOrDefaultAsync(mc => mc.Id == entity.Id, ct)
             ?? throw new InvalidOperationException($"医案不存在: {entity.Id}");
+
+        // 状态流转验证
+        if (existing.CaseStatus != entity.CaseStatus)
+        {
+            if (!MedicalCaseBusinessRules.IsValidStatusTransition(existing.CaseStatus, entity.CaseStatus))
+                throw new InvalidOperationException(
+                    $"医案状态不能从 {existing.CaseStatus} 变更为 {entity.CaseStatus}");
+        }
 
         // 更新基本属性
         _context.Entry(existing).CurrentValues.SetValues(entity);

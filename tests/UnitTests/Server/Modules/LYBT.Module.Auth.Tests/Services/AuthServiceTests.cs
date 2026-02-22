@@ -1,13 +1,14 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
-using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,16 +20,12 @@ namespace LYBT.Module.Auth.Tests.Services;
 
 /// <summary>
 /// AuthService 单元测试
-/// Issue #864 - Phase 2.3: Auth 模块测试
-/// Issue #1008 - 更新为匹配新的 AuthService 实现（IUserRepository + IMapper 替代 IUserService）
-/// Issue #1864 - 重新引入 IUserService 实现 Auth/User 职责分离
-/// OpenSpec: adopt-mapperly-unified-mapping - 移除IMapper依赖，使用Mapperly
+/// 重构: 使用 ICrossModuleService 替代 IUserRepository + IUserService
 /// </summary>
 public class AuthServiceTests : IDisposable
 {
     private readonly Mock<IJwtService> _mockJwtService;
-    private readonly Mock<IUserRepository> _mockUserRepository;
-    private readonly Mock<IUserService> _mockUserService; // Issue #1864: 职责分离
+    private readonly Mock<ICrossModuleService> _mockCrossModuleQuery;
     private readonly Mock<ILogger<AuthService>> _mockLogger;
     private readonly AppDbContext _dbContext;
     private readonly IConfiguration _configuration;
@@ -39,13 +36,12 @@ public class AuthServiceTests : IDisposable
     public AuthServiceTests()
     {
         _mockJwtService = new Mock<IJwtService>();
-        _mockUserRepository = new Mock<IUserRepository>();
-        _mockUserService = new Mock<IUserService>(); // Issue #1864: 职责分离
+        _mockCrossModuleQuery = new Mock<ICrossModuleService>();
         _mockLogger = new Mock<ILogger<AuthService>>();
         _mockRevocationService = new Mock<ITokenRevocationService>();
         _mockAuditService = new Mock<ISecurityAuditService>();
 
-        // Issue #1872: Setup audit service mock to return completed task
+        // Setup audit service mock to return completed task
         _mockAuditService.Setup(x => x.LogAsync(It.IsAny<LYBT.Module.Auth.Models.SecurityAuditEvent>()))
             .Returns(Task.CompletedTask);
 
@@ -61,8 +57,7 @@ public class AuthServiceTests : IDisposable
 
         _sut = new AuthService(
             _mockJwtService.Object,
-            _mockUserRepository.Object,
-            _mockUserService.Object, // Issue #1864: 职责分离
+            _mockCrossModuleQuery.Object,
             _mockLogger.Object,
             _dbContext,
             _configuration,
@@ -74,10 +69,9 @@ public class AuthServiceTests : IDisposable
     private static IConfiguration CreateMockConfiguration()
     {
         var config = new Mock<IConfiguration>();
-        // Issue #1872: 修正配置键以匹配AuthService实际使用的键
         config.Setup(c => c["Lybt:SystemAdmin:UserName"]).Returns("sysadmin");
         config.Setup(c => c["Lybt:SystemAdmin:Email"]).Returns("admin@lybt.com");
-        config.Setup(c => c["Lybt:SystemAdmin:Username"]).Returns("admin"); // RefreshTokenAsync使用
+        config.Setup(c => c["Lybt:SystemAdmin:Username"]).Returns("admin");
         config.Setup(c => c.GetSection("Lybt:Jwt:ExpireMinutes").Value).Returns("15");
         config.Setup(c => c.GetSection("Lybt:Jwt:RefreshTokenExpirationDays").Value).Returns("7");
         return config.Object;
@@ -90,28 +84,22 @@ public class AuthServiceTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var testUser = new User
-        {
-            Id = userId,
-            UserName = "testuser",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!")
-        };
-
-        var testUserDto = new UserDetailDto
-        {
-            Id = userId,
-            UserName = "testuser"
-        };
-
         var request = new LoginRequest
         {
             UserName = "testuser",
             Password = "Password123!"
         };
 
-        // Issue #1864: Mock IUserService.ValidatePasswordAsync
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDetailDto>.Success(testUserDto));
+        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
+            .ReturnsAsync(new UserCredentialDto
+            {
+                Id = userId,
+                UserName = "testuser",
+                RealName = "",
+                Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!")
+            });
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
@@ -131,9 +119,8 @@ public class AuthServiceTests : IDisposable
             Password = "Password123!"
         };
 
-        // Issue #1864: Mock IUserService.ValidatePasswordAsync返回失败
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDetailDto>.Failure("用户名或密码错误"));
+        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
+            .ReturnsAsync((UserCredentialDto?)null);
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
@@ -153,9 +140,16 @@ public class AuthServiceTests : IDisposable
             Password = "WrongPassword"
         };
 
-        // Issue #1864: Mock IUserService.ValidatePasswordAsync返回失败
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDetailDto>.Failure("用户名或密码错误"));
+        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
+            .ReturnsAsync(new UserCredentialDto
+            {
+                Id = Guid.NewGuid(),
+                UserName = "testuser",
+                RealName = "",
+                Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("CorrectPassword")
+            });
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
@@ -210,28 +204,30 @@ public class AuthServiceTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
+
         var testUser = new User
         {
             Id = userId,
             UserName = "testuser",
             RealName = "测试用户",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+            PasswordHash = passwordHash,
             Role = UserRole.Doctor,
             Email = "test@example.com"
         };
 
-        // Issue #1872: 先将用户保存到数据库，因为RefreshToken有外键约束
+        // 先将用户保存到数据库，因为RefreshToken有外键约束
         await _dbContext.Users.AddAsync(testUser);
         await _dbContext.SaveChangesAsync();
 
-        var testUserDto = new UserDetailDto
+        var userCredentialDto = new UserCredentialDto
         {
             Id = userId,
             UserName = "testuser",
             RealName = "测试用户",
             Role = UserRole.Doctor,
-            Email = "test@example.com",
-            Status = CommonStatus.Enabled // 登录成功的用户应该是启用状态
+            Status = CommonStatus.Enabled,
+            PasswordHash = passwordHash
         };
 
         var request = new LoginRequest
@@ -242,32 +238,28 @@ public class AuthServiceTests : IDisposable
 
         var expectedToken = "test.jwt.token";
 
-        // Issue #1864: Mock IUserService.ValidatePasswordAsync for VerifyCredentialsAsync
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDetailDto>.Success(testUserDto));
-
-        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
-            .ReturnsAsync(testUser);
+        // Mock: GetUserByUsernameAsync is called by both VerifyCredentialsAsync and LoginAsync
+        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
+            .ReturnsAsync(userCredentialDto);
 
         _mockJwtService.Setup(x => x.GenerateToken(
-            testUserDto.Id.ToString(),
-            testUserDto.UserName,
-            testUserDto.Role,
-            It.IsAny<string>())) // Issue #1861: userType参数
+            userId.ToString(),
+            "testuser",
+            UserRole.Doctor,
+            It.IsAny<string>()))
             .Returns(expectedToken);
 
         // Act
         var result = await _sut.LoginAsync(request);
 
         // Assert
-        // Issue #1872: 添加失败消息输出以便诊断
         result.IsSuccess.Should().BeTrue($"Login should succeed, but failed with: {result.ErrorMessage}");
         result.Data.Should().NotBeNull();
         result.Data!.Token.Should().Be(expectedToken);
-        result.Data.User.Should().BeEquivalentTo(testUserDto, options => options
-            .Excluding(u => u.CreatedAt)
-            .Excluding(u => u.UpdatedAt));
-        result.Data.RefreshToken.Should().NotBeNullOrEmpty(); // Issue #1872: 验证RefreshToken
+        result.Data.User.UserName.Should().Be("testuser");
+        result.Data.User.RealName.Should().Be("测试用户");
+        result.Data.User.Role.Should().Be(UserRole.Doctor);
+        result.Data.RefreshToken.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
@@ -280,9 +272,9 @@ public class AuthServiceTests : IDisposable
             Password = "WrongPassword"
         };
 
-        // Issue #1864: Mock IUserService.ValidatePasswordAsync返回失败
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDetailDto>.Failure("用户名或密码错误"));
+        // User does not exist
+        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
+            .ReturnsAsync((UserCredentialDto?)null);
 
         // Act
         var result = await _sut.LoginAsync(request);
@@ -302,9 +294,16 @@ public class AuthServiceTests : IDisposable
             Password = "WrongPassword"
         };
 
-        // Issue #1864: Mock IUserService.ValidatePasswordAsync返回失败
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDetailDto>.Failure("用户名或密码错误"));
+        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
+            .ReturnsAsync(new UserCredentialDto
+            {
+                Id = Guid.NewGuid(),
+                UserName = "testuser",
+                RealName = "",
+                Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("CorrectPassword")
+            });
 
         // Act
         var result = await _sut.LoginAsync(request);
@@ -340,7 +339,6 @@ public class AuthServiceTests : IDisposable
         var result = await _sut.RefreshTokenAsync(refreshToken);
 
         // Assert
-        // Issue #1872: RefreshTokenAsync现在实际实现了功能，不存在的token应返回失败
         result.IsSuccess.Should().BeFalse();
         result.ErrorMessage.Should().Contain("RefreshToken不存在");
     }
@@ -418,22 +416,20 @@ public class AuthServiceTests : IDisposable
         await _dbContext.RefreshTokens.AddAsync(oldRefreshToken);
         await _dbContext.SaveChangesAsync();
 
-        var testUserDto = new UserDetailDto
-        {
-            Id = userId,
-            UserName = "testuser",
-            RealName = "测试用户",
-            Role = UserRole.Doctor,
-            Email = "test@example.com"
-        };
-
-        _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
-            .ReturnsAsync(testUser);
+        _mockCrossModuleQuery.Setup(x => x.GetUserBasicInfoAsync(userId))
+            .ReturnsAsync(new UserBasicDto
+            {
+                Id = userId,
+                UserName = "testuser",
+                RealName = "测试用户",
+                Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled
+            });
 
         _mockJwtService.Setup(x => x.GenerateToken(
-            testUserDto.Id.ToString(),
-            testUserDto.UserName,
-            testUserDto.Role,
+            userId.ToString(),
+            "testuser",
+            UserRole.Doctor,
             It.IsAny<string>()))
             .Returns("new.jwt.token");
 
@@ -443,7 +439,7 @@ public class AuthServiceTests : IDisposable
         // Assert
         result.IsSuccess.Should().BeTrue();
 
-        // Issue #1864 AUTH-007: 验证旧Token已被标记为已使用（而非撤销，用于重放攻击检测）
+        // 验证旧Token已被标记为已使用（用于重放攻击检测）
         var oldToken = await _dbContext.RefreshTokens
             .FirstAsync(t => t.Token == oldRefreshToken.Token);
         oldToken.IsUsed.Should().BeTrue();
@@ -459,12 +455,14 @@ public class AuthServiceTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
+
         var testUser = new User
         {
             Id = userId,
             UserName = "testuser",
             RealName = "测试用户",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+            PasswordHash = passwordHash,
             Role = UserRole.Doctor,
             Email = "test@example.com"
         };
@@ -472,13 +470,14 @@ public class AuthServiceTests : IDisposable
         await _dbContext.Users.AddAsync(testUser);
         await _dbContext.SaveChangesAsync();
 
-        var testUserDto = new UserDetailDto
+        var userCredentialDto = new UserCredentialDto
         {
             Id = userId,
             UserName = "testuser",
             RealName = "测试用户",
             Role = UserRole.Doctor,
-            Email = "test@example.com"
+            Status = CommonStatus.Enabled,
+            PasswordHash = passwordHash
         };
 
         var request = new LoginRequest
@@ -487,17 +486,13 @@ public class AuthServiceTests : IDisposable
             Password = "Password123!"
         };
 
-        // Issue #1864: Mock IUserService.ValidatePasswordAsync for VerifyCredentialsAsync
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(request.UserName, request.Password))
-            .ReturnsAsync(Result<UserDetailDto>.Success(testUserDto));
-
-        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
-            .ReturnsAsync(testUser);
+        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
+            .ReturnsAsync(userCredentialDto);
 
         _mockJwtService.Setup(x => x.GenerateToken(
-            testUserDto.Id.ToString(),
-            testUserDto.UserName,
-            testUserDto.Role,
+            userId.ToString(),
+            "testuser",
+            UserRole.Doctor,
             It.IsAny<string>()))
             .Returns("test.jwt.token");
 
@@ -548,7 +543,6 @@ public class AuthServiceTests : IDisposable
         var result = await _sut.ValidateTokenAsync(token);
 
         // Assert
-        // Issue #1864: 无效Token返回Failure而不是Success(false)
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be(LYBT.Shared.Models.Enums.AuthErrorCode.TokenInvalid);
     }
@@ -613,7 +607,6 @@ public class AuthServiceTests : IDisposable
         var result = await _sut.GetSessionInfoAsync(token);
 
         // Assert
-        // Issue #1864: 使用AuthErrorCode.TokenInvalid映射的错误消息
         result.IsSuccess.Should().BeFalse();
         result.ErrorMessage.Should().Contain("登录凭据无效");
     }

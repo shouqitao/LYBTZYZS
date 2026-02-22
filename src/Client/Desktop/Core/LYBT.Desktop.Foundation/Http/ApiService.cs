@@ -237,7 +237,24 @@ namespace LYBT.Desktop.Foundation.Http
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger?.LogError($"API错误: {response.StatusCode}, 内容: {content}");
+                // 统一按 ApiResponse 格式解析错误
+                try
+                {
+                    var errorResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                    if (errorResponse != null && !string.IsNullOrEmpty(errorResponse.Message))
+                    {
+                        _logger?.LogWarning("API业务错误: {StatusCode}, 消息: {Message}",
+                            (int)response.StatusCode, errorResponse.Message);
+                        throw new ApiException(response.StatusCode, errorResponse.Message);
+                    }
+                }
+                catch (JsonException)
+                {
+                    // 非 ApiResponse 格式 (框架级错误), 回退到原始内容
+                }
+
+                _logger?.LogError("API错误: {StatusCode}, 内容: {Content}",
+                    (int)response.StatusCode, content);
                 throw new ApiException(response.StatusCode, content);
             }
 

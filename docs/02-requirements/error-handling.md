@@ -301,7 +301,7 @@ Exception
 | 异常类型 | HTTP | 标题 | 详情 |
 |----------|------|------|------|
 | FluentValidation.ValidationException | 400 | 验证失败 | 请求数据验证失败，请检查输入 |
-| UnauthorizedAccessException | 401 | 未授权 | 您没有权限访问此资源 |
+| UnauthorizedAccessException | 403 | 权限不足 | 您没有权限执行此操作 |
 | OperationCanceledException | 499 | 请求已取消 | 客户端取消了请求 |
 | TimeoutException | 504 | 请求超时 | 服务器处理请求超时 |
 | DbUpdateConcurrencyException | 409 | 并发冲突 | 数据已被其他用户修改 |
@@ -325,6 +325,7 @@ Exception
 | 5 | 异常展示遵循 UI 规范 | 遵循 ui-patterns.md 3.3 节: 业务错误用 Toast，系统错误用对话框。代码需从统一 MessageBox 重构为分层展示 | 2026-02-17 |
 | 6 | 错误消息映射体系 | ClientErrorMessageMapper 覆盖 HTTP 状态码 + 40+ 业务错误码到中文消息，纳入 v1.0 | 2026-02-17 |
 | 7 | 追踪码纳入 v1.0 | 系统错误附加 8 位短追踪码，同步记录到日志，方便用户反馈定位。业务错误不附加 | 2026-02-17 |
+| 8 | **A1: 统一异常体系重构** | Service 层全面采用 throw BusinessException/NotFoundException，消除 InvalidOperationException (47处) 和 Result.Failure("硬编码") (11处)。MedicalCase CQRS Service 直接 throw 域异常→ExceptionHandler 统一映射 HTTP 4xx。BaseService 模块方法签名从 Task\<Result\<T\>\> 改为 Task\<T\>。新增 ~8 个 ErrorCode (PrescriptionAlreadyPrinted/PrescriptionRequired/InvalidStatusTransition/CompletedCaseImmutable/HerbAlreadyVerified 等)。Result\<T\> 仅保留用于批量操作和验证聚合。Desktop LocalData 9处保持 InvalidOperationException (SYNC-D02 后整体删除) | 2026-02-22 |
 
 ---
 
@@ -337,3 +338,4 @@ Exception
 | 2026-02-17 | v2.1 | PRD审查修复: D2-errorCode示例格式对齐5位数体系(AUTH-101->ERR-10101) |
 | 2026-02-18 | v2.2 | 错误码全量分配: 范围表更新为5位MCCEE体系，新增同步模块7xxxx，处方模块4xxxx标注预留 |
 | 2026-02-21 | v2.3 | PRD vs Code 偏差分析修订: 3 项修订, 0 项延期标注 |
+| 2026-02-22 | v2.4 | **A1 统一异常体系重构决策**: 新增决策 #8 -- Service 层全面 throw 域异常取代 InvalidOperationException(47处)/Result.Failure(11处); 新增 ~8 个 ErrorCode; BaseService 方法签名简化; Result 模式仅保留批量/验证场景 |

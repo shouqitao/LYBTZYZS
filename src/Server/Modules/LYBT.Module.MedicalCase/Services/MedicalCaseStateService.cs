@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
-    /// 病案状态服务实现 - 状态管理操作
+    /// 医案状态服务实现 - 状态管理操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：UpdateStatus, Complete, CloseCase, SaveDraft, Cancel等状态流转操作
     /// OpenSpec: adopt-mapperly-unified-mapping - 移除IMapper依赖（此Service无映射需求）
@@ -36,7 +36,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 更新病案状态
+        /// 更新医案状态
         /// 支持 Draft/Active/Completed 状态流转（Cancelled 已移除，使用 IsDeleted 替代）
         /// </summary>
         public async Task<MedicalCase?> UpdateStatusAsync(
@@ -78,7 +78,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 统一完成病案入口
+        /// 统一完成医案入口
         /// skipWorkflowValidation=false: 验证 NeedsPrescription + 处方存在性 (BR-003)
         /// skipWorkflowValidation=true: 直接完成 (原 CloseCaseAsync 行为)
         /// 始终设置 CompletedAt
@@ -116,7 +116,7 @@ namespace LYBT.Module.MedicalCases.Services
                     if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
                     {
                         _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                        throw new InvalidOperationException("已标记需要开处方，但处方不存在，无法完成病案");
+                        throw new InvalidOperationException("已标记需要开处方，但处方不存在，无法完成医案");
                     }
                 }
             }
@@ -129,7 +129,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 关闭病案（直接标记为Completed，不验证三步流程）
+        /// 关闭医案（直接标记为Completed，不验证三步流程）
         /// 委托给统一的 CompleteAsync(skipWorkflowValidation: true)
         /// </summary>
         public async Task<MedicalCase?> CloseCaseAsync(Guid id)

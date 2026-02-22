@@ -122,7 +122,7 @@ namespace LYBT.Module.MedicalCases.Services
             var doctor = await userRepository.GetByIdAsync(doctorId)
                 ?? throw new InvalidOperationException($"医生不存在，DoctorId: {doctorId}");
 
-            // BR-001: 单患者仅一条未完成病案
+            // BR-001: 单患者仅一条未完成医案
             var existingCases = await medicalCaseRepository.GetByPatientIdAsync(patientId);
             if (!MedicalCaseRules.CanCreateNewCase(existingCases))
             {
@@ -198,7 +198,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             logger.LogWarning("[SVC] MedicalCase.{Operation} -> PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId} Reason={Reason}",
                 operation, medicalCase.Id, userId, reason);
-            throw new UnauthorizedAccessException($"无权限编辑此病案：{reason}");
+            throw new UnauthorizedAccessException($"无权限编辑此医案：{reason}");
         }
 
         /// <summary>

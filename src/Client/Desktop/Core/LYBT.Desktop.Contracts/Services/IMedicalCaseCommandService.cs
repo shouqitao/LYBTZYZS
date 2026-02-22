@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Contracts.Services;
 public interface IMedicalCaseCommandService
 {
     /// <summary>
-    /// 当前病案数据
+    /// 当前医案数据
     /// </summary>
     MedicalCaseDetailDto? Current { get; }
 
@@ -26,7 +26,7 @@ public interface IMedicalCaseCommandService
     Task<bool> SaveAsync();
 
     /// <summary>
-    /// 删除当前病案
+    /// 删除当前医案
     /// </summary>
     /// <returns>是否删除成功</returns>
     Task<bool> DeleteAsync();

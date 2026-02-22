@@ -7,7 +7,7 @@ using LYBT.Shared.Primitives.Validation;
 namespace LYBT.Shared.Models.Contracts.MedicalCase
 {
     /// <summary>
-    /// 病案输入DTO - 统一创建、更新和聚合保存
+    /// 医案输入DTO - 统一创建、更新和聚合保存
     /// </summary>
     /// <remarks>
     /// OpenSpec: unify-medicalcase-input-dto, simplify-medicalcase-dataflow
@@ -26,9 +26,9 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     public class MedicalCaseInputDto
     {
         /// <summary>
-        /// 病案ID（更新时必填，创建时为null）
+        /// 医案ID（更新时必填，创建时为null）
         /// </summary>
-        [DisplayName("病案ID")]
+        [DisplayName("医案ID")]
         public Guid? Id { get; set; }
 
         /// <summary>

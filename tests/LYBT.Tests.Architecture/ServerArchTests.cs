@@ -126,6 +126,7 @@ public class ServerArchTests
                        !baseName.EndsWith("Summary") &&  // 允许Summary类
                        !baseName.EndsWith("Rules") &&    // 允许Rules类
                        !baseName.EndsWith("Helper") &&   // 允许Helper类（ChecksumHelper等）
+                       !baseName.EndsWith("Facade") &&   // 允许Facade类（MedicalCaseFacade等）
                        !baseName.StartsWith("Base") &&   // 允许Base开头的基类（BaseService等）
                        !baseName.Contains("Validation") && // 允许Validation相关类
                        !t.IsInterface;

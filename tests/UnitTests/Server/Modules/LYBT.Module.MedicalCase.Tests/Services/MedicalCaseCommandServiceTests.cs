@@ -350,12 +350,16 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity { Id = medicalCaseId, UserId = operatorId };
 
+            _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
             _repositoryMock.Setup(x => x.DeleteAsync(medicalCaseId))
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _service.DeleteAsync(medicalCaseId);
+            var result = await _service.DeleteAsync(medicalCaseId, operatorId, isAdmin: false);
 
             // Assert
             result.Should().BeTrue();
@@ -366,12 +370,13 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.DeleteAsync(medicalCaseId))
-                .ReturnsAsync(false);
+            _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
+                .ReturnsAsync((MedicalCaseEntity?)null);
 
             // Act
-            var result = await _service.DeleteAsync(medicalCaseId);
+            var result = await _service.DeleteAsync(medicalCaseId, operatorId, isAdmin: false);
 
             // Assert
             result.Should().BeFalse();

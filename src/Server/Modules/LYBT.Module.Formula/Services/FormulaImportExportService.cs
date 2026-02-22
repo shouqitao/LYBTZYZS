@@ -19,13 +19,13 @@ namespace LYBT.Module.Formulas.Services;
 public class FormulaImportExportService : IFormulaImportExportService
 {
     private readonly IFormulaRepository _repository;
-    private readonly ICrossModuleQueryService _crossModuleQuery;
+    private readonly ICrossModuleService _crossModuleQuery;
     private readonly ILogger<FormulaImportExportService> _logger;
     private readonly FormulaMapper _mapper = new();
 
     public FormulaImportExportService(
         IFormulaRepository repository,
-        ICrossModuleQueryService crossModuleQuery,
+        ICrossModuleService crossModuleQuery,
         ILogger<FormulaImportExportService> logger)
     {
         _repository = repository;
@@ -294,7 +294,7 @@ public class FormulaImportExportService : IFormulaImportExportService
     }
 
     /// <summary>
-    /// 尝试匹配药材 - 使用ICrossModuleQueryService
+    /// 尝试匹配药材 - 使用ICrossModuleService
     /// </summary>
     private async Task<HerbBasicDto?> TryMatchHerbAsync(string herbName)
     {

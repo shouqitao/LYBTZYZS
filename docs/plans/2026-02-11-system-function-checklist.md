@@ -228,7 +228,7 @@ Shared:   8 个共享库
 | L5.08 | FR-FORM-008 | 共享验方 (IsShared) | IsShared 字段 + Doctor 过滤 | 权限过滤 | DONE | 集成测试 |
 | L5.09 | FR-FORM-009 | 延迟绑定 (药材验证) | Validate API (HerbId 关联) | FormulaValidationVM | DONE | 集成测试 |
 | L5.10 | FR-FORM-010 | 获取待验证验方 | GetPendingValidation | - | DONE | 集成测试 |
-| L5.11 | FR-FORM-011 | 批量导入 (JSON + 药材匹配) | BatchImport + ICrossModuleQueryService | - | DONE | 集成测试 |
+| L5.11 | FR-FORM-011 | 批量导入 (JSON + 药材匹配) | BatchImport + ICrossModuleService | - | DONE | 集成测试 |
 | L5.12 | FR-FORM-012 | 导出 (Excel) | Export | NPOI 本地导出 | DONE | - |
 | L5.13 | FR-FORM-013 | 导入模板下载 | ImportTemplate (AllowAnonymous) | 内置模板 | DONE | - |
 | L5.14 | - | 所有权检查 (Doctor限制) | OwnershipCheck | - | DONE | 集成测试 |
@@ -257,7 +257,7 @@ Shared:   8 个共享库
 | L6.12 | FR-MC-012 | 审计日志 (字段级变更) | AuditService (JSON 存储) | AuditLog 查看 | DONE | 集成测试 |
 | L6.13 | FR-MC-013 | 权限控制 (资源级) | PermissionService + MedicalCasePermissionDto | 权限查询 | DONE | 集成测试 |
 | L6.14 | FR-MC-014 | 锁定规则 (隔天锁定) | StateService (IsLocked = Completed && Date < Today) | - | DONE | 集成测试 |
-| L6.15 | FR-MC-015 | 打印触发 (MedicalCase.PrintVersion 管理) | MedicalCase.IsPrinted/PrintVersion + Prescription.PrintCount | 打印按钮 -> PrintService | DONE | 集成测试 |
+| L6.15 | FR-MC-015 | 打印触发 (MedicalCase.PrintVersion 管理) | MedicalCase.IsPrinted/PrintVersion/PrintCount/LastPrintedAt | 打印按钮 -> PrintService | DONE | 集成测试 |
 | L6.16 | FR-MC-016 | 验方导入到处方 | - | FormulaImportDialog (实时价格) | DONE | - |
 | L6.17 | FR-MC-017 | 待诊队列 | GetPending | - | DONE | 集成测试 |
 | L6.18 | - | 编辑理由 (锁定后修改) | EditReason 参数 | 修改原因对话框 | DONE | 集成测试 |

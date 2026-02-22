@@ -22,7 +22,7 @@ public class PrescriptionConfiguration : BaseEntityConfiguration<Prescription>
         // 折扣精度为(3,2)，例如0.80表示八折
         builder.Property(p => p.Discount).HasPrecision(3, 2);
 
-        // 一病案至多一处方 - 唯一索引
+        // 一医案至多一处方 - 唯一索引
         builder.HasIndex(p => p.MedicalCaseId)
               .HasDatabaseName("UX_Prescriptions_MedicalCaseId")
               .IsUnique();

@@ -8,24 +8,24 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Module.MedicalCases.Interfaces
 {
     /// <summary>
-    /// 病案查询服务接口 - 读操作
+    /// 医案查询服务接口 - 读操作
     /// Phase 3: 从IMedicalCaseService拆分，遵循CQRS原则
     /// 职责：GetById, GetList, Search等查询操作
     /// </summary>
     public interface IMedicalCaseQueryService
     {
         /// <summary>
-        /// 根据ID获取病案详情
+        /// 根据ID获取医案详情
         /// </summary>
-        /// <param name="id">病案ID</param>
-        /// <returns>病案实体（包含完整关联数据）</returns>
+        /// <param name="id">医案ID</param>
+        /// <returns>医案实体（包含完整关联数据）</returns>
         Task<MedicalCase?> GetByIdAsync(Guid id);
 
         /// <summary>
-        /// 查询病案列表（分页）
+        /// 查询医案列表（分页）
         /// OpenSpec: optimize-module-list-ui - 添加角色过滤支持
         /// </summary>
-        /// <param name="status">病案状态（可选）</param>
+        /// <param name="status">医案状态（可选）</param>
         /// <param name="patientId">患者ID（可选）</param>
         /// <param name="page">页码（从1开始）</param>
         /// <param name="pageSize">每页大小</param>
@@ -42,7 +42,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
             string? keyword = null);
 
         /// <summary>
-        /// 查询病案列表（分页，返回MedicalCaseListDto，用于列表视图）
+        /// 查询医案列表（分页，返回MedicalCaseListDto，用于列表视图）
         /// OpenSpec: optimize-entity-data-flow - 增量API方法
         /// </summary>
         Task<PagedResult<MedicalCaseListDto>> GetListDtoAsync(
@@ -57,14 +57,14 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <summary>
         /// 查询辨证记录列表
         /// </summary>
-        /// <param name="medicalCaseId">病案ID</param>
+        /// <param name="medicalCaseId">医案ID</param>
         /// <returns>辨证记录DTO列表</returns>
         Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 查询处方列表
         /// </summary>
-        /// <param name="medicalCaseId">病案ID</param>
+        /// <param name="medicalCaseId">医案ID</param>
         /// <returns>处方DTO列表</returns>
         Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId);
 
@@ -73,7 +73,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
-        /// <returns>未完成的病案实体（包含关联数据），若无则返回null</returns>
+        /// <returns>未完成的医案实体（包含关联数据），若无则返回null</returns>
         Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
 
         /// <summary>

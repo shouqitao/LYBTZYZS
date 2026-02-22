@@ -17,9 +17,9 @@ MedicalCase (聚合根)
        ├─ PrintVersion      (打印时的版本号快照)
        └─ ...
 
-Prescription (内部实体)
-  ├─ PrintCount             (处方专属统计)
-  └─ LastPrintedAt          (处方专属统计)
+MedicalCase (续)
+  ├─ PrintCount             (打印总次数，跨 PrintType)
+  └─ LastPrintedAt          (最后打印时间，跨 PrintType)
 ```
 
 ### PrintType (打印类型枚举)
@@ -60,14 +60,14 @@ Prescription (内部实体)
      - 处方详情 (药材列表: 药名、剂量、单位、煎法)
      - 费用信息 (单剂价格、总价、折扣)
      - 签名区 (医生、审核人、调配人)
-  4. 打印后 Prescription.PrintCount 递增 (处方专属统计)
+  4. 打印后 MedicalCase.PrintCount 递增
   5. 打印后 MedicalCase.IsPrinted = true (聚合根级打印保护，见 [medical-cases.md](medical-cases.md) MC-D15)
-  6. 打印后 Prescription.LastPrintedAt 更新 (处方专属统计)
+  6. 打印后 MedicalCase.LastPrintedAt 更新
 - **远程模式**: Desktop 客户端打印，日志记录到服务端
 - **本地模式**: Desktop 本地打印
 - **验收标准**:
   - [ ] 打印预览 -> 内容在 148x210mm (A5) 范围内正确排版
-  - [ ] 打印操作 -> Prescription.PrintCount += 1, MedicalCase.IsPrinted=true
+  - [ ] 打印操作 -> MedicalCase.PrintCount += 1, MedicalCase.IsPrinted=true, MedicalCase.LastPrintedAt=now
 
 ### FR-PRINT-002: 打印预览 [PrintType=Prescription]
 
@@ -337,3 +337,4 @@ Prescription (内部实体)
 | 2026-02-18 | v2.4 | 对齐 MC-D15: IsPrinted 改为 MedicalCase 聚合根字段; FR-PRINT-003 明确 PrintVersion 递增时机 (打印后修改时递增) |
 | 2026-02-21 | v3.0 | 打印层级提升: 标题"打印功能"->"打印管理"; 概述重写 (MedicalCase 聚合根能力); 新增 PrintType 枚举和打印层级模型; PrescriptionPrintLog 重命名为 MedicalCasePrintLog (FK MedicalCaseId + PrintType); PrintVersion 明确为 MedicalCase 字段; FR-PRINT-001~004 标注为处方打印子类型; 新增决策 7 |
 | 2026-02-21 | v3.1 | PRD vs Code 偏差分析修订: 3 项修订, 1 项延期标注 |
+| 2026-02-22 | v3.2 | **打印字段全提升 (A2)**: PrintCount/LastPrintedAt 从 Prescription 迁移到 MedicalCase 聚合根; 打印层级模型图更新; FR-PRINT-001 验收标准更新为 MedicalCase.PrintCount/LastPrintedAt |

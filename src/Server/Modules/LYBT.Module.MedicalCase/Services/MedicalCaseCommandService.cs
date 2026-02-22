@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
-    /// 病案命令服务实现 - 写操作
+    /// 医案命令服务实现 - 写操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：Create, Update, Delete操作
     /// OpenSpec: adopt-mapperly-unified-mapping - 使用MedicalCaseMapper替代AutoMapper
@@ -46,7 +46,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 创建新病案 (委托给 CreateFromInputDtoAsync)
+        /// 创建新医案 (委托给 CreateFromInputDtoAsync)
         /// </summary>
         public async Task<MedicalCase?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId)
         {
@@ -66,7 +66,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// <param name="request">统一输入DTO</param>
         /// <param name="currentUserId">当前操作用户ID（如果DTO未提供UserId则使用此值）</param>
         /// <param name="isAdmin">是否管理员</param>
-        /// <returns>创建的病案实体</returns>
+        /// <returns>创建的医案实体</returns>
         private async Task<MedicalCase?> CreateFromInputDtoAsync(
             MedicalCaseInputDto request,
             Guid currentUserId,
@@ -153,7 +153,7 @@ namespace LYBT.Module.MedicalCases.Services
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("医案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                 return null;
             }
 
@@ -167,7 +167,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase.Consultation == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdateConsultation → ConsultationNotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new InvalidOperationException("病案的辨证信息不存在");
+                throw new InvalidOperationException("医案的辨证信息不存在");
             }
 
             // Issue #2231: 手动映射属性以避免EF Core共享主键冲突
@@ -254,7 +254,7 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new InvalidOperationException("未标记需要开处方，请先设置处方需求标记");
 
             if (medicalCase.Prescription != null && !medicalCase.Prescription.IsDeleted)
-                throw new InvalidOperationException($"病案已存在处方（ID: {medicalCase.Prescription.Id}），请使用更新接口");
+                throw new InvalidOperationException($"医案已存在处方（ID: {medicalCase.Prescription.Id}），请使用更新接口");
 
             var prescription = _mapper.ToPrescriptionEntity(request);
             prescription.Id = Guid.NewGuid();
@@ -397,16 +397,25 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 删除病案（软删除）
+        /// 删除医案（软删除）
         /// OpenSpec: clarify-cancel-consultation-logic
         /// 使用BaseRepository默认软删除机制（IsDeleted=true）
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, bool isAdmin)
         {
-            _logger.LogInformation("[SVC] MedicalCase.Delete - MedicalCaseId={MedicalCaseId}", id);
-            var result = await _repository.DeleteAsync(id);
-            if (!result)
+            _logger.LogInformation("[SVC] MedicalCase.Delete - MedicalCaseId={MedicalCaseId} OperatorId={OperatorId}", id, operatorId);
+
+            var medicalCase = await _repository.GetByIdAsync(id);
+            if (medicalCase == null)
+            {
                 _logger.LogWarning("[SVC] MedicalCase.Delete -> NotFound - MedicalCaseId={MedicalCaseId}", id);
+                return false;
+            }
+
+            // 权限检查: 确保操作者有权删除此医案
+            MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, medicalCase, operatorId, isAdmin, "Delete", _logger);
+
+            var result = await _repository.DeleteAsync(id);
             return result;
         }
 
@@ -447,7 +456,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 获取聚合根
             var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId)
-                ?? throw new InvalidOperationException($"病案 {medicalCaseId} 不存在");
+                ?? throw new InvalidOperationException($"医案 {medicalCaseId} 不存在");
 
             // 保存变更前的状态用于审计
             var beforeState = CloneMedicalCaseForAudit(medicalCase);
@@ -657,7 +666,7 @@ namespace LYBT.Module.MedicalCases.Services
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <inheritdoc />
-        public async Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        public async Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin)
         {
             var result = new LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto
             {
@@ -682,6 +691,9 @@ namespace LYBT.Module.MedicalCases.Services
                         });
                         continue;
                     }
+
+                    // 权限检查: 确保操作者有权删除此医案
+                    MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, entity, operatorId, isAdmin, "BatchDelete", _logger);
 
                     entity.IsDeleted = true;
                     entity.UpdatedAt = DateTime.Now;

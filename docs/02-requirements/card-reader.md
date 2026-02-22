@@ -183,6 +183,9 @@
 |---|------|------|------|
 | 1 | 读卡器支持范围 | 策略模式多厂商，通过 ICardReader 接口抽象 | ICardReader 接口设计 |
 | 2 | 读卡器功能可用模式 | 仅 Desktop 端，不区分远程/本地模式 | 纯客户端硬件交互 |
+| CARD-D01 | 多厂商驱动加载策略 | 配置化选择，非运行时动态发现。appsettings.json `CardReader:Vendor` 确定厂商，DI 映射 HuaDa/XinGuo/Mock。DLL 放 `drivers/{vendor}/` 目录。启动时 ConnectAsync() 失败不阻塞，状态栏显示连接状态。MockCardReader 用于开发测试 | 配置简单、部署确定、诊所单设备 |
+| CARD-D02 | 照片存储与保护 | DPAPI LocalMachine 加密存 `{AppDataLocal}/LYBT/photos/{patientId}.dat`。接口 IPhotoStorageService (Save/Load/Delete/Exists)。读取解密到内存不写临时文件。默认关闭 CardReaderOptions.SavePhoto=false。随患者硬删除清理。与凭证存储方案 (AUTH-D10) 一致 | DPAPI 标准、无额外依赖 |
+| CARD-D03 | 患者去重降级 | 降级链: (1) IdNumber 精确匹配→命中返回; (2) Name+BirthDate 模糊匹配→命中1条提示用户确认→确认则补填 IdNumber; (3) 命中多条→列表选择或新建; (4) 未命中→新建。婴幼儿: 用家长身份证读卡+手动修改姓名，或直接手动创建 | 渐进式降级、用户参与确认 |
 
 ---
 
@@ -195,3 +198,4 @@
 | 2026-02-11 | v1.2 | 验收标准格式统一为 [场景] -> [预期结果] 格式 |
 | 2026-02-17 | v1.3 | PRD审查修复: A2-Receptionist允许使用读卡器(前台挂号快速登记) |
 | 2026-02-21 | v1.4 | PRD vs Code 偏差分析修订: 1 项修订 (CARD-01 字段映射姓名→Name) |
+| 2026-02-22 | v1.5 | Phase 2 模块功能细化: 新增 CARD-D01 (多厂商配置化驱动加载+MockCardReader)、CARD-D02 (DPAPI 照片加密+IPhotoStorageService)、CARD-D03 (患者去重降级链: IdNumber精确→Name+BirthDate模糊→用户确认→新建) |

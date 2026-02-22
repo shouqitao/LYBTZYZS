@@ -313,7 +313,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         #region 医案管理方法
 
         /// <summary>
-        /// 关闭病案（直接标记为 Completed）
+        /// 关闭医案（直接标记为 Completed）
         /// </summary>
         public async Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId)
         {
@@ -322,12 +322,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
             try
             {
-                _logger.LogInformation("关闭病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogInformation("关闭医案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
                 var result = await _dataSource.CompleteAsync(medicalCaseId);
                 if (!result)
                 {
-                    _logger.LogWarning("病案关闭失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    _logger.LogWarning("医案关闭失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     return null;
                 }
 
@@ -339,12 +339,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                 }
 
                 var dto = _mapper.ToDetailDto(entity);
-                _logger.LogInformation("病案关闭成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogInformation("医案关闭成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                 return dto;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "关闭病案失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogError(ex, "关闭医案失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                 throw;
             }
         }

@@ -5,7 +5,7 @@ using LYBT.Shared.Primitives.Validation;
 namespace LYBT.Shared.Validators.MedicalCase
 {
     /// <summary>
-    /// 病案输入DTO验证器
+    /// 医案输入DTO验证器
     /// </summary>
     /// <remarks>
     /// OpenSpec: unify-medicalcase-input-dto, simplify-medicalcase-dataflow

@@ -21,8 +21,8 @@
 
 ## 功能清单
 
-> **[已修订 2026-02-21]** 保持 Active 初始状态，UI 层未保存表单替代 Draft 概念，PRD 修订初始状态为 Active (代码实际创建后立即设为 Active)
-> 原因: 代码使用 Active 作为初始状态，UI 层通过未保存表单实现草稿语义，无需 Draft 初始状态  |  参考: MC-08
+> **[已修订 2026-02-21]** Draft 状态替换为 Suspended (挂起)。初始状态为 Active，Draft 的"保存草稿"语义由 UI 未保存表单替代; 新增 Suspended 状态承载"挂起工作流"语义 (医生暂时离开，稍后继续)。
+> 原因: Draft=数据不完整的草稿 (已无必要); Suspended=工作流暂停 (有明确业务语义)  |  参考: MC-08, MC-D20
 
 ### FR-MC-001: 创建医案
 
@@ -30,7 +30,7 @@
 - **业务规则**:
   1. PatientId 必填，UserId (医生ID) 必填
   2. 仅 Doctor 可创建
-  3. 初始状态为 Draft
+  3. 初始状态为 Active
   4. 自动创建 Consultation (1:1 共享主键)
   5. 自动生成医案编号 (格式: MC20260210001)
   6. 冗余存储 PatientName 和 DoctorName (读优化)
@@ -106,18 +106,18 @@
 > **[已修订 2026-02-21]** PRD 过度细分错误消息，PRD 简化错误消息定义 (保留核心校验错误，移除过于细粒度的消息要求)
 > 原因: 代码使用统一校验框架返回错误，过度细分的错误消息增加维护成本  |  参考: MC-31
 
-### FR-MC-006: 暂存草稿
+### FR-MC-006: 挂起医案
 
-- **描述**: 保存当前进度为草稿，可稍后继续
+- **描述**: 医生暂时离开当前诊疗，挂起医案稍后继续 (MC-D20)
 - **业务规则**:
-  1. 状态设为 Draft
+  1. 状态设为 Suspended
   2. 保存当前诊断数据
   3. 不要求数据完整性 (TcmDiagnosis 可空)
-- **远程模式**: PUT `/api/v1/medicalcases/{id}/draft`
-- **本地模式**: 本地暂存
+- **远程模式**: PUT `/api/v1/medicalcases/{id}/suspend`
+- **本地模式**: 本地挂起
 - **验收标准**:
-  - [ ] 暂存成功 -> 状态=Draft，可继续编辑
-  - [ ] TcmDiagnosis 为空 -> 暂存成功 (不验证)
+  - [ ] 挂起成功 -> 状态=Suspended，可继续编辑
+  - [ ] TcmDiagnosis 为空 -> 挂起成功 (不验证)
 
 ### FR-MC-007: 完成医案
 
@@ -249,7 +249,7 @@
 
 - **描述**: 基于角色和资源的细粒度权限检查
 - **业务规则**:
-  1. Doctor: 只能编辑自己创建的未完成 (Draft/Active) 医案
+  1. Doctor: 只能编辑自己创建的未完成 (Active/Suspended) 医案
   2. Admin/SuperAdmin: 可编辑所有医案
   3. 编辑已完成医案: 需提供修改原因
   4. 隔天编辑: 需提供修改原因
@@ -278,7 +278,7 @@
 
 - **描述**: 触发医案内容打印，管理打印版本和打印保护。打印为 MedicalCase 聚合根的能力，v1.0 支持处方打印 (PrintType=Prescription)
 - **业务规则**:
-  1. 打印操作设置 `MedicalCase.IsPrinted=true`，`Prescription.PrintCount++`，`Prescription.LastPrintedAt=now`
+  1. 打印操作设置 `MedicalCase.IsPrinted=true`，`MedicalCase.PrintCount++`，`MedicalCase.LastPrintedAt=now`
   2. 打印后修改任何内容 (Consultation 或 Prescription) 需提供 EditReason (MC-D15)
   3. 修改成功后: `MedicalCase.IsPrinted=false`，`MedicalCase.PrintVersion++` (标记需重新打印)
   4. 每次打印记录 MedicalCasePrintLog，含当前 `MedicalCase.PrintVersion` 和 PrintType
@@ -286,7 +286,7 @@
 - **远程模式**: 客户端打印 + 服务端记录日志
 - **本地模式**: 本地打印
 - **验收标准**:
-  - [ ] 打印操作 -> MedicalCase.IsPrinted=true, Prescription.PrintCount += 1
+  - [ ] 打印操作 -> MedicalCase.IsPrinted=true, MedicalCase.PrintCount += 1, MedicalCase.LastPrintedAt=now
   - [ ] IsPrinted=true 时修改 Consultation -> 需提供 EditReason，修改后 IsPrinted=false, MedicalCase.PrintVersion++
   - [ ] IsPrinted=true 时修改 Prescription -> 需提供 EditReason，修改后 IsPrinted=false, MedicalCase.PrintVersion++
   - [ ] 打印操作 -> 生成 MedicalCasePrintLog (PrintType=Prescription, PrintVersion=当前版本)
@@ -314,14 +314,14 @@
 
 - **描述**: 显示当前医生的待看诊患者列表
 - **业务规则**:
-  1. 筛选状态为 Draft 或 Active 的医案
+  1. 筛选状态为 Active 或 Suspended 的医案
   2. 排序规则: CreatedAt ASC (先到先看)
   3. 显示患者姓名、创建时间
   4. 支持按患者 ID 过滤
 - **远程模式**: GET `/api/v1/medicalcases/pending?doctorId=&patientId=`
 - **本地模式**: 本地查询
 - **验收标准**:
-  - [ ] 查询待诊队列 -> 仅返回 CaseStatus=Draft 或 Active 的医案
+  - [ ] 查询待诊队列 -> 仅返回 CaseStatus=Active 或 Suspended 的医案
 
 ### FR-MC-018: 复制历史处方
 
@@ -353,26 +353,28 @@
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Draft: 创建医案
-    Draft --> Active: 开始诊疗
-    Active --> Draft: 暂存草稿
-    Draft --> Completed: 完成看诊
+    [*] --> Active: 创建医案
+    Active --> Suspended: 挂起 (FR-MC-006)
+    Suspended --> Active: 恢复诊疗
     Active --> Completed: 完成看诊
-    Draft --> [*]: 取消 (软删除)
+    Suspended --> Completed: 完成看诊
     Active --> [*]: 取消 (软删除)
+    Suspended --> [*]: 取消 (软删除)
     Completed --> [*]
 
     note right of Completed: IsLocked = CompletedAt.Date < Today
-    note left of Draft: 取消 = IsDeleted=true
+    note left of Suspended: 医生暂时离开，稍后继续
 ```
 
 | 状态 | 值 | 说明 | 允许操作 |
 |------|-----|------|----------|
-| Draft | 0 | 暂存 | 编辑、转 Active、完成、取消 (软删除) |
-| Active | 1 | 进行中 | 编辑、暂存、完成、取消 (软删除) |
+| Active | 1 | 进行中 (初始状态) | 编辑、挂起、完成、取消 (软删除) |
+| Suspended | 0 | 已挂起 (医生暂时离开) | 恢复、完成、取消 (软删除) |
 | Completed | 2 | 已完成 | 查看 (Admin 可编辑需理由) |
 
-> **取消操作**: 不再有独立的 Cancelled 状态值。取消医案统一通过 `IsDeleted=true` 软删除实现，审计类型为 `AuditOperationType.SoftDelete`。已完成的医案不可取消。
+> **取消操作**: 取消医案统一通过 `IsDeleted=true` 软删除实现，审计类型为 `AuditOperationType.SoftDelete`。已完成的医案不可取消。
+>
+> **Draft 已移除 (MC-D20)**: 原 Draft 的"保存不完整数据"语义由 UI 未保存表单替代; Suspended 承载"工作流暂停"语义。枚举值 0 从 Draft 重命名为 Suspended，DB 现有数据无需迁移。
 
 ---
 
@@ -394,6 +396,8 @@ stateDiagram-v2
 | Remark | string(500)? | - | 备注 |
 | IsPrinted | bool | Default: false | 是否已打印 (聚合根级打印保护，打印后任何内容修改需提供 EditReason) |
 | PrintVersion | int | Default: 1 | 打印版本号 (内容变更时递增，用于打印溯源) |
+| PrintCount | int | Default: 0 | 打印次数 (跨 PrintType 总计，per-type 统计从 MedicalCasePrintLog 聚合查询) |
+| LastPrintedAt | DateTime? | - | 最后打印时间 (跨 PrintType) |
 | Consultation | Consultation? | 1:1 | 诊断记录 (共享主键) |
 | Prescription | Prescription? | 1:0..1 | 处方 (可选) |
 
@@ -421,8 +425,6 @@ stateDiagram-v2
 | Usage | string(500)? | - | 用法 |
 | Advice | string(500)? | - | 医嘱 |
 | ReferencedFormulas | string(1000)? | - | 引用来源 (JSON 数组，见下方格式) |
-| PrintCount | int | Default: 0 | 打印次数 (处方专属统计) |
-| LastPrintedAt | DateTime? | - | 最后打印时间 (处方专属统计) |
 | Items | ICollection | 导航 | 处方项列表 |
 
 > **ReferencedFormulas 格式**: JSON 数组，记录处方药材的导入来源，用于审计追溯。验方/历史处方被删除后不清除记录 (导入为数据复制，无强关联)。
@@ -482,7 +484,7 @@ stateDiagram-v2
 
 | 场景 | 需要修改原因 |
 |------|-------------|
-| 当天本人修改 Draft/Active 医案 | 不需要 |
+| 当天本人修改 Active/Suspended 医案 | 不需要 |
 | 修改已完成 (Completed) 医案 | 需要 |
 | 隔天修改 | 需要 |
 | 非本人修改 | 需要 |
@@ -496,22 +498,22 @@ stateDiagram-v2
 
 ### BR-001: 同一患者单活跃医案约束
 
-- **规则**: 同一患者在同一时间只能有一个 Draft 或 Active 状态的医案
+- **规则**: 同一患者在同一时间只能有一个 Active 或 Suspended 状态的医案
 - **触发时机**: 创建医案 (FR-MC-001)
-- **碰撞处理**: 当患者已有 Draft/Active 医案时，提示用户选择:
-  1. **重开现有医案** - 导航到已有的 Draft/Active 医案继续编辑
+- **碰撞处理**: 当患者已有 Active/Suspended 医案时，提示用户选择:
+  1. **重开现有医案** - 导航到已有的 Active/Suspended 医案继续编辑
   2. **关闭旧的后新建** - 将已有医案软删除 (Cancelled)，然后创建新医案
   3. **取消操作** - 放弃创建
-- **技术实现**: 代码层检查 + DB 唯一索引 (仅 Active 状态)
+- **技术实现**: 代码层检查 + DB 唯一索引 (Active + Suspended 状态)
 
 ### BR-002: 医案离开界面操作
 
 - **规则**: 离开医案编辑界面时，必须选择一种处置方式
 - **处置选项**:
-  1. **挂起** - 状态设为 Draft，数据保存，稍后可继续
+  1. **挂起** - 状态设为 Suspended，保存当前数据，稍后可继续 (FR-MC-006)
   2. **关闭** - 执行软删除 (IsDeleted=true)
   3. **完成** - 状态设为 Completed，需通过完成校验 (BR-003)
-- **异常状态** (崩溃/断网/强制关闭): 统一按挂起处理，医案保持当前状态
+- **异常状态** (崩溃/断网/强制关闭): 医案保持当前状态 (Active)，未保存变更丢失 (MC-D18)
 
 ### BR-003: 医案完成校验规则
 
@@ -557,7 +559,7 @@ stateDiagram-v2
 | ERR-30101 | PatientNotFound | 404 | 患者不存在 | PatientRepository 查询失败 |
 | ERR-30102 | DoctorNotFound | 404 | 医生不存在 | UserRepository 查询失败 |
 | ERR-30103 | ActiveCaseExists | 422 | 该患者已有进行中的医案，请先完成现有医案 | 患者有 Active 状态医案 (BR-001) |
-| ERR-30104 | DraftCaseExists | 422 | 该患者已有暂存的医案，请先处理现有医案（继续或关闭） | 患者有 Draft 状态医案 (BR-001) |
+| ERR-30104 | SuspendedCaseExists | 422 | 该患者已有挂起的医案，请先处理现有医案（继续或关闭） | 患者有 Suspended 状态医案 (BR-001) |
 | ERR-30105 | PatientDisabled | 422 | 该患者已被禁用，无法创建医案 | Patient.Status=Disabled 时创建医案 |
 
 ### 权限错误 (302xx)
@@ -568,7 +570,7 @@ stateDiagram-v2
 | ERR-30202 | CannotDeleteCase | 403 | 无权限删除此医案 | Doctor 删除他人医案 |
 | ERR-30203 | CannotCancelCase | 403 | 无权限取消此医案 | Doctor 取消他人医案 |
 | ERR-30204 | CannotDeletePrescription | 403 | 无权限删除此医案的处方 | Doctor 删除他人医案处方 |
-| ERR-30205 | CannotSaveDraft | 403 | 无权限编辑此医案 | Doctor 暂存他人医案 |
+| ERR-30205 | CannotSuspendCase | 403 | 无权限挂起此医案 | Doctor 挂起他人医案 |
 
 ### 状态转换错误 (303xx)
 
@@ -577,8 +579,8 @@ stateDiagram-v2
 | ERR-30301 | InvalidStatusTransition | 422 | 不允许从{oldStatus}状态转换到{newStatus}状态 | 不符合状态机规则 |
 | ERR-30302 | PrescriptionFlagRequired | 422 | 请先标记是否需要开处方 | Complete 时 NeedsPrescription 为 null (BR-003) |
 | ERR-30303 | PrescriptionRequired | 422 | 已标记需要开处方，但处方不存在，无法完成医案 | NeedsPrescription=true 但 Prescription 为 null |
-| ERR-30304 | CompletedCannotDraft | 422 | 已完成的医案不可暂存 | SaveDraft 时状态为 Completed |
-| ERR-30305 | DeletedCannotDraft | 422 | 已删除的医案不可暂存 | SaveDraft 时 IsDeleted=true |
+| ERR-30304 | CompletedCannotSuspend | 422 | 已完成的医案不可挂起 | Suspend 时状态为 Completed |
+| ERR-30305 | DeletedCannotSuspend | 422 | 已删除的医案不可挂起 | Suspend 时 IsDeleted=true |
 | ERR-30306 | CompletedCannotCancel | 422 | 已完成的医案不可取消 | Cancel 时状态为 Completed |
 | ERR-30307 | AlreadyDeleted | 422 | 医案已经是删除状态 | Cancel 时 IsDeleted=true |
 
@@ -620,8 +622,8 @@ stateDiagram-v2
 | 场景 | 行为 | 决策编号 |
 |------|------|---------|
 | 患者被删除 | 有关联医案的患者禁止删除 (返回 422)，仅可禁用。见 [patients.md](patients.md) FR-PAT-005 | MC-D04 |
-| 草稿积压 | v1.0 不实现自动清理。BR-001 阻止同一患者多个 Draft/Active，形成天然卡点提醒 | MC-D05 |
-| 并发创建重复草稿 | 代码层 BR-001 检查 + DB 唯一索引 (仅 Active)。NFR 1-3 并发用户，并发风险极低，接受现状 | MC-D06 |
+| 挂起积压 | v1.0 不实现自动清理。BR-001 阻止同一患者多个 Active/Suspended，形成天然卡点提醒 | MC-D05 |
+| 并发创建冲突 | 代码层 BR-001 检查 + DB 唯一索引 (Active + Suspended)。NFR 1-3 并发用户，并发风险极低，接受现状 | MC-D06 |
 
 ### 患者状态联动
 
@@ -667,8 +669,8 @@ stateDiagram-v2
 | 2 | 本地模式下医案编号的生成规则 | FR-MC-001 | 已确定: MC+yyyyMMdd+3位序号。CaseNumber 为展示用编号 (非唯一约束)，Guid Id 为实际唯一标识。同日本地/远程可能重号，不影响数据完整性 |
 | 3 | 本地模式下跨医案搜索的性能 | FR-MC-010 | 已确定: 满足需求。诊所场景 (百~千级) SQLite 性能良好，已应用 AsNoTracking + 分页优化 |
 | MC-D04 | 患者删除引用检查 | FR-MC-001 + patients.md FR-PAT-005 | 已确定: 有关联医案的患者禁止删除 (422)，仅可禁用 |
-| MC-D05 | 草稿自动清理 | FR-MC-006 | 已确定: v1.0 不实现。BR-001 卡点 + 用户手动处理 |
-| MC-D06 | DB 唯一索引范围 | FR-MC-001 | 已确定: 仅 Active 唯一索引，接受低概率并发风险 (NFR 1-3 用户) |
+| MC-D05 | 挂起医案自动清理 | FR-MC-006 | 已确定: v1.0 不实现。BR-001 卡点 + 用户手动处理 |
+| MC-D06 | DB 唯一索引范围 | FR-MC-001 | 已确定: Active + Suspended 唯一索引，接受低概率并发风险 (NFR 1-3 用户) |
 | MC-D07 | 禁用药材历史处方展示 | FR-MC-004 | 已确定: 名称后缀"(已停用)"，仅可查看不可修改剂量 |
 | MC-D08 | 验方导入处方过滤 | FR-MC-016 | 已确定: 仅展示 Validated 验方，Draft 不出现在导入列表 |
 | MC-D09 | 禁用药材导入处理 | FR-MC-016 | 已确定: 跳过禁用药材 + 提示 |
@@ -677,8 +679,12 @@ stateDiagram-v2
 | MC-D12 | 验方导入独立性 | FR-MC-016 | 已确定: 导入为数据复制，修改处方中药材的剂量/增减不影响原验方 |
 | MC-D13 | 历史处方复制价格策略 | FR-MC-018 | 已确定: 价格从药材库实时获取，与验方导入 (FR-MC-016) 保持一致。历史价格仅作预览参考，不作为新处方定价依据 |
 | MC-D14 | 处方总价计算公式 | FR-MC-004 | 已确定: SingleDosePrice = SUM(Items.Amount); TotalPrice = SingleDosePrice x DosageCount x Discount |
-| MC-D15 | 打印保护策略 | FR-MC-005 + FR-MC-015 | 已确定: IsPrinted 和 PrintVersion 均在 MedicalCase 聚合根上。打印后修改任何内容 (Consultation/Prescription) 需 EditReason，修改后 MedicalCase.IsPrinted=false + MedicalCase.PrintVersion++。打印日志从 PrescriptionPrintLog 重构为 MedicalCasePrintLog (FK=MedicalCaseId, 新增 PrintType)。处方删除始终禁止 (ERR-30404) |
+| MC-D15 | 打印保护策略 | FR-MC-005 + FR-MC-015 | 已确定: IsPrinted/PrintVersion/PrintCount/LastPrintedAt 全部在 MedicalCase 聚合根上 (Prescription 无打印字段)。打印后修改任何内容 (Consultation/Prescription) 需 EditReason，修改后 MedicalCase.IsPrinted=false + MedicalCase.PrintVersion++。打印日志从 PrescriptionPrintLog 重构为 MedicalCasePrintLog (FK=MedicalCaseId, 新增 PrintType)。per-type 统计从 MedicalCasePrintLog 聚合查询。处方删除始终禁止 (ERR-30404) |
 | MC-D16 | 患者禁用与医案联动 | FR-MC-001 + FR-PAT-013 | 已确定: 禁用患者 (主要场景: 已故) 禁止创建新医案 (ERR-30105); 历史医案可查阅但 PatientName 按角色脱敏 (Admin 完整/Doctor 掩码); 有活跃医案时阻止禁用 |
+| MC-D17 | 重复药材剂量合并策略 | FR-MC-016 + FR-MC-018 | 已确定: 通过 appsettings.json 配置 `PrescriptionImport.DuplicateHerbStrategy`。五种策略: Max(取最大)/Min(取最小)/Accumulate(累加,默认)/Skip(跳过)/Replace(替换)。合并时仅更新 Dosage，DecocteMethod 和 Unit 保持原值 |
+| MC-D18 | 崩溃处理策略 | BR-002 | 已确定: Clinical 和 Management 模式统一做变更丢失处理，无自动保存机制。医案保持最后一次成功保存的状态 |
+| MC-D19 | 两种创建医案入口 | FR-MC-001 | 已确定: 模式 1 前台挂号→医生从挂号队列选中; 模式 2 医生直接查询患者创建。两种模式在 BR-001 检查后完全收敛 |
+| MC-D20 | Draft→Suspended 状态重命名 | 状态机全局 | 已确定: 移除 Draft 状态，新增 Suspended (挂起) 状态。Draft 的"保存不完整数据"语义由 UI 未保存表单替代; Suspended 承载"工作流暂停"语义 (医生暂时离开)。枚举值 0 从 Draft 重命名为 Suspended，DB 数据无需迁移。API 端点 `/draft` → `/suspend` |
 
 ---
 
@@ -701,3 +707,6 @@ stateDiagram-v2
 | 2026-02-21 | v2.2 | 打印层级提升到医案层: FR-MC-015 "处方打印"->"打印触发"; MedicalCase 新增 PrintVersion 字段; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt); FR-MC-005 打印保护规则 PrintVersion 引用改为 MedicalCase; MC-D15 更新打印日志重构说明; 边界条件打印场景明确 MedicalCase 前缀 |
 | 2026-02-21 | v2.3 | MedicalCase 深度重构同步: 移除 Cancelled 枚举 (取消统一为 IsDeleted=true 软删除); 状态机更新为 3 状态 (Draft/Active/Completed); FR-MC-007 补充统一完成入口 (CompleteAsync+skipWorkflowValidation) 和 UpdateStatusAsync Guard; FR-MC-012 审计覆盖范围扩展到 19 字段; ERR-30305/30307 更新为软删除触发条件 |
 | 2026-02-21 | v2.4 | PRD vs Code 偏差分析修订: 3 项修订, 3 项延期标注 |
+| 2026-02-21 | v2.5 | 设计深化: 新增决策 MC-D17 (重复药材合并策略可配置), MC-D18 (崩溃做变更丢失), MC-D19 (两种创建医案入口) |
+| 2026-02-21 | v2.6 | **Draft→Suspended 状态重命名 (MC-D20)**: 移除 Draft 状态，新增 Suspended (挂起)。状态机: Active↔Suspended→Completed; FR-MC-006 暂存草稿→挂起医案; API `/draft`→`/suspend`; BR-001/BR-002 更新; ERR-30104/30205/30304/30305 重命名; MC-D05/D06 更新; 边界条件术语统一 |
+| 2026-02-22 | v2.7 | **打印字段全部提升到聚合根 (A2)**: PrintCount/LastPrintedAt 从 Prescription 迁移到 MedicalCase (与 IsPrinted/PrintVersion 统一); Prescription 数据模型移除全部打印字段; FR-MC-015 打印触发规则更新为 MedicalCase.PrintCount/LastPrintedAt; MC-D15 更新为"全部在聚合根，per-type 统计从 PrintLog 聚合" |

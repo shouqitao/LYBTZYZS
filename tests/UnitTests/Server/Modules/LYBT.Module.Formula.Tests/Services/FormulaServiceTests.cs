@@ -22,13 +22,13 @@ namespace LYBT.Module.Formulas.Tests.Services
     /// <summary>
     /// 方剂服务单元测试
     /// 测试方剂的创建、查询、更新、删除以及药材配比管理等核心业务逻辑
-    /// OpenSpec: decouple-server-modules - 使用ICrossModuleQueryService替代IHerbRepository
+    /// OpenSpec: decouple-server-modules - 使用ICrossModuleService替代IHerbRepository
     /// </summary>
     public class FormulaServiceTests : TestBase
     {
         private readonly FormulaService _formulaService;
         private readonly Mock<IFormulaRepository> _repositoryMock;
-        private readonly Mock<ICrossModuleQueryService> _crossModuleQueryMock;
+        private readonly Mock<ICrossModuleService> _crossModuleQueryMock;
         private readonly Mock<ILogger<FormulaService>> _loggerMock;
         private readonly AppDbContext _context;
 
@@ -41,7 +41,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _context = new AppDbContext(options);
 
             _repositoryMock = CreateMock<IFormulaRepository>();
-            _crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            _crossModuleQueryMock = CreateMock<ICrossModuleService>();
             _loggerMock = CreateLoggerMock<FormulaService>();
 
             _formulaService = new FormulaService(
@@ -556,7 +556,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
             crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
                 .ReturnsAsync(selectedHerbDto);
 
@@ -639,7 +639,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
             crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
                 .ReturnsAsync(selectedHerbDto);
 
@@ -677,7 +677,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync((FormulaEntity?)null);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
@@ -720,7 +720,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
@@ -761,7 +761,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
             crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
                 .ReturnsAsync((HerbBasicDto?)null);
 
@@ -807,7 +807,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,

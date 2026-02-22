@@ -104,7 +104,7 @@ BaseDto (Id: Guid)
 
 **DetailDto**: Entity 的全部业务字段 + 状态 + 审计字段。
 
-**BasicDto**: 仅 ICrossModuleQueryService 所需的最少字段。
+**BasicDto**: 仅 ICrossModuleService 所需的最少字段。
 
 ## LYBT.Shared.Utilities (工具类)
 

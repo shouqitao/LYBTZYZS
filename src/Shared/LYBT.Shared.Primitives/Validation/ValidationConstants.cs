@@ -26,12 +26,12 @@ namespace LYBT.Shared.Primitives.Validation
         public const int NameMaxLength = 100;
 
         /// <summary>
-        /// 短备注最大长度（如处方备注、病案备注等）
+        /// 短备注最大长度（如处方备注、医案备注等）
         /// </summary>
         public const int RemarkMaxLength = 1000;
 
         /// <summary>
-        /// 长备注最大长度（如详细诊疗记录、病案详情等）
+        /// 长备注最大长度（如详细诊疗记录、医案详情等）
         /// </summary>
         public const int LongRemarkMaxLength = 2000;
 

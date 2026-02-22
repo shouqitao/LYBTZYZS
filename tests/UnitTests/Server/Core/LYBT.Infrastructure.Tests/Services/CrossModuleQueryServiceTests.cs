@@ -10,16 +10,16 @@ using Xunit;
 namespace LYBT.Infrastructure.Tests.Services;
 
 /// <summary>
-/// CrossModuleQueryService 单元测试
+/// CrossModuleService 单元测试
 /// OpenSpec: decouple-server-modules - Phase 1 Task 1.9-1.13
 /// 测试跨模块只读查询服务
 /// </summary>
-public class CrossModuleQueryServiceTests : IDisposable
+public class CrossModuleServiceTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
-    private readonly CrossModuleQueryService _service;
+    private readonly CrossModuleService _service;
 
-    public CrossModuleQueryServiceTests()
+    public CrossModuleServiceTests()
     {
         // 使用InMemory数据库
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -27,7 +27,7 @@ public class CrossModuleQueryServiceTests : IDisposable
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _service = new CrossModuleQueryService(_dbContext);
+        _service = new CrossModuleService(_dbContext);
     }
 
     public void Dispose()

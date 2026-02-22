@@ -28,7 +28,7 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
         // CreatedBy 必填（覆盖基类的可空配置）
         builder.Property(m => m.CreatedBy).IsRequired();
 
-        // 根据文档要求：单患者仅一条未完成病案 - 过滤唯一索引
+        // 根据文档要求：单患者仅一条未完成医案 - 过滤唯一索引
         builder.HasIndex(m => m.PatientId)
               .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
               .IsUnique()

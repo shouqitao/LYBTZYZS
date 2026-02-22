@@ -27,7 +27,7 @@ public interface IMedicalCaseLifecycleService
     PrescriptionDetailDto? CurrentPrescription { get; }
 
     /// <summary>
-    /// 初始化并加载病案数据
+    /// 初始化并加载医案数据
     /// </summary>
     /// <param name="entityId">医案ID</param>
     Task InitializeAsync(Guid entityId);

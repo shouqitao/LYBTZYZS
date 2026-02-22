@@ -140,7 +140,7 @@ namespace LYBT.Desktop.Contracts.Api
         // 使用QueryMedicalCasesAsync(QueryType=Unfinished)
 
         /// <summary>
-        /// 关闭病案（直接标记为Completed）
+        /// 关闭医案（直接标记为Completed）
         /// Epic #1676 Phase 4 Task 4.1
         /// 业务规则：直接设置状态为Completed，不验证三步流程
         /// </summary>

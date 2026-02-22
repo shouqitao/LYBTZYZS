@@ -269,6 +269,10 @@
 |------|------|----------|------|
 | 1 | 本地模式下导入导出的支持方式 | FR-HERB-009 ~ 012 | 已确定: 支持。客户端 NPOI/本地 JSON 解析，不依赖 API |
 | 2 | 药材价格变更对已有处方的影响策略 | FR-HERB-004 | 已确定: 不影响。PrescriptionItem.UnitPrice 为开方时快照值，新处方使用当前价格 |
+| HERB-D01 | 药材缓存策略 | FR-HERB-002 | 已确定: Desktop 全量预加载 Enabled 药材到 IHerbCacheService (Dict+拼音前缀索引+分类索引)，开处方 0ms 纯内存过滤。Server IMemoryCache + Tag-based Eviction 替代 OutputCache。增量: 单条 CRUD 更新内存; 全量重加载: 批量导入/模式切换/同步完成/闲置30min/登录。参考 POS/EMR/IDE 补全模式 |
+| HERB-D02 | 批量导入性能 | FR-HERB-010 | 已确定: 内存 HashSet 判重 (避免 10000 次查询) + 分批 100 条/批 SaveChanges，10000 条 3~5 秒完成。进度反馈: 简单进度条 (3~5秒不需轮询)。导入完成后触发 IHerbCacheService 全量重加载 (HERB-D01) |
+| HERB-D03 | Formula 引用检查扩展 | FR-HERB-005/013 | 已确定: 删除药材时检查 PrescriptionItem + FormulaItem 双重引用，任一有引用则 CanDelete=false。CheckReference 返回值增加 FormulaReferenceCount。禁用不改验方本身，导入处方时禁用药材自动跳过并提示 |
+| HERB-D04 | 并发策略 | Herb 实体 | 已确定: Last-Write-Wins，不加 RowVersion。小诊所 1~2 个管理员，并发编辑同一药材概率极低。MedicalCase 有 RowVersion 是因为多医生同时操作概率更高 |
 
 ---
 
@@ -283,3 +287,4 @@
 | 2026-02-18 | v1.4 | 错误码全量分配: 3 个子类别 (501xx~503xx) 共 15 个错误码，统一 ERR-MCCEE 格式 + 枚举名 |
 | 2026-02-18 | v1.5 | FR-HERB-002 补充分页验证规则 (NFR-API-001); 新增 ERR-50106 分页错误码 |
 | 2026-02-21 | v1.6 | PRD vs Code 偏差分析修订: 2 项修订 (HERB-05 Price最小值, HERB-06 Price最大值) |
+| 2026-02-22 | v1.7 | Phase 2 模块功能细化: 新增 HERB-D01 (IHerbCacheService 全量预加载+拼音索引)、HERB-D02 (批量导入 HashSet 判重+分批100条)、HERB-D03 (Formula 引用检查扩展到 FormulaItem)、HERB-D04 (并发 LWW 不加 RowVersion) |

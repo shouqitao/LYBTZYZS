@@ -12,7 +12,7 @@ namespace LYBT.Entities.MedicalCases
     /// <summary>
     /// 医案实体 - 聚合根
     /// OpenSpec: simplify-medicalcase-dataflow
-    /// 管理完整诊疗流程：一病案一诊断，一病案至多一处方
+    /// 管理完整诊疗流程：一医案一诊断，一医案至多一处方
     /// </summary>
     [Table("MedicalCases")]
     public class MedicalCase : BaseEntity

@@ -1,5 +1,6 @@
 using LYBT.Shared.ExceptionHandling.Exceptions;
-using LYBT.Shared.ExceptionHandling.ProblemDetails;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -45,15 +46,23 @@ public class BusinessExceptionHandler : IExceptionHandler
             httpContext.Request.Method,
             httpContext.User?.Identity?.Name ?? "匿名用户");
 
-        var problemDetails = ProblemDetailsFactory.Create(
-            appException,
-            httpContext.Request.Path,
-            correlationId,
-            httpContext.TraceIdentifier);
+        var statusCode = appException.GetHttpStatusCode();
+        var response = new ApiResponse
+        {
+            Success = false,
+            Message = appException.UserMessage ?? appException.Message,
+            Errors = new
+            {
+                code = appException.ErrorCode ?? appException.TypedErrorCode?.ToFormattedString(),
+                correlationId,
+                traceId = httpContext.TraceIdentifier
+            },
+            RequestId = correlationId
+        };
 
-        httpContext.Response.StatusCode = problemDetails.Status!.Value;
-        httpContext.Response.ContentType = "application/problem+json";
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+        httpContext.Response.StatusCode = statusCode;
+        httpContext.Response.ContentType = "application/json";
+        await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
 
         return true;
     }

@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.MedicalCase.Services;
 
 /// <summary>
-/// 病案Service - 聚合根门面模式实现
+/// 医案Service - 聚合根门面模式实现
 /// OpenSpec: standardize-service-layer - 统一使用Service命名
 /// OpenSpec: simplify-medicalcase-api - 统一管理Consultation和Prescription
 /// OpenSpec: refactor-frontend-srp-patterns (ADR-1) - 实现SRP职责分离的门面接口
@@ -72,7 +72,7 @@ public class MedicalCaseService : IMedicalCaseService
         {
             _logger.LogInformation("[SVC] MedicalCase.Initialize started - MedicalCaseId={MedicalCaseId}", entityId);
             _currentDetail = await _repository.GetByIdAsync(entityId);
-            if (_currentDetail == null) throw new InvalidOperationException($"未找到ID为{entityId}的病案");
+            if (_currentDetail == null) throw new InvalidOperationException($"未找到ID为{entityId}的医案");
             _originalDetail = _cloneMapper.Clone(_currentDetail);
             _logger.LogDebug("[SVC] MedicalCase.Initialize detail - PatientId={PatientId} UserId={UserId} PatientName={PatientName}",
                 _currentDetail.PatientId, _currentDetail.UserId, _currentDetail.PatientName);
@@ -243,7 +243,7 @@ public class MedicalCaseService : IMedicalCaseService
             else
             {
                 _logger.LogWarning("[SVC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "关闭病案失败" };
+                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "关闭医案失败" };
             }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }

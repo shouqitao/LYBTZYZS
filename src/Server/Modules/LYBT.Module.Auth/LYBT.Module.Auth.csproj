@@ -11,7 +11,6 @@
 	  <None Remove="obj\**" />
 	</ItemGroup>
 	<ItemGroup>
-		<!-- OpenSpec: adopt-mapperly-unified-mapping - AutoMapper已移除，使用UserMapper -->
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
@@ -30,6 +29,5 @@
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Entities\LYBT.Entities.csproj" />
-		<ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
 	</ItemGroup>
 </Project>

@@ -16,12 +16,12 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId);
 
         /// <summary>
-        /// 根据ID获取病案（包含所有关联数据）
+        /// 根据ID获取医案（包含所有关联数据）
         /// </summary>
         Task<MedicalCase> GetByIdWithDetailsAsync(Guid id);
 
         /// <summary>
-        /// 根据ID获取病案（包含所有关联数据）- 强制刷新版本
+        /// 根据ID获取医案（包含所有关联数据）- 强制刷新版本
         /// 分离ChangeTracker中的缓存实体后重新查询，确保获取最新RowVersion
         /// 用于并发场景下避免DbUpdateConcurrencyException
         /// </summary>
@@ -49,7 +49,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync();
 
         /// <summary>
-        /// 查询病案列表（支持多条件组合查询）
+        /// 查询医案列表（支持多条件组合查询）
         /// Issue #1592 - Phase 3
         /// </summary>
         /// <param name="patientName">患者姓名关键字（模糊匹配）</param>

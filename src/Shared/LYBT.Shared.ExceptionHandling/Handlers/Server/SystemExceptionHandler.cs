@@ -1,8 +1,8 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ProblemDetailsModel = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
 namespace LYBT.Shared.ExceptionHandling.Handlers;
 
@@ -42,44 +42,34 @@ public class SystemExceptionHandler : IExceptionHandler
             httpContext.Request.Method,
             httpContext.User?.Identity?.Name ?? "匿名用户");
 
-        var problemDetails = CreateProblemDetails(httpContext, exception, correlationId);
-
-        httpContext.Response.StatusCode = problemDetails.Status!.Value;
-        httpContext.Response.ContentType = "application/problem+json";
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
-
-        return true; // 始终返回true，作为兜底处理器
-    }
-
-    private ProblemDetailsModel CreateProblemDetails(
-        HttpContext httpContext,
-        Exception exception,
-        string correlationId)
-    {
         var (statusCode, title, detail) = GetExceptionInfo(exception);
-
-        var problemDetails = new ProblemDetailsModel
+        var response = new ApiResponse
         {
-            Status = statusCode,
-            Title = title,
-            Detail = detail,
-            Instance = httpContext.Request.Path,
-            Type = GetProblemTypeUri(statusCode)
+            Success = false,
+            Message = detail,
+            Errors = _environment.IsDevelopment()
+                ? new
+                {
+                    title,
+                    exceptionType = exception.GetType().FullName,
+                    stackTrace = exception.StackTrace,
+                    correlationId,
+                    traceId = httpContext.TraceIdentifier
+                }
+                : (object)new
+                {
+                    title,
+                    correlationId,
+                    traceId = httpContext.TraceIdentifier
+                },
+            RequestId = correlationId
         };
 
-        // 添加通用扩展属性
-        problemDetails.Extensions["correlationId"] = correlationId;
-        problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
-        problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+        httpContext.Response.StatusCode = statusCode;
+        httpContext.Response.ContentType = "application/json";
+        await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
 
-        // 开发环境添加更多调试信息
-        if (_environment.IsDevelopment())
-        {
-            problemDetails.Extensions["exceptionType"] = exception.GetType().FullName;
-            problemDetails.Extensions["stackTrace"] = exception.StackTrace ?? string.Empty;
-        }
-
-        return problemDetails;
+        return true; // 始终返回true，作为兜底处理器
     }
 
     private (int StatusCode, string Title, string Detail) GetExceptionInfo(Exception exception)
@@ -93,11 +83,11 @@ public class SystemExceptionHandler : IExceptionHandler
                 "请求数据验证失败，请检查输入"
             ),
 
-            // 系统级 UnauthorizedAccessException
+            // 权限拒绝 (已认证但无权限): HTTP 403 Forbidden
             UnauthorizedAccessException => (
-                401,
-                "未授权",
-                "您没有权限访问此资源"
+                403,
+                "权限不足",
+                "您没有权限执行此操作"
             ),
 
             // 操作取消
@@ -174,20 +164,4 @@ public class SystemExceptionHandler : IExceptionHandler
         return httpContext.TraceIdentifier;
     }
 
-    private static string GetProblemTypeUri(int statusCode)
-    {
-        return statusCode switch
-        {
-            400 => "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            401 => "https://tools.ietf.org/html/rfc7235#section-3.1",
-            403 => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
-            404 => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-            409 => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
-            499 => "https://httpstatuses.com/499",
-            500 => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-            502 => "https://tools.ietf.org/html/rfc7231#section-6.6.3",
-            504 => "https://tools.ietf.org/html/rfc7231#section-6.6.5",
-            _ => $"https://httpstatuses.com/{statusCode}"
-        };
-    }
 }

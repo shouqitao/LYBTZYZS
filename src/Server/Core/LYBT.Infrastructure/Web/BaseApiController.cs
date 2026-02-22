@@ -190,7 +190,7 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 返回业务失败响应（200 OK with success=false）
+        /// 返回业务失败响应（422 Unprocessable Entity with success=false）
         /// </summary>
         protected IActionResult BusinessFail(string message, string? errorCode = null)
         {
@@ -200,7 +200,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
-            return Ok(response);
+            return StatusCode(422, response);
         }
 
         /// <summary>

@@ -115,7 +115,7 @@ graph LR
 **规则**:
 - WebAPI -> Modules -> Infrastructure -> Entities (单向)
 - 所有层可引用 Shared.Models
-- Module 之间禁止直接依赖，跨模块通过 ICrossModuleQueryService 通信
+- Module 之间禁止直接依赖，跨模块通过 ICrossModuleService 通信
 
 ### Client 层依赖
 
@@ -155,7 +155,7 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant MC as MedicalCaseService
-    participant CMS as ICrossModuleQueryService
+    participant CMS as ICrossModuleService
     participant PS as PatientRepository
 
     MC->>CMS: GetPatientBasicInfoAsync(patientId)
@@ -164,7 +164,7 @@ sequenceDiagram
     CMS-->>MC: PatientBasicInfo
 ```
 
-- 使用 `ICrossModuleQueryService` 接口
+- 使用 `ICrossModuleService` 接口
 - 禁止直接注入其他模块的 Repository
 - 返回轻量级 BasicInfo DTO
 

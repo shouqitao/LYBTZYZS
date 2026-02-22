@@ -23,6 +23,6 @@
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
     <!-- 跨模块引用已移除: Herbs -->
-    <!-- 改用 ICrossModuleQueryService 进行跨模块只读查询 -->
+    <!-- 改用 ICrossModuleService 进行跨模块数据访问 -->
   </ItemGroup>
 </Project>

@@ -54,9 +54,9 @@ LYBT.Entities/
   Consultations/     # Consultation
   Formulas/          # Formula, FormulaHerbItem
   Herbs/             # Herb
-  MedicalCases/      # MedicalCase
   Patients/          # Patient
-  Prescriptions/     # Prescription, PrescriptionItem, MedicalCasePrintLog
+  Prescriptions/     # Prescription, PrescriptionItem
+  MedicalCases/      # MedicalCase, MedicalCasePrintLog
   Users/             # User, UserRole 枚举
   Common/            # BaseEntity, 通用枚举
 ```
@@ -79,7 +79,7 @@ LYBT.Entities/
 - `AppDbContext` -- EF Core 数据库上下文
 - `BaseRepository<T>` -- Repository 基类 (14 个标准方法)
 - `BaseReadRepository<T>` -- 只读 Repository 基类
-- `ICrossModuleQueryService` -- 跨模块查询服务
+- `ICrossModuleService` -- 跨模块查询服务
 - `IRepository<T>` / `IReadRepository<T>` -- Repository 接口定义
 - EF Core 实体配置 (Fluent API)
 - 数据库迁移文件
@@ -100,8 +100,8 @@ LYBT.Infrastructure/
     BaseRepository.cs        # 标准 CRUD + 分页
     BaseReadRepository.cs    # 只读查询
   Services/
-    ICrossModuleQueryService.cs
-    CrossModuleQueryService.cs
+    ICrossModuleService.cs
+    CrossModuleService.cs
   DependencyInjection/       # DI 扩展方法
   Logging/                   # 日志相关
   Migrations/                # EF Core 迁移
@@ -154,10 +154,10 @@ LYBT.Module.{Domain}/
 | Users | 传统三层 | - | 用户 CRUD、密码管理 |
 | Patients | 传统三层 | - | 患者 CRUD、导入导出 |
 | Herbs | 传统三层 | - | 药材 CRUD、分类、导入 |
-| Formula | 传统三层 | ICrossModuleQueryService | 验方 CRUD、药材绑定 |
+| Formula | 传统三层 | ICrossModuleService | 验方 CRUD、药材绑定 |
 | MedicalCase | CQRS | IPatientService | 医案核心，状态机管理 |
 | Consultation | 传统三层 | - | 诊断数据 (只读 Repository) |
-| Prescriptions | 传统三层 | ICrossModuleQueryService | 处方数据 |
+| Prescriptions | 传统三层 | ICrossModuleService | 处方数据 |
 | Sync | 传统三层 | - | 数据同步 |
 
 ### CQRS 模式 (MedicalCase)
@@ -582,12 +582,24 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 
 **单会话登录** (AUTH-D06): 同一账号仅允许一台设备登录。新设备登录时，AuthService 撤销该用户所有现有 Token Family (按 FamilyId 批量标记 IsRevoked=true)。旧设备下次请求或刷新 Token 时触发 TokenRevoked → 强制登出。
 
-**角色变更即时生效** (AUTH-D07): 用户角色变更时，UserService 调用 AuthService 撤销该用户 Token Family，强制重登录。复用单会话的 Token Family 撤销逻辑。
+**角色变更即时生效** (AUTH-D07): 用户角色变更时，UserService 通过 `ICrossModuleAuthService.RevokeAllUserTokensAsync()` 撤销该用户 Token Family，强制重登录。复用单会话的 Token Family 撤销逻辑。
+
+**跨模块 Token 撤销** (ICrossModuleAuthService): 独立接口 (ISP 原则，不污染 ICrossModuleQueryService)，Auth 模块提供实现，6 个触发场景:
+
+| 场景 | 调用方 | reason |
+|------|--------|--------|
+| 登录踢出 (AUTH-D06) | AuthService.LoginAsync | NewDeviceLogin |
+| 角色变更 (AUTH-D07) | UserService.UpdateRoleAsync | RoleChanged |
+| 删除用户 | UserService.DeleteAsync | UserDeleted |
+| 重置密码 | UserService.ResetPasswordAsync | PasswordReset |
+| 修改密码 | UserService.ChangePasswordAsync | PasswordChanged |
+| 禁用用户 | UserService.ToggleStatusAsync | UserDisabled |
 
 **实现要点**:
 - RefreshToken 表通过 FamilyId 字段追踪 Token 家族
-- 撤销操作为批量 UPDATE: `SET IsRevoked=true WHERE UserId=@userId AND IsRevoked=false`
+- 撤销操作为批量 UPDATE: `SET IsRevoked=true WHERE UserId=@userId AND IsRevoked=false` (含 RefreshToken + AutoLoginToken)
 - 重放攻击检测: 已使用 (IsUsed=true) 的 RefreshToken 再次提交 → 整个 Family 失效 (ERR-10203 TokenRevoked)
+- 延迟踢出 (AUTH-D08): 撤销后旧 AccessToken 最长 30 分钟内仍有效 (JWT 无状态，不引入黑名单)
 
 ### 备份服务
 
@@ -619,3 +631,4 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 | 2026-02-18 | v1.2 | 设计补全: 新增运维与安全章节 -- 敏感数据脱敏 (FR-LOG-003)、API请求日志 (FR-LOG-007)、启动配置验证 (FR-CFG-004)、安全审计日志 (FR-LOG-002)、日志清理服务 (FR-LOG-005)、审计日志清理 (FR-LOG-006)、Server启动诊断 (FR-SYS-008)、Token Family管理 (AUTH-D06/D07)、备份服务 (NFR-AVAIL-001) |
 | 2026-02-21 | v1.3 | 深度重构同步: LYBT.Entities 补充 MedicalCaseModel 充血模型例外说明; CQRS 方法示例更新为实际方法签名; 新增 MedicalCaseServiceHelper 共享服务 |
 | 2026-02-21 | v1.4 | 模块全面简化: PermissionService 为唯一权限权威，Rules 精简为无状态策略(57行)，ServiceHelper 扩展(重试/权限验证/创建上下文)，ValidationHelper 合并到 Rules |
+| 2026-02-22 | v1.5 | **Phase 4 架构修复设计同步 (A2+A3)**: MedicalCasePrintLog 从 Prescriptions/ 迁移到 MedicalCases/ 目录; Token Family 管理新增 ICrossModuleAuthService 独立接口 (ISP) + 6 个撤销场景表 + 延迟踢出说明 |

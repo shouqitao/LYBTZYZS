@@ -15,7 +15,7 @@
 | D2: 设计模式一致性 | 15% | 8.0 | B | 1.200 | FormulaService基类不一致; 其余模式高度统一 |
 | D3: 数据模型对齐 | 15% | 5.5 | C | 0.825 | 打印字段缺失; Discount精度冲突; 索引筛选条件不符 |
 | D4: 错误处理架构 | 10% | 4.5 | D | 0.450 | 基础设施与实际使用严重脱节; 术语违规50+处 |
-| D5: 跨模块依赖 | 15% | 8.2 | B+ | 1.230 | 分层清晰无反向依赖; ICrossModuleQueryService解耦范例 |
+| D5: 跨模块依赖 | 15% | 8.2 | B+ | 1.230 | 分层清晰无反向依赖; ICrossModuleService解耦范例 |
 | D6: 安全架构 | 15% | 7.5 | B | 1.125 | 100%授权覆盖; Token撤销未实现; AdminOnly过度限制 |
 | D7: 测试架构 | 10% | 7.0 | B | 0.700 | 架构测试重复; Mock框架混用; 7模块零覆盖 |
 | D8: 代码质量 | 5% | 6.5 | C | 0.325 | 术语违规136处; OpenSpec标记1299处; 硬编码连接字符串 |
@@ -385,16 +385,16 @@ Entities (领域实体)
 | MedicalCase -> Patients | IPatientService | 接口 | 合理 (医案关联患者) |
 | MedicalCase -> Users | IUserService | 接口 | 合理 (医案关联医生) |
 | Sync -> Herbs/Patients/Formula | IHerbService等 | 接口 | 合理但较重 (Sync天然跨模块) |
-| ~~Formula -> Herbs~~ | 已移除 | 改用ICrossModuleQueryService | **优秀: 已完成解耦** |
+| ~~Formula -> Herbs~~ | 已移除 | 改用ICrossModuleService | **优秀: 已完成解耦** |
 
-### D5.3 ICrossModuleQueryService
+### D5.3 ICrossModuleService
 
 **接口位置**: Infrastructure层 (合规)
 **返回类型**: DTO投影 (不泄露Entity)
 **查询模式**: AsNoTracking() (性能优化)
 **使用方**: Formula模块 (FormulaService, FormulaImportExportService)
 
-Formula模块已通过ICrossModuleQueryService解耦了对Herbs模块的直接ProjectReference依赖, 这是优秀的解耦范例。
+Formula模块已通过ICrossModuleService解耦了对Herbs模块的直接ProjectReference依赖, 这是优秀的解耦范例。
 
 ### D5.4 namespace引用分析
 
@@ -407,7 +407,7 @@ Auth.AuthService引用Users.Mapping是轻微耦合点 -- 理想情况下应通�
 | 编号 | 发现 | 严重度 | 交叉引用 |
 |------|------|--------|----------|
 | D5-01 | 无反向引用和循环依赖, 分层清晰 | 正面 | [新增-架构] |
-| D5-02 | Formula通过ICrossModuleQueryService解耦Herbs依赖 | 正面 | [新增-架构] |
+| D5-02 | Formula通过ICrossModuleService解耦Herbs依赖 | 正面 | [新增-架构] |
 | D5-03 | MedicalCase直接引用Patients+Users(ProjectReference) | 中等 | [新增-架构] |
 | D5-04 | Sync模块引用3个其他Module(引用量最大) | 中等 | [新增-架构] |
 | D5-05 | Auth.AuthService直接使用Users.Mapping | 低 | [新增-架构] |
@@ -649,7 +649,7 @@ OpenSpec 1299个标记分布在452个.cs文件中, 代表计划中但尚未完�
 | P-04 | CQRS边界清晰, 文档与代码7/7服务完全匹配 | D2 |
 | P-05 | CorrelationId全链路实现(中间件->日志->ProblemDetails->响应头->DB) | D4 |
 | P-06 | 无反向引用和循环依赖, 分层清晰 | D5 |
-| P-07 | Formula通过ICrossModuleQueryService解耦Herbs依赖 | D5 |
+| P-07 | Formula通过ICrossModuleService解耦Herbs依赖 | D5 |
 | P-08 | 所有跨模块引用仅依赖接口(DIP) | D5 |
 | P-09 | Controller 100%类级别授权覆盖 | D6 |
 | P-10 | 敏感数据脱敏管线完整(Entity->日志->API->HTTP) | D6 |
@@ -741,7 +741,7 @@ OpenSpec 1299个标记分布在452个.cs文件中, 代表计划中但尚未完�
 ### 长期 (Sprint 5+): 优化与清理
 
 12. **FormulaService补齐BaseService继承** (D2-01) -- 享受统一错误处理
-13. **MedicalCase/Sync跨模块引用优化** (D5-03/04) -- 评估ICrossModuleQueryService扩展
+13. **MedicalCase/Sync跨模块引用优化** (D5-03/04) -- 评估ICrossModuleService扩展
 14. **OpenSpec标记跟踪清理** (D8-04) -- 建立定期清理机制
 15. **空壳模块/目录清理** (D8-03) -- Consultation/Prescriptions/Server.Interfaces
 16. **架构测试项目合并** (D7-01) -- 消除26个测试csproj中的冗余
@@ -763,7 +763,7 @@ OpenSpec 1299个标记分布在452个.cs文件中, 代表计划中但尚未完�
 | `src/Shared/LYBT.Shared.ExceptionHandling/Exceptions/Business/BusinessException.cs` | D4 |
 | `src/Shared/LYBT.Shared.ExceptionHandling/Exceptions/Business/NotFoundException.cs` | D4 |
 | `src/Shared/LYBT.Shared.ExceptionHandling/Handlers/Server/BusinessExceptionHandler.cs` | D4 |
-| `src/Server/Core/LYBT.Infrastructure/Services/ICrossModuleQueryService.cs` | D5 |
+| `src/Server/Core/LYBT.Infrastructure/Services/ICrossModuleService.cs` | D5 |
 | `src/Server/Services/LYBT.WebAPI/Authorization/MedicalCaseAuthorizationHandler.cs` | D6 |
 | `src/Server/Services/LYBT.WebAPI/Authorization/FormulaAuthorizationHandler.cs` | D6 |
 | `src/Server/Core/LYBT.Infrastructure/Data/Configurations/MedicalCaseConfiguration.cs` | D3 |

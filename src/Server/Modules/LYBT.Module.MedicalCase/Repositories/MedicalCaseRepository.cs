@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.MedicalCases.Repositories
 {
     /// <summary>
-    /// 病案仓储 - 简化版，减少过度复杂的Include策略
+    /// 医案仓储 - 简化版，减少过度复杂的Include策略
     /// </summary>
     internal class MedicalCaseRepository : BaseRepository<MedicalCase>, IMedicalCaseRepository
     {
@@ -56,7 +56,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
-        /// 根据ID获取病案（包含关联数据）
+        /// 根据ID获取医案（包含关联数据）
         /// </summary>
         public async Task<MedicalCase> GetByIdWithDetailsAsync(Guid id)
         {
@@ -66,7 +66,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
-        /// 根据ID获取病案（包含关联数据，强制从数据库刷新，不使用缓存）
+        /// 根据ID获取医案（包含关联数据，强制从数据库刷新，不使用缓存）
         /// 用于处理并发场景，确保获取最新的RowVersion
         /// </summary>
         public async Task<MedicalCase?> GetByIdWithDetailsFreshAsync(Guid id)
@@ -144,7 +144,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
-        /// 根据医生ID获取病案列表（简化版）
+        /// 根据医生ID获取医案列表（简化版）
         /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
         /// </summary>
 
@@ -431,7 +431,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
-        /// 查询病案列表（支持多条件组合查询）
+        /// 查询医案列表（支持多条件组合查询）
         /// Issue #1592 - Phase 3
         /// </summary>
         public async Task<List<MedicalCase>> QueryAsync(
@@ -475,7 +475,7 @@ namespace LYBT.Module.MedicalCases.Repositories
                 .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
 
-            _logger?.LogInformation("查询病案列表，共 {Count} 条记录，条件：患者={PatientName}, 日期={StartDate}~{EndDate}, 诊断={DiagnosisKeyword}",
+            _logger?.LogInformation("查询医案列表，共 {Count} 条记录，条件：患者={PatientName}, 日期={StartDate}~{EndDate}, 诊断={DiagnosisKeyword}",
                 result.Count, patientName ?? "无", startDate, endDate, diagnosisKeyword ?? "无");
 
             return result;

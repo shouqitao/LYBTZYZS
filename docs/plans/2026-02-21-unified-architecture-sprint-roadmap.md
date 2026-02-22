@@ -489,7 +489,7 @@
 |---------|---------|---------|---------|
 | P-04 | CQRS边界清晰7/7 | `MedicalCase-CQRS-Pattern` | CQRS仅限MedicalCase，其余保持传统单Service |
 | P-05 | CorrelationId全链路 | `CorrelationId-Pipeline` | 新增中间件必须传递CorrelationId |
-| P-07 | ICrossModuleQueryService | `CrossModule-Decoupling-Pattern` | 跨模块查询必须通过Infrastructure层接口 |
+| P-07 | ICrossModuleService | `CrossModule-Decoupling-Pattern` | 跨模块查询必须通过Infrastructure层接口 |
 | P-10 | 敏感数据脱敏管线完整 | `SensitiveData-Pipeline` | 新增敏感字段必须标记SensitiveDataAttribute |
 | P-11 | AAA测试模式100% | `AAA-Test-Pattern` | 所有测试必须使用// Arrange/Act/Assert标记 |
 | P-12 | JWT配置规范 | `JWT-Security-Configuration` | Production环境禁止使用默认密钥 |
@@ -667,7 +667,7 @@
 |---|---------|------|---------|
 | P-04 | CQRS-Boundary | CQRS边界7/7匹配 | MedicalCase是唯一CQRS模块，其余保持传统单Service模式 |
 | P-05 | CorrelationId-Pipeline | CorrelationId全链路 | 新增中间件必须传递CorrelationId，新增ProblemDetails必须包含TraceId |
-| P-07 | CrossModule-Decoupling | ICrossModuleQueryService | 跨模块查询必须通过Infrastructure层接口，禁止ProjectReference直接引用其他Module |
+| P-07 | CrossModule-Decoupling | ICrossModuleService | 跨模块查询必须通过Infrastructure层接口，禁止ProjectReference直接引用其他Module |
 | P-10 | SensitiveData-Marking | 脱敏管线完整 | 所有敏感字段必须标记SensitiveDataAttribute，日志管线自动脱敏 |
 | P-11 | AAA-TestPattern | AAA 100%覆盖 | 所有测试必须使用`// Arrange` / `// Act` / `// Assert`标记 |
 | P-12 | JWT-Security | JWT配置规范 | Production环境禁止使用默认密钥，Development环境允许但必须日志Warning |
@@ -828,7 +828,7 @@ graph TD
 | D4-08 | 根因 | 3 | T3-X4-* (附加) |
 | D4-09 | 正面 | 3 | DOC3-14 (文档化) |
 | D5-01 | 正面 | - | 无反向引用(标准P-06) |
-| D5-02 | 正面 | - | ICrossModuleQueryService(标准P-07) |
+| D5-02 | 正面 | - | ICrossModuleService(标准P-07) |
 | D5-03 | 代码 | 5 | A5-02 |
 | D5-04 | 文档 | 5 | DOC5-05 |
 | D5-05 | 代码 | 5 | A5-03 |

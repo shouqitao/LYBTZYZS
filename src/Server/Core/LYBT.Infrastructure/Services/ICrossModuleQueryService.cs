@@ -1,19 +1,21 @@
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.DTOs.Users;
 
 namespace LYBT.Infrastructure.Services;
 
 /// <summary>
-/// 跨模块查询服务接口
-/// 提供模块间只读数据访问，避免直接跨模块注入Repository
+/// 跨模块服务接口
+/// 提供模块间数据访问，避免直接跨模块注入Repository
 /// </summary>
 /// <remarks>
 /// 设计原则：
-/// - 轻量封装：不引入框架级复杂性，仅封装跨模块查询
+/// - 轻量封装：不引入框架级复杂性，仅封装跨模块数据访问
 /// - 返回DTO：防止Entity泄露，符合Bounded Context
 /// - 批量优先：提供批量查询方法，避免N+1问题
-/// - 只读查询：使用AsNoTracking()优化性能
+/// - 查询优先：查询方法使用AsNoTracking()优化性能
+/// - 写操作最小化：仅包含跨模块必要的写操作（如密码哈希升级）
 /// </remarks>
-public interface ICrossModuleQueryService
+public interface ICrossModuleService
 {
     #region 患者查询
 
@@ -52,6 +54,19 @@ public interface ICrossModuleQueryService
     /// <param name="nameOrPinyin">药材名称或拼音</param>
     /// <returns>匹配的药材基本信息DTO，无匹配返回null</returns>
     Task<HerbBasicDto?> GetHerbByNameOrPinyinAsync(string nameOrPinyin);
+
+    #endregion
+
+    #region 用户查询 (供 Auth 模块使用)
+
+    /// <summary>根据用户ID获取基本信息 (不含 PasswordHash)</summary>
+    Task<UserBasicDto?> GetUserBasicInfoAsync(Guid userId);
+
+    /// <summary>根据用户名获取凭据信息 (含 PasswordHash, 仅供密码验证)</summary>
+    Task<UserCredentialDto?> GetUserByUsernameAsync(string username);
+
+    /// <summary>更新用户密码哈希 (BCrypt hash 升级场景)</summary>
+    Task UpdateUserPasswordHashAsync(Guid userId, string newPasswordHash);
 
     #endregion
 }

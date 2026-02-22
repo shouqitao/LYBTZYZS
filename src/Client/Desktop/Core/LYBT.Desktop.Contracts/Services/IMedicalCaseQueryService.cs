@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Contracts.Services;
 public interface IMedicalCaseQueryService
 {
     /// <summary>
-    /// 分页查询病案列表（返回轻量级ListDto）
+    /// 分页查询医案列表（返回轻量级ListDto）
     /// </summary>
     /// <param name="page">页码</param>
     /// <param name="pageSize">每页数量</param>

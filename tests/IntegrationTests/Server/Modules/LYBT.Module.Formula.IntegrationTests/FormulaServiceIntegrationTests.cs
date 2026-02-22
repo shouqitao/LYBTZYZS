@@ -57,7 +57,7 @@ namespace LYBT.Module.Formulas.IntegrationTests
             services.AddFormulaModule();
 
             // 注册跨模块查询服务（FormulaService依赖）
-            services.AddScoped<ICrossModuleQueryService, CrossModuleQueryService>();
+            services.AddScoped<ICrossModuleService, CrossModuleService>();
 
             // 注册Logger
             services.AddLogging(builder => builder.AddDebug());

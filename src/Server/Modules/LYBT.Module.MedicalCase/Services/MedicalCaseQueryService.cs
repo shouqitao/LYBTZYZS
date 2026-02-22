@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
-    /// 病案查询服务实现 - 读操作
+    /// 医案查询服务实现 - 读操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：GetById, GetList, Search等查询操作
     /// OpenSpec: adopt-mapperly-unified-mapping - 使用MedicalCaseMapper替代AutoMapper
@@ -31,7 +31,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 根据ID获取病案详情（包含完整关联数据）
+        /// 根据ID获取医案详情（包含完整关联数据）
         /// Epic #1612: 使用GetDetailQuery预加载Consultation和Prescription
         /// </summary>
         public async Task<MedicalCase?> GetByIdAsync(Guid id)
@@ -42,7 +42,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 查询病案列表（分页）
+        /// 查询医案列表（分页）
         /// Epic #1612: 支持按状态、患者ID过滤
         /// OpenSpec: optimize-module-list-ui - 添加角色过滤，Doctor只能看到自己的医案
         /// </summary>
@@ -101,7 +101,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 查询病案列表（分页，返回MedicalCaseListDto，用于列表视图）
+        /// 查询医案列表（分页，返回MedicalCaseListDto，用于列表视图）
         /// OpenSpec: optimize-entity-data-flow - 增量API方法
         /// </summary>
         public async Task<PagedResult<MedicalCaseListDto>> GetListDtoAsync(
@@ -153,7 +153,7 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 查询辨证记录列表
-        /// Epic #1612: 返回病案的所有历史辨证记录
+        /// Epic #1612: 返回医案的所有历史辨证记录
         /// </summary>
         public async Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId)
         {
@@ -171,7 +171,7 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 查询处方列表
-        /// Epic #1612: 返回病案的所有历史处方记录
+        /// Epic #1612: 返回医案的所有历史处方记录
         /// </summary>
         public async Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId)
         {
