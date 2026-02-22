@@ -216,8 +216,22 @@ containerRegistry.RegisterForNavigation<PatientListView, PatientListViewModel>()
 
 ---
 
+## 常见反模式
+
+| 反模式 | 正确做法 | 原因 |
+|--------|----------|------|
+| ViewModel 直接注入 DbContext | ViewModel → Repository → API/DataSource | 违反分层架构，绕过业务逻辑 |
+| Controller 注入 Repository | Controller → Service → Repository | Controller 只协调，不访问数据层 |
+| 子实体独立 Repository | 通过聚合根 MedicalCaseRepository 操作 | DDD 聚合根边界约束 |
+| Service 返回 null 表示未找到 | throw `NotFoundException` | 统一异常处理，避免调用方遗漏 null 检查 |
+| 在 Service 中使用 `HttpContext` | 通过方法参数传递 userId/isAdmin | Service 层不应依赖 HTTP 上下文 |
+| Desktop 直接绑定 Entity/DTO | 绑定 Observable Model (BindableBase) | Entity/DTO 无 INotifyPropertyChanged |
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
+| 2026-02-22 | v1.1 | 新增常见反模式表 |

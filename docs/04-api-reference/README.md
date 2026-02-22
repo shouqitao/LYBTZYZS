@@ -187,7 +187,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | PUT | `/medicalcases/{id}/prescription-flag` | 设置处方标记 |
 | PUT | `/medicalcases/{id}/status` | 更新状态 |
 | PUT | `/medicalcases/{id}/close` | 关闭医案 |
-| PUT | `/medicalcases/{id}/draft` | 暂存草稿 |
+| PUT | `/medicalcases/{id}/suspend` | 挂起医案 |
 | PUT | `/medicalcases/{id}/cancel` | 取消医案 |
 | DELETE | `/medicalcases/{id}` | 删除医案 (软删除) |
 | POST | `/medicalcases/batch-delete` | 批量删除 |
@@ -279,3 +279,4 @@ Token 获取方式见 [认证 API](auth.md)。
 | 2026-02-10 | v1.0 | 初始版本，覆盖全部 10 个 Controller |
 | 2026-02-18 | v1.1 | PRD同步: 患者模块新增 PUT /patients/{id}/status (FR-PAT-013); 端点总数 92->93 |
 | 2026-02-18 | v1.2 | 认证错误码章节补充注释: 标注 4 个设计扩展码 (PasswordExpired/SessionNotFound/SessionExpired/ConcurrentSessionLimit) |
+| 2026-02-22 | v1.3 | MC-D20 同步: 医案端点 `/draft` 重命名为 `/suspend` (Draft→Suspended 状态重命名) |

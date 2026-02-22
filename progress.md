@@ -1,47 +1,37 @@
-# Progress Log
+# Progress: 文档体系完善与优化
 
-## Session: 2026-02-21 偏差分类确认清单
+## Session: 2026-02-22
 
-### Phase 0: 准备
-- [x] 重置三文件
-- [x] 建立分类标准
+### BRAINSTORM 阶段 [complete]
+- 三并行 Agent 审计文档质量 (断链/模板合规/交叉引用)
+- 三并行 Agent 精确定位修改范围 (architecture/api/dev+ops)
+- 范围确认: A+B (断链修复 + 模板合规)
+- 实际范围缩小: ~9 文件 (初审的变更记录缺失大部分为误判)
 
-### Phase 1: 分类标准 + 横切面确认
-- [x] 用户确认横切面 X1~X8 分类方向
-- [x] 建立 CODE/PRD/DEFER/BOTH 判断依据
+### EXECUTE 阶段 [complete]
 
-### Phase 2: 5 个并行 Agent 偏差分类
-- [x] Agent 1: auth(21) + users(30) + patients(28) = 79 项 -> CODE=69, PRD=6, DEFER=4
-- [x] Agent 2: herbs(24) + formulas(18) = 42 项 -> CODE=32, PRD=3, DEFER=7
-- [x] Agent 3: medical-cases(38) + printing(27) = 65 项 -> CODE=55, PRD=5, DEFER=4, BOTH=1
-- [x] Agent 4: sync(19) + card-reader(1) + desktop-shell(14) + configuration(8) = 42 项 -> CODE=20, PRD=11, DEFER=9, BOTH=2
-- [x] Agent 5: error-handling(9) + logging(8) + health-diagnostics(5) + nfr(9) = 31 项 -> CODE=17, PRD=13, DEFER=1
+**Phase 1: README.md 断链 + 统计修复** [complete]
+- docs/README.md: 修复 3 处断链 + ADR 数量 6→8 + 文件总数 53→55 + 版本 v1.3
 
-### Phase 3: 汇总输出确认清单文档
-- [x] 生成 `docs/plans/2026-02-21-deviation-triage-checklist.md`
-- 文档结构: 分类摘要 + 横切面表 + 15 模块逐偏差分类表 + 修复优先级重排
+**Phase 2: API 文档 /draft→/suspend 同步** [complete]
+- 04-api-reference/README.md: 端点索引 /draft→/suspend + 变更记录 v1.3
+- 04-api-reference/medical-cases.md: 8 处 Draft→Suspended 替换 + 变更记录 v1.4
 
-### Phase 4: 更新三文件
-- [x] task_plan.md 更新为 complete
-- [x] findings.md 更新分类标准和关键发现
-- [x] progress.md 更新执行日志
+**Phase 3: 05-development FAQ 补全** [complete]
+- README.md: +常见问题 (编译/SQL Server/测试/模式切换) → v1.1
+- code-standards.md: +常见违规与陷阱 (FindAsync/try-catch/聚合根/HasPrescription) → v1.1
+- patterns.md: +常见反模式表 (6项) → v1.1
+- testing.md: +常见测试问题 (Desktop CI/数据污染/Mock 原则/架构测试) → v1.1
 
-### Phase 5: 用户逐项确认
-- [x] 自动确认 244 项 (横切面/安全/Bug/simplify-auth 等依据明确)
-- [x] 人工确认 15 项:
-  - X2 本地导入导出 7 项: DEFER → CODE (v1.0 全部实现)
-  - MC-08 初始状态: BOTH → PRD (保持 Active，UI 层表单替代 Draft)
-  - SHELL-04 超时警告: BOTH → PRD (接受移除)
-  - SYNC-17 Checksum: BOTH → CODE (对齐 PRD)
-  - X5 字段值 5 项: 确认 Agent 建议方向
+**Phase 4: 06-operations 故障排查补全** [complete]
+- deployment.md: +故障排查 (服务端/客户端/数据库 3 表) → v1.1
+- configuration.md: +常见配置问题表 + 配置变更生效方式表 → v1.1
 
-## 最终结果 (已确认)
+**修改文件汇总: 9 个文件**
 
-| 指标 | 值 |
-|------|-----|
-| 总偏差数 | 259 (原报告 257 + 实际多 2) |
-| CODE (代码修复) | **201** (77.6%) |
-| PRD (文档修订) | **40** (15.4%) |
-| DEFER (延期) | **18** (6.9%) |
-| BOTH | **0** (全部已确认方向) |
-| 输出文档 | docs/plans/2026-02-21-deviation-triage-checklist.md v1.1 |
+### plans/ 目录整理 [complete]
+- 创建 `docs/plans/archive/` 目录
+- 24 个历史文件移到 archive/ (已完成任务 12 + 分析报告 4 + 设计文档 8)
+- 5 个活跃文档留在 plans/ 根目录
+- 新建 `docs/plans/README.md` 索引 (活跃/归档分类 + 管理规则)
+- plans/ 从 29 文件 784KB → 5 活跃文件 ~220KB + archive/ 24 文件 ~480KB

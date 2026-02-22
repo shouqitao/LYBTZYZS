@@ -178,8 +178,32 @@
 
 ---
 
+## 常见配置问题
+
+| 问题 | 原因 | 解决方案 |
+|------|------|---------|
+| JWT Token 立即过期 | `AccessTokenExpirationMinutes` 设置过小 | 生产环境建议 30 分钟，开发环境可设 120 分钟 |
+| 登录 5 次后被锁 | `LoginLimit.PermitLimit` 触发限流 | 调整限流配置或将测试 IP 加入 `WhitelistedIPs` |
+| 缓存不生效 | `MemoryCache.Enabled` 为 false | 确认生产配置已启用缓存 |
+| 数据库连接超时 | `ConnectionTimeoutSeconds` 过小或网络延迟 | 检查网络连通性，适当增大超时值 |
+| sysadmin 未自动创建 | `SystemAdmin.AutoCreateOnStartup` 为 false | 设为 true 并重启，首次创建后建议关闭 |
+| 日志文件过大 | 未配置日志清理 | 启用 `Logging.Cleanup` 并设置合理 `RetentionDays` |
+
+### 配置变更生效方式
+
+| 配置节 | 生效方式 | 说明 |
+|--------|---------|------|
+| `ConnectionStrings` | 重启应用 | 连接池在启动时初始化 |
+| `Jwt` | 重启应用 | Token 验证参数在启动时加载 |
+| `Security.RateLimiting` | 重启应用 | 限流策略在启动时注册 |
+| `Serilog` | 热更新 | 支持运行时调整日志级别 (via Diagnostics API) |
+| `MemoryCache` | 重启应用 | 缓存策略在启动时配置 |
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 从 README.md 拆分，补充 PasswordPolicy/Session/MemoryCache/Kestrel/SystemAdmin 配置节 |
+| 2026-02-22 | v1.1 | 新增常见配置问题 + 配置变更生效方式表 |

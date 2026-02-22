@@ -161,8 +161,49 @@ if (ownershipError != null) return ownershipError;
 
 ---
 
+## 常见违规与陷阱
+
+**1. `FindAsync` 与软删除过滤器冲突**
+`FindAsync` 在实体不在 ChangeTracker 中时会应用全局查询过滤器 (`IsDeleted`)，导致查不到已软删除的记录。恢复操作需使用 `IgnoreQueryFilters()`:
+```csharp
+// 错误: 已软删除的实体查不到
+var entity = await _dbContext.Patients.FindAsync(id);
+
+// 正确: 恢复已删除记录时
+var entity = await _dbContext.Patients
+    .IgnoreQueryFilters()
+    .FirstOrDefaultAsync(e => e.Id == id);
+```
+
+**2. Controller 中写 try-catch**
+业务异常由 `BusinessExceptionHandler` + `SystemExceptionHandler` 全局处理，Controller 不应包含 try-catch:
+```csharp
+// 错误
+try { var result = await _service.CreateAsync(dto); } catch { ... }
+
+// 正确: 直接调用，异常冒泡到全局处理器
+var result = await _service.CreateAsync(dto);
+```
+
+**3. 聚合根子实体独立操作**
+`Consultation` 和 `Prescription` 不能脱离 `MedicalCase` 独立创建/删除。所有子实体操作必须通过聚合根:
+```csharp
+// 错误: 直接操作子实体
+await _dbContext.Consultations.AddAsync(consultation);
+
+// 正确: 通过聚合根操作
+medicalCase.SetConsultation(consultation);
+await _repository.UpdateAsync(medicalCase);
+```
+
+**4. `HasPrescription` 是计算属性**
+`HasPrescription` 依赖 `PrescriptionId.HasValue`，Mapper 必须显式设置，不能依赖自动映射。
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
+| 2026-02-22 | v1.1 | 新增常见违规与陷阱章节 |

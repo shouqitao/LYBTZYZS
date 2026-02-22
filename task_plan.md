@@ -1,33 +1,46 @@
-# PRD vs Code 偏差分类确认清单
+# Task Plan: 文档体系完善与优化
 
 ## Goal
-对 257 个偏差逐一分类: CODE(代码修复) / PRD(PRD修订) / DEFER(延期) / BOTH(双方调整)，形成用户可确认的清单文档。
+修复文档体系中的断链、过时数据和模板合规缺失，使全部 6 层文档达到设计标准。
 
 ## Phases
 
-| Phase | 描述 | Status |
-|-------|------|--------|
-| 1 | 建立分类标准 + 横切面 X1~X8 分类 | complete |
-| 2 | 5 个并行 Agent 处理 259 项偏差分类 | complete |
-| 3 | 汇总输出确认清单文档 | complete |
-| 4 | 更新 planning-with-files 三文件 | complete |
+### Phase 1: README.md 断链 + 统计修复 [complete]
+- [ ] 修复 3 处断链 (system-architecture→system-overview, adr/→decisions/, 删除 security.md)
+- [ ] 更新 ADR 数量 6→8，architecture 文件总数
+- [ ] 更新 docs/README.md 版本号
+
+### Phase 2: API 文档 /draft→/suspend 同步 [complete]
+- [ ] 04-api-reference/README.md: 端点索引表
+- [ ] 04-api-reference/medical-cases.md: 端点定义 + 描述文字
+- [ ] 两个文件的变更记录更新
+
+### Phase 3: 05-development FAQ 补全 [complete]
+- [ ] README.md: 添加常见问题章节
+- [ ] code-standards.md: 添加常见违规案例
+- [ ] patterns.md: 添加常见陷阱/反模式
+- [ ] testing.md: 添加常见测试问题
+- [ ] (setup.md 已有 FAQ, 跳过)
+
+### Phase 4: 06-operations 故障排查补全 [complete]
+- [ ] deployment.md: 添加故障排查章节
+- [ ] configuration.md: 添加常见配置问题章节
+- [ ] (README.md 已有监控/健康检查, 跳过)
 
 ## Decisions
-- 分类维度: CODE / PRD / DEFER / BOTH
-- 判断依据: 安全性/MVP必要性/技术可行性/项目阶段
-- 横切面 X1~X8 分类由用户在 Plan 阶段确认
-- 输出: `docs/plans/2026-02-21-deviation-triage-checklist.md`
+| Decision | Rationale |
+|----------|-----------|
+| 不添加架构文档"设计决策表" | 决策追踪在 PRD + ADR 中，不重复 |
+| 03-architecture 取消 | 7 文件全部已有变更记录 |
+| 04-api-reference 变更记录取消 | 10 文件全部已有变更记录 |
+| FAQ 内容基于实际项目经验 | 避免空泛填充，写实用内容 |
 
-## 结果摘要 (用户已确认)
-- **总计 259 项** (原报告 257 + MC P3 实际多 1 项 + Sync P2 实际多 1 项)
-- CODE: **201** (77.6%) -- 代码修复
-- PRD: **40** (15.4%) -- PRD 文档修订
-- DEFER: **18** (6.9%) -- 延期到后续 Epic/Sprint
-- BOTH: 0 -- 全部已确认方向
-- 用户确认: 244 项自动确认 + 15 项人工确认
+### Phase 5: plans/ 目录归档整理 [complete]
+- [x] 创建 archive/ 子目录
+- [x] 移动 24 个历史文件
+- [x] 创建 README.md 索引
 
 ## Errors Encountered
-| 错误 | 解决方案 |
-|------|----------|
-| 部分 P3 在原报告中仅有概括描述 | 5 个 Agent 根据概括内容生成了具体条目 |
-| MC P3 / Sync P2 实际条目多于标题数 | 以实际列出条目为准，总数 259 |
+| Error | Attempt | Resolution |
+|-------|---------|------------|
+| (无) | | |

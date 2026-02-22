@@ -173,8 +173,28 @@ service.GetByIdAsync(Arg.Any<Guid>()).Returns(Result.Ok(dto));
 
 ---
 
+## 常见测试问题
+
+**Q: Desktop 单元测试在 CI/Linux 上失败**
+A: Desktop 测试项目 (`LYBT.Tests.Desktop.Unit/Integration`) 目标框架为 `net8.0-windows`，仅在 Windows 环境运行。CI 配置应使用 `--filter` 排除或使用 Windows Agent。
+
+**Q: 集成测试数据污染**
+A: 每个集成测试应独立创建测试数据，不依赖其他测试的数据状态。使用 `IClassFixture<T>` 共享 WebApplicationFactory，但每个测试方法使用独立的数据库 Scope。
+
+**Q: 什么时候用 Mock，什么时候用真实组件？**
+A: 遵循 "最小 Mock" 原则:
+- 仅 Mock `ILogger` 等无业务逻辑的依赖
+- Repository/Service/DbContext 优先使用真实组件 + SQLite InMemory
+- 只有外部 HTTP 调用、文件系统等不可控依赖才使用 Mock
+
+**Q: 架构测试报 "禁止引用" 错误**
+A: 架构测试 (`LYBT.Tests.Architecture`) 强制检查层间依赖方向。常见违规: Controller 引用了 Repository 命名空间、Module 引用了其他 Module。修复方向: 调整代码使其符合三层架构约束。
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
+| 2026-02-22 | v1.1 | 新增常见测试问题 (FAQ) 章节 |

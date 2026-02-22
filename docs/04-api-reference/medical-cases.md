@@ -115,7 +115,7 @@
 
 ### PUT /medicalcases/{id}/status
 
-更新医案状态。仅支持 Draft/Active 状态流转。
+更新医案状态。仅支持 Suspended/Active 状态流转。
 
 > **重要**: `Completed` 状态不允许通过此端点设置，必须使用 `PUT /{id}/close` (完成医案专用入口)。`Cancelled` 状态已移除，取消操作请使用 `PUT /{id}/cancel` (软删除)。
 
@@ -125,7 +125,7 @@
 
 ```json
 {
-  "status": "Draft|Active"
+  "status": "Suspended|Active"
 }
 ```
 
@@ -147,9 +147,9 @@
 
 ---
 
-### PUT /medicalcases/{id}/draft
+### PUT /medicalcases/{id}/suspend
 
-暂存医案 (保存草稿)。保存当前数据，设置状态为 Draft，不触发完成验证。
+挂起医案。保存当前数据，设置状态为 Suspended，不触发完成验证。
 
 **路径参数**: `id` (Guid)
 
@@ -157,7 +157,7 @@
 
 **授权**: 资源级授权 (Edit 操作)
 
-**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` ("医案已暂存")
+**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` ("医案已挂起")
 
 ---
 
@@ -240,7 +240,7 @@
   "patientName": "string",
   "userId": "guid",
   "doctorName": "string",
-  "caseStatus": "Draft|Active|Completed",
+  "caseStatus": "Suspended|Active|Completed",
   "remark": "string",
   "diagnosis": "string",
   "createdAt": "datetime",
@@ -476,7 +476,7 @@
 | ERR-30101 | PatientNotFound | 404 | 患者不存在 | POST / |
 | ERR-30102 | DoctorNotFound | 404 | 医生不存在 | POST / |
 | ERR-30103 | ActiveCaseExists | 422 | 该患者已有进行中的医案 | POST / (BR-001) |
-| ERR-30104 | DraftCaseExists | 422 | 该患者已有暂存的医案 | POST / (BR-001) |
+| ERR-30104 | SuspendedCaseExists | 422 | 该患者已有挂起的医案 | POST / (BR-001) |
 | ERR-30105 | PatientDisabled | 422 | 该患者已被禁用 | POST / |
 
 ### 权限 (302xx)
@@ -487,7 +487,7 @@
 | ERR-30202 | CannotDeleteCase | 403 | 无权限删除此医案 | DELETE /{id} |
 | ERR-30203 | CannotCancelCase | 403 | 无权限取消此医案 | POST /{id}/cancel |
 | ERR-30204 | CannotDeletePrescription | 403 | 无权限删除处方 | DELETE /{id}/prescription |
-| ERR-30205 | CannotSaveDraft | 403 | 无权限编辑此医案 | POST /{id}/save-draft |
+| ERR-30205 | CannotSuspend | 403 | 无权限挂起此医案 | PUT /{id}/suspend |
 
 ### 状态转换 (303xx)
 
@@ -511,7 +511,7 @@
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
 |--------|--------|------|----------|----------|
 | ERR-30501 | PrescriptionCreateRetryFailed | 500 | 创建处方失败 | POST /{id}/prescription |
-| ERR-30502 | SaveRetryFailed | 500 | 保存失败 | PUT /{id}, POST /{id}/save-draft |
+| ERR-30502 | SaveRetryFailed | 500 | 保存失败 | PUT /{id}, PUT /{id}/suspend |
 
 ### 参数验证 (306xx)
 
@@ -533,3 +533,4 @@
 | 2026-02-18 | v1.1 | PRD同步: PUT /medicalcases/{id} 补充打印保护规则 (MC-D15, editReason/ERR-30403/ERR-30404); 新增"复制历史处方"组合API实现路径文档 (FR-MC-018) |
 | 2026-02-18 | v1.2 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-30101~30607)，含创建/权限/状态/处方/并发/参数六类 |
 | 2026-02-21 | v1.3 | 深度重构同步: PUT /status 移除 Cancelled/Completed 支持 (Completed 需用 /close); PUT /cancel 响应改为 204; 4 个废弃端点已从代码移除; caseStatus 枚举移除 Cancelled; /close 补充统一入口说明; 术语"病案"统一为"医案" |
+| 2026-02-22 | v1.4 | MC-D20 同步: Draft→Suspended 状态重命名; `/draft`→`/suspend` 端点重命名; DraftCaseExists→SuspendedCaseExists; CannotSaveDraft→CannotSuspend |

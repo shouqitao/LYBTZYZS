@@ -90,8 +90,28 @@ dotnet test tests/LYBT.Tests.Desktop.Integration/
 
 ---
 
+## 常见问题
+
+**Q: 编译报错 "TargetFramework 'net8.0-windows' is not supported"**
+A: Desktop 相关项目需要 Windows SDK 工作负载。在 Visual Studio Installer 中勾选 ".NET 桌面开发" 工作负载，或使用 `dotnet workload install` 安装。Linux/macOS 下只能编译 Server 项目。
+
+**Q: 不装 SQL Server 能开发吗？**
+A: 可以。Desktop 客户端支持本地模式 (SQLite)，无需 SQL Server。Server 端开发需要 SQL Server，但集成测试使用 SQLite InMemory，也无需装 SQL Server。
+
+**Q: `dotnet test` 部分项目失败**
+A: 常见原因:
+1. Desktop 测试项目 (`LYBT.Tests.Desktop.Unit/Integration`) 需要 `net8.0-windows`，Linux/macOS 无法运行
+2. Server 集成测试需要干净的测试数据库环境
+3. 使用 `--filter` 参数分项目运行可定位问题
+
+**Q: 远程模式和本地模式如何切换？**
+A: Desktop 客户端设置页面手动切换。开发时建议先用本地模式 (无网络依赖)，功能验证后切换远程模式测试 API 流程。
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
+| 2026-02-22 | v1.1 | 新增常见问题 (FAQ) 章节 |
