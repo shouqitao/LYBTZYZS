@@ -421,7 +421,7 @@ stateDiagram-v2
 | MedicalCaseId | Guid | FK | 医案ID |
 | PrescriptionNumber | string(20)? | - | 处方编号 (RX-YYYYMMDD-NNNN) |
 | DosageCount | int | Default: 7 | 帖数 |
-| Discount | decimal(5,4) | Default: 1.0 | 折扣 |
+| Discount | decimal(3,2) | Default: 1.0 | 折扣 (范围 0.00~1.00) |
 | Usage | string(500)? | - | 用法 |
 | Advice | string(500)? | - | 医嘱 |
 | ReferencedFormulas | string(1000)? | - | 引用来源 (JSON 数组，见下方格式) |

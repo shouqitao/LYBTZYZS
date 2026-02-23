@@ -579,7 +579,7 @@ Server 按 IdCardNumber 检查:
 
 ## 错误码
 
-> 同步模块采用 ServiceResult 模式处理错误。错误码分区: 7xxxx，编号体系: MCCEE (M=模块7, CC=子类别, EE=序号)。服务端和客户端分层处理。
+> 同步模块当前采用 ServiceResult 模式处理错误，计划在 S5 迁移到 Result\<T\> 统一返回类型 (D2-2 设计)。错误码分区: 7xxxx，编号体系: MCCEE (M=模块7, CC=子类别, EE=序号)。服务端和客户端分层处理。
 
 ### 服务端通用错误 (701xx)
 
@@ -665,3 +665,4 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 2026-02-18 | v3.1 | 错误码全量分配: 新增7xxxx范围，5个子类别(701xx~705xx)共20个错误码，服务端错误补充HTTP状态码，统一ERR-MCCEE格式+枚举名 |
 | 2026-02-21 | v3.2 | PRD vs Code 偏差分析修订: 4 项修订, 7 项延期标注 |
 | 2026-02-21 | v3.3 | SYNC-D01: 医案同步仅限 Completed 状态。移除 BR-001 冲突处理和 ERR-70303; 新增 ERR-70506 (本地未完成医案阻断切换); FR-SYNC-008 新增 Active/Suspended 前置检查; Draft→Suspended 术语更新 (MC-D20) |
+| 2026-02-23 | v3.4 | 一致性审计: 错误码章节标注 ServiceResult → Result\<T\> 迁移计划 (D2-2, S5) |

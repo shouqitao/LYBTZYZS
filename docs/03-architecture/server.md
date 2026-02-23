@@ -79,7 +79,12 @@ LYBT.Entities/
 - `AppDbContext` -- EF Core 数据库上下文
 - `BaseRepository<T>` -- Repository 基类 (14 个标准方法)
 - `BaseReadRepository<T>` -- 只读 Repository 基类
-- `ICrossModuleService` -- 跨模块查询服务
+- 跨模块服务接口 (ISP 原则，D5-1 设计):
+  - `ICrossModuleService` -- 旧统一接口 (标记 `[Obsolete]`，S3 渐进迁移)
+  - `IPatientCrossModuleService` -- 患者查询 + 引用检查 (S3 新增)
+  - `IHerbCrossModuleService` -- 药材查询 + 引用检查 (S3 新增)
+  - `IUserCrossModuleService` -- 用户查询 + 凭证操作 (S3 新增)
+  - `ICrossModuleAuthService` -- Token 撤销 (已设计，6 个触发场景)
 - `IRepository<T>` / `IReadRepository<T>` -- Repository 接口定义
 - EF Core 实体配置 (Fluent API)
 - 数据库迁移文件
@@ -339,9 +344,29 @@ graph LR
 
 ## Service 层规范
 
+### BaseService 层次结构 (D2-1)
+
+> 设计文档: [d2-d5-design](../plans/2026-02-22-d2-d5-design-patterns-dependencies.md) | 实施: S5
+
+所有 Service 统一继承 BaseService 层次结构:
+
+```
+BaseService (非泛型)
+  ├── 跨域 Service: AuthService, SyncService
+  └── BaseService<T> (泛型，继承 BaseService)
+       └── CRUD Service: HerbService, PatientService, FormulaService, MedicalCase*
+```
+
+| 基类 | 适用场景 | 提供能力 |
+|------|----------|---------|
+| `BaseService` | 跨域服务 (Auth, Sync) | ExecuteAsync (三层异常处理), ValidateAsync (FluentValidation 封装) |
+| `BaseService<T>` | CRUD 实体服务 | 继承 BaseService 全部能力 + 泛型约束 |
+
+**当前状态**: HerbService/PatientService 已继承，FormulaService/AuthService/SyncService 待统一 (S5)
+
 ### 返回值类型
 
-所有 Service 方法统一返回 `Result<T>`:
+所有 Service 方法统一返回 `Result<T>` (S5 完成后 SyncService 从 `ServiceResult<T>` 迁移到 `Result<T>`):
 
 ```csharp
 // 成功
@@ -381,6 +406,23 @@ if (!validationResult.IsValid)
 - Query (Get/List/Search)
 - State (状态变更)
 - 删除原 Service，Controller 直接注入子服务
+
+## 事务边界模型
+
+> 设计文档: [design-deepening-phase3](../plans/2026-02-22-design-deepening-phase3.md) 3.3 节
+
+三级事务模型:
+
+| 级别 | 范围 | 机制 | 典型场景 |
+|------|------|------|----------|
+| **L1** | 单 Repository | 隐式 `SaveChangesAsync()` | 单实体 CRUD (Patient/Herb/User) |
+| **L2** | 聚合根 | 单次 `SaveChangesAsync()` 覆盖多实体 | MedicalCase + Consultation + Prescription + Items 聚合保存 |
+| **L3** | 跨聚合 | 显式 `BeginTransactionAsync()` | Sync 批量上传、批量导入 (事务内多次 SaveChanges，失败整体回滚) |
+
+**规则**:
+- L1/L2 不需要显式事务 (EF Core SaveChanges 自带隐式事务)
+- L3 场景必须使用 `IDbContextTransaction`，确保跨实体原子性
+- MedicalCase 聚合保存属于 L2: 单次 SaveChanges 写入 4 层实体
 
 ## 数据库约定
 
@@ -424,6 +466,28 @@ if (!validationResult.IsValid)
 | `permissions` | 10 分钟 | GET /api/v1/users |
 
 **失效策略** (NFR-D07): 写操作成功后调用 `IOutputCacheStore.EvictByTagAsync(tag)` 主动清除。跨模块失效示例: 创建医案同时清除 `medicalcases` + `patients` (患者 LastVisitTime 更新)。
+
+### Server 端 IMemoryCache (业务层)
+
+> 设计文档: [design-deepening-phase3](../plans/2026-02-22-design-deepening-phase3.md) 3.3 节
+
+用于高频单实体查询，与 OutputCache (HTTP 层) 互补:
+
+| 用途 | Key 模式 | 过期策略 | 失效时机 |
+|------|----------|----------|----------|
+| 单实体 GetById | `{entity}:{id}` | 滑动 5 分钟 | Update/Delete 时移除 |
+| 用户权限 | `user-perms:{userId}` | 滑动 10 分钟 | 角色变更时移除 |
+
+**失效矩阵 (Tag-based)**:
+
+| 触发操作 | OutputCache 失效 | IMemoryCache 失效 |
+|----------|-----------------|-------------------|
+| Herb Create/Update/Delete | `herbs` tag | `herb:{id}` |
+| Herb BatchToggle/Import | `herbs` tag | 清空 `herb:*` |
+| Patient Create/Update/Delete | `patients` tag | `patient:{id}` |
+| MedicalCase 任何写操作 | `medicalcases` tag | `medicalcase:{id}` |
+| User Update/ToggleStatus | -- | `user-info:{id}` + `user-perms:{id}` |
+| Sync Upload | 按实体类型清对应 tag | 清空对应 `{entity}:*` |
 
 ### Desktop 端
 
@@ -632,3 +696,4 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 | 2026-02-21 | v1.3 | 深度重构同步: LYBT.Entities 补充 MedicalCaseModel 充血模型例外说明; CQRS 方法示例更新为实际方法签名; 新增 MedicalCaseServiceHelper 共享服务 |
 | 2026-02-21 | v1.4 | 模块全面简化: PermissionService 为唯一权限权威，Rules 精简为无状态策略(57行)，ServiceHelper 扩展(重试/权限验证/创建上下文)，ValidationHelper 合并到 Rules |
 | 2026-02-22 | v1.5 | **Phase 4 架构修复设计同步 (A2+A3)**: MedicalCasePrintLog 从 Prescriptions/ 迁移到 MedicalCases/ 目录; Token Family 管理新增 ICrossModuleAuthService 独立接口 (ISP) + 6 个撤销场景表 + 延迟踢出说明 |
+| 2026-02-23 | v1.6 | 一致性审计: 新增 ICrossModuleService ISP 拆分 (D5-1); 新增 BaseService 层次结构 (D2-1); 新增事务边界模型 L1/L2/L3; 缓存策略补充 IMemoryCache 层 + Tag-based 失效矩阵 |

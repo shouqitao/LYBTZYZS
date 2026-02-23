@@ -2,7 +2,7 @@
 
 ## 概述
 
-凌隐宝堂中医诊所管理系统采用 Server/Shared/Client 三层架构。Server 层提供 RESTful API 服务，Client 层为 WPF 桌面应用，Shared 层提供两端共享的 DTO、工具类和组件。系统支持远程 (HTTP API + SQL Server) 和本地 (SQLite 直连) 双模式运行。
+凌隐宝堂中医诊所管理系统采用 Server/Shared/Client 三层架构。Server 层提供 RESTful API 服务，Client 层为 WPF 桌面应用，Shared 层提供两端共享的 DTO、工具类和组件。系统支持远程 (SQL Server) 和本地 (SQLite) 双模式运行，两种模式共享 Service/Repository 层代码，仅 DbContext Provider 不同。详见 [dual-mode.md](dual-mode.md)。
 
 ## 系统架构图
 
@@ -164,7 +164,12 @@ sequenceDiagram
     CMS-->>MC: PatientBasicInfo
 ```
 
-- 使用 `ICrossModuleService` 接口
+- 使用跨模块服务接口 (ISP 原则，按域拆分):
+  - `IPatientCrossModuleService` -- 患者查询 + 引用检查
+  - `IHerbCrossModuleService` -- 药材查询 + 引用检查
+  - `IUserCrossModuleService` -- 用户查询 + 凭证操作
+  - `ICrossModuleAuthService` -- Token 撤销 (独立接口，6 个触发场景)
+- 旧 `ICrossModuleService` 标记 `[Obsolete]`，渐进迁移到域专用接口 (S3 实施，详见 [d2-d5-design](../plans/2026-02-22-d2-d5-design-patterns-dependencies.md))
 - 禁止直接注入其他模块的 Repository
 - 返回轻量级 BasicInfo DTO
 

@@ -2,39 +2,81 @@
 
 ## 概述
 
-系统支持远程模式 (Remote) 和本地模式 (Local) 两种运行模式。远程模式通过 HTTP API 连接 SQL Server 数据库，本地模式直接使用 SQLite 本地数据库。两种模式通过策略模式 (Strategy Pattern) 实现，共享相同的 IDataSource 接口，业务层完全无感知。
+系统支持远程模式 (Remote) 和本地模式 (Local) 两种运行模式。远程模式通过 HTTP API 连接 SQL Server 数据库，本地模式使用 SQLite 本地数据库。
 
-## 架构对比图
+**目标架构 (SYNC-D02)**: 两种模式共享 Service/Repository 层代码，仅 DbContext Provider 不同 (SQL Server vs SQLite)。当前代码处于过渡态 (DataSource 策略模式)，将在 Sprint 4 迁移到目标架构。
+
+## 目标架构 (SYNC-D02: 统一数据路径)
+
+> 决策日期: 2026-02-22 | 状态: 已确认，待实施 (Sprint 4)
+
+### 设计原则
+
+废除 IDataSource 抽象层，本地模式与远程模式共享同一套 Service/Repository 代码，仅在最底层切换 DbContext 的数据库连接。参考业界标准: Simple EMR 等同类系统。
+
+### 架构图
 
 ```mermaid
 graph TB
-    subgraph VM["ViewModel / Repository 层"]
-        BL["业务逻辑<br>(使用 IDataSource 接口)"]
+    subgraph VM["ViewModel 层"]
+        BL["ViewModel / Service"]
     end
 
-    BL -->|"ConnectionMode.Remote"| Remote
-    BL -->|"ConnectionMode.Local"| Local
+    subgraph REPO["Repository 层 (共享)"]
+        R["Repository"]
+        SVC["Service"]
+    end
+
+    BL --> SVC --> R
+
+    R -->|"ConnectionMode.Remote"| RemoteCtx
+    R -->|"ConnectionMode.Local"| LocalCtx
 
     subgraph Remote["远程模式"]
-        RDS["RemoteXxxDataSource"]
-        API["ISyncApi (Refit HTTP)"]
-        WebAPI["WebAPI Server"]
+        RemoteCtx["DbContext<br>(SQL Server Provider)"]
         SQL["SQL Server"]
-        RDS --> API --> WebAPI --> SQL
+        RemoteCtx --> SQL
     end
 
     subgraph Local["本地模式"]
-        LDS["LocalXxxDataSource"]
-        LDB["LocalDbContext (EF Core)"]
+        LocalCtx["DbContext<br>(SQLite Provider)"]
         SQLite["SQLite 文件"]
-        Sync["SyncService"]
-        LDS --> LDB --> SQLite
-        Sync --> LDB
-        Sync -->|"HTTP"| WebAPI
+        LocalCtx --> SQLite
     end
 ```
 
-## 核心机制: 策略模式
+### 核心变更
+
+| 维度 | 过渡态 (当前) | 目标态 (SYNC-D02) |
+|------|---------------|-------------------|
+| **抽象层** | IDataSource 接口 + Remote/Local 双实现 | 无额外抽象，直接用 Repository |
+| **业务逻辑** | Local DataSource 重复实现业务规则 | Service/Repository 代码共享，零重复 |
+| **DI 切换** | 注册不同 DataSource 实现 | 注册不同 DbContext Provider |
+| **模式切换** | 重启应用 | 运行时软重启 (SYNC-D03) |
+| **维护成本** | 每个功能需写 Remote + Local 两套 | 只写一套，自动适配双模式 |
+
+### 迁移策略
+
+1. 将 LocalDbContext 的 Entity 配置与 Server 端 DbContext 对齐
+2. Repository 层注入 DbContext 接口 (或通过 Provider 切换连接字符串)
+3. 删除 IDataSource 接口族和全部 Remote/Local DataSource 实现
+4. 保留 LocalAuthService (本地认证独立逻辑)
+5. SyncService 直接操作 Repository，不再依赖 DataSource
+
+## 相关架构决策 (SYNC-D01~D04)
+
+| 编号 | 决策 | 说明 |
+|------|------|------|
+| **SYNC-D01** | 仅同步 Completed 医案 | Draft/Suspended 状态不同步到服务器 |
+| **SYNC-D02** | 统一本地/远程数据路径 | 共享 Service/Repository 层，仅 DbContext Provider 不同。废除 DataSource 策略模式 |
+| **SYNC-D03** | 运行时切换 + 软重启 | 替换 DI 中 DbContext Provider + 导航回首页。参考 Outlook Cached Exchange Mode |
+| **SYNC-D04** | 分层冲突策略 | 简单实体 (Herb/Patient/Formula) Server Wins 自动覆盖; MedicalCase 保留手动选择 |
+
+---
+
+## 当前实现 (过渡态: DataSource 策略模式)
+
+> 以下描述当前代码的实际状态，将在 Sprint 4 迁移到目标架构后删除此章节。
 
 ### ConnectionMode 枚举
 
@@ -72,20 +114,7 @@ public static void RegisterDataSources(
 }
 ```
 
-**关键**: 同一个 IDataSource 接口，不同实现。业务层代码零修改。
-
-### 配置读取
-
-```json
-// appsettings.json
-{
-  "ConnectionMode": "Local"
-}
-```
-
-启动时从 `IConfiguration["ConnectionMode"]` 读取，默认 Remote。
-
-## 模式对比
+### 模式对比
 
 | 维度 | 远程模式 (Remote) | 本地模式 (Local) |
 |------|-------------------|------------------|
@@ -99,6 +128,20 @@ public static void RegisterDataSources(
 | **数据库位置** | 远程服务器 | `%APPDATA%\LYBTZYZS\lybtzyzs.db` |
 | **切换方式** | 修改 appsettings.json 后重启 | 修改 appsettings.json 后重启 |
 
+### Local DataSource 实现
+
+每个实体都有对应的 LocalDataSource (待迁移后删除):
+
+| 类 | 说明 |
+|----|------|
+| LocalPatientDataSource | 患者 CRUD、搜索、批量删除、导入导出 |
+| LocalHerbDataSource | 药材 CRUD、分类、启用/禁用 |
+| LocalFormulaDataSource | 验方 CRUD、克隆、药材绑定 |
+| LocalUserDataSource | 用户 CRUD、密码管理、登录追踪 |
+| LocalMedicalCaseDataSource | 医案聚合根、含详情查询、状态管理 |
+
+---
+
 ## 本地数据访问层 (LocalData)
 
 ### LocalDbContext
@@ -110,27 +153,9 @@ SQLite 实现的 EF Core DbContext:
 - SQLite 适配: 忽略 RowVersion、decimal 转 double
 - 自动审计字段管理 (CreatedAt, UpdatedAt, CreatedBy)
 
-### Local DataSource 实现
-
-每个实体都有对应的 LocalDataSource:
-
-| 类 | 说明 |
-|----|------|
-| LocalPatientDataSource | 患者 CRUD、搜索、批量删除、导入导出 |
-| LocalHerbDataSource | 药材 CRUD、分类、启用/禁用 |
-| LocalFormulaDataSource | 验方 CRUD、克隆、药材绑定 |
-| LocalUserDataSource | 用户 CRUD、密码管理、登录追踪 |
-| LocalMedicalCaseDataSource | 医案聚合根、含详情查询、状态管理 |
-
-**共同特征**:
-- 实现 ILogger 注入，日志带 `[LocalDataSource]` 前缀
-- 读操作使用 `AsNoTracking()` 优化
-- 支持软删除 (IsDeleted)
-- 与远程 DataSource 实现相同的 IDataSource 接口
-
 ### 本地认证
 
-`LocalAuthService` 提供本地模式认证:
+`LocalAuthService` 提供本地模式认证 (迁移后保留):
 - BCrypt 密码验证
 - 账户锁定: 5 次失败后锁定 15 分钟
 - 禁用账户检查
@@ -142,6 +167,17 @@ SQLite 实现的 EF Core DbContext:
 - 数据库路径: `%APPDATA%\LYBTZYZS\lybtzyzs.db`
 - 首次运行自动创建数据库
 - 加载种子数据 (SeedData)
+
+### 配置
+
+```json
+// appsettings.json
+{
+  "ConnectionMode": "Local"
+}
+```
+
+启动时从 `IConfiguration["ConnectionMode"]` 读取，默认 Remote。
 
 ## 同步架构
 
@@ -194,7 +230,7 @@ sequenceDiagram
 | Herb | 支持 |
 | Patient | 支持 |
 | Formula | 支持 (含 FormulaHerbItems) |
-| MedicalCase | 支持 (聚合级原子同步，含 Consultation + Prescription + PrescriptionItems)。详见 [sync.md](../02-requirements/sync.md) MedicalCase 同步设计章节 |
+| MedicalCase | 仅同步 Completed 状态 (SYNC-D01)。聚合级原子同步，含 Consultation + Prescription + PrescriptionItems。详见 [sync.md](../02-requirements/sync.md) |
 | User | v1.0 不支持 (低频变更 + 密码安全)。缓解: 初始化时下载，人员变更后重新初始化 |
 
 ### MedicalCase 同步设计
@@ -205,7 +241,7 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 
 **同步粒度**: 以 DDD 聚合为单位，整个聚合 (MedicalCase + Consultation + Prescription + PrescriptionItems) 作为一个 JSON 对象传输，Server 端使用单事务写入，任何一部分失败整体回滚。
 
-**依赖顺序**: 系统自动强制编排 -- Herb 同步 → Patient 同步 (含 IdCardNumber 去重) → MedicalCase 同步。用户无需关心依赖顺序。
+**依赖顺序**: 系统自动强制编排 -- Herb 同步 -> Patient 同步 (含 IdCardNumber 去重) -> MedicalCase 同步。用户无需关心依赖顺序。
 
 **患者去重**: 本地新建患者上传时，Server 按 IdCardNumber 检查。已存在则返回 Server 端 PatientId，客户端自动重映射关联 MedicalCase 的 PatientId。
 
@@ -215,31 +251,41 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 
 **Checksum 计算**: 聚合级哈希，合并 MedicalCase + Consultation + Prescription + PrescriptionItems 四层业务字段。排除可变编号、冗余名称、审计字段和打印字段。PrescriptionItems 按 HerbId 排序保证哈希确定性。
 
-**同步状态约束**:
+**同步状态约束 (SYNC-D01)**:
 
 | 医案状态 | 上传 | 下载 | 说明 |
 |---------|------|------|------|
-| Draft | 可以 | 可以 | 离线创建的草稿 |
-| Active | 可以 | 可以 | 离线正在进行的医案 |
+| Active | 不同步 | 不同步 | 正在诊疗中，应先完成再同步 |
+| Suspended | 不同步 | 不同步 | 已挂起，应先完成或取消再同步 |
 | Completed | 可以 | 可以 | 已存在的 Completed 不可被覆盖 |
 
-**新增错误码**: 服务端 703xx (PatientNotFound / HerbNotFound / ActiveCaseConflict / CaseLocked)，客户端 705xx (DependencyNotSynced / PatientRemapFailed)。详见 [sync.md](../02-requirements/sync.md) 错误码章节。
+**冲突解决 (SYNC-D04)**:
+
+| 实体类型 | 策略 | 说明 |
+|---------|------|------|
+| Herb / Patient / Formula | Server Wins | 自动覆盖，无冲突 UI |
+| MedicalCase | 手动选择 | 保留冲突对比 UI，用户逐条确认 |
 
 ### 冲突解决
 
-冲突发生在同一实体在本地和服务端都被修改时。用户通过 SyncViewModel 界面:
-1. 查看 ConflictItems 列表
-2. 为每个冲突选择保留版本 (本地 / 服务端)
-3. 未解决的冲突被跳过
-
 **MedicalCase 特有冲突规则**:
-- **BR-001 冲突** (同一患者单活跃医案): 上传 Active/Draft 医案时若该患者 Server 端已有活跃医案，客户端提示医生选择: (a) 将本地医案标记为 Completed 再上传 (b) 关闭 Server 端旧医案后上传本地版本 (c) 跳过该医案稍后手动处理
+- **BR-001 冲突**: SYNC-D01 约束仅同步 Completed 状态医案，Active/Suspended 不参与同步，因此 BR-001 (同一患者单活跃医案) 在同步场景下不会触发冲突。上传的 Completed 医案不受此规则限制
 - **已锁定医案**: 已完成且已锁定的 Completed 医案不可通过同步覆盖 (ERR-70304)
 - **变更字段检测**: 跨整个聚合 (诊断 + 处方 + 药材明细) 检测差异字段，冲突解决 UI 使用左右对比布局 + 差异高亮
 
 ## 模式切换流程
 
-### 切换步骤 (手动)
+### 目标: 运行时软重启 (SYNC-D03)
+
+> 决策日期: 2026-02-22 | 状态: 已确认，待实施 (Sprint 4)
+
+参考 Outlook Cached Exchange Mode:
+1. 用户在设置中切换 ConnectionMode
+2. 应用替换 DI 中 DbContext Provider (SQL Server <-> SQLite)
+3. 自动导航回首页
+4. 无需重启应用
+
+### 当前: 手动重启 (过渡态)
 
 1. 关闭应用
 2. 编辑 `appsettings.json`: `"ConnectionMode": "Remote"` 或 `"Local"`
@@ -254,16 +300,19 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 
 ## 决策记录
 
-| 编号 | 问题 | 影响范围 | 状态 |
-|------|------|----------|------|
-| TBD-01 | 本地模式功能受限范围 | 已确定 | 已确定: 不可用项: 自动登录 / Token刷新 / 审计日志查询 / User同步 / 服务端API导入导出。不活跃超时: **15 分钟** (与远程模式一致，防信息泄露)，可配置 (Session:InactivityTimeoutMinutes)。见 [auth.md](../02-requirements/auth.md) FR-AUTH-006 |
-| TBD-02 | 数据同步冲突解决策略 | 已确定 | 已确定: 手动逐条选择 (保留本地 / 使用服务端 / 跳过)。SyncConflictDialog 已实现 |
-| TBD-03 | MedicalCase 同步支持 | 已确定 | 已确定: 聚合级原子同步 (MC + Consultation + Prescription + Items)，全状态双向同步，自动强制依赖顺序。详见 [sync.md](../02-requirements/sync.md) MedicalCase 同步设计章节 |
+| 编号 | 问题 | 状态 | 说明 |
+|------|------|------|------|
+| SYNC-D01 | MedicalCase 同步范围 | 已确认 | 仅同步 Completed 状态，Active/Suspended 不同步 (Draft 已替换为 Suspended, MC-D20) |
+| SYNC-D02 | 统一本地/远程数据路径 | 已确认，待实施 | 废除 DataSource 策略模式，共享 Service/Repository 层，仅 DbContext Provider 不同 |
+| SYNC-D03 | 运行时模式切换 | 已确认，待实施 | 软重启方案，替换 DI 中 DbContext Provider + 导航回首页 |
+| SYNC-D04 | 冲突解决策略 | 已确认 | 简单实体 Server Wins; MedicalCase 手动选择 |
+| TBD-01 | 本地模式功能受限范围 | 已确定 | 不可用项: 自动登录 / Token刷新 / 审计日志查询 / User同步 / 服务端API导入导出。不活跃超时: 15 分钟 (可配置)。见 [auth.md](../02-requirements/auth.md) FR-AUTH-006 |
 
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从代码逆向工程和 sync 模块分析整合 |
-| 2026-02-18 | v1.1 | PRD同步: MedicalCase 同步从 v2.0 规划更新为已确定 (对齐 sync.md v3.0)，新增 MedicalCase 同步设计章节 (聚合级原子同步/依赖顺序/患者去重/编号重分配/打印排除)，TBD-01 移除 MedicalCase 同步，TBD-03 更新为已确定，冲突解决扩展 BR-001 + 已锁定医案规则 |
+| 2026-02-18 | v1.1 | PRD同步: MedicalCase 同步从 v2.0 规划更新为已确定，新增 MedicalCase 同步设计章节 |
 | 2026-02-19 | v1.2 | TBD-01 补充本地模式不活跃超时时间 (15分钟，可配置) |
+| 2026-02-22 | v2.0 | **架构演进**: 新增 SYNC-D01~D04 决策，标注目标架构 (统一数据路径) 和当前过渡态，重组文档结构 |

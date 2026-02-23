@@ -49,7 +49,7 @@ graph TB
 
 | 项目 | 职责 | 主要内容 |
 |------|------|----------|
-| LYBT.Desktop.Contracts | 接口定义 | IApi 接口 (Refit)、IDataSource 接口、IService 接口 |
+| LYBT.Desktop.Contracts | 接口定义 | IApi 接口 (Refit)、IDataSource 接口 (过渡态，SYNC-D02 后废除)、IService 接口 |
 | LYBT.Desktop.Foundation | 基础设施 | HTTP 客户端、缓存、安全、配置、日志、ConnectionMode |
 | LYBT.Desktop.Infrastructure | WPF 服务 | DialogService、NavigationService、控件、转换器、主题 |
 | LYBT.Desktop.Models | 客户端模型 | ViewState、Item 模型、事件模型 |
@@ -638,14 +638,14 @@ MedicalCase 冲突展示跨整个聚合 (诊断 + 处方 + 药材明细)，通�
 
 1. 检查 SQLite 数据库文件是否存在且完整
 2. 不存在 → 提示"本地数据库不存在，需先执行一次同步"
-3. 存在 → 切换 DataSource 为 SQLite → 状态栏显示"本地模式"
+3. 存在 → 切换 DbContext Provider 为 SQLite → 状态栏显示"本地模式" (详见 [dual-mode.md](dual-mode.md) SYNC-D02/D03)
 
 ### 本地 → 远程
 
 1. 检查网络连通性 (Ping 服务端)
 2. 网络不可用 → 提示"无法连接服务器，请检查网络"
 3. 检查 Token 有效性 → 过期则跳转登录页
-4. 认证有效 → 切换 DataSource 为 HTTP API → 状态栏显示"远程模式"
+4. 认证有效 → 切换 DbContext Provider 为 SQL Server → 状态栏显示"远程模式" (详见 [dual-mode.md](dual-mode.md) SYNC-D02/D03)
 
 ### 切换失败回退
 
@@ -727,7 +727,7 @@ EncryptedStringConverter
 | 选项 | 行为 | 说明 |
 |------|------|------|
 | **保存** | 提交当前修改 → 保存成功后执行导航 | 主操作按钮 |
-| **暂存草稿** | 将当前状态标记为 Draft → 执行导航 | 保留修改到草稿，下次可恢复 |
+| **挂起医案** | 将当前状态标记为 Suspended → 保存当前数据 → 执行导航 | 医生暂时离开，稍后可继续 (FR-MC-006) |
 | **放弃修改** | 丢弃所有未保存修改 → 执行导航 | 不可逆操作 |
 | **取消** | 停留在当前页面 | 继续编辑 |
 
@@ -745,7 +745,7 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
         switch (result.Parameters.GetValue<string>("Action"))
         {
             case "Save": SaveAsync().ContinueWith(_ => continuationCallback(true)); break;
-            case "SaveDraft": SaveDraftAsync().ContinueWith(_ => continuationCallback(true)); break;
+            case "Suspend": SuspendAsync().ContinueWith(_ => continuationCallback(true)); break;
             case "Discard": continuationCallback(true); break;
             case "Cancel": continuationCallback(false); break;
         }

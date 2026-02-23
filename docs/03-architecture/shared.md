@@ -147,7 +147,23 @@ LYBT.Shared.Components/
     PrescriptionCalculator.cs
   Validators/              # 业务验证
     HerbValidatorBase.cs
+  BusinessRules/           # 共享业务规则
+    MedicalCaseBusinessRules.cs
 ```
+
+### MedicalCaseBusinessRules (计划新增)
+
+> 设计文档: [design-deepening-phase3](../plans/2026-02-22-design-deepening-phase3.md) | [design-issues-solutions](../plans/2026-02-21-design-issues-solutions.md) Issue #4
+
+提取到 Shared 层的纯函数业务规则，供 Server 端和 Local 端共享，解决 Local 模式绕过业务规则的问题:
+
+| 方法 | 用途 | 对应规则 |
+|------|------|----------|
+| `CanCreateNewCase(statuses)` | 检查患者是否可新建医案 | BR-001 (单活跃医案约束) |
+| `HasActiveCase(statuses)` | 检查患者是否存在活跃医案 | BR-001 |
+| `IsValidStatusTransition(from, to)` | 状态转换合法性验证 | FR-MC-006~008 状态机矩阵 |
+
+**当前状态**: 待实施 (S5)。Server 端 `MedicalCaseRules` 将简化为 thin wrapper 委托给此类。
 
 **约束**: 可引用 Shared.Models 和 Shared.Utilities，禁止引用 Server/Client。
 
@@ -195,3 +211,4 @@ Entity (DataAnnotations)
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 shared-layer-architecture/dto-architecture specs 整合 |
+| 2026-02-23 | v1.1 | 一致性审计: 新增 MedicalCaseBusinessRules 组件文档 (设计来源: design-deepening-phase3 + design-issues-solutions #4) |
