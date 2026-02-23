@@ -154,6 +154,30 @@ namespace LYBT.Module.Auth.Services
                 userDto.Role,
                 userType); // Issue #1909: 根据角色设置正确的user_type claim
 
+            // X3-01: 登录时撤销旧会话的所有 Token
+            try
+            {
+                var oldTokens = await _dbContext.RefreshTokens
+                    .Where(t => t.UserId == userDto.Id && !t.IsRevoked)
+                    .ToListAsync(cancellationToken);
+
+                foreach (var oldToken in oldTokens)
+                {
+                    oldToken.Revoke("新登录会话，撤销旧 Token", "System:NewLoginSession");
+                }
+
+                if (oldTokens.Count > 0)
+                {
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                    _logger.LogInformation("[SVC] Auth.Login → RevokedOldTokens - UserId={UserId} Count={Count}",
+                        userDto.Id, oldTokens.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[SVC] Auth.Login → RevokeOldTokensFailed - UserId={UserId}", userDto.Id);
+            }
+
             // Issue #1838: 生成并存储RefreshToken
             var refreshToken = GenerateRefreshToken();
             var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;

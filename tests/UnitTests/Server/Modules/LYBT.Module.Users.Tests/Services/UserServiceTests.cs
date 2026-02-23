@@ -3,6 +3,7 @@ using BCrypt.Net;
 using FluentAssertions;
 using FluentValidation;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -29,6 +30,7 @@ namespace LYBT.Module.Users.Tests.Services
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
         private readonly Mock<IValidator<UserInputDto>> _validatorMock;
+        private readonly Mock<ICrossModuleAuthService> _authServiceMock;
 
         public UserServiceTests()
         {
@@ -37,6 +39,7 @@ namespace LYBT.Module.Users.Tests.Services
             _configurationMock = CreateMock<IConfiguration>();
             _httpContextAccessorMock = CreateMock<IHttpContextAccessor>();
             _validatorMock = CreateMock<IValidator<UserInputDto>>();
+            _authServiceMock = CreateMock<ICrossModuleAuthService>();
 
             // 设置默认密码配置（通过IConfiguration）
             _configurationMock.Setup(x => x["Lybt:DefaultPasswords:NewUserPassword"])
@@ -48,13 +51,18 @@ namespace LYBT.Module.Users.Tests.Services
             _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<UserInputDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
-            // 创建UserService实例 - OpenSpec: adopt-mapperly-unified-mapping - Service内部使用Mapperly
+            // X3: 默认设置 token 撤销为成功
+            _authServiceMock.Setup(x => x.RevokeUserTokensAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+
+            // 创建UserService实例
             _userService = new UserService(
                 _repositoryMock.Object,
                 _loggerMock.Object,
                 _configurationMock.Object,
                 _httpContextAccessorMock.Object,
-                _validatorMock.Object);
+                _validatorMock.Object,
+                _authServiceMock.Object);
 
             // Issue #1909: 默认设置为SuperAdmin角色，允许所有操作
             SetupUserRole(UserRole.SuperAdmin);

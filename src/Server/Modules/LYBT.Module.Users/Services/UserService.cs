@@ -3,6 +3,7 @@ using LYBT.Module.Users.Mapping;
 using FluentValidation;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -29,6 +30,7 @@ namespace LYBT.Module.Users.Services
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IValidator<UserInputDto> _validator;
+        private readonly ICrossModuleAuthService _authService;
         private readonly UserMapper _mapper = new();
 
         public UserService(
@@ -36,13 +38,15 @@ namespace LYBT.Module.Users.Services
             ILogger<UserService> logger,
             IConfiguration configuration,
             IHttpContextAccessor httpContextAccessor,
-            IValidator<UserInputDto> validator)
+            IValidator<UserInputDto> validator,
+            ICrossModuleAuthService authService)
             : base(logger)
         {
             _repository = repository;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _validator = validator;
+            _authService = authService;
         }
 
         #region 权限检查辅助方法（Issue #1909）
@@ -316,6 +320,9 @@ namespace LYBT.Module.Users.Services
             // 注意：UserInputDto不包含Username属性，用户名一旦创建不可更改
             // 这也避免了用户后期尝试改为超级管理员用户名的风险
 
+            // X3-02: 角色变更时撤销所有 Token，强制重新认证获取新权限
+            var roleChanged = dto.Role != entity.Role;
+
             // Issue #1911: 保存原 RealName 用于比较
             var oldRealName = entity.RealName;
             _mapper.UpdateEntity(dto, entity);
@@ -330,6 +337,12 @@ namespace LYBT.Module.Users.Services
 
             var result = await _repository.UpdateAsync(entity);
             var resultDto = _mapper.ToDetailDto(result);
+
+            // X3-02: 角色变更后撤销 Token
+            if (roleChanged)
+            {
+                await _authService.RevokeUserTokensAsync(id, "角色变更，强制重新认证");
+            }
 
             _logger.LogInformation("[SVC] User.Update completed - UserId={UserId}", id);
             return Result<UserDetailDto>.Success(resultDto);
@@ -357,6 +370,9 @@ namespace LYBT.Module.Users.Services
                 return permissionCheck;
             }
 
+            // X3-03: 删除前撤销所有 Token
+            await _authService.RevokeUserTokensAsync(id, "用户已删除");
+
             var result = await _repository.DeleteAsync(id);
             _logger.LogInformation("[SVC] User.Delete completed - UserId={UserId} Role={Role}", id, targetUser.Role);
             return result ? Result.Success() : Result.Failure("删除失败");
@@ -380,6 +396,9 @@ namespace LYBT.Module.Users.Services
             // 哈希密码并更新
             entity.PasswordHash = PasswordHelper.HashPassword(password, entity.Role, _logger);
             await _repository.UpdateAsync(entity);
+
+            // X3-04: 重置密码后撤销所有 Token，强制重新登录
+            await _authService.RevokeUserTokensAsync(id, "密码已重置，强制重新登录");
 
             var response = new ResetPasswordResponseDto
             {
@@ -459,6 +478,10 @@ namespace LYBT.Module.Users.Services
             // 在修改密码时必须使用 newPassword 哈希，否则新密码会被丢弃
             entity.PasswordHash = PasswordHelper.HashPassword(newPassword, entity.Role, _logger);
             await _repository.UpdateAsync(entity);
+
+            // X3-05: 修改密码后撤销所有 Token，强制重新登录
+            await _authService.RevokeUserTokensAsync(id, "密码已修改，强制重新登录");
+
             return Result.Success();
         }
 
@@ -536,6 +559,12 @@ namespace LYBT.Module.Users.Services
 
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.ToDetailDto(result);
+
+            // X3-06: 禁用用户时撤销所有 Token
+            if (entity.Status == CommonStatus.Disabled)
+            {
+                await _authService.RevokeUserTokensAsync(id, "用户已禁用，强制登出");
+            }
 
             _logger.LogInformation("[SVC] User.ToggleStatus completed - UserId={UserId} Status={Status}", id, entity.Status);
             return Result<UserDetailDto>.Success(dto);
