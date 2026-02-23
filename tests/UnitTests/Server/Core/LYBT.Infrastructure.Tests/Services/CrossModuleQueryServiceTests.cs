@@ -5,6 +5,8 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace LYBT.Infrastructure.Tests.Services;
@@ -27,7 +29,7 @@ public class CrossModuleServiceTests : IDisposable
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _service = new CrossModuleService(_dbContext);
+        _service = new CrossModuleService(_dbContext, NullLogger<CrossModuleService>.Instance);
     }
 
     public void Dispose()

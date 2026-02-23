@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.DTOs.Users;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Services;
 
@@ -19,10 +20,12 @@ public class CrossModuleService :
     ICrossModuleAuthService
 {
     private readonly AppDbContext _context;
+    private readonly ILogger<CrossModuleService> _logger;
 
-    public CrossModuleService(AppDbContext context)
+    public CrossModuleService(AppDbContext context, ILogger<CrossModuleService> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     #region 患者查询 (IPatientCrossModuleService)
@@ -226,12 +229,38 @@ public class CrossModuleService :
     #region 认证服务 (ICrossModuleAuthService)
 
     /// <inheritdoc />
-    /// <remarks>Token 撤销将在 S1 安全加固阶段实现</remarks>
-    public Task RevokeUserTokensAsync(Guid userId, string reason)
+    /// <remarks>X3: 按 UserId 批量撤销所有未撤销的 RefreshToken</remarks>
+    public async Task RevokeUserTokensAsync(Guid userId, string reason)
     {
-        // OpenSpec: S1 安全加固 - Token Family 撤销，当前阶段预留接口
-        throw new NotImplementedException(
-            "Token 撤销功能将在 S1 安全加固阶段实现。当前仅提供接口定义。");
+        try
+        {
+            var activeTokens = await _context.RefreshTokens
+                .Where(t => t.UserId == userId && !t.IsRevoked)
+                .ToListAsync();
+
+            if (activeTokens.Count == 0)
+            {
+                _logger.LogDebug("[CMQS] RevokeUserTokens → NoActiveTokens - UserId={UserId}", userId);
+                return;
+            }
+
+            foreach (var token in activeTokens)
+            {
+                token.Revoke(reason, "System:CrossModuleRevocation");
+            }
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "[CMQS] RevokeUserTokens completed - UserId={UserId} RevokedCount={Count} Reason={Reason}",
+                userId, activeTokens.Count, reason);
+        }
+        catch (Exception ex)
+        {
+            // X3 约束: 失败记 Warning 不阻塞主操作
+            _logger.LogWarning(ex,
+                "[CMQS] RevokeUserTokens failed - UserId={UserId} Reason={Reason}", userId, reason);
+        }
     }
 
     #endregion
