@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LYBT.Entities.Attributes;
 using LYBT.Entities.Common;
 using LYBT.Shared.Models.Enums;
 
@@ -40,11 +41,13 @@ namespace LYBT.Entities.Users
         /// <summary>电话号码</summary>
         [StringLength(20)]
         [DisplayName("电话号码")]
+        [SensitiveData(SensitiveDataType.ContactInfo, MaskingMode = MaskingMode.Partial)]
         public string? PhoneNumber { get; set; }
 
         /// <summary>邮箱地址</summary>
         [StringLength(100)]
         [DisplayName("邮箱")]
+        [SensitiveData(SensitiveDataType.ContactInfo, MaskingMode = MaskingMode.Partial)]
         public string? Email { get; set; }
 
         /// <summary>用户角色</summary>

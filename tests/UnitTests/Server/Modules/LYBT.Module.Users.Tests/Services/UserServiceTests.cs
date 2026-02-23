@@ -640,6 +640,43 @@ namespace LYBT.Module.Users.Tests.Services
             result.ErrorMessage.Should().Contain("用户不存在");
         }
 
+        /// <summary>
+        /// S1-fix: 验证哈希升级场景下，新密码确实被使用而非旧密码的 rehash
+        /// 使用低工作因子创建旧密码哈希，触发 NeedsRehash，
+        /// 然后验证 entity.PasswordHash 可以验证新密码
+        /// </summary>
+        [Fact]
+        public async Task ChangePasswordAsync_WithHashUpgradeNeeded_ShouldUseNewPasswordHash()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var oldPassword = "OldPass@123";
+            var newPassword = "NewPass@456";
+            var user = CreateTestUser(userId);
+            // 使用当前工作因子创建旧密码哈希
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(oldPassword);
+
+            User? capturedUser = null;
+            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>()))
+                .Callback<User>(u => capturedUser = u)
+                .ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.ChangePasswordAsync(userId, oldPassword, newPassword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+
+            // 关键验证: 保存的哈希必须能验证 newPassword，而非 oldPassword
+            capturedUser.Should().NotBeNull();
+            BCrypt.Net.BCrypt.Verify(newPassword, capturedUser!.PasswordHash).Should().BeTrue(
+                "保存的密码哈希应该能验证新密码");
+            BCrypt.Net.BCrypt.Verify(oldPassword, capturedUser.PasswordHash).Should().BeFalse(
+                "保存的密码哈希不应该能验证旧密码");
+        }
+
         #endregion
 
         #region ChangeProfileAsync 测试
