@@ -2,6 +2,7 @@ using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.DataSources;
 using LYBT.Desktop.LocalData.Tests.TestFixtures;
 using LYBT.Entities.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using FormulaEntity = LYBT.Entities.Formulas.Formula;
 using Microsoft.EntityFrameworkCore;
@@ -234,15 +235,19 @@ public class LocalFormulaDataSourceTests : IClassFixture<LocalDbContextFixture>
         // Arrange
         using var context = _fixture.CreateContext();
         var dataSource = new LocalFormulaDataSource(context, _logger);
-        var formula = new FormulaEntity
+        var input = new FormulaInputDto
         {
             Name = "新验方",
             Effect = "新功效",
-            Category = "新分类"
+            Category = "新分类",
+            Herbs = new List<FormulaHerbItemInputDto>
+            {
+                new() { HerbName = "黄芪", Dosage = 10, Unit = "g" }
+            }
         };
 
         // Act
-        var result = await dataSource.CreateAsync(formula);
+        var result = await dataSource.CreateAsync(input);
 
         // Assert
         result.Should().NotBeNull();
@@ -260,22 +265,22 @@ public class LocalFormulaDataSourceTests : IClassFixture<LocalDbContextFixture>
         // Arrange
         using var context = _fixture.CreateContext();
         var dataSource = new LocalFormulaDataSource(context, _logger);
-        var formula = new FormulaEntity
+        var input = new FormulaInputDto
         {
             Name = "带药材验方",
-            Herbs = new List<FormulaHerbItem>
+            Effect = "功效",
+            Herbs = new List<FormulaHerbItemInputDto>
             {
-                new() { HerbName = "黄芪", Dosage = 15 },
-                new() { HerbName = "党参", Dosage = 10 }
+                new() { HerbName = "黄芪", Dosage = 15, Unit = "g" },
+                new() { HerbName = "党参", Dosage = 10, Unit = "g" }
             }
         };
 
         // Act
-        var result = await dataSource.CreateAsync(formula);
+        var result = await dataSource.CreateAsync(input);
 
         // Assert
         result.Herbs.Should().HaveCount(2);
-        result.Herbs.Should().OnlyContain(h => h.FormulaId == result.Id);
         result.Herbs.Should().OnlyContain(h => h.Id != Guid.Empty);
     }
 
@@ -295,9 +300,14 @@ public class LocalFormulaDataSourceTests : IClassFixture<LocalDbContextFixture>
         var dataSource = new LocalFormulaDataSource(context, _logger);
 
         // Act
-        formula.Name = "新名称";
-        formula.Effect = "新功效";
-        var result = await dataSource.UpdateAsync(formula);
+        var input = new FormulaInputDto
+        {
+            Id = formula.Id,
+            Name = "新名称",
+            Effect = "新功效",
+            Herbs = new List<FormulaHerbItemInputDto>()
+        };
+        var result = await dataSource.UpdateAsync(input);
 
         // Assert
         result.Name.Should().Be("新名称");
@@ -315,33 +325,24 @@ public class LocalFormulaDataSourceTests : IClassFixture<LocalDbContextFixture>
         await context.SaveChangesAsync();
         var formulaId = originalFormula.Id;
 
-        // Detach 原实体避免追踪冲突
-        context.Entry(originalFormula).State = EntityState.Detached;
-        foreach (var herb in originalFormula.Herbs)
-        {
-            context.Entry(herb).State = EntityState.Detached;
-        }
-
         var dataSource = new LocalFormulaDataSource(context, _logger);
 
-        // 创建新实例用于更新
-        var updateFormula = new FormulaEntity
+        // 创建InputDto用于更新
+        var updateInput = new FormulaInputDto
         {
             Id = formulaId,
             Name = "验方",
             Effect = "默认功效",
             Category = "默认分类",
-            FormulaType = FormulaType.Experience,
-            Status = CommonStatus.Enabled,
-            Herbs = new List<FormulaHerbItem>
+            Herbs = new List<FormulaHerbItemInputDto>
             {
-                new() { HerbName = "新药材1", Dosage = 15 },
-                new() { HerbName = "新药材2", Dosage = 20 }
+                new() { HerbName = "新药材1", Dosage = 15, Unit = "g" },
+                new() { HerbName = "新药材2", Dosage = 20, Unit = "g" }
             }
         };
 
         // Act
-        await dataSource.UpdateAsync(updateFormula);
+        await dataSource.UpdateAsync(updateInput);
 
         // Assert - 重新查询以验证
         var updated = await context.Formulas
@@ -361,10 +362,15 @@ public class LocalFormulaDataSourceTests : IClassFixture<LocalDbContextFixture>
         // Arrange
         using var context = _fixture.CreateContext();
         var dataSource = new LocalFormulaDataSource(context, _logger);
-        var formula = new FormulaEntity { Id = Guid.NewGuid(), Name = "不存在的验方" };
+        var input = new FormulaInputDto
+        {
+            Id = Guid.NewGuid(),
+            Name = "不存在的验方",
+            Herbs = new List<FormulaHerbItemInputDto>()
+        };
 
         // Act
-        var act = () => dataSource.UpdateAsync(formula);
+        var act = () => dataSource.UpdateAsync(input);
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
@@ -536,7 +542,11 @@ public class LocalFormulaDataSourceTests : IClassFixture<LocalDbContextFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.IsDeleted.Should().BeFalse();
+        result!.Name.Should().Be("已删除待恢复");
+
+        // Verify entity is no longer soft-deleted
+        var restored = await context.Formulas.FindAsync(formula.Id);
+        restored!.IsDeleted.Should().BeFalse();
     }
 
     [Fact]

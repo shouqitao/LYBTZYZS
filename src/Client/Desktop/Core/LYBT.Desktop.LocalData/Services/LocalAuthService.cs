@@ -1,6 +1,7 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.LocalData.Context;
-using LYBT.Entities.Users;
+using LYBT.Desktop.LocalData.Mappers;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,12 +10,12 @@ namespace LYBT.Desktop.LocalData.Services;
 
 /// <summary>
 /// 本地认证服务实现 - BCrypt 密码验证
-/// OpenSpec: implement-local-mode
 /// </summary>
 public class LocalAuthService : ILocalAuthService
 {
     private readonly LocalDbContext _context;
     private readonly ILogger<LocalAuthService> _logger;
+    private readonly LocalUserMapper _mapper = new();
 
     /// <summary>
     /// 最大失败登录次数
@@ -33,7 +34,7 @@ public class LocalAuthService : ILocalAuthService
     }
 
     /// <inheritdoc />
-    public async Task<User?> ValidateAsync(string username, string password, CancellationToken ct = default)
+    public async Task<UserDetailDto?> ValidateAsync(string username, string password, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
@@ -96,7 +97,7 @@ public class LocalAuthService : ILocalAuthService
         _logger.LogInformation("[LocalAuth] 登录成功: {Username} ({RealName})",
             username, user.RealName);
 
-        return user;
+        return _mapper.ToDetailDto(user);
     }
 
     /// <inheritdoc />

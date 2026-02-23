@@ -1,7 +1,8 @@
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.LocalData.Context;
-using LYBT.Entities.Patients;
+using LYBT.Desktop.LocalData.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -15,6 +16,7 @@ public class LocalPatientDataSource : IPatientDataSource
 {
     private readonly LocalDbContext _context;
     private readonly ILogger<LocalPatientDataSource> _logger;
+    private readonly LocalPatientMapper _mapper = new();
 
     public LocalPatientDataSource(LocalDbContext context, ILogger<LocalPatientDataSource> logger)
     {
@@ -22,15 +24,17 @@ public class LocalPatientDataSource : IPatientDataSource
         _logger = logger;
     }
 
-    public async Task<Patient?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<PatientDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] Patient.GetById - Id={Id}", id);
-        return await _context.Patients
+        var entity = await _context.Patients
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id, ct);
+
+        return entity == null ? null : _mapper.ToDetailDto(entity);
     }
 
-    public async Task<(List<Patient> Items, int Total)> GetPagedAsync(
+    public async Task<(List<PatientDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword = null,
@@ -59,34 +63,54 @@ public class LocalPatientDataSource : IPatientDataSource
             .ToListAsync(ct);
 
         _logger.LogDebug("[LocalDataSource] Patient.GetPaged - Total={Total}, Items={Count}", total, items.Count);
-        return (items, total);
+        return (items.Select(e => _mapper.ToDetailDto(e)).ToList(), total);
     }
 
-    public async Task<Patient> CreateAsync(Patient entity, CancellationToken ct = default)
+    public async Task<PatientDetailDto> CreateAsync(PatientInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[LocalDataSource] Patient.Create - Name={Name}", entity.Name);
+        _logger.LogInformation("[LocalDataSource] Patient.Create - Name={Name}", input.Name);
 
+        var entity = _mapper.ToEntity(input);
         entity.Id = Guid.NewGuid();
+        entity.CreatedAt = DateTime.Now;
+
         _context.Patients.Add(entity);
         await _context.SaveChangesAsync(ct);
 
         _logger.LogInformation("[LocalDataSource] Patient.Create completed - Id={Id}", entity.Id);
-        return entity;
+        return _mapper.ToDetailDto(entity);
     }
 
-    public async Task<Patient> UpdateAsync(Patient entity, CancellationToken ct = default)
+    public async Task<PatientDetailDto> UpdateAsync(PatientInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[LocalDataSource] Patient.Update - Id={Id}", entity.Id);
+        var id = input.Id ?? throw new InvalidOperationException("更新患者时必须提供ID");
+        _logger.LogInformation("[LocalDataSource] Patient.Update - Id={Id}", id);
 
-        var existing = await _context.Patients.FindAsync([entity.Id], ct)
-            ?? throw new InvalidOperationException($"患者不存在: {entity.Id}");
+        var existing = await _context.Patients.FindAsync([id], ct)
+            ?? throw new InvalidOperationException($"患者不存在: {id}");
 
-        // 更新属性
-        _context.Entry(existing).CurrentValues.SetValues(entity);
+        // 更新可变字段
+        existing.Name = input.Name;
+        existing.PinYinCode = input.PinYinCode;
+        existing.Gender = input.Gender;
+        existing.BirthDate = input.BirthDate;
+        existing.IdNumber = input.IdNumber;
+        existing.PhoneNumber = input.PhoneNumber;
+        existing.Address = input.Address;
+        existing.AllergyHistory = input.AllergyHistory;
+        existing.MedicalHistory = input.MedicalHistory;
+        existing.MaritalStatus = input.MaritalStatus;
+        existing.IdType = input.IdType;
+        existing.BloodType = input.BloodType;
+        existing.EmergencyContactName = input.EmergencyContactName;
+        existing.EmergencyContactPhone = input.EmergencyContactPhone;
+        existing.EmergencyContactRelation = input.EmergencyContactRelation;
+        existing.UpdatedAt = DateTime.Now;
+
         await _context.SaveChangesAsync(ct);
 
-        _logger.LogInformation("[LocalDataSource] Patient.Update completed - Id={Id}", entity.Id);
-        return existing;
+        _logger.LogInformation("[LocalDataSource] Patient.Update completed - Id={Id}", existing.Id);
+        return _mapper.ToDetailDto(existing);
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
@@ -108,14 +132,14 @@ public class LocalPatientDataSource : IPatientDataSource
         return true;
     }
 
-    public async Task<List<Patient>> SearchAsync(string keyword, CancellationToken ct = default)
+    public async Task<List<PatientDetailDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] Patient.Search - Keyword={Keyword}", keyword);
 
         if (string.IsNullOrWhiteSpace(keyword))
-            return new List<Patient>();
+            return new List<PatientDetailDto>();
 
-        return await _context.Patients
+        var entities = await _context.Patients
             .AsNoTracking()
             .Where(p =>
                 p.Name.Contains(keyword) ||
@@ -125,9 +149,11 @@ public class LocalPatientDataSource : IPatientDataSource
             .OrderByDescending(p => p.CreatedAt)
             .Take(100)
             .ToListAsync(ct);
+
+        return entities.Select(e => _mapper.ToDetailDto(e)).ToList();
     }
 
-    public async Task<Patient?> GetByIdNumberAsync(string idNumber, CancellationToken ct = default)
+    public async Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] Patient.GetByIdNumber - IdNumber={IdNumber}",
             idNumber.Length > 6 ? idNumber[..6] + "****" : idNumber);
@@ -135,12 +161,14 @@ public class LocalPatientDataSource : IPatientDataSource
         if (string.IsNullOrWhiteSpace(idNumber))
             return null;
 
-        return await _context.Patients
+        var entity = await _context.Patients
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.IdNumber == idNumber, ct);
+
+        return entity == null ? null : _mapper.ToDetailDto(entity);
     }
 
-    public async Task<Patient?> RestoreAsync(Guid id, CancellationToken ct = default)
+    public async Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogInformation("[LocalDataSource] Patient.Restore - Id={Id}", id);
 
@@ -158,7 +186,7 @@ public class LocalPatientDataSource : IPatientDataSource
         await _context.SaveChangesAsync(ct);
 
         _logger.LogInformation("[LocalDataSource] Patient.Restore completed - Id={Id}", id);
-        return entity;
+        return _mapper.ToDetailDto(entity);
     }
 
     public async Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)

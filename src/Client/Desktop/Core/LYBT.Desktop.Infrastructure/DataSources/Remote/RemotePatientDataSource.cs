@@ -1,22 +1,20 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
-using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
+using Riok.Mapperly.Abstractions;
 
 namespace LYBT.Desktop.Infrastructure.DataSources.Remote;
 
 /// <summary>
 /// 远程患者数据源实现 - 调用 WebAPI
-/// OpenSpec: implement-local-mode
 /// </summary>
 public class RemotePatientDataSource : IPatientDataSource
 {
     private readonly IPatientApi _api;
     private readonly ILogger<RemotePatientDataSource> _logger;
-    private readonly PatientDataSourceMapper _mapper = new();
+    private readonly PatientListToDetailMapper _listMapper = new();
 
     public RemotePatientDataSource(IPatientApi api, ILogger<RemotePatientDataSource> logger)
     {
@@ -24,7 +22,7 @@ public class RemotePatientDataSource : IPatientDataSource
         _logger = logger;
     }
 
-    public async Task<Patient?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<PatientDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] Patient.GetById - Id={Id}", id);
 
@@ -36,7 +34,7 @@ public class RemotePatientDataSource : IPatientDataSource
                 _logger.LogWarning("[RemoteDataSource] Patient.GetById - NotFound: {Id}", id);
                 return null;
             }
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -45,7 +43,7 @@ public class RemotePatientDataSource : IPatientDataSource
         }
     }
 
-    public async Task<(List<Patient> Items, int Total)> GetPagedAsync(
+    public async Task<(List<PatientDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword = null,
@@ -58,10 +56,10 @@ public class RemotePatientDataSource : IPatientDataSource
             var response = await _api.GetPatientsAsync(page, pageSize, keyword);
             if (response.Data == null)
             {
-                return (new List<Patient>(), 0);
+                return (new List<PatientDetailDto>(), 0);
             }
 
-            var items = response.Data.Items.Select(_mapper.ToEntity).ToList();
+            var items = response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
             return (items, response.Data.TotalCount);
         }
         catch (Exception ex)
@@ -71,21 +69,20 @@ public class RemotePatientDataSource : IPatientDataSource
         }
     }
 
-    public async Task<Patient> CreateAsync(Patient entity, CancellationToken ct = default)
+    public async Task<PatientDetailDto> CreateAsync(PatientInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] Patient.Create - Name={Name}", entity.Name);
+        _logger.LogInformation("[RemoteDataSource] Patient.Create - Name={Name}", input.Name);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            var response = await _api.CreatePatientAsync(inputDto);
+            var response = await _api.CreatePatientAsync(input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "创建患者失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -94,26 +91,24 @@ public class RemotePatientDataSource : IPatientDataSource
         }
     }
 
-    public async Task<Patient> UpdateAsync(Patient entity, CancellationToken ct = default)
+    public async Task<PatientDetailDto> UpdateAsync(PatientInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] Patient.Update - Id={Id}", entity.Id);
+        _logger.LogInformation("[RemoteDataSource] Patient.Update - Id={Id}", input.Id);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            inputDto.Id = entity.Id;
-            var response = await _api.UpdatePatientAsync(entity.Id, inputDto);
+            var response = await _api.UpdatePatientAsync(input.Id!.Value, input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "更新患者失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[RemoteDataSource] Patient.Update failed - Id={Id}", entity.Id);
+            _logger.LogError(ex, "[RemoteDataSource] Patient.Update failed - Id={Id}", input.Id);
             throw;
         }
     }
@@ -134,7 +129,7 @@ public class RemotePatientDataSource : IPatientDataSource
         }
     }
 
-    public async Task<List<Patient>> SearchAsync(string keyword, CancellationToken ct = default)
+    public async Task<List<PatientDetailDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] Patient.Search - Keyword={Keyword}", keyword);
 
@@ -143,10 +138,10 @@ public class RemotePatientDataSource : IPatientDataSource
             var response = await _api.GetPatientsAsync(1, 100, keyword);
             if (response.Data == null)
             {
-                return new List<Patient>();
+                return new List<PatientDetailDto>();
             }
 
-            return response.Data.Items.Select(_mapper.ToEntity).ToList();
+            return response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
         }
         catch (Exception ex)
         {
@@ -155,18 +150,17 @@ public class RemotePatientDataSource : IPatientDataSource
         }
     }
 
-    public async Task<Patient?> GetByIdNumberAsync(string idNumber, CancellationToken ct = default)
+    public async Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] Patient.GetByIdNumber");
 
         try
         {
-            // 使用身份证号搜索
             var candidates = await SearchAsync(idNumber, ct);
             if (candidates.Count == 0)
                 return null;
 
-            // 精确匹配
+            // 精确匹配 - 列表DTO没有IdNumber, 需要获取详情
             foreach (var candidate in candidates)
             {
                 var detail = await GetByIdAsync(candidate.Id, ct);
@@ -185,7 +179,7 @@ public class RemotePatientDataSource : IPatientDataSource
         }
     }
 
-    public async Task<Patient?> RestoreAsync(Guid id, CancellationToken ct = default)
+    public async Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogInformation("[RemoteDataSource] Patient.Restore - Id={Id}", id);
 
@@ -198,7 +192,7 @@ public class RemotePatientDataSource : IPatientDataSource
                 return null;
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -239,4 +233,26 @@ public class RemotePatientDataSource : IPatientDataSource
             };
         }
     }
+}
+
+/// <summary>
+/// PatientListDto -> PatientDetailDto 映射器 (仅限 DTO 间转换, 无 Entity 依赖)
+/// </summary>
+[Mapper]
+internal partial class PatientListToDetailMapper
+{
+    [MapperIgnoreTarget(nameof(PatientDetailDto.BirthDate))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.IdNumber))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.MaritalStatus))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.IdType))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.BloodType))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.AllergyHistory))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.MedicalHistory))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.EmergencyContactName))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.EmergencyContactPhone))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.EmergencyContactRelation))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.DisableReason))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(PatientDetailDto.CreatedBy))]
+    public partial PatientDetailDto ToDetailDto(PatientListDto listDto);
 }

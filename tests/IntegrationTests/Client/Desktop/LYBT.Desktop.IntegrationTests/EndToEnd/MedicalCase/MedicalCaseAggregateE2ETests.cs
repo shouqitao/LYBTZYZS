@@ -1,15 +1,12 @@
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.IntegrationTests.LocalMode.Fixtures;
 using LYBT.Desktop.LocalData.Context;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
-// 类型别名: 避免命名空间段 "MedicalCase"/"Prescription" 与实体类型冲突
-using MedicalCaseEntity = global::LYBT.Entities.MedicalCases.MedicalCase;
-using ConsultationEntity = global::LYBT.Entities.Consultations.Consultation;
-using PrescriptionEntity = global::LYBT.Entities.Prescriptions.Prescription;
-using PrescriptionItemEntity = global::LYBT.Entities.Prescriptions.PrescriptionItem;
 
 namespace LYBT.Desktop.IntegrationTests.EndToEnd.MedicalCase;
 
@@ -17,7 +14,7 @@ namespace LYBT.Desktop.IntegrationTests.EndToEnd.MedicalCase;
 /// 医案聚合根持久化深度测试
 /// 验证 MedicalCase 作为 DDD 聚合根，管理 Consultation（1:1 共享主键）和 Prescription（1:0..1）的完整生命周期
 ///
-/// 测试层级: DataSource 层（LocalMedicalCaseDataSource → LocalDbContext → SQLite InMemory）
+/// 测试层级: DataSource 层（LocalMedicalCaseDataSource -> LocalDbContext -> SQLite InMemory）
 /// 夹具: LocalModeTestFixture（轻量级 DI 容器，不依赖 ViewModel/Prism）
 /// </summary>
 public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
@@ -45,35 +42,32 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
     }
 
     /// <summary>
-    /// 构建测试用医案实体（不含 Consultation 和 Prescription）
+    /// 构建测试用医案输入DTO（不含 Consultation 和 Prescription）
     /// </summary>
-    private static MedicalCaseEntity BuildBaseMedicalCase(
+    private static MedicalCaseInputDto BuildBaseMedicalCaseInput(
         Guid? patientId = null,
         Guid? userId = null,
         string patientName = "测试患者",
         string doctorName = "测试医生")
     {
-        return new MedicalCaseEntity
+        return new MedicalCaseInputDto
         {
             PatientId = patientId ?? Guid.NewGuid(),
-            PatientName = patientName,
             UserId = userId ?? Guid.NewGuid(),
-            DoctorName = doctorName,
-            CaseStatus = MedicalCaseStatus.Active,
         };
     }
 
     /// <summary>
-    /// 构建测试用诊断实体
+    /// 构建测试用诊断输入DTO
     /// 四诊合参：现病史、舌诊、脉诊、中医辨证
     /// </summary>
-    private static ConsultationEntity BuildConsultation(
+    private static ConsultationInputDto BuildConsultationInput(
         string presentIllness = "头痛三天，伴眩晕",
         string tongueDiagnosis = "舌淡苔白",
         string pulseDiagnosis = "脉细弱",
         string tcmDiagnosis = "气虚头痛")
     {
-        return new ConsultationEntity
+        return new ConsultationInputDto
         {
             PresentIllness = presentIllness,
             TongueDiagnosis = tongueDiagnosis,
@@ -83,12 +77,12 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
     }
 
     /// <summary>
-    /// 构建测试用处方实体（含药材明细）
+    /// 构建测试用处方输入DTO（含药材明细）
     /// 标准中药处方：帖数、用法、医嘱、药材项
     /// </summary>
-    private static PrescriptionEntity BuildPrescription(List<PrescriptionItemEntity>? items = null)
+    private static PrescriptionInputDto BuildPrescriptionInput(List<PrescriptionItemInputDto>? items = null)
     {
-        var defaultItems = items ?? new List<PrescriptionItemEntity>
+        var defaultItems = items ?? new List<PrescriptionItemInputDto>
         {
             new()
             {
@@ -119,7 +113,7 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
             },
         };
 
-        return new PrescriptionEntity
+        return new PrescriptionInputDto
         {
             DosageCount = 7,           // 7帖
             Discount = 1.0m,
@@ -127,6 +121,58 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
             Advice = "忌辛辣生冷，注意休息",
             Items = defaultItems,
         };
+    }
+
+    /// <summary>
+    /// 将 MedicalCaseDetailDto 转换为 MedicalCaseInputDto（用于 UpdateAsync 调用）
+    /// </summary>
+    private static MedicalCaseInputDto ToInputDto(MedicalCaseDetailDto detail)
+    {
+        var input = new MedicalCaseInputDto
+        {
+            Id = detail.Id,
+            PatientId = detail.PatientId,
+            UserId = detail.UserId,
+            NeedsPrescription = detail.HasPrescription ? true : null,
+        };
+
+        if (detail.Consultation != null)
+        {
+            input.Consultation = new ConsultationInputDto
+            {
+                PresentIllness = detail.Consultation.PresentIllness,
+                TongueDiagnosis = detail.Consultation.TongueDiagnosis,
+                PulseDiagnosis = detail.Consultation.PulseDiagnosis,
+                TcmDiagnosis = detail.Consultation.TcmDiagnosis,
+            };
+        }
+
+        if (detail.Prescription != null)
+        {
+            input.NeedsPrescription = true;
+            input.Prescription = new PrescriptionInputDto
+            {
+                Id = detail.Prescription.Id,
+                MedicalCaseId = detail.Prescription.MedicalCaseId,
+                DosageCount = detail.Prescription.DosageCount,
+                Discount = detail.Prescription.Discount,
+                Usage = detail.Prescription.Usage,
+                Advice = detail.Prescription.Advice,
+                ReferencedFormulas = detail.Prescription.ReferencedFormulas,
+                Items = detail.Prescription.Items.Select(i => new PrescriptionItemInputDto
+                {
+                    Id = i.Id,
+                    HerbId = i.HerbId,
+                    HerbName = i.HerbName,
+                    Dosage = i.Dosage,
+                    Unit = i.Unit,
+                    UnitPrice = i.UnitPrice,
+                    DecocteMethod = i.DecocteMethod,
+                }).ToList(),
+            };
+        }
+
+        return input;
     }
 
     #endregion
@@ -139,8 +185,8 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Arrange
         var (_, ds, db) = CreateTestContext();
 
-        var mc = BuildBaseMedicalCase();
-        mc.Consultation = BuildConsultation();
+        var mc = BuildBaseMedicalCaseInput();
+        mc.Consultation = BuildConsultationInput();
 
         // Act - 通过 DataSource 创建（聚合根入口）
         var created = await ds.CreateAsync(mc);
@@ -179,9 +225,10 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Arrange
         var (_, ds, db) = CreateTestContext();
 
-        var mc = BuildBaseMedicalCase();
-        mc.Consultation = BuildConsultation();
-        mc.Prescription = BuildPrescription();
+        var mc = BuildBaseMedicalCaseInput();
+        mc.Consultation = BuildConsultationInput();
+        mc.NeedsPrescription = true;
+        mc.Prescription = BuildPrescriptionInput();
 
         // Act
         var created = await ds.CreateAsync(mc);
@@ -240,8 +287,8 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Arrange - 先创建带诊断的医案
         var (_, ds, db) = CreateTestContext();
 
-        var mc = BuildBaseMedicalCase();
-        mc.Consultation = BuildConsultation(
+        var mc = BuildBaseMedicalCaseInput();
+        mc.Consultation = BuildConsultationInput(
             presentIllness: "初诊：头痛三天",
             tongueDiagnosis: "舌红苔黄",
             pulseDiagnosis: "脉弦数",
@@ -252,13 +299,14 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         var toUpdate = await ds.GetWithDetailsAsync(created.Id);
         toUpdate.Should().NotBeNull();
 
-        // 更新四诊字段 - 中医辨证论治核心
-        toUpdate!.Consultation!.PresentIllness = "复诊：头痛减轻，仍有眩晕";
-        toUpdate.Consultation.TongueDiagnosis = "舌淡红苔薄白";
-        toUpdate.Consultation.PulseDiagnosis = "脉弦";
-        toUpdate.Consultation.TcmDiagnosis = "肝阳上亢（好转）";
+        // 转换为 InputDto 并更新四诊字段
+        var updateInput = ToInputDto(toUpdate!);
+        updateInput.Consultation!.PresentIllness = "复诊：头痛减轻，仍有眩晕";
+        updateInput.Consultation.TongueDiagnosis = "舌淡红苔薄白";
+        updateInput.Consultation.PulseDiagnosis = "脉弦";
+        updateInput.Consultation.TcmDiagnosis = "肝阳上亢（好转）";
 
-        await ds.UpdateAsync(toUpdate);
+        await ds.UpdateAsync(updateInput);
 
         // Assert - 验证更新持久化
         var dbMc = await db.MedicalCases
@@ -290,9 +338,10 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Arrange - 创建带处方的医案
         var (_, ds, db) = CreateTestContext();
 
-        var mc = BuildBaseMedicalCase();
-        mc.Consultation = BuildConsultation();
-        mc.Prescription = BuildPrescription(); // 初始3味药：黄芪、当归、川芎
+        var mc = BuildBaseMedicalCaseInput();
+        mc.Consultation = BuildConsultationInput();
+        mc.NeedsPrescription = true;
+        mc.Prescription = BuildPrescriptionInput(); // 初始3味药：黄芪、当归、川芎
         var created = await ds.CreateAsync(mc);
 
         // 记录原始处方项 ID（用于验证删除）
@@ -305,7 +354,7 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         toUpdate.Should().NotBeNull();
 
         // 新处方药材：补中益气汤加减
-        var newItems = new List<PrescriptionItemEntity>
+        var newItems = new List<PrescriptionItemInputDto>
         {
             new()
             {
@@ -327,11 +376,12 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
             },
         };
 
-        toUpdate!.Prescription!.Items = newItems;
-        toUpdate.Prescription.DosageCount = 14;   // 帖数调整为14帖
-        toUpdate.Prescription.Usage = "每日一剂，水煎服，饭前温服";
+        var updateInput = ToInputDto(toUpdate!);
+        updateInput.Prescription!.Items = newItems;
+        updateInput.Prescription.DosageCount = 14;   // 帖数调整为14帖
+        updateInput.Prescription.Usage = "每日一剂，水煎服，饭前温服";
 
-        await ds.UpdateAsync(toUpdate);
+        await ds.UpdateAsync(updateInput);
 
         // Assert - 验证处方项完全替换
         var dbMc = await db.MedicalCases
@@ -381,15 +431,15 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         var (_, ds, _) = CreateTestContext();
 
         // Act - 创建第一个医案
-        var mc1 = BuildBaseMedicalCase();
+        var mc1 = BuildBaseMedicalCaseInput();
         var created1 = await ds.CreateAsync(mc1);
 
         // Act - 创建第二个医案
-        var mc2 = BuildBaseMedicalCase();
+        var mc2 = BuildBaseMedicalCaseInput();
         var created2 = await ds.CreateAsync(mc2);
 
         // Act - 创建第三个医案
-        var mc3 = BuildBaseMedicalCase();
+        var mc3 = BuildBaseMedicalCaseInput();
         var created3 = await ds.CreateAsync(mc3);
 
         // Assert - 编号格式: MC + YYYYMMDD + 3位序号
@@ -414,10 +464,10 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         var (_, ds, _) = CreateTestContext();
 
         // Act
-        var cases = new List<MedicalCaseEntity>();
+        var cases = new List<MedicalCaseDetailDto>();
         for (int i = 0; i < 5; i++)
         {
-            var mc = BuildBaseMedicalCase(patientName: $"序号测试患者{i + 1}");
+            var mc = BuildBaseMedicalCaseInput();
             cases.Add(await ds.CreateAsync(mc));
         }
 
@@ -444,11 +494,12 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         var userId = Guid.NewGuid();
 
         // 首诊医案
-        var mc1 = BuildBaseMedicalCase(patientId: patientId, userId: userId, patientName: "张三");
-        mc1.Consultation = BuildConsultation(
+        var mc1 = BuildBaseMedicalCaseInput(patientId: patientId, userId: userId);
+        mc1.Consultation = BuildConsultationInput(
             presentIllness: "首诊：咳嗽一周",
             tcmDiagnosis: "风寒犯肺");
-        mc1.Prescription = BuildPrescription(new List<PrescriptionItemEntity>
+        mc1.NeedsPrescription = true;
+        mc1.Prescription = BuildPrescriptionInput(new List<PrescriptionItemInputDto>
         {
             new()
             {
@@ -461,11 +512,12 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         });
 
         // 复诊医案（同一患者，不同诊断）
-        var mc2 = BuildBaseMedicalCase(patientId: patientId, userId: userId, patientName: "张三");
-        mc2.Consultation = BuildConsultation(
+        var mc2 = BuildBaseMedicalCaseInput(patientId: patientId, userId: userId);
+        mc2.Consultation = BuildConsultationInput(
             presentIllness: "复诊：咳嗽减轻，转为干咳",
             tcmDiagnosis: "阴虚燥咳");
-        mc2.Prescription = BuildPrescription(new List<PrescriptionItemEntity>
+        mc2.NeedsPrescription = true;
+        mc2.Prescription = BuildPrescriptionInput(new List<PrescriptionItemInputDto>
         {
             new()
             {
@@ -538,9 +590,9 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Arrange - 仅诊断、不开方的医案（中医常见：先诊断，后续再决定是否开方）
         var (_, ds, db) = CreateTestContext();
 
-        var mc = BuildBaseMedicalCase();
+        var mc = BuildBaseMedicalCaseInput();
         mc.NeedsPrescription = false;
-        mc.Consultation = BuildConsultation(
+        mc.Consultation = BuildConsultationInput(
             presentIllness: "失眠一月",
             tcmDiagnosis: "心脾两虚");
         // 明确不附加 Prescription 对象
@@ -579,9 +631,9 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Arrange - 未标记是否需要处方（用户还未做决策的中间状态）
         var (_, ds, db) = CreateTestContext();
 
-        var mc = BuildBaseMedicalCase();
+        var mc = BuildBaseMedicalCaseInput();
         mc.NeedsPrescription = null; // 未决策
-        mc.Consultation = BuildConsultation(tcmDiagnosis: "待辨证");
+        mc.Consultation = BuildConsultationInput(tcmDiagnosis: "待辨证");
         // 不附加 Prescription
 
         // Act
@@ -608,8 +660,7 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Arrange - DataSource.CreateAsync 内部会将状态设为 Draft
         var (_, ds, _) = CreateTestContext();
 
-        var mc = BuildBaseMedicalCase();
-        mc.CaseStatus = MedicalCaseStatus.Active; // 显式设置为 Active
+        var mc = BuildBaseMedicalCaseInput();
 
         // Act
         var created = await ds.CreateAsync(mc);
@@ -625,9 +676,10 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Arrange - 创建完整聚合（MedicalCase + Consultation + Prescription + Items）
         var (_, ds, _) = CreateTestContext();
 
-        var mc = BuildBaseMedicalCase(patientName: "聚合完整性测试");
-        mc.Consultation = BuildConsultation();
-        mc.Prescription = BuildPrescription();
+        var mc = BuildBaseMedicalCaseInput();
+        mc.Consultation = BuildConsultationInput();
+        mc.NeedsPrescription = true;
+        mc.Prescription = BuildPrescriptionInput();
         var created = await ds.CreateAsync(mc);
 
         // Act - 通过 GetWithDetailsAsync 加载完整聚合
@@ -635,9 +687,8 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
 
         // Assert - 验证所有导航属性均已加载
         detail.Should().NotBeNull();
-        detail!.PatientName.Should().Be("聚合完整性测试");
 
-        detail.Consultation.Should().NotBeNull("Consultation 应通过 Include 加载");
+        detail!.Consultation.Should().NotBeNull("Consultation 应通过 Include 加载");
         detail.Consultation!.Id.Should().Be(detail.Id, "共享主键验证");
 
         detail.Prescription.Should().NotBeNull("Prescription 应通过 Include 加载");
@@ -653,8 +704,8 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Arrange - 先创建仅有诊断的医案（后续再开方的常见场景）
         var (_, ds, db) = CreateTestContext();
 
-        var mc = BuildBaseMedicalCase();
-        mc.Consultation = BuildConsultation(tcmDiagnosis: "脾虚湿盛");
+        var mc = BuildBaseMedicalCaseInput();
+        mc.Consultation = BuildConsultationInput(tcmDiagnosis: "脾虚湿盛");
         // 初始不带处方
         var created = await ds.CreateAsync(mc);
 
@@ -663,12 +714,14 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         initial!.Prescription.Should().BeNull("初始创建时无处方");
 
         // Act - 后续追加处方（医生复查后决定开方）
-        var toUpdate = await ds.GetWithDetailsAsync(created.Id);
-        toUpdate!.Prescription = new PrescriptionEntity
+        var updateInput = ToInputDto(initial);
+        updateInput.NeedsPrescription = true;
+        updateInput.Prescription = new PrescriptionInputDto
         {
+            MedicalCaseId = created.Id,
             DosageCount = 7,
             Usage = "每日一剂，水煎服",
-            Items = new List<PrescriptionItemEntity>
+            Items = new List<PrescriptionItemInputDto>
             {
                 new()
                 {
@@ -689,7 +742,7 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
             }
         };
 
-        await ds.UpdateAsync(toUpdate);
+        await ds.UpdateAsync(updateInput);
 
         // Assert - 处方已添加
         var dbMc = await db.MedicalCases

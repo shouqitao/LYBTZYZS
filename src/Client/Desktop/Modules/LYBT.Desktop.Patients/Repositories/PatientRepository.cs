@@ -1,6 +1,5 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -17,7 +16,6 @@ namespace LYBT.Desktop.Patients.Repositories
         private readonly IPatientDataSource _dataSource;
         private readonly IPatientApi? _api; // 可选，仅用于批量导入/导出（Remote 模式特有功能）
         private readonly ILogger<PatientRepository> _logger;
-        private readonly PatientDataSourceMapper _mapper = new();
 
         /// <summary>
         /// 初始化 PatientRepository
@@ -90,14 +88,13 @@ namespace LYBT.Desktop.Patients.Repositories
             {
                 _logger.LogDebug("[REPO] Patient.GetById started - Id={Id}", id);
 
-                var entity = await _dataSource.GetByIdAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.GetByIdAsync(id);
+                if (dto == null)
                 {
                     _logger.LogWarning("[REPO] Patient.GetById → NotFound - Id={Id}", id);
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogDebug("[REPO] Patient.GetById completed - Id={Id}", id);
                 return dto;
             }
@@ -120,9 +117,7 @@ namespace LYBT.Desktop.Patients.Repositories
             {
                 _logger.LogInformation("[REPO] Patient.Create started");
 
-                var entity = _mapper.ToEntity(patient);
-                var created = await _dataSource.CreateAsync(entity);
-                var dto = _mapper.ToDetailDto(created);
+                var dto = await _dataSource.CreateAsync(patient);
 
                 _logger.LogInformation("[REPO] Patient.Create completed - Id={Id}", dto.Id);
                 return dto;
@@ -149,9 +144,7 @@ namespace LYBT.Desktop.Patients.Repositories
             {
                 _logger.LogInformation("[REPO] Patient.Update started - Id={Id}", patient.Id);
 
-                var entity = _mapper.ToEntity(patient);
-                var updated = await _dataSource.UpdateAsync(entity);
-                var dto = _mapper.ToDetailDto(updated);
+                var dto = await _dataSource.UpdateAsync(patient);
 
                 _logger.LogInformation("[REPO] Patient.Update completed - Id={Id}", dto.Id);
                 return dto;
@@ -244,14 +237,13 @@ namespace LYBT.Desktop.Patients.Repositories
             {
                 _logger.LogInformation("根据身份证号查询患者：{IdNumber}", idNumber[..Math.Min(6, idNumber.Length)] + "****");
 
-                var entity = await _dataSource.GetByIdNumberAsync(idNumber);
-                if (entity == null)
+                var dto = await _dataSource.GetByIdNumberAsync(idNumber);
+                if (dto == null)
                 {
                     _logger.LogInformation("未找到匹配的患者");
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("找到匹配患者：{PatientId}, {Name}", dto.Id, dto.Name);
                 return dto;
             }
@@ -371,14 +363,13 @@ namespace LYBT.Desktop.Patients.Repositories
             {
                 _logger.LogInformation("恢复患者：{Id}", id);
 
-                var entity = await _dataSource.RestoreAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.RestoreAsync(id);
+                if (dto == null)
                 {
                     _logger.LogError("恢复患者失败：{Id}", id);
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("患者已恢复：{Id}", id);
                 return dto;
             }

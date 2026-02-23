@@ -2,7 +2,6 @@ using System.IO;
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
 using LYBT.Desktop.Infrastructure.DataSources.Remote;
 using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.DataSources;
@@ -44,8 +43,6 @@ public static class DataSourceRegistrationExtensions
             RegisterLocalDataSources(containerRegistry);
         }
 
-        // DataSource Mapper 统一注册（Remote 模式需要）
-        RegisterDataSourceMappers(containerRegistry);
     }
 
     /// <summary>
@@ -88,18 +85,6 @@ public static class DataSourceRegistrationExtensions
         containerRegistry.Register<IFormulaDataSource, LocalFormulaDataSource>();
         containerRegistry.Register<IMedicalCaseDataSource, LocalMedicalCaseDataSource>();
         containerRegistry.Register<IUserDataSource, LocalUserDataSource>();
-    }
-
-    /// <summary>
-    /// 注册 DataSource Mapper（DTO ↔ Entity 映射）
-    /// </summary>
-    private static void RegisterDataSourceMappers(IContainerRegistry containerRegistry)
-    {
-        containerRegistry.RegisterSingleton<PatientDataSourceMapper>();
-        containerRegistry.RegisterSingleton<HerbDataSourceMapper>();
-        containerRegistry.RegisterSingleton<FormulaDataSourceMapper>();
-        containerRegistry.RegisterSingleton<MedicalCaseDataSourceMapper>();
-        containerRegistry.RegisterSingleton<UserDataSourceMapper>();
     }
 
     /// <summary>

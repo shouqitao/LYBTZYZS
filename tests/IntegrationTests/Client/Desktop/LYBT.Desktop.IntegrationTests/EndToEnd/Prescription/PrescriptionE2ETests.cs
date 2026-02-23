@@ -1,15 +1,14 @@
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.IntegrationTests.LocalMode.Fixtures;
 using LYBT.Desktop.LocalData.Context;
-using LYBT.Entities.Herbs;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using FormulaEntity = LYBT.Entities.Formulas.Formula;
-using FormulaHerbItemEntity = LYBT.Entities.Formulas.FormulaHerbItem;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
-using PrescriptionItemEntity = LYBT.Entities.Prescriptions.PrescriptionItem;
 
 namespace LYBT.Desktop.IntegrationTests.EndToEnd.Prescription;
 
@@ -32,12 +31,12 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
     /// <summary>
     /// 创建测试用药材（处方项需要引用真实的 HerbId）
     /// </summary>
-    private static async Task<List<Herb>> SeedHerbsAsync(IHerbDataSource herbDataSource)
+    private static async Task<List<HerbDetailDto>> SeedHerbsAsync(IHerbDataSource herbDataSource)
     {
-        var herbs = new List<Herb>();
+        var herbs = new List<HerbDetailDto>();
 
         // 黄芪 - 补气药
-        herbs.Add(await herbDataSource.CreateAsync(new Herb
+        herbs.Add(await herbDataSource.CreateAsync(new HerbInputDto
         {
             Name = "黄芪",
             PinYinCode = "HQ",
@@ -48,7 +47,7 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         }));
 
         // 党参 - 补气药
-        herbs.Add(await herbDataSource.CreateAsync(new Herb
+        herbs.Add(await herbDataSource.CreateAsync(new HerbInputDto
         {
             Name = "党参",
             PinYinCode = "DS",
@@ -59,7 +58,7 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         }));
 
         // 白术 - 补气药
-        herbs.Add(await herbDataSource.CreateAsync(new Herb
+        herbs.Add(await herbDataSource.CreateAsync(new HerbInputDto
         {
             Name = "白术",
             PinYinCode = "BZ",
@@ -70,7 +69,7 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         }));
 
         // 当归 - 补血药
-        herbs.Add(await herbDataSource.CreateAsync(new Herb
+        herbs.Add(await herbDataSource.CreateAsync(new HerbInputDto
         {
             Name = "当归",
             PinYinCode = "DG",
@@ -81,7 +80,7 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         }));
 
         // 附子 - 温里药（先煎）
-        herbs.Add(await herbDataSource.CreateAsync(new Herb
+        herbs.Add(await herbDataSource.CreateAsync(new HerbInputDto
         {
             Name = "附子",
             PinYinCode = "FZ",
@@ -95,24 +94,22 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
     }
 
     /// <summary>
-    /// 创建包含处方的医案
+    /// 创建包含处方的医案输入DTO
     /// </summary>
-    private static MedicalCaseEntity BuildMedicalCaseWithPrescription(
+    private static MedicalCaseInputDto BuildMedicalCaseWithPrescription(
         Guid patientId,
         Guid userId,
-        List<PrescriptionItemEntity> items,
+        List<PrescriptionItemInputDto> items,
         int dosageCount = 7,
         string? usage = "每日一剂，水煎服",
         string? referencedFormulas = null)
     {
-        return new MedicalCaseEntity
+        return new MedicalCaseInputDto
         {
             PatientId = patientId,
-            PatientName = "处方测试患者",
             UserId = userId,
-            DoctorName = "处方测试医生",
             NeedsPrescription = true,
-            Prescription = new PrescriptionEntity
+            Prescription = new PrescriptionInputDto
             {
                 DosageCount = dosageCount,
                 Usage = usage,
@@ -121,6 +118,58 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
                 Items = items
             }
         };
+    }
+
+    /// <summary>
+    /// 将 MedicalCaseDetailDto 转换为 MedicalCaseInputDto（用于 UpdateAsync 调用）
+    /// </summary>
+    private static MedicalCaseInputDto ToInputDto(MedicalCaseDetailDto detail)
+    {
+        var input = new MedicalCaseInputDto
+        {
+            Id = detail.Id,
+            PatientId = detail.PatientId,
+            UserId = detail.UserId,
+            NeedsPrescription = detail.HasPrescription ? true : null,
+        };
+
+        if (detail.Consultation != null)
+        {
+            input.Consultation = new ConsultationInputDto
+            {
+                PresentIllness = detail.Consultation.PresentIllness,
+                TongueDiagnosis = detail.Consultation.TongueDiagnosis,
+                PulseDiagnosis = detail.Consultation.PulseDiagnosis,
+                TcmDiagnosis = detail.Consultation.TcmDiagnosis,
+            };
+        }
+
+        if (detail.Prescription != null)
+        {
+            input.NeedsPrescription = true;
+            input.Prescription = new PrescriptionInputDto
+            {
+                Id = detail.Prescription.Id,
+                MedicalCaseId = detail.Prescription.MedicalCaseId,
+                DosageCount = detail.Prescription.DosageCount,
+                Discount = detail.Prescription.Discount,
+                Usage = detail.Prescription.Usage,
+                Advice = detail.Prescription.Advice,
+                ReferencedFormulas = detail.Prescription.ReferencedFormulas,
+                Items = detail.Prescription.Items.Select(i => new PrescriptionItemInputDto
+                {
+                    Id = i.Id,
+                    HerbId = i.HerbId,
+                    HerbName = i.HerbName,
+                    Dosage = i.Dosage,
+                    Unit = i.Unit,
+                    UnitPrice = i.UnitPrice,
+                    DecocteMethod = i.DecocteMethod,
+                }).ToList(),
+            };
+        }
+
+        return input;
     }
 
     #endregion
@@ -143,7 +192,7 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         var userId = Guid.NewGuid();
 
         // 构建处方项 - 三味药组成（四君子汤基础方去甘草）
-        var items = new List<PrescriptionItemEntity>
+        var items = new List<PrescriptionItemInputDto>
         {
             new()
             {
@@ -228,7 +277,7 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         var userId = Guid.NewGuid();
 
         // 构建处方项 - 明确设置剂量和单价
-        var items = new List<PrescriptionItemEntity>
+        var items = new List<PrescriptionItemInputDto>
         {
             new()
             {
@@ -272,19 +321,19 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
 
         var itemList = detail.Prescription.Items.ToList();
 
-        // 验证 PrescriptionItem.Amount 计算属性: UnitPrice * Dosage
+        // 验证 PrescriptionItem 小计: UnitPrice * Dosage
         var huangqi = itemList.First(i => i.HerbName == "黄芪");
-        huangqi.Amount.Should().Be(105m, "黄芪小计 = 3.5 * 30 = 105");
+        huangqi.Subtotal.Should().Be(105m, "黄芪小计 = 3.5 * 30 = 105");
 
         var danggui = itemList.First(i => i.HerbName == "当归");
-        danggui.Amount.Should().Be(90m, "当归小计 = 6.0 * 15 = 90");
+        danggui.Subtotal.Should().Be(90m, "当归小计 = 6.0 * 15 = 90");
 
         var fuzi = itemList.First(i => i.HerbName == "附子");
-        fuzi.Amount.Should().Be(80m, "附子小计 = 8.0 * 10 = 80");
+        fuzi.Subtotal.Should().Be(80m, "附子小计 = 8.0 * 10 = 80");
         fuzi.DecocteMethod.Should().Be(DecocteMethod.PreDecoct, "附子应为先煎");
 
         // 一帖总价 = 105 + 90 + 80 = 275
-        var singleDoseTotal = itemList.Sum(i => i.Amount);
+        var singleDoseTotal = itemList.Sum(i => i.Subtotal);
         singleDoseTotal.Should().Be(275m, "一帖总价 = 275元");
     }
 
@@ -307,14 +356,13 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         var herbs = await SeedHerbsAsync(herbDataSource);
 
         // 2. 创建验方（四君子汤），包含药材组成
-        var formula = await formulaDataSource.CreateAsync(new FormulaEntity
+        var formula = await formulaDataSource.CreateAsync(new FormulaInputDto
         {
             Name = "四君子汤",
             Effect = "益气健脾",
-            Indication = "脾胃气虚证",
+            Indications = "脾胃气虚证",
             Usage = "水煎温服",
-            Status = CommonStatus.Enabled,
-            Herbs = new List<FormulaHerbItemEntity>
+            Herbs = new List<FormulaHerbItemInputDto>
             {
                 new()
                 {
@@ -348,10 +396,10 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         formulaWithHerbs.Should().NotBeNull();
         formulaWithHerbs!.Herbs.Should().HaveCount(3);
 
-        // 4. 模拟"验方导入到处方"：将 FormulaHerbItem 转换为 PrescriptionItem
+        // 4. 模拟"验方导入到处方"：将 FormulaHerbItemDto 转换为 PrescriptionItemInputDto
         //    实际业务中由 PrescriptionImportHandler/PrescriptionImportExtensions 完成
         //    此处验证数据转换的正确性
-        var prescriptionItems = formulaWithHerbs.Herbs.Select(fh => new PrescriptionItemEntity
+        var prescriptionItems = formulaWithHerbs.Herbs.Select(fh => new PrescriptionItemInputDto
         {
             HerbId = fh.HerbId ?? Guid.Empty,
             HerbName = fh.HerbName,
@@ -420,7 +468,7 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         var userId = Guid.NewGuid();
 
         // 初始处方：黄芪30g + 党参15g
-        var initialItems = new List<PrescriptionItemEntity>
+        var initialItems = new List<PrescriptionItemInputDto>
         {
             new()
             {
@@ -452,9 +500,9 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         //   2. 移除党参，替换为当归15g
         //   3. 新增附子10g（先煎）
         //   4. 帖数从7改为5
-        var updatedMc = initial;
-        updatedMc.Prescription!.DosageCount = 5;
-        updatedMc.Prescription.Items = new List<PrescriptionItemEntity>
+        var updateInput = ToInputDto(initial);
+        updateInput.Prescription!.DosageCount = 5;
+        updateInput.Prescription.Items = new List<PrescriptionItemInputDto>
         {
             new()
             {
@@ -483,7 +531,7 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
             }
         };
 
-        await mcDataSource.UpdateAsync(updatedMc);
+        await mcDataSource.UpdateAsync(updateInput);
 
         // Assert
         var updated = await mcDataSource.GetWithDetailsAsync(created.Id);
@@ -530,12 +578,10 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         var mcDataSource = sp.GetRequiredService<IMedicalCaseDataSource>();
 
         // 创建医案时不附带处方，且标记 NeedsPrescription=false
-        var mc = new MedicalCaseEntity
+        var mc = new MedicalCaseInputDto
         {
             PatientId = Guid.NewGuid(),
-            PatientName = "无处方患者",
             UserId = Guid.NewGuid(),
-            DoctorName = "测试医生",
             NeedsPrescription = false,
             // 不设置 Prescription
             Prescription = null
@@ -547,7 +593,6 @@ public class PrescriptionE2ETests : IClassFixture<LocalModeTestFixture>
         // Assert - 医案应正常创建
         created.Should().NotBeNull();
         created.Id.Should().NotBe(Guid.Empty);
-        created.NeedsPrescription.Should().BeFalse();
 
         // GetWithDetails 应返回无处方的医案
         var detail = await mcDataSource.GetWithDetailsAsync(created.Id);

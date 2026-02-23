@@ -1,25 +1,20 @@
-using LYBT.Entities.Users;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Contracts.DataSources;
 
 /// <summary>
 /// 用户数据源接口
-/// OpenSpec: implement-local-mode
 /// </summary>
-public interface IUserDataSource : IDataSourceBase<User>
+public interface IUserDataSource : IDataSourceBase<UserDetailDto, UserInputDto>
 {
     /// <summary>
     /// 根据用户名获取用户
     /// </summary>
-    Task<User?> GetByUsernameAsync(string username, CancellationToken ct = default);
+    Task<UserDetailDto?> GetByUsernameAsync(string username, CancellationToken ct = default);
 
     /// <summary>
     /// 修改密码
     /// </summary>
-    /// <param name="id">用户ID</param>
-    /// <param name="oldPasswordHash">旧密码哈希（用于验证）</param>
-    /// <param name="newPasswordHash">新密码哈希</param>
-    /// <param name="ct">取消令牌</param>
     Task<bool> ChangePasswordAsync(Guid id, string oldPasswordHash, string newPasswordHash, CancellationToken ct = default);
 
     /// <summary>

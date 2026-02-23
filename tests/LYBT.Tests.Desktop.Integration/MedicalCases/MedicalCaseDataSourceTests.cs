@@ -1,10 +1,9 @@
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.LocalData.Context;
-using LYBT.Entities.Consultations;
-using LYBT.Entities.Herbs;
-using LYBT.Entities.MedicalCases;
-using LYBT.Entities.Patients;
-using LYBT.Entities.Prescriptions;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Desktop.Integration.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,14 +34,11 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         var ds = sp.GetRequiredService<IMedicalCaseDataSource>();
         var patientId = await SeedPatient(sp, "聚合保存测试患者");
 
-        var mc = new MedicalCase
+        var mcInput = new MedicalCaseInputDto
         {
             PatientId = patientId,
-            PatientName = "聚合保存测试患者",
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "测试医生",
-            CaseStatus = MedicalCaseStatus.Active,
-            Consultation = new Consultation
+            Consultation = new ConsultationInputDto
             {
                 PresentIllness = "头痛三天",
                 TongueDiagnosis = "舌红苔黄",
@@ -52,7 +48,7 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         };
 
         // Act
-        var saved = await ds.SaveAsync(mc);
+        var saved = await ds.SaveAsync(mcInput);
 
         // Assert
         saved.Should().NotBeNull();
@@ -76,7 +72,7 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         var patientId = await SeedPatient(sp, "处方保存测试患者");
 
         // 先创建药材
-        var herb = await herbDs.CreateAsync(new Herb
+        var herb = await herbDs.CreateAsync(new HerbInputDto
         {
             Name = "黄芪",
             PinYinCode = "HQ",
@@ -84,25 +80,22 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
             Price = 3.0m
         });
 
-        var mc = new MedicalCase
+        var mcInput = new MedicalCaseInputDto
         {
             PatientId = patientId,
-            PatientName = "处方保存测试患者",
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "测试医生",
-            CaseStatus = MedicalCaseStatus.Active,
             NeedsPrescription = true,
-            Consultation = new Consultation
+            Consultation = new ConsultationInputDto
             {
                 TcmDiagnosis = "气虚证"
             },
-            Prescription = new Prescription
+            Prescription = new PrescriptionInputDto
             {
                 DosageCount = 7,
                 Usage = "水煎服，日一剂",
-                Items = new List<PrescriptionItem>
+                Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItem
+                    new PrescriptionItemInputDto
                     {
                         HerbId = herb.Id,
                         HerbName = "黄芪",
@@ -114,13 +107,13 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         };
 
         // Act
-        var saved = await ds.SaveAsync(mc);
+        var saved = await ds.SaveAsync(mcInput);
 
         // Assert
         saved.Should().NotBeNull();
         var detail = await ds.GetWithDetailsAsync(saved.Id);
         detail.Should().NotBeNull();
-        detail!.NeedsPrescription.Should().BeTrue();
+        detail!.HasPrescription.Should().BeTrue();
         detail.Prescription.Should().NotBeNull();
         detail.Prescription!.DosageCount.Should().Be(7);
         detail.Prescription.Usage.Should().Be("水煎服，日一剂");
@@ -137,21 +130,26 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         var ds = sp.GetRequiredService<IMedicalCaseDataSource>();
         var patientId = await SeedPatient(sp, "更新测试");
 
-        var mc = await ds.SaveAsync(new MedicalCase
+        var mc = await ds.SaveAsync(new MedicalCaseInputDto
         {
             PatientId = patientId,
-            PatientName = "更新测试",
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "医生",
-            CaseStatus = MedicalCaseStatus.Active,
-            Consultation = new Consultation { TcmDiagnosis = "初诊" }
+            Consultation = new ConsultationInputDto { TcmDiagnosis = "初诊" }
         });
 
         // Act - 更新诊断
-        var loaded = await ds.GetWithDetailsAsync(mc.Id);
-        loaded!.Consultation!.TcmDiagnosis = "复诊更新";
-        loaded.Consultation.PresentIllness = "新增现病史";
-        await ds.SaveAsync(loaded);
+        var updateInput = new MedicalCaseInputDto
+        {
+            Id = mc.Id,
+            PatientId = mc.PatientId,
+            UserId = mc.UserId,
+            Consultation = new ConsultationInputDto
+            {
+                TcmDiagnosis = "复诊更新",
+                PresentIllness = "新增现病史"
+            }
+        };
+        await ds.SaveAsync(updateInput);
 
         // Assert
         var updated = await ds.GetWithDetailsAsync(mc.Id);
@@ -171,13 +169,10 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         var ds = sp.GetRequiredService<IMedicalCaseDataSource>();
         var patientId = await SeedPatient(sp, "完成测试");
 
-        var mc = await ds.SaveAsync(new MedicalCase
+        var mc = await ds.SaveAsync(new MedicalCaseInputDto
         {
             PatientId = patientId,
-            PatientName = "完成测试",
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "医生",
-            CaseStatus = MedicalCaseStatus.Active
         });
 
         // Act
@@ -198,13 +193,10 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         var ds = sp.GetRequiredService<IMedicalCaseDataSource>();
         var patientId = await SeedPatient(sp, "取消测试");
 
-        var mc = await ds.SaveAsync(new MedicalCase
+        var mc = await ds.SaveAsync(new MedicalCaseInputDto
         {
             PatientId = patientId,
-            PatientName = "取消测试",
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "医生",
-            CaseStatus = MedicalCaseStatus.Active
         });
 
         // Act
@@ -232,7 +224,8 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         var patient1Id = await SeedPatient(sp, "查询患者A");
         var patient2Id = await SeedPatient(sp, "查询患者B");
 
-        await ds.SaveAsync(CreateActiveMedicalCase(patient1Id, "查询患者A"));
+        var mc1 = await ds.SaveAsync(CreateActiveMedicalCase(patient1Id, "查询患者A"));
+        await ds.CompleteAsync(mc1.Id);
         await ds.SaveAsync(CreateActiveMedicalCase(patient1Id, "查询患者A"));
         await ds.SaveAsync(CreateActiveMedicalCase(patient2Id, "查询患者B"));
 
@@ -251,12 +244,14 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         // Arrange
         var sp = await _fixture.CreateServiceProviderAsync();
         var ds = sp.GetRequiredService<IMedicalCaseDataSource>();
-        var patientId = await SeedPatient(sp, "状态查询");
+        var patient1Id = await SeedPatient(sp, "状态查询A");
+        var patient2Id = await SeedPatient(sp, "状态查询B");
+        var patient3Id = await SeedPatient(sp, "状态查询C");
 
-        // CreateAsync 强制设为 Draft，所以新建的医案都是 Draft
-        var mc1 = await ds.SaveAsync(CreateActiveMedicalCase(patientId, "状态查询"));
-        var mc2 = await ds.SaveAsync(CreateActiveMedicalCase(patientId, "状态查询"));
-        var mc3 = await ds.SaveAsync(CreateActiveMedicalCase(patientId, "状态查询"));
+        // 不同患者各创建一个医案，避免同一患者多医案冲突
+        var mc1 = await ds.SaveAsync(CreateActiveMedicalCase(patient1Id, "状态查询A"));
+        var mc2 = await ds.SaveAsync(CreateActiveMedicalCase(patient2Id, "状态查询B"));
+        var mc3 = await ds.SaveAsync(CreateActiveMedicalCase(patient3Id, "状态查询C"));
 
         // 完成其中一个
         await ds.CompleteAsync(mc3.Id);
@@ -278,8 +273,10 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         var ds = sp.GetRequiredService<IMedicalCaseDataSource>();
         var patientId = await SeedPatient(sp, "患者医案列表");
 
-        await ds.SaveAsync(CreateActiveMedicalCase(patientId, "患者医案列表"));
-        await ds.SaveAsync(CreateActiveMedicalCase(patientId, "患者医案列表"));
+        var mc1 = await ds.SaveAsync(CreateActiveMedicalCase(patientId, "患者医案列表"));
+        await ds.CompleteAsync(mc1.Id);
+        var mc2 = await ds.SaveAsync(CreateActiveMedicalCase(patientId, "患者医案列表"));
+        await ds.CompleteAsync(mc2.Id);
         await ds.SaveAsync(CreateActiveMedicalCase(patientId, "患者医案列表"));
 
         // Act
@@ -302,27 +299,24 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         var herbDs = sp.GetRequiredService<IHerbDataSource>();
         var patientId = await SeedPatient(sp, "导航属性测试");
 
-        var herb1 = await herbDs.CreateAsync(new Herb { Name = "当归", PinYinCode = "DG", Unit = "克", Price = 2.0m });
-        var herb2 = await herbDs.CreateAsync(new Herb { Name = "川芎", PinYinCode = "CX", Unit = "克", Price = 1.5m });
+        var herb1 = await herbDs.CreateAsync(new HerbInputDto { Name = "当归", PinYinCode = "DG", Unit = "克", Price = 2.0m });
+        var herb2 = await herbDs.CreateAsync(new HerbInputDto { Name = "川芎", PinYinCode = "CX", Unit = "克", Price = 1.5m });
 
-        var mc = await ds.SaveAsync(new MedicalCase
+        var mc = await ds.SaveAsync(new MedicalCaseInputDto
         {
             PatientId = patientId,
-            PatientName = "导航属性测试",
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "医生",
-            CaseStatus = MedicalCaseStatus.Active,
             NeedsPrescription = true,
-            Consultation = new Consultation
+            Consultation = new ConsultationInputDto
             {
                 PresentIllness = "月经不调",
                 TcmDiagnosis = "血虚证"
             },
-            Prescription = new Prescription
+            Prescription = new PrescriptionInputDto
             {
                 DosageCount = 14,
                 Usage = "水煎服",
-                Items = new List<PrescriptionItem>
+                Items = new List<PrescriptionItemInputDto>
                 {
                     new() { HerbId = herb1.Id, HerbName = "当归", Dosage = 15, Unit = "克" },
                     new() { HerbId = herb2.Id, HerbName = "川芎", Dosage = 10, Unit = "克" }
@@ -350,7 +344,7 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
     private static async Task<Guid> SeedPatient(IServiceProvider sp, string name)
     {
         var ds = sp.GetRequiredService<IPatientDataSource>();
-        var patient = await ds.CreateAsync(new Patient
+        var patient = await ds.CreateAsync(new PatientInputDto
         {
             Name = name,
             PinYinCode = "CS",
@@ -360,17 +354,14 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
     }
 
     /// <summary>
-    /// 创建医案 (注意: CreateAsync 会强制覆盖 CaseStatus 为 Draft)
+    /// 创建医案输入 (注意: CreateAsync 会强制覆盖 CaseStatus 为 Draft)
     /// </summary>
-    private static MedicalCase CreateActiveMedicalCase(Guid patientId, string patientName)
+    private static MedicalCaseInputDto CreateActiveMedicalCase(Guid patientId, string patientName)
     {
-        return new MedicalCase
+        return new MedicalCaseInputDto
         {
             PatientId = patientId,
-            PatientName = patientName,
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "测试医生",
-            CaseStatus = MedicalCaseStatus.Active // 注: 会被 CreateAsync 覆盖为 Draft
         };
     }
 

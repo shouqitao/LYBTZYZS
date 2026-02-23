@@ -2,6 +2,7 @@ using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.DataSources;
 using LYBT.Desktop.LocalData.Tests.TestFixtures;
 using LYBT.Entities.Patients;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -154,7 +155,7 @@ public class LocalPatientDataSourceTests : IClassFixture<LocalDbContextFixture>
         // Arrange
         using var context = _fixture.CreateContext();
         var dataSource = new LocalPatientDataSource(context, _logger);
-        var patient = new Patient
+        var input = new PatientInputDto
         {
             Name = "新患者",
             Gender = Gender.Male,
@@ -162,7 +163,7 @@ public class LocalPatientDataSourceTests : IClassFixture<LocalDbContextFixture>
         };
 
         // Act
-        var result = await dataSource.CreateAsync(patient);
+        var result = await dataSource.CreateAsync(input);
 
         // Assert
         result.Should().NotBeNull();
@@ -190,9 +191,14 @@ public class LocalPatientDataSourceTests : IClassFixture<LocalDbContextFixture>
         var dataSource = new LocalPatientDataSource(context, _logger);
 
         // Act
-        patient.Name = "新名称";
-        patient.PhoneNumber = "13900139999";
-        var result = await dataSource.UpdateAsync(patient);
+        var input = new PatientInputDto
+        {
+            Id = patient.Id,
+            Name = "新名称",
+            Gender = patient.Gender,
+            PhoneNumber = "13900139999"
+        };
+        var result = await dataSource.UpdateAsync(input);
 
         // Assert
         result.Should().NotBeNull();
@@ -206,11 +212,15 @@ public class LocalPatientDataSourceTests : IClassFixture<LocalDbContextFixture>
         // Arrange
         using var context = _fixture.CreateContext();
         var dataSource = new LocalPatientDataSource(context, _logger);
-        var patient = CreateTestPatient("不存在");
+        var input = new PatientInputDto
+        {
+            Id = Guid.NewGuid(),
+            Name = "不存在"
+        };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => dataSource.UpdateAsync(patient));
+            () => dataSource.UpdateAsync(input));
     }
 
     #endregion
@@ -353,7 +363,11 @@ public class LocalPatientDataSourceTests : IClassFixture<LocalDbContextFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.IsDeleted.Should().BeFalse();
+        result!.Name.Should().Be("已删除待恢复");
+
+        // Verify entity is no longer soft-deleted
+        var restored = await context.Patients.FindAsync(patient.Id);
+        restored!.IsDeleted.Should().BeFalse();
     }
 
     #endregion

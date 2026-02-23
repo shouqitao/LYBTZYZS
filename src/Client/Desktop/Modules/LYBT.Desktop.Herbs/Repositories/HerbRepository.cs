@@ -2,7 +2,6 @@ using System.IO;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.Herbs.Interfaces;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -19,7 +18,6 @@ namespace LYBT.Desktop.Herbs.Repositories
         private readonly IHerbDataSource _dataSource;
         private readonly IHerbApi? _api; // 可选，仅用于批量导入/导出等 Remote 模式特有功能
         private readonly ILogger<HerbRepository> _logger;
-        private readonly HerbDataSourceMapper _mapper = new();
 
         /// <summary>
         /// 初始化 HerbRepository
@@ -93,14 +91,13 @@ namespace LYBT.Desktop.Herbs.Repositories
             {
                 _logger.LogDebug("[REPO] Herb.GetById started - Id={Id}", id);
 
-                var entity = await _dataSource.GetByIdAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.GetByIdAsync(id);
+                if (dto == null)
                 {
                     _logger.LogWarning("[REPO] Herb.GetById -> NotFound - Id={Id}", id);
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogDebug("[REPO] Herb.GetById completed - Id={Id}", id);
                 return dto;
             }
@@ -123,9 +120,7 @@ namespace LYBT.Desktop.Herbs.Repositories
             {
                 _logger.LogInformation("[REPO] Herb.Create started - Name={Name}", dto.Name);
 
-                var entity = _mapper.ToEntity(dto);
-                var created = await _dataSource.CreateAsync(entity);
-                var result = _mapper.ToDetailDto(created);
+                var result = await _dataSource.CreateAsync(dto);
 
                 _logger.LogInformation("[REPO] Herb.Create completed - Id={Id}", result.Id);
                 return result;
@@ -152,9 +147,7 @@ namespace LYBT.Desktop.Herbs.Repositories
             {
                 _logger.LogInformation("[REPO] Herb.Update started - Id={Id}", dto.Id);
 
-                var entity = _mapper.ToEntity(dto);
-                var updated = await _dataSource.UpdateAsync(entity);
-                var result = _mapper.ToDetailDto(updated);
+                var result = await _dataSource.UpdateAsync(dto);
 
                 _logger.LogInformation("[REPO] Herb.Update completed - Id={Id}", result.Id);
                 return result;
@@ -361,13 +354,12 @@ namespace LYBT.Desktop.Herbs.Repositories
                 }
 
                 // 重新获取更新后的数据
-                var entity = await _dataSource.GetByIdAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.GetByIdAsync(id);
+                if (dto == null)
                 {
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("药材状态已切换为：{Status}", dto.Status);
                 return dto;
             }
@@ -387,14 +379,13 @@ namespace LYBT.Desktop.Herbs.Repositories
             {
                 _logger.LogInformation("恢复药材：{Id}", id);
 
-                var entity = await _dataSource.RestoreAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.RestoreAsync(id);
+                if (dto == null)
                 {
                     _logger.LogError("恢复药材失败：{Id}", id);
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("药材已恢复：{Id}", id);
                 return dto;
             }

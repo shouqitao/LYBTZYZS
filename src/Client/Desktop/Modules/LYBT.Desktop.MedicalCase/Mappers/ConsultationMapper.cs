@@ -110,6 +110,10 @@ public partial class ConsultationMapper
     /// <remarks>
     /// 仅映射可写字段，展示字段和审计字段不映射。
     /// </remarks>
+    [MapperIgnoreSource(nameof(ConsultationItem.Id))]
+    [MapperIgnoreSource(nameof(ConsultationItem.MedicalCaseId))]
+    [MapperIgnoreSource(nameof(ConsultationItem.PatientId))]
+    [MapperIgnoreSource(nameof(ConsultationItem.UserId))]
     [MapperIgnoreSource(nameof(ConsultationItem.PatientName))]
     [MapperIgnoreSource(nameof(ConsultationItem.DoctorName))]
     [MapperIgnoreSource(nameof(ConsultationItem.CreatedAt))]
@@ -118,7 +122,7 @@ public partial class ConsultationMapper
     [MapperIgnoreSource(nameof(ConsultationItem.IsExpanded))]
     [MapperIgnoreSource(nameof(ConsultationItem.IsDiagnosisComplete))]
     [MapperIgnoreSource(nameof(ConsultationItem.DisplayText))]
-    [MapperIgnoreSource(nameof(ConsultationItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
+    [MapperIgnoreSource(nameof(ConsultationItem.ValidationMessage))]
     public partial ConsultationInputDto ToInputDto(ConsultationItem item);
 
     #endregion

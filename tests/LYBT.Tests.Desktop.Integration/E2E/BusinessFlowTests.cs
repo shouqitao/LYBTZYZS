@@ -1,13 +1,12 @@
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Entities.Common;
-using LYBT.Entities.Consultations;
-using LYBT.Entities.Formulas;
-using LYBT.Entities.Herbs;
-using LYBT.Entities.MedicalCases;
-using LYBT.Entities.Patients;
-using LYBT.Entities.Prescriptions;
-using LYBT.Entities.Users;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Desktop.Integration.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,19 +39,19 @@ public class BusinessFlowTests : IClassFixture<DesktopFixture>
         var mcDs = sp.GetRequiredService<IMedicalCaseDataSource>();
 
         // === Step 1: 创建医生用户 ===
-        var doctor = await userDs.CreateAsync(new User
+        var doctor = await userDs.CreateAsync(new UserInputDto
         {
             UserName = "dr_zhang",
             RealName = "张医生",
             Role = UserRole.Doctor,
-            Status = CommonStatus.Enabled,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Doctor123!")
+            Password = "Doctor123!",
+            ConfirmPassword = "Doctor123!"
         });
         doctor.Id.Should().NotBe(Guid.Empty);
         doctor.Role.Should().Be(UserRole.Doctor);
 
         // === Step 2: 创建药材库 ===
-        var huangqi = await herbDs.CreateAsync(new Herb
+        var huangqi = await herbDs.CreateAsync(new HerbInputDto
         {
             Name = "黄芪",
             PinYinCode = "HQ",
@@ -62,7 +61,7 @@ public class BusinessFlowTests : IClassFixture<DesktopFixture>
             Effect = "补气升阳，固表止汗"
         });
 
-        var danggui = await herbDs.CreateAsync(new Herb
+        var danggui = await herbDs.CreateAsync(new HerbInputDto
         {
             Name = "当归",
             PinYinCode = "DG",
@@ -72,7 +71,7 @@ public class BusinessFlowTests : IClassFixture<DesktopFixture>
             Effect = "补血活血，调经止痛"
         });
 
-        var baizhu = await herbDs.CreateAsync(new Herb
+        var baizhu = await herbDs.CreateAsync(new HerbInputDto
         {
             Name = "白术",
             PinYinCode = "BZ",
@@ -91,13 +90,12 @@ public class BusinessFlowTests : IClassFixture<DesktopFixture>
         herbTotal.Should().Be(3);
 
         // === Step 3: 创建验方 (经验方) ===
-        var formula = await formulaDs.CreateAsync(new Formula
+        var formula = await formulaDs.CreateAsync(new FormulaInputDto
         {
             Name = "当归补血汤",
             Effect = "补气生血",
-            Indication = "血虚发热证",
-            Status = CommonStatus.Enabled,
-            Herbs = new List<FormulaHerbItem>
+            Indications = "血虚发热证",
+            Herbs = new List<FormulaHerbItemInputDto>
             {
                 new() { HerbId = huangqi.Id, HerbName = "黄芪", Dosage = 30, Unit = "克" },
                 new() { HerbId = danggui.Id, HerbName = "当归", Dosage = 6, Unit = "克" }
@@ -106,7 +104,7 @@ public class BusinessFlowTests : IClassFixture<DesktopFixture>
         formula.Id.Should().NotBe(Guid.Empty);
 
         // === Step 4: 创建患者 ===
-        var patient = await patientDs.CreateAsync(new Patient
+        var patient = await patientDs.CreateAsync(new PatientInputDto
         {
             Name = "李女士",
             PinYinCode = "LNS",
@@ -120,26 +118,24 @@ public class BusinessFlowTests : IClassFixture<DesktopFixture>
         patient.Id.Should().NotBe(Guid.Empty);
 
         // === Step 5: 创建医案 (含诊断+处方) ===
-        var mc = await mcDs.SaveAsync(new MedicalCase
+        var mc = await mcDs.SaveAsync(new MedicalCaseInputDto
         {
             PatientId = patient.Id,
-            PatientName = patient.Name,
             UserId = doctor.Id,
-            DoctorName = doctor.RealName,
             NeedsPrescription = true,
-            Consultation = new Consultation
+            Consultation = new ConsultationInputDto
             {
                 PresentIllness = "患者面色萎黄，头晕乏力三月余，劳累后加重",
                 TongueDiagnosis = "舌淡苔白",
                 PulseDiagnosis = "脉细弱",
                 TcmDiagnosis = "气血两虚证"
             },
-            Prescription = new Prescription
+            Prescription = new PrescriptionInputDto
             {
                 DosageCount = 7,
                 Usage = "水煎服，日一剂，分两次温服",
                 Advice = "忌辛辣刺激，注意休息",
-                Items = new List<PrescriptionItem>
+                Items = new List<PrescriptionItemInputDto>
                 {
                     new()
                     {
@@ -202,13 +198,13 @@ public class BusinessFlowTests : IClassFixture<DesktopFixture>
         var authService = sp.GetRequiredService<ILocalAuthService>();
 
         // 创建用户
-        await userDs.CreateAsync(new User
+        await userDs.CreateAsync(new UserInputDto
         {
             UserName = "auth_test",
             RealName = "认证测试用户",
             Role = UserRole.Doctor,
-            Status = CommonStatus.Enabled,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("MyPassword123!")
+            Password = "MyPassword123!",
+            ConfirmPassword = "MyPassword123!"
         });
 
         // Act - 正确密码
@@ -231,42 +227,37 @@ public class BusinessFlowTests : IClassFixture<DesktopFixture>
         var mcDs = sp.GetRequiredService<IMedicalCaseDataSource>();
 
         // 创建两个患者
-        var patientA = await patientDs.CreateAsync(new Patient
+        var patientA = await patientDs.CreateAsync(new PatientInputDto
         {
             Name = "患者A",
             PinYinCode = "HZA",
             Gender = Gender.Male
         });
-        var patientB = await patientDs.CreateAsync(new Patient
+        var patientB = await patientDs.CreateAsync(new PatientInputDto
         {
             Name = "患者B",
             PinYinCode = "HZB",
             Gender = Gender.Female
         });
 
-        // 为患者A创建2个医案
-        await mcDs.SaveAsync(new MedicalCase
+        // 为患者A创建2个医案（需先完成第一个才能创建第二个）
+        var mcA1 = await mcDs.SaveAsync(new MedicalCaseInputDto
         {
             PatientId = patientA.Id,
-            PatientName = "患者A",
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "医生"
         });
-        await mcDs.SaveAsync(new MedicalCase
+        await mcDs.CompleteAsync(mcA1.Id);
+        await mcDs.SaveAsync(new MedicalCaseInputDto
         {
             PatientId = patientA.Id,
-            PatientName = "患者A",
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "医生"
         });
 
         // 为患者B创建1个医案
-        await mcDs.SaveAsync(new MedicalCase
+        await mcDs.SaveAsync(new MedicalCaseInputDto
         {
             PatientId = patientB.Id,
-            PatientName = "患者B",
             UserId = DesktopFixture.TestUserId,
-            DoctorName = "医生"
         });
 
         // Act

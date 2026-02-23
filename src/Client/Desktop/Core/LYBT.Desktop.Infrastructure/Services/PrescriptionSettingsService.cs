@@ -38,7 +38,6 @@ namespace LYBT.Desktop.Infrastructure.Services
             // 设置静态实例供POCO类访问
             Current = this;
 
-            System.Diagnostics.Debug.WriteLine($"[PrescriptionSettingsService] 重复药材合并策略: {DuplicateHerbMergeStrategy}");
         }
 
         /// <summary>
