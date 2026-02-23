@@ -109,53 +109,33 @@ public static class DatabaseServiceCollectionExtensions
             }
         }
 
-        // 验证数据库连接 - 仅记录警告，不阻塞启动
+        // A1-03: 连接字符串缺失时直接抛出异常，禁止 fallback 硬编码
         if (string.IsNullOrEmpty(connectionString))
         {
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-            Console.WriteLine($"[WARNING] 数据库连接字符串未配置 (Environment: {environment})");
-
-            // 开发环境使用默认连接字符串
-            if (environment.Equals("Development", StringComparison.OrdinalIgnoreCase))
-            {
-                connectionString = "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=30;Command Timeout=30;Max Pool Size=20;Min Pool Size=2;Pooling=true";
-                Console.WriteLine("[INFO] 开发环境使用默认数据库连接字符串");
-            }
+            throw new InvalidOperationException(
+                "数据库连接字符串未配置。请在 appsettings.json 的 Database:ConnectionString " +
+                "或 ConnectionStrings:DefaultConnection 中配置，或设置 CONNECTION_STRING 环境变量。");
         }
 
-        // 注册 AppDbContext - 无论连接字符串是否存在都需要注册
-        if (!string.IsNullOrEmpty(connectionString))
+        // 注册 AppDbContext（connectionString 已通过上方检查，必定非空）
+        services.AddDbContext<LYBT.Infrastructure.Data.AppDbContext>((serviceProvider, options) =>
         {
-            services.AddDbContext<LYBT.Infrastructure.Data.AppDbContext>((serviceProvider, options) =>
+            var sqlOptions = options.UseSqlServer(connectionString, sqlOptions =>
             {
-                var sqlOptions = options.UseSqlServer(connectionString, sqlOptions =>
-                {
-                    sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
-                    // unify-configuration-system: 使用强类型配置
-                    sqlOptions.EnableRetryOnFailure(
-                        databaseOptions.RetryPolicy.MaxRetryCount,
-                        TimeSpan.FromMilliseconds(databaseOptions.RetryPolicy.MaxDelayMs),
-                        null);
-                });
-
-                // unify-configuration-system: 使用硬编码默认值，移除Monitoring和ConnectionPool配置依赖
-                // MVP阶段：开发环境默认启用详细日志，生产环境关闭敏感数据
-                options.EnableSensitiveDataLogging(false); // 生产环境默认关闭
-                options.EnableDetailedErrors(true); // 开发环境启用详细错误
-                options.EnableServiceProviderCaching();
-
-                // 设置命令超时（默认30秒）
-                options.UseSqlServer(opt => opt.CommandTimeout(30));
+                sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
+                // unify-configuration-system: 使用强类型配置
+                sqlOptions.EnableRetryOnFailure(
+                    databaseOptions.RetryPolicy.MaxRetryCount,
+                    TimeSpan.FromMilliseconds(databaseOptions.RetryPolicy.MaxDelayMs),
+                    null);
             });
-        }
-        else
-        {
-            // 即使没有连接字符串也注册 AppDbContext，以避免 DI 错误
-            services.AddDbContext<LYBT.Infrastructure.Data.AppDbContext>(options =>
-            {
-                Console.WriteLine("[WARNING] AppDbContext 注册时没有可用的数据库连接字符串");
-            });
-        }
+
+            options.EnableSensitiveDataLogging(false);
+            options.EnableDetailedErrors(true);
+            options.EnableServiceProviderCaching();
+
+            options.UseSqlServer(opt => opt.CommandTimeout(30));
+        });
 
         // Phase 1: 注册泛型Repository基础设施
         services.AddServerRepositories();

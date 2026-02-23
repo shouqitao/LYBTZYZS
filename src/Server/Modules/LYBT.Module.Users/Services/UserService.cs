@@ -454,9 +454,10 @@ namespace LYBT.Module.Users.Services
             if (!verificationResult.IsSuccess)
                 return Result.Failure("原密码错误");
 
-            // 如果需要重新哈希，使用新的哈希
-            var newHashedPassword = verificationResult.NewHashedPassword ?? PasswordHelper.HashPassword(newPassword, entity.Role, _logger);
-            entity.PasswordHash = newHashedPassword;
+            // S1-fix: 始终使用新密码哈希，而非旧密码的 rehash
+            // verificationResult.NewHashedPassword 是旧密码的新算法哈希（用于升级场景），
+            // 在修改密码时必须使用 newPassword 哈希，否则新密码会被丢弃
+            entity.PasswordHash = PasswordHelper.HashPassword(newPassword, entity.Role, _logger);
             await _repository.UpdateAsync(entity);
             return Result.Success();
         }
