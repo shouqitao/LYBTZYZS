@@ -106,8 +106,8 @@ public class SyncIntegrationTests
         // Act
         var response = await _fixture.AdminClient.GetAsync($"{BaseUrl}/metadata?entityType=InvalidType");
 
-        // Assert - API 返回 200 + Success=false (BusinessFail模式)
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Assert - BusinessFail 返回 422 + Success=false
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
         result!.Success.Should().BeFalse();
     }
@@ -263,8 +263,8 @@ public class SyncIntegrationTests
         // Act
         var response = await _fixture.AdminClient.PostAsJsonAsync($"{BaseUrl}/compare", input);
 
-        // Assert - API 返回 200 + Success=false (BusinessFail模式)
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Assert - BusinessFail 返回 422 + Success=false
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
         result!.Success.Should().BeFalse();
     }
@@ -432,8 +432,8 @@ public class SyncIntegrationTests
         // Act
         var response = await _fixture.AdminClient.PostAsJsonAsync($"{BaseUrl}/upload", input);
 
-        // Assert - API 返回 200 + Success=false (BusinessFail模式)
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Assert - BusinessFail 返回 422 + Success=false
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
         result!.Success.Should().BeFalse();
     }
@@ -623,8 +623,8 @@ public class SyncIntegrationTests
         // Act
         var response = await _fixture.AdminClient.PostAsJsonAsync($"{BaseUrl}/delete", input);
 
-        // Assert - API 返回 200 + Success=false (BusinessFail模式)
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Assert - BusinessFail 返回 422 + Success=false
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
         result!.Success.Should().BeFalse();
     }

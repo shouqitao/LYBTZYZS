@@ -150,15 +150,27 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 检查是否需要提供修改原因
-        /// 已锁定（Completed状态且跨日）医案修改时必须提供原因（管理员修改时）
+        /// S3: 扩展规则 -- IsLocked OR Completed 状态均需提供原因
         /// </summary>
         public bool RequiresEditReason(MedicalCase medicalCase)
         {
             if (medicalCase == null) return false;
 
-            // 已锁定医案修改需要原因（管理员修改时）
-            // IsLocked = Completed状态 且 跨日
-            return medicalCase.IsLocked;
+            // S3: 已锁定 或 已完成状态 都需要提供修改原因
+            return medicalCase.IsLocked || medicalCase.IsCompleted;
+        }
+
+        /// <summary>
+        /// S3: 扩展版本 -- 同时检查是否为非本人编辑
+        /// </summary>
+        public bool RequiresEditReason(MedicalCase medicalCase, Guid currentUserId)
+        {
+            if (medicalCase == null) return false;
+
+            // IsLocked OR 非本人 OR 已完成
+            return medicalCase.IsLocked
+                || medicalCase.UserId != currentUserId
+                || medicalCase.IsCompleted;
         }
 
         /// <summary>

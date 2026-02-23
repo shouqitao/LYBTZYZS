@@ -144,7 +144,8 @@ namespace LYBT.Module.MedicalCases.Services
             Guid medicalCaseId,
             ConsultationInputDto request,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false,
+            string? editReason = null)
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
@@ -161,6 +162,12 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 权限检查
             MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "UpdateConsultation", _logger);
+
+            // S3: 需要修改原因时，验证 editReason 不为空
+            if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(editReason))
+            {
+                throw new InvalidOperationException("该医案需要提供修改原因");
+            }
 
             // 确保Consultation存在
             if (medicalCase.Consultation == null)
@@ -292,7 +299,8 @@ namespace LYBT.Module.MedicalCases.Services
             Guid prescriptionId,
             PrescriptionInputDto request,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false,
+            string? editReason = null)
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdatePrescription - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                 medicalCaseId, prescriptionId);
@@ -306,6 +314,12 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 权限检查
             MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "UpdatePrescription", _logger);
+
+            // S3: 需要修改原因时，验证 editReason 不为空
+            if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(editReason))
+            {
+                throw new InvalidOperationException("该医案需要提供修改原因");
+            }
 
             // 验证Prescription存在且ID匹配
             if (medicalCase.Prescription == null || medicalCase.Prescription.Id != prescriptionId)

@@ -96,10 +96,10 @@ public class UserIntegrationTests
         }
         else
         {
-            // API层正确拦截了重复请求
+            // API层正确拦截了重复请求 (BusinessFail -> 422)
             response.StatusCode.Should().BeOneOf(
-                new[] { HttpStatusCode.BadRequest, HttpStatusCode.Conflict },
-                "重复用户名应返回400或409");
+                new[] { HttpStatusCode.BadRequest, HttpStatusCode.Conflict, HttpStatusCode.UnprocessableEntity },
+                "重复用户名应返回400、409或422(BusinessFail)");
         }
     }
 

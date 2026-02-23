@@ -1,7 +1,10 @@
 ﻿using LYBT.Infrastructure.DependencyInjection;
 using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using LybtMemoryCacheOptions = LYBT.Shared.Configuration.Options.Server.MemoryCacheOptions;
@@ -152,8 +155,17 @@ public static class DatabaseServiceCollectionExtensions
         services.AddScoped<LYBT.Infrastructure.Configuration.Services.DefaultPasswordService>();
         services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
 
-        // D5-1: 跨模块服务 ISP 注册已移至 ServiceCollectionExtensions.AddDatabaseServices()
-        // 此处不再重复注册，避免双重 Scoped 实例
+        // D5-1: 跨模块服务 ISP 注册 (CrossModuleService 实现全部接口，共享 Scoped 实例)
+        services.AddScoped<CrossModuleService>();
+        services.AddScoped<IPatientCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
+        services.AddScoped<IHerbCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
+        services.AddScoped<IUserCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
+        services.AddScoped<ICrossModuleAuthService>(sp => sp.GetRequiredService<CrossModuleService>());
+        // 旧接口保留兼容 (标记 [Obsolete])
+        services.AddScoped<ICrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
+
+        // 错误消息映射服务
+        services.AddSingleton<IErrorMessageMapper, ConfigurableErrorMessageMapper>();
 
         // Issue #1726 Phase 3: 数据库健康检查与启动诊断
         services.AddHealthChecks()

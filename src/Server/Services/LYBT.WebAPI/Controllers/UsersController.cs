@@ -12,11 +12,12 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 用户管理控制器 - 简化版（仅CRUD）
     /// </summary>
-    /// optimize-api-permissions: 用户管理仅限Admin角色访问
+    /// S2: 类级 [Authorize] 允许所有认证用户访问自服务端点
+    /// 管理端点通过方法级 [Authorize(Policy = "AdminOnly")] 限制
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize]
     public class UsersController : BaseApiController
     {
         private readonly IUserService _userService;
@@ -34,6 +35,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: refactor-dto-simplification - 使用扁平化DTO
         /// </summary>
         [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<UserListDto>>), 200)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> GetList(
@@ -98,6 +100,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取单个用户
         /// </summary>
         [HttpGet("{id:guid}")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(Guid id)
@@ -117,6 +120,7 @@ namespace LYBT.WebAPI.Controllers
         /// 创建用户
         /// </summary>
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> Create([FromBody] UserInputDto dto)
@@ -139,6 +143,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新用户
         /// </summary>
         [HttpPut("{id:guid}")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto)
@@ -161,6 +166,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除用户
         /// </summary>
         [HttpDelete("{id:guid}")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Delete(Guid id)
@@ -183,6 +189,7 @@ namespace LYBT.WebAPI.Controllers
         /// 管理员重置用户密码
         /// </summary>
         [HttpPost("{id:guid}/reset-password")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request)
@@ -253,6 +260,7 @@ namespace LYBT.WebAPI.Controllers
         /// 切换用户状态（启用/禁用）
         /// </summary>
         [HttpPost("{id:guid}/toggle-status")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
@@ -274,6 +282,7 @@ namespace LYBT.WebAPI.Controllers
         /// 恢复已删除的用户
         /// </summary>
         [HttpPost("{id:guid}/restore")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)
@@ -298,6 +307,7 @@ namespace LYBT.WebAPI.Controllers
         /// 批量删除用户
         /// </summary>
         [HttpPost("batch-delete")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
@@ -331,6 +341,7 @@ namespace LYBT.WebAPI.Controllers
         /// 批量启用用户
         /// </summary>
         [HttpPost("batch-enable")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
@@ -362,6 +373,7 @@ namespace LYBT.WebAPI.Controllers
         /// 批量禁用用户
         /// </summary>
         [HttpPost("batch-disable")]
+        [Authorize(Policy = "AdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)

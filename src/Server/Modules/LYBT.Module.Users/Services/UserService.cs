@@ -73,6 +73,16 @@ namespace LYBT.Module.Users.Services
         }
 
         /// <summary>
+        /// S2: 获取当前用户ID
+        /// </summary>
+        private Guid? GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return !string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var id) ? id : null;
+        }
+
+        /// <summary>
         /// 检查当前用户是否可以管理目标用户
         /// 权限规则：
         /// - SuperAdmin（100）可以管理 Admin 和 Doctor
@@ -87,7 +97,7 @@ namespace LYBT.Module.Users.Services
             return currentUserRole.Value switch
             {
                 UserRole.SuperAdmin => true,  // SuperAdmin可以管理所有用户
-                UserRole.Admin => targetUserRole.Value == UserRole.Doctor,  // Admin只能管理Doctor
+                UserRole.Admin => targetUserRole.Value is UserRole.Doctor or UserRole.Receptionist,  // S2: Admin管理Doctor+Receptionist
                 UserRole.Doctor => false,  // Doctor不能管理其他用户
                 _ => false
             };
@@ -356,6 +366,14 @@ namespace LYBT.Module.Users.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
 
+            // S2: 自删除保护
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId.HasValue && currentUserId.Value == id)
+            {
+                _logger.LogWarning("[SVC] User.Delete → SelfDeleteBlocked - UserId={UserId}", id);
+                return Result.Failure("不能删除自己的账户");
+            }
+
             // 获取目标用户
             var targetUser = await _repository.GetByIdAsync(id);
             if (targetUser == null)
@@ -463,6 +481,12 @@ namespace LYBT.Module.Users.Services
         /// </summary>
         public async Task<Result> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
         {
+            // S2: 新密码策略验证
+            if (!PasswordPolicyValidator.Validate(newPassword, out var policyErrors))
+            {
+                return Result.Failure(string.Join("; ", policyErrors));
+            }
+
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
