@@ -34,7 +34,8 @@ namespace LYBT.Module.MedicalCases.Interfaces
             Guid medicalCaseId,
             ConsultationInputDto request,
             Guid currentUserId,
-            bool isAdmin = false);
+            bool isAdmin = false,
+            string? editReason = null);
 
         /// <summary>
         /// 标记是否需要开处方（三步流程Step 2）
@@ -74,7 +75,8 @@ namespace LYBT.Module.MedicalCases.Interfaces
             Guid prescriptionId,
             PrescriptionInputDto request,
             Guid currentUserId,
-            bool isAdmin = false);
+            bool isAdmin = false,
+            string? editReason = null);
 
         /// <summary>
         /// 删除处方（软删除）

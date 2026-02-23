@@ -64,6 +64,12 @@ namespace LYBT.Module.MedicalCases.Interfaces
         bool RequiresEditReason(MedicalCase medicalCase);
 
         /// <summary>
+        /// S3: 检查是否需要提供修改原因（扩展版，考虑当前操作者）
+        /// IsLocked OR 非本人 OR 已完成
+        /// </summary>
+        bool RequiresEditReason(MedicalCase medicalCase, Guid currentUserId);
+
+        /// <summary>
         /// 获取用户对医案的权限详情
         /// </summary>
         /// <param name="userId">当前用户ID</param>
