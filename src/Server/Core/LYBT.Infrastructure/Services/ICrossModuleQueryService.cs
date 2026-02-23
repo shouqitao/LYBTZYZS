@@ -15,6 +15,7 @@ namespace LYBT.Infrastructure.Services;
 /// - 查询优先：查询方法使用AsNoTracking()优化性能
 /// - 写操作最小化：仅包含跨模块必要的写操作（如密码哈希升级）
 /// </remarks>
+[Obsolete("使用 IPatientCrossModuleService/IHerbCrossModuleService/IUserCrossModuleService 替代 (D5-1)")]
 public interface ICrossModuleService
 {
     #region 患者查询

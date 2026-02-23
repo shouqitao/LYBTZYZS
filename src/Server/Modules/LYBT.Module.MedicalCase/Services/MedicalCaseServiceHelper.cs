@@ -1,9 +1,8 @@
 using LYBT.Entities.MedicalCases;
-using LYBT.Entities.Patients;
-using LYBT.Entities.Users;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -71,16 +70,17 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 获取操作者信息用于审计日志
+        /// D5-1: 从 IUserRepository 迁移到 IUserCrossModuleService
         /// </summary>
         public static async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(
-            IUserRepository userRepository,
+            IUserCrossModuleService userCrossModule,
             Guid userId,
             bool isAdmin,
             ILogger? logger = null)
         {
             try
             {
-                var user = await userRepository.GetByIdAsync(userId);
+                var user = await userCrossModule.GetUserBasicInfoAsync(userId);
                 if (user != null)
                 {
                     return (user.RealName, user.Role);
@@ -99,14 +99,14 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 验证创建医案的前置条件，返回 Patient 和 Doctor 实体
-        /// 提取自 CreateAsync 和 CreateFromInputDtoAsync 的公共验证逻辑
+        /// 验证创建医案的前置条件，返回 Patient 和 Doctor 基本信息
+        /// D5-1: 从 IPatientRepository/IUserRepository 迁移到 ISP 接口，返回 DTO 替代 Entity
         /// </summary>
-        public static async Task<(Patient Patient, User Doctor)> ValidateAndFetchCreationContextAsync(
+        public static async Task<(PatientBasicDto Patient, UserBasicDto Doctor)> ValidateAndFetchCreationContextAsync(
             Guid patientId,
             Guid doctorId,
-            IPatientRepository patientRepository,
-            IUserRepository userRepository,
+            IPatientCrossModuleService patientCrossModule,
+            IUserCrossModuleService userCrossModule,
             IMedicalCaseRepository medicalCaseRepository,
             ILogger logger)
         {
@@ -116,10 +116,10 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new ArgumentException("DoctorId/UserId 不能为空");
             }
 
-            var patient = await patientRepository.GetByIdAsync(patientId)
+            var patient = await patientCrossModule.GetPatientBasicInfoAsync(patientId)
                 ?? throw new InvalidOperationException($"患者不存在，PatientId: {patientId}");
 
-            var doctor = await userRepository.GetByIdAsync(doctorId)
+            var doctor = await userCrossModule.GetUserBasicInfoAsync(doctorId)
                 ?? throw new InvalidOperationException($"医生不存在，DoctorId: {doctorId}");
 
             // BR-001: 单患者仅一条未完成医案

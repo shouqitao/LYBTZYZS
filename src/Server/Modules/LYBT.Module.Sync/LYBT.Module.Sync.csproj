@@ -20,10 +20,7 @@
     <ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Entities\LYBT.Entities.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-    <!-- 引用其他模块以访问 Service 接口进行引用检查 -->
-    <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
-    <ProjectReference Include="..\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
-    <ProjectReference Include="..\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
+    <!-- D5-1: 跨模块引用检查已通过 IHerbCrossModuleService/IPatientCrossModuleService 解耦 -->
   </ItemGroup>
 
 </Project>

@@ -3,8 +3,7 @@ using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
-using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Patients.Interfaces;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Sync;
@@ -20,8 +19,8 @@ namespace LYBT.Module.Sync.Services;
 public class SyncService : ISyncService
 {
     private readonly AppDbContext _dbContext;
-    private readonly IHerbService _herbService;
-    private readonly IPatientService _patientService;
+    private readonly IHerbCrossModuleService _herbCrossModule;
+    private readonly IPatientCrossModuleService _patientCrossModule;
     private readonly ILogger<SyncService> _logger;
 
     private static readonly IReadOnlyList<string> SupportedTypes = new[] { "Herb", "Patient", "Formula" };
@@ -34,13 +33,13 @@ public class SyncService : ISyncService
 
     public SyncService(
         AppDbContext dbContext,
-        IHerbService herbService,
-        IPatientService patientService,
+        IHerbCrossModuleService herbCrossModule,
+        IPatientCrossModuleService patientCrossModule,
         ILogger<SyncService> logger)
     {
         _dbContext = dbContext;
-        _herbService = herbService;
-        _patientService = patientService;
+        _herbCrossModule = herbCrossModule;
+        _patientCrossModule = patientCrossModule;
         _logger = logger;
     }
 
@@ -523,15 +522,10 @@ public class SyncService : ISyncService
 
     private async Task<(bool canDelete, string? reason)> CanDeleteHerbAsync(Guid herbId)
     {
-        var result = await _herbService.CheckReferenceAsync(herbId);
-        if (!result.IsSuccess || result.Data == null)
+        var result = await _herbCrossModule.CheckHerbReferenceAsync(herbId);
+        if (result.HasReferences)
         {
-            return (false, "无法检查引用关系");
-        }
-
-        if (result.Data.HasReferences)
-        {
-            return (false, $"药材被 {result.Data.ReferenceCount} 个处方引用，请先禁用");
+            return (false, $"药材被 {result.ReferenceCount} 个处方引用，请先禁用");
         }
 
         return (true, null);
@@ -539,15 +533,10 @@ public class SyncService : ISyncService
 
     private async Task<(bool canDelete, string? reason)> CanDeletePatientAsync(Guid patientId)
     {
-        var result = await _patientService.CheckReferenceAsync(patientId);
-        if (!result.IsSuccess || result.Data == null)
+        var result = await _patientCrossModule.CheckPatientReferenceAsync(patientId);
+        if (result.HasReferences)
         {
-            return (false, "无法检查引用关系");
-        }
-
-        if (result.Data.HasReferences)
-        {
-            return (false, $"患者有 {result.Data.ReferenceCount} 条医案记录，请先禁用");
+            return (false, $"患者有 {result.ReferenceCount} 条医案记录，请先禁用");
         }
 
         return (true, null);
