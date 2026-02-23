@@ -576,6 +576,18 @@ namespace LYBT.Module.Users.Services
                 return Result<UserDetailDto>.Failure("您没有权限修改该用户状态");
             }
 
+            // S2-07: 最后管理员保护 - 禁用管理员级用户前检查是否是最后一个
+            if (entity.Status == CommonStatus.Enabled && entity.Role >= UserRole.Admin)
+            {
+                var activeAdmins = await _repository.FindAsync(
+                    u => u.Role >= UserRole.Admin && u.Status == CommonStatus.Enabled);
+                if (activeAdmins.Count() <= 1)
+                {
+                    _logger.LogWarning("[SVC] User.ToggleStatus → LastAdminProtection - UserId={UserId} Role={Role}", id, entity.Role);
+                    return Result<UserDetailDto>.Failure("不能禁用最后一个管理员");
+                }
+            }
+
             entity.Status = entity.Status == CommonStatus.Enabled
                 ? CommonStatus.Disabled
                 : CommonStatus.Enabled;
@@ -719,47 +731,92 @@ namespace LYBT.Module.Users.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // ERR-012: 修复ex.Message暴露
 
-            var successCount = 0;
-            var failedCount = 0;
-            var failedItems = new List<string>();
+            var result = new BatchOperationResultDto
+            {
+                TotalCount = ids.Count
+            };
             var statusText = status == CommonStatus.Enabled ? "启用" : "禁用";
+            var currentRole = GetCurrentUserRole();
 
             foreach (var id in ids)
             {
                 // 不能修改自己的状态
                 if (currentUserId.HasValue && id == currentUserId.Value)
                 {
-                    failedCount++;
-                    failedItems.Add($"不能{statusText}当前登录用户");
+                    result.FailureCount++;
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = $"不能{statusText}当前登录用户"
+                    });
                     continue;
                 }
 
                 var user = await _repository.GetByIdAsync(id);
                 if (user == null || user.IsDeleted)
                 {
-                    failedCount++;
-                    failedItems.Add($"用户不存在: {id}");
+                    result.FailureCount++;
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = "用户不存在"
+                    });
                     continue;
+                }
+
+                // S2-08: 权限检查 - 逐个校验 CanManageUser
+                if (!CanManageUser(currentRole, user.Role))
+                {
+                    result.FailureCount++;
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Name = user.UserName,
+                        Reason = $"无权限{statusText}该用户"
+                    });
+                    continue;
+                }
+
+                // S2-08: 最后管理员保护 (禁用场景)
+                if (status == CommonStatus.Disabled
+                    && user.Status == CommonStatus.Enabled
+                    && user.Role >= UserRole.Admin)
+                {
+                    var activeAdmins = await _repository.FindAsync(
+                        u => u.Role >= UserRole.Admin && u.Status == CommonStatus.Enabled);
+                    if (activeAdmins.Count() <= 1)
+                    {
+                        result.FailureCount++;
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Name = user.UserName,
+                            Reason = "不能禁用最后一个管理员"
+                        });
+                        continue;
+                    }
                 }
 
                 user.Status = status;
                 user.UpdatedAt = DateTime.Now;
                 await _repository.UpdateAsync(user);
-                successCount++;
+                result.SuccessCount++;
+
+                // X3: 禁用用户时撤销所有 Token
+                if (status == CommonStatus.Disabled)
+                {
+                    await _authService.RevokeUserTokensAsync(id, "批量禁用，强制登出");
+                }
+
+                _logger.LogInformation("[SVC] User.BatchUpdateStatus → ItemSuccess - UserId={UserId} Status={Status}", id, status);
             }
 
-            await _repository.SaveChangesAsync();
+            result.Message = $"批量{statusText}完成: 成功 {result.SuccessCount} 个, 失败 {result.FailureCount} 个";
 
-            return Result<BatchOperationResultDto>.Success(new BatchOperationResultDto
-            {
-                SuccessCount = successCount,
-                FailureCount = failedCount,
-                FailedItems = failedItems.Select(msg => new BatchOperationFailureItem
-                {
-                    Reason = msg
-                }).ToList(),
-                Message = $"批量{statusText}完成: 成功 {successCount} 个, 失败 {failedCount} 个"
-            });
+            _logger.LogInformation("[SVC] User.BatchUpdateStatus completed - Total={Total} Success={Success} Failure={Failure}",
+                result.TotalCount, result.SuccessCount, result.FailureCount);
+
+            return Result<BatchOperationResultDto>.Success(result);
         }
     }
 }
