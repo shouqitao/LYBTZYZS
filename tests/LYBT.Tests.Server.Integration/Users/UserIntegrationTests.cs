@@ -604,6 +604,81 @@ public class UserIntegrationTests
 
     #endregion
 
+    #region Last Admin Protection (S2-07)
+
+    [Fact]
+    public async Task ToggleStatus_DisableLastAdmin_ShouldBeRejected()
+    {
+        // Arrange - 使用 SuperAdmin 客户端绕过 CanManageUser(Admin,Admin)=false 限制
+        // SuperAdmin JWT 不对应 DB 用户，但 GetCurrentUserRole() 从 JWT Claims 读取
+        var superAdminId = Guid.Parse("00000000-0000-0000-0000-000000000099");
+        using var superAdminClient = _fixture.CreateClientAs(UserRole.SuperAdmin, superAdminId, "superadmin_test");
+
+        // 种子数据仅有 1 个 Admin 级别用户 (AdminUserId)
+        // Act - SuperAdmin 尝试禁用唯一的管理员
+        var response = await superAdminClient
+            .PostAsync($"/api/v1/users/{WebApiFixture.AdminUserId}/toggle-status", null);
+
+        // Assert - 最后管理员保护应拒绝此操作 (BusinessFail → 422)
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
+            "禁用最后一个管理员应返回422");
+
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<UserDetailDto>>(JsonOptions);
+        body!.Success.Should().BeFalse();
+        body.Message.Should().Contain("最后一个管理员",
+            "错误消息应说明最后管理员保护原因");
+    }
+
+    #endregion
+
+    #region Batch Disable (S2-08)
+
+    [Fact]
+    public async Task BatchDisable_WithDoctorToken_ShouldReturn403()
+    {
+        // Arrange - Doctor 没有 AdminOnly 权限
+        var batchRequest = new { Ids = new List<Guid> { Guid.NewGuid() } };
+
+        // Act
+        var response = await _fixture.DoctorClient
+            .PostAsJsonAsync("/api/v1/users/batch-disable", batchRequest);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "Doctor角色不应能执行批量禁用操作");
+    }
+
+    [Fact]
+    public async Task BatchDisable_LastAdminProtection_ShouldReportFailure()
+    {
+        // Arrange - SuperAdmin 客户端，尝试批量禁用唯一的 Admin
+        var superAdminId = Guid.Parse("00000000-0000-0000-0000-000000000099");
+        using var superAdminClient = _fixture.CreateClientAs(UserRole.SuperAdmin, superAdminId, "superadmin_test");
+
+        // 种子数据仅有 1 个 Admin 级别 DB 用户 (AdminUserId)
+        // SuperAdmin JWT 不在 DB 中，不计入 activeAdmins 查询结果
+        var batchRequest = new { Ids = new List<Guid> { WebApiFixture.AdminUserId } };
+
+        // Act
+        var response = await superAdminClient
+            .PostAsJsonAsync("/api/v1/users/batch-disable", batchRequest);
+
+        // Assert - 批量操作返回 200，但包含失败项
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<BatchOperationResultDto>>(JsonOptions);
+        body!.Success.Should().BeTrue();
+        body.Data.Should().NotBeNull();
+        body.Data!.TotalCount.Should().Be(1);
+        body.Data.FailureCount.Should().Be(1, "最后管理员不应被禁用");
+        body.Data.FailedItems.Should().ContainSingle()
+            .Which.Reason.Should().Contain("最后一个管理员");
+    }
+
+    #endregion
+
     #region Role Permission
 
     [Fact]

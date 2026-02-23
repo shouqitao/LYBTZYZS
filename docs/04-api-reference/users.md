@@ -188,18 +188,18 @@
 **路径参数**: `id` (Guid)
 
 **业务规则**:
-1. **最后管理员保护** (USER-D03): 不能禁用最后一个 SuperAdmin 或最后一个 Admin (返回 403)
-2. 禁用用户时所有 Token Family 失效 (AUTH-D06 复用)
-3. 禁用后当前会话立即失效，尝试登录返回 ERR-10006 (UserDisabled)
-4. 不能修改自己的状态 (返回 400)
+1. **权限检查** (S2): 需要 `CanManageUser` 权限。SuperAdmin 可管理所有角色；Admin 仅可管理 Doctor/Receptionist
+2. **最后管理员保护** (S2-07, USER-D03): 禁用 Admin/SuperAdmin 级别用户时，若活跃管理员 (`Role >= Admin && Enabled`) 仅剩 1 人，拒绝操作
+3. 禁用用户时所有 Token Family 失效 (X3-06, AUTH-D06 复用)
+4. 禁用后当前会话立即失效，尝试登录返回 ERR-10006 (UserDisabled)
 
 **成功响应** (200): `ApiResponse<UserDetailDto>`
 
 响应 message 示例: "用户已启用" 或 "用户已禁用"
 
 **错误响应**:
-- 400: 不能修改自己的状态
-- 403: 最后管理员保护 -- "不能禁用最后一个{超级管理员|管理员}" (USER-D03)
+- 422: 权限不足 -- "您没有权限修改该用户状态"
+- 422: 最后管理员保护 -- "不能禁用最后一个管理员" (USER-D03)
 - 404: 用户不存在 (ERR-10001)
 
 ---
@@ -244,7 +244,14 @@
 
 批量启用用户。
 
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
+
 **请求体**: `BatchDeleteInputDto` (同 batch-delete)
+
+**业务规则** (S2-08):
+1. **自身保护**: 不能启用/禁用当前登录用户
+2. **逐项权限检查**: 每个目标用户都需通过 `CanManageUser` 校验
+3. 部分失败不影响其他项，返回 `BatchOperationResultDto` 汇总结果
 
 **成功响应** (200): `ApiResponse<BatchOperationResultDto>`
 
@@ -254,9 +261,24 @@
 
 批量禁用用户。
 
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
+
 **请求体**: `BatchDeleteInputDto` (同 batch-delete)
 
+**业务规则** (S2-08):
+1. **自身保护**: 不能禁用当前登录用户
+2. **逐项权限检查**: 每个目标用户都需通过 `CanManageUser` 校验
+3. **最后管理员保护** (S2-07): 禁用 Admin/SuperAdmin 级别用户时，若活跃管理员仅剩 1 人，该项标记为失败
+4. 禁用成功的用户触发 Token 撤销 (X3-06)
+5. 部分失败不影响其他项，返回 `BatchOperationResultDto` 汇总结果
+
 **成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+
+`BatchOperationResultDto.FailedItems` 可能包含的失败原因:
+- "不能禁用当前登录用户"
+- "无权限禁用该用户"
+- "不能禁用最后一个管理员"
+- "用户不存在"
 
 ---
 
@@ -283,3 +305,4 @@
 | 2026-02-10 | v1.0 | 初始版本，14 个端点 |
 | 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-10001~10006, ERR-00003) |
 | 2026-02-19 | v1.2 | toggle-status 端点补充业务规则: USER-D03 最后管理员保护、Token Family 失效、错误响应 |
+| 2026-02-23 | v1.3 | S2-07/08: toggle-status 权限层级说明 + 错误码修正 (422); batch-enable/disable 业务规则 (逐项权限、管理员保护、Token撤销) |
