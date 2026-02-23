@@ -1,21 +1,20 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
-using LYBT.Entities.Formulas;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
+using Riok.Mapperly.Abstractions;
 
 namespace LYBT.Desktop.Infrastructure.DataSources.Remote;
 
 /// <summary>
 /// 远程验方数据源 - 通过 API 访问服务端
-/// OpenSpec: implement-local-mode
 /// </summary>
 public class RemoteFormulaDataSource : IFormulaDataSource
 {
     private readonly IFormulaApi _api;
     private readonly ILogger<RemoteFormulaDataSource> _logger;
-    private readonly FormulaDataSourceMapper _mapper = new();
+    private readonly FormulaListToDetailMapper _listMapper = new();
 
     public RemoteFormulaDataSource(IFormulaApi api, ILogger<RemoteFormulaDataSource> logger)
     {
@@ -23,7 +22,7 @@ public class RemoteFormulaDataSource : IFormulaDataSource
         _logger = logger;
     }
 
-    public async Task<Formula?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<FormulaDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] Formula.GetById - Id={Id}", id);
 
@@ -35,7 +34,7 @@ public class RemoteFormulaDataSource : IFormulaDataSource
                 _logger.LogWarning("[RemoteDataSource] Formula.GetById - NotFound: {Id}", id);
                 return null;
             }
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -44,7 +43,7 @@ public class RemoteFormulaDataSource : IFormulaDataSource
         }
     }
 
-    public Task<(List<Formula> Items, int Total)> GetPagedAsync(
+    public Task<(List<FormulaDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword = null,
@@ -53,7 +52,7 @@ public class RemoteFormulaDataSource : IFormulaDataSource
         return GetPagedAsync(page, pageSize, keyword, null, ct);
     }
 
-    public async Task<(List<Formula> Items, int Total)> GetPagedAsync(
+    public async Task<(List<FormulaDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword,
@@ -67,10 +66,10 @@ public class RemoteFormulaDataSource : IFormulaDataSource
             var response = await _api.GetFormulasAsync(page, pageSize, keyword, category);
             if (response.Data == null)
             {
-                return (new List<Formula>(), 0);
+                return (new List<FormulaDetailDto>(), 0);
             }
 
-            var items = response.Data.Items.Select(_mapper.ToEntity).ToList();
+            var items = response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
             return (items, response.Data.TotalCount);
         }
         catch (Exception ex)
@@ -80,21 +79,20 @@ public class RemoteFormulaDataSource : IFormulaDataSource
         }
     }
 
-    public async Task<Formula> CreateAsync(Formula entity, CancellationToken ct = default)
+    public async Task<FormulaDetailDto> CreateAsync(FormulaInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] Formula.Create - Name={Name}", entity.Name);
+        _logger.LogInformation("[RemoteDataSource] Formula.Create - Name={Name}", input.Name);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            var response = await _api.CreateFormulaAsync(inputDto);
+            var response = await _api.CreateFormulaAsync(input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "创建验方失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -103,26 +101,24 @@ public class RemoteFormulaDataSource : IFormulaDataSource
         }
     }
 
-    public async Task<Formula> UpdateAsync(Formula entity, CancellationToken ct = default)
+    public async Task<FormulaDetailDto> UpdateAsync(FormulaInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] Formula.Update - Id={Id}", entity.Id);
+        _logger.LogInformation("[RemoteDataSource] Formula.Update - Id={Id}", input.Id);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            inputDto.Id = entity.Id;
-            var response = await _api.UpdateFormulaAsync(entity.Id, inputDto);
+            var response = await _api.UpdateFormulaAsync(input.Id!.Value, input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "更新验方失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[RemoteDataSource] Formula.Update failed - Id={Id}", entity.Id);
+            _logger.LogError(ex, "[RemoteDataSource] Formula.Update failed - Id={Id}", input.Id);
             throw;
         }
     }
@@ -143,7 +139,7 @@ public class RemoteFormulaDataSource : IFormulaDataSource
         }
     }
 
-    public async Task<Formula?> CloneAsync(Guid id, CancellationToken ct = default)
+    public async Task<FormulaDetailDto?> CloneAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogInformation("[RemoteDataSource] Formula.Clone - Id={Id}", id);
 
@@ -156,7 +152,7 @@ public class RemoteFormulaDataSource : IFormulaDataSource
                 return null;
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -181,7 +177,7 @@ public class RemoteFormulaDataSource : IFormulaDataSource
         }
     }
 
-    public async Task<Formula?> RestoreAsync(Guid id, CancellationToken ct = default)
+    public async Task<FormulaDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogInformation("[RemoteDataSource] Formula.Restore - Id={Id}", id);
 
@@ -194,7 +190,7 @@ public class RemoteFormulaDataSource : IFormulaDataSource
                 return null;
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -203,7 +199,7 @@ public class RemoteFormulaDataSource : IFormulaDataSource
         }
     }
 
-    public async Task<Formula?> GetWithHerbsAsync(Guid id, CancellationToken ct = default)
+    public async Task<FormulaDetailDto?> GetWithHerbsAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] Formula.GetWithHerbs - Id={Id}", id);
 
@@ -243,4 +239,22 @@ public class RemoteFormulaDataSource : IFormulaDataSource
             };
         }
     }
+}
+
+/// <summary>
+/// FormulaListDto -> FormulaDetailDto 映射器 (仅限 DTO 间转换, 无 Entity 依赖)
+/// </summary>
+[Mapper]
+internal partial class FormulaListToDetailMapper
+{
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.CreatedBy))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Description))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Usage))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Property))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Source))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Remark))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Contraindications))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Herbs))]
+    public partial FormulaDetailDto ToDetailDto(FormulaListDto listDto);
 }

@@ -1,18 +1,16 @@
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.IntegrationTests.LocalMode.Fixtures;
 using LYBT.Desktop.LocalData.Context;
-using LYBT.Entities.Herbs;
-using LYBT.Entities.Patients;
-using LYBT.Entities.Users;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
-using FormulaEntity = LYBT.Entities.Formulas.Formula;
-using FormulaHerbItemEntity = LYBT.Entities.Formulas.FormulaHerbItem;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
-using PrescriptionItemEntity = LYBT.Entities.Prescriptions.PrescriptionItem;
 
 namespace LYBT.Desktop.IntegrationTests.EndToEnd.BusinessFlow;
 
@@ -63,17 +61,16 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
         // Step 1: 创建管理员用户 - 系统初始化的第一步
         // 诊所系统上线后，首先需要创建管理员账号
         // ================================================================
-        var adminUser = new User
+        var adminUserInput = new UserInputDto
         {
             UserName = "admin",
             RealName = "系统管理员",
             PinYinCode = "XTGLY",
             Role = UserRole.Admin,
-            Status = CommonStatus.Enabled,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123456"),
+            Password = "Admin@123456",
         };
 
-        var createdAdmin = await userDataSource.CreateAsync(adminUser);
+        var createdAdmin = await userDataSource.CreateAsync(adminUserInput);
 
         // 验证管理员创建成功
         createdAdmin.Should().NotBeNull();
@@ -112,10 +109,10 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
             ("陈皮", "CP", "理气药", 2.2m, "g", "理气健脾，燥湿化痰"),
         };
 
-        var createdHerbs = new List<Herb>();
+        var createdHerbs = new List<HerbDetailDto>();
         foreach (var (name, pinyin, category, price, unit, effect) in herbDefinitions)
         {
-            var herb = new Herb
+            var herbInput = new HerbInputDto
             {
                 Name = name,
                 PinYinCode = pinyin,
@@ -123,10 +120,9 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
                 Price = price,
                 Unit = unit,
                 Effect = effect,
-                Status = CommonStatus.Enabled,
             };
 
-            var createdHerb = await herbDataSource.CreateAsync(herb);
+            var createdHerb = await herbDataSource.CreateAsync(herbInput);
             createdHerbs.Add(createdHerb);
         }
 
@@ -155,17 +151,15 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
         var fuLing = createdHerbs.First(h => h.Name == "茯苓");
         var ganCao = createdHerbs.First(h => h.Name == "甘草");
 
-        var formula = new FormulaEntity
+        var formulaInput = new FormulaInputDto
         {
             Name = "四君子汤",
             Effect = "益气健脾",
-            Indication = "脾胃气虚证。面色萎白，语声低微，气短乏力，食少便溏，舌淡苔白，脉虚弱。",
+            Indications = "脾胃气虚证。面色萎白，语声低微，气短乏力，食少便溏，舌淡苔白，脉虚弱。",
             Usage = "水煎服，每日一剂",
-            Status = CommonStatus.Enabled,
-            FormulaType = FormulaType.Classic,
             Category = "补益剂",
             // 验方药材组成: 四味药，按经典剂量配比
-            Herbs = new List<FormulaHerbItemEntity>
+            Herbs = new List<FormulaHerbItemInputDto>
             {
                 new()
                 {
@@ -173,7 +167,6 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
                     HerbName = "党参",
                     Dosage = 15,       // 君药 (主药)，剂量最大
                     Unit = "g",
-                    IsValidated = true,
                 },
                 new()
                 {
@@ -181,7 +174,6 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
                     HerbName = "白术",
                     Dosage = 10,       // 臣药 (辅助药)
                     Unit = "g",
-                    IsValidated = true,
                 },
                 new()
                 {
@@ -189,7 +181,6 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
                     HerbName = "茯苓",
                     Dosage = 10,       // 佐药
                     Unit = "g",
-                    IsValidated = true,
                 },
                 new()
                 {
@@ -197,12 +188,11 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
                     HerbName = "甘草",
                     Dosage = 6,        // 使药 (调和药)，剂量最小
                     Unit = "g",
-                    IsValidated = true,
                 },
             },
         };
 
-        var createdFormula = await formulaDataSource.CreateAsync(formula);
+        var createdFormula = await formulaDataSource.CreateAsync(formulaInput);
 
         // 验证验方创建成功
         createdFormula.Should().NotBeNull();
@@ -227,7 +217,7 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
         // Step 4: 患者登记 - 新患者来诊
         // 患者基本信息: 姓名、性别、出生日期、联系方式、地址等
         // ================================================================
-        var patient = new Patient
+        var patientInput = new PatientInputDto
         {
             Name = "王建国",
             PinYinCode = "WJG",
@@ -239,7 +229,7 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
             MedicalHistory = "高血压病史5年",
         };
 
-        var createdPatient = await patientDataSource.CreateAsync(patient);
+        var createdPatient = await patientDataSource.CreateAsync(patientInput);
 
         // 验证患者创建成功
         createdPatient.Should().NotBeNull();
@@ -258,16 +248,13 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
         // 中医四诊: 望(舌诊)、闻、问(现病史)、切(脉诊)
         // 辨证论治: 根据四诊信息，得出中医诊断
         // ================================================================
-        var medicalCase = new MedicalCaseEntity
+        var medicalCaseInput = new MedicalCaseInputDto
         {
             PatientId = createdPatient.Id,
-            PatientName = createdPatient.Name,
             UserId = createdAdmin.Id,
-            DoctorName = createdAdmin.RealName,
-            CaseStatus = MedicalCaseStatus.Active,
             NeedsPrescription = true,  // 本次就诊需要开处方
-            // 诊断记录（共享主键，Id 由 CreateAsync 自动设置）
-            Consultation = new ConsultationEntity
+            // 诊断记录
+            Consultation = new ConsultationInputDto
             {
                 // 现病史 - 患者主诉及病程描述
                 PresentIllness = "患者近半月来感到倦怠乏力，食欲不振，食后腹胀，大便偏溏，精神萎靡，自汗。",
@@ -280,7 +267,7 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
             },
         };
 
-        var createdMedicalCase = await medicalCaseDataSource.CreateAsync(medicalCase);
+        var createdMedicalCase = await medicalCaseDataSource.CreateAsync(medicalCaseInput);
 
         // 验证医案创建成功
         createdMedicalCase.Should().NotBeNull();
@@ -310,7 +297,7 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
         var huangQi = createdHerbs.First(h => h.Name == "黄芪");
         var chenPi = createdHerbs.First(h => h.Name == "陈皮");
 
-        var prescriptionItems = new List<PrescriptionItemEntity>
+        var prescriptionItems = new List<PrescriptionItemInputDto>
         {
             // 四君子汤原方药材
             new() { HerbId = dangShen.Id, HerbName = "党参", Dosage = 15, Unit = "g", UnitPrice = dangShen.Price },
@@ -323,28 +310,22 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
         };
 
         // 通过 UpdateAsync 将处方添加到医案
-        // 需要重新构建包含处方的医案实体
-        var medicalCaseWithPrescription = new MedicalCaseEntity
+        var medicalCaseUpdateInput = new MedicalCaseInputDto
         {
             Id = createdMedicalCase.Id,
             PatientId = createdMedicalCase.PatientId,
-            PatientName = createdMedicalCase.PatientName,
             UserId = createdMedicalCase.UserId,
-            DoctorName = createdMedicalCase.DoctorName,
-            CaseStatus = MedicalCaseStatus.Active,
-            CaseNumber = createdMedicalCase.CaseNumber,
             NeedsPrescription = true,
             // 保留原有诊断
-            Consultation = new ConsultationEntity
+            Consultation = new ConsultationInputDto
             {
-                Id = createdMedicalCase.Id,
                 PresentIllness = "患者近半月来感到倦怠乏力，食欲不振，食后腹胀，大便偏溏，精神萎靡，自汗。",
                 TongueDiagnosis = "舌淡胖，边有齿痕，苔薄白",
                 PulseDiagnosis = "脉细弱",
                 TcmDiagnosis = "脾胃气虚证",
             },
             // 新增处方
-            Prescription = new PrescriptionEntity
+            Prescription = new PrescriptionInputDto
             {
                 MedicalCaseId = createdMedicalCase.Id,
                 DosageCount = 7,           // 7帖
@@ -356,7 +337,7 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
             },
         };
 
-        var updatedMedicalCase = await medicalCaseDataSource.UpdateAsync(medicalCaseWithPrescription);
+        var updatedMedicalCase = await medicalCaseDataSource.UpdateAsync(medicalCaseUpdateInput);
 
         // 验证处方创建成功
         updatedMedicalCase.Should().NotBeNull();

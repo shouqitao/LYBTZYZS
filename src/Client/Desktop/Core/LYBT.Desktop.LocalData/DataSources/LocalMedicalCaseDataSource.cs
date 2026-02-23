@@ -1,8 +1,10 @@
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.LocalData.Context;
+using LYBT.Desktop.LocalData.Mappers;
 using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Validators.BusinessRules;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +21,7 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
 {
     private readonly LocalDbContext _context;
     private readonly ILogger<LocalMedicalCaseDataSource> _logger;
+    private readonly LocalMedicalCaseMapper _mapper = new();
 
     public LocalMedicalCaseDataSource(LocalDbContext context, ILogger<LocalMedicalCaseDataSource> logger)
     {
@@ -26,26 +29,30 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
         _logger = logger;
     }
 
-    public async Task<MedicalCase?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] MedicalCase.GetById - Id={Id}", id);
-        return await _context.MedicalCases
+        var entity = await _context.MedicalCases
             .AsNoTracking()
             .FirstOrDefaultAsync(mc => mc.Id == id, ct);
+
+        return entity == null ? null : _mapper.ToDetailDto(entity);
     }
 
-    public async Task<MedicalCase?> GetWithDetailsAsync(Guid id, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto?> GetWithDetailsAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] MedicalCase.GetWithDetails - Id={Id}", id);
-        return await _context.MedicalCases
+        var entity = await _context.MedicalCases
             .AsNoTracking()
             .Include(mc => mc.Consultation)
             .Include(mc => mc.Prescription)
                 .ThenInclude(p => p!.Items)
             .FirstOrDefaultAsync(mc => mc.Id == id, ct);
+
+        return entity == null ? null : _mapper.ToDetailDto(entity);
     }
 
-    public async Task<(List<MedicalCase> Items, int Total)> GetPagedAsync(
+    public async Task<(List<MedicalCaseDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword = null,
@@ -70,10 +77,10 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
             .Take(pageSize)
             .ToListAsync(ct);
 
-        return (items, total);
+        return (items.Select(e => _mapper.ToDetailDto(e)).ToList(), total);
     }
 
-    public async Task<(List<MedicalCase> Items, int Total)> QueryAsync(
+    public async Task<(List<MedicalCaseDetailDto> Items, int Total)> QueryAsync(
         Guid? patientId = null,
         Guid? userId = null,
         MedicalCaseStatus? status = null,
@@ -110,30 +117,40 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
             .Take(pageSize)
             .ToListAsync(ct);
 
-        return (items, total);
+        return (items.Select(e => _mapper.ToDetailDto(e)).ToList(), total);
     }
 
-    public async Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId, CancellationToken ct = default)
+    public async Task<List<MedicalCaseDetailDto>> GetByPatientIdAsync(Guid patientId, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] MedicalCase.GetByPatientId - PatientId={PatientId}", patientId);
 
-        return await _context.MedicalCases
+        var entities = await _context.MedicalCases
             .AsNoTracking()
             .Where(mc => mc.PatientId == patientId)
             .OrderByDescending(mc => mc.CreatedAt)
             .ToListAsync(ct);
+
+        return entities.Select(e => _mapper.ToDetailDto(e)).ToList();
     }
 
-    public async Task<MedicalCase> CreateAsync(MedicalCase entity, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[LocalDataSource] MedicalCase.Create - PatientName={PatientName}", entity.PatientName);
+        _logger.LogInformation("[LocalDataSource] MedicalCase.Create - PatientId={PatientId}", input.PatientId);
 
+        var entity = _mapper.ToEntity(input);
         entity.Id = Guid.NewGuid();
+        entity.CreatedAt = DateTime.Now;
         entity.CaseStatus = MedicalCaseStatus.Draft;
+
+        // 补充患者/医生名称（InputDto 不携带，需从数据库查找）
+        var patient = await _context.Patients.FindAsync(new object[] { input.PatientId }, ct);
+        entity.PatientName = patient?.Name ?? string.Empty;
+        var user = await _context.Users.FindAsync(new object[] { input.UserId }, ct);
+        entity.DoctorName = user?.RealName ?? string.Empty;
 
         // 业务规则: 患者同时只能有一个 Active/Draft 医案
         var existingStatuses = await _context.MedicalCases
-            .Where(mc => mc.PatientId == entity.PatientId && !mc.IsDeleted)
+            .Where(mc => mc.PatientId == input.PatientId && !mc.IsDeleted)
             .Select(mc => mc.CaseStatus)
             .ToListAsync(ct);
 
@@ -144,22 +161,53 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
         entity.CaseNumber = GenerateCaseNumber();
 
         // 创建关联的 Consultation（共享主键）
-        if (entity.Consultation != null)
+        if (input.Consultation != null)
         {
-            entity.Consultation.Id = entity.Id;
+            entity.Consultation = new Consultation
+            {
+                Id = entity.Id,
+                PresentIllness = input.Consultation.PresentIllness,
+                TongueDiagnosis = input.Consultation.TongueDiagnosis,
+                PulseDiagnosis = input.Consultation.PulseDiagnosis,
+                TcmDiagnosis = input.Consultation.TcmDiagnosis,
+                CreatedAt = DateTime.Now
+            };
         }
 
         // 创建关联的 Prescription
-        if (entity.Prescription != null)
+        if (input.Prescription != null)
         {
-            entity.Prescription.Id = Guid.NewGuid();
-            entity.Prescription.MedicalCaseId = entity.Id;
-
-            foreach (var item in entity.Prescription.Items)
+            var prescription = new Prescription
             {
-                item.Id = Guid.NewGuid();
-                item.PrescriptionId = entity.Prescription.Id;
+                Id = Guid.NewGuid(),
+                MedicalCaseId = entity.Id,
+                DosageCount = input.Prescription.DosageCount,
+                Usage = input.Prescription.Usage,
+                Advice = input.Prescription.Advice,
+                ReferencedFormulas = input.Prescription.ReferencedFormulas,
+                Discount = input.Prescription.Discount,
+                Remark = input.Prescription.Remark,
+                CreatedAt = DateTime.Now
+            };
+
+            foreach (var itemInput in input.Prescription.Items)
+            {
+                prescription.Items.Add(new PrescriptionItem
+                {
+                    Id = Guid.NewGuid(),
+                    PrescriptionId = prescription.Id,
+                    HerbId = itemInput.HerbId,
+                    HerbName = itemInput.HerbName ?? string.Empty,
+                    Dosage = itemInput.Dosage,
+                    Unit = itemInput.Unit,
+                    DecocteMethod = itemInput.DecocteMethod,
+                    UnitPrice = itemInput.UnitPrice,
+                    Usage = itemInput.Usage,
+                    Remark = itemInput.Remark
+                });
             }
+
+            entity.Prescription = prescription;
         }
 
         _context.MedicalCases.Add(entity);
@@ -168,93 +216,139 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
         _logger.LogInformation("[LocalDataSource] MedicalCase.Create completed - Id={Id}, CaseNumber={CaseNumber}",
             entity.Id, entity.CaseNumber);
 
-        return entity;
+        return _mapper.ToDetailDto(entity);
     }
 
-    public async Task<MedicalCase> UpdateAsync(MedicalCase entity, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[LocalDataSource] MedicalCase.Update - Id={Id}", entity.Id);
+        var id = input.Id ?? throw new InvalidOperationException("更新医案时必须提供ID");
+        _logger.LogInformation("[LocalDataSource] MedicalCase.Update - Id={Id}", id);
 
         var existing = await _context.MedicalCases
             .Include(mc => mc.Consultation)
             .Include(mc => mc.Prescription)
                 .ThenInclude(p => p!.Items)
-            .FirstOrDefaultAsync(mc => mc.Id == entity.Id, ct)
-            ?? throw new InvalidOperationException($"医案不存在: {entity.Id}");
-
-        // 状态流转验证
-        if (existing.CaseStatus != entity.CaseStatus)
-        {
-            if (!MedicalCaseBusinessRules.IsValidStatusTransition(existing.CaseStatus, entity.CaseStatus))
-                throw new InvalidOperationException(
-                    $"医案状态不能从 {existing.CaseStatus} 变更为 {entity.CaseStatus}");
-        }
+            .FirstOrDefaultAsync(mc => mc.Id == id, ct)
+            ?? throw new InvalidOperationException($"医案不存在: {id}");
 
         // 更新基本属性
-        _context.Entry(existing).CurrentValues.SetValues(entity);
+        existing.Remark = input.Remark;
+        existing.UpdatedAt = DateTime.Now;
 
         // 更新 Consultation
-        if (entity.Consultation != null)
+        if (input.Consultation != null)
         {
             if (existing.Consultation == null)
             {
-                entity.Consultation.Id = entity.Id;
-                _context.Consultations.Add(entity.Consultation);
+                existing.Consultation = new Consultation
+                {
+                    Id = id,
+                    PresentIllness = input.Consultation.PresentIllness,
+                    TongueDiagnosis = input.Consultation.TongueDiagnosis,
+                    PulseDiagnosis = input.Consultation.PulseDiagnosis,
+                    TcmDiagnosis = input.Consultation.TcmDiagnosis,
+                    CreatedAt = DateTime.Now
+                };
+                _context.Consultations.Add(existing.Consultation);
             }
             else
             {
-                _context.Entry(existing.Consultation).CurrentValues.SetValues(entity.Consultation);
+                existing.Consultation.PresentIllness = input.Consultation.PresentIllness;
+                existing.Consultation.TongueDiagnosis = input.Consultation.TongueDiagnosis;
+                existing.Consultation.PulseDiagnosis = input.Consultation.PulseDiagnosis;
+                existing.Consultation.TcmDiagnosis = input.Consultation.TcmDiagnosis;
+                existing.Consultation.UpdatedAt = DateTime.Now;
             }
         }
 
         // 更新 Prescription
-        if (entity.Prescription != null)
+        if (input.Prescription != null)
         {
             if (existing.Prescription == null)
             {
-                entity.Prescription.Id = Guid.NewGuid();
-                entity.Prescription.MedicalCaseId = entity.Id;
-                foreach (var item in entity.Prescription.Items)
+                var prescription = new Prescription
                 {
-                    item.Id = Guid.NewGuid();
-                    item.PrescriptionId = entity.Prescription.Id;
+                    Id = Guid.NewGuid(),
+                    MedicalCaseId = id,
+                    DosageCount = input.Prescription.DosageCount,
+                    Usage = input.Prescription.Usage,
+                    Advice = input.Prescription.Advice,
+                    ReferencedFormulas = input.Prescription.ReferencedFormulas,
+                    Discount = input.Prescription.Discount,
+                    Remark = input.Prescription.Remark,
+                    CreatedAt = DateTime.Now
+                };
+
+                foreach (var itemInput in input.Prescription.Items)
+                {
+                    prescription.Items.Add(new PrescriptionItem
+                    {
+                        Id = Guid.NewGuid(),
+                        PrescriptionId = prescription.Id,
+                        HerbId = itemInput.HerbId,
+                        HerbName = itemInput.HerbName ?? string.Empty,
+                        Dosage = itemInput.Dosage,
+                        Unit = itemInput.Unit,
+                        DecocteMethod = itemInput.DecocteMethod,
+                        UnitPrice = itemInput.UnitPrice,
+                        Usage = itemInput.Usage,
+                        Remark = itemInput.Remark
+                    });
                 }
-                _context.Prescriptions.Add(entity.Prescription);
+
+                _context.Prescriptions.Add(prescription);
             }
             else
             {
-                _context.Entry(existing.Prescription).CurrentValues.SetValues(entity.Prescription);
+                existing.Prescription.DosageCount = input.Prescription.DosageCount;
+                existing.Prescription.Usage = input.Prescription.Usage;
+                existing.Prescription.Advice = input.Prescription.Advice;
+                existing.Prescription.ReferencedFormulas = input.Prescription.ReferencedFormulas;
+                existing.Prescription.Discount = input.Prescription.Discount;
+                existing.Prescription.Remark = input.Prescription.Remark;
+                existing.Prescription.UpdatedAt = DateTime.Now;
 
                 // 更新处方项（删除旧的，添加新的）
                 _context.PrescriptionItems.RemoveRange(existing.Prescription.Items);
-                foreach (var item in entity.Prescription.Items)
+                foreach (var itemInput in input.Prescription.Items)
                 {
-                    item.Id = Guid.NewGuid();
-                    item.PrescriptionId = existing.Prescription.Id;
-                    _context.PrescriptionItems.Add(item);
+                    _context.PrescriptionItems.Add(new PrescriptionItem
+                    {
+                        Id = Guid.NewGuid(),
+                        PrescriptionId = existing.Prescription.Id,
+                        HerbId = itemInput.HerbId,
+                        HerbName = itemInput.HerbName ?? string.Empty,
+                        Dosage = itemInput.Dosage,
+                        Unit = itemInput.Unit,
+                        DecocteMethod = itemInput.DecocteMethod,
+                        UnitPrice = itemInput.UnitPrice,
+                        Usage = itemInput.Usage,
+                        Remark = itemInput.Remark
+                    });
                 }
             }
         }
 
         await _context.SaveChangesAsync(ct);
-        return existing;
+        return _mapper.ToDetailDto(existing);
     }
 
-    public async Task<MedicalCase> SaveAsync(MedicalCase entity, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto> SaveAsync(MedicalCaseInputDto input, CancellationToken ct = default)
     {
         // SaveAsync 统一入口：根据是否存在决定创建或更新
-        var existing = await _context.MedicalCases
-            .AsNoTracking()
-            .FirstOrDefaultAsync(mc => mc.Id == entity.Id, ct);
+        if (input.Id.HasValue)
+        {
+            var existing = await _context.MedicalCases
+                .AsNoTracking()
+                .FirstOrDefaultAsync(mc => mc.Id == input.Id.Value, ct);
 
-        if (existing == null)
-        {
-            return await CreateAsync(entity, ct);
+            if (existing != null)
+            {
+                return await UpdateAsync(input, ct);
+            }
         }
-        else
-        {
-            return await UpdateAsync(entity, ct);
-        }
+
+        return await CreateAsync(input, ct);
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)

@@ -1,10 +1,9 @@
-using LYBT.Entities.Users;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
 /// 本地认证服务接口
-/// OpenSpec: implement-local-mode
 /// </summary>
 public interface ILocalAuthService
 {
@@ -14,8 +13,8 @@ public interface ILocalAuthService
     /// <param name="username">用户名</param>
     /// <param name="password">密码（明文）</param>
     /// <param name="ct">取消令牌</param>
-    /// <returns>验证成功返回用户实体，否则返回 null</returns>
-    Task<User?> ValidateAsync(string username, string password, CancellationToken ct = default);
+    /// <returns>验证成功返回用户详情，否则返回 null</returns>
+    Task<UserDetailDto?> ValidateAsync(string username, string password, CancellationToken ct = default);
 
     /// <summary>
     /// 修改密码

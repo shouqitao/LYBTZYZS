@@ -1,72 +1,71 @@
-# Findings: 项目架构优化一轮迭代
+# Findings: Phase 2 - Desktop Architecture Optimization
 
-## 项目规模
-- 56 个项目 (42 源码 + 26 测试), 2359 测试方法
-- Server: 7 业务模块, 15 Service, 5 Repository
-- Desktop: 8 Core + 7 Module + 2 Role + 1 Shell = 18 项目
-- Shared: 8 共享库
-- Test: 5 新结构 + 18 旧结构 + 3 特殊 = 26 项目
+## Architecture Issue
 
-## 项目级架构分析 (2026-02-23)
+Desktop Contracts/Infrastructure 直接依赖 LYBT.Entities (Server Core 项目)。
+DataSource 接口 `IDataSourceBase<TEntity>` 使用 EF 实体类型作为泛型参数。
 
-### 依赖方向: 无循环依赖, 整体健康
-- Shared 层: 层级清晰, Primitives→Models→Validators/Utilities/Components
-- Server 模块: Herbs/Patients/Formula/Users/Auth 均独立
-- Desktop 模块: 遵循 Foundation→Infrastructure→Models→Contracts 分层
+## Current State Analysis
 
-### 发现的架构问题
+### DataSource 接口 Entity 依赖 (已修复)
 
-#### P1: Server Sync 模块直接引用 3 个业务模块
-- LYBT.Module.Sync → Herbs, Patients, Formula (用于引用检查)
-- 违反模块独立性原则, 应通过 ICrossModuleService 接口
+| Interface | 旧类型 | 新类型 | 状态 |
+|-----------|--------|--------|------|
+| IDataSourceBase | `<TEntity>` | `<TDetail, TInput>` | done |
+| IHerbDataSource | `Herb` | `HerbDetailDto, HerbInputDto` | done |
+| IPatientDataSource | `Patient` | `PatientDetailDto, PatientInputDto` | done |
+| IFormulaDataSource | `Formula` | `FormulaDetailDto, FormulaInputDto` | done |
+| IMedicalCaseDataSource | `MedicalCase` | `MedicalCaseDetailDto, MedicalCaseInputDto` | done |
+| IUserDataSource | `User` | `UserDetailDto, UserInputDto` | done |
+| ILocalAuthService | `User?` | `UserDetailDto?` | done |
 
-#### P2: Server MedicalCase 直接引用 2 个业务模块
-- LYBT.Module.MedicalCase → Patients, Users
-- 已有注释标记移除计划, 运行时通过 ICrossModuleService
+### Remote DataSource 架构变更
 
-#### P3: Desktop MedicalCase 直接引用 2 个业务模块
-- LYBT.Desktop.MedicalCase → Herbs, Formula
-- D5-3 设计: 应通过 IHerbSearchProvider/IFormulaSearchProvider 接口
+**旧路径**: API -> DetailDto -> mapper.ToEntity() -> Entity -> mapper.ToDetailDto() -> DetailDto
+**新路径**: API -> DetailDto -> 直接返回
 
-#### P4: 架构测试重复
-- LYBT.ArchTests (旧, 5文件41测试) vs LYBT.Tests.Architecture (新, 6文件41测试)
-- 测试内容互补但项目分裂
+列表端点处理:
+- API 返回 `XxxListDto`
+- Remote DataSource 内部用 `XxxListToDetailMapper` (Mapperly) 转为 `XxxDetailDto`
+- 未填充的 DetailDto 字段保持默认值 (null/0)
+- Repository/ViewModel 只使用 ListDto 兼容的字段子集
 
-#### P5: 空壳目录残留
-- src/Server/Modules/LYBT.Module.Consultation/ (仅 obj/)
-- src/Server/Modules/LYBT.Module.Prescriptions/ (仅 obj/)
+### Local DataSource 架构变更
 
-#### P6: 包版本管理
-- 待确认是否使用 Directory.Packages.props 中央管理
+**边界转换模式**: EF Entity 在内部使用, 通过 `LocalXxxMapper` 在 DataSource 边界转换
+- 入口: `_mapper.ToEntity(inputDto)` -> EF 操作
+- 出口: EF 查询 Entity -> `_mapper.ToDetailDto(entity)` -> 返回 DTO
 
-### 测试架构: 健康, 无重复
-- 新旧结构互补: 新=层级测试, 旧=模块测试
-- Desktop Unit 649 测试全在新结构 (旧结构无 Desktop 单测)
-- 仅 Architecture 项目建议合并
+### API Response 类型映射
 
-## 设计 vs 代码差距摘要
+| API 端点 | 返回类型 | DataSource 返回 |
+|---------|---------|----------------|
+| GetXxxByIdAsync | `DetailDto` | 直接透传 |
+| GetXxxsAsync (paged) | `PagedResult<ListDto>` | ListDto->DetailDto mapper |
+| CreateXxxAsync | `DetailDto` | 直接透传 |
+| UpdateXxxAsync | `DetailDto` | 直接透传 |
+| RestoreAsync | `DetailDto` | 直接透传 |
+| CloneAsync | `DetailDto` | 直接透传 |
 
-### S1 安全加固 (33项, P0-P1, 无前置依赖)
-- Token Family 撤销 6 场景未实现
-- 引用检查 CheckReference 硬编码 true
-- 权限矩阵不完整 (Admin→Receptionist, 自删保护)
-- 密码哈希 Bug (L458 旧密码优先)
+### 项目依赖变更
 
-### S2 核心功能 (51项, P1, 依赖 S1)
-- 打印字段在 Prescription 层级 (应提升到 MedicalCase)
-- 15 个字段验证值与 PRD 不一致
-- TotalPrice 始终为 0, FormulaMapper Herbs 忽略
+| 项目 | LYBT.Entities 引用 | 状态 |
+|-----|-------------------|------|
+| LYBT.Desktop.Contracts | 已移除 | done |
+| LYBT.Desktop.Infrastructure | 待移除 (Task 6) | pending |
+| LYBT.Desktop.LocalData | 保留 (需要 EF Entity) | by design |
 
-### S3 体系统一 (85项, P1, 依赖 S2)
-- 错误码 MCCEE 未全量统一
-- ICrossModuleService 未 ISP 拆分 (设计已确认)
-- 分页筛选仍在内存过滤 (6 处)
+### 关键发现
 
-### S4 本地模式 (62项, P1-P2)
-- IDataSource 方法缺失 (~22 处)
-- 打印模板与 PRD 不一致 (字体/边距/内容)
+1. **ListDto vs DetailDto**: Paged API 返回 ListDto (轻量), 但接口返回 DetailDto。通过 Mapperly mapper 桥接, DetailDto 中 ListDto 不包含的字段为默认值。
+2. **FormulaHerbItem 无 UnitPrice**: Entity 没有此字段, TotalPrice 计算改为由 Service 层负责。
+3. **MedicalCase.SaveAsync 签名变更**: 从 `SaveAsync(MedicalCase)` 改为 `SaveAsync(MedicalCaseInputDto)`, Local 实现中需从 InputDto 构建/更新聚合实体。
 
-### S5 细节完善 (98项, P2-P3)
-- BaseService 继承未统一 (3 个 Service)
-- SyncService 返回类型 ServiceResult → Result<T>
-- Desktop 跨模块依赖未解耦
+### 待处理: Repository 层编译错误 (27 个)
+
+错误分布:
+- HerbRepository: ~4 errors (Entity->DTO 类型不匹配)
+- PatientRepository: ~4 errors
+- FormulaRepository: ~4 errors
+- MedicalCaseRepository: ~7 errors (最复杂, 包含聚合保存)
+- UserRepository: ~8 errors

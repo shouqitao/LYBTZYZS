@@ -2,6 +2,7 @@ using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.DataSources;
 using LYBT.Desktop.LocalData.Tests.TestFixtures;
 using LYBT.Entities.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -135,7 +136,7 @@ public class LocalHerbDataSourceTests : IClassFixture<LocalDbContextFixture>
         // Arrange
         using var context = _fixture.CreateContext();
         var dataSource = new LocalHerbDataSource(context, _logger);
-        var herb = new Herb
+        var input = new HerbInputDto
         {
             Name = "新药材",
             Category = "清热药",
@@ -143,7 +144,7 @@ public class LocalHerbDataSourceTests : IClassFixture<LocalDbContextFixture>
         };
 
         // Act
-        var result = await dataSource.CreateAsync(herb);
+        var result = await dataSource.CreateAsync(input);
 
         // Assert
         result.Should().NotBeNull();
@@ -254,7 +255,11 @@ public class LocalHerbDataSourceTests : IClassFixture<LocalDbContextFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.IsDeleted.Should().BeFalse();
+        result!.Name.Should().Be("已删除待恢复");
+
+        // Verify entity is no longer soft-deleted
+        var restored = await context.Herbs.FindAsync(herb.Id);
+        restored!.IsDeleted.Should().BeFalse();
     }
 
     #endregion

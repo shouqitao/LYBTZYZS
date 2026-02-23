@@ -27,16 +27,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
 
         #endregion
 
-        #region Events
-
-        /// <summary>
-        /// 药材列表变更事件
-        /// </summary>
-        [Obsolete("使用HerbItems属性的TwoWay绑定替代。将在下个版本移除。")]
-        public event EventHandler<HerbListChangedEventArgs>? HerbListChanged;
-
-        #endregion
-
         #region Dependency Properties
 
         /// <summary>
@@ -193,9 +183,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
         {
             // 同步内部变更到HerbItems属性（TwoWay绑定回写）
             SyncToHerbItemsProperty();
-
-            // 兼容旧事件（已标记Obsolete）
-            HerbListChanged?.Invoke(this, e);
         }
 
         /// <summary>

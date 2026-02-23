@@ -1,21 +1,20 @@
-using LYBT.Desktop.Contracts.Api;
+﻿using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
-using LYBT.Entities.Herbs;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
+using Riok.Mapperly.Abstractions;
 
 namespace LYBT.Desktop.Infrastructure.DataSources.Remote;
 
 /// <summary>
 /// 远程药材数据源 - 通过 API 访问服务端
-/// OpenSpec: implement-local-mode
 /// </summary>
 public class RemoteHerbDataSource : IHerbDataSource
 {
     private readonly IHerbApi _api;
     private readonly ILogger<RemoteHerbDataSource> _logger;
-    private readonly HerbDataSourceMapper _mapper = new();
+    private readonly HerbListToDetailMapper _listMapper = new();
 
     public RemoteHerbDataSource(IHerbApi api, ILogger<RemoteHerbDataSource> logger)
     {
@@ -23,7 +22,7 @@ public class RemoteHerbDataSource : IHerbDataSource
         _logger = logger;
     }
 
-    public async Task<Herb?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<HerbDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] Herb.GetById - Id={Id}", id);
 
@@ -35,7 +34,7 @@ public class RemoteHerbDataSource : IHerbDataSource
                 _logger.LogWarning("[RemoteDataSource] Herb.GetById - NotFound: {Id}", id);
                 return null;
             }
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -44,7 +43,7 @@ public class RemoteHerbDataSource : IHerbDataSource
         }
     }
 
-    public Task<(List<Herb> Items, int Total)> GetPagedAsync(
+    public Task<(List<HerbDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword = null,
@@ -53,7 +52,7 @@ public class RemoteHerbDataSource : IHerbDataSource
         return GetPagedAsync(page, pageSize, keyword, null, ct);
     }
 
-    public async Task<(List<Herb> Items, int Total)> GetPagedAsync(
+    public async Task<(List<HerbDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword,
@@ -67,10 +66,10 @@ public class RemoteHerbDataSource : IHerbDataSource
             var response = await _api.GetHerbsAsync(page, pageSize, keyword, category);
             if (response.Data == null)
             {
-                return (new List<Herb>(), 0);
+                return (new List<HerbDetailDto>(), 0);
             }
 
-            var items = response.Data.Items.Select(_mapper.ToEntity).ToList();
+            var items = response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
             return (items, response.Data.TotalCount);
         }
         catch (Exception ex)
@@ -80,21 +79,20 @@ public class RemoteHerbDataSource : IHerbDataSource
         }
     }
 
-    public async Task<Herb> CreateAsync(Herb entity, CancellationToken ct = default)
+    public async Task<HerbDetailDto> CreateAsync(HerbInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] Herb.Create - Name={Name}", entity.Name);
+        _logger.LogInformation("[RemoteDataSource] Herb.Create - Name={Name}", input.Name);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            var response = await _api.CreateHerbAsync(inputDto);
+            var response = await _api.CreateHerbAsync(input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "创建药材失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -103,26 +101,24 @@ public class RemoteHerbDataSource : IHerbDataSource
         }
     }
 
-    public async Task<Herb> UpdateAsync(Herb entity, CancellationToken ct = default)
+    public async Task<HerbDetailDto> UpdateAsync(HerbInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] Herb.Update - Id={Id}", entity.Id);
+        _logger.LogInformation("[RemoteDataSource] Herb.Update - Id={Id}", input.Id);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            inputDto.Id = entity.Id;
-            var response = await _api.UpdateHerbAsync(entity.Id, inputDto);
+            var response = await _api.UpdateHerbAsync(input.Id!.Value, input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "更新药材失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[RemoteDataSource] Herb.Update failed - Id={Id}", entity.Id);
+            _logger.LogError(ex, "[RemoteDataSource] Herb.Update failed - Id={Id}", input.Id);
             throw;
         }
     }
@@ -159,7 +155,7 @@ public class RemoteHerbDataSource : IHerbDataSource
         }
     }
 
-    public async Task<Herb?> RestoreAsync(Guid id, CancellationToken ct = default)
+    public async Task<HerbDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogInformation("[RemoteDataSource] Herb.Restore - Id={Id}", id);
 
@@ -172,7 +168,7 @@ public class RemoteHerbDataSource : IHerbDataSource
                 return null;
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -187,7 +183,6 @@ public class RemoteHerbDataSource : IHerbDataSource
 
         try
         {
-            // 获取所有药材并提取分类
             var response = await _api.GetHerbsAsync(1, 1000);
             if (response.Data == null)
             {
@@ -240,4 +235,20 @@ public class RemoteHerbDataSource : IHerbDataSource
             };
         }
     }
+}
+
+/// <summary>
+/// HerbListDto -> HerbDetailDto 映射器 (仅限 DTO 间转换, 无 Entity 依赖)
+/// </summary>
+[Mapper]
+internal partial class HerbListToDetailMapper
+{
+    [MapperIgnoreTarget(nameof(HerbDetailDto.Properties))]
+    [MapperIgnoreTarget(nameof(HerbDetailDto.CostPrice))]
+    [MapperIgnoreTarget(nameof(HerbDetailDto.Effect))]
+    [MapperIgnoreTarget(nameof(HerbDetailDto.Usage))]
+    [MapperIgnoreTarget(nameof(HerbDetailDto.Remark))]
+    [MapperIgnoreTarget(nameof(HerbDetailDto.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(HerbDetailDto.CreatedBy))]
+    public partial HerbDetailDto ToDetailDto(HerbListDto listDto);
 }

@@ -1,6 +1,8 @@
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.LocalData.Context;
+using LYBT.Desktop.LocalData.Mappers;
 using LYBT.Entities.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,6 +17,7 @@ public class LocalFormulaDataSource : IFormulaDataSource
 {
     private readonly LocalDbContext _context;
     private readonly ILogger<LocalFormulaDataSource> _logger;
+    private readonly LocalFormulaMapper _mapper = new();
 
     public LocalFormulaDataSource(LocalDbContext context, ILogger<LocalFormulaDataSource> logger)
     {
@@ -22,24 +25,28 @@ public class LocalFormulaDataSource : IFormulaDataSource
         _logger = logger;
     }
 
-    public async Task<Formula?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<FormulaDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] Formula.GetById - Id={Id}", id);
-        return await _context.Formulas
+        var entity = await _context.Formulas
             .AsNoTracking()
             .FirstOrDefaultAsync(f => f.Id == id, ct);
+
+        return entity == null ? null : _mapper.ToDetailDto(entity);
     }
 
-    public async Task<Formula?> GetWithHerbsAsync(Guid id, CancellationToken ct = default)
+    public async Task<FormulaDetailDto?> GetWithHerbsAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] Formula.GetWithHerbs - Id={Id}", id);
-        return await _context.Formulas
+        var entity = await _context.Formulas
             .AsNoTracking()
             .Include(f => f.Herbs)
             .FirstOrDefaultAsync(f => f.Id == id, ct);
+
+        return entity == null ? null : _mapper.ToDetailDto(entity);
     }
 
-    public async Task<(List<Formula> Items, int Total)> GetPagedAsync(
+    public async Task<(List<FormulaDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword = null,
@@ -48,7 +55,7 @@ public class LocalFormulaDataSource : IFormulaDataSource
         return await GetPagedAsync(page, pageSize, keyword, null, ct);
     }
 
-    public async Task<(List<Formula> Items, int Total)> GetPagedAsync(
+    public async Task<(List<FormulaDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword,
@@ -82,14 +89,18 @@ public class LocalFormulaDataSource : IFormulaDataSource
             .Take(pageSize)
             .ToListAsync(ct);
 
-        return (items, total);
+        return (items.Select(e => _mapper.ToDetailDto(e)).ToList(), total);
     }
 
-    public async Task<Formula> CreateAsync(Formula entity, CancellationToken ct = default)
+    public async Task<FormulaDetailDto> CreateAsync(FormulaInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[LocalDataSource] Formula.Create - Name={Name}", entity.Name);
+        _logger.LogInformation("[LocalDataSource] Formula.Create - Name={Name}", input.Name);
 
+        var entity = _mapper.ToEntity(input);
         entity.Id = Guid.NewGuid();
+        entity.CreatedAt = DateTime.Now;
+        entity.Status = CommonStatus.Enabled;
+        entity.ValidationStatus = FormulaValidationStatus.Draft;
 
         // 为药材项设置ID和关联
         foreach (var herb in entity.Herbs)
@@ -101,35 +112,44 @@ public class LocalFormulaDataSource : IFormulaDataSource
         _context.Formulas.Add(entity);
         await _context.SaveChangesAsync(ct);
 
-        return entity;
+        return _mapper.ToDetailDto(entity);
     }
 
-    public async Task<Formula> UpdateAsync(Formula entity, CancellationToken ct = default)
+    public async Task<FormulaDetailDto> UpdateAsync(FormulaInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[LocalDataSource] Formula.Update - Id={Id}", entity.Id);
+        var id = input.Id ?? throw new InvalidOperationException("更新验方时必须提供ID");
+        _logger.LogInformation("[LocalDataSource] Formula.Update - Id={Id}", id);
 
         var existing = await _context.Formulas
             .Include(f => f.Herbs)
-            .FirstOrDefaultAsync(f => f.Id == entity.Id, ct)
-            ?? throw new InvalidOperationException($"验方不存在: {entity.Id}");
+            .FirstOrDefaultAsync(f => f.Id == id, ct)
+            ?? throw new InvalidOperationException($"验方不存在: {id}");
 
         // 更新基本属性
-        _context.Entry(existing).CurrentValues.SetValues(entity);
+        existing.Name = input.Name;
+        existing.Effect = input.Effect;
+        existing.Usage = input.Usage;
+        existing.Property = input.Property;
+        existing.Category = input.Category;
+        existing.IsShared = input.IsShared;
+        existing.Remark = input.Remark;
+        existing.UpdatedAt = DateTime.Now;
 
         // 更新药材项（删除旧的，添加新的）
         // 注意：必须先 ToList() 避免迭代时修改集合
         _context.FormulaHerbItems.RemoveRange(existing.Herbs.ToList());
 
-        foreach (var herb in entity.Herbs)
+        foreach (var herbInput in input.Herbs)
         {
-            herb.Id = Guid.NewGuid();
-            herb.FormulaId = entity.Id;
-            _context.FormulaHerbItems.Add(herb);
+            var herbEntity = _mapper.ToEntity(herbInput);
+            herbEntity.Id = Guid.NewGuid();
+            herbEntity.FormulaId = id;
+            _context.FormulaHerbItems.Add(herbEntity);
         }
 
         await _context.SaveChangesAsync(ct);
 
-        return existing;
+        return _mapper.ToDetailDto(existing);
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
@@ -145,7 +165,7 @@ public class LocalFormulaDataSource : IFormulaDataSource
         return true;
     }
 
-    public async Task<Formula?> CloneAsync(Guid id, CancellationToken ct = default)
+    public async Task<FormulaDetailDto?> CloneAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogInformation("[LocalDataSource] Formula.Clone - Id={Id}", id);
 
@@ -199,7 +219,7 @@ public class LocalFormulaDataSource : IFormulaDataSource
         await _context.SaveChangesAsync(ct);
 
         _logger.LogInformation("[LocalDataSource] Formula.Clone completed - NewId={NewId}", clone.Id);
-        return clone;
+        return _mapper.ToDetailDto(clone);
     }
 
     public async Task<bool> ToggleStatusAsync(Guid id, CancellationToken ct = default)
@@ -218,7 +238,7 @@ public class LocalFormulaDataSource : IFormulaDataSource
         return true;
     }
 
-    public async Task<Formula?> RestoreAsync(Guid id, CancellationToken ct = default)
+    public async Task<FormulaDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogInformation("[LocalDataSource] Formula.Restore - Id={Id}", id);
 
@@ -231,6 +251,6 @@ public class LocalFormulaDataSource : IFormulaDataSource
 
         entity.IsDeleted = false;
         await _context.SaveChangesAsync(ct);
-        return entity;
+        return _mapper.ToDetailDto(entity);
     }
 }

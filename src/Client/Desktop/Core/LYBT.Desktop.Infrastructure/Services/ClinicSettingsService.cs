@@ -54,8 +54,6 @@ namespace LYBT.Desktop.Infrastructure.Services
             var section = _configuration.GetSection(ClinicSettings.SectionName);
             var settings = section.Get<ClinicSettings>() ?? new ClinicSettings();
 
-            System.Diagnostics.Debug.WriteLine($"[ClinicSettingsService] 诊所名称: {settings.Name}");
-
             return settings;
         }
     }

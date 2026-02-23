@@ -1,9 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
 using LYBT.Desktop.Patients.Repositories;
-using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -35,7 +33,7 @@ public class PatientRepositoryTests
     public async Task GetPagedAsync_WithValidParameters_ReturnsPagedResult()
     {
         // Arrange
-        var patients = new List<Patient>
+        var patients = new List<PatientDetailDto>
         {
             CreateTestPatient("张三", Gender.Male),
             CreateTestPatient("李四", Gender.Female)
@@ -59,7 +57,7 @@ public class PatientRepositoryTests
     public async Task GetPagedAsync_WithKeyword_FiltersResults()
     {
         // Arrange
-        var patients = new List<Patient>
+        var patients = new List<PatientDetailDto>
         {
             CreateTestPatient("张三", Gender.Male)
         };
@@ -81,7 +79,7 @@ public class PatientRepositoryTests
         // Arrange
         _dataSourceMock
             .Setup(ds => ds.GetPagedAsync(1, 20, "不存在", default))
-            .ReturnsAsync((new List<Patient>(), 0));
+            .ReturnsAsync((new List<PatientDetailDto>(), 0));
 
         // Act
         var result = await _repository.GetPagedAsync(1, 20, "不存在");
@@ -122,7 +120,7 @@ public class PatientRepositoryTests
         var nonExistingId = Guid.NewGuid();
         _dataSourceMock
             .Setup(ds => ds.GetByIdAsync(nonExistingId, default))
-            .ReturnsAsync((Patient?)null);
+            .ReturnsAsync((PatientDetailDto?)null);
 
         // Act
         var result = await _repository.GetByIdAsync(nonExistingId);
@@ -150,7 +148,7 @@ public class PatientRepositoryTests
         createdPatient.PhoneNumber = "13800138000";
 
         _dataSourceMock
-            .Setup(ds => ds.CreateAsync(It.IsAny<Patient>(), default))
+            .Setup(ds => ds.CreateAsync(It.IsAny<PatientInputDto>(), default))
             .ReturnsAsync(createdPatient);
 
         // Act
@@ -191,7 +189,7 @@ public class PatientRepositoryTests
         updatedPatient.Id = patientId;
 
         _dataSourceMock
-            .Setup(ds => ds.UpdateAsync(It.IsAny<Patient>(), default))
+            .Setup(ds => ds.UpdateAsync(It.IsAny<PatientInputDto>(), default))
             .ReturnsAsync(updatedPatient);
 
         // Act
@@ -257,7 +255,7 @@ public class PatientRepositoryTests
     public async Task SearchAsync_WithKeyword_ReturnsMatchingPatients()
     {
         // Arrange
-        var patients = new List<Patient>
+        var patients = new List<PatientDetailDto>
         {
             CreateTestPatient("张三", Gender.Male),
             CreateTestPatient("张四", Gender.Female)
@@ -283,11 +281,11 @@ public class PatientRepositoryTests
     {
         // Arrange
         var idNumber = "110101199001011234";
-        var patient = CreateTestPatient("身份证患者", Gender.Male);
-        patient.IdNumber = idNumber;
+        var patientDto = CreateTestPatient("身份证患者", Gender.Male);
+        patientDto.IdNumber = idNumber;
         _dataSourceMock
             .Setup(ds => ds.GetByIdNumberAsync(idNumber, default))
-            .ReturnsAsync(patient);
+            .ReturnsAsync(patientDto);
 
         // Act
         var result = await _repository.GetByIdNumberAsync(idNumber);
@@ -303,7 +301,7 @@ public class PatientRepositoryTests
         // Arrange
         _dataSourceMock
             .Setup(ds => ds.GetByIdNumberAsync("000000000000000000", default))
-            .ReturnsAsync((Patient?)null);
+            .ReturnsAsync((PatientDetailDto?)null);
 
         // Act
         var result = await _repository.GetByIdNumberAsync("000000000000000000");
@@ -374,12 +372,12 @@ public class PatientRepositoryTests
 
     #region Helper Methods
 
-    private static Patient CreateTestPatient(
+    private static PatientDetailDto CreateTestPatient(
         string name,
         Gender gender,
         CommonStatus status = CommonStatus.Enabled)
     {
-        return new Patient
+        return new PatientDetailDto
         {
             Id = Guid.NewGuid(),
             Name = name,

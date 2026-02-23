@@ -1,6 +1,7 @@
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.LocalData.Context;
-using LYBT.Entities.Users;
+using LYBT.Desktop.LocalData.Mappers;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ public class LocalUserDataSource : IUserDataSource
 {
     private readonly LocalDbContext _context;
     private readonly ILogger<LocalUserDataSource> _logger;
+    private readonly LocalUserMapper _mapper = new();
 
     public LocalUserDataSource(LocalDbContext context, ILogger<LocalUserDataSource> logger)
     {
@@ -22,27 +24,31 @@ public class LocalUserDataSource : IUserDataSource
         _logger = logger;
     }
 
-    public async Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<UserDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] User.GetById - Id={Id}", id);
-        return await _context.Users
+        var entity = await _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == id, ct);
+
+        return entity == null ? null : _mapper.ToDetailDto(entity);
     }
 
-    public async Task<User?> GetByUsernameAsync(string username, CancellationToken ct = default)
+    public async Task<UserDetailDto?> GetByUsernameAsync(string username, CancellationToken ct = default)
     {
         _logger.LogDebug("[LocalDataSource] User.GetByUsername - Username={Username}", username);
 
         if (string.IsNullOrWhiteSpace(username))
             return null;
 
-        return await _context.Users
+        var entity = await _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.UserName == username, ct);
+
+        return entity == null ? null : _mapper.ToDetailDto(entity);
     }
 
-    public async Task<(List<User> Items, int Total)> GetPagedAsync(
+    public async Task<(List<UserDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword = null,
@@ -67,48 +73,73 @@ public class LocalUserDataSource : IUserDataSource
             .Take(pageSize)
             .ToListAsync(ct);
 
-        return (items, total);
+        return (items.Select(e => _mapper.ToDetailDto(e)).ToList(), total);
     }
 
-    public async Task<User> CreateAsync(User entity, CancellationToken ct = default)
+    public async Task<UserDetailDto> CreateAsync(UserInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[LocalDataSource] User.Create - Username={Username}", entity.UserName);
+        _logger.LogInformation("[LocalDataSource] User.Create - Username={Username}", input.UserName);
 
         // 检查用户名是否已存在
         var exists = await _context.Users
-            .AnyAsync(u => u.UserName == entity.UserName, ct);
+            .AnyAsync(u => u.UserName == input.UserName, ct);
 
         if (exists)
-            throw new InvalidOperationException($"用户名已存在: {entity.UserName}");
+            throw new InvalidOperationException($"用户名已存在: {input.UserName}");
 
+        var entity = _mapper.ToEntity(input);
         entity.Id = Guid.NewGuid();
+        entity.CreatedAt = DateTime.Now;
+        entity.Status = CommonStatus.Enabled;
+
+        // 密码哈希处理
+        if (!string.IsNullOrEmpty(input.Password))
+        {
+            entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(input.Password);
+        }
+
         _context.Users.Add(entity);
         await _context.SaveChangesAsync(ct);
 
-        return entity;
+        return _mapper.ToDetailDto(entity);
     }
 
-    public async Task<User> UpdateAsync(User entity, CancellationToken ct = default)
+    public async Task<UserDetailDto> UpdateAsync(UserInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[LocalDataSource] User.Update - Id={Id}", entity.Id);
+        var id = input.Id ?? throw new InvalidOperationException("更新用户时必须提供ID");
+        _logger.LogInformation("[LocalDataSource] User.Update - Id={Id}", id);
 
-        var existing = await _context.Users.FindAsync([entity.Id], ct)
-            ?? throw new InvalidOperationException($"用户不存在: {entity.Id}");
+        var existing = await _context.Users.FindAsync([id], ct)
+            ?? throw new InvalidOperationException($"用户不存在: {id}");
 
         // 检查用户名是否被其他用户使用
-        var nameConflict = await _context.Users
-            .AnyAsync(u => u.UserName == entity.UserName && u.Id != entity.Id, ct);
+        if (input.UserName != null)
+        {
+            var nameConflict = await _context.Users
+                .AnyAsync(u => u.UserName == input.UserName && u.Id != id, ct);
 
-        if (nameConflict)
-            throw new InvalidOperationException($"用户名已被使用: {entity.UserName}");
+            if (nameConflict)
+                throw new InvalidOperationException($"用户名已被使用: {input.UserName}");
+        }
 
         // 保留密码哈希（不通过此方法更新密码）
         var passwordHash = existing.PasswordHash;
-        _context.Entry(existing).CurrentValues.SetValues(entity);
+
+        // 更新可变字段
+        if (input.UserName != null) existing.UserName = input.UserName;
+        if (input.RealName != null) existing.RealName = input.RealName;
+        existing.PinYinCode = input.PinYinCode;
+        existing.PhoneNumber = input.PhoneNumber;
+        existing.Email = input.Email;
+        if (input.Role.HasValue) existing.Role = input.Role.Value;
+        existing.Remark = input.Remark;
+        existing.UpdatedAt = DateTime.Now;
+
+        // 确保密码不被覆盖
         existing.PasswordHash = passwordHash;
 
         await _context.SaveChangesAsync(ct);
-        return existing;
+        return _mapper.ToDetailDto(existing);
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)

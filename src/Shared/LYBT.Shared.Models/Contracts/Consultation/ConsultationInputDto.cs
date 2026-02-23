@@ -40,28 +40,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("中医诊断")]
         public string? TcmDiagnosis { get; set; }
 
-        // 系统字段 -- 服务端已不使用（通过聚合根 MedicalCase 获取），保留供客户端兼容
-
-        /// <summary>诊疗ID -- 废弃：服务端通过聚合根获取</summary>
-        [Obsolete("服务端通过聚合根获取，此字段将在后续版本移除")]
-        [DisplayName("诊疗ID")]
-        public Guid? Id { get; set; }
-
-        /// <summary>医疗案例ID -- 废弃：服务端通过聚合根获取</summary>
-        [Obsolete("服务端通过聚合根获取，此字段将在后续版本移除")]
-        [DisplayName("医疗案例ID")]
-        public Guid? MedicalCaseId { get; set; }
-
-        /// <summary>患者ID -- 废弃：服务端通过聚合根获取</summary>
-        [Obsolete("服务端通过聚合根获取，此字段将在后续版本移除")]
-        [DisplayName("患者ID")]
-        public Guid? PatientId { get; set; }
-
-        /// <summary>关联用户ID -- 废弃：服务端通过聚合根获取</summary>
-        [Obsolete("服务端通过聚合根获取，此字段将在后续版本移除")]
-        [DisplayName("关联用户ID")]
-        public Guid? UserId { get; set; }
-
         // OpenSpec: refactor-dto-simplification - PatientName/DoctorName已移至ConsultationDetailDto/ConsultationListDto
+        // Phase 1 清理: 移除了 Id/MedicalCaseId/PatientId/UserId (服务端通过聚合根获取)
     }
 }

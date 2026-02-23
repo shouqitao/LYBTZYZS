@@ -50,26 +50,6 @@ namespace LYBT.Shared.Models.Contracts.Common
         CommonStatus Status { get; set; }
     }
 
-    /// <summary>
-    /// 备注接口 - 提供备注字段
-    /// </summary>
-    public interface IRemarkable
-    {
-
-        /// <summary>备注</summary>
-        string? Remark { get; set; }
-    }
-
-    /// <summary>
-    /// 编码接口 - 提供拼音码
-    /// </summary>
-    public interface ICodeable
-    {
-
-        /// <summary>拼音码</summary>
-        string? PinYinCode { get; set; }
-    }
-
     #endregion 核心接口定义
 
     #region 简化DTO基础类体系 - UltraThink架构优化

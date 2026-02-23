@@ -249,8 +249,6 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     {
         return new ConsultationInputDto
         {
-            Id = Id,  // 共享主键
-            MedicalCaseId = Id,
             PresentIllness = PresentIllness,
             TongueDiagnosis = TongueDiagnosis,
             PulseDiagnosis = PulseDiagnosis,

@@ -1,6 +1,5 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
@@ -19,7 +18,6 @@ namespace LYBT.Desktop.Users.Repositories
         private readonly IUserDataSource _dataSource;
         private readonly IUserApi? _api; // 可选，仅用于批量导入/导出等 Remote 模式特有功能
         private readonly ILogger<UserRepository> _logger;
-        private readonly UserDataSourceMapper _mapper = new();
 
         /// <summary>
         /// 初始化 UserRepository
@@ -89,14 +87,13 @@ namespace LYBT.Desktop.Users.Repositories
             {
                 _logger.LogDebug("[REPO] User.GetById started - Id={Id}", id);
 
-                var entity = await _dataSource.GetByIdAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.GetByIdAsync(id);
+                if (dto == null)
                 {
                     _logger.LogWarning("[REPO] User.GetById -> NotFound - Id={Id}", id);
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogDebug("[REPO] User.GetById completed - Id={Id}", id);
                 return dto;
             }
@@ -119,9 +116,7 @@ namespace LYBT.Desktop.Users.Repositories
             {
                 _logger.LogInformation("[REPO] User.Create started - UserName={UserName}", dto.UserName);
 
-                var entity = _mapper.ToEntity(dto);
-                var created = await _dataSource.CreateAsync(entity);
-                var result = _mapper.ToDetailDto(created);
+                var result = await _dataSource.CreateAsync(dto);
 
                 _logger.LogInformation("[REPO] User.Create completed - Id={Id}", result.Id);
                 return result;
@@ -148,9 +143,7 @@ namespace LYBT.Desktop.Users.Repositories
             {
                 _logger.LogInformation("[REPO] User.Update started - Id={Id}", dto.Id);
 
-                var entity = _mapper.ToEntity(dto);
-                var updated = await _dataSource.UpdateAsync(entity);
-                var result = _mapper.ToDetailDto(updated);
+                var result = await _dataSource.UpdateAsync(dto);
 
                 _logger.LogInformation("[REPO] User.Update completed - Id={Id}", result.Id);
                 return result;
@@ -237,13 +230,12 @@ namespace LYBT.Desktop.Users.Repositories
             {
                 _logger.LogDebug("[REPO] User.GetByUsername started - Username={Username}", username);
 
-                var entity = await _dataSource.GetByUsernameAsync(username);
-                if (entity == null)
+                var dto = await _dataSource.GetByUsernameAsync(username);
+                if (dto == null)
                 {
                     throw new InvalidOperationException($"用户 {username} 不存在");
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogDebug("[REPO] User.GetByUsername completed - Username={Username}", username);
                 return dto;
             }
@@ -463,13 +455,12 @@ namespace LYBT.Desktop.Users.Repositories
                 }
 
                 // 重新获取更新后的数据
-                var entity = await _dataSource.GetByIdAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.GetByIdAsync(id);
+                if (dto == null)
                 {
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("[REPO] User.ToggleStatus completed - Id={Id}, Status={Status}", id, dto.Status);
                 return dto;
             }

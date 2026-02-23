@@ -308,8 +308,6 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var request = new ConsultationInputDto
             {
-                PatientId = medicalCase.PatientId,  // Issue #2231: ConsultationInputDtoValidator requires PatientId
-                UserId = FixedDoctorId,              // Issue #2231: ConsultationInputDtoValidator requires UserId
                 PresentIllness = "头痛",
                 TcmDiagnosis = "风寒感冒"
             };
@@ -324,7 +322,6 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data.Should().NotBeNull();
-            // Issue #2231: MedicalCaseDetailDto不包含Consultation导航属性，仅验证ConsultationId
         }
 
         [Fact]
@@ -335,8 +332,6 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var request = new ConsultationInputDto
             {
-                PatientId = medicalCase.PatientId,  // Issue #2231: ConsultationInputDtoValidator requires PatientId
-                UserId = FixedDoctorId,              // Issue #2231: ConsultationInputDtoValidator requires UserId
                 PresentIllness = "测试"
             };
 
@@ -1182,11 +1177,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var consultationRequest = new ConsultationInputDto
             {
-                // Issue #2231: 明确设置为null以避免EF Core键修改错误
-                Id = null,  // 不设置Id，由服务端管理（共享主键）
-                MedicalCaseId = null,  // 不设置MedicalCaseId，通过URL路由传递
-                PatientId = null,  // 不设置PatientId，从MedicalCase获取
-                UserId = null,  // 不设置UserId，从MedicalCase获取
+                // Phase 1: Id/MedicalCaseId/PatientId/UserId 已移除 (服务端通过聚合根获取)
                 PresentIllness = "头痛",
                 TcmDiagnosis = "风寒感冒"
             };

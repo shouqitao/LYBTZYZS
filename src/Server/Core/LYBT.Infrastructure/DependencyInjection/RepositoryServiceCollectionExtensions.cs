@@ -64,10 +64,9 @@ namespace LYBT.Infrastructure.DependencyInjection
         /// <returns>服务集合</returns>
         public static IServiceCollection AddServerRepositories(this IServiceCollection services)
         {
-            //  重要：不要注册开放泛型的基类（BaseReadRepository<>, BaseRepository<>）
+            // 重要：不要注册开放泛型的基类（BaseRepository<>）
             // 原因：基类是抽象的，无法被DI容器实例化
-            // 具体的Repository实现类（如PrescriptionRepository, PatientRepository）
-            // 已在各自模块的Module注册方法中注册（如AddPrescriptionsModule）
+            // 具体的Repository实现类已在各自模块的注册方法中注册
 
             // 注册核心Repository（如果存在）
             // 这里可以手动添加已知的Repository

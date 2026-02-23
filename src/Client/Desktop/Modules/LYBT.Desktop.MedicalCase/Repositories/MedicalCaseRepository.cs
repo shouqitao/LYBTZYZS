@@ -1,6 +1,5 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -18,7 +17,6 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         private readonly IMedicalCaseDataSource _dataSource;
         private readonly IMedicalCaseApi? _api; // 可选，用于高级查询等 Remote 模式特有功能
         private readonly ILogger<MedicalCaseRepository> _logger;
-        private readonly MedicalCaseDataSourceMapper _mapper = new();
 
         /// <summary>
         /// 初始化 MedicalCaseRepository
@@ -93,14 +91,13 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             {
                 _logger.LogDebug("[REPO] MedicalCase.GetById started - Id={Id}", id);
 
-                var entity = await _dataSource.GetWithDetailsAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.GetWithDetailsAsync(id);
+                if (dto == null)
                 {
                     _logger.LogWarning("[REPO] MedicalCase.GetById -> NotFound - Id={Id}", id);
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogDebug("[REPO] MedicalCase.GetById completed - Id={Id}", id);
                 return dto;
             }
@@ -123,9 +120,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             {
                 _logger.LogInformation("[REPO] MedicalCase.Create started - PatientId={PatientId}", dto.PatientId);
 
-                var entity = _mapper.ToEntity(dto);
-                var created = await _dataSource.CreateAsync(entity);
-                var result = _mapper.ToDetailDto(created);
+                var result = await _dataSource.CreateAsync(dto);
 
                 _logger.LogInformation("[REPO] MedicalCase.Create completed - Id={Id}", result.Id);
                 return result;
@@ -152,9 +147,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             {
                 _logger.LogInformation("[REPO] MedicalCase.Update started - Id={Id}", dto.Id);
 
-                var entity = _mapper.ToEntity(dto);
-                var updated = await _dataSource.UpdateAsync(entity);
-                var result = _mapper.ToDetailDto(updated);
+                var result = await _dataSource.UpdateAsync(dto);
 
                 _logger.LogInformation("[REPO] MedicalCase.Update completed - Id={Id}", result.Id);
                 return result;
@@ -332,13 +325,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                 }
 
                 // 重新获取更新后的数据
-                var entity = await _dataSource.GetWithDetailsAsync(medicalCaseId);
-                if (entity == null)
+                var dto = await _dataSource.GetWithDetailsAsync(medicalCaseId);
+                if (dto == null)
                 {
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("医案关闭成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                 return dto;
             }
@@ -412,9 +404,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                     dto.Prescription != null);
 
                 dto.Id = medicalCaseId;
-                var entity = _mapper.ToEntity(dto);
-                var saved = await _dataSource.SaveAsync(entity);
-                var result = _mapper.ToDetailDto(saved);
+                var result = await _dataSource.SaveAsync(dto);
 
                 _logger.LogInformation("聚合保存医案成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                 return result;
@@ -448,7 +438,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                     var entity = await _dataSource.GetWithDetailsAsync(id);
                     if (entity != null)
                     {
-                        results.Add(_mapper.ToDetailDto(entity));
+                        results.Add(entity);
                     }
                 }
 
@@ -590,13 +580,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                 }
 
                 // 重新获取更新后的数据
-                var entity = await _dataSource.GetWithDetailsAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.GetWithDetailsAsync(id);
+                if (dto == null)
                 {
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("[REPO] 取消医案成功，MedicalCaseId: {MedicalCaseId}", id);
                 return dto;
             }

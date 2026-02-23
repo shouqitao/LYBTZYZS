@@ -1,22 +1,17 @@
-using LYBT.Entities.Herbs;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Contracts.DataSources;
 
 /// <summary>
 /// 药材数据源接口
-/// OpenSpec: implement-local-mode
 /// </summary>
-public interface IHerbDataSource : IDataSourceBase<Herb>
+public interface IHerbDataSource : IDataSourceBase<HerbDetailDto, HerbInputDto>
 {
     /// <summary>
     /// 分页获取药材列表（带分类过滤）
     /// </summary>
-    /// <param name="page">页码</param>
-    /// <param name="pageSize">每页数量</param>
-    /// <param name="keyword">搜索关键词</param>
-    /// <param name="category">分类过滤</param>
-    /// <param name="ct">取消令牌</param>
-    Task<(List<Herb> Items, int Total)> GetPagedAsync(
+    Task<(List<HerbDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword,
@@ -31,10 +26,15 @@ public interface IHerbDataSource : IDataSourceBase<Herb>
     /// <summary>
     /// 恢复已删除的药材
     /// </summary>
-    Task<Herb?> RestoreAsync(Guid id, CancellationToken ct = default);
+    Task<HerbDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 获取所有分类
     /// </summary>
     Task<List<string>> GetCategoriesAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// 批量删除药材
+    /// </summary>
+    Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
 }

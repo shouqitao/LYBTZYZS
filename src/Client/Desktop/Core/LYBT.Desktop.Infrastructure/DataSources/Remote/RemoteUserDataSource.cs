@@ -1,23 +1,21 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
-using LYBT.Entities.Users;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.Extensions.Logging;
+using Riok.Mapperly.Abstractions;
 
 namespace LYBT.Desktop.Infrastructure.DataSources.Remote;
 
 /// <summary>
 /// 远程用户数据源 - 通过 API 访问服务端
-/// OpenSpec: implement-local-mode
 /// </summary>
 public class RemoteUserDataSource : IUserDataSource
 {
     private readonly IUserApi _api;
     private readonly ILogger<RemoteUserDataSource> _logger;
-    private readonly UserDataSourceMapper _mapper = new();
+    private readonly UserListToDetailMapper _listMapper = new();
 
     public RemoteUserDataSource(IUserApi api, ILogger<RemoteUserDataSource> logger)
     {
@@ -25,7 +23,7 @@ public class RemoteUserDataSource : IUserDataSource
         _logger = logger;
     }
 
-    public async Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<UserDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] User.GetById - Id={Id}", id);
 
@@ -37,7 +35,7 @@ public class RemoteUserDataSource : IUserDataSource
                 _logger.LogWarning("[RemoteDataSource] User.GetById - NotFound: {Id}", id);
                 return null;
             }
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -46,21 +44,20 @@ public class RemoteUserDataSource : IUserDataSource
         }
     }
 
-    public async Task<User> CreateAsync(User entity, CancellationToken ct = default)
+    public async Task<UserDetailDto> CreateAsync(UserInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] User.Create - Username={Username}", entity.UserName);
+        _logger.LogInformation("[RemoteDataSource] User.Create - Username={Username}", input.UserName);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            var response = await _api.CreateUserAsync(inputDto);
+            var response = await _api.CreateUserAsync(input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "创建用户失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -69,31 +66,29 @@ public class RemoteUserDataSource : IUserDataSource
         }
     }
 
-    public async Task<User> UpdateAsync(User entity, CancellationToken ct = default)
+    public async Task<UserDetailDto> UpdateAsync(UserInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] User.Update - Id={Id}", entity.Id);
+        _logger.LogInformation("[RemoteDataSource] User.Update - Id={Id}", input.Id);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            inputDto.Id = entity.Id;
-            var response = await _api.UpdateUserAsync(entity.Id, inputDto);
+            var response = await _api.UpdateUserAsync(input.Id!.Value, input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "更新用户失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[RemoteDataSource] User.Update failed - Id={Id}", entity.Id);
+            _logger.LogError(ex, "[RemoteDataSource] User.Update failed - Id={Id}", input.Id);
             throw;
         }
     }
 
-    public async Task<(List<User> Items, int Total)> GetPagedAsync(
+    public async Task<(List<UserDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword = null,
@@ -106,10 +101,10 @@ public class RemoteUserDataSource : IUserDataSource
             var response = await _api.GetUsersAsync(page, pageSize, keyword);
             if (response.Data == null)
             {
-                return (new List<User>(), 0);
+                return (new List<UserDetailDto>(), 0);
             }
 
-            var items = response.Data.Items.Select(_mapper.ToEntity).ToList();
+            var items = response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
             return (items, response.Data.TotalCount);
         }
         catch (Exception ex)
@@ -135,13 +130,12 @@ public class RemoteUserDataSource : IUserDataSource
         }
     }
 
-    public async Task<User?> GetByUsernameAsync(string username, CancellationToken ct = default)
+    public async Task<UserDetailDto?> GetByUsernameAsync(string username, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] User.GetByUsername - Username={Username}", username);
 
         try
         {
-            // 通过搜索获取用户
             var response = await _api.GetUsersAsync(1, 100, username);
             if (response.Data == null)
             {
@@ -209,7 +203,6 @@ public class RemoteUserDataSource : IUserDataSource
         _logger.LogDebug("[RemoteDataSource] User.UpdateLastLoginTime - Id={Id}", id);
 
         // Remote模式下，登录时间由服务端自动更新
-        // 此方法仅用于Local模式
         return Task.FromResult(true);
     }
 
@@ -218,7 +211,6 @@ public class RemoteUserDataSource : IUserDataSource
         _logger.LogDebug("[RemoteDataSource] User.ResetFailedLoginCount - Id={Id}", id);
 
         // Remote模式下，失败次数由服务端管理
-        // 此方法仅用于Local模式
         return Task.FromResult(true);
     }
 
@@ -227,7 +219,6 @@ public class RemoteUserDataSource : IUserDataSource
         _logger.LogDebug("[RemoteDataSource] User.IncrementFailedLoginCount - Id={Id}", id);
 
         // Remote模式下，失败次数由服务端管理
-        // 此方法仅用于Local模式
         return Task.FromResult(0);
     }
 
@@ -263,4 +254,18 @@ public class RemoteUserDataSource : IUserDataSource
             };
         }
     }
+}
+
+/// <summary>
+/// UserListDto -> UserDetailDto 映射器 (仅限 DTO 间转换, 无 Entity 依赖)
+/// </summary>
+[Mapper]
+internal partial class UserListToDetailMapper
+{
+    [MapperIgnoreTarget(nameof(UserDetailDto.Email))]
+    [MapperIgnoreTarget(nameof(UserDetailDto.PinYinCode))]
+    [MapperIgnoreTarget(nameof(UserDetailDto.FailedLoginCount))]
+    [MapperIgnoreTarget(nameof(UserDetailDto.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(UserDetailDto.Remark))]
+    public partial UserDetailDto ToDetailDto(UserListDto listDto);
 }

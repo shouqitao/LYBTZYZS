@@ -28,7 +28,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
 {
     #region 依赖服务
 
-    private readonly IMainWindowServicesFacade _servicesFacade;
     private readonly IHealthCheckCoordinator _healthCheckCoordinator;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly MenuManager _menuManager;
@@ -115,7 +114,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     public MainWindowViewModel(
         IViewModelServices services,
-        IMainWindowServicesFacade servicesFacade,
         IUserNotificationService userNotificationService,
         IHealthCheckCoordinator healthCheckCoordinator,
         INavigationCoordinator navigationCoordinator,
@@ -132,7 +130,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         CommonDialogService = services.CommonDialogService;
         UserNotificationService = userNotificationService;
 
-        _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _healthCheckCoordinator = healthCheckCoordinator ?? throw new ArgumentNullException(nameof(healthCheckCoordinator));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));

@@ -1,7 +1,6 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
@@ -17,7 +16,6 @@ namespace LYBT.Desktop.Formula.Repositories
         private readonly IFormulaDataSource _dataSource;
         private readonly IFormulaApi? _api; // 可选，仅用于批量操作等 Remote 模式特有功能
         private readonly ILogger<FormulaRepository> _logger;
-        private readonly FormulaDataSourceMapper _mapper = new();
 
         /// <summary>
         /// 初始化 FormulaRepository
@@ -54,7 +52,7 @@ namespace LYBT.Desktop.Formula.Repositories
                     Id = e.Id,
                     Name = e.Name,
                     Effect = e.Effect,
-                    Indications = e.Indication,
+                    Indications = e.Indications,
                     Category = e.Category,
                     IsShared = e.IsShared,
                     ValidationStatus = e.ValidationStatus,
@@ -93,14 +91,13 @@ namespace LYBT.Desktop.Formula.Repositories
                 _logger.LogDebug("[REPO] Formula.GetById started - Id={Id}", id);
 
                 // 获取包含药材的完整验方
-                var entity = await _dataSource.GetWithHerbsAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.GetWithHerbsAsync(id);
+                if (dto == null)
                 {
                     _logger.LogWarning("[REPO] Formula.GetById -> NotFound - Id={Id}", id);
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogDebug("[REPO] Formula.GetById completed - Id={Id}", id);
                 return dto;
             }
@@ -123,9 +120,7 @@ namespace LYBT.Desktop.Formula.Repositories
             {
                 _logger.LogInformation("[REPO] Formula.Create started - Name={Name}", dto.Name);
 
-                var entity = _mapper.ToEntity(dto);
-                var created = await _dataSource.CreateAsync(entity);
-                var result = _mapper.ToDetailDto(created);
+                var result = await _dataSource.CreateAsync(dto);
 
                 _logger.LogInformation("[REPO] Formula.Create completed - Id={Id}", result.Id);
                 return result;
@@ -152,9 +147,7 @@ namespace LYBT.Desktop.Formula.Repositories
             {
                 _logger.LogInformation("[REPO] Formula.Update started - Id={Id}", dto.Id);
 
-                var entity = _mapper.ToEntity(dto);
-                var updated = await _dataSource.UpdateAsync(entity);
-                var result = _mapper.ToDetailDto(updated);
+                var result = await _dataSource.UpdateAsync(dto);
 
                 _logger.LogInformation("[REPO] Formula.Update completed - Id={Id}", result.Id);
                 return result;
@@ -211,7 +204,7 @@ namespace LYBT.Desktop.Formula.Repositories
                     Id = e.Id,
                     Name = e.Name,
                     Effect = e.Effect,
-                    Indications = e.Indication,
+                    Indications = e.Indications,
                     Category = e.Category,
                     IsShared = e.IsShared,
                     ValidationStatus = e.ValidationStatus,
@@ -250,9 +243,8 @@ namespace LYBT.Desktop.Formula.Repositories
                     throw new InvalidOperationException($"克隆验方失败，ID: {formulaId}");
                 }
 
-                var dto = _mapper.ToDetailDto(cloned);
-                _logger.LogInformation("[REPO] Formula.Clone completed - OriginalId={OriginalId} ClonedId={ClonedId}", formulaId, dto.Id);
-                return dto;
+                _logger.LogInformation("[REPO] Formula.Clone completed - OriginalId={OriginalId} ClonedId={ClonedId}", formulaId, cloned.Id);
+                return cloned;
             }
             catch (Exception ex)
             {
@@ -284,13 +276,12 @@ namespace LYBT.Desktop.Formula.Repositories
                 }
 
                 // 重新获取更新后的数据
-                var entity = await _dataSource.GetWithHerbsAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.GetWithHerbsAsync(id);
+                if (dto == null)
                 {
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("验方状态已切换为：{Status}", dto.Status);
                 return dto;
             }
@@ -310,14 +301,13 @@ namespace LYBT.Desktop.Formula.Repositories
             {
                 _logger.LogInformation("恢复验方：{Id}", id);
 
-                var entity = await _dataSource.RestoreAsync(id);
-                if (entity == null)
+                var dto = await _dataSource.RestoreAsync(id);
+                if (dto == null)
                 {
                     _logger.LogError("恢复验方失败：{Id}", id);
                     return null;
                 }
 
-                var dto = _mapper.ToDetailDto(entity);
                 _logger.LogInformation("验方已恢复：{Id}", id);
                 return dto;
             }

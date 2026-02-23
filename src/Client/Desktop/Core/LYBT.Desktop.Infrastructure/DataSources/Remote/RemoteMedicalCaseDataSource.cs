@@ -1,23 +1,21 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Infrastructure.DataSources.Mappers;
-using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using Riok.Mapperly.Abstractions;
 
 namespace LYBT.Desktop.Infrastructure.DataSources.Remote;
 
 /// <summary>
 /// 远程医案数据源 - 通过 API 访问服务端
-/// OpenSpec: implement-local-mode
 /// </summary>
 public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
 {
     private readonly IMedicalCaseApi _api;
     private readonly ILogger<RemoteMedicalCaseDataSource> _logger;
-    private readonly MedicalCaseDataSourceMapper _mapper = new();
+    private readonly MedicalCaseListToDetailMapper _listMapper = new();
 
     public RemoteMedicalCaseDataSource(IMedicalCaseApi api, ILogger<RemoteMedicalCaseDataSource> logger)
     {
@@ -25,7 +23,7 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
         _logger = logger;
     }
 
-    public async Task<MedicalCase?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] MedicalCase.GetById - Id={Id}", id);
 
@@ -37,7 +35,7 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
                 _logger.LogWarning("[RemoteDataSource] MedicalCase.GetById - NotFound: {Id}", id);
                 return null;
             }
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -46,21 +44,20 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
         }
     }
 
-    public async Task<MedicalCase> CreateAsync(MedicalCase entity, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] MedicalCase.Create - PatientId={PatientId}", entity.PatientId);
+        _logger.LogInformation("[RemoteDataSource] MedicalCase.Create - PatientId={PatientId}", input.PatientId);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            var response = await _api.CreateMedicalCaseAsync(inputDto);
+            var response = await _api.CreateMedicalCaseAsync(input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "创建医案失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
@@ -69,30 +66,29 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
         }
     }
 
-    public async Task<MedicalCase> UpdateAsync(MedicalCase entity, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] MedicalCase.Update - Id={Id}", entity.Id);
+        _logger.LogInformation("[RemoteDataSource] MedicalCase.Update - Id={Id}", input.Id);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            var response = await _api.SaveAsync(entity.Id, inputDto);
+            var response = await _api.SaveAsync(input.Id!.Value, input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "更新医案失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[RemoteDataSource] MedicalCase.Update failed - Id={Id}", entity.Id);
+            _logger.LogError(ex, "[RemoteDataSource] MedicalCase.Update failed - Id={Id}", input.Id);
             throw;
         }
     }
 
-    public async Task<(List<MedicalCase> Items, int Total)> GetPagedAsync(
+    public async Task<(List<MedicalCaseDetailDto> Items, int Total)> GetPagedAsync(
         int page,
         int pageSize,
         string? keyword = null,
@@ -105,10 +101,10 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
             var response = await _api.GetMedicalCasesAsync(page, pageSize, keyword);
             if (response.Data == null)
             {
-                return (new List<MedicalCase>(), 0);
+                return (new List<MedicalCaseDetailDto>(), 0);
             }
 
-            var items = response.Data.Items.Select(_mapper.ToEntity).ToList();
+            var items = response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
             return (items, response.Data.TotalCount);
         }
         catch (Exception ex)
@@ -134,25 +130,24 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
         }
     }
 
-    public async Task<MedicalCase> SaveAsync(MedicalCase entity, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto> SaveAsync(MedicalCaseInputDto input, CancellationToken ct = default)
     {
-        _logger.LogInformation("[RemoteDataSource] MedicalCase.Save - Id={Id}", entity.Id);
+        _logger.LogInformation("[RemoteDataSource] MedicalCase.Save - Id={Id}", input.Id);
 
         try
         {
-            var inputDto = _mapper.ToInputDto(entity);
-            var response = await _api.SaveAsync(entity.Id, inputDto);
+            var response = await _api.SaveAsync(input.Id!.Value, input);
 
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException(response.Message ?? "保存医案失败");
             }
 
-            return _mapper.ToEntity(response.Data);
+            return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[RemoteDataSource] MedicalCase.Save failed - Id={Id}", entity.Id);
+            _logger.LogError(ex, "[RemoteDataSource] MedicalCase.Save failed - Id={Id}", input.Id);
             throw;
         }
     }
@@ -190,7 +185,7 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
         }
     }
 
-    public async Task<MedicalCase?> GetWithDetailsAsync(Guid id, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto?> GetWithDetailsAsync(Guid id, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] MedicalCase.GetWithDetails - Id={Id}", id);
 
@@ -198,7 +193,7 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
         return await GetByIdAsync(id, ct);
     }
 
-    public async Task<(List<MedicalCase> Items, int Total)> QueryAsync(
+    public async Task<(List<MedicalCaseDetailDto> Items, int Total)> QueryAsync(
         Guid? patientId = null,
         Guid? userId = null,
         MedicalCaseStatus? status = null,
@@ -212,7 +207,6 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
 
         try
         {
-            // 使用 QueryMedicalCasesAsync 统一查询端点
             var queryType = patientId.HasValue ? MedicalCaseQueryType.ByPatient : MedicalCaseQueryType.All;
             var response = await _api.QueryMedicalCasesAsync(
                 queryType: queryType,
@@ -223,10 +217,10 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
 
             if (response.Data == null)
             {
-                return (new List<MedicalCase>(), 0);
+                return (new List<MedicalCaseDetailDto>(), 0);
             }
 
-            var items = response.Data.Items.Select(_mapper.ToEntity).ToList();
+            var items = response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
 
             // 客户端过滤状态和日期（如果服务端不支持）
             if (status.HasValue)
@@ -251,7 +245,7 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
         }
     }
 
-    public async Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId, CancellationToken ct = default)
+    public async Task<List<MedicalCaseDetailDto>> GetByPatientIdAsync(Guid patientId, CancellationToken ct = default)
     {
         _logger.LogDebug("[RemoteDataSource] MedicalCase.GetByPatientId - PatientId={PatientId}", patientId);
 
@@ -264,10 +258,10 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
 
             if (response.Data == null)
             {
-                return new List<MedicalCase>();
+                return new List<MedicalCaseDetailDto>();
             }
 
-            return response.Data.Items.Select(_mapper.ToEntity).ToList();
+            return response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
         }
         catch (Exception ex)
         {
@@ -308,4 +302,21 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
             };
         }
     }
+}
+
+/// <summary>
+/// MedicalCaseListDto -> MedicalCaseDetailDto 映射器 (仅限 DTO 间转换, 无 Entity 依赖)
+/// </summary>
+[Mapper]
+internal partial class MedicalCaseListToDetailMapper
+{
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.CreatedBy))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.ConsultationId))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.PrescriptionId))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.Remark))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.PresentIllness))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.Consultation))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.Prescription))]
+    public partial MedicalCaseDetailDto ToDetailDto(MedicalCaseListDto listDto);
 }

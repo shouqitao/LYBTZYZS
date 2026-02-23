@@ -27,7 +27,6 @@ using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Roles;
 using LYBT.Desktop.Infrastructure.Roles.Definitions;
-using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.Services.Notifications;
 using LYBT.Desktop.MedicalCase;
@@ -45,9 +44,7 @@ using LYBT.Desktop.Patients.ViewModels.Components;
 // [已删除] using LYBT.Desktop.Prescriptions.Services - 服务已迁移到MedicalCase
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
-using LYBT.Desktop.Shell.Services.Diagnostics;
 using LYBT.Desktop.Shell.Services.HealthCheck;
-using LYBT.Desktop.Shell.Services.Lifecycle;
 using LYBT.Desktop.Shell.Services.Login;
 using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Desktop.Shell.Services.Startup;
@@ -226,9 +223,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<NavigationCoordinator>(containerRegistry);
 
             // Shell启动流程重构 - Phase 1 新增Logger
-            RegisterLogger<ApplicationLifecycle>(containerRegistry);
             RegisterLogger<SessionLifecycleManager>(containerRegistry);
-            RegisterLogger<StartupDiagnostics>(containerRegistry);
 
             // Shell启动流程重构 - Phase 2 新增Logger
             RegisterLogger<LoginCoordinator>(containerRegistry);
@@ -412,16 +407,13 @@ namespace LYBT.Desktop.Shell.Extensions
             });
             containerRegistry.RegisterSingleton<IUserActivityTracker>(resolver => resolver.Resolve<UserActivityTracker>());
             containerRegistry.RegisterSingleton<IUserActivityState>(resolver => resolver.Resolve<UserActivityTracker>());
-            containerRegistry.RegisterSingleton<IValidationService, ValidationService>();
             containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();
             containerRegistry.RegisterSingleton<IMainWindowServicesFacade, MainWindowServicesFacade>();
             containerRegistry.RegisterSingleton<IPrescriptionSettingsService, PrescriptionSettingsService>(); // OpenSpec: enhance-duplicate-herb-dialog
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>(); // OpenSpec: print-prescription-slip
             // [已删除] IRoleNavigationService - OpenSpec: unify-navigation-architecture (ADR-7)
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
-
-            // OpenSpec: create-printing-module - 注册独立打印模块服务
-            containerRegistry.RegisterSingleton<IPrintService<PrescriptionPrintModel>, PrescriptionPrintService>();
+            // IPrintService<T> 由 PrintingModule 注册，此处不重复
 
             // refactor-auth-role-system Phase 2.1: 可扩展角色注册表
             containerRegistry.RegisterSingleton<IRoleRegistry>(resolver =>
@@ -450,13 +442,11 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterApplicationServices(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<IApplicationInitializationService, ApplicationInitializationService>();
-            containerRegistry.RegisterSingleton<IApplicationBootstrapper, ApplicationBootstrapper>();
+            // IApplicationBootstrapper 由 App.xaml.cs 注册，此处不重复
             containerRegistry.RegisterSingleton<IApplicationStateService, ApplicationStateService>();
 
             // Shell启动流程重构 - Phase 1 新增服务
-            containerRegistry.RegisterSingleton<IApplicationLifecycle, ApplicationLifecycle>();
             containerRegistry.RegisterSingleton<ISessionLifecycleManager, SessionLifecycleManager>();
-            containerRegistry.RegisterSingleton<IStartupDiagnostics, StartupDiagnostics>();
 
             // Shell启动流程重构 - Phase 2 新增服务
             containerRegistry.RegisterSingleton<ILoginCoordinator, LoginCoordinator>();

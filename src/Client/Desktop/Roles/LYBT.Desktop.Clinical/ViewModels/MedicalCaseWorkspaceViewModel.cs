@@ -1071,10 +1071,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         if (_coordinator.CachedConsultation != null)
         {
             var dto = _coordinator.CachedConsultation;
-            Consultation.Id = dto.Id;
-            Consultation.MedicalCaseId = dto.MedicalCaseId;
-            Consultation.PatientId = dto.PatientId;
-            Consultation.UserId = dto.UserId;
+            // Id/MedicalCaseId/PatientId/UserId 已从 ConsultationInputDto 移除 (服务端通过聚合根获取)
             Consultation.PatientName = dto.PatientName ?? string.Empty;
             Consultation.DoctorName = dto.DoctorName ?? string.Empty;
             Consultation.PresentIllness = dto.PresentIllness;
@@ -1087,8 +1084,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         else
         {
             // 新建医案时初始化基础信息
-            Consultation.MedicalCaseId = MedicalCaseId;
-            Consultation.PatientId = CurrentPatient?.Id ?? Guid.Empty;
             Consultation.PatientName = CurrentPatient?.Name ?? string.Empty;
         }
 
