@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using FluentAssertions;
-using LYBT.Desktop.Herbs.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Xunit;
 

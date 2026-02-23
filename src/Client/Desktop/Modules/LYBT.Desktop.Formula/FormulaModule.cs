@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Mappers;
 using LYBT.Desktop.Formula.Models;
@@ -28,6 +29,9 @@ namespace LYBT.Desktop.Formula
             // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IFormulaRepository, FormulaRepository>();
+
+            // D5-3: 跨模块验方搜索提供者，供 MedicalCase 模块使用
+            containerRegistry.Register<IFormulaSearchProvider, Services.FormulaSearchProvider>();
 
             // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 

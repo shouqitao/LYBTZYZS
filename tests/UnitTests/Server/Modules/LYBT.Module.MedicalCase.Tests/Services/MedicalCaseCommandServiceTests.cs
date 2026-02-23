@@ -13,10 +13,8 @@ using Xunit;
 using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
-using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Users.Interfaces;
-using LYBT.Entities.Patients;
-using LYBT.Entities.Users;
+using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Shared.Models.DTOs.Users;
 
 namespace LYBT.Module.MedicalCases.Tests.Services
 {
@@ -31,8 +29,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
     {
         private readonly MedicalCaseCommandService _service;
         private readonly Mock<IMedicalCaseRepository> _repositoryMock;
-        private readonly Mock<IPatientRepository> _patientRepositoryMock;
-        private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<IPatientCrossModuleService> _patientCrossModuleMock;
+        private readonly Mock<IUserCrossModuleService> _userCrossModuleMock;
         private readonly Mock<IMedicalCaseAuditService> _auditServiceMock;
         private readonly Mock<IMedicalCasePermissionService> _permissionServiceMock;
         private readonly Mock<ILogger<MedicalCaseCommandService>> _loggerMock;
@@ -40,8 +38,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         public MedicalCaseCommandServiceTests()
         {
             _repositoryMock = CreateMock<IMedicalCaseRepository>();
-            _patientRepositoryMock = CreateMock<IPatientRepository>();
-            _userRepositoryMock = CreateMock<IUserRepository>();
+            _patientCrossModuleMock = CreateMock<IPatientCrossModuleService>();
+            _userCrossModuleMock = CreateMock<IUserCrossModuleService>();
             _auditServiceMock = CreateMock<IMedicalCaseAuditService>();
             _permissionServiceMock = CreateMock<IMedicalCasePermissionService>();
             _loggerMock = CreateLoggerMock<MedicalCaseCommandService>();
@@ -54,8 +52,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
 
             _service = new MedicalCaseCommandService(
                 _repositoryMock.Object,
-                _patientRepositoryMock.Object,
-                _userRepositoryMock.Object,
+                _patientCrossModuleMock.Object,
+                _userCrossModuleMock.Object,
                 _auditServiceMock.Object,
                 _permissionServiceMock.Object,
                 _loggerMock.Object);
@@ -71,13 +69,13 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var doctorId = Guid.NewGuid();
             var visitDate = DateTime.Now;
 
-            var patient = new Patient { Id = patientId, Name = "张三" };
-            var doctor = new User { Id = doctorId, RealName = "李医生" };
+            var patient = new PatientBasicDto { Id = patientId, Name = "张三" };
+            var doctor = new UserBasicDto { Id = doctorId, RealName = "李医生" };
 
-            _patientRepositoryMock.Setup(x => x.GetByIdAsync(patientId))
+            _patientCrossModuleMock.Setup(x => x.GetPatientBasicInfoAsync(patientId))
                 .ReturnsAsync(patient);
 
-            _userRepositoryMock.Setup(x => x.GetByIdAsync(doctorId))
+            _userCrossModuleMock.Setup(x => x.GetUserBasicInfoAsync(doctorId))
                 .ReturnsAsync(doctor);
 
             _repositoryMock.Setup(x => x.GetByPatientIdAsync(patientId))

@@ -5,12 +5,13 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.Herbs.Controls.HerbItem
+namespace LYBT.Desktop.Infrastructure.Controls.HerbItem
 {
     /// <summary>
     /// 药材项控件内部ViewModel
     /// OpenSpec: herb-editor-control-refactoring
     /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
+    /// OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
     /// </summary>
     public partial class HerbItemControlViewModel : ObservableObject, IHerbItemEditable
     {

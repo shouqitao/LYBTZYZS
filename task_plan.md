@@ -1,46 +1,49 @@
-# Task Plan: 文档体系完善与优化
+# Task Plan: 跨模块编译期解耦
 
 ## Goal
-修复文档体系中的断链、过时数据和模板合规缺失，使全部 6 层文档达到设计标准。
+消除所有业务模块间的直接 ProjectReference (7个)，通过 ISP 接口和 Provider 模式实现跨模块通信。
+
+## Design
+docs/plans/2026-02-23-cross-module-decoupling-design.md
+
+## Plan
+docs/plans/2026-02-23-cross-module-decoupling-plan.md
 
 ## Phases
 
-### Phase 1: README.md 断链 + 统计修复 [complete]
-- [ ] 修复 3 处断链 (system-architecture→system-overview, adr/→decisions/, 删除 security.md)
-- [ ] 更新 ADR 数量 6→8，architecture 文件总数
-- [ ] 更新 docs/README.md 版本号
+### Phase 1: 基础设施 -- 接口与实现 [complete]
+- [1] 创建 4 个 ISP 接口 (IPatient/IHerb/IUser CrossModuleService + ICrossModuleAuthService) -- done
+- [2] CrossModuleService 实现新接口 + CheckReference/Exists 新方法 -- done
+- [3] DI 注册 4 接口 (工厂模式复用同一实例) -- done
+- [4] 旧 ICrossModuleService 标记 [Obsolete] -- done
+- [5] 创建 2 个 Provider 接口 (IHerbSearchProvider + IFormulaSearchProvider) -- done
 
-### Phase 2: API 文档 /draft→/suspend 同步 [complete]
-- [ ] 04-api-reference/README.md: 端点索引表
-- [ ] 04-api-reference/medical-cases.md: 端点定义 + 描述文字
-- [ ] 两个文件的变更记录更新
+### Phase 2: Server 迁移 [complete]
+- [6] SyncService: IHerbService/IPatientService -> ISP 接口 -- done
+- [7] MedicalCase 3 Service: IPatientRepo/IUserRepo -> ISP 接口 -- done
+- [8] 移除 5 个 Server ProjectReference -- done
 
-### Phase 3: 05-development FAQ 补全 [complete]
-- [ ] README.md: 添加常见问题章节
-- [ ] code-standards.md: 添加常见违规案例
-- [ ] patterns.md: 添加常见陷阱/反模式
-- [ ] testing.md: 添加常见测试问题
-- [ ] (setup.md 已有 FAQ, 跳过)
+### Phase 3: Desktop 迁移 [complete]
+- [9] HerbSearchProvider + FormulaSearchProvider 实现 -- done
+- [10] MedicalCase 2 ViewModel 迁移 -- done
+- [11] 移除 2 个 Desktop ProjectReference -- done
+- [附加] HerbItem/HerbList/FormulaView 控件迁移到 Infrastructure -- done
 
-### Phase 4: 06-operations 故障排查补全 [complete]
-- [ ] deployment.md: 添加故障排查章节
-- [ ] configuration.md: 添加常见配置问题章节
-- [ ] (README.md 已有监控/健康检查, 跳过)
+### Phase 4: 清理 [complete]
+- [12] 架构测试合并 (ArchTests -> Tests.Architecture) -- done (38+20=58 tests)
+- [13] 空壳目录删除 (Consultation + Prescriptions) -- done
 
 ## Decisions
 | Decision | Rationale |
 |----------|-----------|
-| 不添加架构文档"设计决策表" | 决策追踪在 PRD + ADR 中，不重复 |
-| 03-architecture 取消 | 7 文件全部已有变更记录 |
-| 04-api-reference 变更记录取消 | 10 文件全部已有变更记录 |
-| FAQ 内容基于实际项目经验 | 避免空泛填充，写实用内容 |
-
-### Phase 5: plans/ 目录归档整理 [complete]
-- [x] 创建 archive/ 子目录
-- [x] 移动 24 个历史文件
-- [x] 创建 README.md 索引
+| ISP 拆分而非 MediatR | 同步语义清晰，已有 ICrossModuleService 基础设施 |
+| CrossModuleService 一类多接口 | 避免多实现类维护成本，共享 DbContext |
+| Provider 接口在 Contracts | 所有 Desktop 模块已依赖 Contracts，零新增依赖 |
+| 旧接口 [Obsolete] 而非立即删除 | 渐进迁移，不阻塞其他消费者 |
+| 控件迁移到 Infrastructure | MedicalCase 使用 HerbList/FormulaView 控件需编译期可见 |
+| Tests.Architecture 改 net8.0-windows | 合并 Desktop 架构测试需要 WPF 引用 |
 
 ## Errors Encountered
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-| (无) | | |
+| Error | Resolution |
+|-------|------------|
+| CustomControlArchTests 白名单不完整 | 添加 HerbListChangeType/HerbItemChangeType 枚举到白名单 |

@@ -1,15 +1,16 @@
-<UserControl x:Class="LYBT.Desktop.Herbs.Controls.HerbItem.HerbItemControl"
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.HerbItem.HerbItemControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:LYBT.Desktop.Herbs.Controls.HerbItem"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:local="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbItem"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
              xmlns:enums="clr-namespace:LYBT.Shared.Models.Enums;assembly=LYBT.Shared.Models"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DesignHeight="40" d:DesignWidth="220">
     <!-- OpenSpec: herb-editor-control-refactoring -->
+    <!-- OpenSpec: cross-module-decoupling - 迁移到Infrastructure -->
     <UserControl.Resources>
         <ObjectDataProvider x:Key="DecocteMethodValues"
                             MethodName="GetValues"

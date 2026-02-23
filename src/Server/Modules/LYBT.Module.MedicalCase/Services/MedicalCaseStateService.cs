@@ -1,7 +1,7 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -17,20 +17,20 @@ namespace LYBT.Module.MedicalCases.Services
     public class MedicalCaseStateService : BaseService<MedicalCase>, IMedicalCaseStateService
     {
         private readonly IMedicalCaseRepository _repository;
-        private readonly IUserRepository _userRepository;
+        private readonly IUserCrossModuleService _userCrossModule;
         private readonly IMedicalCaseAuditService _auditService;
         private readonly IMedicalCasePermissionService _permissionService;
 
         public MedicalCaseStateService(
             IMedicalCaseRepository repository,
-            IUserRepository userRepository,
+            IUserCrossModuleService userCrossModule,
             IMedicalCaseAuditService auditService,
             IMedicalCasePermissionService permissionService,
             ILogger<MedicalCaseStateService> logger)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
         }
@@ -270,7 +270,7 @@ namespace LYBT.Module.MedicalCases.Services
             => MedicalCaseServiceHelper.CloneMedicalCaseForAudit(source);
 
         private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin)
-            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userRepository, userId, isAdmin, _logger);
+            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger);
 
         #endregion
     }

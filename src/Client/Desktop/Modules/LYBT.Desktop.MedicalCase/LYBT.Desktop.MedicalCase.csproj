@@ -86,14 +86,10 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Primitives\LYBT.Shared.Primitives.csproj" />
   </ItemGroup>
 
-  <ItemGroup Label="Module Dependencies - Epic #2175">
-    <!-- Task 3.7: MedicalCase需要Herbs模块以支持药材拼音码过滤 -->
-    <ProjectReference Include="..\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
-    <!-- Task 3.8: MedicalCase需要Formula模块以支持经验方导入 -->
-    <ProjectReference Include="..\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
-    <!-- [已删除] LYBT.Desktop.Prescriptions - 空壳模块已移除，功能已迁移到本模块 -->
-    <!-- OpenSpec: consolidate-panel-viewmodels - ConsultationItem已迁移到本模块Models/Items/ -->
-  </ItemGroup>
+  <!-- Epic #2175 D5-3: 跨模块 ProjectReference 已全部移除 -->
+  <!-- C# 层通过 IHerbSearchProvider/IFormulaSearchProvider (Contracts) 解耦 -->
+  <!-- XAML 控件已迁移到 Infrastructure (HerbListControl/FormulaViewControl) -->
+  <!-- 运行时模块加载顺序通过 [ModuleDependency] 保证 -->
 
   <!-- Epic #1676 Phase 4 Task 4.5: 移除循环依赖 - MedicalCase不需要引用Patients -->
   <!-- Prism [ModuleDependency] 只需要运行时加载顺序，不需要编译时项目引用 -->

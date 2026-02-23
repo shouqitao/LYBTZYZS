@@ -4,12 +4,8 @@ using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
-using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Patients.Interfaces;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Sync.Services;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Sync;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
@@ -28,8 +24,8 @@ namespace LYBT.Module.Sync.Tests.Services;
 public class SyncServiceTests : TestBase
 {
     private readonly AppDbContext _dbContext;
-    private readonly Mock<IHerbService> _herbServiceMock;
-    private readonly Mock<IPatientService> _patientServiceMock;
+    private readonly Mock<IHerbCrossModuleService> _herbCrossModuleMock;
+    private readonly Mock<IPatientCrossModuleService> _patientCrossModuleMock;
     private readonly Mock<ILogger<SyncService>> _loggerMock;
     private readonly SyncService _syncService;
 
@@ -41,14 +37,14 @@ public class SyncServiceTests : TestBase
             .Options;
         _dbContext = new AppDbContext(options);
 
-        _herbServiceMock = CreateMock<IHerbService>();
-        _patientServiceMock = CreateMock<IPatientService>();
+        _herbCrossModuleMock = CreateMock<IHerbCrossModuleService>();
+        _patientCrossModuleMock = CreateMock<IPatientCrossModuleService>();
         _loggerMock = CreateLoggerMock<SyncService>();
 
         _syncService = new SyncService(
             _dbContext,
-            _herbServiceMock.Object,
-            _patientServiceMock.Object,
+            _herbCrossModuleMock.Object,
+            _patientCrossModuleMock.Object,
             _loggerMock.Object);
     }
 
@@ -369,10 +365,9 @@ public class SyncServiceTests : TestBase
         _dbContext.Herbs.Add(herb);
         await _dbContext.SaveChangesAsync();
 
-        _herbServiceMock
-            .Setup(x => x.CheckReferenceAsync(herb.Id))
-            .Returns(Task.FromResult(Result<HerbReferenceCheckDto>.Success(
-                new HerbReferenceCheckDto { HerbId = herb.Id, HasReferences = false, ReferenceCount = 0 })));
+        _herbCrossModuleMock
+            .Setup(x => x.CheckHerbReferenceAsync(herb.Id))
+            .ReturnsAsync(new ReferenceCheckResult(HasReferences: false, ReferenceCount: 0));
 
         var input = new SyncDeleteInputDto
         {
@@ -408,15 +403,9 @@ public class SyncServiceTests : TestBase
         _dbContext.Herbs.Add(herb);
         await _dbContext.SaveChangesAsync();
 
-        _herbServiceMock
-            .Setup(x => x.CheckReferenceAsync(herb.Id))
-            .Returns(Task.FromResult(Result<HerbReferenceCheckDto>.Success(
-                new HerbReferenceCheckDto
-                {
-                    HerbId = herb.Id,
-                    HasReferences = true,
-                    ReferenceCount = 5
-                })));
+        _herbCrossModuleMock
+            .Setup(x => x.CheckHerbReferenceAsync(herb.Id))
+            .ReturnsAsync(new ReferenceCheckResult(HasReferences: true, ReferenceCount: 5));
 
         var input = new SyncDeleteInputDto
         {
@@ -455,10 +444,9 @@ public class SyncServiceTests : TestBase
         _dbContext.Patients.Add(patient);
         await _dbContext.SaveChangesAsync();
 
-        _patientServiceMock
-            .Setup(x => x.CheckReferenceAsync(patient.Id))
-            .Returns(Task.FromResult(Result<PatientReferenceCheckDto>.Success(
-                new PatientReferenceCheckDto { PatientId = patient.Id, HasReferences = false, ReferenceCount = 0 })));
+        _patientCrossModuleMock
+            .Setup(x => x.CheckPatientReferenceAsync(patient.Id))
+            .ReturnsAsync(new ReferenceCheckResult(HasReferences: false, ReferenceCount: 0));
 
         var input = new SyncDeleteInputDto
         {
@@ -523,10 +511,9 @@ public class SyncServiceTests : TestBase
         _dbContext.Herbs.Add(herb);
         await _dbContext.SaveChangesAsync();
 
-        _herbServiceMock
-            .Setup(x => x.CheckReferenceAsync(herb.Id))
-            .Returns(Task.FromResult(Result<HerbReferenceCheckDto>.Success(
-                new HerbReferenceCheckDto { HerbId = herb.Id, HasReferences = false, ReferenceCount = 0 })));
+        _herbCrossModuleMock
+            .Setup(x => x.CheckHerbReferenceAsync(herb.Id))
+            .ReturnsAsync(new ReferenceCheckResult(HasReferences: false, ReferenceCount: 0));
 
         var input = new SyncDeleteInputDto
         {

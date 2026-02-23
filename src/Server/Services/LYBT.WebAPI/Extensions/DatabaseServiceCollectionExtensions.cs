@@ -172,10 +172,8 @@ public static class DatabaseServiceCollectionExtensions
         services.AddScoped<LYBT.Infrastructure.Configuration.Services.DefaultPasswordService>();
         services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
 
-        // OpenSpec: decouple-server-modules - 跨模块服务
-        // 提供模块间数据访问的统一接口，避免模块直接依赖
-        services.AddScoped<LYBT.Infrastructure.Services.ICrossModuleService,
-                          LYBT.Infrastructure.Services.CrossModuleService>();
+        // D5-1: 跨模块服务 ISP 注册已移至 ServiceCollectionExtensions.AddDatabaseServices()
+        // 此处不再重复注册，避免双重 Scoped 实例
 
         // Issue #1726 Phase 3: 数据库健康检查与启动诊断
         services.AddHealthChecks()

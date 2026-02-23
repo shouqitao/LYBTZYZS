@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="clr-namespace:LYBT.Desktop.MedicalCase.Dialogs"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:formulaControls="clr-namespace:LYBT.Desktop.Formula.Controls;assembly=LYBT.Desktop.Formula"
+             xmlns:formulaControls="clr-namespace:LYBT.Desktop.Infrastructure.Controls.FormulaView;assembly=LYBT.Desktop.Infrastructure"
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              mc:Ignorable="d"
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"

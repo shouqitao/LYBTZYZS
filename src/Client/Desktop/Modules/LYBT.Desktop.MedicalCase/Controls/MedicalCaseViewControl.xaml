@@ -17,7 +17,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:herbList="clr-namespace:LYBT.Desktop.Herbs.Controls.HerbList;assembly=LYBT.Desktop.Herbs"
+             xmlns:herbList="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbList;assembly=LYBT.Desktop.Infrastructure"
              x:Name="Root">
 
     <!--

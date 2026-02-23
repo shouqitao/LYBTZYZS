@@ -61,7 +61,7 @@ dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 - **三层架构**: Controller → Service → Repository → DbContext
 - **MVVM**: View (XAML) ← 绑定 → ViewModel → Repository → API
 - **DDD**: MedicalCase 是唯一聚合根 (Consultation + Prescription 是内部实体)
-- **双模式**: 远程 (HTTP API → SQL Server) + 本地 (DataSource → SQLite)，手动切换
+- **双模式**: 远程 (SQL Server) + 本地 (SQLite)，共享 Service/Repository 层，仅 DbContext Provider 不同 (SYNC-D02)。详见 [dual-mode.md](docs/03-architecture/dual-mode.md)
 
 ## 术语铁律
 

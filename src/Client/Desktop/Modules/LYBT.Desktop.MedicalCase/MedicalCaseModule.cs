@@ -22,6 +22,8 @@ namespace LYBT.Desktop.MedicalCase
     /// </summary>
     [Module(ModuleName = nameof(MedicalCaseModule))]
     [ModuleDependency("PatientsModule")] // 病历依赖患者
+    [ModuleDependency("HerbsModule")] // 运行时需要 IHerbSearchProvider 已注册
+    [ModuleDependency("FormulaModule")] // 运行时需要 IFormulaSearchProvider 已注册
     // [已移除] PrescriptionsModule依赖 - 所有功能已迁移到本模块
     //  移除ConsultationModule依赖 - MedicalCase是聚合根，不应依赖子实体模块 (Issue #1463)
     public class MedicalCaseModule : IModule

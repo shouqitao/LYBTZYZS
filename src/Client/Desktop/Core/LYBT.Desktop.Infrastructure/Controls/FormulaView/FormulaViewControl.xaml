@@ -3,20 +3,21 @@
     OpenSpec: extract-detail-controls Task 1.1
     OpenSpec: optimize-preview-layout - 优化布局和视觉层次
     OpenSpec: refactor-master-detail-layout - 详情区域UI优化
+    OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
 
     独立的验方预览控件，可在FormulaDetailView和FormulaImportDialog中复用
-    通过DependencyProperty接收FormulaDto数据
+    通过DependencyProperty接收数据（使用object类型支持FormulaDetailModel和FormulaDetailDto）
 
     UI优化 (2025-12-16):
     - 采用多卡片分组布局，充分利用详情区域空间
     - 分为：基本信息、功效用法、药材组成、系统信息四个逻辑区域
     - 使用统一的DetailLabelStyle和DetailValueStyle样式
 -->
-<UserControl x:Class="LYBT.Desktop.Formula.Controls.FormulaViewControl"
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.FormulaView.FormulaViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
              x:Name="Root">
 
     <!--

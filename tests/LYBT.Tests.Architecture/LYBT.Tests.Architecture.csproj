@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS8625</NoWarn>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -15,10 +16,36 @@
     <PackageReference Include="NetArchTest.Rules" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- Server References -->
+  <ItemGroup Label="Server References">
     <ProjectReference Include="..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
     <ProjectReference Include="..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+  </ItemGroup>
+
+  <!-- Desktop Core References -->
+  <ItemGroup Label="Desktop Core References">
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+  </ItemGroup>
+
+  <!-- Desktop Module References - Required for Assembly.Load() -->
+  <ItemGroup Label="Desktop Module References">
+    <ProjectReference Include="..\..\src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Auth\LYBT.Desktop.Auth.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
+  </ItemGroup>
+
+  <!-- Desktop Role Modules -->
+  <ItemGroup Label="Desktop Role Modules">
+    <ProjectReference Include="..\..\src\Client\Desktop\Roles\LYBT.Desktop.Admin\LYBT.Desktop.Admin.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Roles\LYBT.Desktop.Clinical\LYBT.Desktop.Clinical.csproj" />
   </ItemGroup>
 </Project>

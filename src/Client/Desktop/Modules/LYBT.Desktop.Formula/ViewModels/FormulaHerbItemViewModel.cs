@@ -1,4 +1,4 @@
-using LYBT.Desktop.Herbs.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {

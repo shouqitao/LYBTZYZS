@@ -2,7 +2,7 @@ using FluentAssertions;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Services;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
 using Microsoft.Extensions.Logging;
@@ -26,7 +26,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
     {
         private readonly MedicalCaseStateService _service;
         private readonly Mock<IMedicalCaseRepository> _repositoryMock;
-        private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<IUserCrossModuleService> _userCrossModuleMock;
         private readonly Mock<IMedicalCaseAuditService> _auditServiceMock;
         private readonly Mock<IMedicalCasePermissionService> _permissionServiceMock;
         private readonly Mock<ILogger<MedicalCaseStateService>> _loggerMock;
@@ -34,7 +34,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         public MedicalCaseStateServiceTests()
         {
             _repositoryMock = CreateMock<IMedicalCaseRepository>();
-            _userRepositoryMock = CreateMock<IUserRepository>();
+            _userCrossModuleMock = CreateMock<IUserCrossModuleService>();
             _auditServiceMock = CreateMock<IMedicalCaseAuditService>();
             _permissionServiceMock = CreateMock<IMedicalCasePermissionService>();
             _loggerMock = CreateLoggerMock<MedicalCaseStateService>();
@@ -45,7 +45,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
 
             _service = new MedicalCaseStateService(
                 _repositoryMock.Object,
-                _userRepositoryMock.Object,
+                _userCrossModuleMock.Object,
                 _auditServiceMock.Object,
                 _permissionServiceMock.Object,
                 _loggerMock.Object);

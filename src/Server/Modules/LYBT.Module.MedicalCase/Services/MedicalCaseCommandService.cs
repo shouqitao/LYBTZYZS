@@ -2,10 +2,9 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mapping;
-using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -23,24 +22,24 @@ namespace LYBT.Module.MedicalCases.Services
     public class MedicalCaseCommandService : BaseService<MedicalCase>, IMedicalCaseCommandService
     {
         private readonly IMedicalCaseRepository _repository;
-        private readonly IPatientRepository _patientRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IPatientCrossModuleService _patientCrossModule;
+        private readonly IUserCrossModuleService _userCrossModule;
         private readonly IMedicalCaseAuditService _auditService;
         private readonly IMedicalCasePermissionService _permissionService;
         private readonly MedicalCaseMapper _mapper = new();
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
-            IPatientRepository patientRepository,
-            IUserRepository userRepository,
+            IPatientCrossModuleService patientCrossModule,
+            IUserCrossModuleService userCrossModule,
             IMedicalCaseAuditService auditService,
             IMedicalCasePermissionService permissionService,
             ILogger<MedicalCaseCommandService> logger)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _patientCrossModule = patientCrossModule ?? throw new ArgumentNullException(nameof(patientCrossModule));
+            _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
         }
@@ -79,7 +78,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 统一验证: 参数、Patient、Doctor、BR-001
             var (patient, doctor) = await MedicalCaseServiceHelper.ValidateAndFetchCreationContextAsync(
-                request.PatientId, doctorId, _patientRepository, _userRepository, _repository, _logger);
+                request.PatientId, doctorId, _patientCrossModule, _userCrossModule, _repository, _logger);
 
             // 创建MedicalCase实体
             var medicalCase = new MedicalCase
@@ -659,7 +658,7 @@ namespace LYBT.Module.MedicalCases.Services
             => MedicalCaseServiceHelper.CloneMedicalCaseForAudit(source);
 
         private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin)
-            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userRepository, userId, isAdmin, _logger);
+            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger);
 
         #endregion
 

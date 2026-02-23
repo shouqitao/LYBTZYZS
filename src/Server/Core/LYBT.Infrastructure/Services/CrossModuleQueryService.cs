@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.DTOs.Users;
 using Microsoft.EntityFrameworkCore;
@@ -8,8 +9,14 @@ namespace LYBT.Infrastructure.Services;
 /// <summary>
 /// 跨模块服务实现
 /// 直接使用DbContext进行跨模块数据访问，不经过模块Service
+/// 实现 4 个 ISP 接口 (D5-1) + 旧兼容接口
 /// </summary>
-public class CrossModuleService : ICrossModuleService
+public class CrossModuleService :
+    ICrossModuleService,
+    IPatientCrossModuleService,
+    IHerbCrossModuleService,
+    IUserCrossModuleService,
+    ICrossModuleAuthService
 {
     private readonly AppDbContext _context;
 
@@ -18,7 +25,7 @@ public class CrossModuleService : ICrossModuleService
         _context = context;
     }
 
-    #region 患者查询
+    #region 患者查询 (IPatientCrossModuleService)
 
     /// <inheritdoc />
     public async Task<PatientBasicDto?> GetPatientBasicInfoAsync(Guid patientId)
@@ -59,13 +66,34 @@ public class CrossModuleService : ICrossModuleService
         return patients.ToDictionary(p => p.Id);
     }
 
+    /// <inheritdoc />
+    public async Task<bool> PatientExistsAsync(Guid patientId)
+    {
+        return await _context.Patients
+            .AsNoTracking()
+            .AnyAsync(p => p.Id == patientId && !p.IsDeleted);
+    }
+
+    /// <inheritdoc />
+    public async Task<ReferenceCheckResult> CheckPatientReferenceAsync(Guid patientId)
+    {
+        var count = await _context.MedicalCases
+            .AsNoTracking()
+            .CountAsync(mc => mc.PatientId == patientId && !mc.IsDeleted);
+
+        return new ReferenceCheckResult(
+            HasReferences: count > 0,
+            ReferenceCount: count,
+            Message: count > 0 ? $"患者有 {count} 条医案记录" : null);
+    }
+
     #endregion
 
     // ========== 医案查询方法已删除（OpenSpec: consolidate-medicalcase-queries）==========
     // GetMedicalCaseBasicInfoAsync 已删除 - 请使用 MedicalCaseQueryService
     // GetMedicalCasesBasicInfoAsync 已删除 - 请使用 MedicalCaseQueryService
 
-    #region 药材查询
+    #region 药材查询 (IHerbCrossModuleService)
 
     /// <inheritdoc />
     public async Task<HerbBasicDto?> GetHerbBasicInfoAsync(Guid herbId)
@@ -103,9 +131,22 @@ public class CrossModuleService : ICrossModuleService
             .FirstOrDefaultAsync();
     }
 
+    /// <inheritdoc />
+    public async Task<ReferenceCheckResult> CheckHerbReferenceAsync(Guid herbId)
+    {
+        var count = await _context.PrescriptionItems
+            .AsNoTracking()
+            .CountAsync(pi => pi.HerbId == herbId);
+
+        return new ReferenceCheckResult(
+            HasReferences: count > 0,
+            ReferenceCount: count,
+            Message: count > 0 ? $"药材被 {count} 个处方项引用" : null);
+    }
+
     #endregion
 
-    #region 用户查询
+    #region 用户查询 (IUserCrossModuleService)
 
     /// <inheritdoc />
     public async Task<UserBasicDto?> GetUserBasicInfoAsync(Guid userId)
@@ -170,6 +211,27 @@ public class CrossModuleService : ICrossModuleService
             user.PasswordHash = newPasswordHash;
             await _context.SaveChangesAsync();
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> UserExistsAsync(Guid userId)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .AnyAsync(u => u.Id == userId && !u.IsDeleted);
+    }
+
+    #endregion
+
+    #region 认证服务 (ICrossModuleAuthService)
+
+    /// <inheritdoc />
+    /// <remarks>Token 撤销将在 S1 安全加固阶段实现</remarks>
+    public Task RevokeUserTokensAsync(Guid userId, string reason)
+    {
+        // OpenSpec: S1 安全加固 - Token Family 撤销，当前阶段预留接口
+        throw new NotImplementedException(
+            "Token 撤销功能将在 S1 安全加固阶段实现。当前仅提供接口定义。");
     }
 
     #endregion
