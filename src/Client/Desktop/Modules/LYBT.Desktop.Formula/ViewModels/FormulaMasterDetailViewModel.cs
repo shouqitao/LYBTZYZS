@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
-using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Formula.Mappers;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
@@ -28,8 +28,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         private readonly IFormulaRepository _formulaRepository;
         private readonly IFormulaService _formulaService;
         private readonly IDialogService _prismDialogService;
-        // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，改用IHerbRepository
-        private readonly IHerbRepository _herbRepository;
+        // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
+        private readonly IHerbSearchProvider _herbSearchProvider;
         private readonly FormulaDetailModelMapper _mapper = new();
 
         // 编辑模式下的药材列表
@@ -76,14 +76,14 @@ namespace LYBT.Desktop.Formula.ViewModels
             IFormulaRepository formulaRepository,
             IFormulaService formulaService,
             IDialogService prismDialogService,
-            // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，改用IHerbRepository
-            IHerbRepository herbRepository)
+            // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
+            IHerbSearchProvider herbSearchProvider)
             : base(viewModelServices, masterDetailServices)
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
-            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
 
             PageTitle = "验方管理";
 
@@ -421,18 +421,10 @@ namespace LYBT.Desktop.Formula.ViewModels
                 Logger.LogDebug("开始加载所有药材列表");
                 _allHerbs.Clear();
 
-                const int pageSize = 100;
-                int currentPage = 1;
-                while (true)
-                {
-                    // OpenSpec: simplify-desktop-data-layer - 使用IHerbRepository替代IHerbService
-                    var pagedResult = await _herbRepository.GetPagedAsync(currentPage, pageSize);
-                    if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
-                    foreach (var herb in pagedResult.Items) _allHerbs.Add(herb);
-                    if (pagedResult.Items.Count < pageSize) break;
-                    currentPage++;
-                }
-                Logger.LogInformation("成功分页加载 {Count} 个药材", _allHerbs.Count);
+                // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
+                var herbs = await _herbSearchProvider.GetAllHerbsAsync();
+                foreach (var herb in herbs) _allHerbs.Add(herb);
+                Logger.LogInformation("成功加载 {Count} 个药材", _allHerbs.Count);
             }
             catch (Exception ex)
             {

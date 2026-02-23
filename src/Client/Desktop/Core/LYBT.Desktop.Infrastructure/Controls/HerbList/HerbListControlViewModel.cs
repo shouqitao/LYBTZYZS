@@ -1,17 +1,18 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Herbs.Controls.HerbItem;
-using LYBT.Desktop.Herbs.Models.Items;
+using LYBT.Desktop.Infrastructure.Controls.HerbItem;
+using LYBT.Desktop.Infrastructure.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Desktop.Herbs.Controls.HerbList
+namespace LYBT.Desktop.Infrastructure.Controls.HerbList
 {
     /// <summary>
     /// 药材列表控件内部ViewModel
     /// OpenSpec: herb-editor-control-refactoring
     /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
+    /// OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
     /// </summary>
     public partial class HerbListControlViewModel : ObservableObject
     {
@@ -310,10 +311,6 @@ namespace LYBT.Desktop.Herbs.Controls.HerbList
         {
             // 从药材库同步最新信息
             // OpenSpec: herb-editor-control-refactoring - 导入时使用药材库最新数据
-            // 解决问题：
-            // 1. 经验方无价格、历史处方价格可能过时
-            // 2. 药材名称可能被修改（如"红枣"→"大枣"）
-            // 3. 单位等信息可能变化
             if (dto.HerbId != Guid.Empty && AllHerbs != null)
             {
                 var herbInfo = AllHerbs.FirstOrDefault(h => h.Id == dto.HerbId);

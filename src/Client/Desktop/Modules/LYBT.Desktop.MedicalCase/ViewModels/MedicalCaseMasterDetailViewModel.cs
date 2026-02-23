@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels;
 public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<MedicalCaseListDto, MedicalCaseDetailModel>
 {
     private readonly IMedicalCaseRepository _repository;
-    private readonly IHerbRepository _herbRepository;
+    private readonly IHerbSearchProvider _herbSearchProvider;
     private readonly MedicalCaseDetailModelMapper _mapper = new();
 
     #region 扩展属性
@@ -91,11 +91,11 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         IViewModelServices viewModelServices,
         IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> masterDetailServices,
         IMedicalCaseRepository repository,
-        IHerbRepository herbRepository)
+        IHerbSearchProvider herbSearchProvider)
         : base(viewModelServices, masterDetailServices)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+        _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
 
         PageTitle = "医案管理";
 
@@ -263,7 +263,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     {
         try
         {
-            var herbs = await _herbRepository.SearchAsync(string.Empty);
+            var herbs = await _herbSearchProvider.SearchHerbsAsync(string.Empty);
             AllHerbs = new ObservableCollection<HerbListDto>(herbs);
             Logger.LogDebug("加载药材列表完成: {Count}个", AllHerbs.Count);
         }

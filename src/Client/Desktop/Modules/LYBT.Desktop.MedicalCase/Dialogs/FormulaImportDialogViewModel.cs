@@ -3,7 +3,7 @@ using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -23,7 +23,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
     {
         #region 服务依赖
 
-        private readonly IFormulaRepository _formulaRepository;
+        private readonly IFormulaSearchProvider _formulaSearchProvider;
         private List<FormulaListDto> _allFormulas = new();
 
         #endregion
@@ -124,10 +124,10 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// </summary>
         public FormulaImportDialogViewModel(
             IViewModelServices services,
-            IFormulaRepository formulaRepository)
+            IFormulaSearchProvider formulaSearchProvider)
             : base(services)
         {
-            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
+            _formulaSearchProvider = formulaSearchProvider ?? throw new ArgumentNullException(nameof(formulaSearchProvider));
             Title = "从经验方导入";
 
             // 初始化分类列表
@@ -197,7 +197,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 StatusMessage = "正在加载验方列表...";
 
                 // 统一默认PageSize，通过搜索/分类筛选定位验方
-                var result = await _formulaRepository.GetPagedAsync(1, SystemConstants.DefaultPageSize);
+                var result = await _formulaSearchProvider.GetFormulasPagedAsync(1, SystemConstants.DefaultPageSize);
                 _allFormulas = result.Items.ToList();
 
                 // 动态更新分类列表（保留已有分类，添加数据中的新分类）
@@ -295,7 +295,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 LoadingMessage = "正在加载药材组成...";
 
                 // 获取验方详情（包含药材列表）
-                var detail = await _formulaRepository.GetByIdAsync(SelectedFormula.Id);
+                var detail = await _formulaSearchProvider.GetFormulaByIdAsync(SelectedFormula.Id);
 
                 // 保存完整detail供FormulaViewControl使用
                 SelectedFormulaDetail = detail;

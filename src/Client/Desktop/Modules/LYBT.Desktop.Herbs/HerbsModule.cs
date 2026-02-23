@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Herbs.Interfaces;
+﻿using LYBT.Desktop.Contracts.Services.CrossModule;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Herbs.Mappers;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Repositories;
@@ -28,6 +29,9 @@ namespace LYBT.Desktop.Herbs
             // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IHerbRepository, HerbRepository>();
+
+            // D5-3: 跨模块药材搜索提供者，供 MedicalCase 模块使用
+            containerRegistry.Register<IHerbSearchProvider, Services.HerbSearchProvider>();
 
             // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 

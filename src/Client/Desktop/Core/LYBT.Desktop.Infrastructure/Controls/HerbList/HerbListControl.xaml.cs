@@ -1,17 +1,18 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using LYBT.Desktop.Herbs.Controls.HerbItem;
-using LYBT.Desktop.Herbs.Models.Items;
+using LYBT.Desktop.Infrastructure.Controls.HerbItem;
+using LYBT.Desktop.Infrastructure.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Desktop.Herbs.Controls.HerbList
+namespace LYBT.Desktop.Infrastructure.Controls.HerbList
 {
     /// <summary>
     /// 药材列表控件 - 管理多个HerbItemControl
     /// OpenSpec: herb-editor-control-refactoring
     /// OpenSpec: simplify-workspace-event-architecture - 移除事件，改用属性绑定
+    /// OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
     /// </summary>
     public partial class HerbListControl : UserControl
     {

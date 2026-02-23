@@ -12,7 +12,8 @@
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:formulaControls="clr-namespace:LYBT.Desktop.Formula.Controls">
+             xmlns:formulaControls="clr-namespace:LYBT.Desktop.Formula.Controls"
+             xmlns:formulaView="clr-namespace:LYBT.Desktop.Infrastructure.Controls.FormulaView;assembly=LYBT.Desktop.Infrastructure">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):
@@ -206,7 +207,7 @@
 
                 <!-- 查看模式内容 -->
                 <!-- OpenSpec: unify-vm-view-binding-patterns - 统一使用CurrentDetail -->
-                <formulaControls:FormulaViewControl
+                <formulaView:FormulaViewControl
                     Grid.Row="1"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}"
                     Formula="{Binding CurrentDetail}"
