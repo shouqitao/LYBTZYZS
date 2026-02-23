@@ -143,12 +143,12 @@ namespace LYBT.Infrastructure
             // 添加JWT黑名单服务
             // services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>(); // 移除过度工程
 
-            // ISP 拆分 (D5-1) -- 4 接口共享同一 Scoped 实例
+            // ISP 拆分 (D5-1) -- 3 接口共享同一 Scoped 实例
             services.AddScoped<CrossModuleService>();
             services.AddScoped<Services.CrossModule.IPatientCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
             services.AddScoped<Services.CrossModule.IHerbCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
             services.AddScoped<Services.CrossModule.IUserCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
-            services.AddScoped<Services.CrossModule.ICrossModuleAuthService>(sp => sp.GetRequiredService<CrossModuleService>());
+            // ICrossModuleAuthService 暂不注册 -- 待 S1 安全加固阶段实现后启用
             // 旧接口保留兼容 (标记 [Obsolete])
             services.AddScoped<ICrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
 
