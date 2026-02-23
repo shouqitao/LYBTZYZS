@@ -187,7 +187,8 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 通过聚合根保存（EF Core会跟踪子实体变更）
             var result = await _repository.UpdateAsync(medicalCase);
-            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin);
+            // S3-03: 传递 editReason 到审计日志
+            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, editReason);
             return result;
         }
 
@@ -312,6 +313,9 @@ namespace LYBT.Module.MedicalCases.Services
                 return null;
             }
 
+            // S3-03: 保存变更前的状态用于审计
+            var beforeState = CloneMedicalCaseForAudit(medicalCase);
+
             // 权限检查
             MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "UpdatePrescription", _logger);
 
@@ -355,6 +359,10 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             await _repository.UpdateAsync(medicalCase);
+
+            // S3-03: 记录处方更新审计日志 (含 editReason)
+            await LogUpdateAuditAsync(beforeState, medicalCase, currentUserId, isAdmin, editReason);
+
             return medicalCase.Prescription;
         }
 
@@ -477,6 +485,12 @@ namespace LYBT.Module.MedicalCases.Services
             // 权限检查
             ValidateEditPermission(medicalCase, currentUserId, isAdmin);
 
+            // S3-03: 需要修改原因时，验证 editReason 不为空
+            if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(request.EditReason))
+            {
+                throw new InvalidOperationException("该医案需要提供修改原因");
+            }
+
             // 更新基础字段
             UpdateMedicalCaseBasicFields(medicalCase, request);
 
@@ -496,7 +510,8 @@ namespace LYBT.Module.MedicalCases.Services
             var result = await _repository.UpdateAsync(medicalCase);
             _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
-            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin);
+            // S3-03: 传递 editReason 到审计日志
+            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, request.EditReason);
             return result;
         }
 
@@ -532,8 +547,9 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 记录更新审计日志
+        /// S3-03: 新增 editReason 参数，传递到审计日志
         /// </summary>
-        private async Task LogUpdateAuditAsync(MedicalCase before, MedicalCase after, Guid currentUserId, bool isAdmin)
+        private async Task LogUpdateAuditAsync(MedicalCase before, MedicalCase after, Guid currentUserId, bool isAdmin, string? editReason = null)
         {
             var operatorInfo = await GetOperatorInfoAsync(currentUserId, isAdmin);
             await _auditService.LogAsync(
@@ -542,7 +558,8 @@ namespace LYBT.Module.MedicalCases.Services
                 operatorId: currentUserId,
                 operatorName: operatorInfo.Name,
                 role: operatorInfo.Role,
-                operationType: AuditOperationType.Update);
+                operationType: AuditOperationType.Update,
+                reason: editReason);
         }
 
 
