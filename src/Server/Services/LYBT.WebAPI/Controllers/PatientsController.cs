@@ -149,6 +149,9 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.DeleteAsync(id);
             if (!result.IsSuccess)
             {
+                // X7: 区分引用阻塞(422)和不存在(404)
+                if (result.ErrorMessage?.Contains("医案记录") == true)
+                    return UnprocessableEntity(new ApiResponse { Success = false, Message = result.ErrorMessage });
                 return NotFound("患者不存在");
             }
 
@@ -293,6 +296,52 @@ namespace LYBT.WebAPI.Controllers
 
             LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
+        }
+
+        /// <summary>
+        /// 检查患者引用关系
+        /// X7: 删除前检查是否有关联医案
+        /// </summary>
+        [HttpGet("{id}/check-reference")]
+        [ProducesResponseType(typeof(ApiResponse<PatientReferenceCheckDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> CheckReference(Guid id)
+        {
+            if (ValidateGuid(id, "患者ID") is { } error) return error;
+
+            var result = await _service.CheckReferenceAsync(id);
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return BusinessFail(result.ErrorMessage ?? "引用检查失败");
+            }
+            return Success(result.Data, "引用检查完成");
+        }
+
+        /// <summary>
+        /// 批量检查患者引用关系
+        /// X7: 批量删除前预检查
+        /// </summary>
+        [HttpPost("batch-check-reference")]
+        [ProducesResponseType(typeof(ApiResponse<List<PatientReferenceCheckDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto request)
+        {
+            if (request.PatientIds == null || request.PatientIds.Count == 0)
+            {
+                return ValidationFail("患者ID列表不能为空");
+            }
+
+            if (request.PatientIds.Count > 100)
+            {
+                return ValidationFail("批量检查最多支持100条记录");
+            }
+
+            var result = await _service.BatchCheckReferenceAsync(request.PatientIds);
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return BusinessFail(result.ErrorMessage ?? "批量引用检查失败");
+            }
+            return Success(result.Data, "批量引用检查完成");
         }
     }
 }

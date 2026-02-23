@@ -119,7 +119,15 @@ namespace LYBT.Module.Herbs.Services
 
         public async Task<Result> DeleteAsync(Guid id)
         {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
+            // X7: 删除前强制引用检查
+            var refCheck = await CheckReferenceAsync(id);
+            if (refCheck.IsSuccess && refCheck.Data != null && refCheck.Data.HasReferences)
+            {
+                _logger.LogWarning("[SVC] Herb.Delete → HasReferences - HerbId={HerbId} ReferenceCount={Count}",
+                    id, refCheck.Data.ReferenceCount);
+                return Result.Failure($"药材被 {refCheck.Data.ReferenceCount} 个处方引用，无法删除");
+            }
+
             await _repository.DeleteAsync(id);
             return Result.Success();
         }
@@ -543,8 +551,8 @@ namespace LYBT.Module.Herbs.Services
                 HerbName = herb.Name,
                 HasReferences = hasReferences,
                 ReferenceCount = referenceCount,
-                CanDelete = true, // BR-007: 支持软删除，始终可删除
-                DeleteWarning = hasReferences ? $"该药材已被 {referenceCount} 个处方引用，删除后将标记为已删除状态" : null,
+                CanDelete = !hasReferences, // X7: 有引用不可删除
+                DeleteWarning = hasReferences ? $"该药材已被 {referenceCount} 个处方引用，无法删除" : null,
                 RecentReferences = recentReferences
             };
 

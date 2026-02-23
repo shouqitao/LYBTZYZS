@@ -197,7 +197,15 @@ namespace LYBT.Module.Patients.Services
 
         public async Task<Result> DeleteAsync(Guid id)
         {
-            // eliminate-service-catch-return: 移除冗余try-catch
+            // X7: 删除前强制引用检查
+            var refCheck = await CheckReferenceAsync(id);
+            if (refCheck.IsSuccess && refCheck.Data != null && refCheck.Data.HasReferences)
+            {
+                _logger.LogWarning("[SVC] Patient.Delete → HasReferences - PatientId={PatientId} ReferenceCount={Count}",
+                    id, refCheck.Data.ReferenceCount);
+                return Result.Failure($"患者有 {refCheck.Data.ReferenceCount} 条医案记录，无法删除");
+            }
+
             var result = await _repository.DeleteAsync(id);
             return result ? Result.Success() : Result.Failure("删除失败");
         }
@@ -677,6 +685,21 @@ namespace LYBT.Module.Patients.Services
                         continue;
                     }
 
+                    // X7: 批量删除逐个引用检查
+                    var refCount = await _dbContext.MedicalCases
+                        .CountAsync(mc => mc.PatientId == id && !mc.IsDeleted);
+                    if (refCount > 0)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = $"患者有 {refCount} 条医案记录，无法删除"
+                        });
+                        continue;
+                    }
+
                     // 软删除
                     entity.IsDeleted = true;
                     entity.UpdatedAt = DateTime.Now;
@@ -746,8 +769,8 @@ namespace LYBT.Module.Patients.Services
                 PatientName = patient.Name,
                 HasReferences = hasReferences,
                 ReferenceCount = referenceCount,
-                CanDelete = true, // 支持软删除，始终可删除
-                DeleteWarning = hasReferences ? $"该患者已有 {referenceCount} 个医案记录，删除后将标记为已删除状态" : null,
+                CanDelete = !hasReferences, // X7: 有引用不可删除
+                DeleteWarning = hasReferences ? $"该患者已有 {referenceCount} 个医案记录，无法删除" : null,
                 RecentMedicalCases = recentMedicalCases
             };
 

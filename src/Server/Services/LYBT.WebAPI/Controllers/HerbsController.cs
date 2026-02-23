@@ -129,6 +129,9 @@ namespace LYBT.WebAPI.Controllers
             var result = await _herbService.DeleteAsync(id);
             if (!result.IsSuccess)
             {
+                // X7: 区分引用阻塞(422)和不存在(404)
+                if (result.ErrorMessage?.Contains("处方引用") == true)
+                    return UnprocessableEntity(new ApiResponse { Success = false, Message = result.ErrorMessage });
                 return NotFound(result.ErrorMessage ?? "药材不存在");
             }
 
