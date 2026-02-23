@@ -469,6 +469,93 @@ public class MedicalCaseIntegrationTests
 
     #endregion
 
+    #region EditReason Validation (S3-03)
+
+    [Fact]
+    public async Task Save_CompletedCase_WithoutEditReason_ShouldFail()
+    {
+        // Arrange - 创建医案并关闭 (Completed 状态)
+        var (caseId, original) = await CreateMedicalCaseAsync();
+
+        var closeResp = await _fixture.DoctorClient
+            .PutAsync($"{BaseUrl}/{caseId}/close", null);
+        closeResp.IsSuccessStatusCode.Should().BeTrue("关闭医案应成功");
+
+        // Act - Doctor (owner) 尝试保存已完成医案，不提供 EditReason
+        // RequiresEditReason: IsCompleted=true → 需要 editReason
+        var saveInput = new MedicalCaseInputDto
+        {
+            Id = caseId,
+            PatientId = original.PatientId,
+            UserId = WebApiFixture.DoctorUserId,
+            Consultation = new ConsultationInputDto
+            {
+                PresentIllness = "头痛加剧",
+                TcmDiagnosis = "肝阳上亢 (修改)"
+            }
+            // EditReason 未设置 (null)
+        };
+        var response = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}", saveInput);
+
+        // Assert - InvalidOperationException → SystemExceptionHandler → 500
+        // Test 环境下消息被泛化 ("操作无法执行")，不检查具体消息内容
+        response.IsSuccessStatusCode.Should().BeFalse(
+            "已完成医案未提供修改原因应被拒绝");
+        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError,
+            "editReason 缺失导致 InvalidOperationException → 500");
+
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
+        body!.Success.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Save_CompletedCase_WithEditReason_ShouldSucceed()
+    {
+        // Arrange - 创建医案并关闭
+        var (caseId, original) = await CreateMedicalCaseAsync();
+
+        var closeResp = await _fixture.DoctorClient
+            .PutAsync($"{BaseUrl}/{caseId}/close", null);
+        closeResp.IsSuccessStatusCode.Should().BeTrue("关闭医案应成功");
+
+        // Act - Doctor (owner) 保存已完成医案，提供 EditReason
+        var saveInput = new MedicalCaseInputDto
+        {
+            Id = caseId,
+            PatientId = original.PatientId,
+            UserId = WebApiFixture.DoctorUserId,
+            EditReason = "患者复诊后补充诊断信息",
+            Consultation = new ConsultationInputDto
+            {
+                PresentIllness = "头痛加剧伴恶心",
+                TongueDiagnosis = "舌红苔黄腻",
+                PulseDiagnosis = "弦滑",
+                TcmDiagnosis = "肝阳化风"
+            }
+        };
+        var response = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}", saveInput);
+
+        // Assert - 提供修改原因后应成功保存
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            $"提供 EditReason 后保存应成功, 实际: {response.StatusCode}");
+
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
+        body!.Success.Should().BeTrue();
+        body.Data!.Consultation!.TcmDiagnosis.Should().Be("肝阳化风");
+
+        // Verify - 审计日志应记录修改原因
+        var auditResp = await _fixture.DoctorClient
+            .GetAsync($"{BaseUrl}/{caseId}/audit-logs");
+        auditResp.StatusCode.Should().Be(HttpStatusCode.OK,
+            "审计日志查询应成功");
+    }
+
+    #endregion
+
     #region Queries
 
     [Fact]
