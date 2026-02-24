@@ -76,6 +76,11 @@ public partial class MedicalCaseMapper
     [MapperIgnoreTarget(nameof(MedicalCase.CompletedAt))]
     [MapperIgnoreTarget(nameof(MedicalCase.Consultation))]
     [MapperIgnoreTarget(nameof(MedicalCase.Prescription))]
+    [MapperIgnoreTarget(nameof(MedicalCase.PrintLogs))]
+    [MapperIgnoreTarget(nameof(MedicalCase.PrintVersion))]
+    [MapperIgnoreTarget(nameof(MedicalCase.LastPrintedAt))]
+    [MapperIgnoreTarget(nameof(MedicalCase.PrintCount))]
+    [MapperIgnoreTarget(nameof(MedicalCase.IsPrinted))]
     [MapperIgnoreTarget(nameof(MedicalCase.CreatedAt))]
     [MapperIgnoreTarget(nameof(MedicalCase.CreatedBy))]
     [MapperIgnoreTarget(nameof(MedicalCase.UpdatedAt))]
@@ -97,6 +102,11 @@ public partial class MedicalCaseMapper
     [MapperIgnoreTarget(nameof(MedicalCase.CompletedAt))]
     [MapperIgnoreTarget(nameof(MedicalCase.Consultation))]
     [MapperIgnoreTarget(nameof(MedicalCase.Prescription))]
+    [MapperIgnoreTarget(nameof(MedicalCase.PrintLogs))]
+    [MapperIgnoreTarget(nameof(MedicalCase.PrintVersion))]
+    [MapperIgnoreTarget(nameof(MedicalCase.LastPrintedAt))]
+    [MapperIgnoreTarget(nameof(MedicalCase.PrintCount))]
+    [MapperIgnoreTarget(nameof(MedicalCase.IsPrinted))]
     [MapperIgnoreTarget(nameof(MedicalCase.CreatedAt))]
     [MapperIgnoreTarget(nameof(MedicalCase.CreatedBy))]
     [MapperIgnoreTarget(nameof(MedicalCase.UpdatedAt))]
@@ -158,15 +168,11 @@ public partial class MedicalCaseMapper
     /// <summary>
     /// PrescriptionInputDto转换为Prescription实体
     /// </summary>
+    // T2-X8-09: PrintVersion/LastPrintedAt/PrintCount/IsPrinted/PrintLogs 已从 Prescription 移除
     [MapperIgnoreTarget(nameof(Prescription.Id))]
     [MapperIgnoreTarget(nameof(Prescription.MedicalCaseId))]
-    [MapperIgnoreTarget(nameof(Prescription.PrintVersion))]
-    [MapperIgnoreTarget(nameof(Prescription.LastPrintedAt))]
-    [MapperIgnoreTarget(nameof(Prescription.PrintCount))]
-    [MapperIgnoreTarget(nameof(Prescription.IsPrinted))]
     [MapperIgnoreTarget(nameof(Prescription.PrescriptionNumber))]
     [MapperIgnoreTarget(nameof(Prescription.Items))]
-    [MapperIgnoreTarget(nameof(Prescription.PrintLogs))]
     [MapperIgnoreTarget(nameof(Prescription.CreatedAt))]
     [MapperIgnoreTarget(nameof(Prescription.CreatedBy))]
     [MapperIgnoreTarget(nameof(Prescription.UpdatedAt))]
@@ -180,13 +186,8 @@ public partial class MedicalCaseMapper
     /// </summary>
     [MapperIgnoreTarget(nameof(Prescription.Id))]
     [MapperIgnoreTarget(nameof(Prescription.MedicalCaseId))]
-    [MapperIgnoreTarget(nameof(Prescription.PrintVersion))]
-    [MapperIgnoreTarget(nameof(Prescription.LastPrintedAt))]
-    [MapperIgnoreTarget(nameof(Prescription.PrintCount))]
-    [MapperIgnoreTarget(nameof(Prescription.IsPrinted))]
     [MapperIgnoreTarget(nameof(Prescription.PrescriptionNumber))]
     [MapperIgnoreTarget(nameof(Prescription.Items))]
-    [MapperIgnoreTarget(nameof(Prescription.PrintLogs))]
     [MapperIgnoreTarget(nameof(Prescription.CreatedAt))]
     [MapperIgnoreTarget(nameof(Prescription.CreatedBy))]
     [MapperIgnoreTarget(nameof(Prescription.UpdatedAt))]
@@ -294,7 +295,12 @@ public partial class MedicalCaseMapper
             Diagnosis = entity.Consultation?.TcmDiagnosis,
             CreatedAt = entity.CreatedAt,
             // Issue #2231: 添加ConsultationId字段（共享主键，值等于MedicalCase.Id）
-            ConsultationId = entity.Id
+            ConsultationId = entity.Id,
+            // 打印管理字段
+            PrintVersion = entity.PrintVersion,
+            LastPrintedAt = entity.LastPrintedAt,
+            PrintCount = entity.PrintCount,
+            IsPrinted = entity.IsPrinted
         };
     }
 
@@ -324,6 +330,11 @@ public partial class MedicalCaseMapper
             ConsultationId = entity.Consultation != null ? entity.Id : null,
             PrescriptionId = entity.Prescription != null && !entity.Prescription.IsDeleted ? entity.Prescription.Id : null,
             CompletedAt = entity.CompletedAt,
+            // 打印管理字段
+            PrintVersion = entity.PrintVersion,
+            LastPrintedAt = entity.LastPrintedAt,
+            PrintCount = entity.PrintCount,
+            IsPrinted = entity.IsPrinted,
 
             // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
             PresentIllness = entity.Consultation?.PresentIllness,

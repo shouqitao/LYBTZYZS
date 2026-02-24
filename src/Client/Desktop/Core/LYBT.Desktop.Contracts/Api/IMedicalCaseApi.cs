@@ -210,6 +210,15 @@ namespace LYBT.Desktop.Contracts.Api
             Guid id,
             [Refit.Body] MedicalCaseInputDto request);
 
+        /// <summary>
+        /// 记录打印完成 -- 回写打印状态
+        /// T2-X8-04~08: 打印后更新 IsPrinted/PrintCount/LastPrintedAt/PrintVersion
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/print-completed")]
+        Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintCompletedAsync(
+            Guid medicalCaseId,
+            [Refit.Body] PrintCompletedRequest request);
+
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>

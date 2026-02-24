@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Prescriptions;
+using LYBT.Entities.Prescriptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -6,6 +6,8 @@ namespace LYBT.Infrastructure.Data.Configurations
 {
     /// <summary>
     /// PrescriptionPrintLog 实体 EF Core 配置
+    /// T2-X8-09: Prescription.PrintLogs 导航属性已移除，关系改为无导航配置
+    /// 新的打印日志通过 MedicalCasePrintLog 实体记录
     /// </summary>
     public class PrescriptionPrintLogConfiguration : IEntityTypeConfiguration<PrescriptionPrintLog>
     {
@@ -14,16 +16,13 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.ToTable("PrescriptionPrintLogs");
             entity.HasKey(l => l.Id);
 
-            // 配置与Prescription的关系
+            // T2-X8-09: Prescription.PrintLogs 导航属性已移除
+            // 保留 FK 约束但不使用 WithMany 导航
             entity.HasOne(l => l.Prescription)
-                         .WithMany(p => p.PrintLogs)
+                         .WithMany()
                          .HasForeignKey(l => l.PrescriptionId)
                          .IsRequired()
                          .OnDelete(DeleteBehavior.Cascade);
-
-            // Issue #1765: 删除2个多余索引
-            // - PrescriptionId: EF Core外键自动创建索引
-            // - PrintedAt: MVP阶段(<10K记录)无需额外索引
 
             // 配置并发控制字段
             entity.Property(l => l.RowVersion).IsRowVersion().IsConcurrencyToken();

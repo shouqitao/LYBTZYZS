@@ -122,6 +122,34 @@ namespace LYBT.WebAPI.Controllers
         // - UpdatePrescription, UpdatePrescriptionSimple: 通过SaveAsync更新
         // - DeletePrescription: 通过SaveAsync设置NeedsPrescription=false触发软删除
 
+        /// <summary>
+        /// 记录打印完成 -- 更新打印管理字段并写入打印日志
+        /// T2-X8-04~08: IsPrinted/PrintCount/LastPrintedAt/PrintVersion + PrintLog
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        /// <param name="request">打印完成请求</param>
+        [HttpPut("{id}/print-completed")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
+        public async Task<IActionResult> RecordPrintCompleted(
+            Guid id,
+            [FromBody] PrintCompletedRequest request)
+        {
+            var (operatorId, operatorName, _) = GetOperator();
+
+            var result = await _facade.RecordPrintCompletedAsync(
+                id, request.PrintType, operatorId, operatorName, request.PrinterName);
+
+            if (result == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
+
+            var dto = _mapper.MapToMedicalCaseDetailDto(result);
+
+            _logger.LogInformation("打印完成记录成功，MedicalCaseId: {Id}, PrintVersion: {Version}, PrintCount: {Count}",
+                id, result.PrintVersion, result.PrintCount);
+            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "打印记录更新成功"));
+        }
+
         #region 聚合保存端点
 
         /// <summary>

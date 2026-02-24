@@ -116,6 +116,24 @@ namespace LYBT.Module.MedicalCases.Interfaces
             Guid currentUserId,
             bool isAdmin = false);
 
+        // ========== T2-X8-04~08: 打印回写 ==========
+
+        /// <summary>
+        /// 记录打印完成 -- 更新 IsPrinted/PrintCount/LastPrintedAt，创建 PrintLog
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="printType">打印类型</param>
+        /// <param name="printedBy">打印人ID</param>
+        /// <param name="printedByName">打印人姓名</param>
+        /// <param name="printerName">打印机名称</param>
+        /// <returns>更新后的医案实体</returns>
+        Task<MedicalCase?> RecordPrintCompletedAsync(
+            Guid medicalCaseId,
+            LYBT.Shared.Models.Enums.PrintType printType,
+            Guid printedBy,
+            string printedByName,
+            string? printerName = null);
+
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>

@@ -539,7 +539,8 @@ namespace LYBT.Module.Herbs.Services
                     PrescriptionNumber = p.PrescriptionNumber ?? string.Empty,
                     PatientName = patient.Name,
                     CreatedAt = p.CreatedAt,
-                    Status = p.IsPrinted ? "已打印" : "未打印"
+                    // T2-X8-09: IsPrinted 已迁移到 MedicalCase 层级
+                    Status = mc.IsPrinted ? "已打印" : "未打印"
                 })
                 .Take(5)
                 .ToListAsync();

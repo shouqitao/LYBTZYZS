@@ -1,71 +1,37 @@
-# Findings: Phase 2 - Desktop Architecture Optimization
+# Findings: Sprint 2 - Core Feature Fixes
 
-## Architecture Issue
+## Batch 1 Findings
 
-Desktop Contracts/Infrastructure 直接依赖 LYBT.Entities (Server Core 项目)。
-DataSource 接口 `IDataSourceBase<TEntity>` 使用 EF 实体类型作为泛型参数。
+### MedicalCase 实体结构
+- BaseEntity 包含 Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted
+- MedicalCase 是聚合根, 已有 Consultation(1:1) + Prescription(1:0..1) 导航
+- Prescription 已有 PrintVersion/LastPrintedAt/PrintCount/IsPrinted/PrintLogs 字段
 
-## Current State Analysis
+### Mapper 体系
+- Server 端: `MedicalCaseMapper` (Riok.Mapperly), RequiredMappingStrategy=Target
+  - 3 个手动映射方法: MapToMedicalCaseDto/MapToMedicalCaseDetailDto/MapToPrescriptionDetailDto
+  - 多个 Mapperly 生成方法: ToListDto/ToDetailDto/ToEntity/UpdateEntity
+- Desktop 端: `LocalMedicalCaseMapper` (Riok.Mapperly), 独立映射链
+  - ToDetailDtoCore (Mapperly) + ToDetailDto (手动补充嵌套)
 
-### DataSource 接口 Entity 依赖 (已修复)
+### PrescriptionPrintLog 现状
+- FK: PrescriptionId -> Prescription (Cascade Delete)
+- 表名: PrescriptionPrintLogs
+- 配置: PrescriptionPrintLogConfiguration (独立 IEntityTypeConfiguration)
+- Batch 2 将迁移此 FK 到 MedicalCaseId
 
-| Interface | 旧类型 | 新类型 | 状态 |
-|-----------|--------|--------|------|
-| IDataSourceBase | `<TEntity>` | `<TDetail, TInput>` | done |
-| IHerbDataSource | `Herb` | `HerbDetailDto, HerbInputDto` | done |
-| IPatientDataSource | `Patient` | `PatientDetailDto, PatientInputDto` | done |
-| IFormulaDataSource | `Formula` | `FormulaDetailDto, FormulaInputDto` | done |
-| IMedicalCaseDataSource | `MedicalCase` | `MedicalCaseDetailDto, MedicalCaseInputDto` | done |
-| IUserDataSource | `User` | `UserDetailDto, UserInputDto` | done |
-| ILocalAuthService | `User?` | `UserDetailDto?` | done |
+### EF 配置
+- MedicalCaseConfiguration 使用 BaseEntityConfiguration<T> 基类
+- PrescriptionPrintLogConfiguration 未使用基类 (直接 IEntityTypeConfiguration)
+- MedicalCasePrintLogConfiguration 遵循相同模式
 
-### Remote DataSource 架构变更
+## Sprint 1 Key Learnings (Carried Forward)
 
-**旧路径**: API -> DetailDto -> mapper.ToEntity() -> Entity -> mapper.ToDetailDto() -> DetailDto
-**新路径**: API -> DetailDto -> 直接返回
+### CanManageUser 权限模型
+- SuperAdmin -> 可管理所有角色
+- Admin -> 仅可管理 Doctor/Receptionist
+- Doctor/Receptionist -> 无管理权限
 
-列表端点处理:
-- API 返回 `XxxListDto`
-- Remote DataSource 内部用 `XxxListToDetailMapper` (Mapperly) 转为 `XxxDetailDto`
-- 未填充的 DetailDto 字段保持默认值 (null/0)
-- Repository/ViewModel 只使用 ListDto 兼容的字段子集
-
-### Local DataSource 架构变更
-
-**边界转换模式**: EF Entity 在内部使用, 通过 `LocalXxxMapper` 在 DataSource 边界转换
-- 入口: `_mapper.ToEntity(inputDto)` -> EF 操作
-- 出口: EF 查询 Entity -> `_mapper.ToDetailDto(entity)` -> 返回 DTO
-
-### API Response 类型映射
-
-| API 端点 | 返回类型 | DataSource 返回 |
-|---------|---------|----------------|
-| GetXxxByIdAsync | `DetailDto` | 直接透传 |
-| GetXxxsAsync (paged) | `PagedResult<ListDto>` | ListDto->DetailDto mapper |
-| CreateXxxAsync | `DetailDto` | 直接透传 |
-| UpdateXxxAsync | `DetailDto` | 直接透传 |
-| RestoreAsync | `DetailDto` | 直接透传 |
-| CloneAsync | `DetailDto` | 直接透传 |
-
-### 项目依赖变更
-
-| 项目 | LYBT.Entities 引用 | 状态 |
-|-----|-------------------|------|
-| LYBT.Desktop.Contracts | 已移除 | done |
-| LYBT.Desktop.Infrastructure | 待移除 (Task 6) | pending |
-| LYBT.Desktop.LocalData | 保留 (需要 EF Entity) | by design |
-
-### 关键发现
-
-1. **ListDto vs DetailDto**: Paged API 返回 ListDto (轻量), 但接口返回 DetailDto。通过 Mapperly mapper 桥接, DetailDto 中 ListDto 不包含的字段为默认值。
-2. **FormulaHerbItem 无 UnitPrice**: Entity 没有此字段, TotalPrice 计算改为由 Service 层负责。
-3. **MedicalCase.SaveAsync 签名变更**: 从 `SaveAsync(MedicalCase)` 改为 `SaveAsync(MedicalCaseInputDto)`, Local 实现中需从 InputDto 构建/更新聚合实体。
-
-### 待处理: Repository 层编译错误 (27 个)
-
-错误分布:
-- HerbRepository: ~4 errors (Entity->DTO 类型不匹配)
-- PatientRepository: ~4 errors
-- FormulaRepository: ~4 errors
-- MedicalCaseRepository: ~7 errors (最复杂, 包含聚合保存)
-- UserRepository: ~8 errors
+### EF Core 注意事项
+- FindAsync 应用全局查询过滤器 (IsDeleted)
+- 需要 IgnoreQueryFilters() 查询软删除记录
