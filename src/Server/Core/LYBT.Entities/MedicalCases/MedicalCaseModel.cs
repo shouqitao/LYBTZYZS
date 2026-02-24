@@ -72,6 +72,24 @@ namespace LYBT.Entities.MedicalCases
 
         // ConsultationDate已删除，用BaseEntity.CreatedAt代替
 
+        // ========== 打印管理字段 ==========
+
+        /// <summary>当前打印版本号</summary>
+        [DisplayName("打印版本号")]
+        public int PrintVersion { get; set; } = 1;
+
+        /// <summary>最后打印时间</summary>
+        [DisplayName("最后打印时间")]
+        public DateTime? LastPrintedAt { get; set; }
+
+        /// <summary>打印次数</summary>
+        [DisplayName("打印次数")]
+        public int PrintCount { get; set; } = 0;
+
+        /// <summary>是否已打印</summary>
+        [DisplayName("是否已打印")]
+        public bool IsPrinted { get; set; } = false;
+
         // ========== 同聚合导航属性 ==========
 
         /// <summary>诊断记录（1:1关系）</summary>
@@ -81,6 +99,9 @@ namespace LYBT.Entities.MedicalCases
         /// <summary>处方信息（1:0..1关系）</summary>
         [DisplayName("处方信息")]
         public virtual Prescription? Prescription { get; set; }
+
+        /// <summary>打印日志记录</summary>
+        public virtual ICollection<MedicalCasePrintLog> PrintLogs { get; set; } = new List<MedicalCasePrintLog>();
 
         // ========== 计算属性 ==========
 

@@ -61,23 +61,8 @@ namespace LYBT.Entities.Prescriptions
         // Indication已删除，打印时从Consultation.TcmDiagnosis获取
         // FormulaSource已删除，与ReferencedFormulas功能重复
 
-        // 打印版本管理字段
-
-        /// <summary>当前打印版本号</summary>
-        [DisplayName("打印版本号")]
-        public int PrintVersion { get; set; } = 1;
-
-        /// <summary>最后打印时间</summary>
-        [DisplayName("最后打印时间")]
-        public DateTime? LastPrintedAt { get; set; }
-
-        /// <summary>打印次数</summary>
-        [DisplayName("打印次数")]
-        public int PrintCount { get; set; } = 0;
-
-        /// <summary>是否已打印</summary>
-        [DisplayName("是否已打印")]
-        public bool IsPrinted { get; set; } = false;
+        // T2-X8-09: 打印字段已迁移到 MedicalCase 层级
+        // PrintVersion/LastPrintedAt/PrintCount/IsPrinted 已移除 (2026-02-24)
 
         // 关联数据
 
@@ -91,9 +76,6 @@ namespace LYBT.Entities.Prescriptions
         // Prescription作为MedicalCase聚合的内部实体，不应有反向导航
         // 需要MedicalCase信息时，通过MedicalCaseId查询或使用Query Service
 
-        /// <summary>
-        /// 打印日志记录
-        /// </summary>
-        public virtual ICollection<PrescriptionPrintLog> PrintLogs { get; set; } = new List<PrescriptionPrintLog>();
+        // T2-X8-09: PrintLogs 导航属性已迁移到 MedicalCase.PrintLogs (2026-02-24)
     }
 }

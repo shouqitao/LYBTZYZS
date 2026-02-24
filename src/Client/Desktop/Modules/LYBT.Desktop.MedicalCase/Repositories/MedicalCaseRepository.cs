@@ -635,6 +635,43 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
+        /// <inheritdoc />
+        public async Task<MedicalCaseDetailDto?> RecordPrintCompletedAsync(Guid medicalCaseId, PrintCompletedRequest request)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+
+            if (_api == null)
+            {
+                _logger.LogWarning("[REPO] MedicalCase.RecordPrintCompleted -> NotSupported - 本地模式不支持此操作");
+                return null;
+            }
+
+            try
+            {
+                _logger.LogInformation("[REPO] 记录打印完成，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+                var response = await _api.RecordPrintCompletedAsync(medicalCaseId, request);
+
+                if (response.Success)
+                {
+                    _logger.LogInformation("[REPO] 打印完成记录成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    return response.Data;
+                }
+                else
+                {
+                    _logger.LogWarning("[REPO] 打印完成记录失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
+                        medicalCaseId, response.Message);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[REPO] 打印完成记录异常，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
         #endregion
     }
 }

@@ -111,5 +111,11 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// OpenSpec: simplify-desktop-data-layer (Phase 1)
         /// </summary>
         Task<MedicalCaseDetailDto?> SaveDraftAsync(Guid id, ConsultationInputDto? request);
+
+        /// <summary>
+        /// 记录打印完成 -- 回写打印状态到服务端
+        /// T2-X8-04~08: 打印后更新 IsPrinted/PrintCount/LastPrintedAt/PrintVersion
+        /// </summary>
+        Task<MedicalCaseDetailDto?> RecordPrintCompletedAsync(Guid medicalCaseId, PrintCompletedRequest request);
     }
 }

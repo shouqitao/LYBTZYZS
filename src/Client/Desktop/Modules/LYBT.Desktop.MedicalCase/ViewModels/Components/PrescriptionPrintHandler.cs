@@ -3,8 +3,10 @@ using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
@@ -22,6 +24,7 @@ public class PrescriptionPrintHandler
 
     private readonly IPrintService<PrescriptionPrintModel>? _printService;
     private readonly MedicalCaseWorkspaceCoordinator _coordinator;
+    private readonly IMedicalCaseRepository _repository;
     private readonly ILogger<PrescriptionPrintHandler> _logger;
 
     #endregion
@@ -29,12 +32,15 @@ public class PrescriptionPrintHandler
     #region 构造函数
 
     // OpenSpec: simplify-workspace-architecture - 使用Coordinator替代DataLoader
+    // T2-X8-04~08: 注入 Repository 用于打印回写
     public PrescriptionPrintHandler(
         MedicalCaseWorkspaceCoordinator coordinator,
+        IMedicalCaseRepository repository,
         ILoggerFactory loggerFactory,
         IPrintService<PrescriptionPrintModel>? printService = null)
     {
         _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = loggerFactory.CreateLogger<PrescriptionPrintHandler>();
         _printService = printService;
     }
@@ -76,6 +82,9 @@ public class PrescriptionPrintHandler
             // OpenSpec: create-printing-module - 组装PrescriptionPrintModel并调用新接口
             var printModel = BuildPrintModel(prescription, currentPatient, consultationData);
             await _printService.PreviewAsync(printModel);
+
+            // T2-X8-04~08: 打印成功后回写状态到服务端
+            await RecordPrintCompletedAsync(medicalCaseId, PrintType.Prescription);
 
             return PrintResult.Success();
         }
@@ -157,6 +166,33 @@ public class PrescriptionPrintHandler
         var age = today.Year - birthDate.Value.Year;
         if (birthDate.Value.Date > today.AddYears(-age)) age--;
         return age;
+    }
+
+    /// <summary>
+    /// 打印完成后回写状态到服务端
+    /// T2-X8-04~08: IsPrinted/PrintCount/LastPrintedAt/PrintVersion + PrintLog
+    /// </summary>
+    private async Task RecordPrintCompletedAsync(Guid medicalCaseId, PrintType printType)
+    {
+        try
+        {
+            var request = new PrintCompletedRequest { PrintType = printType };
+            var result = await _repository.RecordPrintCompletedAsync(medicalCaseId, request);
+            if (result != null)
+            {
+                _logger.LogInformation("打印回写成功，MedicalCaseId: {MedicalCaseId}, PrintCount: {PrintCount}",
+                    medicalCaseId, result.PrintCount);
+            }
+            else
+            {
+                _logger.LogWarning("打印回写失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            }
+        }
+        catch (Exception ex)
+        {
+            // 打印回写失败不应阻止打印预览本身的成功
+            _logger.LogError(ex, "打印回写异常，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+        }
     }
 
     /// <summary>

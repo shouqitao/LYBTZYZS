@@ -33,5 +33,21 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
               .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
               .IsUnique()
               .HasFilter("[CaseStatus] = 1 AND [IsDeleted] = 0");
+
+        // A2-03: 按医生查询医案的性能索引
+        builder.HasIndex(m => m.UserId)
+              .HasDatabaseName("IX_MedicalCases_UserId");
+
+        // ========== 打印管理字段配置 ==========
+        builder.Property(m => m.PrintVersion).HasDefaultValue(1);
+        builder.Property(m => m.PrintCount).HasDefaultValue(0);
+        builder.Property(m => m.IsPrinted).HasDefaultValue(false);
+
+        // PrintLogs 一对多关系 (Cascade 删除)
+        builder.HasMany(m => m.PrintLogs)
+              .WithOne(l => l.MedicalCase)
+              .HasForeignKey(l => l.MedicalCaseId)
+              .IsRequired()
+              .OnDelete(DeleteBehavior.Cascade);
     }
 }

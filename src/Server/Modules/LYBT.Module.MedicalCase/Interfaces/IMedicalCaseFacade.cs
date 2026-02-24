@@ -36,6 +36,16 @@ public interface IMedicalCaseFacade
     /// </summary>
     Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin);
 
+    /// <summary>
+    /// 记录打印完成
+    /// </summary>
+    Task<MedicalCase?> RecordPrintCompletedAsync(
+        Guid medicalCaseId,
+        LYBT.Shared.Models.Enums.PrintType printType,
+        Guid printedBy,
+        string printedByName,
+        string? printerName = null);
+
     // ===== 状态操作 (StateService) =====
 
     /// <summary>

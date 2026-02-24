@@ -49,6 +49,14 @@ public class MedicalCaseFacade : IMedicalCaseFacade
     public Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin)
         => _commandService.BatchDeleteAsync(ids, operatorId, isAdmin);
 
+    public Task<MedicalCase?> RecordPrintCompletedAsync(
+        Guid medicalCaseId,
+        LYBT.Shared.Models.Enums.PrintType printType,
+        Guid printedBy,
+        string printedByName,
+        string? printerName = null)
+        => _commandService.RecordPrintCompletedAsync(medicalCaseId, printType, printedBy, printedByName, printerName);
+
     // ===== 状态操作 - 委托 StateService =====
 
     public Task<MedicalCase?> UpdateStatusAsync(Guid id, MedicalCaseStatus status)

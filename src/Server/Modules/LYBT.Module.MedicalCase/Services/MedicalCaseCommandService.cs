@@ -333,14 +333,14 @@ namespace LYBT.Module.MedicalCases.Services
                 return null;
             }
 
-            // 业务规则验证：已打印处方不允许修改
-            if (medicalCase.Prescription.IsPrinted)
+            // T2-X8-01: 打印保护 -- 已打印的完成态医案禁止修改处方
+            if (medicalCase.IsPrinted && medicalCase.IsCompleted)
             {
-                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → AlreadyPrinted - PrescriptionId={PrescriptionId}", prescriptionId);
-                throw new InvalidOperationException("处方已打印，不允许修改");
+                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw new InvalidOperationException("医案已打印并完成，不允许修改处方");
             }
 
-            // 通过AutoMapper更新Prescription子实体（不包含Items）
+            // 通过Mapperly更新Prescription子实体（不包含Items）
             _mapper.UpdatePrescriptionEntity(request, medicalCase.Prescription);
             medicalCase.Prescription.UpdatedAt = DateTime.Now;
             medicalCase.UpdatedAt = DateTime.Now;
@@ -397,11 +397,11 @@ namespace LYBT.Module.MedicalCases.Services
                 return false;
             }
 
-            // 业务规则验证：已打印处方不允许删除
-            if (medicalCase.Prescription.IsPrinted)
+            // T2-X8-01: 打印保护 -- 已打印的完成态医案禁止删除处方
+            if (medicalCase.IsPrinted && medicalCase.IsCompleted)
             {
-                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → AlreadyPrinted - PrescriptionId={PrescriptionId}", prescriptionId);
-                throw new InvalidOperationException("处方已打印，不允许删除");
+                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw new InvalidOperationException("医案已打印并完成，不允许删除处方");
             }
 
             // 软删除Prescription
@@ -503,6 +503,13 @@ namespace LYBT.Module.MedicalCases.Services
             // 更新处方
             if (request.Prescription != null)
             {
+                // T2-X8-01: 打印保护 -- 已打印的完成态医案禁止修改处方
+                if (medicalCase.IsPrinted && medicalCase.IsCompleted)
+                {
+                    _logger.LogWarning("[SVC] MedicalCase.Save → PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                    throw new InvalidOperationException("医案已打印并完成，不允许修改处方");
+                }
+
                 HandlePrescriptionUpdate(medicalCase, request.Prescription);
             }
 
@@ -692,6 +699,61 @@ namespace LYBT.Module.MedicalCases.Services
             => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger);
 
         #endregion
+
+        // ========== T2-X8-04~08: 打印回写 ==========
+
+        /// <inheritdoc />
+        public async Task<MedicalCase?> RecordPrintCompletedAsync(
+            Guid medicalCaseId,
+            LYBT.Shared.Models.Enums.PrintType printType,
+            Guid printedBy,
+            string printedByName,
+            string? printerName = null)
+        {
+            _logger.LogInformation("[SVC] MedicalCase.RecordPrintCompleted - MedicalCaseId={MedicalCaseId} PrintType={PrintType}",
+                medicalCaseId, printType);
+
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            if (medicalCase == null)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.RecordPrintCompleted → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return null;
+            }
+
+            // 更新打印管理字段
+            medicalCase.IsPrinted = true;
+            medicalCase.PrintCount++;
+            medicalCase.LastPrintedAt = DateTime.Now;
+            medicalCase.UpdatedAt = DateTime.Now;
+
+            // T2-X8-10: PrintVersion 递增 (每次打印递增版本号)
+            medicalCase.PrintVersion++;
+
+            // T2-X8-11 + S4-13: 创建打印日志记录（版本快照）
+            var printLog = new MedicalCasePrintLog
+            {
+                Id = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
+                PrintType = printType,
+                PrintVersion = medicalCase.PrintVersion,
+                PrintedAt = DateTime.Now,
+                PrintedBy = printedBy,
+                PrintedByName = printedByName,
+                PrinterName = printerName,
+                IsSuccess = true,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+
+            medicalCase.PrintLogs.Add(printLog);
+
+            var result = await _repository.UpdateAsync(medicalCase);
+
+            _logger.LogInformation("[SVC] MedicalCase.RecordPrintCompleted → Success - MedicalCaseId={MedicalCaseId} PrintVersion={PrintVersion} PrintCount={PrintCount}",
+                medicalCaseId, medicalCase.PrintVersion, medicalCase.PrintCount);
+
+            return result;
+        }
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 

@@ -88,6 +88,24 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         /// <summary>是否有处方（计算属性）</summary>
         public bool HasPrescription => PrescriptionId.HasValue;
 
+        // ========== 打印管理字段 ==========
+
+        /// <summary>当前打印版本号</summary>
+        [DisplayName("打印版本号")]
+        public int PrintVersion { get; set; } = 1;
+
+        /// <summary>最后打印时间</summary>
+        [DisplayName("最后打印时间")]
+        public DateTime? LastPrintedAt { get; set; }
+
+        /// <summary>打印次数</summary>
+        [DisplayName("打印次数")]
+        public int PrintCount { get; set; } = 0;
+
+        /// <summary>是否已打印</summary>
+        [DisplayName("是否已打印")]
+        public bool IsPrinted { get; set; } = false;
+
         // ========== 扩展字段 ==========
 
         /// <summary>现病史</summary>
