@@ -10,11 +10,13 @@
 
 | 文件 | 内容 | 最后更新 |
 |------|------|----------|
-| [Sprint 路线图](2026-02-21-unified-architecture-sprint-roadmap.md) | 305 项任务，5 个 Sprint 分配 | 2026-02-21 |
+| [Sprint 路线图](2026-02-21-unified-architecture-sprint-roadmap.md) | 305 项任务，5 个 Sprint 分配; S1/S2 已完成 | 2026-02-25 |
+| [Sprint 3 设计](2026-02-25-sprint3-design.md) | Sprint 3 详细执行计划 (73 项，5 Batch) | 2026-02-25 |
+| [完整技术设计](2026-02-22-full-sprint-design.md) | Sprint 1-5 全量技术设计参考 | 2026-02-22 |
 | [功能检查清单](2026-02-11-system-function-checklist.md) | 全系统功能完成状态追踪 | 2026-02-22 |
 | [系统架构图](2026-02-21-system-architecture-diagrams.md) | 21 张 Mermaid 架构图 (领域模型/部署/数据流等) | 2026-02-21 |
-| [设计问题与解决方案](2026-02-21-design-issues-solutions.md) | 8 项架构设计问题的修复方案 | 2026-02-21 |
 | [架构深度对比](2026-02-21-architecture-deep-comparison.md) | D1-D8 八维度 PRD-代码偏差评估基线 | 2026-02-21 |
+| [Sprint 就绪度评估](2026-02-22-sprint-readiness-assessment.md) | Sprint 3-5 就绪度分析 | 2026-02-22 |
 
 ## 归档文档
 
@@ -33,7 +35,22 @@
 | prd-completion-design/plan/impl-plan | 2026-02-11 |
 | test-restructure-design/plan | 2026-02-08 |
 
-### 一次性分析报告 (4 个)
+### Sprint 已完成设计 (3 个, 2026-02-25 归档)
+
+| 文件 | 完成日期 | 说明 |
+|------|----------|------|
+| sprint1-design | 2026-02-25 | Sprint 1 全部 33/33 完成 |
+| design-issues-solutions | 2026-02-25 | 8 项设计问题全部实施 |
+| design-deepening-phase3 | 2026-02-25 | 数据流/状态流设计已实施 |
+
+### 跨模块解耦 (2 个, 2026-02-25 归档)
+
+| 文件 | 完成日期 | 说明 |
+|------|----------|------|
+| cross-module-decoupling-design | 2026-02-23 | D5 ISP 拆分 + Sync 解耦 (PR #2263) |
+| cross-module-decoupling-plan | 2026-02-23 | 同上 |
+
+### 一次性分析报告 (7 个)
 
 | 文件 | 说明 |
 |------|------|
@@ -41,6 +58,9 @@
 | deviation-triage-checklist | 偏差分类检查清单 |
 | prd-design-gap-analysis | PRD-设计缺口分析 |
 | code-fix-backlog | 代码修复积压列表 |
+| code-doc-audit-report | 代码-文档审查报告 (2026-02-25 归档) |
+| architecture-analysis-report | 架构分析报告 (2026-02-25 归档) |
+| d2-d5-design-patterns-dependencies | D2-D5 设计模式依赖分析 (2026-02-25 归档) |
 
 ### 设计文档 (任务已录入路线图) (8 个)
 
@@ -64,4 +84,4 @@
 
 ---
 
-*文档版本: v1.0 | 最后更新: 2026-02-22*
+*文档版本: v1.1 | 最后更新: 2026-02-25*
