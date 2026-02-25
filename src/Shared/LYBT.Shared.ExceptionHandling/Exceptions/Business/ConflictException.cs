@@ -81,10 +81,10 @@ public class ConflictException : AppException
     {
         return new ConflictException(
             EC.MedicalCaseVersionConflict,
-            $"病历 (ID: {caseId}) 版本冲突，期望版本: {expectedVersion}，当前版本: {currentVersion}",
-            "病历数据已被其他用户修改，请刷新页面后重试")
+            $"医案 (ID: {caseId}) 版本冲突，期望版本: {expectedVersion}，当前版本: {currentVersion}",
+            "医案数据已被其他用户修改，请刷新页面后重试")
         {
-            ResourceType = "病历",
+            ResourceType = "医案",
             ResourceId = caseId.ToString(),
             ExpectedVersion = expectedVersion,
             CurrentVersion = currentVersion
@@ -94,11 +94,11 @@ public class ConflictException : AppException
     public static ConflictException MedicalCaseLocked(Guid caseId, string? lockedBy = null)
     {
         var message = lockedBy != null
-            ? $"病历正在被用户 {lockedBy} 编辑"
-            : "病历正在被其他用户编辑";
+            ? $"医案正在被用户 {lockedBy} 编辑"
+            : "医案正在被其他用户编辑";
         return new ConflictException(EC.MedicalCaseLocked, message, message)
         {
-            ResourceType = "病历",
+            ResourceType = "医案",
             ResourceId = caseId.ToString()
         };
     }

@@ -19,9 +19,11 @@ public static class ErrorCodeExtensions
             ErrorCode.PasswordPolicyViolation => 400,
             ErrorCode.PrescriptionNoHerbs => 400,
             ErrorCode.FormulaNoHerbs => 400,
-            ErrorCode.ConsultationNoSymptoms => 400,
-            ErrorCode.ConsultationIncomplete => 400,
             ErrorCode.HerbInvalidPrice => 400,
+            ErrorCode.HerbInvalidPagination => 400,
+            ErrorCode.HerbBatchImportExceeded => 400,
+            ErrorCode.UnsupportedEntityType => 400,
+            ErrorCode.JsonDeserializeFailed => 400,
 
             // 401 Unauthorized - 认证错误
             ErrorCode.Unauthorized => 401,
@@ -47,7 +49,7 @@ public static class ErrorCodeExtensions
             ErrorCode.PrescriptionNotFound => 404,
             ErrorCode.HerbNotFound => 404,
             ErrorCode.FormulaNotFound => 404,
-            ErrorCode.ConsultationNotFound => 404,
+            ErrorCode.SyncEntityNotFound => 404,
 
             // 409 Conflict - 冲突错误
             ErrorCode.ConcurrencyConflict => 409,
@@ -60,12 +62,12 @@ public static class ErrorCodeExtensions
             ErrorCode.HerbNameExists => 409,
             ErrorCode.FormulaNameExists => 409,
             ErrorCode.MedicalCaseLocked => 409,
+            ErrorCode.SyncDataConflict => 409,
 
             // 422 Unprocessable Entity - 业务规则违反
             ErrorCode.InvalidPatientStatus => 422,
             ErrorCode.InvalidMedicalCaseState => 422,
             ErrorCode.InvalidPrescriptionState => 422,
-            ErrorCode.InvalidConsultationState => 422,
             ErrorCode.PatientHasActiveCases => 422,
             ErrorCode.MedicalCaseArchived => 422,
             ErrorCode.MedicalCaseMissingDiagnosis => 422,
@@ -78,8 +80,12 @@ public static class ErrorCodeExtensions
             ErrorCode.HerbInUse => 422,
             ErrorCode.FormulaValidationFailed => 422,
             ErrorCode.FormulaInUse => 422,
-            ErrorCode.ConsultationCompleted => 422,
             ErrorCode.PasswordChangeRequired => 422,
+            ErrorCode.SyncPatientNotFound => 422,
+            ErrorCode.SyncHerbNotFound => 422,
+            ErrorCode.SyncCaseLocked => 422,
+            ErrorCode.SyncHerbHasReference => 422,
+            ErrorCode.SyncPatientHasReference => 422,
 
             // 429 Too Many Requests
             ErrorCode.RateLimitExceeded => 429,
@@ -88,7 +94,13 @@ public static class ErrorCodeExtensions
             ErrorCode.ServiceUnavailable => 503,
             ErrorCode.Timeout => 503,
 
-            // 500 Internal Server Error - 默认
+            // 500 Internal Server Error - 默认/同步上传失败
+            ErrorCode.HerbUploadFailed => 500,
+            ErrorCode.PatientUploadFailed => 500,
+            ErrorCode.FormulaUploadFailed => 500,
+            ErrorCode.MedicalCaseUploadFailed => 500,
+            ErrorCode.SyncReferenceCheckFailed => 500,
+
             _ => 500
         };
     }
@@ -106,9 +118,11 @@ public static class ErrorCodeExtensions
             ErrorCode.PasswordPolicyViolation => ErrorCategory.Validation,
             ErrorCode.PrescriptionNoHerbs => ErrorCategory.Validation,
             ErrorCode.FormulaNoHerbs => ErrorCategory.Validation,
-            ErrorCode.ConsultationNoSymptoms => ErrorCategory.Validation,
-            ErrorCode.ConsultationIncomplete => ErrorCategory.Validation,
             ErrorCode.HerbInvalidPrice => ErrorCategory.Validation,
+            ErrorCode.HerbInvalidPagination => ErrorCategory.Validation,
+            ErrorCode.HerbBatchImportExceeded => ErrorCategory.Validation,
+            ErrorCode.UnsupportedEntityType => ErrorCategory.Validation,
+            ErrorCode.JsonDeserializeFailed => ErrorCategory.Validation,
 
             // 认证错误
             ErrorCode.Unauthorized => ErrorCategory.Authentication,
@@ -134,12 +148,13 @@ public static class ErrorCodeExtensions
             ErrorCode.PrescriptionNotFound => ErrorCategory.Resource,
             ErrorCode.HerbNotFound => ErrorCategory.Resource,
             ErrorCode.FormulaNotFound => ErrorCategory.Resource,
-            ErrorCode.ConsultationNotFound => ErrorCategory.Resource,
+            ErrorCode.SyncEntityNotFound => ErrorCategory.Resource,
 
             // 并发错误
             ErrorCode.ConcurrencyConflict => ErrorCategory.Concurrency,
             ErrorCode.MedicalCaseVersionConflict => ErrorCategory.Concurrency,
             ErrorCode.MedicalCaseLocked => ErrorCategory.Concurrency,
+            ErrorCode.SyncDataConflict => ErrorCategory.Concurrency,
 
             // 业务逻辑错误
             ErrorCode.UserNameExists => ErrorCategory.Business,
@@ -152,7 +167,6 @@ public static class ErrorCodeExtensions
             ErrorCode.InvalidPatientStatus => ErrorCategory.Business,
             ErrorCode.InvalidMedicalCaseState => ErrorCategory.Business,
             ErrorCode.InvalidPrescriptionState => ErrorCategory.Business,
-            ErrorCode.InvalidConsultationState => ErrorCategory.Business,
             ErrorCode.PatientHasActiveCases => ErrorCategory.Business,
             ErrorCode.MedicalCaseArchived => ErrorCategory.Business,
             ErrorCode.MedicalCaseMissingDiagnosis => ErrorCategory.Business,
@@ -163,17 +177,33 @@ public static class ErrorCodeExtensions
             ErrorCode.PrescriptionCompleted => ErrorCategory.Business,
             ErrorCode.HerbInsufficientStock => ErrorCategory.Business,
             ErrorCode.HerbInUse => ErrorCategory.Business,
+            ErrorCode.HerbNotDeleted => ErrorCategory.Business,
             ErrorCode.FormulaValidationFailed => ErrorCategory.Business,
             ErrorCode.FormulaInUse => ErrorCategory.Business,
-            ErrorCode.ConsultationCompleted => ErrorCategory.Business,
             ErrorCode.PasswordChangeRequired => ErrorCategory.Business,
             ErrorCode.RateLimitExceeded => ErrorCategory.Business,
+            ErrorCode.SyncPatientNotFound => ErrorCategory.Business,
+            ErrorCode.SyncHerbNotFound => ErrorCategory.Business,
+            ErrorCode.SyncCaseLocked => ErrorCategory.Business,
+            ErrorCode.SyncHerbHasReference => ErrorCategory.Business,
+            ErrorCode.SyncPatientHasReference => ErrorCategory.Business,
+            ErrorCode.SyncNoEntityTypeSelected => ErrorCategory.Business,
+            ErrorCode.SyncFailed => ErrorCategory.Business,
+            ErrorCode.SyncChecksumTypeError => ErrorCategory.Business,
+            ErrorCode.SyncDependencyNotSynced => ErrorCategory.Business,
+            ErrorCode.SyncPatientRemapFailed => ErrorCategory.Business,
+            ErrorCode.SyncLocalActiveCasesExist => ErrorCategory.Business,
 
             // 系统错误
             ErrorCode.InternalError => ErrorCategory.System,
             ErrorCode.DatabaseError => ErrorCategory.System,
             ErrorCode.ServiceUnavailable => ErrorCategory.System,
             ErrorCode.Timeout => ErrorCategory.System,
+            ErrorCode.HerbUploadFailed => ErrorCategory.System,
+            ErrorCode.PatientUploadFailed => ErrorCategory.System,
+            ErrorCode.FormulaUploadFailed => ErrorCategory.System,
+            ErrorCode.MedicalCaseUploadFailed => ErrorCategory.System,
+            ErrorCode.SyncReferenceCheckFailed => ErrorCategory.System,
 
             // 配置错误
             ErrorCode.ConfigurationError => ErrorCategory.Configuration,
@@ -199,7 +229,7 @@ public static class ErrorCodeExtensions
             < 50000 => "Prescriptions",
             < 60000 => "Herbs",
             < 70000 => "Formula",
-            < 80000 => "Consultation",
+            < 80000 => "Sync",
             _ => "Unknown"
         };
     }

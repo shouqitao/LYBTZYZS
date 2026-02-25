@@ -4,15 +4,15 @@ namespace LYBT.Shared.Primitives.ErrorCodes;
 /// 错误码枚举
 /// consolidate-exception-handling: 统一错误码定义
 ///
-/// 错误码分区规则:
+/// 错误码分区规则 (MCCEE: M=模块, CC=子类别, EE=序号):
 /// - 0xxxx: 通用错误
 /// - 1xxxx: 用户模块 (Users)
 /// - 2xxxx: 患者模块 (Patients)
-/// - 3xxxx: 病例模块 (MedicalCase)
+/// - 3xxxx: 医案模块 (MedicalCase)
 /// - 4xxxx: 处方模块 (Prescriptions)
 /// - 5xxxx: 草药模块 (Herbs)
 /// - 6xxxx: 配方模块 (Formula)
-/// - 7xxxx: 问诊模块 (Consultation)
+/// - 7xxxx: 同步模块 (Sync)
 /// </summary>
 public enum ErrorCode
 {
@@ -185,7 +185,7 @@ public enum ErrorCode
     PatientPhoneExists = 20003,
 
     /// <summary>
-    /// 患者有未完成的病例
+    /// 患者有关联的医案
     /// </summary>
     PatientHasActiveCases = 20004,
 
@@ -201,45 +201,45 @@ public enum ErrorCode
 
     #endregion
 
-    #region 3xxxx - 病例模块 (MedicalCase)
+    #region 3xxxx - 医案模块 (MedicalCase)
 
     /// <summary>
-    /// 病例未找到
+    /// 医案未找到
     /// </summary>
     MedicalCaseNotFound = 30001,
 
     /// <summary>
-    /// 病例状态不允许此操作
+    /// 医案状态不允许此操作
     /// </summary>
     InvalidMedicalCaseState = 30002,
 
     /// <summary>
-    /// 病例已归档
+    /// 医案已归档
     /// </summary>
     MedicalCaseArchived = 30003,
 
     /// <summary>
-    /// 病例正在被其他用户编辑
+    /// 医案正在被其他用户编辑
     /// </summary>
     MedicalCaseLocked = 30004,
 
     /// <summary>
-    /// 病例数据版本冲突
+    /// 医案数据版本冲突
     /// </summary>
     MedicalCaseVersionConflict = 30005,
 
     /// <summary>
-    /// 无法创建重复病例
+    /// 无法创建重复医案
     /// </summary>
     DuplicateMedicalCase = 30006,
 
     /// <summary>
-    /// 病例缺少必要的诊断信息
+    /// 医案缺少必要的诊断信息
     /// </summary>
     MedicalCaseMissingDiagnosis = 30007,
 
     /// <summary>
-    /// 无法删除有处方的病例
+    /// 无法删除有处方的医案
     /// </summary>
     MedicalCaseHasPrescriptions = 30008,
 
@@ -316,6 +316,23 @@ public enum ErrorCode
     /// </summary>
     HerbInvalidPrice = 50006,
 
+    // --- MCCEE 编码 (501xx~503xx) ---
+
+    /// <summary>
+    /// 该药材未被删除，无需恢复 (501xx: 核心错误)
+    /// </summary>
+    HerbNotDeleted = 50104,
+
+    /// <summary>
+    /// 分页参数无效 (501xx: 核心错误)
+    /// </summary>
+    HerbInvalidPagination = 50106,
+
+    /// <summary>
+    /// 批量导入超出限制 (502xx: 批量操作错误)
+    /// </summary>
+    HerbBatchImportExceeded = 50202,
+
     #endregion
 
     #region 6xxxx - 配方模块 (Formula)
@@ -352,32 +369,117 @@ public enum ErrorCode
 
     #endregion
 
-    #region 7xxxx - 问诊模块 (Consultation)
+    #region 7xxxx - 同步模块 (Sync)
+
+    // --- 701xx: 服务端通用错误 ---
 
     /// <summary>
-    /// 问诊记录未找到
+    /// 不支持的实体类型
     /// </summary>
-    ConsultationNotFound = 70001,
+    UnsupportedEntityType = 70101,
 
     /// <summary>
-    /// 问诊状态不允许此操作
+    /// JSON 反序列化失败
     /// </summary>
-    InvalidConsultationState = 70002,
+    JsonDeserializeFailed = 70102,
 
     /// <summary>
-    /// 问诊已完成
+    /// 同步数据冲突 (服务端已存在)
     /// </summary>
-    ConsultationCompleted = 70003,
+    SyncDataConflict = 70103,
+
+    // --- 702xx: 服务端上传错误 ---
 
     /// <summary>
-    /// 问诊数据不完整
+    /// 药材上传失败
     /// </summary>
-    ConsultationIncomplete = 70004,
+    HerbUploadFailed = 70201,
 
     /// <summary>
-    /// 症状描述为空
+    /// 患者上传失败
     /// </summary>
-    ConsultationNoSymptoms = 70005,
+    PatientUploadFailed = 70202,
+
+    /// <summary>
+    /// 验方上传失败
+    /// </summary>
+    FormulaUploadFailed = 70203,
+
+    /// <summary>
+    /// 医案上传失败
+    /// </summary>
+    MedicalCaseUploadFailed = 70204,
+
+    // --- 703xx: 服务端 MedicalCase 特有错误 ---
+
+    /// <summary>
+    /// 同步时患者不存在
+    /// </summary>
+    SyncPatientNotFound = 70301,
+
+    /// <summary>
+    /// 同步时药材不存在
+    /// </summary>
+    SyncHerbNotFound = 70302,
+
+    /// <summary>
+    /// 医案已锁定，无法通过同步覆盖
+    /// </summary>
+    SyncCaseLocked = 70304,
+
+    // --- 704xx: 服务端删除错误 ---
+
+    /// <summary>
+    /// 同步删除引用检查失败
+    /// </summary>
+    SyncReferenceCheckFailed = 70401,
+
+    /// <summary>
+    /// 同步删除时药材被处方引用
+    /// </summary>
+    SyncHerbHasReference = 70402,
+
+    /// <summary>
+    /// 同步删除时患者有医案记录
+    /// </summary>
+    SyncPatientHasReference = 70403,
+
+    /// <summary>
+    /// 同步删除时实体不存在
+    /// </summary>
+    SyncEntityNotFound = 70404,
+
+    // --- 705xx: 客户端错误 ---
+
+    /// <summary>
+    /// 未选择同步数据类型
+    /// </summary>
+    SyncNoEntityTypeSelected = 70501,
+
+    /// <summary>
+    /// 同步失败
+    /// </summary>
+    SyncFailed = 70502,
+
+    /// <summary>
+    /// 不支持的 Checksum 实体类型
+    /// </summary>
+    SyncChecksumTypeError = 70503,
+
+    /// <summary>
+    /// 同步前依赖未满足
+    /// </summary>
+    SyncDependencyNotSynced = 70504,
+
+    /// <summary>
+    /// 患者重映射失败
+    /// </summary>
+    SyncPatientRemapFailed = 70505,
+
+    /// <summary>
+    /// 本地有未完成的医案，无法切换模式
+    /// </summary>
+    SyncLocalActiveCasesExist = 70506,
 
     #endregion
 }

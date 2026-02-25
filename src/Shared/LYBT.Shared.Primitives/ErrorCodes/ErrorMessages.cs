@@ -41,19 +41,19 @@ public static class ErrorMessages
         [ErrorCode.PatientNotFound] = ("患者信息不存在", "Patient not found"),
         [ErrorCode.PatientIdCardExists] = ("身份证号已被使用", "Patient ID card exists"),
         [ErrorCode.PatientPhoneExists] = ("手机号已被使用", "Patient phone exists"),
-        [ErrorCode.PatientHasActiveCases] = ("患者有未完成的病例", "Patient has active cases"),
+        [ErrorCode.PatientHasActiveCases] = ("患者有关联的医案，无法删除", "Patient has referenced cases"),
         [ErrorCode.PatientDisabled] = ("患者档案已停用", "Patient is disabled"),
         [ErrorCode.InvalidPatientStatus] = ("无效的患者状态", "Invalid patient status"),
 
-        // 病历模块 (3xxxx)
-        [ErrorCode.MedicalCaseNotFound] = ("病历不存在", "Medical case not found"),
-        [ErrorCode.InvalidMedicalCaseState] = ("病历状态不允许此操作", "Invalid medical case state"),
-        [ErrorCode.MedicalCaseArchived] = ("病历已归档，无法修改", "Medical case is archived"),
-        [ErrorCode.MedicalCaseLocked] = ("病历正在被其他用户编辑", "Medical case is locked"),
-        [ErrorCode.MedicalCaseVersionConflict] = ("病历数据已被其他用户修改，请刷新页面后重试", "Medical case version conflict"),
-        [ErrorCode.DuplicateMedicalCase] = ("无法创建重复病例", "Duplicate medical case"),
-        [ErrorCode.MedicalCaseMissingDiagnosis] = ("病例缺少必要的诊断信息", "Medical case missing diagnosis"),
-        [ErrorCode.MedicalCaseHasPrescriptions] = ("无法删除有处方的病例", "Medical case has prescriptions"),
+        // 医案模块 (3xxxx)
+        [ErrorCode.MedicalCaseNotFound] = ("医案不存在", "Medical case not found"),
+        [ErrorCode.InvalidMedicalCaseState] = ("医案状态不允许此操作", "Invalid medical case state"),
+        [ErrorCode.MedicalCaseArchived] = ("医案已归档，无法修改", "Medical case is archived"),
+        [ErrorCode.MedicalCaseLocked] = ("医案正在被其他用户编辑", "Medical case is locked"),
+        [ErrorCode.MedicalCaseVersionConflict] = ("医案数据已被其他用户修改，请刷新页面后重试", "Medical case version conflict"),
+        [ErrorCode.DuplicateMedicalCase] = ("无法创建重复医案", "Duplicate medical case"),
+        [ErrorCode.MedicalCaseMissingDiagnosis] = ("医案缺少必要的诊断信息", "Medical case missing diagnosis"),
+        [ErrorCode.MedicalCaseHasPrescriptions] = ("无法删除有处方的医案", "Medical case has prescriptions"),
 
         // 处方模块 (4xxxx)
         [ErrorCode.PrescriptionNotFound] = ("处方不存在", "Prescription not found"),
@@ -71,6 +71,9 @@ public static class ErrorMessages
         [ErrorCode.HerbDisabled] = ("药材已停用", "Herb is disabled"),
         [ErrorCode.HerbInUse] = ("无法删除已使用的药材", "Herb is in use"),
         [ErrorCode.HerbInvalidPrice] = ("药材价格无效", "Invalid herb price"),
+        [ErrorCode.HerbNotDeleted] = ("该药材未被删除，无需恢复", "Herb is not deleted, no need to restore"),
+        [ErrorCode.HerbInvalidPagination] = ("页码和页大小参数无效", "Invalid pagination parameters"),
+        [ErrorCode.HerbBatchImportExceeded] = ("批量导入最多支持10000条记录", "Batch import limit exceeded (max 10000)"),
 
         // 方剂模块 (6xxxx)
         [ErrorCode.FormulaNotFound] = ("方剂不存在", "Formula not found"),
@@ -80,12 +83,32 @@ public static class ErrorMessages
         [ErrorCode.FormulaInUse] = ("无法删除已使用的方剂", "Formula is in use"),
         [ErrorCode.FormulaDisabled] = ("方剂已停用", "Formula is disabled"),
 
-        // 诊断模块 (7xxxx)
-        [ErrorCode.ConsultationNotFound] = ("诊断记录不存在", "Consultation not found"),
-        [ErrorCode.InvalidConsultationState] = ("问诊状态不允许此操作", "Invalid consultation state"),
-        [ErrorCode.ConsultationCompleted] = ("问诊已完成，无法修改", "Consultation is completed"),
-        [ErrorCode.ConsultationIncomplete] = ("问诊数据不完整", "Consultation is incomplete"),
-        [ErrorCode.ConsultationNoSymptoms] = ("症状描述为空", "Consultation has no symptoms")
+        // 同步模块 (7xxxx)
+        // 701xx: 服务端通用错误
+        [ErrorCode.UnsupportedEntityType] = ("不支持的实体类型", "Unsupported entity type"),
+        [ErrorCode.JsonDeserializeFailed] = ("JSON 反序列化失败", "JSON deserialization failed"),
+        [ErrorCode.SyncDataConflict] = ("服务器已存在该数据", "Server data conflict"),
+        // 702xx: 服务端上传错误
+        [ErrorCode.HerbUploadFailed] = ("药材上传失败", "Herb upload failed"),
+        [ErrorCode.PatientUploadFailed] = ("患者上传失败", "Patient upload failed"),
+        [ErrorCode.FormulaUploadFailed] = ("验方上传失败", "Formula upload failed"),
+        [ErrorCode.MedicalCaseUploadFailed] = ("医案上传失败", "Medical case upload failed"),
+        // 703xx: MedicalCase 同步错误
+        [ErrorCode.SyncPatientNotFound] = ("患者不存在，请先同步患者", "Sync patient not found"),
+        [ErrorCode.SyncHerbNotFound] = ("药材不存在，请先同步药材", "Sync herb not found"),
+        [ErrorCode.SyncCaseLocked] = ("医案已完成且已锁定，无法通过同步覆盖", "Medical case is locked, cannot overwrite via sync"),
+        // 704xx: 同步删除错误
+        [ErrorCode.SyncReferenceCheckFailed] = ("无法检查引用关系", "Sync reference check failed"),
+        [ErrorCode.SyncHerbHasReference] = ("药材被处方引用，请先禁用", "Herb has prescription references"),
+        [ErrorCode.SyncPatientHasReference] = ("患者有医案记录，请先禁用", "Patient has medical case references"),
+        [ErrorCode.SyncEntityNotFound] = ("实体不存在或已删除", "Sync entity not found or deleted"),
+        // 705xx: 客户端错误
+        [ErrorCode.SyncNoEntityTypeSelected] = ("请选择要同步的数据类型", "No entity type selected for sync"),
+        [ErrorCode.SyncFailed] = ("同步失败", "Sync failed"),
+        [ErrorCode.SyncChecksumTypeError] = ("不支持的 Checksum 实体类型", "Unsupported checksum entity type"),
+        [ErrorCode.SyncDependencyNotSynced] = ("请先同步药材和患者数据", "Sync dependencies not satisfied"),
+        [ErrorCode.SyncPatientRemapFailed] = ("无法匹配患者，请手动处理", "Patient remap failed"),
+        [ErrorCode.SyncLocalActiveCasesExist] = ("本地有未完成的医案，请先完成或取消后再切换模式", "Local active cases exist, complete or cancel before switching mode")
     };
 
     /// <summary>

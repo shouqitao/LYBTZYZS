@@ -67,10 +67,7 @@ public class NotFoundException : AppException
         new(EC.PrescriptionNotFound, "处方不存在", "处方", prescriptionId.ToString());
 
     public static NotFoundException MedicalCase(Guid caseId) =>
-        new(EC.MedicalCaseNotFound, "病历不存在", "病历", caseId.ToString());
-
-    public static NotFoundException Consultation(Guid consultationId) =>
-        new(EC.ConsultationNotFound, "诊断记录不存在", "诊断记录", consultationId.ToString());
+        new(EC.MedicalCaseNotFound, "医案不存在", "医案", caseId.ToString());
 
     public static NotFoundException Formula(Guid formulaId) =>
         new(EC.FormulaNotFound, "方剂不存在", "方剂", formulaId.ToString());

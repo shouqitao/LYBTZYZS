@@ -50,7 +50,7 @@ public static class ExceptionFactory
             ConflictException.Duplicate("患者", "手机号", phone);
 
         public static BusinessException HasActiveCases(Guid patientId) =>
-            new(EC.PatientHasActiveCases, $"患者 (ID: {patientId}) 有未完成的病例");
+            new(EC.PatientHasActiveCases, $"患者 (ID: {patientId}) 有关联的医案");
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public static class ExceptionFactory
     }
 
     /// <summary>
-    /// 病历相关异常
+    /// 医案相关异常
     /// </summary>
     public static class MedicalCase
     {
@@ -103,11 +103,11 @@ public static class ExceptionFactory
 
         public static BusinessException InvalidState(Guid caseId, string currentState, string expectedState) =>
             new(EC.InvalidMedicalCaseState,
-                $"病历 (ID: {caseId}) 状态无效，当前: {currentState}，期望: {expectedState}");
+                $"医案 (ID: {caseId}) 状态无效，当前: {currentState}，期望: {expectedState}");
 
         public static BusinessException Archived(Guid caseId) =>
             new(EC.MedicalCaseArchived,
-                $"病历 (ID: {caseId}) 已归档，无法修改");
+                $"医案 (ID: {caseId}) 已归档，无法修改");
 
         public static ConflictException VersionConflict(Guid caseId, int expectedVersion, int currentVersion) =>
             ConflictException.MedicalCaseVersion(caseId, expectedVersion, currentVersion);
@@ -134,20 +134,4 @@ public static class ExceptionFactory
             new(EC.FormulaNoHerbs, $"方剂 (ID: {formulaId}) 草药为空");
     }
 
-    /// <summary>
-    /// 诊断相关异常
-    /// </summary>
-    public static class Consultation
-    {
-        public static NotFoundException NotFound(Guid consultationId) =>
-            NotFoundException.Consultation(consultationId);
-
-        public static BusinessException InvalidState(Guid consultationId, string currentState) =>
-            new(EC.InvalidConsultationState,
-                $"诊断记录 (ID: {consultationId}) 状态无效: {currentState}");
-
-        public static BusinessException Completed(Guid consultationId) =>
-            new(EC.ConsultationCompleted,
-                $"诊断记录 (ID: {consultationId}) 已完成，无法修改");
-    }
 }
