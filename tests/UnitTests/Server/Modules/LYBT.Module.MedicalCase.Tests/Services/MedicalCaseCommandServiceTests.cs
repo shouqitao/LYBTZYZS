@@ -31,6 +31,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         private readonly Mock<IMedicalCaseRepository> _repositoryMock;
         private readonly Mock<IPatientCrossModuleService> _patientCrossModuleMock;
         private readonly Mock<IUserCrossModuleService> _userCrossModuleMock;
+        private readonly Mock<IHerbCrossModuleService> _herbCrossModuleMock;
         private readonly Mock<IMedicalCaseAuditService> _auditServiceMock;
         private readonly Mock<IMedicalCasePermissionService> _permissionServiceMock;
         private readonly Mock<ILogger<MedicalCaseCommandService>> _loggerMock;
@@ -40,6 +41,7 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _repositoryMock = CreateMock<IMedicalCaseRepository>();
             _patientCrossModuleMock = CreateMock<IPatientCrossModuleService>();
             _userCrossModuleMock = CreateMock<IUserCrossModuleService>();
+            _herbCrossModuleMock = CreateMock<IHerbCrossModuleService>();
             _auditServiceMock = CreateMock<IMedicalCaseAuditService>();
             _permissionServiceMock = CreateMock<IMedicalCasePermissionService>();
             _loggerMock = CreateLoggerMock<MedicalCaseCommandService>();
@@ -50,10 +52,15 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _permissionServiceMock.Setup(x => x.CanDelete(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<MedicalCaseEntity>()))
                 .Returns(true);
 
+            // 默认: 药材价格查询返回空
+            _herbCrossModuleMock.Setup(x => x.GetHerbPricesAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(new Dictionary<Guid, decimal>());
+
             _service = new MedicalCaseCommandService(
                 _repositoryMock.Object,
                 _patientCrossModuleMock.Object,
                 _userCrossModuleMock.Object,
+                _herbCrossModuleMock.Object,
                 _auditServiceMock.Object,
                 _permissionServiceMock.Object,
                 _loggerMock.Object);

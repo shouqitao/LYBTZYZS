@@ -24,6 +24,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IMedicalCaseRepository _repository;
         private readonly IPatientCrossModuleService _patientCrossModule;
         private readonly IUserCrossModuleService _userCrossModule;
+        private readonly IHerbCrossModuleService _herbCrossModule;
         private readonly IMedicalCaseAuditService _auditService;
         private readonly IMedicalCasePermissionService _permissionService;
         private readonly MedicalCaseMapper _mapper = new();
@@ -32,6 +33,7 @@ namespace LYBT.Module.MedicalCases.Services
             IMedicalCaseRepository repository,
             IPatientCrossModuleService patientCrossModule,
             IUserCrossModuleService userCrossModule,
+            IHerbCrossModuleService herbCrossModule,
             IMedicalCaseAuditService auditService,
             IMedicalCasePermissionService permissionService,
             ILogger<MedicalCaseCommandService> logger)
@@ -40,6 +42,7 @@ namespace LYBT.Module.MedicalCases.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _patientCrossModule = patientCrossModule ?? throw new ArgumentNullException(nameof(patientCrossModule));
             _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
+            _herbCrossModule = herbCrossModule ?? throw new ArgumentNullException(nameof(herbCrossModule));
             _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
         }
@@ -118,7 +121,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 如果DTO中提供了处方数据且需要开处方，创建Prescription
             if (request.Prescription != null && request.Prescription.NeedsPrescription)
             {
-                CreateNewPrescription(medicalCase, request.Prescription);
+                await CreateNewPrescriptionAsync(medicalCase, request.Prescription);
             }
 
             var result = await _repository.AddAsync(medicalCase);
@@ -269,17 +272,8 @@ namespace LYBT.Module.MedicalCases.Services
             prescription.CreatedAt = DateTime.Now;
             prescription.UpdatedAt = DateTime.Now;
 
-            if (request.Items != null && request.Items.Any())
-            {
-                prescription.Items = new List<LYBT.Entities.Prescriptions.PrescriptionItem>();
-                foreach (var itemDto in request.Items)
-                {
-                    var item = _mapper.ToPrescriptionItemEntity(itemDto);
-                    item.Id = Guid.NewGuid();
-                    item.PrescriptionId = prescription.Id;
-                    prescription.Items.Add(item);
-                }
-            }
+            // T2-S4-02: 使用统一的CreatePrescriptionItemsAsync确保UnitPrice自动填充
+            prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, request);
 
             medicalCase.Prescription = prescription;
             medicalCase.UpdatedAt = DateTime.Now;
@@ -345,15 +339,12 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.Prescription.UpdatedAt = DateTime.Now;
             medicalCase.UpdatedAt = DateTime.Now;
 
-            // 手动处理Items更新（AutoMapper无法正确处理集合更新）
+            // T2-S4-02: 使用统一的CreatePrescriptionItemsAsync确保UnitPrice自动填充
             if (request.Items != null)
             {
                 medicalCase.Prescription.Items.Clear();
-                foreach (var itemDto in request.Items)
+                foreach (var item in await CreatePrescriptionItemsAsync(prescriptionId, request))
                 {
-                    var item = _mapper.ToPrescriptionItemEntity(itemDto);
-                    item.Id = Guid.NewGuid();
-                    item.PrescriptionId = prescriptionId;
                     medicalCase.Prescription.Items.Add(item);
                 }
             }
@@ -510,7 +501,7 @@ namespace LYBT.Module.MedicalCases.Services
                     throw new InvalidOperationException("医案已打印并完成，不允许修改处方");
                 }
 
-                HandlePrescriptionUpdate(medicalCase, request.Prescription);
+                await HandlePrescriptionUpdateAsync(medicalCase, request.Prescription);
             }
 
             // 保存并审计
@@ -574,7 +565,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// 处理处方更新(创建/更新/软删除)
         /// consolidate-code-quality: 从SaveAsync提取，降低圈复杂度
         /// </summary>
-        private void HandlePrescriptionUpdate(
+        private async Task HandlePrescriptionUpdateAsync(
             MedicalCase medicalCase,
             PrescriptionInputDto prescriptionDto)
         {
@@ -588,11 +579,11 @@ namespace LYBT.Module.MedicalCases.Services
 
             if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
             {
-                CreateNewPrescription(medicalCase, prescriptionDto);
+                await CreateNewPrescriptionAsync(medicalCase, prescriptionDto);
             }
             else
             {
-                UpdateExistingPrescription(medicalCase.Prescription, prescriptionDto);
+                await UpdateExistingPrescriptionAsync(medicalCase.Prescription, prescriptionDto);
             }
         }
 
@@ -613,7 +604,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 创建新处方
         /// </summary>
-        private void CreateNewPrescription(
+        private async Task CreateNewPrescriptionAsync(
             MedicalCase medicalCase,
             PrescriptionInputDto prescriptionDto)
         {
@@ -622,14 +613,16 @@ namespace LYBT.Module.MedicalCases.Services
                 Id = Guid.NewGuid(),
                 MedicalCaseId = medicalCase.Id,
                 DosageCount = prescriptionDto.DosageCount,
+                Usage = prescriptionDto.Usage,
                 Advice = prescriptionDto.Advice,
                 ReferencedFormulas = prescriptionDto.ReferencedFormulas,
                 Discount = prescriptionDto.Discount,
+                Remark = prescriptionDto.Remark,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
                 Items = new List<LYBT.Entities.Prescriptions.PrescriptionItem>()
             };
-            prescription.Items = CreatePrescriptionItems(prescription.Id, prescriptionDto);
+            prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, prescriptionDto);
 
             medicalCase.Prescription = prescription;
             _logger.LogInformation("[SVC] MedicalCase.Save → PrescriptionCreated - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId} ItemCount={ItemCount}",
@@ -639,18 +632,20 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 更新现有处方
         /// </summary>
-        private void UpdateExistingPrescription(
+        private async Task UpdateExistingPrescriptionAsync(
             Prescription prescription,
             PrescriptionInputDto prescriptionDto)
         {
             prescription.DosageCount = prescriptionDto.DosageCount;
+            prescription.Usage = prescriptionDto.Usage;
             prescription.Advice = prescriptionDto.Advice;
             prescription.ReferencedFormulas = prescriptionDto.ReferencedFormulas;
             prescription.Discount = prescriptionDto.Discount;
+            prescription.Remark = prescriptionDto.Remark;
             prescription.UpdatedAt = DateTime.Now;
 
             prescription.Items.Clear();
-            foreach (var item in CreatePrescriptionItems(prescription.Id, prescriptionDto))
+            foreach (var item in await CreatePrescriptionItemsAsync(prescription.Id, prescriptionDto))
             {
                 prescription.Items.Add(item);
             }
@@ -660,18 +655,43 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 创建处方项列表
+        /// 创建处方项列表（含UnitPrice自动填充）
         /// </summary>
-        private static List<LYBT.Entities.Prescriptions.PrescriptionItem> CreatePrescriptionItems(
+        /// <remarks>
+        /// T2-S4-02: 当客户端未传UnitPrice（值为0）时，从药材库自动查询当前价格填充。
+        /// 防御性设计，确保TotalPrice计算正确。
+        /// </remarks>
+        private async Task<List<LYBT.Entities.Prescriptions.PrescriptionItem>> CreatePrescriptionItemsAsync(
             Guid prescriptionId,
             PrescriptionInputDto prescriptionDto)
         {
             var items = new List<LYBT.Entities.Prescriptions.PrescriptionItem>();
 
-            if (prescriptionDto.Items == null) return items;
+            if (prescriptionDto.Items == null || !prescriptionDto.Items.Any()) return items;
+
+            // T2-S4-02: 批量查询缺失UnitPrice的药材价格
+            var herbIdsNeedingPrice = prescriptionDto.Items
+                .Where(i => i.UnitPrice <= 0)
+                .Select(i => i.HerbId)
+                .Distinct()
+                .ToList();
+
+            Dictionary<Guid, decimal>? herbPrices = null;
+            if (herbIdsNeedingPrice.Count > 0)
+            {
+                herbPrices = await _herbCrossModule.GetHerbPricesAsync(herbIdsNeedingPrice);
+                _logger.LogInformation("[SVC] Auto-populated UnitPrice for {Count} herbs from herb catalog",
+                    herbPrices.Count);
+            }
 
             foreach (var itemDto in prescriptionDto.Items)
             {
+                var unitPrice = itemDto.UnitPrice;
+                if (unitPrice <= 0 && herbPrices != null && herbPrices.TryGetValue(itemDto.HerbId, out var herbPrice))
+                {
+                    unitPrice = herbPrice;
+                }
+
                 items.Add(new LYBT.Entities.Prescriptions.PrescriptionItem
                 {
                     Id = Guid.NewGuid(),
@@ -680,8 +700,8 @@ namespace LYBT.Module.MedicalCases.Services
                     HerbName = itemDto.HerbName ?? string.Empty,
                     Dosage = itemDto.Dosage,
                     Unit = itemDto.Unit,
-                    UnitPrice = itemDto.UnitPrice,
-                    Usage = prescriptionDto.Usage,
+                    UnitPrice = unitPrice,
+                    Usage = itemDto.Usage,
                     Remark = itemDto.Remark,
                     DecocteMethod = itemDto.DecocteMethod
                 });

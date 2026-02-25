@@ -16,4 +16,7 @@ public interface IHerbCrossModuleService
 
     /// <summary>检查药材引用关系 (处方引用数)</summary>
     Task<ReferenceCheckResult> CheckHerbReferenceAsync(Guid herbId);
+
+    /// <summary>批量获取药材单价（用于处方项UnitPrice自动填充）</summary>
+    Task<Dictionary<Guid, decimal>> GetHerbPricesAsync(IEnumerable<Guid> herbIds);
 }
