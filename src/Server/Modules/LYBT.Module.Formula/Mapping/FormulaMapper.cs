@@ -41,12 +41,11 @@ public partial class FormulaMapper
     /// <remarks>
     /// Indications映射自Indication字段
     /// HerbCount/TotalPrice由Service计算
-    /// Herbs单独映射
+    /// Herbs通过ToHerbItemDto/ToHerbItemDtos自动映射
     /// </remarks>
     [MapProperty(nameof(Formula.Indication), nameof(FormulaDetailDto.Indications))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.HerbCount))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.TotalPrice))]
-    [MapperIgnoreTarget(nameof(FormulaDetailDto.Herbs))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Description))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Source))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Contraindications))]

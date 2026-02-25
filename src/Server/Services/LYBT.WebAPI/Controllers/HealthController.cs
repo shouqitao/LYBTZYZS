@@ -65,7 +65,7 @@ public class HealthController : BaseApiController
         // 执行数据库连接检查
         var dbCheck = await CheckDatabase();
 
-        var overallStatus = dbCheck.Status == "Healthy" ? "Healthy" : "Degraded";
+        var overallStatus = dbCheck.Status; // 直接使用 CheckDatabase 返回的准确状态 (Healthy/Degraded/Unhealthy)
 
         var response = new
         {
@@ -74,11 +74,14 @@ public class HealthController : BaseApiController
             database = new
             {
                 status = dbCheck.Status,
-                duration = dbCheck.Duration
+                duration = dbCheck.Duration,
+                provider = dbCheck.Provider,
+                pendingMigrations = dbCheck.PendingMigrationCount,
+                serverVersion = dbCheck.ServerVersion
             }
         };
 
-        var statusCode = overallStatus == "Degraded" ? 503 : 200;
+        var statusCode = overallStatus == "Healthy" ? 200 : 503;
         return StatusCode(statusCode, response);
     }
 
@@ -96,14 +99,32 @@ public class HealthController : BaseApiController
                 return check;
             }
 
+            // 获取数据库 Provider 名称
+            check.Provider = _dbContext.Database.ProviderName;
+
             // 检查是否为关系型数据库（排除 InMemory 数据库）
             var isRelationalDatabase = _dbContext.Database.IsRelational();
 
             if (isRelationalDatabase)
             {
+                // 获取服务器版本信息
+                try
+                {
+                    var connection = _dbContext.Database.GetDbConnection();
+                    if (connection.State == System.Data.ConnectionState.Open)
+                    {
+                        check.ServerVersion = connection.ServerVersion;
+                    }
+                }
+                catch
+                {
+                    // ServerVersion 获取失败不影响健康检查
+                }
+
                 // 仅在关系型数据库上检查迁移
                 var pendingMigrations = await _dbContext.Database.GetPendingMigrationsAsync();
                 var pendingCount = pendingMigrations.Count();
+                check.PendingMigrationCount = pendingCount;
 
                 check.Status = pendingCount == 0 ? "Healthy" : "Degraded";
             }
@@ -138,5 +159,8 @@ public class HealthController : BaseApiController
         public string Name { get; }
         public string Status { get; set; } = string.Empty;
         public long Duration { get; set; }
+        public string? Provider { get; set; }
+        public int PendingMigrationCount { get; set; }
+        public string? ServerVersion { get; set; }
     }
 }

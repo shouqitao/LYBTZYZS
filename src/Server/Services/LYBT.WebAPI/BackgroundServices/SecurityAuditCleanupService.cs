@@ -5,7 +5,7 @@ namespace LYBT.WebAPI.BackgroundServices;
 
 /// <summary>
 /// 安全审计日志清理后台服务
-/// Issue #1873 - 每日凌晨3点清理30天前的审计日志
+/// Issue #1873 - 每日凌晨3点清理365天前的审计日志
 /// </summary>
 public class SecurityAuditCleanupService : BackgroundService
 {
@@ -75,7 +75,7 @@ public class SecurityAuditCleanupService : BackgroundService
     }
 
     /// <summary>
-    /// 清理30天前的审计日志
+    /// 清理365天前的审计日志
     /// </summary>
     private async Task CleanupOldLogsAsync(CancellationToken cancellationToken)
     {
@@ -86,10 +86,10 @@ public class SecurityAuditCleanupService : BackgroundService
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // 计算截止日期（30天前）
-            var cutoffDate = DateTime.UtcNow.AddDays(-30);
+            // 计算截止日期（365天前）
+            var cutoffDate = DateTime.UtcNow.AddDays(-365);
 
-            // 查询30天前的日志
+            // 查询365天前的日志
             var oldLogs = await context.SecurityAuditLogs
                 .Where(log => log.CreatedAt < cutoffDate)
                 .ToListAsync(cancellationToken);

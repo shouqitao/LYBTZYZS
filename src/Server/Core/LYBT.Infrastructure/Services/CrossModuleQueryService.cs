@@ -147,6 +147,18 @@ public class CrossModuleService :
             Message: count > 0 ? $"药材被 {count} 个处方项引用" : null);
     }
 
+    /// <inheritdoc />
+    public async Task<Dictionary<Guid, decimal>> GetHerbPricesAsync(IEnumerable<Guid> herbIds)
+    {
+        var idList = herbIds.ToList();
+        if (idList.Count == 0) return new Dictionary<Guid, decimal>();
+
+        return await _context.Herbs
+            .AsNoTracking()
+            .Where(h => idList.Contains(h.Id) && !h.IsDeleted)
+            .ToDictionaryAsync(h => h.Id, h => h.Price);
+    }
+
     #endregion
 
     #region 用户查询 (IUserCrossModuleService)
