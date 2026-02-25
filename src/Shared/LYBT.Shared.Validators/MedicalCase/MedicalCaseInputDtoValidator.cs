@@ -1,6 +1,7 @@
 using FluentValidation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Primitives.Validation;
+using LYBT.Shared.Validators.Prescriptions;
 
 namespace LYBT.Shared.Validators.MedicalCase
 {
@@ -46,6 +47,13 @@ namespace LYBT.Shared.Validators.MedicalCase
                 .MaximumLength(ValidationConstants.RemarkMaxLength)
                 .WithMessage($"备注长度不能超过{ValidationConstants.RemarkMaxLength}个字符")
                 .When(x => !string.IsNullOrEmpty(x.Remark));
+
+            // ========== 嵌套对象验证 ==========
+
+            // 处方：可选，有值时验证（含DosageCount > 0）
+            RuleFor(x => x.Prescription)
+                .SetValidator(new PrescriptionInputDtoValidator()!)
+                .When(x => x.Prescription != null);
         }
     }
 }

@@ -18,7 +18,7 @@ public class MedicalCaseAuditLogConfiguration : IEntityTypeConfiguration<Medical
         // 必填字段配置
         builder.Property(e => e.MedicalCaseId).IsRequired();
         builder.Property(e => e.OperatorId).IsRequired();
-        builder.Property(e => e.OperatorName).IsRequired();
+        builder.Property(e => e.OperatorName).IsRequired().HasMaxLength(100);
         builder.Property(e => e.OperatorRole).IsRequired();
         builder.Property(e => e.OperationType).IsRequired();
         builder.Property(e => e.CreatedAt).IsRequired();

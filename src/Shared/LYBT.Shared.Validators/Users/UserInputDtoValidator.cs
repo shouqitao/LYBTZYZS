@@ -29,7 +29,7 @@ namespace LYBT.Shared.Validators.Users
 
             // 密码：创建时如果提供则验证长度
             RuleFor(x => x.Password)
-                .MinimumLength(6).WithMessage("密码长度不能少于6个字符")
+                .MinimumLength(8).WithMessage("密码长度不能少于8个字符")
                 .MaximumLength(ValidationConstants.PasswordMaxLength)
                 .WithMessage($"密码长度不能超过{ValidationConstants.PasswordMaxLength}个字符")
                 .When(x => !string.IsNullOrEmpty(x.Password));
