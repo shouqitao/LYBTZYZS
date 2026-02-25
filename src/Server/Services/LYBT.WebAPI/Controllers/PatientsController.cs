@@ -4,6 +4,7 @@ using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -204,7 +205,6 @@ namespace LYBT.WebAPI.Controllers
         /// 下载患者导入模板
         /// </summary>
         [HttpGet("import-template")]
-        [AllowAnonymous]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         public async Task<IActionResult> ExportTemplate()
@@ -244,11 +244,32 @@ namespace LYBT.WebAPI.Controllers
                 fileName);
         }
 
-        // ========== OpenSpec: optimize-module-list-ui - 恢复端点 ==========
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复端点 ==========
+
+        /// <summary>
+        /// 切换患者状态（启用/禁用）
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
+        /// </summary>
+        [HttpPost("{id}/toggle-status")]
+        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> ToggleStatus(Guid id)
+        {
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "患者");
+            if (ownershipError != null) return ownershipError;
+
+            var result = await _service.ToggleStatusAsync(id);
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return BusinessFail(result.ErrorMessage ?? "状态切换失败");
+            }
+
+            LogOperation("切换患者状态", new { NewStatus = result.Data.Status }, id);
+            return Success(result.Data, $"患者已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+        }
 
         /// <summary>
         /// 恢复已删除的患者
-        /// 注：患者实体无Status字段，因此无ToggleStatus端点
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/restore")]

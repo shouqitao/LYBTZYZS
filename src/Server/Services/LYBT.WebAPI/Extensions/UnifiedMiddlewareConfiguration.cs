@@ -61,8 +61,8 @@ public static class UnifiedMiddlewareConfiguration
         // 3.2 CORS（如需要，在认证之前）
         // app.UseCors(); // 根据需要启用
 
-        // 3.3 速率限制 - Issue #1761 Phase 2.1: MVP阶段不使用速率限制
-        // app.UseRateLimiter();
+        // 3.3 速率限制 - A2-02: 启用速率限制中间件
+        app.UseRateLimiter();
 
         // ===== 阶段4: 认证和授权 =====
         // 4.1 认证

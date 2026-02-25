@@ -94,7 +94,12 @@ namespace LYBT.Module.Patients.Interfaces
 
         #endregion
 
-        // ========== OpenSpec: optimize-module-list-ui - 恢复方法 ==========
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法 ==========
+
+        /// <summary>
+        /// 切换患者状态（启用/禁用）
+        /// </summary>
+        Task<Result<PatientDetailDto>> ToggleStatusAsync(Guid id);
 
         /// <summary>
         /// 恢复软删除的患者
