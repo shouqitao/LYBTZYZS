@@ -15,7 +15,7 @@ namespace LYBT.Shared.Validators.Auth
 
             RuleFor(x => x.NewPassword)
                 .NotEmpty().WithMessage("新密码不能为空")
-                .MinimumLength(6).WithMessage("新密码长度不能少于6个字符")
+                .MinimumLength(8).WithMessage("新密码长度不能少于8个字符")
                 .MaximumLength(50).WithMessage("新密码长度不能超过50个字符")
                 .NotEqual(x => x.OldPassword).WithMessage("新密码不能与原密码相同");
         }

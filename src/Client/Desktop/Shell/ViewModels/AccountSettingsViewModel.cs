@@ -300,9 +300,9 @@ namespace LYBT.Desktop.Shell.ViewModels
                 return false;
             }
 
-            if (NewPassword.Length < 6)
+            if (NewPassword.Length < 8)
             {
-                SetValidationError("新密码长度不能少于6位");
+                SetValidationError("新密码长度不能少于8位");
                 return false;
             }
 

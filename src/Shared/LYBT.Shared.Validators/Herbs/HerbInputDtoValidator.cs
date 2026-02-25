@@ -36,17 +36,17 @@ namespace LYBT.Shared.Validators.Herbs
                 .WithMessage("产地长度不能超过100个字符")
                 .When(x => !string.IsNullOrEmpty(x.Origin));
 
-            // 规格50字符以内（可选）
+            // 规格100字符以内（可选）
             RuleFor(x => x.Spec)
-                .MaximumLength(50)
-                .WithMessage("规格长度不能超过50个字符")
+                .MaximumLength(100)
+                .WithMessage("规格长度不能超过100个字符")
                 .When(x => !string.IsNullOrEmpty(x.Spec));
 
-            // 单位必填，20字符以内
+            // 单位必填，10字符以内
             RuleFor(x => x.Unit)
                 .NotEmpty().WithMessage("单位不能为空")
-                .MaximumLength(20)
-                .WithMessage("单位长度不能超过20个字符");
+                .MaximumLength(10)
+                .WithMessage("单位长度不能超过10个字符");
 
             // BR-005: 单价 > 0
             RuleFor(x => x.Price)
@@ -57,8 +57,8 @@ namespace LYBT.Shared.Validators.Herbs
 
             // 功效500字符以内（可选）
             RuleFor(x => x.Effect)
-                .MaximumLength(ValidationConstants.RemarkMaxLength)
-                .WithMessage($"功效长度不能超过{ValidationConstants.RemarkMaxLength}个字符")
+                .MaximumLength(500)
+                .WithMessage("功效长度不能超过500个字符")
                 .When(x => !string.IsNullOrEmpty(x.Effect));
 
             // 用法用量200字符以内（可选）

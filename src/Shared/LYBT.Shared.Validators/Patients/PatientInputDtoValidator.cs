@@ -29,21 +29,23 @@ namespace LYBT.Shared.Validators.Patients
 
             // Issue #2240: 移除Age验证，因为Age不再是输入属性（改为从BirthDate计算）
 
-            // 4. IdNumber：如果提供，必须符合18位身份证格式
+            // 4. IdNumber：必填，必须符合18位身份证格式
             RuleFor(x => x.IdNumber)
+                .NotEmpty().WithMessage("身份证号不能为空")
                 .Matches(ValidationConstants.IdCardRegex).WithMessage("身份证号格式不正确（应为18位）")
                 .When(x => !string.IsNullOrEmpty(x.IdNumber));
 
-            // 6. PhoneNumber：如果提供，必须符合手机号格式
+            // 6. PhoneNumber：必填，必须符合手机号格式
             RuleFor(x => x.PhoneNumber)
+                .NotEmpty().WithMessage("手机号不能为空")
                 .Matches(ValidationConstants.PhoneRegex).WithMessage("手机号格式不正确")
                 .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
 
-            // 7. Address：长度限制
+            // 7. Address：必填，长度限制
             RuleFor(x => x.Address)
+                .NotEmpty().WithMessage("地址不能为空")
                 .MaximumLength(ValidationConstants.AddressMaxLength)
-                .WithMessage($"地址长度不能超过{ValidationConstants.AddressMaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.Address));
+                .WithMessage($"地址长度不能超过{ValidationConstants.AddressMaxLength}个字符");
 
             // 8. AllergyHistory：长度限制
             RuleFor(x => x.AllergyHistory)

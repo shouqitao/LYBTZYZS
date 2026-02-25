@@ -15,7 +15,7 @@ namespace LYBT.Shared.Validators.Formula
                 .MaximumLength(100).WithMessage("方剂名称长度不能超过100个字符");
 
             RuleFor(x => x.Effect)
-                .MaximumLength(200).WithMessage("功效长度不能超过200个字符")
+                .MaximumLength(500).WithMessage("功效长度不能超过500个字符")
                 .When(x => !string.IsNullOrEmpty(x.Effect));
 
             RuleFor(x => x.Description)

@@ -30,7 +30,7 @@ namespace LYBT.Entities.MedicalCases
 
         /// <summary>操作者姓名</summary>
         [Required]
-        [StringLength(50)]
+        [StringLength(100)]
         [DisplayName("操作者姓名")]
         public string OperatorName { get; set; } = string.Empty;
 

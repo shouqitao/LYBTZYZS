@@ -78,7 +78,7 @@ namespace LYBT.Shared.Primitives.Validation
         /// <summary>
         /// 用法说明最大长度
         /// </summary>
-        public const int UsageMaxLength = 200;
+        public const int UsageMaxLength = 500;
 
         /// <summary>
         /// 诊断最大长度（如中医诊断、舌诊、脉诊）
