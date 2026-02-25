@@ -11,6 +11,7 @@ using LYBT.Shared.Utilities.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.Auth.Services
 {
@@ -57,7 +58,7 @@ namespace LYBT.Module.Auth.Services
         {
             var result = await VerifyCredentialsInternalAsync(request);
             if (!result.IsSuccess)
-                return Result<string>.Failure(result.ErrorCode ?? AuthErrorCode.InvalidCredentials, result.ErrorMessage);
+                return Result<string>.Failure(result.ModuleErrorCode ?? GenericErrorCode.AuthInvalidCredentials, result.ErrorMessage);
 
             return Result<string>.Success(result.Data!.Id.ToString());
         }
@@ -68,21 +69,21 @@ namespace LYBT.Module.Auth.Services
         private async Task<Result<UserCredentialDto>> VerifyCredentialsInternalAsync(LoginRequest request)
         {
             if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
-                return Result<UserCredentialDto>.Failure(AuthErrorCode.InvalidCredentials, "用户名和密码不能为空");
+                return Result<UserCredentialDto>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名和密码不能为空");
 
             var user = await _crossModuleQuery.GetUserByUsernameAsync(request.UserName);
             if (user == null)
             {
                 _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=用户不存在",
                     request.UserName);
-                return Result<UserCredentialDto>.Failure(AuthErrorCode.InvalidCredentials, "用户名或密码错误");
+                return Result<UserCredentialDto>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名或密码错误");
             }
 
             if (user.Status == CommonStatus.Disabled)
             {
                 _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=用户已被禁用",
                     request.UserName);
-                return Result<UserCredentialDto>.Failure(AuthErrorCode.UserDisabled, "用户已被禁用");
+                return Result<UserCredentialDto>.Failure(GenericErrorCode.UserDisabled, "用户已被禁用");
             }
 
             var verificationResult = PasswordHelper.VerifyPassword(
@@ -93,7 +94,7 @@ namespace LYBT.Module.Auth.Services
             {
                 _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=密码错误",
                     request.UserName);
-                return Result<UserCredentialDto>.Failure(AuthErrorCode.InvalidCredentials, "用户名或密码错误");
+                return Result<UserCredentialDto>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名或密码错误");
             }
 
             // BCrypt hash 升级
@@ -134,9 +135,9 @@ namespace LYBT.Module.Auth.Services
                     Success = false,
                     ErrorMessage = credentialsResult.ErrorMessage ?? "凭据验证失败"
                 });
-                // Issue #1864: 传递错误码
+                // T3-X1-01: 传递统一错误码
                 return Result<LoginResponse>.Failure(
-                    credentialsResult.ErrorCode ?? AuthErrorCode.InvalidCredentials,
+                    credentialsResult.ModuleErrorCode ?? GenericErrorCode.AuthInvalidCredentials,
                     credentialsResult.ErrorMessage);
             }
 
@@ -304,7 +305,7 @@ namespace LYBT.Module.Auth.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             if (string.IsNullOrWhiteSpace(refreshToken))
-                return Result<LoginResponse>.Failure(AuthErrorCode.RefreshTokenInvalid, "RefreshToken不能为空");
+                return Result<LoginResponse>.Failure(GenericErrorCode.AuthRefreshTokenInvalid, "RefreshToken不能为空");
 
             // 1. 查询RefreshToken记录
             var tokenRecord = await _dbContext.RefreshTokens
@@ -319,7 +320,7 @@ namespace LYBT.Module.Auth.Services
                     Success = false,
                     ErrorMessage = "Token不存在"
                 });
-                return Result<LoginResponse>.Failure(AuthErrorCode.RefreshTokenInvalid, "RefreshToken不存在");
+                return Result<LoginResponse>.Failure(GenericErrorCode.AuthRefreshTokenInvalid, "RefreshToken不存在");
             }
 
             // 2. Issue #1864 AUTH-007: 检测重放攻击
@@ -345,28 +346,28 @@ namespace LYBT.Module.Auth.Services
                     ErrorMessage = "检测到Token重放攻击"
                 });
 
-                return Result<LoginResponse>.Failure(AuthErrorCode.TokenRevoked, "检测到安全威胁，请重新登录");
+                return Result<LoginResponse>.Failure(GenericErrorCode.AuthTokenRevoked, "检测到安全威胁，请重新登录");
             }
 
             // 3. 验证Token是否有效
             if (!tokenRecord.IsValid())
             {
-                AuthErrorCode errorCode;
+                GenericErrorCode errorCode;
                 string reason;
 
                 if (tokenRecord.IsRevoked)
                 {
-                    errorCode = AuthErrorCode.TokenRevoked;
+                    errorCode = GenericErrorCode.AuthTokenRevoked;
                     reason = "已撤销";
                 }
                 else if (tokenRecord.IsDeleted)
                 {
-                    errorCode = AuthErrorCode.TokenRevoked;
+                    errorCode = GenericErrorCode.AuthTokenRevoked;
                     reason = "已删除";
                 }
                 else
                 {
-                    errorCode = AuthErrorCode.RefreshTokenExpired;
+                    errorCode = GenericErrorCode.AuthRefreshTokenExpired;
                     reason = "已过期";
                 }
 
@@ -394,7 +395,7 @@ namespace LYBT.Module.Auth.Services
             // 4. 通过 ICrossModuleService 获取用户信息
             var userBasic = await _crossModuleQuery.GetUserBasicInfoAsync(tokenRecord.UserId);
             if (userBasic == null)
-                return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound);
+                return Result<LoginResponse>.Failure(GenericErrorCode.UserNotFound);
 
             var userDto = MapToUserDetailDto(userBasic);
 
@@ -485,11 +486,11 @@ namespace LYBT.Module.Auth.Services
                 if (principal != null)
                     return Result<bool>.Success(true);
 
-                return Result<bool>.Failure(AuthErrorCode.TokenInvalid);
+                return Result<bool>.Failure(GenericErrorCode.AuthTokenInvalid);
             }
             catch
             {
-                return Result<bool>.Failure(AuthErrorCode.TokenInvalid);
+                return Result<bool>.Failure(GenericErrorCode.AuthTokenInvalid);
             }
         }
 
@@ -504,7 +505,7 @@ namespace LYBT.Module.Auth.Services
 
             var principal = _jwtService.ValidateToken(token);
             if (principal == null)
-                return Result<object>.Failure(AuthErrorCode.TokenInvalid);
+                return Result<object>.Failure(GenericErrorCode.AuthTokenInvalid);
 
             var sessionInfo = new
             {
@@ -532,10 +533,10 @@ namespace LYBT.Module.Auth.Services
         public async Task<Result<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(request.UserName))
-                return Result<LoginResponse>.Failure(AuthErrorCode.InvalidCredentials, "用户名不能为空");
+                return Result<LoginResponse>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名不能为空");
 
             if (string.IsNullOrWhiteSpace(request.AutoLoginToken))
-                return Result<LoginResponse>.Failure(AuthErrorCode.InvalidCredentials, "AutoLoginToken不能为空");
+                return Result<LoginResponse>.Failure(GenericErrorCode.AuthInvalidCredentials, "AutoLoginToken不能为空");
 
             // 1. 查找AutoLoginToken记录
             var tokenRecord = await _dbContext.Set<LYBT.Entities.Auth.AutoLoginToken>()
@@ -553,7 +554,7 @@ namespace LYBT.Module.Auth.Services
                     Success = false,
                     ErrorMessage = "AutoLoginToken不存在"
                 });
-                return Result<LoginResponse>.Failure(AuthErrorCode.InvalidCredentials, "AutoLoginToken无效");
+                return Result<LoginResponse>.Failure(GenericErrorCode.AuthInvalidCredentials, "AutoLoginToken无效");
             }
 
             // 2. 检测重放攻击
@@ -577,7 +578,7 @@ namespace LYBT.Module.Auth.Services
                     ErrorMessage = "检测到AutoLoginToken重放攻击"
                 });
 
-                return Result<LoginResponse>.Failure(AuthErrorCode.TokenRevoked, "检测到安全威胁，请重新登录");
+                return Result<LoginResponse>.Failure(GenericErrorCode.AuthTokenRevoked, "检测到安全威胁，请重新登录");
             }
 
             // 3. 验证Token是否有效
@@ -595,20 +596,20 @@ namespace LYBT.Module.Auth.Services
                     ErrorMessage = $"AutoLoginToken{reason}"
                 });
 
-                return Result<LoginResponse>.Failure(AuthErrorCode.RefreshTokenExpired, $"AutoLoginToken{reason}，请重新登录");
+                return Result<LoginResponse>.Failure(GenericErrorCode.AuthRefreshTokenExpired, $"AutoLoginToken{reason}，请重新登录");
             }
 
             // 4. 通过 ICrossModuleService 获取用户信息
             var userBasic = await _crossModuleQuery.GetUserBasicInfoAsync(tokenRecord.UserId);
             if (userBasic == null)
             {
-                return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound, "用户不存在");
+                return Result<LoginResponse>.Failure(GenericErrorCode.UserNotFound, "用户不存在");
             }
 
             // 检查用户是否被禁用
             if (userBasic.Status == CommonStatus.Disabled)
             {
-                return Result<LoginResponse>.Failure(AuthErrorCode.UserDisabled, "用户已被禁用");
+                return Result<LoginResponse>.Failure(GenericErrorCode.UserDisabled, "用户已被禁用");
             }
 
             var userDto = MapToUserDetailDto(userBasic);

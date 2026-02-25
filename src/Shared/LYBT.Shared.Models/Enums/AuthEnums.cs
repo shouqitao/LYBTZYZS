@@ -68,6 +68,7 @@ namespace LYBT.Shared.Models.Enums
     /// Issue #1864: 统一错误码体系，便于客户端处理和国际化
     /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
+    [Obsolete("T3-X1-01: 请使用 LYBT.Shared.Primitives.ErrorCodes.ErrorCode (1xxxx 用户模块) 替代。AuthService 已迁移到统一 ErrorCode。")]
     public enum AuthErrorCode
     {
         /// <summary>无错误</summary>

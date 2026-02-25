@@ -4,8 +4,10 @@ using LYBT.Shared.Logging.Masking;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Infrastructure.Web
 {
@@ -255,8 +257,9 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 处理带AuthErrorCode的Result返回值 - 根据错误码返回正确HTTP状态码
+        /// 处理带错误码的Result返回值 - 根据错误码返回正确HTTP状态码
         /// Issue #1864: 统一认证错误处理
+        /// T3-X1-01: 迁移到统一 ErrorCode，优先使用 ModuleErrorCode
         /// </summary>
         protected IActionResult HandleAuthResult<T>(Result<T> result, string successMessage = "操作成功")
         {
@@ -265,41 +268,63 @@ namespace LYBT.Infrastructure.Web
                 return Success(result.Data!, successMessage);
             }
 
-            var errorCode = result.ErrorCode;
             var message = result.ErrorMessage ?? "操作失败";
 
-            // 根据ErrorCode映射HTTP状态码
+            // T3-X1-01: 优先使用统一 ModuleErrorCode
+            if (result.ModuleErrorCode.HasValue)
+            {
+                var moduleCode = result.ModuleErrorCode.Value;
+                var httpStatus = moduleCode.ToHttpStatusCode();
+                var errorResponse = CreateModuleErrorResponse<T>(message, moduleCode);
+
+                return httpStatus switch
+                {
+                    401 => Unauthorized(errorResponse),
+                    403 => StatusCode(403, errorResponse),
+                    404 => base.NotFound(errorResponse),
+                    422 => StatusCode(422, errorResponse),
+                    503 => StatusCode(503, errorResponse),
+                    500 => StatusCode(500, errorResponse),
+                    _ => StatusCode(httpStatus, errorResponse)
+                };
+            }
+
+            // 兼容: 回退到旧的 AuthErrorCode 路径
+            var errorCode = result.ErrorCode;
             return errorCode switch
             {
-                // 认证错误 1xx -> 401 Unauthorized
                 AuthErrorCode.InvalidCredentials => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.UserNotFound => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.UserDisabled => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.PasswordExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-
-                // Token错误 2xx -> 401 Unauthorized
                 AuthErrorCode.TokenExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.TokenInvalid => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.TokenRevoked => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.RefreshTokenExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.RefreshTokenInvalid => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-
-                // 会话错误 3xx -> 401 Unauthorized
                 AuthErrorCode.SessionNotFound => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.SessionExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.ConcurrentSessionLimit => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-
-                // 系统错误 9xx -> 500 Internal Server Error
                 AuthErrorCode.InternalError => StatusCode(500, CreateAuthErrorResponse<T>(message, errorCode)),
                 AuthErrorCode.ServiceUnavailable => StatusCode(503, CreateAuthErrorResponse<T>(message, errorCode)),
-
-                // 默认返回业务失败(200 with success=false)
                 _ => BusinessFail(message, errorCode?.ToString())
             };
         }
 
         /// <summary>
-        /// 创建认证错误响应对象
+        /// 创建统一错误码响应对象
+        /// T3-X1-01: 新的统一错误码响应格式
+        /// </summary>
+        private ApiResponse<T> CreateModuleErrorResponse<T>(string message, GenericErrorCode errorCode)
+        {
+            var response = ApiResponse<T>.CreateFail(message);
+            response.RequestId = GetRequestId();
+            response.Errors = new { code = errorCode.ToFormattedString(), numericCode = (int)errorCode };
+            return response;
+        }
+
+        /// <summary>
+        /// 创建认证错误响应对象 (兼容旧 AuthErrorCode)
         /// </summary>
         private ApiResponse<T> CreateAuthErrorResponse<T>(string message, AuthErrorCode? errorCode)
         {

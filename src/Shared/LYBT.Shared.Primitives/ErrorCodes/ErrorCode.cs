@@ -165,6 +165,45 @@ public enum ErrorCode
     /// </summary>
     SessionExpired = 10015,
 
+    // --- Auth MCCEE 编码 (101xx~103xx) ---
+    // OpenSpec: T3-X1-01 - Auth 模块 MCCEE 统一
+
+    // 101xx: 认证错误
+
+    /// <summary>
+    /// 凭据无效 (用户名或密码错误)
+    /// </summary>
+    AuthInvalidCredentials = 10101,
+
+    // 102xx: Token 错误
+
+    /// <summary>
+    /// Token 无效 (格式错误或签名验证失败)
+    /// </summary>
+    AuthTokenInvalid = 10202,
+
+    /// <summary>
+    /// Token 已被撤销
+    /// </summary>
+    AuthTokenRevoked = 10203,
+
+    /// <summary>
+    /// RefreshToken 已过期
+    /// </summary>
+    AuthRefreshTokenExpired = 10204,
+
+    /// <summary>
+    /// RefreshToken 无效
+    /// </summary>
+    AuthRefreshTokenInvalid = 10205,
+
+    // 103xx: 会话错误
+
+    /// <summary>
+    /// 并发会话数超限
+    /// </summary>
+    AuthConcurrentSessionLimit = 10303,
+
     #endregion
 
     #region 2xxxx - 患者模块 (Patients)
@@ -198,6 +237,62 @@ public enum ErrorCode
     /// 无效的患者状态
     /// </summary>
     InvalidPatientStatus = 20006,
+
+    // --- MCCEE 编码 (207xx~208xx) ---
+
+    // 207xx: 业务规则错误
+
+    /// <summary>
+    /// 手机号已存在 (创建/更新时)
+    /// </summary>
+    PatientPhoneDuplicate = 20701,
+
+    /// <summary>
+    /// 该患者未被删除，无需恢复
+    /// </summary>
+    PatientNotDeleted = 20702,
+
+    /// <summary>
+    /// 批量操作时 ID 列表为空
+    /// </summary>
+    PatientBatchOperationEmpty = 20703,
+
+    /// <summary>
+    /// 批量检查超出限制 (最多 100 条)
+    /// </summary>
+    PatientBatchCheckExceeded = 20704,
+
+    /// <summary>
+    /// 分页参数无效
+    /// </summary>
+    PatientInvalidPagination = 20705,
+
+    // 208xx: 导入错误
+
+    /// <summary>
+    /// 导入文件为空
+    /// </summary>
+    PatientImportFileEmpty = 20801,
+
+    /// <summary>
+    /// 导入文件格式不正确 (仅支持 .xlsx)
+    /// </summary>
+    PatientImportFileFormat = 20802,
+
+    /// <summary>
+    /// 导入文件大小超限 (最大 10MB)
+    /// </summary>
+    PatientImportFileSize = 20803,
+
+    /// <summary>
+    /// Excel 文件中没有工作表
+    /// </summary>
+    PatientImportNoWorksheet = 20804,
+
+    /// <summary>
+    /// 导入数据超过限制 (最大 1000 行)
+    /// </summary>
+    PatientImportRowExceeded = 20805,
 
     #endregion
 
@@ -242,6 +337,176 @@ public enum ErrorCode
     /// 无法删除有处方的医案
     /// </summary>
     MedicalCaseHasPrescriptions = 30008,
+
+    // --- MCCEE 编码 (301xx~306xx) ---
+    // OpenSpec: T3-X1-12 - 现有 30001~30008 保留兼容，新 MCCEE 码并行
+
+    // 301xx: 创建医案错误
+
+    /// <summary>
+    /// 创建医案时患者不存在
+    /// </summary>
+    McPatientNotFound = 30101,
+
+    /// <summary>
+    /// 创建医案时医生不存在
+    /// </summary>
+    McDoctorNotFound = 30102,
+
+    /// <summary>
+    /// 该患者已有进行中的医案
+    /// </summary>
+    McActiveCaseExists = 30103,
+
+    /// <summary>
+    /// 该患者已有挂起的医案
+    /// </summary>
+    McSuspendedCaseExists = 30104,
+
+    /// <summary>
+    /// 患者已被禁用，无法创建医案
+    /// </summary>
+    McPatientDisabled = 30105,
+
+    // 302xx: 权限错误
+
+    /// <summary>
+    /// 无权限编辑此医案
+    /// </summary>
+    McCannotEditCase = 30201,
+
+    /// <summary>
+    /// 无权限删除此医案
+    /// </summary>
+    McCannotDeleteCase = 30202,
+
+    /// <summary>
+    /// 无权限取消此医案
+    /// </summary>
+    McCannotCancelCase = 30203,
+
+    /// <summary>
+    /// 无权限删除此医案的处方
+    /// </summary>
+    McCannotDeletePrescription = 30204,
+
+    /// <summary>
+    /// 无权限挂起此医案
+    /// </summary>
+    McCannotSuspendCase = 30205,
+
+    // 303xx: 状态转换错误
+
+    /// <summary>
+    /// 不允许的状态转换
+    /// </summary>
+    McInvalidStatusTransition = 30301,
+
+    /// <summary>
+    /// 完成前需标记处方需求
+    /// </summary>
+    McPrescriptionFlagRequired = 30302,
+
+    /// <summary>
+    /// 已标记需要开处方但处方不存在
+    /// </summary>
+    McPrescriptionRequired = 30303,
+
+    /// <summary>
+    /// 已完成的医案不可挂起
+    /// </summary>
+    McCompletedCannotSuspend = 30304,
+
+    /// <summary>
+    /// 已删除的医案不可挂起
+    /// </summary>
+    McDeletedCannotSuspend = 30305,
+
+    /// <summary>
+    /// 已完成的医案不可取消
+    /// </summary>
+    McCompletedCannotCancel = 30306,
+
+    /// <summary>
+    /// 医案已经是删除状态
+    /// </summary>
+    McAlreadyDeleted = 30307,
+
+    // 304xx: 处方错误
+
+    /// <summary>
+    /// 未标记需要开处方
+    /// </summary>
+    McPrescriptionFlagNotSet = 30401,
+
+    /// <summary>
+    /// 医案已存在处方，请使用更新接口
+    /// </summary>
+    McPrescriptionAlreadyExists = 30402,
+
+    /// <summary>
+    /// 医案已打印，修改需要提供修改原因
+    /// </summary>
+    McPrintedRequiresReason = 30403,
+
+    /// <summary>
+    /// 医案已打印，不允许删除处方
+    /// </summary>
+    McPrintedCannotDelete = 30404,
+
+    /// <summary>
+    /// 诊断记录不存在 (内部错误)
+    /// </summary>
+    McConsultationNotFound = 30405,
+
+    // 305xx: 并发和系统错误
+
+    /// <summary>
+    /// 创建处方并发重试失败
+    /// </summary>
+    McPrescriptionCreateRetryFailed = 30501,
+
+    /// <summary>
+    /// 保存并发重试失败
+    /// </summary>
+    McSaveRetryFailed = 30502,
+
+    // 306xx: 参数验证错误
+
+    /// <summary>
+    /// 请求 ID 与路由 ID 不匹配
+    /// </summary>
+    McRequestIdMismatch = 30601,
+
+    /// <summary>
+    /// 分页参数无效
+    /// </summary>
+    McInvalidPagination = 30602,
+
+    /// <summary>
+    /// 批量查询超出限制 (最多 50 个)
+    /// </summary>
+    McBatchQueryExceeded = 30603,
+
+    /// <summary>
+    /// 批量操作时 ID 列表为空
+    /// </summary>
+    McBatchOperationEmpty = 30604,
+
+    /// <summary>
+    /// 患者 ID 无效
+    /// </summary>
+    McInvalidPatientId = 30605,
+
+    /// <summary>
+    /// 返回数量参数无效 (1-50)
+    /// </summary>
+    McInvalidCountParam = 30606,
+
+    /// <summary>
+    /// 医案不存在
+    /// </summary>
+    McCaseNotFound = 30607,
 
     #endregion
 
@@ -318,20 +583,86 @@ public enum ErrorCode
 
     // --- MCCEE 编码 (501xx~503xx) ---
 
+    // 501xx: 核心错误
+
     /// <summary>
-    /// 该药材未被删除，无需恢复 (501xx: 核心错误)
+    /// 药材验证失败 (FluentValidation)
+    /// </summary>
+    HerbValidationFailed = 50102,
+
+    /// <summary>
+    /// 无权限操作此药材 (Doctor 操作他人创建的药材)
+    /// </summary>
+    HerbNoPermission = 50103,
+
+    /// <summary>
+    /// 该药材未被删除，无需恢复
     /// </summary>
     HerbNotDeleted = 50104,
 
     /// <summary>
-    /// 分页参数无效 (501xx: 核心错误)
+    /// 分页参数无效
     /// </summary>
     HerbInvalidPagination = 50106,
 
+    // 502xx: 批量操作错误
+
     /// <summary>
-    /// 批量导入超出限制 (502xx: 批量操作错误)
+    /// 批量操作时 ID 列表为空
+    /// </summary>
+    HerbBatchEmpty = 50201,
+
+    /// <summary>
+    /// 批量导入超出限制 (最多 10000 条)
     /// </summary>
     HerbBatchImportExceeded = 50202,
+
+    /// <summary>
+    /// 批量检查超出限制 (最多 100 条)
+    /// </summary>
+    HerbBatchCheckExceeded = 50203,
+
+    /// <summary>
+    /// 批量操作时单项药材不存在
+    /// </summary>
+    HerbBatchItemNotFound = 50204,
+
+    /// <summary>
+    /// 批量状态更新时药材不存在或已删除
+    /// </summary>
+    HerbBatchItemDeletedOrMissing = 50205,
+
+    /// <summary>
+    /// 批量操作时单项数据库异常
+    /// </summary>
+    HerbBatchItemError = 50206,
+
+    // 503xx: Excel 导入错误
+
+    /// <summary>
+    /// 导入文件为空
+    /// </summary>
+    HerbImportFileEmpty = 50301,
+
+    /// <summary>
+    /// 导入文件格式不正确 (仅支持 .xlsx)
+    /// </summary>
+    HerbImportFileFormat = 50302,
+
+    /// <summary>
+    /// 导入文件大小超限 (最大 10MB)
+    /// </summary>
+    HerbImportFileSize = 50303,
+
+    /// <summary>
+    /// Excel 文件格式错误 (无工作表)
+    /// </summary>
+    HerbImportExcelError = 50304,
+
+    /// <summary>
+    /// Excel 文件中没有数据行
+    /// </summary>
+    HerbImportNoData = 50305,
 
     #endregion
 
@@ -366,6 +697,94 @@ public enum ErrorCode
     /// 配方已被禁用
     /// </summary>
     FormulaDisabled = 60006,
+
+    // --- MCCEE 编码 (601xx~603xx) ---
+
+    // 601xx: 核心错误
+
+    /// <summary>
+    /// 验方ID不能为空
+    /// </summary>
+    FormulaIdInvalid = 60102,
+
+    /// <summary>
+    /// 无权限操作此验方 (Doctor 操作他人创建的验方)
+    /// </summary>
+    FormulaNoPermission = 60103,
+
+    /// <summary>
+    /// 新增验方失败
+    /// </summary>
+    FormulaCreateFailed = 60104,
+
+    /// <summary>
+    /// 更新验方失败
+    /// </summary>
+    FormulaUpdateFailed = 60105,
+
+    /// <summary>
+    /// 删除验方失败 (验方不存在)
+    /// </summary>
+    FormulaDeleteFailed = 60106,
+
+    /// <summary>
+    /// 该验方未被删除，无需恢复
+    /// </summary>
+    FormulaNotDeleted = 60107,
+
+    /// <summary>
+    /// 分页参数无效
+    /// </summary>
+    FormulaInvalidPagination = 60108,
+
+    // 602xx: 药材验证错误
+
+    /// <summary>
+    /// 药材项参数不能为空 (formulaId/herbItemId/selectedHerbId)
+    /// </summary>
+    FormulaHerbItemIdInvalid = 60201,
+
+    /// <summary>
+    /// 药材项不存在
+    /// </summary>
+    FormulaHerbItemNotFound = 60202,
+
+    /// <summary>
+    /// 该药材已校验，无需重复操作
+    /// </summary>
+    FormulaHerbItemAlreadyValidated = 60203,
+
+    /// <summary>
+    /// 所选系统药材不存在
+    /// </summary>
+    FormulaSystemHerbNotFound = 60204,
+
+    /// <summary>
+    /// 获取待校验验方列表失败
+    /// </summary>
+    FormulaPendingValidationListFailed = 60205,
+
+    // 603xx: 批量操作错误
+
+    /// <summary>
+    /// 批量操作时 ID 列表为空
+    /// </summary>
+    FormulaBatchEmpty = 60301,
+
+    /// <summary>
+    /// 批量导入数据不能为空
+    /// </summary>
+    FormulaBatchImportEmpty = 60302,
+
+    /// <summary>
+    /// 批量操作时单项方剂不存在
+    /// </summary>
+    FormulaBatchItemNotFound = 60303,
+
+    /// <summary>
+    /// 批量操作时单项数据库异常
+    /// </summary>
+    FormulaBatchItemError = 60304,
 
     #endregion
 
