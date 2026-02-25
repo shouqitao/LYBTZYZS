@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
+using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.Formulas.Services
 {
@@ -96,7 +97,7 @@ namespace LYBT.Module.Formulas.Services
             // 使用优化后的查询方法，包含所有药材配伍
             var entity = await _repository.GetByIdWithHerbsAsync(id);
             if (entity == null)
-                return Result<FormulaDetailDto>.Failure("验方不存在");
+                return Result<FormulaDetailDto>.Failure(GenericErrorCode.FormulaNotFound);
 
             var dto = _mapper.ToDetailDto(entity);
             return Result<FormulaDetailDto>.Success(dto);
@@ -146,7 +147,7 @@ namespace LYBT.Module.Formulas.Services
             // Issue #2014: 使用GetByIdWithHerbsAsync（包含Herbs集合）
             var entity = await _repository.GetByIdWithHerbsAsync(id);
             if (entity == null)
-                return Result<FormulaDetailDto>.Failure("验方不存在");
+                return Result<FormulaDetailDto>.Failure(GenericErrorCode.FormulaNotFound);
 
             // Issue #2014: 手动更新基础字段（包括新增的Indication）
             entity.Name = dto.Name;
@@ -205,7 +206,7 @@ namespace LYBT.Module.Formulas.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var result = await _repository.DeleteAsync(id);
-            return result ? Result.Success() : Result.Failure("删除失败");
+            return result ? Result.Success() : Result.Failure(GenericErrorCode.InternalError, "删除失败");
         }
 
 
@@ -219,27 +220,27 @@ namespace LYBT.Module.Formulas.Services
             var formula = await _repository.GetByIdWithHerbsAsync(formulaId);
             if (formula == null)
             {
-                return Result.Failure("验方不存在");
+                return Result.Failure(GenericErrorCode.FormulaNotFound);
             }
 
             // 2. 查找待验证的药材项
             var herbItem = formula.Herbs.FirstOrDefault(h => h.Id == herbItemId);
             if (herbItem == null)
             {
-                return Result.Failure("药材项不存在");
+                return Result.Failure(GenericErrorCode.FormulaValidationFailed, "药材项不存在");
             }
 
             // 3. 验证是否已校验
             if (herbItem.IsValidated)
             {
-                return Result.Failure("该药材已校验，无需重复操作");
+                return Result.Failure(GenericErrorCode.FormulaValidationFailed, "该药材已校验，无需重复操作");
             }
 
             // 4. 查询选定的药材 - OpenSpec: decouple-server-modules 使用ICrossModuleService
             var selectedHerb = await _crossModuleQuery.GetHerbBasicInfoAsync(selectedHerbId);
             if (selectedHerb == null)
             {
-                return Result.Failure("所选药材不存在");
+                return Result.Failure(GenericErrorCode.HerbNotFound, "所选药材不存在");
             }
 
             // 5. 更新药材项的验证信息
@@ -311,7 +312,7 @@ namespace LYBT.Module.Formulas.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
             {
-                return Result<FormulaDetailDto>.Failure("验方不存在");
+                return Result<FormulaDetailDto>.Failure(GenericErrorCode.FormulaNotFound);
             }
 
             // 切换状态
@@ -338,12 +339,12 @@ namespace LYBT.Module.Formulas.Services
             var entity = await _repository.GetByIdIncludingDeletedAsync(id);
             if (entity == null)
             {
-                return Result<FormulaDetailDto>.Failure("验方不存在");
+                return Result<FormulaDetailDto>.Failure(GenericErrorCode.FormulaNotFound);
             }
 
             if (!entity.IsDeleted)
             {
-                return Result<FormulaDetailDto>.Failure("该验方未被删除，无需恢复");
+                return Result<FormulaDetailDto>.Failure(GenericErrorCode.InvalidRequest, "该验方未被删除，无需恢复");
             }
 
             // 恢复软删除

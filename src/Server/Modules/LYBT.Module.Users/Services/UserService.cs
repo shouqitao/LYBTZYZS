@@ -14,6 +14,7 @@ using LYBT.Shared.Utilities.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.Users.Services
 {
@@ -112,7 +113,7 @@ namespace LYBT.Module.Users.Services
             var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, targetRole))
             {
-                return Result.Failure("您没有权限删除该用户");
+                return Result.Failure(GenericErrorCode.Forbidden, "您没有权限删除该用户");
             }
 
             // 最后一个SuperAdmin/Admin保护
@@ -124,7 +125,7 @@ namespace LYBT.Module.Users.Services
                 if (count <= 1)
                 {
                     var roleName = targetRole == UserRole.SuperAdmin ? "超级管理员" : "管理员";
-                    return Result.Failure($"不能删除最后一个{roleName}");
+                    return Result.Failure(GenericErrorCode.CannotDeleteSysAdmin, $"不能删除最后一个{roleName}");
                 }
             }
 
@@ -190,7 +191,7 @@ namespace LYBT.Module.Users.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result<UserDetailDto>.Failure("用户不存在");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
 
             var dto = _mapper.ToDetailDto(entity);
             return Result<UserDetailDto>.Success(dto);
@@ -240,7 +241,7 @@ namespace LYBT.Module.Users.Services
                                dto.Role == UserRole.Admin ? "管理员" : "医生";
                 _logger.LogWarning("[SVC] User.Create → PermissionDenied - CurrentRole={CurrentRole} TargetRole={TargetRole}",
                     currentRole, dto.Role);
-                return Result<UserDetailDto>.Failure($"您没有权限创建{roleName}账户");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, $"您没有权限创建{roleName}账户");
             }
 
             // 保留用户名检查（Issue #1909: 简化，仅保留系统保留用户名）
@@ -248,7 +249,7 @@ namespace LYBT.Module.Users.Services
             if (reservedUsernames.Any(reserved => string.Equals(dto.UserName, reserved, StringComparison.OrdinalIgnoreCase)))
             {
                 _logger.LogWarning("[SVC] User.Create → ReservedUsername - UserName={UserName}", dto.UserName);
-                return Result<UserDetailDto>.Failure($"用户名 '{dto.UserName}' 为系统保留用户名，不可使用");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNameExists, $"用户名 '{dto.UserName}' 为系统保留用户名，不可使用");
             }
 
             // Issue #1262: 检查用户名是否已存在（唯一性验证）
@@ -258,7 +259,7 @@ namespace LYBT.Module.Users.Services
             if (existingUser)
             {
                 _logger.LogWarning("[SVC] User.Create → DuplicateUsername - UserName={UserName}", dto.UserName);
-                return Result<UserDetailDto>.Failure($"用户名 '{dto.UserName}' 已存在，请使用其他用户名");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNameExists, $"用户名 '{dto.UserName}' 已存在，请使用其他用户名");
             }
 
             var entity = _mapper.ToEntity(dto);
@@ -299,7 +300,7 @@ namespace LYBT.Module.Users.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result<UserDetailDto>.Failure("用户不存在");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
 
             // FluentValidation 验证（Phase 1 Task 1.6）
             var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -316,7 +317,7 @@ namespace LYBT.Module.Users.Services
             {
                 _logger.LogWarning("[SVC] User.Update → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
                     currentRole, id, entity.Role);
-                return Result<UserDetailDto>.Failure("您没有权限更新该用户");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "您没有权限更新该用户");
             }
 
             // Issue #1909: 检查角色变更权限
@@ -324,7 +325,7 @@ namespace LYBT.Module.Users.Services
             {
                 _logger.LogWarning("[SVC] User.Update → RoleEscalation - CurrentRole={CurrentRole} OldRole={OldRole} NewRole={NewRole}",
                     currentRole, entity.Role, dto.Role);
-                return Result<UserDetailDto>.Failure("您没有权限将用户角色修改为该级别");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "您没有权限将用户角色修改为该级别");
             }
 
             // 注意：UserInputDto不包含Username属性，用户名一旦创建不可更改
@@ -371,13 +372,13 @@ namespace LYBT.Module.Users.Services
             if (currentUserId.HasValue && currentUserId.Value == id)
             {
                 _logger.LogWarning("[SVC] User.Delete → SelfDeleteBlocked - UserId={UserId}", id);
-                return Result.Failure("不能删除自己的账户");
+                return Result.Failure(GenericErrorCode.Forbidden, "不能删除自己的账户");
             }
 
             // 获取目标用户
             var targetUser = await _repository.GetByIdAsync(id);
             if (targetUser == null)
-                return Result.Failure("用户不存在");
+                return Result.Failure(GenericErrorCode.UserNotFound);
 
             // Issue #1909: 权限检查和保护逻辑
             var permissionCheck = await CanDeleteUserAsync(id, targetUser.Role);
@@ -393,7 +394,7 @@ namespace LYBT.Module.Users.Services
 
             var result = await _repository.DeleteAsync(id);
             _logger.LogInformation("[SVC] User.Delete completed - UserId={UserId} Role={Role}", id, targetUser.Role);
-            return result ? Result.Success() : Result.Failure("删除失败");
+            return result ? Result.Success() : Result.Failure(GenericErrorCode.InternalError, "删除失败");
         }
 
         /// <summary>
@@ -405,7 +406,7 @@ namespace LYBT.Module.Users.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result<ResetPasswordResponseDto>.Failure("用户不存在");
+                return Result<ResetPasswordResponseDto>.Failure(GenericErrorCode.UserNotFound);
 
             // 始终使用配置文件中的默认密码，不再接受请求中的密码参数
             string password = _configuration["Lybt:DefaultPasswords:NewUserPassword"]
@@ -437,23 +438,23 @@ namespace LYBT.Module.Users.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             if (string.IsNullOrWhiteSpace(userName))
-                return Result<UserDetailDto>.Failure("用户名不能为空");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.ValidationFailed, "用户名不能为空");
 
             if (string.IsNullOrWhiteSpace(password))
-                return Result<UserDetailDto>.Failure("密码不能为空");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.ValidationFailed, "密码不能为空");
 
             var entity = await _repository.GetByUsernameAsync(userName);
             if (entity == null)
             {
                 _logger.LogWarning("[SVC] User.ValidatePassword → NotFound - UserName={UserName}", userName);
-                return Result<UserDetailDto>.Failure("用户名或密码错误");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名或密码错误");
             }
 
             // 检查用户状态
             if (entity.Status == CommonStatus.Disabled)
             {
                 _logger.LogWarning("[SVC] User.ValidatePassword → Disabled - UserName={UserName}", userName);
-                return Result<UserDetailDto>.Failure("用户已被禁用");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.UserDisabled, "用户已被禁用");
             }
 
             // 验证密码
@@ -461,7 +462,7 @@ namespace LYBT.Module.Users.Services
             if (!verificationResult.IsSuccess)
             {
                 _logger.LogWarning("[SVC] User.ValidatePassword → InvalidPassword - UserName={UserName}", userName);
-                return Result<UserDetailDto>.Failure("用户名或密码错误");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名或密码错误");
             }
 
             // 如果需要重新哈希密码（升级哈希算法场景）
@@ -490,12 +491,12 @@ namespace LYBT.Module.Users.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result.Failure("用户不存在");
+                return Result.Failure(GenericErrorCode.UserNotFound);
 
             // 验证旧密码并获取验证结果
             var verificationResult = PasswordHelper.VerifyPassword(oldPassword, entity.PasswordHash, entity.Role, _logger);
             if (!verificationResult.IsSuccess)
-                return Result.Failure("原密码错误");
+                return Result.Failure(GenericErrorCode.InvalidPassword, "原密码错误");
 
             // S1-fix: 始终使用新密码哈希，而非旧密码的 rehash
             // verificationResult.NewHashedPassword 是旧密码的新算法哈希（用于升级场景），
@@ -519,12 +520,12 @@ namespace LYBT.Module.Users.Services
             // 验证输入
             if (dto == null)
             {
-                return Result<UserDetailDto>.Failure("个人资料信息不能为空");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.ValidationFailed, "个人资料信息不能为空");
             }
 
             if (string.IsNullOrWhiteSpace(dto.RealName))
             {
-                return Result<UserDetailDto>.Failure("真实姓名不能为空");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.ValidationFailed, "真实姓名不能为空");
             }
 
             // 获取用户实体
@@ -532,7 +533,7 @@ namespace LYBT.Module.Users.Services
             if (entity == null)
             {
                 _logger.LogWarning("[SVC] User.ChangeProfile → NotFound - UserId={UserId}", userId);
-                return Result<UserDetailDto>.Failure("用户不存在");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
             }
 
             // 更新字段
@@ -565,7 +566,7 @@ namespace LYBT.Module.Users.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result<UserDetailDto>.Failure("用户不存在");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
 
             // 权限检查
             var currentRole = GetCurrentUserRole();
@@ -573,7 +574,7 @@ namespace LYBT.Module.Users.Services
             {
                 _logger.LogWarning("[SVC] User.ToggleStatus → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
                     currentRole, id, entity.Role);
-                return Result<UserDetailDto>.Failure("您没有权限修改该用户状态");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "您没有权限修改该用户状态");
             }
 
             // S2-07: 最后管理员保护 - 禁用管理员级用户前检查是否是最后一个
@@ -584,7 +585,7 @@ namespace LYBT.Module.Users.Services
                 if (activeAdmins.Count() <= 1)
                 {
                     _logger.LogWarning("[SVC] User.ToggleStatus → LastAdminProtection - UserId={UserId} Role={Role}", id, entity.Role);
-                    return Result<UserDetailDto>.Failure("不能禁用最后一个管理员");
+                    return Result<UserDetailDto>.Failure(GenericErrorCode.CannotDeleteSysAdmin, "不能禁用最后一个管理员");
                 }
             }
 
@@ -614,10 +615,10 @@ namespace LYBT.Module.Users.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdIncludingDeletedAsync(id);
             if (entity == null)
-                return Result<UserDetailDto>.Failure("用户不存在");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
 
             if (!entity.IsDeleted)
-                return Result<UserDetailDto>.Failure("该用户未被删除，无需恢复");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.InvalidRequest, "该用户未被删除，无需恢复");
 
             // 权限检查
             var currentRole = GetCurrentUserRole();
@@ -625,7 +626,7 @@ namespace LYBT.Module.Users.Services
             {
                 _logger.LogWarning("[SVC] User.Restore → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
                     currentRole, id, entity.Role);
-                return Result<UserDetailDto>.Failure("您没有权限恢复该用户");
+                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "您没有权限恢复该用户");
             }
 
             entity.IsDeleted = false;
@@ -654,7 +655,7 @@ namespace LYBT.Module.Users.Services
 
             if (ids.Count == 0)
             {
-                return Result<BatchOperationResultDto>.Failure("请至少选择一个用户");
+                return Result<BatchOperationResultDto>.Failure(GenericErrorCode.ValidationFailed, "请至少选择一个用户");
             }
 
             var currentRole = GetCurrentUserRole();

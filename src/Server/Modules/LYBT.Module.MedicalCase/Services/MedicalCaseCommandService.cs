@@ -9,7 +9,9 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
+using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.MedicalCases.Services
 {
@@ -169,14 +171,14 @@ namespace LYBT.Module.MedicalCases.Services
             // S3: 需要修改原因时，验证 editReason 不为空
             if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(editReason))
             {
-                throw new InvalidOperationException("该医案需要提供修改原因");
+                throw new BusinessException(EC.McPrintedRequiresReason, "该医案需要提供修改原因");
             }
 
             // 确保Consultation存在
             if (medicalCase.Consultation == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdateConsultation → ConsultationNotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new InvalidOperationException("医案的辨证信息不存在");
+                throw new BusinessException(EC.McConsultationNotFound, "医案的辨证信息不存在");
             }
 
             // Issue #2231: 手动映射属性以避免EF Core共享主键冲突
@@ -261,10 +263,10 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             if (medicalCase.NeedsPrescription != true)
-                throw new InvalidOperationException("未标记需要开处方，请先设置处方需求标记");
+                throw new BusinessException(EC.McPrescriptionFlagNotSet, "未标记需要开处方，请先设置处方需求标记");
 
             if (medicalCase.Prescription != null && !medicalCase.Prescription.IsDeleted)
-                throw new InvalidOperationException($"医案已存在处方（ID: {medicalCase.Prescription.Id}），请使用更新接口");
+                throw new BusinessException(EC.McPrescriptionAlreadyExists, $"医案已存在处方（ID: {medicalCase.Prescription.Id}），请使用更新接口");
 
             var prescription = _mapper.ToPrescriptionEntity(request);
             prescription.Id = Guid.NewGuid();
@@ -316,7 +318,7 @@ namespace LYBT.Module.MedicalCases.Services
             // S3: 需要修改原因时，验证 editReason 不为空
             if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(editReason))
             {
-                throw new InvalidOperationException("该医案需要提供修改原因");
+                throw new BusinessException(EC.McPrintedRequiresReason, "该医案需要提供修改原因");
             }
 
             // 验证Prescription存在且ID匹配
@@ -331,7 +333,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase.IsPrinted && medicalCase.IsCompleted)
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new InvalidOperationException("医案已打印并完成，不允许修改处方");
+                throw new BusinessException(EC.McPrintedCannotDelete, "医案已打印并完成，不允许修改处方");
             }
 
             // 通过Mapperly更新Prescription子实体（不包含Items）
@@ -392,7 +394,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase.IsPrinted && medicalCase.IsCompleted)
             {
                 _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new InvalidOperationException("医案已打印并完成，不允许删除处方");
+                throw new BusinessException(EC.McPrintedCannotDelete, "医案已打印并完成，不允许删除处方");
             }
 
             // 软删除Prescription
@@ -468,7 +470,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 获取聚合根
             var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId)
-                ?? throw new InvalidOperationException($"医案 {medicalCaseId} 不存在");
+                ?? throw ExceptionFactory.MedicalCase.NotFound(medicalCaseId);
 
             // 保存变更前的状态用于审计
             var beforeState = CloneMedicalCaseForAudit(medicalCase);
@@ -479,7 +481,7 @@ namespace LYBT.Module.MedicalCases.Services
             // S3-03: 需要修改原因时，验证 editReason 不为空
             if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(request.EditReason))
             {
-                throw new InvalidOperationException("该医案需要提供修改原因");
+                throw new BusinessException(EC.McPrintedRequiresReason, "该医案需要提供修改原因");
             }
 
             // 更新基础字段
@@ -498,7 +500,7 @@ namespace LYBT.Module.MedicalCases.Services
                 if (medicalCase.IsPrinted && medicalCase.IsCompleted)
                 {
                     _logger.LogWarning("[SVC] MedicalCase.Save → PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("医案已打印并完成，不允许修改处方");
+                    throw new BusinessException(EC.McPrintedCannotDelete, "医案已打印并完成，不允许修改处方");
                 }
 
                 await HandlePrescriptionUpdateAsync(medicalCase, request.Prescription);

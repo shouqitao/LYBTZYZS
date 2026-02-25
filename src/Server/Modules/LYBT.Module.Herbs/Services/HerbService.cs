@@ -12,6 +12,7 @@ using LYBT.Shared.Utilities.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
+using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.Herbs.Services
 {
@@ -71,7 +72,7 @@ namespace LYBT.Module.Herbs.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result<HerbDetailDto>.Failure("药材不存在");
+                return Result<HerbDetailDto>.Failure(GenericErrorCode.HerbNotFound);
 
             var dto = _mapper.ToDetailDto(entity);
             return Result<HerbDetailDto>.Success(dto);
@@ -100,7 +101,7 @@ namespace LYBT.Module.Herbs.Services
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result<HerbDetailDto>.Failure("药材不存在");
+                return Result<HerbDetailDto>.Failure(GenericErrorCode.HerbNotFound);
 
             // FluentValidation 验证（Phase 1 Task 1.8）
             var validationResult = await _validator.ValidateAsync(dto);
@@ -125,7 +126,7 @@ namespace LYBT.Module.Herbs.Services
             {
                 _logger.LogWarning("[SVC] Herb.Delete → HasReferences - HerbId={HerbId} ReferenceCount={Count}",
                     id, refCheck.Data.ReferenceCount);
-                return Result.Failure($"药材被 {refCheck.Data.ReferenceCount} 个处方引用，无法删除");
+                return Result.Failure(GenericErrorCode.HerbInUse, $"药材被 {refCheck.Data.ReferenceCount} 个处方引用，无法删除");
             }
 
             await _repository.DeleteAsync(id);
@@ -518,7 +519,7 @@ namespace LYBT.Module.Herbs.Services
             var herb = await _repository.GetByIdAsync(herbId);
             if (herb == null)
             {
-                return Result<HerbReferenceCheckDto>.Failure("药材不存在");
+                return Result<HerbReferenceCheckDto>.Failure(GenericErrorCode.HerbNotFound);
             }
 
             // 查询处方引用计数
@@ -604,7 +605,7 @@ namespace LYBT.Module.Herbs.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
             {
-                return Result<HerbDetailDto>.Failure("药材不存在");
+                return Result<HerbDetailDto>.Failure(GenericErrorCode.HerbNotFound);
             }
 
             // 切换状态
@@ -631,12 +632,12 @@ namespace LYBT.Module.Herbs.Services
             var entity = await _repository.GetByIdIncludingDeletedAsync(id);
             if (entity == null)
             {
-                return Result<HerbDetailDto>.Failure("药材不存在");
+                return Result<HerbDetailDto>.Failure(GenericErrorCode.HerbNotFound);
             }
 
             if (!entity.IsDeleted)
             {
-                return Result<HerbDetailDto>.Failure("该药材未被删除，无需恢复");
+                return Result<HerbDetailDto>.Failure(GenericErrorCode.InvalidRequest, "该药材未被删除，无需恢复");
             }
 
             // 恢复软删除

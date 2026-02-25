@@ -4,7 +4,9 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
+using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.MedicalCases.Services
 {
@@ -50,7 +52,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (status == MedicalCaseStatus.Completed)
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → CompletedBlocked - 请使用 CompleteAsync");
-                throw new InvalidOperationException("完成医案请使用专用的 Complete 接口，不允许通过状态更新直接设置为 Completed");
+                throw new BusinessException(EC.McInvalidStatusTransition, "完成医案请使用专用的 Complete 接口，不允许通过状态更新直接设置为 Completed");
             }
 
             // 获取聚合根
@@ -66,7 +68,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → InvalidTransition - OldStatus={OldStatus} NewStatus={NewStatus}",
                     medicalCase.CaseStatus, status);
-                throw new InvalidOperationException($"不允许从{medicalCase.CaseStatus}状态转换到{status}状态");
+                throw new BusinessException(EC.McInvalidStatusTransition, $"不允许从{medicalCase.CaseStatus}状态转换到{status}状态");
             }
 
             // 更新状态（仅 Draft <-> Active）
@@ -107,7 +109,7 @@ namespace LYBT.Module.MedicalCases.Services
                 if (medicalCase.NeedsPrescription == null)
                 {
                     _logger.LogWarning("[SVC] MedicalCase.Complete → NeedsPrescriptionNotSet - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("请先标记是否需要开处方");
+                    throw new BusinessException(EC.McPrescriptionFlagRequired, "请先标记是否需要开处方");
                 }
 
                 // 如果标记需要开处方，验证处方存在
@@ -116,7 +118,7 @@ namespace LYBT.Module.MedicalCases.Services
                     if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
                     {
                         _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                        throw new InvalidOperationException("已标记需要开处方，但处方不存在，无法完成医案");
+                        throw new BusinessException(EC.McPrescriptionRequired, "已标记需要开处方，但处方不存在，无法完成医案");
                     }
                 }
             }
@@ -168,14 +170,14 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
                 _logger.LogWarning("[SVC] MedicalCase.SaveDraft → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new InvalidOperationException("已完成的医案不可暂存");
+                throw new BusinessException(EC.McCompletedCannotSuspend, "已完成的医案不可暂存");
             }
 
             // 已软删除的医案不可暂存
             if (medicalCase.IsDeleted)
             {
                 _logger.LogWarning("[SVC] MedicalCase.SaveDraft → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new InvalidOperationException("已删除的医案不可暂存");
+                throw new BusinessException(EC.McDeletedCannotSuspend, "已删除的医案不可暂存");
             }
 
             // DDD: 委托给聚合根域方法
@@ -234,14 +236,14 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new InvalidOperationException("已完成的医案不可取消");
+                throw new BusinessException(EC.McCompletedCannotCancel, "已完成的医案不可取消");
             }
 
             // 已软删除的不重复处理
             if (medicalCase.IsDeleted)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new InvalidOperationException("医案已被删除");
+                throw new BusinessException(EC.McAlreadyDeleted, "医案已被删除");
             }
 
             // DDD: 委托给聚合根域方法
