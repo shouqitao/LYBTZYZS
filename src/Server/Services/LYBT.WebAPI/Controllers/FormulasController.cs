@@ -206,7 +206,6 @@ namespace LYBT.WebAPI.Controllers
         /// 下载验方导入模板 (Issue #1166)
         /// </summary>
         [HttpGet("import-template")]
-        [AllowAnonymous]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         public IActionResult ExportTemplate()

@@ -27,20 +27,12 @@ namespace LYBT.Desktop.Formula.Services
                 result.AddError("配方名称长度不能超过100个字符");
             }
 
-            if (string.IsNullOrWhiteSpace(effect))
-            {
-                result.AddError("功效主治不能为空");
-            }
-            else if (effect.Length > 500)
+            if (!string.IsNullOrWhiteSpace(effect) && effect.Length > 500)
             {
                 result.AddError("功效主治长度不能超过500个字符");
             }
 
-            if (string.IsNullOrWhiteSpace(usage))
-            {
-                result.AddError("用法用量不能为空");
-            }
-            else if (usage.Length > 500)
+            if (!string.IsNullOrWhiteSpace(usage) && usage.Length > 500)
             {
                 result.AddError("用法用量长度不能超过500个字符");
             }

@@ -625,7 +625,33 @@ namespace LYBT.Module.Patients.Services
 
         #endregion
 
-        // ========== OpenSpec: optimize-module-list-ui - 恢复方法实现 ==========
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法实现 ==========
+
+        /// <summary>
+        /// 切换患者状态（启用/禁用）
+        /// </summary>
+        public async Task<Result<PatientDetailDto>> ToggleStatusAsync(Guid id)
+        {
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null)
+            {
+                return Result<PatientDetailDto>.Failure("患者不存在");
+            }
+
+            // 切换状态
+            entity.Status = entity.Status == CommonStatus.Enabled
+                ? CommonStatus.Disabled
+                : CommonStatus.Enabled;
+            entity.UpdatedAt = DateTime.Now;
+
+            var result = await _repository.UpdateAsync(entity);
+            var dto = _mapper.ToDetailDto(result);
+            dto.Age = result.Age;
+
+            _logger.LogInformation("[SVC] Patient.ToggleStatus completed - PatientId={PatientId} Status={Status}", id, entity.Status);
+
+            return Result<PatientDetailDto>.Success(dto);
+        }
 
         /// <summary>
         /// 恢复软删除的患者
