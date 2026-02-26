@@ -11,12 +11,12 @@
 # 编译
 dotnet build LYBT.All.sln
 
-# 测试 (5个测试项目, 1472 tests)
-dotnet test tests/LYBT.Tests.Unit/
-dotnet test tests/LYBT.Tests.Desktop.Unit/
-dotnet test tests/LYBT.Tests.Architecture/
-dotnet test tests/LYBT.Tests.Server.Integration/
-dotnet test tests/LYBT.Tests.Desktop.Integration/
+# 测试 (5个测试项目, ~1455 tests)
+dotnet test tests/LYBT.Tests.Unit/             # 592 tests
+dotnet test tests/LYBT.Tests.Desktop.Unit/     # 633 tests
+dotnet test tests/LYBT.Tests.Architecture/     # 60 tests
+dotnet test tests/LYBT.Tests.Server.Integration/ # 146 tests
+dotnet test tests/LYBT.Tests.Desktop.Integration/ # 24 tests
 
 # 全量测试
 dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"

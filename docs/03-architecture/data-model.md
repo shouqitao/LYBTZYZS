@@ -261,6 +261,52 @@ graph TB
 | IsUsed | bool | 是 | 是否已使用 |
 | UsageCount | int | 是 | 使用次数 |
 
+## 辅助实体
+
+以下实体不是独立业务概念，而是为主实体提供支撑功能 (关联关系、打印追踪、会话管理等)。
+
+### MedicalCasePrintLog (打印记录)
+
+MedicalCase 聚合根的内部实体 (继承 BaseEntity)，记录每次打印操作用于合规追溯。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| MedicalCaseId | Guid | 外键 (关联 MedicalCase) |
+| PrintType | PrintType | 打印类型 (处方/验方) |
+| PrintVersion | int | 打印时的医案版本号 |
+| PrintedAt | DateTime | 打印时间 |
+| PrintedBy | Guid? | 打印人 ID |
+| PrintedByName | string(50)? | 打印人姓名 |
+| PrinterName | string(100)? | 打印机名称或 IP |
+| IsSuccess | bool | 打印状态 (默认 true) |
+| ErrorMessage | string(500)? | 失败错误信息 |
+| Remark | string(200)? | 备注 |
+
+**用途**: 已打印医案修改后需提供 EditReason (MC-D15)，打印日志提供变更审计链。
+
+### PrescriptionItem (处方药材项)
+
+Prescription 的子实体，表示处方中的单味药材。不继承 BaseEntity (无软删除、无审计字段)，随处方整体操作。
+
+**关键计算**: `Amount = UnitPrice x Dosage` (计算属性，不持久化)
+
+> 详细字段定义见上方 [PrescriptionItem 章节](#prescriptionitem-处方药材项)。
+
+### FormulaHerbItem (验方药材项)
+
+Formula 的子实体，实现验方与药材的 N:N 关系。支持**延迟绑定**: 导入验方时 `HerbId` 可为 null，通过 `OriginalHerbName` 保留原始名称，后续校验时绑定到系统药材 (`IsValidated=true`)。
+
+> 详细字段定义见上方 [FormulaHerbItem 章节](#formulaherbitem-验方药材项)。
+
+### AuthSession + RefreshToken (会话与令牌)
+
+User 的关联实体，管理用户登录会话和 JWT 刷新令牌:
+
+- **AuthSession**: 记录登录/登出时间、Token 哈希、IP 地址，支持会话撤销 (`IsRevoked`)
+- **RefreshToken**: 实现 Token 轮换机制，通过 `FamilyId` 检测重放攻击，`IsUsed` + `UsageCount` 防止 Token 重复使用
+
+> 详细字段定义见上方 [AuthSession](#authsession-认证会话) 和 [RefreshToken](#refreshtoken-刷新令牌) 章节。
+
 ## 枚举定义
 
 ### MedicalCaseStatus
@@ -385,3 +431,4 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 | 2026-02-19 | v1.2 | 设计补全: 索引策略章节 (BR-001 筛选唯一索引 MC-D06); Herb 禁用药材显示规则 (MC-D07); Prescription 价格计算公式 (MC-D14) |
 | 2026-02-21 | v1.3 | 打印层级提升: ER 图和聚合根图 PrescriptionPrintLog->MedicalCasePrintLog (FK 改为 MedicalCase); MedicalCase 新增 PrintVersion; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt) |
 | 2026-02-21 | v1.4 | 深度重构同步: MedicalCaseStatus 移除 Cancelled=3 (取消统一为 IsDeleted=true); MedicalCase 新增 DDD 域方法 (Complete/SaveAsDraft/SoftDelete/UpdateConsultation)，从贫血模型演进为充血模型 |
+| 2026-02-26 | v1.5 | DOC3-10: 新增"辅助实体"章节，汇总 MedicalCasePrintLog/PrescriptionItem/FormulaHerbItem/AuthSession+RefreshToken 的职责和设计要点 |

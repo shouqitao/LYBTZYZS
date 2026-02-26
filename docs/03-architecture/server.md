@@ -354,7 +354,7 @@ graph LR
 BaseService (非泛型)
   ├── 跨域 Service: AuthService, SyncService
   └── BaseService<T> (泛型，继承 BaseService)
-       └── CRUD Service: HerbService, PatientService, FormulaService, MedicalCase*
+       └── CRUD Service: HerbService, PatientService, FormulaService (A3-07), MedicalCase*
 ```
 
 | 基类 | 适用场景 | 提供能力 |
@@ -362,7 +362,7 @@ BaseService (非泛型)
 | `BaseService` | 跨域服务 (Auth, Sync) | ExecuteAsync (三层异常处理), ValidateAsync (FluentValidation 封装) |
 | `BaseService<T>` | CRUD 实体服务 | 继承 BaseService 全部能力 + 泛型约束 |
 
-**当前状态**: HerbService/PatientService 已继承，FormulaService/AuthService/SyncService 待统一 (S5)
+**当前状态**: HerbService/PatientService/FormulaService 已继承 (FormulaService 在 Sprint3-Batch4a A3-07 完成迁移)，AuthService/SyncService 待统一 (S5)
 
 ### 返回值类型
 
@@ -398,6 +398,17 @@ var validationResult = await _validator.ValidateAsync(dto);
 if (!validationResult.IsValid)
     return Result<T>.Failure(validationResult.Errors);
 ```
+
+### Validator 架构与迁移
+
+Validator 原先分散在各业务模块 (`Module.{Entity}/Validators/`) 中，存在重复规则和不一致的问题。当前采用分层迁移策略:
+
+| 层级 | 位置 | 职责 | 示例 |
+|------|------|------|------|
+| **共享验证规则** | `Shared.Validators/` | 跨模块通用规则 (手机号、身份证、中文姓名等) | `PhoneNumberValidator`, `IdNumberValidator` |
+| **模块验证器** | `Module.{Entity}/Validators/` | 模块专属业务规则 (引用共享规则) | `PatientInputDtoValidator` |
+
+**迁移原则**: 2 个以上模块共用的验证规则提取到 `Shared.Validators`；仅单模块使用的规则保留在模块内。模块 Validator 通过组合 (`Include()` / `SetValidator()`) 引用共享规则，避免代码重复。
 
 ### 大型 Service 拆分标准
 
@@ -697,3 +708,4 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 | 2026-02-21 | v1.4 | 模块全面简化: PermissionService 为唯一权限权威，Rules 精简为无状态策略(57行)，ServiceHelper 扩展(重试/权限验证/创建上下文)，ValidationHelper 合并到 Rules |
 | 2026-02-22 | v1.5 | **Phase 4 架构修复设计同步 (A2+A3)**: MedicalCasePrintLog 从 Prescriptions/ 迁移到 MedicalCases/ 目录; Token Family 管理新增 ICrossModuleAuthService 独立接口 (ISP) + 6 个撤销场景表 + 延迟踢出说明 |
 | 2026-02-23 | v1.6 | 一致性审计: 新增 ICrossModuleService ISP 拆分 (D5-1); 新增 BaseService 层次结构 (D2-1); 新增事务边界模型 L1/L2/L3; 缓存策略补充 IMemoryCache 层 + Tag-based 失效矩阵 |
+| 2026-02-26 | v1.7 | Sprint3-Batch5a DOC3: FormulaService BaseService 继承状态更新 (A3-07); 新增 Validator 架构与迁移章节 (Shared.Validators) |

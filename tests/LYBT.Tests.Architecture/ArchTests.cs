@@ -818,4 +818,39 @@ public class ArchTests
     }
 
     #endregion
+
+    #region Sprint3-STD: P-06 分层依赖方向综合守护
+
+    /// <summary>
+    /// P-06: 分层架构无反向引用/循环依赖
+    /// 综合验证依赖方向: WebAPI → Modules → Infrastructure → Entities → (nothing)
+    /// 防止分层退化，任何反向引用都会导致测试失败
+    /// </summary>
+    [Theory]
+    [InlineData("LYBT.Entities", new[] { "LYBT.Infrastructure", "LYBT.WebAPI", "LYBT.Module.Auth", "LYBT.Module.Users", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Herbs", "LYBT.Module.Formulas", "LYBT.Module.Sync" },
+        "Entities 层 (最底层) 不得依赖任何上层")]
+    [InlineData("LYBT.Infrastructure", new[] { "LYBT.WebAPI", "LYBT.Module.Auth", "LYBT.Module.Users", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Herbs", "LYBT.Module.Formulas", "LYBT.Module.Sync" },
+        "Infrastructure 层不得依赖 WebAPI 或 Module 层")]
+    [InlineData("LYBT.Module.Auth", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
+    [InlineData("LYBT.Module.Users", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
+    [InlineData("LYBT.Module.Patients", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
+    [InlineData("LYBT.Module.Herbs", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
+    [InlineData("LYBT.Module.Formulas", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
+    [InlineData("LYBT.Module.MedicalCases", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
+    [InlineData("LYBT.Module.Sync", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
+    public void P06_NoReverseOrCircularDependencies(string sourceAssembly, string[] forbiddenDependencies, string rule)
+    {
+        var assembly = Assembly.Load(sourceAssembly);
+
+        var result = Types.InAssembly(assembly)
+            .Should()
+            .NotHaveDependencyOnAny(forbiddenDependencies)
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"违反 P-06 规则 ({rule}): {sourceAssembly} 反向依赖了 " +
+            $"{string.Join(", ", result.FailingTypes?.Select(t => t.FullName) ?? [])}");
+    }
+
+    #endregion
 }

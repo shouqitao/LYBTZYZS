@@ -392,6 +392,98 @@ public class DesktopLayerArchTests
         }
     }
 
+    #region Sprint3-STD: 架构规则固化
+
+    /// <summary>
+    /// P-01: 所有 DataSource 接口必须同时有 Remote 和 Local 实现
+    /// 确保双模式 (远程/本地) 实体 100% 完整，新增实体不会遗漏某一端
+    /// </summary>
+    [Fact]
+    public void P01_AllDataSources_Must_Have_Both_Remote_And_Local()
+    {
+        var contractsAssembly = Assembly.Load("LYBT.Desktop.Contracts");
+        var infrastructureAssembly = Assembly.Load("LYBT.Desktop.Infrastructure");
+        var localDataAssembly = Assembly.Load("LYBT.Desktop.LocalData");
+
+        // 查找所有 I{X}DataSource 接口 (排除 IDataSourceBase)
+        var dataSourceInterfaces = contractsAssembly.GetTypes()
+            .Where(t => t.IsInterface &&
+                       t.Name.EndsWith("DataSource") &&
+                       t.Name.StartsWith("I") &&
+                       t.Name != "IDataSourceBase")
+            .ToList();
+
+        Assert.NotEmpty(dataSourceInterfaces);
+
+        var missingImplementations = new List<string>();
+
+        foreach (var dsInterface in dataSourceInterfaces)
+        {
+            // 从 IFormulaDataSource 提取 "Formula"
+            var entityName = dsInterface.Name[1..^"DataSource".Length];
+
+            // 检查 Remote 实现
+            var remoteType = infrastructureAssembly.GetTypes()
+                .FirstOrDefault(t => t.Name == $"Remote{entityName}DataSource" && !t.IsAbstract);
+            if (remoteType == null)
+                missingImplementations.Add($"Remote{entityName}DataSource (接口: {dsInterface.Name})");
+
+            // 检查 Local 实现
+            var localType = localDataAssembly.GetTypes()
+                .FirstOrDefault(t => t.Name == $"Local{entityName}DataSource" && !t.IsAbstract);
+            if (localType == null)
+                missingImplementations.Add($"Local{entityName}DataSource (接口: {dsInterface.Name})");
+        }
+
+        Assert.True(missingImplementations.Count == 0,
+            $"双模式实体实现不完整，违反 P-01 规则:\n{string.Join("\n", missingImplementations)}");
+    }
+
+    /// <summary>
+    /// P-03: 所有 CRUD ViewModel 必须继承 MasterDetailViewModelBase
+    /// 确保 CRUD 功能的一致性 (列表/详情/导航/搜索)
+    /// </summary>
+    [Fact]
+    public void P03_AllCrudViewModels_Must_Inherit_MasterDetailViewModelBase()
+    {
+        // MasterDetail 命名约定标识 CRUD ViewModel
+        var crudViewModels = Types.InAssemblies(DesktopAssemblies)
+            .That()
+            .HaveNameEndingWith("MasterDetailViewModel")
+            .And()
+            .AreClasses()
+            .And()
+            .AreNotAbstract()
+            .GetTypes();
+
+        Assert.NotEmpty(crudViewModels);
+
+        foreach (var vmType in crudViewModels)
+        {
+            var currentType = vmType.BaseType;
+            var inheritsMasterDetail = false;
+
+            while (currentType != null && currentType != typeof(object))
+            {
+                var baseName = currentType.IsGenericType
+                    ? currentType.GetGenericTypeDefinition().Name
+                    : currentType.Name;
+
+                if (baseName.Contains("MasterDetailViewModelBase"))
+                {
+                    inheritsMasterDetail = true;
+                    break;
+                }
+                currentType = currentType.BaseType;
+            }
+
+            Assert.True(inheritsMasterDetail,
+                $"CRUD ViewModel {vmType.Name} 未继承 MasterDetailViewModelBase，违反 P-03 规则");
+        }
+    }
+
+    #endregion
+
     /// <summary>
     /// 验证所有 Repository 都在对应模块中注册
     /// </summary>

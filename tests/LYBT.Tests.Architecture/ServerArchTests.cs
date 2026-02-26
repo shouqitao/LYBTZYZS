@@ -444,4 +444,108 @@ public class ServerArchTests
 
         Assert.NotEmpty(dbConfigTypes);
     }
+
+    #region Sprint3-STD: 架构规则固化
+
+    /// <summary>
+    /// P-02: 所有 Repository 必须继承 BaseRepository
+    /// 确保 Repository 层统一的 CRUD 和软删除行为
+    /// </summary>
+    [Fact]
+    public void P02_AllRepositories_Must_Inherit_BaseRepository()
+    {
+        var repositoryTypes = Types.InAssemblies(ServerAssemblies)
+            .That()
+            .HaveNameEndingWith("Repository")
+            .And()
+            .DoNotHaveNameStartingWith("Base")
+            .And()
+            .AreClasses()
+            .And()
+            .AreNotAbstract()
+            .GetTypes();
+
+        foreach (var repoType in repositoryTypes)
+        {
+            // 检查是否继承了 BaseRepository<T> 或 BaseRepository
+            var inheritsBase = repoType.BaseType?.Name?.Contains("BaseRepository") == true ||
+                              repoType.BaseType?.BaseType?.Name?.Contains("BaseRepository") == true;
+
+            Assert.True(inheritsBase,
+                $"Repository {repoType.Name} 未继承 BaseRepository，违反 P-02 规则");
+        }
+    }
+
+    /// <summary>
+    /// P-09: 所有 Controller 必须有类级别 [Authorize] 属性
+    /// Sprint3-A3-08: FallbackPolicy 已启用，此规则为二重保障
+    /// </summary>
+    [Fact]
+    public void P09_AllControllers_Must_Have_ClassLevel_Authorize()
+    {
+        var controllerTypes = Types.InAssemblies(ServerAssemblies)
+            .That()
+            .HaveNameEndingWith("Controller")
+            .And()
+            .DoNotHaveNameStartingWith("Base")
+            .And()
+            .AreClasses()
+            .And()
+            .AreNotAbstract()
+            .GetTypes();
+
+        foreach (var controller in controllerTypes)
+        {
+            // 类级别必须有 [Authorize] 或 [AllowAnonymous]
+            var hasClassLevelAuth = controller.GetCustomAttributes(true)
+                .Any(attr => attr.GetType().Name == "AuthorizeAttribute");
+
+            var hasClassLevelAllowAnonymous = controller.GetCustomAttributes(true)
+                .Any(attr => attr.GetType().Name == "AllowAnonymousAttribute");
+
+            // 排除健康检查等基础设施 Controller
+            var isInfraController = controller.Name.Contains("Health") ||
+                                    controller.Name.Contains("Root");
+
+            Assert.True(hasClassLevelAuth || hasClassLevelAllowAnonymous || isInfraController,
+                $"Controller {controller.Name} 缺少类级别 [Authorize] 属性，违反 P-09 规则");
+        }
+    }
+
+    /// <summary>
+    /// P-08: 跨模块引用必须通过接口 (ICrossModuleService)
+    /// 模块间不得直接引用其他模块的 Service 实现类
+    /// </summary>
+    [Fact]
+    public void P08_CrossModule_References_Must_Use_Interfaces()
+    {
+        var moduleAssemblies = ServerAssemblies
+            .Where(a => a.GetName().Name?.StartsWith("LYBT.Module.") == true)
+            .ToArray();
+
+        foreach (var moduleAssembly in moduleAssemblies)
+        {
+            var moduleName = moduleAssembly.GetName().Name!;
+            var otherModuleServiceNamespaces = moduleAssemblies
+                .Where(a => a.GetName().Name != moduleName)
+                .Select(a => $"{a.GetName().Name!.Replace("LYBT.Module.", "LYBT.Module.")}.Services")
+                .ToArray();
+
+            // 检查是否直接依赖其他模块的 Services 命名空间
+            var result = Types.InAssembly(moduleAssembly)
+                .Should()
+                .NotHaveDependencyOnAny(otherModuleServiceNamespaces)
+                .GetResult();
+
+            // 允许已知的跨模块协作 (Sync模块需要访问所有模块)
+            var failingTypes = result.FailingTypes?
+                .Where(t => !t.FullName?.Contains("Module.Sync") == true)
+                .ToList() ?? [];
+
+            Assert.True(failingTypes.Count == 0,
+                $"模块 {moduleName} 直接引用了其他模块的 Service 实现: {string.Join(", ", failingTypes.Select(t => t.Name))}");
+        }
+    }
+
+    #endregion
 }

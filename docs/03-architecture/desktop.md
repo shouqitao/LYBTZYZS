@@ -45,7 +45,7 @@ graph TB
     Modules --> Models
 ```
 
-## Core 层 (6 个项目)
+## Core 层 (8 个项目)
 
 | 项目 | 职责 | 主要内容 |
 |------|------|----------|
@@ -55,6 +55,8 @@ graph TB
 | LYBT.Desktop.Models | 客户端模型 | ViewState、Item 模型、事件模型 |
 | LYBT.Desktop.Printing | 打印服务 | MedicalCase 聚合根打印能力 (v1.0: A5 处方打印模板、打印预览) |
 | LYBT.Desktop.Utilities | 工具类库 | 通用辅助方法 |
+| LYBT.Desktop.LocalData | 本地数据访问 | SQLite 数据库操作、本地模式 DbContext |
+| LYBT.Desktop.CardReader | 硬件集成 | 身份证读卡器策略模式、多厂商支持 |
 
 **依赖方向**: Shell -> Roles -> Modules -> Infrastructure -> Foundation -> Contracts
 
@@ -101,8 +103,19 @@ LYBT.Desktop.{Domain}/
 | Herbs | Admin + Clinical | 药材 CRUD、分类 |
 | Formula | Admin + Clinical | 验方 CRUD、药材绑定 |
 | MedicalCase | Clinical | 医案核心 (含处方) |
-| Consultation | Clinical | 诊断编辑 |
+| Consultation | Clinical | 诊断编辑 (注: Desktop 端无独立 Consultation 模块，诊断编辑集成在 MedicalCase 模块内；独立 Consultation 模块仅存在于 Server 端) |
 | Sync | Clinical | 数据同步 (本地模式) |
+
+## Views 和 Controls 目录约定
+
+| 目录 | 用途 | 命名约定 | 说明 |
+|------|------|----------|------|
+| `Views/` | 页面级视图 | `{Feature}View.xaml` | 与 ViewModel 1:1 对应，负责整体页面布局 |
+| `Controls/` | 可复用业务控件 | `{Feature}Control.xaml` | 跨模块或模块内复用的 UI 组件，拥有独立 ViewModel |
+
+**区分原则**: Views/ 中的视图是导航目标 (通过 `RegisterForNavigation` 注册)，Controls/ 中的控件是嵌入式组件 (通过 XAML 引用或 Region 注入)。一个 View 可以组合多个 Control。
+
+---
 
 ## Roles 层 (2 个角色入口)
 
@@ -332,8 +345,11 @@ Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱�
 ## CardReader 集成
 
 **位置**: `Core/LYBT.Desktop.CardReader/`
+**所属层级**: Core 层 (非 Modules 层)
 
 身份证读卡器硬件集成模块，通过策略模式支持多厂商设备。
+
+> **为何在 Core 层**: CardReader 属于硬件集成基础设施，与具体业务模块无关。放在 Core 层使其可被多个业务模块 (如 Patients) 引用，符合基础设施下沉的架构原则。类似 Printing 项目的定位。
 
 ### 架构
 
@@ -762,3 +778,4 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 | 2026-02-10 | v1.1 | 新增可复用业务控件、业务弹窗、CardReader 集成章节 |
 | 2026-02-10 | v1.0 | 初始版本，从 client-layer-architecture/desktop-architecture/viewmodel-conventions specs 整合 |
 | 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (FR-AUTH-009)、Token 刷新失败 (FR-AUTH-011)、客户端异常处理 (FR-ERR-003/005/008)、错误消息映射 (FR-ERR-006)、错误追踪码 (FR-ERR-007)、菜单结构 (FR-SHELL-005)、Desktop 启动诊断 (FR-SHELL-006)、账户设置 (FR-SHELL-007)、同步 UI (FR-SYNC-007)、模式切换 (FR-SYNC-008)、SQLite 加密 (NFR-SEC-004)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |
+| 2026-02-26 | v1.3 | Sprint3-Batch5a DOC3: Consultation 模块 Server-only 标注; Views/Controls 目录约定; CardReader Core 层定位说明; Core 层新增 LocalData/CardReader |

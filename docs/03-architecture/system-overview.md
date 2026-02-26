@@ -48,13 +48,15 @@ graph TB
 LYBTZYZS/
 src/
   Client/Desktop/                    # WPF 桌面客户端
-    Core/                            # 核心库 (6个项目)
+    Core/                            # 核心库 (8个项目)
       LYBT.Desktop.Contracts/        # 接口定义
       LYBT.Desktop.Foundation/       # 基础设施 (配置、网络、安全)
       LYBT.Desktop.Infrastructure/   # 通用服务、控件
       LYBT.Desktop.Models/           # 客户端模型
       LYBT.Desktop.Printing/         # 打印服务
       LYBT.Desktop.Utilities/        # 工具类库
+      LYBT.Desktop.LocalData/        # 本地数据访问 (SQLite)
+      LYBT.Desktop.CardReader/       # 身份证读卡器硬件集成
     Modules/                         # 业务模块 (8个)
       LYBT.Desktop.Auth/             # 认证
       LYBT.Desktop.Consultation/     # 诊断
@@ -76,28 +78,46 @@ src/
       LYBT.Infrastructure/           # 基础设施 (DbContext, Repository基类)
     Modules/                         # 业务模块 (9个)
       LYBT.Module.Auth/
-      LYBT.Module.Consultation/
+      LYBT.Module.Consultation/      # 空壳模块(已废弃，保留以兼容系统加载)
       LYBT.Module.Formula/
       LYBT.Module.Herbs/
       LYBT.Module.MedicalCase/
       LYBT.Module.Patients/
-      LYBT.Module.Prescriptions/
+      LYBT.Module.Prescriptions/     # 空壳模块(已废弃，保留以兼容系统加载)
       LYBT.Module.Sync/
       LYBT.Module.Users/
     Services/
       LYBT.WebAPI/                   # Web API 入口
 
-  Shared/                            # 共享库 (3个项目)
+  Shared/                            # 共享库 (3个核心 + 5个工具)
     LYBT.Shared.Components/          # 共享UI组件
     LYBT.Shared.Models/              # DTO、Contract
     LYBT.Shared.Utilities/           # 工具类
+    LYBT.Shared.Logging/             # 统一日志抽象
+    LYBT.Shared.Validators/          # 共享验证规则 (从 Module Validators 迁移)
+    LYBT.Shared.Configuration/       # 共享配置模型
+    LYBT.Shared.Primitives/          # 基础类型和常量
+    LYBT.Shared.ExceptionHandling/   # 统一异常类型定义
 
-tests/                               # 测试
+tests/                               # 测试 (5个主项目 + 4个辅助项目)
+    LYBT.Tests.Unit/                 # Server 端单元测试 (592 tests)
+    LYBT.Tests.Desktop.Unit/         # Desktop 端单元测试 (633 tests)
+    LYBT.Tests.Architecture/         # 架构守护测试 (60 tests)
+    LYBT.Tests.Server.Integration/   # Server 集成测试 (146 tests)
+    LYBT.Tests.Desktop.Integration/  # Desktop 集成测试 (24 tests)
+    BenchmarkTests/
+      LYBT.QueryLayer.Benchmarks/    # 查询层性能基准 (BenchmarkDotNet)
+    PerformanceTests/
+      LYBT.Server.PerformanceTests/  # Server 性能测试 (批量操作等)
+    CompatibilityTests/
+      LYBT.Server.CompatibilityTests/ # 向后兼容性验证
+    TestConfiguration/
+      LYBT.Tests.Configuration/      # 共享测试基础设施 (TestDbContext, Fixtures)
 docs/                                # 文档
 openspec/                            # OpenSpec 规范 (将废弃)
 ```
 
-**项目总数**: 约 33 个项目
+**项目总数**: 约 40+ 个项目
 
 ## 依赖方向
 
@@ -197,3 +217,5 @@ sequenceDiagram
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 project-architecture spec 整合 |
+| 2026-02-26 | v1.1 | Sprint3-Batch5a DOC3: 标注 Consultation/Prescriptions 空壳模块; 项目数更新为 40+; 新增 Desktop.LocalData/CardReader; 新增 Shared 工具项目 (Logging/Validators/Configuration/Primitives/ExceptionHandling) |
+| 2026-02-26 | v1.2 | DOC3-15: 工具层 4 个辅助项目文档化 (Benchmarks/PerformanceTests/CompatibilityTests/TestConfiguration); tests/ 主项目列表展开 |

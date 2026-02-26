@@ -8,17 +8,24 @@ Shared 层提供 Server 和 Client 两端共享的代码，包括 DTO 定义、�
 
 ```mermaid
 graph TB
-    Server["Server 层"] -->|"引用"| Models & Utilities & Components & Logging
-    Client["Client 层"] -->|"引用"| Models & Utilities & Components & Logging
+    Server["Server 层"] -->|"引用"| Models & Utilities & Components & Logging & ExH & Config & Validators
+    Client["Client 层"] -->|"引用"| Models & Utilities & Components & Logging & ExH & Config & Validators
 
-    subgraph Shared["Shared 层"]
+    subgraph Shared["Shared 层 (8 项目)"]
+        Primitives["Shared.Primitives<br>(ErrorCode/常量)"]
         Models["Shared.Models<br>(DTO/Contract)"]
         Utilities["Shared.Utilities<br>(工具类)"]
         Components["Shared.Components<br>(业务组件)"]
         Logging["Shared.Logging<br>(日志基础设施)"]
+        Validators["Shared.Validators<br>(FluentValidation)"]
+        ExH["Shared.ExceptionHandling<br>(异常处理)"]
+        Config["Shared.Configuration<br>(Options 配置)"]
     end
 
+    Models --> Primitives
     Components --> Models & Utilities
+    Validators --> Models & Primitives
+    ExH --> Primitives
     Logging -.->|"可选依赖"| Utilities
 ```
 
@@ -185,6 +192,224 @@ LYBT.Shared.Logging/
   Extensions/              # DI 扩展方法
 ```
 
+## LYBT.Shared.Primitives (错误码与基础类型)
+
+### 职责
+
+定义系统级基础类型，包括统一错误码 (ErrorCode)、错误消息映射 (ErrorMessages)、验证常量 (ValidationConstants)。是所有模块共享的最底层依赖。
+
+### 目录结构
+
+```
+LYBT.Shared.Primitives/
+  ErrorCodes/              # 统一错误码体系
+    ErrorCode.cs           # MCCEE 错误码枚举 (M=模块, CC=子类别, EE=序号)
+    ErrorMessages.cs       # 错误码到用户友好消息的映射
+    ErrorCategory.cs       # 错误分类
+    ErrorCodeExtensions.cs # 错误码扩展方法
+  Validation/              # 验证常量
+    ValidationConstants.cs # 全局验证常量 (字符串长度、数值范围等)
+```
+
+### 错误码分区
+
+| 分区 | 模块 | 示例 |
+|------|------|------|
+| 0xxxx | 通用错误 | Unknown, NotFound, ValidationFailed |
+| 1xxxx | 用户/认证 (Users/Auth) | UserNotFound, AuthInvalidCredentials |
+| 2xxxx | 患者 (Patients) | PatientNotFound, PatientPhoneDuplicate |
+| 3xxxx | 医案 (MedicalCase) | McActiveCaseExists, McInvalidStatusTransition |
+| 4xxxx | 处方 (Prescriptions) | PrescriptionNotFound |
+| 5xxxx | 草药 (Herbs) | HerbNotFound, HerbNameExists |
+| 6xxxx | 配方 (Formula) | FormulaNotFound, FormulaNoPermission |
+| 7xxxx | 同步 (Sync) | SyncDataConflict, SyncFailed |
+
+**约束**: 零依赖，不引用任何其他 LYBT 项目。
+
+## LYBT.Shared.Validators (FluentValidation 验证器)
+
+### 职责
+
+集中管理从各业务模块提取的 FluentValidation 验证器和共享业务规则验证器，Server/Client 双端复用。
+
+### 目录结构
+
+```
+LYBT.Shared.Validators/
+  Auth/                    # 认证验证器
+    LoginRequestValidator.cs
+    SuperAdminLoginRequestValidator.cs
+    ChangePasswordRequestValidator.cs
+  Consultation/            # 诊断验证器
+    ConsultationInputDtoValidator.cs
+  Prescriptions/           # 处方验证器
+    PrescriptionInputDtoValidator.cs
+  MedicalCase/             # 医案验证器
+    MedicalCaseInputDtoValidator.cs
+  Patients/                # 患者验证器
+    PatientInputDtoValidator.cs
+  Users/                   # 用户验证器
+    UserInputDtoValidator.cs
+  Herbs/                   # 药材验证器
+    HerbInputDtoValidator.cs
+  Formula/                 # 验方验证器
+    FormulaInputDtoValidator.cs
+  BusinessRules/           # 共享业务规则
+    IBusinessRuleValidator.cs
+    BaseBusinessRuleValidator.cs
+    MedicalCaseBusinessRules.cs
+    PatientBusinessRuleValidator.cs
+    UserBusinessRuleValidator.cs
+    PrescriptionBusinessRuleValidator.cs
+    ValidationContext.cs
+```
+
+**约束**: 引用 Shared.Models 和 Shared.Primitives (ValidationConstants)，禁止引用 Server/Client。
+
+## LYBT.Shared.ExceptionHandling (异常处理)
+
+### 职责
+
+提供统一的异常层次结构、ProblemDetails 工厂和双端 (Server/Desktop) 异常处理器。所有业务异常继承 `AppException`，携带 `ErrorCode` 用于结构化错误响应。
+
+### 目录结构
+
+```
+LYBT.Shared.ExceptionHandling/
+  Exceptions/              # 异常类层次
+    Base/
+      AppException.cs      # 基类 (携带 ErrorCode)
+    Business/
+      BusinessException.cs # 业务异常
+      ValidationException.cs
+      NotFoundException.cs
+      ConflictException.cs
+    Security/
+      UnauthorizedException.cs
+    External/
+      ApiException.cs      # 外部 API 调用异常
+    Factory/
+      ExceptionFactory.cs  # 异常工厂
+  Handlers/                # 异常处理器
+    Server/
+      BusinessExceptionHandler.cs
+      SystemExceptionHandler.cs
+    Desktop/
+      DesktopExceptionHandler.cs
+      IDesktopExceptionHandler.cs
+      ExceptionSeverity.cs
+  ProblemDetails/          # RFC 7807 ProblemDetails
+    ProblemDetailsFactory.cs
+    ProblemDetailsExtensions.cs
+    ClientProblemDetails.cs
+  Mappers/                 # 错误消息映射
+    IErrorMessageMapper.cs
+    ExceptionMessageMapper.cs
+    ConfigurableErrorMessageMapper.cs
+    ClientErrorMessageMapper.cs
+    ExceptionSeverityMapper.cs
+  Extensions/              # DI 扩展
+    ServiceCollectionExtensions.cs
+    ApplicationBuilderExtensions.cs
+```
+
+### 异常继承层次
+
+```
+Exception
+  AppException (ErrorCode, HttpStatusCode)
+    BusinessException (400)
+      ValidationException (400)
+      NotFoundException (404)
+      ConflictException (409)
+    UnauthorizedException (401)
+    ApiException (502/503)
+```
+
+**约束**: 引用 Shared.Primitives (ErrorCode)，禁止引用 Server/Client 具体实现。
+
+## LYBT.Shared.Configuration (配置选项)
+
+### 职责
+
+集中管理所有 Options 类和配置绑定扩展，Server/Client 通过 `IOptions<T>` 模式消费。包含配置验证器确保启动时配置合法。
+
+### 目录结构
+
+```
+LYBT.Shared.Configuration/
+  Options/
+    Common/
+      JwtOptions.cs        # JWT 配置 (双端共享)
+    Server/
+      DatabaseOptions.cs   # 数据库连接配置
+      SecurityOptions.cs   # 安全策略
+      SessionOptions.cs    # 会话管理
+      PasswordPolicyOptions.cs  # 密码策略 (过期天数、复杂度)
+      LoggingOptions.cs    # 日志配置
+      SystemAdminOptions.cs # 系统管理员初始化
+      DefaultPasswordOptions.cs # 默认密码策略
+      MemoryCacheOptions.cs # 缓存配置
+      SwaggerOptions.cs    # Swagger 配置
+      JsonOptions.cs       # JSON 序列化配置
+      UserManagementOptions.cs # 用户管理配置
+    Client/
+      ApiClientOptions.cs  # API 客户端配置 (BaseUrl, Timeout)
+      FeatureToggleOptions.cs # 功能开关
+      ClinicSettingsOptions.cs # 诊所设置
+      PrescriptionOptions.cs # 处方默认值
+      ClientSessionOptions.cs # 客户端会话配置
+  Validation/              # 配置验证器
+    JwtOptionsValidator.cs
+    DatabaseOptionsValidator.cs
+    SecurityOptionsValidator.cs
+  Extensions/              # DI 绑定扩展
+    ServerConfigurationExtensions.cs
+    ClientConfigurationExtensions.cs
+  Constants/
+    ConfigurationSections.cs # appsettings.json 节名常量
+```
+
+**约束**: 引用 Microsoft.Extensions.Options，禁止引用业务逻辑。
+
+## SensitiveDataAttribute 设计
+
+> 位于 `LYBT.Shared.Logging.Masking` 命名空间
+
+`[SensitiveData]` 特性用于标记需要日志脱敏的属性。`SensitiveDataMasker` 在序列化和日志输出时自动检测该特性并应用脱敏规则。
+
+### 使用方式
+
+```csharp
+[SensitiveData(SensitiveDataType.ContactInfo, MaskingMode = MaskingMode.Partial)]
+public string PhoneNumber { get; set; }
+```
+
+### 脱敏模式 (MaskingMode)
+
+| 模式 | 说明 | 示例 |
+|------|------|------|
+| Default | 中间位用 * 替代 | `张**` / `abc****xyz` |
+| Partial | 显示前后几位，按数据类型智能处理 | 手机号: `138****1234`，身份证: `110***********1234` |
+| Full | 完全隐藏 | `[已隐藏]` |
+| Hash | SHA256 短哈希标识 | `[REDACTED:A1B2C3D4]` |
+
+### 数据类型 (SensitiveDataType)
+
+| 类型 | 说明 | 典型字段 |
+|------|------|----------|
+| PersonalInfo | 个人信息 | 姓名、地址 |
+| MedicalInfo | 医疗信息 | 过敏史、病史 |
+| ContactInfo | 联系信息 | 手机号、邮箱 |
+| IdentityInfo | 身份信息 | 身份证号 |
+| FinancialInfo | 财务信息 | 银行卡号 |
+
+### 脱敏层次
+
+- **属性级**: `SensitiveDataMasker.MaskObject()` 反射检测 `[SensitiveData]` 特性
+- **文本级**: `SensitiveDataMasker.SanitizeText()` 正则匹配密码、Token、连接字符串等
+- **Serilog 集成**: `SensitiveDataDestructuringPolicy` 在 Serilog 解构时自动脱敏
+
 ## 验证规则一致性
 
 ### 三层验证体系
@@ -212,3 +437,4 @@ Entity (DataAnnotations)
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 shared-layer-architecture/dto-architecture specs 整合 |
 | 2026-02-23 | v1.1 | 一致性审计: 新增 MedicalCaseBusinessRules 组件文档 (设计来源: design-deepening-phase3 + design-issues-solutions #4) |
+| 2026-02-26 | v1.2 | DOC3-03: 补全 4 个缺失 Shared 项目文档 (Primitives/Validators/ExceptionHandling/Configuration)；DOC3-13: 新增 SensitiveDataAttribute 设计章节 |
