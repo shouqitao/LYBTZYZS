@@ -777,6 +777,61 @@ namespace LYBT.Module.MedicalCases.Services
             return result;
         }
 
+        // ========== T4-S5-02: 打印日志记录 ==========
+
+        /// <inheritdoc />
+        public async Task<bool> AddPrintLogAsync(
+            Guid medicalCaseId,
+            LYBT.Shared.Models.Enums.PrintType printType,
+            bool isSuccess,
+            Guid printedBy,
+            string printedByName,
+            string? printerName = null,
+            string? errorMessage = null)
+        {
+            _logger.LogInformation("[SVC] MedicalCase.AddPrintLog - MedicalCaseId={MedicalCaseId} IsSuccess={IsSuccess}",
+                medicalCaseId, isSuccess);
+
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            if (medicalCase == null)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.AddPrintLog -> NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return false;
+            }
+
+            // 成功时更新打印管理字段
+            if (isSuccess)
+            {
+                medicalCase.IsPrinted = true;
+                medicalCase.PrintCount++;
+                medicalCase.LastPrintedAt = DateTime.UtcNow;
+                medicalCase.PrintVersion++;
+            }
+
+            // 创建打印日志记录
+            var printLog = new MedicalCasePrintLog
+            {
+                Id = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
+                PrintType = printType,
+                PrintVersion = medicalCase.PrintVersion,
+                PrintedAt = DateTime.UtcNow,
+                PrintedBy = printedBy,
+                PrintedByName = printedByName,
+                PrinterName = printerName,
+                IsSuccess = isSuccess,
+                ErrorMessage = errorMessage
+            };
+
+            medicalCase.PrintLogs.Add(printLog);
+            await _repository.UpdateAsync(medicalCase);
+
+            _logger.LogInformation("[SVC] MedicalCase.AddPrintLog -> Success - MedicalCaseId={MedicalCaseId} IsSuccess={IsSuccess}",
+                medicalCaseId, isSuccess);
+
+            return true;
+        }
+
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <inheritdoc />

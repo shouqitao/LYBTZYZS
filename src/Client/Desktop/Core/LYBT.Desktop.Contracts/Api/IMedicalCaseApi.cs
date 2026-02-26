@@ -219,6 +219,15 @@ namespace LYBT.Desktop.Contracts.Api
             Guid medicalCaseId,
             [Refit.Body] PrintCompletedRequest request);
 
+        /// <summary>
+        /// 添加打印日志 -- 记录打印成功/失败
+        /// T4-S5-02: 远程打印日志存储
+        /// </summary>
+        [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/print-logs")]
+        Task<ApiResponse<object>> AddPrintLogAsync(
+            Guid medicalCaseId,
+            [Refit.Body] PrintLogInputDto request);
+
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>

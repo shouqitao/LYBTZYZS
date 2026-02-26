@@ -270,6 +270,39 @@ public class RemoteMedicalCaseDataSource : IMedicalCaseDataSource
         }
     }
 
+    /// <inheritdoc />
+    public async Task<bool> AddPrintLogAsync(
+        Guid medicalCaseId,
+        bool isSuccess,
+        PrintType printType = PrintType.Prescription,
+        string? printerName = null,
+        string? errorMessage = null,
+        CancellationToken ct = default)
+    {
+        _logger.LogInformation("[RemoteDataSource] MedicalCase.AddPrintLog - MedicalCaseId={MedicalCaseId}, IsSuccess={IsSuccess}",
+            medicalCaseId, isSuccess);
+
+        try
+        {
+            var request = new PrintLogInputDto
+            {
+                PrintType = printType,
+                IsSuccess = isSuccess,
+                PrinterName = printerName,
+                ErrorMessage = errorMessage
+            };
+
+            var response = await _api.AddPrintLogAsync(medicalCaseId, request);
+            return response.Success;
+        }
+        catch (Exception ex)
+        {
+            // T4-S5-01: 打印日志记录失败不应阻塞打印操作
+            _logger.LogError(ex, "[RemoteDataSource] MedicalCase.AddPrintLog failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return false;
+        }
+    }
+
     public async Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         _logger.LogInformation("[RemoteDataSource] MedicalCase.BatchDelete - Count={Count}", ids.Count);

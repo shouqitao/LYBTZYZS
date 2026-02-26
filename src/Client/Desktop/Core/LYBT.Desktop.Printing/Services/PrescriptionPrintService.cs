@@ -11,6 +11,8 @@ using LYBT.Desktop.Printing.Models;
 using LYBT.Desktop.Printing.Templates;
 using Microsoft.Extensions.Logging;
 
+// T4-S5-01: PrintLogRequested event for print failure/success logging
+
 namespace LYBT.Desktop.Printing.Services
 {
     /// <summary>
@@ -22,6 +24,12 @@ namespace LYBT.Desktop.Printing.Services
     {
         private readonly ILogger<PrescriptionPrintService> _logger;
         private string? _defaultPrinterName;
+
+        /// <summary>
+        /// 打印日志事件 - 在打印成功或失败时触发
+        /// T4-S5-01: 调用方可订阅此事件以记录打印日志
+        /// </summary>
+        public event Action<PrintLogEntry>? PrintLogRequested;
 
         // 纸张尺寸定义（像素，96 DPI）
         private static readonly Size A5PageSize = new(559, 794);  // 148mm x 210mm
@@ -59,15 +67,23 @@ namespace LYBT.Desktop.Printing.Services
                 }
 
                 if (success)
+                {
                     _logger.LogInformation("[PRINT] PrintAsync completed successfully");
+                    // T4-S5-01: 打印成功日志
+                    PrintLogRequested?.Invoke(PrintLogEntry.Succeeded(options.PrinterName ?? _defaultPrinterName));
+                }
                 else
+                {
                     _logger.LogDebug("[PRINT] PrintAsync cancelled by user");
+                }
 
                 return await Task.FromResult(success);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[PRINT] PrintAsync failed");
+                // T4-S5-01: 打印失败日志
+                PrintLogRequested?.Invoke(PrintLogEntry.Failed(ex.Message, options?.PrinterName ?? _defaultPrinterName));
                 throw;
             }
         }
@@ -464,6 +480,8 @@ namespace LYBT.Desktop.Printing.Services
                 if (printQueue == null)
                 {
                     _logger.LogError("[PRINT] No printer available");
+                    // T4-S5-01: 打印失败日志 - 无可用打印机
+                    PrintLogRequested?.Invoke(PrintLogEntry.Failed("No printer available", options.PrinterName));
                     return false;
                 }
 
@@ -480,6 +498,8 @@ namespace LYBT.Desktop.Printing.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[PRINT] ExecutePrintDirect failed");
+                // T4-S5-01: 打印失败日志
+                PrintLogRequested?.Invoke(PrintLogEntry.Failed(ex.Message, options.PrinterName));
                 return false;
             }
         }

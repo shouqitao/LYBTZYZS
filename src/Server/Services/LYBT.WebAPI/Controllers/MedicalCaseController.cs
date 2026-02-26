@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+// T4-S5-02: Print log endpoint
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -148,6 +149,34 @@ namespace LYBT.WebAPI.Controllers
             _logger.LogInformation("打印完成记录成功，MedicalCaseId: {Id}, PrintVersion: {Version}, PrintCount: {Count}",
                 id, result.PrintVersion, result.PrintCount);
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "打印记录更新成功"));
+        }
+
+        /// <summary>
+        /// 添加打印日志 -- 记录打印成功或失败
+        /// T4-S5-02: 支持打印成功/失败日志记录
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        /// <param name="request">打印日志输入</param>
+        [HttpPost("{id}/print-logs")]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
+        public async Task<IActionResult> AddPrintLog(
+            Guid id,
+            [FromBody] PrintLogInputDto request)
+        {
+            var (operatorId, operatorName, _) = GetOperator();
+
+            var result = await _facade.AddPrintLogAsync(
+                id, request.PrintType, request.IsSuccess,
+                operatorId, operatorName,
+                request.PrinterName, request.ErrorMessage);
+
+            if (!result)
+                return NotFound(ApiResponse<object>.CreateFail("医案不存在"));
+
+            _logger.LogInformation("打印日志记录成功，MedicalCaseId: {Id}, IsSuccess: {IsSuccess}",
+                id, request.IsSuccess);
+            return Ok(ApiResponse<object>.CreateSuccess(null, "打印日志记录成功"));
         }
 
         #region 聚合保存端点

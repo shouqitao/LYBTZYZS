@@ -57,6 +57,17 @@ public class MedicalCaseFacade : IMedicalCaseFacade
         string? printerName = null)
         => _commandService.RecordPrintCompletedAsync(medicalCaseId, printType, printedBy, printedByName, printerName);
 
+    /// <inheritdoc />
+    public Task<bool> AddPrintLogAsync(
+        Guid medicalCaseId,
+        LYBT.Shared.Models.Enums.PrintType printType,
+        bool isSuccess,
+        Guid printedBy,
+        string printedByName,
+        string? printerName = null,
+        string? errorMessage = null)
+        => _commandService.AddPrintLogAsync(medicalCaseId, printType, isSuccess, printedBy, printedByName, printerName, errorMessage);
+
     // ===== 状态操作 - 委托 StateService =====
 
     public Task<MedicalCase?> UpdateStatusAsync(Guid id, MedicalCaseStatus status)

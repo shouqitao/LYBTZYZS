@@ -9,6 +9,17 @@ namespace LYBT.Desktop.Contracts.DataSources;
 public interface IMedicalCaseDataSource : IDataSourceBase<MedicalCaseDetailDto, MedicalCaseInputDto>
 {
     /// <summary>
+    /// 添加打印日志记录
+    /// T4-S5-03: 本地模式打印日志存储
+    /// </summary>
+    Task<bool> AddPrintLogAsync(
+        Guid medicalCaseId,
+        bool isSuccess,
+        PrintType printType = PrintType.Prescription,
+        string? printerName = null,
+        string? errorMessage = null,
+        CancellationToken ct = default);
+    /// <summary>
     /// 聚合保存医案（MedicalCase + Consultation + Prescription）
     /// </summary>
     Task<MedicalCaseDetailDto> SaveAsync(MedicalCaseInputDto input, CancellationToken ct = default);

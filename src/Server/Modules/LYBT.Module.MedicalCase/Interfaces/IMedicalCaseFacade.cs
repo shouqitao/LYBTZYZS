@@ -46,6 +46,19 @@ public interface IMedicalCaseFacade
         string printedByName,
         string? printerName = null);
 
+    /// <summary>
+    /// 添加打印日志（支持成功/失败）
+    /// T4-S5-02
+    /// </summary>
+    Task<bool> AddPrintLogAsync(
+        Guid medicalCaseId,
+        LYBT.Shared.Models.Enums.PrintType printType,
+        bool isSuccess,
+        Guid printedBy,
+        string printedByName,
+        string? printerName = null,
+        string? errorMessage = null);
+
     // ===== 状态操作 (StateService) =====
 
     /// <summary>

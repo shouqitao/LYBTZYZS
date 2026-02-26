@@ -401,6 +401,59 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
     }
 
     /// <summary>
+    /// 添加打印日志记录
+    /// T4-S5-03: 本地模式打印日志存储
+    /// </summary>
+    public async Task<bool> AddPrintLogAsync(
+        Guid medicalCaseId,
+        bool isSuccess,
+        LYBT.Shared.Models.Enums.PrintType printType = LYBT.Shared.Models.Enums.PrintType.Prescription,
+        string? printerName = null,
+        string? errorMessage = null,
+        CancellationToken ct = default)
+    {
+        _logger.LogInformation("[LocalDataSource] MedicalCase.AddPrintLog - MedicalCaseId={MedicalCaseId}, IsSuccess={IsSuccess}",
+            medicalCaseId, isSuccess);
+
+        var entity = await _context.MedicalCases.FindAsync([medicalCaseId], ct);
+        if (entity == null)
+        {
+            _logger.LogWarning("[LocalDataSource] MedicalCase.AddPrintLog -> NotFound - MedicalCaseId={MedicalCaseId}",
+                medicalCaseId);
+            return false;
+        }
+
+        var printLog = new MedicalCasePrintLog
+        {
+            Id = Guid.NewGuid(),
+            MedicalCaseId = medicalCaseId,
+            PrintType = printType,
+            PrintVersion = entity.PrintVersion + (isSuccess ? 1 : 0),
+            PrintedAt = DateTime.Now,
+            PrinterName = printerName,
+            IsSuccess = isSuccess,
+            ErrorMessage = errorMessage
+        };
+
+        _context.MedicalCasePrintLogs.Add(printLog);
+
+        // 成功时同步更新打印管理字段
+        if (isSuccess)
+        {
+            entity.IsPrinted = true;
+            entity.PrintCount++;
+            entity.LastPrintedAt = DateTime.Now;
+            entity.PrintVersion++;
+        }
+
+        await _context.SaveChangesAsync(ct);
+
+        _logger.LogInformation("[LocalDataSource] MedicalCase.AddPrintLog completed - MedicalCaseId={MedicalCaseId}, IsSuccess={IsSuccess}",
+            medicalCaseId, isSuccess);
+        return true;
+    }
+
+    /// <summary>
     /// 生成医案编号（格式：MC + 年月日 + 序号）
     /// </summary>
     private string GenerateCaseNumber()
