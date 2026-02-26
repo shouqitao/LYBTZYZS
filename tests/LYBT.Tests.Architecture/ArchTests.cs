@@ -762,4 +762,60 @@ public class ArchTests
             result.IsSuccessful,
             $"共享工具库违规依赖Swashbuckle: {string.Join(", ", result.FailingTypes?.Select(t => t.Name) ?? [])}");
     }
+
+    #region Sprint3-A3-05: Shared 内部依赖架构规则
+
+    /// <summary>
+    /// Sprint3-A3-05: Shared 层不得依赖 Server 模块层
+    /// Shared 是底层基础设施，不应反向依赖上层模块
+    /// </summary>
+    [Fact]
+    public void Shared_Should_Not_Depend_On_Server_Modules()
+    {
+        var result = Types.InAssemblies(Assemblies)
+            .That()
+            .ResideInNamespaceStartingWith("LYBT.Shared")
+            .Should()
+            .NotHaveDependencyOnAny(
+                "LYBT.Module.Auth",
+                "LYBT.Module.Users",
+                "LYBT.Module.Patients",
+                "LYBT.Module.MedicalCases",
+                "LYBT.Module.Herbs",
+                "LYBT.Module.Formulas",
+                "LYBT.Module.Sync",
+                "LYBT.Infrastructure",
+                "LYBT.WebAPI")
+            .GetResult();
+
+        Assert.True(
+            result.IsSuccessful,
+            $"Shared层违规依赖Server模块: {string.Join(", ", result.FailingTypes?.Select(t => t.Name) ?? [])}");
+    }
+
+    /// <summary>
+    /// Sprint3-A3-05: Shared 层不得依赖 Desktop 层
+    /// Shared 是跨端共享层，不应依赖 Desktop 特有实现
+    /// </summary>
+    [Fact]
+    public void Shared_Should_Not_Depend_On_Desktop()
+    {
+        var result = Types.InAssemblies(Assemblies)
+            .That()
+            .ResideInNamespaceStartingWith("LYBT.Shared")
+            .Should()
+            .NotHaveDependencyOnAny(
+                "LYBT.Desktop",
+                "LYBT.Desktop.Infrastructure",
+                "LYBT.Desktop.Foundation",
+                "LYBT.Desktop.Contracts",
+                "LYBT.Desktop.Models")
+            .GetResult();
+
+        Assert.True(
+            result.IsSuccessful,
+            $"Shared层违规依赖Desktop层: {string.Join(", ", result.FailingTypes?.Select(t => t.Name) ?? [])}");
+    }
+
+    #endregion
 }
