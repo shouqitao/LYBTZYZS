@@ -23,6 +23,7 @@ public class NavigationCoordinator : INavigationCoordinator
     private readonly IUserNotificationService? _userNotificationService;
 
     // OpenSpec: unify-navigation-architecture (ADR-7) - 导航历史管理
+    private const int MaxHistorySize = 20;
     private readonly List<string> _navigationHistory = new();
 
     public NavigationCoordinator(
@@ -98,6 +99,10 @@ public class NavigationCoordinator : INavigationCoordinator
                 if (result.Result == true)
                 {
                     // OpenSpec: unify-navigation-architecture (ADR-7) - 记录导航历史
+                    if (_navigationHistory.Count >= MaxHistorySize)
+                    {
+                        _navigationHistory.RemoveAt(0);
+                    }
                     _navigationHistory.Add(viewName);
                     NavigationChanged?.Invoke(this, new NavigationChangedEventArgs(fromView, viewName, parameters));
                     _logger.LogDebug("导航成功: {FromView} -> {ToView}", fromView, viewName);

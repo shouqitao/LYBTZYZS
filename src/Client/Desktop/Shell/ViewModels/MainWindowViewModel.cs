@@ -104,6 +104,21 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     public bool IsNotLoggedIn => !IsLoggedIn;
 
+    /// <summary>S6-01: 用户管理菜单可见性 - 委托给 MenuManager</summary>
+    public bool IsUserManagementVisible => _menuManager.IsUserManagementVisible;
+
+    /// <summary>S6-02: 同步菜单可见性 - 委托给 MenuManager</summary>
+    public bool IsSyncVisible => _menuManager.IsSyncVisible;
+
+    /// <summary>S6-01: 系统设置可见性 - 委托给 MenuManager</summary>
+    public bool IsSystemSettingsVisible => _menuManager.IsSystemSettingsVisible;
+
+    /// <summary>S6-04: 密码修改可见性 - 委托给 MenuManager</summary>
+    public bool IsPasswordChangeVisible => _menuManager.IsPasswordChangeVisible;
+
+    /// <summary>S6-02/S6-04: 是否为本地模式</summary>
+    public bool IsLocalMode => _menuManager.CurrentConnectionMode == LYBT.Desktop.Foundation.Application.ConnectionMode.Local;
+
     #endregion
 
     #region 构造函数
@@ -436,6 +451,14 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
             // Issue #1864: 启动Token生命周期监控
             _ = StartTokenLifecycleMonitoringAsync();
+
+            // S6-01/S6-02: 刷新菜单可见性
+            _menuManager.RefreshMenuVisibility();
+            OnPropertyChanged(nameof(IsUserManagementVisible));
+            OnPropertyChanged(nameof(IsSyncVisible));
+            OnPropertyChanged(nameof(IsSystemSettingsVisible));
+            OnPropertyChanged(nameof(IsPasswordChangeVisible));
+            OnPropertyChanged(nameof(IsLocalMode));
 
             Logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", user.UserName);
         });

@@ -77,6 +77,8 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // OpenSpec: implement-local-mode - 读取连接模式并注册对应的 DataSource
             var connectionMode = GetConnectionMode(configuration);
+            // S6-02: 注册 ConnectionMode 为单例，供 MenuManager 等服务使用
+            containerRegistry.RegisterInstance(connectionMode);
             containerRegistry.RegisterDataSources(connectionMode);
             RegisterDataSourceLoggers(containerRegistry, connectionMode);
 

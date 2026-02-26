@@ -138,23 +138,7 @@ public static class ProblemDetailsFactory
 
     /// <summary>
     /// 获取HTTP状态码对应的RFC问题类型URI
+    /// DRY: 委托到共享常量类 ProblemTypeUris
     /// </summary>
-    private static string GetProblemTypeUri(int statusCode)
-    {
-        return statusCode switch
-        {
-            400 => "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            401 => "https://tools.ietf.org/html/rfc7235#section-3.1",
-            403 => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
-            404 => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-            409 => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
-            422 => "https://tools.ietf.org/html/rfc4918#section-11.2",
-            499 => "https://httpstatuses.com/499",
-            500 => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-            502 => "https://tools.ietf.org/html/rfc7231#section-6.6.3",
-            503 => "https://tools.ietf.org/html/rfc7231#section-6.6.4",
-            504 => "https://tools.ietf.org/html/rfc7231#section-6.6.5",
-            _ => $"https://httpstatuses.com/{statusCode}"
-        };
-    }
+    private static string GetProblemTypeUri(int statusCode) => ProblemTypeUris.GetByStatusCode(statusCode);
 }

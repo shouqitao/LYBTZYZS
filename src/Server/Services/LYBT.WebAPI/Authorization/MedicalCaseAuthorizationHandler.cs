@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using LYBT.Entities.MedicalCases;
+﻿using LYBT.Entities.MedicalCases;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +29,7 @@ public class MedicalCaseAuthorizationHandler
         OperationAuthorizationRequirement requirement,
         MedicalCase resource)
     {
-        var (userId, role) = ExtractUserInfo(context.User);
+        var (userId, role) = context.User.ExtractUserInfo();
 
         if (userId == Guid.Empty)
         {
@@ -71,39 +70,5 @@ public class MedicalCaseAuthorizationHandler
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// 从 ClaimsPrincipal 提取用户ID和角色
-    /// </summary>
-    private static (Guid UserId, UserRole Role) ExtractUserInfo(ClaimsPrincipal user)
-    {
-        var userId = Guid.Empty;
-        var role = UserRole.Doctor; // 默认最低权限
-
-        // 提取用户ID: 优先 NameIdentifier, 其次 sub
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)
-                          ?? user.FindFirst("sub");
-        if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedUserId))
-        {
-            userId = parsedUserId;
-        }
-
-        // 提取角色: 优先 Role claim, 其次 role claim
-        var roleClaim = user.FindFirst(ClaimTypes.Role)
-                        ?? user.FindFirst("role");
-        if (roleClaim != null)
-        {
-            // 处理遗留命名 (SysAdmin → SuperAdmin)
-            var roleValue = roleClaim.Value;
-            if (roleValue.Equals("SysAdmin", StringComparison.OrdinalIgnoreCase))
-            {
-                role = UserRole.SuperAdmin;
-            }
-            else if (Enum.TryParse<UserRole>(roleValue, ignoreCase: true, out var parsedRole))
-            {
-                role = parsedRole;
-            }
-        }
-
-        return (userId, role);
-    }
+    // DRY: ExtractUserInfo 已提取到 ClaimsPrincipalExtensions 扩展方法
 }

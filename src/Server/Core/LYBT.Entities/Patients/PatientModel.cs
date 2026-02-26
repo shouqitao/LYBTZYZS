@@ -95,8 +95,9 @@ namespace LYBT.Entities.Patients
         [DisplayName("紧急联系人姓名")]
         public string? EmergencyContactName { get; set; }
 
-        /// <summary>紧急联系人电话（数据库中存在的字段）</summary>
+        /// <summary>紧急联系人电话（数据库中存在的字段）- Epic 05-P0-03: 敏感数据</summary>
         [DisplayName("紧急联系人电话")]
+        [SensitiveData(SensitiveDataType.ContactInfo, MaskingMode = MaskingMode.Partial)]
         public string? EmergencyContactPhone { get; set; }
 
         /// <summary>紧急联系人关系（数据库中存在的字段）</summary>
