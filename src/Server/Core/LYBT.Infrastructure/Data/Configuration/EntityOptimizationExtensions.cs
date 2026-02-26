@@ -23,7 +23,7 @@ namespace LYBT.Infrastructure.Data.Configuration
             // 优化患者实体配置
             OptimizePatientEntity(modelBuilder);
 
-            // 优化就诊记录实体配置
+            // 优化医案实体配置
             OptimizeMedicalCaseEntity(modelBuilder);
 
             // 优化处方实体配置
@@ -82,7 +82,7 @@ namespace LYBT.Infrastructure.Data.Configuration
         }
 
         /// <summary>
-        /// 优化就诊记录实体配置
+        /// 优化医案实体配置
         /// Issue #1763: MVP阶段(<10K记录)无需额外索引，主键和外键索引已足够
         /// </summary>
         private static void OptimizeMedicalCaseEntity(ModelBuilder modelBuilder)

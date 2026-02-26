@@ -179,7 +179,7 @@ Shared:   8 个共享库
 | L3.10 | FR-PAT-011~012 | 引用检查 (单个+批量) | CheckReference / BatchCheck (最多100条) | 删除确认 | DONE | 集成测试 |
 | L3.11 | - | 敏感数据保护 (掩码) | SensitiveDataAttribute (5字段) | - | DONE | 4 测试 |
 | L3.12 | - | 年龄自动计算 (BirthDate) | Service 层计算 | - | DONE | 实体测试 |
-| L3.13 | **-** | **导航到病历查看页面** | - | **TODO: 占位符 (PatientMasterDetailVM:408)** | **GAP** | - |
+| L3.13 | **-** | **导航到医案查看页面** | - | **TODO: 占位符 (PatientMasterDetailVM:408)** | **GAP** | - |
 | L3.14 | **-** | **导航到问诊流程页面** | - | **TODO: 占位符 (PatientMasterDetailVM:418)** | **GAP** | - |
 | L3.15 | **FR-PAT-013** | **患者状态管理 (启用/禁用)** | **PatientsController 注释: "无Status字段，无ToggleStatus端点"** | **-** | **GAP** | - |
 
@@ -371,7 +371,7 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 | **P1** | GAP-6 | Token Family 撤销未联动 (5 场景) | L1-L2 | FR-USER-004~011 | 角色变更/删除/禁用/修改密码/重置密码后 Token 不失效，安全风险 |
 | **P1** | GAP-7 | 引用检查形同虚设 | L3-L4 | FR-PAT-005, FR-HERB-005 | CanDelete 硬编码 true，有引用的数据可被删除 |
 | **P1** | GAP-8 | 打印层级重构 (C6) | L6-L7 | FR-PRINT-001~004, FR-MC-015 | IsPrinted/PrintVersion 仍在 Prescription 上，打印回写链断开 |
-| **P2** | GAP-2 | 患者->病历/问诊导航 | L3.13~14 | - | UI 便捷入口，TODO 占位符，不影响核心 CRUD |
+| **P2** | GAP-2 | 患者->医案/问诊导航 | L3.13~14 | - | UI 便捷入口，TODO 占位符，不影响核心 CRUD |
 | **P2** | GAP-3 | MedicalCase 查询 Repository 优化 | L6.22 | - | 功能可用 (内存过滤)，性能优化项 |
 | **P3** | GAP-5 | 异常通知类型映射 (Toast/对话框) | L0.23 | FR-ERR-008 | ExceptionSeverity 四级已有，缺少到 ui-patterns.md 通知层级的映射 |
 
@@ -468,7 +468,7 @@ WPF 客户端的宿主框架，Prism 模块化启动。
 | 位置 | 内容 | 优先级 | 关联缺口 |
 |------|------|--------|----------|
 | Desktop/UserService.cs:325 | 修改密码逻辑 (占位实现) | P1 | GAP-1 |
-| Desktop/PatientMasterDetailVM.cs:408 | 导航到病历查看页面 | P2 | GAP-2 |
+| Desktop/PatientMasterDetailVM.cs:408 | 导航到医案查看页面 | P2 | GAP-2 |
 | Desktop/PatientMasterDetailVM.cs:418 | 导航到问诊流程页面 | P2 | GAP-2 |
 | Server/MedicalCaseQueryService.cs:59 | Repository 分页扩展 | P2 | GAP-3 |
 | Desktop/ClinicalHomeViewModel.cs:264 | 今日统计数据 | P3 | - |

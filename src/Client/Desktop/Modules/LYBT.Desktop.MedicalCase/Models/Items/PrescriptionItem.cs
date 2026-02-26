@@ -61,7 +61,7 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
 
     private Guid _medicalCaseId = Guid.Empty;
     /// <summary>
-    /// 关联的病历ID
+    /// 关联的医案ID
     /// </summary>
     public Guid MedicalCaseId
     {

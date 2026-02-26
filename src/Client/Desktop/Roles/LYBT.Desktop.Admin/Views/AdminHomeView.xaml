@@ -81,14 +81,14 @@
                     </StackPanel>
                 </Border>
 
-                <!--  卡片5: 病历管理  -->
+                <!--  卡片5: 医案管理  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Border.InputBindings>
                         <MouseBinding Command="{Binding NavigateToMedicalCaseManagementCommand}" Gesture="LeftClick" />
                     </Border.InputBindings>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4C1;" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="病历管理" />
+                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="医案管理" />
                     </StackPanel>
                 </Border>
 

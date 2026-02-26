@@ -105,7 +105,7 @@ namespace LYBT.Desktop.Admin.ViewModels
         private void NavigateToFormulaManagement() => NavigateTo(ViewNames.FormulaManagement);
 
         /// <summary>
-        /// 导航到病历管理
+        /// 导航到医案管理
         /// </summary>
         [RelayCommand]
         private void NavigateToMedicalCaseManagement() => NavigateTo(ViewNames.MedicalCaseManagement);

@@ -27,7 +27,7 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable
 
     private Guid _id = Guid.Empty;
     /// <summary>
-    /// 问诊记录ID（等于MedicalCaseId，共享主键）
+    /// 辨证记录ID（等于MedicalCaseId，共享主键）
     /// </summary>
     public Guid Id
     {
@@ -37,7 +37,7 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable
 
     private Guid _medicalCaseId = Guid.Empty;
     /// <summary>
-    /// 关联的病历ID
+    /// 关联的医案ID
     /// </summary>
     public Guid MedicalCaseId
     {

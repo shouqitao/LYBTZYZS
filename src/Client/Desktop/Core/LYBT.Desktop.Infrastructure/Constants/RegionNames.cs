@@ -43,7 +43,7 @@
         public const string PatientRegion = "PatientRegion";
 
         /// <summary>
-        /// 问诊区域
+        /// 辨证区域
         /// </summary>
         public const string ConsultationRegion = "ConsultationRegion";
 

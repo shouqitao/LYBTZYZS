@@ -403,26 +403,26 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
-        /// <summary>查看病历</summary>
+        /// <summary>查看医案</summary>
         [RelayCommand(CanExecute = nameof(CanViewMedicalRecords))]
         private void ViewMedicalRecords()
         {
             if (SelectedItem == null) return;
 
-            Logger.LogInformation("查看患者病历：{PatientId}", SelectedItem.Id);
-            // TODO: 导航到病历查看页面
+            Logger.LogInformation("查看患者医案：{PatientId}", SelectedItem.Id);
+            // TODO: 导航到医案查看页面
         }
 
         private bool CanViewMedicalRecords() => HasSelection;
 
-        /// <summary>新建问诊</summary>
+        /// <summary>新建医案</summary>
         [RelayCommand(CanExecute = nameof(CanNewConsultation))]
         private void NewConsultation()
         {
             if (SelectedItem == null) return;
 
-            Logger.LogInformation("为患者新建问诊：{PatientId}", SelectedItem.Id);
-            // TODO: 导航到问诊流程页面
+            Logger.LogInformation("为患者新建医案：{PatientId}", SelectedItem.Id);
+            // TODO: 导航到医案流程页面
         }
 
         private bool CanNewConsultation() => HasSelection;

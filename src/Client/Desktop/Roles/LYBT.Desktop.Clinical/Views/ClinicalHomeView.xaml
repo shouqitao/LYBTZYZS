@@ -114,13 +114,13 @@
                                 Text=" 人" />
                         </StackPanel>
 
-                        <!--  待完成病历  -->
+                        <!--  待完成医案  -->
                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="13"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
-                                Text="待完成病历 " />
+                                Text="待完成医案 " />
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="20"
@@ -156,14 +156,14 @@
                     </Button>
                 </Border>
 
-                <!--  辅助卡片2：病历查询  -->
+                <!--  辅助卡片2：医案查询  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
                     <Button
                         Style="{StaticResource TransparentButtonStyle}"
                         Command="{Binding NavigateToMedicalCaseQueryCommand}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4CB;" />
-                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="病历查询" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="医案查询" />
                         </StackPanel>
                     </Button>
                 </Border>

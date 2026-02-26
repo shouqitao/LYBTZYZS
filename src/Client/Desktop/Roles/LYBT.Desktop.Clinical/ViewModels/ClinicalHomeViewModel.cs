@@ -119,7 +119,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         }
 
         /// <summary>
-        /// 导航到病历查询 - Issue #1827
+        /// 导航到医案查询 - Issue #1827
         /// OpenSpec: rename-reference-to-management - 使用Clinical角色台管理视图
         /// </summary>
         [RelayCommand]
