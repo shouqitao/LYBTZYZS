@@ -278,6 +278,8 @@
 
 **药材匹配机制**: 导入时通过 ICrossModuleService.GetHerbByNameOrPinyinAsync() 匹配系统药材，匹配失败则 HerbId=null、IsValidated=false，保存供后续手动绑定。
 
+> **[Sprint 4 已实现]** Formula DataSource 扩展: IFormulaDataSource 新增 BatchImportAsync/GetPendingValidationAsync/GetAllForExportAsync/ValidateHerbBindingsAsync 方法，Local/Remote 双模式实现 (T4-X2-19~22)
+
 ---
 
 ## 决策记录
@@ -301,3 +303,4 @@
 | 2026-02-17 | v1.4 | PRD审查修复: C1-FR-FORM-001 Effect/Usage改为选填(以Server端为准)，长度统一500 |
 | 2026-02-18 | v1.5 | 错误码全量分配: 3 个子类别 (601xx~603xx) 共 17 个错误码，统一 ERR-MCCEE 格式 + 枚举名 |
 | 2026-02-21 | v1.6 | PRD vs Code 偏差分析修订: 1 项修订 (FORM-14 Name字段最大长度) |
+| 2026-02-26 | v1.7 | **Sprint 4 已实现标记**: IFormulaDataSource 扩展 BatchImportAsync/GetPendingValidationAsync/GetAllForExportAsync/ValidateHerbBindingsAsync (T4-X2-19~22) |

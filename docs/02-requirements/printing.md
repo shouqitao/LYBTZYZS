@@ -182,6 +182,8 @@ MedicalCase (续)
 | 2 | 微软雅黑 (Microsoft YaHei) | 备选，现代感更强 |
 | 3 | 系统默认中文字体 | 兜底方案 |
 
+> **[Sprint 4 已实现]** 字体变更: 打印模板字体从 STKaiti (华文楷体) 统一变更为 SimSun (宋体)，符合中医处方笺行业标准 (T4-S5-04)
+
 ### 分页规则
 
 | 场景 | 处理方式 |
@@ -190,6 +192,8 @@ MedicalCase (续)
 | 药材 > 12 味 (A5) | 自动分页。第一页显示前 12 味，第二页续药材 + 签名区 |
 | 第二页标题 | 显示 "(续上页)" + 诊所名称 (缩小) + 患者姓名 |
 | 签名区位置 | 始终在最后一页底部 |
+
+> **[Sprint 4 已实现]** 打印分页: 超过 12 味药材自动分页，首页最多 12 味，续页最多 20 味，签名区始终在最后一页底部 (T4-S5-09)
 
 ### 打印内容规则
 
@@ -261,7 +265,9 @@ MedicalCase (续)
 |------|------|------|
 | 诊所信息 | ClinicName, Department, ClinicAddress, ClinicPhone | 标题和机构信息 |
 | 患者信息 | PatientName, Gender, Age, ConsultationDate | 患者基本信息 |
-| 诊断信息 | PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis | 中医四诊 |
+| 诊断信息 | PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis | 中医四诊 (望/闻/问/切) |
+
+> **[Sprint 4 已实现]** 四诊信息: 打印模板包含望/闻/问/切四诊区域，完整展示现病史、舌诊、脉诊、中医辨证 (T4-S5-07)
 | 处方内容 | Items (药材列表), DosageCount, Usage, Advice | 药材明细、用法和医嘱 |
 | 费用信息 | SingleDosePrice, TotalPrice, ConsultationFee | 价格汇总 (计算规则见下方) |
 | 签名区 | DoctorName, PrescriptionDate, Reviewer, Dispenser | 签名 (见下方来源说明) |
@@ -338,3 +344,4 @@ MedicalCase (续)
 | 2026-02-21 | v3.0 | 打印层级提升: 标题"打印功能"->"打印管理"; 概述重写 (MedicalCase 聚合根能力); 新增 PrintType 枚举和打印层级模型; PrescriptionPrintLog 重命名为 MedicalCasePrintLog (FK MedicalCaseId + PrintType); PrintVersion 明确为 MedicalCase 字段; FR-PRINT-001~004 标注为处方打印子类型; 新增决策 7 |
 | 2026-02-21 | v3.1 | PRD vs Code 偏差分析修订: 3 项修订, 1 项延期标注 |
 | 2026-02-22 | v3.2 | **打印字段全提升 (A2)**: PrintCount/LastPrintedAt 从 Prescription 迁移到 MedicalCase 聚合根; 打印层级模型图更新; FR-PRINT-001 验收标准更新为 MedicalCase.PrintCount/LastPrintedAt |
+| 2026-02-26 | v3.3 | **Sprint 4 已实现标记**: 字体变更 STKaiti->SimSun (T4-S5-04)、打印分页 12/20 味 (T4-S5-09)、四诊信息区域 (T4-S5-07) |

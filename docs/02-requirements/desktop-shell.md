@@ -118,6 +118,8 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 9.0 模块化架�
   7. 菜单内容根据用户角色动态显示/隐藏 (通过 IApplicationCommands)
 - **远程模式**: 全部菜单可用
 - **本地模式**: 部分菜单不可用 (如需要服务端的操作)
+
+> **[Sprint 4 已实现]** 角色菜单可见性: MenuManager 根据 CurrentUser.Role 和 ConnectionMode 控制菜单项可见性，不同角色看到不同的导航菜单和操作按钮 (T4-S6-01~02)
 - **验收标准**:
   - [ ] Ctrl+N -> 快速添加患者
   - [ ] Ctrl+S -> 触发当前页面保存
@@ -255,6 +257,8 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 9.0 模块化架�
 | 前进 | 不支持 |
 | 历史深度 | 最多 20 条 |
 | 清空时机 | 登出时清空 |
+
+> **[Sprint 4 已实现]** 导航历史上限: NavigationCoordinator 限制导航历史记录最多 20 条，超出时自动移除最早的记录 (T4-S6-03)
 
 ---
 
@@ -398,3 +402,4 @@ Unauthenticated -> Authenticating -> Authenticated -> Active -> Expired -> Unaut
 | 2026-02-17 | v2.0 | Round 5 深化: 新增完整菜单层级+角色可见性矩阵、Prism Region定义+导航参数、状态栏信息、启动画面规格+失败降级、账户设置详细、导航历史规范 |
 | 2026-02-17 | v2.1 | PRD审查修复: A2-Receptionist角色定义, A3-超时15min/警告2min, A4-本地模式同远程超时, E3-新建医案仅Doctor可见 |
 | 2026-02-21 | v2.2 | PRD vs Code 偏差分析修订: 5 项修订, 1 项延期标注 |
+| 2026-02-26 | v2.3 | **Sprint 4 已实现标记**: 角色菜单可见性 MenuManager (T4-S6-01~02)、导航历史上限 20 条 (T4-S6-03) |

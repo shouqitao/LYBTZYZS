@@ -136,6 +136,8 @@
   - [ ] 1001行Excel -> 返回 400 "导入数据超过限制"
   - [ ] 部分行验证失败 -> 返回行号+失败原因+修复建议
 
+> **[Sprint 4 已实现]** Patient DataSource 扩展: IPatientDataSource 新增 BatchImportAsync/GetAllForExportAsync/HasMedicalCasesAsync/BatchCheckReferencesAsync 方法，Local/Remote 双模式实现 (T4-X2-09~12)
+
 ### FR-PAT-009: 下载导入模板
 
 - **描述**: 下载患者导入 Excel 模板
@@ -323,3 +325,4 @@
 | 2026-02-18 | v1.7 | 错误码全量分配: 业务规则错误补充207xx编号(4个)，导入错误补充208xx编号(5个) |
 | 2026-02-18 | v1.8 | 新增 FR-PAT-013 患者状态管理 (启用/禁用); 明确禁用场景 (PAT-D05: 患者已故); v2.0 规划关系转移 (PAT-D06); ERR-20005 触发条件明确化 |
 | 2026-02-18 | v1.9 | FR-PAT-002 补充分页验证规则 (NFR-API-001); 新增 ERR-20705 分页错误码 |
+| 2026-02-26 | v2.0 | **Sprint 4 已实现标记**: IPatientDataSource 扩展 BatchImportAsync/GetAllForExportAsync/HasMedicalCasesAsync/BatchCheckReferencesAsync (T4-X2-09~12) |

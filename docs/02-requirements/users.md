@@ -221,6 +221,8 @@
   - [ ] 已认证用户 -> 返回 200 + UserDetailDto
   - [ ] 未携带 Token -> 返回 401
 
+> **[Sprint 4 已实现]** User DataSource 扩展: IUserDataSource 新增 RestoreAsync/BatchDeleteAsync/ResetPasswordAsync/BatchToggleStatusAsync/GetCurrentUserAsync 方法，Local/Remote 双模式实现完整覆盖 (T4-X2-01~08)
+
 ---
 
 ## 数据模型
@@ -309,3 +311,4 @@
 | 2026-02-21 | v1.4 | PRD vs Code 偏差分析修订: 1 项修订 (USER-30 旧密码错误消息对齐代码) |
 | 2026-02-21 | v1.5 | Phase 2 模块功能细化: 新增权限值层级模型 (USER-D04, 100/80/60/40)，sysadmin 不可被管理规则 (USER-D05)，移除最后管理员保护 (USER-D03)，批量删除改为单事务，医生删除后医案不自动转移 (USER-D06)，错误码简化为权限值统一判断，FR-USER-001/004/005/007/011 对齐权限值模型 |
 | 2026-02-22 | v1.6 | **Token 撤销接口统一 (A3)**: ICrossModuleService → ICrossModuleAuthService (ISP); FR-USER-008 (重置密码) + FR-USER-009 (修改密码) 补充 ICrossModuleAuthService 显式调用; 6 个撤销场景全部对齐 AUTH-D07 |
+| 2026-02-26 | v1.7 | **Sprint 4 已实现标记**: IUserDataSource 扩展 RestoreAsync/BatchDeleteAsync/ResetPasswordAsync/BatchToggleStatusAsync/GetCurrentUserAsync (T4-X2-01~08) |

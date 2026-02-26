@@ -190,6 +190,8 @@
 - **验收标准**:
   - [ ] 药材被5个处方引用 -> 返回 referenceCount=5, canDelete=false
 
+> **[Sprint 4 已实现]** Herb DataSource 扩展: IHerbDataSource 新增 BatchToggleStatusAsync/BatchImportAsync/GetAllForExportAsync/HasReferencesAsync/GetImportTemplateColumns 方法，Local/Remote 双模式实现 (T4-X2-13~18)
+
 ---
 
 ## 数据模型
@@ -288,3 +290,4 @@
 | 2026-02-18 | v1.5 | FR-HERB-002 补充分页验证规则 (NFR-API-001); 新增 ERR-50106 分页错误码 |
 | 2026-02-21 | v1.6 | PRD vs Code 偏差分析修订: 2 项修订 (HERB-05 Price最小值, HERB-06 Price最大值) |
 | 2026-02-22 | v1.7 | Phase 2 模块功能细化: 新增 HERB-D01 (IHerbCacheService 全量预加载+拼音索引)、HERB-D02 (批量导入 HashSet 判重+分批100条)、HERB-D03 (Formula 引用检查扩展到 FormulaItem)、HERB-D04 (并发 LWW 不加 RowVersion) |
+| 2026-02-26 | v1.8 | **Sprint 4 已实现标记**: IHerbDataSource 扩展 BatchToggleStatusAsync/BatchImportAsync/GetAllForExportAsync/HasReferencesAsync/GetImportTemplateColumns (T4-X2-13~18) |

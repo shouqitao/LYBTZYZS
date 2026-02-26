@@ -80,6 +80,8 @@
   7. 单剂价格 (SingleDosePrice) = SUM(所有 Items.Amount)，即一剂所有药材小计之和
   8. 总价 (TotalPrice) = SingleDosePrice x DosageCount x Discount
   9. 折扣 (Discount) 语义: 1.0 = 无折扣, 0.9 = 九折, 0.85 = 八五折
+
+> **[Sprint 4 已实现]** 处方折扣: Discount 字段已纳入处方价格计算，TotalPrice = SingleDosePrice x DosageCount x Discount (T4-S5-11)
 - **远程模式**: PUT `/api/v1/medicalcases/{id}` (聚合保存，含 Prescription + Items)
 - **本地模式**: 本地存储
 - **验收标准**:
@@ -290,6 +292,12 @@
   - [ ] IsPrinted=true 时修改 Consultation -> 需提供 EditReason，修改后 IsPrinted=false, MedicalCase.PrintVersion++
   - [ ] IsPrinted=true 时修改 Prescription -> 需提供 EditReason，修改后 IsPrinted=false, MedicalCase.PrintVersion++
   - [ ] 打印操作 -> 生成 MedicalCasePrintLog (PrintType=Prescription, PrintVersion=当前版本)
+
+> **[Sprint 4 已实现]** 打印回写: IsPrinted/PrintCount/LastPrintedAt/PrintVersion 字段在打印后由 PrintService 自动更新到 MedicalCase 聚合根 (T2-X8-04~08)
+
+> **[Sprint 4 已实现]** 打印日志: MedicalCasePrintLog 实体支持成功/失败日志记录，含 PrintType、PrintVersion 快照、ErrorMessage (T4-S5-01~03)
+
+> **[Sprint 4 已实现]** 医师自动绑定: 打印时 DoctorName 自动从 ISessionManager.CurrentUser.RealName 获取，无需手动填写 (T4-S5-10)
 
 ### FR-MC-016: 验方导入到处方
 
@@ -710,3 +718,4 @@ stateDiagram-v2
 | 2026-02-21 | v2.5 | 设计深化: 新增决策 MC-D17 (重复药材合并策略可配置), MC-D18 (崩溃做变更丢失), MC-D19 (两种创建医案入口) |
 | 2026-02-21 | v2.6 | **Draft→Suspended 状态重命名 (MC-D20)**: 移除 Draft 状态，新增 Suspended (挂起)。状态机: Active↔Suspended→Completed; FR-MC-006 暂存草稿→挂起医案; API `/draft`→`/suspend`; BR-001/BR-002 更新; ERR-30104/30205/30304/30305 重命名; MC-D05/D06 更新; 边界条件术语统一 |
 | 2026-02-22 | v2.7 | **打印字段全部提升到聚合根 (A2)**: PrintCount/LastPrintedAt 从 Prescription 迁移到 MedicalCase (与 IsPrinted/PrintVersion 统一); Prescription 数据模型移除全部打印字段; FR-MC-015 打印触发规则更新为 MedicalCase.PrintCount/LastPrintedAt; MC-D15 更新为"全部在聚合根，per-type 统计从 PrintLog 聚合" |
+| 2026-02-26 | v2.8 | **Sprint 4 已实现标记**: FR-MC-015 打印回写 (T2-X8-04~08)、打印日志 (T4-S5-01~03)、医师自动绑定 (T4-S5-10); FR-MC-004 处方折扣 (T4-S5-11) |
