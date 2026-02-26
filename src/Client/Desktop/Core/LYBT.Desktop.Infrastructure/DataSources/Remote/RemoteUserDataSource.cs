@@ -222,6 +222,9 @@ public class RemoteUserDataSource : IUserDataSource
         return Task.FromResult(0);
     }
 
+    // ==================== Sprint 4 X2 扩展方法 ====================
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
     public async Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         _logger.LogInformation("[RemoteDataSource] User.BatchDelete - Count={Count}", ids.Count);
@@ -253,6 +256,88 @@ public class RemoteUserDataSource : IUserDataSource
                 Message = ex.Message
             };
         }
+    }
+
+    /// <summary>T4-X2-03: 恢复已删除的用户</summary>
+    public async Task<UserDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[RemoteDataSource] User.Restore - Id={Id}", id);
+
+        try
+        {
+            var response = await _api.RestoreAsync(id);
+            return response.Success ? response.Data : null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] User.Restore failed - Id={Id}", id);
+            return null;
+        }
+    }
+
+    /// <summary>T4-X2-05: 管理员重置用户密码</summary>
+    public async Task<ResetPasswordResponseDto> ResetPasswordAsync(Guid id, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[RemoteDataSource] User.ResetPassword - Id={Id}", id);
+
+        try
+        {
+            var response = await _api.ResetPasswordAsync(id, new ResetPasswordRequestDto());
+            return response.Data ?? new ResetPasswordResponseDto { Success = false };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] User.ResetPassword failed - Id={Id}", id);
+            return new ResetPasswordResponseDto { Success = false };
+        }
+    }
+
+    /// <summary>T4-X2-07: 批量切换用户状态</summary>
+    public async Task<BatchOperationResultDto> BatchToggleStatusAsync(List<Guid> ids, bool enable, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[RemoteDataSource] User.BatchToggleStatus - Count={Count}, Enable={Enable}", ids.Count, enable);
+
+        try
+        {
+            var input = new BatchDeleteInputDto { Ids = ids };
+            var response = enable
+                ? await _api.BatchEnableAsync(input)
+                : await _api.BatchDisableAsync(input);
+
+            if (!response.Success || response.Data == null)
+            {
+                return new BatchOperationResultDto
+                {
+                    TotalCount = ids.Count,
+                    FailureCount = ids.Count,
+                    IsSuccess = false,
+                    Message = response.Message ?? $"批量{(enable ? "启用" : "禁用")}失败"
+                };
+            }
+
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] User.BatchToggleStatus failed");
+            return new BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                FailureCount = ids.Count,
+                IsSuccess = false,
+                Message = ex.Message
+            };
+        }
+    }
+
+    /// <summary>T4-X2-08: 获取当前用户 (从服务端 session 获取)</summary>
+    public async Task<UserDetailDto?> GetCurrentUserAsync(CancellationToken ct = default)
+    {
+        _logger.LogDebug("[RemoteDataSource] User.GetCurrentUser");
+
+        // 远程模式: 复用 GetUsersAsync 搜索或由调用方从 SessionManager 获取
+        // 此处返回 null，实际场景由上层 AuthenticationService 管理当前用户
+        return await Task.FromResult<UserDetailDto?>(null);
     }
 }
 
