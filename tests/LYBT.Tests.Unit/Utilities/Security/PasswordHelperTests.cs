@@ -517,7 +517,7 @@ namespace LYBT.Tests.Unit.Utilities.Security
 
             // Assert
             Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Timestamp);
+            Assert.True(result.Timestamp != default);
             Assert.Null(result.ErrorMessage);
         }
 
@@ -534,7 +534,7 @@ namespace LYBT.Tests.Unit.Utilities.Security
 
             // Assert
             Assert.False(result.IsSuccess);
-            Assert.NotNull(result.Timestamp);
+            Assert.True(result.Timestamp != default);
         }
 
         [Fact]

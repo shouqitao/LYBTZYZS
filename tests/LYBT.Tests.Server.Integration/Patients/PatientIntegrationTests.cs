@@ -17,6 +17,9 @@ public class PatientIntegrationTests
 {
     private readonly WebApiFixture _fixture;
 
+    /// <summary>生成唯一电话号码，避免并行测试时唯一约束冲突</summary>
+    private static string UniquePhone() => $"138{Random.Shared.Next(10000000, 99999999)}";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -34,12 +37,13 @@ public class PatientIntegrationTests
     public async Task CreatePatient_WithValidData_ShouldPersist()
     {
         // Arrange
+        var phone = UniquePhone();
         var request = new PatientInputDto
         {
             Name = "集成测试患者_" + Guid.NewGuid().ToString("N")[..6],
             Gender = Gender.Male,
             BirthDate = new DateTime(1985, 3, 15),
-            PhoneNumber = "13800001001",
+            PhoneNumber = phone,
             Address = "北京市朝阳区"
         };
 
@@ -58,7 +62,7 @@ public class PatientIntegrationTests
         body.Data.Should().NotBeNull();
         body.Data!.Name.Should().Be(request.Name);
         body.Data.Gender.Should().Be(Gender.Male);
-        body.Data.PhoneNumber.Should().Be("13800001001");
+        body.Data.PhoneNumber.Should().Be(phone);
         body.Data.Address.Should().Be("北京市朝阳区");
         body.Data.Id.Should().NotBe(Guid.Empty, "应生成有效ID");
         body.Data.PinYinCode.Should().NotBeNullOrWhiteSpace("应自动生成拼音码");
@@ -73,12 +77,12 @@ public class PatientIntegrationTests
             Name = "完整患者_" + Guid.NewGuid().ToString("N")[..6],
             Gender = Gender.Female,
             BirthDate = new DateTime(1990, 8, 20),
-            PhoneNumber = "13800001002",
+            PhoneNumber = UniquePhone(),
             Address = "上海市浦东新区",
             AllergyHistory = "青霉素过敏",
             MedicalHistory = "2020年阑尾炎手术",
             EmergencyContactName = "家属张三",
-            EmergencyContactPhone = "13900001001",
+            EmergencyContactPhone = UniquePhone(),
             EmergencyContactRelation = "配偶"
         };
 
@@ -154,12 +158,13 @@ public class PatientIntegrationTests
     public async Task GetPatient_ById_ShouldReturnDetail()
     {
         // Arrange - 先创建一个患者
+        var phone = UniquePhone();
         var createRequest = new PatientInputDto
         {
             Name = "详情测试_" + Guid.NewGuid().ToString("N")[..6],
             Gender = Gender.Female,
             BirthDate = new DateTime(1988, 6, 10),
-            PhoneNumber = "13800001003"
+            PhoneNumber = phone
         };
         var createResponse = await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -180,7 +185,7 @@ public class PatientIntegrationTests
         body.Data!.Id.Should().Be(patientId);
         body.Data.Name.Should().Be(createRequest.Name);
         body.Data.Gender.Should().Be(Gender.Female);
-        body.Data.PhoneNumber.Should().Be("13800001003");
+        body.Data.PhoneNumber.Should().Be(phone);
     }
 
     [Fact]
@@ -270,7 +275,7 @@ public class PatientIntegrationTests
         {
             Name = "更新前_" + Guid.NewGuid().ToString("N")[..6],
             Gender = Gender.Male,
-            PhoneNumber = "13800001004"
+            PhoneNumber = UniquePhone()
         };
         var createResponse = await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -281,12 +286,13 @@ public class PatientIntegrationTests
         var patientId = created!.Data!.Id;
 
         // Act - 更新信息
+        var updatedPhone = UniquePhone();
         var updateRequest = new PatientInputDto
         {
             Id = patientId,
             Name = "更新后姓名",
             Gender = Gender.Female,
-            PhoneNumber = "13900001004",
+            PhoneNumber = updatedPhone,
             Address = "更新后地址",
             AllergyHistory = "花粉过敏"
         };
@@ -301,7 +307,7 @@ public class PatientIntegrationTests
         updated!.Success.Should().BeTrue();
         updated.Data!.Name.Should().Be("更新后姓名");
         updated.Data.Gender.Should().Be(Gender.Female);
-        updated.Data.PhoneNumber.Should().Be("13900001004");
+        updated.Data.PhoneNumber.Should().Be(updatedPhone);
         updated.Data.Address.Should().Be("更新后地址");
         updated.Data.AllergyHistory.Should().Be("花粉过敏");
 

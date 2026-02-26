@@ -10,10 +10,10 @@ namespace LYBT.Infrastructure.Services;
 /// <summary>
 /// 跨模块服务实现
 /// 直接使用DbContext进行跨模块数据访问，不经过模块Service
-/// 实现 4 个 ISP 接口 (D5-1) + 旧兼容接口
+/// 实现 4 个 ISP 接口 (D5-1)
+/// Sprint3-Batch3: 移除旧兼容接口 ICrossModuleService
 /// </summary>
 public class CrossModuleService :
-    ICrossModuleService,
     IPatientCrossModuleService,
     IHerbCrossModuleService,
     IUserCrossModuleService,

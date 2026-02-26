@@ -12,6 +12,7 @@ using LYBT.Shared.Utilities.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
+using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.Patients.Services
 {
@@ -103,7 +104,7 @@ namespace LYBT.Module.Patients.Services
             // eliminate-service-catch-return: 业务逻辑检查保留在外部，无需ExecuteAsync包装
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result<PatientDetailDto>.Failure("患者不存在");
+                return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientNotFound);
 
             var dto = _mapper.ToDetailDto(entity);
             // 确保Age属性正确计算（从实体的计算属性复制到DTO）
@@ -143,7 +144,7 @@ namespace LYBT.Module.Patients.Services
             // eliminate-service-catch-return: 移除冗余try-catch，保留业务逻辑检查
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result<PatientDetailDto>.Failure("患者不存在");
+                return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientNotFound);
 
             // FluentValidation 验证（Phase 1 Task 1.7）
             var validationResult = await _validator.ValidateAsync(dto);
@@ -203,11 +204,11 @@ namespace LYBT.Module.Patients.Services
             {
                 _logger.LogWarning("[SVC] Patient.Delete → HasReferences - PatientId={PatientId} ReferenceCount={Count}",
                     id, refCheck.Data.ReferenceCount);
-                return Result.Failure($"患者有 {refCheck.Data.ReferenceCount} 条医案记录，无法删除");
+                return Result.Failure(GenericErrorCode.PatientHasActiveCases, $"患者有 {refCheck.Data.ReferenceCount} 条医案记录，无法删除");
             }
 
             var result = await _repository.DeleteAsync(id);
-            return result ? Result.Success() : Result.Failure("删除失败");
+            return result ? Result.Success() : Result.Failure(GenericErrorCode.InternalError, "删除失败");
         }
 
         /// <summary>
@@ -230,7 +231,7 @@ namespace LYBT.Module.Patients.Services
 
             if (worksheet == null)
             {
-                return Result<PatientBatchImportResultDto>.Failure("Excel文件中没有工作表");
+                return Result<PatientBatchImportResultDto>.Failure(GenericErrorCode.InvalidRequest, "Excel文件中没有工作表");
             }
 
             var rowCount = worksheet.Dimension?.Rows ?? 0;
@@ -242,7 +243,7 @@ namespace LYBT.Module.Patients.Services
             // BR-003: 限制最大导入行数
             if (rowCount > 1000)
             {
-                return Result<PatientBatchImportResultDto>.Failure($"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
+                return Result<PatientBatchImportResultDto>.Failure(GenericErrorCode.ValidationFailed, $"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
             }
 
             var patientsToCreate = new List<Patient>();
@@ -545,7 +546,7 @@ namespace LYBT.Module.Patients.Services
             // eliminate-service-catch-return: 移除冗余try-catch，保留业务检查
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                return Result<Patient>.Failure("患者不存在");
+                return Result<Patient>.Failure(GenericErrorCode.PatientNotFound);
 
             return Result<Patient>.Success(entity);
         }
@@ -572,7 +573,7 @@ namespace LYBT.Module.Patients.Services
                 var existingPatient = await _repository.GetByPhoneNumberAsync(dto.PhoneNumber);
                 if (existingPatient != null && !existingPatient.IsDeleted)
                 {
-                    return Result<Patient>.Failure($"手机号 {dto.PhoneNumber} 已存在");
+                    return Result<Patient>.Failure(GenericErrorCode.PatientPhoneExists, $"手机号 {dto.PhoneNumber} 已存在");
                 }
             }
 
@@ -595,7 +596,7 @@ namespace LYBT.Module.Patients.Services
             // Issue #2245 Fix: 检查实体存在性(包括软删除状态)
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null || entity.IsDeleted)
-                return Result<Patient>.Failure("患者不存在");
+                return Result<Patient>.Failure(GenericErrorCode.PatientNotFound);
 
             // FluentValidation 验证
             var validationResult = await _validator.ValidateAsync(dto);
@@ -635,7 +636,7 @@ namespace LYBT.Module.Patients.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
             {
-                return Result<PatientDetailDto>.Failure("患者不存在");
+                return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientNotFound);
             }
 
             // 切换状态
@@ -661,10 +662,10 @@ namespace LYBT.Module.Patients.Services
             // eliminate-service-catch-return: 移除冗余try-catch，保留业务逻辑检查
             var entity = await _repository.GetByIdIncludingDeletedAsync(id);
             if (entity == null)
-                return Result<PatientDetailDto>.Failure("患者不存在");
+                return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientNotFound);
 
             if (!entity.IsDeleted)
-                return Result<PatientDetailDto>.Failure("该患者未被删除，无需恢复");
+                return Result<PatientDetailDto>.Failure(GenericErrorCode.InvalidPatientStatus, "该患者未被删除，无需恢复");
 
             entity.IsDeleted = false;
             entity.UpdatedAt = DateTime.Now;
@@ -767,7 +768,7 @@ namespace LYBT.Module.Patients.Services
             var patient = await _repository.GetByIdAsync(patientId);
             if (patient == null)
             {
-                return Result<PatientReferenceCheckDto>.Failure("患者不存在");
+                return Result<PatientReferenceCheckDto>.Failure(GenericErrorCode.PatientNotFound);
             }
 
             // 查询医案引用计数
@@ -817,7 +818,7 @@ namespace LYBT.Module.Patients.Services
             // 批量检查数量限制
             if (patientIds.Count > MAX_CHECK_SIZE)
             {
-                return Result<List<PatientReferenceCheckDto>>.Failure($"批量检查最多支持{MAX_CHECK_SIZE}条记录");
+                return Result<List<PatientReferenceCheckDto>>.Failure(GenericErrorCode.ValidationFailed, $"批量检查最多支持{MAX_CHECK_SIZE}条记录");
             }
 
             var results = new List<PatientReferenceCheckDto>();

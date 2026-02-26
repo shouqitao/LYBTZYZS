@@ -44,7 +44,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                 name: "IX_EntityAuditLogs_CreatedAt",
                 table: "EntityAuditLogs",
                 column: "CreatedAt",
-                descending: new bool[0]);
+                descending: Array.Empty<bool>());
 
             migrationBuilder.CreateIndex(
                 name: "IX_EntityAuditLogs_EntityType_EntityId_CreatedAt",

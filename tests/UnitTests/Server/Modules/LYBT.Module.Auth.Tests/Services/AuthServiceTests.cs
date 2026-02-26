@@ -2,7 +2,7 @@ using FluentAssertions;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Common;
@@ -20,12 +20,12 @@ namespace LYBT.Module.Auth.Tests.Services;
 
 /// <summary>
 /// AuthService 单元测试
-/// 重构: 使用 ICrossModuleService 替代 IUserRepository + IUserService
+/// 重构: 使用 IUserCrossModuleService 替代 IUserRepository + IUserService
 /// </summary>
 public class AuthServiceTests : IDisposable
 {
     private readonly Mock<IJwtService> _mockJwtService;
-    private readonly Mock<ICrossModuleService> _mockCrossModuleQuery;
+    private readonly Mock<IUserCrossModuleService> _mockCrossModuleQuery;
     private readonly Mock<ILogger<AuthService>> _mockLogger;
     private readonly AppDbContext _dbContext;
     private readonly IConfiguration _configuration;
@@ -36,7 +36,7 @@ public class AuthServiceTests : IDisposable
     public AuthServiceTests()
     {
         _mockJwtService = new Mock<IJwtService>();
-        _mockCrossModuleQuery = new Mock<ICrossModuleService>();
+        _mockCrossModuleQuery = new Mock<IUserCrossModuleService>();
         _mockLogger = new Mock<ILogger<AuthService>>();
         _mockRevocationService = new Mock<ITokenRevocationService>();
         _mockAuditService = new Mock<ISecurityAuditService>();
@@ -544,7 +544,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.ErrorCode.Should().Be(LYBT.Shared.Models.Enums.AuthErrorCode.TokenInvalid);
+        result.ModuleErrorCode.Should().Be(LYBT.Shared.Primitives.ErrorCodes.ErrorCode.AuthTokenInvalid);
     }
 
     [Fact]

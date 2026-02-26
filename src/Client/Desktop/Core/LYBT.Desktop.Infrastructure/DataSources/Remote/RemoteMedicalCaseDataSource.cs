@@ -318,5 +318,9 @@ internal partial class MedicalCaseListToDetailMapper
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.PresentIllness))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.Consultation))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.Prescription))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.PrintVersion))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.LastPrintedAt))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.PrintCount))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.IsPrinted))]
     public partial MedicalCaseDetailDto ToDetailDto(MedicalCaseListDto listDto);
 }

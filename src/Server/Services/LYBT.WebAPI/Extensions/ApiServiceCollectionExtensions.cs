@@ -1,5 +1,8 @@
-﻿using LYBT.Shared.Configuration.Options.Server;
+﻿using System.Text.Json;
+using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.ExceptionHandling.Handlers;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Primitives.ErrorCodes;
 using LYBT.WebAPI.Configuration;
 
 namespace LYBT.WebAPI.Extensions;
@@ -148,11 +151,43 @@ public static class ApiServiceCollectionExtensions
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
+        // Sprint3-Batch3: 读取配置项，测试环境可通过 Security:RateLimiting:Enabled=false 禁用限流
+        var rateLimitingEnabled = configuration.GetValue("Security:RateLimiting:Enabled", true);
+        if (!rateLimitingEnabled)
+        {
+            // 注册无操作 RateLimiter，包含 Login 策略名以兼容 [EnableRateLimiting("Login")]
+            services.AddRateLimiter(options =>
+            {
+                options.AddPolicy("Login", _ =>
+                    System.Threading.RateLimiting.RateLimitPartition.GetNoLimiter("noop"));
+            });
+            return services;
+        }
+
         // MVP阶段：仅启用Login限流防止暴力破解，使用硬编码默认值
         // 默认配置：5次尝试/60秒（合理的防暴力破解策略）
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            // Sprint3-X6: 返回结构化 ApiResponse + ErrorCode.RateLimitExceeded
+            options.OnRejected = async (context, cancellationToken) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                context.HttpContext.Response.ContentType = "application/json";
+
+                var message = ErrorMessages.Get(ErrorCode.RateLimitExceeded);
+                var response = ApiResponse.CreateFail(message, new
+                {
+                    errorCode = ErrorCode.RateLimitExceeded.ToFormattedString(),
+                    retryAfter = context.Lease.TryGetMetadata(
+                        System.Threading.RateLimiting.MetadataName.RetryAfter, out var retryAfter)
+                        ? retryAfter.TotalSeconds
+                        : 60
+                });
+
+                await context.HttpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+            };
 
             // 登录端点速率限制：基于IP的固定窗口限流器
             options.AddPolicy("Login", httpContext =>

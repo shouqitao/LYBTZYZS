@@ -8,6 +8,7 @@ using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
+// Sprint3-Batch3: AuthErrorCode 已移除，HandleAuthResult 统一使用 ModuleErrorCode
 
 namespace LYBT.Infrastructure.Web
 {
@@ -258,8 +259,7 @@ namespace LYBT.Infrastructure.Web
 
         /// <summary>
         /// 处理带错误码的Result返回值 - 根据错误码返回正确HTTP状态码
-        /// Issue #1864: 统一认证错误处理
-        /// T3-X1-01: 迁移到统一 ErrorCode，优先使用 ModuleErrorCode
+        /// Sprint3-Batch3: 统一使用 ModuleErrorCode，移除 AuthErrorCode 兼容路径
         /// </summary>
         protected IActionResult HandleAuthResult<T>(Result<T> result, string successMessage = "操作成功")
         {
@@ -270,7 +270,7 @@ namespace LYBT.Infrastructure.Web
 
             var message = result.ErrorMessage ?? "操作失败";
 
-            // T3-X1-01: 优先使用统一 ModuleErrorCode
+            // 统一使用 ModuleErrorCode
             if (result.ModuleErrorCode.HasValue)
             {
                 var moduleCode = result.ModuleErrorCode.Value;
@@ -289,51 +289,18 @@ namespace LYBT.Infrastructure.Web
                 };
             }
 
-            // 兼容: 回退到旧的 AuthErrorCode 路径
-            var errorCode = result.ErrorCode;
-            return errorCode switch
-            {
-                AuthErrorCode.InvalidCredentials => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.UserNotFound => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.UserDisabled => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.PasswordExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.TokenExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.TokenInvalid => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.TokenRevoked => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.RefreshTokenExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.RefreshTokenInvalid => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.SessionNotFound => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.SessionExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.ConcurrentSessionLimit => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.InternalError => StatusCode(500, CreateAuthErrorResponse<T>(message, errorCode)),
-                AuthErrorCode.ServiceUnavailable => StatusCode(503, CreateAuthErrorResponse<T>(message, errorCode)),
-                _ => BusinessFail(message, errorCode?.ToString())
-            };
+            // 无错误码时作为业务失败处理
+            return BusinessFail(message);
         }
 
         /// <summary>
         /// 创建统一错误码响应对象
-        /// T3-X1-01: 新的统一错误码响应格式
         /// </summary>
         private ApiResponse<T> CreateModuleErrorResponse<T>(string message, GenericErrorCode errorCode)
         {
             var response = ApiResponse<T>.CreateFail(message);
             response.RequestId = GetRequestId();
             response.Errors = new { code = errorCode.ToFormattedString(), numericCode = (int)errorCode };
-            return response;
-        }
-
-        /// <summary>
-        /// 创建认证错误响应对象 (兼容旧 AuthErrorCode)
-        /// </summary>
-        private ApiResponse<T> CreateAuthErrorResponse<T>(string message, AuthErrorCode? errorCode)
-        {
-            var response = ApiResponse<T>.CreateFail(message);
-            response.RequestId = GetRequestId();
-            if (errorCode.HasValue)
-            {
-                response.Errors = new { code = errorCode.Value.ToString(), numericCode = (int)errorCode.Value };
-            }
             return response;
         }
 

@@ -89,6 +89,45 @@ namespace LYBT.Module.Formulas.Repositories
         }
 
         /// <summary>
+        /// 获取分页列表（包含药材配伍信息 + category/role 筛选，DB 层执行）
+        /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
+        /// </summary>
+        public async Task<PagedResult<Formula>> GetPagedWithDetailsAsync(
+            int pageNumber, int pageSize, string? keyword,
+            string? category, Guid? userId, bool isAdmin)
+        {
+            var query = GetBaseQuery();
+
+            // 关键字过滤（复用模板方法）
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = ApplyKeywordFilter(query, keyword.Trim());
+            }
+
+            // 分类筛选（DB 层执行）
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                query = query.Where(f => f.Category != null && f.Category.Contains(category));
+            }
+
+            // 角色过滤（DB 层执行）
+            // Admin/SuperAdmin 可以看到所有 Formula
+            // Doctor 只能看到自己创建的或共享的 Formula
+            if (!isAdmin && userId.HasValue)
+            {
+                query = query.Where(f =>
+                    f.UserId == userId.Value ||
+                    f.CreatedBy == userId.Value ||
+                    f.IsShared);
+            }
+
+            // 默认排序
+            query = ApplyDefaultOrdering(query);
+
+            return await GetPagedResultAsync(query, pageNumber, pageSize);
+        }
+
+        /// <summary>
         /// 根据用户ID和权限获取方剂列表（合并权限逻辑）
         /// </summary>
         public async Task<List<Formula>> GetByUserIdAsync(Guid userId)

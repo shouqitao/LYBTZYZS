@@ -30,7 +30,7 @@ namespace LYBT.QueryLayer.Benchmarks
     [MemoryDiagnoser]
     [SimpleJob(warmupCount: 2, iterationCount: 5)]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    public class BatchOperationsBenchmark
+    public class BatchOperationsBenchmark : IDisposable
     {
         private AppDbContext _context = null!;
         private SqliteConnection _connection = null!;
@@ -226,6 +226,12 @@ namespace LYBT.QueryLayer.Benchmarks
         {
             _context?.Dispose();
             _connection?.Dispose();
+        }
+
+        public void Dispose()
+        {
+            Cleanup();
+            GC.SuppressFinalize(this);
         }
     }
 

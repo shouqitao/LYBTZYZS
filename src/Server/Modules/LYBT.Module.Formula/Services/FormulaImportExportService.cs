@@ -1,5 +1,5 @@
 using LYBT.Entities.Formulas;
-using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Mapping;
 using LYBT.Shared.Models.Common;
@@ -19,13 +19,13 @@ namespace LYBT.Module.Formulas.Services;
 public class FormulaImportExportService : IFormulaImportExportService
 {
     private readonly IFormulaRepository _repository;
-    private readonly ICrossModuleService _crossModuleQuery;
+    private readonly IHerbCrossModuleService _crossModuleQuery;
     private readonly ILogger<FormulaImportExportService> _logger;
     private readonly FormulaMapper _mapper = new();
 
     public FormulaImportExportService(
         IFormulaRepository repository,
-        ICrossModuleService crossModuleQuery,
+        IHerbCrossModuleService crossModuleQuery,
         ILogger<FormulaImportExportService> logger)
     {
         _repository = repository;

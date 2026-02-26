@@ -1,5 +1,5 @@
 ﻿using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
 using LYBT.Shared.Models.Common;
@@ -23,7 +23,7 @@ namespace LYBT.Module.Auth.Services
     public class AuthService : IAuthService
     {
         private readonly IJwtService _jwtService;
-        private readonly ICrossModuleService _crossModuleQuery;
+        private readonly IUserCrossModuleService _crossModuleQuery;
         private readonly ILogger<AuthService> _logger;
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _configuration;
@@ -32,7 +32,7 @@ namespace LYBT.Module.Auth.Services
 
         public AuthService(
             IJwtService jwtService,
-            ICrossModuleService crossModuleQuery,
+            IUserCrossModuleService crossModuleQuery,
             ILogger<AuthService> logger,
             AppDbContext dbContext,
             IConfiguration configuration,

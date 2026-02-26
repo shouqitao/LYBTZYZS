@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -22,13 +22,13 @@ namespace LYBT.Module.Formulas.Tests.Services
     /// <summary>
     /// 方剂服务单元测试
     /// 测试方剂的创建、查询、更新、删除以及药材配比管理等核心业务逻辑
-    /// OpenSpec: decouple-server-modules - 使用ICrossModuleService替代IHerbRepository
+    /// OpenSpec: decouple-server-modules - 使用IHerbCrossModuleService替代IHerbRepository
     /// </summary>
     public class FormulaServiceTests : TestBase
     {
         private readonly FormulaService _formulaService;
         private readonly Mock<IFormulaRepository> _repositoryMock;
-        private readonly Mock<ICrossModuleService> _crossModuleQueryMock;
+        private readonly Mock<IHerbCrossModuleService> _crossModuleQueryMock;
         private readonly Mock<ILogger<FormulaService>> _loggerMock;
         private readonly AppDbContext _context;
 
@@ -41,7 +41,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _context = new AppDbContext(options);
 
             _repositoryMock = CreateMock<IFormulaRepository>();
-            _crossModuleQueryMock = CreateMock<ICrossModuleService>();
+            _crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
             _loggerMock = CreateLoggerMock<FormulaService>();
 
             _formulaService = new FormulaService(
@@ -96,7 +96,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Name.Should().Be(createDto.Name);
+            result.Data!.Name.Should().Be(createDto.Name);
             result.Data.Effect.Should().Be(createDto.Effect);
 
             _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Once);
@@ -154,7 +154,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(formulaId);
+            result.Data!.Id.Should().Be(formulaId);
             result.Data.Name.Should().Be(formula.Name);
         }
 
@@ -165,7 +165,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formulaId = Guid.NewGuid();
 
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync((FormulaEntity?)null);
+                .Returns(Task.FromResult<FormulaEntity>(null!));
 
             // Act
             var result = await _formulaService.GetByIdAsync(formulaId);
@@ -272,7 +272,8 @@ namespace LYBT.Module.Formulas.Tests.Services
                 PageSize = 20
             };
 
-            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(1, 20, null))
+            // Sprint3-X6: Mock 新的 6 参数签名 (keyword, category, userId, isAdmin)
+            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(1, 20, null, null, null, true))
                 .ReturnsAsync(pagedResult);
 
             // Act
@@ -283,7 +284,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().HaveCount(2);
+            result.Data!.Items.Should().HaveCount(2);
             result.Data.TotalCount.Should().Be(2);
         }
 
@@ -299,7 +300,8 @@ namespace LYBT.Module.Formulas.Tests.Services
                 PageSize = 20
             };
 
-            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(0, 20, null))
+            // Sprint3-X6: Mock 新的 6 参数签名
+            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(0, 20, null, null, null, true))
                 .ReturnsAsync(pagedResult);
 
             // Act
@@ -353,7 +355,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(formulaId);
+            result.Data!.Id.Should().Be(formulaId);
 
             _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Once);
         }
@@ -373,7 +375,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             };
 
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync((FormulaEntity?)null);
+                .Returns(Task.FromResult<FormulaEntity>(null!));
 
             // Act
             var result = await _formulaService.UpdateAsync(formulaId, updateDto);
@@ -434,8 +436,8 @@ namespace LYBT.Module.Formulas.Tests.Services
         [Fact]
         public async Task GetPendingValidationFormulasAsync_ShouldReturnOnlyDraftFormulas()
         {
-            // Arrange
-            var formulas = new List<FormulaEntity>
+            // Arrange - Sprint3-X6: FindAsync 在 DB 层过滤 Draft 状态
+            var draftFormulas = new List<FormulaEntity>
             {
                 new()
                 {
@@ -448,14 +450,6 @@ namespace LYBT.Module.Formulas.Tests.Services
                 new()
                 {
                     Id = Guid.NewGuid(),
-                    Name = "已验证验方",
-                    Effect = "功效2",
-                    ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Validated,
-                    Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>()
-                },
-                new()
-                {
-                    Id = Guid.NewGuid(),
                     Name = "待验证验方2",
                     Effect = "功效3",
                     ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft,
@@ -463,8 +457,9 @@ namespace LYBT.Module.Formulas.Tests.Services
                 }
             };
 
-            _repositoryMock.Setup(x => x.GetAllAsync())
-                .ReturnsAsync(formulas);
+            // Sprint3-X6: 代码现在使用 FindAsync(predicate) 替代 GetAllAsync()
+            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<FormulaEntity, bool>>>()))
+                .ReturnsAsync(draftFormulas);
 
             // Act
             var result = await _formulaService.GetPendingValidationFormulasAsync();
@@ -475,16 +470,15 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data.Should().HaveCount(2);
             result.Data.Should().OnlyContain(f => f.ValidationStatus == LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft);
-            result.Data.Should().NotContain(f => f.Name == "已验证验方");
 
-            _repositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
+            _repositoryMock.Verify(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<FormulaEntity, bool>>>()), Times.Once);
         }
 
         [Fact]
         public async Task GetPendingValidationFormulasAsync_WithNoFormulas_ShouldReturnEmptyList()
         {
-            // Arrange
-            _repositoryMock.Setup(x => x.GetAllAsync())
+            // Arrange - Sprint3-X6: 使用 FindAsync 替代 GetAllAsync
+            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<FormulaEntity, bool>>>()))
                 .ReturnsAsync(new List<FormulaEntity>());
 
             // Act
@@ -500,8 +494,8 @@ namespace LYBT.Module.Formulas.Tests.Services
         [Fact]
         public async Task GetPendingValidationFormulasAsync_WithException_ShouldThrowException()
         {
-            // Arrange
-            _repositoryMock.Setup(x => x.GetAllAsync())
+            // Arrange - Sprint3-X6: 使用 FindAsync 替代 GetAllAsync
+            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<FormulaEntity, bool>>>()))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act & Assert
@@ -556,7 +550,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
+            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
             crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
                 .ReturnsAsync(selectedHerbDto);
 
@@ -639,7 +633,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
+            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
             crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
                 .ReturnsAsync(selectedHerbDto);
 
@@ -675,9 +669,9 @@ namespace LYBT.Module.Formulas.Tests.Services
             var selectedHerbId = Guid.NewGuid();
 
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync((FormulaEntity?)null);
+                .Returns(Task.FromResult<FormulaEntity>(null!));
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
+            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
@@ -720,7 +714,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
+            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
@@ -761,7 +755,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
+            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
             crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
                 .ReturnsAsync((HerbBasicDto?)null);
 
@@ -807,7 +801,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var crossModuleQueryMock = CreateMock<ICrossModuleService>();
+            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
                 crossModuleQueryMock.Object,
@@ -856,7 +850,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Disabled);
+            result.Data!.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Disabled);
 
             _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Once);
         }
@@ -887,7 +881,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Enabled);
+            result.Data!.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Enabled);
         }
 
         [Fact]

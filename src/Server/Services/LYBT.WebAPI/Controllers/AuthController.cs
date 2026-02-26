@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Web;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -182,8 +183,8 @@ namespace LYBT.WebAPI.Controllers
             }
             else
             {
-                // Issue #1864: 返回结构化错误码
-                var errorCode = result.ErrorCode?.ToString() ?? "TokenInvalid";
+                // Sprint3-Batch3: 使用统一 ModuleErrorCode
+                var errorCode = result.ModuleErrorCode?.ToFormattedString() ?? "ERR-10202";
                 return Unauthorized(new { valid = false, message = result.ErrorMessage ?? "Token is invalid", errorCode });
             }
         }

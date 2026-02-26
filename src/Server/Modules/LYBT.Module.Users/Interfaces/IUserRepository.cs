@@ -1,5 +1,7 @@
 ﻿using LYBT.Entities.Users;
 using LYBT.Infrastructure.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Users.Interfaces
 {
@@ -34,6 +36,12 @@ namespace LYBT.Module.Users.Interfaces
         /// <param name="username">待检查的用户名</param>
         /// <returns>存在返回true，否则返回false</returns>
         Task<bool> UsernameExistsAsync(string username);
+
+        /// <summary>
+        /// 分页查询用户（支持 keyword/role/status 筛选，DB 层执行）
+        /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
+        /// </summary>
+        Task<PagedResult<User>> GetPagedAsync(int pageNumber, int pageSize, string? keyword, UserRole? role, CommonStatus? status);
 
         // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
 

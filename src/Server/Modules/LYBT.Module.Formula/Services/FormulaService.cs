@@ -1,6 +1,6 @@
 ﻿using LYBT.Module.Formulas.Mapping;
 using LYBT.Entities.Formulas;
-using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -19,13 +19,13 @@ namespace LYBT.Module.Formulas.Services
     public class FormulaService : IFormulaService
     {
         private readonly IFormulaRepository _repository;
-        private readonly ICrossModuleService _crossModuleQuery;
+        private readonly IHerbCrossModuleService _crossModuleQuery;
         private readonly FormulaMapper _mapper = new();
         private readonly ILogger<FormulaService> _logger;
 
         public FormulaService(
             IFormulaRepository repository,
-            ICrossModuleService crossModuleQuery,
+            IHerbCrossModuleService crossModuleQuery,
             ILogger<FormulaService> logger)
         {
             _repository = repository;
@@ -41,50 +41,16 @@ namespace LYBT.Module.Formulas.Services
             Guid? currentUserId = null,
             bool isAdmin = false)
         {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            // 使用优化后的查询方法，包含Herbs集合
-            var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
+            // Sprint3-X6: keyword + category + role 筛选均在 DB 层执行，TotalCount 自然正确
+            var pagedResult = await _repository.GetPagedWithDetailsAsync(
+                page, pageSize, keyword, category, currentUserId, isAdmin);
 
-            // optimize-api-permissions: 应用角色过滤
-            // Admin/SuperAdmin可以看到所有Formula
-            // Doctor只能看到自己创建的或共享的Formula
-            var filteredItems = pagedResult.Items.AsEnumerable();
-
-            if (!isAdmin && currentUserId.HasValue)
-            {
-                // 过滤条件：用户可以看到:
-                // 1. UserId匹配的验方（优先）
-                // 2. CreatedBy匹配的验方（当UserId为NULL时的回退）
-                // 3. IsShared=true的共享验方
-                filteredItems = filteredItems.Where(f =>
-                    f.UserId == currentUserId.Value ||
-                    f.CreatedBy == currentUserId.Value ||
-                    f.IsShared);
-
-                _logger.LogDebug("[SVC] Formula.GetPaged → RoleFilter - UserId={UserId} OriginalCount={OriginalCount}",
-                    currentUserId.Value, pagedResult.Items.Count);
-            }
-
-            // Issue #1164: 应用分类筛选（MVP阶段内存过滤，Formula实体有Category字段）
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                filteredItems = filteredItems.Where(f =>
-                    !string.IsNullOrEmpty(f.Category) &&
-                    f.Category.Contains(category, StringComparison.OrdinalIgnoreCase));
-            }
-
-            var filteredList = filteredItems.ToList();
-
-            // 注意: 当应用了角色过滤或分类过滤时，TotalCount需要更新
-            var needsRecalculateTotal = (!isAdmin && currentUserId.HasValue) || !string.IsNullOrWhiteSpace(category);
-
-            // AutoMapper配置: HerbCount从Herbs.Count映射，TotalPrice标记为Ignore（无法计算）
-            var items = _mapper.ToListDtos(filteredList);
+            var items = _mapper.ToListDtos(pagedResult.Items.ToList());
 
             var dto = new PagedResult<FormulaListDto>
             {
                 Items = items,
-                TotalCount = needsRecalculateTotal ? filteredList.Count : pagedResult.TotalCount,
+                TotalCount = pagedResult.TotalCount,
                 CurrentPage = pagedResult.CurrentPage,
                 PageSize = pagedResult.PageSize
             };
@@ -282,17 +248,12 @@ namespace LYBT.Module.Formulas.Services
         /// </summary>
         public async Task<Result<List<FormulaDetailDto>>> GetPendingValidationFormulasAsync()
         {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            // 查询所有Draft状态的验方（使用GetAllAsync预加载Herbs避免N+1查询）
-            var allFormulas = await _repository.GetAllAsync();
-
-            // 过滤出Draft状态的验方
-            var pendingFormulas = allFormulas
-                .Where(f => f.ValidationStatus == FormulaValidationStatus.Draft)
-                .ToList();
+            // Sprint3-X6: 在 DB 层过滤 Draft 状态，避免 GetAllAsync 全量加载
+            var pendingFormulas = await _repository.FindAsync(
+                f => f.ValidationStatus == FormulaValidationStatus.Draft);
 
             // 映射为DTO
-            var formulaDtos = _mapper.ToDetailDtos(pendingFormulas);
+            var formulaDtos = _mapper.ToDetailDtos(pendingFormulas.ToList());
 
             _logger.LogInformation("[SVC] Formula.GetPendingValidation completed - Count={Count}", formulaDtos.Count);
             return Result<List<FormulaDetailDto>>.Success(formulaDtos);

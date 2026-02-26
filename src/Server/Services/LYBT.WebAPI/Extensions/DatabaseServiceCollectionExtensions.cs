@@ -161,8 +161,6 @@ public static class DatabaseServiceCollectionExtensions
         services.AddScoped<IHerbCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
         services.AddScoped<IUserCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
         services.AddScoped<ICrossModuleAuthService>(sp => sp.GetRequiredService<CrossModuleService>());
-        // 旧接口保留兼容 (标记 [Obsolete])
-        services.AddScoped<ICrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
 
         // 错误消息映射服务
         services.AddSingleton<IErrorMessageMapper, ConfigurableErrorMessageMapper>();

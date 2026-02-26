@@ -230,7 +230,7 @@ namespace LYBT.Tests.Unit.Entities.Prescriptions
         [InlineData("纸张卡纸", false)]
         [InlineData("墨盒用尽", false)]
         [InlineData(null, true)]
-        public void PrintLog_ShouldHandleDifferentErrorScenarios(string errorMessage, bool isSuccess)
+        public void PrintLog_ShouldHandleDifferentErrorScenarios(string? errorMessage, bool isSuccess)
         {
             // Arrange & Act
             var printLog = new PrescriptionPrintLog

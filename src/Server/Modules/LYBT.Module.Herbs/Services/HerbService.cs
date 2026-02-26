@@ -43,24 +43,14 @@ namespace LYBT.Module.Herbs.Services
 
         public async Task<Result<PagedResult<HerbListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
         {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            // 修复：传递keyword参数到Repository进行数据库级别搜索
-            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
+            // Sprint3-X6: keyword + category 筛选均在 DB 层执行，TotalCount 自然正确
+            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword, category);
             var dtos = _mapper.ToListDtos(pagedResult.Items.ToList());
-
-            // Issue #1164: 应用分类筛选（在DTO级别过滤）
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                dtos = dtos.Where(h =>
-                    !string.IsNullOrEmpty(h.Category) &&
-                    h.Category.Contains(category, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            }
 
             var dto = new PagedResult<HerbListDto>
             {
                 Items = dtos,
-                TotalCount = !string.IsNullOrWhiteSpace(category) ? dtos.Count : pagedResult.TotalCount,
+                TotalCount = pagedResult.TotalCount,
                 CurrentPage = pagedResult.CurrentPage,
                 PageSize = pagedResult.PageSize
             };

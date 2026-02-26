@@ -1,5 +1,6 @@
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Module.Herbs.Interfaces
 {
@@ -42,6 +43,12 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <param name="name">药材名称</param>
         /// <param name="excludeId">排除的ID（更新时传入当前记录ID）</param>
         Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null);
+
+        /// <summary>
+        /// 分页查询药材（支持关键字 + 分类筛选，DB 层执行）
+        /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
+        /// </summary>
+        Task<PagedResult<Herb>> GetPagedAsync(int pageNumber, int pageSize, string? keyword, string? category);
 
         // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
 

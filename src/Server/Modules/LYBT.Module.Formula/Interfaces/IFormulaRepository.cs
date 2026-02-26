@@ -31,6 +31,14 @@ namespace LYBT.Module.Formulas.Interfaces
         Task<PagedResult<Formula>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
 
         /// <summary>
+        /// 获取分页列表（包含药材配伍信息 + category/role 筛选，DB 层执行）
+        /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
+        /// </summary>
+        Task<PagedResult<Formula>> GetPagedWithDetailsAsync(
+            int pageNumber, int pageSize, string? keyword,
+            string? category, Guid? userId, bool isAdmin);
+
+        /// <summary>
         /// 根据用户ID获取方剂列表（包含权限逻辑：自己的+共享的）
         /// </summary>
         Task<List<Formula>> GetByUserIdAsync(Guid userId);

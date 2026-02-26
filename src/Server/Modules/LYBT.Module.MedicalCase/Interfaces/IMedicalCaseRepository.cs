@@ -2,6 +2,7 @@
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.MedicalCases.Interfaces
 {
@@ -31,6 +32,15 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 获取分页列表（包含关联数据）
         /// </summary>
         Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
+
+        /// <summary>
+        /// 获取分页列表（包含关联数据 + 全部筛选条件，DB 层执行）
+        /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
+        /// </summary>
+        Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(
+            int pageNumber, int pageSize,
+            MedicalCaseStatus? status, Guid? patientId, Guid? doctorId,
+            bool isAdmin, string? keyword = null);
 
         /// <summary>
         /// 获取待看诊医案列表（Status=Active）

@@ -2,6 +2,8 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -45,6 +47,43 @@ namespace LYBT.Module.Users.Repositories
         protected override IQueryable<User> ApplyDefaultOrdering(IQueryable<User> query)
         {
             return query.OrderBy(u => u.UserName);
+        }
+
+        #endregion
+
+        #region Sprint3-X6: 分页查询（DB 层 keyword/role/status 筛选）
+
+        /// <summary>
+        /// 分页查询用户（支持 keyword/role/status 筛选，DB 层执行）
+        /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
+        /// </summary>
+        public async Task<PagedResult<User>> GetPagedAsync(
+            int pageNumber, int pageSize, string? keyword, UserRole? role, CommonStatus? status)
+        {
+            var query = _dbSet.AsNoTracking().Where(e => !e.IsDeleted);
+
+            // 关键字过滤（复用模板方法）
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = ApplyKeywordFilter(query, keyword.Trim());
+            }
+
+            // 角色筛选（DB 层执行）
+            if (role.HasValue)
+            {
+                query = query.Where(u => u.Role == role.Value);
+            }
+
+            // 状态筛选（DB 层执行）
+            if (status.HasValue)
+            {
+                query = query.Where(u => u.Status == status.Value);
+            }
+
+            // 默认排序（复用模板方法）
+            query = ApplyDefaultOrdering(query);
+
+            return await GetPagedResultAsync(query, pageNumber, pageSize);
         }
 
         #endregion

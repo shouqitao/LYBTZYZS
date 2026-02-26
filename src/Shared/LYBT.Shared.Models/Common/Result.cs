@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.ErrorCodes;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
@@ -7,7 +6,7 @@ namespace LYBT.Shared.Models.Common;
 /// <summary>
 /// 统一返回值模式 - 封装成功/失败状态和错误信息
 /// Phase 1 Task 1.5: 为Service层提供统一的返回值模式，替代直接抛出异常
-/// Issue #1864: 新增ErrorCode支持结构化错误处理
+/// Sprint3-Batch3: 移除 AuthErrorCode 属性和方法，统一使用 GenericErrorCode
 /// </summary>
 /// <typeparam name="T">返回数据类型</typeparam>
 /// <remarks>
@@ -64,12 +63,6 @@ public class Result<T>
     public List<string>? Errors { get; set; }
 
     /// <summary>
-    /// 认证错误码（用于认证相关操作的结构化错误处理）
-    /// Issue #1864: 支持客户端统一处理和国际化
-    /// </summary>
-    public AuthErrorCode? ErrorCode { get; set; }
-
-    /// <summary>
     /// 通用错误码（用于所有模块的结构化错误处理）
     /// consolidate-exception-handling: 支持模块化错误码分区
     /// </summary>
@@ -120,25 +113,6 @@ public class Result<T>
     }
 
     /// <summary>
-    /// 创建失败结果（带认证错误码）
-    /// Issue #1864: 支持结构化错误处理
-    /// </summary>
-    /// <param name="errorCode">认证错误码</param>
-    /// <param name="errorMessage">可选的错误消息，默认使用错误码对应的消息</param>
-    /// <returns>失败的Result对象</returns>
-    public static Result<T> Failure(AuthErrorCode errorCode, string? errorMessage = null)
-    {
-        var message = errorMessage ?? GetAuthErrorMessage(errorCode);
-        return new Result<T>
-        {
-            IsSuccess = false,
-            ErrorCode = errorCode,
-            ErrorMessage = message,
-            Errors = new List<string> { message }
-        };
-    }
-
-    /// <summary>
     /// 创建失败结果（带通用错误码）
     /// consolidate-exception-handling: 支持模块化错误码
     /// </summary>
@@ -154,33 +128,6 @@ public class Result<T>
             ModuleErrorCode = errorCode,
             ErrorMessage = message,
             Errors = new List<string> { message }
-        };
-    }
-
-    /// <summary>
-    /// 获取认证错误码对应的默认消息
-    /// </summary>
-    private static string GetAuthErrorMessage(AuthErrorCode errorCode)
-    {
-        return errorCode switch
-        {
-            AuthErrorCode.None => "操作成功",
-            AuthErrorCode.InvalidCredentials => "用户名或密码错误",
-            AuthErrorCode.UserNotFound => "用户不存在",
-            AuthErrorCode.UserDisabled => "用户账号已被禁用",
-            AuthErrorCode.PasswordExpired => "密码已过期，请修改密码",
-            AuthErrorCode.WeakPassword => "密码不符合安全要求",
-            AuthErrorCode.TokenExpired => "登录已过期，请重新登录",
-            AuthErrorCode.TokenInvalid => "登录凭据无效",
-            AuthErrorCode.TokenRevoked => "登录已失效，请重新登录",
-            AuthErrorCode.RefreshTokenExpired => "会话已过期，请重新登录",
-            AuthErrorCode.RefreshTokenInvalid => "刷新凭据无效",
-            AuthErrorCode.SessionNotFound => "会话不存在",
-            AuthErrorCode.SessionExpired => "会话已到期，请重新登录",
-            AuthErrorCode.ConcurrentSessionLimit => "登录设备数超过限制",
-            AuthErrorCode.InternalError => "服务器内部错误",
-            AuthErrorCode.ServiceUnavailable => "服务暂时不可用",
-            _ => "未知错误"
         };
     }
 

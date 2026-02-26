@@ -6,6 +6,7 @@ using FluentAssertions;
 using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Formulas;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -57,7 +58,7 @@ namespace LYBT.Module.Formulas.IntegrationTests
             services.AddFormulaModule();
 
             // 注册跨模块查询服务（FormulaService依赖）
-            services.AddScoped<ICrossModuleService, CrossModuleService>();
+            services.AddScoped<IHerbCrossModuleService, CrossModuleService>();
 
             // 注册Logger
             services.AddLogging(builder => builder.AddDebug());

@@ -144,6 +144,51 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
+        /// 获取分页列表（包含关联数据 + 全部筛选条件，DB 层执行）
+        /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
+        /// </summary>
+        public async Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(
+            int pageNumber, int pageSize,
+            MedicalCaseStatus? status, Guid? patientId, Guid? doctorId,
+            bool isAdmin, string? keyword = null)
+        {
+            var query = GetDetailQuery();
+
+            // 状态筛选
+            if (status.HasValue)
+            {
+                query = query.Where(m => m.CaseStatus == status.Value);
+            }
+
+            // 患者筛选
+            if (patientId.HasValue)
+            {
+                query = query.Where(m => m.PatientId == patientId.Value);
+            }
+
+            // 关键字搜索（患者姓名 + 中医诊断）
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var kw = keyword.Trim();
+                query = query.Where(m =>
+                    m.PatientName.Contains(kw) ||
+                    m.DoctorName.Contains(kw) ||
+                    (m.Consultation != null && m.Consultation.TcmDiagnosis != null && m.Consultation.TcmDiagnosis.Contains(kw)));
+            }
+
+            // 角色过滤: 非管理员只能看到自己创建的医案
+            if (!isAdmin && doctorId.HasValue)
+            {
+                query = query.Where(m => m.UserId == doctorId.Value);
+            }
+
+            // 按创建时间倒序
+            query = query.OrderByDescending(m => m.CreatedAt);
+
+            return await GetPagedResultAsync(query, pageNumber, pageSize);
+        }
+
+        /// <summary>
         /// 根据医生ID获取医案列表（简化版）
         /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
         /// </summary>

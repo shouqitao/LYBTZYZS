@@ -142,7 +142,7 @@ public class SyncControllerIntegrationTests : IntegrationTestBase
         metadata.Checksum.Should().NotBeNullOrEmpty();
         metadata.Checksum.Length.Should().Be(64); // SHA256 hex string
 
-        _output.WriteLine($"Herb metadata count: {result.Data.Count}");
+        _output.WriteLine($"Herb metadata count: {result.Data!.Count}");
     }
 
     [Fact]

@@ -44,7 +44,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 查询医案列表（分页）
         /// Epic #1612: 支持按状态、患者ID过滤
-        /// OpenSpec: optimize-module-list-ui - 添加角色过滤，Doctor只能看到自己的医案
+        /// Sprint3-X6: 全部筛选迁移到 Repository DB 层执行
         /// </summary>
         public async Task<PagedResult<MedicalCase>> GetListAsync(
             MedicalCaseStatus? status,
@@ -55,54 +55,14 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false,
             string? keyword = null)
         {
-            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            // TODO: Repository需要扩展支持status和patientId过滤的分页方法
-            // 当前使用GetPagedWithDetailsAsync作为临时实现
-            var result = await _repository.GetPagedWithDetailsAsync(page, pageSize);
-
-            // 临时过滤逻辑（后续应在Repository层实现）
-            var filteredItems = result.Items.AsQueryable();
-
-            if (status.HasValue)
-            {
-                filteredItems = filteredItems.Where(m => m.CaseStatus == status.Value);
-            }
-
-            if (patientId.HasValue)
-            {
-                filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
-            }
-
-            // OpenSpec: refactor-medicalcase-management - 关键字过滤
-            // 支持按患者姓名或中医诊断搜索
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                filteredItems = filteredItems.Where(m =>
-                    (m.PatientName != null && m.PatientName.Contains(keyword)) ||
-                    (m.Consultation != null && m.Consultation.TcmDiagnosis != null && m.Consultation.TcmDiagnosis.Contains(keyword)));
-            }
-
-            // OpenSpec: optimize-module-list-ui - 角色过滤
-            // 非管理员只能看到自己创建的医案
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
-            if (!isAdmin && currentDoctorId.HasValue)
-            {
-                filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
-                _logger.LogDebug("[SVC] MedicalCase.GetList → RoleFilter - DoctorId={DoctorId}", currentDoctorId.Value);
-            }
-
-            return new PagedResult<MedicalCase>
-            {
-                Items = filteredItems.ToList(),
-                TotalCount = filteredItems.Count(),
-                CurrentPage = page,
-                PageSize = pageSize
-            };
+            // Sprint3-X6: 全部筛选在 DB 层执行，TotalCount 自然正确
+            return await _repository.GetPagedWithDetailsAsync(
+                page, pageSize, status, patientId, currentDoctorId, isAdmin, keyword);
         }
 
         /// <summary>
         /// 查询医案列表（分页，返回MedicalCaseListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// Sprint3-X6: 复用 GetListAsync 结果 + 映射，消除重复代码
         /// </summary>
         public async Task<PagedResult<MedicalCaseListDto>> GetListDtoAsync(
             MedicalCaseStatus? status,
@@ -113,39 +73,14 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false,
             string? keyword = null)
         {
-            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            var result = await _repository.GetPagedWithDetailsAsync(page, pageSize);
-            var filteredItems = result.Items.AsQueryable();
-
-            if (status.HasValue)
-            {
-                filteredItems = filteredItems.Where(m => m.CaseStatus == status.Value);
-            }
-
-            if (patientId.HasValue)
-            {
-                filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                filteredItems = filteredItems.Where(m =>
-                    (m.PatientName != null && m.PatientName.Contains(keyword)) ||
-                    (m.Consultation != null && m.Consultation.TcmDiagnosis != null && m.Consultation.TcmDiagnosis.Contains(keyword)));
-            }
-
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
-            if (!isAdmin && currentDoctorId.HasValue)
-            {
-                filteredItems = filteredItems.Where(m => m.UserId == currentDoctorId.Value);
-            }
-
-            var dtos = _mapper.ToListDtos(filteredItems.ToList());
+            // Sprint3-X6: 复用 GetListAsync（已在 DB 层完成全部筛选）
+            var result = await GetListAsync(status, patientId, page, pageSize, currentDoctorId, isAdmin, keyword);
+            var dtos = _mapper.ToListDtos(result.Items.ToList());
 
             return new PagedResult<MedicalCaseListDto>
             {
                 Items = dtos,
-                TotalCount = dtos.Count,
+                TotalCount = result.TotalCount,
                 CurrentPage = page,
                 PageSize = pageSize
             };

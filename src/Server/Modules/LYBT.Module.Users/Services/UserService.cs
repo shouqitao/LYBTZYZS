@@ -147,35 +147,14 @@ namespace LYBT.Module.Users.Services
             UserRole? role = null,
             CommonStatus? status = null)
         {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+            // Sprint3-X6: keyword/role/status 筛选均在 DB 层执行，TotalCount 自然正确
+            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword, role, status);
             var dtos = _mapper.ToListDtos(pagedResult.Items.ToList());
-
-            // 应用筛选条件（MVP阶段内存过滤）
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                dtos = dtos.Where(u =>
-                    u.UserName.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                    u.RealName.Contains(keyword, StringComparison.OrdinalIgnoreCase)
-                ).ToList();
-            }
-
-            if (role.HasValue)
-            {
-                dtos = dtos.Where(u => u.Role == role.Value).ToList();
-            }
-
-            if (status.HasValue)
-            {
-                dtos = dtos.Where(u => u.Status == status.Value).ToList();
-            }
 
             var result = new PagedResult<UserListDto>
             {
                 Items = dtos,
-                TotalCount = keyword == null && !role.HasValue && !status.HasValue
-                    ? pagedResult.TotalCount
-                    : dtos.Count,
+                TotalCount = pagedResult.TotalCount,
                 CurrentPage = page,
                 PageSize = pageSize
             };
