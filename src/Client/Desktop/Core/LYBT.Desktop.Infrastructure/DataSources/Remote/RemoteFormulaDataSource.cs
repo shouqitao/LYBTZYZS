@@ -2,6 +2,7 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Riok.Mapperly.Abstractions;
 
@@ -238,6 +239,109 @@ public class RemoteFormulaDataSource : IFormulaDataSource
                 Message = ex.Message
             };
         }
+    }
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
+    /// <inheritdoc />
+    public async Task<BatchOperationResultDto> BatchImportAsync(List<FormulaImportItemDto> items, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[RemoteDataSource] Formula.BatchImport - Count={Count}", items.Count);
+
+        try
+        {
+            var response = await _api.BatchImportAsync(new FormulaBatchImportInputDto
+            {
+                Formulas = items
+            });
+
+            if (!response.Success || response.Data == null)
+            {
+                return new BatchOperationResultDto
+                {
+                    TotalCount = items.Count,
+                    FailureCount = items.Count,
+                    IsSuccess = false,
+                    Message = response.Message ?? "批量导入失败"
+                };
+            }
+
+            // 将 FormulaBatchImportResultDto 转换为 BatchOperationResultDto
+            return new BatchOperationResultDto
+            {
+                TotalCount = response.Data.TotalCount,
+                SuccessCount = response.Data.SuccessCount,
+                FailureCount = response.Data.FailureCount,
+                IsSuccess = response.Data.FailureCount == 0
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] Formula.BatchImport failed");
+            return new BatchOperationResultDto
+            {
+                TotalCount = items.Count,
+                FailureCount = items.Count,
+                IsSuccess = false,
+                Message = ex.Message
+            };
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<List<FormulaDetailDto>> GetPendingValidationAsync(CancellationToken ct = default)
+    {
+        _logger.LogDebug("[RemoteDataSource] Formula.GetPendingValidation");
+
+        try
+        {
+            // 使用分页获取并在客户端过滤（远程 API 无专用端点）
+            var response = await _api.GetFormulasAsync(1, 10000);
+            if (response.Data == null)
+            {
+                return new List<FormulaDetailDto>();
+            }
+
+            return response.Data.Items
+                .Where(f => f.ValidationStatus == FormulaValidationStatus.Draft)
+                .Select(_listMapper.ToDetailDto)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] Formula.GetPendingValidation failed");
+            return new List<FormulaDetailDto>();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<List<FormulaDetailDto>> GetAllForExportAsync(string? keyword = null, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[RemoteDataSource] Formula.GetAllForExport - Keyword={Keyword}", keyword);
+
+        try
+        {
+            var response = await _api.GetFormulasAsync(1, 10000, keyword);
+            if (response.Data == null)
+            {
+                return new List<FormulaDetailDto>();
+            }
+
+            return response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] Formula.GetAllForExport failed");
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public Task<bool> ValidateHerbBindingsAsync(Guid formulaId, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[RemoteDataSource] Formula.ValidateHerbBindings - FormulaId={FormulaId}", formulaId);
+
+        // 远程模式验证由服务端完成，客户端保守返回 true
+        return Task.FromResult(true);
     }
 }
 

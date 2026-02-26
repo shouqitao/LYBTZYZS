@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Contracts.DataSources;
@@ -36,4 +37,27 @@ public interface IFormulaDataSource : IDataSourceBase<FormulaDetailDto, FormulaI
         string? keyword,
         string? category,
         CancellationToken ct = default);
+
+    // Sprint 4 X2 扩展方法
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
+    /// <summary>
+    /// T4-X2-19/21: 批量导入验方 (延迟绑定，标记为 Draft)
+    /// </summary>
+    Task<BatchOperationResultDto> BatchImportAsync(List<FormulaImportItemDto> items, CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-20: 获取待验证验方列表 (ValidationStatus == Draft)
+    /// </summary>
+    Task<List<FormulaDetailDto>> GetPendingValidationAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-22: 获取导出数据
+    /// </summary>
+    Task<List<FormulaDetailDto>> GetAllForExportAsync(string? keyword = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-19: 验证验方药材绑定
+    /// </summary>
+    Task<bool> ValidateHerbBindingsAsync(Guid formulaId, CancellationToken ct = default);
 }

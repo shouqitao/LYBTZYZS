@@ -235,6 +235,117 @@ public class RemoteHerbDataSource : IHerbDataSource
             };
         }
     }
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
+    /// <inheritdoc />
+    public async Task<BatchOperationResultDto> BatchToggleStatusAsync(List<Guid> ids, bool enable, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[RemoteDataSource] Herb.BatchToggleStatus - Count={Count}, Enable={Enable}", ids.Count, enable);
+
+        try
+        {
+            var input = new BatchDeleteInputDto { Ids = ids };
+            var response = enable
+                ? await _api.BatchEnableAsync(input)
+                : await _api.BatchDisableAsync(input);
+
+            if (!response.Success || response.Data == null)
+            {
+                return new BatchOperationResultDto
+                {
+                    TotalCount = ids.Count,
+                    FailureCount = ids.Count,
+                    IsSuccess = false,
+                    Message = response.Message ?? "批量切换状态失败"
+                };
+            }
+
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] Herb.BatchToggleStatus failed");
+            return new BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                FailureCount = ids.Count,
+                IsSuccess = false,
+                Message = ex.Message
+            };
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<BatchOperationResultDto> BatchImportAsync(List<HerbInputDto> items, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[RemoteDataSource] Herb.BatchImport - Count={Count}", items.Count);
+
+        // 远程模式逐个创建（API 无批量导入 HerbInputDto 接口）
+        var result = new BatchOperationResultDto
+        {
+            TotalCount = items.Count,
+            IsSuccess = true
+        };
+
+        foreach (var item in items)
+        {
+            try
+            {
+                var created = await CreateAsync(item, ct);
+                result.SuccessCount++;
+                result.SuccessfulIds.Add(created.Id);
+            }
+            catch (Exception ex)
+            {
+                result.FailureCount++;
+                result.FailedItems.Add(new BatchOperationFailureItem
+                {
+                    Reason = $"导入药材 '{item.Name}' 失败: {ex.Message}"
+                });
+                _logger.LogWarning(ex, "[RemoteDataSource] Herb.BatchImport - Failed to import: {Name}", item.Name);
+            }
+        }
+
+        result.IsSuccess = result.FailureCount == 0;
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<List<HerbDetailDto>> GetAllForExportAsync(string? keyword = null, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[RemoteDataSource] Herb.GetAllForExport - Keyword={Keyword}", keyword);
+
+        try
+        {
+            var response = await _api.GetHerbsAsync(1, 10000, keyword);
+            if (response.Data == null)
+            {
+                return new List<HerbDetailDto>();
+            }
+
+            return response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] Herb.GetAllForExport failed");
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public Task<bool> HasReferencesAsync(Guid herbId, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[RemoteDataSource] Herb.HasReferences - HerbId={HerbId}", herbId);
+
+        // 远程模式保守返回 true（由服务端判断）
+        return Task.FromResult(true);
+    }
+
+    /// <inheritdoc />
+    public string[] GetImportTemplateColumns()
+    {
+        return ["药材名称", "拼音码", "分类", "性味", "归经", "功效", "单位", "单价"];
+    }
 }
 
 /// <summary>

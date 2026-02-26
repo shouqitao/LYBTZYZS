@@ -27,4 +27,27 @@ public interface IPatientDataSource : IDataSourceBase<PatientDetailDto, PatientI
     /// 批量删除患者
     /// </summary>
     Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
+
+    // Sprint 4 X2 扩展方法
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
+    /// <summary>
+    /// T4-X2-09: 批量导入患者 (Excel解析后的数据)
+    /// </summary>
+    Task<BatchOperationResultDto> BatchImportAsync(List<PatientInputDto> items, CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-10: 获取导出数据
+    /// </summary>
+    Task<List<PatientDetailDto>> GetAllForExportAsync(string? keyword = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-11: 检查患者是否有关联医案
+    /// </summary>
+    Task<bool> HasMedicalCasesAsync(Guid patientId, CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-12: 批量检查患者关联医案
+    /// </summary>
+    Task<Dictionary<Guid, bool>> BatchCheckReferencesAsync(List<Guid> patientIds, CancellationToken ct = default);
 }

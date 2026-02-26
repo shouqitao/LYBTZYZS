@@ -219,4 +219,132 @@ public class LocalHerbDataSource : IHerbDataSource
 
         return result;
     }
+
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
+    /// <inheritdoc />
+    public async Task<BatchOperationResultDto> BatchToggleStatusAsync(List<Guid> ids, bool enable, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[LocalDataSource] Herb.BatchToggleStatus - Count={Count}, Enable={Enable}", ids.Count, enable);
+
+        var result = new BatchOperationResultDto
+        {
+            TotalCount = ids.Count,
+            IsSuccess = true
+        };
+
+        var targetStatus = enable ? CommonStatus.Enabled : CommonStatus.Disabled;
+
+        foreach (var id in ids)
+        {
+            var entity = await _context.Herbs.FindAsync([id], ct);
+            if (entity != null)
+            {
+                entity.Status = targetStatus;
+                result.SuccessCount++;
+                result.SuccessfulIds.Add(id);
+            }
+            else
+            {
+                result.FailureCount++;
+                result.FailedIds.Add(id);
+                result.FailedItems.Add(new BatchOperationFailureItem
+                {
+                    Id = id,
+                    Reason = "药材不存在"
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync(ct);
+
+        result.IsSuccess = result.FailureCount == 0;
+        _logger.LogInformation("[LocalDataSource] Herb.BatchToggleStatus completed - Success={Success}, Failure={Failure}",
+            result.SuccessCount, result.FailureCount);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<BatchOperationResultDto> BatchImportAsync(List<HerbInputDto> items, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[LocalDataSource] Herb.BatchImport - Count={Count}", items.Count);
+
+        var result = new BatchOperationResultDto
+        {
+            TotalCount = items.Count,
+            IsSuccess = true
+        };
+
+        foreach (var item in items)
+        {
+            try
+            {
+                var created = await CreateAsync(item, ct);
+                result.SuccessCount++;
+                result.SuccessfulIds.Add(created.Id);
+            }
+            catch (Exception ex)
+            {
+                result.FailureCount++;
+                result.FailedItems.Add(new BatchOperationFailureItem
+                {
+                    Reason = $"导入药材 '{item.Name}' 失败: {ex.Message}"
+                });
+                _logger.LogWarning(ex, "[LocalDataSource] Herb.BatchImport - Failed to import: {Name}", item.Name);
+            }
+        }
+
+        result.IsSuccess = result.FailureCount == 0;
+        _logger.LogInformation("[LocalDataSource] Herb.BatchImport completed - Success={Success}, Failure={Failure}",
+            result.SuccessCount, result.FailureCount);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<List<HerbDetailDto>> GetAllForExportAsync(string? keyword = null, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[LocalDataSource] Herb.GetAllForExport - Keyword={Keyword}", keyword);
+
+        var query = _context.Herbs.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(h =>
+                h.Name.Contains(keyword) ||
+                (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
+        }
+
+        var entities = await query
+            .OrderBy(h => h.Name)
+            .ToListAsync(ct);
+
+        return entities.Select(e => _mapper.ToDetailDto(e)).ToList();
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> HasReferencesAsync(Guid herbId, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[LocalDataSource] Herb.HasReferences - HerbId={HerbId}", herbId);
+
+        // 检查验方药材项引用
+        var inFormulas = await _context.FormulaHerbItems
+            .AnyAsync(fhi => fhi.HerbId == herbId, ct);
+
+        if (inFormulas)
+            return true;
+
+        // 检查处方药材项引用
+        var inPrescriptions = await _context.PrescriptionItems
+            .AnyAsync(pi => pi.HerbId == herbId, ct);
+
+        return inPrescriptions;
+    }
+
+    /// <inheritdoc />
+    public string[] GetImportTemplateColumns()
+    {
+        return ["药材名称", "拼音码", "分类", "性味", "归经", "功效", "单位", "单价"];
+    }
 }

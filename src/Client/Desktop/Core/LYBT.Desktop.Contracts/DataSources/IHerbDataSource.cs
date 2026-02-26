@@ -37,4 +37,32 @@ public interface IHerbDataSource : IDataSourceBase<HerbDetailDto, HerbInputDto>
     /// 批量删除药材
     /// </summary>
     Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
+
+    // Sprint 4 X2 扩展方法
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
+    /// <summary>
+    /// T4-X2-13: 批量切换药材状态
+    /// </summary>
+    Task<BatchOperationResultDto> BatchToggleStatusAsync(List<Guid> ids, bool enable, CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-14/15: 批量导入药材
+    /// </summary>
+    Task<BatchOperationResultDto> BatchImportAsync(List<HerbInputDto> items, CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-16: 获取导出数据
+    /// </summary>
+    Task<List<HerbDetailDto>> GetAllForExportAsync(string? keyword = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-17: 检查药材是否被验方/处方引用
+    /// </summary>
+    Task<bool> HasReferencesAsync(Guid herbId, CancellationToken ct = default);
+
+    /// <summary>
+    /// T4-X2-18: 获取导入模板列头
+    /// </summary>
+    string[] GetImportTemplateColumns();
 }

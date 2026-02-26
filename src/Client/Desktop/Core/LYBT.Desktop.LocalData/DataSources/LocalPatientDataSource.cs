@@ -227,4 +227,89 @@ public class LocalPatientDataSource : IPatientDataSource
 
         return result;
     }
+
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
+    /// <inheritdoc />
+    public async Task<BatchOperationResultDto> BatchImportAsync(List<PatientInputDto> items, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[LocalDataSource] Patient.BatchImport - Count={Count}", items.Count);
+
+        var result = new BatchOperationResultDto
+        {
+            TotalCount = items.Count,
+            IsSuccess = true
+        };
+
+        foreach (var item in items)
+        {
+            try
+            {
+                var created = await CreateAsync(item, ct);
+                result.SuccessCount++;
+                result.SuccessfulIds.Add(created.Id);
+            }
+            catch (Exception ex)
+            {
+                result.FailureCount++;
+                result.FailedItems.Add(new BatchOperationFailureItem
+                {
+                    Reason = $"导入患者 '{item.Name}' 失败: {ex.Message}"
+                });
+                _logger.LogWarning(ex, "[LocalDataSource] Patient.BatchImport - Failed to import: {Name}", item.Name);
+            }
+        }
+
+        result.IsSuccess = result.FailureCount == 0;
+        _logger.LogInformation("[LocalDataSource] Patient.BatchImport completed - Success={Success}, Failure={Failure}",
+            result.SuccessCount, result.FailureCount);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<List<PatientDetailDto>> GetAllForExportAsync(string? keyword = null, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[LocalDataSource] Patient.GetAllForExport - Keyword={Keyword}", keyword);
+
+        var query = _context.Patients.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(p =>
+                p.Name.Contains(keyword) ||
+                (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)) ||
+                (p.IdNumber != null && p.IdNumber.Contains(keyword)) ||
+                (p.PinYinCode != null && p.PinYinCode.Contains(keyword)));
+        }
+
+        var entities = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync(ct);
+
+        return entities.Select(e => _mapper.ToDetailDto(e)).ToList();
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> HasMedicalCasesAsync(Guid patientId, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[LocalDataSource] Patient.HasMedicalCases - PatientId={PatientId}", patientId);
+
+        return await _context.MedicalCases
+            .AnyAsync(mc => mc.PatientId == patientId, ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<Dictionary<Guid, bool>> BatchCheckReferencesAsync(List<Guid> patientIds, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[LocalDataSource] Patient.BatchCheckReferences - Count={Count}", patientIds.Count);
+
+        var result = new Dictionary<Guid, bool>();
+        foreach (var id in patientIds)
+        {
+            result[id] = await HasMedicalCasesAsync(id, ct);
+        }
+
+        return result;
+    }
 }

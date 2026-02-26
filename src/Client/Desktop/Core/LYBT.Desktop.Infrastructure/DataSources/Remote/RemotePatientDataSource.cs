@@ -233,6 +233,94 @@ public class RemotePatientDataSource : IPatientDataSource
             };
         }
     }
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
+    /// <inheritdoc />
+    public async Task<BatchOperationResultDto> BatchImportAsync(List<PatientInputDto> items, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[RemoteDataSource] Patient.BatchImport - Count={Count}", items.Count);
+
+        try
+        {
+            var response = await _api.BatchImportAsync(new PatientBatchImportInputDto
+            {
+                Patients = items
+            });
+
+            if (!response.Success || response.Data == null)
+            {
+                return new BatchOperationResultDto
+                {
+                    TotalCount = items.Count,
+                    FailureCount = items.Count,
+                    IsSuccess = false,
+                    Message = response.Message ?? "批量导入失败"
+                };
+            }
+
+            // 将 PatientBatchImportResultDto 转换为 BatchOperationResultDto
+            return new BatchOperationResultDto
+            {
+                TotalCount = response.Data.TotalCount,
+                SuccessCount = response.Data.SuccessCount,
+                FailureCount = response.Data.FailureCount,
+                IsSuccess = response.Data.FailureCount == 0
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] Patient.BatchImport failed");
+            return new BatchOperationResultDto
+            {
+                TotalCount = items.Count,
+                FailureCount = items.Count,
+                IsSuccess = false,
+                Message = ex.Message
+            };
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<List<PatientDetailDto>> GetAllForExportAsync(string? keyword = null, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[RemoteDataSource] Patient.GetAllForExport - Keyword={Keyword}", keyword);
+
+        try
+        {
+            // 使用大 pageSize 获取所有数据
+            var response = await _api.GetPatientsAsync(1, 10000, keyword);
+            if (response.Data == null)
+            {
+                return new List<PatientDetailDto>();
+            }
+
+            return response.Data.Items.Select(_listMapper.ToDetailDto).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] Patient.GetAllForExport failed");
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public Task<bool> HasMedicalCasesAsync(Guid patientId, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[RemoteDataSource] Patient.HasMedicalCases - PatientId={PatientId}", patientId);
+
+        // 远程模式保守返回 true（由服务端判断）
+        return Task.FromResult(true);
+    }
+
+    /// <inheritdoc />
+    public Task<Dictionary<Guid, bool>> BatchCheckReferencesAsync(List<Guid> patientIds, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[RemoteDataSource] Patient.BatchCheckReferences - Count={Count}", patientIds.Count);
+
+        // 远程模式保守返回 true（由服务端判断）
+        var result = patientIds.ToDictionary(id => id, _ => true);
+        return Task.FromResult(result);
+    }
 }
 
 /// <summary>

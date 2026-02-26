@@ -2,6 +2,7 @@ using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.Mappers;
 using LYBT.Entities.Formulas;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -252,5 +253,144 @@ public class LocalFormulaDataSource : IFormulaDataSource
         entity.IsDeleted = false;
         await _context.SaveChangesAsync(ct);
         return _mapper.ToDetailDto(entity);
+    }
+
+    // OpenSpec: SYNC-D02 - 过渡态方法
+
+    /// <inheritdoc />
+    public async Task<BatchOperationResultDto> BatchImportAsync(List<FormulaImportItemDto> items, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[LocalDataSource] Formula.BatchImport - Count={Count}", items.Count);
+
+        var result = new BatchOperationResultDto
+        {
+            TotalCount = items.Count,
+            IsSuccess = true
+        };
+
+        foreach (var item in items)
+        {
+            try
+            {
+                var entity = new Formula
+                {
+                    Id = Guid.NewGuid(),
+                    Name = item.Name,
+                    Effect = item.Effect,
+                    Usage = item.Usage,
+                    Property = item.Property,
+                    IsShared = item.IsShared,
+                    Remark = item.Remark,
+                    Status = CommonStatus.Enabled,
+                    ValidationStatus = FormulaValidationStatus.Draft,
+                    CreatedAt = DateTime.Now
+                };
+
+                // 创建药材项（延迟绑定模式）
+                foreach (var herbImport in item.Herbs)
+                {
+                    entity.Herbs.Add(new FormulaHerbItem
+                    {
+                        Id = Guid.NewGuid(),
+                        FormulaId = entity.Id,
+                        HerbName = herbImport.HerbName,
+                        OriginalHerbName = herbImport.HerbName,
+                        Dosage = herbImport.Dosage,
+                        Unit = herbImport.Unit ?? "g",
+                        IsValidated = false
+                    });
+                }
+
+                _context.Formulas.Add(entity);
+                await _context.SaveChangesAsync(ct);
+
+                result.SuccessCount++;
+                result.SuccessfulIds.Add(entity.Id);
+            }
+            catch (Exception ex)
+            {
+                result.FailureCount++;
+                result.FailedItems.Add(new BatchOperationFailureItem
+                {
+                    Reason = $"导入验方 '{item.Name}' 失败: {ex.Message}"
+                });
+                _logger.LogWarning(ex, "[LocalDataSource] Formula.BatchImport - Failed to import: {Name}", item.Name);
+            }
+        }
+
+        result.IsSuccess = result.FailureCount == 0;
+        _logger.LogInformation("[LocalDataSource] Formula.BatchImport completed - Success={Success}, Failure={Failure}",
+            result.SuccessCount, result.FailureCount);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<List<FormulaDetailDto>> GetPendingValidationAsync(CancellationToken ct = default)
+    {
+        _logger.LogDebug("[LocalDataSource] Formula.GetPendingValidation");
+
+        var entities = await _context.Formulas
+            .AsNoTracking()
+            .Include(f => f.Herbs)
+            .Where(f => f.ValidationStatus == FormulaValidationStatus.Draft)
+            .OrderByDescending(f => f.CreatedAt)
+            .ToListAsync(ct);
+
+        return entities.Select(e => _mapper.ToDetailDto(e)).ToList();
+    }
+
+    /// <inheritdoc />
+    public async Task<List<FormulaDetailDto>> GetAllForExportAsync(string? keyword = null, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[LocalDataSource] Formula.GetAllForExport - Keyword={Keyword}", keyword);
+
+        var query = _context.Formulas
+            .AsNoTracking()
+            .Include(f => f.Herbs)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(f =>
+                f.Name.Contains(keyword) ||
+                (f.Effect != null && f.Effect.Contains(keyword)) ||
+                (f.Indication != null && f.Indication.Contains(keyword)));
+        }
+
+        var entities = await query
+            .OrderByDescending(f => f.CreatedAt)
+            .ToListAsync(ct);
+
+        return entities.Select(e => _mapper.ToDetailDto(e)).ToList();
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> ValidateHerbBindingsAsync(Guid formulaId, CancellationToken ct = default)
+    {
+        _logger.LogDebug("[LocalDataSource] Formula.ValidateHerbBindings - FormulaId={FormulaId}", formulaId);
+
+        var herbItems = await _context.FormulaHerbItems
+            .AsNoTracking()
+            .Where(fhi => fhi.FormulaId == formulaId)
+            .ToListAsync(ct);
+
+        if (herbItems.Count == 0)
+            return false;
+
+        // 检查所有药材项是否都有有效的 HerbId 绑定
+        foreach (var item in herbItems)
+        {
+            if (!item.HerbId.HasValue)
+                return false;
+
+            var herbExists = await _context.Herbs
+                .AnyAsync(h => h.Id == item.HerbId.Value, ct);
+
+            if (!herbExists)
+                return false;
+        }
+
+        return true;
     }
 }
