@@ -42,10 +42,29 @@ namespace LYBT.Desktop.Printing.Models
         // ===== 诊断核心字段 =====
         /// <summary>现病史</summary>
         public string? PresentIllness { get; set; }
+        /// <summary>望诊</summary>
+        public string? InspectionDiagnosis { get; set; }
+        /// <summary>闻诊</summary>
+        public string? AuscultationDiagnosis { get; set; }
         /// <summary>舌诊</summary>
         public string? TongueDiagnosis { get; set; }
         /// <summary>脉诊</summary>
         public string? PulseDiagnosis { get; set; }
+
+        /// <summary>
+        /// 症状综合文本（望闻问切四诊合参）
+        /// T4-S5-07: 合并四诊信息供打印显示
+        /// </summary>
+        public string SymptomsText
+        {
+            get
+            {
+                var parts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(Symptoms)) parts.Add(Symptoms);
+                if (!string.IsNullOrWhiteSpace(PresentIllness)) parts.Add(PresentIllness);
+                return string.Join("；", parts);
+            }
+        }
 
         // ===== 处方内容 =====
         /// <summary>药材列表</summary>
@@ -64,6 +83,8 @@ namespace LYBT.Desktop.Printing.Models
         public decimal TreatmentFee { get; set; }
         /// <summary>单剂价格</summary>
         public decimal SingleDosePrice { get; set; }
+        /// <summary>折扣（0-1之间，1.0表示无折扣）T4-S5-11</summary>
+        public decimal Discount { get; set; } = 1.0m;
         /// <summary>总价（合计）</summary>
         public decimal TotalPrice { get; set; }
 

@@ -235,20 +235,140 @@ namespace LYBT.Desktop.Printing.Services
             };
         }
 
+        // T4-S5-09: 分页阈值和容量常量
+        private const int FirstPageHerbLimit = 12;       // 首页最多显示12味药材
+        private const int ContinuationPageHerbLimit = 20; // 续页最多显示20味药材（头部更简洁）
+
+        /// <summary>
+        /// 构建FixedDocument，支持多页
+        /// T4-S5-09: 当药材超过12味时自动分页
+        /// </summary>
         private FixedDocument BuildFixedDocument(PrescriptionPrintModel model, Size pageSize)
         {
             var document = new FixedDocument();
             document.DocumentPaginator.PageSize = pageSize;
 
-            var pageContent = new PageContent();
-            var fixedPage = CreateFixedPage(model, pageSize);
+            var itemCount = model.Items?.Count ?? 0;
 
-            ((IAddChild)pageContent).AddChild(fixedPage);
-            document.Pages.Add(pageContent);
+            if (itemCount <= FirstPageHerbLimit)
+            {
+                // 单页模式：药材 <= 12味，使用原有模板
+                var pageContent = new PageContent();
+                var fixedPage = CreateFixedPage(model, pageSize);
+                ((IAddChild)pageContent).AddChild(fixedPage);
+                document.Pages.Add(pageContent);
+            }
+            else
+            {
+                // 多页模式 T4-S5-09
+                _logger.LogInformation("[PRINT] Multi-page mode: {ItemCount} herbs, threshold={Threshold}",
+                    itemCount, FirstPageHerbLimit);
+                BuildMultiPageDocument(document, model, pageSize);
+            }
 
             return document;
         }
 
+        /// <summary>
+        /// 构建多页文档
+        /// T4-S5-09: 首页显示前N味药材（使用完整模板），后续页使用续页模板
+        /// </summary>
+        private void BuildMultiPageDocument(FixedDocument document, PrescriptionPrintModel model, Size pageSize)
+        {
+            var allItems = model.Items?.ToList() ?? new List<PrescriptionItemPrintModel>();
+            var totalItems = allItems.Count;
+            var offset = 0;
+
+            // 第1页：使用完整模板，限制药材数量
+            var firstPageItems = allItems.Take(FirstPageHerbLimit).ToList();
+            var firstPageModel = CloneModelWithItems(model, firstPageItems);
+            var firstPage = CreateFixedPage(firstPageModel, pageSize);
+            var firstPageContent = new PageContent();
+            ((IAddChild)firstPageContent).AddChild(firstPage);
+            document.Pages.Add(firstPageContent);
+            offset += FirstPageHerbLimit;
+
+            // 后续页：使用续页模板
+            while (offset < totalItems)
+            {
+                var remainingCount = totalItems - offset;
+                var pageItems = allItems.Skip(offset).Take(ContinuationPageHerbLimit).ToList();
+                var isLastPage = (offset + pageItems.Count) >= totalItems;
+
+                var continuationModel = CloneModelWithItems(model, pageItems);
+                var continuationPage = CreateContinuationFixedPage(continuationModel, pageSize, isLastPage);
+                var continuationPageContent = new PageContent();
+                ((IAddChild)continuationPageContent).AddChild(continuationPage);
+                document.Pages.Add(continuationPageContent);
+
+                offset += pageItems.Count;
+            }
+
+            _logger.LogInformation("[PRINT] Multi-page document built: {PageCount} pages for {ItemCount} herbs",
+                document.Pages.Count, totalItems);
+        }
+
+        /// <summary>
+        /// 克隆打印模型但替换药材列表
+        /// T4-S5-09
+        /// </summary>
+        private static PrescriptionPrintModel CloneModelWithItems(
+            PrescriptionPrintModel source,
+            List<PrescriptionItemPrintModel> items)
+        {
+            return new PrescriptionPrintModel
+            {
+                // 诊所信息
+                ClinicName = source.ClinicName,
+                ClinicAddress = source.ClinicAddress,
+                ClinicPhone = source.ClinicPhone,
+                Department = source.Department,
+
+                // 患者信息
+                PatientName = source.PatientName,
+                Gender = source.Gender,
+                Age = source.Age,
+                ConsultationDate = source.ConsultationDate,
+                OutpatientNumber = source.OutpatientNumber,
+                PatientPhone = source.PatientPhone,
+                PatientAddress = source.PatientAddress,
+
+                // 诊断信息
+                TcmDiagnosis = source.TcmDiagnosis,
+                Symptoms = source.Symptoms,
+                PresentIllness = source.PresentIllness,
+                InspectionDiagnosis = source.InspectionDiagnosis,
+                AuscultationDiagnosis = source.AuscultationDiagnosis,
+                TongueDiagnosis = source.TongueDiagnosis,
+                PulseDiagnosis = source.PulseDiagnosis,
+
+                // 处方内容（替换药材列表）
+                Items = items,
+                DosageCount = source.DosageCount,
+                Usage = source.Usage,
+                Advice = source.Advice,
+                FormulaSource = source.FormulaSource,
+
+                // 费用信息
+                ConsultationFee = source.ConsultationFee,
+                MedicineFee = source.MedicineFee,
+                TreatmentFee = source.TreatmentFee,
+                SingleDosePrice = source.SingleDosePrice,
+                Discount = source.Discount,
+                TotalPrice = source.TotalPrice,
+
+                // 签名
+                DoctorName = source.DoctorName,
+                PrescriptionDate = source.PrescriptionDate,
+                Reviewer = source.Reviewer,
+                Dispenser = source.Dispenser,
+                PrescriptionNumber = source.PrescriptionNumber,
+            };
+        }
+
+        /// <summary>
+        /// 创建首页 FixedPage（使用完整模板）
+        /// </summary>
         private FixedPage CreateFixedPage(PrescriptionPrintModel model, Size pageSize)
         {
             var template = new PrescriptionPrintTemplate
@@ -257,6 +377,46 @@ namespace LYBT.Desktop.Printing.Services
                 Width = pageSize.Width,
                 Height = pageSize.Height
             };
+
+            template.Measure(pageSize);
+            template.Arrange(new Rect(pageSize));
+            template.UpdateLayout();
+
+            var fixedPage = new FixedPage
+            {
+                Width = pageSize.Width,
+                Height = pageSize.Height,
+                Background = System.Windows.Media.Brushes.White
+            };
+
+            fixedPage.Children.Add(template);
+            FixedPage.SetLeft(template, 0);
+            FixedPage.SetTop(template, 0);
+
+            fixedPage.Measure(pageSize);
+            fixedPage.Arrange(new Rect(pageSize));
+            fixedPage.UpdateLayout();
+
+            return fixedPage;
+        }
+
+        /// <summary>
+        /// 创建续页 FixedPage（使用续页模板）
+        /// T4-S5-09
+        /// </summary>
+        private FixedPage CreateContinuationFixedPage(PrescriptionPrintModel model, Size pageSize, bool isLastPage)
+        {
+            var template = new PrescriptionContinuationTemplate
+            {
+                DataContext = model,
+                Width = pageSize.Width,
+                Height = pageSize.Height
+            };
+
+            if (isLastPage)
+            {
+                template.SetAsLastPage();
+            }
 
             template.Measure(pageSize);
             template.Arrange(new Rect(pageSize));

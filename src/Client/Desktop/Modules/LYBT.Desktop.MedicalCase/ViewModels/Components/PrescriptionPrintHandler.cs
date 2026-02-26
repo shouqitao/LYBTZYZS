@@ -1,4 +1,5 @@
 // OpenSpec: create-printing-module - 使用新的独立打印模块
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
@@ -25,6 +26,7 @@ public class PrescriptionPrintHandler
     private readonly IPrintService<PrescriptionPrintModel>? _printService;
     private readonly MedicalCaseWorkspaceCoordinator _coordinator;
     private readonly IMedicalCaseRepository _repository;
+    private readonly ISessionManager _sessionManager;
     private readonly ILogger<PrescriptionPrintHandler> _logger;
 
     #endregion
@@ -33,14 +35,17 @@ public class PrescriptionPrintHandler
 
     // OpenSpec: simplify-workspace-architecture - 使用Coordinator替代DataLoader
     // T2-X8-04~08: 注入 Repository 用于打印回写
+    // T4-S5-10: 注入 ISessionManager 用于自动绑定 DoctorName
     public PrescriptionPrintHandler(
         MedicalCaseWorkspaceCoordinator coordinator,
         IMedicalCaseRepository repository,
+        ISessionManager sessionManager,
         ILoggerFactory loggerFactory,
         IPrintService<PrescriptionPrintModel>? printService = null)
     {
         _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         _logger = loggerFactory.CreateLogger<PrescriptionPrintHandler>();
         _printService = printService;
     }
@@ -98,12 +103,20 @@ public class PrescriptionPrintHandler
     /// <summary>
     /// 构建打印数据模型
     /// OpenSpec: create-printing-module
+    /// T4-S5-10: 自动绑定DoctorName从当前登录用户
+    /// T4-S5-11: 包含Discount折扣计算
     /// </summary>
-    private static PrescriptionPrintModel BuildPrintModel(
+    private PrescriptionPrintModel BuildPrintModel(
         PrescriptionDetailDto prescription,
         PatientDetailDto? patient,
         ConsultationInputDto? consultation)
     {
+        // T4-S5-10: 自动从当前登录用户获取医师姓名
+        var doctorName = _sessionManager.CurrentUser?.RealName ?? string.Empty;
+
+        // T4-S5-11: 获取折扣值（0-1之间，默认1.0无折扣）
+        var discount = prescription.Discount > 0 ? prescription.Discount : 1.0m;
+
         var model = new PrescriptionPrintModel
         {
             // 患者信息
@@ -128,13 +141,20 @@ public class PrescriptionPrintHandler
             // 费用信息
             SingleDosePrice = prescription.Items?.Sum(i => i.Dosage * i.UnitPrice) ?? 0,
 
-            // 签名
+            // T4-S5-11: 折扣
+            Discount = discount,
+
+            // T4-S5-10: 签名 - 自动绑定当前用户
+            DoctorName = doctorName,
             PrescriptionDate = DateTime.Now
         };
 
-        // 计算总价
+        // T4-S5-11: 计算总价（含折扣）
         model.MedicineFee = model.SingleDosePrice * model.DosageCount;
-        model.TotalPrice = model.ConsultationFee + model.MedicineFee + model.TreatmentFee;
+        var subtotal = model.ConsultationFee + model.MedicineFee + model.TreatmentFee;
+        model.TotalPrice = discount < 1.0m
+            ? Math.Round(subtotal * discount, 0, MidpointRounding.AwayFromZero)
+            : subtotal;
 
         // 药材列表
         if (prescription.Items != null)
@@ -244,6 +264,7 @@ public class PrescriptionPrintHandler
             Advice = prescriptionData.Advice,
             ReferencedFormulas = prescriptionData.ReferencedFormulas,
             Remark = prescriptionData.Remark,
+            Discount = prescriptionData.Discount, // T4-S5-11: 传递折扣值
             Items = items
         };
     }
