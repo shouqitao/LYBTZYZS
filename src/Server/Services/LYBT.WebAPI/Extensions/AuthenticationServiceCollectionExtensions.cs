@@ -107,10 +107,12 @@ public static class AuthenticationServiceCollectionExtensions
                 .RequireAuthenticatedUser()
                 .Build();
 
-            // 不设置全局回退策略，允许未标注授权属性的端点（如Swagger）匿名访问
-            // options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-            //     .RequireAuthenticatedUser()
-            //     .Build();
+            // Sprint3-A3-08: 启用 FallbackPolicy，默认要求所有端点认证
+            // Swagger 中间件不受影响（在 endpoint routing 之前运行）
+            // /health 端点需要显式 AllowAnonymous() 豁免
+            options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
 
             // 定义基于角色的策略
             // optimize-api-permissions: 添加SuperAdmin支持

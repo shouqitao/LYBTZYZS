@@ -89,11 +89,12 @@ public static class UnifiedMiddlewareConfiguration
 
         // ===== 阶段7: 终端映射（最后） =====
         // Issue #1726 Phase 3: 健康检查端点
-        app.MapHealthChecks("/health");
+        // Sprint3-A3-08: FallbackPolicy 启用后，健康检查需显式 AllowAnonymous
+        app.MapHealthChecks("/health").AllowAnonymous();
         app.MapHealthChecks("/health/database", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
         {
             Predicate = (check) => check.Name == "database"
-        });
+        }).AllowAnonymous();
 
         app.MapControllers();
 

@@ -1,5 +1,6 @@
 ﻿using LYBT.Module.Formulas.Mapping;
 using LYBT.Entities.Formulas;
+using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Common;
@@ -14,23 +15,22 @@ namespace LYBT.Module.Formulas.Services
 {
     /// <summary>
     /// 验方服务 - 简化版，只包含基础CRUD
-    /// OpenSpec: decouple-server-modules - 使用ICrossModuleService替代IHerbRepository
+    /// Sprint3-A3-07: 继承 BaseService 统一日志和权限验证
     /// </summary>
-    public class FormulaService : IFormulaService
+    public class FormulaService : BaseService, IFormulaService
     {
         private readonly IFormulaRepository _repository;
         private readonly IHerbCrossModuleService _crossModuleQuery;
         private readonly FormulaMapper _mapper = new();
-        private readonly ILogger<FormulaService> _logger;
 
         public FormulaService(
             IFormulaRepository repository,
             IHerbCrossModuleService crossModuleQuery,
             ILogger<FormulaService> logger)
+            : base(logger)
         {
             _repository = repository;
             _crossModuleQuery = crossModuleQuery;
-            _logger = logger;
         }
 
         public async Task<Result<PagedResult<FormulaListDto>>> GetPagedAsync(
