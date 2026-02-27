@@ -85,7 +85,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             badRequestResult.StatusCode.Should().Be(400);
 
             // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
-            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<bool>()), Times.Never);
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             badRequestResult.StatusCode.Should().Be(400);
 
             // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
-            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<bool>()), Times.Never);
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             badRequestResult.StatusCode.Should().Be(400);
 
             // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
-            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<bool>()), Times.Never);
         }
 
         #endregion
@@ -143,14 +143,14 @@ namespace LYBT.Module.Patients.Tests.Controllers
                 PageSize = pageSize
             });
 
-            _mockService.Setup(s => s.GetPagedAsync(pageNumber, pageSize, keyword))
+            _mockService.Setup(s => s.GetPagedAsync(pageNumber, pageSize, keyword, It.IsAny<bool>()))
                        .ReturnsAsync(mockResult);
 
             // Act
             await _controller.GetList(pageNumber, pageSize, keyword);
 
             // Assert
-            _mockService.Verify(s => s.GetPagedAsync(pageNumber, pageSize, keyword), Times.Once);
+            _mockService.Verify(s => s.GetPagedAsync(pageNumber, pageSize, keyword, It.IsAny<bool>()), Times.Once);
         }
 
         [Fact]
@@ -166,14 +166,14 @@ namespace LYBT.Module.Patients.Tests.Controllers
                 PageSize = 20
             });
 
-            _mockService.Setup(s => s.GetPagedAsync(1, 20, null))
+            _mockService.Setup(s => s.GetPagedAsync(1, 20, null, It.IsAny<bool>()))
                        .ReturnsAsync(mockResult);
 
             // Act
             await _controller.GetList();
 
             // Assert
-            _mockService.Verify(s => s.GetPagedAsync(1, 20, null), Times.Once);
+            _mockService.Verify(s => s.GetPagedAsync(1, 20, null, It.IsAny<bool>()), Times.Once);
         }
 
         #endregion

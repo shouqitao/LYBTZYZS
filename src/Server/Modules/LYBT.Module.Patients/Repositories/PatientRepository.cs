@@ -2,6 +2,8 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -96,6 +98,39 @@ namespace LYBT.Module.Patients.Repositories
             return await _dbSet
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber && !p.IsDeleted);
+        }
+
+        /// <summary>
+        /// 根据身份证号查询患者（T5-P2-24 唯一性检查）
+        /// </summary>
+        public async Task<Patient?> GetByIdNumberAsync(string idNumber)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.IdNumber == idNumber && !p.IsDeleted);
+        }
+
+        /// <summary>
+        /// 分页查询患者（支持状态过滤）（T5-P2-27 角色过滤）
+        /// </summary>
+        public async Task<PagedResult<Patient>> GetPagedWithStatusFilterAsync(int page, int pageSize, string? keyword, CommonStatus status)
+        {
+            var query = _dbSet.AsNoTracking().Where(p => !p.IsDeleted && p.Status == status);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = ApplyKeywordFilter(query, keyword.Trim());
+            }
+
+            query = ApplyDefaultOrdering(query);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Patient>(items, totalCount, page, pageSize);
         }
 
         #endregion

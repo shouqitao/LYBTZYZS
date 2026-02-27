@@ -1,5 +1,7 @@
 ﻿using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Patients.Interfaces
 {
@@ -44,6 +46,22 @@ namespace LYBT.Module.Patients.Interfaces
         /// <param name="phoneNumber">手机号</param>
         /// <returns>患者对象，不存在返回null</returns>
         Task<Patient?> GetByPhoneNumberAsync(string phoneNumber);
+
+        /// <summary>
+        /// 根据身份证号查询患者（T5-P2-24 唯一性检查）
+        /// </summary>
+        /// <param name="idNumber">身份证号</param>
+        /// <returns>患者对象，不存在返回null</returns>
+        Task<Patient?> GetByIdNumberAsync(string idNumber);
+
+        /// <summary>
+        /// 分页查询患者（支持状态过滤）（T5-P2-27 角色过滤）
+        /// </summary>
+        /// <param name="page">页码</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <param name="keyword">搜索关键词</param>
+        /// <param name="status">状态过滤</param>
+        Task<PagedResult<Patient>> GetPagedWithStatusFilterAsync(int page, int pageSize, string? keyword, CommonStatus status);
 
         // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
 

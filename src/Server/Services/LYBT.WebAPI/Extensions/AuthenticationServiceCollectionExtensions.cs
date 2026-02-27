@@ -124,6 +124,11 @@ public static class AuthenticationServiceCollectionExtensions
                 policy.RequireAuthenticatedUser()
                       .RequireRole("SuperAdmin", "Admin", "Doctor"));
 
+            // T5-P2-30: 患者模块访问策略 - 包含Receptionist
+            options.AddPolicy("PatientAccess", policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
+
             options.AddPolicy("RequireAuthenticated", policy =>
                 policy.RequireAuthenticatedUser());
         });

@@ -15,10 +15,11 @@ namespace LYBT.WebAPI.Controllers
     /// 患者管理 API - 基础CRUD功能
     /// </summary>
     /// optimize-api-permissions: 患者管理需Doctor或Admin角色
+    /// T5-P2-30: 扩展为PatientAccess策略，包含Receptionist
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = "DoctorOrAdmin")]
+    [Authorize(Policy = "PatientAccess")]
     public class PatientsController : BaseApiController
     {
         private readonly IPatientService _service;
@@ -47,7 +48,11 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
             }
 
-            var result = await _service.GetPagedAsync(page, pageSize, keyword);
+            // T5-P2-27: 非Admin角色只看到启用患者
+            var isAdmin = User?.IsInRole("Admin") == true || User?.IsInRole("SuperAdmin") == true;
+            var filterDisabled = !isAdmin;
+
+            var result = await _service.GetPagedAsync(page, pageSize, keyword, filterDisabled);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "查询失败");
@@ -81,9 +86,10 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 新增患者
+        /// T5-P2-29: 创建成功返回201
         /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
@@ -98,7 +104,9 @@ namespace LYBT.WebAPI.Controllers
             patientDto.Age = patientEntity.Age;
 
             LogOperation("新增患者成功", patientDto, patientEntity.Id);
-            return Success(patientDto, "患者创建成功");
+            return CreatedAtAction(nameof(GetById),
+                new { id = patientEntity.Id, version = "1" },
+                ApiResponse<PatientDetailDto>.CreateSuccess(patientDto, "患者创建成功"));
         }
 
         /// <summary>

@@ -45,6 +45,12 @@
             /// 医生或管理员策略
             /// </summary>
             public const string DoctorOrAdmin = "DoctorOrAdminPolicy";
+
+            /// <summary>
+            /// 患者模块访问策略 (Doctor + Admin + Receptionist)
+            /// T5-P2-30: Receptionist CRU 权限
+            /// </summary>
+            public const string PatientAccess = "PatientAccess";
         }
 
         /// <summary>
@@ -140,6 +146,7 @@
                 Policies.AdminOnly => new[] { Roles.Admin },
                 Policies.DoctorOnly => new[] { Roles.Doctor },
                 Policies.DoctorOrAdmin => new[] { Roles.Doctor, Roles.Admin },
+                Policies.PatientAccess => new[] { Roles.Doctor, Roles.Admin, "Receptionist" },
                 _ => Array.Empty<string>()
             };
         }

@@ -29,11 +29,10 @@ namespace LYBT.Shared.Validators.Patients
 
             // Issue #2240: 移除Age验证，因为Age不再是输入属性（改为从BirthDate计算）
 
-            // 4. IdNumber：必填，必须符合18位身份证格式
+            // 4. IdNumber：必填，必须符合18位身份证格式 (T5-P2-24: 移除条件，成为真正的必填字段)
             RuleFor(x => x.IdNumber)
                 .NotEmpty().WithMessage("身份证号不能为空")
-                .Matches(ValidationConstants.IdCardRegex).WithMessage("身份证号格式不正确（应为18位）")
-                .When(x => !string.IsNullOrEmpty(x.IdNumber));
+                .Matches(ValidationConstants.IdCardRegex).WithMessage("身份证号格式不正确（应为18位）");
 
             // 6. PhoneNumber：必填，必须符合手机号格式
             RuleFor(x => x.PhoneNumber)

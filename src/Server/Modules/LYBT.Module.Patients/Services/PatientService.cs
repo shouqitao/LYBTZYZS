@@ -41,11 +41,14 @@ namespace LYBT.Module.Patients.Services
             _dbContext = dbContext;
         }
 
-        public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // Bug #1587修复：支持关键字搜索（姓名/拼音码/手机号）
-            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
+            // T5-P2-27: filterDisabled=true时只显示启用状态患者
+            var pagedResult = filterDisabled
+                ? await _repository.GetPagedWithStatusFilterAsync(page, pageSize, keyword, CommonStatus.Enabled)
+                : await _repository.GetPagedAsync(page, pageSize, keyword);
 
             var items = _mapper.ToListDtos(pagedResult.Items.ToList());
 
@@ -73,10 +76,13 @@ namespace LYBT.Module.Patients.Services
         /// 分页查询患者列表（返回PatientListDto，用于列表视图）
         /// OpenSpec: optimize-entity-data-flow - 增量API方法
         /// </summary>
-        public async Task<Result<PagedResult<PatientListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<Result<PagedResult<PatientListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false)
         {
             // eliminate-service-catch-return: 移除冗余try-catch
-            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
+            // T5-P2-27: filterDisabled=true时只显示启用状态患者
+            var pagedResult = filterDisabled
+                ? await _repository.GetPagedWithStatusFilterAsync(page, pageSize, keyword, CommonStatus.Enabled)
+                : await _repository.GetPagedAsync(page, pageSize, keyword);
             var dtos = _mapper.ToListDtos(pagedResult.Items.ToList());
 
             // 确保Age属性正确计算
@@ -125,6 +131,26 @@ namespace LYBT.Module.Patients.Services
                 return Result<PatientDetailDto>.Failure(errors);
             }
 
+            // T5-P3-10: 检查手机号唯一性 (与 CreateEntityAsync 保持一致)
+            if (!string.IsNullOrEmpty(dto.PhoneNumber))
+            {
+                var existingByPhone = await _repository.GetByPhoneNumberAsync(dto.PhoneNumber);
+                if (existingByPhone != null && !existingByPhone.IsDeleted)
+                {
+                    return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientPhoneExists, $"手机号 {dto.PhoneNumber} 已存在");
+                }
+            }
+
+            // T5-P3-10: 检查身份证号唯一性 (与 CreateEntityAsync 保持一致)
+            if (!string.IsNullOrEmpty(dto.IdNumber))
+            {
+                var existingByIdNumber = await _repository.GetByIdNumberAsync(dto.IdNumber);
+                if (existingByIdNumber != null)
+                {
+                    return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientIdCardExists, $"身份证号 {dto.IdNumber} 已存在");
+                }
+            }
+
             var entity = _mapper.ToEntity(dto);
 
             // 生成拼音码（基于姓名）
@@ -153,6 +179,26 @@ namespace LYBT.Module.Patients.Services
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                 _logger.LogWarning("[SVC] Patient.Update → ValidationFailed - PatientId={PatientId} Errors={Errors}", id, string.Join("; ", errors));
                 return Result<PatientDetailDto>.Failure(errors);
+            }
+
+            // T5-P2-25: 更新时检查手机号唯一性 (排除自身)
+            if (!string.IsNullOrEmpty(dto.PhoneNumber))
+            {
+                var existingByPhone = await _repository.GetByPhoneNumberAsync(dto.PhoneNumber);
+                if (existingByPhone != null && existingByPhone.Id != id)
+                {
+                    return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientPhoneExists, $"手机号 {dto.PhoneNumber} 已被其他患者使用");
+                }
+            }
+
+            // T5-P2-26: 更新时检查身份证号唯一性 (排除自身)
+            if (!string.IsNullOrEmpty(dto.IdNumber))
+            {
+                var existingByIdNumber = await _repository.GetByIdNumberAsync(dto.IdNumber);
+                if (existingByIdNumber != null && existingByIdNumber.Id != id)
+                {
+                    return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientIdCardExists, $"身份证号 {dto.IdNumber} 已被其他患者使用");
+                }
             }
 
             // 保存旧的姓名用于检测变化
@@ -240,13 +286,17 @@ namespace LYBT.Module.Patients.Services
                 return Result<PatientBatchImportResultDto>.Success(result);
             }
 
-            // BR-003: 限制最大导入行数
-            if (rowCount > 1000)
+            // BR-003: 限制最大导入行数 (T5-P3-11: 修复off-by-one，rowCount包含表头行)
+            if (rowCount - 1 > 1000)
             {
-                return Result<PatientBatchImportResultDto>.Failure(GenericErrorCode.ValidationFailed, $"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
+                return Result<PatientBatchImportResultDto>.Failure(GenericErrorCode.PatientImportRowExceeded, $"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
             }
 
             var patientsToCreate = new List<Patient>();
+
+            // T5-P2-28: 批量内去重跟踪
+            var importedPhoneNumbers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var importedIdNumbers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // 从第2行开始读取数据（第1行是表头）
             for (int row = 2; row <= rowCount; row++)
@@ -276,9 +326,24 @@ namespace LYBT.Module.Patients.Services
                         continue;
                     }
 
-                    // BR-004: 检查手机号重复
+                    // BR-004: 检查手机号重复 (数据库 + 批量内)
                     if (!string.IsNullOrEmpty(inputDto.PhoneNumber))
                     {
+                        if (importedPhoneNumbers.Contains(inputDto.PhoneNumber))
+                        {
+                            result.SkippedCount++;
+                            result.Failures.Add(new PatientImportFailureDto
+                            {
+                                OriginalRowNumber = row,
+                                FailureReason = "手机号在本次导入中重复",
+                                FieldName = "PhoneNumber",
+                                OriginalValue = inputDto.PhoneNumber,
+                                SuggestedFix = "修改手机号或跳过该记录",
+                                DataSnapshot = inputDto
+                            });
+                            continue;
+                        }
+
                         var existing = await _repository.GetByPhoneNumberAsync(inputDto.PhoneNumber);
                         if (existing != null)
                         {
@@ -296,11 +361,52 @@ namespace LYBT.Module.Patients.Services
                         }
                     }
 
+                    // T5-P2-28: 检查身份证号重复 (数据库 + 批量内)
+                    if (!string.IsNullOrEmpty(inputDto.IdNumber))
+                    {
+                        if (importedIdNumbers.Contains(inputDto.IdNumber))
+                        {
+                            result.SkippedCount++;
+                            result.Failures.Add(new PatientImportFailureDto
+                            {
+                                OriginalRowNumber = row,
+                                FailureReason = "身份证号在本次导入中重复",
+                                FieldName = "IdNumber",
+                                OriginalValue = inputDto.IdNumber,
+                                SuggestedFix = "修改身份证号或跳过该记录",
+                                DataSnapshot = inputDto
+                            });
+                            continue;
+                        }
+
+                        var existingById = await _repository.GetByIdNumberAsync(inputDto.IdNumber);
+                        if (existingById != null)
+                        {
+                            result.SkippedCount++;
+                            result.Failures.Add(new PatientImportFailureDto
+                            {
+                                OriginalRowNumber = row,
+                                FailureReason = "身份证号已存在",
+                                FieldName = "IdNumber",
+                                OriginalValue = inputDto.IdNumber,
+                                SuggestedFix = "修改身份证号或跳过该记录",
+                                DataSnapshot = inputDto
+                            });
+                            continue;
+                        }
+                    }
+
                     // 映射到Patient实体
                     var patient = _mapper.ToEntity(inputDto);
 
                     // 生成拼音码（Task 2.6）
                     patient.PinYinCode = PinYinHelper.GetPinYinCode(patient.Name);
+
+                    // T5-P2-28: 记录已导入的手机号和身份证号用于批量内去重
+                    if (!string.IsNullOrEmpty(inputDto.PhoneNumber))
+                        importedPhoneNumbers.Add(inputDto.PhoneNumber);
+                    if (!string.IsNullOrEmpty(inputDto.IdNumber))
+                        importedIdNumbers.Add(inputDto.IdNumber);
 
                     patientsToCreate.Add(patient);
                 }
@@ -413,7 +519,7 @@ namespace LYBT.Module.Patients.Services
             worksheet.Cells[1, 1].Value = "姓名*";
             worksheet.Cells[1, 2].Value = "性别";
             worksheet.Cells[1, 3].Value = "出生日期";
-            worksheet.Cells[1, 4].Value = "身份证号";
+            worksheet.Cells[1, 4].Value = "身份证号*";
             worksheet.Cells[1, 5].Value = "手机号码";
             worksheet.Cells[1, 6].Value = "地址";
             worksheet.Cells[1, 7].Value = "过敏史";
@@ -577,6 +683,16 @@ namespace LYBT.Module.Patients.Services
                 }
             }
 
+            // T5-P2-24: 检查身份证号唯一性
+            if (!string.IsNullOrEmpty(dto.IdNumber))
+            {
+                var existingByIdNumber = await _repository.GetByIdNumberAsync(dto.IdNumber);
+                if (existingByIdNumber != null)
+                {
+                    return Result<Patient>.Failure(GenericErrorCode.PatientIdCardExists, $"身份证号 {dto.IdNumber} 已存在");
+                }
+            }
+
             var entity = _mapper.ToEntity(dto);
 
             // 生成拼音码（基于姓名）
@@ -605,6 +721,26 @@ namespace LYBT.Module.Patients.Services
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                 _logger.LogWarning("[SVC] Patient.Update → ValidationFailed - PatientId={PatientId} Errors={Errors}", id, string.Join("; ", errors));
                 return Result<Patient>.Failure(errors);
+            }
+
+            // T5-P2-25: 更新时检查手机号唯一性 (排除自身)
+            if (!string.IsNullOrEmpty(dto.PhoneNumber))
+            {
+                var existingByPhone = await _repository.GetByPhoneNumberAsync(dto.PhoneNumber);
+                if (existingByPhone != null && existingByPhone.Id != id)
+                {
+                    return Result<Patient>.Failure(GenericErrorCode.PatientPhoneExists, $"手机号 {dto.PhoneNumber} 已被其他患者使用");
+                }
+            }
+
+            // T5-P2-26: 更新时检查身份证号唯一性 (排除自身)
+            if (!string.IsNullOrEmpty(dto.IdNumber))
+            {
+                var existingByIdNumber = await _repository.GetByIdNumberAsync(dto.IdNumber);
+                if (existingByIdNumber != null && existingByIdNumber.Id != id)
+                {
+                    return Result<Patient>.Failure(GenericErrorCode.PatientIdCardExists, $"身份证号 {dto.IdNumber} 已被其他患者使用");
+                }
             }
 
             // 保存旧的姓名用于检测变化
