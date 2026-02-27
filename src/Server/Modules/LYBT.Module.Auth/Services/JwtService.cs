@@ -52,6 +52,20 @@ public class JwtService : IJwtService
                 "这是安全基线要求,可使用以下命令生成符合要求的密钥:\n" +
                 "PowerShell: [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(64))");
         }
+
+        // T5-P2-45: 生产环境禁止使用已知默认密钥
+        var environment = _configuration["ASPNETCORE_ENVIRONMENT"]
+            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            ?? "Development";
+
+        const string knownDefaultKey = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
+        if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase) &&
+            secretKey.Contains(knownDefaultKey, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "生产环境禁止使用默认 JWT 密钥。请使用以下命令生成安全密钥:\n" +
+                "PowerShell: [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(64))");
+        }
     }
 
     /// <summary>

@@ -26,6 +26,7 @@ namespace LYBT.Desktop.Foundation.Http
     public class TokenRefreshHandler : DelegatingHandler, ITokenRefreshHandler
     {
         private readonly ITokenStorageService _tokenStorage;
+        private readonly ICredentialVault _credentialVault;
         private readonly IUserActivityState? _userActivityState;
         private readonly ILogger<TokenRefreshHandler> _logger;
         private readonly IConfiguration _configuration;
@@ -47,12 +48,14 @@ namespace LYBT.Desktop.Foundation.Http
 
         public TokenRefreshHandler(
             ITokenStorageService tokenStorage,
+            ICredentialVault credentialVault,
             IConfiguration configuration,
             ILogger<TokenRefreshHandler> logger,
             IUserActivityState? userActivityState = null,
             IEventAggregator? eventAggregator = null)
         {
             _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
+            _credentialVault = credentialVault ?? throw new ArgumentNullException(nameof(credentialVault));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userActivityState = userActivityState; // 可选依赖，启动时可能尚未注册
@@ -208,6 +211,19 @@ namespace LYBT.Desktop.Foundation.Http
                 // 不可重试的错误，立即返回
                 _logger.LogWarning("Token刷新失败（不可重试） [原因: {Reason}]", lastResult.FailureReason);
                 break;
+            }
+
+            // T5-P2-05: RefreshToken 失败时尝试 AutoLogin 降级
+            if (lastResult != null && IsAutoLoginEligible(lastResult.FailureReason))
+            {
+                var autoLoginResult = await TryAutoLoginFallbackAsync();
+                if (autoLoginResult.Success)
+                {
+                    _logger.LogInformation("Token刷新失败后 AutoLogin 降级成功");
+                    return autoLoginResult;
+                }
+
+                _logger.LogWarning("AutoLogin 降级也失败: {Reason}", autoLoginResult.ErrorMessage);
             }
 
             // 发布失败事件
@@ -418,6 +434,101 @@ namespace LYBT.Desktop.Foundation.Http
                 _logger.LogError(ex, "发布Token刷新失败事件失败");
             }
         }
+
+        #region T5-P2-05: AutoLogin 降级
+
+        /// <summary>
+        /// 判断失败原因是否适合尝试 AutoLogin 降级
+        /// 仅 RefreshToken 过期/撤销/无效时尝试，UserDisabled/NotLoggedIn 不降级
+        /// </summary>
+        private static bool IsAutoLoginEligible(TokenRefreshFailureReason? reason)
+        {
+            return reason is TokenRefreshFailureReason.RefreshTokenExpired
+                or TokenRefreshFailureReason.RefreshTokenRevoked
+                or TokenRefreshFailureReason.RefreshTokenInvalid;
+        }
+
+        /// <summary>
+        /// 尝试使用存储的 AutoLoginToken 进行降级登录
+        /// 使用 _refreshHttpClient 直接调用 API，避免循环依赖
+        /// </summary>
+        private async Task<TokenRefreshResult> TryAutoLoginFallbackAsync()
+        {
+            try
+            {
+                // 1. 获取当前用户名
+                var loginResponse = await _tokenStorage.GetLoginResponseAsync();
+                var username = loginResponse?.User?.UserName;
+                if (string.IsNullOrEmpty(username))
+                {
+                    _logger.LogDebug("AutoLogin 降级跳过: 无法获取用户名");
+                    return TokenRefreshResult.Failed(TokenRefreshFailureReason.NotLoggedIn, "无法获取用户名");
+                }
+
+                // 2. 从 CredentialVault 获取 AutoLoginToken
+                var autoLoginToken = await _credentialVault.GetAutoLoginTokenAsync(username);
+                if (string.IsNullOrEmpty(autoLoginToken))
+                {
+                    _logger.LogDebug("AutoLogin 降级跳过: 无存储的 AutoLoginToken - UserName: {UserName}", username);
+                    return TokenRefreshResult.Failed(TokenRefreshFailureReason.NotLoggedIn, "无AutoLoginToken");
+                }
+
+                // 3. 调用 POST /api/v1/auth/auto-login
+                var request = new AutoLoginRequest
+                {
+                    UserName = username,
+                    AutoLoginToken = autoLoginToken
+                };
+
+                var response = await _refreshHttpClient.PostAsJsonAsync("/api/v1/auth/auto-login", request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning("AutoLogin 降级 API 调用失败 [StatusCode: {StatusCode}] [Error: {Error}]",
+                        response.StatusCode, errorContent);
+
+                    // AutoLoginToken 无效时清除存储
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        await _credentialVault.ClearCredentialsAsync(username);
+                        _logger.LogInformation("AutoLoginToken 无效，已清除凭据 - UserName: {UserName}", username);
+                    }
+
+                    return TokenRefreshResult.Failed(TokenRefreshFailureReason.RefreshTokenInvalid, "自动登录失败");
+                }
+
+                // 4. 解析响应并保存新 Token
+                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponse>>();
+                if (apiResponse?.Success != true || apiResponse.Data == null)
+                {
+                    return TokenRefreshResult.Failed(TokenRefreshFailureReason.Unknown, apiResponse?.Message ?? "自动登录响应解析失败");
+                }
+
+                await _tokenStorage.SaveAuthenticationAsync(apiResponse.Data, rememberMe: true);
+
+                // 5. 更新 AutoLoginToken（服务端可能返回新的）
+                if (!string.IsNullOrEmpty(apiResponse.Data.AutoLoginToken))
+                {
+                    await _credentialVault.SaveAutoLoginTokenAsync(username, apiResponse.Data.AutoLoginToken);
+                }
+
+                _logger.LogInformation("AutoLogin 降级成功 [UserName: {UserName}] [NewExpiry: {ExpiresAt}]",
+                    username, apiResponse.Data.ExpiresAt);
+
+                // 发布成功事件
+                PublishTokenRefreshSucceededEvent();
+
+                return TokenRefreshResult.Succeeded();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AutoLogin 降级异常");
+                return TokenRefreshResult.Failed(TokenRefreshFailureReason.Unknown, ex.Message);
+            }
+        }
+
+        #endregion
 
         protected override void Dispose(bool disposing)
         {

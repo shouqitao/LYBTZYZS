@@ -305,12 +305,13 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<TokenRefreshHandler>(resolver =>
             {
                 var tokenStorage = resolver.Resolve<ITokenStorageService>();
+                var credentialVault = resolver.Resolve<ICredentialVault>();
                 var configuration = resolver.Resolve<IConfiguration>();
                 var logger = resolver.Resolve<ILogger<TokenRefreshHandler>>();
                 IUserActivityState? userActivityState = null;
                 try { userActivityState = resolver.Resolve<IUserActivityState>(); }
                 catch { /* 启动阶段可能尚未注册 */ }
-                return new TokenRefreshHandler(tokenStorage, configuration, logger, userActivityState);
+                return new TokenRefreshHandler(tokenStorage, credentialVault, configuration, logger, userActivityState);
             });
             // OpenSpec: refactor-login-authentication (Phase 1.4) - 注册接口
             containerRegistry.Register<ITokenRefreshHandler>(resolver => resolver.Resolve<TokenRefreshHandler>());

@@ -37,5 +37,12 @@ namespace LYBT.Shared.Models.Contracts.Auth
         /// </remarks>
         [DisplayName("自动登录令牌")]
         public string? AutoLoginToken { get; set; }
+
+        /// <summary>
+        /// T5-P2-31: 是否需要在登录后修改密码
+        /// 管理员重置密码后，用户首次登录时设置为 true
+        /// </summary>
+        [DisplayName("须改密")]
+        public bool MustChangePassword { get; set; }
     }
 }

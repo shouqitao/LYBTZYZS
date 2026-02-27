@@ -393,6 +393,8 @@ namespace LYBT.Module.Users.Services
 
             // 哈希密码并更新
             entity.PasswordHash = PasswordHelper.HashPassword(password, entity.Role, _logger);
+            // T5-P2-31: 重置密码后标记下次登录须改密
+            entity.MustChangeOnNextLogin = true;
             await _repository.UpdateAsync(entity);
 
             // X3-04: 重置密码后撤销所有 Token，强制重新登录
@@ -481,6 +483,8 @@ namespace LYBT.Module.Users.Services
             // verificationResult.NewHashedPassword 是旧密码的新算法哈希（用于升级场景），
             // 在修改密码时必须使用 newPassword 哈希，否则新密码会被丢弃
             entity.PasswordHash = PasswordHelper.HashPassword(newPassword, entity.Role, _logger);
+            // T5-P2-31: 修改密码后清除须改密标记
+            entity.MustChangeOnNextLogin = false;
             await _repository.UpdateAsync(entity);
 
             // X3-05: 修改密码后撤销所有 Token，强制重新登录
@@ -516,6 +520,11 @@ namespace LYBT.Module.Users.Services
             }
 
             // 更新字段
+            // T5-P2-32: RealName 变更时重新生成拼音码
+            if (!string.Equals(entity.RealName, dto.RealName, StringComparison.Ordinal))
+            {
+                entity.PinYinCode = PinYinHelper.GetPinYinCode(dto.RealName);
+            }
             entity.RealName = dto.RealName;
             entity.PhoneNumber = dto.PhoneNumber;
 

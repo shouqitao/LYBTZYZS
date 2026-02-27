@@ -82,6 +82,12 @@ namespace LYBT.Desktop.Auth.ViewModels
                 var oldValue = _rememberPassword;
                 if (SetProperty(ref _rememberPassword, value))
                 {
+                    // T5-P2-07: 勾选"记住密码"时自动勾选"记住用户名"
+                    if (value && !RememberUsername)
+                    {
+                        RememberUsername = true;
+                    }
+
                     // 取消勾选时清除已保存的密码
                     if (oldValue && !value)
                     {

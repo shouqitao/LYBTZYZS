@@ -72,6 +72,13 @@ namespace LYBT.Entities.Users
         [DisplayName("锁定结束时间")]
         public DateTime? LockoutEnd { get; set; }
 
+        /// <summary>
+        /// T5-P2-31: 下次登录时必须修改密码
+        /// 管理员重置密码后设置此标记
+        /// </summary>
+        [DisplayName("下次登录须改密")]
+        public bool MustChangeOnNextLogin { get; set; } = false;
+
         // ==== 基础时间字段 ====
         // 审计字段（CreatedAt、UpdatedAt、CreatedBy、UpdatedBy）继承自BaseEntity
 

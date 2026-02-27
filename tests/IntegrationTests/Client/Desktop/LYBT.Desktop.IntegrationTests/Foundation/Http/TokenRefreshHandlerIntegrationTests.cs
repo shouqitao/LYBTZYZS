@@ -36,6 +36,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
 
     private readonly IConfiguration _configuration;
     private readonly ILogger<TokenRefreshHandler> _logger;
+    private readonly ICredentialVault _credentialVault;
 
     public TokenRefreshHandlerIntegrationTests()
     {
@@ -51,6 +52,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
             .Build();
 
         _logger = Substitute.For<ILogger<TokenRefreshHandler>>();
+        _credentialVault = Substitute.For<ICredentialVault>();
     }
 
     public void Dispose()
@@ -90,6 +92,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
         var mockInnerHandler = new MockHttpMessageHandler(HttpStatusCode.OK, "{}");
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
+            _credentialVault,
             _configuration,
             _logger,
             mockActivityState)
@@ -168,6 +171,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
 
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
+            _credentialVault,
             _configuration,
             _logger,
             mockActivityState)
@@ -218,6 +222,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
         var mockInnerHandler = new MockHttpMessageHandler(HttpStatusCode.OK, "{}");
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
+            _credentialVault,
             _configuration,
             _logger,
             mockActivityState)
@@ -255,6 +260,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
         var mockInnerHandler = new MockHttpMessageHandler(HttpStatusCode.OK, "{}");
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
+            _credentialVault,
             _configuration,
             _logger,
             mockActivityState)
@@ -303,6 +309,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
         var mockInnerHandler = new MockHttpMessageHandler(HttpStatusCode.OK, "{}");
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
+            _credentialVault,
             _configuration,
             _logger,
             userActivityState: null) // 可选依赖为null

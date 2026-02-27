@@ -352,11 +352,15 @@ namespace LYBT.Desktop.Foundation.Security
                     return null;
                 }
 
-                // 验证HMAC完整性
+                // T5-P2-03: 验证HMAC完整性，篡改时清除凭据
                 var expectedHmac = ComputeHmac(username, entry.EncryptedAutoLoginToken);
                 if (!string.Equals(entry.Hmac, expectedHmac, StringComparison.Ordinal))
                 {
-                    _logger.LogWarning("HMAC校验失败，数据可能被篡改 - UserName: {UserName}", username);
+                    _logger.LogWarning("HMAC校验失败，数据可能被篡改，清除凭据 - UserName: {UserName}", username);
+                    // 篡改检测: 立即清除被篡改的 Token
+                    entry.EncryptedAutoLoginToken = string.Empty;
+                    entry.Hmac = string.Empty;
+                    await SaveVaultAsync(vault);
                     return null;
                 }
 

@@ -40,10 +40,15 @@ namespace LYBT.Entities.Auth
         public string Jti { get; set; } = string.Empty;
 
         /// <summary>
-        /// 过期时间
+        /// 过期时间 (滑动过期，每次轮换时刷新)
         /// </summary>
         [Required]
         public DateTime ExpiresAt { get; set; }
+
+        /// <summary>
+        /// T5-P2-04: 绝对过期时间 (30天，Token Family 创建时设定，轮换时继承，不可延长)
+        /// </summary>
+        public DateTime? AbsoluteExpiresAt { get; set; }
 
         /// <summary>
         /// 是否已撤销
@@ -130,20 +135,25 @@ namespace LYBT.Entities.Auth
         /// <summary>
         /// 是否激活（计算属性）
         /// Issue #1864: 增加IsUsed检查，已使用的Token不再激活
+        /// T5-P2-04: 增加AbsoluteExpiresAt检查
         /// </summary>
         [NotMapped]
-        public bool IsActive => !IsRevoked && !IsDeleted && !IsUsed && ExpiresAt > DateTime.UtcNow;
+        public bool IsActive => !IsRevoked && !IsDeleted && !IsUsed &&
+                                ExpiresAt > DateTime.UtcNow &&
+                                (!AbsoluteExpiresAt.HasValue || AbsoluteExpiresAt.Value > DateTime.UtcNow);
 
         /// <summary>
         /// 检查Token是否有效
         /// Issue #1864: 增加IsUsed检查，已使用的Token不再有效
+        /// T5-P2-04: 增加30天绝对过期检查
         /// </summary>
         public bool IsValid()
         {
             return !IsRevoked &&
                    !IsDeleted &&
                    !IsUsed &&
-                   ExpiresAt > DateTime.UtcNow;
+                   ExpiresAt > DateTime.UtcNow &&
+                   (!AbsoluteExpiresAt.HasValue || AbsoluteExpiresAt.Value > DateTime.UtcNow);
         }
 
         /// <summary>

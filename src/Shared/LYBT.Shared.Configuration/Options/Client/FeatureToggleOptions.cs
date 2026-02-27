@@ -30,4 +30,10 @@ public sealed class FeatureToggleOptions
     public bool MedicalCaseDelete { get; set; } = true;
     public bool MedicalCaseViewDetail { get; set; } = true;
     public bool MedicalCaseSearch { get; set; } = true;
+
+    // 硬件设备
+    /// <summary>
+    /// T5-P2-44: 读卡器功能开关，默认关闭
+    /// </summary>
+    public bool CardReaderEnabled { get; set; } = false;
 }

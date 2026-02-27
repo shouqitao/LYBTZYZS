@@ -20,6 +20,9 @@ public record UserBasicDto
     public string? PinYinCode { get; init; }
     public DateTime? LastLoginTime { get; init; }
     public int FailedLoginCount { get; init; }
+    public DateTime? LockoutEnd { get; init; }
+    /// <summary>T5-P2-31: 下次登录须改密标记</summary>
+    public bool MustChangeOnNextLogin { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
     public string? Remark { get; init; }

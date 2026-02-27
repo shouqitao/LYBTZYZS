@@ -181,6 +181,8 @@ public class CrossModuleService :
                 PinYinCode = u.PinYinCode,
                 LastLoginTime = u.LastLoginTime,
                 FailedLoginCount = u.FailedLoginCount,
+                LockoutEnd = u.LockoutEnd,
+                MustChangeOnNextLogin = u.MustChangeOnNextLogin,
                 CreatedAt = u.CreatedAt,
                 UpdatedAt = u.UpdatedAt,
                 Remark = u.Remark
@@ -206,6 +208,8 @@ public class CrossModuleService :
                 PinYinCode = u.PinYinCode,
                 LastLoginTime = u.LastLoginTime,
                 FailedLoginCount = u.FailedLoginCount,
+                LockoutEnd = u.LockoutEnd,
+                MustChangeOnNextLogin = u.MustChangeOnNextLogin,
                 CreatedAt = u.CreatedAt,
                 UpdatedAt = u.UpdatedAt,
                 Remark = u.Remark,
@@ -234,6 +238,39 @@ public class CrossModuleService :
         return await _context.Users
             .AsNoTracking()
             .AnyAsync(u => u.Id == userId && !u.IsDeleted);
+    }
+
+    /// <inheritdoc />
+    /// <summary>
+    /// T5-P2-01: 更新登录失败状态
+    /// </summary>
+    public async Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+        if (user != null)
+        {
+            user.FailedLoginCount = failedLoginCount;
+            user.LockoutEnd = lockoutEnd;
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    /// <summary>
+    /// T5-P2-01: 重置登录状态 (成功登录后)
+    /// </summary>
+    public async Task ResetLoginStateAsync(Guid userId)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+        if (user != null)
+        {
+            user.FailedLoginCount = 0;
+            user.LockoutEnd = null;
+            user.LastLoginTime = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
     }
 
     #endregion

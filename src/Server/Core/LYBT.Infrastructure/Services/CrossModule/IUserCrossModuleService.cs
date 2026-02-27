@@ -19,4 +19,14 @@ public interface IUserCrossModuleService
 
     /// <summary>检查用户是否存在 (未删除)</summary>
     Task<bool> UserExistsAsync(Guid userId);
+
+    /// <summary>
+    /// T5-P2-01: 更新登录失败状态 (FailedLoginCount + LockoutEnd)
+    /// </summary>
+    Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd);
+
+    /// <summary>
+    /// T5-P2-01: 重置登录状态 (成功登录后清除锁定，更新 LastLoginTime)
+    /// </summary>
+    Task ResetLoginStateAsync(Guid userId);
 }

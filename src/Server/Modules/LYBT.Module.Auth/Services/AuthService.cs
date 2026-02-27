@@ -66,6 +66,16 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 内部凭据验证 - 返回 UserCredentialDto，供 LoginAsync 复用避免双重查询
         /// </summary>
+        /// <summary>
+        /// T5-P2-01: 最大失败登录次数
+        /// </summary>
+        private const int MaxFailedLoginCount = 5;
+
+        /// <summary>
+        /// T5-P2-01: 锁定时间（分钟）
+        /// </summary>
+        private const int LockoutMinutes = 15;
+
         private async Task<Result<UserCredentialDto>> VerifyCredentialsInternalAsync(LoginRequest request)
         {
             if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
@@ -79,11 +89,20 @@ namespace LYBT.Module.Auth.Services
                 return Result<UserCredentialDto>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名或密码错误");
             }
 
+            // T5-P2-02: UserDisabled 返回 403 (ErrorCode.UserDisabled -> HTTP 403)
             if (user.Status == CommonStatus.Disabled)
             {
                 _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=用户已被禁用",
                     request.UserName);
                 return Result<UserCredentialDto>.Failure(GenericErrorCode.UserDisabled, "用户已被禁用");
+            }
+
+            // T5-P2-01: 检查账户锁定状态 (参考 LocalAuthService:61-94)
+            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+            {
+                _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=账户已锁定至 {LockoutEnd}",
+                    request.UserName, user.LockoutEnd.Value);
+                return Result<UserCredentialDto>.Failure(GenericErrorCode.UserLocked, "账号已被锁定，请稍后重试");
             }
 
             var verificationResult = PasswordHelper.VerifyPassword(
@@ -92,8 +111,23 @@ namespace LYBT.Module.Auth.Services
 
             if (!verificationResult.IsSuccess)
             {
-                _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=密码错误",
-                    request.UserName);
+                // T5-P2-01: 增加失败次数，达到阈值时锁定账户
+                var newFailedCount = user.FailedLoginCount + 1;
+                DateTime? lockoutEnd = null;
+
+                if (newFailedCount >= MaxFailedLoginCount)
+                {
+                    lockoutEnd = DateTime.UtcNow.AddMinutes(LockoutMinutes);
+                    _logger.LogWarning("[SVC] Auth.VerifyCredentials -> AccountLocked - UserName={UserName} FailedCount={Count} LockoutMinutes={Minutes}",
+                        request.UserName, newFailedCount, LockoutMinutes);
+                }
+                else
+                {
+                    _logger.LogWarning("[SVC] Auth.VerifyCredentials -> Failed - UserName={UserName} Reason=密码错误 FailedCount={Count}",
+                        request.UserName, newFailedCount);
+                }
+
+                await _crossModuleQuery.UpdateLoginFailureAsync(user.Id, newFailedCount, lockoutEnd);
                 return Result<UserCredentialDto>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名或密码错误");
             }
 
@@ -101,6 +135,17 @@ namespace LYBT.Module.Auth.Services
             if (verificationResult.NewHashedPassword != null)
             {
                 await _crossModuleQuery.UpdateUserPasswordHashAsync(user.Id, verificationResult.NewHashedPassword);
+            }
+
+            // T5-P2-01: 登录成功，重置失败计数和锁定状态
+            if (user.FailedLoginCount > 0 || user.LockoutEnd.HasValue)
+            {
+                await _crossModuleQuery.ResetLoginStateAsync(user.Id);
+            }
+            else
+            {
+                // 仅更新 LastLoginTime
+                await _crossModuleQuery.ResetLoginStateAsync(user.Id);
             }
 
             _logger.LogInformation("[SVC] Auth.VerifyCredentials completed - UserName={UserName} Role={Role}",
@@ -184,6 +229,9 @@ namespace LYBT.Module.Auth.Services
             var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
             var tokenExpireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15;
 
+            // T5-P2-04: 30天绝对过期
+            var absoluteExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenAbsoluteExpirationDays") ?? 30;
+
             var refreshTokenRecord = new LYBT.Entities.Auth.RefreshToken
             {
                 Token = refreshToken,
@@ -191,6 +239,7 @@ namespace LYBT.Module.Auth.Services
                 UserType = userType, // Issue #1909: 根据角色设置用户类型
                 Jti = Guid.NewGuid().ToString(),
                 ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
+                AbsoluteExpiresAt = DateTime.UtcNow.AddDays(absoluteExpireDays), // T5-P2-04
                 FamilyId = Guid.NewGuid().ToString() // 新家族ID
             };
             _dbContext.RefreshTokens.Add(refreshTokenRecord);
@@ -201,7 +250,8 @@ namespace LYBT.Module.Auth.Services
                 Token = token,
                 User = userDto,
                 RefreshToken = refreshToken, // Issue #1838: 返回RefreshToken
-                ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes),
+                MustChangePassword = userBasic.MustChangeOnNextLogin // T5-P2-31
             };
 
             // OpenSpec: refactor-login-authentication (CVT-001)
@@ -420,7 +470,7 @@ namespace LYBT.Module.Auth.Services
             // 这样当攻击者尝试重用时，IsUsed=true会触发重放攻击检测
             tokenRecord.MarkAsUsed(newRefreshToken);
 
-            // 创建新Token记录，继承FamilyId
+            // 创建新Token记录，继承FamilyId和AbsoluteExpiresAt
             var newTokenRecord = new LYBT.Entities.Auth.RefreshToken
             {
                 Token = newRefreshToken,
@@ -428,6 +478,7 @@ namespace LYBT.Module.Auth.Services
                 UserType = userType, // Issue #1861: 继承用户类型
                 Jti = Guid.NewGuid().ToString(),
                 ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
+                AbsoluteExpiresAt = tokenRecord.AbsoluteExpiresAt, // T5-P2-04: 继承绝对过期，不可延长
                 FamilyId = tokenRecord.FamilyId ?? Guid.NewGuid().ToString() // 继承或创建家族ID
             };
 
