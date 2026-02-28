@@ -89,6 +89,7 @@ namespace LYBT.Module.MedicalCases.Services
             var medicalCase = new MedicalCase
             {
                 Id = Guid.NewGuid(),
+                CaseNumber = await GenerateCaseNumberAsync(),  // T5-P2-11: 自动生成医案编号
                 PatientId = request.PatientId,
                 PatientName = patient.Name,
                 CaseStatus = MedicalCaseStatus.Active,
@@ -112,6 +113,15 @@ namespace LYBT.Module.MedicalCases.Services
             // 如果DTO中提供了诊断数据，填充Consultation字段
             if (request.Consultation != null)
             {
+                // T5-P2-10: 创建时也验证TcmDiagnosis非空
+                // 注: UpdateConsultationAsync 通过 FluentValidation Pipeline 验证，
+                // 但 CreateFromInputDtoAsync 的 Consultation 数据是直接映射，不经过验证器
+                if (string.IsNullOrWhiteSpace(request.Consultation.TcmDiagnosis))
+                {
+                    _logger.LogWarning("[SVC] MedicalCase.Create -> TcmDiagnosisEmpty");
+                    throw new BusinessException(EC.MedicalCaseMissingDiagnosis, "中医诊断不能为空");
+                }
+
                 consultation.PresentIllness = request.Consultation.PresentIllness;
                 consultation.TongueDiagnosis = request.Consultation.TongueDiagnosis;
                 consultation.PulseDiagnosis = request.Consultation.PulseDiagnosis;
@@ -228,6 +238,12 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.NeedsPrescription = needsPrescription;
             medicalCase.UpdatedAt = DateTime.Now;
 
+            // T5-P2-12: 标记不需要处方时，软删除已有处方
+            if (!needsPrescription)
+            {
+                SoftDeletePrescriptionIfExists(medicalCase);
+            }
+
             // 保存
             var result = await _repository.UpdateAsync(medicalCase);
             await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin);
@@ -270,6 +286,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             var prescription = _mapper.ToPrescriptionEntity(request);
             prescription.Id = Guid.NewGuid();
+            prescription.PrescriptionNumber = await GeneratePrescriptionNumberAsync();  // T5-P2-13
             prescription.MedicalCaseId = medicalCaseId;
             prescription.CreatedAt = DateTime.Now;
             prescription.UpdatedAt = DateTime.Now;
@@ -613,6 +630,7 @@ namespace LYBT.Module.MedicalCases.Services
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
+                PrescriptionNumber = await GeneratePrescriptionNumberAsync(),  // T5-P2-13: 自动生成处方编号
                 MedicalCaseId = medicalCase.Id,
                 DosageCount = prescriptionDto.DosageCount,
                 Usage = prescriptionDto.Usage,
@@ -719,6 +737,35 @@ namespace LYBT.Module.MedicalCases.Services
 
         private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin)
             => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger);
+
+        /// <summary>
+        /// 生成医案编号（格式：MC + 年月日 + 序号）
+        /// T5-P2-11: 参考 LocalMedicalCaseDataSource.GenerateCaseNumber
+        /// </summary>
+        private async Task<string> GenerateCaseNumberAsync()
+        {
+            var today = DateTime.Today;
+            var dateStr = today.ToString("yyyyMMdd");
+            var prefix = $"MC{dateStr}";
+
+            // 查询今天的医案数量（包含软删除的，避免编号重复）
+            var count = await _repository.CountByPrefixAsync(prefix);
+            return $"{prefix}{(count + 1):D3}";
+        }
+
+        /// <summary>
+        /// 生成处方编号（格式：RX + 年月日 + 序号）
+        /// T5-P2-13
+        /// </summary>
+        private async Task<string> GeneratePrescriptionNumberAsync()
+        {
+            var today = DateTime.Today;
+            var dateStr = today.ToString("yyyyMMdd");
+            var prefix = $"RX{dateStr}";
+
+            var count = await _repository.CountPrescriptionsByPrefixAsync(prefix);
+            return $"{prefix}{(count + 1):D4}";
+        }
 
         #endregion
 

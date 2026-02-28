@@ -27,4 +27,10 @@ public class PatientBasicDto
     /// 手机号码
     /// </summary>
     public string? Phone { get; set; }
+
+    /// <summary>
+    /// 患者状态
+    /// T5-P2-09: 创建医案时需检查患者状态
+    /// </summary>
+    public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 }

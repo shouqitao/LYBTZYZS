@@ -120,6 +120,14 @@ namespace LYBT.Module.MedicalCases.Services
                         _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                         throw new BusinessException(EC.McPrescriptionRequired, "已标记需要开处方，但处方不存在，无法完成医案");
                     }
+
+                    // T5-P2-15: 验证处方明细不为空
+                    if (medicalCase.Prescription.Items == null || !medicalCase.Prescription.Items.Any())
+                    {
+                        _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionItemsEmpty - MedicalCaseId={MedicalCaseId}",
+                            medicalCaseId);
+                        throw new BusinessException(EC.McPrescriptionItemsRequired, "处方必须包含至少一项药材才能完成医案");
+                    }
                 }
             }
 
@@ -231,6 +239,16 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 权限检查
             MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, operatorId, isAdmin, "Cancel", _logger);
+
+            // T5-P2-16: 非当天本人取消需原因
+            var isSameDay = medicalCase.CreatedAt.Date == DateTime.Today;
+            var isOwner = medicalCase.UserId == operatorId;
+            if (!(isSameDay && isOwner) && string.IsNullOrWhiteSpace(reason))
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Cancel → ReasonRequired - MedicalCaseId={MedicalCaseId} IsOwner={IsOwner} IsSameDay={IsSameDay}",
+                    id, isOwner, isSameDay);
+                throw new BusinessException(EC.McCancelReasonRequired, "非当天本人创建的医案取消时必须提供取消原因");
+            }
 
             // 业务规则验证：只有Draft/Active状态可以取消
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)

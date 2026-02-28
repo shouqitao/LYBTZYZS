@@ -96,6 +96,8 @@ public static class ErrorMessages
         [ErrorCode.McDeletedCannotSuspend] = ("已删除的医案不可挂起", "Deleted case cannot be suspended"),
         [ErrorCode.McCompletedCannotCancel] = ("已完成的医案不可取消", "Completed case cannot be cancelled"),
         [ErrorCode.McAlreadyDeleted] = ("医案已经是删除状态", "Medical case is already deleted"),
+        [ErrorCode.McCancelReasonRequired] = ("非当天本人创建的医案取消时必须提供取消原因", "Cancel reason is required for non-same-day or non-owner cancellation"),
+        [ErrorCode.McPrescriptionItemsRequired] = ("处方必须包含至少一项药材才能完成医案", "Prescription must contain at least one item to complete medical case"),
         // 304xx: 处方错误
         [ErrorCode.McPrescriptionFlagNotSet] = ("未标记需要开处方，请先设置处方需求标记", "Prescription flag not set"),
         [ErrorCode.McPrescriptionAlreadyExists] = ("医案已存在处方，请使用更新接口", "Prescription already exists, use update endpoint"),

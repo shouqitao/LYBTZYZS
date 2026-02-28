@@ -432,6 +432,18 @@ public enum ErrorCode
     /// </summary>
     McAlreadyDeleted = 30307,
 
+    /// <summary>
+    /// 非当天本人取消需提供取消原因
+    /// T5-P2-16
+    /// </summary>
+    McCancelReasonRequired = 30308,
+
+    /// <summary>
+    /// 完成时处方明细为空
+    /// T5-P2-15
+    /// </summary>
+    McPrescriptionItemsRequired = 30309,
+
     // 304xx: 处方错误
 
     /// <summary>

@@ -581,6 +581,28 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
+        /// 按前缀统计医案编号数量（包含软删除，避免编号重复）
+        /// T5-P2-11: 医案编号自动生成
+        /// </summary>
+        public async Task<int> CountByPrefixAsync(string prefix)
+        {
+            return await _dbSet
+                .IgnoreQueryFilters()
+                .CountAsync(mc => mc.CaseNumber != null && mc.CaseNumber.StartsWith(prefix));
+        }
+
+        /// <summary>
+        /// 按前缀统计处方编号数量（包含软删除，避免编号重复）
+        /// T5-P2-13: 处方编号自动生成
+        /// </summary>
+        public async Task<int> CountPrescriptionsByPrefixAsync(string prefix)
+        {
+            return await _context.Set<Prescription>()
+                .IgnoreQueryFilters()
+                .CountAsync(p => p.PrescriptionNumber != null && p.PrescriptionNumber.StartsWith(prefix));
+        }
+
+        /// <summary>
         /// 批量获取医案详情（包含所有关联数据）
         /// OpenSpec: consolidate-medicalcase-detail-queries
         /// 使用EF Core的Contains优化为单次数据库查询

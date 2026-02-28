@@ -89,5 +89,17 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="ids">医案ID列表</param>
         /// <returns>医案实体列表</returns>
         Task<List<MedicalCase>> GetBatchWithDetailsAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 按前缀统计医案编号数量（包含软删除，避免编号重复）
+        /// T5-P2-11: 医案编号自动生成
+        /// </summary>
+        Task<int> CountByPrefixAsync(string prefix);
+
+        /// <summary>
+        /// 按前缀统计处方编号数量（包含软删除，避免编号重复）
+        /// T5-P2-13: 处方编号自动生成
+        /// </summary>
+        Task<int> CountPrescriptionsByPrefixAsync(string prefix);
     }
 }

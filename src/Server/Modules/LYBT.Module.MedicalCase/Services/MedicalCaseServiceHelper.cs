@@ -1,10 +1,12 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.MedicalCases.Services
 {
@@ -118,6 +120,14 @@ namespace LYBT.Module.MedicalCases.Services
 
             var patient = await patientCrossModule.GetPatientBasicInfoAsync(patientId)
                 ?? throw new InvalidOperationException($"患者不存在，PatientId: {patientId}");
+
+            // T5-P2-09: 检查患者状态
+            if (patient.Status != CommonStatus.Enabled)
+            {
+                logger.LogWarning("[SVC] MedicalCase.Create -> PatientDisabled - PatientId={PatientId} Status={Status}",
+                    patientId, patient.Status);
+                throw new BusinessException(EC.McPatientDisabled, "该患者已被禁用，无法创建医案");
+            }
 
             var doctor = await userCrossModule.GetUserBasicInfoAsync(doctorId)
                 ?? throw new InvalidOperationException($"医生不存在，DoctorId: {doctorId}");

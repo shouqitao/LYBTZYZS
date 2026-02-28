@@ -41,7 +41,8 @@ public class CrossModuleService :
                 Id = p.Id,
                 Name = p.Name,
                 Gender = p.Gender,
-                Phone = p.PhoneNumber
+                Phone = p.PhoneNumber,
+                Status = p.Status  // T5-P2-09
             })
             .FirstOrDefaultAsync();
     }
@@ -62,7 +63,8 @@ public class CrossModuleService :
                 Id = p.Id,
                 Name = p.Name,
                 Gender = p.Gender,
-                Phone = p.PhoneNumber
+                Phone = p.PhoneNumber,
+                Status = p.Status  // T5-P2-09
             })
             .ToListAsync();
 
