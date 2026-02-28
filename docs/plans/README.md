@@ -10,13 +10,10 @@
 
 | 文件 | 内容 | 最后更新 |
 |------|------|----------|
-| [Sprint 路线图](2026-02-21-unified-architecture-sprint-roadmap.md) | 305 项任务，5 个 Sprint 分配; S1/S2 已完成 | 2026-02-25 |
-| [Sprint 3 设计](2026-02-25-sprint3-design.md) | Sprint 3 详细执行计划 (73 项，5 Batch) | 2026-02-25 |
+| [Sprint 路线图](2026-02-21-unified-architecture-sprint-roadmap.md) | 305 项任务，5 个 Sprint 分配; S1-S4 已完成 | 2026-02-28 |
 | [完整技术设计](2026-02-22-full-sprint-design.md) | Sprint 1-5 全量技术设计参考 | 2026-02-22 |
 | [功能检查清单](2026-02-11-system-function-checklist.md) | 全系统功能完成状态追踪 | 2026-02-22 |
 | [系统架构图](2026-02-21-system-architecture-diagrams.md) | 21 张 Mermaid 架构图 (领域模型/部署/数据流等) | 2026-02-21 |
-| [架构深度对比](2026-02-21-architecture-deep-comparison.md) | D1-D8 八维度 PRD-代码偏差评估基线 | 2026-02-21 |
-| [Sprint 就绪度评估](2026-02-22-sprint-readiness-assessment.md) | Sprint 3-5 就绪度分析 | 2026-02-22 |
 
 ## 归档文档
 
@@ -42,6 +39,15 @@
 | sprint1-design | 2026-02-25 | Sprint 1 全部 33/33 完成 |
 | design-issues-solutions | 2026-02-25 | 8 项设计问题全部实施 |
 | design-deepening-phase3 | 2026-02-25 | 数据流/状态流设计已实施 |
+
+### Sprint 5 完成归档 (4 个, 2026-02-28 归档)
+
+| 文件 | 完成日期 | 说明 |
+|------|----------|------|
+| sprint3-design | 2026-02-28 | Sprint 3 全部完成，已无参考需求 |
+| sprint-readiness-assessment | 2026-02-28 | Sprint 1-5 均已启动，评估使命完成 |
+| architecture-deep-comparison | 2026-02-28 | 架构分析已转化为 Sprint 任务 |
+| a4-03-authorization-handler-evaluation | 2026-02-28 | Sprint 4 评估，Sprint 4 已完成 |
 
 ### 跨模块解耦 (2 个, 2026-02-25 归档)
 
@@ -84,4 +90,4 @@
 
 ---
 
-*文档版本: v1.1 | 最后更新: 2026-02-25*
+*文档版本: v1.2 | 最后更新: 2026-02-28*
