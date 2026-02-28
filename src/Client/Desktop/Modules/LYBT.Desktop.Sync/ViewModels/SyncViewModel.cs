@@ -151,6 +151,13 @@ public partial class SyncViewModel : NavigableViewModelBase
             return;
         }
 
+        // T5-P2-42: 同步前检查认证状态
+        if (!SessionManager.IsAuthenticated)
+        {
+            SetError("请先登录后再进行同步操作");
+            return;
+        }
+
         await ExecuteWithErrorHandlingAsync(async () =>
         {
             ClearDifferences();

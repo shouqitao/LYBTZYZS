@@ -30,4 +30,19 @@ public class SyncDeleteResultDto
     /// 被拒绝的删除项（有引用数据）
     /// </summary>
     public List<SyncDeleteRejectedItem> Rejected { get; set; } = new();
+
+    /// <summary>
+    /// 成功数量
+    /// </summary>
+    public int SuccessCount => Success.Count;
+
+    /// <summary>
+    /// 拒绝数量
+    /// </summary>
+    public int RejectedCount => Rejected.Count;
+
+    /// <summary>
+    /// 总数量
+    /// </summary>
+    public int TotalCount => SuccessCount + RejectedCount;
 }

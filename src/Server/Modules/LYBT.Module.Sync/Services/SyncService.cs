@@ -300,7 +300,9 @@ public class SyncService : ISyncService
 
     private async Task<List<SyncMetadataDto>> GetHerbMetadataAsync()
     {
+        // T5-P2-40: IgnoreQueryFilters 确保软删除记录参与 Checksum 比对
         var herbs = await _dbContext.Herbs
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .ToListAsync();
 
@@ -309,13 +311,17 @@ public class SyncService : ISyncService
             EntityId = h.Id,
             Checksum = ChecksumHelper.ComputeHerbChecksum(h),
             LastModifiedAt = h.UpdatedAt ?? h.CreatedAt,
-            IsDeleted = h.IsDeleted
+            IsDeleted = h.IsDeleted,
+            EntityName = h.Name,
+            EntityType = "Herb"
         }).ToList();
     }
 
     private async Task<List<SyncMetadataDto>> GetPatientMetadataAsync()
     {
+        // T5-P2-40: IgnoreQueryFilters 确保软删除记录参与 Checksum 比对
         var patients = await _dbContext.Patients
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .ToListAsync();
 
@@ -324,14 +330,18 @@ public class SyncService : ISyncService
             EntityId = p.Id,
             Checksum = ChecksumHelper.ComputePatientChecksum(p),
             LastModifiedAt = p.UpdatedAt ?? p.CreatedAt,
-            IsDeleted = p.IsDeleted
+            IsDeleted = p.IsDeleted,
+            EntityName = p.Name,
+            EntityType = "Patient"
         }).ToList();
     }
 
     private async Task<List<SyncMetadataDto>> GetFormulaMetadataAsync()
     {
+        // T5-P2-40: IgnoreQueryFilters 确保软删除记录参与 Checksum 比对
         var formulas = await _dbContext.Formulas
             .Include(f => f.Herbs)
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .ToListAsync();
 
@@ -340,7 +350,9 @@ public class SyncService : ISyncService
             EntityId = f.Id,
             Checksum = ChecksumHelper.ComputeFormulaChecksum(f),
             LastModifiedAt = f.UpdatedAt ?? f.CreatedAt,
-            IsDeleted = f.IsDeleted
+            IsDeleted = f.IsDeleted,
+            EntityName = f.Name,
+            EntityType = "Formula"
         }).ToList();
     }
 

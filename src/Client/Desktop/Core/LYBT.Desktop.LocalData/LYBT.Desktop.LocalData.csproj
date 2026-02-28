@@ -37,9 +37,10 @@
     <PackageReference Include="Riok.Mapperly" />
   </ItemGroup>
 
-  <!-- Logging -->
+  <!-- Logging & Options -->
   <ItemGroup Label="Logging">
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <!-- Project References -->
@@ -48,6 +49,7 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
     <ProjectReference Include="..\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
   </ItemGroup>
 
 </Project>

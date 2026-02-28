@@ -8,7 +8,9 @@ using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Sync;
 using Microsoft.EntityFrameworkCore;
 using LYBT.Desktop.LocalData.Helpers;
+using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Desktop.LocalData.Services;
 
@@ -21,6 +23,7 @@ public class SyncService : ISyncService
     private readonly ISyncApi _syncApi;
     private readonly LocalDbContext _context;
     private readonly ILogger<SyncService> _logger;
+    private readonly SyncOptions _syncOptions;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -31,11 +34,13 @@ public class SyncService : ISyncService
     public SyncService(
         ISyncApi syncApi,
         LocalDbContext context,
-        ILogger<SyncService> logger)
+        ILogger<SyncService> logger,
+        IOptions<SyncOptions> syncOptions)
     {
         _syncApi = syncApi;
         _context = context;
         _logger = logger;
+        _syncOptions = syncOptions.Value;
     }
 
     /// <inheritdoc />
@@ -148,7 +153,7 @@ public class SyncService : ISyncService
         {
             EntityType = entityType,
             Entities = entities,
-            OverwriteConflicts = false
+            OverwriteConflicts = _syncOptions.OverwriteConflicts
         };
 
         var response = await _syncApi.UploadAsync(input);

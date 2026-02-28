@@ -23,6 +23,7 @@ public static class ConfigurationSections
 
     // 客户端配置
     public const string ApiClient = "ApiClient";
+    public const string Sync = "Sync";
     public const string ClientSession = "ClientSession";
     public const string FeatureToggles = "FeatureToggles";
     public const string ClinicSettings = "ClinicSettings";

@@ -58,6 +58,11 @@ public static class ClientConfigurationExtensions
             .Bind(configuration.GetSection(PrescriptionOptions.SectionName))
             .ValidateDataAnnotations();
 
+        // 同步配置
+        services.AddOptions<SyncOptions>()
+            .Bind(configuration.GetSection(SyncOptions.SectionName))
+            .ValidateDataAnnotations();
+
         return services;
     }
 }

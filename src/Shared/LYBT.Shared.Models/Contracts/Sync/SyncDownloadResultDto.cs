@@ -21,4 +21,19 @@ public class SyncDownloadResultDto
     /// 下载数量
     /// </summary>
     public int Count { get; set; }
+
+    /// <summary>
+    /// 成功数量（等于 Count）
+    /// </summary>
+    public int SuccessCount => Count;
+
+    /// <summary>
+    /// 错误数量
+    /// </summary>
+    public int ErrorCount { get; set; }
+
+    /// <summary>
+    /// 错误信息列表
+    /// </summary>
+    public List<string> Errors { get; set; } = new();
 }

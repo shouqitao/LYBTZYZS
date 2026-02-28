@@ -24,4 +24,14 @@ public class SyncMetadataDto
     /// 是否已删除
     /// </summary>
     public bool IsDeleted { get; set; }
+
+    /// <summary>
+    /// 实体名称（显示用）
+    /// </summary>
+    public string? EntityName { get; set; }
+
+    /// <summary>
+    /// 实体类型
+    /// </summary>
+    public string EntityType { get; set; } = string.Empty;
 }
