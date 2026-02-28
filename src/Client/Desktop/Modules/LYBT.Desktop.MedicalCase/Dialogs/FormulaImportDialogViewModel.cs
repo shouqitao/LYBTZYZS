@@ -7,6 +7,7 @@ using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Services.Dialogs;
 
@@ -244,6 +245,12 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         private void FilterFormulas()
         {
             var filtered = _allFormulas.AsEnumerable();
+
+            // T5-P2-17: 过滤未验证的验方
+            filtered = filtered.Where(f => f.ValidationStatus == FormulaValidationStatus.Validated);
+
+            // T5-P2-18: 过滤已禁用的验方
+            filtered = filtered.Where(f => f.Status == CommonStatus.Enabled);
 
             // 1. 分类筛选
             if (!string.IsNullOrWhiteSpace(SelectedCategory) && SelectedCategory != "全部")

@@ -169,6 +169,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 嵌套实体: Prescription 变更检测
             if (before.Prescription != null && after.Prescription != null)
             {
+                CompareField("Prescription.Usage", before.Prescription.Usage, after.Prescription.Usage, changedFields, oldValues, newValuesDict);
                 CompareField("Prescription.DosageCount", before.Prescription.DosageCount, after.Prescription.DosageCount, changedFields, oldValues, newValuesDict);
                 CompareField("Prescription.Discount", before.Prescription.Discount, after.Prescription.Discount, changedFields, oldValues, newValuesDict);
                 CompareField("Prescription.Advice", before.Prescription.Advice, after.Prescription.Advice, changedFields, oldValues, newValuesDict);

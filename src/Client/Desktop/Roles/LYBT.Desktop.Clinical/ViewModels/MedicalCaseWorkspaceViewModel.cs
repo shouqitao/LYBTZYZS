@@ -428,6 +428,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         _prescriptionImportHandler.ShowConfirmMessage = ShowConfirmMessageAsync;
         _prescriptionImportHandler.GetCurrentPatient = () => CurrentPatient;
         _prescriptionImportHandler.GetPrescription = () => Prescription;
+        _prescriptionImportHandler.GetAllHerbs = () => AllHerbs;
 
         // OpenSpec: integrate-cardreader-module - 保存读卡器集成服务引用
         _patientCardReaderIntegration = patientCardReaderIntegration ?? throw new ArgumentNullException(nameof(patientCardReaderIntegration));

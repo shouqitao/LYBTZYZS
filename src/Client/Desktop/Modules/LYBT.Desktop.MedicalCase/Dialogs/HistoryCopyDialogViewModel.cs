@@ -259,7 +259,8 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         {
             var parameters = new DialogParameters
             {
-                { "SelectedCase", SelectedCase },
+                // T5-P3-09: 优先传出详情（包含DosageCount/Discount等处方级字段）
+                { "SelectedCase", SelectedCaseDetail ?? SelectedCase },
                 { "SelectedItems", SelectedPrescriptionItems }
             };
             CloseDialog(parameters, ButtonResult.OK);

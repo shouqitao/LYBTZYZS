@@ -4,8 +4,10 @@ using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Services.Dialogs;
 
@@ -61,6 +63,12 @@ public class PrescriptionImportHandler
     /// 获取处方Item的回调
     /// </summary>
     public Func<PrescriptionItem?>? GetPrescription { get; set; }
+
+    /// <summary>
+    /// 获取全部药材列表（用于过滤禁用药材）
+    /// T5-P2-19, T5-P2-21
+    /// </summary>
+    public Func<IEnumerable<HerbListDto>?>? GetAllHerbs { get; set; }
 
     #endregion
 
@@ -164,6 +172,28 @@ public class PrescriptionImportHandler
     #region 私有方法
 
     /// <summary>
+    /// 过滤禁用药材
+    /// T5-P2-19, T5-P2-21
+    /// </summary>
+    private IReadOnlyList<PrescriptionItemDto> FilterDisabledHerbs(
+        IReadOnlyList<PrescriptionItemDto> items, string source)
+    {
+        var allHerbs = GetAllHerbs?.Invoke();
+        if (allHerbs == null) return items;
+
+        var disabledHerbIds = new HashSet<Guid>(
+            allHerbs.Where(h => h.Status != CommonStatus.Enabled).Select(h => h.Id));
+
+        var filtered = items.Where(h => !disabledHerbIds.Contains(h.HerbId)).ToList();
+        var skippedCount = items.Count - filtered.Count;
+        if (skippedCount > 0)
+        {
+            _logger.LogInformation("{Source}跳过 {Count} 味已禁用药材", source, skippedCount);
+        }
+        return filtered;
+    }
+
+    /// <summary>
     /// 处理验方导入结果
     /// </summary>
     private async Task HandleFormulaImportResultAsync(IDialogParameters parameters)
@@ -190,7 +220,7 @@ public class PrescriptionImportHandler
             }
 
             // 转换为PrescriptionItemDto并添加
-            var herbItems = formula.ToPrescriptionItemDtos(herbs);
+            var herbItems = FilterDisabledHerbs(formula.ToPrescriptionItemDtos(herbs), "验方导入");
             if (!herbItems.Any())
             {
                 if (ShowErrorMessage != null)
@@ -251,7 +281,8 @@ public class PrescriptionImportHandler
             }
 
             // 转换为PrescriptionItemDto并添加
-            var herbItems = items.ToPrescriptionItemDtos();
+            // T5-P2-21: 过滤禁用药材
+            var herbItems = FilterDisabledHerbs(items.ToPrescriptionItemDtos(), "历史复制");
             if (!herbItems.Any())
             {
                 if (ShowErrorMessage != null)
@@ -262,6 +293,29 @@ public class PrescriptionImportHandler
             foreach (var item in herbItems)
             {
                 prescription.Items.Add(item);
+            }
+
+            // T5-P2-23 + T5-P3-09: 从历史医案复制来源信息和处方级字段
+            if (parameters.TryGetValue<MedicalCaseDetailDto>("SelectedCase", out var selectedCase) && selectedCase != null)
+            {
+                // T5-P2-23: 记录历史复制来源
+                var sourceRef = !string.IsNullOrEmpty(selectedCase.CaseNumber)
+                    ? $"复制自{selectedCase.CaseNumber}"
+                    : "复制自历史医案";
+
+                if (string.IsNullOrEmpty(prescription.ReferencedFormulas))
+                    prescription.ReferencedFormulas = sourceRef;
+                else if (!prescription.ReferencedFormulas.Contains(sourceRef))
+                    prescription.ReferencedFormulas = $"{prescription.ReferencedFormulas}, {sourceRef}";
+
+                // T5-P3-09: 复制处方级别字段
+                if (selectedCase.Prescription != null)
+                {
+                    if (selectedCase.Prescription.DosageCount > 0 && prescription.DosageCount == 0)
+                        prescription.DosageCount = selectedCase.Prescription.DosageCount;
+                    if (selectedCase.Prescription.Discount > 0 && prescription.Discount == 0)
+                        prescription.Discount = selectedCase.Prescription.Discount;
+                }
             }
 
             if (ShowSuccessMessage != null)

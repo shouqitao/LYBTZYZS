@@ -743,12 +743,13 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
         /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
+        /// <param name="doctorId">医生ID（可选）- Admin角色可指定查询特定医生的待诊队列 (T5-P3-08)</param>
         [Obsolete("Use GET /api/v1/medicalcases/query with QueryType=Pending instead. Will be removed in v2.0")]
         [HttpGet("pending")]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 401)]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 403)]
-        public async Task<IActionResult> GetPendingCases([FromQuery] Guid? patientId = null)
+        public async Task<IActionResult> GetPendingCases([FromQuery] Guid? patientId = null, [FromQuery] Guid? doctorId = null)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // UnauthorizedAccessException由SystemExceptionHandler转换为401响应
@@ -758,15 +759,23 @@ namespace LYBT.WebAPI.Controllers
             // Issue #2241: 根据角色判断查询范围，使用UserRole枚举比较
             if (operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin)
             {
-                // 管理员查询所有待诊医案
-                _logger.LogInformation("管理员查询全部待诊队列，OperatorId: {OperatorId}, Role: {Role}, PatientId: {PatientId}",
-                    operatorId, operatorRole, patientId);
-                // OpenSpec: unify-pending-query-api - 管理员目前不支持按患者筛选（返回全部）
-                result = await _facade.GetAllPendingCasesAsync();
-                // 如果有patientId参数，在内存中过滤
-                if (patientId.HasValue)
+                // 管理员查询待诊医案
+                _logger.LogInformation("管理员查询待诊队列，OperatorId: {OperatorId}, Role: {Role}, PatientId: {PatientId}, DoctorId: {DoctorId}",
+                    operatorId, operatorRole, patientId, doctorId);
+
+                if (doctorId.HasValue)
                 {
-                    result = result.Where(r => r.PatientId == patientId.Value).ToList();
+                    // T5-P3-08: 指定医生的待诊队列
+                    result = await _facade.GetPendingCasesAsync(doctorId.Value, patientId);
+                }
+                else
+                {
+                    result = await _facade.GetAllPendingCasesAsync();
+                    // 如果有patientId参数，在内存中过滤
+                    if (patientId.HasValue)
+                    {
+                        result = result.Where(r => r.PatientId == patientId.Value).ToList();
+                    }
                 }
             }
             else if (operatorRole == UserRole.Doctor)
