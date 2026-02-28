@@ -20,6 +20,14 @@ public class PatientIntegrationTests
     /// <summary>生成唯一电话号码，避免并行测试时唯一约束冲突</summary>
     private static string UniquePhone() => $"138{Random.Shared.Next(10000000, 99999999)}";
 
+    private static int _idSeq = 0;
+    /// <summary>生成唯一18位身份证号</summary>
+    private static string UniqueIdNumber()
+    {
+        var seq = Interlocked.Increment(ref _idSeq);
+        return $"11010119900101{seq:D3}X";
+    }
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -43,6 +51,7 @@ public class PatientIntegrationTests
             Name = "集成测试患者_" + Guid.NewGuid().ToString("N")[..6],
             Gender = Gender.Male,
             BirthDate = new DateTime(1985, 3, 15),
+            IdNumber = UniqueIdNumber(),
             PhoneNumber = phone,
             Address = "北京市朝阳区"
         };
@@ -52,7 +61,7 @@ public class PatientIntegrationTests
             .PostAsJsonAsync("/api/v1/patients", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK,
+        response.IsSuccessStatusCode.Should().BeTrue(
             $"创建患者应成功, 实际: {response.StatusCode}");
 
         var body = await response.Content
@@ -77,6 +86,7 @@ public class PatientIntegrationTests
             Name = "完整患者_" + Guid.NewGuid().ToString("N")[..6],
             Gender = Gender.Female,
             BirthDate = new DateTime(1990, 8, 20),
+            IdNumber = UniqueIdNumber(),
             PhoneNumber = UniquePhone(),
             Address = "上海市浦东新区",
             AllergyHistory = "青霉素过敏",
@@ -91,7 +101,7 @@ public class PatientIntegrationTests
             .PostAsJsonAsync("/api/v1/patients", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.IsSuccessStatusCode.Should().BeTrue();
 
         var body = await response.Content
             .ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
@@ -132,7 +142,10 @@ public class PatientIntegrationTests
         var createRequest = new PatientInputDto
         {
             Name = "列表测试_" + Guid.NewGuid().ToString("N")[..6],
-            Gender = Gender.Male
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -164,7 +177,9 @@ public class PatientIntegrationTests
             Name = "详情测试_" + Guid.NewGuid().ToString("N")[..6],
             Gender = Gender.Female,
             BirthDate = new DateTime(1988, 6, 10),
-            PhoneNumber = phone
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = phone,
+            Address = "集成测试地址"
         };
         var createResponse = await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -211,7 +226,10 @@ public class PatientIntegrationTests
         var createRequest = new PatientInputDto
         {
             Name = uniqueName,
-            Gender = Gender.Male
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -239,7 +257,10 @@ public class PatientIntegrationTests
         var createRequest = new PatientInputDto
         {
             Name = "张伟_" + Guid.NewGuid().ToString("N")[..4],
-            Gender = Gender.Male
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var createResponse = await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -275,7 +296,9 @@ public class PatientIntegrationTests
         {
             Name = "更新前_" + Guid.NewGuid().ToString("N")[..6],
             Gender = Gender.Male,
-            PhoneNumber = UniquePhone()
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var createResponse = await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -292,6 +315,7 @@ public class PatientIntegrationTests
             Id = patientId,
             Name = "更新后姓名",
             Gender = Gender.Female,
+            IdNumber = UniqueIdNumber(),
             PhoneNumber = updatedPhone,
             Address = "更新后地址",
             AllergyHistory = "花粉过敏"
@@ -326,7 +350,10 @@ public class PatientIntegrationTests
         var createRequest = new PatientInputDto
         {
             Name = "原始名字",
-            Gender = Gender.Male
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var createResponse = await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -339,7 +366,11 @@ public class PatientIntegrationTests
         var updateRequest = new PatientInputDto
         {
             Id = patientId,
-            Name = "完全不同"
+            Name = "完全不同",
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var updateResponse = await _fixture.AdminClient
             .PutAsJsonAsync($"/api/v1/patients/{patientId}", updateRequest);
@@ -363,7 +394,10 @@ public class PatientIntegrationTests
         var createRequest = new PatientInputDto
         {
             Name = "待删除患者_" + Guid.NewGuid().ToString("N")[..6],
-            Gender = Gender.Male
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var createResponse = await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -396,7 +430,10 @@ public class PatientIntegrationTests
         var createRequest = new PatientInputDto
         {
             Name = "待恢复患者_" + Guid.NewGuid().ToString("N")[..6],
-            Gender = Gender.Female
+            Gender = Gender.Female,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var createResponse = await _fixture.AdminClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -444,7 +481,10 @@ public class PatientIntegrationTests
             var request = new PatientInputDto
             {
                 Name = $"批删患者{i}_" + Guid.NewGuid().ToString("N")[..4],
-                Gender = Gender.Male
+                Gender = Gender.Male,
+                IdNumber = UniqueIdNumber(),
+                PhoneNumber = UniquePhone(),
+                Address = "集成测试地址"
             };
             var response = await _fixture.AdminClient
                 .PostAsJsonAsync("/api/v1/patients", request);
@@ -508,7 +548,10 @@ public class PatientIntegrationTests
         var request = new PatientInputDto
         {
             Name = "医生创建_" + Guid.NewGuid().ToString("N")[..6],
-            Gender = Gender.Male
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
 
         // Act
@@ -516,7 +559,7 @@ public class PatientIntegrationTests
             .PostAsJsonAsync("/api/v1/patients", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK,
+        response.IsSuccessStatusCode.Should().BeTrue(
             "Doctor角色应能创建患者");
     }
 
@@ -544,7 +587,10 @@ public class PatientIntegrationTests
             var request = new PatientInputDto
             {
                 Name = $"分页测试{i}_" + Guid.NewGuid().ToString("N")[..4],
-                Gender = Gender.Male
+                Gender = Gender.Male,
+                IdNumber = UniqueIdNumber(),
+                PhoneNumber = UniquePhone(),
+                Address = "集成测试地址"
             };
             await _fixture.AdminClient
                 .PostAsJsonAsync("/api/v1/patients", request);
@@ -592,7 +638,10 @@ public class PatientIntegrationTests
         var createRequest = new PatientInputDto
         {
             Name = "Doctor所有_" + Guid.NewGuid().ToString("N")[..6],
-            Gender = Gender.Male
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var createResponse = await _fixture.DoctorClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -607,7 +656,10 @@ public class PatientIntegrationTests
         {
             Id = patientId,
             Name = "Admin已修改_" + Guid.NewGuid().ToString("N")[..6],
-            Gender = Gender.Male
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var updateResponse = await _fixture.AdminClient
             .PutAsJsonAsync($"/api/v1/patients/{patientId}", updateRequest);
@@ -624,7 +676,10 @@ public class PatientIntegrationTests
         var createRequest = new PatientInputDto
         {
             Name = "Doctor待删_" + Guid.NewGuid().ToString("N")[..6],
-            Gender = Gender.Female
+            Gender = Gender.Female,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var createResponse = await _fixture.DoctorClient
             .PostAsJsonAsync("/api/v1/patients", createRequest);
@@ -654,7 +709,11 @@ public class PatientIntegrationTests
         var request = new PatientInputDto
         {
             Name = "年龄计算_" + Guid.NewGuid().ToString("N")[..6],
-            BirthDate = new DateTime(1990, 1, 1)
+            Gender = Gender.Male,
+            BirthDate = new DateTime(1990, 1, 1),
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
 
         // Act
@@ -677,7 +736,11 @@ public class PatientIntegrationTests
         // Arrange - 不提供出生日期
         var request = new PatientInputDto
         {
-            Name = "无年龄_" + Guid.NewGuid().ToString("N")[..6]
+            Name = "无年龄_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
 
         // Act

@@ -44,13 +44,24 @@ public class MedicalCaseIntegrationTests
 
     #region Helpers
 
+    private static int _idSeq = 0;
+    private static string UniqueIdNumber()
+    {
+        var seq = Interlocked.Increment(ref _idSeq);
+        return $"11010119900201{seq:D3}X";
+    }
+    private static string UniquePhone() => $"138{Random.Shared.Next(10000000, 99999999)}";
+
     /// <summary>创建测试患者并返回ID</summary>
     private async Task<Guid> CreatePatientAsync(string? name = null)
     {
         var input = new PatientInputDto
         {
             Name = name ?? "医案患者_" + Guid.NewGuid().ToString("N")[..4],
-            Gender = Gender.Male
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
         };
         var resp = await _fixture.AdminClient.PostAsJsonAsync(PatientUrl, input);
         resp.IsSuccessStatusCode.Should().BeTrue();
@@ -498,12 +509,11 @@ public class MedicalCaseIntegrationTests
         var response = await _fixture.DoctorClient
             .PutAsJsonAsync($"{BaseUrl}/{caseId}", saveInput);
 
-        // Assert - InvalidOperationException → SystemExceptionHandler → 500
-        // Test 环境下消息被泛化 ("操作无法执行")，不检查具体消息内容
+        // Assert - 验证层拒绝: 已完成医案未提供修改原因
         response.IsSuccessStatusCode.Should().BeFalse(
             "已完成医案未提供修改原因应被拒绝");
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError,
-            "editReason 缺失导致 InvalidOperationException → 500");
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "editReason 缺失应被验证层拒绝 (400)");
 
         var body = await response.Content
             .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
