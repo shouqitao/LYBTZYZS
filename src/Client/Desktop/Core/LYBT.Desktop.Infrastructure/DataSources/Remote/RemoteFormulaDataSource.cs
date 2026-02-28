@@ -335,6 +335,58 @@ public class RemoteFormulaDataSource : IFormulaDataSource
         }
     }
 
+    /// <summary>
+    /// T5-P2-37: 批量启用/禁用验方
+    /// </summary>
+    public async Task<BatchOperationResultDto> BatchToggleStatusAsync(List<Guid> ids, bool enable, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[RemoteDataSource] Formula.BatchToggleStatus - Count={Count}, Enable={Enable}", ids.Count, enable);
+
+        try
+        {
+            var input = new BatchDeleteInputDto { Ids = ids };
+            var response = enable
+                ? await _api.BatchEnableAsync(input)
+                : await _api.BatchDisableAsync(input);
+
+            if (!response.Success || response.Data == null)
+            {
+                return new BatchOperationResultDto
+                {
+                    TotalCount = ids.Count,
+                    FailureCount = ids.Count,
+                    IsSuccess = false,
+                    Message = response.Message ?? "批量切换状态失败"
+                };
+            }
+
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[RemoteDataSource] Formula.BatchToggleStatus failed");
+            return new BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                FailureCount = ids.Count,
+                IsSuccess = false,
+                Message = ex.Message
+            };
+        }
+    }
+
+    /// <summary>
+    /// T5-P2-38: 获取导入模板列定义（主表）
+    /// </summary>
+    public string[] GetImportTemplateColumns()
+        => ["验方编号*", "验方名称*", "分类", "功效", "用法", "性味归经", "方剂类型", "是否共享", "备注"];
+
+    /// <summary>
+    /// T5-P2-38: 获取导入模板列定义（药材明细）
+    /// </summary>
+    public string[] GetImportTemplateHerbColumns()
+        => ["验方编号*", "药材名称*", "用量*", "单位", "炮制方法"];
+
     /// <inheritdoc />
     public Task<bool> ValidateHerbBindingsAsync(Guid formulaId, CancellationToken ct = default)
     {

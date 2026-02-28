@@ -80,6 +80,12 @@ namespace LYBT.Module.Herbs.Services
                 return Result<HerbDetailDto>.Failure(errors);
             }
 
+            // T5-P2-33: 拼音码自动生成
+            if (string.IsNullOrWhiteSpace(dto.PinYinCode))
+            {
+                dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);
+            }
+
             var entity = _mapper.ToEntity(dto);
             var result = await _repository.AddAsync(entity);
             var resultDto = _mapper.ToDetailDto(result);
@@ -100,6 +106,17 @@ namespace LYBT.Module.Herbs.Services
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                 _logger.LogWarning("[SVC] Herb.Update → ValidationFailed - HerbId={HerbId} Errors={Errors}", id, string.Join("; ", errors));
                 return Result<HerbDetailDto>.Failure(errors);
+            }
+
+            // T5-P2-34: 名称变更时重新生成拼音码
+            if (entity.Name != dto.Name)
+            {
+                dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);
+            }
+            else if (string.IsNullOrWhiteSpace(dto.PinYinCode))
+            {
+                // 名称未变但拼音码为空（历史数据补全）
+                dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);
             }
 
             _mapper.UpdateEntity(dto, entity);

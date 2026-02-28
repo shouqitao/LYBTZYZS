@@ -43,6 +43,11 @@ namespace LYBT.Module.Formulas.Interfaces
         /// </summary>
         Task<List<Formula>> GetByUserIdAsync(Guid userId);
 
+        /// <summary>
+        /// T5-P2-36: 获取所有验方（包含药材组成），用于导出
+        /// </summary>
+        Task<List<Formula>> GetAllWithHerbsAsync();
+
         // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
 
         /// <summary>

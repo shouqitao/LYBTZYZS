@@ -1,47 +1,34 @@
-# Task Plan: Sprint 2 - Core Feature Fixes (Batch Execution)
+# Sprint 5 Batch 5: Herb/Formula Enhancement
 
 ## Goal
+完成药材拼音码自动生成、验方校验/导出/批量操作/导入模板 6 项增强。
 
-Sprint 2: 核心功能修复 -- 打印层级重构、字段验证值对齐、功能Bug修复、安全端点加固。共 51 项任务, 7 个 Batch。
+## Phases
 
-## Execution Order
+### Phase 1: Herb PinYin Auto-generation [complete]
+- [x] T5-P2-33: HerbService.CreateAsync 拼音码自动生成
+- [x] T5-P2-34: HerbService.UpdateAsync 名称变更时重新生成拼音码
 
-`Batch 1 -> Batch 2 -> Batch 3 -> Batch 5 -> Batch 4 -> Batch 6 -> Batch 7`
+### Phase 2: Formula Validator Fix [complete]
+- [x] T5-P2-35: FormulaInputDtoValidator 强制 Herbs 非空校验
 
-## Batch Status
+### Phase 3: Formula Export Enhancement [complete]
+- [x] T5-P2-36: FormulaImportExportService 导出增加药材组成 Sheet
+  - IFormulaRepository + GetAllWithHerbsAsync
+  - FormulaRepository 实现
+  - ExportAsync 添加 Sheet2
 
-| Batch | Theme | Tasks | Status |
-|-------|-------|-------|--------|
-| 1 | X8 实体基础 + PrintType + 索引 | 5 | **complete** |
-| 2 | X8 打印逻辑 + 保护 | 10 | **complete** |
-| 3 | X5 Server 侧验证对齐 | 11 | **complete** |
-| 4 | X5 Desktop + 配置对齐 | 4 | pending |
-| 5 | S4 Bug 修复 | 8 | pending |
-| 6 | S4 剩余 + A2 安全加固 | 7 | pending (blocked by B3) |
-| 7 | A2 架构测试 + PRD 文档 | 6 | pending (blocked by all) |
+### Phase 4: Formula Desktop DataSource [complete]
+- [x] T5-P2-37: IFormulaDataSource + Local/Remote BatchToggleStatusAsync
+- [x] T5-P2-38: IFormulaDataSource + Local/Remote GetImportTemplate*Columns
 
-## Committed
-
-- `a856fcb69` feat: X8 print hierarchy refactor + print-completed API (Sprint2-Batch1+2)
-
-## Next: Batch 5 (S4 Bug 修复)
-
-执行顺序: Batch 3 complete -> Batch 5 -> Batch 4 -> Batch 6 -> Batch 7
+### Phase 5: Verification [complete]
+- [x] dotnet build LYBT.All.sln → 0 errors
+- [x] Unit tests: 592 passed
+- [x] Desktop Unit tests: 638 passed
+- [x] Architecture tests: 74 passed
 
 ## Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| Batch 1+2 合并提交 | 同属 X8 打印层级重构 |
-| 打印保护条件: IsPrinted && IsCompleted | 允许未完成医案反复修改打印 |
-| 回写容错: 失败不阻止打印 | UX 优先 |
-| Herb Effect 不用 RemarkMaxLength 常量 | RemarkMaxLength=1000 不适合 Effect(500)，直接硬编码 500 |
-| PatientInputDto: IdNumber/Phone/Address 格式验证保留 When 条件 | NotEmpty 已确保非空，格式验证仅在有值时触发避免双重错误 |
-| EF 迁移含 Batch 1+2 打印字段迁移 | 因 Batch 1+2 未生成迁移，此次一并生成 |
-
-## Errors Encountered
-
-| Error | Resolution |
-|-------|-----------|
-| HerbService.cs 引用 Prescription.IsPrinted | 改为 mc.IsPrinted (join MedicalCase) |
-| PrescriptionPrintLogConfiguration WithMany(p => p.PrintLogs) | 改 WithMany() 无导航 |
+- T5-P2-36 采用 GetAllWithHerbsAsync 复用 GetBaseQuery (自带 Include Herbs)
+- T5-P2-37 Local/Remote 实现分别参照 Herb 模块同名方法
+- T5-P2-38 采用 string[] 返回列名数组模式，与 IHerbDataSource.GetImportTemplateColumns 一致

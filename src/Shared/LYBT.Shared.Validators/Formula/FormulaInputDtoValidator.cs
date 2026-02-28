@@ -34,9 +34,10 @@ namespace LYBT.Shared.Validators.Formula
                 .MaximumLength(1000).WithMessage("备注长度不能超过1000个字符")
                 .When(x => !string.IsNullOrEmpty(x.Remark));
 
+            // T5-P2-35: 强制非空校验（移除 .When 条件，确保 Herbs=null 时也触发校验）
             RuleFor(x => x.Herbs)
-                .NotEmpty().WithMessage("方剂必须包含至少一味药材")
-                .When(x => x.Herbs != null);
+                .NotNull().WithMessage("药材列表不能为空")
+                .NotEmpty().WithMessage("方剂必须包含至少一味药材");
 
             RuleForEach(x => x.Herbs)
                 .SetValidator(new FormulaHerbItemInputDtoValidator())

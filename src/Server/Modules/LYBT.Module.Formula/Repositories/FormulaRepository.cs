@@ -138,6 +138,16 @@ namespace LYBT.Module.Formulas.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// T5-P2-36: 获取所有验方（包含药材组成），用于导出
+        /// </summary>
+        public async Task<List<Formula>> GetAllWithHerbsAsync()
+        {
+            return await GetBaseQuery()
+                .OrderBy(f => f.Name)
+                .ToListAsync();
+        }
+
         #region OpenSpec: optimize-module-list-ui - 恢复功能支持
 
         /// <summary>

@@ -365,6 +365,63 @@ public class LocalFormulaDataSource : IFormulaDataSource
         return entities.Select(e => _mapper.ToDetailDto(e)).ToList();
     }
 
+    /// <summary>
+    /// T5-P2-37: 批量启用/禁用验方
+    /// </summary>
+    public async Task<BatchOperationResultDto> BatchToggleStatusAsync(List<Guid> ids, bool enable, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[LocalDataSource] Formula.BatchToggleStatus - Count={Count}, Enable={Enable}", ids.Count, enable);
+
+        var result = new BatchOperationResultDto
+        {
+            TotalCount = ids.Count,
+            IsSuccess = true
+        };
+
+        var targetStatus = enable ? CommonStatus.Enabled : CommonStatus.Disabled;
+
+        foreach (var id in ids)
+        {
+            var entity = await _context.Formulas.FindAsync([id], ct);
+            if (entity != null)
+            {
+                entity.Status = targetStatus;
+                result.SuccessCount++;
+                result.SuccessfulIds.Add(id);
+            }
+            else
+            {
+                result.FailureCount++;
+                result.FailedIds.Add(id);
+                result.FailedItems.Add(new BatchOperationFailureItem
+                {
+                    Id = id,
+                    Reason = "验方不存在"
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync(ct);
+
+        result.IsSuccess = result.FailureCount == 0;
+        _logger.LogInformation("[LocalDataSource] Formula.BatchToggleStatus completed - Success={Success}, Failure={Failure}",
+            result.SuccessCount, result.FailureCount);
+
+        return result;
+    }
+
+    /// <summary>
+    /// T5-P2-38: 获取导入模板列定义（主表）
+    /// </summary>
+    public string[] GetImportTemplateColumns()
+        => ["验方编号*", "验方名称*", "分类", "功效", "用法", "性味归经", "方剂类型", "是否共享", "备注"];
+
+    /// <summary>
+    /// T5-P2-38: 获取导入模板列定义（药材明细）
+    /// </summary>
+    public string[] GetImportTemplateHerbColumns()
+        => ["验方编号*", "药材名称*", "用量*", "单位", "炮制方法"];
+
     /// <inheritdoc />
     public async Task<bool> ValidateHerbBindingsAsync(Guid formulaId, CancellationToken ct = default)
     {

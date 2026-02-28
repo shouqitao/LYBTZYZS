@@ -151,7 +151,8 @@ public class FormulaImportExportService : IFormulaImportExportService
     {
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-        var formulas = (await _repository.GetAllAsync()).ToList();
+        // T5-P2-36: 使用 GetAllWithHerbsAsync 加载药材组成
+        var formulas = await _repository.GetAllWithHerbsAsync();
 
         if (!string.IsNullOrWhiteSpace(category))
         {
@@ -200,6 +201,42 @@ public class FormulaImportExportService : IFormulaImportExportService
             }
 
             worksheet.Cells.AutoFitColumns();
+
+            // T5-P2-36: Sheet2 - 药材组成详情
+            var herbSheet = package.Workbook.Worksheets.Add("药材组成");
+
+            herbSheet.Cells[1, 1].Value = "验方名称";
+            herbSheet.Cells[1, 2].Value = "药材名称";
+            herbSheet.Cells[1, 3].Value = "用量";
+            herbSheet.Cells[1, 4].Value = "单位";
+            herbSheet.Cells[1, 5].Value = "炮制方法";
+
+            using (var range = herbSheet.Cells[1, 1, 1, 5])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+            }
+
+            int herbRow = 2;
+            foreach (var formula in formulas)
+            {
+                if (formula.Herbs == null || !formula.Herbs.Any())
+                    continue;
+
+                foreach (var herb in formula.Herbs)
+                {
+                    herbSheet.Cells[herbRow, 1].Value = formula.Name;
+                    herbSheet.Cells[herbRow, 2].Value = herb.HerbName;
+                    herbSheet.Cells[herbRow, 3].Value = herb.Dosage;
+                    herbSheet.Cells[herbRow, 4].Value = herb.Unit;
+                    herbSheet.Cells[herbRow, 5].Value = herb.ProcessingMethod;
+                    herbRow++;
+                }
+            }
+
+            herbSheet.Cells.AutoFitColumns();
+
             package.Save();
         }
 

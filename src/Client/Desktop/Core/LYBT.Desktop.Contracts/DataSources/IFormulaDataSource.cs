@@ -60,4 +60,19 @@ public interface IFormulaDataSource : IDataSourceBase<FormulaDetailDto, FormulaI
     /// T4-X2-19: 验证验方药材绑定
     /// </summary>
     Task<bool> ValidateHerbBindingsAsync(Guid formulaId, CancellationToken ct = default);
+
+    /// <summary>
+    /// T5-P2-37: 批量启用/禁用验方
+    /// </summary>
+    Task<BatchOperationResultDto> BatchToggleStatusAsync(List<Guid> ids, bool enable, CancellationToken ct = default);
+
+    /// <summary>
+    /// T5-P2-38: 获取导入模板列定义（主表）
+    /// </summary>
+    string[] GetImportTemplateColumns();
+
+    /// <summary>
+    /// T5-P2-38: 获取导入模板列定义（药材明细）
+    /// </summary>
+    string[] GetImportTemplateHerbColumns();
 }
