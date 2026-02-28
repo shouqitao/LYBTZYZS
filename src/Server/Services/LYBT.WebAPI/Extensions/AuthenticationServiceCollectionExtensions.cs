@@ -108,7 +108,7 @@ public static class AuthenticationServiceCollectionExtensions
                 .Build();
 
             // Sprint3-A3-08: 启用 FallbackPolicy，默认要求所有端点认证
-            // Swagger 中间件不受影响（在 endpoint routing 之前运行）
+            // Swagger 中间件已移至 UseRouting 之前，不受 FallbackPolicy 影响
             // /health 端点需要显式 AllowAnonymous() 豁免
             options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()

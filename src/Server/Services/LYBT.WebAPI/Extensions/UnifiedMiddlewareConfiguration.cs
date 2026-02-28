@@ -55,6 +55,9 @@ public static class UnifiedMiddlewareConfiguration
         // app.UseStaticFiles(); // 当前项目无静态文件
 
         // ===== 阶段3: 路由和请求处理 =====
+        // 3.0 Swagger（在路由和认证之前，避免被 FallbackPolicy 拦截）
+        app.ConfigureSwaggerMiddleware();
+
         // 3.1 路由（必须在认证之前）
         app.UseRouting();
 
@@ -83,11 +86,7 @@ public static class UnifiedMiddlewareConfiguration
         // 5.2 输出缓存（.NET 7+）
         app.UseOutputCache();
 
-        // ===== 阶段6: API文档（可选） =====
-        // 6.1 Swagger（仅非生产）
-        app.ConfigureSwaggerMiddleware();
-
-        // ===== 阶段7: 终端映射（最后） =====
+        // ===== 阶段6: 终端映射（最后） =====
         // Issue #1726 Phase 3: 健康检查端点
         // Sprint3-A3-08: FallbackPolicy 启用后，健康检查需显式 AllowAnonymous
         app.MapHealthChecks("/health").AllowAnonymous();
