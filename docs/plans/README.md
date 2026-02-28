@@ -10,10 +10,7 @@
 
 | 文件 | 内容 | 最后更新 |
 |------|------|----------|
-| [Sprint 路线图](2026-02-21-unified-architecture-sprint-roadmap.md) | 305 项任务，5 个 Sprint 分配; S1-S4 已完成 | 2026-02-28 |
-| [完整技术设计](2026-02-22-full-sprint-design.md) | Sprint 1-5 全量技术设计参考 | 2026-02-22 |
-| [功能检查清单](2026-02-11-system-function-checklist.md) | 全系统功能完成状态追踪 | 2026-02-22 |
-| [系统架构图](2026-02-21-system-architecture-diagrams.md) | 21 张 Mermaid 架构图 (领域模型/部署/数据流等) | 2026-02-21 |
+| [Sprint 5 剩余任务](2026-02-28-sprint5-remaining-tasks.md) | Sprint 5 剩余 28 项任务清单 | 2026-02-28 |
 
 ## 归档文档
 
@@ -40,7 +37,7 @@
 | design-issues-solutions | 2026-02-25 | 8 项设计问题全部实施 |
 | design-deepening-phase3 | 2026-02-25 | 数据流/状态流设计已实施 |
 
-### Sprint 5 完成归档 (4 个, 2026-02-28 归档)
+### Sprint 5 完成归档 (8 个, 2026-02-28 归档)
 
 | 文件 | 完成日期 | 说明 |
 |------|----------|------|
@@ -48,6 +45,10 @@
 | sprint-readiness-assessment | 2026-02-28 | Sprint 1-5 均已启动，评估使命完成 |
 | architecture-deep-comparison | 2026-02-28 | 架构分析已转化为 Sprint 任务 |
 | a4-03-authorization-handler-evaluation | 2026-02-28 | Sprint 4 评估，Sprint 4 已完成 |
+| system-function-checklist | 2026-02-28 | 功能清单使命完成，剩余任务已独立提取 |
+| system-architecture-diagrams | 2026-02-28 | 架构参考文档，不影响 Sprint 5 剩余工作 |
+| unified-architecture-sprint-roadmap | 2026-02-28 | Sprint 5 剩余任务已独立提取，路线图使命完成 |
+| full-sprint-design | 2026-02-28 | Sprint 1-4 已执行完毕，Sprint 5 有独立文档 |
 
 ### 跨模块解耦 (2 个, 2026-02-25 归档)
 
