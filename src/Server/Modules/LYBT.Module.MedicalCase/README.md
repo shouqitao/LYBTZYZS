@@ -6,7 +6,7 @@
 
 - **层级**: Server端
 - **架构模式**: CQRS(读写分离，状态服务)
-- **跨模块通信**: ICrossModuleQueryService(查询PatientBasicDto)
+- **跨模块通信**: IPatientCrossModuleService(查询PatientBasicDto)
 
 ## 目录结构
 
@@ -52,7 +52,7 @@ Pending(待接诊) → InProgress(诊疗中) → Completed(已完成)
 ## 依赖关系
 
 ### 依赖
-- LYBT.Infrastructure (BaseRepository, AppDbContext, ICrossModuleQueryService)
+- LYBT.Infrastructure (BaseRepository, AppDbContext, IPatientCrossModuleService)
 - LYBT.Entities (MedicalCase, Consultation, Prescription)
 - LYBT.Shared.Models (MedicalCaseDto, ConsultationDto等)
 

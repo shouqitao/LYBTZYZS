@@ -235,7 +235,7 @@ SyncMetadataDto {
     Checksum: string        // SHA256 哈希值
     LastModifiedAt: DateTime // 最后修改时间 (UTC)
     IsDeleted: bool         // 是否已删除
-    DisplayName: string     // 显示名称 (用于 UI 展示)
+    EntityName: string      // 实体名称 (用于 UI 展示)
 }
 ```
 
@@ -253,7 +253,7 @@ SyncDiffResultDto {
 
 SyncDiffItemDto {
     EntityId: Guid
-    DisplayName: string                   // 实体显示名称
+    EntityName: string                    // 实体名称
     DiffType: string                      // "LocalOnly" | "ServerOnly" | "Modified" | "Identical"
     LocalChecksum: string?                // 本地 Checksum (LocalOnly 时有值)
     ServerChecksum: string?               // 服务端 Checksum (ServerOnly 时有值)
@@ -269,7 +269,7 @@ SyncDiffItemDto {
 SyncConflictDetailDto {
     EntityId: Guid
     EntityType: string
-    DisplayName: string
+    EntityName: string
     LocalVersion: Dictionary<string, string>    // 本地字段值 { "Name": "甘草", "Price": "15.00", ... }
     ServerVersion: Dictionary<string, string>   // 服务端字段值
     ChangedFields: string[]                     // 差异字段列表 (高亮显示)
@@ -292,7 +292,7 @@ SyncResultDto {
 
 SyncFailedItemDto {
     EntityId: Guid
-    DisplayName: string
+    EntityName: string
     ErrorMessage: string     // 失败原因
 }
 ```
@@ -670,3 +670,4 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 2026-02-21 | v3.2 | PRD vs Code 偏差分析修订: 4 项修订, 7 项延期标注 |
 | 2026-02-21 | v3.3 | SYNC-D01: 医案同步仅限 Completed 状态。移除 BR-001 冲突处理和 ERR-70303; 新增 ERR-70506 (本地未完成医案阻断切换); FR-SYNC-008 新增 Active/Suspended 前置检查; Draft→Suspended 术语更新 (MC-D20) |
 | 2026-02-23 | v3.4 | 一致性审计: 错误码章节标注 ServiceResult → Result\<T\> 迁移计划 (D2-2, S5) |
+| 2026-02-28 | v3.5 | **PRD 偏差修复**: SyncMetadataDto/SyncDiffItemDto/SyncConflictDetailDto/SyncFailedItemDto 中 DisplayName 修正为 EntityName，对齐代码实现 (PRD-09) |

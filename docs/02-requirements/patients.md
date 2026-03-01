@@ -167,7 +167,7 @@
   1. 返回引用次数 (医案总数，含所有状态)
   2. 返回最近 5 条引用的医案记录
   3. **有关联医案时 CanDelete=false** (MC-D04)，提示使用禁用功能替代
-- **远程模式**: POST `/api/v1/patients/{id}/check-reference`
+- **远程模式**: GET `/api/v1/patients/{id}/check-reference`
 - **本地模式**: 本地检查
 - **验收标准**:
   - [ ] 患者有3条医案 -> 返回 referenceCount=3, canDelete=false
@@ -218,6 +218,7 @@
 | PinYinCode | string(50)? | - | 拼音码 (系统生成) |
 | Gender | Gender | Enum | 性别 (Unknown/Male/Female) |
 | BirthDate | DateTime? | - | 出生日期 |
+| IdType | int | Default: 0 | 证件类型 |
 | IdNumber | string(50) | Required, Unique, 敏感 | 证件号码 (IdentityInfo, 部分掩码) (PAT-D03) |
 | PhoneNumber | string(20) | Required, 敏感 | 手机号码 (ContactInfo, 部分掩码) |
 | Address | string(256) | Required, 敏感 | 地址 (PersonalInfo, 默认掩码) |
@@ -227,7 +228,9 @@
 | MaritalStatus | int | Default: 0 | 婚姻状态 |
 | EmergencyContactName | string? | - | 紧急联系人姓名 |
 | EmergencyContactPhone | string? | - | 紧急联系人电话 |
+| EmergencyContactRelation | string? | - | 紧急联系人关系 |
 | Status | CommonStatus | Default: Enabled | 患者状态 |
+| DisableReason | string(128)? | - | 禁用原因 |
 | LastVisitTime | DateTime? | - | 最后就诊时间 (自动更新) |
 | VisitCount | int | Default: 0 | 就诊次数 |
 | Age | int? | 计算属性 | 基于 BirthDate 计算，NotMapped |
@@ -326,3 +329,4 @@
 | 2026-02-18 | v1.8 | 新增 FR-PAT-013 患者状态管理 (启用/禁用); 明确禁用场景 (PAT-D05: 患者已故); v2.0 规划关系转移 (PAT-D06); ERR-20005 触发条件明确化 |
 | 2026-02-18 | v1.9 | FR-PAT-002 补充分页验证规则 (NFR-API-001); 新增 ERR-20705 分页错误码 |
 | 2026-02-26 | v2.0 | **Sprint 4 已实现标记**: IPatientDataSource 扩展 BatchImportAsync/GetAllForExportAsync/HasMedicalCasesAsync/BatchCheckReferencesAsync (T4-X2-09~12) |
+| 2026-02-28 | v2.1 | **PRD 偏差修复**: 数据模型补充 IdType/DisableReason/EmergencyContactRelation 字段 (PRD-01); CheckReference HTTP 方法从 POST 修正为 GET (PRD-12) |

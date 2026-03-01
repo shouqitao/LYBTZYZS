@@ -377,12 +377,12 @@ stateDiagram-v2
 | 状态 | 值 | 说明 | 允许操作 |
 |------|-----|------|----------|
 | Active | 1 | 进行中 (初始状态) | 编辑、挂起、完成、取消 (软删除) |
-| Suspended | 0 | 已挂起 (医生暂时离开) | 恢复、完成、取消 (软删除) |
+| Draft/Suspended | 0 | 暂存/已挂起 (代码当前枚举名为 Draft，设计目标重命名为 Suspended) | 恢复、完成、取消 (软删除) |
 | Completed | 2 | 已完成 | 查看 (Admin 可编辑需理由) |
 
 > **取消操作**: 取消医案统一通过 `IsDeleted=true` 软删除实现，审计类型为 `AuditOperationType.SoftDelete`。已完成的医案不可取消。
 >
-> **Draft 已移除 (MC-D20)**: 原 Draft 的"保存不完整数据"语义由 UI 未保存表单替代; Suspended 承载"工作流暂停"语义。枚举值 0 从 Draft 重命名为 Suspended，DB 现有数据无需迁移。
+> **Draft->Suspended 重命名 (MC-D20)**: 设计决策已确定将 Draft 重命名为 Suspended，但代码枚举 (`MedicalCaseStatus.Draft = 0`) 尚未执行重命名。当前代码仍使用 Draft 枚举值。待代码侧完成重命名后移除本标注。
 
 ---
 
@@ -719,3 +719,4 @@ stateDiagram-v2
 | 2026-02-21 | v2.6 | **Draft→Suspended 状态重命名 (MC-D20)**: 移除 Draft 状态，新增 Suspended (挂起)。状态机: Active↔Suspended→Completed; FR-MC-006 暂存草稿→挂起医案; API `/draft`→`/suspend`; BR-001/BR-002 更新; ERR-30104/30205/30304/30305 重命名; MC-D05/D06 更新; 边界条件术语统一 |
 | 2026-02-22 | v2.7 | **打印字段全部提升到聚合根 (A2)**: PrintCount/LastPrintedAt 从 Prescription 迁移到 MedicalCase (与 IsPrinted/PrintVersion 统一); Prescription 数据模型移除全部打印字段; FR-MC-015 打印触发规则更新为 MedicalCase.PrintCount/LastPrintedAt; MC-D15 更新为"全部在聚合根，per-type 统计从 PrintLog 聚合" |
 | 2026-02-26 | v2.8 | **Sprint 4 已实现标记**: FR-MC-015 打印回写 (T2-X8-04~08)、打印日志 (T4-S5-01~03)、医师自动绑定 (T4-S5-10); FR-MC-004 处方折扣 (T4-S5-11) |
+| 2026-02-28 | v2.9 | **PRD 偏差修复**: 状态表 Suspended 修正为 Draft/Suspended，标注代码枚举仍为 Draft，待重命名 (PRD-10) |

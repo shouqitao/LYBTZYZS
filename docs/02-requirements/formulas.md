@@ -35,7 +35,7 @@
   5. 默认类型为 Experience (经验方)
   6. 初始 ValidationStatus=Draft
   7. 记录 UserId 和 CreatedBy (用于所有权判断)
-- **远程模式**: POST `/api/v1/formulas`，返回 FormulaDetailDto
+- **远程模式**: POST `/api/v1/formulas`，返回 FormulaDetailDto (200)
 - **本地模式**: DataSource 本地存储
 - **验收标准**:
   - [ ] 药材列表为空 -> 返回 400 验证失败
@@ -304,3 +304,4 @@
 | 2026-02-18 | v1.5 | 错误码全量分配: 3 个子类别 (601xx~603xx) 共 17 个错误码，统一 ERR-MCCEE 格式 + 枚举名 |
 | 2026-02-21 | v1.6 | PRD vs Code 偏差分析修订: 1 项修订 (FORM-14 Name字段最大长度) |
 | 2026-02-26 | v1.7 | **Sprint 4 已实现标记**: IFormulaDataSource 扩展 BatchImportAsync/GetPendingValidationAsync/GetAllForExportAsync/ValidateHerbBindingsAsync (T4-X2-19~22) |
+| 2026-02-28 | v1.8 | **PRD 偏差修复**: Create 端点返回码明确标注 200 (PRD-11) |

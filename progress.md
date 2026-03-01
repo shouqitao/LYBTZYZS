@@ -1,29 +1,42 @@
-# Sprint 5 Batch 5 Progress
+# Progress - 审计遗留项处理
 
-## Session: 2026-02-28
+## Session: 2026-03-01
 
-### Actions
-1. 读取 8 个目标文件 + 4 个参考文件
-2. Task 1+2+3 并行执行（HerbService 拼音码 + Validator 修复）
-3. Task 4 执行（FormulaRepository + FormulaImportExportService 导出增强）
-4. Task 5+6 并行执行（IFormulaDataSource + Local/Remote 实现）
-5. 编译验证: 0 errors, 4 warnings (已有的 UserMapper RMG012)
-6. 测试验证: 592 + 638 + 74 = 1304 tests passed
+### Phase 0: 快速清理 [complete]
+- 0A: LocalData.csproj added to LYBT.All.sln
+- 0B: AuthErrorCode 枚举删除 (AuthEnums.cs + 3 comment refs)
+- 0C: ICrossModuleService 接口文件删除 + 8 文件注释更新到 ISP 接口名
 
-### Modified Files
-| File | Change |
-|------|--------|
-| `src/Server/Modules/LYBT.Module.Herbs/Services/HerbService.cs` | CreateAsync + UpdateAsync 拼音码逻辑 |
-| `src/Shared/LYBT.Shared.Validators/Formula/FormulaInputDtoValidator.cs` | Herbs 强制非空校验 |
-| `src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaRepository.cs` | +GetAllWithHerbsAsync |
-| `src/Server/Modules/LYBT.Module.Formula/Repositories/FormulaRepository.cs` | +GetAllWithHerbsAsync 实现 |
-| `src/Server/Modules/LYBT.Module.Formula/Services/FormulaImportExportService.cs` | ExportAsync 药材组成 Sheet |
-| `src/Client/Desktop/Core/LYBT.Desktop.Contracts/DataSources/IFormulaDataSource.cs` | +BatchToggleStatusAsync, +GetImportTemplate*Columns |
-| `src/Client/Desktop/Core/LYBT.Desktop.LocalData/DataSources/LocalFormulaDataSource.cs` | +BatchToggleStatusAsync, +GetImportTemplate*Columns |
-| `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/DataSources/Remote/RemoteFormulaDataSource.cs` | +BatchToggleStatusAsync, +GetImportTemplate*Columns |
+### Phase 1: Draft -> Suspended 全量迁移 [complete]
+- 1A: MedicalCaseEnums.cs (Draft alias removed), CaseStatus.cs, MedicalCaseModel.cs, MedicalCaseBusinessRules.cs
+- 1B: 6 Server Service 文件 (SaveDraftAsync -> SuspendAsync)
+- 1C: MedicalCaseController.cs (PUT /draft -> /suspend)
+- 1D: 14 Desktop 文件 (Command/ViewModel/Service/Repository/XAML)
+- 1E: 11 test 文件
+- Verification: Build 0 errors, Tests 1438 passed / 0 failed
+- Grep确认: MedicalCaseStatus.Draft / SaveDraft / /draft 零残留
 
-### Test Results
-- LYBT.Tests.Unit: 592 passed
-- LYBT.Tests.Desktop.Unit: 638 passed
-- LYBT.Tests.Architecture: 74 passed
-- Total: 1304 passed, 0 failed
+### Phase 2: Server 缓存失效 [complete]
+- 2A: ICacheInvalidationService + CacheInvalidationService (OutputCache Tag + MemoryCache Prefix)
+- 2B: DI 注册为 Singleton
+- 2C: 6 Service 集成 (HerbService, FormulaService, FormulaImportExportService, PatientService, MedicalCaseCommandService, MedicalCaseStateService)
+- 2D: 5 test files updated (constructor mock params)
+- 2E: Architecture test whitelist updated
+- Verification: Build 0 errors, Tests 1453 passed / 0 failed
+
+### Phase 3: Desktop 缓存失效 [complete]
+- 3A: CacheEvents.cs (Contracts/Events), IDesktopCacheManager (Contracts), DesktopCacheManager (Foundation/Caching)
+- 3B: PatientSearchCache 订阅 PatientEvents.Created/Updated + CacheEvents.Invalidated
+- 3C: SyncService.ExecuteSyncAsync 完成后调用 _cacheManager.InvalidateAll()
+- 3D: DI 注册为 Singleton
+- Verification: Build 0 errors/0 warnings, Tests 1476 passed / 0 failed
+
+### Phase 4: A4 打印模板 [complete]
+- 4A: PrescriptionPrintA4Template.xaml + .xaml.cs (794x1123px, Margin=57px, 字号: 18/17/11/10pt, HerbItem Width=135px)
+- 4B: PrescriptionContinuationA4Template.xaml + .xaml.cs (A4续页, SetAsLastPage() 控制尾部区域可见性)
+- 4C: PrescriptionPrintService 更新:
+  - A5FirstPageHerbLimit=12, A4FirstPageHerbLimit=20
+  - IsA4(Size) / GetFirstPageHerbLimit(Size) 辅助方法
+  - CreateFixedPage: 根据 IsA4 选择 PrescriptionPrintA4Template / PrescriptionPrintTemplate
+  - CreateContinuationFixedPage: 根据 IsA4 选择 A4/A5 续页模板
+- Verification: Build 0 errors, Tests 1438 passed / 0 failed

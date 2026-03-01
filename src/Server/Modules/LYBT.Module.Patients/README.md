@@ -6,7 +6,7 @@
 
 - **层级**: Server端
 - **架构模式**: 传统三层
-- **跨模块通信**: 无(被MedicalCase模块通过ICrossModuleQueryService查询)
+- **跨模块通信**: 无(被MedicalCase模块通过IPatientCrossModuleService查询)
 
 ## 目录结构
 
@@ -42,7 +42,7 @@ LYBT.Module.Patients/
 
 ### 被依赖
 - LYBT.WebAPI (PatientController)
-- LYBT.Module.MedicalCase (通过ICrossModuleQueryService查询PatientBasicDto)
+- LYBT.Module.MedicalCase (通过IPatientCrossModuleService查询PatientBasicDto)
 
 ## API端点
 

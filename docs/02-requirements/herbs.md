@@ -36,7 +36,7 @@
   3. 单价必须大于 0，最大 100000
   4. 自动生成拼音码 (PinYinCode) 用于快速搜索
   5. 默认状态为 Enabled
-- **远程模式**: POST `/api/v1/herbs`，返回 HerbDetailDto
+- **远程模式**: POST `/api/v1/herbs`，返回 HerbDetailDto (200)
 - **本地模式**: DataSource 本地存储
 - **验收标准**:
   - [ ] 创建成功 -> 拼音码自动生成
@@ -291,3 +291,4 @@
 | 2026-02-21 | v1.6 | PRD vs Code 偏差分析修订: 2 项修订 (HERB-05 Price最小值, HERB-06 Price最大值) |
 | 2026-02-22 | v1.7 | Phase 2 模块功能细化: 新增 HERB-D01 (IHerbCacheService 全量预加载+拼音索引)、HERB-D02 (批量导入 HashSet 判重+分批100条)、HERB-D03 (Formula 引用检查扩展到 FormulaItem)、HERB-D04 (并发 LWW 不加 RowVersion) |
 | 2026-02-26 | v1.8 | **Sprint 4 已实现标记**: IHerbDataSource 扩展 BatchToggleStatusAsync/BatchImportAsync/GetAllForExportAsync/HasReferencesAsync/GetImportTemplateColumns (T4-X2-13~18) |
+| 2026-02-28 | v1.9 | **PRD 偏差修复**: Create 端点返回码明确标注 200 (PRD-11) |

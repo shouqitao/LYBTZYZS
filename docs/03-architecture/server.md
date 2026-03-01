@@ -2,7 +2,7 @@
 
 ## 概述
 
-Server 层采用经典三层架构: Controller -> Service -> Repository -> DbContext。共 13 个项目，分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组。简单模块使用传统三层模式，复杂模块 (MedicalCase) 使用 CQRS 模式。
+Server 层采用经典三层架构: Controller -> Service -> Repository -> DbContext。分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组。简单模块使用传统三层模式，复杂模块 (MedicalCase) 使用 CQRS 模式。Prescriptions 模块已于 2026-01-05 移除，处方功能迁移到 MedicalCase 聚合根内。
 
 ## 架构图
 
@@ -19,8 +19,6 @@ graph TB
         Herbs["Module.Herbs"]
         Formula["Module.Formula"]
         MC["Module.MedicalCase"]
-        Consultation["Module.Consultation"]
-        Prescriptions["Module.Prescriptions"]
         Sync["Module.Sync"]
     end
 
@@ -29,8 +27,8 @@ graph TB
         Entities["LYBT.Entities<br>(领域实体)"]
     end
 
-    WebAPI --> Auth & Users & Patients & Herbs & Formula & MC & Consultation & Prescriptions & Sync
-    Auth & Users & Patients & Herbs & Formula & MC & Consultation & Prescriptions & Sync --> Infra
+    WebAPI --> Auth & Users & Patients & Herbs & Formula & MC & Sync
+    Auth & Users & Patients & Herbs & Formula & MC & Sync --> Infra
     Infra --> Entities
 ```
 
@@ -67,8 +65,10 @@ LYBT.Entities/
 |------|------|------|
 | Id | Guid | 主键 |
 | CreatedAt | DateTime | 创建时间 (UTC) |
-| UpdatedAt | DateTime | 更新时间 (UTC) |
+| UpdatedAt | DateTime? | 更新时间 (UTC) |
 | CreatedBy | Guid? | 创建人 |
+| UpdatedBy | Guid? | 更新人 |
+| RowVersion | byte[]? | 并发控制字段 (乐观并发, [Timestamp]) |
 | IsDeleted | bool | 软删除标记 |
 
 ### LYBT.Infrastructure
@@ -77,15 +77,14 @@ LYBT.Entities/
 
 **职责**:
 - `AppDbContext` -- EF Core 数据库上下文
-- `BaseRepository<T>` -- Repository 基类 (14 个标准方法)
-- `BaseReadRepository<T>` -- 只读 Repository 基类
+- `BaseRepository<T>` -- Repository 基类 (21 个公开方法)
 - 跨模块服务接口 (ISP 原则，D5-1 设计):
   - `ICrossModuleService` -- 旧统一接口 (标记 `[Obsolete]`，S3 渐进迁移)
   - `IPatientCrossModuleService` -- 患者查询 + 引用检查 (S3 新增)
   - `IHerbCrossModuleService` -- 药材查询 + 引用检查 (S3 新增)
   - `IUserCrossModuleService` -- 用户查询 + 凭证操作 (S3 新增)
   - `ICrossModuleAuthService` -- Token 撤销 (已设计，6 个触发场景)
-- `IRepository<T>` / `IReadRepository<T>` -- Repository 接口定义
+- `IRepository<T>` -- Repository 接口定义
 - EF Core 实体配置 (Fluent API)
 - 数据库迁移文件
 
@@ -100,10 +99,8 @@ LYBT.Infrastructure/
       ...
   Interfaces/
     IRepository.cs
-    IReadRepository.cs
   Repositories/
-    BaseRepository.cs        # 标准 CRUD + 分页
-    BaseReadRepository.cs    # 只读查询
+    BaseRepository.cs        # 标准 CRUD + 分页 + 高级查询
   Services/
     ICrossModuleService.cs
     CrossModuleService.cs
@@ -116,20 +113,31 @@ LYBT.Infrastructure/
     ApiErrorCodes.cs         # 错误码定义
 ```
 
-**BaseRepository 标准方法**:
+**BaseRepository 公开方法 (21 个)**:
 
 | 方法 | 说明 |
 |------|------|
 | `GetByIdAsync(id)` | 按 ID 查询 |
-| `GetPagedAsync(page, size, keyword)` | 分页查询 (模板方法) |
 | `GetAllAsync()` | 查询全部 |
-| `CreateAsync(entity)` | 创建 |
+| `FindAsync(predicate)` | 条件查询 (简单版) |
+| `FindAsync(predicate, orderBy, includes, skip, take)` | 条件查询 (高级版，支持预加载和分页) |
+| `SelectAsync(predicate, selector)` | 投影查询 |
+| `GetPagedAsync(page, size, keyword)` | 分页查询 (模板方法) |
+| `GetPagedAsync(page, size, predicate, orderBy, ascending)` | 高级分页查询 |
+| `ExistsAsync(predicate)` | 存在检查 |
+| `CountAsync()` | 数量统计 (无条件) |
+| `CountAsync(predicate)` | 数量统计 (有条件) |
+| `AddAsync(entity)` | 创建 |
+| `AddRangeAsync(entities)` | 批量创建 |
 | `UpdateAsync(entity)` | 更新 |
+| `UpdateRangeAsync(entities)` | 批量更新 |
 | `DeleteAsync(id)` | 软删除 |
+| `DeleteRangeAsync(predicate)` | 批量软删除 |
 | `HardDeleteAsync(id)` | 物理删除 |
-| `RestoreAsync(id)` | 恢复软删除 |
-| `ExistsAsync(id)` | 存在检查 |
-| `CountAsync()` | 数量统计 |
+| `GetQueryable()` | 获取可查询对象 |
+| `GetNoTrackingQueryable()` | 获取不跟踪查询对象 |
+| `FromSqlRawAsync(sql, params)` | 原生 SQL 查询 |
+| `SaveChangesAsync()` | 保存更改 (含 RowVersion 同步) |
 
 **分页查询模板方法模式**:
 子类通过覆盖 `ApplyKeywordFilter` 和 `ApplyDefaultOrdering` 提供定制逻辑，不重写 `GetPagedAsync` 本身。
@@ -161,8 +169,6 @@ LYBT.Module.{Domain}/
 | Herbs | 传统三层 | - | 药材 CRUD、分类、导入 |
 | Formula | 传统三层 | ICrossModuleService | 验方 CRUD、药材绑定 |
 | MedicalCase | CQRS | IPatientService | 医案核心，状态机管理 |
-| Consultation | 传统三层 | - | 诊断数据 (只读 Repository) |
-| Prescriptions | 传统三层 | ICrossModuleService | 处方数据 |
 | Sync | 传统三层 | - | 数据同步 |
 
 ### CQRS 模式 (MedicalCase)
@@ -457,7 +463,6 @@ Validator 原先分散在各业务模块 (`Module.{Entity}/Validators/`) 中，�
 | 实体 | 冲突 | 别名 |
 |------|------|------|
 | Formula | LYBT.Module.Formula 命名空间 | `FormulaEntity` |
-| Consultation | LYBT.Module.Consultation | `ConsultationEntity` |
 | MedicalCase | LYBT.Module.MedicalCase | `MedicalCaseEntity` |
 
 ## 缓存策略
@@ -709,3 +714,4 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 | 2026-02-22 | v1.5 | **Phase 4 架构修复设计同步 (A2+A3)**: MedicalCasePrintLog 从 Prescriptions/ 迁移到 MedicalCases/ 目录; Token Family 管理新增 ICrossModuleAuthService 独立接口 (ISP) + 6 个撤销场景表 + 延迟踢出说明 |
 | 2026-02-23 | v1.6 | 一致性审计: 新增 ICrossModuleService ISP 拆分 (D5-1); 新增 BaseService 层次结构 (D2-1); 新增事务边界模型 L1/L2/L3; 缓存策略补充 IMemoryCache 层 + Tag-based 失效矩阵 |
 | 2026-02-26 | v1.7 | Sprint3-Batch5a DOC3: FormulaService BaseService 继承状态更新 (A3-07); 新增 Validator 架构与迁移章节 (Shared.Validators) |
+| 2026-02-28 | v1.8 | **PRD 偏差修复**: BaseEntity 补充 UpdatedBy/RowVersion 字段 (PRD-02); BaseRepository 方法列表对齐代码 21 个公开方法 (PRD-03); 移除 Module.Consultation/Prescriptions (PRD-04); 移除不存在的 BaseReadRepository/IReadRepository (PRD-07/08) |

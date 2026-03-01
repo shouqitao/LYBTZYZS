@@ -80,8 +80,10 @@ graph TB
 | NeedsPrescription | bool? | 否 | 是否需要处方 |
 | CompletedAt | DateTime? | 否 | 完成时间 |
 | Remark | string(500) | 否 | 备注 |
-| IsPrinted | bool | 是 | 是否已打印 (默认 false)。聚合根级打印保护: 为 true 时修改 Consultation 或 Prescription 内容需提供 EditReason (MC-D15) |
 | PrintVersion | int | 是 | 打印版本号 (默认 1)。医案内容修改后自增，标记需重新打印 |
+| LastPrintedAt | DateTime? | 否 | 最后打印时间 |
+| PrintCount | int | 是 | 打印次数 (默认 0) |
+| IsPrinted | bool | 是 | 是否已打印 (默认 false)。聚合根级打印保护: 为 true 时修改 Consultation 或 Prescription 内容需提供 EditReason (MC-D15) |
 | Consultation | Consultation? | - | 导航属性 (1:1) |
 | Prescription | Prescription? | - | 导航属性 (1:0..1) |
 
@@ -121,8 +123,6 @@ graph TB
 | Advice | string(500) | 否 | 医嘱 |
 | ReferencedFormulas | string(500) | 否 | 引用验方 (逗号分隔) |
 | Remark | string(500) | 否 | 备注 |
-| PrintCount | int | 是 | 打印次数 (处方专属统计) |
-| LastPrintedAt | DateTime? | 否 | 最后打印时间 (处方专属统计) |
 
 **价格计算公式** (MC-D14):
 - Items[i].Amount = UnitPrice x Dosage (单味药小计，PrescriptionItem 计算属性)
@@ -156,13 +156,18 @@ graph TB
 | Gender | Gender | 是 | 性别 |
 | MaritalStatus | int | 是 | 婚姻状况 |
 | BirthDate | DateTime? | 否 | 出生日期 |
+| IdType | int | 是 | 证件类型 (默认 0) |
 | IdNumber | string(50) | 否 | 身份证号 (敏感) |
 | PhoneNumber | string(20) | 否 | 手机号 (敏感) |
 | Address | string(256) | 否 | 地址 (敏感) |
 | AllergyHistory | string(500) | 否 | 过敏史 (敏感) |
 | MedicalHistory | string(1000) | 否 | 病史 (敏感) |
 | BloodType | int | 是 | 血型 |
+| EmergencyContactName | string? | 否 | 紧急联系人姓名 |
+| EmergencyContactPhone | string? | 否 | 紧急联系人电话 (敏感) |
+| EmergencyContactRelation | string? | 否 | 紧急联系人关系 |
 | Status | CommonStatus | 是 | 状态 (PAT-D05: 禁用主要场景为患者已故; 禁用后禁止创建新医案) |
+| DisableReason | string(128) | 否 | 禁用原因 |
 | LastVisitTime | DateTime? | 否 | 最后就诊 |
 | VisitCount | int | 是 | 就诊次数 |
 
@@ -199,6 +204,7 @@ graph TB
 | CostPrice | decimal(18,2)? | 否 | 成本价 |
 | Effect | string(500) | 否 | 功效 |
 | Usage | string(500) | 否 | 用法 |
+| Remark | string(500) | 否 | 备注 |
 | Status | CommonStatus | 是 | 状态 |
 
 **显示规则** (MC-D07): 禁用药材 (Status=Disabled) 在历史处方中展示时，名称后缀"(已停用)"，如"黄芪(已停用)"。禁用药材仅可查看不可修改剂量，不可添加到新处方中。
@@ -432,3 +438,4 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 | 2026-02-21 | v1.3 | 打印层级提升: ER 图和聚合根图 PrescriptionPrintLog->MedicalCasePrintLog (FK 改为 MedicalCase); MedicalCase 新增 PrintVersion; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt) |
 | 2026-02-21 | v1.4 | 深度重构同步: MedicalCaseStatus 移除 Cancelled=3 (取消统一为 IsDeleted=true); MedicalCase 新增 DDD 域方法 (Complete/SaveAsDraft/SoftDelete/UpdateConsultation)，从贫血模型演进为充血模型 |
 | 2026-02-26 | v1.5 | DOC3-10: 新增"辅助实体"章节，汇总 MedicalCasePrintLog/PrescriptionItem/FormulaHerbItem/AuthSession+RefreshToken 的职责和设计要点 |
+| 2026-02-28 | v1.6 | **PRD 偏差修复**: Patient 补充 IdType/EmergencyContact*/DisableReason 字段 (PRD-01); Herb 补充 Remark 字段 (PRD-05); PrintCount/LastPrintedAt 从 Prescription 移到 MedicalCase (PRD-06) |
