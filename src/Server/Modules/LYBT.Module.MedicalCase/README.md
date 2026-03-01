@@ -49,6 +49,15 @@ Pending(待接诊) → InProgress(诊疗中) → Completed(已完成)
 | CanDelete | 仅草稿状态可删除 |
 | CanComplete | 必须有诊断记录 |
 
+## 设计依据
+
+- 采用 CQRS 模式 (Command/Query/State) 分离读写操作，单一 Service 拆分后职责清晰
+- MedicalCase 作为聚合根，Consultation/Prescription 作为内部实体，保证数据一致性
+- Facade 模式聚合 5 个 CQRS 服务，降低 Controller 构造函数依赖 (8->3)
+- 状态机驱动医案生命周期 (Active/Suspended/Completed)，防止非法状态转换
+- MedicalCaseRules 委托到 Shared 层 BusinessRules，实现 Server/Client 规则共享
+- 并发重试机制 (ExecuteWithConcurrencyRetryAsync) 处理乐观并发冲突
+
 ## 依赖关系
 
 ### 依赖

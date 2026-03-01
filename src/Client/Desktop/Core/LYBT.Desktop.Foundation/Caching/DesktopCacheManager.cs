@@ -55,6 +55,42 @@ public sealed class DesktopCacheManager : IDesktopCacheManager
             });
     }
 
+    public void InvalidateHerbCaches()
+    {
+        _logger.LogDebug("[Cache] Desktop invalidating herb caches");
+        _memoryCache.RemoveByPrefix("GET:/api/v1/herbs");
+        _eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>().Publish(
+            new CacheInvalidatedPayload
+            {
+                Domain = CacheDomain.Herbs,
+                Reason = "HerbCRUD"
+            });
+    }
+
+    public void InvalidateFormulaCaches()
+    {
+        _logger.LogDebug("[Cache] Desktop invalidating formula caches");
+        _memoryCache.RemoveByPrefix("GET:/api/v1/formulas");
+        _eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>().Publish(
+            new CacheInvalidatedPayload
+            {
+                Domain = CacheDomain.Formulas,
+                Reason = "FormulaCRUD"
+            });
+    }
+
+    public void InvalidateUserCaches()
+    {
+        _logger.LogDebug("[Cache] Desktop invalidating user caches");
+        _memoryCache.RemoveByPrefix("GET:/api/v1/users");
+        _eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>().Publish(
+            new CacheInvalidatedPayload
+            {
+                Domain = CacheDomain.Users,
+                Reason = "UserCRUD"
+            });
+    }
+
     public void InvalidateAll()
     {
         _logger.LogInformation("[Cache] Desktop invalidating ALL caches (post-sync)");

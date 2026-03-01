@@ -29,11 +29,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<MedicalCase?> GetByIdWithDetailsFreshAsync(Guid id);
 
         /// <summary>
-        /// 获取分页列表（包含关联数据）
-        /// </summary>
-        Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
-
-        /// <summary>
         /// 获取分页列表（包含关联数据 + 全部筛选条件，DB 层执行）
         /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
         /// </summary>

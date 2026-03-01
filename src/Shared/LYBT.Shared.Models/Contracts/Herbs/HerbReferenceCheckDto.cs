@@ -15,7 +15,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         /// <summary>是否被引用</summary>
         public bool HasReferences { get; set; }
 
-        /// <summary>引用次数（处方中的引用总数）</summary>
+        /// <summary>引用次数（处方+验方引用总数）</summary>
         public int ReferenceCount { get; set; }
 
         /// <summary>是否可删除（BR-007: 始终为true，支持软删除）</summary>

@@ -87,6 +87,13 @@ public class ClientProblemDetails
     [JsonPropertyName("businessRule")]
     public string? BusinessRule { get; set; }
 
+    /// <summary>
+    /// 错误严重程度 (info/warning/error/critical)
+    /// T5-P3-03: 接收服务端 ProblemDetails 中的 severity 字段
+    /// </summary>
+    [JsonPropertyName("severity")]
+    public string? Severity { get; set; }
+
     #region 便捷属性
 
     /// <summary>
@@ -118,6 +125,12 @@ public class ClientProblemDetails
     /// 是否为服务器错误
     /// </summary>
     public bool IsServerError => Status >= 500;
+
+    /// <summary>
+    /// 是否为严重错误 (critical)
+    /// </summary>
+    public bool IsCriticalError =>
+        string.Equals(Severity, "critical", StringComparison.OrdinalIgnoreCase);
 
     #endregion
 

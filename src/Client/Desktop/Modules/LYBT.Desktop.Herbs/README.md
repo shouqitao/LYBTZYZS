@@ -28,61 +28,17 @@ LYBT.Desktop.Herbs/
 
 ## HerbManagementViewModel
 
-### 属性
+### 核心功能
 
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| Herbs | ObservableCollection | 药材列表 |
-| SelectedHerb | HerbDto | 选中的药材 |
-| SearchText | string | 搜索关键词(支持拼音) |
-| FilterCategory | string | 分类筛选 |
-| IsLoading | bool | 加载状态 |
-| TotalCount | int | 总数量 |
-| PageIndex | int | 当前页码 |
-
-### 命令(19个)
-
-| 命令 | 说明 |
-|------|------|
-| LoadCommand | 加载药材列表 |
-| SearchCommand | 搜索药材(支持拼音首字母) |
-| CreateCommand | 新建药材 |
-| EditCommand | 编辑药材 |
-| DeleteCommand | 删除药材 |
-| ImportCommand | 批量导入(Excel) |
-| ExportCommand | 导出药材 |
-| RefreshCommand | 刷新列表 |
-| FilterCommand | 按分类筛选 |
+- 属性: Herbs列表、拼音搜索、分类筛选、分页
+- 命令(19个): CRUD、批量导入导出(Excel)、分类筛选
 
 ## HerbDetailViewModel
 
-### 属性(16个)
+### 核心功能
 
-| 属性类别 | 属性 | 说明 |
-|----------|------|------|
-| 基本信息 | Name | 药材名称 |
-| 基本信息 | PinYin | 拼音(用于快速搜索) |
-| 基本信息 | Alias | 别名 |
-| 基本信息 | Category | 分类(如:补虚药/清热药) |
-| 药性 | Nature | 性(寒/热/温/凉/平) |
-| 药性 | Flavor | 味(酸/苦/甘/辛/咸) |
-| 药性 | Meridian | 归经 |
-| 功效 | Functions | 功效 |
-| 功效 | Indications | 主治 |
-| 用法 | Dosage | 常用剂量 |
-| 用法 | Usage | 用法说明 |
-| 价格 | UnitPrice | 单价(元/克) |
-| 状态 | HasChanges | 变更标记 |
-| 状态 | IsActive | 启用状态 |
-
-### 命令(15个)
-
-| 命令 | 说明 |
-|------|------|
-| SaveCommand | 保存药材 |
-| CancelCommand | 取消编辑 |
-| ValidateCommand | 验证数据 |
-| ToggleActiveCommand | 切换启用状态 |
+- 属性(16个): 基本信息(名称/拼音/别名/分类)、药性(性/味/归经)、功效/主治、用法/剂量/价格、状态
+- 命令(15个): 保存/取消、验证、启用状态切换
 
 ## IHerbRepository
 
@@ -111,6 +67,13 @@ LYBT.Desktop.Herbs/
 | HerbSelectionDialog | 处方模块调用药材选择对话框 |
 | 药材选择 | 返回选中的HerbDto列表 |
 | 剂量建议 | 提供常用剂量参考 |
+
+## 设计依据
+
+- 药材作为独立基础数据模块，是验方和处方的底层依赖，独立管理避免与业务流程耦合
+- 拼音搜索(全拼+首字母)适配中医师快速检索习惯，输入"hq"即可定位"黄芪"
+- HerbListControl/HerbItemControl采用可复用控件设计，同时服务于药材管理、验方编辑和处方开具三个场景
+- 批量导入(Excel)功能支持药材基础数据的初始化录入，降低系统启用门槛
 
 ## 依赖关系
 

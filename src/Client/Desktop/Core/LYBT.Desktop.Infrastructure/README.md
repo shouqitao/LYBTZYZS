@@ -69,6 +69,13 @@ LYBT.Desktop.Infrastructure/
 | PrescriptionCompletedEvent | 处方完成 |
 | DataRefreshEvent | 数据刷新 |
 
+## 设计依据
+
+- 与Foundation分层: Foundation提供平台无关能力，Infrastructure提供WPF专属基础设施，职责边界清晰
+- SessionManager集中管理用户会话和权限状态，避免各模块各自维护登录状态导致的不一致
+- 自定义控件(VirtualizedDataGrid等)封装WPF虚拟化技术，使业务模块无需关心大数据量渲染性能
+- Prism事件总线实现模块间松耦合通信，模块通过发布/订阅事件交互而非直接引用
+
 ## 依赖关系
 
 ### 依赖

@@ -42,42 +42,11 @@ LYBT.Desktop.MedicalCase/
 
 ## MedicalCaseFlowViewModel
 
-### 属性(13个)
+### 核心功能
 
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| CurrentStep | int | 当前步骤(1-3) |
-| MedicalCaseId | Guid | 医案ID |
-| PatientId | Guid | 患者ID |
-| PatientName | string | 患者姓名 |
-| CurrentStepView | object | 当前步骤视图 |
-| CanGoNext | bool | 可进入下一步 |
-| CanGoPrev | bool | 可返回上一步 |
-| CanComplete | bool | 可完成流程 |
-| IsLoading | bool | 加载状态 |
-| HasUnsavedChanges | bool | 未保存变更 |
-| FlowStatus | string | 流程状态 |
-| ValidationMessage | string | 验证消息 |
-| StepTitle | string | 步骤标题 |
-
-### 命令
-
-| 命令 | 说明 |
-|------|------|
-| NextStepCommand | 进入下一步(保存当前步骤) |
-| PrevStepCommand | 返回上一步 |
-| SaveCommand | 保存当前步骤 |
-| CompleteCommand | 完成整个流程 |
-| CancelCommand | 取消流程 |
-| ValidateCommand | 验证当前步骤 |
-
-### ISaveable协调
-
-| 方法 | 说明 |
-|------|------|
-| SaveCurrentStepAsync | 调用当前步骤组件的ISaveable.SaveAsync |
-| ValidateCurrentStep | 调用当前步骤组件的IValidatable.ValidateAll |
-| CheckStepChanges | 检查当前步骤的HasChanges状态 |
+- 属性(13个): 步骤控制(CurrentStep/CanGoNext/CanGoPrev)、医案标识、加载/保存状态
+- 命令: 步骤导航(Next/Prev)、保存、完成、取消、验证
+- ISaveable协调: 通过接口调用当前步骤组件的Save/Validate/HasChanges
 
 ## IMedicalCaseRepository
 
@@ -100,6 +69,13 @@ LYBT.Desktop.MedicalCase/
 | InProgress | 进行中 | 编辑/保存 |
 | PrescriptionConfirmed | 处方已确认 | 查看/完成 |
 | Completed | 已完成 | 只读 |
+
+## 设计依据
+
+- MedicalCase作为DDD聚合根，统一编排Consultation和Prescription子实体的生命周期
+- 三步流程(四诊->处方->总结)映射中医真实诊疗流程，每步独立保存，支持中断恢复
+- 通过ISaveable/IValidatable接口与子步骤组件交互，FlowViewModel不依赖具体子模块实现
+- 状态机(Created->InProgress->PrescriptionConfirmed->Completed)确保医案流转合规
 
 ## 依赖关系
 

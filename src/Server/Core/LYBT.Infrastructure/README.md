@@ -51,6 +51,13 @@ LYBT.Infrastructure/
 | BaseApiController | 业务Controller继承基类 |
 | IEntityTypeConfiguration | 实体配置扩展 |
 
+## 设计依据
+
+- 泛型 BaseRepository 通过模板方法模式 (ApplyKeywordFilter/ApplyDefaultOrdering) 实现可扩展的 CRUD 基类，减少各模块重复代码
+- 统一 AppDbContext 管理所有实体 DbSet，EF Core 全局查询过滤器自动排除软删除记录
+- Options 模式 (DatabaseOptions/JwtOptions/CacheOptions) 实现强类型配置，支持环境隔离
+- 跨模块服务 (CrossModuleService) 提供模块间只读查询接口，避免模块直接依赖
+
 ## 依赖关系
 
 ### 依赖

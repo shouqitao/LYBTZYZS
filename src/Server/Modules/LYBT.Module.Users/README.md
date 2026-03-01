@@ -60,6 +60,14 @@ LYBT.Module.Users/
 | UserSearchDto | 搜索用户(关键词、角色、状态筛选) |
 | UserDto | 响应DTO(Role为UserRole枚举) |
 
+## 设计依据
+
+- 传统三层架构，用户管理属于标准 CRUD 场景，遵循 MVP 适度设计原则
+- Admin/Doctor 双角色体系适配中医诊所场景 (管理员 + 出诊医生)
+- ASP.NET Core Identity PasswordHasher 确保密码安全，避免自研哈希算法的风险
+- Create/Update DTO 分离，避免更新操作意外修改敏感字段 (如用户名、密码)
+- 通过 IUserCrossModuleService 向 Auth 模块暴露用户查询，保持模块职责分离
+
 ## 依赖关系
 
 ### 依赖

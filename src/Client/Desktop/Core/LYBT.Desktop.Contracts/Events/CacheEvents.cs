@@ -46,6 +46,15 @@ public enum CacheDomain
     /// <summary>医案相关缓存</summary>
     MedicalCases,
 
+    /// <summary>药材相关缓存</summary>
+    Herbs,
+
+    /// <summary>验方相关缓存</summary>
+    Formulas,
+
+    /// <summary>用户相关缓存</summary>
+    Users,
+
     /// <summary>全部缓存 (Sync 后使用)</summary>
     All
 }

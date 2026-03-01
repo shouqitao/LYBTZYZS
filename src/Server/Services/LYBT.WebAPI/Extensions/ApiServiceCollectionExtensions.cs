@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using LYBT.Shared.Configuration.Options.Server;
+﻿using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Primitives.ErrorCodes;

@@ -1,137 +1,93 @@
 # LYBT.Desktop.Formula
 
-> 验方管理模块 | 方剂模板/配方管理/快速开方
+> 验方管理模块 | 方剂模板管理 / 药材组方 / 验方复制
 
 ## 项目定位
 
-- **层级**: Client Modules层
-- **职责**: 提供验方(经典方剂模板)的管理界面，支持创建、编辑、搜索、克隆验方，为处方开具提供模板支持
+- **层级**: Client Modules 层
+- **职责**: 提供验方(经验方/经典方剂模板)的管理界面，支持创建、编辑、搜索、复制验方，为处方开具提供模板支持
 
 ## 目录结构
 
 ```
 LYBT.Desktop.Formula/
+├── CommandHandlers/
+│   ├── IFormulaCommandHandler.cs           # CommandHandler 接口
+│   └── FormulaCommandHandler.cs            # CommandHandler 实现
+├── Controls/
+│   ├── FormulaEditControl.xaml/.xaml.cs     # 验方编辑控件 (DependencyProperty 绑定)
+│   └── FormulaMasterDetailControl.xaml/.xaml.cs  # Master-Detail 可复用控件
 ├── Interfaces/
-│   └── IFormulaRepository.cs        # 验方仓储接口
+│   ├── IFormulaRepository.cs               # 验方仓储接口 (CRUD+搜索+克隆+批量)
+│   └── IFormulaService.cs                  # 验方 Service 接口
+├── Mappers/
+│   ├── FormulaDetailModelMapper.cs         # Mapperly: FormulaDetailDto <-> FormulaDetailModel
+│   ├── FormulaHerbItemMapper.cs            # Mapperly: FormulaHerbItemDto <-> FormulaHerbItem
+│   └── FormulaMapper.cs                    # Mapperly: FormulaDetailDto <-> FormulaItem
+├── Models/
+│   ├── Items/
+│   │   ├── FormulaHerbItem.cs              # 验方药材项 UI 模型 (BindableBase)
+│   │   └── FormulaItem.cs                  # 验方列表项 UI 模型 (BindableBase)
+│   └── FormulaDetailModel.cs               # Detail 编辑模型 (ValidatableModelBase)
 ├── Repositories/
-│   └── FormulaRepository.cs         # 验方仓储实现
-├── Services/                         # 服务层(Epic #1773)
-│   ├── FormulaCalculationService.cs # 剂量计算服务
-│   ├── FormulaCloneService.cs       # 验方克隆服务
-│   ├── FormulaExportService.cs      # 导出服务
-│   ├── FormulaImportService.cs      # 导入服务
-│   ├── FormulaSearchService.cs      # 搜索服务
-│   ├── FormulaTemplateService.cs    # 模板服务
-│   ├── FormulaValidationService.cs  # 验证服务
-│   └── Interfaces/                   # 服务接口
+│   └── FormulaRepository.cs                # 仓储实现 (DataSource 抽象层)
+├── Services/
+│   ├── FormulaSearchProvider.cs            # 跨模块搜索提供者 (IFormulaSearchProvider)
+│   ├── FormulaService.cs                   # 业务服务 (保存/复制/删除)
+│   └── FormulaValidator.cs                 # 验方验证器 (信息+药材+完整性)
 ├── ViewModels/
-│   ├── FormulaManagementViewModel.cs # 验方管理ViewModel
-│   ├── FormulaDetailViewModel.cs     # 验方详情ViewModel
-│   └── FormulaItemViewModel.cs       # 验方条目ViewModel
-├── Views/
-│   ├── FormulaManagementView.xaml   # 管理视图
-│   ├── FormulaDetailView.xaml       # 详情视图
-│   └── FormulaItemView.xaml         # 条目视图
-└── FormulaModule.cs                  # Prism模块注册
+│   ├── FormulaHerbItemViewModel.cs         # 验方药材项 ViewModel
+│   └── FormulaMasterDetailViewModel.cs     # 核心 ViewModel (组合模式)
+└── FormulaModule.cs                         # Prism 模块注册
 ```
 
-## FormulaManagementViewModel
+## 核心接口
 
-### 属性
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| Formulas | ObservableCollection | 验方列表 |
-| SelectedFormula | FormulaDto | 选中的验方 |
-| SearchText | string | 搜索关键词 |
-| IsLoading | bool | 加载状态 |
-| TotalCount | int | 总数量 |
-| PageIndex | int | 当前页码 |
-| PageSize | int | 每页数量 |
-
-### 命令(20个)
-
-| 命令 | 说明 |
+| 接口 | 职责 |
 |------|------|
-| LoadCommand | 加载验方列表 |
-| SearchCommand | 搜索验方 |
-| CreateCommand | 新建验方 |
-| EditCommand | 编辑验方 |
-| DeleteCommand | 删除验方 |
-| CloneCommand | 克隆验方 |
-| ExportCommand | 导出验方 |
-| ImportCommand | 导入验方 |
-| RefreshCommand | 刷新列表 |
-| NextPageCommand | 下一页 |
-| PrevPageCommand | 上一页 |
+| IFormulaRepository | 验方仓储 (CRUD + 搜索 + 克隆 + 状态切换 + 批量操作) |
+| IFormulaService | 业务服务 (保存验证 + 复制 + 删除) |
+| IFormulaSearchProvider | 跨模块搜索提供者 (供 MedicalCase 模块调用) |
 
-## FormulaDetailViewModel
+## 关键功能
 
-### 属性(25个)
-
-| 属性类别 | 属性 | 说明 |
-|----------|------|------|
-| 基本信息 | Name | 验方名称 |
-| 基本信息 | Category | 分类(如:补益剂/解表剂) |
-| 基本信息 | Source | 来源(如:伤寒论) |
-| 基本信息 | Description | 方解说明 |
-| 组成 | FormulaItems | 药材组成列表 |
-| 功效 | Functions | 功效 |
-| 功效 | Indications | 主治 |
-| 功效 | Contraindications | 禁忌 |
-| 状态 | HasChanges | 变更标记 |
-| 状态 | IsReadOnly | 只读模式 |
-
-### 命令(11个)
-
-| 命令 | 说明 |
+| 功能 | 实现 |
 |------|------|
-| SaveCommand | 保存验方 |
-| CancelCommand | 取消编辑 |
-| AddHerbCommand | 添加药材 |
-| RemoveHerbCommand | 移除药材 |
-| EditHerbCommand | 编辑药材剂量 |
-| ValidateCommand | 验证验方 |
+| Master-Detail 管理 | FormulaMasterDetailViewModel + MasterDetailControlBase |
+| 验方复制 | FormulaService.CopyFormulaAsync (名称加"_副本") |
+| 药材组方 | AddHerbCommand / DeleteHerbCommand (HerbItemViewModelBase) |
+| 状态管理 | ToggleStatusCommand (启用/禁用) |
+| 跨模块搜索 | FormulaSearchProvider 委托 IFormulaRepository |
+| 验证 | FormulaValidator (基本信息 + 药材列表 + 完整性) |
 
-## IFormulaRepository
+## 设计依据
 
-| 方法 | 说明 |
-|------|------|
-| GetAllAsync | 获取所有验方 |
-| GetByIdAsync | 按ID获取 |
-| GetPagedAsync | 分页查询 |
-| SearchAsync | 搜索验方 |
-| CreateAsync | 创建验方 |
-| UpdateAsync | 更新验方 |
-| DeleteAsync | 删除验方 |
-| CloneAsync | 克隆验方 |
-| GetByCategoryAsync | 按分类获取 |
-
-## 与Prescriptions集成
-
-| 集成点 | 说明 |
-|--------|------|
-| FormulaTemplateDialog | 处方模块调用验方选择对话框 |
-| ApplyToRecipe | 将验方应用到处方 |
-| 剂量换算 | 支持按比例调整剂量 |
+- Master-Detail 组合模式继承 MasterDetailViewModelBase，聚合 Loading/Pagination/Dialog 等服务
+- Control 复用模式: FormulaMasterDetailControl 由 Admin 和 Clinical 角色台的 FormulaManagementView 嵌入
+- DataSource 抽象层支持 Local(SQLite) / Remote(API) 模式切换
+- 跨模块通过 IFormulaSearchProvider 和 IHerbSearchProvider 接口解耦
+- Mapperly 编译时映射替代 AutoMapper，零运行时开销
 
 ## 依赖关系
 
 ### 依赖
-- LYBT.Desktop.Models (ViewModelBase)
-- LYBT.Desktop.Foundation (BaseApiRepository)
-- LYBT.Desktop.Contracts (IFormulaApi)
-- LYBT.Shared.Models (FormulaDto)
-- Prism.Core/Prism.DryIoc (8.x)
+- LYBT.Desktop.Foundation (BaseApiRepository/Security)
+- LYBT.Desktop.Infrastructure (MasterDetailControlBase/ViewModelBase/Services)
+- LYBT.Desktop.Models (ValidatableModelBase/HerbItemViewModelBase)
+- LYBT.Desktop.Contracts (IFormulaApi/IFormulaDataSource)
+- LYBT.Shared.Models (FormulaListDto/FormulaDetailDto/FormulaInputDto)
+- LYBT.Desktop.Herbs (IHerbSearchProvider)
+- Prism.DryIoc (8.x)
 
 ### 被依赖
-- LYBT.Desktop.Shell (模块加载)
-- LYBT.Desktop.Prescriptions (验方模板选择)
+- LYBT.Desktop.Admin (FormulaManagementView 嵌入 FormulaMasterDetailControl)
+- LYBT.Desktop.Clinical (FormulaManagementView 嵌入 FormulaMasterDetailControl)
 
 ## 更新记录
 
 | 日期 | 变更 |
 |------|------|
-| 2025-12-04 | 按README规范重写文档 |
-| 2025-11-15 | Epic #1773服务层重构 |
+| 2026-03-01 | 目录结构和接口表更新 |
+| 2025-12-04 | 按 README 规范重写文档 |
+| 2025-11-15 | Epic #1773 服务层重构 |
 | 2025-10-29 | 初始版本 |

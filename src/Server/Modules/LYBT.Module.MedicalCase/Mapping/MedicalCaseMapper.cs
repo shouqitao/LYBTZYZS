@@ -63,58 +63,6 @@ public partial class MedicalCaseMapper
     /// </summary>
     public partial List<MedicalCaseDetailDto> ToDetailDtos(List<MedicalCase> entities);
 
-    /// <summary>
-    /// MedicalCaseInputDto转换为MedicalCase实体（创建）
-    /// </summary>
-    [MapperIgnoreSource(nameof(MedicalCaseInputDto.Id))]
-    [MapperIgnoreTarget(nameof(MedicalCase.Id))]
-    [MapperIgnoreTarget(nameof(MedicalCase.PatientName))]
-    [MapperIgnoreTarget(nameof(MedicalCase.DoctorName))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CaseStatus))]
-    [MapperIgnoreTarget(nameof(MedicalCase.NeedsPrescription))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CaseNumber))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CompletedAt))]
-    [MapperIgnoreTarget(nameof(MedicalCase.Consultation))]
-    [MapperIgnoreTarget(nameof(MedicalCase.Prescription))]
-    [MapperIgnoreTarget(nameof(MedicalCase.PrintLogs))]
-    [MapperIgnoreTarget(nameof(MedicalCase.PrintVersion))]
-    [MapperIgnoreTarget(nameof(MedicalCase.LastPrintedAt))]
-    [MapperIgnoreTarget(nameof(MedicalCase.PrintCount))]
-    [MapperIgnoreTarget(nameof(MedicalCase.IsPrinted))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CreatedAt))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CreatedBy))]
-    [MapperIgnoreTarget(nameof(MedicalCase.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(MedicalCase.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(MedicalCase.RowVersion))]
-    [MapperIgnoreTarget(nameof(MedicalCase.IsDeleted))]
-    public partial MedicalCase ToEntity(MedicalCaseInputDto dto);
-
-    /// <summary>
-    /// MedicalCaseInputDto更新到现有MedicalCase实体
-    /// </summary>
-    [MapperIgnoreSource(nameof(MedicalCaseInputDto.Id))]
-    [MapperIgnoreTarget(nameof(MedicalCase.Id))]
-    [MapperIgnoreTarget(nameof(MedicalCase.PatientName))]
-    [MapperIgnoreTarget(nameof(MedicalCase.DoctorName))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CaseStatus))]
-    [MapperIgnoreTarget(nameof(MedicalCase.NeedsPrescription))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CaseNumber))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CompletedAt))]
-    [MapperIgnoreTarget(nameof(MedicalCase.Consultation))]
-    [MapperIgnoreTarget(nameof(MedicalCase.Prescription))]
-    [MapperIgnoreTarget(nameof(MedicalCase.PrintLogs))]
-    [MapperIgnoreTarget(nameof(MedicalCase.PrintVersion))]
-    [MapperIgnoreTarget(nameof(MedicalCase.LastPrintedAt))]
-    [MapperIgnoreTarget(nameof(MedicalCase.PrintCount))]
-    [MapperIgnoreTarget(nameof(MedicalCase.IsPrinted))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CreatedAt))]
-    [MapperIgnoreTarget(nameof(MedicalCase.CreatedBy))]
-    [MapperIgnoreTarget(nameof(MedicalCase.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(MedicalCase.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(MedicalCase.RowVersion))]
-    [MapperIgnoreTarget(nameof(MedicalCase.IsDeleted))]
-    public partial void UpdateEntity(MedicalCaseInputDto dto, MedicalCase entity);
-
     // ========== Consultation映射（聚合内使用） ==========
 
     /// <summary>
@@ -126,30 +74,6 @@ public partial class MedicalCaseMapper
     [MapperIgnoreTarget(nameof(ConsultationDetailDto.PatientName))]
     [MapperIgnoreTarget(nameof(ConsultationDetailDto.DoctorName))]
     public partial ConsultationDetailDto ToConsultationDetailDto(Consultation entity);
-
-    /// <summary>
-    /// ConsultationInputDto转换为Consultation实体
-    /// </summary>
-    [MapperIgnoreTarget(nameof(Consultation.Id))]
-    [MapperIgnoreTarget(nameof(Consultation.CreatedAt))]
-    [MapperIgnoreTarget(nameof(Consultation.CreatedBy))]
-    [MapperIgnoreTarget(nameof(Consultation.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(Consultation.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(Consultation.RowVersion))]
-    [MapperIgnoreTarget(nameof(Consultation.IsDeleted))]
-    public partial Consultation ToConsultationEntity(ConsultationInputDto dto);
-
-    /// <summary>
-    /// ConsultationInputDto更新到现有Consultation实体
-    /// </summary>
-    [MapperIgnoreTarget(nameof(Consultation.Id))]
-    [MapperIgnoreTarget(nameof(Consultation.CreatedAt))]
-    [MapperIgnoreTarget(nameof(Consultation.CreatedBy))]
-    [MapperIgnoreTarget(nameof(Consultation.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(Consultation.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(Consultation.RowVersion))]
-    [MapperIgnoreTarget(nameof(Consultation.IsDeleted))]
-    public partial void UpdateConsultationEntity(ConsultationInputDto dto, Consultation entity);
 
     // ========== Prescription映射（聚合内使用） ==========
 
@@ -211,67 +135,6 @@ public partial class MedicalCaseMapper
     /// PrescriptionItem实体列表转换为PrescriptionItemDto列表
     /// </summary>
     public partial List<PrescriptionItemDto> ToPrescriptionItemDtos(List<PrescriptionItem> entities);
-
-    /// <summary>
-    /// PrescriptionItemInputDto转换为PrescriptionItem实体
-    /// </summary>
-    [MapperIgnoreTarget(nameof(PrescriptionItem.Id))]
-    [MapperIgnoreTarget(nameof(PrescriptionItem.PrescriptionId))]
-    public partial PrescriptionItem ToPrescriptionItemEntity(PrescriptionItemInputDto dto);
-
-    /// <summary>
-    /// PrescriptionItemInputDto列表转换为PrescriptionItem实体列表
-    /// </summary>
-    public partial List<PrescriptionItem> ToPrescriptionItemEntities(List<PrescriptionItemInputDto> dtos);
-
-
-    // ========== Controller迁移的详情映射方法 ==========
-    // OpenSpec: refactor-server-srp-patterns - 从Controller迁移到Mapper
-
-    /// <summary>
-    /// 处方实体转换为PrescriptionDetailDto（包含价格计算）
-    /// </summary>
-    /// <param name="entity">处方实体</param>
-    /// <param name="medicalCaseId">关联的医案ID</param>
-    /// <returns>处方详情DTO</returns>
-    public PrescriptionDetailDto MapToPrescriptionDetailDto(Prescription entity, Guid medicalCaseId)
-    {
-        return new PrescriptionDetailDto
-        {
-            Id = entity.Id,
-            MedicalCaseId = medicalCaseId,
-            // OpenSpec: PatientId/UserId已移除，客户端通过MedicalCaseId获取
-            PrescriptionNumber = entity.PrescriptionNumber,
-            // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
-            // Indication = entity.Indication,
-            DosageCount = entity.DosageCount,
-            Discount = entity.Discount,
-            Advice = entity.Advice,
-            // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
-            // FormulaSource = entity.FormulaSource,
-            ReferencedFormulas = entity.ReferencedFormulas,
-            Remark = entity.Remark,
-            Items = entity.Items?.Select(item => new PrescriptionItemDto
-            {
-                Id = item.Id,
-                HerbId = item.HerbId,
-                HerbName = item.HerbName,
-                Dosage = item.Dosage,
-                Unit = item.Unit,
-                UnitPrice = item.UnitPrice,
-                Subtotal = item.Amount, // Amount是计算属性，映射到Subtotal
-                Usage = item.Usage,
-                Remark = item.Remark,
-                DecocteMethod = item.DecocteMethod
-            }).ToList() ?? new List<PrescriptionItemDto>(),
-            SingleDosePrice = entity.Items?.Sum(x => x.Amount) ?? 0,
-            TotalPrice = (entity.Items?.Sum(x => x.Amount) ?? 0) * entity.DosageCount * entity.Discount,
-            TotalWeight = entity.Items?.Sum(x => x.Dosage) ?? 0,
-            Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled, // 子实体状态由聚合根MedicalCase控制
-            CreatedAt = entity.CreatedAt,
-            UpdatedAt = entity.UpdatedAt
-        };
-    }
 
     /// <summary>
     /// 医案实体转换为MedicalCaseDetailDto（简化版，无嵌套DTO）

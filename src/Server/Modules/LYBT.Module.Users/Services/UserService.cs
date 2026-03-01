@@ -529,6 +529,12 @@ namespace LYBT.Module.Users.Services
             entity.RealName = dto.RealName;
             entity.PhoneNumber = dto.PhoneNumber;
 
+            // T5-P3-19: 更新 Email (仅当 DTO 提供了值时)
+            if (dto.Email != null)
+            {
+                entity.Email = dto.Email;
+            }
+
             // 保存更改
             var updatedEntity = await _repository.UpdateAsync(entity);
             var resultDto = _mapper.ToDetailDto(updatedEntity);

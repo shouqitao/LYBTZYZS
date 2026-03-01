@@ -24,5 +24,12 @@ namespace LYBT.Shared.Models.Contracts.Users
         [StringLength(20, ErrorMessage = "电话号码长度不能超过20个字符")]
         [DisplayName("电话号码")]
         public string? PhoneNumber { get; set; }
+
+        /// <summary>邮箱地址</summary>
+        /// <remarks>T5-P3-19: AccountSettings 支持 Email 编辑</remarks>
+        [EmailAddress(ErrorMessage = "邮箱格式不正确")]
+        [StringLength(100, ErrorMessage = "邮箱长度不能超过100个字符")]
+        [DisplayName("邮箱")]
+        public string? Email { get; set; }
     }
 }

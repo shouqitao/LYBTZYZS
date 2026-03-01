@@ -1,4 +1,6 @@
 using LYBT.Entities.MedicalCases;
+using LYBT.Entities.Patients;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -37,6 +39,20 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
         // A2-03: 按医生查询医案的性能索引
         builder.HasIndex(m => m.UserId)
               .HasDatabaseName("IX_MedicalCases_UserId");
+
+        // CODE-05/06: MedicalCase -> Patient FK (DDD 跨聚合 ID 引用，无导航属性)
+        builder.HasOne<Patient>()
+              .WithMany()
+              .HasForeignKey(m => m.PatientId)
+              .IsRequired()
+              .OnDelete(DeleteBehavior.Restrict);
+
+        // CODE-05/06: MedicalCase -> User FK (DDD 跨聚合 ID 引用，无导航属性)
+        builder.HasOne<User>()
+              .WithMany()
+              .HasForeignKey(m => m.UserId)
+              .IsRequired()
+              .OnDelete(DeleteBehavior.Restrict);
 
         // ========== 打印管理字段配置 ==========
         builder.Property(m => m.PrintVersion).HasDefaultValue(1);

@@ -67,6 +67,30 @@ public class ProductionConfigurationValidator
         },
         new ConfigurationItem
         {
+            Key = "Lybt:Jwt:Issuer",
+            EnvVarName = "Lybt__Jwt__Issuer",
+            Severity = Severity.Important,
+            Description = "JWT 发行者标识",
+            Example = "LYBT-WebAPI"
+        },
+        new ConfigurationItem
+        {
+            Key = "Lybt:Jwt:Audience",
+            EnvVarName = "Lybt__Jwt__Audience",
+            Severity = Severity.Important,
+            Description = "JWT 受众标识",
+            Example = "LYBT-Client"
+        },
+        new ConfigurationItem
+        {
+            Key = "Lybt:Business:SystemAdmin:DisplayName",
+            EnvVarName = "Lybt__Business__SystemAdmin__DisplayName",
+            Severity = Severity.Important,
+            Description = "系统管理员显示名称",
+            Example = "系统管理员"
+        },
+        new ConfigurationItem
+        {
             Key = "AllowedHosts",
             EnvVarName = "AllowedHosts",
             Severity = Severity.Optional,
@@ -91,6 +115,52 @@ public class ProductionConfigurationValidator
         {
             throw new ProductionConfigurationException(GetDetailedErrorMessage());
         }
+    }
+
+    /// <summary>
+    /// 验证 Critical 配置项（所有环境通用）
+    /// T5-P3-01: 非生产环境降级为 Warning 日志，不终止启动
+    /// </summary>
+    /// <returns>缺失的 Critical 配置项描述列表（空列表表示全部通过）</returns>
+    public List<string> ValidateCriticalItems()
+    {
+        var missing = new List<string>();
+        foreach (var item in RequiredItems.Where(i => i.Severity == Severity.Critical))
+        {
+            var value = _configuration[item.Key];
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                missing.Add($"{item.Description} ({item.Key}) -- 环境变量: {item.EnvVarName}");
+            }
+            else if (item.MinLength.HasValue && value.Length < item.MinLength.Value)
+            {
+                missing.Add($"{item.Description} ({item.Key}) -- 长度不足（需要至少 {item.MinLength} 字符）");
+            }
+        }
+        return missing;
+    }
+
+    /// <summary>
+    /// 验证 Important 配置项（非生产环境降级为 Warning）
+    /// </summary>
+    /// <returns>有问题的 Important 配置项描述列表（空列表表示全部通过）</returns>
+    public List<string> ValidateImportantItems()
+    {
+        var issues = new List<string>();
+        foreach (var item in RequiredItems.Where(i => i.Severity == Severity.Important))
+        {
+            var value = _configuration[item.Key];
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                issues.Add($"{item.Description} ({item.Key}) -- 环境变量: {item.EnvVarName}");
+            }
+            else if (!string.IsNullOrEmpty(item.Pattern) &&
+                     !Regex.IsMatch(value, item.Pattern))
+            {
+                issues.Add($"{item.Description} ({item.Key}) -- 格式验证失败");
+            }
+        }
+        return issues;
     }
 
     private void ValidateAllItems()

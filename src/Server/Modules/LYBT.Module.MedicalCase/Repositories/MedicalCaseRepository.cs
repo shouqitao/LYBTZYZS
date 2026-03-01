@@ -118,32 +118,6 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
-        /// 获取分页列表（简化版，按需Include）
-        /// Phase 2: Repository层简化（Epic #1725）- 使用BaseRepository辅助方法
-        /// </summary>
-        public async Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(
-            int pageNumber,
-            int pageSize,
-            string? keyword = null)
-        {
-            var query = GetDetailQuery();
-
-            // 简化搜索逻辑 - 只搜索基本字段
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                query = query.Where(m =>
-                    m.PatientName.Contains(keyword) ||
-                    m.DoctorName.Contains(keyword));
-            }
-
-            // 使用BaseRepository辅助方法处理分页（Epic #1725）
-            return await GetPagedResultAsync(
-                query.OrderByDescending(m => m.CreatedAt),
-                pageNumber,
-                pageSize);
-        }
-
-        /// <summary>
         /// 获取分页列表（包含关联数据 + 全部筛选条件，DB 层执行）
         /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
         /// </summary>

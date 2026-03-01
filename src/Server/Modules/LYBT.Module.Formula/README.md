@@ -42,6 +42,14 @@ LYBT.Module.Formula/
 | 药材验证 | 检查验方中药材有效性 |
 | 共享机制 | IsShared标志控制验方共享 |
 
+## 设计依据
+
+- 传统三层架构 (Controller-Service-Repository)，验方管理属于标准 CRUD 场景，无需 CQRS 复杂度
+- 通过 IHerbCrossModuleService 查询药材信息，避免直接依赖 Herbs 模块 Repository
+- IsShared 标志实现验方共享机制，支持个人验方和公共验方的灵活管理
+- 克隆功能和 Excel 导入支持快速创建验方，契合中医诊所批量建档的实际需求
+- Mapperly 编译时映射替代 AutoMapper，消除运行时反射开销
+
 ## 依赖关系
 
 ### 依赖

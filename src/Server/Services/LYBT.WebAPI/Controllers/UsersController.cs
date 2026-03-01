@@ -189,7 +189,7 @@ namespace LYBT.WebAPI.Controllers
         /// 管理员重置用户密码
         /// </summary>
         [HttpPost("{id:guid}/reset-password")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "SuperAdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request)
@@ -282,7 +282,7 @@ namespace LYBT.WebAPI.Controllers
         /// 恢复已删除的用户
         /// </summary>
         [HttpPost("{id:guid}/restore")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "SuperAdminOnly")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)

@@ -51,6 +51,13 @@ LYBT.Desktop.Foundation/
 | DPAPI加密 | 安全凭证存储 |
 | 三层HTTP抽象 | IApiService → ApiService → BaseApiRepository |
 
+## 设计依据
+
+- 与Infrastructure分离，保持平台无关性(无WPF依赖)，为未来跨平台(MAUI等)复用奠定基础
+- BaseApiRepository提供统一的CRUD+分页基类，各模块仓储继承后只需关注业务差异
+- 集成Polly弹性策略(重试/熔断/超时)，将网络不稳定性的处理统一在基础层，业务层无需关心
+- DPAPI加密凭证存储，确保Token等敏感数据不以明文形式保存在本地
+
 ## 依赖关系
 
 ### 依赖

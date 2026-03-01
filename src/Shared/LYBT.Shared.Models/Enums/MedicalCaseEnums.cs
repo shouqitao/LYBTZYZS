@@ -78,27 +78,4 @@ namespace LYBT.Shared.Models.Enums
         [Description("最近")]
         Recent = 4
     }
-
-    /// <summary>
-    /// 病例更新模式枚举
-    /// OpenSpec: unify-enums-to-shared - 从MedicalCaseDtos.cs迁移
-    /// </summary>
-    public enum MedicalCaseUpdateMode
-    {
-        /// <summary>更新所有提供的字段</summary>
-        [Description("全部更新")]
-        UpdateAll = 0,
-
-        /// <summary>仅更新提供的字段，其他保持不变</summary>
-        [Description("部分更新")]
-        UpdateOnly = 1,
-
-        /// <summary>仅验证，不执行更新</summary>
-        [Description("仅验证")]
-        ValidateOnly = 2,
-
-        /// <summary>事务模式：要么全部成功，要么全部回滚</summary>
-        [Description("事务模式")]
-        Transactional = 3
-    }
 }

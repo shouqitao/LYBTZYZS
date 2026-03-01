@@ -14,7 +14,7 @@ public sealed class UserManagementOptions
     /// 默认角色
     /// </summary>
     [Required]
-    public string DefaultRole { get; set; } = "Staff";
+    public string DefaultRole { get; set; } = "Doctor";
 
     /// <summary>
     /// 是否允许自注册

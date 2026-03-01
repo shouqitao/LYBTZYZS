@@ -42,6 +42,10 @@ namespace LYBT.Desktop.Shell.ViewModels
         [ObservableProperty]
         private string _phoneNumber = string.Empty;
 
+        /// <summary>邮箱地址 (T5-P3-19)</summary>
+        [ObservableProperty]
+        private string _email = string.Empty;
+
         [ObservableProperty]
         private string _role = string.Empty;
 
@@ -137,7 +141,8 @@ namespace LYBT.Desktop.Shell.ViewModels
                 var profileDto = new ChangeProfileDto
                 {
                     RealName = RealName,
-                    PhoneNumber = PhoneNumber
+                    PhoneNumber = PhoneNumber,
+                    Email = string.IsNullOrWhiteSpace(Email) ? null : Email
                 };
 
                 // 调用Repository更新用户信息
@@ -263,6 +268,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             UserName = user.UserName;
             RealName = user.RealName ?? string.Empty;
             PhoneNumber = user.PhoneNumber ?? string.Empty;
+            Email = user.Email ?? string.Empty;
             Role = GetRoleDisplayName(user.Role);
         }
 

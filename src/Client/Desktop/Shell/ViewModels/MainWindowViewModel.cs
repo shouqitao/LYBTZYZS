@@ -6,6 +6,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Contracts.Events;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
@@ -94,6 +95,24 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     [ObservableProperty]
     private bool _isDrawerOpen;
+
+    /// <summary>
+    /// 是否正在同步数据
+    /// </summary>
+    [ObservableProperty]
+    private bool _isSyncing;
+
+    /// <summary>
+    /// 同步状态消息
+    /// </summary>
+    [ObservableProperty]
+    private string? _syncStatusMessage;
+
+    /// <summary>
+    /// 上次同步完成时间
+    /// </summary>
+    [ObservableProperty]
+    private DateTime? _lastSyncTime;
 
     #endregion
 
@@ -355,6 +374,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         // OpenSpec: unify-event-system - 使用AuthEvents聚合类
         Events.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
         Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(OnTokenLifecycleStateChanged);
+        Events.Subscribe<SyncEvents.StatusChangedEvent, SyncStatusPayload>(OnSyncStatusChanged);
         _navigationCoordinator.SubscribeToRegionCollection();
     }
 
@@ -377,6 +397,19 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private void OnHealthStatusChanged(object? sender, HealthStatusChangedEventArgs e)
     {
         Application.Current?.Dispatcher.BeginInvoke(() => ApiStatus = e.CurrentStatus);
+    }
+
+    /// <summary>
+    /// 同步状态变更事件处理
+    /// </summary>
+    private void OnSyncStatusChanged(SyncStatusPayload payload)
+    {
+        Application.Current?.Dispatcher.BeginInvoke(() =>
+        {
+            IsSyncing = payload.IsSyncing;
+            LastSyncTime = payload.LastSyncTime;
+            SyncStatusMessage = payload.StatusMessage;
+        });
     }
 
     // OpenSpec: simplify-auth-architecture - OnSessionExpiring方法已移除
@@ -529,7 +562,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
             Logger.LogWarning(ex, "登出处理异常");
         }
         
-        // 登出完成后再导航到登录页
+        // 登出完成后清除导航历史并导航到登录页
+        _navigationCoordinator.ClearHistory();
         _navigationCoordinator.ClearContentRegion();
         _navigationCoordinator.ShowLoginDialog();
     }

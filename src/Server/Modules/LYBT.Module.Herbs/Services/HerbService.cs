@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Data;
@@ -139,7 +140,7 @@ namespace LYBT.Module.Herbs.Services
             {
                 _logger.LogWarning("[SVC] Herb.Delete → HasReferences - HerbId={HerbId} ReferenceCount={Count}",
                     id, refCheck.Data.ReferenceCount);
-                return Result.Failure(GenericErrorCode.HerbInUse, $"药材被 {refCheck.Data.ReferenceCount} 个处方引用，无法删除");
+                return Result.Failure(GenericErrorCode.HerbInUse, refCheck.Data.DeleteWarning ?? $"药材被 {refCheck.Data.ReferenceCount} 个引用，无法删除");
             }
 
             await _repository.DeleteAsync(id);
@@ -537,10 +538,16 @@ namespace LYBT.Module.Herbs.Services
             }
 
             // 查询处方引用计数
-            var referenceCount = await _dbContext.PrescriptionItems
+            var prescriptionRefCount = await _dbContext.PrescriptionItems
                 .CountAsync(pi => pi.HerbId == herbId);
 
-            // 获取最近5条引用记录（使用 Join 查询，因为 PrescriptionItem 没有导航属性）
+            // CODE-11: 查询验方引用计数 (FormulaHerbItem.HerbId 可空，仅统计已绑定的)
+            var formulaRefCount = await _dbContext.Set<FormulaHerbItem>()
+                .CountAsync(fhi => fhi.HerbId != null && fhi.HerbId == herbId);
+
+            var referenceCount = prescriptionRefCount + formulaRefCount;
+
+            // 获取最近5条处方引用记录（使用 Join 查询，因为 PrescriptionItem 没有导航属性）
             var recentReferences = await (
                 from pi in _dbContext.PrescriptionItems
                 join p in _dbContext.Prescriptions on pi.PrescriptionId equals p.Id
@@ -561,6 +568,9 @@ namespace LYBT.Module.Herbs.Services
                 .ToListAsync();
 
             var hasReferences = referenceCount > 0;
+            var deleteWarning = hasReferences
+                ? BuildReferenceWarning(prescriptionRefCount, formulaRefCount)
+                : null;
             var result = new HerbReferenceCheckDto
             {
                 HerbId = herbId,
@@ -568,12 +578,12 @@ namespace LYBT.Module.Herbs.Services
                 HasReferences = hasReferences,
                 ReferenceCount = referenceCount,
                 CanDelete = !hasReferences, // X7: 有引用不可删除
-                DeleteWarning = hasReferences ? $"该药材已被 {referenceCount} 个处方引用，无法删除" : null,
+                DeleteWarning = deleteWarning,
                 RecentReferences = recentReferences
             };
 
-            _logger.LogInformation("[SVC] Herb.CheckReference completed - HerbName={HerbName} HasReferences={HasReferences} ReferenceCount={ReferenceCount}",
-                herb.Name, hasReferences, referenceCount);
+            _logger.LogInformation("[SVC] Herb.CheckReference completed - HerbName={HerbName} HasReferences={HasReferences} PrescriptionRefs={PrescriptionRefs} FormulaRefs={FormulaRefs}",
+                herb.Name, hasReferences, prescriptionRefCount, formulaRefCount);
 
             return Result<HerbReferenceCheckDto>.Success(result);
         }
@@ -753,6 +763,22 @@ namespace LYBT.Module.Herbs.Services
                         continue;
                     }
 
+                    // CODE-11: 批量删除前检查引用（跳过有引用的项，不中断批量操作）
+                    var refCheck = await CheckReferenceAsync(id);
+                    if (refCheck.IsSuccess && refCheck.Data != null && refCheck.Data.HasReferences)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = refCheck.Data.DeleteWarning ?? $"药材被 {refCheck.Data.ReferenceCount} 个引用，无法删除"
+                        });
+                        _logger.LogWarning("[SVC] Herb.BatchDelete → HasReferences - HerbId={HerbId} RefCount={Count}",
+                            id, refCheck.Data.ReferenceCount);
+                        continue;
+                    }
+
                     // 软删除
                     entity.IsDeleted = true;
                     entity.UpdatedAt = DateTime.Now;
@@ -779,7 +805,27 @@ namespace LYBT.Module.Herbs.Services
             result.IsSuccess = result.SuccessCount > 0;
             result.Message = $"批量删除完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
 
+            // CODE-11: 批量删除成功后失效缓存
+            if (result.SuccessCount > 0)
+            {
+                await _cacheInvalidation.InvalidateAsync("herbs");
+            }
+
             return Result<BatchOperationResultDto>.Success(result);
+        }
+
+        /// <summary>
+        /// 构建引用警告消息 (处方+验方)
+        /// </summary>
+        private static string BuildReferenceWarning(int prescriptionRefCount, int formulaRefCount)
+        {
+            var parts = new List<string>(2);
+            if (prescriptionRefCount > 0)
+                parts.Add($"{prescriptionRefCount} 个处方");
+            if (formulaRefCount > 0)
+                parts.Add($"{formulaRefCount} 个验方");
+
+            return $"该药材被 {string.Join("和 ", parts)} 引用，无法删除";
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Infrastructure.DependencyInjection
 {
@@ -9,22 +8,6 @@ namespace LYBT.Infrastructure.DependencyInjection
     /// </summary>
     public static class RepositoryServiceCollectionExtensions
     {
-        /// <summary>
-        /// 注册所有Repository服务
-        /// 自动扫描并注册所有Repository实现
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <param name="assemblies">要扫描的程序集，默认为当前程序集</param>
-        /// <returns>服务集合</returns>
-        public static IServiceCollection AddRepositories(this IServiceCollection services, params Assembly[] assemblies)
-        {
-            var assembliesToScan = assemblies.Length > 0
-                ? assemblies
-                : new[] { Assembly.GetExecutingAssembly() };
-
-            return AddRepositoriesInternal(services, assembliesToScan);
-        }
-
         /// <summary>
         /// 注册指定类型的Repository
         /// </summary>
@@ -77,37 +60,5 @@ namespace LYBT.Infrastructure.DependencyInjection
             return services;
         }
 
-        #region 私有方法
-
-        /// <summary>
-        /// 内部Repository注册实现
-        /// </summary>
-        private static IServiceCollection AddRepositoriesInternal(IServiceCollection services, Assembly[] assemblies)
-        {
-            foreach (var assembly in assemblies)
-            {
-                // 扫描Repository接口和实现
-                var repositoryTypes = assembly.GetTypes()
-                    .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
-                    .ToList();
-
-                foreach (var repositoryType in repositoryTypes)
-                {
-                    // 查找对应的接口
-                    var interfaceType = repositoryType.GetInterfaces()
-                        .FirstOrDefault(i => i.Name.EndsWith("Repository") && i.IsInterface);
-
-                    if (interfaceType != null)
-                    {
-                        // 默认使用Scoped生命周期注册
-                        services.AddScoped(interfaceType, repositoryType);
-                    }
-                }
-            }
-
-            return services;
-        }
-
-        #endregion
     }
 }

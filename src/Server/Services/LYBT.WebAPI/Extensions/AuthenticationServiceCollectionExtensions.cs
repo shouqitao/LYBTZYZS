@@ -129,6 +129,11 @@ public static class AuthenticationServiceCollectionExtensions
                 policy.RequireAuthenticatedUser()
                       .RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
 
+            // CODE-04: 最高权限操作策略 (仅 SuperAdmin)
+            options.AddPolicy("SuperAdminOnly", policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole("SuperAdmin"));
+
             options.AddPolicy("RequireAuthenticated", policy =>
                 policy.RequireAuthenticatedUser());
         });

@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
+using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 
 namespace LYBT.Module.Sync.Services;
@@ -112,6 +113,72 @@ public static class ChecksumHelper
     }
 
     /// <summary>
+    /// 计算 MedicalCase 聚合级 Checksum
+    /// 合并 MedicalCase + Consultation + Prescription + PrescriptionItems 四层业务字段
+    /// 排除: CaseNumber, PrescriptionNumber, PatientName, DoctorName, 审计字段, 打印字段
+    /// PrescriptionItems 按 HerbId 排序保证哈希确定性
+    /// </summary>
+    public static string ComputeMedicalCaseChecksum(MedicalCase mc)
+    {
+        // Consultation 业务字段
+        var consultation = mc.Consultation != null
+            ? new
+            {
+                mc.Consultation.PresentIllness,
+                mc.Consultation.TongueDiagnosis,
+                mc.Consultation.PulseDiagnosis,
+                mc.Consultation.TcmDiagnosis
+            }
+            : (object?)null;
+
+        // Prescription 业务字段 + 排序后的 Items
+        object? prescription = null;
+        if (mc.Prescription != null)
+        {
+            var sortedItems = mc.Prescription.Items?
+                .OrderBy(i => i.HerbId)
+                .Select(i => new
+                {
+                    i.HerbId,
+                    i.Dosage,
+                    i.Unit,
+                    i.DecocteMethod,
+                    i.UnitPrice,
+                    i.Usage,
+                    i.Remark
+                })
+                .ToList();
+
+            prescription = new
+            {
+                mc.Prescription.DosageCount,
+                mc.Prescription.Discount,
+                mc.Prescription.Usage,
+                mc.Prescription.Advice,
+                mc.Prescription.ReferencedFormulas,
+                mc.Prescription.Remark,
+                Items = sortedItems
+            };
+        }
+
+        var data = new
+        {
+            mc.Id,
+            mc.PatientId,
+            mc.UserId,
+            mc.CaseStatus,
+            mc.NeedsPrescription,
+            mc.CompletedAt,
+            mc.Remark,
+            mc.IsDeleted,
+            Consultation = consultation,
+            Prescription = prescription
+        };
+
+        return ComputeHash(data);
+    }
+
+    /// <summary>
     /// 根据实体类型计算 Checksum
     /// </summary>
     public static string ComputeChecksum(object entity, string entityType)
@@ -121,6 +188,7 @@ public static class ChecksumHelper
             "Herb" => ComputeHerbChecksum((Herb)entity),
             "Patient" => ComputePatientChecksum((Patient)entity),
             "Formula" => ComputeFormulaChecksum((Formula)entity),
+            "MedicalCase" => ComputeMedicalCaseChecksum((MedicalCase)entity),
             _ => throw new ArgumentException($"不支持的实体类型: {entityType}")
         };
     }

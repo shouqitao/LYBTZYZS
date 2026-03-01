@@ -224,6 +224,28 @@ namespace LYBT.Module.Auth.Services
                 _logger.LogWarning(ex, "[SVC] Auth.Login → RevokeOldTokensFailed - UserId={UserId}", userDto.Id);
             }
 
+            // CODE-03: 撤销旧 AutoLoginToken Family
+            try
+            {
+                var oldAutoTokens = await _dbContext.Set<LYBT.Entities.Auth.AutoLoginToken>()
+                    .Where(t => t.UserId == userDto.Id && !t.IsRevoked)
+                    .ToListAsync(cancellationToken);
+                foreach (var oldAutoToken in oldAutoTokens)
+                {
+                    oldAutoToken.Revoke("新登录会话，撤销旧 AutoLoginToken", "System:NewLoginSession");
+                }
+                if (oldAutoTokens.Count > 0)
+                {
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                    _logger.LogInformation("[SVC] Auth.Login -> RevokedOldAutoTokens - UserId={UserId} Count={Count}",
+                        userDto.Id, oldAutoTokens.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[SVC] Auth.Login -> RevokeOldAutoTokensFailed - UserId={UserId}", userDto.Id);
+            }
+
             // Issue #1838: 生成并存储RefreshToken
             var refreshToken = GenerateRefreshToken();
             var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;

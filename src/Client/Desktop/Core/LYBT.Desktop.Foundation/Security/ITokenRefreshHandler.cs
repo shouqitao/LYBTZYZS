@@ -8,8 +8,8 @@ namespace LYBT.Desktop.Foundation.Security
     /// </summary>
     /// <remarks>
     /// Token刷新事件通过Prism PubSubEvent发布:
-    /// - TokenEvents.RefreshSucceededEvent: 刷新成功
-    /// - TokenEvents.RefreshFailedEvent: 刷新失败
+    /// - AuthEvents.TokenRefreshSucceededEvent: 刷新成功
+    /// - AuthEvents.TokenRefreshFailedEvent: 刷新失败
     /// </remarks>
     public interface ITokenRefreshHandler
     {

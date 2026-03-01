@@ -30,6 +30,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private readonly IDialogService _prismDialogService;
         // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
         private readonly IHerbSearchProvider _herbSearchProvider;
+        private readonly IDesktopCacheManager _cacheManager;
         private readonly FormulaDetailModelMapper _mapper = new();
 
         // 编辑模式下的药材列表
@@ -77,13 +78,15 @@ namespace LYBT.Desktop.Formula.ViewModels
             IFormulaService formulaService,
             IDialogService prismDialogService,
             // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
-            IHerbSearchProvider herbSearchProvider)
+            IHerbSearchProvider herbSearchProvider,
+            IDesktopCacheManager cacheManager)
             : base(viewModelServices, masterDetailServices)
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
             _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
+            _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
             PageTitle = "验方管理";
 
@@ -205,6 +208,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                     Logger.LogInformation("验方更新成功: {FormulaId} - {FormulaName}", detail.Id, detail.Name);
                 }
 
+                _cacheManager.InvalidateFormulaCaches();
                 OnPropertyChanged(nameof(DetailTitle));
                 return true;
             }
@@ -230,6 +234,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             else
             {
                 Logger.LogInformation("验方删除成功: {FormulaId} - {FormulaName}", item.Id, item.Name);
+                _cacheManager.InvalidateFormulaCaches();
             }
             return success;
         }
@@ -290,6 +295,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     Logger.LogInformation("验方状态已切换: {FormulaName} -> {NewStatus}", formula.Name, result.Status);
                     await MasterDetailServices.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}", "操作成功");
+                    _cacheManager.InvalidateFormulaCaches();
                     await RefreshAsync();
                 }
                 else
@@ -322,6 +328,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     Logger.LogInformation("验方复制成功: {SourceName} -> {NewName}", SelectedItem.Name, result.Name);
                     await MasterDetailServices.Dialog.ShowSuccessAsync($"验方已复制为 '{result.Name}'", "操作成功");
+                    _cacheManager.InvalidateFormulaCaches();
                     await RefreshAsync();
                 }
                 else
@@ -355,6 +362,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     Logger.LogInformation("验方已恢复: {FormulaName}", formula.Name);
                     await MasterDetailServices.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已恢复", "操作成功");
+                    _cacheManager.InvalidateFormulaCaches();
                     await RefreshAsync();
                 }
                 else

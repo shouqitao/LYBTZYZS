@@ -36,6 +36,7 @@ public static class ProblemDetailsFactory
         problemDetails.Extensions["correlationId"] = correlationId;
         problemDetails.Extensions["traceId"] = traceId;
         problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+        problemDetails.Extensions["severity"] = MapCategoryToSeverity(errorCode.ToCategory()).ToString().ToLowerInvariant();
 
         // ValidationException特殊处理
         if (exception is ValidationException validationException && validationException.Errors.Count > 0)
@@ -84,6 +85,7 @@ public static class ProblemDetailsFactory
         problemDetails.Extensions["correlationId"] = correlationId;
         problemDetails.Extensions["traceId"] = traceId;
         problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+        problemDetails.Extensions["severity"] = MapCategoryToSeverity(errorCode.ToCategory()).ToString().ToLowerInvariant();
 
         return problemDetails;
     }
@@ -110,6 +112,7 @@ public static class ProblemDetailsFactory
         problemDetails.Extensions["correlationId"] = correlationId;
         problemDetails.Extensions["traceId"] = traceId;
         problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+        problemDetails.Extensions["severity"] = ErrorSeverity.Warning.ToString().ToLowerInvariant();
         problemDetails.Extensions["errors"] = errors;
 
         return problemDetails;
@@ -141,4 +144,23 @@ public static class ProblemDetailsFactory
     /// DRY: 委托到共享常量类 ProblemTypeUris
     /// </summary>
     private static string GetProblemTypeUri(int statusCode) => ProblemTypeUris.GetByStatusCode(statusCode);
+
+    /// <summary>
+    /// ErrorCategory -> ErrorSeverity 映射
+    /// T5-P3-03: ProblemDetails severity 字段支持
+    /// </summary>
+    private static ErrorSeverity MapCategoryToSeverity(ErrorCategory category) => category switch
+    {
+        ErrorCategory.Validation => ErrorSeverity.Warning,
+        ErrorCategory.Authentication => ErrorSeverity.Error,
+        ErrorCategory.Authorization => ErrorSeverity.Error,
+        ErrorCategory.Resource => ErrorSeverity.Warning,
+        ErrorCategory.Business => ErrorSeverity.Warning,
+        ErrorCategory.Concurrency => ErrorSeverity.Warning,
+        ErrorCategory.System => ErrorSeverity.Critical,
+        ErrorCategory.External => ErrorSeverity.Error,
+        ErrorCategory.Configuration => ErrorSeverity.Critical,
+        ErrorCategory.Network => ErrorSeverity.Error,
+        _ => ErrorSeverity.Error
+    };
 }

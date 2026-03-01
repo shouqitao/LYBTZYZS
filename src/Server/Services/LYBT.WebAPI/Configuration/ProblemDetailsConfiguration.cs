@@ -1,4 +1,5 @@
 ﻿using LYBT.Shared.ExceptionHandling.ProblemDetails;
+using LYBT.Shared.Primitives.ErrorCodes;
 using LYBT.WebAPI.Middleware;
 
 namespace LYBT.WebAPI.Configuration;
@@ -27,6 +28,13 @@ public static class ProblemDetailsConfiguration
 
                 // 添加TraceId
                 context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+
+                // T5-P3-03: 非AppException路径添加默认severity（使用ErrorSeverity枚举统一）
+                if (!context.ProblemDetails.Extensions.ContainsKey("severity"))
+                {
+                    var statusCode2 = context.ProblemDetails.Status ?? context.HttpContext.Response.StatusCode;
+                    context.ProblemDetails.Extensions["severity"] = MapStatusCodeToSeverity(statusCode2);
+                }
 
                 // 设置Instance为请求路径
                 context.ProblemDetails.Instance ??= context.HttpContext.Request.Path;
@@ -70,6 +78,7 @@ public static class ProblemDetailsConfiguration
             problemDetails.Extensions["correlationId"] = correlationId;
             problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
             problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
+            problemDetails.Extensions["severity"] = MapStatusCodeToSeverity(statusCode);
 
             httpContext.Response.ContentType = "application/problem+json";
             await httpContext.Response.WriteAsJsonAsync(problemDetails);
@@ -77,6 +86,17 @@ public static class ProblemDetailsConfiguration
 
         return app;
     }
+
+    /// <summary>
+    /// 将HTTP状态码映射到ErrorSeverity枚举的小写字符串
+    /// DRY: 统一使用ErrorSeverity枚举，与AppException路径一致
+    /// </summary>
+    private static string MapStatusCodeToSeverity(int statusCode) => (statusCode switch
+    {
+        >= 500 => ErrorSeverity.Critical,
+        >= 400 => ErrorSeverity.Warning,
+        _ => ErrorSeverity.Info
+    }).ToString().ToLowerInvariant();
 
     /// <summary>
     /// 获取RFC 7807标准问题类型URI

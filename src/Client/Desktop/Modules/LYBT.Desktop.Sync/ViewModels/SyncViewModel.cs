@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Events;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Sync;
 using Microsoft.Extensions.Logging;
@@ -18,6 +20,7 @@ public partial class SyncViewModel : NavigableViewModelBase
 {
     private readonly ISyncService _syncService;
     private readonly IDialogService _dialogService;
+    private readonly IApiHealthCheckService _healthCheckService;
 
     #region Observable Properties
 
@@ -117,11 +120,13 @@ public partial class SyncViewModel : NavigableViewModelBase
     public SyncViewModel(
         IViewModelServices services,
         ISyncService syncService,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        IApiHealthCheckService healthCheckService)
         : base(services)
     {
         _syncService = syncService;
         _dialogService = dialogService;
+        _healthCheckService = healthCheckService;
 
         PageTitle = "数据同步";
     }
@@ -151,12 +156,9 @@ public partial class SyncViewModel : NavigableViewModelBase
             return;
         }
 
-        // T5-P2-42: 同步前检查认证状态
-        if (!SessionManager.IsAuthenticated)
-        {
-            SetError("请先登录后再进行同步操作");
+        // T5-P2-42: 同步前检查认证状态和网络连接
+        if (!await ValidatePreConditionsAsync())
             return;
-        }
 
         await ExecuteWithErrorHandlingAsync(async () =>
         {
@@ -206,6 +208,10 @@ public partial class SyncViewModel : NavigableViewModelBase
     private async Task ExecuteSyncAsync()
     {
         if (string.IsNullOrEmpty(SelectedEntityType))
+            return;
+
+        // T5-P2-42: 执行同步前二次验证认证状态和网络连接
+        if (!await ValidatePreConditionsAsync())
             return;
 
         // 检查是否有未处理的冲突
@@ -304,6 +310,30 @@ public partial class SyncViewModel : NavigableViewModelBase
     #endregion
 
     #region Private Methods
+
+    /// <summary>
+    /// T5-P2-42: 同步前置条件验证 (认证状态 + 网络连接)
+    /// </summary>
+    private async Task<bool> ValidatePreConditionsAsync()
+    {
+        // 检查认证状态
+        if (!SessionManager.IsAuthenticated)
+        {
+            SetError("请先登录后再进行同步操作");
+            return false;
+        }
+
+        // 检查网络连接
+        var healthStatus = await _healthCheckService.CheckHealthAsync(timeout: 5000);
+        if (healthStatus != ApiHealthStatus.Healthy)
+        {
+            var errorDetail = _healthCheckService.LastErrorMessage ?? "无法连接到服务器";
+            SetError($"网络连接不可用: {errorDetail}");
+            return false;
+        }
+
+        return true;
+    }
 
     private async Task LoadEntityTypesAsync()
     {
@@ -414,6 +444,17 @@ public partial class SyncViewModel : NavigableViewModelBase
         OnPropertyChanged(nameof(ConflictCount));
         OnPropertyChanged(nameof(TotalDifferenceCount));
         ExecuteSyncCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsSyncingChanged(bool value)
+    {
+        Events.Publish<SyncEvents.StatusChangedEvent, SyncStatusPayload>(
+            new SyncStatusPayload
+            {
+                IsSyncing = value,
+                LastSyncTime = LastSyncTime,
+                StatusMessage = value ? "正在同步..." : StatusMessage
+            });
     }
 
     partial void OnSelectedEntityTypeChanged(string? value)

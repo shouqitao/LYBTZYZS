@@ -30,6 +30,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     private readonly IMedicalCaseRepository _repository;
     private readonly IHerbSearchProvider _herbSearchProvider;
     private readonly MedicalCaseDetailModelMapper _mapper = new();
+    private readonly IDesktopCacheManager _cacheManager;
 
     #region 扩展属性
 
@@ -91,11 +92,13 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         IViewModelServices viewModelServices,
         IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> masterDetailServices,
         IMedicalCaseRepository repository,
-        IHerbSearchProvider herbSearchProvider)
+        IHerbSearchProvider herbSearchProvider,
+        IDesktopCacheManager cacheManager)
         : base(viewModelServices, masterDetailServices)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
+        _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
         PageTitle = "医案管理";
 
@@ -227,6 +230,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
             Logger.LogInformation("医案保存成功: {MedicalCaseId}, 药材数量: {HerbCount}",
                 detail.Id, prescriptionItems.Count);
 
+            _cacheManager.InvalidateMedicalCaseCaches();
             OnPropertyChanged(nameof(DetailTitle));
             return true;
         }
@@ -250,6 +254,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         else
         {
             Logger.LogInformation("医案删除成功: {MedicalCaseId}", item.Id);
+            _cacheManager.InvalidateMedicalCaseCaches();
         }
         return success;
     }

@@ -205,6 +205,14 @@ namespace LYBT.Module.MedicalCases.Services
             consultation.TcmDiagnosis = request.TcmDiagnosis;
             consultation.UpdatedAt = DateTime.Now;
 
+            // CODE-02: 编辑已打印医案时重置 IsPrinted（防御性编程）
+            if (medicalCase.IsPrinted)
+            {
+                medicalCase.IsPrinted = false;
+                medicalCase.PrintVersion++;
+                _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation -> ResetIsPrinted - MedicalCaseId={Id}", medicalCase.Id);
+            }
+
             // 通过聚合根保存（EF Core会跟踪子实体变更）
             var result = await _repository.UpdateAsync(medicalCase);
             await _cacheInvalidation.InvalidateAsync("medicalcases");
@@ -376,6 +384,14 @@ namespace LYBT.Module.MedicalCases.Services
                 }
             }
 
+            // CODE-02: 编辑已打印医案时重置 IsPrinted（防御性编程）
+            if (medicalCase.IsPrinted)
+            {
+                medicalCase.IsPrinted = false;
+                medicalCase.PrintVersion++;
+                _logger.LogInformation("[SVC] MedicalCase.UpdatePrescription -> ResetIsPrinted - MedicalCaseId={Id}", medicalCase.Id);
+            }
+
             await _repository.UpdateAsync(medicalCase);
             await _cacheInvalidation.InvalidateAsync("medicalcases");
 
@@ -535,6 +551,14 @@ namespace LYBT.Module.MedicalCases.Services
                 }
 
                 await HandlePrescriptionUpdateAsync(medicalCase, request.Prescription);
+            }
+
+            // CODE-02: 编辑已打印医案时重置 IsPrinted
+            if (medicalCase.IsPrinted)
+            {
+                medicalCase.IsPrinted = false;
+                medicalCase.PrintVersion++;
+                _logger.LogInformation("[SVC] MedicalCase.Save -> ResetIsPrinted - MedicalCaseId={Id}", medicalCase.Id);
             }
 
             // 保存并审计

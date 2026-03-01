@@ -38,6 +38,14 @@ LYBT.Module.Auth/
 | RefreshToken | 7天有效期，支持撤销 |
 | 密码加密 | BCrypt(工作因子12) |
 
+## 设计依据
+
+- 双轨认证 (AdminSecrets + Users 表) 分离超级管理员和普通用户的身份验证路径，提高安全性
+- 通过 IUserCrossModuleService 解耦 Auth 与 Users 模块，Auth 不直接访问 UserRepository
+- AccessToken 短有效期 (2h) + RefreshToken 长有效期 (7d) 平衡安全与用户体验
+- BCrypt 工作因子 12 兼顾密码安全和小型诊所硬件性能
+- TokenRevocationService 支持主动撤销，SecurityAuditService 记录安全事件
+
 ## 依赖关系
 
 ### 依赖

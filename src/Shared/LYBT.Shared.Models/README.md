@@ -1,47 +1,44 @@
 # LYBT.Shared.Models
 
-> 共享数据模型库 | DTO契约定义 | 前后端类型一致
+> 共享数据模型库 | 111个.cs文件 | DTO契约+枚举+扩展方法
 
 ## 项目定位
 
 - **层级**: Shared层
-- **职责**: 提供Server/Client共享的数据传输对象(DTO)、枚举、异常类和扩展方法
+- **职责**: 提供Server/Client共享的数据传输对象(DTO)、枚举和扩展方法
 
 ## 目录结构
 
 ```
 LYBT.Shared.Models/
-├── Common/                 # 通用模型(3文件)
-│   ├── BatchIdsDto.cs
-│   ├── EnumItem.cs
-│   └── NullableEnumItem.cs
-├── Constants/              # 常量定义(2文件)
-│   ├── ErrorMessageKeys.cs
-│   └── ValidationConstants.cs
-├── Contracts/              # DTO定义(8模块)
-│   ├── Common/             # 通用契约(11文件)
-│   ├── Auth/               # 认证DTO(8文件)
-│   ├── Users/              # 用户DTO
-│   ├── Patients/           # 患者DTO
-│   ├── MedicalCase/        # 医案DTO
-│   ├── Consultation/       # 诊断DTO
-│   ├── Prescriptions/      # 处方DTO
-│   ├── Herbs/              # 药材DTO
-│   └── Formula/            # 验方DTO
-├── Core/                   # 核心模型(1文件)
-├── Enums/                  # 枚举定义(9文件)
-├── Exceptions/             # 异常类(6文件)
-└── Extensions/             # 扩展方法(8文件)
+├── Common/                     # 通用模型(1文件)
+│   └── Result.cs               # Result<T>/Result 统一返回值
+├── DTOs/                       # 跨模块DTO(1文件)
+│   └── Users/UserBasicDto.cs   # 跨模块用户基本信息
+├── Contracts/                  # DTO契约定义(10模块，95文件)
+│   ├── Auth/                   # 认证(12文件)
+│   ├── Common/                 # 通用契约(16文件)
+│   ├── Consultation/           # 诊断(2文件)
+│   ├── Formula/                # 验方(11文件)
+│   ├── Herbs/                  # 药材(8文件)
+│   ├── MedicalCase/            # 医案(13文件)
+│   ├── Patients/               # 患者(10文件)
+│   ├── Prescriptions/          # 处方(4文件)
+│   ├── Sync/                   # 数据同步(10文件)
+│   └── Users/                  # 用户(9文件)
+├── Enums/                      # 枚举定义(12文件)
+└── Extensions/                 # 扩展方法(2文件)
 ```
 
 ## 核心组件
 
 | 组件 | 说明 |
 |------|------|
-| ApiResponse<T> | 统一API响应格式 |
-| ServiceResult<T> | 服务层结果包装 |
-| PagedResult<T> | 分页结果模型 |
-| PagedQueryBaseDto | 分页查询基类 |
+| ApiResponse<T> | 统一API响应格式(Success/Message/Data/Timestamp) |
+| ServiceResult<T> | 服务层结果包装(IsSuccess/Data/ErrorMessage) |
+| Result<T> | Service层统一返回值(支持ErrorCode) |
+| PagedResult<T> | 分页结果模型(Items/TotalCount/TotalPages) |
+| PagedQueryBaseDto | 分页查询基类(Keyword/PageIndex/PageSize/Sort) |
 
 ## DTO基类体系
 
@@ -55,23 +52,27 @@ LYBT.Shared.Models/
 
 ## 核心枚举
 
-| 枚举 | 值 | 说明 |
+| 枚举 | 文件 | 说明 |
 |------|------|------|
-| CommonStatus | Disabled, Enabled | 通用状态 |
-| UserRole | Doctor, Admin | 用户角色 |
-| Gender | Unknown, Male, Female | 性别 |
-| CaseStatus | Registered, InProgress, Completed, Cancelled, Temporary | 医案状态 |
-| PrescriptionStatus | Draft, Confirmed, Dispensed, Cancelled | 处方状态 |
+| UserRole | AuthEnums.cs | Receptionist/Doctor/Admin/SuperAdmin |
+| LoginType | AuthEnums.cs | Password 认证类型 |
+| CaseStatus | CaseStatus.cs | Suspended/Active/Completed |
+| MedicalCaseStatus | MedicalCaseEnums.cs | Suspended/Active/Completed |
+| CommonStatus | SystemEnums.cs | Disabled/Enabled |
+| Gender | Gender.cs | Unknown/Male/Female |
+| DecocteMethod | DecocteMethod.cs | 7种煎法 |
+| FormulaType | FormulaType.cs | Classic/Experience |
+| DuplicateStrategy | DuplicateStrategy.cs | Skip/Update/Error |
+| PrintType | PrintType.cs | Prescription/Formula |
+| ErrorCategory | ErrorEnums.cs | 12种错误分类 |
+| PasswordStrength | SecurityEnums.cs | Weak~VeryStrong 5级 |
 
-## 异常类
+## 设计依据
 
-| 异常类 | 说明 |
-|--------|------|
-| AppException | 应用异常基类 |
-| BusinessException | 业务逻辑异常 |
-| ValidationException | 验证失败异常 |
-| NotFoundException | 资源未找到异常 |
-| ApiException | API调用异常 |
+- DTO集中于Shared.Models而非各模块内，确保Server/Desktop共享同一API契约
+- 枚举与DTO同层，避免Desktop直接引用Server端Entities层
+- DTO基类体系通过接口组合(IIdentifiable/IAuditable/IStatusManageable)实现按需继承
+- 大部分业务DTO已扁平化设计，不再继承基类；批量操作DTO使用继承链
 
 ## 依赖关系
 
@@ -79,11 +80,11 @@ LYBT.Shared.Models/
 - 无(基础设施层，零依赖)
 
 ### 被依赖
-- LYBT.Infrastructure (引用Entity和Exceptions)
-- LYBT.Module.*(所有Server模块)
+- LYBT.Infrastructure (引用Entity和结果类型)
+- LYBT.Module.* (所有Server模块)
 - LYBT.WebAPI (引用所有DTO和ApiResponse)
 - LYBT.Desktop.Contracts (引用所有DTO)
-- LYBT.Desktop.*(所有Desktop模块)
+- LYBT.Desktop.* (所有Desktop模块)
 - 所有测试项目
 
 ### NuGet包
@@ -94,6 +95,6 @@ LYBT.Shared.Models/
 
 | 日期 | 变更 |
 |------|------|
+| 2026-03-01 | 根据实际目录结构重写，修正文件计数 |
 | 2025-12-04 | 按README规范重写文档 |
 | 2025-10-29 | DTO三阶段优化完成 |
-| 2025-09-20 | DTO基类体系重构 |

@@ -140,6 +140,49 @@ public static void RegisterDataSources(
 | LocalUserDataSource | 用户 CRUD、密码管理、登录追踪 |
 | LocalMedicalCaseDataSource | 医案聚合根、含详情查询、状态管理 |
 
+### DataSource 接口层次
+
+```
+IDataSourceBase<TDetail, TInput>  (泛型基接口, LYBT.Desktop.Contracts.DataSources)
+  ├── IPatientDataSource
+  ├── IHerbDataSource
+  ├── IFormulaDataSource
+  ├── IMedicalCaseDataSource
+  └── IUserDataSource
+```
+
+基接口定义 5 个标准 CRUD 方法:
+- `GetByIdAsync(Guid id, CancellationToken ct)` -> `Task<TDetail?>`
+- `GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken ct)` -> `Task<(List<TDetail>, int)>`
+- `CreateAsync(TInput input, CancellationToken ct)` -> `Task<TDetail>`
+- `UpdateAsync(TInput input, CancellationToken ct)` -> `Task<TDetail>`
+- `DeleteAsync(Guid id, CancellationToken ct)` -> `Task<bool>`
+
+实体接口继承基接口并追加领域特定方法 (如 BatchDelete, ToggleStatus, Search 等)。
+
+### Remote vs Local 实现对应表
+
+| 接口 | Remote 实现 | Local 实现 |
+|------|------------|-----------|
+| IPatientDataSource | RemotePatientDataSource | LocalPatientDataSource |
+| IHerbDataSource | RemoteHerbDataSource | LocalHerbDataSource |
+| IFormulaDataSource | RemoteFormulaDataSource | LocalFormulaDataSource |
+| IMedicalCaseDataSource | RemoteMedicalCaseDataSource | LocalMedicalCaseDataSource |
+| IUserDataSource | RemoteUserDataSource | LocalUserDataSource |
+
+- Remote 实现位于 `LYBT.Desktop.Infrastructure/DataSources/Remote/`，依赖 Refit API 客户端
+- Local 实现位于 `LYBT.Desktop.LocalData/DataSources/`，依赖 LocalDbContext (SQLite)
+- 所有实现均为 Transient 生命周期
+
+### DI 注册切换详情
+
+`DataSourceRegistrationExtensions.RegisterDataSources(mode)` 根据 ConnectionMode 枚举注册:
+- **Remote**: 注册 5 个 RemoteXxxDataSource (Transient)
+- **Local**: 注册 LocalDbContext + DatabaseInitializer + LocalAuthService + SyncService + 5 个 LocalXxxDataSource
+- **共享**: ICurrentUserProvider (SessionBasedCurrentUserProvider, Singleton)
+
+> SYNC-D02 计划废除整个 IDataSource 抽象层，改为共享 Service/Repository + DbContext Provider 切换。
+
 ---
 
 ## 本地数据访问层 (LocalData)
@@ -214,6 +257,56 @@ sequenceDiagram
 | UploadAsync | 序列化本地实体为 JSON，上传到服务端 |
 | DownloadAsync | 从服务端下载实体 JSON，存入本地 SQLite |
 | ExecuteSyncAsync | 完整同步流程: 处理上传列表 + 下载列表 + 冲突解决 |
+
+### 端到端调用链
+
+```
+Desktop SyncViewModel
+  -> ISyncService (Desktop Contracts, LYBT.Desktop.Contracts.Services)
+    -> SyncService (LocalData 实现, LYBT.Desktop.LocalData.Services)
+      -> LocalDbContext (本地元数据读写)
+      -> ISyncApi (Refit HTTP, LYBT.Desktop.Contracts.Api)
+        -> SyncController (Server WebAPI, /api/v1/sync)
+          -> ISyncService (Module.Sync 接口, LYBT.Module.Sync.Interfaces)
+            -> SyncService (Module.Sync 实现, LYBT.Module.Sync.Services)
+              -> AppDbContext (服务器数据库)
+              -> IHerbCrossModuleService (删除前引用检查)
+              -> IPatientCrossModuleService (删除前引用检查)
+```
+
+Desktop 和 Server 各有独立的 ISyncService 接口 (同名不同命名空间):
+- Desktop: `LYBT.Desktop.Contracts.Services.ISyncService` -- 面向 ViewModel，按 entityType 字符串分派
+- Server: `LYBT.Module.Sync.Interfaces.ISyncService` -- 面向 Controller，接收 DTO 输入
+
+### 跨模块依赖
+
+| 依赖来源 | 被依赖接口 | 实现类 | 用途 |
+|---------|-----------|--------|------|
+| Module.Sync | IHerbCrossModuleService | CrossModuleService | 删除前检查 PrescriptionItem 引用 |
+| Module.Sync | IPatientCrossModuleService | CrossModuleService | 删除前检查 MedicalCase 引用 |
+
+CrossModuleService 定义在 `LYBT.Infrastructure/Services/CrossModuleQueryService.cs`，实现 ISP 四接口 (IPatientCrossModuleService, IHerbCrossModuleService, IUserCrossModuleService, ICrossModuleAuthService)。
+
+### 同步依赖顺序
+
+参照约束决定同步顺序 (当前支持的 SupportedTypes: Herb, Patient, Formula):
+
+| 顺序 | 下载 (Server->Local) | 上传 (Local->Server) | 原因 |
+|------|---------------------|---------------------|------|
+| 1 | Herb | Herb | Formula 子项引用 HerbId |
+| 2 | Patient | Patient | MedicalCase 引用 PatientId |
+| 3 | Formula | Formula | 依赖 Herb 已存在 |
+| (未实现) | MedicalCase | MedicalCase | 聚合级，依赖 Patient + Herb |
+
+### 基础数据 vs 聚合同步
+
+| 维度 | 基础数据 (Herb/Patient/Formula) | MedicalCase 聚合 (未启用) |
+|------|-------------------------------|--------------------------|
+| 子集合 | 无 / FormulaHerbItem (1层) | Consultation + Prescription + PrescriptionItems (3层) |
+| Checksum | 扁平字段 / 2层 | 4层聚合，PrescriptionItems 按 HerbId 排序 |
+| 上传处理 | SetValues 覆盖 / RemoveRange+Add | 需处理共享主键 (Consultation.Id = MedicalCase.Id) |
+| 状态约束 | 无 | 仅 Completed 可同步 (SYNC-D01) |
+| 冲突策略 | Server Wins 自动覆盖 | 手动选择 (SYNC-D04) |
 
 ### Checksum 比对
 

@@ -25,6 +25,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     private readonly IUserPasswordHandler _passwordHandler;
     private readonly IUserStatusHandler _statusHandler;
     private readonly IUserImportExportHandler _importExportHandler;
+    private readonly IDesktopCacheManager _cacheManager;
 
     #region 筛选属性
 
@@ -115,13 +116,15 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         UserService commandHandler,
         IUserPasswordHandler passwordHandler,
         IUserStatusHandler statusHandler,
-        IUserImportExportHandler importExportHandler)
+        IUserImportExportHandler importExportHandler,
+        IDesktopCacheManager cacheManager)
         : base(viewModelServices, masterDetailServices)
     {
         _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
         _passwordHandler = passwordHandler ?? throw new ArgumentNullException(nameof(passwordHandler));
         _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
         _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
+        _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
         PageTitle = "用户管理";
 
@@ -278,6 +281,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
                 Logger.LogInformation("用户{Action}成功: {UserId} - {UserName}",
                     IsNew ? "创建" : "更新", result.user.Id, result.user.UserName);
 
+                _cacheManager.InvalidateUserCaches();
                 OnPropertyChanged(nameof(DetailTitle));
                 return true;
             }
@@ -317,6 +321,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         else
         {
             Logger.LogInformation("用户删除成功: {UserId} - {UserName}", item.Id, item.UserName);
+            _cacheManager.InvalidateUserCaches();
         }
         return result.success;
     }
@@ -358,6 +363,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         if (SelectedItem == null) return;
         if (await _statusHandler.ToggleUserStatusAsync(SelectedItem))
         {
+            _cacheManager.InvalidateUserCaches();
             await RefreshAsync();
         }
     }
@@ -371,6 +377,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         if (SelectedItem == null) return;
         if (await _statusHandler.RestoreAsync(SelectedItem))
         {
+            _cacheManager.InvalidateUserCaches();
             await RefreshAsync();
         }
     }
@@ -387,6 +394,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     {
         if (await _importExportHandler.ImportAsync())
         {
+            _cacheManager.InvalidateUserCaches();
             await RefreshAsync();
         }
     }

@@ -42,26 +42,5 @@ public interface ICommandHandlerBase<TListDto, TDetailDto, TInputDto>
     Task<CommandResult<bool>> DeleteAsync(Guid id);
 }
 
-/// <summary>
-/// 只读CommandHandler接口
-/// 用于不需要写操作的场景
-/// </summary>
-/// <typeparam name="TListDto">列表DTO类型</typeparam>
-/// <typeparam name="TDetailDto">详情DTO类型</typeparam>
-public interface IReadOnlyCommandHandler<TListDto, TDetailDto>
-    where TListDto : class
-    where TDetailDto : class
-{
-    /// <summary>
-    /// 获取列表
-    /// </summary>
-    Task<CommandResult<List<TListDto>>> GetListAsync(QueryParams? query = null);
-
-    /// <summary>
-    /// 获取详情
-    /// </summary>
-    Task<CommandResult<TDetailDto>> GetDetailAsync(Guid id);
-}
-
 // OpenSpec: cleanup-patient-dead-code - 已删除重复的PagedResult<T>和未使用的IPagedCommandHandler
 // PagedResult<T>统一使用LYBT.Shared.Models.Contracts.Common.PagedResult<T>

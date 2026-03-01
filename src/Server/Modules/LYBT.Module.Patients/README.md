@@ -33,6 +33,14 @@ LYBT.Module.Patients/
 | IPatientServiceOptimized | - | Entity直接返回策略(性能优化) |
 | IPatientRepository | 4+ | 继承BaseRepository，按名字/电话/日期范围查询 |
 
+## 设计依据
+
+- 传统三层架构，患者管理属于标准 CRUD 场景，架构简单直接
+- IPatientServiceOptimized 提供 Entity 直接返回模式，跨模块查询时避免不必要的 DTO 映射开销
+- 通过 IPatientCrossModuleService 向 MedicalCase 模块暴露只读查询，保持模块边界清晰
+- Mapperly 编译时映射替代 AutoMapper，消除运行时反射开销
+- 继承 BaseService 复用统一错误处理和 FluentValidation 验证逻辑
+
 ## 依赖关系
 
 ### 依赖

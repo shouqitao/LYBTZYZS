@@ -135,6 +135,13 @@ namespace LYBT.Module.MedicalCases.Services
                 }
             }
 
+            // CODE-01: 完成医案时验证中医诊断必填
+            if (string.IsNullOrWhiteSpace(medicalCase.Consultation?.TcmDiagnosis))
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Complete -> TcmDiagnosisRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw new BusinessException(EC.MedicalCaseMissingDiagnosis, "中医诊断不能为空，请先填写中医诊断");
+            }
+
             // DDD: 委托给聚合根域方法
             medicalCase.Complete();
 

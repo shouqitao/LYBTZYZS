@@ -16,6 +16,21 @@ public interface IDesktopCacheManager
     void InvalidateMedicalCaseCaches();
 
     /// <summary>
+    /// 使药材相关缓存失效
+    /// </summary>
+    void InvalidateHerbCaches();
+
+    /// <summary>
+    /// 使验方相关缓存失效
+    /// </summary>
+    void InvalidateFormulaCaches();
+
+    /// <summary>
+    /// 使用户相关缓存失效
+    /// </summary>
+    void InvalidateUserCaches();
+
+    /// <summary>
     /// 使所有缓存失效 (Sync 完成后调用)
     /// </summary>
     void InvalidateAll();

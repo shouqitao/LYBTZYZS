@@ -23,12 +23,6 @@ namespace LYBT.Infrastructure.Data.Configuration
             // 优化患者实体配置
             OptimizePatientEntity(modelBuilder);
 
-            // 优化医案实体配置
-            OptimizeMedicalCaseEntity(modelBuilder);
-
-            // 优化处方实体配置
-            OptimizePrescriptionEntity(modelBuilder);
-
             // 优化用户实体配置
             OptimizeUserEntity(modelBuilder);
         }
@@ -79,26 +73,6 @@ namespace LYBT.Infrastructure.Data.Configuration
                 entity.HasIndex(p => p.PhoneNumber)
                     .HasDatabaseName("IX_Patient_Phone");
             });
-        }
-
-        /// <summary>
-        /// 优化医案实体配置
-        /// Issue #1763: MVP阶段(<10K记录)无需额外索引，主键和外键索引已足够
-        /// </summary>
-        private static void OptimizeMedicalCaseEntity(ModelBuilder modelBuilder)
-        {
-            // MVP阶段不创建额外索引
-            // 数据规模达到10万+时再考虑添加复合索引
-        }
-
-        /// <summary>
-        /// 优化处方实体配置
-        /// Issue #1763: MVP阶段(<10K记录)无需额外索引，主键和外键索引已足够
-        /// </summary>
-        private static void OptimizePrescriptionEntity(ModelBuilder modelBuilder)
-        {
-            // MVP阶段不创建额外索引
-            // 数据规模达到10万+时再考虑添加复合索引
         }
 
         /// <summary>

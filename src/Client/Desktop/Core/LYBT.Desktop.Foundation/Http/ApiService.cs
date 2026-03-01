@@ -364,8 +364,6 @@ namespace LYBT.Desktop.Foundation.Http
         }
     }
 
-    // ApiException 现在使用 LYBT.Shared.Models.Exceptions.ApiException
-
     /// <summary>
     /// 请求去重器 - 带有自动过期清理机制
     /// </summary>
@@ -449,78 +447,4 @@ namespace LYBT.Desktop.Foundation.Http
         }
     }
 
-    /// <summary>
-    /// 泛型API服务
-    /// </summary>
-    public class ApiService<TEntity> : IApiService where TEntity : class
-    {
-        private readonly IApiService _apiService;
-        private readonly string _baseEndpoint;
-
-        public ApiService(IApiService apiService, string baseEndpoint)
-        {
-            _apiService = apiService;
-            _baseEndpoint = baseEndpoint;
-        }
-
-        public async Task<IEnumerable<TEntity>?> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            return await _apiService.GetAsync<IEnumerable<TEntity>>(_baseEndpoint, cancellationToken: cancellationToken);
-        }
-
-        public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await _apiService.GetAsync<TEntity>($"{_baseEndpoint}/{id}", cancellationToken: cancellationToken);
-        }
-
-        public async Task<TEntity?> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
-        {
-            return await _apiService.PostAsync<TEntity, TEntity>(_baseEndpoint, entity, cancellationToken);
-        }
-
-        public async Task<TEntity?> UpdateAsync(Guid id, TEntity entity, CancellationToken cancellationToken = default)
-        {
-            return await _apiService.PutAsync<TEntity, TEntity>($"{_baseEndpoint}/{id}", entity, cancellationToken);
-        }
-
-        public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await _apiService.DeleteAsync($"{_baseEndpoint}/{id}", cancellationToken);
-        }
-
-        // IApiService implementation
-
-        /// <inheritdoc/>
-        public Task<TResponse?> GetAsync<TResponse>(string endpoint, object? parameters = null, CancellationToken cancellationToken = default)
-            where TResponse : class
-            => _apiService.GetAsync<TResponse>(endpoint, parameters, cancellationToken);
-
-        /// <inheritdoc/>
-        public Task<TResponse?> PostAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
-            where TResponse : class
-            => _apiService.PostAsync<TRequest, TResponse>(endpoint, request, cancellationToken);
-
-        /// <inheritdoc/>
-        public Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
-            where TResponse : class
-            => _apiService.PutAsync<TRequest, TResponse>(endpoint, request, cancellationToken);
-
-        /// <inheritdoc/>
-        public Task<TResponse?> PatchAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
-            where TResponse : class
-            => _apiService.PatchAsync<TRequest, TResponse>(endpoint, request, cancellationToken);
-
-        /// <inheritdoc/>
-        public Task<bool> DeleteAsync(string endpoint, CancellationToken cancellationToken = default)
-            => _apiService.DeleteAsync(endpoint, cancellationToken);
-
-        /// <inheritdoc/>
-        public Task<Stream> DownloadAsync(string endpoint, CancellationToken cancellationToken = default)
-            => _apiService.DownloadAsync(endpoint, cancellationToken);
-
-        /// <inheritdoc/>
-        public Task<TResponse?> UploadAsync<TResponse>(string endpoint, Stream file, string fileName, Dictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
-            where TResponse : class
-            => _apiService.UploadAsync<TResponse>(endpoint, file, fileName, metadata, cancellationToken);
-    }
 }

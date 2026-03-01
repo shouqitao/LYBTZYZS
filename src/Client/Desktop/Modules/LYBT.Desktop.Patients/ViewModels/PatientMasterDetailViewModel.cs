@@ -38,6 +38,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         // OpenSpec: integrate-cardreader-module - 读卡器服务
         private readonly ICardReaderService _cardReaderService;
         private readonly IPatientCardReaderIntegration _patientCardReaderIntegration;
+        private readonly IDesktopCacheManager _cacheManager;
 
         #region 扩展属性
 
@@ -92,6 +93,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             IDialogService prismDialogService,
             ICardReaderService cardReaderService,
             IPatientCardReaderIntegration patientCardReaderIntegration,
+            IDesktopCacheManager cacheManager,
             ICommonDialogService? commonDialogService = null)
             : base(viewModelServices, masterDetailServices)
         {
@@ -100,6 +102,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
             _cardReaderService = cardReaderService ?? throw new ArgumentNullException(nameof(cardReaderService));
             _patientCardReaderIntegration = patientCardReaderIntegration ?? throw new ArgumentNullException(nameof(patientCardReaderIntegration));
+            _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
             _commonDialogService = commonDialogService;
 
             PageTitle = "患者管理";
@@ -228,6 +231,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogInformation("患者{Action}成功: {PatientId} - {PatientName}",
                     IsNew ? "创建" : "更新", result.Id, result.Name);
 
+                _cacheManager.InvalidatePatientCaches();
                 OnPropertyChanged(nameof(DetailTitle));
                 return true;
             }
@@ -252,6 +256,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             else
             {
                 Logger.LogInformation("患者删除成功: {PatientId} - {PatientName}", item.Id, item.Name);
+                _cacheManager.InvalidatePatientCaches();
             }
             return result.Success;
         }
@@ -276,6 +281,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (result != null)
                 {
                     Logger.LogInformation("患者已恢复: {PatientName}", patient.Name);
+                    _cacheManager.InvalidatePatientCaches();
                     await MasterDetailServices.Dialog.ShowSuccessAsync($"患者 '{patient.Name}' 已恢复", "操作成功");
                     await RefreshAsync();
                 }
@@ -334,7 +340,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                         message += $"\n第{f.OriginalRowNumber}行：{f.FailureReason}";
                 }
                 await _commonDialogService.ShowInfoAsync(message, "导入结果");
-                if (result.SuccessCount > 0) await RefreshAsync();
+                if (result.SuccessCount > 0)
+                {
+                    _cacheManager.InvalidatePatientCaches();
+                    await RefreshAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -505,6 +515,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 await MasterDetailServices.Dialog.ShowSuccessAsync($"患者 {patientResult.Name} 创建成功", "创建成功");
 
                 // 刷新列表并选中新患者
+                _cacheManager.InvalidatePatientCaches();
                 await RefreshAsync();
                 await SearchAndSelectPatientAsync(patientResult.PatientId);
             }

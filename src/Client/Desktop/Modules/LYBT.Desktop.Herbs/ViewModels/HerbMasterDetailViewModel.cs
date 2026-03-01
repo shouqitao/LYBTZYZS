@@ -25,6 +25,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，统一使用IHerbRepository
         private readonly IHerbRepository _herbRepository;
         private readonly IDialogService _prismDialogService;
+        private readonly IDesktopCacheManager _cacheManager;
 
         #region 扩展属性
 
@@ -58,12 +59,14 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IViewModelServices viewModelServices,
             IMasterDetailServices<HerbListDto, HerbDetailModel> masterDetailServices,
             IHerbRepository herbRepository,
-            IDialogService prismDialogService)
+            IDialogService prismDialogService,
+            IDesktopCacheManager cacheManager)
             : base(viewModelServices, masterDetailServices)
         {
             // OpenSpec: simplify-desktop-data-layer - 移除IHerbService依赖
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
+            _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
             PageTitle = "药材管理";
             StatusOptions = new ObservableCollection<CommonStatus>(Enum.GetValues<CommonStatus>());
@@ -211,6 +214,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 OnPropertyChanged(nameof(DetailTitle));
             }
 
+            _cacheManager.InvalidateHerbCaches();
             return true;
         }
 
@@ -222,8 +226,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
             if (!result.success)
             {
                 MasterDetailServices.ErrorHandler.SetError("Delete", result.error ?? "删除药材失败");
+                return false;
             }
-            return result.success;
+
+            _cacheManager.InvalidateHerbCaches();
+            return true;
         }
 
         #endregion
@@ -248,6 +255,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 {
                     Logger.LogInformation("药材状态已切换: {HerbName} -> {NewStatus}", herb.Name, result.Status);
                     await MasterDetailServices.Dialog.ShowSuccessAsync($"药材 '{herb.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}", "操作成功");
+                    _cacheManager.InvalidateHerbCaches();
                     await RefreshAsync();
                 }
                 else
@@ -301,6 +309,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 {
                     Logger.LogInformation("药材已恢复: {HerbName}", herb.Name);
                     await MasterDetailServices.Dialog.ShowSuccessAsync($"药材 '{herb.Name}' 已恢复", "操作成功");
+                    _cacheManager.InvalidateHerbCaches();
                     await RefreshAsync();
                 }
                 else
@@ -343,6 +352,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     {
                         await MasterDetailServices.Dialog.ShowSuccessAsync(
                             $"成功导入 {result.SuccessCount} 条药材记录", "导入成功");
+                        _cacheManager.InvalidateHerbCaches();
                         await RefreshAsync();
                     }
                     else

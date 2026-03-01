@@ -108,13 +108,30 @@ public class Program
 
             builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
 
-            // 生产环境配置验证
+            // T5-P3-01: 所有环境验证 Critical 配置项
+            var configValidator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
+            var criticalMissing = configValidator.ValidateCriticalItems();
+            if (criticalMissing.Count > 0)
+            {
+                foreach (var item in criticalMissing)
+                {
+                    Log.Warning("Critical 配置缺失: {ConfigItem}", item);
+                }
+            }
+
+            // 所有环境: 验证 Important 配置项（降级为 Warning）
+            var importantMissing = configValidator.ValidateImportantItems();
+            foreach (var item in importantMissing)
+            {
+                Log.Warning("Important 配置缺失: {ConfigItem}", item);
+            }
+
+            // 生产环境: 全量验证（含 Important），失败终止启动
             if (builder.Environment.IsProduction())
             {
-                var validator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
                 try
                 {
-                    validator.ValidateOrThrow();
+                    configValidator.ValidateOrThrow();
                     Log.Information(" Production 配置验证通过");
                 }
                 catch (LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationException ex)

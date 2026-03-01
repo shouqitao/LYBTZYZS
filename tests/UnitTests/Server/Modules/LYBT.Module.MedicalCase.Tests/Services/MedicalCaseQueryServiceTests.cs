@@ -106,6 +106,10 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _repositoryMock.GetPagedWithDetailsAsync(
                     Arg.Any<int>(),
                     Arg.Any<int>(),
+                    Arg.Any<MedicalCaseStatus?>(),
+                    Arg.Any<Guid?>(),
+                    Arg.Any<Guid?>(),
+                    Arg.Any<bool>(),
                     Arg.Any<string?>())
                 .Returns(pagedResult);
 
@@ -139,7 +143,13 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 PageSize = pageSize
             };
 
-            _repositoryMock.GetPagedWithDetailsAsync(page, pageSize, Arg.Any<string?>())
+            _repositoryMock.GetPagedWithDetailsAsync(
+                    page, pageSize,
+                    Arg.Any<MedicalCaseStatus?>(),
+                    Arg.Any<Guid?>(),
+                    Arg.Any<Guid?>(),
+                    Arg.Any<bool>(),
+                    Arg.Any<string?>())
                 .Returns(pagedResult);
 
             // Act
