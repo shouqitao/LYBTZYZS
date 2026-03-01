@@ -266,25 +266,35 @@ public class DesktopLayerArchTests
     }
 
     /// <summary>
-    /// 确保使用统一的导航服务
+    /// 确保 ViewModel 不直接依赖 IRegionManager 进行导航 (应通过 INavigationCoordinator)
     /// </summary>
     [Fact]
     public void Should_Use_Unified_Navigation_Service()
     {
-        var navigationUsages = Types.InAssemblies(DesktopAssemblies)
+        // 允许白名单: Shell 层的导航协调器本身需要 IRegionManager
+        var allowedTypes = new HashSet<string>
+        {
+            "NavigationCoordinator",
+            "MainWindowViewModel", // 通过 INavigationCoordinator 间接使用
+        };
+
+        var viewModelTypes = Types.InAssemblies(DesktopAssemblies)
             .That()
-            .ResideInNamespace("ViewModels")
+            .ResideInNamespaceContaining("ViewModels")
             .GetTypes()
-            .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-            .Where(m => m.Name.Contains("Navigate") && !m.Name.Contains("OnNavigated"))
+            .Where(t => !allowedTypes.Contains(t.Name))
+            .Where(t => t.Name.EndsWith("ViewModel"))
             .ToList();
 
-        // 检查是否使用INavigationService而非直接使用RegionManager
-        foreach (var method in navigationUsages)
-        {
-            var methodBody = method.GetMethodBody();
-            // TODO: 深入检查方法体以验证使用了INavigationService
-        }
+        var violatingTypes = viewModelTypes
+            .Where(t => t.GetConstructors()
+                .Any(c => c.GetParameters()
+                    .Any(p => p.ParameterType.Name == "IRegionManager")))
+            .Select(t => t.FullName)
+            .ToList();
+
+        Assert.True(violatingTypes.Count == 0,
+            $"ViewModel 不应直接注入 IRegionManager，应使用 INavigationCoordinator: {string.Join(", ", violatingTypes)}");
     }
 
     /// <summary>

@@ -1,0 +1,167 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        ====================================================================
+        TextBox Styles - 文本框样式
+        依赖: DesignTokens.xaml (FontSizeBody, PrimaryFontFamily, CornerRadiusSmall)
+        ====================================================================
+    -->
+    <Style x:Key="SearchTextBox" TargetType="TextBox">
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border
+                        Background="White"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{StaticResource CornerRadiusSmall}">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryRegionBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--
+        可编辑文本框样式 - 支持只读/编辑模式切换
+        OpenSpec: unify-detail-view-style - 用于详情页各个字段
+    -->
+    <Style x:Key="EditableTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="MinHeight" Value="44" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border
+                        x:Name="PART_Border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{StaticResource CornerRadiusSmall}">
+                        <ScrollViewer
+                            x:Name="PART_ContentHost"
+                            Margin="{TemplateBinding Padding}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!--  只读模式：浅灰背景，无边框高亮  -->
+                        <Trigger Property="IsReadOnly" Value="True">
+                            <Setter TargetName="PART_Border" Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}" />
+                        </Trigger>
+                        <!--  编辑模式：聚焦时主色边框  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsFocused" Value="True" />
+                                <Condition Property="IsReadOnly" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                        </MultiTrigger>
+                        <!--  悬停效果（非只读时）  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsReadOnly" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource SecondaryRegionBrush}" />
+                        </MultiTrigger>
+                        <!--  禁用状态  -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="PART_Border" Property="Background" Value="{DynamicResource SecondaryBorderBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--
+        带验证的TextBox样式 - 继承自EditableTextBoxStyle
+        验证失败时显示红色下边框和ToolTip
+        OpenSpec: ui-validation-framework (从ValidationStyles.xaml迁移以解决资源加载顺序问题)
+
+        使用方式:
+        <TextBox Text="{Binding UserName, ValidatesOnNotifyDataErrors=True}"
+                 Style="{StaticResource ValidatingTextBoxStyle}"/>
+    -->
+    <Style
+        x:Key="ValidatingTextBoxStyle"
+        BasedOn="{StaticResource EditableTextBoxStyle}"
+        TargetType="TextBox">
+        <Setter Property="Validation.ErrorTemplate">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border
+                        BorderBrush="{DynamicResource ValidationErrorBrush}"
+                        BorderThickness="0,0,0,2"
+                        CornerRadius="4">
+                        <AdornedElementPlaceholder />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--
+        查看模式值显示样式 - OpenSpec: refactor-detail-view-container
+        用于详情页查看模式下的只读值展示，无边框文本
+    -->
+    <Style x:Key="ValueDisplayStyle" TargetType="TextBlock">
+        <Setter Property="Padding" Value="0,10" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!--
+        标签+值布局样式 - OpenSpec: refactor-detail-view-container
+        用于查看模式下的标签-值对展示
+    -->
+    <Style x:Key="LabelValueStyle" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+
+    <!--
+        ====================================================================
+        ComboBox Styles - 下拉框样式
+        ====================================================================
+    -->
+    <Style x:Key="FilterComboBox" TargetType="ComboBox">
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
+        <Setter Property="Background" Value="White" />
+    </Style>
+
+</ResourceDictionary>

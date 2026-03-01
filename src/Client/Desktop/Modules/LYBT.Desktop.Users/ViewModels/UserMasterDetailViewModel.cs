@@ -81,8 +81,14 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
 
     #region 扩展属性
 
-    /// <summary>是否为管理员</summary>
-    public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
+    /// <inheritdoc/>
+    protected override string EntityDisplayName => "用户";
+
+    /// <inheritdoc/>
+    protected override string NewEntityVerb => "新增";
+
+    /// <inheritdoc/>
+    protected override string? GetDetailDisplayName() => CurrentDetail?.RealName;
 
     /// <summary>用户名是否只读（编辑模式下不可修改）</summary>
     public bool IsUserNameReadOnly => CurrentDetail != null && !IsNew;
@@ -92,17 +98,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
 
     /// <summary>状态选项</summary>
     public ObservableCollection<CommonStatus> StatusOptions { get; } = new(Enum.GetValues<CommonStatus>());
-
-    /// <summary>详情标题</summary>
-    public string DetailTitle
-    {
-        get
-        {
-            if (CurrentDetail == null) return "用户详情";
-            if (IsNew) return "新增用户";
-            return IsEditMode ? $"编辑用户 - {CurrentDetail.RealName}" : $"用户详情 - {CurrentDetail.RealName}";
-        }
-    }
 
     #endregion
 
@@ -128,12 +123,11 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
 
         PageTitle = "用户管理";
 
-        // 监听属性变化
+        // 监听属性变化 - DetailTitle 已由基类自动通知
         PropertyChanged += (s, e) =>
         {
             if (e.PropertyName is nameof(CurrentDetail) or nameof(IsEditMode))
             {
-                OnPropertyChanged(nameof(DetailTitle));
                 OnPropertyChanged(nameof(IsUserNameReadOnly));
             }
         };
@@ -218,7 +212,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
             };
 
             MasterDetailServices.DetailEditor.LoadDetail(detail);
-            OnPropertyChanged(nameof(DetailTitle));
             OnPropertyChanged(nameof(IsUserNameReadOnly));
         }
         catch (Exception ex)
@@ -232,7 +225,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     protected override UserDetailModel CreateNewDetail()
     {
         var detail = UserDetailModel.CreateNew();
-        OnPropertyChanged(nameof(DetailTitle));
         OnPropertyChanged(nameof(IsUserNameReadOnly));
         return detail;
     }
@@ -282,7 +274,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
                     IsNew ? "创建" : "更新", result.user.Id, result.user.UserName);
 
                 _cacheManager.InvalidateUserCaches();
-                OnPropertyChanged(nameof(DetailTitle));
                 return true;
             }
 

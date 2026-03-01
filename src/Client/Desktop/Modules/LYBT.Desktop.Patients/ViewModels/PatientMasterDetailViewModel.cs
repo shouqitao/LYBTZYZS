@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
@@ -7,15 +6,12 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Services;
-using LYBT.Desktop.Patients.ViewModels.Components;
-using LYBT.Desktop.Utilities.Excel;
+using LYBT.Desktop.Patients.ViewModels.Handlers;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
-using Prism.Regions;
-using Prism.Services.Dialogs;
 using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.CardReader.Models;
 using LYBT.Desktop.CardReader.Services;
@@ -32,8 +28,8 @@ namespace LYBT.Desktop.Patients.ViewModels
     {
         private readonly PatientService _commandHandler;
         private readonly IPatientRepository _patientRepository;
-        private readonly IDialogService _prismDialogService;
-        private readonly ICommonDialogService? _commonDialogService;
+        private readonly IPatientStatusHandler _statusHandler;
+        private readonly IPatientImportExportHandler _importExportHandler;
 
         // OpenSpec: integrate-cardreader-module - 读卡器服务
         private readonly ICardReaderService _cardReaderService;
@@ -42,25 +38,20 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region 扩展属性
 
-        /// <summary>是否为管理员</summary>
-        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
+        /// <inheritdoc/>
+        protected override string EntityDisplayName => "患者";
+
+        /// <inheritdoc/>
+        protected override string NewEntityVerb => "新增";
+
+        /// <inheritdoc/>
+        protected override string? GetDetailDisplayName() => CurrentDetail?.Name;
 
         /// <summary>性别选项</summary>
         public ObservableCollection<Gender> GenderOptions { get; } = new(Enum.GetValues<Gender>());
 
         /// <summary>状态选项</summary>
         public ObservableCollection<CommonStatus> StatusOptions { get; } = new(Enum.GetValues<CommonStatus>());
-
-        /// <summary>详情标题</summary>
-        public string DetailTitle
-        {
-            get
-            {
-                if (CurrentDetail == null) return "患者详情";
-                if (IsNew) return "新增患者";
-                return IsEditMode ? $"编辑患者 - {CurrentDetail.Name}" : $"患者详情 - {CurrentDetail.Name}";
-            }
-        }
 
         #endregion
 
@@ -84,37 +75,27 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// 构造函数
         /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
-        // OpenSpec: integrate-cardreader-module - 添加读卡器服务依赖
         public PatientMasterDetailViewModel(
             IViewModelServices viewModelServices,
             IMasterDetailServices<PatientListDto, PatientDetailModel> masterDetailServices,
             PatientService commandHandler,
             IPatientRepository patientRepository,
-            IDialogService prismDialogService,
+            IPatientStatusHandler statusHandler,
+            IPatientImportExportHandler importExportHandler,
             ICardReaderService cardReaderService,
             IPatientCardReaderIntegration patientCardReaderIntegration,
-            IDesktopCacheManager cacheManager,
-            ICommonDialogService? commonDialogService = null)
+            IDesktopCacheManager cacheManager)
             : base(viewModelServices, masterDetailServices)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
+            _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
+            _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
             _cardReaderService = cardReaderService ?? throw new ArgumentNullException(nameof(cardReaderService));
             _patientCardReaderIntegration = patientCardReaderIntegration ?? throw new ArgumentNullException(nameof(patientCardReaderIntegration));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
-            _commonDialogService = commonDialogService;
 
             PageTitle = "患者管理";
-
-            // 监听属性变化
-            PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName is nameof(CurrentDetail) or nameof(IsEditMode))
-                {
-                    OnPropertyChanged(nameof(DetailTitle));
-                }
-            };
         }
 
         #region 基类抽象方法实现
@@ -173,7 +154,6 @@ namespace LYBT.Desktop.Patients.ViewModels
                 };
 
                 MasterDetailServices.DetailEditor.LoadDetail(detail);
-                OnPropertyChanged(nameof(DetailTitle));
             }
             catch (Exception ex)
             {
@@ -185,9 +165,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>创建新详情实例</summary>
         protected override PatientDetailModel CreateNewDetail()
         {
-            var detail = PatientDetailModel.CreateNew();
-            OnPropertyChanged(nameof(DetailTitle));
-            return detail;
+            return PatientDetailModel.CreateNew();
         }
 
         /// <summary>保存详情</summary>
@@ -232,7 +210,6 @@ namespace LYBT.Desktop.Patients.ViewModels
                     IsNew ? "创建" : "更新", result.Id, result.Name);
 
                 _cacheManager.InvalidatePatientCaches();
-                OnPropertyChanged(nameof(DetailTitle));
                 return true;
             }
             catch (Exception ex)
@@ -270,30 +247,10 @@ namespace LYBT.Desktop.Patients.ViewModels
         private async Task RestoreAsync()
         {
             if (SelectedItem == null) return;
-
-            try
+            if (await _statusHandler.RestoreAsync(SelectedItem))
             {
-                var patient = SelectedItem;
-                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认恢复患者 [{patient.Name}] 吗？", "恢复确认");
-                if (!confirmed) return;
-
-                var result = await _patientRepository.RestoreAsync(patient.Id);
-                if (result != null)
-                {
-                    Logger.LogInformation("患者已恢复: {PatientName}", patient.Name);
-                    _cacheManager.InvalidatePatientCaches();
-                    await MasterDetailServices.Dialog.ShowSuccessAsync($"患者 '{patient.Name}' 已恢复", "操作成功");
-                    await RefreshAsync();
-                }
-                else
-                {
-                    await MasterDetailServices.Dialog.ShowErrorAsync("恢复患者失败", "操作失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "恢复患者失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("恢复患者失败", "操作失败");
+                _cacheManager.InvalidatePatientCaches();
+                await RefreshAsync();
             }
         }
 
@@ -303,53 +260,10 @@ namespace LYBT.Desktop.Patients.ViewModels
         [RelayCommand]
         private async Task ImportAsync()
         {
-            if (_commonDialogService == null) return;
-
-            try
+            if (await _importExportHandler.ImportAsync())
             {
-                var filePath = await _commonDialogService.ShowOpenFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "选择患者导入文件");
-                if (string.IsNullOrEmpty(filePath)) return;
-
-                using var fileStream = File.OpenRead(filePath);
-                var patients = await ExcelHelper.ParseAsync<PatientInputDto>(fileStream, hasHeader: true);
-                if (patients == null || patients.Count == 0)
-                {
-                    await _commonDialogService.ShowErrorAsync("文件中没有有效的患者数据", "导入患者");
-                    return;
-                }
-
-                var request = new PatientBatchImportInputDto
-                {
-                    Patients = patients,
-                    Strategy = DuplicateStrategy.Skip
-                };
-                var result = await _patientRepository.BatchImportAsync(request);
-                if (result == null)
-                {
-                    await _commonDialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入患者");
-                    return;
-                }
-
-                var message = $"导入完成！\n成功：{result.SuccessCount}条\n失败：{result.FailureCount}条\n跳过：{result.SkippedCount}条\n成功率：{result.SuccessRate:F1}%";
-                if (result.FailureCount > 0)
-                {
-                    message += $"\n\n前{Math.Min(3, result.Failures.Count)}条失败记录：";
-                    foreach (var f in result.Failures.Take(3))
-                        message += $"\n第{f.OriginalRowNumber}行：{f.FailureReason}";
-                }
-                await _commonDialogService.ShowInfoAsync(message, "导入结果");
-                if (result.SuccessCount > 0)
-                {
-                    _cacheManager.InvalidatePatientCaches();
-                    await RefreshAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导入患者失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("导入患者失败", "操作失败");
+                _cacheManager.InvalidatePatientCaches();
+                await RefreshAsync();
             }
         }
 
@@ -357,60 +271,14 @@ namespace LYBT.Desktop.Patients.ViewModels
         [RelayCommand]
         private async Task ExportAsync()
         {
-            if (_commonDialogService == null) return;
-
-            try
-            {
-                var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "导出患者数据",
-                    defaultFileName: $"患者数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
-                if (string.IsNullOrEmpty(filePath)) return;
-
-                var allPatients = await _patientRepository.SearchAsync(SearchText ?? string.Empty);
-                if (allPatients == null || allPatients.Count == 0)
-                {
-                    await _commonDialogService.ShowErrorAsync("没有可导出的数据", "导出患者");
-                    return;
-                }
-
-                await ExcelHelper.ExportAsync(allPatients, filePath, "患者数据");
-                await _commonDialogService.ShowInfoAsync($"成功导出{allPatients.Count}条患者数据到：\n{filePath}", "导出成功");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导出患者失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("导出患者失败", "操作失败");
-            }
+            await _importExportHandler.ExportAsync(SearchText);
         }
 
         /// <summary>下载模板</summary>
         [RelayCommand]
         private async Task DownloadTemplateAsync()
         {
-            if (_commonDialogService == null) return;
-
-            try
-            {
-                var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "保存患者导入模板",
-                    defaultFileName: $"患者导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
-                if (string.IsNullOrEmpty(filePath)) return;
-
-                var sampleData = new List<PatientInputDto>
-                {
-                    new() { Name = "张三", Gender = Gender.Male, BirthDate = new DateTime(1980, 1, 1), PhoneNumber = "13800138000", Address = "北京市朝阳区" },
-                    new() { Name = "李四", Gender = Gender.Female, BirthDate = new DateTime(1990, 5, 15), PhoneNumber = "13800138001", Address = "上海市浦东新区" }
-                };
-                await ExcelHelper.GenerateTemplateAsync(filePath, "患者导入模板", sampleData);
-                await _commonDialogService.ShowInfoAsync($"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入患者」功能导入。", "下载成功");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "下载模板失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("下载模板失败", "操作失败");
-            }
+            await _importExportHandler.DownloadTemplateAsync();
         }
 
         /// <summary>查看医案</summary>

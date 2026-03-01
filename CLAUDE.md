@@ -91,6 +91,7 @@ dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 ## 核心约束
 
+- **Phase 完成必须等待指令** - 每完成一个 Phase 后，汇报结果并等待用户明确指令，禁止自动进入下一 Phase
 - **Planning-with-files 必用** - 复杂任务(3+步骤)必须创建 task_plan.md / findings.md / progress.md
 - **新任务必重置** - 开始新任务时覆盖三文件，禁止跨任务累积
 - **2-Action Rule** - 每2次搜索/浏览操作后，立即更新 findings.md
@@ -128,5 +129,5 @@ docs/
 
 ---
 
-最后更新: 2026-02-12
-文档版本: v6.2-lifecycle
+最后更新: 2026-03-01
+文档版本: v6.3-phase-gate

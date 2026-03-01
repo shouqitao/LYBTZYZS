@@ -40,12 +40,12 @@ namespace LYBT.Desktop.Herbs
             // OpenSpec: migrate-views-to-role-modules - HerbDetailView/HerbDetailViewModel已删除（无调用）
             // Issue #2168: CRUD统一架构 - HerbCreateViewModel已删除
 
-            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
-            // 注册Herbs模块的MasterDetail服务
-            containerRegistry.AddMasterDetailServices<HerbListDto, HerbDetailModel>();
+            // Handler 组件
+            containerRegistry.Register<ViewModels.Handlers.IHerbStatusHandler, ViewModels.Handlers.HerbStatusHandler>();
+            containerRegistry.Register<ViewModels.Handlers.IHerbImportExportHandler, ViewModels.Handlers.HerbImportExportHandler>();
 
-            // OpenSpec: refactor-admin-workspace - Control模式重构
-            // HerbMasterDetailControl供角色台View复用，ViewModel在Control内部解析
+            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
+            containerRegistry.AddMasterDetailServices<HerbListDto, HerbDetailModel>();
             containerRegistry.Register<ViewModels.HerbMasterDetailViewModel>();
         }
     }

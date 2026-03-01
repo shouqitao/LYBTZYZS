@@ -34,15 +34,11 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 
     #region 扩展属性
 
-    /// <summary>详情标题</summary>
-    public string DetailTitle
-    {
-        get
-        {
-            if (CurrentDetail == null) return "医案详情";
-            return IsEditMode ? $"编辑医案 - {CurrentDetail.PatientName}" : $"医案详情 - {CurrentDetail.PatientName}";
-        }
-    }
+    /// <inheritdoc/>
+    protected override string EntityDisplayName => "医案";
+
+    /// <inheritdoc/>
+    protected override string? GetDetailDisplayName() => CurrentDetail?.PatientName;
 
     /// <summary>选中项的患者姓名</summary>
     public string SelectedPatientName => SelectedItem?.PatientName ?? string.Empty;
@@ -101,15 +97,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
         PageTitle = "医案管理";
-
-        // 监听属性变化
-        PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName is nameof(CurrentDetail) or nameof(IsEditMode))
-            {
-                OnPropertyChanged(nameof(DetailTitle));
-            }
-        };
+        // DetailTitle 已由基类自动通知
     }
 
     #region 基类抽象方法实现
@@ -166,7 +154,6 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
             InitializeEditModels(detail);
 
             MasterDetailServices.DetailEditor.LoadDetail(detail);
-            OnPropertyChanged(nameof(DetailTitle));
         }
         catch (Exception ex)
         {
@@ -231,7 +218,6 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
                 detail.Id, prescriptionItems.Count);
 
             _cacheManager.InvalidateMedicalCaseCaches();
-            OnPropertyChanged(nameof(DetailTitle));
             return true;
         }
         catch (Exception ex)

@@ -1,38 +1,31 @@
-# 剩余任务全量清零
+# Phase 5: Desktop UI 拆分 + 测试补全
 
 ## Goal
-完成 remaining-tasks.md 中 15 项 OPEN 任务，归档后实现阶段性清零。
+处理 Desktop 层代码质量问题: 拆分过大 XAML/C# 文件，清理占位符测试，修复架构测试断言。
 
 ## Phases
 
-### Phase A: CRITICAL -- 业务逻辑修复 (4 项) - complete (已在先前会话实现)
-- A1. CODE-01: CompleteAsync TcmDiagnosis 验证
-- A2. CODE-02: 编辑已打印医案重置 IsPrinted
-- A3. CODE-03: LoginAsync 撤销旧 AutoLoginToken
-- A4. CODE-04: sysadmin SuperAdminOnly 策略
+### Phase 5A: UnifiedComponents.xaml 拆分 [complete]
+- 拆分为 5 个子文件: DesignTokens / ButtonStyles / InputStyles / DataGridStyles / PanelStyles
+- UnifiedComponents.xaml 保留为纯聚合器 (~28 行)
 
-### Phase B: HIGH -- 数据完整性 (4 项) - complete
-- B1. CODE-05/06: MedicalCase FK Fluent API
-- B2. CODE-11: Herb BatchDelete 引用检查
-- B3. T5-P3-06: Desktop 写后缓存失效
-- B4. T5-P2-42: 同步前网络检查
+### Phase 5B: ServiceCollectionExtensions 拆分 [complete]
+- 抽取 LoggingRegistrationExtensions.cs (~185 行)
+- 抽取 HttpServiceRegistrationExtensions.cs (~85 行)
+- 删除死代码: ErrorHandlingServiceExtensions.cs, CommonStyles.xaml
+- ServiceCollectionExtensions.cs 缩减至 ~210 行
 
-### Phase C: MEDIUM -- 代码修复 (3 项) - complete (已在先前会话实现)
-- C1. T5-P3-03: ProblemDetails Severity
-- C2. T5-P3-01: 配置验证警告
-- C3. T5-P3-19: Email 编辑
+### Phase 5C: 测试清理 [complete]
+- 删除 3 个占位符测试文件
+- 恢复 Batch2_ConfigurationDirectRead 实际检查逻辑
+- 重写 Should_Use_Unified_Navigation_Service 为有效断言
 
-### Phase D: MEDIUM -- UI 增强 (1 项) - complete (已在 Session 4 实现)
-- D1. T5-P3-21: 状态栏同步标识
-
-### Phase E: 文档 + 清理 (3 项) - complete
-- E1. DOC5-04: DataSource 双模式文档
-- E2. DOC5-05: Sync 跨模块文档
-- E3. T5-P3-20b: MedicalCase Checksum
-
-### Phase F: 归档 - complete
+### 验证 [complete]
+- dotnet build: 0 errors, 0 warnings
+- Architecture tests: 74 passed
+- Desktop unit tests: 612 passed
+- Server unit tests: 370 passed
 
 ## Decisions
-- SuperAdminOnly 策略仅用于 reset-password 和 restore
-- Herb BatchDelete 跳过有引用的项，不中断批量操作
-- 缓存失效: 写操作成功后调用 Invalidate
+- XAML 拆分: 利用 WPF MergedDictionaries 加载顺序保证 StaticResource 跨文件解析
+- 测试减少 3 个 (占位符删除)，Architecture 测试从存根恢复为实际断言

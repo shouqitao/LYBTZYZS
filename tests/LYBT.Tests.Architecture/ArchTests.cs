@@ -563,22 +563,12 @@ public class ArchTests
     }
 
     /// <summary>
-    /// Batch 2-③ 配置直读测试 - P3配置直读统一已完成，暂时跳过
+    /// Batch 2-③ 配置直读测试 - 验证 WebAPI 层不直接读取敏感配置
+    /// P3配置直读统一已完成，验证无回归
     /// </summary>
     [Fact]
     public void Batch2_ConfigurationDirectRead_Should_Use_ConfigurationHelper()
     {
-        // P3配置直读统一已完成：
-        // 1. AuthenticationExtensions已标记废弃，使用UnifiedServiceRegistration
-        // 2. ApiVersioningConfiguration使用固定值避免配置分散
-        // 3. PerformanceOptimization改用WebApiOptions统一配置
-        // 4. 创建WebApiConfigurationOptions统一管理WebAPI层配置
-
-        // 暂时跳过详细检查，主要工作已完成
-        Assert.True(true, "P3配置直读统一已完成核心重构");
-
-        // 原有检查逻辑保留备用（已注释）
-        /*
         var webApiAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.WebAPI");
         if (webApiAssembly == null) return;
 
@@ -587,7 +577,7 @@ public class ArchTests
         var types = webApiAssembly.GetTypes();
         foreach (var type in types)
         {
-            if (type.Name.Equals("ConfigurationHelper")) continue; // 允许统一配置助手
+            if (type.Name.Equals("ConfigurationHelper")) continue;
 
             var methods = type.GetMethods()
                 .Where(m => m.Name.Contains("GetConnectionString") ||
@@ -602,7 +592,6 @@ public class ArchTests
         }
 
         Assert.Empty(typesWithConfigMethods);
-        */
     }
 
     /// <summary>

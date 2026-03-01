@@ -164,8 +164,6 @@ public static class DatabaseServiceCollectionExtensions
         services.AddScoped<IUserCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
         services.AddScoped<ICrossModuleAuthService>(sp => sp.GetRequiredService<CrossModuleService>());
 
-        // 错误消息映射服务
-        services.AddSingleton<IErrorMessageMapper, ConfigurableErrorMessageMapper>();
 
         // Issue #1726 Phase 3: 数据库健康检查与启动诊断
         services.AddHealthChecks()

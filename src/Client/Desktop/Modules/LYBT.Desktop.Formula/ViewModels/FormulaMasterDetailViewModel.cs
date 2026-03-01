@@ -5,15 +5,14 @@ using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Formula.Mappers;
+using LYBT.Desktop.Formula.ViewModels.Handlers;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
-using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -26,8 +25,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     public partial class FormulaMasterDetailViewModel : MasterDetailViewModelBase<FormulaListDto, FormulaDetailModel>
     {
         private readonly IFormulaRepository _formulaRepository;
-        private readonly IFormulaService _formulaService;
-        private readonly IDialogService _prismDialogService;
+        private readonly IFormulaStatusHandler _statusHandler;
         // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
         private readonly IHerbSearchProvider _herbSearchProvider;
         private readonly IDesktopCacheManager _cacheManager;
@@ -41,8 +39,11 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 扩展属性
 
-        /// <summary>是否为管理员</summary>
-        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
+        /// <inheritdoc/>
+        protected override string EntityDisplayName => "验方";
+
+        /// <inheritdoc/>
+        protected override string? GetDetailDisplayName() => CurrentDetail?.Name;
 
         /// <summary>编辑模式下的药材列表</summary>
         public ObservableCollection<FormulaHerbItemViewModel> EditHerbItems
@@ -54,17 +55,6 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>药材数量</summary>
         public int HerbCount => EditHerbItems?.Count(h => h.HerbId != Guid.Empty) ?? 0;
 
-        /// <summary>详情标题</summary>
-        public string DetailTitle
-        {
-            get
-            {
-                if (CurrentDetail == null) return "验方详情";
-                if (IsNew) return "新建验方";
-                return IsEditMode ? $"编辑验方 - {CurrentDetail.Name}" : $"验方详情 - {CurrentDetail.Name}";
-            }
-        }
-
         #endregion
 
         /// <summary>
@@ -75,32 +65,24 @@ namespace LYBT.Desktop.Formula.ViewModels
             IViewModelServices viewModelServices,
             IMasterDetailServices<FormulaListDto, FormulaDetailModel> masterDetailServices,
             IFormulaRepository formulaRepository,
-            IFormulaService formulaService,
-            IDialogService prismDialogService,
-            // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
+            IFormulaStatusHandler statusHandler,
             IHerbSearchProvider herbSearchProvider,
             IDesktopCacheManager cacheManager)
             : base(viewModelServices, masterDetailServices)
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
+            _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
             PageTitle = "验方管理";
 
-            // 监听属性变化
-            // OpenSpec: unify-vm-view-binding-patterns - 移除ViewFormulaDto相关逻辑
+            // 监听属性变化 - DetailTitle 已由基类自动通知
             PropertyChanged += (s, e) =>
             {
-                switch (e.PropertyName)
+                if (e.PropertyName == nameof(IsEditMode) && IsEditMode)
                 {
-                    case nameof(IsEditMode):
-                        if (IsEditMode)
-                            PopulateEditHerbItems();
-                        OnPropertyChanged(nameof(DetailTitle));
-                        break;
+                    PopulateEditHerbItems();
                 }
             };
         }
@@ -148,7 +130,6 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 var detail = _mapper.ToItem(dto);
                 MasterDetailServices.DetailEditor.LoadDetail(detail);
-                OnPropertyChanged(nameof(DetailTitle));
             }
             catch (Exception ex)
             {
@@ -160,9 +141,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>创建新详情实例</summary>
         protected override FormulaDetailModel CreateNewDetail()
         {
-            var detail = FormulaDetailModel.CreateNew();
-            OnPropertyChanged(nameof(DetailTitle));
-            return detail;
+            return FormulaDetailModel.CreateNew();
         }
 
         /// <summary>保存详情</summary>
@@ -209,7 +188,6 @@ namespace LYBT.Desktop.Formula.ViewModels
                 }
 
                 _cacheManager.InvalidateFormulaCaches();
-                OnPropertyChanged(nameof(DetailTitle));
                 return true;
             }
             catch (Exception ex)
@@ -282,31 +260,10 @@ namespace LYBT.Desktop.Formula.ViewModels
         private async Task ToggleStatusAsync()
         {
             if (SelectedItem == null) return;
-
-            try
+            if (await _statusHandler.ToggleStatusAsync(SelectedItem))
             {
-                var formula = SelectedItem;
-                var newStatus = formula.Status == CommonStatus.Enabled ? "禁用" : "启用";
-                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认{newStatus}验方 [{formula.Name}] 吗？", "状态切换确认");
-                if (!confirmed) return;
-
-                var result = await _formulaRepository.ToggleStatusAsync(formula.Id);
-                if (result != null)
-                {
-                    Logger.LogInformation("验方状态已切换: {FormulaName} -> {NewStatus}", formula.Name, result.Status);
-                    await MasterDetailServices.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}", "操作成功");
-                    _cacheManager.InvalidateFormulaCaches();
-                    await RefreshAsync();
-                }
-                else
-                {
-                    await MasterDetailServices.Dialog.ShowErrorAsync("切换验方状态失败", "操作失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "切换验方状态失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("切换验方状态失败", "操作失败");
+                _cacheManager.InvalidateFormulaCaches();
+                await RefreshAsync();
             }
         }
 
@@ -350,30 +307,10 @@ namespace LYBT.Desktop.Formula.ViewModels
         private async Task RestoreAsync()
         {
             if (SelectedItem == null) return;
-
-            try
+            if (await _statusHandler.RestoreAsync(SelectedItem))
             {
-                var formula = SelectedItem;
-                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认恢复验方 [{formula.Name}] 吗？", "恢复确认");
-                if (!confirmed) return;
-
-                var result = await _formulaRepository.RestoreAsync(formula.Id);
-                if (result != null)
-                {
-                    Logger.LogInformation("验方已恢复: {FormulaName}", formula.Name);
-                    await MasterDetailServices.Dialog.ShowSuccessAsync($"验方 '{formula.Name}' 已恢复", "操作成功");
-                    _cacheManager.InvalidateFormulaCaches();
-                    await RefreshAsync();
-                }
-                else
-                {
-                    await MasterDetailServices.Dialog.ShowErrorAsync("恢复验方失败", "操作失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "恢复验方失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("恢复验方失败", "操作失败");
+                _cacheManager.InvalidateFormulaCaches();
+                await RefreshAsync();
             }
         }
 

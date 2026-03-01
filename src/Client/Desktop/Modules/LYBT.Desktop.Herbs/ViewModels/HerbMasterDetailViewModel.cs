@@ -1,16 +1,15 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Herbs.Models;
+using LYBT.Desktop.Herbs.ViewModels.Handlers;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
-using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
@@ -22,50 +21,42 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// </summary>
     public partial class HerbMasterDetailViewModel : MasterDetailViewModelBase<HerbListDto, HerbDetailModel>
     {
-        // OpenSpec: simplify-desktop-data-layer - 移除IHerbService，统一使用IHerbRepository
         private readonly IHerbRepository _herbRepository;
-        private readonly IDialogService _prismDialogService;
+        private readonly IHerbStatusHandler _statusHandler;
+        private readonly IHerbImportExportHandler _importExportHandler;
         private readonly IDesktopCacheManager _cacheManager;
 
         #region 扩展属性
 
+        /// <inheritdoc/>
+        protected override string EntityDisplayName => "药材";
+
+        /// <inheritdoc/>
+        protected override string? GetDetailDisplayName() => CurrentDetail?.Name;
+
         /// <summary>是否允许编辑名称（新建时允许，编辑时不允许）</summary>
         public bool IsNameEditable => IsNew;
 
-        /// <summary>是否为管理员</summary>
-        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
-
         /// <summary>状态选项</summary>
         public ObservableCollection<CommonStatus> StatusOptions { get; }
-
-        /// <summary>详情标题</summary>
-        public string DetailTitle
-        {
-            get
-            {
-                if (CurrentDetail == null) return "药材详情";
-                if (IsNew) return "新建药材";
-                return IsEditMode ? $"编辑药材 - {CurrentDetail.Name}" : $"药材详情 - {CurrentDetail.Name}";
-            }
-        }
 
         #endregion
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
         public HerbMasterDetailViewModel(
             IViewModelServices viewModelServices,
             IMasterDetailServices<HerbListDto, HerbDetailModel> masterDetailServices,
             IHerbRepository herbRepository,
-            IDialogService prismDialogService,
+            IHerbStatusHandler statusHandler,
+            IHerbImportExportHandler importExportHandler,
             IDesktopCacheManager cacheManager)
             : base(viewModelServices, masterDetailServices)
         {
-            // OpenSpec: simplify-desktop-data-layer - 移除IHerbService依赖
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
-            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
+            _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
+            _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
             PageTitle = "药材管理";
@@ -130,7 +121,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
             };
 
             MasterDetailServices.DetailEditor.LoadDetail(detail);
-            OnPropertyChanged(nameof(DetailTitle));
             OnPropertyChanged(nameof(IsNameEditable));
         }
 
@@ -139,7 +129,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             var detail = HerbDetailModel.CreateNew();
             OnPropertyChanged(nameof(IsNameEditable));
-            OnPropertyChanged(nameof(DetailTitle));
             return detail;
         }
 
@@ -211,7 +200,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 detail.Remark = result.data.Remark;
                 detail.Status = result.data.Status;
 
-                OnPropertyChanged(nameof(DetailTitle));
             }
 
             _cacheManager.InvalidateHerbCaches();
@@ -242,31 +230,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private async Task ToggleStatusAsync()
         {
             if (SelectedItem == null) return;
-
-            try
+            if (await _statusHandler.ToggleStatusAsync(SelectedItem))
             {
-                var herb = SelectedItem;
-                var newStatus = herb.Status == CommonStatus.Enabled ? "禁用" : "启用";
-                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认{newStatus}药材 [{herb.Name}] 吗？", "状态切换确认");
-                if (!confirmed) return;
-
-                var result = await _herbRepository.ToggleStatusAsync(herb.Id);
-                if (result != null)
-                {
-                    Logger.LogInformation("药材状态已切换: {HerbName} -> {NewStatus}", herb.Name, result.Status);
-                    await MasterDetailServices.Dialog.ShowSuccessAsync($"药材 '{herb.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}", "操作成功");
-                    _cacheManager.InvalidateHerbCaches();
-                    await RefreshAsync();
-                }
-                else
-                {
-                    await MasterDetailServices.Dialog.ShowErrorAsync("切换药材状态失败", "操作失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "切换药材状态失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("切换药材状态失败", "操作失败");
+                _cacheManager.InvalidateHerbCaches();
+                await RefreshAsync();
             }
         }
 
@@ -285,7 +252,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
             copy.Status = CommonStatus.Enabled;
 
             MasterDetailServices.DetailEditor.CreateNew(() => copy);
-            OnPropertyChanged(nameof(DetailTitle));
 
             Logger.LogInformation("复制药材: {SourceName} -> {CopyName}", SelectedItem?.Name, copy.Name);
         }
@@ -297,125 +263,32 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private async Task RestoreAsync()
         {
             if (SelectedItem == null) return;
-
-            try
+            if (await _statusHandler.RestoreAsync(SelectedItem))
             {
-                var herb = SelectedItem;
-                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认恢复药材 [{herb.Name}] 吗？", "恢复确认");
-                if (!confirmed) return;
-
-                var result = await _herbRepository.RestoreAsync(herb.Id);
-                if (result != null)
-                {
-                    Logger.LogInformation("药材已恢复: {HerbName}", herb.Name);
-                    await MasterDetailServices.Dialog.ShowSuccessAsync($"药材 '{herb.Name}' 已恢复", "操作成功");
-                    _cacheManager.InvalidateHerbCaches();
-                    await RefreshAsync();
-                }
-                else
-                {
-                    await MasterDetailServices.Dialog.ShowErrorAsync("恢复药材失败", "操作失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "恢复药材失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync("恢复药材失败", "操作失败");
+                _cacheManager.InvalidateHerbCaches();
+                await RefreshAsync();
             }
         }
 
         private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
 
         /// <summary>导入药材</summary>
-        [RelayCommand(CanExecute = nameof(CanImport))]
+        [RelayCommand]
         private async Task ImportHerbsAsync()
         {
-            try
+            if (await _importExportHandler.ImportAsync())
             {
-                // 选择文件
-                var filePath = await CommonDialogService.ShowOpenFileDialogAsync(
-                    filter: "Excel文件|*.xlsx;*.xls",
-                    title: "选择药材导入文件");
-
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    return; // 用户取消
-                }
-
-                await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
-                {
-                    await using var fileStream = File.OpenRead(filePath);
-                    var fileName = Path.GetFileName(filePath);
-                    var result = await _herbRepository.BatchImportAsync(fileStream, fileName);
-
-                    if (result != null && result.SuccessCount > 0)
-                    {
-                        await MasterDetailServices.Dialog.ShowSuccessAsync(
-                            $"成功导入 {result.SuccessCount} 条药材记录", "导入成功");
-                        _cacheManager.InvalidateHerbCaches();
-                        await RefreshAsync();
-                    }
-                    else
-                    {
-                        await MasterDetailServices.Dialog.ShowWarningAsync(
-                            "没有导入任何记录，请检查文件格式", "导入提示");
-                    }
-                }, "导入药材");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导入药材失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync(
-                    $"导入药材失败: {ex.Message}", "操作失败");
+                _cacheManager.InvalidateHerbCaches();
+                await RefreshAsync();
             }
         }
-
-        private bool CanImport() => !IsBusy && !IsLoading;
 
         /// <summary>导出药材</summary>
-        [RelayCommand(CanExecute = nameof(CanExport))]
+        [RelayCommand]
         private async Task ExportHerbsAsync()
         {
-            try
-            {
-                // 选择保存位置
-                var defaultFileName = $"药材导出_{DateTime.Now:yyyyMMdd}.xlsx";
-                var filePath = await CommonDialogService.ShowSaveFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "导出药材数据",
-                    defaultFileName: defaultFileName);
-
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    return; // 用户取消
-                }
-
-                await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
-                {
-                    Logger.LogInformation("导出药材数据，关键词：{Keyword}", SearchText);
-                    var bytes = await _herbRepository.ExportHerbsAsync(SearchText);
-
-                    if (bytes == null || bytes.Length == 0)
-                    {
-                        await MasterDetailServices.Dialog.ShowErrorAsync(
-                            "导出失败，没有数据可导出", "导出药材");
-                        return;
-                    }
-
-                    await File.WriteAllBytesAsync(filePath, bytes);
-                    await MasterDetailServices.Dialog.ShowSuccessAsync(
-                        $"药材数据已导出到：{filePath}", "导出成功");
-                }, "导出药材");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导出药材失败");
-                await MasterDetailServices.Dialog.ShowErrorAsync(
-                    $"导出药材失败: {ex.Message}", "操作失败");
-            }
+            await _importExportHandler.ExportAsync(SearchText);
         }
-
-        private bool CanExport() => !IsBusy && !IsLoading && Items.Count > 0;
 
         /// <summary>按分类搜索</summary>
         [RelayCommand]

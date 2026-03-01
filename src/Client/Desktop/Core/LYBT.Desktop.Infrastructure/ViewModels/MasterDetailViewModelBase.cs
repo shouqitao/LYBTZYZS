@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
@@ -206,6 +207,49 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         #endregion
 
+        #region 实体元数据与详情标题
+
+        /// <summary>
+        /// 实体显示名称 - 子类必须提供 (如 "药材", "患者", "用户")
+        /// </summary>
+        protected abstract string EntityDisplayName { get; }
+
+        /// <summary>
+        /// "新建"动词 - 默认"新建"，子类可重写为"新增"等
+        /// </summary>
+        protected virtual string NewEntityVerb => "新建";
+
+        /// <summary>
+        /// 获取当前详情的显示名称 - 用于标题后缀 (如患者姓名)
+        /// 返回 null 时标题不带后缀
+        /// </summary>
+        protected virtual string? GetDetailDisplayName() => null;
+
+        /// <summary>
+        /// 详情面板标题 - 根据状态自动计算
+        /// 规则: null→"{Entity}详情", IsNew→"{Verb}{Entity}", Edit→"编辑{Entity} - {Name}", View→"{Entity}详情 - {Name}"
+        /// </summary>
+        public virtual string DetailTitle
+        {
+            get
+            {
+                if (CurrentDetail == null) return $"{EntityDisplayName}详情";
+                if (IsNew) return $"{NewEntityVerb}{EntityDisplayName}";
+                var displayName = GetDetailDisplayName();
+                var suffix = displayName != null ? $" - {displayName}" : string.Empty;
+                return IsEditMode
+                    ? $"编辑{EntityDisplayName}{suffix}"
+                    : $"{EntityDisplayName}详情{suffix}";
+            }
+        }
+
+        /// <summary>
+        /// 是否为管理员
+        /// </summary>
+        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
+
+        #endregion
+
         public virtual bool KeepAlive => false;
 
         /// <summary>
@@ -298,6 +342,14 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
                     NotifyCommandsCanExecuteChanged();
                     // OpenSpec: refactor-masterdetail-command-refresh - 编辑模式变化时刷新ShowDetailPanel
                     OnPropertyChanged(nameof(ShowDetailPanel));
+                }
+
+                // DetailTitle 依赖 CurrentDetail/IsEditMode/IsNew，自动通知
+                if (e.PropertyName is nameof(IDetailEditorService<TDetail>.CurrentDetail)
+                    or nameof(IDetailEditorService<TDetail>.IsEditMode)
+                    or nameof(IDetailEditorService<TDetail>.IsNew))
+                {
+                    OnPropertyChanged(nameof(DetailTitle));
                 }
             };
 
