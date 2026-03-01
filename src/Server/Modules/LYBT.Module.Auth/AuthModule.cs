@@ -21,6 +21,7 @@ namespace LYBT.Module.Auth
         {
             // 仅注册必要的核心服务
             services.AddSingleton<IJwtService, JwtService>(); // 优化：JWT服务无状态，使用Singleton
+            services.AddScoped<ITokenManagementService, TokenManagementService>();
             services.AddScoped<IAuthService, AuthService>();
 
             // Issue #1870: Token撤销服务

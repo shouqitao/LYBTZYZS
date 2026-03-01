@@ -31,6 +31,7 @@ namespace LYBT.Module.Users.Tests.Services
         private readonly IHttpContextAccessor _httpContextAccessorMock;
         private readonly IValidator<UserInputDto> _validatorMock;
         private readonly ICrossModuleAuthService _authServiceMock;
+        private readonly IUserBatchOperationService _batchServiceMock;
 
         public UserServiceTests()
         {
@@ -40,6 +41,7 @@ namespace LYBT.Module.Users.Tests.Services
             _httpContextAccessorMock = CreateMock<IHttpContextAccessor>();
             _validatorMock = CreateMock<IValidator<UserInputDto>>();
             _authServiceMock = CreateMock<ICrossModuleAuthService>();
+            _batchServiceMock = CreateMock<IUserBatchOperationService>();
 
             // 设置默认密码配置（通过IConfiguration）
             _configurationMock["Lybt:DefaultPasswords:NewUserPassword"]
@@ -62,7 +64,8 @@ namespace LYBT.Module.Users.Tests.Services
                 _configurationMock,
                 _httpContextAccessorMock,
                 _validatorMock,
-                _authServiceMock);
+                _authServiceMock,
+                _batchServiceMock);
 
             // Issue #1909: 默认设置为SuperAdmin角色，允许所有操作
             SetupUserRole(UserRole.SuperAdmin);

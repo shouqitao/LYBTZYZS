@@ -32,6 +32,7 @@ namespace LYBT.Module.Users.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IValidator<UserInputDto> _validator;
         private readonly ICrossModuleAuthService _authService;
+        private readonly IUserBatchOperationService _batchService;
         private readonly UserMapper _mapper = new();
 
         public UserService(
@@ -40,7 +41,8 @@ namespace LYBT.Module.Users.Services
             IConfiguration configuration,
             IHttpContextAccessor httpContextAccessor,
             IValidator<UserInputDto> validator,
-            ICrossModuleAuthService authService)
+            ICrossModuleAuthService authService,
+            IUserBatchOperationService batchService)
             : base(logger)
         {
             _repository = repository;
@@ -48,6 +50,7 @@ namespace LYBT.Module.Users.Services
             _httpContextAccessor = httpContextAccessor;
             _validator = validator;
             _authService = authService;
+            _batchService = batchService;
         }
 
         #region 权限检查辅助方法（Issue #1909）
@@ -635,178 +638,14 @@ namespace LYBT.Module.Users.Services
         }
 
 
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
+        // ========== 批量操作委托给 IUserBatchOperationService ==========
 
         /// <inheritdoc />
-        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            // ERR-012: 修复ex.Message暴露
-
-            var result = new BatchOperationResultDto
-            {
-                TotalCount = ids.Count
-            };
-
-            if (ids.Count == 0)
-            {
-                return Result<BatchOperationResultDto>.Failure(GenericErrorCode.ValidationFailed, "请至少选择一个用户");
-            }
-
-            var currentRole = GetCurrentUserRole();
-
-            foreach (var id in ids)
-            {
-                // 不能删除自己
-                if (currentUserId.HasValue && id == currentUserId.Value)
-                {
-                    result.FailedItems.Add(new BatchOperationFailureItem
-                    {
-                        Id = id,
-                        Reason = "不能删除自己"
-                    });
-                    result.FailureCount++;
-                    continue;
-                }
-
-                var user = await _repository.GetByIdAsync(id);
-                if (user == null)
-                {
-                    result.FailedItems.Add(new BatchOperationFailureItem
-                    {
-                        Id = id,
-                        Reason = "用户不存在"
-                    });
-                    result.FailureCount++;
-                    continue;
-                }
-
-                // 权限检查
-                var permissionCheck = await CanDeleteUserAsync(id, user.Role);
-                if (!permissionCheck.IsSuccess)
-                {
-                    result.FailedItems.Add(new BatchOperationFailureItem
-                    {
-                        Id = id,
-                        Name = user.UserName,
-                        Reason = permissionCheck.Message ?? "无权限删除"
-                    });
-                    result.FailureCount++;
-                    continue;
-                }
-
-                // CODE-34: 标记软删除，不立即 SaveChanges，最后统一提交
-                user.IsDeleted = true;
-                user.UpdatedAt = DateTime.Now;
-                result.SuccessCount++;
-                _logger.LogInformation("[SVC] User.BatchDelete -> ItemMarked - UserId={UserId} UserName={UserName}", id, user.UserName);
-            }
-
-            // CODE-34: 统一 SaveChanges 确保单事务
-            if (result.SuccessCount > 0)
-            {
-                await _repository.SaveChangesAsync();
-            }
-
-            _logger.LogInformation("[SVC] User.BatchDelete completed - TotalCount={Total} SuccessCount={Success} FailureCount={Failure}",
-                result.TotalCount, result.SuccessCount, result.FailureCount);
-
-            return Result<BatchOperationResultDto>.Success(result);
-        }
-
+        public Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null)
+            => _batchService.BatchDeleteAsync(ids, currentUserId);
 
         /// <inheritdoc />
-        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            // ERR-012: 修复ex.Message暴露
-
-            var result = new BatchOperationResultDto
-            {
-                TotalCount = ids.Count
-            };
-            var statusText = status == CommonStatus.Enabled ? "启用" : "禁用";
-            var currentRole = GetCurrentUserRole();
-
-            foreach (var id in ids)
-            {
-                // 不能修改自己的状态
-                if (currentUserId.HasValue && id == currentUserId.Value)
-                {
-                    result.FailureCount++;
-                    result.FailedItems.Add(new BatchOperationFailureItem
-                    {
-                        Id = id,
-                        Reason = $"不能{statusText}当前登录用户"
-                    });
-                    continue;
-                }
-
-                var user = await _repository.GetByIdAsync(id);
-                if (user == null || user.IsDeleted)
-                {
-                    result.FailureCount++;
-                    result.FailedItems.Add(new BatchOperationFailureItem
-                    {
-                        Id = id,
-                        Reason = "用户不存在"
-                    });
-                    continue;
-                }
-
-                // S2-08: 权限检查 - 逐个校验 CanManageUser
-                if (!CanManageUser(currentRole, user.Role))
-                {
-                    result.FailureCount++;
-                    result.FailedItems.Add(new BatchOperationFailureItem
-                    {
-                        Id = id,
-                        Name = user.UserName,
-                        Reason = $"无权限{statusText}该用户"
-                    });
-                    continue;
-                }
-
-                // S2-08: 最后管理员保护 (禁用场景)
-                if (status == CommonStatus.Disabled
-                    && user.Status == CommonStatus.Enabled
-                    && user.Role >= UserRole.Admin)
-                {
-                    var activeAdmins = await _repository.FindAsync(
-                        u => u.Role >= UserRole.Admin && u.Status == CommonStatus.Enabled);
-                    if (activeAdmins.Count() <= 1)
-                    {
-                        result.FailureCount++;
-                        result.FailedItems.Add(new BatchOperationFailureItem
-                        {
-                            Id = id,
-                            Name = user.UserName,
-                            Reason = "不能禁用最后一个管理员"
-                        });
-                        continue;
-                    }
-                }
-
-                user.Status = status;
-                user.UpdatedAt = DateTime.Now;
-                await _repository.UpdateAsync(user);
-                result.SuccessCount++;
-
-                // X3: 禁用用户时撤销所有 Token
-                if (status == CommonStatus.Disabled)
-                {
-                    await _authService.RevokeUserTokensAsync(id, "批量禁用，强制登出");
-                }
-
-                _logger.LogInformation("[SVC] User.BatchUpdateStatus → ItemSuccess - UserId={UserId} Status={Status}", id, status);
-            }
-
-            result.Message = $"批量{statusText}完成: 成功 {result.SuccessCount} 个, 失败 {result.FailureCount} 个";
-
-            _logger.LogInformation("[SVC] User.BatchUpdateStatus completed - Total={Total} Success={Success} Failure={Failure}",
-                result.TotalCount, result.SuccessCount, result.FailureCount);
-
-            return Result<BatchOperationResultDto>.Success(result);
-        }
+        public Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null)
+            => _batchService.BatchUpdateStatusAsync(ids, status, currentUserId);
     }
 }

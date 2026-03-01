@@ -25,6 +25,7 @@ namespace LYBT.Module.Herbs
 
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<IHerbService, HerbService>();
+            services.AddScoped<IHerbImportExportService, HerbImportExportService>();
 
             // services.AddScoped<IHerbCategoryService, HerbCategoryService>();
 

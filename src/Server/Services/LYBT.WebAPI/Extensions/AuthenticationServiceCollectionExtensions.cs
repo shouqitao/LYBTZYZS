@@ -1,8 +1,7 @@
 ﻿using System.Text;
 using LYBT.Shared.Configuration.Options.Common;
-using LYBT.WebAPI.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.IdentityModel.Tokens;
 
 namespace LYBT.WebAPI.Extensions;
@@ -137,15 +136,6 @@ public static class AuthenticationServiceCollectionExtensions
             options.AddPolicy("RequireAuthenticated", policy =>
                 policy.RequireAuthenticatedUser());
         });
-
-        // 注册资源级授权处理器
-        // refactor-authorization-system: AUTHZ-001
-        // 必须使用Scoped，因为依赖Scoped的IMedicalCasePermissionService
-        services.AddScoped<IAuthorizationHandler, MedicalCaseAuthorizationHandler>();
-
-        // optimize-api-permissions: 注册Formula授权处理器
-        // FormulaAuthorizationHandler只依赖ILogger，可以使用Scoped或Singleton
-        services.AddScoped<IAuthorizationHandler, FormulaAuthorizationHandler>();
 
         return services;
     }

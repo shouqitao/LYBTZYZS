@@ -29,6 +29,7 @@ namespace LYBT.Module.Patients.Tests.Services
         private readonly IValidator<PatientInputDto> _validatorMock;
         private readonly AppDbContext _dbContext;
         private readonly ICacheInvalidationService _cacheInvalidationMock;
+        private readonly IPatientImportExportService _importExportMock;
 
         public PatientServiceTests()
         {
@@ -36,6 +37,7 @@ namespace LYBT.Module.Patients.Tests.Services
             _loggerMock = CreateLoggerMock<PatientService>();
             _validatorMock = CreateMock<IValidator<PatientInputDto>>();
             _cacheInvalidationMock = CreateMock<ICacheInvalidationService>();
+            _importExportMock = CreateMock<IPatientImportExportService>();
 
             // 默认validator返回验证成功
             _validatorMock
@@ -56,7 +58,8 @@ namespace LYBT.Module.Patients.Tests.Services
                 _loggerMock,
                 _validatorMock,
                 _dbContext,
-                _cacheInvalidationMock);
+                _cacheInvalidationMock,
+                _importExportMock);
         }
 
         public override void Dispose()

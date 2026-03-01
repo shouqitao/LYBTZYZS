@@ -25,6 +25,7 @@ namespace LYBT.Module.Patients
 
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<IPatientService, PatientService>();
+            services.AddScoped<IPatientImportExportService, PatientImportExportService>();
 
             // services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 

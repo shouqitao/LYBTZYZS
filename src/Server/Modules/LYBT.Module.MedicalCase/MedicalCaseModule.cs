@@ -25,10 +25,11 @@ namespace LYBT.Module.MedicalCases
             // 仓储层 - 统一实现
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
 
-            // 服务层 - Phase 3: CQRS拆分（Command/Query/State分离）
+            // 服务层 - Phase 3: CQRS拆分（Command/Query/State/Print分离）
             services.AddScoped<IMedicalCaseCommandService, MedicalCaseCommandService>();
             services.AddScoped<IMedicalCaseQueryService, MedicalCaseQueryService>();
             services.AddScoped<IMedicalCaseStateService, MedicalCaseStateService>();
+            services.AddScoped<IMedicalCasePrintService, MedicalCasePrintService>();
 
             // OpenSpec: refactor-medicalcase-management - 权限服务
             services.AddScoped<IMedicalCasePermissionService, MedicalCasePermissionService>();

@@ -10,7 +10,7 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Module.MedicalCases.Services;
 
 /// <summary>
-/// MedicalCase 门面服务实现 - 聚合 5 个 CQRS 服务的简单委托
+/// MedicalCase 门面服务实现 - 聚合 6 个 CQRS 服务的简单委托
 /// 降低 Controller 构造函数依赖数量 (8 -> 3)
 /// </summary>
 public class MedicalCaseFacade : IMedicalCaseFacade
@@ -20,19 +20,22 @@ public class MedicalCaseFacade : IMedicalCaseFacade
     private readonly IMedicalCaseStateService _stateService;
     private readonly IMedicalCasePermissionService _permissionService;
     private readonly IMedicalCaseAuditService _auditService;
+    private readonly IMedicalCasePrintService _printService;
 
     public MedicalCaseFacade(
         IMedicalCaseCommandService commandService,
         IMedicalCaseQueryService queryService,
         IMedicalCaseStateService stateService,
         IMedicalCasePermissionService permissionService,
-        IMedicalCaseAuditService auditService)
+        IMedicalCaseAuditService auditService,
+        IMedicalCasePrintService printService)
     {
         _commandService = commandService;
         _queryService = queryService;
         _stateService = stateService;
         _permissionService = permissionService;
         _auditService = auditService;
+        _printService = printService;
     }
 
     // ===== 写操作 - 委托 CommandService =====
@@ -55,7 +58,7 @@ public class MedicalCaseFacade : IMedicalCaseFacade
         Guid printedBy,
         string printedByName,
         string? printerName = null)
-        => _commandService.RecordPrintCompletedAsync(medicalCaseId, printType, printedBy, printedByName, printerName);
+        => _printService.RecordPrintCompletedAsync(medicalCaseId, printType, printedBy, printedByName, printerName);
 
     /// <inheritdoc />
     public Task<bool> AddPrintLogAsync(
@@ -66,7 +69,7 @@ public class MedicalCaseFacade : IMedicalCaseFacade
         string printedByName,
         string? printerName = null,
         string? errorMessage = null)
-        => _commandService.AddPrintLogAsync(medicalCaseId, printType, isSuccess, printedBy, printedByName, printerName, errorMessage);
+        => _printService.AddPrintLogAsync(medicalCaseId, printType, isSuccess, printedBy, printedByName, printerName, errorMessage);
 
     // ===== 状态操作 - 委托 StateService =====
 

@@ -26,6 +26,7 @@ public class HerbServiceTests : IDisposable
     private readonly IValidator<HerbInputDto> _validatorMock;
     private readonly AppDbContext _dbContext;
     private readonly ICacheInvalidationService _cacheInvalidationMock;
+    private readonly IHerbImportExportService _importExportMock;
     private readonly HerbService _sut;
 
     public HerbServiceTests()
@@ -33,6 +34,7 @@ public class HerbServiceTests : IDisposable
         _repositoryMock = Substitute.For<IHerbRepository>();
         _validatorMock = Substitute.For<IValidator<HerbInputDto>>();
         _cacheInvalidationMock = Substitute.For<ICacheInvalidationService>();
+        _importExportMock = Substitute.For<IHerbImportExportService>();
 
         // 使用 InMemory 数据库用于 DbContext 操作
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -55,7 +57,8 @@ public class HerbServiceTests : IDisposable
             NullLogger<HerbService>.Instance,
             _validatorMock,
             _dbContext,
-            _cacheInvalidationMock);
+            _cacheInvalidationMock,
+            _importExportMock);
     }
 
     public void Dispose()

@@ -32,6 +32,7 @@ public class AuthServiceTests : IDisposable
     private readonly IConfiguration _configuration;
     private readonly ITokenRevocationService _revocationService;
     private readonly ISecurityAuditService _auditService;
+    private readonly ITokenManagementService _tokenManagement;
     private readonly AuthService _sut;
 
     public AuthServiceTests()
@@ -41,6 +42,7 @@ public class AuthServiceTests : IDisposable
         _logger = Substitute.For<ILogger<AuthService>>();
         _revocationService = Substitute.For<ITokenRevocationService>();
         _auditService = Substitute.For<ISecurityAuditService>();
+        _tokenManagement = Substitute.For<ITokenManagementService>();
 
         // Setup audit service to return completed task
         _auditService.LogAsync(Arg.Any<LYBT.Module.Auth.Models.SecurityAuditEvent>())
@@ -63,7 +65,8 @@ public class AuthServiceTests : IDisposable
             _dbContext,
             _configuration,
             _revocationService,
-            _auditService
+            _auditService,
+            _tokenManagement
         );
     }
 
