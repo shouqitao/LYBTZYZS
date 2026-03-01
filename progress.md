@@ -1,32 +1,27 @@
-# Progress: Phase 5 Desktop UI 拆分 + 测试补全
+# Progress: Code Simplifier 审查修复
 
 ## Session: 2026-03-01
 
-### Phase 5A: UnifiedComponents.xaml 拆分 -- COMPLETE
-- Created: DesignTokens.xaml (107 lines) - Type Ramp, Spacing, CornerRadius, Elevation
-- Created: ButtonStyles.xaml (239 lines) - Primary/Secondary/Danger/Success/Warning/Info/Link
-- Created: InputStyles.xaml (160 lines) - SearchTextBox, EditableTextBox, ValidatingTextBox, ValueDisplay, ComboBox
-- Created: DataGridStyles.xaml (196 lines) - Base/MasterDetail DataGrid, Row, Cell, ColumnHeader
-- Created: PanelStyles.xaml (272 lines) - Pagination, StatusBadge, ToolBar, DetailView, DetailPanel, Loading
-- Updated: UnifiedComponents.xaml -> pure aggregator (28 lines)
-- Original: 1025 lines -> Aggregator 28 lines, 5 sub-files totaling ~974 lines (all under 300 lines)
+### Phase 1: 独立修复 -- COMPLETE
+- [done] Step 1: MasterDetailViewModelBase 移除 11 处 [DEBUG] LogDebug
+- [done] Step 2: HerbImportExportHandler ex.Message -> 安全错误消息 (2处)
+- [done] Step 3: LoggingRegistrationExtensions 移除 2 个未使用 using
 
-### Phase 5B: ServiceCollectionExtensions 拆分 -- COMPLETE
-- Created: LoggingRegistrationExtensions.cs (~185 lines) - RegisterLogging() + RegisterDataSourceLoggers()
-- Created: HttpServiceRegistrationExtensions.cs (~85 lines) - RegisterHttpServices()
-- Updated: ServiceCollectionExtensions.cs (470 -> ~210 lines)
-- Deleted: ErrorHandlingServiceExtensions.cs (35 lines, dead code)
-- Deleted: Styles/CommonStyles.xaml (unreferenced in App.xaml)
+### Phase 2: StatusHandler 泛型基类重构 -- COMPLETE
+- [done] Step 4: 创建 BaseStatusHandler<TListDto> (~110行)
+- [done] Step 5: HerbStatusHandler 86行 -> 40行
+- [done] Step 6: FormulaStatusHandler 87行 -> 40行 (修正 FormulaItem -> FormulaDetailModel)
+- [done] Step 7: FormulaModule DI 修正 + Handler 注册 + 移除 unused using
+- [done] Step 8: PatientStatusHandler 55行 -> 33行
+- [done] Step 9: PatientsModule 新增 Handler DI 注册
+- [done] Step 10: UserStatusHandler 102行 -> 70行
 
-### Phase 5C: 测试清理 -- COMPLETE
-- Deleted: ShellViewModelTests.cs (placeholder)
-- Deleted: PatientListViewModelTests.cs (placeholder)
-- Deleted: UserListViewModelTests.cs (placeholder)
-- Fixed: ArchTests.Batch2_ConfigurationDirectRead - restored actual assertion logic
-- Fixed: DesktopLayerArchTests.Should_Use_Unified_Navigation_Service - real IRegionManager check
+### Phase 3: StatusOptions 优化 -- COMPLETE
+- [done] Step 11: 创建 CommonOptions.StatusOptions (~15行)
+- [done] Step 12: 更新 3 个 ViewModel 引用
 
-### Verification -- COMPLETE
+### Verification -- PASS
 - Build: 0 errors, 0 warnings
-- Architecture tests: 74 passed (was 60 before Phase 5C restored assertions)
-- Desktop unit tests: 612 passed (was 633, -3 placeholder + -18 from Phase 3 handler extraction)
 - Server unit tests: 370 passed
+- Desktop unit tests: 597 passed
+- Architecture tests: 74 passed

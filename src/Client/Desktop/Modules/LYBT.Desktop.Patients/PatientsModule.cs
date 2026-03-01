@@ -70,6 +70,9 @@ namespace LYBT.Desktop.Patients
             // 注册Patients模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<PatientListDto, PatientDetailModel>();
 
+            // Handler DI注册
+            containerRegistry.Register<ViewModels.Handlers.IPatientStatusHandler, ViewModels.Handlers.PatientStatusHandler>();
+
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // PatientMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.PatientMasterDetailViewModel>();

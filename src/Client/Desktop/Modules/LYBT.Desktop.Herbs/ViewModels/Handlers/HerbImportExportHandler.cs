@@ -70,7 +70,7 @@ public class HerbImportExportHandler : IHerbImportExportHandler
         {
             _logger.LogError(ex, "导入药材失败");
             await _masterDetailServices.Dialog.ShowErrorAsync(
-                $"导入药材失败: {ex.Message}", "操作失败");
+                "导入药材失败，请检查文件格式后重试", "操作失败");
             return false;
         }
     }
@@ -112,7 +112,7 @@ public class HerbImportExportHandler : IHerbImportExportHandler
         {
             _logger.LogError(ex, "导出药材失败");
             await _masterDetailServices.Dialog.ShowErrorAsync(
-                $"导出药材失败: {ex.Message}", "操作失败");
+                "导出药材失败，请稍后重试", "操作失败");
         }
     }
 }

@@ -1,8 +1,6 @@
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.Formula.Mappers;
 using LYBT.Desktop.Formula.Models;
-using LYBT.Desktop.Formula.Models.Items;
 using LYBT.Desktop.Formula.Repositories;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -45,7 +43,10 @@ namespace LYBT.Desktop.Formula
 
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Formula模块的MasterDetail服务
-            containerRegistry.AddMasterDetailServices<FormulaListDto, FormulaItem>();
+            containerRegistry.AddMasterDetailServices<FormulaListDto, FormulaDetailModel>();
+
+            // Handler DI注册
+            containerRegistry.Register<ViewModels.Handlers.IFormulaStatusHandler, ViewModels.Handlers.FormulaStatusHandler>();
 
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // FormulaMasterDetailControl供角色台View复用，ViewModel在Control内部解析

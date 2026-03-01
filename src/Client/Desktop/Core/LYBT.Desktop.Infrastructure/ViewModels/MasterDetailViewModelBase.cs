@@ -333,12 +333,9 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             // DetailEditor变更
             _masterDetailServices.DetailEditor.PropertyChanged += (s, e) =>
             {
-                Logger.LogDebug("[DEBUG] DetailEditor.PropertyChanged: Property={Property}, IsEditMode={IsEditMode}, Type={Type}", 
-                    e.PropertyName, IsEditMode, GetType().Name);
                 OnPropertyChanged(e.PropertyName);
                 if (e.PropertyName == nameof(IDetailEditorService<TDetail>.IsEditMode))
                 {
-                    Logger.LogDebug("[DEBUG] IsEditMode changed, calling NotifyCommandsCanExecuteChanged()");
                     NotifyCommandsCanExecuteChanged();
                     // OpenSpec: refactor-masterdetail-command-refresh - 编辑模式变化时刷新ShowDetailPanel
                     OnPropertyChanged(nameof(ShowDetailPanel));
@@ -463,15 +460,11 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanCreateNew))]
         protected virtual async Task CreateNewAsync()
         {
-            Logger.LogDebug("[DEBUG] CreateNewAsync() ENTERED: Type={Type}", GetType().Name);
             _masterDetailServices.DetailEditor.CreateNew(CreateNewDetail);
-            Logger.LogDebug("[DEBUG] CreateNewAsync() after CreateNew: IsEditMode={IsEditMode}, CurrentDetail={CurrentDetailType}", 
-                IsEditMode, CurrentDetail?.GetType().Name ?? "null");
             if (CurrentDetail != null)
             {
                 await OnDetailCreatedAsync(CurrentDetail);
             }
-            Logger.LogDebug("[DEBUG] CreateNewAsync() completed");
         }
 
         /// <summary>
@@ -506,25 +499,16 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [RelayCommand(CanExecute = nameof(CanCancel))]
         protected virtual async Task CancelAsync()
         {
-            Logger.LogDebug("[DEBUG] CancelAsync() ENTERED: Type={Type}, IsEditMode={IsEditMode}, HasUnsavedChanges={HasUnsavedChanges}", 
-                GetType().Name, IsEditMode, HasUnsavedChanges);
-            
             if (HasUnsavedChanges)
             {
                 var confirmed = await _masterDetailServices.Dialog.ShowConfirmAsync(
                     "确认取消",
                     "有未保存的更改，确定要取消吗？");
 
-                if (!confirmed)
-                {
-                    Logger.LogDebug("[DEBUG] CancelAsync() user cancelled confirmation");
-                    return;
-                }
+                if (!confirmed) return;
             }
 
-            Logger.LogDebug("[DEBUG] CancelAsync() calling CancelEdit()");
             _masterDetailServices.DetailEditor.CancelEdit();
-            Logger.LogDebug("[DEBUG] CancelAsync() completed");
         }
 
         /// <summary>
@@ -552,13 +536,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         private bool CanCreateNew() => !IsEditMode && !IsBusy;
         private bool CanEdit() => HasSelection && !IsEditMode && !IsBusy;
         private bool CanSave() => IsEditMode && CurrentDetail != null && !IsBusy;
-        private bool CanCancel()
-        {
-            var result = IsEditMode;
-            Logger.LogDebug("[DEBUG] CanCancel() called: IsEditMode={IsEditMode}, Result={Result}, Type={Type}", 
-                IsEditMode, result, GetType().Name);
-            return result;
-        }
+        private bool CanCancel() => IsEditMode;
         private bool CanDelete() => HasSelection && !IsEditMode && !IsBusy;
 
         /// <summary>
@@ -566,8 +544,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// </summary>
         private void NotifyCommandsCanExecuteChanged()
         {
-            Logger.LogDebug("[DEBUG] NotifyCommandsCanExecuteChanged() called: Type={Type}, IsEditMode={IsEditMode}",
-                GetType().Name, IsEditMode);
             CreateNewCommand.NotifyCanExecuteChanged();
             EditCommand.NotifyCanExecuteChanged();
             SaveCommand.NotifyCanExecuteChanged();

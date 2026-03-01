@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.ViewModels.Components;
@@ -97,7 +98,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     public ObservableCollection<UserRole> RoleOptions { get; } = new(Enum.GetValues<UserRole>());
 
     /// <summary>状态选项</summary>
-    public ObservableCollection<CommonStatus> StatusOptions { get; } = new(Enum.GetValues<CommonStatus>());
+    public ObservableCollection<CommonStatus> StatusOptions { get; } = new(CommonOptions.StatusOptions);
 
     #endregion
 

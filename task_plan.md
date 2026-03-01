@@ -1,31 +1,26 @@
-# Phase 5: Desktop UI 拆分 + 测试补全
+# Code Simplifier 审查修复计划
 
 ## Goal
-处理 Desktop 层代码质量问题: 拆分过大 XAML/C# 文件，清理占位符测试，修复架构测试断言。
+修复 code-simplifier 审查发现的 7 个问题，通过泛型基类消除 4 个 StatusHandler 重复代码，净减少 ~150 行。
 
 ## Phases
 
-### Phase 5A: UnifiedComponents.xaml 拆分 [complete]
-- 拆分为 5 个子文件: DesignTokens / ButtonStyles / InputStyles / DataGridStyles / PanelStyles
-- UnifiedComponents.xaml 保留为纯聚合器 (~28 行)
+### Phase 1: 独立修复 - complete
+- Step 1: H-02 清除 MasterDetailViewModelBase DEBUG 日志 (11处)
+- Step 2: H-03 修复 HerbImportExportHandler ex.Message 泄露 (2处)
+- Step 3: M-06 清理 LoggingRegistrationExtensions 未使用 using (2个)
 
-### Phase 5B: ServiceCollectionExtensions 拆分 [complete]
-- 抽取 LoggingRegistrationExtensions.cs (~185 行)
-- 抽取 HttpServiceRegistrationExtensions.cs (~85 行)
-- 删除死代码: ErrorHandlingServiceExtensions.cs, CommonStyles.xaml
-- ServiceCollectionExtensions.cs 缩减至 ~210 行
+### Phase 2: StatusHandler 泛型基类重构 - complete
+- Step 4: 创建 BaseStatusHandler<TListDto>
+- Step 5-6: 重构 Herb/Formula StatusHandler + M-01 修复
+- Step 7: 修复 FormulaModule DI 注册
+- Step 8-9: 重构 Patient StatusHandler + DI 注册
+- Step 10: 重构 UserStatusHandler
 
-### Phase 5C: 测试清理 [complete]
-- 删除 3 个占位符测试文件
-- 恢复 Batch2_ConfigurationDirectRead 实际检查逻辑
-- 重写 Should_Use_Unified_Navigation_Service 为有效断言
-
-### 验证 [complete]
-- dotnet build: 0 errors, 0 warnings
-- Architecture tests: 74 passed
-- Desktop unit tests: 612 passed
-- Server unit tests: 370 passed
+### Phase 3: StatusOptions 优化 - complete
+- Step 11: 创建共享 CommonOptions 常量
+- Step 12: 更新 3 个 ViewModel 引用
 
 ## Decisions
-- XAML 拆分: 利用 WPF MergedDictionaries 加载顺序保证 StaticResource 跨文件解析
-- 测试减少 3 个 (占位符删除)，Architecture 测试从存根恢复为实际断言
+- 异常策略: 仅捕获 HttpRequestException，其他异常冒泡
+- UserStatusHandler.ToggleUserStatusAsync 独立实现 (走 UserService 元组模式)

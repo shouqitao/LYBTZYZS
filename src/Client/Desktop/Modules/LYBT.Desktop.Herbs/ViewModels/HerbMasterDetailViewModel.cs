@@ -7,6 +7,7 @@ using LYBT.Desktop.Herbs.ViewModels.Handlers;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
@@ -60,7 +61,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
             PageTitle = "药材管理";
-            StatusOptions = new ObservableCollection<CommonStatus>(Enum.GetValues<CommonStatus>());
+            StatusOptions = new ObservableCollection<CommonStatus>(CommonOptions.StatusOptions);
         }
 
         #region 基类抽象方法实现

@@ -9,6 +9,7 @@ using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels.Handlers;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
@@ -51,7 +52,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         public ObservableCollection<Gender> GenderOptions { get; } = new(Enum.GetValues<Gender>());
 
         /// <summary>状态选项</summary>
-        public ObservableCollection<CommonStatus> StatusOptions { get; } = new(Enum.GetValues<CommonStatus>());
+        public ObservableCollection<CommonStatus> StatusOptions { get; } = new(CommonOptions.StatusOptions);
 
         #endregion
 
