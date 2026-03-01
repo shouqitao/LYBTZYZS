@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using LYBT.Entities.Patients;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Patients.Interfaces;
@@ -28,17 +29,20 @@ namespace LYBT.Module.Patients.Services
         private readonly IValidator<PatientInputDto> _validator;
         private readonly PatientMapper _mapper = new();
         private readonly AppDbContext _dbContext;
+        private readonly ICacheInvalidationService _cacheInvalidation;
 
         public PatientService(
             IPatientRepository repository,
             ILogger<PatientService> logger,
             IValidator<PatientInputDto> validator,
-            AppDbContext dbContext)
+            AppDbContext dbContext,
+            ICacheInvalidationService cacheInvalidation)
             : base(logger)
         {
             _repository = repository;
             _validator = validator;
             _dbContext = dbContext;
+            _cacheInvalidation = cacheInvalidation;
         }
 
         public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false)
@@ -157,6 +161,7 @@ namespace LYBT.Module.Patients.Services
             entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
 
             var result = await _repository.AddAsync(entity);
+            await _cacheInvalidation.InvalidateAsync("patients");
             var resultDto = _mapper.ToDetailDto(result);
 
             // 确保Age属性正确计算
@@ -215,6 +220,7 @@ namespace LYBT.Module.Patients.Services
             }
 
             var result = await _repository.UpdateAsync(entity);
+            await _cacheInvalidation.InvalidateAsync("patients");
             var resultDto = _mapper.ToDetailDto(result);
 
             // 确保Age属性正确计算
@@ -254,6 +260,10 @@ namespace LYBT.Module.Patients.Services
             }
 
             var result = await _repository.DeleteAsync(id);
+            if (result)
+            {
+                await _cacheInvalidation.InvalidateAsync("patients");
+            }
             return result ? Result.Success() : Result.Failure(GenericErrorCode.InternalError, "删除失败");
         }
 

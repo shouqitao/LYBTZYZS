@@ -22,7 +22,7 @@
     <!-- Removed Microsoft.Extensions.Logging.Abstractions - provided by dependencies -->
     <PackageReference Include="Bogus"  />
     <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除 -->
-    <PackageReference Include="Moq"  />
+    <!-- CODE-42: Moq 已移除 (代码不使用Moq) -->
   </ItemGroup>
 
   <ItemGroup>

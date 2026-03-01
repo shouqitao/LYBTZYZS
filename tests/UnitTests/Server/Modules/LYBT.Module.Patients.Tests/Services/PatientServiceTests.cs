@@ -1,6 +1,7 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using FluentValidation;
 using LYBT.Entities.Patients;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
@@ -10,7 +11,8 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace LYBT.Module.Patients.Tests.Services
@@ -22,21 +24,23 @@ namespace LYBT.Module.Patients.Tests.Services
     public class PatientServiceTests : TestBase
     {
         private readonly PatientService _patientService;
-        private readonly Mock<IPatientRepository> _repositoryMock;
-        private readonly Mock<ILogger<PatientService>> _loggerMock;
-        private readonly Mock<IValidator<PatientInputDto>> _validatorMock;
+        private readonly IPatientRepository _repositoryMock;
+        private readonly ILogger<PatientService> _loggerMock;
+        private readonly IValidator<PatientInputDto> _validatorMock;
         private readonly AppDbContext _dbContext;
+        private readonly ICacheInvalidationService _cacheInvalidationMock;
 
         public PatientServiceTests()
         {
             _repositoryMock = CreateMock<IPatientRepository>();
             _loggerMock = CreateLoggerMock<PatientService>();
             _validatorMock = CreateMock<IValidator<PatientInputDto>>();
+            _cacheInvalidationMock = CreateMock<ICacheInvalidationService>();
 
             // 默认validator返回验证成功
             _validatorMock
-                .Setup(x => x.ValidateAsync(It.IsAny<PatientInputDto>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+                .ValidateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
+                .Returns(new FluentValidation.Results.ValidationResult());
 
             // 使用 InMemory SQLite 创建真实 DbContext
             var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -48,10 +52,11 @@ namespace LYBT.Module.Patients.Tests.Services
 
             // 创建PatientService实例（Mapperly迁移后，Service内部使用私有Mapper）
             _patientService = new PatientService(
-                _repositoryMock.Object,
-                _loggerMock.Object,
-                _validatorMock.Object,
-                _dbContext);
+                _repositoryMock,
+                _loggerMock,
+                _validatorMock,
+                _dbContext,
+                _cacheInvalidationMock);
         }
 
         public override void Dispose()
@@ -79,8 +84,8 @@ namespace LYBT.Module.Patients.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()))
-                .ReturnsAsync(pagedResult);
+                .GetPagedAsync(1, 20, Arg.Any<string?>())
+                .Returns(pagedResult);
 
             // Act
             var result = await _patientService.GetPagedAsync(1, 20, null);
@@ -94,7 +99,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data!.CurrentPage.Should().Be(1);
             result.Data!.PageSize.Should().Be(20);
 
-            _repositoryMock.Verify(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()), Times.Once);
+            await _repositoryMock.Received(1).GetPagedAsync(1, 20, Arg.Any<string?>());
         }
 
         [Fact]
@@ -104,7 +109,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var exception = new Exception("数据库错误");
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
+                .GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
                 .ThrowsAsync(exception);
 
             // Act & Assert
@@ -127,8 +132,8 @@ namespace LYBT.Module.Patients.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()))
-                .ReturnsAsync(pagedResult);
+                .GetPagedAsync(1, 20, Arg.Any<string?>())
+                .Returns(pagedResult);
 
             // Act
             var result = await _patientService.GetPagedAsync(1, 20, null);
@@ -153,8 +158,8 @@ namespace LYBT.Module.Patients.Tests.Services
             var patient = CreateTestPatient(patientId);
 
             _repositoryMock
-                .Setup(x => x.GetByIdAsync(patientId))
-                .ReturnsAsync(patient);
+                .GetByIdAsync(patientId)
+                .Returns(patient);
 
             // Act
             var result = await _patientService.GetByIdAsync(patientId);
@@ -167,7 +172,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data!.Name.Should().Be(patient.Name);
             result.Data!.PhoneNumber.Should().Be(patient.PhoneNumber);
 
-            _repositoryMock.Verify(x => x.GetByIdAsync(patientId), Times.Once);
+            await _repositoryMock.Received(1).GetByIdAsync(patientId);
         }
 
         [Fact]
@@ -177,8 +182,8 @@ namespace LYBT.Module.Patients.Tests.Services
             var patientId = Guid.NewGuid();
 
             _repositoryMock
-                .Setup(x => x.GetByIdAsync(patientId))
-                .ReturnsAsync((Patient?)null);
+                .GetByIdAsync(patientId)
+                .Returns((Patient?)null);
 
             // Act
             var result = await _patientService.GetByIdAsync(patientId);
@@ -199,7 +204,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var exception = new Exception("数据库错误");
 
             _repositoryMock
-                .Setup(x => x.GetByIdAsync(patientId))
+                .GetByIdAsync(patientId)
                 .ThrowsAsync(exception);
 
             // Act & Assert
@@ -244,8 +249,8 @@ namespace LYBT.Module.Patients.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.AddAsync(It.IsAny<Patient>()))
-                .ReturnsAsync(createdPatient);
+                .AddAsync(Arg.Any<Patient>())
+                .Returns(createdPatient);
 
             // Act
             var result = await _patientService.CreateAsync(createDto);
@@ -258,7 +263,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data!.PhoneNumber.Should().Be(createDto.PhoneNumber);
             result.Data!.IdNumber.Should().Be(createDto.IdNumber);
 
-            _repositoryMock.Verify(x => x.AddAsync(It.IsAny<Patient>()), Times.Once);
+            await _repositoryMock.Received(1).AddAsync(Arg.Any<Patient>());
         }
 
         [Fact]
@@ -276,7 +281,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var exception = new Exception("数据库错误");
 
             _repositoryMock
-                .Setup(x => x.AddAsync(It.IsAny<Patient>()))
+                .AddAsync(Arg.Any<Patient>())
                 .ThrowsAsync(exception);
 
             // Act & Assert
@@ -321,12 +326,12 @@ namespace LYBT.Module.Patients.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetByIdAsync(patientId))
-                .ReturnsAsync(existingPatient);
+                .GetByIdAsync(patientId)
+                .Returns(existingPatient);
 
             _repositoryMock
-                .Setup(x => x.UpdateAsync(It.IsAny<Patient>()))
-                .ReturnsAsync(updatedPatient);
+                .UpdateAsync(Arg.Any<Patient>())
+                .Returns(updatedPatient);
 
             // Act
             var result = await _patientService.UpdateAsync(patientId, updateDto);
@@ -339,8 +344,8 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data!.Name.Should().Be(updateDto.Name);
             result.Data!.PhoneNumber.Should().Be(updateDto.PhoneNumber);
 
-            _repositoryMock.Verify(x => x.GetByIdAsync(patientId), Times.Once);
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Once);
+            await _repositoryMock.Received(1).GetByIdAsync(patientId);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<Patient>());
         }
 
         [Fact]
@@ -354,8 +359,8 @@ namespace LYBT.Module.Patients.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetByIdAsync(patientId))
-                .ReturnsAsync((Patient?)null);
+                .GetByIdAsync(patientId)
+                .Returns((Patient?)null);
 
             // Act
             var result = await _patientService.UpdateAsync(patientId, updateDto);
@@ -365,8 +370,8 @@ namespace LYBT.Module.Patients.Tests.Services
             result.IsSuccess.Should().BeFalse();
             result.ErrorMessage.Should().Be("患者不存在");
 
-            _repositoryMock.Verify(x => x.GetByIdAsync(patientId), Times.Once);
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Never);
+            await _repositoryMock.Received(1).GetByIdAsync(patientId);
+            await _repositoryMock.DidNotReceive().UpdateAsync(Arg.Any<Patient>());
         }
 
         [Fact]
@@ -384,11 +389,11 @@ namespace LYBT.Module.Patients.Tests.Services
             var exception = new Exception("数据库错误");
 
             _repositoryMock
-                .Setup(x => x.GetByIdAsync(patientId))
-                .ReturnsAsync(existingPatient);
+                .GetByIdAsync(patientId)
+                .Returns(existingPatient);
 
             _repositoryMock
-                .Setup(x => x.UpdateAsync(It.IsAny<Patient>()))
+                .UpdateAsync(Arg.Any<Patient>())
                 .ThrowsAsync(exception);
 
             // Act & Assert
@@ -417,8 +422,8 @@ namespace LYBT.Module.Patients.Tests.Services
 
             // Service使用GetPagedAsync进行搜索
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 100, keyword))
-                .ReturnsAsync(new PagedResult<Patient>
+                .GetPagedAsync(1, 100, keyword)
+                .Returns(new PagedResult<Patient>
                 {
                     Items = matchingPatients,
                     TotalCount = 2,
@@ -451,7 +456,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data!.Should().BeEmpty();
 
-            _repositoryMock.Verify(x => x.GetAllAsync(), Times.Never);
+            await _repositoryMock.DidNotReceive().GetAllAsync();
         }
 
         [Fact]
@@ -469,7 +474,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data!.Should().BeEmpty();
 
-            _repositoryMock.Verify(x => x.GetAllAsync(), Times.Never);
+            await _repositoryMock.DidNotReceive().GetAllAsync();
         }
 
         [Fact]
@@ -480,8 +485,8 @@ namespace LYBT.Module.Patients.Tests.Services
 
             // Service使用GetPagedAsync进行搜索，返回空结果
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 100, keyword))
-                .ReturnsAsync(new PagedResult<Patient>
+                .GetPagedAsync(1, 100, keyword)
+                .Returns(new PagedResult<Patient>
                 {
                     Items = new List<Patient>(),
                     TotalCount = 0,
@@ -508,7 +513,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var exception = new Exception("数据库错误");
 
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
+                .GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
                 .ThrowsAsync(exception);
 
             // Act & Assert
@@ -529,8 +534,8 @@ namespace LYBT.Module.Patients.Tests.Services
             var patientId = Guid.NewGuid();
 
             _repositoryMock
-                .Setup(x => x.DeleteAsync(patientId))
-                .ReturnsAsync(true);
+                .DeleteAsync(patientId)
+                .Returns(true);
 
             // Act
             var result = await _patientService.DeleteAsync(patientId);
@@ -539,7 +544,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
 
-            _repositoryMock.Verify(x => x.DeleteAsync(patientId), Times.Once);
+            await _repositoryMock.Received(1).DeleteAsync(patientId);
         }
 
         [Fact]
@@ -549,8 +554,8 @@ namespace LYBT.Module.Patients.Tests.Services
             var patientId = Guid.NewGuid();
 
             _repositoryMock
-                .Setup(x => x.DeleteAsync(patientId))
-                .ReturnsAsync(false);
+                .DeleteAsync(patientId)
+                .Returns(false);
 
             // Act
             var result = await _patientService.DeleteAsync(patientId);
@@ -570,7 +575,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var exception = new Exception("数据库错误");
 
             _repositoryMock
-                .Setup(x => x.DeleteAsync(patientId))
+                .DeleteAsync(patientId)
                 .ThrowsAsync(exception);
 
             // Act & Assert
@@ -592,8 +597,8 @@ namespace LYBT.Module.Patients.Tests.Services
             var patient = CreateTestPatient(patientId);
             patient.IsDeleted = true;
 
-            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(patientId)).ReturnsAsync(patient);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Patient>())).ReturnsAsync(patient);
+            _repositoryMock.GetByIdIncludingDeletedAsync(patientId).Returns(patient);
+            _repositoryMock.UpdateAsync(Arg.Any<Patient>()).Returns(patient);
 
             // Act
             var result = await _patientService.RestoreAsync(patientId);
@@ -603,7 +608,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.IsSuccess.Should().BeTrue();
             patient.IsDeleted.Should().BeFalse();
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Once);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<Patient>());
         }
 
         [Fact]
@@ -614,7 +619,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var patient = CreateTestPatient(patientId);
             patient.IsDeleted = false;
 
-            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(patientId)).ReturnsAsync(patient);
+            _repositoryMock.GetByIdIncludingDeletedAsync(patientId).Returns(patient);
 
             // Act
             var result = await _patientService.RestoreAsync(patientId);
@@ -624,7 +629,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.IsSuccess.Should().BeFalse();
             result.ErrorMessage.Should().Contain("未被删除");
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Never);
+            await _repositoryMock.DidNotReceive().UpdateAsync(Arg.Any<Patient>());
         }
 
         [Fact]
@@ -633,7 +638,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Arrange
             var patientId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(patientId)).ReturnsAsync((Patient?)null);
+            _repositoryMock.GetByIdIncludingDeletedAsync(patientId).Returns((Patient?)null);
 
             // Act
             var result = await _patientService.RestoreAsync(patientId);
@@ -659,10 +664,10 @@ namespace LYBT.Module.Patients.Tests.Services
             var patient1 = CreateTestPatient(id1);
             var patient2 = CreateTestPatient(id2);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(patient1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(patient2);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Patient>()))
-                .ReturnsAsync((Patient p) => p);
+            _repositoryMock.GetByIdAsync(id1).Returns(patient1);
+            _repositoryMock.GetByIdAsync(id2).Returns(patient2);
+            _repositoryMock.UpdateAsync(Arg.Any<Patient>())
+                .Returns(callInfo => callInfo.Arg<Patient>());
 
             // Act
             var result = await _patientService.BatchDeleteAsync(ids);
@@ -675,7 +680,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data!.FailureCount.Should().Be(0);
 
             // 验证使用软删除
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Exactly(2));
+            await _repositoryMock.Received(2).UpdateAsync(Arg.Any<Patient>());
         }
 
         [Fact]
@@ -705,10 +710,10 @@ namespace LYBT.Module.Patients.Tests.Services
 
             var patient1 = CreateTestPatient(id1);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(patient1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((Patient?)null);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Patient>()))
-                .ReturnsAsync((Patient p) => p);
+            _repositoryMock.GetByIdAsync(id1).Returns(patient1);
+            _repositoryMock.GetByIdAsync(id2).Returns((Patient?)null);
+            _repositoryMock.UpdateAsync(Arg.Any<Patient>())
+                .Returns(callInfo => callInfo.Arg<Patient>());
 
             // Act
             var result = await _patientService.BatchDeleteAsync(ids);
@@ -731,13 +736,15 @@ namespace LYBT.Module.Patients.Tests.Services
             var patient1 = CreateTestPatient(id1);
             var patient2 = CreateTestPatient(id2);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(patient1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(patient2);
+            _repositoryMock.GetByIdAsync(id1).Returns(patient1);
+            _repositoryMock.GetByIdAsync(id2).Returns(patient2);
 
             // 第一个成功，第二个抛异常
-            _repositoryMock.SetupSequence(x => x.UpdateAsync(It.IsAny<Patient>()))
-                .ReturnsAsync(patient1)
-                .ThrowsAsync(new Exception("Database error"));
+            _repositoryMock.UpdateAsync(Arg.Any<Patient>())
+                .Returns(
+                    callInfo => patient1,
+                    callInfo => throw new Exception("Database error")
+                );
 
             // Act
             var result = await _patientService.BatchDeleteAsync(ids);
@@ -760,7 +767,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var patientId = Guid.NewGuid();
             var patient = CreateTestPatient(patientId);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(patientId)).ReturnsAsync(patient);
+            _repositoryMock.GetByIdAsync(patientId).Returns(patient);
 
             // 模拟没有医案引用 - 通过DbContext查询
             // 由于使用InMemory数据库，默认为空
@@ -781,7 +788,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Arrange
             var patientId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(patientId)).ReturnsAsync((Patient?)null);
+            _repositoryMock.GetByIdAsync(patientId).Returns((Patient?)null);
 
             // Act
             var result = await _patientService.CheckReferenceAsync(patientId);
@@ -807,8 +814,8 @@ namespace LYBT.Module.Patients.Tests.Services
             var patient1 = CreateTestPatient(id1);
             var patient2 = CreateTestPatient(id2);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(patient1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(patient2);
+            _repositoryMock.GetByIdAsync(id1).Returns(patient1);
+            _repositoryMock.GetByIdAsync(id2).Returns(patient2);
 
             // Act
             var result = await _patientService.BatchCheckReferenceAsync(ids);

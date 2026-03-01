@@ -1,4 +1,5 @@
 using LYBT.Entities.Formulas;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Mapping;
@@ -22,15 +23,18 @@ public class FormulaImportExportService : IFormulaImportExportService
     private readonly IHerbCrossModuleService _crossModuleQuery;
     private readonly ILogger<FormulaImportExportService> _logger;
     private readonly FormulaMapper _mapper = new();
+    private readonly ICacheInvalidationService _cacheInvalidation;
 
     public FormulaImportExportService(
         IFormulaRepository repository,
         IHerbCrossModuleService crossModuleQuery,
-        ILogger<FormulaImportExportService> logger)
+        ILogger<FormulaImportExportService> logger,
+        ICacheInvalidationService cacheInvalidation)
     {
         _repository = repository;
         _crossModuleQuery = crossModuleQuery;
         _logger = logger;
+        _cacheInvalidation = cacheInvalidation;
     }
 
     /// <summary>
@@ -140,6 +144,11 @@ public class FormulaImportExportService : IFormulaImportExportService
         result.EndTime = DateTime.Now;
         result.IsSuccess = true;
         result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条，药材匹配 {result.MatchedHerbsCount} 个，未匹配 {result.UnmatchedHerbsCount} 个";
+
+        if (result.SuccessCount > 0)
+        {
+            await _cacheInvalidation.InvalidateAsync("formulas");
+        }
 
         return Result<FormulaBatchImportResultDto>.Success(result);
     }
@@ -331,7 +340,7 @@ public class FormulaImportExportService : IFormulaImportExportService
     }
 
     /// <summary>
-    /// 尝试匹配药材 - 使用ICrossModuleService
+    /// 尝试匹配药材 - 通过 IHerbCrossModuleService
     /// </summary>
     private async Task<HerbBasicDto?> TryMatchHerbAsync(string herbName)
     {

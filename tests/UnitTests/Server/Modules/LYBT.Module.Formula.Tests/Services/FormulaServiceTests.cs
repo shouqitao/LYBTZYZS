@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
-using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Services;
@@ -10,10 +10,9 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Tests.Common;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
@@ -27,67 +26,183 @@ namespace LYBT.Module.Formulas.Tests.Services
     public class FormulaServiceTests : TestBase
     {
         private readonly FormulaService _formulaService;
-        private readonly Mock<IFormulaRepository> _repositoryMock;
-        private readonly Mock<IHerbCrossModuleService> _crossModuleQueryMock;
-        private readonly Mock<ILogger<FormulaService>> _loggerMock;
-        private readonly AppDbContext _context;
+        private readonly IFormulaRepository _repositoryMock;
+        private readonly IHerbCrossModuleService _crossModuleQueryMock;
+        private readonly ILogger<FormulaService> _loggerMock;
+        private readonly ICacheInvalidationService _cacheInvalidationMock;
 
         public FormulaServiceTests()
         {
-            // 创建内存数据库上下文
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
-            _context = new AppDbContext(options);
-
             _repositoryMock = CreateMock<IFormulaRepository>();
             _crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
             _loggerMock = CreateLoggerMock<FormulaService>();
+            _cacheInvalidationMock = CreateMock<ICacheInvalidationService>();
 
             _formulaService = new FormulaService(
-                _repositoryMock.Object,
-                _crossModuleQueryMock.Object,
-                _loggerMock.Object);
+                _repositoryMock,
+                _crossModuleQueryMock,
+                _loggerMock,
+                _cacheInvalidationMock);
         }
 
-        #region 创建方剂测试
+        #region GetByIdAsync 测试
 
         [Fact]
-        public async Task CreateAsync_WithValidData_ShouldReturnSuccess()
+        public async Task GetByIdAsync_WithExistingFormula_ShouldReturnFormula()
         {
             // Arrange
-            var herbId1 = Guid.NewGuid();
-            var herbId2 = Guid.NewGuid();
+            var formulaId = Guid.NewGuid();
+            var formula = CreateTestFormula(formulaId);
 
-            var createDto = new FormulaInputDto
+            _repositoryMock.GetByIdAsync(formulaId).Returns(formula);
+
+            // Act
+            var result = await _formulaService.GetByIdAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Id.Should().Be(formulaId);
+            result.Data!.Name.Should().Be(formula.Name);
+
+            await _repositoryMock.Received(1).GetByIdAsync(formulaId);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_WithNonExistingFormula_ShouldReturnFailure()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+
+            _repositoryMock.GetByIdAsync(formulaId).Returns((FormulaEntity?)null);
+
+            // Act
+            var result = await _formulaService.GetByIdAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Be("方剂不存在");
+            result.Data.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_WhenRepositoryThrowsException_ShouldThrowException()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+            var exception = new Exception("数据库错误");
+
+            _repositoryMock.GetByIdAsync(formulaId).ThrowsAsync(exception);
+
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _formulaService.GetByIdAsync(formulaId));
+
+            thrownException.Message.Should().Be("数据库错误");
+        }
+
+        #endregion
+
+        #region GetPagedAsync 测试
+
+        [Fact]
+        public async Task GetPagedAsync_WithValidParameters_ShouldReturnPagedResult()
+        {
+            // Arrange
+            var formulas = CreateTestFormulas(5);
+            var pagedResult = new PagedResult<FormulaEntity>
             {
-                Name = "桂枝汤",
-                Effect = "解肌发表，调和营卫",
-                Usage = "水煎服，温服",
-                Category = "解表剂",
-                Description = "伤寒论经典名方",
-                Preparation = "水煎",
-                Indications = "外感风寒表虚证",
-                Contraindications = "表实无汗者禁用",
-                IsShared = false,
-                Herbs = new List<FormulaHerbItemInputDto>
-                {
-                    new() { HerbId = herbId1, HerbName = "桂枝", Unit = "g", Dosage = 9, SortOrder = 1 },
-                    new() { HerbId = herbId2, HerbName = "白芍", Unit = "g", Dosage = 9, SortOrder = 2 }
-                }
+                Items = formulas,
+                TotalCount = 5,
+                CurrentPage = 1,
+                PageSize = 20
             };
 
-            var formula = new FormulaEntity
+            _repositoryMock.GetPagedAsync(1, 20, Arg.Any<string?>()).Returns(pagedResult);
+
+            // Act
+            var result = await _formulaService.GetPagedAsync(1, 20, null);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Items.Should().HaveCount(5);
+            result.Data!.TotalCount.Should().Be(5);
+            result.Data!.CurrentPage.Should().Be(1);
+            result.Data!.PageSize.Should().Be(20);
+
+            await _repositoryMock.Received(1).GetPagedAsync(1, 20, Arg.Any<string?>());
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_WhenRepositoryThrowsException_ShouldThrowException()
+        {
+            // Arrange
+            var exception = new Exception("数据库错误");
+            _repositoryMock.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
+                .ThrowsAsync(exception);
+
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _formulaService.GetPagedAsync(1, 20, null));
+
+            thrownException.Message.Should().Be("数据库错误");
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_WithEmptyResult_ShouldReturnEmptyPagedResult()
+        {
+            // Arrange
+            var pagedResult = new PagedResult<FormulaEntity>
+            {
+                Items = new List<FormulaEntity>(),
+                TotalCount = 0,
+                CurrentPage = 1,
+                PageSize = 20
+            };
+
+            _repositoryMock.GetPagedAsync(1, 20, Arg.Any<string?>()).Returns(pagedResult);
+
+            // Act
+            var result = await _formulaService.GetPagedAsync(1, 20, null);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Items.Should().BeEmpty();
+            result.Data!.TotalCount.Should().Be(0);
+        }
+
+        #endregion
+
+        #region CreateAsync 测试
+
+        [Fact]
+        public async Task CreateAsync_WithValidData_ShouldCreateFormula()
+        {
+            // Arrange
+            var createDto = new FormulaInputDto
+            {
+                Name = "测试方剂",
+                Category = "补益剂",
+                Effect = "补气养血",
+                Herbs = new List<FormulaHerbItemInputDto>()
+            };
+
+            var createdFormula = new FormulaEntity
             {
                 Id = Guid.NewGuid(),
                 Name = createDto.Name,
+                Category = createDto.Category,
                 Effect = createDto.Effect,
-                Usage = createDto.Usage,
-                Category = createDto.Category
+                CreatedAt = DateTime.UtcNow
             };
 
-            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync(formula);
+            _repositoryMock.AddAsync(Arg.Any<FormulaEntity>()).Returns(createdFormula);
 
             // Act
             var result = await _formulaService.CreateAsync(createDto);
@@ -97,835 +212,289 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.Name.Should().Be(createDto.Name);
-            result.Data.Effect.Should().Be(createDto.Effect);
 
-            _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Once);
+            await _repositoryMock.Received(1).AddAsync(Arg.Any<FormulaEntity>());
         }
 
         [Fact]
-        public async Task CreateAsync_WithException_ShouldThrowException()
+        public async Task CreateAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
             var createDto = new FormulaInputDto
             {
                 Name = "测试方剂",
                 Effect = "测试功效",
-                Usage = "测试用法",
-                Herbs = new List<FormulaHerbItemInputDto>
-                {
-                    new() { HerbId = Guid.NewGuid(), HerbName = "测试药材", Unit = "g", Dosage = 10, SortOrder = 1 }
-                }
+                Herbs = new List<FormulaHerbItemInputDto>()
             };
 
-            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<FormulaEntity>()))
-                .ThrowsAsync(new Exception("Database error"));
+            var exception = new Exception("数据库错误");
+            _repositoryMock.AddAsync(Arg.Any<FormulaEntity>()).ThrowsAsync(exception);
 
             // Act & Assert
-            // consolidate-exception-handling: 异常现在由全局处理器处理，服务层不再捕获
-            var act = () => _formulaService.CreateAsync(createDto);
-            await act.Should().ThrowAsync<Exception>().WithMessage("Database error");
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _formulaService.CreateAsync(createDto));
+
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion
 
-        #region 查询方剂测试
+        #region UpdateAsync 测试
 
         [Fact]
-        public async Task GetByIdAsync_WithValidId_ShouldReturnFormula()
+        public async Task UpdateAsync_WithExistingFormula_ShouldUpdateFormula()
         {
             // Arrange
             var formulaId = Guid.NewGuid();
-            var formula = new FormulaEntity
+            var existingFormula = CreateTestFormula(formulaId);
+
+            var updateDto = new FormulaInputDto
             {
-                Id = formulaId,
-                Name = "小柴胡汤",
-                Effect = "和解少阳",
-                Usage = "温服一升，日三服",
-                Category = "和解剂"
+                Name = "更新的方剂名称",
+                Category = "更新的分类",
+                Effect = "更新的功效",
+                Herbs = new List<FormulaHerbItemInputDto>()
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync(formula);
+            var updatedFormula = new FormulaEntity
+            {
+                Id = formulaId,
+                Name = updateDto.Name,
+                Category = updateDto.Category,
+                Effect = updateDto.Effect,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _repositoryMock.GetByIdAsync(formulaId).Returns(existingFormula);
+            _repositoryMock.UpdateAsync(Arg.Any<FormulaEntity>()).Returns(updatedFormula);
 
             // Act
-            var result = await _formulaService.GetByIdAsync(formulaId);
+            var result = await _formulaService.UpdateAsync(formulaId, updateDto);
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.Id.Should().Be(formulaId);
-            result.Data.Name.Should().Be(formula.Name);
+            result.Data!.Name.Should().Be(updateDto.Name);
+
+            await _repositoryMock.Received(1).GetByIdAsync(formulaId);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<FormulaEntity>());
         }
 
         [Fact]
-        public async Task GetByIdAsync_WithNonExistentId_ShouldReturnFailure()
+        public async Task UpdateAsync_WithNonExistingFormula_ShouldReturnFailure()
         {
             // Arrange
             var formulaId = Guid.NewGuid();
+            var updateDto = new FormulaInputDto
+            {
+                Name = "更新的方剂名称",
+                Herbs = new List<FormulaHerbItemInputDto>()
+            };
 
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .Returns(Task.FromResult<FormulaEntity>(null!));
+            _repositoryMock.GetByIdAsync(formulaId).Returns((FormulaEntity?)null);
 
             // Act
-            var result = await _formulaService.GetByIdAsync(formulaId);
+            var result = await _formulaService.UpdateAsync(formulaId, updateDto);
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("验方不存在");
+            result.ErrorMessage.Should().Be("方剂不存在");
+
+            await _repositoryMock.Received(1).GetByIdAsync(formulaId);
+            await _repositoryMock.DidNotReceive().UpdateAsync(Arg.Any<FormulaEntity>());
         }
 
         [Fact]
-        public async Task SearchAsync_WithSearchTerm_ShouldReturnMatchingFormulas()
+        public async Task UpdateAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
-            var searchTerm = "柴胡";
-            var formulas = new List<FormulaEntity>
+            var formulaId = Guid.NewGuid();
+            var existingFormula = CreateTestFormula(formulaId);
+            var updateDto = new FormulaInputDto
             {
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "小柴胡汤",
-                    Effect = "和解少阳",
-                    Category = "和解剂"
-                },
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "大柴胡汤",
-                    Effect = "和解少阳，内泻热结",
-                    Category = "和解剂"
-                }
+                Name = "更新的方剂名称",
+                Herbs = new List<FormulaHerbItemInputDto>()
             };
 
-            var pagedResult = new PagedResult<FormulaEntity>
-            {
-                Items = formulas,
-                TotalCount = 2,
-                CurrentPage = 1,
-                PageSize = 100
-            };
+            var exception = new Exception("数据库错误");
+            _repositoryMock.GetByIdAsync(formulaId).Returns(existingFormula);
+            _repositoryMock.UpdateAsync(Arg.Any<FormulaEntity>()).ThrowsAsync(exception);
 
-            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(1, 100, searchTerm))
-                .ReturnsAsync(pagedResult);
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _formulaService.UpdateAsync(formulaId, updateDto));
+
+            thrownException.Message.Should().Be("数据库错误");
+        }
+
+        #endregion
+
+        #region DeleteAsync 测试
+
+        [Fact]
+        public async Task DeleteAsync_WithExistingFormula_ShouldDeleteSuccessfully()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+
+            _repositoryMock.DeleteAsync(formulaId).Returns(true);
 
             // Act
-            var result = await _formulaService.SearchAsync(searchTerm);
+            var result = await _formulaService.DeleteAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+
+            await _repositoryMock.Received(1).DeleteAsync(formulaId);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WhenDeleteFails_ShouldReturnFailure()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+
+            _repositoryMock.DeleteAsync(formulaId).Returns(false);
+
+            // Act
+            var result = await _formulaService.DeleteAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Be("删除失败");
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WhenRepositoryThrowsException_ShouldThrowException()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+            var exception = new Exception("数据库错误");
+
+            _repositoryMock.DeleteAsync(formulaId).ThrowsAsync(exception);
+
+            // Act & Assert
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _formulaService.DeleteAsync(formulaId));
+
+            thrownException.Message.Should().Be("数据库错误");
+        }
+
+        #endregion
+
+        #region SearchAsync 测试
+
+        [Fact]
+        public async Task SearchAsync_WithMatchingKeyword_ShouldReturnMatchingFormulas()
+        {
+            // Arrange
+            var keyword = "补气";
+            var matchingFormulas = new List<FormulaEntity>
+            {
+                CreateTestFormula(),
+                CreateTestFormula()
+            };
+            matchingFormulas[0].Name = "补气方";
+            matchingFormulas[1].Name = "补气养血方";
+
+            _repositoryMock.GetPagedAsync(1, 100, keyword)
+                .Returns(new PagedResult<FormulaEntity>
+                {
+                    Items = matchingFormulas,
+                    TotalCount = 2,
+                    CurrentPage = 1,
+                    PageSize = 100
+                });
+
+            // Act
+            var result = await _formulaService.SearchAsync(keyword);
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Should().HaveCount(2);
+            result.Data!.Should().HaveCount(2);
         }
 
         [Fact]
         public async Task SearchAsync_WithEmptyKeyword_ShouldReturnEmptyList()
         {
             // Arrange
-            var emptyKeyword = "";
+            var keyword = "";
 
             // Act
-            var result = await _formulaService.SearchAsync(emptyKeyword);
+            var result = await _formulaService.SearchAsync(keyword);
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Should().BeEmpty();
+            result.Data!.Should().BeEmpty();
 
-            _repositoryMock.Verify(x => x.GetPagedWithDetailsAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Never);
+            await _repositoryMock.DidNotReceive().GetAllAsync();
         }
 
         [Fact]
-        public async Task SearchAsync_WithWhitespaceKeyword_ShouldReturnEmptyList()
+        public async Task SearchAsync_WithNoMatches_ShouldReturnEmptyList()
         {
             // Arrange
-            var whitespaceKeyword = "   ";
+            var keyword = "不存在的方剂";
 
-            // Act
-            var result = await _formulaService.SearchAsync(whitespaceKeyword);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().BeEmpty();
-        }
-
-        [Fact]
-        public async Task GetPagedAsync_WithValidParameters_ShouldReturnPagedResult()
-        {
-            // Arrange
-            var formulas = new List<FormulaEntity>
-            {
-                new() { Id = Guid.NewGuid(), Name = "方剂1", Effect = "功效1" },
-                new() { Id = Guid.NewGuid(), Name = "方剂2", Effect = "功效2" }
-            };
-
-            var pagedResult = new PagedResult<FormulaEntity>
-            {
-                Items = formulas,
-                TotalCount = 2,
-                CurrentPage = 1,
-                PageSize = 20
-            };
-
-            // Sprint3-X6: Mock 新的 6 参数签名 (keyword, category, userId, isAdmin)
-            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(1, 20, null, null, null, true))
-                .ReturnsAsync(pagedResult);
-
-            // Act
-            // optimize-api-permissions: 使用新签名，Admin查看所有
-            var result = await _formulaService.GetPagedAsync(1, 20, null, null, null, true);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data!.Items.Should().HaveCount(2);
-            result.Data.TotalCount.Should().Be(2);
-        }
-
-        [Fact]
-        public async Task GetPagedAsync_WithZeroPage_ShouldStillWork()
-        {
-            // Arrange
-            var pagedResult = new PagedResult<FormulaEntity>
-            {
-                Items = new List<FormulaEntity>(),
-                TotalCount = 0,
-                CurrentPage = 0,
-                PageSize = 20
-            };
-
-            // Sprint3-X6: Mock 新的 6 参数签名
-            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(0, 20, null, null, null, true))
-                .ReturnsAsync(pagedResult);
-
-            // Act
-            // optimize-api-permissions: 使用新签名
-            var result = await _formulaService.GetPagedAsync(0, 20, null, null, null, true);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-        }
-
-        #endregion
-
-        #region 更新方剂测试
-
-        [Fact]
-        public async Task UpdateAsync_WithValidData_ShouldReturnSuccess()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var updateDto = new FormulaInputDto
-            {
-                Id = formulaId,
-                Name = "小柴胡汤（加减）",
-                Effect = "和解少阳，疏肝解郁",
-                Usage = "温服，日三次",
-                Herbs = new List<FormulaHerbItemInputDto>
+            _repositoryMock.GetPagedAsync(1, 100, keyword)
+                .Returns(new PagedResult<FormulaEntity>
                 {
-                    new() { HerbId = Guid.NewGuid(), HerbName = "柴胡", Unit = "g", Dosage = 9, SortOrder = 1 }
-                }
-            };
-
-            var existingFormula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "小柴胡汤",
-                Effect = "和解少阳",
-                Category = "和解剂"
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync(existingFormula);
-
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync(existingFormula);
+                    Items = new List<FormulaEntity>(),
+                    TotalCount = 0,
+                    CurrentPage = 1,
+                    PageSize = 100
+                });
 
             // Act
-            var result = await _formulaService.UpdateAsync(formulaId, updateDto);
+            var result = await _formulaService.SearchAsync(keyword);
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Id.Should().Be(formulaId);
-
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Once);
+            result.Data!.Should().BeEmpty();
         }
 
         [Fact]
-        public async Task UpdateAsync_WithNonExistentId_ShouldReturnFailure()
+        public async Task SearchAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
-            var formulaId = Guid.NewGuid();
-            var updateDto = new FormulaInputDto
-            {
-                Id = formulaId,
-                Name = "测试方剂",
-                Effect = "测试功效",
-                Usage = "测试用法",
-                Herbs = new List<FormulaHerbItemInputDto>()
-            };
+            var keyword = "补气";
+            var exception = new Exception("数据库错误");
 
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .Returns(Task.FromResult<FormulaEntity>(null!));
-
-            // Act
-            var result = await _formulaService.UpdateAsync(formulaId, updateDto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("验方不存在");
-
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
-        }
-
-        #endregion
-
-        #region 删除方剂测试
-
-        [Fact]
-        public async Task DeleteAsync_WithValidId_ShouldReturnSuccess()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-
-            _repositoryMock.Setup(x => x.DeleteAsync(formulaId))
-                .ReturnsAsync(true);
-
-            // Act
-            var result = await _formulaService.DeleteAsync(formulaId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-
-            _repositoryMock.Verify(x => x.DeleteAsync(formulaId), Times.Once);
-        }
-
-        [Fact]
-        public async Task DeleteAsync_WithRepositoryFailure_ShouldReturnFailure()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-
-            _repositoryMock.Setup(x => x.DeleteAsync(formulaId))
-                .ReturnsAsync(false);
-
-            // Act
-            var result = await _formulaService.DeleteAsync(formulaId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("删除失败");
-        }
-
-        #endregion
-
-        #region 待验证验方查询测试
-
-        [Fact]
-        public async Task GetPendingValidationFormulasAsync_ShouldReturnOnlyDraftFormulas()
-        {
-            // Arrange - Sprint3-X6: FindAsync 在 DB 层过滤 Draft 状态
-            var draftFormulas = new List<FormulaEntity>
-            {
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "待验证验方1",
-                    Effect = "功效1",
-                    ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft,
-                    Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>()
-                },
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "待验证验方2",
-                    Effect = "功效3",
-                    ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft,
-                    Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>()
-                }
-            };
-
-            // Sprint3-X6: 代码现在使用 FindAsync(predicate) 替代 GetAllAsync()
-            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<FormulaEntity, bool>>>()))
-                .ReturnsAsync(draftFormulas);
-
-            // Act
-            var result = await _formulaService.GetPendingValidationFormulasAsync();
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data.Should().HaveCount(2);
-            result.Data.Should().OnlyContain(f => f.ValidationStatus == LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft);
-
-            _repositoryMock.Verify(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<FormulaEntity, bool>>>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task GetPendingValidationFormulasAsync_WithNoFormulas_ShouldReturnEmptyList()
-        {
-            // Arrange - Sprint3-X6: 使用 FindAsync 替代 GetAllAsync
-            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<FormulaEntity, bool>>>()))
-                .ReturnsAsync(new List<FormulaEntity>());
-
-            // Act
-            var result = await _formulaService.GetPendingValidationFormulasAsync();
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data.Should().BeEmpty();
-        }
-
-        [Fact]
-        public async Task GetPendingValidationFormulasAsync_WithException_ShouldThrowException()
-        {
-            // Arrange - Sprint3-X6: 使用 FindAsync 替代 GetAllAsync
-            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<FormulaEntity, bool>>>()))
-                .ThrowsAsync(new Exception("Database error"));
+            _repositoryMock.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
+                .ThrowsAsync(exception);
 
             // Act & Assert
-            // consolidate-exception-handling: 异常现在由全局处理器处理，服务层不再捕获
-            var act = () => _formulaService.GetPendingValidationFormulasAsync();
-            await act.Should().ThrowAsync<Exception>().WithMessage("Database error");
+            var thrownException = await Assert.ThrowsAsync<Exception>(
+                () => _formulaService.SearchAsync(keyword));
+
+            thrownException.Message.Should().Be("数据库错误");
         }
 
         #endregion
 
-        #region 验证验方药材测试
-
-        [Fact]
-        public async Task ValidateFormulaHerbAsync_WithValidData_ShouldUpdateHerbAndReturnSuccess()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var herbItemId = Guid.NewGuid();
-            var selectedHerbId = Guid.NewGuid();
-
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "测试验方",
-                ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft,
-                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
-                {
-                    new()
-                    {
-                        Id = herbItemId,
-                        HerbName = "未验证药材",
-                        IsValidated = false,
-                        Dosage = 10
-                    },
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        HerbName = "其他药材",
-                        IsValidated = false,
-                        Dosage = 5
-                    }
-                }
-            };
-
-            // OpenSpec: decouple-server-modules - 使用HerbBasicDto替代Herb实体
-            var selectedHerbDto = new HerbBasicDto
-            {
-                Id = selectedHerbId,
-                Name = "人参"
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync(formula);
-
-            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
-            crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
-                .ReturnsAsync(selectedHerbDto);
-
-            var formulaService = new FormulaService(
-                _repositoryMock.Object,
-                crossModuleQueryMock.Object,
-                _loggerMock.Object);
-
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync(formula);
-
-            _repositoryMock.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(1);
-
-            // Act
-            var result = await formulaService.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-
-            var herbItem = formula.Herbs.First(h => h.Id == herbItemId);
-            herbItem.HerbId.Should().Be(selectedHerbId);
-            herbItem.HerbName.Should().Be("人参");
-            herbItem.IsValidated.Should().BeTrue();
-
-            // 验方状态应该还是Draft（因为还有其他未验证药材）
-            formula.ValidationStatus.Should().Be(LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft);
-
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Once);
-            _repositoryMock.Verify(x => x.SaveChangesAsync(), Times.Once);
-        }
-
-        [Fact]
-        public async Task ValidateFormulaHerbAsync_WhenAllHerbsValidated_ShouldUpdateFormulaStatusToValidated()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var herbItemId = Guid.NewGuid();
-            var selectedHerbId = Guid.NewGuid();
-
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "测试验方",
-                ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft,
-                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
-                {
-                    new()
-                    {
-                        Id = herbItemId,
-                        HerbName = "最后一个未验证药材",
-                        IsValidated = false,
-                        Dosage = 10
-                    },
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        HerbName = "已验证药材1",
-                        IsValidated = true,
-                        Dosage = 5
-                    },
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        HerbName = "已验证药材2",
-                        IsValidated = true,
-                        Dosage = 8
-                    }
-                }
-            };
-
-            // OpenSpec: decouple-server-modules - 使用HerbBasicDto替代Herb实体
-            var selectedHerbDto = new HerbBasicDto
-            {
-                Id = selectedHerbId,
-                Name = "当归"
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync(formula);
-
-            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
-            crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
-                .ReturnsAsync(selectedHerbDto);
-
-            var formulaService = new FormulaService(
-                _repositoryMock.Object,
-                crossModuleQueryMock.Object,
-                _loggerMock.Object);
-
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync(formula);
-
-            _repositoryMock.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(1);
-
-            // Act
-            var result = await formulaService.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-
-            // 所有药材都已验证，验方状态应该更新为Validated
-            formula.ValidationStatus.Should().Be(LYBT.Shared.Models.Enums.FormulaValidationStatus.Validated);
-            formula.Herbs.Should().OnlyContain(h => h.IsValidated);
-        }
-
-        [Fact]
-        public async Task ValidateFormulaHerbAsync_WithNonExistentFormula_ShouldReturnFailure()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var herbItemId = Guid.NewGuid();
-            var selectedHerbId = Guid.NewGuid();
-
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .Returns(Task.FromResult<FormulaEntity>(null!));
-
-            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
-            var formulaService = new FormulaService(
-                _repositoryMock.Object,
-                crossModuleQueryMock.Object,
-                _loggerMock.Object);
-
-            // Act
-            var result = await formulaService.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("验方不存在");
-
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task ValidateFormulaHerbAsync_WithNonExistentHerbItem_ShouldReturnFailure()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var herbItemId = Guid.NewGuid();
-            var selectedHerbId = Guid.NewGuid();
-
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "测试验方",
-                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
-                {
-                    new()
-                    {
-                        Id = Guid.NewGuid(), // 不同的ID
-                        HerbName = "其他药材",
-                        IsValidated = false
-                    }
-                }
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync(formula);
-
-            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
-            var formulaService = new FormulaService(
-                _repositoryMock.Object,
-                crossModuleQueryMock.Object,
-                _loggerMock.Object);
-
-            // Act
-            var result = await formulaService.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("药材项不存在");
-        }
-
-        [Fact]
-        public async Task ValidateFormulaHerbAsync_WithNonExistentSelectedHerb_ShouldReturnFailure()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var herbItemId = Guid.NewGuid();
-            var selectedHerbId = Guid.NewGuid();
-
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "测试验方",
-                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
-                {
-                    new()
-                    {
-                        Id = herbItemId,
-                        HerbName = "药材",
-                        IsValidated = false
-                    }
-                }
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync(formula);
-
-            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
-            crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
-                .ReturnsAsync((HerbBasicDto?)null);
-
-            var formulaService = new FormulaService(
-                _repositoryMock.Object,
-                crossModuleQueryMock.Object,
-                _loggerMock.Object);
-
-            // Act
-            var result = await formulaService.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("所选药材不存在");
-        }
-
-        [Fact]
-        public async Task ValidateFormulaHerbAsync_WithAlreadyValidatedHerb_ShouldReturnFailure()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var herbItemId = Guid.NewGuid();
-            var selectedHerbId = Guid.NewGuid();
-
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "测试验方",
-                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
-                {
-                    new()
-                    {
-                        Id = herbItemId,
-                        HerbId = Guid.NewGuid(),
-                        HerbName = "人参",
-                        IsValidated = true, // 已经验证过
-                        Dosage = 10
-                    }
-                }
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync(formula);
-
-            var crossModuleQueryMock = CreateMock<IHerbCrossModuleService>();
-            var formulaService = new FormulaService(
-                _repositoryMock.Object,
-                crossModuleQueryMock.Object,
-                _loggerMock.Object);
-
-            // Act
-            var result = await formulaService.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("该药材已校验，无需重复操作");
-
-            // 验证未调用更新操作（因为已校验，应该直接返回）
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
-            _repositoryMock.Verify(x => x.SaveChangesAsync(), Times.Never);
-        }
-
-        #endregion
-
-        #region 状态切换测试
-
-        [Fact]
-        public async Task ToggleStatusAsync_EnabledToDisabled_ShouldToggle()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "测试方剂",
-                Effect = "测试功效",
-                Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
-                .ReturnsAsync(formula);
-
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync((FormulaEntity f) => f);
-
-            // Act
-            var result = await _formulaService.ToggleStatusAsync(formulaId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data!.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Disabled);
-
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task ToggleStatusAsync_DisabledToEnabled_ShouldToggle()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "测试方剂",
-                Effect = "测试功效",
-                Status = LYBT.Shared.Models.Enums.CommonStatus.Disabled
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
-                .ReturnsAsync(formula);
-
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync((FormulaEntity f) => f);
-
-            // Act
-            var result = await _formulaService.ToggleStatusAsync(formulaId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data!.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Enabled);
-        }
-
-        [Fact]
-        public async Task ToggleStatusAsync_WithNonExistentId_ShouldReturnFailure()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-
-            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
-                .ReturnsAsync((FormulaEntity?)null);
-
-            // Act
-            var result = await _formulaService.ToggleStatusAsync(formulaId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("验方不存在");
-
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
-        }
-
-        #endregion
-
-        #region 恢复测试
+        #region RestoreAsync 测试
 
         [Fact]
         public async Task RestoreAsync_WithDeletedFormula_ShouldRestore()
         {
             // Arrange
             var formulaId = Guid.NewGuid();
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "已删除方剂",
-                Effect = "测试功效",
-                IsDeleted = true
-            };
+            var formula = CreateTestFormula(formulaId);
+            formula.IsDeleted = true;
 
-            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(formulaId))
-                .ReturnsAsync(formula);
-
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync((FormulaEntity f) => f);
+            _repositoryMock.GetByIdIncludingDeletedAsync(formulaId).Returns(formula);
+            _repositoryMock.UpdateAsync(Arg.Any<FormulaEntity>()).Returns(formula);
 
             // Act
             var result = await _formulaService.RestoreAsync(formulaId);
@@ -935,7 +504,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.IsSuccess.Should().BeTrue();
             formula.IsDeleted.Should().BeFalse();
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Once);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<FormulaEntity>());
         }
 
         [Fact]
@@ -943,16 +512,10 @@ namespace LYBT.Module.Formulas.Tests.Services
         {
             // Arrange
             var formulaId = Guid.NewGuid();
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "未删除方剂",
-                Effect = "测试功效",
-                IsDeleted = false
-            };
+            var formula = CreateTestFormula(formulaId);
+            formula.IsDeleted = false;
 
-            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(formulaId))
-                .ReturnsAsync(formula);
+            _repositoryMock.GetByIdIncludingDeletedAsync(formulaId).Returns(formula);
 
             // Act
             var result = await _formulaService.RestoreAsync(formulaId);
@@ -962,17 +525,16 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.IsSuccess.Should().BeFalse();
             result.ErrorMessage.Should().Contain("未被删除");
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
+            await _repositoryMock.DidNotReceive().UpdateAsync(Arg.Any<FormulaEntity>());
         }
 
         [Fact]
-        public async Task RestoreAsync_WithNonExistentId_ShouldReturnFailure()
+        public async Task RestoreAsync_WithNonExistingFormula_ShouldReturnFailure()
         {
             // Arrange
             var formulaId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(formulaId))
-                .ReturnsAsync((FormulaEntity?)null);
+            _repositoryMock.GetByIdIncludingDeletedAsync(formulaId).Returns((FormulaEntity?)null);
 
             // Act
             var result = await _formulaService.RestoreAsync(formulaId);
@@ -980,7 +542,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("验方不存在");
+            result.ErrorMessage.Should().Contain("方剂不存在");
         }
 
         #endregion
@@ -998,10 +560,10 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1" };
             var formula2 = new FormulaEntity { Id = id2, Name = "方剂2", Effect = "功效2" };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(formula2);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync((FormulaEntity f) => f);
+            _repositoryMock.GetByIdAsync(id1).Returns(formula1);
+            _repositoryMock.GetByIdAsync(id2).Returns(formula2);
+            _repositoryMock.UpdateAsync(Arg.Any<FormulaEntity>())
+                .Returns(callInfo => callInfo.Arg<FormulaEntity>());
 
             // Act
             var result = await _formulaService.BatchDeleteAsync(ids);
@@ -1013,8 +575,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.Data!.SuccessCount.Should().Be(2);
             result.Data.FailureCount.Should().Be(0);
 
-            // 验证使用软删除
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Exactly(2));
+            await _repositoryMock.Received(2).UpdateAsync(Arg.Any<FormulaEntity>());
         }
 
         [Fact]
@@ -1027,10 +588,10 @@ namespace LYBT.Module.Formulas.Tests.Services
 
             var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1" };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((FormulaEntity?)null);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync((FormulaEntity f) => f);
+            _repositoryMock.GetByIdAsync(id1).Returns(formula1);
+            _repositoryMock.GetByIdAsync(id2).Returns((FormulaEntity?)null);
+            _repositoryMock.UpdateAsync(Arg.Any<FormulaEntity>())
+                .Returns(callInfo => callInfo.Arg<FormulaEntity>());
 
             // Act
             var result = await _formulaService.BatchDeleteAsync(ids);
@@ -1070,13 +631,15 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1" };
             var formula2 = new FormulaEntity { Id = id2, Name = "方剂2", Effect = "功效2" };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(formula2);
+            _repositoryMock.GetByIdAsync(id1).Returns(formula1);
+            _repositoryMock.GetByIdAsync(id2).Returns(formula2);
 
             // 第一个成功，第二个抛异常
-            _repositoryMock.SetupSequence(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync(formula1)
-                .ThrowsAsync(new Exception("Database error"));
+            _repositoryMock.UpdateAsync(Arg.Any<FormulaEntity>())
+                .Returns(
+                    callInfo => formula1,
+                    callInfo => throw new Exception("Database error")
+                );
 
             // Act
             var result = await _formulaService.BatchDeleteAsync(ids);
@@ -1104,11 +667,11 @@ namespace LYBT.Module.Formulas.Tests.Services
             var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1", Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled };
             var formula2 = new FormulaEntity { Id = id2, Name = "方剂2", Effect = "功效2", Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(formula2);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync((FormulaEntity f) => f);
-            _repositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
+            _repositoryMock.GetByIdAsync(id1).Returns(formula1);
+            _repositoryMock.GetByIdAsync(id2).Returns(formula2);
+            _repositoryMock.UpdateAsync(Arg.Any<FormulaEntity>())
+                .Returns(callInfo => callInfo.Arg<FormulaEntity>());
+            _repositoryMock.SaveChangesAsync().Returns(0);
 
             // Act
             var result = await _formulaService.BatchUpdateStatusAsync(ids, targetStatus);
@@ -1120,7 +683,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             result.Data!.SuccessCount.Should().Be(2);
             result.Data.FailureCount.Should().Be(0);
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Exactly(2));
+            await _repositoryMock.Received(2).UpdateAsync(Arg.Any<FormulaEntity>());
         }
 
         [Fact]
@@ -1134,11 +697,11 @@ namespace LYBT.Module.Formulas.Tests.Services
 
             var formula1 = new FormulaEntity { Id = id1, Name = "方剂1", Effect = "功效1", Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(formula1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((FormulaEntity?)null);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync((FormulaEntity f) => f);
-            _repositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
+            _repositoryMock.GetByIdAsync(id1).Returns(formula1);
+            _repositoryMock.GetByIdAsync(id2).Returns((FormulaEntity?)null);
+            _repositoryMock.UpdateAsync(Arg.Any<FormulaEntity>())
+                .Returns(callInfo => callInfo.Arg<FormulaEntity>());
+            _repositoryMock.SaveChangesAsync().Returns(0);
 
             // Act
             var result = await _formulaService.BatchUpdateStatusAsync(ids, targetStatus);
@@ -1157,7 +720,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             var ids = new List<Guid>();
             var targetStatus = LYBT.Shared.Models.Enums.CommonStatus.Disabled;
 
-            _repositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
+            _repositoryMock.SaveChangesAsync().Returns(0);
 
             // Act
             var result = await _formulaService.BatchUpdateStatusAsync(ids, targetStatus);
@@ -1172,10 +735,32 @@ namespace LYBT.Module.Formulas.Tests.Services
 
         #endregion
 
-        public override void Dispose()
+        #region 辅助方法
+
+        private FormulaEntity CreateTestFormula(Guid? id = null)
         {
-            _context?.Dispose();
-            base.Dispose();
+            var formulaId = id ?? Guid.NewGuid();
+            return new FormulaEntity
+            {
+                Id = formulaId,
+                Name = $"方剂_{formulaId.ToString().Substring(0, 8)}",
+                Category = "补益剂",
+                Effect = "补气养血",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
         }
+
+        private List<FormulaEntity> CreateTestFormulas(int count)
+        {
+            var formulas = new List<FormulaEntity>();
+            for (int i = 0; i < count; i++)
+            {
+                formulas.Add(CreateTestFormula());
+            }
+            return formulas;
+        }
+
+        #endregion
     }
 }

@@ -2,6 +2,7 @@ using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using LYBT.Entities.Herbs;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Services;
@@ -24,12 +25,14 @@ public class HerbServiceTests : IDisposable
     private readonly IHerbRepository _repositoryMock;
     private readonly IValidator<HerbInputDto> _validatorMock;
     private readonly AppDbContext _dbContext;
+    private readonly ICacheInvalidationService _cacheInvalidationMock;
     private readonly HerbService _sut;
 
     public HerbServiceTests()
     {
         _repositoryMock = Substitute.For<IHerbRepository>();
         _validatorMock = Substitute.For<IValidator<HerbInputDto>>();
+        _cacheInvalidationMock = Substitute.For<ICacheInvalidationService>();
 
         // 使用 InMemory 数据库用于 DbContext 操作
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -51,7 +54,8 @@ public class HerbServiceTests : IDisposable
             _repositoryMock,
             NullLogger<HerbService>.Instance,
             _validatorMock,
-            _dbContext);
+            _dbContext,
+            _cacheInvalidationMock);
     }
 
     public void Dispose()

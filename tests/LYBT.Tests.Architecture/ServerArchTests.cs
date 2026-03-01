@@ -513,7 +513,7 @@ public class ServerArchTests
     }
 
     /// <summary>
-    /// P-08: 跨模块引用必须通过接口 (ICrossModuleService)
+    /// P-08: 跨模块引用必须通过 ISP 接口 (IPatientCrossModuleService 等)
     /// 模块间不得直接引用其他模块的 Service 实现类
     /// </summary>
     [Fact]

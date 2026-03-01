@@ -20,7 +20,7 @@
     <PackageReference Include="FluentAssertions"  />
     <!-- SQLite InMemory由Directory.Build.props提供 -->
     <PackageReference Include="Bogus"  />
-    <PackageReference Include="Moq"  />
+    <PackageReference Include="NSubstitute" />
     <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除 -->
   </ItemGroup>
 

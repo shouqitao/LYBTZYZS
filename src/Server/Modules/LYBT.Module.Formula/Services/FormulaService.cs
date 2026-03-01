@@ -1,5 +1,6 @@
 ﻿using LYBT.Module.Formulas.Mapping;
 using LYBT.Entities.Formulas;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Formulas.Interfaces;
@@ -22,15 +23,18 @@ namespace LYBT.Module.Formulas.Services
         private readonly IFormulaRepository _repository;
         private readonly IHerbCrossModuleService _crossModuleQuery;
         private readonly FormulaMapper _mapper = new();
+        private readonly ICacheInvalidationService _cacheInvalidation;
 
         public FormulaService(
             IFormulaRepository repository,
             IHerbCrossModuleService crossModuleQuery,
-            ILogger<FormulaService> logger)
+            ILogger<FormulaService> logger,
+            ICacheInvalidationService cacheInvalidation)
             : base(logger)
         {
             _repository = repository;
             _crossModuleQuery = crossModuleQuery;
+            _cacheInvalidation = cacheInvalidation;
         }
 
         public async Task<Result<PagedResult<FormulaListDto>>> GetPagedAsync(
@@ -103,6 +107,7 @@ namespace LYBT.Module.Formulas.Services
             };
 
             var result = await _repository.AddAsync(entity);
+            await _cacheInvalidation.InvalidateAsync("formulas");
             var resultDto = _mapper.ToDetailDto(result);
             return Result<FormulaDetailDto>.Success(resultDto);
         }
@@ -149,6 +154,7 @@ namespace LYBT.Module.Formulas.Services
             }
 
             var result = await _repository.UpdateAsync(entity);
+            await _cacheInvalidation.InvalidateAsync("formulas");
             var resultDto = _mapper.ToDetailDto(result);
             return Result<FormulaDetailDto>.Success(resultDto);
         }
@@ -172,6 +178,10 @@ namespace LYBT.Module.Formulas.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var result = await _repository.DeleteAsync(id);
+            if (result)
+            {
+                await _cacheInvalidation.InvalidateAsync("formulas");
+            }
             return result ? Result.Success() : Result.Failure(GenericErrorCode.InternalError, "删除失败");
         }
 
@@ -202,7 +212,7 @@ namespace LYBT.Module.Formulas.Services
                 return Result.Failure(GenericErrorCode.FormulaValidationFailed, "该药材已校验，无需重复操作");
             }
 
-            // 4. 查询选定的药材 - OpenSpec: decouple-server-modules 使用ICrossModuleService
+            // 4. 查询选定的药材 - 通过 IHerbCrossModuleService
             var selectedHerb = await _crossModuleQuery.GetHerbBasicInfoAsync(selectedHerbId);
             if (selectedHerb == null)
             {

@@ -101,6 +101,9 @@ public static class DatabaseServiceCollectionExtensions
                        .Tag("permissions"));
         });
 
+        // 缓存失效服务
+        services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();
+
         // unify-configuration-system: 验证关键配置
         // 验证 JWT 配置
         if (string.IsNullOrEmpty(jwtOptions.SecretKey))

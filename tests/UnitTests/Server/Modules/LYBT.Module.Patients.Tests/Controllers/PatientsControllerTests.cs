@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using FluentAssertions;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Interfaces;
@@ -9,7 +9,7 @@ using LYBT.Tests.Common;
 using LYBT.WebAPI.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.Module.Patients.Tests.Controllers
@@ -21,7 +21,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
     public class PatientsControllerTests : TestBase
     {
         private readonly PatientsController _controller;
-        private readonly Mock<IPatientService> _mockService;
+        private readonly IPatientService _mockService;
 
         public PatientsControllerTests()
         {
@@ -29,7 +29,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var mockLogger = CreateLoggerMock<PatientsController>();
 
             // 注：Mapperly迁移后，Controller内部使用私有Mapper，无需外部注入
-            _controller = new PatientsController(_mockService.Object, mockLogger.Object);
+            _controller = new PatientsController(_mockService, mockLogger);
         }
 
         #region Constructor Tests
@@ -41,7 +41,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var mockService = CreateMock<IPatientService>();
             var mockLogger = CreateLoggerMock<PatientsController>();
             // 注：Mapperly迁移后，Controller内部使用私有Mapper
-            var controller = new PatientsController(mockService.Object, mockLogger.Object);
+            var controller = new PatientsController(mockService, mockLogger);
 
             // Assert
             controller.Should().NotBeNull();
@@ -54,7 +54,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             // Controller依赖.NET的NRT（Nullable Reference Types）在编译时检查
             // 实际运行时不会抛出异常，但会在首次使用null服务时失败
             var mockLogger = CreateLoggerMock<PatientsController>();
-            var controller = new PatientsController(null!, mockLogger.Object);
+            var controller = new PatientsController(null!, mockLogger);
 
             // 构造函数不会抛出异常，但对象会被创建
             controller.Should().NotBeNull();
@@ -85,7 +85,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             badRequestResult.StatusCode.Should().Be(400);
 
             // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
-            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<bool>()), Times.Never);
+            await _mockService.DidNotReceive().GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<bool>());
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             badRequestResult.StatusCode.Should().Be(400);
 
             // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
-            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<bool>()), Times.Never);
+            await _mockService.DidNotReceive().GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<bool>());
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             badRequestResult.StatusCode.Should().Be(400);
 
             // OpenSpec: post-release-cleanup - 更新为GetPagedAsync（返回PatientListDto）
-            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<bool>()), Times.Never);
+            await _mockService.DidNotReceive().GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<bool>());
         }
 
         #endregion
@@ -143,14 +143,14 @@ namespace LYBT.Module.Patients.Tests.Controllers
                 PageSize = pageSize
             });
 
-            _mockService.Setup(s => s.GetPagedAsync(pageNumber, pageSize, keyword, It.IsAny<bool>()))
-                       .ReturnsAsync(mockResult);
+            _mockService.GetPagedAsync(pageNumber, pageSize, keyword, Arg.Any<bool>())
+                       .Returns(mockResult);
 
             // Act
             await _controller.GetList(pageNumber, pageSize, keyword);
 
             // Assert
-            _mockService.Verify(s => s.GetPagedAsync(pageNumber, pageSize, keyword, It.IsAny<bool>()), Times.Once);
+            await _mockService.Received(1).GetPagedAsync(pageNumber, pageSize, keyword, Arg.Any<bool>());
         }
 
         [Fact]
@@ -166,14 +166,14 @@ namespace LYBT.Module.Patients.Tests.Controllers
                 PageSize = 20
             });
 
-            _mockService.Setup(s => s.GetPagedAsync(1, 20, null, It.IsAny<bool>()))
-                       .ReturnsAsync(mockResult);
+            _mockService.GetPagedAsync(1, 20, null, Arg.Any<bool>())
+                       .Returns(mockResult);
 
             // Act
             await _controller.GetList();
 
             // Assert
-            _mockService.Verify(s => s.GetPagedAsync(1, 20, null, It.IsAny<bool>()), Times.Once);
+            await _mockService.Received(1).GetPagedAsync(1, 20, null, Arg.Any<bool>());
         }
 
         #endregion

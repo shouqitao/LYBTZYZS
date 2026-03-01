@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using LYBT.Entities.Herbs;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Herbs.Interfaces;
@@ -28,17 +29,20 @@ namespace LYBT.Module.Herbs.Services
         private readonly IValidator<HerbInputDto> _validator;
         private readonly HerbMapper _mapper = new();
         private readonly AppDbContext _dbContext;
+        private readonly ICacheInvalidationService _cacheInvalidation;
 
         public HerbService(
             IHerbRepository repository,
             ILogger<HerbService> logger,
             IValidator<HerbInputDto> validator,
-            AppDbContext dbContext)
+            AppDbContext dbContext,
+            ICacheInvalidationService cacheInvalidation)
             : base(logger)
         {
             _repository = repository;
             _validator = validator;
             _dbContext = dbContext;
+            _cacheInvalidation = cacheInvalidation;
         }
 
         public async Task<Result<PagedResult<HerbListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
@@ -88,6 +92,7 @@ namespace LYBT.Module.Herbs.Services
 
             var entity = _mapper.ToEntity(dto);
             var result = await _repository.AddAsync(entity);
+            await _cacheInvalidation.InvalidateAsync("herbs");
             var resultDto = _mapper.ToDetailDto(result);
             return Result<HerbDetailDto>.Success(resultDto);
         }
@@ -121,6 +126,7 @@ namespace LYBT.Module.Herbs.Services
 
             _mapper.UpdateEntity(dto, entity);
             var result = await _repository.UpdateAsync(entity);
+            await _cacheInvalidation.InvalidateAsync("herbs");
             var resultDto = _mapper.ToDetailDto(result);
             return Result<HerbDetailDto>.Success(resultDto);
         }
@@ -137,6 +143,7 @@ namespace LYBT.Module.Herbs.Services
             }
 
             await _repository.DeleteAsync(id);
+            await _cacheInvalidation.InvalidateAsync("herbs");
             return Result.Success();
         }
 
