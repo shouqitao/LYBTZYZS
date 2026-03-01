@@ -16,8 +16,8 @@ public static class MedicalCaseRules
     public static bool HasActiveCase(IEnumerable<MedicalCase> existingCases)
         => MedicalCaseBusinessRules.HasActiveCase(existingCases.Select(c => c.CaseStatus));
 
-    public static bool HasDraftCase(IEnumerable<MedicalCase> existingCases)
-        => MedicalCaseBusinessRules.HasDraftCase(existingCases.Select(c => c.CaseStatus));
+    public static bool HasSuspendedCase(IEnumerable<MedicalCase> existingCases)
+        => MedicalCaseBusinessRules.HasSuspendedCase(existingCases.Select(c => c.CaseStatus));
 
     public static bool IsValidStatusTransition(MedicalCaseStatus from, MedicalCaseStatus to)
         => MedicalCaseBusinessRules.IsValidStatusTransition(from, to);

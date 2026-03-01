@@ -144,11 +144,11 @@ namespace LYBT.Module.MedicalCases.Services
                     throw new InvalidOperationException("该患者已有进行中的医案，请先完成现有医案");
                 }
 
-                if (MedicalCaseRules.HasDraftCase(existingCases))
+                if (MedicalCaseRules.HasSuspendedCase(existingCases))
                 {
-                    var draftCase = existingCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Draft);
-                    logger.LogWarning("[SVC] MedicalCase -> DraftCaseExists - PatientId={PatientId} CaseId={CaseId}",
-                        patientId, draftCase?.Id);
+                    var suspendedCase = existingCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Suspended);
+                    logger.LogWarning("[SVC] MedicalCase -> SuspendedCaseExists - PatientId={PatientId} CaseId={CaseId}",
+                        patientId, suspendedCase?.Id);
                     throw new InvalidOperationException("该患者已有暂存的医案，请先处理现有医案（继续或关闭）");
                 }
             }

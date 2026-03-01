@@ -625,22 +625,22 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
         #endregion
 
-        #region Write Layer Tests - SaveDraft (OpenSpec: refactor-medicalcase-api)
+        #region Write Layer Tests - Suspend (OpenSpec: refactor-medicalcase-api)
 
         /// <summary>
-        /// OpenSpec: refactor-medicalcase-api - SaveDraft端点集成测试
-        /// 验证暂存医案功能（PUT /api/v1/medicalcases/{id}/draft）
+        /// OpenSpec: refactor-medicalcase-api - Suspend端点集成测试
+        /// 验证暂停医案功能（PUT /api/v1/medicalcases/{id}/suspend）
         /// </summary>
         [Fact]
-        public async Task SaveDraft_WithValidRequest_ShouldSetStatusToDraft()
+        public async Task Suspend_WithValidRequest_ShouldSetStatusToSuspended()
         {
             // Arrange - 创建Active状态的病案
             var medicalCase = await CreateTestMedicalCaseAsync();
             medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Active);
 
-            // Act - 调用SaveDraft端点
+            // Act - 调用Suspend端点
             var response = await Client.PutAsync(
-                $"/api/v1/medicalcases/{medicalCase.Id}/draft",
+                $"/api/v1/medicalcases/{medicalCase.Id}/suspend",
                 null);
 
             // Assert
@@ -648,56 +648,56 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
             apiResponse.Data.Should().NotBeNull();
-            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Draft);
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Suspended);
 
-            _output.WriteLine($"✅ SaveDraft成功: 状态从Active变更为Draft");
+            _output.WriteLine($"✅ Suspend成功: 状态从Active变更为Suspended");
         }
 
         /// <summary>
-        /// OpenSpec: refactor-medicalcase-api - SaveDraft对Completed状态应返回403
+        /// OpenSpec: refactor-medicalcase-api - Suspend对Completed状态应返回403
         /// 验证业务规则: 已完成的医案不可编辑
         /// </summary>
         [Fact]
-        public async Task SaveDraft_WhenStatusCompleted_ShouldReturn403()
+        public async Task Suspend_WhenStatusCompleted_ShouldReturn403()
         {
             // Arrange - 创建并完成病案
             var medicalCase = await CreateAndCompleteMedicalCaseAsync();
             medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
 
-            // Act - 尝试对已完成的病案调用SaveDraft
+            // Act - 尝试对已完成的病案调用Suspend
             var response = await Client.PutAsync(
-                $"/api/v1/medicalcases/{medicalCase.Id}/draft",
+                $"/api/v1/medicalcases/{medicalCase.Id}/suspend",
                 null);
 
             // Assert - MedicalCaseRules.CanEdit对Completed状态返回false，抛出UnauthorizedAccessException
             response.ShouldHaveStatusCode(System.Net.HttpStatusCode.Forbidden);
 
-            _output.WriteLine($"✅ SaveDraft正确拒绝Completed状态的医案");
+            _output.WriteLine($"✅ Suspend正确拒绝Completed状态的医案");
         }
 
         /// <summary>
-        /// OpenSpec: refactor-medicalcase-api - SaveDraft对Draft状态应保持Draft
-        /// 验证幂等性: 多次暂存不改变状态
+        /// OpenSpec: refactor-medicalcase-api - Suspend对Suspended状态应保持Suspended
+        /// 验证幂等性: 多次暂停不改变状态
         /// </summary>
         [Fact]
-        public async Task SaveDraft_WhenStatusDraft_ShouldRemainDraft()
+        public async Task Suspend_WhenStatusSuspended_ShouldRemainSuspended()
         {
-            // Arrange - 创建病案并暂存
+            // Arrange - 创建病案并暂停
             var medicalCase = await CreateTestMedicalCaseAsync();
-            await Client.PutAsync($"/api/v1/medicalcases/{medicalCase.Id}/draft", null);
+            await Client.PutAsync($"/api/v1/medicalcases/{medicalCase.Id}/suspend", null);
 
-            // Act - 再次调用SaveDraft
+            // Act - 再次调用Suspend
             var response = await Client.PutAsync(
-                $"/api/v1/medicalcases/{medicalCase.Id}/draft",
+                $"/api/v1/medicalcases/{medicalCase.Id}/suspend",
                 null);
 
             // Assert
             response.ShouldBeOk();
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
-            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Draft);
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Suspended);
 
-            _output.WriteLine($"✅ SaveDraft幂等性验证通过");
+            _output.WriteLine($"✅ Suspend幂等性验证通过");
         }
 
         #endregion
@@ -775,17 +775,17 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         }
 
         /// <summary>
-        /// OpenSpec: refactor-medicalcase-api - Cancel对Draft状态应成功
-        /// 验证草稿状态可取消
+        /// OpenSpec: refactor-medicalcase-api - Cancel对Suspended状态应成功
+        /// 验证暂停状态可取消
         /// </summary>
         [Fact]
-        public async Task CancelMedicalCase_WhenStatusDraft_ShouldSucceed()
+        public async Task CancelMedicalCase_WhenStatusSuspended_ShouldSucceed()
         {
-            // Arrange - 创建病案并暂存
+            // Arrange - 创建病案并暂停
             var medicalCase = await CreateTestMedicalCaseAsync();
-            await Client.PutAsync($"/api/v1/medicalcases/{medicalCase.Id}/draft", null);
+            await Client.PutAsync($"/api/v1/medicalcases/{medicalCase.Id}/suspend", null);
 
-            // Act - 取消Draft状态的病案
+            // Act - 取消Suspended状态的病案
             var response = await Client.PutAsync(
                 $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
                 null);
@@ -793,7 +793,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert - 取消操作现在返回204 NoContent（软删除）
             response.ShouldHaveStatusCode(System.Net.HttpStatusCode.NoContent);
 
-            _output.WriteLine($"✅ Cancel对Draft状态成功(软删除)");
+            _output.WriteLine($"✅ Cancel对Suspended状态成功(软删除)");
         }
 
         /// <summary>

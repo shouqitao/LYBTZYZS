@@ -597,40 +597,40 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         }
 
         /// <summary>
-        /// 暂存医案草稿
+        /// 挂起医案
         /// </summary>
-        public async Task<MedicalCaseDetailDto?> SaveDraftAsync(Guid id, ConsultationInputDto? request)
+        public async Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request)
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(id));
 
             if (_api == null)
             {
-                _logger.LogWarning("[REPO] MedicalCase.SaveDraft -> NotSupported - 本地模式不支持此操作");
+                _logger.LogWarning("[REPO] MedicalCase.Suspend -> NotSupported - 本地模式不支持此操作");
                 return null;
             }
 
             try
             {
-                _logger.LogInformation("[REPO] 暂存医案草稿，MedicalCaseId: {MedicalCaseId}", id);
+                _logger.LogInformation("[REPO] 挂起医案，MedicalCaseId: {MedicalCaseId}", id);
 
-                var response = await _api.SaveDraftAsync(id, request);
+                var response = await _api.SuspendAsync(id, request);
 
                 if (response.Success)
                 {
-                    _logger.LogInformation("[REPO] 暂存医案草稿成功，MedicalCaseId: {MedicalCaseId}", id);
+                    _logger.LogInformation("[REPO] 挂起医案成功，MedicalCaseId: {MedicalCaseId}", id);
                     return response.Data;
                 }
                 else
                 {
-                    _logger.LogWarning("[REPO] 暂存医案草稿失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
+                    _logger.LogWarning("[REPO] 挂起医案失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
                         id, response.Message);
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[REPO] 暂存医案草稿异常，MedicalCaseId: {MedicalCaseId}", id);
+                _logger.LogError(ex, "[REPO] 挂起医案异常，MedicalCaseId: {MedicalCaseId}", id);
                 throw;
             }
         }

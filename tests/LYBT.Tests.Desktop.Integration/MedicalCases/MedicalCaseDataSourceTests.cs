@@ -256,13 +256,13 @@ public class MedicalCaseDataSourceTests : IClassFixture<DesktopFixture>
         // 完成其中一个
         await ds.CompleteAsync(mc3.Id);
 
-        // Act - 按 Draft 状态查询 (新建默认为 Draft)
-        var (draftItems, draftTotal) = await ds.QueryAsync(status: MedicalCaseStatus.Draft);
+        // Act - 按 Suspended 状态查询 (新建默认为 Suspended)
+        var (suspendedItems, suspendedTotal) = await ds.QueryAsync(status: MedicalCaseStatus.Suspended);
 
-        // Assert - 应该有 2 个 Draft
-        draftTotal.Should().Be(2);
-        draftItems.Should().HaveCount(2);
-        draftItems.Should().AllSatisfy(mc => mc.CaseStatus.Should().Be(MedicalCaseStatus.Draft));
+        // Assert - 应该有 2 个 Suspended
+        suspendedTotal.Should().Be(2);
+        suspendedItems.Should().HaveCount(2);
+        suspendedItems.Should().AllSatisfy(mc => mc.CaseStatus.Should().Be(MedicalCaseStatus.Suspended));
     }
 
     [Fact]

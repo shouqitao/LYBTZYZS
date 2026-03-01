@@ -227,7 +227,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     public bool ShowEditButton => _editModeStateMachine.ShowEditButton;
     public bool ShowEditButtonTopRight => _editModeStateMachine.ShowEditButtonTopRight;
     public bool ShowSaveButton => _editModeStateMachine.ShowSaveButton;
-    public bool ShowDraftButton => _editModeStateMachine.ShowDraftButton;
+    public bool ShowSuspendButton => _editModeStateMachine.ShowSuspendButton;
     public bool ShowCompleteButton => _editModeStateMachine.ShowCompleteButton;
     public bool IsHistoricalEditMode => _editModeStateMachine.IsHistoricalEditMode;
     public bool CanEdit => _editModeStateMachine.CanEdit;
@@ -312,9 +312,9 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     public DelegateCommand BackCommand { get; }
     public DelegateCommand BackToPatientSelectionCommand => BackCommand;
     /// <summary>
-    /// Clinical模式: 暂存医案命令 - 保存为Draft状态，留在当前界面
+    /// Clinical模式: 挂起医案命令 - 保存为Suspended状态，留在当前界面
     /// </summary>
-    public DelegateCommand SaveDraftCommand { get; }
+    public DelegateCommand SuspendCommand { get; }
     /// <summary>
     /// Management模式: 保存修改命令 - 保存修改，留在当前界面
     /// </summary>
@@ -415,7 +415,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         _pendingQueueHandler.GetCurrentMedicalCaseId = () => MedicalCaseId;
         _pendingQueueHandler.GetCurrentPatient = () => CurrentPatient;
         _pendingQueueHandler.GetIsReadOnly = () => IsReadOnly;
-        _pendingQueueHandler.SaveDraftOnly = SaveDraftOnlyAsync;
+        _pendingQueueHandler.SuspendOnly = SuspendOnlyAsync;
         _pendingQueueHandler.OnPropertyChanged = OnPropertyChanged;
 
         _prescriptionImportHandler = new PrescriptionImportHandler(
@@ -473,8 +473,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
 
         // 初始化命令
         BackCommand = new DelegateCommand(async () => await ExecuteBackAsync());
-        // Clinical模式: 暂存医案
-        SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft, () => WorkspaceMode == WorkspaceMode.Clinical && _editModeStateMachine.IsEditing);
+        // Clinical模式: 挂起医案
+        SuspendCommand = new DelegateCommand(ExecuteSuspend, () => WorkspaceMode == WorkspaceMode.Clinical && _editModeStateMachine.IsEditing);
         // Management模式: 保存修改
         SaveChangesCommand = new DelegateCommand(ExecuteSaveChanges, () => WorkspaceMode == WorkspaceMode.Management && _editModeStateMachine.IsEditing);
         PrintPrescriptionCommand = new DelegateCommand(ExecutePrintPrescription, () => CanPrintPrescription).ObservesProperty(() => CanPrintPrescription);
@@ -605,7 +605,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
                             _editModeStateMachine.EditReason = auditReason;
                         }
 
-                        await SaveDraftOnlyAsync();
+                        await SuspendOnlyAsync();
                         _editModeStateMachine.EnterReadOnlyMode();
                         tcs.SetResult(true);
                         break;
@@ -646,7 +646,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
             var dialogResult = await CommonDialogService.ShowTripleChoiceAsync(message, "离开确认");
             choice = dialogResult switch
             {
-                TripleChoiceResult.Yes => LeaveConsultationChoice.SaveDraft,
+                TripleChoiceResult.Yes => LeaveConsultationChoice.Suspend,
                 TripleChoiceResult.No => LeaveConsultationChoice.CancelCase,
                 _ => LeaveConsultationChoice.Stay
             };
@@ -660,9 +660,9 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         // 根据用户选择执行对应操作
         switch (choice)
         {
-            case LeaveConsultationChoice.SaveDraft:
-                Logger.LogDebug("Navigation.HandleLeaveRequest → SaveDraft");
-                await SaveDraftOnlyAsync();
+            case LeaveConsultationChoice.Suspend:
+                Logger.LogDebug("Navigation.HandleLeaveRequest → Suspend");
+                await SuspendOnlyAsync();
                 return LeaveConsultationResult.AllowLeave(choice);
 
             case LeaveConsultationChoice.CancelCase:
@@ -685,10 +685,10 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     private IValidatable GetConsultationValidator() => Consultation;
     private IValidatable GetPrescriptionValidator() => Prescription;
 
-    private async Task SaveDraftOnlyAsync()
+    private async Task SuspendOnlyAsync()
     {
-        // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合暂存
-        try { SetBusy(true, "正在保存..."); await _coordinator.SaveDraftAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark); }
+        // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合挂起
+        try { SetBusy(true, "正在保存..."); await _coordinator.SuspendAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark); }
         finally { SetBusy(false); }
     }
 
@@ -700,14 +700,14 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     }
 
     /// <summary>
-    /// Clinical模式: 暂存医案 - 保存为Draft状态，留在当前界面继续编辑
+    /// Clinical模式: 挂起医案 - 保存为Suspended状态，留在当前界面继续编辑
     /// </summary>
-    private async void ExecuteSaveDraft()
+    private async void ExecuteSuspend()
     {
         try
         {
-            SetBusy(true, "正在暂存...");
-            var result = await _coordinator.SaveDraftAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark);
+            SetBusy(true, "正在挂起...");
+            var result = await _coordinator.SuspendAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark);
             if (result.IsSuccess)
             {
                 _editModeStateMachine.EnterReadOnlyMode();
@@ -741,7 +741,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
             if (!string.IsNullOrEmpty(auditReason)) EditReason = auditReason;
 
             SetBusy(true, "正在保存...");
-            var result = await _coordinator.SaveDraftAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark);
+            var result = await _coordinator.SuspendAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark);
             if (result.IsSuccess)
             {
                 _editModeStateMachine.EnterReadOnlyMode();
@@ -853,7 +853,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
                 await _pendingQueueHandler.RefreshQueueAsync(v => IsRefreshingPendingQueue = v);
                 // 更新按钮状态
                 OnPropertyChanged(nameof(ShowCompleteButton));
-                OnPropertyChanged(nameof(ShowDraftButton));
+                OnPropertyChanged(nameof(ShowSuspendButton));
                 OnPropertyChanged(nameof(CanComplete));
             }
             else
@@ -888,8 +888,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
         await LoadMedicalCaseDataAsync();
 
         // OpenSpec: refactor-medicalcase-workspace Phase 5 - 从待诊队列恢复挂起医案
-        // Clinical模式下，如果加载的是Draft状态医案，自动恢复为Active
-        await ResumeDraftIfNeededAsync();
+        // Clinical模式下，如果加载的是Suspended状态医案，自动恢复为Active
+        await ResumeSuspendedIfNeededAsync();
 
         InitializeChildViewModels();
         await DetermineEditModeAsync(initialEditState, isHistoricalEdit);
@@ -961,27 +961,27 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     /// Clinical模式下恢复Draft状态医案为Active
     /// OpenSpec: refactor-medicalcase-workspace Phase 5 - 从待诊队列恢复挂起医案
     /// </summary>
-    private async Task ResumeDraftIfNeededAsync()
+    private async Task ResumeSuspendedIfNeededAsync()
     {
         var medicalCase = _coordinator.CachedMedicalCase;
         if (medicalCase == null) return;
 
-        // 仅在Clinical模式且医案状态为Draft时恢复
+        // 仅在Clinical模式且医案状态为Suspended时恢复
         if (WorkspaceMode == WorkspaceMode.Clinical &&
-            medicalCase.CaseStatus == Shared.Models.Enums.MedicalCaseStatus.Draft)
+            medicalCase.CaseStatus == Shared.Models.Enums.MedicalCaseStatus.Suspended)
         {
-            Logger.LogInformation("[CMD] ResumeDraft → MedicalCaseId={MedicalCaseId}", MedicalCaseId);
+            Logger.LogInformation("[CMD] ResumeSuspended → MedicalCaseId={MedicalCaseId}", MedicalCaseId);
 
-            var result = await _medicalCaseService.ResumeDraftAsync(MedicalCaseId);
+            var result = await _medicalCaseService.ResumeSuspendedAsync(MedicalCaseId);
             if (result.success)
             {
                 // 更新缓存的医案状态
                 medicalCase.CaseStatus = Shared.Models.Enums.MedicalCaseStatus.Active;
-                Logger.LogInformation("[CMD] ResumeDraft completed → Status=Active");
+                Logger.LogInformation("[CMD] ResumeSuspended completed → Status=Active");
             }
             else
             {
-                Logger.LogWarning("[CMD] ResumeDraft failed → {ErrorMessage}", result.errorMessage);
+                Logger.LogWarning("[CMD] ResumeSuspended failed → {ErrorMessage}", result.errorMessage);
             }
         }
     }
@@ -1165,7 +1165,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase
     {
         OnPropertyChanged(nameof(IsEditing)); OnPropertyChanged(nameof(IsReadOnly));
         OnPropertyChanged(nameof(ShowEditButton)); OnPropertyChanged(nameof(ShowEditButtonTopRight));
-        OnPropertyChanged(nameof(ShowSaveButton)); OnPropertyChanged(nameof(ShowDraftButton));
+        OnPropertyChanged(nameof(ShowSaveButton)); OnPropertyChanged(nameof(ShowSuspendButton));
         OnPropertyChanged(nameof(ShowCompleteButton)); OnPropertyChanged(nameof(HeaderTitle));
         OnPropertyChanged(nameof(BackButtonText));
         SaveCommand?.RaiseCanExecuteChanged(); EnterEditModeCommand?.RaiseCanExecuteChanged();

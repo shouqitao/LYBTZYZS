@@ -189,10 +189,10 @@ public class MedicalCaseWorkspaceCoordinator
     }
 
     /// <summary>
-    /// 暂存医案（使用聚合保存）
+    /// 挂起医案（使用聚合保存）
     /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.4)
     /// </summary>
-    public async Task<LifecycleResult> SaveDraftAsync(
+    public async Task<LifecycleResult> SuspendAsync(
         Guid medicalCaseId,
         IDataProvider? consultationProvider,
         IDataProvider? prescriptionProvider,
@@ -205,12 +205,12 @@ public class MedicalCaseWorkspaceCoordinator
             return new LifecycleResult(false, saveResult.ErrorMessage);
         }
 
-        // 更新状态为Draft
-        var result = await _medicalCaseService.SaveDraftAsync(medicalCaseId);
+        // 更新状态为Suspended
+        var result = await _medicalCaseService.SuspendAsync(medicalCaseId);
 
         if (result.success)
         {
-            _logger.LogInformation("医案已暂存（聚合模式），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("医案已挂起（聚合模式），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
         }
 
         return new LifecycleResult(result.success, result.errorMessage);

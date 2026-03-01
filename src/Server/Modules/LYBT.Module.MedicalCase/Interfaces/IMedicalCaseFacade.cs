@@ -72,9 +72,9 @@ public interface IMedicalCaseFacade
     Task<MedicalCase?> CompleteAsync(Guid id, Guid operatorId, bool isAdmin, bool skipWorkflowValidation = false);
 
     /// <summary>
-    /// 暂存医案（保存草稿）
+    /// 挂起医案（暂停处理）
     /// </summary>
-    Task<MedicalCase?> SaveDraftAsync(Guid id, ConsultationInputDto? input, Guid operatorId, bool isAdmin);
+    Task<MedicalCase?> SuspendAsync(Guid id, ConsultationInputDto? input, Guid operatorId, bool isAdmin);
 
     /// <summary>
     /// 取消医案

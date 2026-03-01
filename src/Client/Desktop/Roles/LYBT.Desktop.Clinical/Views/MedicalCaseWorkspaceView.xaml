@@ -212,10 +212,10 @@
 
                         <!-- Clinical编辑模式: 暂存医案按钮 -->
                         <Button Content="暂存医案"
-                                Command="{Binding SaveDraftCommand}"
+                                Command="{Binding SuspendCommand}"
                                 Style="{DynamicResource WarningButton}"
                                 ToolTip="保存当前进度，稍后点击'修改医案'继续编辑"
-                                Visibility="{Binding ShowDraftButton, Converter={x:Static converters:Cvt.BoolToVis}}"
+                                Visibility="{Binding ShowSuspendButton, Converter={x:Static converters:Cvt.BoolToVis}}"
                                 Margin="0,0,8,0"/>
 
                         <!-- 通用模式: 打印处方单按钮 -->
@@ -236,7 +236,7 @@
 
                         <!-- Management编辑模式: 保存医案按钮 -->
                         <Button Content="保存医案"
-                                Command="{Binding SaveDraftCommand}"
+                                Command="{Binding SuspendCommand}"
                                 Style="{DynamicResource SuccessButton}"
                                 ToolTip="保存修改并留在当前界面"
                                 Visibility="{Binding ShowSaveButton, Converter={x:Static converters:Cvt.BoolToVis}}"/>

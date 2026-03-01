@@ -335,27 +335,27 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.UpdateStatus failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SaveDraftViaApiAsync(Guid medicalCaseId, ConsultationInputDto? consultationData = null)
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SuspendViaApiAsync(Guid medicalCaseId, ConsultationInputDto? consultationData = null)
     {
         try
         {
-            _logger.LogInformation("[SVC] MedicalCase.SaveDraftViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("[SVC] MedicalCase.SuspendViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // OpenSpec: simplify-desktop-data-layer - 改用Repository
-            var data = await _repository.SaveDraftAsync(medicalCaseId, consultationData);
-            
+            var data = await _repository.SuspendAsync(medicalCaseId, consultationData);
+
             if (data != null)
             {
-                _logger.LogInformation("[SVC] MedicalCase.SaveDraftViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                _logger.LogInformation("[SVC] MedicalCase.SuspendViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
             }
             else
             {
-                _logger.LogWarning("[SVC] MedicalCase.SaveDraftViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "暂存草稿失败" };
+                _logger.LogWarning("[SVC] MedicalCase.SuspendViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "挂起医案失败" };
             }
         }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SaveDraftViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
+        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SuspendViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CancelMedicalCaseViaApiAsync(Guid medicalCaseId, string? reason = null)
@@ -487,29 +487,29 @@ public class MedicalCaseService : IMedicalCaseService
     }
 
     /// <summary>
-    /// 暂存医案
+    /// 挂起医案
     /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> SaveDraftAsync(Guid medicalCaseId)
+    public virtual async Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId)
     {
         try
         {
-            _logger.LogInformation("[SVC] MedicalCase.SaveDraft started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("[SVC] MedicalCase.Suspend started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
-            var response = await SaveDraftViaApiAsync(medicalCaseId);
+            var response = await SuspendViaApiAsync(medicalCaseId);
             if (!response.Success)
             {
-                _logger.LogWarning("[SVC] MedicalCase.SaveDraft → Failed - Message={Message}", response.Message);
-                return (false, response.Message ?? "暂存医案失败");
+                _logger.LogWarning("[SVC] MedicalCase.Suspend → Failed - Message={Message}", response.Message);
+                return (false, response.Message ?? "挂起医案失败");
             }
 
-            _logger.LogInformation("[SVC] MedicalCase.SaveDraft completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("[SVC] MedicalCase.Suspend completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             return (true, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[SVC] MedicalCase.SaveDraft failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("暂存", ex));
+            _logger.LogError(ex, "[SVC] MedicalCase.Suspend failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("挂起", ex));
         }
     }
 
@@ -575,14 +575,14 @@ public class MedicalCaseService : IMedicalCaseService
     }
 
     /// <summary>
-    /// 恢复暂存医案为Active状态
+    /// 恢复挂起医案为Active状态
     /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> ResumeDraftAsync(Guid medicalCaseId)
+    public virtual async Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId)
     {
         try
         {
-            _logger.LogDebug("[SVC] MedicalCase.ResumeDraft started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            _logger.LogDebug("[SVC] MedicalCase.ResumeSuspended started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             var request = new MedicalCaseStatusInputDto
             {
@@ -593,16 +593,16 @@ public class MedicalCaseService : IMedicalCaseService
 
             if (!response.Success)
             {
-                _logger.LogWarning("[SVC] MedicalCase.ResumeDraft → Failed - Message={Message}", response.Message);
+                _logger.LogWarning("[SVC] MedicalCase.ResumeSuspended → Failed - Message={Message}", response.Message);
                 return (false, response.Message ?? "恢复医案失败");
             }
 
-            _logger.LogInformation("[SVC] MedicalCase.ResumeDraft completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("[SVC] MedicalCase.ResumeSuspended completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             return (true, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[SVC] MedicalCase.ResumeDraft failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            _logger.LogError(ex, "[SVC] MedicalCase.ResumeSuspended failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("恢复", ex));
         }
     }

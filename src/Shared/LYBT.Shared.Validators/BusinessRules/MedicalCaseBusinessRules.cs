@@ -8,22 +8,22 @@ namespace LYBT.Shared.Validators.BusinessRules;
 /// </summary>
 public static class MedicalCaseBusinessRules
 {
-    /// <summary>患者同时只能有一个 Active 或 Draft 状态的医案</summary>
+    /// <summary>患者同时只能有一个 Active 或 Suspended 状态的医案</summary>
     public static bool CanCreateNewCase(IEnumerable<MedicalCaseStatus> existingStatuses)
-        => !existingStatuses.Any(s => s == MedicalCaseStatus.Active || s == MedicalCaseStatus.Draft);
+        => !existingStatuses.Any(s => s == MedicalCaseStatus.Active || s == MedicalCaseStatus.Suspended);
 
-    /// <summary>状态流转: Draft 和 Active 双向, Completed 由 CompleteAsync 专门处理</summary>
+    /// <summary>状态流转: Suspended 和 Active 双向, Completed 由 CompleteAsync 专门处理</summary>
     public static bool IsValidStatusTransition(MedicalCaseStatus from, MedicalCaseStatus to)
         => (from, to) switch
         {
-            (MedicalCaseStatus.Draft, MedicalCaseStatus.Active) => true,
-            (MedicalCaseStatus.Active, MedicalCaseStatus.Draft) => true,
+            (MedicalCaseStatus.Suspended, MedicalCaseStatus.Active) => true,
+            (MedicalCaseStatus.Active, MedicalCaseStatus.Suspended) => true,
             _ => false
         };
 
     public static bool HasActiveCase(IEnumerable<MedicalCaseStatus> statuses)
         => statuses.Any(s => s == MedicalCaseStatus.Active);
 
-    public static bool HasDraftCase(IEnumerable<MedicalCaseStatus> statuses)
-        => statuses.Any(s => s == MedicalCaseStatus.Draft);
+    public static bool HasSuspendedCase(IEnumerable<MedicalCaseStatus> statuses)
+        => statuses.Any(s => s == MedicalCaseStatus.Suspended);
 }

@@ -9,9 +9,9 @@ namespace LYBT.Shared.Models.Enums
     /// </summary>
     public enum CaseStatus
     {
-        /// <summary>暂存</summary>
-        [Description("暂存")]
-        Draft = MedicalCaseStatus.Draft,
+        /// <summary>已挂起</summary>
+        [Description("已挂起")]
+        Suspended = MedicalCaseStatus.Suspended,
 
         /// <summary>活跃/进行中</summary>
         [Description("进行中")]

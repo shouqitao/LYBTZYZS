@@ -7,13 +7,13 @@ namespace LYBT.Module.MedicalCases.Interfaces
     /// <summary>
     /// 医案状态服务接口 - 状态管理操作
     /// Phase 3: 从IMedicalCaseService拆分，遵循CQRS原则
-    /// 职责：UpdateStatus, Complete, CloseCase, SaveDraft, Cancel等状态流转操作
+    /// 职责：UpdateStatus, Complete, CloseCase, Suspend, Cancel等状态流转操作
     /// </summary>
     public interface IMedicalCaseStateService
     {
         /// <summary>
         /// 更新医案状态
-        /// 支持 Draft/Active/Completed 状态流转
+        /// 支持 Suspended/Active/Completed 状态流转
         /// </summary>
         /// <param name="medicalCaseId">医案ID</param>
         /// <param name="status">目标状态</param>
@@ -49,16 +49,16 @@ namespace LYBT.Module.MedicalCases.Interfaces
     Task<MedicalCase?> CloseCaseAsync(Guid id);
 
         /// <summary>
-        /// 暂存医案（保存草稿）
+        /// 挂起医案（暂停处理）
         /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
-        /// 业务规则：保存当前数据，设置状态为Draft，不触发完成验证
+        /// 业务规则：保存当前数据，设置状态为Suspended，不触发完成验证
         /// </summary>
         /// <param name="id">医案ID</param>
         /// <param name="request">可选的诊断信息更新</param>
         /// <param name="operatorId">操作者ID</param>
         /// <param name="isAdmin">是否管理员</param>
         /// <returns>更新后的医案实体</returns>
-        Task<MedicalCase?> SaveDraftAsync(
+        Task<MedicalCase?> SuspendAsync(
             Guid id,
             ConsultationInputDto? request,
             Guid operatorId,

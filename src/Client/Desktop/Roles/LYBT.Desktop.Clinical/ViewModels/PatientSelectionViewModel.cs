@@ -177,7 +177,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
                 SetBusyWithMessage(false, null);
 
                 // OpenSpec: unify-case-status - 根据CaseStatus决定处理方式
-                if (existingCase.CaseStatus == MedicalCaseStatus.Draft)
+                if (existingCase.CaseStatus == MedicalCaseStatus.Suspended)
                 {
                     // 暂存草稿：让用户选择继续或新建
                     await HandleSuspendedCaseAsync(existingCase);

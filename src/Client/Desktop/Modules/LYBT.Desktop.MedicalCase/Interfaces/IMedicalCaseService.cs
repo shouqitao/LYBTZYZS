@@ -28,6 +28,6 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         // Query: GetPagedAsync, QueryAsync, GetUnfinishedCaseByPatientIdAsync, CloseCaseAsync
         // Command: Current, HasChanges, SaveAsync, DeleteAsync, CreateMedicalCaseAsync
         // Lifecycle: MedicalCaseId, CurrentConsultation, CurrentPrescription, InitializeAsync, ReloadAsync,
-        //            SaveDraftAsync, CancelMedicalCaseAsync, CompleteMedicalCaseAsync, ResumeDraftAsync
+        //            SuspendAsync, CancelMedicalCaseAsync, CompleteMedicalCaseAsync, ResumeSuspendedAsync
     }
 }

@@ -345,21 +345,21 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
-        /// 获取待看诊医案列表（Status=Draft或Active）
+        /// 获取待看诊医案列表（Status=Suspended或Active）
         /// Epic #1583 - Phase 5
-        /// Bug Fix: 应包含Draft和Active两种未完成状态
+        /// Bug Fix: 应包含Suspended和Active两种未完成状态
         /// OpenSpec: redesign-pending-queue - 正确的状态判定和序号计算
         /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null)
         {
             // Epic #2210 Phase 3: 按医生ID过滤，实现多医生数据隔离
-            // Bug Fix: 包含Draft和Active两种未完成状态，暂存后的医案应显示在待诊队列
+            // Bug Fix: 包含Suspended和Active两种未完成状态，挂起后的医案应显示在待诊队列
             // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             // OpenSpec: unify-case-status - 直接使用CaseStatus，已移除PendingCaseType枚举
             var query = _dbSet
                 .Where(m => !m.IsDeleted
-                    && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active)
+                    && (m.CaseStatus == MedicalCaseStatus.Suspended || m.CaseStatus == MedicalCaseStatus.Active)
                     && m.UserId == doctorId);
 
             // OpenSpec: unify-pending-query-api - 按患者筛选
@@ -413,16 +413,16 @@ namespace LYBT.Module.MedicalCases.Repositories
 
         /// <summary>
         /// 获取所有待看诊医案列表（管理员专用）
-        /// Bug Fix: 应包含Draft和Active两种未完成状态
+        /// Bug Fix: 应包含Suspended和Active两种未完成状态
         /// OpenSpec: redesign-pending-queue - 正确的状态判定和序号计算
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
         {
-            // Bug Fix: 包含Draft和Active两种未完成状态
+            // Bug Fix: 包含Suspended和Active两种未完成状态
             // OpenSpec: unify-case-status - 直接使用CaseStatus，已移除PendingCaseType枚举
             // Bug Fix: MaskPhoneNumber无法在EF Core查询中翻译，先查询原始数据再在内存中处理
             var rawData = await _dbSet
-                .Where(m => !m.IsDeleted && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active))
+                .Where(m => !m.IsDeleted && (m.CaseStatus == MedicalCaseStatus.Suspended || m.CaseStatus == MedicalCaseStatus.Active))
                 .Join(
                     _context.Set<Patient>(),
                     m => m.PatientId,

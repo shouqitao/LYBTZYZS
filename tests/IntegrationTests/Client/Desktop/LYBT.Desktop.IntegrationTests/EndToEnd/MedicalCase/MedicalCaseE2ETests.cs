@@ -185,7 +185,7 @@ public class MedicalCaseE2ETests : IDisposable
                 new LYBT.Entities.MedicalCases.MedicalCase
                 {
                     Id = Guid.NewGuid(), PatientId = Guid.NewGuid(), PatientName = "状态3",
-                    UserId = userId, DoctorName = "医生A", CaseStatus = MedicalCaseStatus.Draft,
+                    UserId = userId, DoctorName = "医生A", CaseStatus = MedicalCaseStatus.Suspended,
                     CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow,
                 }
             );

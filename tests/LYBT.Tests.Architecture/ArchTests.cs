@@ -455,6 +455,7 @@ public class ArchTests
             "Controller",               // 控制器
             "Repository",               // 仓储层
             "CacheExtensions",          // 缓存扩展
+            "CacheInvalidationService", // 缓存失效服务
             "ServiceCollectionExtensions", // 客户端服务注册
             "ServiceDiscovery",         // 客户端服务发现
             "ApiService"                // 客户端API服务

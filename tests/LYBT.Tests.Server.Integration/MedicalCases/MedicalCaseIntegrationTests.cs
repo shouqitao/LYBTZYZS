@@ -355,24 +355,24 @@ public class MedicalCaseIntegrationTests
     }
 
     [Fact]
-    public async Task SaveDraft_ShouldSetDraftStatus()
+    public async Task Suspend_ShouldSetSuspendedStatus()
     {
         // Arrange
         var (caseId, _) = await CreateMedicalCaseAsync();
 
         // Act
-        var draftInput = new ConsultationInputDto
+        var suspendInput = new ConsultationInputDto
         {
-            TcmDiagnosis = "草稿诊断"
+            TcmDiagnosis = "暂停诊断"
         };
         var response = await _fixture.DoctorClient
-            .PutAsJsonAsync($"{BaseUrl}/{caseId}/draft", draftInput);
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}/suspend", suspendInput);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content
             .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
-        body!.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Draft, "暂存后应为Draft");
+        body!.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Suspended, "暂停后应为Suspended");
     }
 
     [Fact]

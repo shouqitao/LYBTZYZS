@@ -1,4 +1,5 @@
 using LYBT.Entities.MedicalCases;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -13,7 +14,7 @@ namespace LYBT.Module.MedicalCases.Services
     /// <summary>
     /// 医案状态服务实现 - 状态管理操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
-    /// 职责：UpdateStatus, Complete, CloseCase, SaveDraft, Cancel等状态流转操作
+    /// 职责：UpdateStatus, Complete, CloseCase, Suspend, Cancel等状态流转操作
     /// OpenSpec: adopt-mapperly-unified-mapping - 移除IMapper依赖（此Service无映射需求）
     /// </summary>
     public class MedicalCaseStateService : BaseService<MedicalCase>, IMedicalCaseStateService
@@ -22,19 +23,22 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IUserCrossModuleService _userCrossModule;
         private readonly IMedicalCaseAuditService _auditService;
         private readonly IMedicalCasePermissionService _permissionService;
+        private readonly ICacheInvalidationService _cacheInvalidation;
 
         public MedicalCaseStateService(
             IMedicalCaseRepository repository,
             IUserCrossModuleService userCrossModule,
             IMedicalCaseAuditService auditService,
             IMedicalCasePermissionService permissionService,
-            ILogger<MedicalCaseStateService> logger)
+            ILogger<MedicalCaseStateService> logger,
+            ICacheInvalidationService cacheInvalidation)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
+            _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
         }
 
         /// <summary>
@@ -135,7 +139,9 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.Complete();
 
             // 保存
-            return await _repository.UpdateAsync(medicalCase);
+            var result = await _repository.UpdateAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            return result;
         }
 
         /// <summary>
@@ -148,23 +154,23 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 暂存医案（保存草稿）
+        /// 挂起医案（暂停处理）
         /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
-        /// 业务规则：保存当前数据，设置状态为Draft，不触发完成验证
+        /// 业务规则：保存当前数据，设置状态为Suspended，不触发完成验证
         /// </summary>
-        public async Task<MedicalCase?> SaveDraftAsync(
+        public async Task<MedicalCase?> SuspendAsync(
             Guid id,
             ConsultationInputDto? request,
             Guid operatorId,
             bool isAdmin = false)
         {
-            _logger.LogInformation("[SVC] MedicalCase.SaveDraft - MedicalCaseId={MedicalCaseId}", id);
+            _logger.LogInformation("[SVC] MedicalCase.Suspend - MedicalCaseId={MedicalCaseId}", id);
 
             // 获取聚合根
             var medicalCase = await _repository.GetByIdWithDetailsAsync(id);
             if (medicalCase == null)
             {
-                _logger.LogWarning("[SVC] MedicalCase.SaveDraft → NotFound - MedicalCaseId={MedicalCaseId}", id);
+                _logger.LogWarning("[SVC] MedicalCase.Suspend → NotFound - MedicalCaseId={MedicalCaseId}", id);
                 return null;
             }
 
@@ -172,20 +178,20 @@ namespace LYBT.Module.MedicalCases.Services
             var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, operatorId, isAdmin, "SaveDraft", _logger);
+            MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, operatorId, isAdmin, "Suspend", _logger);
 
-            // 业务规则验证：只有Draft/Active状态可以暂存
+            // 业务规则验证：只有Suspended/Active状态可以挂起
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
-                _logger.LogWarning("[SVC] MedicalCase.SaveDraft → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(EC.McCompletedCannotSuspend, "已完成的医案不可暂存");
+                _logger.LogWarning("[SVC] MedicalCase.Suspend → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
+                throw new BusinessException(EC.McCompletedCannotSuspend, "已完成的医案不可挂起");
             }
 
-            // 已软删除的医案不可暂存
+            // 已软删除的医案不可挂起
             if (medicalCase.IsDeleted)
             {
-                _logger.LogWarning("[SVC] MedicalCase.SaveDraft → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(EC.McDeletedCannotSuspend, "已删除的医案不可暂存");
+                _logger.LogWarning("[SVC] MedicalCase.Suspend → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
+                throw new BusinessException(EC.McDeletedCannotSuspend, "已删除的医案不可挂起");
             }
 
             // DDD: 委托给聚合根域方法
@@ -196,10 +202,11 @@ namespace LYBT.Module.MedicalCases.Services
                     request.PulseDiagnosis, request.TcmDiagnosis);
             }
 
-            medicalCase.SaveAsDraft();
+            medicalCase.Suspend();
 
             // 保存
             var result = await _repository.UpdateAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
 
             // 记录审计日志
             var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin);
@@ -269,6 +276,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 保存
             var result = await _repository.UpdateAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
 
             // 记录审计日志
             var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin);

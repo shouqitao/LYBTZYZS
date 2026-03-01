@@ -58,9 +58,9 @@ public class PendingQueueHandler
     public Func<bool>? GetIsReadOnly { get; set; }
 
     /// <summary>
-    /// 保存草稿的回调（编辑模式使用）
+    /// 挂起医案的回调（编辑模式使用）
     /// </summary>
-    public Func<Task>? SaveDraftOnly { get; set; }
+    public Func<Task>? SuspendOnly { get; set; }
 
     /// <summary>
     /// 属性变更通知的回调
@@ -152,14 +152,14 @@ public class PendingQueueHandler
                 if (!isReadOnly)
                 {
                     // 编辑模式：执行暂存回调（保存当前编辑内容）
-                    if (SaveDraftOnly != null)
-                        await SaveDraftOnly.Invoke();
+                    if (SuspendOnly != null)
+                        await SuspendOnly.Invoke();
                     _logger.LogInformation("编辑模式，自动暂存后切换到患者：{PatientName}", pendingCase.PatientName);
                 }
                 else
                 {
                     // 查看模式：调用Service暂存
-                    var switchResult = await _medicalCaseService.SaveDraftAsync(currentMedicalCaseId);
+                    var switchResult = await _medicalCaseService.SuspendAsync(currentMedicalCaseId);
                     if (!switchResult.success)
                     {
                         _logger.LogWarning("切换时暂存当前医案失败：{Error}", switchResult.errorMessage);
@@ -174,7 +174,7 @@ public class PendingQueueHandler
             }
 
             // 3. 处理目标患者
-            if (pendingCase.CaseStatus == Shared.Models.Enums.MedicalCaseStatus.Draft)
+            if (pendingCase.CaseStatus == Shared.Models.Enums.MedicalCaseStatus.Suspended)
             {
                 SetBusy?.Invoke(false, null);
                 await HandleSuspendedCaseAsync(pendingCase);

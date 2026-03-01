@@ -163,7 +163,7 @@ public class BusinessFlowTests : IClassFixture<DesktopFixture>
         });
 
         mc.Id.Should().NotBe(Guid.Empty);
-        mc.CaseStatus.Should().Be(MedicalCaseStatus.Draft); // CreateAsync 默认 Draft
+        mc.CaseStatus.Should().Be(MedicalCaseStatus.Suspended); // CreateAsync 默认 Suspended
 
         // === Step 6: 验证聚合详情 ===
         var detail = await mcDs.GetWithDetailsAsync(mc.Id);

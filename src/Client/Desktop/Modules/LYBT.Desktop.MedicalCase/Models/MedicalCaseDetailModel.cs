@@ -23,7 +23,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     private Guid _patientId;
     private string _patientName = string.Empty;
     // ConsultationDate已删除，使用CreatedAt代替
-    private MedicalCaseStatus _status = MedicalCaseStatus.Draft;
+    private MedicalCaseStatus _status = MedicalCaseStatus.Suspended;
     private string? _remark;
 
     // 诊断摘要（只读）
@@ -219,7 +219,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     /// <summary>状态文本</summary>
     public string StatusText => Status switch
     {
-        MedicalCaseStatus.Draft => "暂存",
+        MedicalCaseStatus.Suspended => "已挂起",
         MedicalCaseStatus.Active => "进行中",
         MedicalCaseStatus.Completed => "已完成",
         _ => "未知"

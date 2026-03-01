@@ -76,8 +76,8 @@ public enum LeaveConsultationChoice
 {
     /// <summary>无选择（无活跃医案时）</summary>
     None,
-    /// <summary>暂存医案后离开</summary>
-    SaveDraft,
+    /// <summary>挂起医案后离开</summary>
+    Suspend,
     /// <summary>取消医案后离开</summary>
     CancelCase,
     /// <summary>继续停留</summary>

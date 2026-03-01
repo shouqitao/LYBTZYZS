@@ -275,7 +275,7 @@ public class BusinessFlowE2ETests : IClassFixture<LocalModeTestFixture>
         createdMedicalCase.PatientId.Should().Be(createdPatient.Id, "医案应关联到正确的患者");
         createdMedicalCase.UserId.Should().Be(createdAdmin.Id, "医案应关联到正确的医生");
         createdMedicalCase.CaseNumber.Should().NotBeNullOrEmpty("应自动生成医案编号");
-        createdMedicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Draft, "新建医案初始状态应为 Draft");
+        createdMedicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Suspended, "新建医案初始状态应为 Suspended");
 
         // 验证诊断记录（共享主键）
         var dbConsultation = await dbContext.Consultations.FindAsync(createdMedicalCase.Id);

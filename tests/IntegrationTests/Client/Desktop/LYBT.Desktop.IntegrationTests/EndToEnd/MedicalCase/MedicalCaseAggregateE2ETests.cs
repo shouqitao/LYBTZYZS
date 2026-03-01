@@ -665,9 +665,9 @@ public class MedicalCaseAggregateE2ETests : IClassFixture<LocalModeTestFixture>
         // Act
         var created = await ds.CreateAsync(mc);
 
-        // Assert - DataSource 内部强制设为 Draft
-        created.CaseStatus.Should().Be(MedicalCaseStatus.Draft,
-            "CreateAsync 内部会将状态重置为 Draft，无论传入什么值");
+        // Assert - DataSource 内部强制设为 Suspended
+        created.CaseStatus.Should().Be(MedicalCaseStatus.Suspended,
+            "CreateAsync 内部会将状态重置为 Suspended，无论传入什么值");
     }
 
     [Fact]

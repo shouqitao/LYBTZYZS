@@ -38,11 +38,11 @@ public interface IMedicalCaseLifecycleService
     Task ReloadAsync();
 
     /// <summary>
-    /// 暂存医案
+    /// 挂起医案
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
     /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> SaveDraftAsync(Guid medicalCaseId);
+    Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId);
 
     /// <summary>
     /// 取消医案
@@ -60,9 +60,9 @@ public interface IMedicalCaseLifecycleService
     Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId);
 
     /// <summary>
-    /// 恢复暂存医案为Active状态
+    /// 恢复挂起医案为Active状态
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
     /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> ResumeDraftAsync(Guid medicalCaseId);
+    Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId);
 }

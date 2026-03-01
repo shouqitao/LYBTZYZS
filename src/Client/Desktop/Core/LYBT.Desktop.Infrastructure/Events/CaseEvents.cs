@@ -99,9 +99,9 @@ public record CasePrescriptionCompletedPayload
     public decimal TotalAmount { get; init; }
 
     /// <summary>
-    /// 是否保存为草稿
+    /// 是否挂起
     /// </summary>
-    public bool IsDraft { get; init; }
+    public bool IsSuspended { get; init; }
 
     /// <summary>
     /// 事件时间戳

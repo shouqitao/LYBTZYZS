@@ -6,7 +6,7 @@ using LYBT.Module.MedicalCases.Services;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
@@ -20,8 +20,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
     public class MedicalCaseQueryServiceTests : TestBase
     {
         private readonly MedicalCaseQueryService _service;
-        private readonly Mock<IMedicalCaseRepository> _repositoryMock;
-        private readonly Mock<ILogger<MedicalCaseQueryService>> _loggerMock;
+        private readonly IMedicalCaseRepository _repositoryMock;
+        private readonly ILogger<MedicalCaseQueryService> _loggerMock;
 
         public MedicalCaseQueryServiceTests()
         {
@@ -29,8 +29,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _loggerMock = CreateLoggerMock<MedicalCaseQueryService>();
 
             _service = new MedicalCaseQueryService(
-                _repositoryMock.Object,
-                _loggerMock.Object);
+                _repositoryMock,
+                _loggerMock);
         }
 
         #region GetByIdAsync Tests
@@ -48,8 +48,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
+            _repositoryMock.GetByIdWithDetailsAsync(medicalCaseId)
+                .Returns(medicalCase);
 
             // Act
             var result = await _service.GetByIdAsync(medicalCaseId);
@@ -65,10 +65,9 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            MedicalCaseEntity? nullCase = null;
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
-                .ReturnsAsync(nullCase!);
+            _repositoryMock.GetByIdWithDetailsAsync(medicalCaseId)
+                .Returns((MedicalCaseEntity?)null);
 
             // Act
             var result = await _service.GetByIdAsync(medicalCaseId);
@@ -104,13 +103,11 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 PageSize = pageSize
             };
 
-            // Mock repository返回包含医案的分页结果
-            // 服务层会根据status和patientId进行过滤
-            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(
-                    It.IsAny<int>(),
-                    It.IsAny<int>(),
-                    It.IsAny<string?>()))
-                .ReturnsAsync(pagedResult);
+            _repositoryMock.GetPagedWithDetailsAsync(
+                    Arg.Any<int>(),
+                    Arg.Any<int>(),
+                    Arg.Any<string?>())
+                .Returns(pagedResult);
 
             // Act
             var result = await _service.GetListAsync(status, patientId, page, pageSize);
@@ -142,8 +139,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 PageSize = pageSize
             };
 
-            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(page, pageSize, It.IsAny<string?>()))
-                .ReturnsAsync(pagedResult);
+            _repositoryMock.GetPagedWithDetailsAsync(page, pageSize, Arg.Any<string?>())
+                .Returns(pagedResult);
 
             // Act
             var result = await _service.GetListAsync(null, null, page, pageSize);
@@ -163,7 +160,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             // Arrange
             var patientId = Guid.NewGuid();
             var doctorId = Guid.NewGuid();
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             var medicalCase = new MedicalCaseEntity
             {
                 Id = Guid.NewGuid(),
@@ -172,8 +168,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 CaseStatus = MedicalCaseStatus.Active
             };
 
-            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId))
-                .ReturnsAsync(medicalCase);
+            _repositoryMock.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId)
+                .Returns(medicalCase);
 
             // Act
             var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
@@ -191,8 +187,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var patientId = Guid.NewGuid();
             var doctorId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId))
-                .ReturnsAsync((MedicalCaseEntity?)null);
+            _repositoryMock.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId)
+                .Returns((MedicalCaseEntity?)null);
 
             // Act
             var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
@@ -216,9 +212,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 new PendingMedicalCaseDto { PatientId = Guid.NewGuid(), PatientName = "李四" }
             };
 
-            // OpenSpec: unify-pending-query-api - 添加patientId参数支持
-            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId, null))
-                .ReturnsAsync(pendingCases);
+            _repositoryMock.GetPendingCasesAsync(doctorId, null)
+                .Returns(pendingCases);
 
             // Act
             var result = await _service.GetPendingCasesAsync(doctorId);
@@ -234,9 +229,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             // Arrange
             var doctorId = Guid.NewGuid();
 
-            // OpenSpec: unify-pending-query-api - 添加patientId参数支持
-            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId, null))
-                .ReturnsAsync(new List<PendingMedicalCaseDto>());
+            _repositoryMock.GetPendingCasesAsync(doctorId, null)
+                .Returns(new List<PendingMedicalCaseDto>());
 
             // Act
             var result = await _service.GetPendingCasesAsync(doctorId);
@@ -260,8 +254,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 new PendingMedicalCaseDto { PatientId = patientId, PatientName = "张三" }
             };
 
-            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId, patientId))
-                .ReturnsAsync(pendingCases);
+            _repositoryMock.GetPendingCasesAsync(doctorId, patientId)
+                .Returns(pendingCases);
 
             // Act
             var result = await _service.GetPendingCasesAsync(doctorId, patientId);
@@ -287,8 +281,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 new PendingMedicalCaseDto { PatientId = Guid.NewGuid(), PatientName = "王五" }
             };
 
-            _repositoryMock.Setup(x => x.GetAllPendingCasesAsync())
-                .ReturnsAsync(pendingCases);
+            _repositoryMock.GetAllPendingCasesAsync()
+                .Returns(pendingCases);
 
             // Act
             var result = await _service.GetAllPendingCasesAsync();

@@ -379,17 +379,17 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 暂存医案（保存草稿）
+        /// 挂起医案
         /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
-        /// 保存当前数据，设置状态为Draft，不触发完成验证
+        /// 挂起医案，设置状态为Suspended，不触发完成验证
         /// 资源级权限由 Service 层 EnsureCanEdit/EnsureCanDelete 统一检查
         /// </summary>
-        [HttpPut("{id}/draft")]
+        [HttpPut("{id}/suspend")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
-        public async Task<IActionResult> SaveDraft(
+        public async Task<IActionResult> Suspend(
             Guid id,
             [FromBody] ConsultationInputDto? request = null)
         {
@@ -397,7 +397,7 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _facade.SaveDraftAsync(id, request, operatorId, isAdmin);
+            var result = await _facade.SuspendAsync(id, request, operatorId, isAdmin);
             if (result == null)
             {
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));

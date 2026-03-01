@@ -12,9 +12,9 @@ public enum EditType
     Create,
 
     /// <summary>
-    /// 编辑草稿
+    /// 编辑挂起医案
     /// </summary>
-    EditDraft,
+    EditSuspended,
 
     /// <summary>
     /// 编辑已完成（历史编辑，需审计）

@@ -76,8 +76,8 @@ public class MedicalCaseFacade : IMedicalCaseFacade
     public Task<MedicalCase?> CompleteAsync(Guid id, Guid operatorId, bool isAdmin, bool skipWorkflowValidation = false)
         => _stateService.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation);
 
-    public Task<MedicalCase?> SaveDraftAsync(Guid id, ConsultationInputDto? input, Guid operatorId, bool isAdmin)
-        => _stateService.SaveDraftAsync(id, input, operatorId, isAdmin);
+    public Task<MedicalCase?> SuspendAsync(Guid id, ConsultationInputDto? input, Guid operatorId, bool isAdmin)
+        => _stateService.SuspendAsync(id, input, operatorId, isAdmin);
 
     public Task<MedicalCase?> CancelAsync(Guid id, Guid operatorId, bool isAdmin, string? reason = null)
         => _stateService.CancelAsync(id, operatorId, isAdmin, reason);

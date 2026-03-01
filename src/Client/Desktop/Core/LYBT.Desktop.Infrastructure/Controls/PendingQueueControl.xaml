@@ -207,7 +207,7 @@
                                                 <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Active}">
                                                     <Setter Property="Background" Value="{StaticResource PendingInProgressBrush}"/>
                                                 </DataTrigger>
-                                                <!-- Draft = 暂存/待诊 (默认灰色即可) -->
+                                                <!-- Suspended = 挂起/待诊 (默认灰色即可) -->
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
@@ -237,8 +237,8 @@
                         <Setter Property="BorderBrush" Value="#F0F0F0"/>
                         <Setter Property="Margin" Value="0"/>
                         <Style.Triggers>
-                            <!-- OpenSpec: optimize-medicalcase-ui - 暂存状态行背景 (Draft) -->
-                            <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Draft}">
+                            <!-- OpenSpec: optimize-medicalcase-ui - 挂起状态行背景 (Suspended) -->
+                            <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Suspended}">
                                 <Setter Property="Background" Value="{StaticResource PendingSuspendedRowBrush}"/>
                             </DataTrigger>
                             <Trigger Property="IsSelected" Value="True">

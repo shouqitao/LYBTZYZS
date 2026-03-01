@@ -4,13 +4,14 @@ namespace LYBT.Shared.Models.Enums
 {
     /// <summary>
     /// 医疗案例状态枚举 - 简化版
-    /// 状态机：Draft ↔ Active → Completed，取消操作统一使用软删除（IsDeleted）
+    /// 状态机：Suspended ↔ Active → Completed，取消操作统一使用软删除（IsDeleted）
+    /// MC-D20: Draft 已重命名为 Suspended (挂起)
     /// </summary>
     public enum MedicalCaseStatus
     {
-        /// <summary>暂存（用户暂时保存，稍后继续）- Issue #1647</summary>
-        [Description("暂存")]
-        Draft = 0,
+        /// <summary>已挂起（医生暂时离开，稍后继续）- MC-D20</summary>
+        [Description("已挂起")]
+        Suspended = 0,
 
         /// <summary>活跃/进行中（正在诊疗）</summary>
         [Description("进行中")]
@@ -18,8 +19,9 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>已完成（三步流程全部完成）</summary>
         [Description("已完成")]
-        Completed = 2
+        Completed = 2,
         // Cancelled = 3 已移除，取消操作统一使用软删除（IsDeleted=true）
+
     }
 
     /// <summary>

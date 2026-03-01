@@ -422,6 +422,49 @@ public class LocalFormulaDataSource : IFormulaDataSource
     public string[] GetImportTemplateHerbColumns()
         => ["验方编号*", "药材名称*", "用量*", "单位", "炮制方法"];
 
+    /// <summary>
+    /// CODE-40: 批量删除验方
+    /// </summary>
+    public async Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[LocalDataSource] Formula.BatchDelete - Count={Count}", ids.Count);
+
+        var result = new BatchOperationResultDto
+        {
+            TotalCount = ids.Count,
+            IsSuccess = true
+        };
+
+        foreach (var id in ids)
+        {
+            var entity = await _context.Formulas.FindAsync([id], ct);
+            if (entity != null)
+            {
+                entity.IsDeleted = true;
+                result.SuccessCount++;
+                result.SuccessfulIds.Add(id);
+            }
+            else
+            {
+                result.FailureCount++;
+                result.FailedIds.Add(id);
+                result.FailedItems.Add(new BatchOperationFailureItem
+                {
+                    Id = id,
+                    Reason = "验方不存在"
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync(ct);
+
+        result.IsSuccess = result.FailureCount == 0;
+        _logger.LogInformation("[LocalDataSource] Formula.BatchDelete completed - Success={Success}, Failure={Failure}",
+            result.SuccessCount, result.FailureCount);
+
+        return result;
+    }
+
     /// <inheritdoc />
     public async Task<bool> ValidateHerbBindingsAsync(Guid formulaId, CancellationToken ct = default)
     {

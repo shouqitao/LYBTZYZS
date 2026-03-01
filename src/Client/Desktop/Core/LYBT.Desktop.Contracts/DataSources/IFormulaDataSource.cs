@@ -67,6 +67,11 @@ public interface IFormulaDataSource : IDataSourceBase<FormulaDetailDto, FormulaI
     Task<BatchOperationResultDto> BatchToggleStatusAsync(List<Guid> ids, bool enable, CancellationToken ct = default);
 
     /// <summary>
+    /// CODE-40: 批量删除验方
+    /// </summary>
+    Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
+
+    /// <summary>
     /// T5-P2-38: 获取导入模板列定义（主表）
     /// </summary>
     string[] GetImportTemplateColumns();

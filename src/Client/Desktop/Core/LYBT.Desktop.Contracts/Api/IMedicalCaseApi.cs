@@ -148,12 +148,12 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid id);
 
         /// <summary>
-        /// 暂存医案（保存草稿）
+        /// 挂起医案
         /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
-        /// 保存当前数据，设置状态为Draft，不触发完成验证
+        /// 挂起医案，设置状态为Suspended，不触发完成验证
         /// </summary>
-        [Refit.Put("/api/v1/medicalcases/{id}/draft")]
-        Task<ApiResponse<MedicalCaseDetailDto>> SaveDraftAsync(
+        [Refit.Put("/api/v1/medicalcases/{id}/suspend")]
+        Task<ApiResponse<MedicalCaseDetailDto>> SuspendAsync(
             Guid id,
             [Refit.Body] ConsultationInputDto? request = null);
 
@@ -167,7 +167,7 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 更新医案状态
-        /// Issue #2243: 修复SaveDraft和Complete功能
+        /// Issue #2243: 修复Suspend和Complete功能
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}/status")]
         Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(

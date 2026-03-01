@@ -1,6 +1,7 @@
 ﻿using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -30,6 +31,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IMedicalCaseAuditService _auditService;
         private readonly IMedicalCasePermissionService _permissionService;
         private readonly MedicalCaseMapper _mapper = new();
+        private readonly ICacheInvalidationService _cacheInvalidation;
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
@@ -38,7 +40,8 @@ namespace LYBT.Module.MedicalCases.Services
             IHerbCrossModuleService herbCrossModule,
             IMedicalCaseAuditService auditService,
             IMedicalCasePermissionService permissionService,
-            ILogger<MedicalCaseCommandService> logger)
+            ILogger<MedicalCaseCommandService> logger,
+            ICacheInvalidationService cacheInvalidation)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -47,6 +50,7 @@ namespace LYBT.Module.MedicalCases.Services
             _herbCrossModule = herbCrossModule ?? throw new ArgumentNullException(nameof(herbCrossModule));
             _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
+            _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
         }
 
         /// <summary>
@@ -137,6 +141,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             var result = await _repository.AddAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
 
             // 记录创建审计日志
             await _auditService.LogAsync(
@@ -202,6 +207,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 通过聚合根保存（EF Core会跟踪子实体变更）
             var result = await _repository.UpdateAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
             // S3-03: 传递 editReason 到审计日志
             await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, editReason);
             return result;
@@ -246,6 +252,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 保存
             var result = await _repository.UpdateAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
             await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin);
             return result;
         }
@@ -297,6 +304,7 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.Prescription = prescription;
             medicalCase.UpdatedAt = DateTime.Now;
             await _repository.UpdateAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
 
             _logger.LogInformation("[SVC] MedicalCase.CreatePrescription completed - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                 medicalCaseId, prescription.Id);
@@ -369,6 +377,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             await _repository.UpdateAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
 
             // S3-03: 记录处方更新审计日志 (含 editReason)
             await LogUpdateAuditAsync(beforeState, medicalCase, currentUserId, isAdmin, editReason);
@@ -424,6 +433,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 通过聚合根保存
             await _repository.UpdateAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
             return true;
         }
 
@@ -447,6 +457,10 @@ namespace LYBT.Module.MedicalCases.Services
             MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, medicalCase, operatorId, isAdmin, "Delete", _logger);
 
             var result = await _repository.DeleteAsync(id);
+            if (result)
+            {
+                await _cacheInvalidation.InvalidateAsync("medicalcases");
+            }
             return result;
         }
 
@@ -525,6 +539,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 保存并审计
             var result = await _repository.UpdateAsync(medicalCase);
+            await _cacheInvalidation.InvalidateAsync("medicalcases");
             _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // S3-03: 传递 editReason 到审计日志

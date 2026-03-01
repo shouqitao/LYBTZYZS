@@ -78,7 +78,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public void ShowEditButton_ShouldReturnFalse_WhenEditing()
         {
             // Arrange
-            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditDraft, canEdit: true, EditState.Editing);
+            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditSuspended, canEdit: true, EditState.Editing);
 
             // Assert
             _sut.ShowEditButton.Should().BeFalse();
@@ -98,27 +98,27 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public void ShowSaveButton_ShouldReturnTrue_WhenEditingInManagementMode()
         {
             // Arrange
-            _sut.Initialize(WorkspaceMode.Management, EditType.EditDraft, canEdit: true, EditState.Editing);
+            _sut.Initialize(WorkspaceMode.Management, EditType.EditSuspended, canEdit: true, EditState.Editing);
 
             // Assert
             _sut.ShowSaveButton.Should().BeTrue();
         }
 
         [Fact]
-        public void ShowDraftButton_ShouldReturnTrue_WhenEditingInClinicalMode()
+        public void ShowSuspendButton_ShouldReturnTrue_WhenEditingInClinicalMode()
         {
             // Arrange
-            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditDraft, canEdit: true, EditState.Editing);
+            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditSuspended, canEdit: true, EditState.Editing);
 
             // Assert
-            _sut.ShowDraftButton.Should().BeTrue();
+            _sut.ShowSuspendButton.Should().BeTrue();
         }
 
         [Fact]
         public void ShowCompleteButton_ShouldReturnTrue_WhenEditingInClinicalMode()
         {
             // Arrange
-            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditDraft, canEdit: true, EditState.Editing);
+            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditSuspended, canEdit: true, EditState.Editing);
 
             // Assert
             _sut.ShowCompleteButton.Should().BeTrue();
@@ -152,7 +152,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public void HeaderTitle_ShouldReturn编辑医案_WhenManagementAndEditing()
         {
             // Arrange
-            _sut.Initialize(WorkspaceMode.Management, EditType.EditDraft, canEdit: true, EditState.Editing);
+            _sut.Initialize(WorkspaceMode.Management, EditType.EditSuspended, canEdit: true, EditState.Editing);
 
             // Assert
             _sut.HeaderTitle.Should().Be("编辑医案");
@@ -216,7 +216,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public void EnterEditMode_ShouldReturnTrue_WhenCanEdit()
         {
             // Arrange
-            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditDraft, canEdit: true, EditState.ReadOnly);
+            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditSuspended, canEdit: true, EditState.ReadOnly);
 
             // Act
             var result = _sut.EnterEditMode();
@@ -261,7 +261,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             // Arrange
             EditStateChangedEventArgs? receivedArgs = null;
             _sut.EditStateChanged += (sender, args) => receivedArgs = args;
-            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditDraft, canEdit: true, EditState.Editing);
+            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditSuspended, canEdit: true, EditState.Editing);
 
             // Act
             _sut.EnterReadOnlyMode();
@@ -282,13 +282,13 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             // Act
             _sut.Initialize(
                 WorkspaceMode.Management,
-                EditType.EditDraft,
+                EditType.EditSuspended,
                 canEdit: true,
                 EditState.ReadOnly);
 
             // Assert
             _sut.WorkspaceMode.Should().Be(WorkspaceMode.Management);
-            _sut.EditType.Should().Be(EditType.EditDraft);
+            _sut.EditType.Should().Be(EditType.EditSuspended);
             _sut.CanEdit.Should().BeTrue();
             _sut.EditState.Should().Be(EditState.ReadOnly);
         }
@@ -386,7 +386,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         }
 
         [Fact]
-        public void DetermineFromContext_ShouldSetEditTypeEditDraft_WhenNotCompleted()
+        public void DetermineFromContext_ShouldSetEditTypeEditSuspended_WhenNotCompleted()
         {
             // Act
             _sut.DetermineFromContext(
@@ -397,7 +397,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 preferEditing: true);
 
             // Assert
-            _sut.EditType.Should().Be(EditType.EditDraft);
+            _sut.EditType.Should().Be(EditType.EditSuspended);
         }
 
         [Fact]
@@ -438,7 +438,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public void CanEnterEditMode_ShouldReturnTrue_WhenReadOnlyAndCanEdit()
         {
             // Arrange
-            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditDraft, canEdit: true, EditState.ReadOnly);
+            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditSuspended, canEdit: true, EditState.ReadOnly);
 
             // Assert
             _sut.CanEnterEditMode.Should().BeTrue();
@@ -448,7 +448,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
         public void CanEnterEditMode_ShouldReturnFalse_WhenAlreadyEditing()
         {
             // Arrange
-            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditDraft, canEdit: true, EditState.Editing);
+            _sut.Initialize(WorkspaceMode.Clinical, EditType.EditSuspended, canEdit: true, EditState.Editing);
 
             // Assert
             _sut.CanEnterEditMode.Should().BeFalse();

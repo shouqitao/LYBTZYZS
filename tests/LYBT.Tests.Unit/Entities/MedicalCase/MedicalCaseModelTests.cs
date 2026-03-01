@@ -51,13 +51,13 @@ namespace LYBT.Tests.Unit.Entities.MedicalCases
         }
 
         [Fact]
-        public void IsLocked_ShouldReturnFalse_WhenDraft()
+        public void IsLocked_ShouldReturnFalse_WhenSuspended()
         {
             // Arrange
-            var medicalCase = new MedicalCase { CaseStatus = MedicalCaseStatus.Draft };
+            var medicalCase = new MedicalCase { CaseStatus = MedicalCaseStatus.Suspended };
 
             // Act & Assert
-            medicalCase.IsLocked.Should().BeFalse("Draft状态不应被锁定");
+            medicalCase.IsLocked.Should().BeFalse("Suspended状态不应被锁定");
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace LYBT.Tests.Unit.Entities.MedicalCases
         #region IsActive Computed Property Tests
 
         [Theory]
-        [InlineData(MedicalCaseStatus.Draft, true)]
+        [InlineData(MedicalCaseStatus.Suspended, true)]
         [InlineData(MedicalCaseStatus.Active, true)]
         [InlineData(MedicalCaseStatus.Completed, false)]
         public void IsActive_ShouldReturnCorrectValue(MedicalCaseStatus status, bool expected)
@@ -111,7 +111,7 @@ namespace LYBT.Tests.Unit.Entities.MedicalCases
 
         [Theory]
         [InlineData(MedicalCaseStatus.Active, false)]
-        [InlineData(MedicalCaseStatus.Draft, false)]
+        [InlineData(MedicalCaseStatus.Suspended, false)]
         [InlineData(MedicalCaseStatus.Completed, true)]
         public void IsCompleted_ShouldReturnCorrectValue(MedicalCaseStatus status, bool expected)
         {

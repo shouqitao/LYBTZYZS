@@ -82,7 +82,7 @@ public partial class MedicalCaseEditModeStateMachine : ObservableObject
     }
 
     /// <summary>
-    /// 编辑类型（Create/EditDraft/EditCompleted/ViewOnly）
+    /// 编辑类型（Create/EditSuspended/EditCompleted/ViewOnly）
     /// </summary>
     public EditType EditType
     {
@@ -159,7 +159,7 @@ public partial class MedicalCaseEditModeStateMachine : ObservableObject
     /// <summary>
     /// 是否显示暂存按钮（Clinical编辑模式）
     /// </summary>
-    public bool ShowDraftButton => IsEditing && WorkspaceMode == WorkspaceMode.Clinical;
+    public bool ShowSuspendButton => IsEditing && WorkspaceMode == WorkspaceMode.Clinical;
 
     /// <summary>
     /// 是否显示完成看诊按钮（Clinical编辑模式）
@@ -260,7 +260,7 @@ public partial class MedicalCaseEditModeStateMachine : ObservableObject
         _editState = editType switch
         {
             EditType.Create => EditState.Editing,
-            EditType.EditDraft when canEdit => initialEditState,
+            EditType.EditSuspended when canEdit => initialEditState,
             EditType.EditCompleted when canEdit => initialEditState,
             EditType.ViewOnly => EditState.ReadOnly,
             _ => canEdit ? initialEditState : EditState.ReadOnly
@@ -297,7 +297,7 @@ public partial class MedicalCaseEditModeStateMachine : ObservableObject
         }
 
         // 确定编辑类型
-        EditType = isCompleted ? EditType.EditCompleted : EditType.EditDraft;
+        EditType = isCompleted ? EditType.EditCompleted : EditType.EditSuspended;
 
         // 确定初始编辑状态
         if (preferEditing && CanEdit)
@@ -323,7 +323,7 @@ public partial class MedicalCaseEditModeStateMachine : ObservableObject
         OnPropertyChanged(nameof(ShowEditButton));
         OnPropertyChanged(nameof(ShowEditButtonTopRight));
         OnPropertyChanged(nameof(ShowSaveButton));
-        OnPropertyChanged(nameof(ShowDraftButton));
+        OnPropertyChanged(nameof(ShowSuspendButton));
         OnPropertyChanged(nameof(ShowCompleteButton));
         OnPropertyChanged(nameof(HeaderTitle));
         OnPropertyChanged(nameof(BackButtonText));

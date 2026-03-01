@@ -5,7 +5,9 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+using NSubstitute.ReturnsExtensions;
 
 namespace LYBT.Desktop.Patients.Tests.Services;
 
@@ -15,15 +17,15 @@ namespace LYBT.Desktop.Patients.Tests.Services;
 /// </summary>
 public class PatientServiceTests
 {
-    private readonly Mock<IPatientRepository> _repositoryMock;
-    private readonly Mock<ILogger<PatientService>> _loggerMock;
+    private readonly IPatientRepository _repository;
+    private readonly ILogger<PatientService> _logger;
     private readonly PatientService _service;
 
     public PatientServiceTests()
     {
-        _repositoryMock = new Mock<IPatientRepository>();
-        _loggerMock = new Mock<ILogger<PatientService>>();
-        _service = new PatientService(_repositoryMock.Object, _loggerMock.Object);
+        _repository = Substitute.For<IPatientRepository>();
+        _logger = Substitute.For<ILogger<PatientService>>();
+        _service = new PatientService(_repository, _logger);
     }
 
     #region CreatePatientAsync Tests
@@ -39,9 +41,9 @@ public class PatientServiceTests
         };
         var createdPatient = CreateTestPatientDetailDto(Guid.NewGuid(), "新患者", Gender.Male);
 
-        _repositoryMock
-            .Setup(r => r.CreateAsync(inputDto))
-            .ReturnsAsync(createdPatient);
+        _repository
+            .CreateAsync(inputDto)
+            .Returns(createdPatient);
 
         // Act
         var result = await _service.CreatePatientAsync(inputDto);
@@ -61,8 +63,8 @@ public class PatientServiceTests
         {
             Name = "错误患者"
         };
-        _repositoryMock
-            .Setup(r => r.CreateAsync(inputDto))
+        _repository
+            .CreateAsync(inputDto)
             .ThrowsAsync(new Exception("数据库错误"));
 
         // Act
@@ -90,9 +92,9 @@ public class PatientServiceTests
         };
         var updatedPatient = CreateTestPatientDetailDto(patientId, "更新患者", Gender.Male);
 
-        _repositoryMock
-            .Setup(r => r.UpdateAsync(inputDto))
-            .ReturnsAsync(updatedPatient);
+        _repository
+            .UpdateAsync(inputDto)
+            .Returns(updatedPatient);
 
         // Act
         var result = await _service.UpdatePatientAsync(inputDto);
@@ -113,8 +115,8 @@ public class PatientServiceTests
             Id = Guid.NewGuid(),
             Name = "错误患者"
         };
-        _repositoryMock
-            .Setup(r => r.UpdateAsync(inputDto))
+        _repository
+            .UpdateAsync(inputDto)
             .ThrowsAsync(new Exception("更新失败"));
 
         // Act
@@ -135,9 +137,9 @@ public class PatientServiceTests
     {
         // Arrange
         var patientId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.DeleteAsync(patientId))
-            .ReturnsAsync(true);
+        _repository
+            .DeleteAsync(patientId)
+            .Returns(true);
 
         // Act
         var result = await _service.DeletePatientAsync(patientId);
@@ -153,8 +155,8 @@ public class PatientServiceTests
     {
         // Arrange
         var patientId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.DeleteAsync(patientId))
+        _repository
+            .DeleteAsync(patientId)
             .ThrowsAsync(new Exception("删除失败"));
 
         // Act
@@ -176,9 +178,9 @@ public class PatientServiceTests
         var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var batchResult = new BatchOperationResultDto { SuccessCount = 2, FailureCount = 0 };
 
-        _repositoryMock
-            .Setup(r => r.BatchDeleteAsync(ids))
-            .ReturnsAsync(batchResult);
+        _repository
+            .BatchDeleteAsync(Arg.Any<List<Guid>>())
+            .Returns(batchResult);
 
         // Act
         var result = await _service.BatchDeletePatientsAsync(ids);
@@ -209,9 +211,9 @@ public class PatientServiceTests
     {
         // Arrange
         var ids = new List<Guid> { Guid.NewGuid() };
-        _repositoryMock
-            .Setup(r => r.BatchDeleteAsync(ids))
-            .ReturnsAsync((BatchOperationResultDto?)null);
+        _repository
+            .BatchDeleteAsync(ids)
+            .ReturnsNull();
 
         // Act
         var result = await _service.BatchDeletePatientsAsync(ids);
@@ -227,8 +229,8 @@ public class PatientServiceTests
     {
         // Arrange
         var ids = new List<Guid> { Guid.NewGuid() };
-        _repositoryMock
-            .Setup(r => r.BatchDeleteAsync(ids))
+        _repository
+            .BatchDeleteAsync(ids)
             .ThrowsAsync(new Exception("批量删除失败"));
 
         // Act
@@ -253,9 +255,9 @@ public class PatientServiceTests
             new() { Id = Guid.NewGuid(), Name = "张四" }
         };
 
-        _repositoryMock
-            .Setup(r => r.SearchAsync("张"))
-            .ReturnsAsync(patients);
+        _repository
+            .SearchAsync("张")
+            .Returns(patients);
 
         // Act
         var result = await _service.SearchPatientsAsync("张");
@@ -270,8 +272,8 @@ public class PatientServiceTests
     public async Task SearchPatientsAsync_WhenRepositoryThrows_ReturnsFailed()
     {
         // Arrange
-        _repositoryMock
-            .Setup(r => r.SearchAsync("error"))
+        _repository
+            .SearchAsync("error")
             .ThrowsAsync(new Exception("搜索失败"));
 
         // Act
@@ -303,9 +305,9 @@ public class PatientServiceTests
             PageSize = 20
         };
 
-        _repositoryMock
-            .Setup(r => r.GetPagedAsync(1, 20, null))
-            .ReturnsAsync(pagedResult);
+        _repository
+            .GetPagedAsync(1, 20, null)
+            .Returns(pagedResult);
 
         // Act
         var result = await _service.GetPatientsPagedAsync(1, 20);
@@ -332,9 +334,9 @@ public class PatientServiceTests
             PageSize = 20
         };
 
-        _repositoryMock
-            .Setup(r => r.GetPagedAsync(1, 20, "王"))
-            .ReturnsAsync(pagedResult);
+        _repository
+            .GetPagedAsync(1, 20, "王")
+            .Returns(pagedResult);
 
         // Act
         var result = await _service.GetPatientsPagedAsync(1, 20, "王");
@@ -348,8 +350,8 @@ public class PatientServiceTests
     public async Task GetPatientsPagedAsync_WhenRepositoryThrows_ReturnsFailed()
     {
         // Arrange
-        _repositoryMock
-            .Setup(r => r.GetPagedAsync(1, 20, null))
+        _repository
+            .GetPagedAsync(1, 20, null)
             .ThrowsAsync(new Exception("查询失败"));
 
         // Act
@@ -372,9 +374,9 @@ public class PatientServiceTests
         var patientId = Guid.NewGuid();
         var patient = CreateTestPatientDetailDto(patientId, "测试患者", Gender.Male);
 
-        _repositoryMock
-            .Setup(r => r.GetByIdAsync(patientId))
-            .ReturnsAsync(patient);
+        _repository
+            .GetByIdAsync(patientId)
+            .Returns(patient);
 
         // Act
         var result = await _service.GetByIdAsync(patientId);
@@ -391,9 +393,9 @@ public class PatientServiceTests
     {
         // Arrange
         var nonExistingId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.GetByIdAsync(nonExistingId))
-            .ReturnsAsync((PatientDetailDto?)null);
+        _repository
+            .GetByIdAsync(nonExistingId)
+            .ReturnsNull();
 
         // Act
         var result = await _service.GetByIdAsync(nonExistingId);
@@ -409,8 +411,8 @@ public class PatientServiceTests
     {
         // Arrange
         var patientId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.GetByIdAsync(patientId))
+        _repository
+            .GetByIdAsync(patientId)
             .ThrowsAsync(new Exception("查询失败"));
 
         // Act

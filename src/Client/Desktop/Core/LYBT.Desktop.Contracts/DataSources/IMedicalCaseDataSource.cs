@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 
@@ -56,4 +57,9 @@ public interface IMedicalCaseDataSource : IDataSourceBase<MedicalCaseDetailDto, 
     /// 获取患者的医案列表
     /// </summary>
     Task<List<MedicalCaseDetailDto>> GetByPatientIdAsync(Guid patientId, CancellationToken ct = default);
+
+    /// <summary>
+    /// CODE-40: 批量删除医案
+    /// </summary>
+    Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
 }

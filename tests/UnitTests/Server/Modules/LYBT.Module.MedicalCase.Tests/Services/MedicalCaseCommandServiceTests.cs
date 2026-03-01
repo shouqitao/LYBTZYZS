@@ -8,11 +8,13 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 using Xunit;
 using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.DTOs.Users;
 
@@ -28,13 +30,14 @@ namespace LYBT.Module.MedicalCases.Tests.Services
     public class MedicalCaseCommandServiceTests : TestBase
     {
         private readonly MedicalCaseCommandService _service;
-        private readonly Mock<IMedicalCaseRepository> _repositoryMock;
-        private readonly Mock<IPatientCrossModuleService> _patientCrossModuleMock;
-        private readonly Mock<IUserCrossModuleService> _userCrossModuleMock;
-        private readonly Mock<IHerbCrossModuleService> _herbCrossModuleMock;
-        private readonly Mock<IMedicalCaseAuditService> _auditServiceMock;
-        private readonly Mock<IMedicalCasePermissionService> _permissionServiceMock;
-        private readonly Mock<ILogger<MedicalCaseCommandService>> _loggerMock;
+        private readonly IMedicalCaseRepository _repositoryMock;
+        private readonly IPatientCrossModuleService _patientCrossModuleMock;
+        private readonly IUserCrossModuleService _userCrossModuleMock;
+        private readonly IHerbCrossModuleService _herbCrossModuleMock;
+        private readonly IMedicalCaseAuditService _auditServiceMock;
+        private readonly IMedicalCasePermissionService _permissionServiceMock;
+        private readonly ILogger<MedicalCaseCommandService> _loggerMock;
+        private readonly ICacheInvalidationService _cacheInvalidationMock;
 
         public MedicalCaseCommandServiceTests()
         {
@@ -45,25 +48,27 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             _auditServiceMock = CreateMock<IMedicalCaseAuditService>();
             _permissionServiceMock = CreateMock<IMedicalCasePermissionService>();
             _loggerMock = CreateLoggerMock<MedicalCaseCommandService>();
+            _cacheInvalidationMock = CreateMock<ICacheInvalidationService>();
 
             // 默认: 权限检查通过
-            _permissionServiceMock.Setup(x => x.CanEdit(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<MedicalCaseEntity>()))
+            _permissionServiceMock.CanEdit(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<MedicalCaseEntity>())
                 .Returns(true);
-            _permissionServiceMock.Setup(x => x.CanDelete(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<MedicalCaseEntity>()))
+            _permissionServiceMock.CanDelete(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<MedicalCaseEntity>())
                 .Returns(true);
 
             // 默认: 药材价格查询返回空
-            _herbCrossModuleMock.Setup(x => x.GetHerbPricesAsync(It.IsAny<IEnumerable<Guid>>()))
-                .ReturnsAsync(new Dictionary<Guid, decimal>());
+            _herbCrossModuleMock.GetHerbPricesAsync(Arg.Any<IEnumerable<Guid>>())
+                .Returns(new Dictionary<Guid, decimal>());
 
             _service = new MedicalCaseCommandService(
-                _repositoryMock.Object,
-                _patientCrossModuleMock.Object,
-                _userCrossModuleMock.Object,
-                _herbCrossModuleMock.Object,
-                _auditServiceMock.Object,
-                _permissionServiceMock.Object,
-                _loggerMock.Object);
+                _repositoryMock,
+                _patientCrossModuleMock,
+                _userCrossModuleMock,
+                _herbCrossModuleMock,
+                _auditServiceMock,
+                _permissionServiceMock,
+                _loggerMock,
+                _cacheInvalidationMock);
         }
 
         #region CreateAsync Tests
@@ -79,14 +84,14 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var patient = new PatientBasicDto { Id = patientId, Name = "张三" };
             var doctor = new UserBasicDto { Id = doctorId, RealName = "李医生" };
 
-            _patientCrossModuleMock.Setup(x => x.GetPatientBasicInfoAsync(patientId))
-                .ReturnsAsync(patient);
+            _patientCrossModuleMock.GetPatientBasicInfoAsync(patientId)
+                .Returns(patient);
 
-            _userCrossModuleMock.Setup(x => x.GetUserBasicInfoAsync(doctorId))
-                .ReturnsAsync(doctor);
+            _userCrossModuleMock.GetUserBasicInfoAsync(doctorId)
+                .Returns(doctor);
 
-            _repositoryMock.Setup(x => x.GetByPatientIdAsync(patientId))
-                .ReturnsAsync(new List<MedicalCaseEntity>());
+            _repositoryMock.GetByPatientIdAsync(patientId)
+                .Returns(new List<MedicalCaseEntity>());
 
             var createdMedicalCase = new MedicalCaseEntity
             {
@@ -99,8 +104,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 Consultation = new ConsultationEntity { Id = Guid.NewGuid() }
             };
 
-            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<MedicalCaseEntity>()))
-                .ReturnsAsync(createdMedicalCase);
+            _repositoryMock.AddAsync(Arg.Any<MedicalCaseEntity>())
+                .Returns(createdMedicalCase);
 
             // Act
             var result = await _service.CreateAsync(patientId, visitDate, doctorId);
@@ -128,8 +133,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 CaseStatus = MedicalCaseStatus.Active
             };
 
-            _repositoryMock.Setup(x => x.GetByPatientIdAsync(patientId))
-                .ReturnsAsync(new List<MedicalCaseEntity> { existingActiveCase });
+            _repositoryMock.GetByPatientIdAsync(patientId)
+                .Returns(new List<MedicalCaseEntity> { existingActiveCase });
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
@@ -160,7 +165,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            // OpenSpec: simplify-medicalcase-dataflow - ChiefComplaint已移除，使用PresentIllness
             var request = new ConsultationInputDto
             {
                 PresentIllness = "头痛",
@@ -177,11 +181,11 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 }
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
+            _repositoryMock.GetByIdWithDetailsAsync(medicalCaseId)
+                .Returns(medicalCase);
 
-            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
-                .ReturnsAsync(medicalCase);
+            _repositoryMock.UpdateAsync(medicalCase)
+                .Returns(medicalCase);
 
             // Act
             var result = await _service.UpdateConsultationAsync(medicalCaseId, request, Guid.NewGuid(), isAdmin: true);
@@ -198,27 +202,24 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var doctorId = Guid.NewGuid();
             var request = new ConsultationInputDto();
 
-            // OpenSpec: simplify-medicalcase-dataflow - 测试非管理员不能编辑已完成医案
-            // UserId设为当前用户，确保不会因为"非创建者"而被拒绝
-            // 规则：Completed 状态当天可编辑，跨日后锁定，所以需要设置为过去的日期
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
                 UserId = doctorId,
                 CaseStatus = MedicalCaseStatus.Completed,
-                CreatedAt = DateTime.Today.AddDays(-1), // 昨天创建，跨日锁定
-                CompletedAt = DateTime.Today.AddDays(-1), // 昨天完成
+                CreatedAt = DateTime.Today.AddDays(-1),
+                CompletedAt = DateTime.Today.AddDays(-1),
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
+            _repositoryMock.GetByIdWithDetailsAsync(medicalCaseId)
+                .Returns(medicalCase);
 
             // 覆盖默认 mock: 非管理员不能编辑已完成(跨日锁定)的医案
-            _permissionServiceMock.Setup(x => x.CanEdit(doctorId, false, medicalCase))
+            _permissionServiceMock.CanEdit(doctorId, false, medicalCase)
                 .Returns(false);
 
-            // Act & Assert - 非管理员无法编辑已完成医案，抛出UnauthorizedAccessException
+            // Act & Assert
             await Assert.ThrowsAsync<UnauthorizedAccessException>(
                 () => _service.UpdateConsultationAsync(medicalCaseId, request, doctorId, isAdmin: false));
         }
@@ -234,7 +235,6 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var medicalCaseId = Guid.NewGuid();
             var needsPrescription = true;
 
-            // OpenSpec: simplify-medicalcase-dataflow - PrescriptionEnabled已从Consultation移至MedicalCase.NeedsPrescription
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
@@ -246,11 +246,11 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 }
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
+            _repositoryMock.GetByIdWithDetailsAsync(medicalCaseId)
+                .Returns(medicalCase);
 
-            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
-                .ReturnsAsync(medicalCase);
+            _repositoryMock.UpdateAsync(medicalCase)
+                .Returns(medicalCase);
 
             // Act
             var result = await _service.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription, Guid.NewGuid(), isAdmin: true);
@@ -291,18 +291,11 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 }
             };
 
-            // OpenSpec: simplify-medicalcase-dataflow - PatientId/UserId已从Prescription移除，通过MedicalCase获取
-            var prescription = new PrescriptionEntity
-            {
-                Id = Guid.NewGuid(),
-                MedicalCaseId = medicalCaseId
-            };
+            _repositoryMock.GetByIdWithDetailsFreshAsync(medicalCaseId)
+                .Returns(medicalCase);
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
-
-            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
-                .ReturnsAsync(medicalCase);
+            _repositoryMock.UpdateAsync(medicalCase)
+                .Returns(medicalCase);
 
             // Act
             var result = await _service.CreatePrescriptionAsync(medicalCaseId, request);
@@ -338,8 +331,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
                 }
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
+            _repositoryMock.GetByIdWithDetailsFreshAsync(medicalCaseId)
+                .Returns(medicalCase);
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
@@ -358,10 +351,10 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var operatorId = Guid.NewGuid();
             var medicalCase = new MedicalCaseEntity { Id = medicalCaseId, UserId = operatorId };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
-            _repositoryMock.Setup(x => x.DeleteAsync(medicalCaseId))
-                .ReturnsAsync(true);
+            _repositoryMock.GetByIdAsync(medicalCaseId)
+                .Returns(medicalCase);
+            _repositoryMock.DeleteAsync(medicalCaseId)
+                .Returns(true);
 
             // Act
             var result = await _service.DeleteAsync(medicalCaseId, operatorId, isAdmin: false);
@@ -377,8 +370,8 @@ namespace LYBT.Module.MedicalCases.Tests.Services
             var medicalCaseId = Guid.NewGuid();
             var operatorId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
-                .ReturnsAsync((MedicalCaseEntity?)null);
+            _repositoryMock.GetByIdAsync(medicalCaseId)
+                .ReturnsNull();
 
             // Act
             var result = await _service.DeleteAsync(medicalCaseId, operatorId, isAdmin: false);

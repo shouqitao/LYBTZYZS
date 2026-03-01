@@ -107,10 +107,10 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request);
 
         /// <summary>
-        /// 暂存医案草稿
+        /// 挂起医案
         /// OpenSpec: simplify-desktop-data-layer (Phase 1)
         /// </summary>
-        Task<MedicalCaseDetailDto?> SaveDraftAsync(Guid id, ConsultationInputDto? request);
+        Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request);
 
         /// <summary>
         /// 记录打印完成 -- 回写打印状态到服务端

@@ -4,6 +4,7 @@ using LYBT.Desktop.LocalData.Mappers;
 using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Validators.BusinessRules;
@@ -140,7 +141,7 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
         var entity = _mapper.ToEntity(input);
         entity.Id = Guid.NewGuid();
         entity.CreatedAt = DateTime.Now;
-        entity.CaseStatus = MedicalCaseStatus.Draft;
+        entity.CaseStatus = MedicalCaseStatus.Suspended;
 
         // 补充患者/医生名称（InputDto 不携带，需从数据库查找）
         var patient = await _context.Patients.FindAsync(new object[] { input.PatientId }, ct);
@@ -451,6 +452,49 @@ public class LocalMedicalCaseDataSource : IMedicalCaseDataSource
         _logger.LogInformation("[LocalDataSource] MedicalCase.AddPrintLog completed - MedicalCaseId={MedicalCaseId}, IsSuccess={IsSuccess}",
             medicalCaseId, isSuccess);
         return true;
+    }
+
+    /// <summary>
+    /// CODE-40: 批量删除医案
+    /// </summary>
+    public async Task<BatchOperationResultDto> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
+    {
+        _logger.LogInformation("[LocalDataSource] MedicalCase.BatchDelete - Count={Count}", ids.Count);
+
+        var result = new BatchOperationResultDto
+        {
+            TotalCount = ids.Count,
+            IsSuccess = true
+        };
+
+        foreach (var id in ids)
+        {
+            var entity = await _context.MedicalCases.FindAsync([id], ct);
+            if (entity != null)
+            {
+                entity.IsDeleted = true;
+                result.SuccessCount++;
+                result.SuccessfulIds.Add(id);
+            }
+            else
+            {
+                result.FailureCount++;
+                result.FailedIds.Add(id);
+                result.FailedItems.Add(new BatchOperationFailureItem
+                {
+                    Id = id,
+                    Reason = "医案不存在"
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync(ct);
+
+        result.IsSuccess = result.FailureCount == 0;
+        _logger.LogInformation("[LocalDataSource] MedicalCase.BatchDelete completed - Success={Success}, Failure={Failure}",
+            result.SuccessCount, result.FailureCount);
+
+        return result;
     }
 
     /// <summary>

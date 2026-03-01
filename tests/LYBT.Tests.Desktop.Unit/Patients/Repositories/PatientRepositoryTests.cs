@@ -6,7 +6,8 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace LYBT.Desktop.Patients.Tests.Repositories;
 
@@ -16,15 +17,15 @@ namespace LYBT.Desktop.Patients.Tests.Repositories;
 /// </summary>
 public class PatientRepositoryTests
 {
-    private readonly Mock<IPatientDataSource> _dataSourceMock;
-    private readonly Mock<ILogger<PatientRepository>> _loggerMock;
+    private readonly IPatientDataSource _dataSource;
+    private readonly ILogger<PatientRepository> _logger;
     private readonly PatientRepository _repository;
 
     public PatientRepositoryTests()
     {
-        _dataSourceMock = new Mock<IPatientDataSource>();
-        _loggerMock = new Mock<ILogger<PatientRepository>>();
-        _repository = new PatientRepository(_dataSourceMock.Object, _loggerMock.Object);
+        _dataSource = Substitute.For<IPatientDataSource>();
+        _logger = Substitute.For<ILogger<PatientRepository>>();
+        _repository = new PatientRepository(_dataSource, _logger);
     }
 
     #region GetPagedAsync Tests
@@ -38,9 +39,9 @@ public class PatientRepositoryTests
             CreateTestPatient("张三", Gender.Male),
             CreateTestPatient("李四", Gender.Female)
         };
-        _dataSourceMock
-            .Setup(ds => ds.GetPagedAsync(1, 20, null, default))
-            .ReturnsAsync((patients, 2));
+        _dataSource
+            .GetPagedAsync(1, 20, null, default)
+            .Returns((patients, 2));
 
         // Act
         var result = await _repository.GetPagedAsync(1, 20, null);
@@ -61,9 +62,9 @@ public class PatientRepositoryTests
         {
             CreateTestPatient("张三", Gender.Male)
         };
-        _dataSourceMock
-            .Setup(ds => ds.GetPagedAsync(1, 20, "张", default))
-            .ReturnsAsync((patients, 1));
+        _dataSource
+            .GetPagedAsync(1, 20, "张", default)
+            .Returns((patients, 1));
 
         // Act
         var result = await _repository.GetPagedAsync(1, 20, "张");
@@ -77,9 +78,9 @@ public class PatientRepositoryTests
     public async Task GetPagedAsync_WithEmptyResult_ReturnsEmptyList()
     {
         // Arrange
-        _dataSourceMock
-            .Setup(ds => ds.GetPagedAsync(1, 20, "不存在", default))
-            .ReturnsAsync((new List<PatientDetailDto>(), 0));
+        _dataSource
+            .GetPagedAsync(1, 20, "不存在", default)
+            .Returns((new List<PatientDetailDto>(), 0));
 
         // Act
         var result = await _repository.GetPagedAsync(1, 20, "不存在");
@@ -100,9 +101,9 @@ public class PatientRepositoryTests
         var patientId = Guid.NewGuid();
         var patient = CreateTestPatient("测试患者", Gender.Male);
         patient.Id = patientId;
-        _dataSourceMock
-            .Setup(ds => ds.GetByIdAsync(patientId, default))
-            .ReturnsAsync(patient);
+        _dataSource
+            .GetByIdAsync(patientId, default)
+            .Returns(patient);
 
         // Act
         var result = await _repository.GetByIdAsync(patientId);
@@ -118,9 +119,9 @@ public class PatientRepositoryTests
     {
         // Arrange
         var nonExistingId = Guid.NewGuid();
-        _dataSourceMock
-            .Setup(ds => ds.GetByIdAsync(nonExistingId, default))
-            .ReturnsAsync((PatientDetailDto?)null);
+        _dataSource
+            .GetByIdAsync(nonExistingId, default)
+            .Returns((PatientDetailDto?)null);
 
         // Act
         var result = await _repository.GetByIdAsync(nonExistingId);
@@ -147,9 +148,9 @@ public class PatientRepositoryTests
         createdPatient.Id = Guid.NewGuid();
         createdPatient.PhoneNumber = "13800138000";
 
-        _dataSourceMock
-            .Setup(ds => ds.CreateAsync(It.IsAny<PatientInputDto>(), default))
-            .ReturnsAsync(createdPatient);
+        _dataSource
+            .CreateAsync(Arg.Any<PatientInputDto>(), default)
+            .Returns(createdPatient);
 
         // Act
         var result = await _repository.CreateAsync(inputDto);
@@ -188,9 +189,9 @@ public class PatientRepositoryTests
         var updatedPatient = CreateTestPatient("更新后患者", Gender.Female);
         updatedPatient.Id = patientId;
 
-        _dataSourceMock
-            .Setup(ds => ds.UpdateAsync(It.IsAny<PatientInputDto>(), default))
-            .ReturnsAsync(updatedPatient);
+        _dataSource
+            .UpdateAsync(Arg.Any<PatientInputDto>(), default)
+            .Returns(updatedPatient);
 
         // Act
         var result = await _repository.UpdateAsync(inputDto);
@@ -220,9 +221,9 @@ public class PatientRepositoryTests
     {
         // Arrange
         var patientId = Guid.NewGuid();
-        _dataSourceMock
-            .Setup(ds => ds.DeleteAsync(patientId, default))
-            .ReturnsAsync(true);
+        _dataSource
+            .DeleteAsync(patientId, default)
+            .Returns(true);
 
         // Act
         var result = await _repository.DeleteAsync(patientId);
@@ -236,9 +237,9 @@ public class PatientRepositoryTests
     {
         // Arrange
         var nonExistingId = Guid.NewGuid();
-        _dataSourceMock
-            .Setup(ds => ds.DeleteAsync(nonExistingId, default))
-            .ReturnsAsync(false);
+        _dataSource
+            .DeleteAsync(nonExistingId, default)
+            .Returns(false);
 
         // Act
         var result = await _repository.DeleteAsync(nonExistingId);
@@ -260,9 +261,9 @@ public class PatientRepositoryTests
             CreateTestPatient("张三", Gender.Male),
             CreateTestPatient("张四", Gender.Female)
         };
-        _dataSourceMock
-            .Setup(ds => ds.SearchAsync("张", default))
-            .ReturnsAsync(patients);
+        _dataSource
+            .SearchAsync("张", default)
+            .Returns(patients);
 
         // Act
         var result = await _repository.SearchAsync("张");
@@ -283,9 +284,9 @@ public class PatientRepositoryTests
         var idNumber = "110101199001011234";
         var patientDto = CreateTestPatient("身份证患者", Gender.Male);
         patientDto.IdNumber = idNumber;
-        _dataSourceMock
-            .Setup(ds => ds.GetByIdNumberAsync(idNumber, default))
-            .ReturnsAsync(patientDto);
+        _dataSource
+            .GetByIdNumberAsync(idNumber, default)
+            .Returns(patientDto);
 
         // Act
         var result = await _repository.GetByIdNumberAsync(idNumber);
@@ -299,9 +300,9 @@ public class PatientRepositoryTests
     public async Task GetByIdNumberAsync_WithNonExistingIdNumber_ReturnsNull()
     {
         // Arrange
-        _dataSourceMock
-            .Setup(ds => ds.GetByIdNumberAsync("000000000000000000", default))
-            .ReturnsAsync((PatientDetailDto?)null);
+        _dataSource
+            .GetByIdNumberAsync("000000000000000000", default)
+            .Returns((PatientDetailDto?)null);
 
         // Act
         var result = await _repository.GetByIdNumberAsync("000000000000000000");
@@ -320,9 +321,9 @@ public class PatientRepositoryTests
         // Arrange
         var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
         var batchResult = new BatchOperationResultDto { SuccessCount = 3, FailureCount = 0 };
-        _dataSourceMock
-            .Setup(ds => ds.BatchDeleteAsync(ids, default))
-            .ReturnsAsync(batchResult);
+        _dataSource
+            .BatchDeleteAsync(ids, default)
+            .Returns(batchResult);
 
         // Act
         var result = await _repository.BatchDeleteAsync(ids);
@@ -339,9 +340,9 @@ public class PatientRepositoryTests
         // Arrange
         var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var batchResult = new BatchOperationResultDto { SuccessCount = 1, FailureCount = 1 };
-        _dataSourceMock
-            .Setup(ds => ds.BatchDeleteAsync(ids, default))
-            .ReturnsAsync(batchResult);
+        _dataSource
+            .BatchDeleteAsync(ids, default)
+            .Returns(batchResult);
 
         // Act
         var result = await _repository.BatchDeleteAsync(ids);
@@ -357,9 +358,9 @@ public class PatientRepositoryTests
     {
         // Arrange
         var ids = new List<Guid> { Guid.NewGuid() };
-        _dataSourceMock
-            .Setup(ds => ds.BatchDeleteAsync(ids, default))
-            .ThrowsAsync(new Exception("批量删除失败"));
+        _dataSource
+            .BatchDeleteAsync(ids, default)
+            .Throws(new Exception("批量删除失败"));
 
         // Act
         var result = await _repository.BatchDeleteAsync(ids);

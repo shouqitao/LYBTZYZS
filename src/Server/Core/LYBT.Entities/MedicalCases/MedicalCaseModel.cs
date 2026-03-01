@@ -108,14 +108,14 @@ namespace LYBT.Entities.MedicalCases
         /// <summary>
         /// 是否已锁定
         /// 锁定条件：已完成状态 且 非当天（完成或创建）
-        /// Draft/Active状态不受跨日限制，可随时编辑
+        /// Suspended/Active状态不受跨日限制，可随时编辑
         /// </summary>
         public bool IsLocked => IsCompleted && (CompletedAt ?? CreatedAt).Date < DateTime.Today;
 
         /// <summary>
         /// 是否活跃（可编辑状态）
         /// </summary>
-        public bool IsActive => CaseStatus == MedicalCaseStatus.Draft || CaseStatus == MedicalCaseStatus.Active;
+        public bool IsActive => CaseStatus == MedicalCaseStatus.Suspended || CaseStatus == MedicalCaseStatus.Active;
 
         /// <summary>
         /// 是否已完成
@@ -137,11 +137,11 @@ namespace LYBT.Entities.MedicalCases
         }
 
         /// <summary>
-        /// 暂存医案 -- 设置状态为 Draft
+        /// 挂起医案 -- 设置状态为 Suspended
         /// </summary>
-        public void SaveAsDraft()
+        public void Suspend()
         {
-            CaseStatus = MedicalCaseStatus.Draft;
+            CaseStatus = MedicalCaseStatus.Suspended;
             UpdatedAt = DateTime.Now;
         }
 
