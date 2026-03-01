@@ -3,8 +3,6 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <!-- 允许测试项目访问internal类 (Issue #1600 Phase 3) -->

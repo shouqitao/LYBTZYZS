@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <LangVersion>12.0</LangVersion>
-    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 
@@ -15,13 +12,9 @@
     <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
     <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
     <AssemblyCopyright>Copyright (c) 凌隐宝堂中医诊所 2025</AssemblyCopyright>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <InformationalVersion>1.0.0-printing</InformationalVersion>
 
     <!-- Package Information -->
     <PackageId>LYBT.Desktop.Printing</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
     <Authors>LYBT开发团队</Authors>
     <PackageDescription>LYBT WPF打印服务 - 通用打印、预览、导出功能</PackageDescription>
     <PackageTags>WPF;Printing;FixedDocument;XPS;中医;诊所</PackageTags>

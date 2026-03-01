@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <LangVersion>12.0</LangVersion>
-    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -16,13 +13,9 @@
     <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
     <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
     <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <InformationalVersion>1.0.0-admin-role</InformationalVersion>
 
     <!-- Package Information -->
     <PackageId>LYBT.Desktop.Admin</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
     <Authors>LYBT开发团队</Authors>
     <PackageDescription>LYBT管理员角色模块 - 系统管理工作台主页、功能导航</PackageDescription>
     <PackageTags>WPF;管理员;角色;系统管理;中医;诊所</PackageTags>

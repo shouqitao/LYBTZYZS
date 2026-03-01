@@ -3,6 +3,13 @@
   
   <!-- 输出路径: 使用默认的项目本地 bin 目录，避免并行构建文件锁定 -->
   
+  <!-- 语言与可空性 (集中管理，各 .csproj 无需重复声明) -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
   <!-- 统一编译配置 -->
   <PropertyGroup>
     <!-- 统一编译器设置 -->
@@ -35,5 +42,19 @@
 
   <!-- 包版本通过 Directory.Packages.props 中央管理，这里不再定义版本变量 -->
 
+  <!-- 产品元数据 -->
+  <PropertyGroup>
+    <Authors>LYBT Team</Authors>
+    <Company>凌隐宝堂</Company>
+    <Product>凌隐宝堂中医诊所管理系统</Product>
+    <Copyright>Copyright (c) 2024-$([System.DateTime]::Now.Year) 凌隐宝堂</Copyright>
+  </PropertyGroup>
+
+  <!-- 统一版本管理 -->
+  <PropertyGroup>
+    <VersionPrefix>2.1.0</VersionPrefix>
+    <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
+    <FileVersion>$(VersionPrefix).0</FileVersion>
+  </PropertyGroup>
 
 </Project>

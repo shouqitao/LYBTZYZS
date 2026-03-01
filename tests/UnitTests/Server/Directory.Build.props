@@ -1,4 +1,7 @@
 <Project>
+  <!-- 导入上级配置 (tests/Directory.Build.props -> root Directory.Build.props) -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
   <!-- Server测试项目共享配置 - SQLite InMemory数据库测试 -->
   <!--
     长期优化方案（Microsoft官方推荐）:

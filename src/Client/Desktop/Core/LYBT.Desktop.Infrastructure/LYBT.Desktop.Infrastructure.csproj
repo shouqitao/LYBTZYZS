@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <LangVersion>12.0</LangVersion>
-    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 
@@ -15,13 +12,9 @@
     <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
     <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
     <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
-    <InformationalVersion>2.1.0-infrastructure</InformationalVersion>
 
     <!-- Package Information -->
     <PackageId>LYBT.Desktop.Infrastructure</PackageId>
-    <PackageVersion>2.1.0</PackageVersion>
     <Authors>LYBT开发团队</Authors>
     <PackageDescription>LYBT WPF基础设施 - 主题系统、自定义控件、UI工具类库</PackageDescription>
     <PackageTags>WPF;UI;Infrastructure;中医;诊所;主题;控件</PackageTags>

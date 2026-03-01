@@ -29,15 +29,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
-  <!-- 测试框架包版本管理 -->
-  <PropertyGroup>
-    <XUnitVersion>2.6.6</XUnitVersion>
-    <XUnitRunnerVersion>2.5.7</XUnitRunnerVersion>
-    <MoqVersion>4.20.72</MoqVersion>
-    <FluentAssertionsVersion>6.12.2</FluentAssertionsVersion>
-    <CoverletVersion>6.0.2</CoverletVersion>
-  </PropertyGroup>
-
+  <!-- 包版本通过 Directory.Packages.props (CPM) 集中管理 -->
   <!-- coverlet.collector 已移至 Directory.Build.targets，避免重复定义 -->
 
 </Project>

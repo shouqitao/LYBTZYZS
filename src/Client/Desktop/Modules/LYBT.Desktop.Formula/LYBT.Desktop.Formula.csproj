@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <LangVersion>12.0</LangVersion>
-    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -16,13 +13,9 @@
     <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
     <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
     <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
-    <InformationalVersion>2.1.0-formula-enterprise</InformationalVersion>
     
     <!-- Package Information -->
     <PackageId>LYBT.Desktop.Formula</PackageId>
-    <PackageVersion>2.1.0</PackageVersion>
     <Authors>LYBT开发团队</Authors>
     <PackageDescription>LYBT验方管理模块 - 经典验方模板、个人验方、智能推荐 | UltraThink双层架构标准</PackageDescription>
     <PackageTags>WPF;验方管理;经典验方;个人验方;中医;诊所;UltraThink</PackageTags>
