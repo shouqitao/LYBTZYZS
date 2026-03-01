@@ -203,6 +203,7 @@ use-cases/
 examples/
 templates/
 !/docs/templates/  # 文档系统标准模板目录例外
+!/src/Client/Desktop/Core/LYBT.Desktop.Printing/Templates/  # 打印模板例外
 
 # 截图和图片文件
 *.png

@@ -252,12 +252,24 @@ namespace LYBT.Desktop.Printing.Services
         }
 
         // T4-S5-09: 分页阈值和容量常量
-        private const int FirstPageHerbLimit = 12;       // 首页最多显示12味药材
+        private const int A5FirstPageHerbLimit = 12;      // A5首页最多显示12味药材
+        private const int A4FirstPageHerbLimit = 20;      // A4首页最多显示20味药材
         private const int ContinuationPageHerbLimit = 20; // 续页最多显示20味药材（头部更简洁）
 
         /// <summary>
+        /// 判断是否为A4纸张尺寸
+        /// </summary>
+        private static bool IsA4(Size pageSize) => pageSize.Width >= A4PageSize.Width;
+
+        /// <summary>
+        /// 根据纸张大小获取首页药材限制
+        /// </summary>
+        private static int GetFirstPageHerbLimit(Size pageSize) =>
+            IsA4(pageSize) ? A4FirstPageHerbLimit : A5FirstPageHerbLimit;
+
+        /// <summary>
         /// 构建FixedDocument，支持多页
-        /// T4-S5-09: 当药材超过12味时自动分页
+        /// T4-S5-09: 当药材超过首页限制时自动分页 (A5=12味, A4=20味)
         /// </summary>
         private FixedDocument BuildFixedDocument(PrescriptionPrintModel model, Size pageSize)
         {
@@ -265,10 +277,11 @@ namespace LYBT.Desktop.Printing.Services
             document.DocumentPaginator.PageSize = pageSize;
 
             var itemCount = model.Items?.Count ?? 0;
+            var firstPageLimit = GetFirstPageHerbLimit(pageSize);
 
-            if (itemCount <= FirstPageHerbLimit)
+            if (itemCount <= firstPageLimit)
             {
-                // 单页模式：药材 <= 12味，使用原有模板
+                // 单页模式
                 var pageContent = new PageContent();
                 var fixedPage = CreateFixedPage(model, pageSize);
                 ((IAddChild)pageContent).AddChild(fixedPage);
@@ -278,7 +291,7 @@ namespace LYBT.Desktop.Printing.Services
             {
                 // 多页模式 T4-S5-09
                 _logger.LogInformation("[PRINT] Multi-page mode: {ItemCount} herbs, threshold={Threshold}",
-                    itemCount, FirstPageHerbLimit);
+                    itemCount, firstPageLimit);
                 BuildMultiPageDocument(document, model, pageSize);
             }
 
@@ -294,15 +307,16 @@ namespace LYBT.Desktop.Printing.Services
             var allItems = model.Items?.ToList() ?? new List<PrescriptionItemPrintModel>();
             var totalItems = allItems.Count;
             var offset = 0;
+            var firstPageLimit = GetFirstPageHerbLimit(pageSize);
 
             // 第1页：使用完整模板，限制药材数量
-            var firstPageItems = allItems.Take(FirstPageHerbLimit).ToList();
+            var firstPageItems = allItems.Take(firstPageLimit).ToList();
             var firstPageModel = CloneModelWithItems(model, firstPageItems);
             var firstPage = CreateFixedPage(firstPageModel, pageSize);
             var firstPageContent = new PageContent();
             ((IAddChild)firstPageContent).AddChild(firstPage);
             document.Pages.Add(firstPageContent);
-            offset += FirstPageHerbLimit;
+            offset += firstPageLimit;
 
             // 后续页：使用续页模板
             while (offset < totalItems)
@@ -383,16 +397,13 @@ namespace LYBT.Desktop.Printing.Services
         }
 
         /// <summary>
-        /// 创建首页 FixedPage（使用完整模板）
+        /// 创建首页 FixedPage（根据纸张尺寸选择A4或A5模板）
         /// </summary>
         private FixedPage CreateFixedPage(PrescriptionPrintModel model, Size pageSize)
         {
-            var template = new PrescriptionPrintTemplate
-            {
-                DataContext = model,
-                Width = pageSize.Width,
-                Height = pageSize.Height
-            };
+            UserControl template = IsA4(pageSize)
+                ? new PrescriptionPrintA4Template { DataContext = model, Width = pageSize.Width, Height = pageSize.Height }
+                : new PrescriptionPrintTemplate { DataContext = model, Width = pageSize.Width, Height = pageSize.Height };
 
             template.Measure(pageSize);
             template.Arrange(new Rect(pageSize));
@@ -417,21 +428,33 @@ namespace LYBT.Desktop.Printing.Services
         }
 
         /// <summary>
-        /// 创建续页 FixedPage（使用续页模板）
+        /// 创建续页 FixedPage（根据纸张尺寸选择A4或A5续页模板）
         /// T4-S5-09
         /// </summary>
         private FixedPage CreateContinuationFixedPage(PrescriptionPrintModel model, Size pageSize, bool isLastPage)
         {
-            var template = new PrescriptionContinuationTemplate
+            UserControl template;
+            if (IsA4(pageSize))
             {
-                DataContext = model,
-                Width = pageSize.Width,
-                Height = pageSize.Height
-            };
-
-            if (isLastPage)
+                var a4Template = new PrescriptionContinuationA4Template
+                {
+                    DataContext = model,
+                    Width = pageSize.Width,
+                    Height = pageSize.Height
+                };
+                if (isLastPage) a4Template.SetAsLastPage();
+                template = a4Template;
+            }
+            else
             {
-                template.SetAsLastPage();
+                var a5Template = new PrescriptionContinuationTemplate
+                {
+                    DataContext = model,
+                    Width = pageSize.Width,
+                    Height = pageSize.Height
+                };
+                if (isLastPage) a5Template.SetAsLastPage();
+                template = a5Template;
             }
 
             template.Measure(pageSize);
