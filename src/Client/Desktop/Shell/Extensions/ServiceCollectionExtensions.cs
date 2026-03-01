@@ -289,6 +289,7 @@ namespace LYBT.Desktop.Shell.Extensions
             {
                 SizeLimit = 1000, CompactionPercentage = 0.25, ExpirationScanFrequency = TimeSpan.FromMinutes(5)
             }));
+            containerRegistry.RegisterSingleton<IDesktopCacheManager, LYBT.Desktop.Foundation.Caching.DesktopCacheManager>();
         }
 
         /// <summary>注册HTTP相关服务</summary>

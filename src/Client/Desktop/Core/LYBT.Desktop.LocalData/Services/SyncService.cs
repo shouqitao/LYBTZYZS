@@ -24,6 +24,7 @@ public class SyncService : ISyncService
     private readonly LocalDbContext _context;
     private readonly ILogger<SyncService> _logger;
     private readonly SyncOptions _syncOptions;
+    private readonly IDesktopCacheManager? _cacheManager;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -35,12 +36,14 @@ public class SyncService : ISyncService
         ISyncApi syncApi,
         LocalDbContext context,
         ILogger<SyncService> logger,
-        IOptions<SyncOptions> syncOptions)
+        IOptions<SyncOptions> syncOptions,
+        IDesktopCacheManager? cacheManager = null)
     {
         _syncApi = syncApi;
         _context = context;
         _logger = logger;
         _syncOptions = syncOptions.Value;
+        _cacheManager = cacheManager;
     }
 
     /// <inheritdoc />
@@ -289,6 +292,9 @@ public class SyncService : ISyncService
         _logger.LogInformation(
             "[SyncService] 同步完成 - Uploaded={Uploaded}, Downloaded={Downloaded}, Skipped={Skipped}, Failed={Failed}",
             result.UploadedCount, result.DownloadedCount, result.SkippedCount, result.FailedCount);
+
+        // 同步完成后清理所有 Desktop 缓存
+        _cacheManager?.InvalidateAll();
 
         return result;
     }

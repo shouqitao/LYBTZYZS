@@ -1,8 +1,11 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Contracts.Events;
+using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 
 namespace LYBT.Desktop.Patients.Services
 {
@@ -22,13 +25,33 @@ namespace LYBT.Desktop.Patients.Services
 
         public PatientSearchCache(
             ILogger<PatientSearchCache> logger,
-            ISessionManager sessionManager)
+            ISessionManager sessionManager,
+            IEventAggregator eventAggregator)
         {
             _logger = logger;
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
             // 订阅会话变化事件，用户切换或登出时清理缓存
             _sessionManager.SessionChanged += OnSessionChanged;
+
+            // 订阅患者 CRUD 事件 -- 创建/更新后立即失效缓存
+            eventAggregator.GetEvent<PatientEvents.CreatedEvent>()
+                .Subscribe(_ => Invalidate(), ThreadOption.BackgroundThread);
+            eventAggregator.GetEvent<PatientEvents.UpdatedEvent>()
+                .Subscribe(_ => Invalidate(), ThreadOption.BackgroundThread);
+
+            // 订阅全局缓存失效事件 (Sync 完成后)
+            eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>()
+                .Subscribe(OnCacheInvalidated, ThreadOption.BackgroundThread);
+        }
+
+        private void OnCacheInvalidated(CacheInvalidatedPayload payload)
+        {
+            if (payload.Domain is CacheDomain.Patients or CacheDomain.All)
+            {
+                _logger.LogInformation("[Cache] PatientSearchCache invalidated by {Reason}", payload.Reason);
+                Invalidate();
+            }
         }
 
         /// <summary>
