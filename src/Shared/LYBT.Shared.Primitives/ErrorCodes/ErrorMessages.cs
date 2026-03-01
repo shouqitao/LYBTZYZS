@@ -35,7 +35,6 @@ public static class ErrorMessages
         [ErrorCode.InvalidRefreshToken] = ("登录状态异常，请重新登录", "Invalid refresh token"),
         [ErrorCode.RoleNotFound] = ("角色不存在", "Role not found"),
         [ErrorCode.CannotDeleteSysAdmin] = ("无法删除系统管理员", "Cannot delete system admin"),
-        [ErrorCode.TokenExpired] = ("Access Token 已过期，请刷新令牌", "Access token expired"),
         [ErrorCode.DeviceMismatch] = ("登录设备不匹配", "Device mismatch"),
         [ErrorCode.PasswordChangeRequired] = ("首次登录需要修改密码", "Password change required"),
         [ErrorCode.SessionExpired] = ("会话已到期，请重新登录", "Session expired"),

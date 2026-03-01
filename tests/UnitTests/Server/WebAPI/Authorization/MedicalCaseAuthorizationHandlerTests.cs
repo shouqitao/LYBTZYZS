@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.WebAPI.Tests.Authorization;
@@ -19,15 +19,15 @@ namespace LYBT.WebAPI.Tests.Authorization;
 /// </summary>
 public class MedicalCaseAuthorizationHandlerTests
 {
-    private readonly Mock<IMedicalCasePermissionService> _mockPermissionService;
+    private readonly IMedicalCasePermissionService _permissionService;
     private readonly ILogger<MedicalCaseAuthorizationHandler> _logger;
     private readonly MedicalCaseAuthorizationHandler _handler;
 
     public MedicalCaseAuthorizationHandlerTests()
     {
-        _mockPermissionService = new Mock<IMedicalCasePermissionService>();
+        _permissionService = Substitute.For<IMedicalCasePermissionService>();
         _logger = NullLogger<MedicalCaseAuthorizationHandler>.Instance;
-        _handler = new MedicalCaseAuthorizationHandler(_mockPermissionService.Object, _logger);
+        _handler = new MedicalCaseAuthorizationHandler(_permissionService, _logger);
     }
 
     #region Admin可编辑所有医案
@@ -42,8 +42,8 @@ public class MedicalCaseAuthorizationHandlerTests
         var doctorId = Guid.NewGuid(); // 不同的医生创建的医案
         var medicalCase = CreateMedicalCase(doctorId, MedicalCaseStatus.Active);
 
-        _mockPermissionService
-            .Setup(s => s.CanEdit(userId, role, medicalCase))
+        _permissionService
+            .CanEdit(userId, role, medicalCase)
             .Returns(true);
 
         var context = CreateAuthorizationContext(userId, role, medicalCase, MedicalCaseOperations.Edit);
@@ -65,8 +65,8 @@ public class MedicalCaseAuthorizationHandlerTests
         var doctorId = Guid.NewGuid();
         var medicalCase = CreateMedicalCase(doctorId, MedicalCaseStatus.Completed);
 
-        _mockPermissionService
-            .Setup(s => s.CanDelete(userId, role, medicalCase))
+        _permissionService
+            .CanDelete(userId, role, medicalCase)
             .Returns(true);
 
         var context = CreateAuthorizationContext(userId, role, medicalCase, MedicalCaseOperations.Delete);
@@ -80,19 +80,19 @@ public class MedicalCaseAuthorizationHandlerTests
 
     #endregion
 
-    #region Doctor可编辑自己的Draft/Active医案
+    #region Doctor可编辑自己的Suspended/Active医案
 
     [Theory]
-    [InlineData(MedicalCaseStatus.Draft)]
+    [InlineData(MedicalCaseStatus.Suspended)]
     [InlineData(MedicalCaseStatus.Active)]
-    public async Task Doctor_CanEdit_OwnDraftOrActiveMedicalCase(MedicalCaseStatus status)
+    public async Task Doctor_CanEdit_OwnSuspendedOrActiveMedicalCase(MedicalCaseStatus status)
     {
         // Arrange
         var doctorId = Guid.NewGuid();
         var medicalCase = CreateMedicalCase(doctorId, status);
 
-        _mockPermissionService
-            .Setup(s => s.CanEdit(doctorId, UserRole.Doctor, medicalCase))
+        _permissionService
+            .CanEdit(doctorId, UserRole.Doctor, medicalCase)
             .Returns(true);
 
         var context = CreateAuthorizationContext(doctorId, UserRole.Doctor, medicalCase, MedicalCaseOperations.Edit);
@@ -101,7 +101,7 @@ public class MedicalCaseAuthorizationHandlerTests
         await _handler.HandleAsync(context);
 
         // Assert
-        context.HasSucceeded.Should().BeTrue($"Doctor 应该可以编辑自己的 {status} 医案");
+        context.HasSucceeded.Should().BeTrue($"Doctor 应该可以编辑自己的 {status} 状态医案");
     }
 
     #endregion
@@ -114,10 +114,10 @@ public class MedicalCaseAuthorizationHandlerTests
         // Arrange
         var doctorId = Guid.NewGuid();
         var otherDoctorId = Guid.NewGuid();
-        var medicalCase = CreateMedicalCase(otherDoctorId, MedicalCaseStatus.Draft);
+        var medicalCase = CreateMedicalCase(otherDoctorId, MedicalCaseStatus.Suspended);
 
-        _mockPermissionService
-            .Setup(s => s.CanEdit(doctorId, UserRole.Doctor, medicalCase))
+        _permissionService
+            .CanEdit(doctorId, UserRole.Doctor, medicalCase)
             .Returns(false);
 
         var context = CreateAuthorizationContext(doctorId, UserRole.Doctor, medicalCase, MedicalCaseOperations.Edit);
@@ -140,8 +140,8 @@ public class MedicalCaseAuthorizationHandlerTests
         var doctorId = Guid.NewGuid();
         var medicalCase = CreateMedicalCase(doctorId, MedicalCaseStatus.Completed);
 
-        _mockPermissionService
-            .Setup(s => s.CanEdit(doctorId, UserRole.Doctor, medicalCase))
+        _permissionService
+            .CanEdit(doctorId, UserRole.Doctor, medicalCase)
             .Returns(false);
 
         var context = CreateAuthorizationContext(doctorId, UserRole.Doctor, medicalCase, MedicalCaseOperations.Edit);
@@ -161,7 +161,7 @@ public class MedicalCaseAuthorizationHandlerTests
     public async Task UnauthenticatedUser_CannotEdit()
     {
         // Arrange
-        var medicalCase = CreateMedicalCase(Guid.NewGuid(), MedicalCaseStatus.Draft);
+        var medicalCase = CreateMedicalCase(Guid.NewGuid(), MedicalCaseStatus.Suspended);
         var context = CreateAuthorizationContextWithoutUser(medicalCase, MedicalCaseOperations.Edit);
 
         // Act
@@ -200,10 +200,10 @@ public class MedicalCaseAuthorizationHandlerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var medicalCase = CreateMedicalCase(userId, MedicalCaseStatus.Draft);
+        var medicalCase = CreateMedicalCase(userId, MedicalCaseStatus.Suspended);
 
-        _mockPermissionService
-            .Setup(s => s.CanEdit(userId, UserRole.Doctor, medicalCase))
+        _permissionService
+            .CanEdit(userId, UserRole.Doctor, medicalCase)
             .Returns(true);
 
         // 使用 NameIdentifier claim
@@ -225,7 +225,7 @@ public class MedicalCaseAuthorizationHandlerTests
 
         // Assert
         context.HasSucceeded.Should().BeTrue();
-        _mockPermissionService.Verify(s => s.CanEdit(userId, UserRole.Doctor, medicalCase), Times.Once);
+        _permissionService.Received(1).CanEdit(userId, UserRole.Doctor, medicalCase);
     }
 
     [Fact]
@@ -233,10 +233,10 @@ public class MedicalCaseAuthorizationHandlerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var medicalCase = CreateMedicalCase(userId, MedicalCaseStatus.Draft);
+        var medicalCase = CreateMedicalCase(userId, MedicalCaseStatus.Suspended);
 
-        _mockPermissionService
-            .Setup(s => s.CanEdit(userId, UserRole.Doctor, medicalCase))
+        _permissionService
+            .CanEdit(userId, UserRole.Doctor, medicalCase)
             .Returns(true);
 
         // 使用 sub claim (JWT 标准)
@@ -265,10 +265,10 @@ public class MedicalCaseAuthorizationHandlerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var medicalCase = CreateMedicalCase(Guid.NewGuid(), MedicalCaseStatus.Draft);
+        var medicalCase = CreateMedicalCase(Guid.NewGuid(), MedicalCaseStatus.Suspended);
 
-        _mockPermissionService
-            .Setup(s => s.CanEdit(userId, UserRole.SuperAdmin, medicalCase))
+        _permissionService
+            .CanEdit(userId, UserRole.SuperAdmin, medicalCase)
             .Returns(true);
 
         // 使用遗留的 SysAdmin 角色名
@@ -290,7 +290,7 @@ public class MedicalCaseAuthorizationHandlerTests
 
         // Assert
         context.HasSucceeded.Should().BeTrue();
-        _mockPermissionService.Verify(s => s.CanEdit(userId, UserRole.SuperAdmin, medicalCase), Times.Once);
+        _permissionService.Received(1).CanEdit(userId, UserRole.SuperAdmin, medicalCase);
     }
 
     #endregion

@@ -5,7 +5,7 @@ using LYBT.WebAPI.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Serilog.Events;
 using Xunit;
 
@@ -17,15 +17,15 @@ namespace LYBT.WebAPI.Tests.Controllers;
 /// </summary>
 public class DiagnosticsControllerTests : IDisposable
 {
-    private readonly Mock<ILogger<DiagnosticsController>> _loggerMock;
+    private readonly ILogger<DiagnosticsController> _logger;
     private readonly LoggingLevelManager _loggingLevelManager;
     private readonly DiagnosticsController _controller;
 
     public DiagnosticsControllerTests()
     {
-        _loggerMock = new Mock<ILogger<DiagnosticsController>>();
+        _logger = Substitute.For<ILogger<DiagnosticsController>>();
         _loggingLevelManager = new LoggingLevelManager(LogEventLevel.Information);
-        _controller = new DiagnosticsController(_loggingLevelManager, _loggerMock.Object);
+        _controller = new DiagnosticsController(_loggingLevelManager, _logger);
 
         // 设置HttpContext以支持GetOperator()
         SetupControllerContext();
@@ -317,14 +317,12 @@ public class DiagnosticsControllerTests : IDisposable
         _controller.EnableDebugMode(request);
 
         // Assert
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => o.ToString()!.Contains("调试模式已启用")),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        _logger.Received(1).Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("调试模式已启用")),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
@@ -337,14 +335,12 @@ public class DiagnosticsControllerTests : IDisposable
         _controller.DisableDebugMode();
 
         // Assert
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => o.ToString()!.Contains("调试模式已禁用")),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        _logger.Received(1).Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("调试模式已禁用")),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
@@ -357,14 +353,12 @@ public class DiagnosticsControllerTests : IDisposable
         _controller.SetLoggingLevel(request);
 
         // Assert
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => o.ToString()!.Contains("日志级别已手动更改")),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        _logger.Received(1).Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("日志级别已手动更改")),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     #endregion

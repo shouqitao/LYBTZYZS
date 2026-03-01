@@ -1,9 +1,9 @@
-﻿using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
+using NSubstitute;
 
 namespace LYBT.Tests.Common
 {
@@ -15,15 +15,15 @@ namespace LYBT.Tests.Common
     {
         protected readonly IServiceProvider ServiceProvider;
         protected readonly IServiceCollection Services;
-        protected readonly Mock<ILogger> MockLogger;
+        protected readonly ILogger MockLogger;
 
         protected TestBase()
         {
             Services = new ServiceCollection();
 
             // 配置日志
-            MockLogger = new Mock<ILogger>();
-            Services.AddSingleton(MockLogger.Object);
+            MockLogger = Substitute.For<ILogger>();
+            Services.AddSingleton(MockLogger);
             Services.AddLogging(builder => builder.AddDebug());
 
             // 允许子类添加额外的服务
@@ -57,28 +57,28 @@ namespace LYBT.Tests.Common
         }
 
         /// <summary>
-        /// 创建Mock对象
+        /// 创建NSubstitute替代对象
         /// </summary>
-        protected Mock<T> CreateMock<T>() where T : class
+        protected T CreateMock<T>() where T : class
         {
-            var mock = new Mock<T>();
-            Services.AddSingleton(mock.Object);
-            return mock;
+            var substitute = Substitute.For<T>();
+            Services.AddSingleton(substitute);
+            return substitute;
         }
 
         /// <summary>
-        /// 创建指定类型的Logger Mock
+        /// 创建指定类型的Logger替代对象
         /// </summary>
-        protected Mock<ILogger<T>> CreateLoggerMock<T>()
+        protected ILogger<T> CreateLoggerMock<T>()
         {
-            var mock = new Mock<ILogger<T>>();
-            Services.AddSingleton(mock.Object);
-            return mock;
+            var substitute = Substitute.For<ILogger<T>>();
+            Services.AddSingleton(substitute);
+            return substitute;
         }
 
         /// <summary>
-        /// 创建指定类型的Logger实例（用于internal类型，避免Moq代理创建失败）
-        /// Issue #2244: Repository类是internal的，Moq无法为强命名程序集创建代理
+        /// 创建指定类型的Logger实例（用于internal类型，避免代理创建失败）
+        /// Issue #2244: Repository类是internal的，NSubstitute无法为强命名程序集创建代理
         /// </summary>
         protected ILogger<T> CreateLogger<T>()
         {
@@ -89,7 +89,7 @@ namespace LYBT.Tests.Common
 
         /// <summary>
         /// 创建InMemory数据库上下文（用于Repository测试）
-        /// Issue #2244: AppDbContext无法使用Mock，需要真实的InMemory数据库
+        /// Issue #2244: AppDbContext无法使用替代，需要真实的InMemory数据库
         /// </summary>
         protected AppDbContext CreateInMemoryContext()
         {

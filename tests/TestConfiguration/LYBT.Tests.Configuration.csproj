@@ -31,7 +31,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"  />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json"  />
     <PackageReference Include="Microsoft.Extensions.Logging"  />
-    <PackageReference Include="Moq"  />
     <PackageReference Include="System.Data.SqlClient" />
   </ItemGroup>
 

@@ -69,13 +69,6 @@ public class UnauthorizedException : AppException
         new(EC.PasswordChangeRequired, "首次登录需要修改密码", "需要修改密码");
 
     /// <summary>
-    /// Token已过期
-    /// refactor-auth-role-system Phase 1.3
-    /// </summary>
-    public static UnauthorizedException TokenExpired() =>
-        new(EC.TokenExpired, "登录已过期，请重新登录", "Access Token已过期");
-
-    /// <summary>
     /// 设备指纹不匹配
     /// refactor-auth-role-system Phase 1.3
     /// </summary>

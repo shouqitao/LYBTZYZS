@@ -1,9 +1,9 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Shell.Services.Session;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Prism.Events;
 
 namespace LYBT.Desktop.Shell.Tests.Services.Session;
@@ -13,30 +13,30 @@ namespace LYBT.Desktop.Shell.Tests.Services.Session;
 /// </summary>
 public class SessionLifecycleManagerTests : IDisposable
 {
-    private readonly Mock<ILogger<SessionLifecycleManager>> _loggerMock;
-    private readonly Mock<ITokenLifecycleService> _tokenLifecycleServiceMock;
-    private readonly Mock<IUserActivityTracker> _userActivityTrackerMock;
-    private readonly Mock<IEventAggregator> _eventAggregatorMock;
-    private readonly Mock<TokenLifecycleStateChangedEvent> _tokenLifecycleEventMock;
+    private readonly ILogger<SessionLifecycleManager> _logger;
+    private readonly ITokenLifecycleService _tokenLifecycleService;
+    private readonly IUserActivityTracker _userActivityTracker;
+    private readonly IEventAggregator _eventAggregator;
+    private readonly TokenLifecycleStateChangedEvent _tokenLifecycleEvent;
     private readonly SessionLifecycleManager _sut;
 
     public SessionLifecycleManagerTests()
     {
-        _loggerMock = new Mock<ILogger<SessionLifecycleManager>>();
-        _tokenLifecycleServiceMock = new Mock<ITokenLifecycleService>();
-        _userActivityTrackerMock = new Mock<IUserActivityTracker>();
-        _eventAggregatorMock = new Mock<IEventAggregator>();
-        _tokenLifecycleEventMock = new Mock<TokenLifecycleStateChangedEvent>();
+        _logger = Substitute.For<ILogger<SessionLifecycleManager>>();
+        _tokenLifecycleService = Substitute.For<ITokenLifecycleService>();
+        _userActivityTracker = Substitute.For<IUserActivityTracker>();
+        _eventAggregator = Substitute.For<IEventAggregator>();
+        _tokenLifecycleEvent = Substitute.For<TokenLifecycleStateChangedEvent>();
 
-        _eventAggregatorMock
-            .Setup(ea => ea.GetEvent<TokenLifecycleStateChangedEvent>())
-            .Returns(_tokenLifecycleEventMock.Object);
+        _eventAggregator
+            .GetEvent<TokenLifecycleStateChangedEvent>()
+            .Returns(_tokenLifecycleEvent);
 
         _sut = new SessionLifecycleManager(
-            _loggerMock.Object,
-            _tokenLifecycleServiceMock.Object,
-            _userActivityTrackerMock.Object,
-            _eventAggregatorMock.Object);
+            _logger,
+            _tokenLifecycleService,
+            _userActivityTracker,
+            _eventAggregator);
     }
 
     public void Dispose()
@@ -90,7 +90,7 @@ public class SessionLifecycleManagerTests : IDisposable
         await _sut.StartSessionAsync(userName, userRole, tokenExpiresAt);
 
         // Assert
-        _tokenLifecycleServiceMock.Verify(s => s.StartMonitoring(tokenExpiresAt), Times.Once);
+        _tokenLifecycleService.Received(1).StartMonitoring(tokenExpiresAt);
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class SessionLifecycleManagerTests : IDisposable
         await _sut.StartSessionAsync(userName, userRole, tokenExpiresAt);
 
         // Assert
-        _userActivityTrackerMock.Verify(t => t.StartTracking(), Times.Once);
+        _userActivityTracker.Received(1).StartTracking();
     }
 
     [Fact]
@@ -165,8 +165,8 @@ public class SessionLifecycleManagerTests : IDisposable
         await _sut.EndSessionAsync();
 
         // Assert
-        _tokenLifecycleServiceMock.Verify(s => s.StopMonitoring(), Times.Once);
-        _tokenLifecycleServiceMock.Verify(s => s.Reset(), Times.Once);
+        _tokenLifecycleService.Received(1).StopMonitoring();
+        _tokenLifecycleService.Received(1).Reset();
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class SessionLifecycleManagerTests : IDisposable
         await _sut.EndSessionAsync();
 
         // Assert
-        _userActivityTrackerMock.Verify(t => t.StopTracking(), Times.Once);
+        _userActivityTracker.Received(1).StopTracking();
     }
 
     #endregion
@@ -191,7 +191,7 @@ public class SessionLifecycleManagerTests : IDisposable
     {
         // Arrange
         await _sut.StartSessionAsync("testuser", "Doctor", DateTime.Now.AddHours(1));
-        _tokenLifecycleServiceMock.Setup(s => s.TryRefreshTokenAsync()).ReturnsAsync(true);
+        _tokenLifecycleService.TryRefreshTokenAsync().Returns(true);
 
         SessionState? intermediateState = null;
         _sut.StateChanged += (sender, args) =>
@@ -212,7 +212,7 @@ public class SessionLifecycleManagerTests : IDisposable
     {
         // Arrange
         await _sut.StartSessionAsync("testuser", "Doctor", DateTime.Now.AddHours(1));
-        _tokenLifecycleServiceMock.Setup(s => s.TryRefreshTokenAsync()).ReturnsAsync(true);
+        _tokenLifecycleService.TryRefreshTokenAsync().Returns(true);
 
         // Act
         var result = await _sut.RefreshTokenAsync();
@@ -227,7 +227,7 @@ public class SessionLifecycleManagerTests : IDisposable
     {
         // Arrange
         await _sut.StartSessionAsync("testuser", "Doctor", DateTime.Now.AddHours(1));
-        _tokenLifecycleServiceMock.Setup(s => s.TryRefreshTokenAsync()).ReturnsAsync(false);
+        _tokenLifecycleService.TryRefreshTokenAsync().Returns(false);
 
         // Act
         var result = await _sut.RefreshTokenAsync();
@@ -252,7 +252,7 @@ public class SessionLifecycleManagerTests : IDisposable
         _sut.UpdateTokenExpiration(newExpiration);
 
         // Assert
-        _tokenLifecycleServiceMock.Verify(s => s.UpdateExpiration(newExpiration), Times.Once);
+        _tokenLifecycleService.Received(1).UpdateExpiration(newExpiration);
     }
 
     #endregion
@@ -269,7 +269,7 @@ public class SessionLifecycleManagerTests : IDisposable
         _sut.RecordUserActivity();
 
         // Assert
-        _userActivityTrackerMock.Verify(t => t.ResetActivity(), Times.Once);
+        _userActivityTracker.Received(1).ResetActivity();
     }
 
     #endregion
@@ -281,7 +281,7 @@ public class SessionLifecycleManagerTests : IDisposable
     {
         // Arrange
         var remainingTime = TimeSpan.FromMinutes(30);
-        _tokenLifecycleServiceMock.Setup(s => s.RemainingTime).Returns(remainingTime);
+        _tokenLifecycleService.RemainingTime.Returns(remainingTime);
 
         // Act
         var result = _sut.TokenRemainingTime;
@@ -328,7 +328,7 @@ public class SessionLifecycleManagerTests : IDisposable
         _sut.SessionExpired += (sender, args) => expiredRaised = true;
 
         // Act - 模拟UserActivityTracker触发SessionExpired事件
-        _userActivityTrackerMock.Raise(t => t.SessionExpired += null, EventArgs.Empty);
+        _userActivityTracker.SessionExpired += Raise.Event();
 
         // Assert
         _sut.CurrentState.Should().Be(SessionState.Expired);

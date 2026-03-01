@@ -4,7 +4,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Services;
@@ -27,7 +27,7 @@ public class TokenRevocationServiceTests : IDisposable
             .Options;
 
         _context = new AppDbContext(options);
-        _logger = new Mock<ILogger<TokenRevocationService>>().Object;
+        _logger = Substitute.For<ILogger<TokenRevocationService>>();
         _sut = new TokenRevocationService(_context, _logger);
     }
 

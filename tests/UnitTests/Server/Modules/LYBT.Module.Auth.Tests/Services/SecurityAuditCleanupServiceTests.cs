@@ -1,10 +1,12 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LYBT.Entities.Auth;
 using LYBT.Infrastructure.Data;
+using LYBT.Shared.Configuration.Options.Server;
 using LYBT.WebAPI.BackgroundServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Services;
@@ -12,12 +14,14 @@ namespace LYBT.Module.Auth.Tests.Services;
 /// <summary>
 /// SecurityAuditCleanupService 单元测试
 /// Issue #1873 - 安全审计日志清理后台服务测试
+/// CODE-29: 更新为使用可配置保留天数
 /// </summary>
 public class SecurityAuditCleanupServiceTests : IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
     private readonly string _databaseName;
     private readonly SecurityAuditCleanupService _sut;
+    private const int TestRetentionDays = 30;
 
     public SecurityAuditCleanupServiceTests()
     {
@@ -37,7 +41,13 @@ public class SecurityAuditCleanupServiceTests : IDisposable
         var scopeFactory = _serviceProvider.GetRequiredService<IServiceScopeFactory>();
         var logger = _serviceProvider.GetRequiredService<ILogger<SecurityAuditCleanupService>>();
 
-        _sut = new SecurityAuditCleanupService(scopeFactory, logger);
+        // CODE-29: 配置保留天数为 30 天（方便测试）
+        var securityOptions = Options.Create(new SecurityOptions
+        {
+            AuditRetentionDays = TestRetentionDays
+        });
+
+        _sut = new SecurityAuditCleanupService(scopeFactory, logger, securityOptions);
     }
 
     public void Dispose()

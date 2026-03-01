@@ -303,6 +303,16 @@ namespace LYBT.Infrastructure.Repositories
                 .AnyAsync(predicate);
         }
 
+        /// <summary>
+        /// 检查指定ID的实体是否存在 (CODE-33)
+        /// </summary>
+        public virtual async Task<bool> ExistsAsync(Guid id)
+        {
+            return await _dbSet
+                .Where(e => !e.IsDeleted)
+                .AnyAsync(e => e.Id == id);
+        }
+
         // Issue #1766: 删除显式接口实现ExistsAsync(Expression) - public方法已自动实现接口
 
         /// <summary>
@@ -491,6 +501,33 @@ namespace LYBT.Infrastructure.Repositories
                 typeof(TEntity).Name, entities.Count);
 
             return entities.Count;
+        }
+
+        /// <summary>
+        /// 恢复软删除记录 (CODE-32)
+        /// </summary>
+        public virtual async Task<bool> RestoreAsync(Guid id)
+        {
+            // 使用 IgnoreQueryFilters 查询已软删除的记录
+            var entity = await _dbSet
+                .IgnoreQueryFilters()
+                .Where(e => e.Id == id && e.IsDeleted)
+                .SingleOrDefaultAsync();
+
+            if (entity == null)
+            {
+                _logger.LogWarning("[REPO] {EntityType}.Restore({Id}) -> NotFound or NotDeleted", typeof(TEntity).Name, id);
+                return false;
+            }
+
+            entity.IsDeleted = false;
+            entity.UpdatedAt = DateTime.Now;
+
+            _dbSet.Update(entity);
+            await SaveChangesAsync();
+
+            _logger.LogDebug("[REPO] {EntityType}.Restore({Id})", typeof(TEntity).Name, id);
+            return true;
         }
 
         /// <summary>

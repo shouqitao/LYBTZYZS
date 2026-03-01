@@ -16,7 +16,7 @@ using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 namespace LYBT.Module.Auth.Services
 {
     /// <summary>
-    /// 认证服务 - 通过 ICrossModuleService 解耦 Users 模块依赖
+    /// 认证服务 - 通过 IUserCrossModuleService 解耦 Users 模块依赖
     /// 密码验证使用 PasswordHelper (LYBT.Shared.Utilities)，用户查询通过 CMQS 间接访问
     /// 仅提供小型中医诊所系统所需的基础认证功能
     /// </summary>
@@ -52,7 +52,7 @@ namespace LYBT.Module.Auth.Services
 
         /// <summary>
         /// 验证用户凭据（统一认证）
-        /// 通过 ICrossModuleService + PasswordHelper 实现密码验证，解耦 Users 模块
+        /// 通过 IUserCrossModuleService + PasswordHelper 实现密码验证，解耦 Users 模块
         /// </summary>
         public async Task<Result<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
@@ -442,7 +442,7 @@ namespace LYBT.Module.Auth.Services
                 _logger.LogWarning("[SVC] Auth.RefreshToken → AbnormalUsage - UsageCount={Count}", tokenRecord.UsageCount);
             }
 
-            // 4. 通过 ICrossModuleService 获取用户信息
+            // 4. 通过 IUserCrossModuleService 获取用户信息
             var userBasic = await _crossModuleQuery.GetUserBasicInfoAsync(tokenRecord.UserId);
             if (userBasic == null)
                 return Result<LoginResponse>.Failure(GenericErrorCode.UserNotFound);
@@ -569,15 +569,6 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 撤销RefreshToken（简化版本不支持）
-        /// </summary>
-        public async Task<Result<bool>> RevokeTokenAsync(RevokeTokenRequest request)
-        {
-            await Task.CompletedTask;
-            return Result<bool>.Success(true);
-        }
-
-        /// <summary>
         /// 使用AutoLoginToken自动登录
         /// OpenSpec: refactor-login-authentication (CVT-001)
         /// </summary>
@@ -650,7 +641,7 @@ namespace LYBT.Module.Auth.Services
                 return Result<LoginResponse>.Failure(GenericErrorCode.AuthRefreshTokenExpired, $"AutoLoginToken{reason}，请重新登录");
             }
 
-            // 4. 通过 ICrossModuleService 获取用户信息
+            // 4. 通过 IUserCrossModuleService 获取用户信息
             var userBasic = await _crossModuleQuery.GetUserBasicInfoAsync(tokenRecord.UserId);
             if (userBasic == null)
             {

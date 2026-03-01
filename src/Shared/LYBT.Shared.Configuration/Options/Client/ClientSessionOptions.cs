@@ -20,7 +20,7 @@ public sealed class ClientSessionOptions
     /// 超时前警告时间 (分钟)
     /// </summary>
     [Range(0, 10)]
-    public int WarningBeforeTimeoutMinutes { get; set; } = 0;
+    public int WarningBeforeTimeoutMinutes { get; set; } = 2;
 
     /// <summary>
     /// 活动检查间隔 (秒)

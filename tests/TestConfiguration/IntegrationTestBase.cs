@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace LYBT.Tests.Common
 {
@@ -20,7 +20,7 @@ namespace LYBT.Tests.Common
         protected readonly WebApplicationFactory<Program> Factory;
         protected readonly HttpClient Client;
         protected readonly IServiceProvider ServiceProvider;
-        protected readonly Mock<ILogger> MockLogger;
+        protected readonly ILogger MockLogger;
 
         //  Issue #1669: 固定数据库名，确保同一测试实例的所有HTTP请求使用同一内存数据库
         protected readonly string TestDatabaseName;
@@ -41,8 +41,8 @@ namespace LYBT.Tests.Common
             Client = CreateHttpClient(Factory);
             ServiceProvider = Factory.Services;
 
-            // 创建通用Logger Mock
-            MockLogger = new Mock<ILogger>();
+            // 创建通用Logger Substitute
+            MockLogger = Substitute.For<ILogger>();
         }
 
         /// <summary>
@@ -324,25 +324,21 @@ namespace LYBT.Tests.Common
         {
             if (message != null)
             {
-                MockLogger.Verify(
-                    x => x.Log(
-                        logLevel,
-                        It.IsAny<EventId>(),
-                        It.Is<It.IsAnyType>((o, t) => o.ToString()!.Contains(message)),
-                        It.IsAny<Exception>(),
-                        It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                    Times.AtLeastOnce);
+                MockLogger.Received().Log(
+                    logLevel,
+                    Arg.Any<EventId>(),
+                    Arg.Is<object>(o => o.ToString()!.Contains(message)),
+                    Arg.Any<Exception>(),
+                    Arg.Any<Func<object, Exception?, string>>());
             }
             else
             {
-                MockLogger.Verify(
-                    x => x.Log(
-                        logLevel,
-                        It.IsAny<EventId>(),
-                        It.IsAny<It.IsAnyType>(),
-                        It.IsAny<Exception>(),
-                        It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                    Times.AtLeastOnce);
+                MockLogger.Received().Log(
+                    logLevel,
+                    Arg.Any<EventId>(),
+                    Arg.Any<object>(),
+                    Arg.Any<Exception>(),
+                    Arg.Any<Func<object, Exception?, string>>());
             }
         }
 

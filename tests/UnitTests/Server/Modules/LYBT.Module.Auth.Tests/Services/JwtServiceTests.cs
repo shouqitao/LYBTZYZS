@@ -1,10 +1,10 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using FluentAssertions;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Configuration.Options.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Services;
@@ -16,15 +16,15 @@ namespace LYBT.Module.Auth.Tests.Services;
 /// </summary>
 public class JwtServiceTests
 {
-    private readonly Mock<IOptions<JwtOptions>> _mockOptions;
+    private readonly IOptions<JwtOptions> _options;
     private readonly IConfiguration _configuration;
     private readonly JwtService _sut;
 
     public JwtServiceTests()
     {
-        _mockOptions = new Mock<IOptions<JwtOptions>>();
+        _options = Substitute.For<IOptions<JwtOptions>>();
         // unify-configuration-system: 使用扁平化的 JwtOptions
-        _mockOptions.Setup(o => o.Value).Returns(new JwtOptions
+        _options.Value.Returns(new JwtOptions
         {
             SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
             Issuer = "LYBT",
@@ -34,7 +34,7 @@ public class JwtServiceTests
         });
 
         _configuration = CreateMockConfiguration();
-        _sut = new JwtService(_mockOptions.Object, _configuration);
+        _sut = new JwtService(_options, _configuration);
     }
 
     private static IConfiguration CreateMockConfiguration()
@@ -380,21 +380,21 @@ public class JwtServiceTests
     public void Constructor_WithStrongKey_DoesNotThrow()
     {
         // Arrange
-        var mockOptions = new Mock<IOptions<JwtOptions>>();
+        var options = Substitute.For<IOptions<JwtOptions>>();
         // unify-configuration-system: 使用扁平化的 JwtOptions
-        mockOptions.Setup(o => o.Value).Returns(new JwtOptions
+        options.Value.Returns(new JwtOptions
         {
             SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
             Issuer = "LYBT",
             Audience = "LYBTUsers"
         });
 
-        var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Jwt:SecretKey"])
+        var config = Substitute.For<IConfiguration>();
+        config["Jwt:SecretKey"]
               .Returns("ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890");
 
         // Act & Assert
-        var act = () => new JwtService(mockOptions.Object, config.Object);
+        var act = () => new JwtService(options, config);
         act.Should().NotThrow();
     }
 
@@ -402,20 +402,20 @@ public class JwtServiceTests
     public void Constructor_WithTooShortKey_ThrowsArgumentException()
     {
         // Arrange
-        var mockOptions = new Mock<IOptions<JwtOptions>>();
+        var options = Substitute.For<IOptions<JwtOptions>>();
         // unify-configuration-system: 使用扁平化的 JwtOptions
-        mockOptions.Setup(o => o.Value).Returns(new JwtOptions
+        options.Value.Returns(new JwtOptions
         {
             SecretKey = "TooShortKey123",
             Issuer = "LYBT",
             Audience = "LYBTUsers"
         });
 
-        var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Jwt:SecretKey"]).Returns("TooShortKey123");
+        var config = Substitute.For<IConfiguration>();
+        config["Jwt:SecretKey"].Returns("TooShortKey123");
 
         // Act & Assert
-        var act = () => new JwtService(mockOptions.Object, config.Object);
+        var act = () => new JwtService(options, config);
         act.Should().Throw<ArgumentException>().WithMessage("*长度不足*");
     }
 
@@ -423,21 +423,21 @@ public class JwtServiceTests
     public void Constructor_WithMinimum32CharsKey_DoesNotThrow()
     {
         // Arrange
-        var mockOptions = new Mock<IOptions<JwtOptions>>();
+        var options = Substitute.For<IOptions<JwtOptions>>();
         // unify-configuration-system: 使用扁平化的 JwtOptions
-        mockOptions.Setup(o => o.Value).Returns(new JwtOptions
+        options.Value.Returns(new JwtOptions
         {
             SecretKey = "12345678901234567890123456789012", // 正好 32 字符
             Issuer = "LYBT",
             Audience = "LYBTUsers"
         });
 
-        var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Jwt:SecretKey"])
+        var config = Substitute.For<IConfiguration>();
+        config["Jwt:SecretKey"]
               .Returns("12345678901234567890123456789012");
 
         // Act & Assert
-        var act = () => new JwtService(mockOptions.Object, config.Object);
+        var act = () => new JwtService(options, config);
         act.Should().NotThrow();
     }
 
@@ -445,20 +445,20 @@ public class JwtServiceTests
     public void Constructor_WithEmptySecretKey_ThrowsInvalidOperationException()
     {
         // Arrange
-        var mockOptions = new Mock<IOptions<JwtOptions>>();
+        var options = Substitute.For<IOptions<JwtOptions>>();
         // unify-configuration-system: 使用扁平化的 JwtOptions
-        mockOptions.Setup(o => o.Value).Returns(new JwtOptions
+        options.Value.Returns(new JwtOptions
         {
             SecretKey = "",
             Issuer = "LYBT",
             Audience = "LYBTUsers"
         });
 
-        var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Jwt:SecretKey"]).Returns("");
+        var config = Substitute.For<IConfiguration>();
+        config["Jwt:SecretKey"].Returns("");
 
         // Act & Assert
-        var act = () => new JwtService(mockOptions.Object, config.Object);
+        var act = () => new JwtService(options, config);
         act.Should().Throw<InvalidOperationException>().WithMessage("*未配置*");
     }
 

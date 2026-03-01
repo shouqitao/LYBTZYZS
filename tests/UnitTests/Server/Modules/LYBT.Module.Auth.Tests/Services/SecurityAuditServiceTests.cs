@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using FluentAssertions;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Models;
@@ -6,7 +6,7 @@ using LYBT.Module.Auth.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Services;
@@ -19,7 +19,7 @@ public class SecurityAuditServiceTests : IDisposable
 {
     private readonly AppDbContext _context;
     private readonly ILogger<SecurityAuditService> _logger;
-    private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly SecurityAuditService _sut;
 
     public SecurityAuditServiceTests()
@@ -30,9 +30,9 @@ public class SecurityAuditServiceTests : IDisposable
             .Options;
 
         _context = new AppDbContext(options);
-        _logger = new Mock<ILogger<SecurityAuditService>>().Object;
-        _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-        _sut = new SecurityAuditService(_context, _logger, _httpContextAccessorMock.Object);
+        _logger = Substitute.For<ILogger<SecurityAuditService>>();
+        _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
+        _sut = new SecurityAuditService(_context, _logger, _httpContextAccessor);
     }
 
     public void Dispose()
@@ -142,7 +142,7 @@ public class SecurityAuditServiceTests : IDisposable
         // Assert
         var auditLog = await _context.SecurityAuditLogs.FirstOrDefaultAsync();
         auditLog.Should().NotBeNull();
-        // IPv6地址被.NET自动规范化：2001:0db8:85a3:0000:0000:8a2e:0370:7334 → 2001:db8:85a3::8a2e:370:7334
+        // IPv6地址被.NET自动规范化：2001:0db8:85a3:0000:0000:8a2e:0370:7334 -> 2001:db8:85a3::8a2e:370:7334
         auditLog!.IpAddress.Should().Be("2001:db8:85a3::*");
     }
 
@@ -156,7 +156,7 @@ public class SecurityAuditServiceTests : IDisposable
             Success = true
         };
 
-        _httpContextAccessorMock.Setup(x => x.HttpContext).Returns((HttpContext?)null);
+        _httpContextAccessor.HttpContext.Returns((HttpContext?)null);
 
         // Act
         await _sut.LogAsync(auditEvent);
@@ -260,7 +260,7 @@ public class SecurityAuditServiceTests : IDisposable
         var disposedContext = new AppDbContext(options);
         disposedContext.Dispose();
 
-        var sutWithDisposedContext = new SecurityAuditService(disposedContext, _logger, _httpContextAccessorMock.Object);
+        var sutWithDisposedContext = new SecurityAuditService(disposedContext, _logger, _httpContextAccessor);
 
         // Act & Assert - 即使数据库失败也不应抛出异常
         var act = async () => await sutWithDisposedContext.LogAsync(auditEvent);
@@ -277,7 +277,7 @@ public class SecurityAuditServiceTests : IDisposable
         httpContext.Connection.RemoteIpAddress = IPAddress.Parse(ipAddress);
         httpContext.Request.Headers["User-Agent"] = userAgent;
 
-        _httpContextAccessorMock.Setup(x => x.HttpContext).Returns(httpContext);
+        _httpContextAccessor.HttpContext.Returns(httpContext);
     }
 
     #endregion

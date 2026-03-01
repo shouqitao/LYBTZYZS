@@ -2,7 +2,7 @@ using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Shell.Services.Startup;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace LYBT.Desktop.Shell.Tests.Services.Startup;
 
@@ -11,13 +11,13 @@ namespace LYBT.Desktop.Shell.Tests.Services.Startup;
 /// </summary>
 public class StartupPipelineTests
 {
-    private readonly Mock<ILogger<StartupPipeline>> _loggerMock;
+    private readonly ILogger<StartupPipeline> _logger;
     private readonly StartupPipeline _sut;
 
     public StartupPipelineTests()
     {
-        _loggerMock = new Mock<ILogger<StartupPipeline>>();
-        _sut = new StartupPipeline(_loggerMock.Object);
+        _logger = Substitute.For<ILogger<StartupPipeline>>();
+        _sut = new StartupPipeline(_logger);
     }
 
     #region 初始状态测试
@@ -38,10 +38,10 @@ public class StartupPipelineTests
     public void RegisterStep_ShouldAddStep()
     {
         // Arrange
-        var stepMock = CreateMockStep("TestStep", 1, true);
+        var step = CreateSubstituteStep("TestStep", 1, true);
 
         // Act
-        _sut.RegisterStep(stepMock.Object);
+        _sut.RegisterStep(step);
 
         // Assert
         _sut.Steps.Should().HaveCount(1);
@@ -62,12 +62,12 @@ public class StartupPipelineTests
     public void RegisterStep_ShouldThrow_WhenStepNameAlreadyExists()
     {
         // Arrange
-        var step1 = CreateMockStep("DuplicateName", 1, true);
-        var step2 = CreateMockStep("DuplicateName", 2, true);
-        _sut.RegisterStep(step1.Object);
+        var step1 = CreateSubstituteStep("DuplicateName", 1, true);
+        var step2 = CreateSubstituteStep("DuplicateName", 2, true);
+        _sut.RegisterStep(step1);
 
         // Act
-        var act = () => _sut.RegisterStep(step2.Object);
+        var act = () => _sut.RegisterStep(step2);
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
@@ -79,10 +79,10 @@ public class StartupPipelineTests
     {
         // Arrange
         _ = _sut.ExecuteAsync();
-        var step = CreateMockStep("LateStep", 1, true);
+        var step = CreateSubstituteStep("LateStep", 1, true);
 
         // Act
-        var act = () => _sut.RegisterStep(step.Object);
+        var act = () => _sut.RegisterStep(step);
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
@@ -110,13 +110,13 @@ public class StartupPipelineTests
         // Arrange
         var executionOrder = new List<string>();
 
-        var step1 = CreateMockStep("Step1", 30, true, () => executionOrder.Add("Step1"));
-        var step2 = CreateMockStep("Step2", 10, true, () => executionOrder.Add("Step2"));
-        var step3 = CreateMockStep("Step3", 20, true, () => executionOrder.Add("Step3"));
+        var step1 = CreateSubstituteStep("Step1", 30, true, () => executionOrder.Add("Step1"));
+        var step2 = CreateSubstituteStep("Step2", 10, true, () => executionOrder.Add("Step2"));
+        var step3 = CreateSubstituteStep("Step3", 20, true, () => executionOrder.Add("Step3"));
 
-        _sut.RegisterStep(step1.Object);
-        _sut.RegisterStep(step2.Object);
-        _sut.RegisterStep(step3.Object);
+        _sut.RegisterStep(step1);
+        _sut.RegisterStep(step2);
+        _sut.RegisterStep(step3);
 
         // Act
         await _sut.ExecuteAsync();
@@ -129,13 +129,13 @@ public class StartupPipelineTests
     public async Task ExecuteAsync_WhenRequiredStepFails_ShouldStopAndReturnFailed()
     {
         // Arrange
-        var step1 = CreateMockStep("Step1", 10, true);
+        var step1 = CreateSubstituteStep("Step1", 10, true);
         var step2 = CreateFailingStep("FailingStep", 20, true, "Test error");
-        var step3 = CreateMockStep("Step3", 30, true);
+        var step3 = CreateSubstituteStep("Step3", 30, true);
 
-        _sut.RegisterStep(step1.Object);
-        _sut.RegisterStep(step2.Object);
-        _sut.RegisterStep(step3.Object);
+        _sut.RegisterStep(step1);
+        _sut.RegisterStep(step2);
+        _sut.RegisterStep(step3);
 
         // Act
         var result = await _sut.ExecuteAsync();
@@ -156,13 +156,13 @@ public class StartupPipelineTests
         // Arrange
         var executionOrder = new List<string>();
 
-        var step1 = CreateMockStep("Step1", 10, true, () => executionOrder.Add("Step1"));
+        var step1 = CreateSubstituteStep("Step1", 10, true, () => executionOrder.Add("Step1"));
         var step2 = CreateFailingStep("OptionalFail", 20, false, "Optional error");
-        var step3 = CreateMockStep("Step3", 30, true, () => executionOrder.Add("Step3"));
+        var step3 = CreateSubstituteStep("Step3", 30, true, () => executionOrder.Add("Step3"));
 
-        _sut.RegisterStep(step1.Object);
-        _sut.RegisterStep(step2.Object);
-        _sut.RegisterStep(step3.Object);
+        _sut.RegisterStep(step1);
+        _sut.RegisterStep(step2);
+        _sut.RegisterStep(step3);
 
         // Act
         var result = await _sut.ExecuteAsync();
@@ -192,11 +192,11 @@ public class StartupPipelineTests
     {
         // Arrange
         using var cts = new CancellationTokenSource();
-        var step1 = CreateMockStep("Step1", 10, true, () => cts.Cancel());
-        var step2 = CreateMockStep("Step2", 20, true);
+        var step1 = CreateSubstituteStep("Step1", 10, true, () => cts.Cancel());
+        var step2 = CreateSubstituteStep("Step2", 20, true);
 
-        _sut.RegisterStep(step1.Object);
-        _sut.RegisterStep(step2.Object);
+        _sut.RegisterStep(step1);
+        _sut.RegisterStep(step2);
 
         // Act
         var result = await _sut.ExecuteAsync(cancellationToken: cts.Token);
@@ -232,10 +232,10 @@ public class StartupPipelineTests
         var completedSteps = new List<string>();
         _sut.StepCompleted += (_, e) => completedSteps.Add(e.StepName);
 
-        var step1 = CreateMockStep("Step1", 10, true);
-        var step2 = CreateMockStep("Step2", 20, true);
-        _sut.RegisterStep(step1.Object);
-        _sut.RegisterStep(step2.Object);
+        var step1 = CreateSubstituteStep("Step1", 10, true);
+        var step2 = CreateSubstituteStep("Step2", 20, true);
+        _sut.RegisterStep(step1);
+        _sut.RegisterStep(step2);
 
         // Act
         await _sut.ExecuteAsync();
@@ -252,10 +252,10 @@ public class StartupPipelineTests
     public void GetDiagnostics_ShouldReturnCorrectInfo()
     {
         // Arrange
-        var step1 = CreateMockStep("Step1", 10, true);
-        var step2 = CreateMockStep("Step2", 20, false);
-        _sut.RegisterStep(step1.Object);
-        _sut.RegisterStep(step2.Object);
+        var step1 = CreateSubstituteStep("Step1", 10, true);
+        var step2 = CreateSubstituteStep("Step2", 20, false);
+        _sut.RegisterStep(step1);
+        _sut.RegisterStep(step2);
 
         // Act
         var diagnostics = _sut.GetDiagnostics();
@@ -271,8 +271,8 @@ public class StartupPipelineTests
     public async Task GetDiagnostics_AfterExecution_ShouldShowCompletedSteps()
     {
         // Arrange
-        var step1 = CreateMockStep("Step1", 10, true);
-        _sut.RegisterStep(step1.Object);
+        var step1 = CreateSubstituteStep("Step1", 10, true);
+        _sut.RegisterStep(step1);
 
         // Act
         await _sut.ExecuteAsync();
@@ -289,30 +289,30 @@ public class StartupPipelineTests
 
     #region 辅助方法
 
-    private static Mock<IStartupStep> CreateMockStep(string name, int order, bool isRequired, Action? onExecute = null)
+    private static IStartupStep CreateSubstituteStep(string name, int order, bool isRequired, Action? onExecute = null)
     {
-        var stepMock = new Mock<IStartupStep>();
-        stepMock.SetupGet(s => s.Name).Returns(name);
-        stepMock.SetupGet(s => s.Order).Returns(order);
-        stepMock.SetupGet(s => s.IsRequired).Returns(isRequired);
-        stepMock.Setup(s => s.ExecuteAsync(It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()))
-            .Returns(() =>
+        var step = Substitute.For<IStartupStep>();
+        step.Name.Returns(name);
+        step.Order.Returns(order);
+        step.IsRequired.Returns(isRequired);
+        step.ExecuteAsync(Arg.Any<IProgress<string>?>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
             {
                 onExecute?.Invoke();
                 return Task.FromResult(StartupStepResult.Succeeded(TimeSpan.FromMilliseconds(10)));
             });
-        return stepMock;
+        return step;
     }
 
-    private static Mock<IStartupStep> CreateFailingStep(string name, int order, bool isRequired, string errorMessage)
+    private static IStartupStep CreateFailingStep(string name, int order, bool isRequired, string errorMessage)
     {
-        var stepMock = new Mock<IStartupStep>();
-        stepMock.SetupGet(s => s.Name).Returns(name);
-        stepMock.SetupGet(s => s.Order).Returns(order);
-        stepMock.SetupGet(s => s.IsRequired).Returns(isRequired);
-        stepMock.Setup(s => s.ExecuteAsync(It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(StartupStepResult.Failed(errorMessage));
-        return stepMock;
+        var step = Substitute.For<IStartupStep>();
+        step.Name.Returns(name);
+        step.Order.Returns(order);
+        step.IsRequired.Returns(isRequired);
+        step.ExecuteAsync(Arg.Any<IProgress<string>?>(), Arg.Any<CancellationToken>())
+            .Returns(StartupStepResult.Failed(errorMessage));
+        return step;
     }
 
     #endregion

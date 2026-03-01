@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Shared.Models.DTOs.Users;
 
 /// <summary>
-/// 跨模块用户基本信息 DTO (供 Auth 模块通过 ICrossModuleService 使用)
+/// 跨模块用户基本信息 DTO (供 Auth 模块通过 IUserCrossModuleService 使用)
 /// 不含敏感信息 (PasswordHash)，适用于用户信息展示场景
 /// </summary>
 public record UserBasicDto

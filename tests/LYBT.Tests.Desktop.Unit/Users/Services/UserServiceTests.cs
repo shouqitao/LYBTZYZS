@@ -5,7 +5,9 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+using NSubstitute.ReturnsExtensions;
 
 namespace LYBT.Desktop.Users.Tests.Services;
 
@@ -15,15 +17,15 @@ namespace LYBT.Desktop.Users.Tests.Services;
 /// </summary>
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> _repositoryMock;
-    private readonly Mock<ILogger<UserService>> _loggerMock;
+    private readonly IUserRepository _repository;
+    private readonly ILogger<UserService> _logger;
     private readonly UserService _service;
 
     public UserServiceTests()
     {
-        _repositoryMock = new Mock<IUserRepository>();
-        _loggerMock = new Mock<ILogger<UserService>>();
-        _service = new UserService(_repositoryMock.Object, _loggerMock.Object);
+        _repository = Substitute.For<IUserRepository>();
+        _logger = Substitute.For<ILogger<UserService>>();
+        _service = new UserService(_repository, _logger);
     }
 
     #region CreateAsync Tests
@@ -40,9 +42,9 @@ public class UserServiceTests
         };
         var createdUser = CreateTestUserDetailDto(Guid.NewGuid(), "newuser", "新用户", UserRole.Doctor);
 
-        _repositoryMock
-            .Setup(r => r.CreateAsync(inputDto))
-            .ReturnsAsync(createdUser);
+        _repository
+            .CreateAsync(inputDto)
+            .Returns(createdUser);
 
         // Act
         var (success, user, errorMessage) = await _service.CreateAsync(inputDto);
@@ -63,8 +65,8 @@ public class UserServiceTests
             UserName = "erroruser",
             RealName = "错误用户"
         };
-        _repositoryMock
-            .Setup(r => r.CreateAsync(inputDto))
+        _repository
+            .CreateAsync(inputDto)
             .ThrowsAsync(new Exception("数据库错误"));
 
         // Act
@@ -93,9 +95,9 @@ public class UserServiceTests
         };
         var updatedUser = CreateTestUserDetailDto(userId, "updateduser", "更新用户");
 
-        _repositoryMock
-            .Setup(r => r.UpdateAsync(inputDto))
-            .ReturnsAsync(updatedUser);
+        _repository
+            .UpdateAsync(inputDto)
+            .Returns(updatedUser);
 
         // Act
         var (success, user, errorMessage) = await _service.UpdateAsync(inputDto);
@@ -116,8 +118,8 @@ public class UserServiceTests
             Id = Guid.NewGuid(),
             UserName = "erroruser"
         };
-        _repositoryMock
-            .Setup(r => r.UpdateAsync(inputDto))
+        _repository
+            .UpdateAsync(inputDto)
             .ThrowsAsync(new Exception("更新失败"));
 
         // Act
@@ -138,9 +140,9 @@ public class UserServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.DeleteAsync(userId))
-            .ReturnsAsync(true);
+        _repository
+            .DeleteAsync(userId)
+            .Returns(true);
 
         // Act
         var (success, errorMessage) = await _service.DeleteAsync(userId);
@@ -155,9 +157,9 @@ public class UserServiceTests
     {
         // Arrange
         var nonExistingId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.DeleteAsync(nonExistingId))
-            .ReturnsAsync(false);
+        _repository
+            .DeleteAsync(nonExistingId)
+            .Returns(false);
 
         // Act
         var (success, errorMessage) = await _service.DeleteAsync(nonExistingId);
@@ -172,8 +174,8 @@ public class UserServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.DeleteAsync(userId))
+        _repository
+            .DeleteAsync(userId)
             .ThrowsAsync(new Exception("删除失败"));
 
         // Act
@@ -195,9 +197,9 @@ public class UserServiceTests
         var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var batchResult = new BatchOperationResultDto { SuccessCount = 2, FailureCount = 0 };
 
-        _repositoryMock
-            .Setup(r => r.BatchDeleteAsync(ids))
-            .ReturnsAsync(batchResult);
+        _repository
+            .BatchDeleteAsync(ids)
+            .Returns(batchResult);
 
         // Act
         var (success, result, errorMessage) = await _service.BatchDeleteAsync(ids);
@@ -214,9 +216,9 @@ public class UserServiceTests
     {
         // Arrange
         var ids = new List<Guid> { Guid.NewGuid() };
-        _repositoryMock
-            .Setup(r => r.BatchDeleteAsync(ids))
-            .ReturnsAsync((BatchOperationResultDto?)null);
+        _repository
+            .BatchDeleteAsync(ids)
+            .ReturnsNull();
 
         // Act
         var (success, result, errorMessage) = await _service.BatchDeleteAsync(ids);
@@ -238,9 +240,9 @@ public class UserServiceTests
         var userId = Guid.NewGuid();
         var user = CreateTestUserDetailDto(userId, "testuser", "测试用户");
 
-        _repositoryMock
-            .Setup(r => r.GetByIdAsync(userId))
-            .ReturnsAsync(user);
+        _repository
+            .GetByIdAsync(userId)
+            .Returns(user);
 
         // Act
         var (success, resultUser, errorMessage) = await _service.GetByIdAsync(userId);
@@ -257,9 +259,9 @@ public class UserServiceTests
     {
         // Arrange
         var nonExistingId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.GetByIdAsync(nonExistingId))
-            .ReturnsAsync((UserDetailDto?)null);
+        _repository
+            .GetByIdAsync(nonExistingId)
+            .ReturnsNull();
 
         // Act
         var (success, user, errorMessage) = await _service.GetByIdAsync(nonExistingId);
@@ -275,8 +277,8 @@ public class UserServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.GetByIdAsync(userId))
+        _repository
+            .GetByIdAsync(userId)
             .ThrowsAsync(new Exception("查询失败"));
 
         // Act
@@ -308,9 +310,9 @@ public class UserServiceTests
             PageSize = 20
         };
 
-        _repositoryMock
-            .Setup(r => r.GetPagedAsync(1, 20, null))
-            .ReturnsAsync(pagedResult);
+        _repository
+            .GetPagedAsync(1, 20, null)
+            .Returns(pagedResult);
 
         // Act
         var (success, data, errorMessage) = await _service.GetPagedAsync(1, 20);
@@ -337,9 +339,9 @@ public class UserServiceTests
             PageSize = 20
         };
 
-        _repositoryMock
-            .Setup(r => r.GetPagedAsync(1, 20, "医生"))
-            .ReturnsAsync(pagedResult);
+        _repository
+            .GetPagedAsync(1, 20, "医生")
+            .Returns(pagedResult);
 
         // Act
         var (success, data, errorMessage) = await _service.GetPagedAsync(1, 20, "医生");
@@ -354,8 +356,8 @@ public class UserServiceTests
     public async Task GetPagedAsync_WhenRepositoryThrows_ReturnsError()
     {
         // Arrange
-        _repositoryMock
-            .Setup(r => r.GetPagedAsync(1, 20, null))
+        _repository
+            .GetPagedAsync(1, 20, null)
             .ThrowsAsync(new Exception("查询失败"));
 
         // Act
@@ -379,9 +381,9 @@ public class UserServiceTests
         var user = CreateTestUserDetailDto(userId, "testuser", "测试用户");
         user.Status = CommonStatus.Disabled;
 
-        _repositoryMock
-            .Setup(r => r.ToggleStatusAsync(userId))
-            .ReturnsAsync(user);
+        _repository
+            .ToggleStatusAsync(userId)
+            .Returns(user);
 
         // Act
         var (success, resultUser, errorMessage) = await _service.ToggleStatusAsync(userId);
@@ -398,9 +400,9 @@ public class UserServiceTests
     {
         // Arrange
         var nonExistingId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.ToggleStatusAsync(nonExistingId))
-            .ReturnsAsync((UserDetailDto?)null);
+        _repository
+            .ToggleStatusAsync(nonExistingId)
+            .ReturnsNull();
 
         // Act
         var (success, user, errorMessage) = await _service.ToggleStatusAsync(nonExistingId);
@@ -416,8 +418,8 @@ public class UserServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        _repositoryMock
-            .Setup(r => r.ToggleStatusAsync(userId))
+        _repository
+            .ToggleStatusAsync(userId)
             .ThrowsAsync(new Exception("状态切换失败"));
 
         // Act
@@ -443,9 +445,9 @@ public class UserServiceTests
             new() { Id = Guid.NewGuid(), UserName = "doctor2", RealName = "王护士" }
         };
 
-        _repositoryMock
-            .Setup(r => r.SearchAsync("王"))
-            .ReturnsAsync(users);
+        _repository
+            .SearchAsync("王")
+            .Returns(users);
 
         // Act
         var (success, resultUsers, errorMessage) = await _service.SearchAsync("王");
@@ -460,8 +462,8 @@ public class UserServiceTests
     public async Task SearchAsync_WhenRepositoryThrows_ReturnsError()
     {
         // Arrange
-        _repositoryMock
-            .Setup(r => r.SearchAsync("error"))
+        _repository
+            .SearchAsync("error")
             .ThrowsAsync(new Exception("搜索失败"));
 
         // Act
@@ -486,9 +488,9 @@ public class UserServiceTests
             new() { Id = Guid.NewGuid(), UserName = "doctor1", RealName = "医生1", Role = UserRole.Doctor }
         };
 
-        _repositoryMock
-            .Setup(r => r.GetDoctorsAsync())
-            .ReturnsAsync(doctors);
+        _repository
+            .GetDoctorsAsync()
+            .Returns(doctors);
 
         // Act
         var (success, resultDoctors, errorMessage) = await _service.GetDoctorsAsync();
@@ -503,8 +505,8 @@ public class UserServiceTests
     public async Task GetDoctorsAsync_WhenRepositoryThrows_ReturnsError()
     {
         // Arrange
-        _repositoryMock
-            .Setup(r => r.GetDoctorsAsync())
+        _repository
+            .GetDoctorsAsync()
             .ThrowsAsync(new Exception("查询医生失败"));
 
         // Act

@@ -1,23 +1,29 @@
 using LYBT.Infrastructure.Data;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.BackgroundServices;
 
 /// <summary>
 /// 安全审计日志清理后台服务
-/// Issue #1873 - 每日凌晨3点清理365天前的审计日志
+/// Issue #1873 - 每日凌晨3点清理过期审计日志
+/// CODE-29: 保留天数从配置读取 (SecurityOptions.AuditRetentionDays)
 /// </summary>
 public class SecurityAuditCleanupService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<SecurityAuditCleanupService> _logger;
+    private readonly int _retentionDays;
 
     public SecurityAuditCleanupService(
         IServiceScopeFactory scopeFactory,
-        ILogger<SecurityAuditCleanupService> logger)
+        ILogger<SecurityAuditCleanupService> logger,
+        IOptions<SecurityOptions> securityOptions)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _retentionDays = securityOptions.Value.AuditRetentionDays;
     }
 
     /// <summary>
@@ -75,21 +81,21 @@ public class SecurityAuditCleanupService : BackgroundService
     }
 
     /// <summary>
-    /// 清理365天前的审计日志
+    /// 清理过期审计日志 (CODE-29: 保留天数从配置读取)
     /// </summary>
     private async Task CleanupOldLogsAsync(CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("开始清理旧的审计日志...");
+            _logger.LogInformation("开始清理旧的审计日志（保留天数：{RetentionDays}）...", _retentionDays);
 
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // 计算截止日期（365天前）
-            var cutoffDate = DateTime.UtcNow.AddDays(-365);
+            // 计算截止日期（根据配置的保留天数）
+            var cutoffDate = DateTime.UtcNow.AddDays(-_retentionDays);
 
-            // 查询365天前的日志
+            // 查询过期的日志
             var oldLogs = await context.SecurityAuditLogs
                 .Where(log => log.CreatedAt < cutoffDate)
                 .ToListAsync(cancellationToken);

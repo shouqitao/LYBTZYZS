@@ -86,9 +86,10 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 检查当前用户是否可以管理目标用户
         /// 权限规则：
-        /// - SuperAdmin（100）可以管理 Admin 和 Doctor
-        /// - Admin（10）可以管理 Doctor，但不能管理 Admin 或 SuperAdmin
-        /// - Doctor（1）只能修改自己的信息
+        /// - SuperAdmin（100）可以管理所有用户（Admin、Doctor、Receptionist）
+        /// - Admin（10）可以管理 Doctor 和 Receptionist，但不能管理 Admin 或 SuperAdmin
+        /// - Doctor（1）不能管理其他用户
+        /// - Receptionist（0）不能管理其他用户
         /// </summary>
         private bool CanManageUser(UserRole? currentUserRole, UserRole? targetUserRole)
         {
@@ -688,23 +689,17 @@ namespace LYBT.Module.Users.Services
                     continue;
                 }
 
-                // 执行删除
-                var deleteResult = await _repository.DeleteAsync(id);
-                if (deleteResult)
-                {
-                    result.SuccessCount++;
-                    _logger.LogInformation("[SVC] User.BatchDelete → ItemSuccess - UserId={UserId} UserName={UserName}", id, user.UserName);
-                }
-                else
-                {
-                    result.FailedItems.Add(new BatchOperationFailureItem
-                    {
-                        Id = id,
-                        Name = user.UserName,
-                        Reason = "删除操作失败"
-                    });
-                    result.FailureCount++;
-                }
+                // CODE-34: 标记软删除，不立即 SaveChanges，最后统一提交
+                user.IsDeleted = true;
+                user.UpdatedAt = DateTime.Now;
+                result.SuccessCount++;
+                _logger.LogInformation("[SVC] User.BatchDelete -> ItemMarked - UserId={UserId} UserName={UserName}", id, user.UserName);
+            }
+
+            // CODE-34: 统一 SaveChanges 确保单事务
+            if (result.SuccessCount > 0)
+            {
+                await _repository.SaveChangesAsync();
             }
 
             _logger.LogInformation("[SVC] User.BatchDelete completed - TotalCount={Total} SuccessCount={Success} FailureCount={Failure}",

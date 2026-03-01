@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.Module.Sync.Tests.Services;
@@ -24,9 +24,9 @@ namespace LYBT.Module.Sync.Tests.Services;
 public class SyncServiceTests : TestBase
 {
     private readonly AppDbContext _dbContext;
-    private readonly Mock<IHerbCrossModuleService> _herbCrossModuleMock;
-    private readonly Mock<IPatientCrossModuleService> _patientCrossModuleMock;
-    private readonly Mock<ILogger<SyncService>> _loggerMock;
+    private readonly IHerbCrossModuleService _herbCrossModuleMock;
+    private readonly IPatientCrossModuleService _patientCrossModuleMock;
+    private readonly ILogger<SyncService> _loggerMock;
     private readonly SyncService _syncService;
 
     public SyncServiceTests()
@@ -43,9 +43,9 @@ public class SyncServiceTests : TestBase
 
         _syncService = new SyncService(
             _dbContext,
-            _herbCrossModuleMock.Object,
-            _patientCrossModuleMock.Object,
-            _loggerMock.Object);
+            _herbCrossModuleMock,
+            _patientCrossModuleMock,
+            _loggerMock);
     }
 
     #region GetSupportedEntityTypes 测试
@@ -167,7 +167,7 @@ public class SyncServiceTests : TestBase
         var input = new SyncCompareInputDto
         {
             EntityType = "Herb",
-            LocalEntities = new List<LocalEntityMetadata>() // 空列表，没有本地数据
+            LocalEntities = new List<LocalEntityMetadata>()
         };
 
         // Act
@@ -202,7 +202,7 @@ public class SyncServiceTests : TestBase
                 new()
                 {
                     EntityId = herb.Id,
-                    Checksum = "different-checksum-456", // 不同的 Checksum
+                    Checksum = "different-checksum-456",
                     LastModifiedAt = DateTime.UtcNow
                 }
             }
@@ -232,7 +232,6 @@ public class SyncServiceTests : TestBase
         _dbContext.Herbs.Add(herb);
         await _dbContext.SaveChangesAsync();
 
-        // 计算服务器端的 Checksum
         var serverChecksum = ChecksumHelper.ComputeHerbChecksum(herb);
 
         var input = new SyncCompareInputDto
@@ -243,7 +242,7 @@ public class SyncServiceTests : TestBase
                 new()
                 {
                     EntityId = herb.Id,
-                    Checksum = serverChecksum, // 相同的 Checksum
+                    Checksum = serverChecksum,
                     LastModifiedAt = DateTime.UtcNow
                 }
             }
@@ -254,7 +253,7 @@ public class SyncServiceTests : TestBase
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Data!.Diffs.Should().BeEmpty(); // Checksum 相同，无差异
+        result.Data!.Diffs.Should().BeEmpty();
     }
 
     [Fact]
@@ -365,9 +364,8 @@ public class SyncServiceTests : TestBase
         _dbContext.Herbs.Add(herb);
         await _dbContext.SaveChangesAsync();
 
-        _herbCrossModuleMock
-            .Setup(x => x.CheckHerbReferenceAsync(herb.Id))
-            .ReturnsAsync(new ReferenceCheckResult(HasReferences: false, ReferenceCount: 0));
+        _herbCrossModuleMock.CheckHerbReferenceAsync(herb.Id)
+            .Returns(new ReferenceCheckResult(HasReferences: false, ReferenceCount: 0));
 
         var input = new SyncDeleteInputDto
         {
@@ -383,7 +381,6 @@ public class SyncServiceTests : TestBase
         result.Data!.Success.Should().Contain(herb.Id);
         result.Data.Rejected.Should().BeEmpty();
 
-        // 验证数据库中已软删除
         var deletedHerb = await _dbContext.Herbs.FindAsync(herb.Id);
         deletedHerb!.IsDeleted.Should().BeTrue();
     }
@@ -403,9 +400,8 @@ public class SyncServiceTests : TestBase
         _dbContext.Herbs.Add(herb);
         await _dbContext.SaveChangesAsync();
 
-        _herbCrossModuleMock
-            .Setup(x => x.CheckHerbReferenceAsync(herb.Id))
-            .ReturnsAsync(new ReferenceCheckResult(HasReferences: true, ReferenceCount: 5));
+        _herbCrossModuleMock.CheckHerbReferenceAsync(herb.Id)
+            .Returns(new ReferenceCheckResult(HasReferences: true, ReferenceCount: 5));
 
         var input = new SyncDeleteInputDto
         {
@@ -424,7 +420,6 @@ public class SyncServiceTests : TestBase
         result.Data.Rejected[0].Reason.Should().Contain("被");
         result.Data.Rejected[0].Reason.Should().Contain("处方引用");
 
-        // 验证数据库中未删除
         var notDeletedHerb = await _dbContext.Herbs.FindAsync(herb.Id);
         notDeletedHerb!.IsDeleted.Should().BeFalse();
     }
@@ -444,9 +439,8 @@ public class SyncServiceTests : TestBase
         _dbContext.Patients.Add(patient);
         await _dbContext.SaveChangesAsync();
 
-        _patientCrossModuleMock
-            .Setup(x => x.CheckPatientReferenceAsync(patient.Id))
-            .ReturnsAsync(new ReferenceCheckResult(HasReferences: false, ReferenceCount: 0));
+        _patientCrossModuleMock.CheckPatientReferenceAsync(patient.Id)
+            .Returns(new ReferenceCheckResult(HasReferences: false, ReferenceCount: 0));
 
         var input = new SyncDeleteInputDto
         {
@@ -491,7 +485,6 @@ public class SyncServiceTests : TestBase
         result.Data!.Success.Should().Contain(formula.Id);
         result.Data.Rejected.Should().BeEmpty();
 
-        // Formula 无引用检查，直接软删除
         var deletedFormula = await _dbContext.Formulas.FindAsync(formula.Id);
         deletedFormula!.IsDeleted.Should().BeTrue();
     }
@@ -505,15 +498,14 @@ public class SyncServiceTests : TestBase
             Id = Guid.NewGuid(),
             Name = "黄芪",
             Status = CommonStatus.Enabled,
-            IsDeleted = true, // 已经删除
+            IsDeleted = true,
             CreatedAt = DateTime.UtcNow
         };
         _dbContext.Herbs.Add(herb);
         await _dbContext.SaveChangesAsync();
 
-        _herbCrossModuleMock
-            .Setup(x => x.CheckHerbReferenceAsync(herb.Id))
-            .ReturnsAsync(new ReferenceCheckResult(HasReferences: false, ReferenceCount: 0));
+        _herbCrossModuleMock.CheckHerbReferenceAsync(herb.Id)
+            .Returns(new ReferenceCheckResult(HasReferences: false, ReferenceCount: 0));
 
         var input = new SyncDeleteInputDto
         {
@@ -586,7 +578,6 @@ public class SyncServiceTests : TestBase
         result.Data.ConflictCount.Should().Be(0);
         result.Data.ErrorCount.Should().Be(0);
 
-        // 验证数据库中已创建
         var createdHerb = await _dbContext.Herbs.FindAsync(herbId);
         createdHerb.Should().NotBeNull();
         createdHerb!.Name.Should().Be("黄芪");
@@ -610,7 +601,6 @@ public class SyncServiceTests : TestBase
         _dbContext.Herbs.Add(existingHerb);
         await _dbContext.SaveChangesAsync();
 
-        // 上传更新后的数据
         var updatedHerb = new Herb
         {
             Id = herbId,
@@ -627,7 +617,7 @@ public class SyncServiceTests : TestBase
         {
             EntityType = "Herb",
             Entities = new List<JsonElement> { json },
-            OverwriteConflicts = true // 覆盖冲突
+            OverwriteConflicts = true
         };
 
         // Act
@@ -638,7 +628,6 @@ public class SyncServiceTests : TestBase
         result.Data!.SuccessCount.Should().Be(1);
         result.Data.ConflictCount.Should().Be(0);
 
-        // 验证数据库中已更新
         var herb = await _dbContext.Herbs.FindAsync(herbId);
         herb!.Name.Should().Be("黄芪（蜜炙）");
         herb.Price.Should().Be(60m);
@@ -676,7 +665,7 @@ public class SyncServiceTests : TestBase
         {
             EntityType = "Herb",
             Entities = new List<JsonElement> { json },
-            OverwriteConflicts = false // 不覆盖冲突
+            OverwriteConflicts = false
         };
 
         // Act
@@ -688,9 +677,8 @@ public class SyncServiceTests : TestBase
         result.Data.ConflictCount.Should().Be(1);
         result.Data.Results[0].IsConflict.Should().BeTrue();
 
-        // 验证数据库中未更新
         var herb = await _dbContext.Herbs.FindAsync(herbId);
-        herb!.Name.Should().Be("黄芪"); // 原值
+        herb!.Name.Should().Be("黄芪");
     }
 
     [Fact]
@@ -793,7 +781,6 @@ public class SyncServiceTests : TestBase
         _dbContext.Formulas.Add(existingFormula);
         await _dbContext.SaveChangesAsync();
 
-        // 上传更新后的方剂
         var updatedFormula = new Formula
         {
             Id = formulaId,
@@ -870,7 +857,7 @@ public class SyncServiceTests : TestBase
     [Fact]
     public async Task UploadAsync_WithInvalidJson_ShouldReturnError()
     {
-        // Arrange - 使用 JSON 数组而不是对象，会导致反序列化为 Herb 失败
+        // Arrange
         var invalidJson = JsonDocument.Parse("[1, 2, 3]").RootElement;
 
         var input = new SyncUploadInputDto
@@ -884,7 +871,7 @@ public class SyncServiceTests : TestBase
         var result = await _syncService.UploadAsync(input);
 
         // Assert
-        result.IsSuccess.Should().BeTrue(); // 整体操作成功，但单项失败
+        result.IsSuccess.Should().BeTrue();
         result.Data!.ErrorCount.Should().Be(1);
         result.Data.SuccessCount.Should().Be(0);
     }
@@ -937,7 +924,7 @@ public class SyncServiceTests : TestBase
 
         var conflictHerb = new Herb
         {
-            Id = existingHerbId, // 与已存在的 ID 相同
+            Id = existingHerbId,
             Name = "冲突药材",
             Unit = "g",
             Price = 40m,

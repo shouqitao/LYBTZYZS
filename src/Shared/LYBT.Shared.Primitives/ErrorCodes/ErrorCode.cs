@@ -148,12 +148,6 @@ public enum ErrorCode
     PasswordChangeRequired = 10012,
 
     /// <summary>
-    /// Access Token已过期
-    /// refactor-auth-role-system Phase 1.3
-    /// </summary>
-    TokenExpired = 10013,
-
-    /// <summary>
     /// 设备指纹不匹配
     /// refactor-auth-role-system Phase 1.3
     /// </summary>

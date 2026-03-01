@@ -1112,70 +1112,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("PrescriptionItems", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Entities.Prescriptions.PrescriptionPrintLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsSuccess")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("PrescriptionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("PrintVersion")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PrintedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("PrintedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PrintedByName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PrinterName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Remark")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PrescriptionId");
-
-                    b.ToTable("PrescriptionPrintLogs", (string)null);
-                });
-
             modelBuilder.Entity("LYBT.Entities.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1344,17 +1280,6 @@ namespace LYBT.Infrastructure.Migrations
                         .HasForeignKey("PrescriptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("LYBT.Entities.Prescriptions.PrescriptionPrintLog", b =>
-                {
-                    b.HasOne("LYBT.Entities.Prescriptions.Prescription", "Prescription")
-                        .WithMany()
-                        .HasForeignKey("PrescriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Prescription");
                 });
 
             modelBuilder.Entity("LYBT.Entities.Formulas.Formula", b =>

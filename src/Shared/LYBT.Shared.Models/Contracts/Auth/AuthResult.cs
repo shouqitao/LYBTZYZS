@@ -5,7 +5,7 @@ namespace LYBT.Shared.Models.Contracts.Auth;
 
 /// <summary>
 /// 认证操作结果 - 带结构化错误码
-/// Sprint3-Batch3: 迁移到统一 GenericErrorCode，移除 AuthErrorCode 依赖
+/// Sprint3-Batch3: 统一使用 GenericErrorCode
 /// </summary>
 /// <typeparam name="T">返回数据类型</typeparam>
 public class AuthResult<T>
@@ -87,12 +87,6 @@ public class AuthResult<T>
     /// </summary>
     public static AuthResult<T> UserDisabled(string? message = null)
         => Failure(GenericErrorCode.UserDisabled, message);
-
-    /// <summary>
-    /// Token已过期
-    /// </summary>
-    public static AuthResult<T> TokenExpired(string? message = null)
-        => Failure(GenericErrorCode.TokenExpired, message);
 
     /// <summary>
     /// Token已撤销

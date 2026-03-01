@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;
@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace LYBT.Desktop.Shell.Tests.Services.Login;
 
@@ -22,14 +22,14 @@ namespace LYBT.Desktop.Shell.Tests.Services.Login;
 /// </summary>
 public class LoginCoordinatorTests
 {
-    private readonly Mock<ILogger<LoginCoordinator>> _loggerMock;
-    private readonly Mock<IAuthenticationService> _authServiceMock;
-    private readonly Mock<ITokenStorageService> _tokenStorageMock;
-    private readonly Mock<ISessionLifecycleManager> _sessionManagerMock;
-    private readonly Mock<IModuleLoadingService> _moduleLoadingMock;
-    private readonly Mock<INavigationCoordinator> _navigationCoordinatorMock;
-    private readonly Mock<IAuthenticationStateMachine> _stateMachineMock;
-    private readonly Mock<IConfiguration> _configurationMock;
+    private readonly ILogger<LoginCoordinator> _logger;
+    private readonly IAuthenticationService _authService;
+    private readonly ITokenStorageService _tokenStorage;
+    private readonly ISessionLifecycleManager _sessionManager;
+    private readonly IModuleLoadingService _moduleLoading;
+    private readonly INavigationCoordinator _navigationCoordinator;
+    private readonly IAuthenticationStateMachine _stateMachine;
+    private readonly IConfiguration _configuration;
     private readonly LoginCoordinator _sut;
     private AuthState _currentMockState = AuthState.Idle;
 
@@ -54,43 +54,45 @@ public class LoginCoordinatorTests
 
     public LoginCoordinatorTests()
     {
-        _loggerMock = new Mock<ILogger<LoginCoordinator>>();
-        _authServiceMock = new Mock<IAuthenticationService>();
-        _tokenStorageMock = new Mock<ITokenStorageService>();
-        _sessionManagerMock = new Mock<ISessionLifecycleManager>();
-        _moduleLoadingMock = new Mock<IModuleLoadingService>();
-        _navigationCoordinatorMock = new Mock<INavigationCoordinator>();
-        _stateMachineMock = new Mock<IAuthenticationStateMachine>();
-        _configurationMock = new Mock<IConfiguration>();
+        _logger = Substitute.For<ILogger<LoginCoordinator>>();
+        _authService = Substitute.For<IAuthenticationService>();
+        _tokenStorage = Substitute.For<ITokenStorageService>();
+        _sessionManager = Substitute.For<ISessionLifecycleManager>();
+        _moduleLoading = Substitute.For<IModuleLoadingService>();
+        _navigationCoordinator = Substitute.For<INavigationCoordinator>();
+        _stateMachine = Substitute.For<IAuthenticationStateMachine>();
+        _configuration = Substitute.For<IConfiguration>();
 
-        // 配置状态机Mock - 使用回调跟踪状态变化
-        _stateMachineMock.Setup(m => m.Fire(It.IsAny<AuthEvent>(), It.IsAny<string?>()))
-            .Returns((AuthEvent evt, string? msg) =>
+        // 配置状态机Substitute - 使用回调跟踪状态变化
+        _stateMachine.Fire(Arg.Any<AuthEvent>(), Arg.Any<string?>())
+            .Returns(callInfo =>
             {
+                var evt = callInfo.Arg<AuthEvent>();
+                var msg = callInfo.ArgAt<string?>(1);
                 if (StateTransitions.TryGetValue((_currentMockState, evt), out var newState))
                 {
                     var previousState = _currentMockState;
                     _currentMockState = newState;
                     // 触发状态变更事件
-                    _stateMachineMock.Raise(m => m.StateChanged += null,
+                    _stateMachine.StateChanged += Raise.EventWith(
                         new AuthStateChangedEventArgs(previousState, newState, evt, msg));
                     return true;
                 }
                 return false;
             });
 
-        _stateMachineMock.Setup(m => m.CurrentState).Returns(() => _currentMockState);
-        _stateMachineMock.Setup(m => m.IsAuthenticated).Returns(() => _currentMockState == AuthState.Authenticated);
+        _stateMachine.CurrentState.Returns(_ => _currentMockState);
+        _stateMachine.IsAuthenticated.Returns(_ => _currentMockState == AuthState.Authenticated);
 
         _sut = new LoginCoordinator(
-            _loggerMock.Object,
-            _authServiceMock.Object,
-            _tokenStorageMock.Object,
-            _sessionManagerMock.Object,
-            _moduleLoadingMock.Object,
-            _navigationCoordinatorMock.Object,
-            _stateMachineMock.Object,
-            _configurationMock.Object);
+            _logger,
+            _authService,
+            _tokenStorage,
+            _sessionManager,
+            _moduleLoading,
+            _navigationCoordinator,
+            _stateMachine,
+            _configuration);
     }
 
     #region 初始状态测试
@@ -110,13 +112,13 @@ public class LoginCoordinatorTests
         // Act
         var act = () => new LoginCoordinator(
             null!,
-            _authServiceMock.Object,
-            _tokenStorageMock.Object,
-            _sessionManagerMock.Object,
-            _moduleLoadingMock.Object,
-            _navigationCoordinatorMock.Object,
-            _stateMachineMock.Object,
-            _configurationMock.Object);
+            _authService,
+            _tokenStorage,
+            _sessionManager,
+            _moduleLoading,
+            _navigationCoordinator,
+            _stateMachine,
+            _configuration);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -128,14 +130,14 @@ public class LoginCoordinatorTests
     {
         // Act
         var act = () => new LoginCoordinator(
-            _loggerMock.Object,
+            _logger,
             null!,
-            _tokenStorageMock.Object,
-            _sessionManagerMock.Object,
-            _moduleLoadingMock.Object,
-            _navigationCoordinatorMock.Object,
-            _stateMachineMock.Object,
-            _configurationMock.Object);
+            _tokenStorage,
+            _sessionManager,
+            _moduleLoading,
+            _navigationCoordinator,
+            _stateMachine,
+            _configuration);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -177,9 +179,8 @@ public class LoginCoordinatorTests
         await _sut.LoginAsync("testuser", "password");
 
         // Assert
-        _sessionManagerMock.Verify(
-            s => s.StartSessionAsync(user.UserName!, It.IsAny<string>(), loginResponse.ExpiresAt),
-            Times.Once);
+        await _sessionManager.Received(1)
+            .StartSessionAsync(user.UserName!, Arg.Any<string>(), loginResponse.ExpiresAt);
     }
 
     [Fact]
@@ -194,9 +195,8 @@ public class LoginCoordinatorTests
         await _sut.LoginAsync("testuser", "password");
 
         // Assert
-        _moduleLoadingMock.Verify(
-            m => m.LoadModulesAsync(It.Is<string[]>(arr => arr.Contains("PatientsModule"))),
-            Times.Once);
+        await _moduleLoading.Received(1)
+            .LoadModulesAsync(Arg.Is<string[]>(arr => arr.Contains("PatientsModule")));
     }
 
     [Fact]
@@ -211,20 +211,19 @@ public class LoginCoordinatorTests
         await _sut.LoginAsync("adminuser", "password");
 
         // Assert
-        _moduleLoadingMock.Verify(
-            m => m.LoadModulesAsync(It.Is<string[]>(arr =>
+        await _moduleLoading.Received(1)
+            .LoadModulesAsync(Arg.Is<string[]>(arr =>
                 arr.Contains("UsersModule") &&
                 arr.Contains("HerbsModule") &&
-                arr.Contains("FormulaModule"))),
-            Times.Once);
+                arr.Contains("FormulaModule")));
     }
 
     [Fact]
     public async Task LoginAsync_Failure_ShouldReturnFailedResult()
     {
         // Arrange
-        _authServiceMock.Setup(a => a.LoginAsync(It.IsAny<LoginRequest>()))
-            .ReturnsAsync(ServiceResult<LoginResponse>.Failure("认证失败"));
+        _authService.LoginAsync(Arg.Any<LoginRequest>())
+            .Returns(ServiceResult<LoginResponse>.Failure("认证失败"));
 
         // Act
         var result = await _sut.LoginAsync("testuser", "wrongpassword");
@@ -322,9 +321,8 @@ public class LoginCoordinatorTests
         await _sut.HandleLoginSuccessAsync(user, expiresAt);
 
         // Assert
-        _sessionManagerMock.Verify(
-            s => s.StartSessionAsync(user.UserName!, It.IsAny<string>(), expiresAt),
-            Times.Once);
+        await _sessionManager.Received(1)
+            .StartSessionAsync(user.UserName!, Arg.Any<string>(), expiresAt);
     }
 
     [Fact]
@@ -338,9 +336,8 @@ public class LoginCoordinatorTests
         await _sut.HandleLoginSuccessAsync(user, DateTime.Now.AddHours(1));
 
         // Assert
-        _moduleLoadingMock.Verify(
-            m => m.LoadModulesAsync(It.IsAny<string[]>()),
-            Times.AtLeastOnce);
+        await _moduleLoading.Received()
+            .LoadModulesAsync(Arg.Any<string[]>());
     }
 
     [Fact]
@@ -388,7 +385,7 @@ public class LoginCoordinatorTests
         await _sut.LogoutAsync();
 
         // Assert
-        _sessionManagerMock.Verify(s => s.EndSessionAsync(), Times.Once);
+        await _sessionManager.Received(1).EndSessionAsync();
     }
 
     [Fact]
@@ -404,7 +401,7 @@ public class LoginCoordinatorTests
         await _sut.LogoutAsync();
 
         // Assert
-        _authServiceMock.Verify(a => a.LogoutAsync(), Times.Once);
+        await _authService.Received(1).LogoutAsync();
     }
 
     [Fact]
@@ -490,29 +487,29 @@ public class LoginCoordinatorTests
 
     private void SetupSuccessfulLogin(LoginResponse response)
     {
-        _authServiceMock.Setup(a => a.LoginAsync(It.IsAny<LoginRequest>()))
-            .ReturnsAsync(ServiceResult<LoginResponse>.Success(response));
+        _authService.LoginAsync(Arg.Any<LoginRequest>())
+            .Returns(ServiceResult<LoginResponse>.Success(response));
         SetupNavigationService();
     }
 
     private void SetupSuccessfulAutoLogin(LoginResponse response)
     {
-        _tokenStorageMock.Setup(t => t.GetTokenAsync()).ReturnsAsync("valid-token");
-        _authServiceMock.Setup(a => a.ValidateTokenAsync(It.IsAny<string>()))
-            .ReturnsAsync(ServiceResult<ValidateTokenResponse>.Success(new ValidateTokenResponse
+        _tokenStorage.GetTokenAsync().Returns("valid-token");
+        _authService.ValidateTokenAsync(Arg.Any<string>())
+            .Returns(ServiceResult<ValidateTokenResponse>.Success(new ValidateTokenResponse
             {
                 IsValid = true,
                 Username = response.User.UserName,
                 Role = response.User.Role.ToString(),
                 ExpiresAt = response.ExpiresAt
             }));
-        _tokenStorageMock.Setup(t => t.GetLoginResponseAsync()).ReturnsAsync(response);
+        _tokenStorage.GetLoginResponseAsync().Returns(response);
         SetupNavigationService();
     }
 
     private void SetupNavigationService()
     {
-        // INavigationCoordinator.NavigateToHome is synchronous, no setup needed for Moq
+        // INavigationCoordinator.NavigateToHome is synchronous, no setup needed for NSubstitute
     }
 
     #endregion

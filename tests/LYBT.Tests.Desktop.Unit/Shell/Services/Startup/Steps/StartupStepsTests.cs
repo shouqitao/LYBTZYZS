@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using FluentAssertions;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Performance;
@@ -6,7 +6,8 @@ using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Prism.Modularity;
 
 namespace LYBT.Desktop.Shell.Tests.Services.Startup.Steps;
@@ -21,17 +22,17 @@ public class StartupStepsTests
 
     public class ErrorHandlingStartupStepTests
     {
-        private readonly Mock<IDesktopExceptionHandler> _exceptionHandlerMock;
-        private readonly Mock<ILogger<ErrorHandlingStartupStep>> _loggerMock;
+        private readonly IDesktopExceptionHandler _exceptionHandler;
+        private readonly ILogger<ErrorHandlingStartupStep> _logger;
         private readonly ErrorHandlingStartupStep _sut;
 
         public ErrorHandlingStartupStepTests()
         {
-            _exceptionHandlerMock = new Mock<IDesktopExceptionHandler>();
-            _loggerMock = new Mock<ILogger<ErrorHandlingStartupStep>>();
+            _exceptionHandler = Substitute.For<IDesktopExceptionHandler>();
+            _logger = Substitute.For<ILogger<ErrorHandlingStartupStep>>();
             _sut = new ErrorHandlingStartupStep(
-                _exceptionHandlerMock.Object,
-                _loggerMock.Object);
+                _exceptionHandler,
+                _logger);
         }
 
         [Fact]
@@ -50,16 +51,16 @@ public class StartupStepsTests
 
             // Assert
             result.Success.Should().BeTrue();
-            _exceptionHandlerMock.Verify(s => s.RegisterGlobalExceptionHandlers(), Times.Once);
+            _exceptionHandler.Received(1).RegisterGlobalExceptionHandlers();
         }
 
         [Fact]
         public async Task ExecuteAsync_WhenServiceThrows_ShouldReturnFailed()
         {
             // Arrange
-            _exceptionHandlerMock
-                .Setup(s => s.RegisterGlobalExceptionHandlers())
-                .Throws(new InvalidOperationException("Test error"));
+            _exceptionHandler
+                .When(s => s.RegisterGlobalExceptionHandlers())
+                .Do(_ => throw new InvalidOperationException("Test error"));
 
             // Act
             var result = await _sut.ExecuteAsync();
@@ -74,13 +75,13 @@ public class StartupStepsTests
         public async Task ExecuteAsync_ShouldReportProgress()
         {
             // Arrange
-            var progressMock = new Mock<IProgress<string>>();
+            var progress = Substitute.For<IProgress<string>>();
 
             // Act
-            await _sut.ExecuteAsync(progressMock.Object);
+            await _sut.ExecuteAsync(progress);
 
             // Assert
-            progressMock.Verify(p => p.Report(It.Is<string>(s => s.Contains("异常处理器"))), Times.Once);
+            progress.Received(1).Report(Arg.Is<string>(s => s.Contains("异常处理器")));
         }
     }
 
@@ -90,17 +91,17 @@ public class StartupStepsTests
 
     public class ModuleCoordinatorStartupStepTests
     {
-        private readonly Mock<IModuleManager> _moduleManagerMock;
-        private readonly Mock<ILogger<ModuleCoordinatorStartupStep>> _loggerMock;
+        private readonly IModuleManager _moduleManager;
+        private readonly ILogger<ModuleCoordinatorStartupStep> _logger;
         private readonly ModuleCoordinatorStartupStep _sut;
 
         public ModuleCoordinatorStartupStepTests()
         {
-            _moduleManagerMock = new Mock<IModuleManager>();
-            _loggerMock = new Mock<ILogger<ModuleCoordinatorStartupStep>>();
+            _moduleManager = Substitute.For<IModuleManager>();
+            _logger = Substitute.For<ILogger<ModuleCoordinatorStartupStep>>();
             _sut = new ModuleCoordinatorStartupStep(
-                _moduleManagerMock.Object,
-                _loggerMock.Object);
+                _moduleManager,
+                _logger);
         }
 
         [Fact]
@@ -142,13 +143,13 @@ public class StartupStepsTests
         public async Task ExecuteAsync_ShouldReportProgress()
         {
             // Arrange
-            var progressMock = new Mock<IProgress<string>>();
+            var progress = Substitute.For<IProgress<string>>();
 
             // Act
-            await _sut.ExecuteAsync(progressMock.Object);
+            await _sut.ExecuteAsync(progress);
 
             // Assert
-            progressMock.Verify(p => p.Report(It.Is<string>(s => s.Contains("模块协调器"))), Times.Once);
+            progress.Received(1).Report(Arg.Is<string>(s => s.Contains("模块协调器")));
         }
     }
 
@@ -158,17 +159,17 @@ public class StartupStepsTests
 
     public class CoreServicesStartupStepTests
     {
-        private readonly Mock<IApplicationInitializationService> _initializationServiceMock;
-        private readonly Mock<ILogger<CoreServicesStartupStep>> _loggerMock;
+        private readonly IApplicationInitializationService _initializationService;
+        private readonly ILogger<CoreServicesStartupStep> _logger;
         private readonly CoreServicesStartupStep _sut;
 
         public CoreServicesStartupStepTests()
         {
-            _initializationServiceMock = new Mock<IApplicationInitializationService>();
-            _loggerMock = new Mock<ILogger<CoreServicesStartupStep>>();
+            _initializationService = Substitute.For<IApplicationInitializationService>();
+            _logger = Substitute.For<ILogger<CoreServicesStartupStep>>();
             _sut = new CoreServicesStartupStep(
-                _initializationServiceMock.Object,
-                _loggerMock.Object);
+                _initializationService,
+                _logger);
         }
 
         [Fact]
@@ -187,15 +188,15 @@ public class StartupStepsTests
 
             // Assert
             result.Success.Should().BeTrue();
-            _initializationServiceMock.Verify(s => s.InitializeCoreServicesAsync(), Times.Once);
+            await _initializationService.Received(1).InitializeCoreServicesAsync();
         }
 
         [Fact]
         public async Task ExecuteAsync_WhenServiceThrows_ShouldReturnFailed()
         {
             // Arrange
-            _initializationServiceMock
-                .Setup(s => s.InitializeCoreServicesAsync())
+            _initializationService
+                .InitializeCoreServicesAsync()
                 .ThrowsAsync(new InvalidOperationException("Test error"));
 
             // Act
@@ -211,13 +212,13 @@ public class StartupStepsTests
         public async Task ExecuteAsync_ShouldReportProgress()
         {
             // Arrange
-            var progressMock = new Mock<IProgress<string>>();
+            var progress = Substitute.For<IProgress<string>>();
 
             // Act
-            await _sut.ExecuteAsync(progressMock.Object);
+            await _sut.ExecuteAsync(progress);
 
             // Assert
-            progressMock.Verify(p => p.Report(It.Is<string>(s => s.Contains("核心服务"))), Times.Once);
+            progress.Received(1).Report(Arg.Is<string>(s => s.Contains("核心服务")));
         }
     }
 
@@ -227,17 +228,17 @@ public class StartupStepsTests
 
     public class ApiHealthCheckStartupStepTests
     {
-        private readonly Mock<IApplicationStateService> _applicationStateServiceMock;
-        private readonly Mock<ILogger<ApiHealthCheckStartupStep>> _loggerMock;
+        private readonly IApplicationStateService _applicationStateService;
+        private readonly ILogger<ApiHealthCheckStartupStep> _logger;
         private readonly ApiHealthCheckStartupStep _sut;
 
         public ApiHealthCheckStartupStepTests()
         {
-            _applicationStateServiceMock = new Mock<IApplicationStateService>();
-            _loggerMock = new Mock<ILogger<ApiHealthCheckStartupStep>>();
+            _applicationStateService = Substitute.For<IApplicationStateService>();
+            _logger = Substitute.For<ILogger<ApiHealthCheckStartupStep>>();
             _sut = new ApiHealthCheckStartupStep(
-                _applicationStateServiceMock.Object,
-                _loggerMock.Object);
+                _applicationStateService,
+                _logger);
         }
 
         [Fact]
@@ -253,9 +254,9 @@ public class StartupStepsTests
         public async Task ExecuteAsync_WhenApiHealthy_ShouldReturnSuccess()
         {
             // Arrange
-            _applicationStateServiceMock
-                .Setup(s => s.CheckApiHealthAsync(It.IsAny<int>()))
-                .ReturnsAsync(true);
+            _applicationStateService
+                .CheckApiHealthAsync(Arg.Any<int>())
+                .Returns(true);
 
             // Act
             var result = await _sut.ExecuteAsync();
@@ -268,9 +269,9 @@ public class StartupStepsTests
         public async Task ExecuteAsync_WhenApiUnhealthy_ShouldReturnFailed()
         {
             // Arrange
-            _applicationStateServiceMock
-                .Setup(s => s.CheckApiHealthAsync(It.IsAny<int>()))
-                .ReturnsAsync(false);
+            _applicationStateService
+                .CheckApiHealthAsync(Arg.Any<int>())
+                .Returns(false);
 
             // Act
             var result = await _sut.ExecuteAsync();
@@ -284,8 +285,8 @@ public class StartupStepsTests
         public async Task ExecuteAsync_WhenServiceThrows_ShouldReturnFailed()
         {
             // Arrange
-            _applicationStateServiceMock
-                .Setup(s => s.CheckApiHealthAsync(It.IsAny<int>()))
+            _applicationStateService
+                .CheckApiHealthAsync(Arg.Any<int>())
                 .ThrowsAsync(new HttpRequestException("Connection refused"));
 
             // Act
@@ -301,16 +302,16 @@ public class StartupStepsTests
         public async Task ExecuteAsync_ShouldReportProgress()
         {
             // Arrange
-            _applicationStateServiceMock
-                .Setup(s => s.CheckApiHealthAsync(It.IsAny<int>()))
-                .ReturnsAsync(true);
-            var progressMock = new Mock<IProgress<string>>();
+            _applicationStateService
+                .CheckApiHealthAsync(Arg.Any<int>())
+                .Returns(true);
+            var progress = Substitute.For<IProgress<string>>();
 
             // Act
-            await _sut.ExecuteAsync(progressMock.Object);
+            await _sut.ExecuteAsync(progress);
 
             // Assert
-            progressMock.Verify(p => p.Report(It.Is<string>(s => s.Contains("API"))), Times.Once);
+            progress.Received(1).Report(Arg.Is<string>(s => s.Contains("API")));
         }
     }
 
@@ -320,17 +321,17 @@ public class StartupStepsTests
 
     public class WarmupStartupStepTests
     {
-        private readonly Mock<IStartupOptimizationService> _startupOptimizationServiceMock;
-        private readonly Mock<ILogger<WarmupStartupStep>> _loggerMock;
+        private readonly IStartupOptimizationService _startupOptimizationService;
+        private readonly ILogger<WarmupStartupStep> _logger;
         private readonly WarmupStartupStep _sut;
 
         public WarmupStartupStepTests()
         {
-            _startupOptimizationServiceMock = new Mock<IStartupOptimizationService>();
-            _loggerMock = new Mock<ILogger<WarmupStartupStep>>();
+            _startupOptimizationService = Substitute.For<IStartupOptimizationService>();
+            _logger = Substitute.For<ILogger<WarmupStartupStep>>();
             _sut = new WarmupStartupStep(
-                _startupOptimizationServiceMock.Object,
-                _loggerMock.Object);
+                _startupOptimizationService,
+                _logger);
         }
 
         [Fact]
@@ -349,15 +350,15 @@ public class StartupStepsTests
 
             // Assert
             result.Success.Should().BeTrue();
-            _startupOptimizationServiceMock.Verify(s => s.WarmupApplicationAsync(), Times.Once);
+            await _startupOptimizationService.Received(1).WarmupApplicationAsync();
         }
 
         [Fact]
         public async Task ExecuteAsync_WhenServiceThrows_ShouldReturnFailed()
         {
             // Arrange
-            _startupOptimizationServiceMock
-                .Setup(s => s.WarmupApplicationAsync())
+            _startupOptimizationService
+                .WarmupApplicationAsync()
                 .ThrowsAsync(new InvalidOperationException("Warmup error"));
 
             // Act
@@ -373,13 +374,13 @@ public class StartupStepsTests
         public async Task ExecuteAsync_ShouldReportProgress()
         {
             // Arrange
-            var progressMock = new Mock<IProgress<string>>();
+            var progress = Substitute.For<IProgress<string>>();
 
             // Act
-            await _sut.ExecuteAsync(progressMock.Object);
+            await _sut.ExecuteAsync(progress);
 
             // Assert
-            progressMock.Verify(p => p.Report(It.Is<string>(s => s.Contains("预热"))), Times.Once);
+            progress.Received(1).Report(Arg.Is<string>(s => s.Contains("预热")));
         }
     }
 

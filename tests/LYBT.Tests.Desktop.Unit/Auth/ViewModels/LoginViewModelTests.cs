@@ -1,9 +1,9 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Prism.Events;
 using Prism.Regions;
 
@@ -11,39 +11,39 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
 {
     /// <summary>
     /// LoginViewModel 单元测试
-    /// 遵循测试架构标准：AAA模式、Mock管理、测试数据构建器
+    /// 遵循测试架构标准：AAA模式、Substitute管理、测试数据构建器
     /// </summary>
     public class LoginViewModelTests : IDisposable
     {
-        private Mock<IAuthenticationService> _mockAuthService = null!;
-        private Mock<ITokenStorageService> _mockTokenStorage = null!;
-        private Mock<IEventAggregator> _mockEventAggregator = null!;
-        private Mock<ILoggerFactory> _mockLoggerFactory = null!;
-        private Mock<ILogger<LoginViewModel>> _mockLogger = null!;
-        private Mock<IRegionManager> _mockRegionManager = null!;
-        private Mock<IApiHealthCheckService> _mockApiHealthCheckService = null!;
+        private IAuthenticationService _authService = null!;
+        private ITokenStorageService _tokenStorage = null!;
+        private IEventAggregator _eventAggregator = null!;
+        private ILoggerFactory _loggerFactory = null!;
+        private ILogger<LoginViewModel> _logger = null!;
+        private IRegionManager _regionManager = null!;
+        private IApiHealthCheckService _apiHealthCheckService = null!;
 
         private LoginViewModel _viewModel = null!;
 
         public LoginViewModelTests()
         {
-            SetupMocks();
+            SetupSubstitutes();
             CreateViewModel();
         }
 
-        private void SetupMocks()
+        private void SetupSubstitutes()
         {
-            _mockAuthService = new Mock<IAuthenticationService>();
-            _mockTokenStorage = new Mock<ITokenStorageService>();
-            _mockEventAggregator = new Mock<IEventAggregator>();
-            _mockLoggerFactory = new Mock<ILoggerFactory>();
-            _mockLogger = new Mock<ILogger<LoginViewModel>>();
-            _mockRegionManager = new Mock<IRegionManager>();
-            _mockApiHealthCheckService = new Mock<IApiHealthCheckService>();
+            _authService = Substitute.For<IAuthenticationService>();
+            _tokenStorage = Substitute.For<ITokenStorageService>();
+            _eventAggregator = Substitute.For<IEventAggregator>();
+            _loggerFactory = Substitute.For<ILoggerFactory>();
+            _logger = Substitute.For<ILogger<LoginViewModel>>();
+            _regionManager = Substitute.For<IRegionManager>();
+            _apiHealthCheckService = Substitute.For<IApiHealthCheckService>();
 
-            _mockLoggerFactory
-                .Setup(x => x.CreateLogger(It.IsAny<string>()))
-                .Returns(_mockLogger.Object);
+            _loggerFactory
+                .CreateLogger(Arg.Any<string>())
+                .Returns(_logger);
         }
 
         private void CreateViewModel()
@@ -269,7 +269,7 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
 
         /// <summary>
         /// 测试：用户名恢复为原保存用户名时不应恢复密码
-        /// 场景：doctor1 → doctor2（清空密码）→ doctor1（密码仍为空）
+        /// 场景：doctor1 -> doctor2（清空密码）-> doctor1（密码仍为空）
         /// </summary>
         [Fact]
         public void UsernameChange_BackToSaved_ShouldNotRestorePassword()

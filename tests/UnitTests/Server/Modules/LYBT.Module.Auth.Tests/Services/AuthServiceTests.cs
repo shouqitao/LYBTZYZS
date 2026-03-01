@@ -13,7 +13,8 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Services;
@@ -24,25 +25,25 @@ namespace LYBT.Module.Auth.Tests.Services;
 /// </summary>
 public class AuthServiceTests : IDisposable
 {
-    private readonly Mock<IJwtService> _mockJwtService;
-    private readonly Mock<IUserCrossModuleService> _mockCrossModuleQuery;
-    private readonly Mock<ILogger<AuthService>> _mockLogger;
+    private readonly IJwtService _jwtService;
+    private readonly IUserCrossModuleService _crossModuleQuery;
+    private readonly ILogger<AuthService> _logger;
     private readonly AppDbContext _dbContext;
     private readonly IConfiguration _configuration;
-    private readonly Mock<ITokenRevocationService> _mockRevocationService;
-    private readonly Mock<ISecurityAuditService> _mockAuditService;
+    private readonly ITokenRevocationService _revocationService;
+    private readonly ISecurityAuditService _auditService;
     private readonly AuthService _sut;
 
     public AuthServiceTests()
     {
-        _mockJwtService = new Mock<IJwtService>();
-        _mockCrossModuleQuery = new Mock<IUserCrossModuleService>();
-        _mockLogger = new Mock<ILogger<AuthService>>();
-        _mockRevocationService = new Mock<ITokenRevocationService>();
-        _mockAuditService = new Mock<ISecurityAuditService>();
+        _jwtService = Substitute.For<IJwtService>();
+        _crossModuleQuery = Substitute.For<IUserCrossModuleService>();
+        _logger = Substitute.For<ILogger<AuthService>>();
+        _revocationService = Substitute.For<ITokenRevocationService>();
+        _auditService = Substitute.For<ISecurityAuditService>();
 
-        // Setup audit service mock to return completed task
-        _mockAuditService.Setup(x => x.LogAsync(It.IsAny<LYBT.Module.Auth.Models.SecurityAuditEvent>()))
+        // Setup audit service to return completed task
+        _auditService.LogAsync(Arg.Any<LYBT.Module.Auth.Models.SecurityAuditEvent>())
             .Returns(Task.CompletedTask);
 
         // 使用 InMemory SQLite 创建真实 DbContext
@@ -53,28 +54,28 @@ public class AuthServiceTests : IDisposable
         _dbContext.Database.OpenConnection();
         _dbContext.Database.EnsureCreated();
 
-        _configuration = CreateMockConfiguration();
+        _configuration = CreateSubstituteConfiguration();
 
         _sut = new AuthService(
-            _mockJwtService.Object,
-            _mockCrossModuleQuery.Object,
-            _mockLogger.Object,
+            _jwtService,
+            _crossModuleQuery,
+            _logger,
             _dbContext,
             _configuration,
-            _mockRevocationService.Object,
-            _mockAuditService.Object
+            _revocationService,
+            _auditService
         );
     }
 
-    private static IConfiguration CreateMockConfiguration()
+    private static IConfiguration CreateSubstituteConfiguration()
     {
-        var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:SystemAdmin:UserName"]).Returns("sysadmin");
-        config.Setup(c => c["Lybt:SystemAdmin:Email"]).Returns("admin@lybt.com");
-        config.Setup(c => c["Lybt:SystemAdmin:Username"]).Returns("admin");
-        config.Setup(c => c.GetSection("Lybt:Jwt:ExpireMinutes").Value).Returns("15");
-        config.Setup(c => c.GetSection("Lybt:Jwt:RefreshTokenExpirationDays").Value).Returns("7");
-        return config.Object;
+        var config = Substitute.For<IConfiguration>();
+        config["Lybt:SystemAdmin:UserName"].Returns("sysadmin");
+        config["Lybt:SystemAdmin:Email"].Returns("admin@lybt.com");
+        config["Lybt:SystemAdmin:Username"].Returns("admin");
+        config.GetSection("Lybt:Jwt:ExpireMinutes").Value.Returns("15");
+        config.GetSection("Lybt:Jwt:RefreshTokenExpirationDays").Value.Returns("7");
+        return config;
     }
 
     #region 用户凭据验证测试
@@ -90,8 +91,8 @@ public class AuthServiceTests : IDisposable
             Password = "Password123!"
         };
 
-        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
-            .ReturnsAsync(new UserCredentialDto
+        _crossModuleQuery.GetUserByUsernameAsync(request.UserName)
+            .Returns(new UserCredentialDto
             {
                 Id = userId,
                 UserName = "testuser",
@@ -119,8 +120,8 @@ public class AuthServiceTests : IDisposable
             Password = "Password123!"
         };
 
-        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
-            .ReturnsAsync((UserCredentialDto?)null);
+        _crossModuleQuery.GetUserByUsernameAsync(request.UserName)
+            .ReturnsNull();
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
@@ -140,8 +141,8 @@ public class AuthServiceTests : IDisposable
             Password = "WrongPassword"
         };
 
-        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
-            .ReturnsAsync(new UserCredentialDto
+        _crossModuleQuery.GetUserByUsernameAsync(request.UserName)
+            .Returns(new UserCredentialDto
             {
                 Id = Guid.NewGuid(),
                 UserName = "testuser",
@@ -238,15 +239,15 @@ public class AuthServiceTests : IDisposable
 
         var expectedToken = "test.jwt.token";
 
-        // Mock: GetUserByUsernameAsync is called by both VerifyCredentialsAsync and LoginAsync
-        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
-            .ReturnsAsync(userCredentialDto);
+        // Setup: GetUserByUsernameAsync is called by both VerifyCredentialsAsync and LoginAsync
+        _crossModuleQuery.GetUserByUsernameAsync(request.UserName)
+            .Returns(userCredentialDto);
 
-        _mockJwtService.Setup(x => x.GenerateToken(
+        _jwtService.GenerateToken(
             userId.ToString(),
             "testuser",
             UserRole.Doctor,
-            It.IsAny<string>()))
+            Arg.Any<string>())
             .Returns(expectedToken);
 
         // Act
@@ -273,8 +274,8 @@ public class AuthServiceTests : IDisposable
         };
 
         // User does not exist
-        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
-            .ReturnsAsync((UserCredentialDto?)null);
+        _crossModuleQuery.GetUserByUsernameAsync(request.UserName)
+            .ReturnsNull();
 
         // Act
         var result = await _sut.LoginAsync(request);
@@ -294,8 +295,8 @@ public class AuthServiceTests : IDisposable
             Password = "WrongPassword"
         };
 
-        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
-            .ReturnsAsync(new UserCredentialDto
+        _crossModuleQuery.GetUserByUsernameAsync(request.UserName)
+            .Returns(new UserCredentialDto
             {
                 Id = Guid.NewGuid(),
                 UserName = "testuser",
@@ -416,8 +417,8 @@ public class AuthServiceTests : IDisposable
         await _dbContext.RefreshTokens.AddAsync(oldRefreshToken);
         await _dbContext.SaveChangesAsync();
 
-        _mockCrossModuleQuery.Setup(x => x.GetUserBasicInfoAsync(userId))
-            .ReturnsAsync(new UserBasicDto
+        _crossModuleQuery.GetUserBasicInfoAsync(userId)
+            .Returns(new UserBasicDto
             {
                 Id = userId,
                 UserName = "testuser",
@@ -426,11 +427,11 @@ public class AuthServiceTests : IDisposable
                 Status = CommonStatus.Enabled
             });
 
-        _mockJwtService.Setup(x => x.GenerateToken(
+        _jwtService.GenerateToken(
             userId.ToString(),
             "testuser",
             UserRole.Doctor,
-            It.IsAny<string>()))
+            Arg.Any<string>())
             .Returns("new.jwt.token");
 
         // Act
@@ -486,14 +487,14 @@ public class AuthServiceTests : IDisposable
             Password = "Password123!"
         };
 
-        _mockCrossModuleQuery.Setup(x => x.GetUserByUsernameAsync(request.UserName))
-            .ReturnsAsync(userCredentialDto);
+        _crossModuleQuery.GetUserByUsernameAsync(request.UserName)
+            .Returns(userCredentialDto);
 
-        _mockJwtService.Setup(x => x.GenerateToken(
+        _jwtService.GenerateToken(
             userId.ToString(),
             "testuser",
             UserRole.Doctor,
-            It.IsAny<string>()))
+            Arg.Any<string>())
             .Returns("test.jwt.token");
 
         // Act
@@ -503,13 +504,13 @@ public class AuthServiceTests : IDisposable
         result.IsSuccess.Should().BeTrue();
 
         // 验证审计服务被调用记录登录成功
-        _mockAuditService.Verify(x => x.LogAsync(
-            It.Is<LYBT.Module.Auth.Models.SecurityAuditEvent>(e =>
+        await _auditService.Received(1).LogAsync(
+            Arg.Is<LYBT.Module.Auth.Models.SecurityAuditEvent>(e =>
                 e.EventType == "Login" &&
                 e.UserId == userId &&
                 e.UserName == "testuser" &&
                 e.Success == true
-            )), Times.Once);
+            ));
     }
 
     [Fact]
@@ -519,7 +520,7 @@ public class AuthServiceTests : IDisposable
         var token = "valid.token";
         var mockPrincipal = new System.Security.Claims.ClaimsPrincipal();
 
-        _mockJwtService.Setup(x => x.ValidateToken(token))
+        _jwtService.ValidateToken(token)
             .Returns(mockPrincipal);
 
         // Act
@@ -536,7 +537,7 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var token = "invalid.token";
 
-        _mockJwtService.Setup(x => x.ValidateToken(token))
+        _jwtService.ValidateToken(token)
             .Returns((System.Security.Claims.ClaimsPrincipal?)null);
 
         // Act
@@ -545,19 +546,6 @@ public class AuthServiceTests : IDisposable
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.ModuleErrorCode.Should().Be(LYBT.Shared.Primitives.ErrorCodes.ErrorCode.AuthTokenInvalid);
-    }
-
-    [Fact]
-    public async Task RevokeTokenAsync_ReturnsSuccess()
-    {
-        // Arrange
-        var request = new RevokeTokenRequest();
-
-        // Act
-        var result = await _sut.RevokeTokenAsync(request);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
     }
 
     #endregion
@@ -583,7 +571,7 @@ public class AuthServiceTests : IDisposable
         var identity = new System.Security.Claims.ClaimsIdentity(claims, "TestAuth");
         var principal = new System.Security.Claims.ClaimsPrincipal(identity);
 
-        _mockJwtService.Setup(x => x.ValidateToken(token))
+        _jwtService.ValidateToken(token)
             .Returns(principal);
 
         // Act
@@ -600,7 +588,7 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var token = "invalid.token";
 
-        _mockJwtService.Setup(x => x.ValidateToken(token))
+        _jwtService.ValidateToken(token)
             .Returns((System.Security.Claims.ClaimsPrincipal?)null);
 
         // Act

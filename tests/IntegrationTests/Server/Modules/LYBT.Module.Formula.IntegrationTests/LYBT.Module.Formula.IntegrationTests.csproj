@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-    <PackageReference Include="Moq" />
+    <PackageReference Include="NSubstitute" />
     <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除，使用Mapperly -->
     <PackageReference Include="EPPlus" />
   </ItemGroup>

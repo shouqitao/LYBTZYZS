@@ -5,7 +5,7 @@ using LYBT.Desktop.Users.Repositories;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace LYBT.Desktop.Users.Tests.Repositories;
 
@@ -15,15 +15,15 @@ namespace LYBT.Desktop.Users.Tests.Repositories;
 /// </summary>
 public class UserRepositoryTests
 {
-    private readonly Mock<IUserDataSource> _dataSourceMock;
-    private readonly Mock<ILogger<UserRepository>> _loggerMock;
+    private readonly IUserDataSource _dataSource;
+    private readonly ILogger<UserRepository> _logger;
     private readonly UserRepository _repository;
 
     public UserRepositoryTests()
     {
-        _dataSourceMock = new Mock<IUserDataSource>();
-        _loggerMock = new Mock<ILogger<UserRepository>>();
-        _repository = new UserRepository(_dataSourceMock.Object, _loggerMock.Object);
+        _dataSource = Substitute.For<IUserDataSource>();
+        _logger = Substitute.For<ILogger<UserRepository>>();
+        _repository = new UserRepository(_dataSource, _logger);
     }
 
     #region GetPagedAsync Tests
@@ -37,9 +37,9 @@ public class UserRepositoryTests
             CreateTestUser("user1", "张三"),
             CreateTestUser("user2", "李四")
         };
-        _dataSourceMock
-            .Setup(ds => ds.GetPagedAsync(1, 20, null, default))
-            .ReturnsAsync((users, 2));
+        _dataSource
+            .GetPagedAsync(1, 20, null, default)
+            .Returns((users, 2));
 
         // Act
         var result = await _repository.GetPagedAsync(1, 20, null);
@@ -60,9 +60,9 @@ public class UserRepositoryTests
         {
             CreateTestUser("doctor1", "王医生", UserRole.Doctor)
         };
-        _dataSourceMock
-            .Setup(ds => ds.GetPagedAsync(1, 20, "王", default))
-            .ReturnsAsync((users, 1));
+        _dataSource
+            .GetPagedAsync(1, 20, "王", default)
+            .Returns((users, 1));
 
         // Act
         var result = await _repository.GetPagedAsync(1, 20, "王");
@@ -76,9 +76,9 @@ public class UserRepositoryTests
     public async Task GetPagedAsync_WithEmptyResult_ReturnsEmptyList()
     {
         // Arrange
-        _dataSourceMock
-            .Setup(ds => ds.GetPagedAsync(1, 20, "不存在", default))
-            .ReturnsAsync((new List<UserDetailDto>(), 0));
+        _dataSource
+            .GetPagedAsync(1, 20, "不存在", default)
+            .Returns((new List<UserDetailDto>(), 0));
 
         // Act
         var result = await _repository.GetPagedAsync(1, 20, "不存在");
@@ -99,9 +99,9 @@ public class UserRepositoryTests
         var userId = Guid.NewGuid();
         var user = CreateTestUser("testuser", "测试用户");
         user.Id = userId;
-        _dataSourceMock
-            .Setup(ds => ds.GetByIdAsync(userId, default))
-            .ReturnsAsync(user);
+        _dataSource
+            .GetByIdAsync(userId, default)
+            .Returns(user);
 
         // Act
         var result = await _repository.GetByIdAsync(userId);
@@ -118,9 +118,9 @@ public class UserRepositoryTests
     {
         // Arrange
         var nonExistingId = Guid.NewGuid();
-        _dataSourceMock
-            .Setup(ds => ds.GetByIdAsync(nonExistingId, default))
-            .ReturnsAsync((UserDetailDto?)null);
+        _dataSource
+            .GetByIdAsync(nonExistingId, default)
+            .Returns((UserDetailDto?)null);
 
         // Act
         var result = await _repository.GetByIdAsync(nonExistingId);
@@ -148,9 +148,9 @@ public class UserRepositoryTests
         createdUser.Id = Guid.NewGuid();
         createdUser.PhoneNumber = "13800138000";
 
-        _dataSourceMock
-            .Setup(ds => ds.CreateAsync(It.IsAny<UserInputDto>(), default))
-            .ReturnsAsync(createdUser);
+        _dataSource
+            .CreateAsync(Arg.Any<UserInputDto>(), default)
+            .Returns(createdUser);
 
         // Act
         var result = await _repository.CreateAsync(inputDto);
@@ -191,9 +191,9 @@ public class UserRepositoryTests
         var updatedUser = CreateTestUser("updateduser", "更新后用户", UserRole.Admin);
         updatedUser.Id = userId;
 
-        _dataSourceMock
-            .Setup(ds => ds.UpdateAsync(It.IsAny<UserInputDto>(), default))
-            .ReturnsAsync(updatedUser);
+        _dataSource
+            .UpdateAsync(Arg.Any<UserInputDto>(), default)
+            .Returns(updatedUser);
 
         // Act
         var result = await _repository.UpdateAsync(inputDto);
@@ -242,9 +242,9 @@ public class UserRepositoryTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        _dataSourceMock
-            .Setup(ds => ds.DeleteAsync(userId, default))
-            .ReturnsAsync(true);
+        _dataSource
+            .DeleteAsync(userId, default)
+            .Returns(true);
 
         // Act
         var result = await _repository.DeleteAsync(userId);
@@ -258,9 +258,9 @@ public class UserRepositoryTests
     {
         // Arrange
         var nonExistingId = Guid.NewGuid();
-        _dataSourceMock
-            .Setup(ds => ds.DeleteAsync(nonExistingId, default))
-            .ReturnsAsync(false);
+        _dataSource
+            .DeleteAsync(nonExistingId, default)
+            .Returns(false);
 
         // Act
         var result = await _repository.DeleteAsync(nonExistingId);
@@ -282,9 +282,9 @@ public class UserRepositoryTests
             CreateTestUser("doctor1", "王医生", UserRole.Doctor),
             CreateTestUser("receptionist1", "王接待", UserRole.Receptionist)
         };
-        _dataSourceMock
-            .Setup(ds => ds.GetPagedAsync(1, 100, "王", default))
-            .ReturnsAsync((users, 2));
+        _dataSource
+            .GetPagedAsync(1, 100, "王", default)
+            .Returns((users, 2));
 
         // Act
         var result = await _repository.SearchAsync("王");
@@ -308,9 +308,9 @@ public class UserRepositoryTests
             CreateTestUser("doctor2", "医生2", UserRole.Doctor, CommonStatus.Disabled),
             CreateTestUser("admin1", "管理员1", UserRole.Admin, CommonStatus.Enabled)
         };
-        _dataSourceMock
-            .Setup(ds => ds.GetPagedAsync(1, 100, null, default))
-            .ReturnsAsync((users, 3));
+        _dataSource
+            .GetPagedAsync(1, 100, null, default)
+            .Returns((users, 3));
 
         // Act
         var result = await _repository.GetDoctorsAsync();
@@ -330,9 +330,9 @@ public class UserRepositoryTests
         {
             CreateTestUser("admin1", "管理员1", UserRole.Admin, CommonStatus.Enabled)
         };
-        _dataSourceMock
-            .Setup(ds => ds.GetPagedAsync(1, 100, null, default))
-            .ReturnsAsync((users, 1));
+        _dataSource
+            .GetPagedAsync(1, 100, null, default)
+            .Returns((users, 1));
 
         // Act
         var result = await _repository.GetDoctorsAsync();
@@ -350,9 +350,9 @@ public class UserRepositoryTests
     {
         // Arrange
         var user = CreateTestUser("existinguser", "存在的用户");
-        _dataSourceMock
-            .Setup(ds => ds.GetByUsernameAsync("existinguser", default))
-            .ReturnsAsync(user);
+        _dataSource
+            .GetByUsernameAsync("existinguser", default)
+            .Returns(user);
 
         // Act
         var result = await _repository.GetByUsernameAsync("existinguser");
@@ -366,9 +366,9 @@ public class UserRepositoryTests
     public async Task GetByUsernameAsync_WithNonExistingUsername_ThrowsException()
     {
         // Arrange
-        _dataSourceMock
-            .Setup(ds => ds.GetByUsernameAsync("nonexisting", default))
-            .ReturnsAsync((UserDetailDto?)null);
+        _dataSource
+            .GetByUsernameAsync("nonexisting", default)
+            .Returns((UserDetailDto?)null);
 
         // Act
         var act = async () => await _repository.GetByUsernameAsync("nonexisting");
@@ -390,12 +390,12 @@ public class UserRepositoryTests
         var userDto = CreateTestUser("testuser", "测试用户", UserRole.Doctor, CommonStatus.Disabled);
         userDto.Id = userId;
 
-        _dataSourceMock
-            .Setup(ds => ds.ToggleStatusAsync(userId, default))
-            .ReturnsAsync(true);
-        _dataSourceMock
-            .Setup(ds => ds.GetByIdAsync(userId, default))
-            .ReturnsAsync(userDto);
+        _dataSource
+            .ToggleStatusAsync(userId, default)
+            .Returns(true);
+        _dataSource
+            .GetByIdAsync(userId, default)
+            .Returns(userDto);
 
         // Act
         var result = await _repository.ToggleStatusAsync(userId);
@@ -410,9 +410,9 @@ public class UserRepositoryTests
     {
         // Arrange
         var nonExistingId = Guid.NewGuid();
-        _dataSourceMock
-            .Setup(ds => ds.ToggleStatusAsync(nonExistingId, default))
-            .ReturnsAsync(false);
+        _dataSource
+            .ToggleStatusAsync(nonExistingId, default)
+            .Returns(false);
 
         // Act
         var result = await _repository.ToggleStatusAsync(nonExistingId);
@@ -430,9 +430,9 @@ public class UserRepositoryTests
     {
         // Arrange
         var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-        _dataSourceMock
-            .Setup(ds => ds.DeleteAsync(It.IsAny<Guid>(), default))
-            .ReturnsAsync(true);
+        _dataSource
+            .DeleteAsync(Arg.Any<Guid>(), default)
+            .Returns(true);
 
         // Act
         var result = await _repository.BatchDeleteAsync(ids);
@@ -451,12 +451,12 @@ public class UserRepositoryTests
         var failId = Guid.NewGuid();
         var ids = new List<Guid> { successId, failId };
 
-        _dataSourceMock
-            .Setup(ds => ds.DeleteAsync(successId, default))
-            .ReturnsAsync(true);
-        _dataSourceMock
-            .Setup(ds => ds.DeleteAsync(failId, default))
-            .ReturnsAsync(false);
+        _dataSource
+            .DeleteAsync(successId, default)
+            .Returns(true);
+        _dataSource
+            .DeleteAsync(failId, default)
+            .Returns(false);
 
         // Act
         var result = await _repository.BatchDeleteAsync(ids);

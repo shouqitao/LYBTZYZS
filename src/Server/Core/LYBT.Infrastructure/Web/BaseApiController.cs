@@ -8,7 +8,6 @@ using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
-// Sprint3-Batch3: AuthErrorCode 已移除，HandleAuthResult 统一使用 ModuleErrorCode
 
 namespace LYBT.Infrastructure.Web
 {
@@ -259,7 +258,6 @@ namespace LYBT.Infrastructure.Web
 
         /// <summary>
         /// 处理带错误码的Result返回值 - 根据错误码返回正确HTTP状态码
-        /// Sprint3-Batch3: 统一使用 ModuleErrorCode，移除 AuthErrorCode 兼容路径
         /// </summary>
         protected IActionResult HandleAuthResult<T>(Result<T> result, string successMessage = "操作成功")
         {

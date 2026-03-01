@@ -65,8 +65,6 @@ namespace LYBT.Infrastructure.Data
 
         public DbSet<PrescriptionItem> PrescriptionItems { get; set; }
 
-        public DbSet<PrescriptionPrintLog> PrescriptionPrintLogs { get; set; }
-
         // 医案打印日志 - T2-X8-12: 打印日志从 Prescription 层级迁移到 MedicalCase 层级
         public DbSet<MedicalCasePrintLog> MedicalCasePrintLogs { get; set; }
 

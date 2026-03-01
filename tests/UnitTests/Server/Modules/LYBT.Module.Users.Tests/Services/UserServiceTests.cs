@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using BCrypt.Net;
 using FluentAssertions;
 using FluentValidation;
@@ -13,7 +13,7 @@ using LYBT.Tests.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.Module.Users.Tests.Services
@@ -25,12 +25,12 @@ namespace LYBT.Module.Users.Tests.Services
     public class UserServiceTests : TestBase
     {
         private readonly UserService _userService;
-        private readonly Mock<IUserRepository> _repositoryMock;
-        private readonly Mock<ILogger<UserService>> _loggerMock;
-        private readonly Mock<IConfiguration> _configurationMock;
-        private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
-        private readonly Mock<IValidator<UserInputDto>> _validatorMock;
-        private readonly Mock<ICrossModuleAuthService> _authServiceMock;
+        private readonly IUserRepository _repositoryMock;
+        private readonly ILogger<UserService> _loggerMock;
+        private readonly IConfiguration _configurationMock;
+        private readonly IHttpContextAccessor _httpContextAccessorMock;
+        private readonly IValidator<UserInputDto> _validatorMock;
+        private readonly ICrossModuleAuthService _authServiceMock;
 
         public UserServiceTests()
         {
@@ -42,27 +42,27 @@ namespace LYBT.Module.Users.Tests.Services
             _authServiceMock = CreateMock<ICrossModuleAuthService>();
 
             // 设置默认密码配置（通过IConfiguration）
-            _configurationMock.Setup(x => x["Lybt:DefaultPasswords:NewUserPassword"])
+            _configurationMock["Lybt:DefaultPasswords:NewUserPassword"]
                 .Returns("Lybt2025@TempPass#");
-            _configurationMock.Setup(x => x["Lybt:DefaultPasswords:SysAdminPassword"])
+            _configurationMock["Lybt:DefaultPasswords:SysAdminPassword"]
                 .Returns("LybtAdmin2025@SecurePass#");
 
             // Phase 1 Task 1.6: 默认设置 validator 返回成功
-            _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<UserInputDto>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+            _validatorMock.ValidateAsync(Arg.Any<UserInputDto>(), Arg.Any<CancellationToken>())
+                .Returns(new FluentValidation.Results.ValidationResult());
 
             // X3: 默认设置 token 撤销为成功
-            _authServiceMock.Setup(x => x.RevokeUserTokensAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+            _authServiceMock.RevokeUserTokensAsync(Arg.Any<Guid>(), Arg.Any<string>())
                 .Returns(Task.CompletedTask);
 
             // 创建UserService实例
             _userService = new UserService(
-                _repositoryMock.Object,
-                _loggerMock.Object,
-                _configurationMock.Object,
-                _httpContextAccessorMock.Object,
-                _validatorMock.Object,
-                _authServiceMock.Object);
+                _repositoryMock,
+                _loggerMock,
+                _configurationMock,
+                _httpContextAccessorMock,
+                _validatorMock,
+                _authServiceMock);
 
             // Issue #1909: 默认设置为SuperAdmin角色，允许所有操作
             SetupUserRole(UserRole.SuperAdmin);
@@ -87,7 +87,7 @@ namespace LYBT.Module.Users.Tests.Services
                 User = claimsPrincipal
             };
 
-            _httpContextAccessorMock.Setup(x => x.HttpContext).Returns(httpContext);
+            _httpContextAccessorMock.HttpContext.Returns(httpContext);
         }
 
         #endregion
@@ -108,8 +108,8 @@ namespace LYBT.Module.Users.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()))
-                .ReturnsAsync(pagedResult);
+                .GetPagedAsync(1, 20, Arg.Any<string?>())
+                .Returns(pagedResult);
 
             // Act
             var result = await _userService.GetPagedAsync(1, 20, null);
@@ -123,18 +123,17 @@ namespace LYBT.Module.Users.Tests.Services
             result.Data!.CurrentPage.Should().Be(1);
             result.Data!.PageSize.Should().Be(20);
 
-            _repositoryMock.Verify(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()), Times.Once);
+            await _repositoryMock.Received(1).GetPagedAsync(1, 20, Arg.Any<string?>());
         }
 
         [Fact]
         public async Task GetPagedAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
-            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var exception = new Exception("数据库错误");
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
-                .ThrowsAsync(exception);
+                .GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
+                .Returns<PagedResult<User>>(x => throw exception);
 
             // Act & Assert
             var thrownException = await Assert.ThrowsAsync<Exception>(
@@ -156,8 +155,8 @@ namespace LYBT.Module.Users.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()))
-                .ReturnsAsync(pagedResult);
+                .GetPagedAsync(1, 20, Arg.Any<string?>())
+                .Returns(pagedResult);
 
             // Act
             var result = await _userService.GetPagedAsync(1, 20, null);
@@ -181,9 +180,7 @@ namespace LYBT.Module.Users.Tests.Services
             var userId = Guid.NewGuid();
             var user = CreateTestUser(userId);
 
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(user);
+            _repositoryMock.GetByIdAsync(userId).Returns(user);
 
             // Act
             var result = await _userService.GetByIdAsync(userId);
@@ -196,7 +193,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Data!.UserName.Should().Be(user.UserName);
             result.Data!.RealName.Should().Be(user.RealName);
 
-            _repositoryMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
+            await _repositoryMock.Received(1).GetByIdAsync(userId);
         }
 
         [Fact]
@@ -205,9 +202,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var userId = Guid.NewGuid();
 
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync((User?)null);
+            _repositoryMock.GetByIdAsync(userId).Returns((User?)null);
 
             // Act
             var result = await _userService.GetByIdAsync(userId);
@@ -223,13 +218,10 @@ namespace LYBT.Module.Users.Tests.Services
         public async Task GetByIdAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
-            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var userId = Guid.NewGuid();
             var exception = new Exception("数据库错误");
 
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
-                .ThrowsAsync(exception);
+            _repositoryMock.GetByIdAsync(userId).Returns<User?>(x => throw exception);
 
             // Act & Assert
             var thrownException = await Assert.ThrowsAsync<Exception>(
@@ -267,9 +259,7 @@ namespace LYBT.Module.Users.Tests.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            _repositoryMock
-                .Setup(x => x.AddAsync(It.IsAny<User>()))
-                .ReturnsAsync(createdUser);
+            _repositoryMock.AddAsync(Arg.Any<User>()).Returns(createdUser);
 
             // Act
             var result = await _userService.CreateAsync(createDto);
@@ -282,14 +272,13 @@ namespace LYBT.Module.Users.Tests.Services
             result.Data!.RealName.Should().Be(createDto.RealName);
             result.Data!.Email.Should().Be(createDto.Email);
 
-            _repositoryMock.Verify(x => x.AddAsync(It.IsAny<User>()), Times.Once);
+            await _repositoryMock.Received(1).AddAsync(Arg.Any<User>());
         }
 
         [Fact]
         public async Task CreateAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
-            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var createDto = new UserInputDto
             {
                 UserName = "newuser",
@@ -299,9 +288,7 @@ namespace LYBT.Module.Users.Tests.Services
 
             var exception = new Exception("数据库错误");
 
-            _repositoryMock
-                .Setup(x => x.AddAsync(It.IsAny<User>()))
-                .ThrowsAsync(exception);
+            _repositoryMock.AddAsync(Arg.Any<User>()).Returns<User>(x => throw exception);
 
             // Act & Assert
             var thrownException = await Assert.ThrowsAsync<Exception>(
@@ -340,13 +327,8 @@ namespace LYBT.Module.Users.Tests.Services
                 UpdatedAt = DateTime.UtcNow
             };
 
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(existingUser);
-
-            _repositoryMock
-                .Setup(x => x.UpdateAsync(It.IsAny<User>()))
-                .ReturnsAsync(updatedUser);
+            _repositoryMock.GetByIdAsync(userId).Returns(existingUser);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns(updatedUser);
 
             // Act
             var result = await _userService.UpdateAsync(userId, updateDto);
@@ -359,8 +341,8 @@ namespace LYBT.Module.Users.Tests.Services
             result.Data!.RealName.Should().Be(updateDto.RealName);
             result.Data!.Email.Should().Be(updateDto.Email);
 
-            _repositoryMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+            await _repositoryMock.Received(1).GetByIdAsync(userId);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
@@ -368,14 +350,9 @@ namespace LYBT.Module.Users.Tests.Services
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var updateDto = new UserInputDto
-            {
-                RealName = "更新的名字"
-            };
+            var updateDto = new UserInputDto { RealName = "更新的名字" };
 
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync((User?)null);
+            _repositoryMock.GetByIdAsync(userId).Returns((User?)null);
 
             // Act
             var result = await _userService.UpdateAsync(userId, updateDto);
@@ -385,31 +362,22 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeFalse();
             result.ErrorMessage.Should().Be("用户不存在");
 
-            _repositoryMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+            await _repositoryMock.Received(1).GetByIdAsync(userId);
+            await _repositoryMock.DidNotReceive().UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
         public async Task UpdateAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
-            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var userId = Guid.NewGuid();
             var existingUser = CreateTestUser(userId);
-            var updateDto = new UserInputDto
-            {
-                RealName = "更新的名字"
-            };
+            var updateDto = new UserInputDto { RealName = "更新的名字" };
 
             var exception = new Exception("数据库错误");
 
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(existingUser);
-
-            _repositoryMock
-                .Setup(x => x.UpdateAsync(It.IsAny<User>()))
-                .ThrowsAsync(exception);
+            _repositoryMock.GetByIdAsync(userId).Returns(existingUser);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns<User>(x => throw exception);
 
             // Act & Assert
             var thrownException = await Assert.ThrowsAsync<Exception>(
@@ -436,19 +404,10 @@ namespace LYBT.Module.Users.Tests.Services
                 RealName = "Test User"
             };
 
-            // Issue #1909: Mock GetByIdAsync to return the target user
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(targetUser);
-
-            // Issue #1909: Mock FindAsync for last-one protection check (IRepository<T>无参数CountAsync)
-            _repositoryMock
-                .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
-                .ReturnsAsync(new List<User> { new User(), new User() }); // 返回2个用户，允许删除
-
-            _repositoryMock
-                .Setup(x => x.DeleteAsync(userId))
-                .ReturnsAsync(true);
+            _repositoryMock.GetByIdAsync(userId).Returns(targetUser);
+            _repositoryMock.FindAsync(Arg.Any<System.Linq.Expressions.Expression<Func<User, bool>>>())
+                .Returns(new List<User> { new User(), new User() });
+            _repositoryMock.DeleteAsync(userId).Returns(true);
 
             // Act
             var result = await _userService.DeleteAsync(userId);
@@ -457,7 +416,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
 
-            _repositoryMock.Verify(x => x.DeleteAsync(userId), Times.Once);
+            await _repositoryMock.Received(1).DeleteAsync(userId);
         }
 
         [Fact]
@@ -474,19 +433,10 @@ namespace LYBT.Module.Users.Tests.Services
                 RealName = "Test User"
             };
 
-            // Issue #1909: Mock GetByIdAsync
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(targetUser);
-
-            // Issue #1909: Mock FindAsync for last-one protection check (IRepository<T>无参数CountAsync)
-            _repositoryMock
-                .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
-                .ReturnsAsync(new List<User> { new User(), new User() }); // 返回2个用户，允许删除
-
-            _repositoryMock
-                .Setup(x => x.DeleteAsync(userId))
-                .ReturnsAsync(false);
+            _repositoryMock.GetByIdAsync(userId).Returns(targetUser);
+            _repositoryMock.FindAsync(Arg.Any<System.Linq.Expressions.Expression<Func<User, bool>>>())
+                .Returns(new List<User> { new User(), new User() });
+            _repositoryMock.DeleteAsync(userId).Returns(false);
 
             // Act
             var result = await _userService.DeleteAsync(userId);
@@ -501,7 +451,6 @@ namespace LYBT.Module.Users.Tests.Services
         public async Task DeleteAsync_WhenRepositoryThrowsException_ShouldThrowException()
         {
             // Arrange
-            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理，测试更新为期望异常上抛
             var userId = Guid.NewGuid();
             var targetUser = new User
             {
@@ -513,19 +462,10 @@ namespace LYBT.Module.Users.Tests.Services
             };
             var exception = new Exception("数据库错误");
 
-            // Issue #1909: Mock GetByIdAsync first
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(targetUser);
-
-            // Issue #1909: Mock FindAsync for last-one protection check (IRepository<T>无参数CountAsync)
-            _repositoryMock
-                .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
-                .ReturnsAsync(new List<User> { new User(), new User() }); // 返回2个用户，允许删除
-
-            _repositoryMock
-                .Setup(x => x.DeleteAsync(userId))
-                .ThrowsAsync(exception);
+            _repositoryMock.GetByIdAsync(userId).Returns(targetUser);
+            _repositoryMock.FindAsync(Arg.Any<System.Linq.Expressions.Expression<Func<User, bool>>>())
+                .Returns(new List<User> { new User(), new User() });
+            _repositoryMock.DeleteAsync(userId).Returns<bool>(x => throw exception);
 
             // Act & Assert
             var thrownException = await Assert.ThrowsAsync<Exception>(
@@ -546,8 +486,8 @@ namespace LYBT.Module.Users.Tests.Services
             var user = CreateTestUser(userId);
             var request = new ResetPasswordRequestDto();
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+            _repositoryMock.GetByIdAsync(userId).Returns(user);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns(user);
 
             // Act
             var result = await _userService.ResetPasswordAsync(userId, request);
@@ -558,7 +498,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data!.TemporaryPassword.Should().NotBeNullOrEmpty();
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
@@ -568,7 +508,7 @@ namespace LYBT.Module.Users.Tests.Services
             var userId = Guid.NewGuid();
             var request = new ResetPasswordRequestDto();
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync((User?)null);
+            _repositoryMock.GetByIdAsync(userId).Returns((User?)null);
 
             // Act
             var result = await _userService.ResetPasswordAsync(userId, request);
@@ -578,7 +518,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeFalse();
             result.ErrorMessage.Should().Contain("用户不存在");
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+            await _repositoryMock.DidNotReceive().UpdateAsync(Arg.Any<User>());
         }
 
         #endregion
@@ -595,8 +535,8 @@ namespace LYBT.Module.Users.Tests.Services
             var user = CreateTestUser(userId);
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(oldPassword);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+            _repositoryMock.GetByIdAsync(userId).Returns(user);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns(user);
 
             // Act
             var result = await _userService.ChangePasswordAsync(userId, oldPassword, newPassword);
@@ -605,7 +545,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
@@ -618,7 +558,7 @@ namespace LYBT.Module.Users.Tests.Services
             var user = CreateTestUser(userId);
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword("CorrectPass@123");
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
+            _repositoryMock.GetByIdAsync(userId).Returns(user);
 
             // Act
             var result = await _userService.ChangePasswordAsync(userId, oldPassword, newPassword);
@@ -628,7 +568,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeFalse();
             result.ErrorMessage.Should().Contain("原密码");
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+            await _repositoryMock.DidNotReceive().UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
@@ -637,7 +577,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var userId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync((User?)null);
+            _repositoryMock.GetByIdAsync(userId).Returns((User?)null);
 
             // Act
             var result = await _userService.ChangePasswordAsync(userId, "old", "new");
@@ -650,8 +590,6 @@ namespace LYBT.Module.Users.Tests.Services
 
         /// <summary>
         /// S1-fix: 验证哈希升级场景下，新密码确实被使用而非旧密码的 rehash
-        /// 使用低工作因子创建旧密码哈希，触发 NeedsRehash，
-        /// 然后验证 entity.PasswordHash 可以验证新密码
         /// </summary>
         [Fact]
         public async Task ChangePasswordAsync_WithHashUpgradeNeeded_ShouldUseNewPasswordHash()
@@ -661,14 +599,12 @@ namespace LYBT.Module.Users.Tests.Services
             var oldPassword = "OldPass@123";
             var newPassword = "NewPass@456";
             var user = CreateTestUser(userId);
-            // 使用当前工作因子创建旧密码哈希
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(oldPassword);
 
             User? capturedUser = null;
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>()))
-                .Callback<User>(u => capturedUser = u)
-                .ReturnsAsync(user);
+            _repositoryMock.GetByIdAsync(userId).Returns(user);
+            _repositoryMock.UpdateAsync(Arg.Do<User>(u => capturedUser = u))
+                .Returns(user);
 
             // Act
             var result = await _userService.ChangePasswordAsync(userId, oldPassword, newPassword);
@@ -701,8 +637,8 @@ namespace LYBT.Module.Users.Tests.Services
                 PhoneNumber = "13900139000"
             };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+            _repositoryMock.GetByIdAsync(userId).Returns(user);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns(user);
 
             // Act
             var result = await _userService.ChangeProfileAsync(userId, dto);
@@ -712,7 +648,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
@@ -722,7 +658,7 @@ namespace LYBT.Module.Users.Tests.Services
             var userId = Guid.NewGuid();
             var dto = new ChangeProfileDto { RealName = "Test" };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync((User?)null);
+            _repositoryMock.GetByIdAsync(userId).Returns((User?)null);
 
             // Act
             var result = await _userService.ChangeProfileAsync(userId, dto);
@@ -745,8 +681,8 @@ namespace LYBT.Module.Users.Tests.Services
             var user = CreateTestUser(userId);
             user.Status = CommonStatus.Enabled;
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+            _repositoryMock.GetByIdAsync(userId).Returns(user);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns(user);
 
             // Act
             var result = await _userService.ToggleStatusAsync(userId);
@@ -757,7 +693,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data!.Status.Should().Be(CommonStatus.Disabled);
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
@@ -768,8 +704,8 @@ namespace LYBT.Module.Users.Tests.Services
             var user = CreateTestUser(userId);
             user.Status = CommonStatus.Disabled;
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(user);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+            _repositoryMock.GetByIdAsync(userId).Returns(user);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns(user);
 
             // Act
             var result = await _userService.ToggleStatusAsync(userId);
@@ -786,7 +722,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var userId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync((User?)null);
+            _repositoryMock.GetByIdAsync(userId).Returns((User?)null);
 
             // Act
             var result = await _userService.ToggleStatusAsync(userId);
@@ -796,7 +732,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeFalse();
             result.ErrorMessage.Should().Contain("用户不存在");
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+            await _repositoryMock.DidNotReceive().UpdateAsync(Arg.Any<User>());
         }
 
         #endregion
@@ -811,8 +747,8 @@ namespace LYBT.Module.Users.Tests.Services
             var user = CreateTestUser(userId);
             user.IsDeleted = true;
 
-            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(userId)).ReturnsAsync(user);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(user);
+            _repositoryMock.GetByIdIncludingDeletedAsync(userId).Returns(user);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns(user);
 
             // Act
             var result = await _userService.RestoreAsync(userId);
@@ -822,7 +758,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeTrue();
             user.IsDeleted.Should().BeFalse();
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
+            await _repositoryMock.Received(1).UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
@@ -833,7 +769,7 @@ namespace LYBT.Module.Users.Tests.Services
             var user = CreateTestUser(userId);
             user.IsDeleted = false;
 
-            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(userId)).ReturnsAsync(user);
+            _repositoryMock.GetByIdIncludingDeletedAsync(userId).Returns(user);
 
             // Act
             var result = await _userService.RestoreAsync(userId);
@@ -843,7 +779,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeFalse();
             result.ErrorMessage.Should().Contain("未被删除");
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Never);
+            await _repositoryMock.DidNotReceive().UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
@@ -852,7 +788,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var userId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetByIdIncludingDeletedAsync(userId)).ReturnsAsync((User?)null);
+            _repositoryMock.GetByIdIncludingDeletedAsync(userId).Returns((User?)null);
 
             // Act
             var result = await _userService.RestoreAsync(userId);
@@ -878,11 +814,11 @@ namespace LYBT.Module.Users.Tests.Services
             var user1 = CreateTestUser(id1);
             var user2 = CreateTestUser(id2);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(user1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(user2);
-            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
-                .ReturnsAsync(new List<User> { new User(), new User(), new User() }); // 多于要删除的数量
-            _repositoryMock.Setup(x => x.DeleteAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+            _repositoryMock.GetByIdAsync(id1).Returns(user1);
+            _repositoryMock.GetByIdAsync(id2).Returns(user2);
+            _repositoryMock.FindAsync(Arg.Any<System.Linq.Expressions.Expression<Func<User, bool>>>())
+                .Returns(new List<User> { new User(), new User(), new User() });
+            _repositoryMock.DeleteAsync(Arg.Any<Guid>()).Returns(true);
 
             // Act
             var result = await _userService.BatchDeleteAsync(ids);
@@ -920,11 +856,11 @@ namespace LYBT.Module.Users.Tests.Services
 
             var user1 = CreateTestUser(id1);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(user1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((User?)null);
-            _repositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
-                .ReturnsAsync(new List<User> { new User(), new User() });
-            _repositoryMock.Setup(x => x.DeleteAsync(id1)).ReturnsAsync(true);
+            _repositoryMock.GetByIdAsync(id1).Returns(user1);
+            _repositoryMock.GetByIdAsync(id2).Returns((User?)null);
+            _repositoryMock.FindAsync(Arg.Any<System.Linq.Expressions.Expression<Func<User, bool>>>())
+                .Returns(new List<User> { new User(), new User() });
+            _repositoryMock.DeleteAsync(id1).Returns(true);
 
             // Act
             var result = await _userService.BatchDeleteAsync(ids);
@@ -952,9 +888,9 @@ namespace LYBT.Module.Users.Tests.Services
             var user1 = CreateTestUser(id1);
             var user2 = CreateTestUser(id2);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(user1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync(user2);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
+            _repositoryMock.GetByIdAsync(id1).Returns(user1);
+            _repositoryMock.GetByIdAsync(id2).Returns(user2);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns(callInfo => callInfo.Arg<User>());
 
             // Act
             var result = await _userService.BatchUpdateStatusAsync(ids, targetStatus);
@@ -966,7 +902,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Data!.SuccessCount.Should().Be(2);
             result.Data!.FailureCount.Should().Be(0);
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Exactly(2));
+            await _repositoryMock.Received(2).UpdateAsync(Arg.Any<User>());
         }
 
         [Fact]
@@ -976,7 +912,7 @@ namespace LYBT.Module.Users.Tests.Services
             var ids = new List<Guid>();
             var targetStatus = CommonStatus.Disabled;
 
-            _repositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
+            _repositoryMock.SaveChangesAsync().Returns(0);
 
             // Act
             var result = await _userService.BatchUpdateStatusAsync(ids, targetStatus);
@@ -1000,9 +936,9 @@ namespace LYBT.Module.Users.Tests.Services
 
             var user1 = CreateTestUser(id1);
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(id1)).ReturnsAsync(user1);
-            _repositoryMock.Setup(x => x.GetByIdAsync(id2)).ReturnsAsync((User?)null);
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
+            _repositoryMock.GetByIdAsync(id1).Returns(user1);
+            _repositoryMock.GetByIdAsync(id2).Returns((User?)null);
+            _repositoryMock.UpdateAsync(Arg.Any<User>()).Returns(callInfo => callInfo.Arg<User>());
 
             // Act
             var result = await _userService.BatchUpdateStatusAsync(ids, targetStatus);

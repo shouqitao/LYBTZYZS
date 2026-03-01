@@ -2,7 +2,7 @@ using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.WebAPI.Tests.Middleware;
@@ -13,13 +13,13 @@ namespace LYBT.WebAPI.Tests.Middleware;
 /// </summary>
 public class BusinessExceptionHandlerTests
 {
-    private readonly Mock<ILogger<BusinessExceptionHandler>> _loggerMock;
+    private readonly ILogger<BusinessExceptionHandler> _logger;
     private readonly BusinessExceptionHandler _handler;
 
     public BusinessExceptionHandlerTests()
     {
-        _loggerMock = new Mock<ILogger<BusinessExceptionHandler>>();
-        _handler = new BusinessExceptionHandler(_loggerMock.Object);
+        _logger = Substitute.For<ILogger<BusinessExceptionHandler>>();
+        _handler = new BusinessExceptionHandler(_logger);
     }
 
     [Fact]
@@ -96,13 +96,11 @@ public class BusinessExceptionHandlerTests
         await _handler.TryHandleAsync(context, exception, CancellationToken.None);
 
         // Assert - 验证日志被调用
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.AtLeastOnce);
+        _logger.Received().Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 }

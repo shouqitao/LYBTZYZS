@@ -22,7 +22,7 @@
     <!-- Removed conflicting packages - provided by dependencies -->
     <PackageReference Include="Bogus"  />
     <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除 -->
-    <PackageReference Include="Moq"  />
+    <PackageReference Include="NSubstitute" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,8 +1,8 @@
-﻿using LYBT.Shared.ExceptionHandling.Handlers;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.WebAPI.Tests.Middleware;
@@ -13,16 +13,16 @@ namespace LYBT.WebAPI.Tests.Middleware;
 /// </summary>
 public class SystemExceptionHandlerTests
 {
-    private readonly Mock<ILogger<SystemExceptionHandler>> _loggerMock;
-    private readonly Mock<IHostEnvironment> _environmentMock;
+    private readonly ILogger<SystemExceptionHandler> _logger;
+    private readonly IHostEnvironment _environment;
     private readonly SystemExceptionHandler _handler;
 
     public SystemExceptionHandlerTests()
     {
-        _loggerMock = new Mock<ILogger<SystemExceptionHandler>>();
-        _environmentMock = new Mock<IHostEnvironment>();
-        _environmentMock.Setup(e => e.EnvironmentName).Returns("Production");
-        _handler = new SystemExceptionHandler(_loggerMock.Object, _environmentMock.Object);
+        _logger = Substitute.For<ILogger<SystemExceptionHandler>>();
+        _environment = Substitute.For<IHostEnvironment>();
+        _environment.EnvironmentName.Returns("Production");
+        _handler = new SystemExceptionHandler(_logger, _environment);
     }
 
     [Fact]
@@ -68,14 +68,12 @@ public class SystemExceptionHandlerTests
         await _handler.TryHandleAsync(context, exception, CancellationToken.None);
 
         // Assert
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.AtLeastOnce);
+        _logger.Received().Log(
+            LogLevel.Error,
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]

@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Common;
 /// <summary>
 /// 统一返回值模式 - 封装成功/失败状态和错误信息
 /// Phase 1 Task 1.5: 为Service层提供统一的返回值模式，替代直接抛出异常
-/// Sprint3-Batch3: 移除 AuthErrorCode 属性和方法，统一使用 GenericErrorCode
+/// Sprint3-Batch3: 统一使用 GenericErrorCode
 /// </summary>
 /// <typeparam name="T">返回数据类型</typeparam>
 /// <remarks>

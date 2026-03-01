@@ -1,7 +1,7 @@
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.WebAPI.Tests.Middleware;
@@ -12,11 +12,11 @@ namespace LYBT.WebAPI.Tests.Middleware;
 /// </summary>
 public class CorrelationIdMiddlewareTests
 {
-    private readonly Mock<ILogger<CorrelationIdMiddleware>> _loggerMock;
+    private readonly ILogger<CorrelationIdMiddleware> _logger;
 
     public CorrelationIdMiddlewareTests()
     {
-        _loggerMock = new Mock<ILogger<CorrelationIdMiddleware>>();
+        _logger = Substitute.For<ILogger<CorrelationIdMiddleware>>();
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public class CorrelationIdMiddlewareTests
             nextCalled = true;
             return Task.CompletedTask;
         };
-        var middleware = new CorrelationIdMiddleware(next, _loggerMock.Object);
+        var middleware = new CorrelationIdMiddleware(next, _logger);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -57,7 +57,7 @@ public class CorrelationIdMiddlewareTests
             nextCalled = true;
             return Task.CompletedTask;
         };
-        var middleware = new CorrelationIdMiddleware(next, _loggerMock.Object);
+        var middleware = new CorrelationIdMiddleware(next, _logger);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -80,7 +80,7 @@ public class CorrelationIdMiddlewareTests
             storedCorrelationId = ctx.GetCorrelationId();
             return Task.CompletedTask;
         };
-        var middleware = new CorrelationIdMiddleware(next, _loggerMock.Object);
+        var middleware = new CorrelationIdMiddleware(next, _logger);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -117,7 +117,7 @@ public class CorrelationIdMiddlewareTests
         // Arrange
         var context = new DefaultHttpContext();
         RequestDelegate next = _ => Task.CompletedTask;
-        var middleware = new CorrelationIdMiddleware(next, _loggerMock.Object);
+        var middleware = new CorrelationIdMiddleware(next, _logger);
 
         // Act
         await middleware.InvokeAsync(context);

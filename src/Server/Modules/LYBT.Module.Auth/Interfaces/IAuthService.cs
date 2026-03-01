@@ -53,9 +53,5 @@ namespace LYBT.Module.Auth.Interfaces
         /// </summary>
         Task<Result<object>> GetSessionInfoAsync(string token);
 
-        /// <summary>
-        /// 撤销RefreshToken
-        /// </summary>
-        Task<Result<bool>> RevokeTokenAsync(RevokeTokenRequest request);
     }
 }

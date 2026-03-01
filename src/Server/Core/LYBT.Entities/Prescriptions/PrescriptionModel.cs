@@ -31,7 +31,7 @@ namespace LYBT.Entities.Prescriptions
         public int DosageCount { get; set; } = 7;
 
         /// <summary>折扣（0-1之间，0.8表示8折）</summary>
-        [Column(TypeName = "decimal(5,4)")]
+        [Column(TypeName = "decimal(3,2)")]
         [DisplayName("折扣")]
         public decimal Discount { get; set; } = 1.0m;
 

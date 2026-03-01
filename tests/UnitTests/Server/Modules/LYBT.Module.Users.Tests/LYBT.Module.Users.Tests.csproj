@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"  />
     <!-- SQLite InMemory由Directory.Build.props提供 -->
     <PackageReference Include="Bogus"  />
-    <PackageReference Include="Moq"  />
+    <PackageReference Include="NSubstitute" />
     <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除，使用Mapperly -->
   </ItemGroup>
 

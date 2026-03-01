@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using System.Security.Claims;
 using LYBT.Infrastructure.Services;
 using Xunit;
@@ -14,13 +14,13 @@ namespace LYBT.Infrastructure.Services.Tests
     /// </summary>
     public class BaseServiceTests
     {
-        private readonly Mock<ILogger<BaseServiceTests>> _loggerMock;
+        private readonly ILogger<BaseServiceTests> _logger;
         private readonly TestableBaseService _baseService;
 
         public BaseServiceTests()
         {
-            _loggerMock = new Mock<ILogger<BaseServiceTests>>();
-            _baseService = new TestableBaseService(_loggerMock.Object);
+            _logger = Substitute.For<ILogger<BaseServiceTests>>();
+            _baseService = new TestableBaseService(_logger);
         }
 
         #region 编辑权限验证测试

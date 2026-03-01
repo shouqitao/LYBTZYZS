@@ -14,6 +14,12 @@ public sealed class SecurityOptions
     /// 速率限制配置
     /// </summary>
     public RateLimitingOptions RateLimiting { get; set; } = new();
+
+    /// <summary>
+    /// 审计日志保留天数 (CODE-29)
+    /// </summary>
+    [Range(30, 3650)]
+    public int AuditRetentionDays { get; set; } = 365;
 }
 
 /// <summary>
