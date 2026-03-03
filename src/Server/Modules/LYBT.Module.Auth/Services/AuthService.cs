@@ -197,7 +197,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "[SVC] Auth.Login -> RevokeOldTokensFailed - UserId={UserId}", userDto.Id);
+            _logger.LogError(ex, "[SVC] Auth.Login -> RevokeOldTokensFailed - UserId={UserId}", userDto.Id);
         }
 
         // CODE-03: 撤销旧 AutoLoginToken Family
@@ -219,7 +219,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "[SVC] Auth.Login -> RevokeOldAutoTokensFailed - UserId={UserId}", userDto.Id);
+            _logger.LogError(ex, "[SVC] Auth.Login -> RevokeOldAutoTokensFailed - UserId={UserId}", userDto.Id);
         }
 
         // 生成并存储 RefreshToken

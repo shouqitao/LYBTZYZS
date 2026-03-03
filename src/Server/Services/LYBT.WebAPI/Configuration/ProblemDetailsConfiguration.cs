@@ -1,4 +1,5 @@
-﻿using LYBT.Shared.ExceptionHandling.ProblemDetails;
+﻿using LYBT.Infrastructure.Constants;
+using LYBT.Shared.ExceptionHandling.ProblemDetails;
 using LYBT.Shared.Primitives.ErrorCodes;
 using LYBT.WebAPI.Middleware;
 
@@ -27,7 +28,7 @@ public static class ProblemDetailsConfiguration
                 context.ProblemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
 
                 // 添加TraceId
-                context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+                context.ProblemDetails.Extensions[HttpHeaderConstants.TraceIdKey] = context.HttpContext.TraceIdentifier;
 
                 // T5-P3-03: 非AppException路径添加默认severity（使用ErrorSeverity枚举统一）
                 if (!context.ProblemDetails.Extensions.ContainsKey("severity"))
@@ -77,7 +78,7 @@ public static class ProblemDetailsConfiguration
 
             problemDetails.Extensions["correlationId"] = correlationId;
             problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
-            problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
+            problemDetails.Extensions[HttpHeaderConstants.TraceIdKey] = httpContext.TraceIdentifier;
             problemDetails.Extensions["severity"] = MapStatusCodeToSeverity(statusCode);
 
             httpContext.Response.ContentType = "application/problem+json";

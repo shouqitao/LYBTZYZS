@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -15,7 +16,7 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Policy = "DoctorOrAdmin")]
+[Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
 public class SyncController : BaseApiController
 {
     private readonly ISyncService _syncService;

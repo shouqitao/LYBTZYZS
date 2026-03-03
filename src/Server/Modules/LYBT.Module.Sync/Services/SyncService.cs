@@ -396,7 +396,7 @@ public class SyncService : ISyncService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "上传 Herb 失败");
+            _logger.LogError(ex, "[SVC] Sync.UploadHerb -> Failed");
             return new SyncUploadItemResult { Success = false, ErrorMessage = ex.Message };
         }
     }
@@ -436,7 +436,7 @@ public class SyncService : ISyncService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "上传 Patient 失败");
+            _logger.LogError(ex, "[SVC] Sync.UploadPatient -> Failed");
             return new SyncUploadItemResult { Success = false, ErrorMessage = ex.Message };
         }
     }
@@ -489,7 +489,7 @@ public class SyncService : ISyncService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "上传 Formula 失败");
+            _logger.LogError(ex, "[SVC] Sync.UploadFormula -> Failed");
             return new SyncUploadItemResult { Success = false, ErrorMessage = ex.Message };
         }
     }

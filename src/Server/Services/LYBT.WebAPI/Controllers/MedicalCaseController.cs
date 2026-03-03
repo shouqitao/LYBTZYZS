@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using LYBT.Entities.MedicalCases;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mapping;
@@ -21,11 +22,11 @@ namespace LYBT.WebAPI.Controllers
     /// Phase 3: 拆分为三个职责单一的Service
     /// </summary>
     /// optimize-api-permissions: 医案管理需Doctor或Admin角色
-    /// 资源级授权通过MedicalCaseAuthorizationHandler实现
+    /// 资源级授权由Service层 IMedicalCasePermissionService 实现
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/medicalcases")]
-    [Authorize(Policy = "DoctorOrAdmin")]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCaseController : BaseApiController
     {
         private readonly IMedicalCaseFacade _facade;
@@ -52,7 +53,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         /// <param name="dto">创建请求（Id应为null）</param>
         [HttpPost]
-        [Authorize(Roles = "Doctor")]
+        [Authorize(Roles = RoleConstants.Doctor)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]

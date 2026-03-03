@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -17,7 +18,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = "DoctorOrAdmin")]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class HerbsController : BaseApiController
     {
         private readonly IHerbService _herbService;
@@ -131,7 +132,7 @@ namespace LYBT.WebAPI.Controllers
             {
                 // X7: 区分引用阻塞(422)和不存在(404)
                 if (result.ErrorMessage?.Contains("处方引用") == true)
-                    return UnprocessableEntity(new ApiResponse { Success = false, Message = result.ErrorMessage });
+                    return BusinessFail(result.ErrorMessage ?? "无法删除，存在处方引用");
                 return NotFound(result.ErrorMessage ?? "药材不存在");
             }
 

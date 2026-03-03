@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FluentValidation;
+using LYBT.Infrastructure.Constants;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Primitives.ErrorCodes;
@@ -57,7 +58,7 @@ namespace LYBT.Infrastructure.Services
                 // 检查是否为本人创建
                 if (createdUserId != currentUserId)
                 {
-                    _logger.LogWarning("权限验证失败 - 非本人创建: EntityType={EntityType}, EntityId={EntityId}, CreatedUserId={CreatedUserId}, CurrentUserId={CurrentUserId}",
+                    _logger.LogInformation("权限验证失败 - 非本人创建: EntityType={EntityType}, EntityId={EntityId}, CreatedUserId={CreatedUserId}, CurrentUserId={CurrentUserId}",
                         entityType, entityId, createdUserId, currentUserId);
                     return (false, $"只能编辑自己创建的{entityType}");
                 }
@@ -68,7 +69,7 @@ namespace LYBT.Infrastructure.Services
 
                 if (!createdToday)
                 {
-                    _logger.LogWarning("权限验证失败 - 非当天创建: EntityType={EntityType}, EntityId={EntityId}, CreatedDate={CreatedDate:yyyy-MM-dd}, Today={Today:yyyy-MM-dd}",
+                    _logger.LogInformation("权限验证失败 - 非当天创建: EntityType={EntityType}, EntityId={EntityId}, CreatedDate={CreatedDate:yyyy-MM-dd}, Today={Today:yyyy-MM-dd}",
                         entityType, entityId, createdDate.Date, today);
                     return (false, $"只能编辑当天创建的{entityType}（创建日期：{createdDate:yyyy-MM-dd}）");
                 }
@@ -108,7 +109,7 @@ namespace LYBT.Infrastructure.Services
                      ?? context.User.FindFirst("role")?.Value
                      ?? "Unknown";
 
-            var isAdmin = role.Contains("Admin", StringComparison.OrdinalIgnoreCase)
+            var isAdmin = role.Contains(RoleConstants.Admin, StringComparison.OrdinalIgnoreCase)
                          || role.Contains("Administrator", StringComparison.OrdinalIgnoreCase);
 
             return Task.FromResult<(Guid UserId, bool IsAdmin, string Role)?>((userId, isAdmin, role));
@@ -202,8 +203,8 @@ namespace LYBT.Infrastructure.Services
         {
             return role switch
             {
-                var r when r.Contains("Admin", StringComparison.OrdinalIgnoreCase) => "管理员",
-                var r when r.Contains("Doctor", StringComparison.OrdinalIgnoreCase) => "医生",
+                var r when r.Contains(RoleConstants.Admin, StringComparison.OrdinalIgnoreCase) => "管理员",
+                var r when r.Contains(RoleConstants.Doctor, StringComparison.OrdinalIgnoreCase) => "医生",
                 var r when r.Contains("User", StringComparison.OrdinalIgnoreCase) => "用户",
                 _ => "未知角色"
             };

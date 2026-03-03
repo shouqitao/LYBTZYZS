@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using LYBT.Infrastructure.Constants;
 using Serilog.Context;
 
 namespace LYBT.WebAPI.Middleware
@@ -13,18 +14,18 @@ namespace LYBT.WebAPI.Middleware
         /// <summary>
         /// CorrelationId HTTP请求/响应头名称
         /// </summary>
-        public const string CorrelationIdHeader = "X-Correlation-ID";
+        public const string CorrelationIdHeader = HttpHeaderConstants.CorrelationId;
 
         /// <summary>
         /// W3C Trace Context标准头名称
         /// LOG-013: 分布式追踪Header传递
         /// </summary>
-        public const string TraceparentHeader = "traceparent";
+        public const string TraceparentHeader = HttpHeaderConstants.Traceparent;
 
         /// <summary>
         /// HttpContext.Items中存储CorrelationId的键名
         /// </summary>
-        public const string CorrelationIdItemKey = "CorrelationId";
+        public const string CorrelationIdItemKey = HttpHeaderConstants.CorrelationIdItemKey;
 
         private readonly RequestDelegate _next;
         private readonly ILogger<CorrelationIdMiddleware> _logger;

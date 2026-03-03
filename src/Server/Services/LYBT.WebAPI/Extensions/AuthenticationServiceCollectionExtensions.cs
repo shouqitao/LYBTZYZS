@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using LYBT.Infrastructure.Constants;
 using LYBT.Shared.Configuration.Options.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
@@ -115,23 +116,23 @@ public static class AuthenticationServiceCollectionExtensions
 
             // 定义基于角色的策略
             // optimize-api-permissions: 添加SuperAdmin支持
-            options.AddPolicy("AdminOnly", policy =>
+            options.AddPolicy(PolicyConstants.AdminOnly, policy =>
                 policy.RequireAuthenticatedUser()
-                      .RequireRole("SuperAdmin", "Admin"));
+                      .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin));
 
-            options.AddPolicy("DoctorOrAdmin", policy =>
+            options.AddPolicy(PolicyConstants.DoctorOrAdmin, policy =>
                 policy.RequireAuthenticatedUser()
-                      .RequireRole("SuperAdmin", "Admin", "Doctor"));
+                      .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin, RoleConstants.Doctor));
 
             // T5-P2-30: 患者模块访问策略 - 包含Receptionist
-            options.AddPolicy("PatientAccess", policy =>
+            options.AddPolicy(PolicyConstants.PatientAccess, policy =>
                 policy.RequireAuthenticatedUser()
-                      .RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
+                      .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin, RoleConstants.Doctor, RoleConstants.Receptionist));
 
             // CODE-04: 最高权限操作策略 (仅 SuperAdmin)
-            options.AddPolicy("SuperAdminOnly", policy =>
+            options.AddPolicy(PolicyConstants.SuperAdminOnly, policy =>
                 policy.RequireAuthenticatedUser()
-                      .RequireRole("SuperAdmin"));
+                      .RequireRole(RoleConstants.SuperAdmin));
 
             options.AddPolicy("RequireAuthenticated", policy =>
                 policy.RequireAuthenticatedUser());

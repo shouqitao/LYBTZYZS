@@ -559,8 +559,9 @@ namespace LYBT.Desktop.Printing.Services
 
                 return LocalPrintServer.GetDefaultPrintQueue();
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "[PRINT] GetPrintQueue failed for printer: {PrinterName}, falling back to default", printerName);
                 return LocalPrintServer.GetDefaultPrintQueue();
             }
         }

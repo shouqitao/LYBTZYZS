@@ -204,8 +204,9 @@ public class TokenManagementService : ITokenManagementService
 
             return Result<bool>.Failure(GenericErrorCode.AuthTokenInvalid);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "[SVC] TokenMgmt.ValidateToken -> Failed");
             return Result<bool>.Failure(GenericErrorCode.AuthTokenInvalid);
         }
     }

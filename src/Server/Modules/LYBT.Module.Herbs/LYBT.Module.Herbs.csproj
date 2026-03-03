@@ -8,6 +8,7 @@
   <!-- 允许测试项目访问internal类 (Issue #1600 Phase 3) -->
   <ItemGroup>
     <InternalsVisibleTo Include="LYBT.Module.Herbs.Tests" />
+    <InternalsVisibleTo Include="LYBT.Tests.Unit" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using LYBT.Infrastructure.Constants;
 using LYBT.Shared.Logging.Masking;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -47,7 +48,7 @@ namespace LYBT.Infrastructure.Web
             var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value
                          ?? User?.FindFirst("role")?.Value
                          ?? User?.FindFirst("roles")?.Value
-                         ?? User?.FindFirst("Admin")?.Value;
+                         ?? User?.FindFirst(RoleConstants.Admin)?.Value;
 
             if (Guid.TryParse(userId, out var opId) && opId != Guid.Empty && !string.IsNullOrEmpty(userName))
             {
@@ -71,7 +72,7 @@ namespace LYBT.Infrastructure.Web
 
             if (roleStr.Equals("SysAdmin", StringComparison.OrdinalIgnoreCase))
             {
-                roleStr = "SuperAdmin";
+                roleStr = RoleConstants.SuperAdmin;
             }
 
             if (Enum.TryParse<UserRole>(roleStr, ignoreCase: true, out var role))

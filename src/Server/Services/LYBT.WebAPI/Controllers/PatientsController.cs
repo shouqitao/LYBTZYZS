@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Interfaces;
@@ -19,7 +20,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = "PatientAccess")]
+    [Authorize(Policy = PolicyConstants.PatientAccess)]
     public class PatientsController : BaseApiController
     {
         private readonly IPatientService _service;
@@ -49,7 +50,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             // T5-P2-27: 非Admin角色只看到启用患者
-            var isAdmin = User?.IsInRole("Admin") == true || User?.IsInRole("SuperAdmin") == true;
+            var isAdmin = User?.IsInRole(RoleConstants.Admin) == true || User?.IsInRole(RoleConstants.SuperAdmin) == true;
             var filterDisabled = !isAdmin;
 
             var result = await _service.GetPagedAsync(page, pageSize, keyword, filterDisabled);
@@ -160,7 +161,7 @@ namespace LYBT.WebAPI.Controllers
             {
                 // X7: 区分引用阻塞(422)和不存在(404)
                 if (result.ErrorMessage?.Contains("医案记录") == true)
-                    return UnprocessableEntity(new ApiResponse { Success = false, Message = result.ErrorMessage });
+                    return BusinessFail(result.ErrorMessage ?? "无法删除，存在关联医案记录");
                 return NotFound("患者不存在");
             }
 

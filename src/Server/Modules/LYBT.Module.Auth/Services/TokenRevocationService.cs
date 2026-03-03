@@ -69,7 +69,7 @@ public class TokenRevocationService : ITokenRevocationService
         }
         catch (Exception auditEx)
         {
-            _logger.LogError(auditEx, "[SVC] Token.Revoke → AuditFailed - TokenId={TokenId}", tokenRecord.Id);
+            _logger.LogWarning(auditEx, "[SVC] Token.Revoke → AuditFailed - TokenId={TokenId}", tokenRecord.Id);
             // 审计日志失败不影响主操作
         }
 

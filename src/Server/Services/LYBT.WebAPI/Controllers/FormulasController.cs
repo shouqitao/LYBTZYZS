@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -14,11 +15,11 @@ namespace LYBT.WebAPI.Controllers
     /// 验方管理 API - 基础CRUD功能
     /// </summary>
     /// optimize-api-permissions: 验方管理需Doctor或Admin角色
-    /// 资源级授权通过FormulaAuthorizationHandler实现
+    /// 资源级授权由Service层所有权检查实现
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = "DoctorOrAdmin")]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class FormulasController : BaseApiController
     {
         private readonly IFormulaService _service;

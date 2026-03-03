@@ -122,7 +122,7 @@ namespace LYBT.Module.MedicalCases.Services
                 // 但 CreateFromInputDtoAsync 的 Consultation 数据是直接映射，不经过验证器
                 if (string.IsNullOrWhiteSpace(request.Consultation.TcmDiagnosis))
                 {
-                    _logger.LogWarning("[SVC] MedicalCase.Create -> TcmDiagnosisEmpty");
+                    _logger.LogInformation("[SVC] MedicalCase.Create -> TcmDiagnosisEmpty");
                     throw new BusinessException(EC.MedicalCaseMissingDiagnosis, "中医诊断不能为空");
                 }
 
@@ -173,7 +173,7 @@ namespace LYBT.Module.MedicalCases.Services
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("医案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogInformation("医案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                 return null;
             }
 
@@ -192,7 +192,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 确保Consultation存在
             if (medicalCase.Consultation == null)
             {
-                _logger.LogWarning("[SVC] MedicalCase.UpdateConsultation → ConsultationNotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation → ConsultationNotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 throw new BusinessException(EC.McConsultationNotFound, "医案的辨证信息不存在");
             }
 

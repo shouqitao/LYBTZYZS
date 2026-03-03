@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Logging.Management;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +15,7 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/diagnostics")]
-[Authorize(Roles = "SuperAdmin")]  // 仅超级管理员可访问
+[Authorize(Roles = RoleConstants.SuperAdmin)]  // 仅超级管理员可访问
 public class DiagnosticsController : BaseApiController
 {
     private readonly LoggingLevelManager _loggingLevelManager;

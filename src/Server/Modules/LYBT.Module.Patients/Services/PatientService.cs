@@ -134,7 +134,7 @@ namespace LYBT.Module.Patients.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("[SVC] Patient.Create → ValidationFailed - Errors={Errors}", string.Join("; ", errors));
+                _logger.LogInformation("[SVC] Patient.Create → ValidationFailed - ErrorCount={ErrorCount} Errors={@Errors}", errors.Count, errors);
                 return Result<PatientDetailDto>.Failure(errors);
             }
 
@@ -185,7 +185,7 @@ namespace LYBT.Module.Patients.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("[SVC] Patient.Update → ValidationFailed - PatientId={PatientId} Errors={Errors}", id, string.Join("; ", errors));
+                _logger.LogInformation("[SVC] Patient.Update → ValidationFailed - PatientId={PatientId} ErrorCount={ErrorCount} Errors={@Errors}", id, errors.Count, errors);
                 return Result<PatientDetailDto>.Failure(errors);
             }
 
@@ -323,7 +323,7 @@ namespace LYBT.Module.Patients.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("[SVC] Patient.Create → ValidationFailed - Errors={Errors}", string.Join("; ", errors));
+                _logger.LogInformation("[SVC] Patient.Create → ValidationFailed - ErrorCount={ErrorCount} Errors={@Errors}", errors.Count, errors);
                 return Result<Patient>.Failure(errors);
             }
 
@@ -373,7 +373,7 @@ namespace LYBT.Module.Patients.Services
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                _logger.LogWarning("[SVC] Patient.Update → ValidationFailed - PatientId={PatientId} Errors={Errors}", id, string.Join("; ", errors));
+                _logger.LogInformation("[SVC] Patient.Update → ValidationFailed - PatientId={PatientId} ErrorCount={ErrorCount} Errors={@Errors}", id, errors.Count, errors);
                 return Result<Patient>.Failure(errors);
             }
 
