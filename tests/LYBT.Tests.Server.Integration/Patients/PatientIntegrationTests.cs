@@ -700,6 +700,233 @@ public class PatientIntegrationTests
 
     #endregion
 
+    #region Migrated from Structure B
+
+    [Fact]
+    public async Task GetById_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange - 先创建一个患者获取有效ID
+        var createRequest = new PatientInputDto
+        {
+            Name = "未认证详情_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
+        };
+        var createResponse = await _fixture.AdminClient
+            .PostAsJsonAsync("/api/v1/patients", createRequest);
+        var created = await createResponse.Content
+            .ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
+        var patientId = created!.Data!.Id;
+
+        // Act - 未认证客户端尝试获取患者详情
+        var response = await _fixture.AnonymousClient
+            .GetAsync($"/api/v1/patients/{patientId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task CreatePatient_WithDuplicatePhoneNumber_ShouldReturnBadRequest()
+    {
+        // Arrange - 先创建一个患者
+        var phone = UniquePhone();
+        var firstRequest = new PatientInputDto
+        {
+            Name = "重复手机号1_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = phone,
+            Address = "集成测试地址"
+        };
+        var firstResponse = await _fixture.AdminClient
+            .PostAsJsonAsync("/api/v1/patients", firstRequest);
+        firstResponse.IsSuccessStatusCode.Should().BeTrue("第一次创建应成功");
+
+        // Act - 使用相同手机号再创建一个
+        var duplicateRequest = new PatientInputDto
+        {
+            Name = "重复手机号2_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Female,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = phone, // 与第一个患者相同
+            Address = "集成测试地址"
+        };
+        var response = await _fixture.AdminClient
+            .PostAsJsonAsync("/api/v1/patients", duplicateRequest);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
+        result.Message.Should().Contain("已存在");
+    }
+
+    [Fact]
+    public async Task CreatePatient_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var request = new PatientInputDto
+        {
+            Name = "未认证创建_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Male,
+            PhoneNumber = UniquePhone()
+        };
+
+        // Act
+        var response = await _fixture.AnonymousClient
+            .PostAsJsonAsync("/api/v1/patients", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task UpdatePatient_NonExistentId_ShouldReturn404()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+        var updateRequest = new PatientInputDto
+        {
+            Id = nonExistingId,
+            Name = "不存在的患者",
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PutAsJsonAsync($"/api/v1/patients/{nonExistingId}", updateRequest);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task UpdatePatient_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var createRequest = new PatientInputDto
+        {
+            Name = "未认证更新_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
+        };
+        var createResponse = await _fixture.AdminClient
+            .PostAsJsonAsync("/api/v1/patients", createRequest);
+        var created = await createResponse.Content
+            .ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
+        var patientId = created!.Data!.Id;
+
+        var updateRequest = new PatientInputDto
+        {
+            Id = patientId,
+            Name = "未认证更新后",
+            Gender = Gender.Male,
+            PhoneNumber = UniquePhone()
+        };
+
+        // Act
+        var response = await _fixture.AnonymousClient
+            .PutAsJsonAsync($"/api/v1/patients/{patientId}", updateRequest);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task DeletePatient_NonExistentId_ShouldReturn404()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+
+        // Act
+        var response = await _fixture.AdminClient
+            .DeleteAsync($"/api/v1/patients/{nonExistingId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeletePatient_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var createRequest = new PatientInputDto
+        {
+            Name = "未认证删除_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Male,
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
+        };
+        var createResponse = await _fixture.AdminClient
+            .PostAsJsonAsync("/api/v1/patients", createRequest);
+        var created = await createResponse.Content
+            .ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
+        var patientId = created!.Data!.Id;
+
+        // Act
+        var response = await _fixture.AnonymousClient
+            .DeleteAsync($"/api/v1/patients/{patientId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task GetPatients_ShouldReturnAgeCalculatedFromBirthDate()
+    {
+        // Arrange - 确保有带BirthDate的患者
+        var request = new PatientInputDto
+        {
+            Name = "年龄列表_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Male,
+            BirthDate = new DateTime(1990, 1, 1),
+            IdNumber = UniqueIdNumber(),
+            PhoneNumber = UniquePhone(),
+            Address = "集成测试地址"
+        };
+        await _fixture.AdminClient
+            .PostAsJsonAsync("/api/v1/patients", request);
+
+        // Act
+        var response = await _fixture.AdminClient
+            .GetAsync("/api/v1/patients");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<PagedResult<PatientListDto>>>(JsonOptions);
+        body.Should().NotBeNull();
+        body!.Data.Should().NotBeNull();
+        body.Data!.Items.Should().NotBeEmpty();
+
+        // 验证列表中Age属性已正确计算
+        var patientsWithAge = body.Data.Items
+            .Where(p => p.Age.HasValue)
+            .ToList();
+        patientsWithAge.Should().NotBeEmpty("应有带年龄的患者");
+
+        foreach (var patient in patientsWithAge)
+        {
+            patient.Age.Should().BeGreaterThanOrEqualTo(0,
+                "Age应从BirthDate正确计算");
+        }
+    }
+
+    #endregion
+
     #region Age Calculation
 
     [Fact]

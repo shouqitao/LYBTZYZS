@@ -722,4 +722,397 @@ public class MedicalCaseIntegrationTests
     }
 
     #endregion
+
+    #region Migrated from Structure B
+
+    // ===== Create: 字段验证 =====
+
+    [Fact]
+    public async Task CreateMedicalCase_ShouldSetUserId()
+    {
+        // Arrange
+        var patientId = await CreatePatientAsync();
+        var input = new MedicalCaseInputDto
+        {
+            PatientId = patientId,
+            UserId = WebApiFixture.DoctorUserId,
+            Consultation = new ConsultationInputDto { TcmDiagnosis = "测试" }
+        };
+
+        // Act
+        var response = await _fixture.DoctorClient.PostAsJsonAsync(BaseUrl, input);
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
+        body!.Data!.UserId.Should().Be(WebApiFixture.DoctorUserId,
+            "UserId应从JWT Token的NameIdentifier正确设置");
+        body.Data.UserId.Should().NotBe(Guid.Empty);
+    }
+
+    [Fact]
+    public async Task CreateMedicalCase_ShouldSetDoctorName_FromUserTable()
+    {
+        // Arrange
+        var patientId = await CreatePatientAsync();
+        var input = new MedicalCaseInputDto
+        {
+            PatientId = patientId,
+            UserId = WebApiFixture.DoctorUserId,
+            Consultation = new ConsultationInputDto { TcmDiagnosis = "测试" }
+        };
+
+        // Act
+        var response = await _fixture.DoctorClient.PostAsJsonAsync(BaseUrl, input);
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
+        body!.Data!.DoctorName.Should().NotBeNullOrEmpty(
+            "DoctorName应从Users表的RealName字段正确获取");
+    }
+
+    [Fact]
+    public async Task CreateMedicalCase_ShouldSetPatientName_FromPatientTable()
+    {
+        // Arrange
+        var uniqueName = "患者名称验证_" + Guid.NewGuid().ToString("N")[..4];
+        var patientId = await CreatePatientAsync(uniqueName);
+        var input = new MedicalCaseInputDto
+        {
+            PatientId = patientId,
+            UserId = WebApiFixture.DoctorUserId,
+            Consultation = new ConsultationInputDto { TcmDiagnosis = "测试" }
+        };
+
+        // Act
+        var response = await _fixture.DoctorClient.PostAsJsonAsync(BaseUrl, input);
+
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
+        body!.Data!.PatientName.Should().Contain(uniqueName,
+            "PatientName应从Patients表正确获取");
+    }
+
+    [Fact]
+    public async Task CreateMedicalCase_WithEmptyGuid_ShouldReturn400()
+    {
+        // Arrange - 使用空GUID作为PatientId
+        var input = new MedicalCaseInputDto
+        {
+            PatientId = Guid.Empty,
+            UserId = WebApiFixture.DoctorUserId,
+            Consultation = new ConsultationInputDto { TcmDiagnosis = "测试" }
+        };
+
+        // Act
+        var response = await _fixture.DoctorClient.PostAsJsonAsync(BaseUrl, input);
+
+        // Assert - 空GUID被FluentValidation的NotEmpty()规则拦截，返回400
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "空GUID PatientId被FluentValidation拦截，应返回400");
+    }
+
+    [Fact]
+    public async Task CreateMedicalCase_WhenPatientHasActiveCase_ShouldReturn500()
+    {
+        // Arrange - 先创建一个Active医案
+        var patientId = await CreatePatientAsync();
+        await CreateMedicalCaseAsync(patientId: patientId);
+
+        // 再为同一患者尝试创建第二个
+        var input = new MedicalCaseInputDto
+        {
+            PatientId = patientId,
+            UserId = WebApiFixture.DoctorUserId,
+            Consultation = new ConsultationInputDto { TcmDiagnosis = "测试" }
+        };
+
+        // Act
+        var response = await _fixture.DoctorClient.PostAsJsonAsync(BaseUrl, input);
+
+        // Assert - BR-001: 单患者只能有一个Active医案
+        // 当前实现使用 InvalidOperationException (而非 BusinessException)，
+        // SystemExceptionHandler 将其映射为 500
+        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError,
+            "同一患者已有进行中医案时，InvalidOperationException被映射为500");
+    }
+
+    // ===== SetPrescriptionFlag: 额外场景 =====
+
+    [Fact]
+    public async Task SetPrescriptionFlag_WithMinimalConsultation_ShouldStillSucceed()
+    {
+        // Arrange - 创建医案，仅提供最小必填诊断(TcmDiagnosis)
+        // 注: CreateFromInputDtoAsync 要求 TcmDiagnosis 非空，否则抛 BusinessException
+        var patientId = await CreatePatientAsync();
+        var input = new MedicalCaseInputDto
+        {
+            PatientId = patientId,
+            UserId = WebApiFixture.DoctorUserId,
+            Consultation = new ConsultationInputDto { TcmDiagnosis = "待定" } // 最小必填诊断
+        };
+        var createResp = await _fixture.DoctorClient.PostAsJsonAsync(BaseUrl, input);
+        createResp.IsSuccessStatusCode.Should().BeTrue(
+            $"创建医案应成功, 实际: {createResp.StatusCode}");
+        var created = await createResp.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
+        var caseId = created!.Data!.Id;
+
+        // Act - 设置处方标志
+        var flagReq = new { NeedsPrescription = true };
+        var response = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}/prescription-flag", flagReq);
+
+        // Assert - 仅有最小诊断也应允许设置处方标志
+        response.IsSuccessStatusCode.Should().BeTrue(
+            "仅有最小诊断也应允许设置处方标志");
+    }
+
+    // ===== Status: 通用更新 + 完成无处方 =====
+
+    [Fact]
+    public async Task UpdateStatus_ToCompleted_ViaCloseEndpoint_ShouldSucceed()
+    {
+        // Arrange
+        var (caseId, _) = await CreateMedicalCaseAsync();
+
+        // Act - 通过 /close 端点完成医案
+        // 注: /status 端点的 Completed 走 CompleteAsync(skipWorkflowValidation:false)，
+        // 要求 NeedsPrescription 已设置，不适合简单完成场景
+        // /close 端点走 CompleteAsync(skipWorkflowValidation:true)，跳过流程验证
+        var response = await _fixture.DoctorClient
+            .PutAsync($"{BaseUrl}/{caseId}/close", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
+        body!.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
+    }
+
+    [Fact]
+    public async Task CompleteMedicalCase_ViaCloseEndpoint_ShouldCompleteWithoutPrescription()
+    {
+        // Arrange - 创建医案但不添加处方
+        var (caseId, _) = await CreateMedicalCaseAsync();
+
+        // Act - 通过 /close 端点直接完成(无处方)
+        // 注: /status 端点的 Completed 走 CompleteAsync(skipWorkflowValidation:false)，要求 NeedsPrescription 已设置
+        // /close 端点走 CompleteAsync(skipWorkflowValidation:true)，跳过流程验证
+        var response = await _fixture.DoctorClient
+            .PutAsync($"{BaseUrl}/{caseId}/close", null);
+
+        // Assert - /close 端点允许无处方直接完成
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
+        body!.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Completed,
+            "无处方也应可通过close端点完成");
+    }
+
+    // ===== Suspend: 额外状态转换 =====
+
+    [Fact]
+    public async Task Suspend_WhenStatusCompleted_ShouldReturn400()
+    {
+        // Arrange - 创建医案并关闭
+        var (caseId, _) = await CreateMedicalCaseAsync();
+        var closeResp = await _fixture.DoctorClient
+            .PutAsync($"{BaseUrl}/{caseId}/close", null);
+        closeResp.IsSuccessStatusCode.Should().BeTrue();
+
+        // Act - 尝试对已完成的医案调用Suspend
+        var suspendInput = new ConsultationInputDto { TcmDiagnosis = "尝试暂停" };
+        var response = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}/suspend", suspendInput);
+
+        // Assert - 已完成的医案不可挂起
+        // BusinessException.GetHttpStatusCode() 固定返回 400
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "已完成的医案不可暂停，BusinessException返回400");
+    }
+
+    [Fact]
+    public async Task Suspend_WhenAlreadySuspended_ShouldRemainSuspended()
+    {
+        // Arrange - 创建医案并暂停
+        var (caseId, _) = await CreateMedicalCaseAsync();
+        var firstSuspend = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}/suspend",
+                new ConsultationInputDto { TcmDiagnosis = "第一次暂停" });
+        firstSuspend.IsSuccessStatusCode.Should().BeTrue();
+
+        // Act - 再次调用Suspend
+        var response = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}/suspend",
+                new ConsultationInputDto { TcmDiagnosis = "再次暂停" });
+
+        // Assert - 幂等性: 多次暂停不改变状态
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
+        body!.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Suspended,
+            "多次暂停应保持Suspended状态");
+    }
+
+    // ===== Cancel: 额外状态转换 =====
+
+    [Fact]
+    public async Task CancelMedicalCase_WhenStatusCompleted_ShouldReturn400()
+    {
+        // Arrange - 创建医案并关闭
+        var (caseId, _) = await CreateMedicalCaseAsync();
+        var closeResp = await _fixture.DoctorClient
+            .PutAsync($"{BaseUrl}/{caseId}/close", null);
+        closeResp.IsSuccessStatusCode.Should().BeTrue();
+
+        // Act - 尝试对已完成的医案调用Cancel
+        var cancelReq = new { Reason = "测试取消" };
+        var response = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}/cancel", cancelReq);
+
+        // Assert - 已完成的医案不可取消
+        // BusinessException.GetHttpStatusCode() 固定返回 400
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "已完成的医案不可取消，BusinessException返回400");
+    }
+
+    [Fact]
+    public async Task CancelMedicalCase_WithReason_ShouldSucceed()
+    {
+        // Arrange
+        var (caseId, _) = await CreateMedicalCaseAsync();
+
+        // Act - 带理由取消
+        var cancelReq = new { Reason = "患者临时有事，择日再诊" };
+        var response = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}/cancel", cancelReq);
+
+        // Assert - 取消操作返回204 NoContent(软删除)
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent,
+            "带理由取消应成功(204)");
+    }
+
+    [Fact]
+    public async Task CancelMedicalCase_WhenStatusSuspended_ShouldSucceed()
+    {
+        // Arrange - 创建医案并暂停
+        var (caseId, _) = await CreateMedicalCaseAsync();
+        var suspendResp = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}/suspend",
+                new ConsultationInputDto { TcmDiagnosis = "暂停" });
+        suspendResp.IsSuccessStatusCode.Should().BeTrue();
+
+        // Act - 取消Suspended状态的医案
+        var response = await _fixture.DoctorClient
+            .PutAsync($"{BaseUrl}/{caseId}/cancel", null);
+
+        // Assert - 暂停状态可取消(软删除)
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent,
+            "暂停状态的医案应可取消");
+    }
+
+    [Fact]
+    public async Task CancelMedicalCase_WhenAlreadyCancelled_ShouldReturn404()
+    {
+        // Arrange - 创建并取消医案
+        var (caseId, _) = await CreateMedicalCaseAsync();
+        await _fixture.DoctorClient.PutAsync($"{BaseUrl}/{caseId}/cancel", null);
+
+        // Act - 尝试再次取消
+        var response = await _fixture.DoctorClient
+            .PutAsync($"{BaseUrl}/{caseId}/cancel", null);
+
+        // Assert - 软删除后查不到，返回404
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound,
+            "已软删除的医案再次取消应返回404");
+    }
+
+    // ===== Permissions: 已完成状态 =====
+
+    [Fact]
+    public async Task GetPermissions_WhenCompleted_ShouldReturnRequiresEditReason()
+    {
+        // Arrange - 创建并关闭医案
+        var (caseId, _) = await CreateMedicalCaseAsync();
+        var closeResp = await _fixture.DoctorClient
+            .PutAsync($"{BaseUrl}/{caseId}/close", null);
+        closeResp.IsSuccessStatusCode.Should().BeTrue();
+
+        // Act
+        var response = await _fixture.DoctorClient
+            .GetAsync($"{BaseUrl}/{caseId}/permissions");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<MedicalCasePermissionDto>>(JsonOptions);
+        // 已完成的医案当天创建者仍可编辑 (CanEdit=true)，但需要提供修改原因
+        // PermissionService规则: Completed状态 + 当天 = 可编辑; 跨日后锁定
+        body!.Data!.CanEdit.Should().BeTrue(
+            "已完成的医案当天创建者仍可编辑");
+        body.Data.RequiresEditReason.Should().BeTrue(
+            "已完成的医案需要提供修改原因");
+    }
+
+    // ===== Save (PUT /{id}): 额外验证场景 =====
+
+    [Fact]
+    public async Task Save_WithMismatchedId_ShouldReturn400()
+    {
+        // Arrange - 创建医案
+        var (caseId, original) = await CreateMedicalCaseAsync();
+        var wrongId = Guid.NewGuid();
+
+        var saveInput = new MedicalCaseInputDto
+        {
+            Id = wrongId, // 与URL中的ID不匹配
+            PatientId = original.PatientId,
+            UserId = WebApiFixture.DoctorUserId,
+            Consultation = new ConsultationInputDto
+            {
+                TcmDiagnosis = "测试"
+            }
+        };
+
+        // Act
+        var response = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{caseId}", saveInput);
+
+        // Assert - ID不匹配应返回400
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "body.Id与URL路径ID不匹配应返回400");
+    }
+
+    [Fact]
+    public async Task Save_NonExistingId_ShouldReturn404()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+        var saveInput = new MedicalCaseInputDto
+        {
+            Id = nonExistingId,
+            PatientId = Guid.NewGuid(),
+            UserId = WebApiFixture.DoctorUserId,
+            Consultation = new ConsultationInputDto
+            {
+                TcmDiagnosis = "测试"
+            }
+        };
+
+        // Act
+        var response = await _fixture.DoctorClient
+            .PutAsJsonAsync($"{BaseUrl}/{nonExistingId}", saveInput);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound,
+            "不存在的医案应返回404");
+    }
+
+    #endregion
 }

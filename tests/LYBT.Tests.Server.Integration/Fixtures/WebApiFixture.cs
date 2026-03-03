@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,9 @@ public class WebApiFixture : IAsyncLifetime
     /// <summary>带Doctor权限的HttpClient</summary>
     public HttpClient DoctorClient { get; private set; } = null!;
 
+    /// <summary>带SuperAdmin权限的HttpClient (模拟生产sysadmin用户)</summary>
+    public HttpClient SysAdminClient { get; private set; } = null!;
+
     /// <summary>无认证的HttpClient</summary>
     public HttpClient AnonymousClient { get; private set; } = null!;
 
@@ -39,6 +43,7 @@ public class WebApiFixture : IAsyncLifetime
     // 固定测试用户ID
     public static readonly Guid AdminUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     public static readonly Guid DoctorUserId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+    public static readonly Guid SysAdminUserId = Guid.Parse("00000000-0000-0000-0000-000000000003");
 
     // JWT配置 - 必须与WebAPI/appsettings.Test.json一致
     private const string JwtSecretKey = "VGVzdFNlY3JldEtleV9NaW5MZW5ndGgzMkNoYXJzX0ZvckpXVFRva2VuR2VuX0xZQlRfMTIzNDU2";
@@ -48,6 +53,7 @@ public class WebApiFixture : IAsyncLifetime
     // 测试用密码
     public const string AdminPassword = "TestAdmin2025@";
     public const string DoctorPassword = "TestDoctor2025@";
+    public const string SysAdminPassword = "TestAdmin2025@"; // 与appsettings.Test.json DefaultPasswords:SysAdminPassword一致
 
     // SQL Server测试数据库连接字符串
     private const string TestConnectionString =
@@ -76,6 +82,7 @@ public class WebApiFixture : IAsyncLifetime
         // 创建预配置的HttpClient
         AdminClient = CreateAuthenticatedClient(UserRole.Admin, AdminUserId, "admin");
         DoctorClient = CreateAuthenticatedClient(UserRole.Doctor, DoctorUserId, "doctor");
+        SysAdminClient = CreateAuthenticatedClient(UserRole.SuperAdmin, SysAdminUserId, "sysadmin");
         AnonymousClient = _factory.CreateClient();
     }
 
@@ -83,6 +90,7 @@ public class WebApiFixture : IAsyncLifetime
     {
         AdminClient?.Dispose();
         DoctorClient?.Dispose();
+        SysAdminClient?.Dispose();
         AnonymousClient?.Dispose();
 
         // 清理测试数据库
@@ -123,6 +131,22 @@ public class WebApiFixture : IAsyncLifetime
     {
         var scope = Services.CreateScope();
         return scope.ServiceProvider.GetRequiredService<T>();
+    }
+
+    /// <summary>创建JSON序列化的HttpContent (从IntegrationTestBase吸收)</summary>
+    public static StringContent CreateJsonContent<T>(T obj)
+    {
+        var json = JsonSerializer.Serialize(obj);
+        return new StringContent(json, Encoding.UTF8, "application/json");
+    }
+
+    /// <summary>反序列化HTTP响应内容 (从IntegrationTestBase吸收)</summary>
+    public static T? ParseResponseContent<T>(string content)
+    {
+        return JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
     }
 
     #region Private Setup
@@ -215,6 +239,8 @@ public class WebApiFixture : IAsyncLifetime
     {
         await UpsertUser(db, AdminUserId, "admin", "系统管理员", UserRole.Admin, AdminPassword);
         await UpsertUser(db, DoctorUserId, "doctor", "测试医生", UserRole.Doctor, DoctorPassword);
+        // 模拟生产种子路径: sysadmin (SuperAdmin) - 与DatabaseInitializationService.EnsureSystemAdminExistsAsync()对齐
+        await UpsertUser(db, SysAdminUserId, "sysadmin", "系统管理员", UserRole.SuperAdmin, SysAdminPassword);
         await db.SaveChangesAsync();
     }
 

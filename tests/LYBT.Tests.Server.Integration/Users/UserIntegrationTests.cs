@@ -367,13 +367,14 @@ public class UserIntegrationTests
             .ReadFromJsonAsync<ApiResponse<UserDetailDto>>(JsonOptions);
         var userId = created!.Data!.Id;
 
-        // Act - 管理员重置密码
+        // Act - SuperAdmin重置密码 (reset-password端点需要SuperAdminOnly策略)
         var resetRequest = new { MustChangeOnNextLogin = true };
-        var resetResponse = await _fixture.AdminClient
+        var resetResponse = await _fixture.SysAdminClient
             .PostAsJsonAsync($"/api/v1/users/{userId}/reset-password", resetRequest);
 
         // Assert
-        resetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        resetResponse.StatusCode.Should().Be(HttpStatusCode.OK,
+            "SuperAdmin应有权限重置密码");
 
         var body = await resetResponse.Content
             .ReadFromJsonAsync<ApiResponse<ResetPasswordResponseDto>>(JsonOptions);
@@ -524,12 +525,13 @@ public class UserIntegrationTests
             .GetAsync($"/api/v1/users/{userId}");
         getAfterDelete.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
-        // Act - 恢复用户
-        var restoreResponse = await _fixture.AdminClient
+        // Act - SuperAdmin恢复用户 (restore端点需要SuperAdminOnly策略)
+        var restoreResponse = await _fixture.SysAdminClient
             .PostAsync($"/api/v1/users/{userId}/restore", null);
 
         // Assert
-        restoreResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        restoreResponse.StatusCode.Should().Be(HttpStatusCode.OK,
+            "SuperAdmin应有权限恢复用户");
 
         var body = await restoreResponse.Content
             .ReadFromJsonAsync<ApiResponse<UserDetailDto>>(JsonOptions);
@@ -610,16 +612,21 @@ public class UserIntegrationTests
     public async Task ToggleStatus_DisableLastAdmin_ShouldBeRejected()
     {
         // Arrange - 使用 SuperAdmin 客户端绕过 CanManageUser(Admin,Admin)=false 限制
-        // SuperAdmin JWT 不对应 DB 用户，但 GetCurrentUserRole() 从 JWT Claims 读取
         var superAdminId = Guid.Parse("00000000-0000-0000-0000-000000000099");
         using var superAdminClient = _fixture.CreateClientAs(UserRole.SuperAdmin, superAdminId, "superadmin_test");
 
-        // 种子数据仅有 1 个 Admin 级别用户 (AdminUserId)
+        // 最后管理员保护逻辑查询 u.Role >= UserRole.Admin && u.Status == Enabled
+        // 种子数据包含 Admin + SysAdmin(SuperAdmin)，需要先禁用 SysAdmin 使 Admin 成为最后一个
+        var disableSysAdminResponse = await superAdminClient
+            .PostAsync($"/api/v1/users/{WebApiFixture.SysAdminUserId}/toggle-status", null);
+        disableSysAdminResponse.StatusCode.Should().Be(HttpStatusCode.OK,
+            "禁用SysAdmin以使Admin成为最后一个管理员级别用户");
+
         // Act - SuperAdmin 尝试禁用唯一的管理员
         var response = await superAdminClient
             .PostAsync($"/api/v1/users/{WebApiFixture.AdminUserId}/toggle-status", null);
 
-        // Assert - 最后管理员保护应拒绝此操作 (BusinessFail → 422)
+        // Assert - 最后管理员保护应拒绝此操作 (BusinessFail -> 422)
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
             "禁用最后一个管理员应返回422");
 
@@ -628,6 +635,10 @@ public class UserIntegrationTests
         body!.Success.Should().BeFalse();
         body.Message.Should().Contain("最后一个管理员",
             "错误消息应说明最后管理员保护原因");
+
+        // Cleanup - 恢复 SysAdmin 状态
+        await superAdminClient
+            .PostAsync($"/api/v1/users/{WebApiFixture.SysAdminUserId}/toggle-status", null);
     }
 
     #endregion
@@ -656,8 +667,13 @@ public class UserIntegrationTests
         var superAdminId = Guid.Parse("00000000-0000-0000-0000-000000000099");
         using var superAdminClient = _fixture.CreateClientAs(UserRole.SuperAdmin, superAdminId, "superadmin_test");
 
-        // 种子数据仅有 1 个 Admin 级别 DB 用户 (AdminUserId)
-        // SuperAdmin JWT 不在 DB 中，不计入 activeAdmins 查询结果
+        // 最后管理员保护逻辑查询 u.Role >= UserRole.Admin && u.Status == Enabled
+        // 种子数据包含 Admin + SysAdmin(SuperAdmin)，需要先禁用 SysAdmin 使 Admin 成为最后一个
+        var disableSysAdminResponse = await superAdminClient
+            .PostAsync($"/api/v1/users/{WebApiFixture.SysAdminUserId}/toggle-status", null);
+        disableSysAdminResponse.StatusCode.Should().Be(HttpStatusCode.OK,
+            "禁用SysAdmin以使Admin成为最后一个管理员级别用户");
+
         var batchRequest = new { Ids = new List<Guid> { WebApiFixture.AdminUserId } };
 
         // Act
@@ -675,6 +691,10 @@ public class UserIntegrationTests
         body.Data.FailureCount.Should().Be(1, "最后管理员不应被禁用");
         body.Data.FailedItems.Should().ContainSingle()
             .Which.Reason.Should().Contain("最后一个管理员");
+
+        // Cleanup - 恢复 SysAdmin 状态
+        await superAdminClient
+            .PostAsync($"/api/v1/users/{WebApiFixture.SysAdminUserId}/toggle-status", null);
     }
 
     #endregion
@@ -729,6 +749,157 @@ public class UserIntegrationTests
         body.Data!.Items.Should().OnlyContain(
             u => u.Role == UserRole.Doctor,
             "按Doctor角色筛选不应返回其他角色");
+    }
+
+    #endregion
+
+    #region Migrated from Structure B
+
+    [Fact]
+    public async Task GetUsers_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Act
+        var response = await _fixture.AnonymousClient
+            .GetAsync("/api/v1/users");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task GetUsers_WithInvalidPage_ShouldReturnError()
+    {
+        // Act - page=0 是无效参数
+        var response = await _fixture.AdminClient
+            .GetAsync("/api/v1/users?page=0&pageSize=10");
+
+        // Assert - Controller未验证page参数，page=0导致Repository层计算
+        // 负OFFSET引发异常，全局异常处理器返回500
+        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError,
+            "page=0导致Repository层异常，全局异常处理器返回500");
+    }
+
+    [Fact]
+    public async Task GetUser_WithEmptyId_ShouldReturnBadRequest()
+    {
+        // Act
+        var response = await _fixture.AdminClient
+            .GetAsync($"/api/v1/users/{Guid.Empty}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateUser_WithInvalidEmail_ShouldReturnValidationError()
+    {
+        // Arrange
+        var request = new UserInputDto
+        {
+            UserName = "invalidemail_" + Guid.NewGuid().ToString("N")[..8],
+            RealName = "无效邮箱用户",
+            Email = "invalid-email", // 无效邮箱格式
+            Role = UserRole.Doctor
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsJsonAsync("/api/v1/users", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task UpdateUser_NonExistentId_ShouldReturnBusinessFail()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+        var updateRequest = new UserInputDto
+        {
+            Id = nonExistentId,
+            RealName = "不存在的用户"
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PutAsJsonAsync($"/api/v1/users/{nonExistentId}", updateRequest);
+
+        // Assert - Controller.Update调用Service.UpdateAsync，用户不存在时
+        // Service返回Result.Failure，Controller走BusinessFail(422)路径
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
+            "用户不存在时UpdateAsync返回Failure，Controller返回BusinessFail(422)");
+    }
+
+    [Fact]
+    public async Task UpdateUser_WithMismatchedId_ShouldReturnError()
+    {
+        // Arrange
+        var urlId = Guid.NewGuid();
+        var updateRequest = new UserInputDto
+        {
+            Id = Guid.NewGuid(), // 与URL中的ID不匹配
+            RealName = "ID不匹配的用户"
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PutAsJsonAsync($"/api/v1/users/{urlId}", updateRequest);
+
+        // Assert - Update端点使用URL中的id查找用户，不存在则返回BusinessFail(422)
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
+            "URL中的ID不存在于数据库，UserService.UpdateAsync返回BusinessFail");
+    }
+
+    [Fact]
+    public async Task DeleteUser_NonExistentId_ShouldReturn404()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var response = await _fixture.AdminClient
+            .DeleteAsync($"/api/v1/users/{nonExistentId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ChangePassword_WithPasswordMismatch_ShouldReturnValidationError()
+    {
+        // Arrange - 创建一个用户
+        var username = "testpwdmismatch_" + Guid.NewGuid().ToString("N")[..8];
+        var password = "TestPass2025@";
+        var createRequest = new UserInputDto
+        {
+            UserName = username,
+            RealName = "密码不匹配用户",
+            Password = password,
+            ConfirmPassword = password,
+            Role = UserRole.Doctor
+        };
+        var createResponse = await _fixture.AdminClient
+            .PostAsJsonAsync("/api/v1/users", createRequest);
+        createResponse.IsSuccessStatusCode.Should().BeTrue();
+
+        var created = await createResponse.Content
+            .ReadFromJsonAsync<ApiResponse<UserDetailDto>>(JsonOptions);
+        var userId = created!.Data!.Id;
+
+        // Act - 新密码和确认密码不匹配
+        var changeRequest = new ChangePasswordDto
+        {
+            UserId = userId,
+            OldPassword = password,
+            NewPassword = "NewPassword456!",
+            ConfirmNewPassword = "DifferentPassword" // 不匹配
+        };
+        var response = await _fixture.AdminClient
+            .PutAsJsonAsync($"/api/v1/users/{userId}/change-password", changeRequest);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     #endregion

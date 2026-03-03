@@ -418,4 +418,313 @@ public class FormulaIntegrationTests
     }
 
     #endregion
+
+    #region Category Filter (migrated from Structure B)
+
+    [Fact]
+    public async Task GetFormulas_WithCategory_ShouldFilter()
+    {
+        // Arrange
+        var uniqueCategory = "测试分类_" + Guid.NewGuid().ToString("N")[..4];
+        var input = CreateFormulaInput();
+        input.Category = uniqueCategory;
+        await CreateFormulaAsync(input: input);
+
+        // Act
+        var response = await _fixture.AdminClient
+            .GetAsync($"{BaseUrl}?category={uniqueCategory}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<PagedResult<FormulaListDto>>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Authorization (migrated from Structure B)
+
+    [Fact]
+    public async Task GetById_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var (formulaId, _) = await CreateFormulaAsync();
+        var client = _fixture.CreateClient();
+
+        // Act
+        var response = await client.GetAsync($"{BaseUrl}/{formulaId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Create_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var client = _fixture.CreateClient();
+        var newFormula = new FormulaInputDto
+        {
+            Name = "未认证测试",
+            Herbs = new List<FormulaHerbItemInputDto>
+            {
+                new() { HerbName = "测试药材", Dosage = 10, Unit = "克" }
+            }
+        };
+
+        // Act
+        var response = await client.PostAsJsonAsync(BaseUrl, newFormula);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Update_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var (formulaId, _) = await CreateFormulaAsync();
+        var client = _fixture.CreateClient();
+        var updatedFormula = new FormulaInputDto
+        {
+            Id = formulaId,
+            Name = "未认证更新",
+            Herbs = new List<FormulaHerbItemInputDto>
+            {
+                new() { HerbName = "测试", Dosage = 10, Unit = "克" }
+            }
+        };
+
+        // Act
+        var response = await client.PutAsJsonAsync($"{BaseUrl}/{formulaId}", updatedFormula);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Delete_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var (formulaId, _) = await CreateFormulaAsync();
+        var client = _fixture.CreateClient();
+
+        // Act
+        var response = await client.DeleteAsync($"{BaseUrl}/{formulaId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task BatchOperations_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var (formulaId, _) = await CreateFormulaAsync();
+        var client = _fixture.CreateClient();
+        var batchDto = new BatchDeleteInputDto
+        {
+            Ids = new List<Guid> { formulaId }
+        };
+
+        // Act
+        var response = await client.PostAsJsonAsync($"{BaseUrl}/batch-delete", batchDto);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    #endregion
+
+    #region Validation (migrated from Structure B)
+
+    [Fact]
+    public async Task CreateFormula_WithoutHerbs_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var invalidFormula = new FormulaInputDto
+        {
+            Name = "无药材验方",
+            Effect = "测试",
+            Usage = "测试",
+            Herbs = new List<FormulaHerbItemInputDto>() // 空药材列表
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsJsonAsync(BaseUrl, invalidFormula);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    #endregion
+
+    #region Update/Delete Edge Cases (migrated from Structure B)
+
+    [Fact]
+    public async Task UpdateFormula_WithNonExistingId_ShouldReturnNotFound()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+        var updatedFormula = new FormulaInputDto
+        {
+            Id = nonExistingId,
+            Name = "不存在的验方",
+            Herbs = new List<FormulaHerbItemInputDto>
+            {
+                new() { HerbName = "测试", Dosage = 10, Unit = "克" }
+            }
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PutAsJsonAsync($"{BaseUrl}/{nonExistingId}", updatedFormula);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteFormula_WithNonExistingId_ShouldReturnNotFound()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+
+        // Act
+        var response = await _fixture.AdminClient
+            .DeleteAsync($"{BaseUrl}/{nonExistingId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ToggleStatus_WithNonExistingId_ShouldReturnNotFound()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsync($"{BaseUrl}/{nonExistingId}/toggle-status", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task RestoreFormula_WithNonExistingId_ShouldReturn422()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsync($"{BaseUrl}/{nonExistingId}/restore", null);
+
+        // Assert - Restore 对不存在的ID返回 422 (BusinessFail)
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    #endregion
+
+    #region Batch Enable/Disable (migrated from Structure B)
+
+    [Fact]
+    public async Task BatchEnable_WithValidIds_ShouldEnableMultiple()
+    {
+        // Arrange
+        var (formulaId, _) = await CreateFormulaAsync();
+        var batchDto = new BatchDeleteInputDto
+        {
+            Ids = new List<Guid> { formulaId }
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsJsonAsync($"{BaseUrl}/batch-enable", batchDto);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<BatchOperationResultDto>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task BatchDisable_WithValidIds_ShouldDisableMultiple()
+    {
+        // Arrange
+        var (formulaId, _) = await CreateFormulaAsync();
+        var batchDto = new BatchDeleteInputDto
+        {
+            Ids = new List<Guid> { formulaId }
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsJsonAsync($"{BaseUrl}/batch-disable", batchDto);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<BatchOperationResultDto>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Export (migrated from Structure B)
+
+    [Fact]
+    public async Task Export_ShouldReturnExcelFile()
+    {
+        // Act
+        var response = await _fixture.AdminClient
+            .GetAsync($"{BaseUrl}/export");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should()
+            .Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+
+    [Fact]
+    public async Task ExportTemplate_ShouldReturnTemplateFile()
+    {
+        // Act - import-template 需要认证
+        var response = await _fixture.AdminClient.GetAsync($"{BaseUrl}/import-template");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should()
+            .Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+
+    #endregion
+
+    #region Validation Flow (migrated from Structure B)
+
+    [Fact]
+    public async Task GetPendingValidation_ShouldReturnDraftFormulas()
+    {
+        // Act
+        var response = await _fixture.AdminClient
+            .GetAsync($"{BaseUrl}/pending-validation");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<List<FormulaDetailDto>>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+    }
+
+    #endregion
 }

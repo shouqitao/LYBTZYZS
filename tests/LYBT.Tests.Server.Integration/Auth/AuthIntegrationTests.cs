@@ -82,6 +82,38 @@ public class AuthIntegrationTests
         body.Data!.Token.Should().NotBeNullOrWhiteSpace();
     }
 
+    /// <summary>
+    /// 验证生产种子路径: sysadmin (SuperAdmin) 可正常登录。
+    /// 与DatabaseInitializationService.EnsureSystemAdminExistsAsync()对齐，
+    /// 确保测试覆盖生产初始化路径。
+    /// </summary>
+    [Fact]
+    public async Task Login_SysAdminCredentials_ReturnsTokenWithSuperAdminRole()
+    {
+        // Arrange
+        var request = new LoginRequest
+        {
+            UserName = "sysadmin",
+            Password = WebApiFixture.SysAdminPassword
+        };
+
+        // Act
+        var response = await _fixture.AnonymousClient
+            .PostAsJsonAsync("/api/v1/auth/login", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<LoginResponse>>(JsonOptions);
+        body.Should().NotBeNull();
+        body!.Success.Should().BeTrue();
+        body.Data.Should().NotBeNull();
+        body.Data!.Token.Should().NotBeNullOrWhiteSpace("sysadmin登录应返回JWT Token");
+        body.Data.User.Should().NotBeNull("登录应返回用户信息");
+        body.Data.User!.Role.Should().Be(UserRole.SuperAdmin, "sysadmin应具有SuperAdmin角色");
+    }
+
     #endregion
 
     #region Login - 失败场景
@@ -156,6 +188,104 @@ public class AuthIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    #endregion
+
+    #region Login - 边界场景 (Phase 1 测试置信度重建)
+
+    /// <summary>
+    /// 验证禁用用户登录返回 403 (UserDisabled)。
+    /// 覆盖 AuthService.VerifyCredentialsInternalAsync 的 Status == Disabled 分支。
+    /// </summary>
+    [Fact]
+    public async Task Login_DisabledUser_Returns403()
+    {
+        // Arrange: 种子一个被禁用的用户
+        var disabledUserId = Guid.Parse("00000000-0000-0000-0000-000000000010");
+        const string disabledUsername = "disabled_user_test";
+        const string disabledPassword = "TestDisabled2025@";
+
+        await _fixture.SeedAsync(async db =>
+        {
+            var existing = await db.Set<LYBT.Entities.Users.User>().FindAsync(disabledUserId);
+            if (existing == null)
+            {
+                db.Set<LYBT.Entities.Users.User>().Add(new LYBT.Entities.Users.User
+                {
+                    Id = disabledUserId,
+                    UserName = disabledUsername,
+                    RealName = "禁用测试用户",
+                    Role = UserRole.Doctor,
+                    Status = CommonStatus.Disabled,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(disabledPassword),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+                await db.SaveChangesAsync();
+            }
+        });
+
+        var request = new LoginRequest
+        {
+            UserName = disabledUsername,
+            Password = disabledPassword
+        };
+
+        // Act
+        var response = await _fixture.AnonymousClient
+            .PostAsJsonAsync("/api/v1/auth/login", request);
+
+        // Assert - AuthService 对禁用用户返回 UserDisabled -> Controller 映射为 403
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "禁用用户登录应返回 403 Forbidden");
+    }
+
+    /// <summary>
+    /// 验证密码Hash为空字符串的用户登录返回401而非500。
+    /// 覆盖 PasswordHelper.VerifyPassword 对空字符串 hash 的防御处理。
+    /// 注: 数据库 PasswordHash 列有 NOT NULL 约束，null 场景由 DB 层防御。
+    /// </summary>
+    [Fact]
+    public async Task Login_UserWithEmptyPasswordHash_Returns401()
+    {
+        // Arrange: 种子一个密码Hash为空字符串的用户
+        var emptyHashUserId = Guid.Parse("00000000-0000-0000-0000-000000000011");
+        const string emptyHashUsername = "emptyhash_user_test";
+
+        await _fixture.SeedAsync(async db =>
+        {
+            var existing = await db.Set<LYBT.Entities.Users.User>().FindAsync(emptyHashUserId);
+            if (existing == null)
+            {
+                db.Set<LYBT.Entities.Users.User>().Add(new LYBT.Entities.Users.User
+                {
+                    Id = emptyHashUserId,
+                    UserName = emptyHashUsername,
+                    RealName = "空Hash测试用户",
+                    Role = UserRole.Doctor,
+                    Status = CommonStatus.Enabled,
+                    PasswordHash = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+                await db.SaveChangesAsync();
+            }
+        });
+
+        var request = new LoginRequest
+        {
+            UserName = emptyHashUsername,
+            Password = "any_password_123"
+        };
+
+        // Act
+        var response = await _fixture.AnonymousClient
+            .PostAsJsonAsync("/api/v1/auth/login", request);
+
+        // Assert - PasswordHelper.VerifyPassword 对空字符串返回失败
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized,
+            "密码Hash为空时应返回401 (PasswordHelper 检测到 IsNullOrEmpty 直接返回失败)");
     }
 
     #endregion

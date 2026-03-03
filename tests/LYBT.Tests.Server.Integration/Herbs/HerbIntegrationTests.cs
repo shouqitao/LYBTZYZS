@@ -437,4 +437,338 @@ public class HerbIntegrationTests
     }
 
     #endregion
+
+    #region Authorization (migrated from Structure B)
+
+    [Fact]
+    public async Task GetById_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var (herbId, _) = await CreateHerbAsync();
+        var client = _fixture.CreateClient();
+
+        // Act
+        var response = await client.GetAsync($"{BaseUrl}/{herbId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Create_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var client = _fixture.CreateClient();
+        var newHerb = new HerbInputDto
+        {
+            Name = "未认证测试药材",
+            Unit = "克",
+            Price = 1.0m
+        };
+
+        // Act
+        var response = await client.PostAsJsonAsync(BaseUrl, newHerb);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Update_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var (herbId, _) = await CreateHerbAsync();
+        var client = _fixture.CreateClient();
+        var updatedHerb = new HerbInputDto
+        {
+            Id = herbId,
+            Name = "未认证更新",
+            Unit = "克",
+            Price = 1.0m
+        };
+
+        // Act
+        var response = await client.PutAsJsonAsync($"{BaseUrl}/{herbId}", updatedHerb);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Delete_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var (herbId, _) = await CreateHerbAsync();
+        var client = _fixture.CreateClient();
+
+        // Act
+        var response = await client.DeleteAsync($"{BaseUrl}/{herbId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task BatchOperations_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var (herbId, _) = await CreateHerbAsync();
+        var client = _fixture.CreateClient();
+        var batchDto = new BatchDeleteInputDto
+        {
+            Ids = new List<Guid> { herbId }
+        };
+
+        // Act
+        var response = await client.PostAsJsonAsync($"{BaseUrl}/batch-delete", batchDto);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    #endregion
+
+    #region Validation (migrated from Structure B)
+
+    [Fact]
+    public async Task CreateHerb_WithoutName_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var invalidHerb = new HerbInputDto
+        {
+            Name = "", // 空名称
+            Unit = "克",
+            Price = 1.0m
+        };
+
+        // Act
+        var response = await _fixture.AdminClient.PostAsJsonAsync(BaseUrl, invalidHerb);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    #endregion
+
+    #region Update/Delete Edge Cases (migrated from Structure B)
+
+    [Fact]
+    public async Task UpdateHerb_WithNonExistingId_ShouldReturnNotFound()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+        var updatedHerb = new HerbInputDto
+        {
+            Id = nonExistingId,
+            Name = "不存在的药材",
+            Unit = "克",
+            Price = 1.0m
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PutAsJsonAsync($"{BaseUrl}/{nonExistingId}", updatedHerb);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteHerb_WithNonExistingId_ShouldReturnNotFound()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+
+        // Act
+        var response = await _fixture.AdminClient
+            .DeleteAsync($"{BaseUrl}/{nonExistingId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ToggleStatus_WithNonExistingId_ShouldReturnNotFound()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsync($"{BaseUrl}/{nonExistingId}/toggle-status", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task RestoreHerb_WithNonExistingId_ShouldReturn422()
+    {
+        // Arrange
+        var nonExistingId = Guid.NewGuid();
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsync($"{BaseUrl}/{nonExistingId}/restore", null);
+
+        // Assert - Restore 对不存在的ID返回 422 (BusinessFail)
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    #endregion
+
+    #region Batch Enable/Disable (migrated from Structure B)
+
+    [Fact]
+    public async Task BatchEnable_WithValidIds_ShouldEnableMultiple()
+    {
+        // Arrange
+        var (herbId, _) = await CreateHerbAsync();
+        var batchDto = new BatchDeleteInputDto
+        {
+            Ids = new List<Guid> { herbId }
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsJsonAsync($"{BaseUrl}/batch-enable", batchDto);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<BatchOperationResultDto>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task BatchDisable_WithValidIds_ShouldDisableMultiple()
+    {
+        // Arrange
+        var (herbId, _) = await CreateHerbAsync();
+        var batchDto = new BatchDeleteInputDto
+        {
+            Ids = new List<Guid> { herbId }
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsJsonAsync($"{BaseUrl}/batch-disable", batchDto);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<BatchOperationResultDto>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Export (migrated from Structure B)
+
+    [Fact]
+    public async Task Export_ShouldReturnExcelFile()
+    {
+        // Act
+        var response = await _fixture.AdminClient.GetAsync($"{BaseUrl}/export");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should()
+            .Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+
+    [Fact]
+    public async Task ExportTemplate_ShouldReturnTemplateFile()
+    {
+        // Act - import-template 需要认证
+        var response = await _fixture.AdminClient.GetAsync($"{BaseUrl}/import-template");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should()
+            .Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+
+    [Fact]
+    public async Task GetAllForExport_ShouldReturnAllHerbs()
+    {
+        // Act
+        var response = await _fixture.AdminClient
+            .GetAsync($"{BaseUrl}/export-all");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<List<HerbDetailDto>>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region Reference Check (migrated from Structure B)
+
+    [Fact]
+    public async Task CheckReference_WithExistingId_ShouldReturnReferenceStatus()
+    {
+        // Arrange
+        var (herbId, _) = await CreateHerbAsync();
+
+        // Act
+        var response = await _fixture.AdminClient
+            .GetAsync($"{BaseUrl}/{herbId}/check-reference");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<HerbReferenceCheckDto>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task BatchCheckReference_WithValidIds_ShouldReturnResults()
+    {
+        // Arrange
+        var (herbId1, _) = await CreateHerbAsync();
+        var (herbId2, _) = await CreateHerbAsync();
+        var request = new HerbBatchCheckReferenceInputDto
+        {
+            HerbIds = new List<Guid> { herbId1, herbId2 }
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsJsonAsync($"{BaseUrl}/batch-check-reference", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content
+            .ReadFromJsonAsync<ApiResponse<List<HerbReferenceCheckDto>>>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task BatchCheckReference_WithEmptyIds_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var request = new HerbBatchCheckReferenceInputDto
+        {
+            HerbIds = new List<Guid>()
+        };
+
+        // Act
+        var response = await _fixture.AdminClient
+            .PostAsJsonAsync($"{BaseUrl}/batch-check-reference", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    #endregion
 }
