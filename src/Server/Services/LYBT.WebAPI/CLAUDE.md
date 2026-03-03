@@ -373,32 +373,20 @@ GET    /api/v1/health/ping             [AllowAnonymous] Ping探活
 GET    /api/v1/health/details          [Authorize] 详细健康检查(含数据库)
 ```
 
-### Authorization/ (5 文件) -- 资源级授权体系
+### Authorization/ [DELETED]
 
-| 文件 | 类 | 用途 |
-|------|-----|------|
-| MedicalCaseOperations.cs | `MedicalCaseOperations` (static) | 定义医案操作常量: Create/Read/Edit/Delete (OperationAuthorizationRequirement) |
-| FormulaOperations.cs | `FormulaOperations` (static) | 定义验方操作常量: Read/Update/Delete |
-| MedicalCaseAuthorizationHandler.cs | `MedicalCaseAuthorizationHandler` | 医案资源授权处理器, 继承 AuthorizationHandler<OperationAuthorizationRequirement, MedicalCase>, 委托 IMedicalCasePermissionService |
-| FormulaAuthorizationHandler.cs | `FormulaAuthorizationHandler` | 验方资源授权处理器, 继承 AuthorizationHandler<OperationAuthorizationRequirement, Formula>, 内置授权逻辑 |
-| ClaimsPrincipalExtensions.cs | `ClaimsPrincipalExtensions` (static) | ClaimsPrincipal扩展: ExtractUserInfo()从JWT提取UserId+UserRole, 处理SysAdmin遗留命名 |
+资源级授权 Handler 基础设施已删除 (2026-03-01)。原 5 个文件 (MedicalCaseOperations/FormulaOperations/MedicalCaseAuthorizationHandler/FormulaAuthorizationHandler/ClaimsPrincipalExtensions) 已移除。
 
-#### 授权体系设计分析
+实际权限控制由 Service 层 `EnsureCanEdit`/`EnsureCanDelete` 方法实现。
 
-资源级授权分为两层:
+#### 当前授权体系
 
-1. **策略级授权 (Policy-based)** -- 在 AuthenticationServiceCollectionExtensions 中注册:
-   - `AdminOnly`: SuperAdmin + Admin
-   - `DoctorOrAdmin`: SuperAdmin + Admin + Doctor
-   - `PatientAccess`: SuperAdmin + Admin + Doctor + Receptionist
-   - `RequireAuthenticated`: 任意已认证用户
-   - FallbackPolicy: 默认要求认证
-
-2. **资源级授权 (Resource-based)** -- 通过 IAuthorizationHandler 实现:
-   - `MedicalCaseAuthorizationHandler`: 注册为Scoped (依赖Scoped的IMedicalCasePermissionService), 委托Service层判断权限
-   - `FormulaAuthorizationHandler`: 注册为Scoped, 内置授权逻辑 (Admin可操作所有, Doctor仅操作自己的)
-
-**设计合理性评估**: 授权Handler已注册到DI并生效, 但Controller中并未显式调用 `IAuthorizationService.AuthorizeAsync()` 进行资源级授权检查。实际的权限控制由Service层的 `EnsureCanEdit`/`EnsureCanDelete` 方法实现, Handler更多作为ASP.NET Core授权基础设施的预留扩展点。MedicalCaseOperations 和 FormulaOperations 定义的操作常量仅在各自的Handler内部使用, 无外部调用。
+策略级授权 (Policy-based) -- 在 AuthenticationServiceCollectionExtensions 中注册:
+- `AdminOnly`: SuperAdmin + Admin
+- `DoctorOrAdmin`: SuperAdmin + Admin + Doctor
+- `PatientAccess`: SuperAdmin + Admin + Doctor + Receptionist
+- `RequireAuthenticated`: 任意已认证用户
+- FallbackPolicy: 默认要求认证
 
 ### Middleware/ (3 文件)
 
@@ -466,18 +454,8 @@ GET    /api/v1/health/details          [Authorize] 详细健康检查(含数据�
 
 | 类型 | 状态 | 说明 |
 |------|------|------|
-| `AuthorizationExtensions` | [已清理] 2026-03-01 | 文件及 Extensions/ServiceCollection/ 目录已删除。`AddRoleBasedAuthorization`/`AddAuthorizationPolicy` 无任何调用，实际授权策略在 AuthenticationServiceCollectionExtensions 中直接注册 |
-| `MedicalCaseOperations` | [SUSPECT] | 操作常量仅在 MedicalCaseAuthorizationHandler 内部引用, 但Controller未调用 `IAuthorizationService.AuthorizeAsync()`, Handler注册但从未被触发 |
-| `FormulaOperations` | [SUSPECT] | 同上, 操作常量仅在 FormulaAuthorizationHandler 内部引用, 未被外部触发 |
-
-## 授权体系设计观察
-
-当前授权实现存在**双轨并行**的现象:
-
-1. **ASP.NET Core资源级授权** (Authorization/): Handler已注册, Operations已定义, 但Controller从未调用 `IAuthorizationService.AuthorizeAsync()` 进行资源级授权检查
-2. **Service层权限检查**: 实际权限控制由 `IMedicalCasePermissionService.CanEdit/CanDelete` 和 `BaseApiController.GetEntityWithOwnershipCheckAsync` 在Service/Controller层完成
-
-建议: 要么移除未使用的资源级授权基础设施 (MedicalCaseOperations/FormulaOperations + Handler), 要么在Controller中集成 `IAuthorizationService.AuthorizeAsync()` 调用以激活Handler, 消除双轨设计的维护负担。
+| `AuthorizationExtensions` | [已清理] 2026-03-01 | 文件及 Extensions/ServiceCollection/ 目录已删除 |
+| `Authorization/` (5 文件) | [已清理] 2026-03-01 | MedicalCaseOperations/FormulaOperations/Handler/ClaimsPrincipalExtensions 全部删除，实际授权由 Service 层实现 |
 
 ## 环境配置
 
