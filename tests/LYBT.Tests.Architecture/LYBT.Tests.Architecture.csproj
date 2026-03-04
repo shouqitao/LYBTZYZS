@@ -46,4 +46,9 @@
     <ProjectReference Include="..\..\src\Client\Desktop\Roles\LYBT.Desktop.Admin\LYBT.Desktop.Admin.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Roles\LYBT.Desktop.Clinical\LYBT.Desktop.Clinical.csproj" />
   </ItemGroup>
+
+  <!-- Test Project References (for AntiMock architecture rules) -->
+  <ItemGroup Label="Test Project References">
+    <ProjectReference Include="..\LYBT.Tests.Server\LYBT.Tests.Server.csproj" />
+  </ItemGroup>
 </Project>

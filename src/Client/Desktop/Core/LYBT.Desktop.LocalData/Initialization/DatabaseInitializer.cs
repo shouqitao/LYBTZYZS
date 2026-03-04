@@ -47,14 +47,14 @@ public class DatabaseInitializer
             if (created)
             {
                 _logger.LogInformation("[LocalData] 数据库已创建: {Path}", DatabasePath);
-
-                // 初始化种子数据
-                await SeedData.SeedAsync(_context, _logger, ct);
             }
             else
             {
                 _logger.LogDebug("[LocalData] 数据库已存在: {Path}", DatabasePath);
             }
+
+            // 始终执行种子数据 - SeedData 内部已处理幂等性
+            await SeedData.SeedAsync(_context, _logger, ct);
         }
         catch (Exception ex)
         {

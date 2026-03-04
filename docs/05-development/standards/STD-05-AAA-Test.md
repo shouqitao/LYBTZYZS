@@ -52,15 +52,13 @@ public async Task SaveAsync_WithValidInput_ReturnsMedicalCase()
 4. **Mock 边界**: 仅 Mock 直接依赖 (一层)，禁止 Mock 被测类的内部方法
 5. **测试数据**: 使用有意义的测试数据，避免 "test1"/"abc" 等无语义值
 
-### 测试项目分布
+### 测试项目分布 (Testing Trophy 架构)
 
 | 项目 | 数量 | 说明 |
 |------|------|------|
-| LYBT.Tests.Unit | ~592 | Server 端单元测试 |
-| LYBT.Tests.Desktop.Unit | ~633 | Desktop 端单元测试 |
-| LYBT.Tests.Architecture | ~60 | 架构规则测试 |
-| LYBT.Tests.Server.Integration | ~146 | Server 集成测试 |
-| LYBT.Tests.Desktop.Integration | ~24 | Desktop 集成测试 |
+| LYBT.Tests.Server | ~1185 | Server 全量测试 (真实 SQL Server + Respawn, 零 mock) |
+| LYBT.Tests.Desktop | ~715 | Desktop 全量测试 (SQLite + 真实 Repository, 最小 WPF mock) |
+| LYBT.Tests.Architecture | ~76 | 架构防护 + AntiMockRules |
 
 ## 参考
 
@@ -70,3 +68,4 @@ public async Task SaveAsync_WithValidInput_ReturnsMedicalCase()
 ---
 
 创建日期: 2026-02-26
+更新日期: 2026-03-04 (Testing Trophy 重构: 项目计数更新)

@@ -47,11 +47,9 @@ LYBTZYZS/
       Services/LYBT.WebAPI/     # ASP.NET Core WebAPI
     Shared/                     # 共享模型和工具
   tests/
-    LYBT.Tests.Unit/            # Server 单元测试 (net8.0)
-    LYBT.Tests.Desktop.Unit/    # Desktop 单元测试 (net8.0-windows)
-    LYBT.Tests.Server.Integration/  # Server 集成测试 (net8.0)
-    LYBT.Tests.Desktop.Integration/ # Desktop 集成测试 (net8.0)
-    LYBT.Tests.Architecture/    # 架构约束测试 (net8.0)
+    LYBT.Tests.Server/          # Server 全量测试 (net8.0, Testing Trophy, 零 mock)
+    LYBT.Tests.Desktop/         # Desktop 全量测试 (net8.0-windows, 最小 WPF mock)
+    LYBT.Tests.Architecture/    # 架构防护测试 (net8.0, 含 AntiMockRules)
   docs/                         # 项目文档
 ```
 
@@ -71,11 +69,9 @@ LYBTZYZS/
 dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 # 分项目运行
-dotnet test tests/LYBT.Tests.Unit/
-dotnet test tests/LYBT.Tests.Desktop.Unit/
+dotnet test tests/LYBT.Tests.Server/
+dotnet test tests/LYBT.Tests.Desktop/
 dotnet test tests/LYBT.Tests.Architecture/
-dotnet test tests/LYBT.Tests.Server.Integration/
-dotnet test tests/LYBT.Tests.Desktop.Integration/
 ```
 
 ## 文档导航
@@ -100,8 +96,8 @@ A: 可以。Desktop 客户端支持本地模式 (SQLite)，无需 SQL Server。S
 
 **Q: `dotnet test` 部分项目失败**
 A: 常见原因:
-1. Desktop 测试项目 (`LYBT.Tests.Desktop.Unit/Integration`) 需要 `net8.0-windows`，Linux/macOS 无法运行
-2. Server 集成测试需要干净的测试数据库环境
+1. Desktop 测试项目 (`LYBT.Tests.Desktop`) 需要 `net8.0-windows`，Linux/macOS 无法运行
+2. Server 测试需要本地 SQL Server 实例 (Respawn 数据重置)
 3. 使用 `--filter` 参数分项目运行可定位问题
 
 **Q: 远程模式和本地模式如何切换？**
@@ -115,3 +111,4 @@ A: Desktop 客户端设置页面手动切换。开发时建议先用本地模式
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-22 | v1.1 | 新增常见问题 (FAQ) 章节 |
+| 2026-03-04 | v1.2 | Testing Trophy 重构: 测试项目 5->3, 更新命令 |

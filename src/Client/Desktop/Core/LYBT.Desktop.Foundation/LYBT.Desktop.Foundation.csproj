@@ -22,8 +22,7 @@
 
   <!-- Test Access -->
   <ItemGroup Label="Internal Visibility">
-    <InternalsVisibleTo Include="LYBT.Desktop.Foundation.Tests" />
-    <InternalsVisibleTo Include="LYBT.Tests.Desktop.Unit" />
+    <InternalsVisibleTo Include="LYBT.Tests.Desktop" />
   </ItemGroup>
 
   <!-- HTTP and Resilience -->

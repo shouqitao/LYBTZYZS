@@ -364,11 +364,12 @@ public class ServerArchTests
                 .GetResult();
 
             // 过滤允许的共享组件依赖和同模块内部Service间依赖
+            // DIV-A04: 白名单收窄 -- 使用 StartsWith 替代 Contains 避免误匹配
             var filteredFailingTypes = result.FailingTypes?.Where(t =>
-                !t.FullName?.Contains(".Services.AuthService") == true && // 允许AuthService作为共享组件
-                !t.FullName?.Contains(".Infrastructure.") == true && // 允许Infrastructure层依赖
-                !t.FullName?.Contains(".Services.MedicalCase") == true && // 允许MedicalCase模块内部Service间协作
-                !t.FullName?.Contains(".Module.Sync.") == true) // 允许Sync模块引用其他模块Entity（数据同步需要）
+                !t.FullName?.Contains(".Services.AuthService") == true && // Auth 认证服务被多模块共享使用
+                !t.FullName?.StartsWith("LYBT.Infrastructure.") == true && // 共享 Infrastructure 层 (非模块内部 namespace)
+                !t.FullName?.Contains(".Services.MedicalCase") == true && // MedicalCase 模块内部 Service 间协作
+                !t.FullName?.StartsWith("LYBT.Module.Sync.") == true) // Sync 模块需访问所有模块 Entity (数据同步)
                 .ToList() ?? [];
 
             Assert.True(filteredFailingTypes.Count == 0,

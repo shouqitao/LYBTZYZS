@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>LYBT.Tests.Server</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Test Framework -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <!-- Integration Test Infrastructure -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <!-- Database Reset -->
+    <PackageReference Include="Respawn" />
+    <!-- Authentication -->
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+    <PackageReference Include="BCrypt.Net-Next" />
+    <!-- Validation and Data -->
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Bogus" />
+    <!-- Configuration -->
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Server Core -->
+    <ProjectReference Include="..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
+    <ProjectReference Include="..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
+    <!-- Shared -->
+    <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
+    <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Logging\LYBT.Shared.Logging.csproj" />
+    <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
+    <ProjectReference Include="..\..\src\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
+    <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Primitives\LYBT.Shared.Primitives.csproj" />
+    <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
+    <!-- Server Modules -->
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.Test.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

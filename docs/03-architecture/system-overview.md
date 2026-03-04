@@ -99,20 +99,10 @@ src/
     LYBT.Shared.Primitives/          # 基础类型和常量
     LYBT.Shared.ExceptionHandling/   # 统一异常类型定义
 
-tests/                               # 测试 (5个主项目 + 4个辅助项目)
-    LYBT.Tests.Unit/                 # Server 端单元测试 (592 tests)
-    LYBT.Tests.Desktop.Unit/         # Desktop 端单元测试 (633 tests)
-    LYBT.Tests.Architecture/         # 架构守护测试 (60 tests)
-    LYBT.Tests.Server.Integration/   # Server 集成测试 (146 tests)
-    LYBT.Tests.Desktop.Integration/  # Desktop 集成测试 (24 tests)
-    BenchmarkTests/
-      LYBT.QueryLayer.Benchmarks/    # 查询层性能基准 (BenchmarkDotNet)
-    PerformanceTests/
-      LYBT.Server.PerformanceTests/  # Server 性能测试 (批量操作等)
-    CompatibilityTests/
-      LYBT.Server.CompatibilityTests/ # 向后兼容性验证
-    TestConfiguration/
-      LYBT.Tests.Configuration/      # 共享测试基础设施 (TestDbContext, Fixtures)
+tests/                               # 测试 (3 个项目, Testing Trophy 架构)
+    LYBT.Tests.Server/               # Server 全量测试 (1185 tests, 真实 SQL Server + Respawn, 零 mock)
+    LYBT.Tests.Desktop/              # Desktop 全量测试 (715 tests, SQLite + 真实 Repository)
+    LYBT.Tests.Architecture/         # 架构防护测试 (76 tests, 含 AntiMockRules)
 docs/                                # 文档
 openspec/                            # OpenSpec 规范 (将废弃)
 ```
@@ -219,3 +209,4 @@ sequenceDiagram
 | 2026-02-10 | v1.0 | 初始版本，从 project-architecture spec 整合 |
 | 2026-02-26 | v1.1 | Sprint3-Batch5a DOC3: 标注 Consultation/Prescriptions 空壳模块; 项目数更新为 40+; 新增 Desktop.LocalData/CardReader; 新增 Shared 工具项目 (Logging/Validators/Configuration/Primitives/ExceptionHandling) |
 | 2026-02-26 | v1.2 | DOC3-15: 工具层 4 个辅助项目文档化 (Benchmarks/PerformanceTests/CompatibilityTests/TestConfiguration); tests/ 主项目列表展开 |
+| 2026-03-04 | v1.3 | Testing Trophy 重构: 5+4 项目 -> 3 项目; 辅助测试项目已删除 |

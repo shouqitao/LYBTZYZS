@@ -10,24 +10,29 @@
 
 ## 决策
 
-采用集成优先的测试金字塔:
+采用 Testing Trophy 架构 (2026-03-04 升级):
 
-| 层级 | 项目 | 覆盖范围 | 优先级 |
-|------|------|----------|--------|
-| Server 集成 | LYBT.Tests.Server.Integration | Controller -> Service -> Repository -> InMemoryDb | 最高 |
-| Desktop 集成 | LYBT.Tests.Desktop.Integration | ViewModel -> Repository -> MockApi | 高 |
-| 单元测试 | LYBT.Tests.Unit | 实体验证、纯逻辑 | 中 |
-| Desktop 单元 | LYBT.Tests.Desktop.Unit | ViewModel 逻辑 | 中 |
-| 架构测试 | LYBT.Tests.Architecture | 依赖方向、命名规范 | 低频 |
+| 层级 | 项目 | 覆盖范围 | Tests |
+|------|------|----------|-------|
+| Server 全量 | LYBT.Tests.Server | 真实 HTTP + SQL Server + Respawn (零 mock) | 1185 |
+| Desktop 全量 | LYBT.Tests.Desktop | SQLite InMemory + 真实 Repository (最小 WPF mock) | 715 |
+| 架构防护 | LYBT.Tests.Architecture | 层依赖 + AntiMockRules | 76 |
 
 ### 关键原则
-- 集成测试使用 EF Core InMemory 或 SQLite，不 mock Repository
+- Server 测试零 mock: 真实 SQL Server + Respawn 每测试重置 + 真实 JWT 登录
+- Desktop 测试最小 mock: 仅限 WPF Runtime 边界接口 (IRegionManager 等)
+- AntiMockRuleTests 架构测试强制 Server 项目不引用 NSubstitute
 - 测试命名: `方法名_场景_期望结果`
 - AAA 模式: Arrange-Act-Assert
 - WPF Desktop 测试需要 net8.0-windows 目标框架，不与 Server 混合
+
+### 演进历史
+- 2026-02-08: 初始 "集成优先" 策略 (5 项目, EF InMemory + Mock)
+- 2026-03-04: 升级为 Testing Trophy (3 项目, 真实 DB + Respawn, 零 Mock)
 
 ## 变更记录
 
 | 日期 | 变更 |
 |------|------|
 | 2026-02-08 | 初始决策，5 个测试项目结构 |
+| 2026-03-04 | 升级为 Testing Trophy: 5->3 项目, Server 零 mock, Respawn 隔离 |

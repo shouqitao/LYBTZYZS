@@ -46,7 +46,11 @@ namespace LYBT.WebAPI.Controllers
             UserRole? role = null,
             CommonStatus? status = null)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            if (page < 1)
+                return ValidationFail("页码必须大于0");
+            if (pageSize < 1 || pageSize > 100)
+                return ValidationFail("每页数量必须在1-100之间");
+
             var result = await _userService.GetPagedAsync(page, pageSize, keyword, role, status);
             return SuccessPaged(result.Data!, "查询成功");
         }

@@ -11,12 +11,10 @@
 # 编译
 dotnet build LYBT.All.sln
 
-# 测试 (5个测试项目, ~1455 tests)
-dotnet test tests/LYBT.Tests.Unit/             # 592 tests
-dotnet test tests/LYBT.Tests.Desktop.Unit/     # 633 tests
-dotnet test tests/LYBT.Tests.Architecture/     # 60 tests
-dotnet test tests/LYBT.Tests.Server.Integration/ # 146 tests
-dotnet test tests/LYBT.Tests.Desktop.Integration/ # 24 tests
+# 测试 (3个测试项目, Testing Trophy 架构, ~2021 tests)
+dotnet test tests/LYBT.Tests.Server/           # 1185 tests (真实 SQL Server + Respawn, 零 mock)
+dotnet test tests/LYBT.Tests.Desktop/          # 760 tests (SQLite InMemory + 真实 Repository)
+dotnet test tests/LYBT.Tests.Architecture/     # 76 tests (架构防护 + AntiMockRules)
 
 # 全量测试
 dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
@@ -129,5 +127,5 @@ docs/
 
 ---
 
-最后更新: 2026-03-01
-文档版本: v6.3-phase-gate
+最后更新: 2026-03-04
+文档版本: v6.4-testing-trophy

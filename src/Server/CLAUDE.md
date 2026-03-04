@@ -51,9 +51,8 @@ dotnet ef database update \
 dotnet run --project src/Server/Services/LYBT.WebAPI
 # Swagger: https://localhost:7001/swagger
 
-# 测试
-dotnet test tests/LYBT.Tests.Unit/
-dotnet test tests/LYBT.Tests.Server.Integration/
+# 测试 (Testing Trophy: 真实 SQL Server + Respawn, 零 mock)
+dotnet test tests/LYBT.Tests.Server/
 ```
 
 ## 默认管理员

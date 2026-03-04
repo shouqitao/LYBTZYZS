@@ -12,37 +12,35 @@
 
 ---
 
-## 测试项目结构 (5 个项目)
+## 测试项目结构 (3 个项目, Testing Trophy 架构)
 
 ```
 tests/
-  LYBT.Tests.Unit/                    # Server/Shared 纯逻辑单元测试 (net8.0)
-    Entities/                         # 实体模型验证
-    Utilities/                        # 工具类/配置/安全
-    Infrastructure/                   # BaseService/序列化
+  LYBT.Tests.Server/                  # Server 端全量测试 (net8.0, 1185 tests)
+    Infrastructure/                   # ServerFixture, IntegrationTestBase, Respawn
+    Integration/                      # 真实 HTTP + SQL Server 集成测试
+      Auth/, Users/, Patients/        # 认证、用户、患者
+      Herbs/, Formulas/               # 药材、验方
+      MedicalCases/, Sync/            # 医案聚合根、数据同步
+    PureLogic/                        # 纯逻辑测试 (Entities, Validators, Utilities)
+      Entities/, Shared/, WebAPI/     # 无外部依赖的单元测试
 
-  LYBT.Tests.Desktop.Unit/           # Desktop 单元测试 (net8.0-windows)
-    Auth/, Formula/, Foundation/      # ViewModel、Service、Security
-    Herbs/, Infrastructure/           # 控件、DataSource、Events、Models
-    LocalData/, MedicalCase/          # 本地数据、医案状态机
-    Patients/, Shell/, Users/         # 患者、Shell服务、用户
+  LYBT.Tests.Desktop/                 # Desktop 端全量测试 (net8.0-windows, 715 tests)
+    _Infrastructure/                  # DesktopFixture (SQLite + 真实 Repository)
+    ViewModels/                       # ViewModel 集成测试 (真实 DataSource)
+    EndToEnd/                         # 业务流 E2E (Repository -> SQLite)
+    LocalData/                        # 本地数据层 DataSource 测试
+    PureLogic/                        # 纯逻辑 (状态机、事件、模型)
 
-  LYBT.Tests.Server.Integration/     # Server端集成测试 (net8.0)
-    Auth/, Users/, Patients/          # 认证、用户、患者
-    Herbs/, Formulas/                 # 药材、验方
-    MedicalCases/, Sync/             # 医案聚合根、数据同步
-
-  LYBT.Tests.Desktop.Integration/    # Desktop端集成测试 (net8.0)
-    EndToEnd/                         # ViewModel -> DB 端到端
-    LocalMode/                        # 本地模式 DataSource 集成
-    Foundation/                       # 基础设施组件
-
-  LYBT.Tests.Architecture/           # 架构约束测试 (net8.0)
-    ArchTests                         # 层依赖、命名规范、禁用框架
-    AggregateRootArchTests            # 聚合根模式、软删除
+  LYBT.Tests.Architecture/            # 架构防护测试 (net8.0, 76 tests)
+    ServerArchTests                   # 层依赖、命名规范
+    CustomControlArchTests            # WPF 控件规范
+    AntiMockRuleTests                 # Testing Trophy 防护: Server 零 mock
 ```
 
-**平台分离**: Server/Shared 测试用 `net8.0` (跨平台)，Desktop 测试用 `net8.0-windows` (WPF)。
+**Testing Trophy 原则**: Server 测试使用真实 SQL Server + Respawn (零 mock)，Desktop 测试使用 SQLite InMemory + 真实 Repository (仅 WPF 边界 mock)。
+
+**平台分离**: Server 测试用 `net8.0` (跨平台)，Desktop 测试用 `net8.0-windows` (WPF)。
 
 ---
 
@@ -53,11 +51,9 @@ tests/
 dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 # 分项目运行
-dotnet test tests/LYBT.Tests.Unit/
-dotnet test tests/LYBT.Tests.Desktop.Unit/
+dotnet test tests/LYBT.Tests.Server/
+dotnet test tests/LYBT.Tests.Desktop/
 dotnet test tests/LYBT.Tests.Architecture/
-dotnet test tests/LYBT.Tests.Server.Integration/
-dotnet test tests/LYBT.Tests.Desktop.Integration/
 
 # 运行特定测试类
 dotnet test --filter "FullyQualifiedName~PatientModelTests"
@@ -134,19 +130,22 @@ public void Patient_Create_WithValidData_ShouldSetDefaults()
   FullSyncFlow_Upload_ThenDownload_ShouldReturnSameData
 ```
 
-### Mock 框架
+### Mock 策略 (Testing Trophy)
 
-**统一使用 NSubstitute** (禁止 Moq):
+**Server 测试: 零 mock** -- 所有测试通过真实 HTTP 管线 + SQL Server + Respawn 执行。
+**Desktop 测试: 最小 mock** -- 仅限 WPF Runtime 边界接口 (IRegionManager, IDialogService 等)。
 
 ```csharp
-// 正确: NSubstitute 语法
-var logger = Substitute.For<ILogger<MyService>>();
-var service = Substitute.For<IPatientService>();
-service.GetByIdAsync(Arg.Any<Guid>()).Returns(Result.Ok(dto));
+// Server 测试 -- 真实 HTTP 请求 (零 mock)
+var response = await Client.PostAsJsonAsync("/api/v1/patients", dto);
+response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-// 禁止: Moq 语法
-// var mock = new Mock<ILogger>(); // 不允许
+// Desktop 测试 -- 真实 Repository + SQLite (仅 mock WPF 边界)
+var fixture = new DesktopFixture(); // SQLite InMemory + 真实 DataSource
+var vm = fixture.CreateViewModel<PatientServiceTests>();
 ```
+
+**NSubstitute 仅在 Desktop 测试中使用** (Server 测试项目通过 AntiMockRuleTests 架构测试禁止引用)。
 
 ---
 
@@ -175,20 +174,17 @@ service.GetByIdAsync(Arg.Any<Guid>()).Returns(Result.Ok(dto));
 
 ## 常见测试问题
 
-**Q: Desktop 单元测试在 CI/Linux 上失败**
-A: Desktop 测试项目 (`LYBT.Tests.Desktop.Unit/Integration`) 目标框架为 `net8.0-windows`，仅在 Windows 环境运行。CI 配置应使用 `--filter` 排除或使用 Windows Agent。
+**Q: Desktop 测试在 CI/Linux 上失败**
+A: Desktop 测试项目 (`LYBT.Tests.Desktop`) 目标框架为 `net8.0-windows`，仅在 Windows 环境运行。CI 配置应使用 `--filter` 排除或使用 Windows Agent。
 
 **Q: 集成测试数据污染**
-A: 每个集成测试应独立创建测试数据，不依赖其他测试的数据状态。使用 `IClassFixture<T>` 共享 WebApplicationFactory，但每个测试方法使用独立的数据库 Scope。
+A: Server 测试使用 Respawn 在每个测试前重置数据库 (按外键拓扑序 DELETE)。Desktop 测试使用 SQLite InMemory 每测试独立连接。数据隔离由 IntegrationTestBase/DesktopFixture 自动管理。
 
-**Q: 什么时候用 Mock，什么时候用真实组件？**
-A: 遵循 "最小 Mock" 原则:
-- 仅 Mock `ILogger` 等无业务逻辑的依赖
-- Repository/Service/DbContext 优先使用真实组件 + SQLite InMemory
-- 只有外部 HTTP 调用、文件系统等不可控依赖才使用 Mock
+**Q: 什么时候用 Mock？**
+A: Testing Trophy 原则 -- Server 测试零 mock (通过 AntiMockRuleTests 架构测试强制)。Desktop 测试仅 mock WPF Runtime 边界接口 (IRegionManager, IDialogService, IModuleManager 等)。Repository/Service/DbContext 必须使用真实组件。
 
 **Q: 架构测试报 "禁止引用" 错误**
-A: 架构测试 (`LYBT.Tests.Architecture`) 强制检查层间依赖方向。常见违规: Controller 引用了 Repository 命名空间、Module 引用了其他 Module。修复方向: 调整代码使其符合三层架构约束。
+A: 架构测试 (`LYBT.Tests.Architecture`) 强制检查层间依赖方向和 mock 使用限制。AntiMockRuleTests 确保 Server 测试不引用 NSubstitute。修复方向: 用真实集成测试替代 mock 测试。
 
 ---
 
@@ -198,3 +194,4 @@ A: 架构测试 (`LYBT.Tests.Architecture`) 强制检查层间依赖方向。常
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-22 | v1.1 | 新增常见测试问题 (FAQ) 章节 |
+| 2026-03-04 | v2.0 | Testing Trophy 重构: 5 项目 -> 3 项目, Server 零 mock, Respawn 隔离 |

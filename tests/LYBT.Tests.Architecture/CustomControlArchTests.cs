@@ -39,8 +39,11 @@ public class CustomControlArchTests
     /// 检测标准：
     /// - 控件有名为*Content的DependencyProperty
     /// - 构造函数不应设置DataContext
+    ///
+    /// DIV-A02: SetsDataContextInConstructor 的 IL 分析未实现 (始终返回 false)，
+    /// 该检测通过代码审查完成，此自动化测试为 YAGNI。
     /// </remarks>
-    [Fact]
+    [Fact(Skip = "DIV-A02: IL analysis not implemented - SetsDataContextInConstructor always returns false (YAGNI)")]
     public void ContentHosting_Controls_Should_Not_Set_DataContext_In_Constructor()
     {
         var controlsWithContent = GetCustomControlTypes()
