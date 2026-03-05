@@ -12,7 +12,7 @@ Prism模块入口，注册DI服务和Dialog。
 
 - 依赖模块: PatientsModule, HerbsModule, FormulaModule
 - 注册: `IMedicalCaseRepository`, `IMedicalCaseService`, `IMedicalCaseQueryService`, `IMedicalCaseCommandService`, `IMedicalCaseLifecycleService`
-- 注册Component: `MedicalCaseWorkspaceCoordinator` (Scoped), `MedicalCaseEditModeStateMachine` (Scoped)
+- ~~注册Component: `MedicalCaseWorkspaceCoordinator` (Scoped), `MedicalCaseEditModeStateMachine` (Scoped)~~ 已移除。Coordinator 合并到 MedicalCaseService；StateMachine 已替换为 WorkspaceState immutable record
 - 注册Dialog: `FormulaImportDialog`, `HistoryCopyDialog`, `UnsavedChangesDialog`
 - 注册ViewModel: `MedicalCaseMasterDetailViewModel`
 - 注册MasterDetailServices: `MedicalCaseListDto` / `MedicalCaseDetailModel`
@@ -77,6 +77,10 @@ Prism模块入口，注册DI服务和Dialog。
 #### WorkspaceMode.cs
 
 工作区模式枚举: `Clinical` (临床看诊), `Management` (管理编辑), `Reception` (前台挂号)
+
+#### WorkspaceState.cs (immutable record)
+
+Replaces old ObservableObject-based WorkspaceState. Uses C# record with `with` expressions for state transitions. Single `OnPropertyChanged(nameof(State))` replaces 10+ individual notifications.
 
 #### MedicalCaseNavigationParameters.cs
 
@@ -233,59 +237,13 @@ Mapperly源生成深拷贝映射器，用于变更检测和回滚。
 
 ### ViewModels/Components/
 
-#### MedicalCaseEditModeStateMachine.cs
+#### MedicalCaseEditModeStateMachine.cs -- 已删除
 
-编辑模式状态机，继承 `ObservableObject`。管理编辑状态、按钮可见性、标题显示。
+已删除 - 替换为 `Models/WorkspaceState.cs` immutable record。状态机的可变状态和10+个 PropertyChanged 通知被替换为 C# record 的 `with` 表达式和单次 `OnPropertyChanged(nameof(State))` 通知。
 
-| 核心状态 | 类型 | 说明 |
-|----------|------|------|
-| `WorkspaceMode` | WorkspaceMode | Clinical/Management/Reception |
-| `EditState` | EditState | Editing/ReadOnly |
-| `EditType` | EditType | Create/EditSuspended/EditCompleted/ViewOnly |
-| `CanEdit` | bool | 是否有编辑权限 |
-| `HasUnsavedChanges` | bool | [ObservableProperty] 是否有未保存修改 |
-| `EditReason` | string | [ObservableProperty] 编辑原因 |
+#### MedicalCaseWorkspaceCoordinator.cs -- 已删除
 
-| 计算属性 | 说明 |
-|----------|------|
-| `IsEditing`, `IsReadOnly` | 编辑状态判断 |
-| `IsHistoricalEditMode` | EditType == EditCompleted |
-| `ShowEditButton`, `ShowEditButtonTopRight`, `ShowSaveButton`, `ShowSuspendButton`, `ShowCompleteButton` | 按钮可见性 |
-| `HeaderTitle`, `BackButtonText`, `EditStateText`, `EditStateColor` | 显示文本和颜色 |
-
-| 方法 | 说明 |
-|------|------|
-| `EnterEditMode()` | 进入编辑模式 |
-| `EnterReadOnlyMode()` | 进入只读模式 |
-| `Initialize(workspaceMode, editType, canEdit, initialEditState)` | 初始化状态机 |
-| `DetermineFromContext(workspaceMode, isCompleted, isOwner, isAdmin, preferEditing)` | 自动决定编辑模式 |
-
-引用方: Clinical模块的 `MedicalCaseWorkspaceViewModel`
-
-#### MedicalCaseWorkspaceCoordinator.cs
-
-工作区协调器，负责数据加载、聚合保存、生命周期操作。合并了DataLoader功能。
-
-| 缓存属性 | 说明 |
-|----------|------|
-| `CachedMedicalCase` | 缓存的医案详情 |
-| `CachedConsultation` | 缓存的诊疗记录 |
-| `CachedPrescription` | 缓存的处方信息 |
-
-| 方法 | 说明 |
-|------|------|
-| `LoadMedicalCaseDetailsAsync(medicalCaseId)` | 加载医案详情及关联数据 |
-| `ClearCache()` | 清除缓存 |
-| `SaveAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark, editReason)` | 聚合保存（单次API调用） |
-| `SuspendAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark)` | 保存后挂起 |
-| `CompleteAsync(medicalCaseId, consultationProvider, prescriptionProvider, consultationValidator, prescriptionValidator, remark, isPrescriptionEnabled)` | 验证后保存并完成 |
-| `CancelAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark)` | 保存后取消（软删除） |
-
-事件: `DataLoaded` (DataLoadedEventArgs)
-
-附带结果类型: `LifecycleResult`, `AggregateSaveResult`, `DataLoadedEventArgs`
-
-引用方: `PrescriptionPrintHandler`, Clinical模块的 `MedicalCaseWorkspaceViewModel`
+已合并到 MedicalCaseService (commit ece8c5d0a)。Coordinator 的数据加载、聚合保存、生命周期操作职责全部迁移到 `IMedicalCaseService` 接口。
 
 #### PrescriptionPrintHandler.cs
 
@@ -305,30 +263,27 @@ Mapperly源生成深拷贝映射器，用于变更检测和回滚。
 
 引用方: Clinical模块的 `MedicalCaseWorkspaceViewModel`
 
-#### WorkspaceState.cs
+#### WorkspaceState.cs (旧 ObservableObject 版本) -- 已删除
 
-工作区状态聚合对象，继承 `ObservableObject`。聚合UI状态属性，减少ViewModel属性数量。
+已删除 - 替换为 `Models/WorkspaceState.cs` immutable record。见 Models 章节。
 
-| 属性分组 | [ObservableProperty] 属性 |
-|----------|---------------------------|
-| 忙碌状态 | `IsBusy`, `BusyMessage` |
-| 患者信息 | `PatientName`, `PatientInfo`, `PatientGenderDisplay`, `PatientAge`, `PatientPhone`, `PatientVisitCount`, `RegistrationTime` |
-| 队列状态 | `IsRefreshingPendingQueue` |
-| 完成状态 | `CanPrintPrescription`, `CanComplete` |
-| 导航状态 | `IsFromManagement`, `HasUnsavedChanges` |
-| 处方控制 | `IsPrescriptionEnabled`, `NeedsPrescription` |
+### ViewModels/Workspace/
 
-| 方法 | 说明 |
-|------|------|
-| `SetBusy(busy, message)` | 设置忙碌状态 |
-| `UpdateFromPatient(patient)` | 从PatientDetailDto更新患者信息 |
-| `UpdateCanComplete(consultationValid, prescriptionValid, needsPrescription, isEditing)` | 更新完成状态 |
-| `UpdateCanPrint(hasValidPrescription)` | 更新打印状态 |
-| `Reset()` | 重置所有状态 |
+Composite ViewModel pattern child VMs. Created by parent (MedicalCaseWorkspaceViewModel), not container-resolved.
 
-计算属性: `PatientDisplayModel`, `NoPrescription`
+#### ConsultationEditorViewModel.cs
 
-引用方: Clinical模块的 `MedicalCaseWorkspaceViewModel`, Infrastructure的 `CaseEvents`
+Child VM wrapping ConsultationItem. Handles initialization from DTO via ConsultationMapper.
+
+#### PrescriptionEditorViewModel.cs
+
+Child VM wrapping PrescriptionItem. Handles initialization, collection change notification to parent.
+
+#### MedicalCaseCommandsViewModel.cs (455 lines)
+
+Child VM for aggregate root commands (save/suspend/complete/print/import/clear).
+Constructor deps: IMedicalCaseWorkspaceContext, IWorkspaceHost, IMedicalCaseService, PrescriptionPrintHandler, IDialogService?
+Import operations (formula/history/clear) migrated from PrescriptionImportHandler.
 
 ### Dialogs/
 

@@ -19,7 +19,7 @@ namespace LYBT.Desktop.MedicalCase.Mappers;
 /// OpenSpec: simplify-desktop-data-layer - 替代手写Clone方法
 /// 用于创建DTO的深拷贝副本，支持变更检测和回滚
 /// </remarks>
-[Mapper]
+[Mapper(UseDeepCloning = true)]
 public partial class MedicalCaseCloneMapper
 {
     /// <summary>
