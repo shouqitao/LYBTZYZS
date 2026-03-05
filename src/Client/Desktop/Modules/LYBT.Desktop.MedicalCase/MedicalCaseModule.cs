@@ -64,10 +64,7 @@ namespace LYBT.Desktop.MedicalCase
             // OpenSpec: simplify-medicalcase-module - MedicalCaseLifecycleHandler已合并到IMedicalCaseService
             // OpenSpec: simplify-workspace-architecture - MedicalCaseDataLoader已合并到MedicalCaseWorkspaceCoordinator
 
-            // OpenSpec: refactor-viewmodel-layer - 工作区协调器（整合了数据加载功能）
-            containerRegistry.RegisterScoped<ViewModels.Components.MedicalCaseWorkspaceCoordinator>();
-
-            // OpenSpec: refactor-viewmodel-layer Phase 1 - 编辑模式状态机
+            // 编辑模式状态机
             containerRegistry.RegisterScoped<ViewModels.Components.MedicalCaseEditModeStateMachine>();
 
             // OpenSpec: simplify-workspace-architecture - MedicalCaseNavigationHandler已删除，逻辑内联到MedicalCaseWorkspaceViewModel
