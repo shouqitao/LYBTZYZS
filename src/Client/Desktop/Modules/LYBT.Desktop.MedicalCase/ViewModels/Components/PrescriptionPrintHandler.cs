@@ -1,4 +1,3 @@
-// OpenSpec: create-printing-module - 使用新的独立打印模块
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Printing.Interfaces;
@@ -15,16 +14,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 /// <summary>
 /// 处方打印处理器
 /// 负责处方打印预览和DTO构建
-/// OpenSpec: slim-medicalcase-viewmodel (Phase 2)
-/// OpenSpec: create-printing-module - 更新为使用独立Printing模块
-/// OpenSpec: simplify-workspace-architecture - 使用Coordinator替代DataLoader
 /// </summary>
 public class PrescriptionPrintHandler
 {
     #region 字段
 
     private readonly IPrintService<PrescriptionPrintModel>? _printService;
-    private readonly MedicalCaseWorkspaceCoordinator _coordinator;
+    private readonly IMedicalCaseService _medicalCaseService;
     private readonly IMedicalCaseRepository _repository;
     private readonly ISessionManager _sessionManager;
     private readonly ILogger<PrescriptionPrintHandler> _logger;
@@ -33,17 +29,14 @@ public class PrescriptionPrintHandler
 
     #region 构造函数
 
-    // OpenSpec: simplify-workspace-architecture - 使用Coordinator替代DataLoader
-    // T2-X8-04~08: 注入 Repository 用于打印回写
-    // T4-S5-10: 注入 ISessionManager 用于自动绑定 DoctorName
     public PrescriptionPrintHandler(
-        MedicalCaseWorkspaceCoordinator coordinator,
+        IMedicalCaseService medicalCaseService,
         IMedicalCaseRepository repository,
         ISessionManager sessionManager,
         ILoggerFactory loggerFactory,
         IPrintService<PrescriptionPrintModel>? printService = null)
     {
-        _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
+        _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         _logger = loggerFactory.CreateLogger<PrescriptionPrintHandler>();
@@ -226,8 +219,7 @@ public class PrescriptionPrintHandler
         IDataProvider? prescriptionProvider)
     {
         // 优先使用缓存的处方数据
-        // OpenSpec: simplify-workspace-architecture - 使用Coordinator缓存
-        var cachedPrescription = _coordinator.CachedPrescription;
+        var cachedPrescription = _medicalCaseService.CachedPrescription;
         if (cachedPrescription != null)
         {
             return cachedPrescription;

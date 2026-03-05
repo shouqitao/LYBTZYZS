@@ -7,6 +7,7 @@
 | 统计仪表盘+单一核心操作模式 | 医生工作台聚焦诊疗流程,减少操作步骤 | 2025-10-29 |
 | OnNavigatedTo自动刷新统计 | 每次进入页面保证数据最新,无需手动刷新 | 2025-10-29 |
 | ExecuteSafelyAsync包装异步操作 | 自动处理异常和加载状态,避免重复样板代码 | 2025-10-29 |
+| Composite ViewModel Pattern | MedicalCaseWorkspaceViewModel重构为子VM组合模式(ConsultationEditor/PrescriptionEditor/Commands/PendingQueue/CardReader)，消除Handler回调 | 2026-03-05 |
 
 ## 已知陷阱
 
@@ -132,25 +133,26 @@ INavigationAware: `OnNavigatedTo` 刷新统计数据，`IsNavigationTarget` 返�
 
 INavigationAware: `OnNavigatedTo` 加载患者列表
 
-### ViewModels/MedicalCaseWorkspaceViewModel.cs (1275行)
+### ViewModels/MedicalCaseWorkspaceViewModel.cs (631行)
 
-医案工作区ViewModel，4:6统一看诊界面（左诊断右处方）。继承 `NavigableViewModelBase`。
+医案工作区 Composite ViewModel，薄壳编排层。继承 `NavigableViewModelBase`，实现 `IMedicalCaseWorkspaceContext` 和 `IWorkspaceHost`。
 
-依赖服务 (14个):
-- `MedicalCaseService` (_dataManager) - 数据管理
+依赖服务 (8个，从14个精简):
 - `IMedicalCaseService` - 医案业务服务
-- `MedicalCaseWorkspaceCoordinator` - 工作区协调器（数据加载/保存）
-- `MedicalCaseEditModeStateMachine` - 编辑模式状态机
 - `INavigationCoordinator` - 统一导航
 - `IActiveConsultationService` - 活跃诊断服务
 - `IPendingQueueManager` - 待诊队列管理
 - `PrescriptionPrintHandler` - 打印处理器
-- `PendingQueueHandler` - 待诊队列操作处理器
-- `PrescriptionImportHandler` - 处方导入处理器
-- `CardReaderWorkspaceHandler` - 读卡器处理器
 - `IPatientCardReaderIntegration` - 患者读卡器集成
 - `IDialogService?` - 对话框 (可选)
 - `IRegionManager` (从 services 获取)
+
+子 ViewModel (Composite Pattern):
+- `ConsultationEditor` - 诊断编辑子VM
+- `PrescriptionEditor` - 处方编辑子VM
+- `Commands` (MedicalCaseCommandsViewModel) - 命令子VM (含验方导入/历史复制/药材清空)
+- `PendingQueue` (PendingQueueViewModel) - 待诊队列子VM
+- `CardReader` (CardReaderViewModel) - 读卡器子VM
 
 核心属性:
 - `State` (WorkspaceState) - 工作区状态聚合对象
@@ -159,93 +161,18 @@ INavigationAware: `OnNavigatedTo` 加载患者列表
 - `AllHerbs` (ObservableCollection<HerbListDto>) - 药材库数据
 - `CurrentPatient` (PatientDetailDto?) - 当前患者
 - `MedicalCaseId` (Guid) - 当前医案ID
-- `PendingQueue` (ObservableCollection<PendingMedicalCaseDto>) - 待诊队列
-- `NeedsPrescription` / `IsPrescriptionEnabled` / `CanComplete` / `CanPrintPrescription` - 状态控制
 
-编辑模式委托属性 (来自 `MedicalCaseEditModeStateMachine`):
-- `IsEditing`, `IsReadOnly`, `ShowEditButton`, `ShowSaveButton`, `ShowSuspendButton`, `ShowCompleteButton`
-- `IsHistoricalEditMode`, `CanEdit`, `EditReason`, `WorkspaceMode`, `HeaderTitle`, `BackButtonText`
+### ViewModels/Workspace/PendingQueueViewModel.cs
 
-读卡器属性: `IsCardReaderConnected`, `IsAutoReadEnabled`, `IsReading`, `CardReaderStatusMessage`
+待诊队列子ViewModel。替代原 `PendingQueueHandler` 回调模式。
 
-命令 (DelegateCommand):
-- `BackCommand` / `BackToPatientSelectionCommand` - 返回
-- `SuspendCommand` - Clinical模式挂起医案
-- `SaveChangesCommand` - Management模式保存修改
-- `CompleteMedicalCaseCommand` - 完成医案
-- `SaveCommand` - 保存
-- `EnterEditModeCommand` - 进入编辑模式
-- `PrintPrescriptionCommand` - 打印处方
-- `RefreshQueueCommand` - 刷新待诊队列
-- `SelectPendingCaseCommand` (DelegateCommand<PendingMedicalCaseDto>) - 选择待诊患者
-- `OpenFormulaImportDialogCommand` - 打开验方导入对话框
-- `OpenHistoryCopyDialogCommand` - 打开历史处方复制对话框
-- `ClearHerbItemsCommand` - 清空药材列表
-- `ReadCardCommand` - 手动读卡
-- `ToggleAutoReadCommand` - 切换自动读卡
-- `ViewPatientHistoryCommand` - 查看患者历史
+通过 `IWorkspaceHost` 和 `IMedicalCaseWorkspaceContext` 接口与父VM通信，消除回调属性。负责待诊队列刷新、选择、切换操作。
 
-### Handlers/CardReaderWorkspaceHandler.cs (481行)
+### ViewModels/Workspace/CardReaderViewModel.cs
 
-读卡器工作台处理器，实现 `IDisposable`。从 ViewModel 提取读卡器相关业务逻辑。
+读卡器子ViewModel。替代原 `CardReaderWorkspaceHandler` 回调模式。
 
-依赖服务: `ICardReaderService`, `IPatientCardReaderIntegration`, `IMedicalCaseService`, `INavigationCoordinator`
-
-属性: `IsConnected`, `IsAutoReadEnabled`, `IsReading`, `StatusMessage`
-
-回调属性 (与ViewModel通信):
-- `SetBusy`, `ShowErrorMessage`, `ShowSuccessMessage`, `GetCommonDialogService`, `OnPropertyChanged`
-- `OnPatientReadyForMedicalCase` - 读卡成功并找到/创建患者后的回调
-
-公共方法:
-- `InitializeAsync()` - 初始化读卡器连接
-- `ManualReadCardAsync()` - 手动读卡
-- `ToggleAutoRead()` / `StartAutoRead()` / `StopAutoRead()` - 自动读卡控制
-- `DisconnectAsync()` - 断开连接
-
-私有方法:
-- `HandleCardReadResultAsync()` - 处理读卡结果
-- `ProcessPatientFromCardAsync()` - 根据身份证号查找或创建患者
-- `HandleNewPatientFromCardAsync()` - 新患者确认创建弹窗
-- `MaskIdNumber()` - 身份证号隐私掩码 (保留前6后4)
-
-事件处理: `OnConnectionStateChanged`, `OnCardReadCompleted`, `OnCardReadError`
-
-### Handlers/PrescriptionImportHandler.cs (337行)
-
-处方导入处理器。负责验方导入、历史处方复制、药材清空操作。
-
-依赖: `IDialogService?`, `ILoggerFactory`
-
-回调属性: `GetCommonDialogService`, `SetBusy`, `ShowErrorMessage`, `ShowSuccessMessage`, `ShowConfirmMessage`, `GetCurrentPatient`, `GetPrescription`, `GetAllHerbs`
-
-公共方法:
-- `OpenFormulaImportDialog()` - 打开 `FormulaImportDialog`，导入验方药材
-- `OpenHistoryCopyDialog()` - 打开 `HistoryCopyDialog`，复制历史处方药材
-- `ClearHerbItemsAsync()` - 清空药材列表 (带确认)
-
-私有方法:
-- `FilterDisabledHerbs()` - 过滤禁用药材 (T5-P2-19, T5-P2-21)
-- `HandleFormulaImportResultAsync()` - 处理验方导入结果，记录引用验方名
-- `HandleHistoryCopyResultAsync()` - 处理历史复制结果，复制来源信息和处方级字段 (T5-P2-23, T5-P3-09)
-
-### Handlers/PendingQueueHandler.cs (379行)
-
-待诊队列操作处理器。负责待诊队列刷新、选择、切换操作。
-
-依赖: `IMedicalCaseService`, `IPendingQueueManager`, `INavigationCoordinator`
-
-回调属性: `GetCommonDialogService`, `SetBusy`, `ShowErrorMessage`, `GetCurrentMedicalCaseId`, `GetCurrentPatient`, `GetIsReadOnly`, `SuspendOnly`, `OnPropertyChanged`
-
-公共方法:
-- `RefreshQueueAsync(Action<bool>)` - 刷新待诊队列
-- `SelectPendingCaseAsync(PendingMedicalCaseDto?)` - 选择待诊患者并切换医案，处理 Active/Suspended/新建三种状态
-
-私有方法:
-- `HandleSuspendedCaseAsync()` - 处理挂起医案，双选项弹窗 (继续/新建)
-- `NavigateToNewMedicalCaseAsync()` - 创建新医案并导航
-- `NavigateToExistingMedicalCaseAsync()` - 导航到已存在医案
-- `GetPatientDetailAsync()` - 获取患者详情 (优先返回当前患者)
+通过 `IWorkspaceHost` 和 `IMedicalCaseWorkspaceContext` 接口与父VM通信，消除回调属性。负责读卡器连接、手动/自动读卡、患者查找/创建。
 
 ### Views/ClinicalHomeView.xaml.cs (16行)
 
@@ -278,16 +205,24 @@ INavigationAware: `OnNavigatedTo` 加载患者列表
 ### 死代码分析
 
 无死代码。所有类型均有引用:
-- 3个ViewModel - 模块注册 + Shell Logger注册
-- 3个Handler - `MedicalCaseWorkspaceViewModel` 构造函数注入使用
+- 3个ViewModel + 子VM (Workspace/) - 模块注册 + Shell Logger注册
 - 7个View - 模块 `RegisterForNavigation` + ViewModel 导航命令引用
 - 模块由 Shell `App.xaml.cs` 加载: `moduleCatalog.AddModule<ClinicalModule>(InitializationMode.WhenAvailable)`
 - 模块声明依赖 `PatientsModule` 和 `MedicalCaseModule`
 
-注意: `MedicalCaseWorkspaceViewModel` 有 1275 行，超过推荐的 800 行上限。已通过 Handler 提取 (CardReaderWorkspaceHandler, PrescriptionImportHandler, PendingQueueHandler) 进行了 SRP 分解，但核心编排逻辑仍较长。
+已删除文件 (2026-03-05 Composite ViewModel 重构):
+- `Handlers/CardReaderWorkspaceHandler.cs` - 替换为 `ViewModels/Workspace/CardReaderViewModel.cs`
+- `Handlers/PendingQueueHandler.cs` - 替换为 `ViewModels/Workspace/PendingQueueViewModel.cs`
+- `Handlers/PrescriptionImportHandler.cs` - 逻辑迁移到 `MedicalCaseCommandsViewModel`
+- `Handlers/` 目录已不存在
+
+注意: `PrescriptionPrintHandler` 仍在使用，位于 MedicalCase 模块 (非 Clinical 模块)。
+
+`MedicalCaseWorkspaceViewModel` 从 1275 行精简到 631 行，低于 800 行推荐上限。
 
 ## 模块演进记录
 
 | 日期 | 变更 |
 |------|------|
 | 2025-10-29 | 初始版本,今日统计+开始看诊 |
+| 2026-03-05 | Composite ViewModel重构: 3个Handler删除,拆分为5个子VM,主VM从1275行精简到631行 |

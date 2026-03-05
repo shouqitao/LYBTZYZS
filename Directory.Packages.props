@@ -46,6 +46,7 @@
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <!-- OpenSpec: adopt-mapperly-unified-mapping - 编译时映射源生成器 -->
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
+
   </ItemGroup>
   <ItemGroup Label="Web API Packages">
     <!-- ASP.NET Core Web API - 统一到 8.0.x 版本 -->

@@ -20,7 +20,7 @@ public class ApplicationTickServiceTests
     /// </summary>
     static ApplicationTickServiceTests()
     {
-        DesktopFixture.InitializeWpf();
+        WpfTestHelper.InitializeWpf();
     }
 
     private readonly ILogger<ApplicationTickService> _mockLogger;

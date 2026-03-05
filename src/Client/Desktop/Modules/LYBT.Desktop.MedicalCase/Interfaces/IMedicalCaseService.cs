@@ -1,33 +1,90 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.MedicalCase.Interfaces
 {
     /// <summary>
     /// 医案Service接口 - 聚合根门面模式
-    /// OpenSpec: standardize-service-layer - 统一使用Service命名
-    /// OpenSpec: simplify-medicalcase-api - 聚合根统一管理Consultation和Prescription
-    /// OpenSpec: refactor-frontend-srp-patterns (ADR-1) - 门面接口，聚合Query/Command/Lifecycle职责
+    /// 继承 Query/Command/Lifecycle 三职责接口 + Coordinator 数据加载/聚合保存职责
     /// </summary>
-    /// <remarks>
-    /// 继承自三个专职接口实现SRP职责分离：
-    /// - IMedicalCaseQueryService: 查询职责
-    /// - IMedicalCaseCommandService: 命令职责
-    /// - IMedicalCaseLifecycleService: 生命周期职责
-    /// </remarks>
     public interface IMedicalCaseService :
         IMedicalCaseQueryService,
         IMedicalCaseCommandService,
         IMedicalCaseLifecycleService
     {
-        // OpenSpec: cleanup-medicalcase-dead-code - 以下方法已删除（0调用，功能由SaveAsync替代）
-        // - UpdateConsultation: 直接修改Current.Consultation即可
-        // - CreatePrescriptionAsync: 通过SaveAsync创建
-        // - DeletePrescriptionAsync: 通过SaveAsync设置NeedsPrescription=false触发
+        #region 数据加载与缓存 (原 Coordinator 职责)
 
-        // 所有成员通过接口继承获得：
-        // Query: GetPagedAsync, QueryAsync, GetUnfinishedCaseByPatientIdAsync, CloseCaseAsync
-        // Command: Current, HasChanges, SaveAsync, DeleteAsync, CreateMedicalCaseAsync
-        // Lifecycle: MedicalCaseId, CurrentConsultation, CurrentPrescription, InitializeAsync, ReloadAsync,
-        //            SuspendAsync, CancelMedicalCaseAsync, CompleteMedicalCaseAsync, ResumeSuspendedAsync
+        /// <summary>
+        /// 加载医案详情并缓存
+        /// </summary>
+        Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadDetailsAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 缓存的医案详情
+        /// </summary>
+        MedicalCaseDetailDto? CachedMedicalCase { get; }
+
+        /// <summary>
+        /// 缓存的诊疗记录
+        /// </summary>
+        ConsultationDetailDto? CachedConsultation { get; }
+
+        /// <summary>
+        /// 缓存的处方信息
+        /// </summary>
+        PrescriptionDetailDto? CachedPrescription { get; }
+
+        /// <summary>
+        /// 清除缓存数据
+        /// </summary>
+        void ClearCache();
+
+        #endregion
+
+        #region 聚合保存 (原 Coordinator 职责)
+
+        /// <summary>
+        /// 聚合保存（诊断+处方一次性保存）
+        /// </summary>
+        Task<(bool Success, MedicalCaseDetailDto? Data, string? Error)> AggregateSaveAsync(
+            Guid medicalCaseId,
+            ConsultationInputDto? consultation,
+            PrescriptionInputDto? prescription,
+            string? remark = null,
+            string? editReason = null);
+
+        /// <summary>
+        /// 保存后完成医案
+        /// </summary>
+        Task<(bool Success, string? Error)> SaveAndCompleteAsync(
+            Guid medicalCaseId,
+            ConsultationInputDto? consultation,
+            PrescriptionInputDto? prescription,
+            IValidatable? consultationValidator,
+            IValidatable? prescriptionValidator,
+            string? remark = null,
+            bool isPrescriptionEnabled = true);
+
+        /// <summary>
+        /// 保存后挂起医案
+        /// </summary>
+        Task<(bool Success, string? Error)> SaveAndSuspendAsync(
+            Guid medicalCaseId,
+            ConsultationInputDto? consultation,
+            PrescriptionInputDto? prescription,
+            string? remark = null);
+
+        /// <summary>
+        /// 保存后取消医案
+        /// </summary>
+        Task<(bool Success, string? Error)> SaveAndCancelAsync(
+            Guid medicalCaseId,
+            ConsultationInputDto? consultation,
+            PrescriptionInputDto? prescription,
+            string? remark = null);
+
+        #endregion
     }
 }

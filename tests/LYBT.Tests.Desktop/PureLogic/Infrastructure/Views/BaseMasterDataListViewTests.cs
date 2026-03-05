@@ -19,7 +19,7 @@ public class BaseMasterDataListViewTests
     /// </summary>
     static BaseMasterDataListViewTests()
     {
-        DesktopFixture.InitializeWpf();
+        WpfTestHelper.InitializeWpf();
     }
 
     #region Test Data Models
