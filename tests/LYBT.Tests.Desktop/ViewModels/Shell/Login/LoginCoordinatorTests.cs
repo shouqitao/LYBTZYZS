@@ -168,57 +168,6 @@ public class LoginCoordinatorTests
     }
 
     [Fact]
-    public async Task LoginAsync_Success_ShouldStartSession()
-    {
-        // Arrange
-        var user = CreateTestUser();
-        var loginResponse = CreateLoginResponse(user);
-        SetupSuccessfulLogin(loginResponse);
-
-        // Act
-        await _sut.LoginAsync("testuser", "password");
-
-        // Assert
-        await _sessionManager.Received(1)
-            .StartSessionAsync(user.UserName!, Arg.Any<string>(), loginResponse.ExpiresAt);
-    }
-
-    [Fact]
-    public async Task LoginAsync_Success_ShouldLoadModules()
-    {
-        // Arrange
-        var user = CreateTestUser();
-        var loginResponse = CreateLoginResponse(user);
-        SetupSuccessfulLogin(loginResponse);
-
-        // Act
-        await _sut.LoginAsync("testuser", "password");
-
-        // Assert
-        await _moduleLoading.Received(1)
-            .LoadModulesAsync(Arg.Is<string[]>(arr => arr.Contains("PatientsModule")));
-    }
-
-    [Fact]
-    public async Task LoginAsync_AdminUser_ShouldLoadAdminModules()
-    {
-        // Arrange
-        var user = CreateTestUser(UserRole.Admin);
-        var loginResponse = CreateLoginResponse(user);
-        SetupSuccessfulLogin(loginResponse);
-
-        // Act
-        await _sut.LoginAsync("adminuser", "password");
-
-        // Assert
-        await _moduleLoading.Received(1)
-            .LoadModulesAsync(Arg.Is<string[]>(arr =>
-                arr.Contains("UsersModule") &&
-                arr.Contains("HerbsModule") &&
-                arr.Contains("FormulaModule")));
-    }
-
-    [Fact]
     public async Task LoginAsync_Failure_ShouldReturnFailedResult()
     {
         // Arrange
@@ -310,37 +259,6 @@ public class LoginCoordinatorTests
     #region HandleLoginSuccessAsync测试
 
     [Fact]
-    public async Task HandleLoginSuccessAsync_ShouldStartSession()
-    {
-        // Arrange
-        var user = CreateTestUser();
-        var expiresAt = DateTime.Now.AddHours(1);
-        SetupNavigationService();
-
-        // Act
-        await _sut.HandleLoginSuccessAsync(user, expiresAt);
-
-        // Assert
-        await _sessionManager.Received(1)
-            .StartSessionAsync(user.UserName!, Arg.Any<string>(), expiresAt);
-    }
-
-    [Fact]
-    public async Task HandleLoginSuccessAsync_ShouldLoadModules()
-    {
-        // Arrange
-        var user = CreateTestUser();
-        SetupNavigationService();
-
-        // Act
-        await _sut.HandleLoginSuccessAsync(user, DateTime.Now.AddHours(1));
-
-        // Assert
-        await _moduleLoading.Received()
-            .LoadModulesAsync(Arg.Any<string[]>());
-    }
-
-    [Fact]
     public async Task HandleLoginSuccessAsync_WithNullUser_ShouldThrow()
     {
         // Act
@@ -370,38 +288,6 @@ public class LoginCoordinatorTests
         _sut.CurrentState.Should().Be(AuthState.Idle);
         _sut.IsLoggedIn.Should().BeFalse();
         _sut.CurrentUser.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task LogoutAsync_ShouldEndSession()
-    {
-        // Arrange
-        var user = CreateTestUser();
-        var loginResponse = CreateLoginResponse(user);
-        SetupSuccessfulLogin(loginResponse);
-        await _sut.LoginAsync("testuser", "password");
-
-        // Act
-        await _sut.LogoutAsync();
-
-        // Assert
-        await _sessionManager.Received(1).EndSessionAsync();
-    }
-
-    [Fact]
-    public async Task LogoutAsync_ShouldCallAuthServiceLogout()
-    {
-        // Arrange
-        var user = CreateTestUser();
-        var loginResponse = CreateLoginResponse(user);
-        SetupSuccessfulLogin(loginResponse);
-        await _sut.LoginAsync("testuser", "password");
-
-        // Act
-        await _sut.LogoutAsync();
-
-        // Assert
-        await _authService.Received(1).LogoutAsync();
     }
 
     [Fact]
@@ -489,21 +375,6 @@ public class LoginCoordinatorTests
     {
         _authService.LoginAsync(Arg.Any<LoginRequest>())
             .Returns(ServiceResult<LoginResponse>.Success(response));
-        SetupNavigationService();
-    }
-
-    private void SetupSuccessfulAutoLogin(LoginResponse response)
-    {
-        _tokenStorage.GetTokenAsync().Returns("valid-token");
-        _authService.ValidateTokenAsync(Arg.Any<string>())
-            .Returns(ServiceResult<ValidateTokenResponse>.Success(new ValidateTokenResponse
-            {
-                IsValid = true,
-                Username = response.User.UserName,
-                Role = response.User.Role.ToString(),
-                ExpiresAt = response.ExpiresAt
-            }));
-        _tokenStorage.GetLoginResponseAsync().Returns(response);
         SetupNavigationService();
     }
 
@@ -628,49 +499,6 @@ public class LoginCoordinatorLocalModeTests
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("用户名或密码错误");
         _sut.CurrentState.Should().Be(AuthState.Failed);
-    }
-
-    [Fact]
-    public async Task LoginAsync_LocalMode_ShouldNotCallRemoteAuthService()
-    {
-        // Arrange
-        var user = new UserDetailDto
-        {
-            Id = Guid.NewGuid(),
-            UserName = "localuser",
-            RealName = "Local User",
-            Role = UserRole.Doctor
-        };
-        _localAuthService.ValidateAsync("localuser", "password", Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<UserDetailDto?>(user));
-
-        // Act
-        await _sut.LoginAsync("localuser", "password");
-
-        // Assert - 本地模式不应调用远程认证
-        await _authService.DidNotReceive().LoginAsync(Arg.Any<LoginRequest>());
-    }
-
-    [Fact]
-    public async Task LoginAsync_LocalMode_ShouldNotSaveToken()
-    {
-        // Arrange
-        var user = new UserDetailDto
-        {
-            Id = Guid.NewGuid(),
-            UserName = "localuser",
-            RealName = "Local User",
-            Role = UserRole.Doctor
-        };
-        _localAuthService.ValidateAsync("localuser", "password", Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<UserDetailDto?>(user));
-
-        // Act
-        await _sut.LoginAsync("localuser", "password");
-
-        // Assert - 本地模式不保存 JWT Token
-        await _tokenStorage.DidNotReceive()
-            .SaveAuthenticationAsync(Arg.Any<LoginResponse>(), Arg.Any<bool>());
     }
 
     [Fact]

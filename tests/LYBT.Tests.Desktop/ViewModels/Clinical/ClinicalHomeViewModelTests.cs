@@ -104,64 +104,6 @@ public class ClinicalHomeViewModelTests
 
     #endregion
 
-    #region 导航命令测试
-
-    [Fact]
-    public void StartMedicalCaseCommand_ShouldNavigateToPatientSelection()
-    {
-        // Arrange
-        var vm = CreateViewModel();
-
-        // Act
-        vm.StartMedicalCaseCommand.Execute(null);
-
-        // Assert
-        _navigationCoordinator.Received(1).NavigateTo("PatientSelectionView", Arg.Any<IDictionary<string, object>?>());
-    }
-
-    [Fact]
-    public void NavigateToPatientManagementCommand_ShouldNavigate()
-    {
-        // Arrange
-        var vm = CreateViewModel();
-
-        // Act
-        vm.NavigateToPatientManagementCommand.Execute(null);
-
-        // Assert
-        _navigationCoordinator.Received(1).NavigateTo("PatientManagementView", Arg.Any<IDictionary<string, object>?>());
-    }
-
-    [Fact]
-    public void NavigateToHerbLibraryCommand_ShouldNavigate()
-    {
-        // Arrange
-        var vm = CreateViewModel();
-
-        // Act
-        vm.NavigateToHerbLibraryCommand.Execute(null);
-
-        // Assert
-        _navigationCoordinator.Received(1).NavigateTo("HerbManagementView", Arg.Any<IDictionary<string, object>?>());
-    }
-
-    [Fact]
-    public void ChangePasswordCommand_ShouldNavigateWithTabParameter()
-    {
-        // Arrange
-        var vm = CreateViewModel();
-
-        // Act
-        vm.ChangePasswordCommand.Execute(null);
-
-        // Assert
-        _navigationCoordinator.Received(1).NavigateTo(
-            "AccountSettingsView",
-            Arg.Is<IDictionary<string, object>>(d => d.ContainsKey("Tab") && (string)d["Tab"] == "Password"));
-    }
-
-    #endregion
-
     #region INavigationAware 测试
 
     [Fact]

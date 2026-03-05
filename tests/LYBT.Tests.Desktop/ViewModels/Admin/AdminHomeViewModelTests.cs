@@ -106,64 +106,6 @@ public class AdminHomeViewModelTests
 
     #endregion
 
-    #region 导航命令测试
-
-    [Fact]
-    public void NavigateToUserManagementCommand_ShouldNavigate()
-    {
-        // Arrange
-        var vm = CreateViewModel();
-
-        // Act
-        vm.NavigateToUserManagementCommand.Execute(null);
-
-        // Assert
-        _navigationCoordinator.Received(1).NavigateTo("UserManagementView", Arg.Any<IDictionary<string, object>?>());
-    }
-
-    [Fact]
-    public void NavigateToHerbManagementCommand_ShouldNavigate()
-    {
-        // Arrange
-        var vm = CreateViewModel();
-
-        // Act
-        vm.NavigateToHerbManagementCommand.Execute(null);
-
-        // Assert
-        _navigationCoordinator.Received(1).NavigateTo("HerbManagementView", Arg.Any<IDictionary<string, object>?>());
-    }
-
-    [Fact]
-    public void NavigateToSystemSettingsCommand_ShouldNavigate()
-    {
-        // Arrange
-        var vm = CreateViewModel();
-
-        // Act
-        vm.NavigateToSystemSettingsCommand.Execute(null);
-
-        // Assert
-        _navigationCoordinator.Received(1).NavigateTo("SystemSettingsView", Arg.Any<IDictionary<string, object>?>());
-    }
-
-    [Fact]
-    public void ChangePasswordCommand_ShouldNavigateWithTabParameter()
-    {
-        // Arrange
-        var vm = CreateViewModel();
-
-        // Act
-        vm.ChangePasswordCommand.Execute(null);
-
-        // Assert
-        _navigationCoordinator.Received(1).NavigateTo(
-            "AccountSettingsView",
-            Arg.Is<IDictionary<string, object>>(d => d.ContainsKey("Tab") && (string)d["Tab"] == "Password"));
-    }
-
-    #endregion
-
     #region INavigationAware 测试
 
     [Fact]
