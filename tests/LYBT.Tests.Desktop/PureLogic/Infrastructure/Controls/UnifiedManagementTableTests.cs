@@ -20,7 +20,7 @@ public class UnifiedManagementTableTests
     /// </summary>
     static UnifiedManagementTableTests()
     {
-        DesktopFixture.InitializeWpf();
+        WpfTestHelper.InitializeWpf();
     }
 
     #region Test Data Models
