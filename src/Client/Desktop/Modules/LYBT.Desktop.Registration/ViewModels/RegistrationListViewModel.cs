@@ -124,7 +124,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
                 // 刷新队列
                 await LoadQueueAsync();
 
-                // TODO: 导航到医案工作区 (待 Task 5.4 Shell 导航集成)
+                // FUTURE: 接诊后导航到医案工作区 (US-REG-004)
             }
             else
             {

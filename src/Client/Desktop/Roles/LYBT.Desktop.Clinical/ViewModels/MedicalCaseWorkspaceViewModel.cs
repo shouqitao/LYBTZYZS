@@ -577,7 +577,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     }
 
     private Task<string?> CheckAndGetAuditReasonAsync()
-        => Task.FromResult<string?>(string.Empty); // TODO: 审计功能将来单独规划
+        => Task.FromResult<string?>(string.Empty); // FUTURE: 医案审计日志查看功能 (US-MC-012)
 
     #endregion
 

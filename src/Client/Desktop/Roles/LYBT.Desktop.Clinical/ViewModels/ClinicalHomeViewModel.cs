@@ -279,7 +279,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         {
             try
             {
-                // TODO: 从服务获取今日统计数据
+                // FUTURE: 从服务获取今日统计数据 (US-SHELL-005)
                 // 临时使用模拟数据
                 TodayConsultationCount = 0;
                 PendingCaseCount = 0;

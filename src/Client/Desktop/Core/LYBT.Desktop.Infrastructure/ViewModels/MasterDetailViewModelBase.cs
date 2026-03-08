@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
     ///
     /// 注意：由于项目依赖顺序(Models → Infrastructure)，无法直接继承CoreViewModelBase
     /// 采用组合模式：保持ObservableObject继承 + IViewModelServices参数获取通用服务
-    /// TODO: 后续提案重构项目结构，将CoreViewModelBase移到更底层项目
+    /// FUTURE: 重构项目结构，将CoreViewModelBase移到更底层项目 (ARCH-REFACTOR)
     /// </summary>
     /// <typeparam name="TListItem">列表项类型</typeparam>
     /// <typeparam name="TDetail">详情模型类型</typeparam>

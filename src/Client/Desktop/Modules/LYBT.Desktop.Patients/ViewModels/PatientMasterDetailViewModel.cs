@@ -289,7 +289,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             if (SelectedItem == null) return;
 
             Logger.LogInformation("查看患者医案：{PatientId}", SelectedItem.Id);
-            // TODO: 导航到医案查看页面
+            // FUTURE: 导航到医案查看页面 (US-MC-010)
         }
 
         private bool CanViewMedicalRecords() => HasSelection;
@@ -301,7 +301,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             if (SelectedItem == null) return;
 
             Logger.LogInformation("为患者新建医案：{PatientId}", SelectedItem.Id);
-            // TODO: 导航到医案流程页面
+            // FUTURE: 导航到新建医案流程页面 (US-MC-003)
         }
 
         private bool CanNewConsultation() => HasSelection;

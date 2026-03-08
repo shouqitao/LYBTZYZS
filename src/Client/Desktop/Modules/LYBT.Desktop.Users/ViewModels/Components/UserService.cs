@@ -322,7 +322,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         {
             _logger.LogInformation("[SVC] User.ChangePassword started - UserId={UserId}", userId);
 
-            // TODO: 实现修改密码逻辑（应该调用认证服务）
+            // FUTURE: 实现修改密码逻辑，需调用认证服务 (US-AUTH-007)
             return Task.FromResult<(bool, string?)>((true, "修改密码功能开发中"));
         }
 
