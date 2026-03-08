@@ -49,7 +49,14 @@ namespace LYBT.Module.Formulas.Services
             var pagedResult = await _repository.GetPagedWithDetailsAsync(
                 page, pageSize, keyword, category, currentUserId, isAdmin);
 
-            var items = _mapper.ToListDtos(pagedResult.Items.ToList());
+            var entities = pagedResult.Items.ToList();
+            var items = _mapper.ToListDtos(entities);
+
+            // CODE-23: HerbCount 由 Service 层计算 (Mapper 忽略此字段)
+            for (var i = 0; i < items.Count; i++)
+            {
+                items[i].HerbCount = entities[i].Herbs?.Count ?? 0;
+            }
 
             var dto = new PagedResult<FormulaListDto>
             {
@@ -70,6 +77,8 @@ namespace LYBT.Module.Formulas.Services
                 return Result<FormulaDetailDto>.Failure(GenericErrorCode.FormulaNotFound);
 
             var dto = _mapper.ToDetailDto(entity);
+            // CODE-23: HerbCount 由 Service 层计算 (Mapper 忽略此字段)
+            dto.HerbCount = entity.Herbs?.Count ?? 0;
             return Result<FormulaDetailDto>.Success(dto);
         }
 
