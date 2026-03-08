@@ -2,9 +2,9 @@
 
 ## 概述
 
-系统支持远程模式 (Remote) 和本地模式 (Local) 两种运行模式。远程模式通过 HTTP API 连接 SQL Server 数据库，本地模式使用 SQLite 本地数据库。
+系统支持远程模式 (Remote) 和本地模式 (Local) 两种运行模式。远程模式通过 HTTP API 连接 SQL Server 数据库，本地模式使用 SQL Server LocalDB 本地数据库。
 
-**目标架构 (SYNC-D02)**: 两种模式共享 Service/Repository 层代码，仅 DbContext Provider 不同 (SQL Server vs SQLite)。当前代码处于过渡态 (DataSource 策略模式)，将在 Sprint 4 迁移到目标架构。
+**目标架构 (SYNC-D02)**: 两种模式共享 Service/Repository 层代码，仅 DbContext Provider 连接字符串不同 (远程 SQL Server vs 本地 SQL Server LocalDB)。当前代码处于过渡态 (DataSource 策略模式)，将在 Sprint 4 迁移到目标架构。
 
 ## 目标架构 (SYNC-D02: 统一数据路径)
 
@@ -39,9 +39,9 @@ graph TB
     end
 
     subgraph Local["本地模式"]
-        LocalCtx["DbContext<br>(SQLite Provider)"]
-        SQLite["SQLite 文件"]
-        LocalCtx --> SQLite
+        LocalCtx["DbContext<br>(SQL Server LocalDB Provider)"]
+        LocalDB["SQL Server LocalDB"]
+        LocalCtx --> LocalDB
     end
 ```
 
@@ -51,7 +51,7 @@ graph TB
 |------|---------------|-------------------|
 | **抽象层** | IDataSource 接口 + Remote/Local 双实现 | 无额外抽象，直接用 Repository |
 | **业务逻辑** | Local DataSource 重复实现业务规则 | Service/Repository 代码共享，零重复 |
-| **DI 切换** | 注册不同 DataSource 实现 | 注册不同 DbContext Provider |
+| **DI 切换** | 注册不同 DataSource 实现 | 注册不同 DbContext 连接字符串 |
 | **模式切换** | 重启应用 | 运行时软重启 (SYNC-D03) |
 | **维护成本** | 每个功能需写 Remote + Local 两套 | 只写一套，自动适配双模式 |
 
@@ -85,7 +85,7 @@ graph TB
 public enum ConnectionMode
 {
     Remote,  // WebAPI 服务器连接
-    Local    // SQLite 本地数据库
+    Local    // SQL Server LocalDB 本地数据库
 }
 ```
 
@@ -118,14 +118,14 @@ public static void RegisterDataSources(
 
 | 维度 | 远程模式 (Remote) | 本地模式 (Local) |
 |------|-------------------|------------------|
-| **数据库** | SQL Server (远程) | SQLite (本地文件) |
-| **数据链路** | ViewModel -> IDataSource -> HTTP API -> Controller -> Service -> Repository -> SQL Server | ViewModel -> IDataSource -> LocalDbContext -> SQLite |
+| **数据库** | SQL Server (远程) | SQL Server LocalDB (本地) |
+| **数据链路** | ViewModel -> IDataSource -> HTTP API -> Controller -> Service -> Repository -> SQL Server | ViewModel -> IDataSource -> LocalDbContext -> SQL Server LocalDB |
 | **DataSource 实现** | RemoteXxxDataSource (Refit HTTP 客户端) | LocalXxxDataSource (EF Core 直连) |
 | **认证方式** | JWT Token (服务端验证) | LocalAuthService (BCrypt 本地验证) |
 | **多用户** | 支持 (服务端管理) | 单用户 |
 | **数据同步** | 不需要 | SyncService (双向同步) |
 | **离线支持** | 不支持 | 完全离线 |
-| **数据库位置** | 远程服务器 | `%APPDATA%\LYBTZYZS\lybtzyzs.db` |
+| **数据库位置** | 远程服务器 | SQL Server LocalDB 实例 `(localdb)\MSSQLLocalDB`，数据库 `LYBTZYZS_Local` |
 | **切换方式** | 修改 appsettings.json 后重启 | 修改 appsettings.json 后重启 |
 
 ### Local DataSource 实现
@@ -171,7 +171,7 @@ IDataSourceBase<TDetail, TInput>  (泛型基接口, LYBT.Desktop.Contracts.DataS
 | IUserDataSource | RemoteUserDataSource | LocalUserDataSource |
 
 - Remote 实现位于 `LYBT.Desktop.Infrastructure/DataSources/Remote/`，依赖 Refit API 客户端
-- Local 实现位于 `LYBT.Desktop.LocalData/DataSources/`，依赖 LocalDbContext (SQLite)
+- Local 实现位于 `LYBT.Desktop.LocalData/DataSources/`，依赖 LocalDbContext (SQL Server LocalDB)
 - 所有实现均为 Transient 生命周期
 
 ### DI 注册切换详情
@@ -189,11 +189,11 @@ IDataSourceBase<TDetail, TInput>  (泛型基接口, LYBT.Desktop.Contracts.DataS
 
 ### LocalDbContext
 
-SQLite 实现的 EF Core DbContext:
+SQL Server LocalDB 实现的 EF Core DbContext:
 
 - 管理全部实体 DbSet: Patients, Users, Herbs, Formulas, MedicalCases, Consultations, Prescriptions
 - 软删除全局查询过滤器 (IsDeleted = false)
-- SQLite 适配: 忽略 RowVersion、decimal 转 double
+- SQL Server 原生支持 RowVersion、decimal，无需适配代码
 - 自动审计字段管理 (CreatedAt, UpdatedAt, CreatedBy)
 
 ### 本地认证
@@ -207,8 +207,8 @@ SQLite 实现的 EF Core DbContext:
 ### 数据库初始化
 
 `DatabaseInitializer`:
-- 数据库路径: `%APPDATA%\LYBTZYZS\lybtzyzs.db`
-- 首次运行自动创建数据库
+- 使用 SQL Server LocalDB，EnsureCreatedAsync 自动创建数据库
+- 连接字符串配置: `appsettings.json` 的 `LocalConnectionString` (默认: `(localdb)\MSSQLLocalDB`)
 - 加载种子数据 (SeedData)
 
 ### 配置
@@ -255,7 +255,7 @@ sequenceDiagram
 |------|------|
 | CheckDifferencesAsync | 比对本地与服务端元数据，分类为 LocalOnly/ServerOnly/Conflict |
 | UploadAsync | 序列化本地实体为 JSON，上传到服务端 |
-| DownloadAsync | 从服务端下载实体 JSON，存入本地 SQLite |
+| DownloadAsync | 从服务端下载实体 JSON，存入本地数据库 |
 | ExecuteSyncAsync | 完整同步流程: 处理上传列表 + 下载列表 + 冲突解决 |
 
 ### 端到端调用链
@@ -374,7 +374,7 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 
 参考 Outlook Cached Exchange Mode:
 1. 用户在设置中切换 ConnectionMode
-2. 应用替换 DI 中 DbContext Provider (SQL Server <-> SQLite)
+2. 应用替换 DI 中 DbContext 连接字符串 (远程 SQL Server <-> 本地 SQL Server LocalDB)
 3. 自动导航回首页
 4. 无需重启应用
 
@@ -387,8 +387,8 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 
 ### 首次进入本地模式
 
-1. DatabaseInitializer 检查 SQLite 文件是否存在
-2. 不存在则创建数据库，加载种子数据
+1. DatabaseInitializer 通过 EnsureCreatedAsync 创建 LocalDB 数据库（如不存在）
+2. 加载种子数据（admin 默认账户）
 3. 用户可通过 Sync 模块从服务端下载初始数据
 
 ## 决策记录
@@ -396,8 +396,8 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 | 编号 | 问题 | 状态 | 说明 |
 |------|------|------|------|
 | SYNC-D01 | MedicalCase 同步范围 | 已确认 | 仅同步 Completed 状态，Active/Suspended 不同步 (Draft 已替换为 Suspended, MC-D20) |
-| SYNC-D02 | 统一本地/远程数据路径 | 已确认，待实施 | 废除 DataSource 策略模式，共享 Service/Repository 层，仅 DbContext Provider 不同 |
-| SYNC-D03 | 运行时模式切换 | 已确认，待实施 | 软重启方案，替换 DI 中 DbContext Provider + 导航回首页 |
+| SYNC-D02 | 统一本地/远程数据路径 | 已确认，待实施 | 废除 DataSource 策略模式，共享 Service/Repository 层，仅 DbContext 连接字符串不同。LocalDB 迁移已完成 (Sprint 2) |
+| SYNC-D03 | 运行时模式切换 | 已确认，待实施 | 软重启方案，替换 DI 中 DbContext 连接字符串 + 导航回首页 |
 | SYNC-D04 | 冲突解决策略 | 已确认 | 简单实体 Server Wins; MedicalCase 手动选择 |
 | TBD-01 | 本地模式功能受限范围 | 已确定 | 不可用项: 自动登录 / Token刷新 / 审计日志查询 / User同步 / 服务端API导入导出。不活跃超时: 15 分钟 (可配置)。见 [auth.md](../02-requirements/auth.md) FR-AUTH-006 |
 
@@ -409,3 +409,4 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 | 2026-02-18 | v1.1 | PRD同步: MedicalCase 同步从 v2.0 规划更新为已确定，新增 MedicalCase 同步设计章节 |
 | 2026-02-19 | v1.2 | TBD-01 补充本地模式不活跃超时时间 (15分钟，可配置) |
 | 2026-02-22 | v2.0 | **架构演进**: 新增 SYNC-D01~D04 决策，标注目标架构 (统一数据路径) 和当前过渡态，重组文档结构 |
+| 2026-03-08 | v2.1 | **LocalDB 迁移**: Local 模式从 SQLite 迁移到 SQL Server LocalDB，删除 IgnoreRowVersion/ApplyDecimalConversion 适配代码 |

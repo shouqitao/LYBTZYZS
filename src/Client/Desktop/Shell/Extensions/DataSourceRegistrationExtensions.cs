@@ -1,4 +1,3 @@
-using System.IO;
 using LYBT.Desktop.Contracts.DataSources;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
@@ -10,6 +9,7 @@ using LYBT.Desktop.LocalData.Services;
 using SyncService = LYBT.Desktop.LocalData.Services.SyncService;
 using LYBT.Desktop.Shell.Services.Session;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 
@@ -23,13 +23,21 @@ namespace LYBT.Desktop.Shell.Extensions;
 public static class DataSourceRegistrationExtensions
 {
     /// <summary>
+    /// 本地模式默认连接字符串 (SQL Server LocalDB)
+    /// </summary>
+    private const string DefaultLocalConnectionString =
+        @"Server=(localdb)\MSSQLLocalDB;Database=LYBTZYZS_Local;Trusted_Connection=True;TrustServerCertificate=True;";
+
+    /// <summary>
     /// 注册 DataSource 服务
     /// </summary>
     /// <param name="containerRegistry">容器注册器</param>
     /// <param name="mode">连接模式</param>
+    /// <param name="configuration">配置 (可选，用于读取本地连接字符串)</param>
     public static void RegisterDataSources(
         this IContainerRegistry containerRegistry,
-        ConnectionMode mode)
+        ConnectionMode mode,
+        IConfiguration? configuration = null)
     {
         // 注册 CurrentUserProvider（两种模式都需要）
         RegisterCurrentUserProvider(containerRegistry);
@@ -40,7 +48,8 @@ public static class DataSourceRegistrationExtensions
         }
         else
         {
-            RegisterLocalDataSources(containerRegistry);
+            var connectionString = configuration?["LocalConnectionString"] ?? DefaultLocalConnectionString;
+            RegisterLocalDataSources(containerRegistry, connectionString);
         }
 
     }
@@ -67,12 +76,12 @@ public static class DataSourceRegistrationExtensions
     }
 
     /// <summary>
-    /// 注册本地模式 DataSource（SQLite）
+    /// 注册本地模式 DataSource（SQL Server LocalDB）
     /// </summary>
-    private static void RegisterLocalDataSources(IContainerRegistry containerRegistry)
+    private static void RegisterLocalDataSources(IContainerRegistry containerRegistry, string connectionString)
     {
         // 注册本地数据库上下文
-        RegisterLocalDbContext(containerRegistry);
+        RegisterLocalDbContext(containerRegistry, connectionString);
 
         // 注册本地认证服务
         containerRegistry.RegisterSingleton<ILocalAuthService, LocalAuthService>();
@@ -90,23 +99,15 @@ public static class DataSourceRegistrationExtensions
     }
 
     /// <summary>
-    /// 注册本地数据库上下文和相关服务
+    /// 注册本地数据库上下文和相关服务 (SQL Server LocalDB)
     /// </summary>
-    private static void RegisterLocalDbContext(IContainerRegistry containerRegistry)
+    private static void RegisterLocalDbContext(IContainerRegistry containerRegistry, string connectionString)
     {
-        // 数据库路径: %APPDATA%\LYBTZYZS\lybtzyzs.db
-        var dbPath = DatabaseInitializer.DatabasePath;
-        var dbDirectory = Path.GetDirectoryName(dbPath);
-        if (!string.IsNullOrEmpty(dbDirectory))
-        {
-            Directory.CreateDirectory(dbDirectory);
-        }
-
-        // 注册 DbContextOptions
+        // 注册 DbContextOptions (SQL Server LocalDB)
         containerRegistry.RegisterSingleton<DbContextOptions<LocalDbContext>>(_ =>
         {
             var optionsBuilder = new DbContextOptionsBuilder<LocalDbContext>();
-            optionsBuilder.UseSqlite($"Data Source={dbPath}");
+            optionsBuilder.UseSqlServer(connectionString);
             return optionsBuilder.Options;
         });
 

@@ -5,21 +5,13 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.LocalData.Initialization;
 
 /// <summary>
-/// 数据库初始化器 - 负责创建 SQLite 数据库和初始化数据
+/// 数据库初始化器 - 负责创建 SQL Server LocalDB 数据库和初始化数据
 /// OpenSpec: implement-local-mode
 /// </summary>
 public class DatabaseInitializer
 {
     private readonly LocalDbContext _context;
     private readonly ILogger<DatabaseInitializer> _logger;
-
-    /// <summary>
-    /// 数据库文件路径
-    /// </summary>
-    public static string DatabasePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "LYBTZYZS",
-        "lybtzyzs.db");
 
     public DatabaseInitializer(LocalDbContext context, ILogger<DatabaseInitializer> logger)
     {
@@ -34,23 +26,15 @@ public class DatabaseInitializer
     {
         try
         {
-            // 确保目录存在
-            var directory = Path.GetDirectoryName(DatabasePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-                _logger.LogInformation("[LocalData] 创建数据库目录: {Directory}", directory);
-            }
-
-            // 创建数据库（如果不存在）
+            // 创建数据库（如果不存在）-- SQL Server LocalDB 自动管理数据文件
             var created = await _context.Database.EnsureCreatedAsync(ct);
             if (created)
             {
-                _logger.LogInformation("[LocalData] 数据库已创建: {Path}", DatabasePath);
+                _logger.LogInformation("[LocalData] SQL Server LocalDB 数据库已创建");
             }
             else
             {
-                _logger.LogDebug("[LocalData] 数据库已存在: {Path}", DatabasePath);
+                _logger.LogDebug("[LocalData] SQL Server LocalDB 数据库已存在");
             }
 
             // 始终执行种子数据 - SeedData 内部已处理幂等性
@@ -64,18 +48,17 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// 检查数据库是否存在
+    /// 检查数据库是否可连接
     /// </summary>
-    public static bool DatabaseExists()
+    public async Task<bool> CanConnectAsync(CancellationToken ct = default)
     {
-        return File.Exists(DatabasePath);
-    }
-
-    /// <summary>
-    /// 获取数据库连接字符串
-    /// </summary>
-    public static string GetConnectionString()
-    {
-        return $"Data Source={DatabasePath}";
+        try
+        {
+            return await _context.Database.CanConnectAsync(ct);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

@@ -495,6 +495,50 @@ public class DesktopLayerArchTests
     #endregion
 
     /// <summary>
+    /// P-07: LocalData 模块必须使用 SQL Server，不得依赖 SQLite
+    /// 确保 Local 模式与 Server 模式使用相同的数据库引擎，消除 SQL 方言差异
+    /// </summary>
+    [Fact]
+    public void P07_LocalData_Must_Not_Depend_On_SQLite()
+    {
+        var localDataAssembly = Assembly.Load("LYBT.Desktop.LocalData");
+
+        // LocalData 不应引用 SQLite 相关程序集
+        var sqliteReferences = localDataAssembly.GetReferencedAssemblies()
+            .Where(a => a.Name != null &&
+                       a.Name.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
+            .Select(a => a.Name!)
+            .ToList();
+
+        Assert.True(sqliteReferences.Count == 0,
+            $"LocalData 不应依赖 SQLite (已迁移到 SQL Server LocalDB)，但发现引用:\n{string.Join("\n", sqliteReferences)}");
+    }
+
+    /// <summary>
+    /// P-08: LocalData 的 LocalDbContext 不应包含 SQLite 适配方法
+    /// IgnoreRowVersion 和 ApplyDecimalConversion 是 SQLite 特有的适配代码
+    /// </summary>
+    [Fact]
+    public void P08_LocalDbContext_Must_Not_Have_SQLite_Adapters()
+    {
+        var localDataAssembly = Assembly.Load("LYBT.Desktop.LocalData");
+        var localDbContextType = localDataAssembly.GetTypes()
+            .FirstOrDefault(t => t.Name == "LocalDbContext");
+
+        Assert.NotNull(localDbContextType);
+
+        var sqliteAdapterMethods = new[] { "IgnoreRowVersion", "ApplyDecimalConversion" };
+        var foundMethods = localDbContextType!
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+            .Where(m => sqliteAdapterMethods.Contains(m.Name))
+            .Select(m => m.Name)
+            .ToList();
+
+        Assert.True(foundMethods.Count == 0,
+            $"LocalDbContext 不应包含 SQLite 适配方法，但发现:\n{string.Join("\n", foundMethods)}");
+    }
+
+    /// <summary>
     /// 验证所有 Repository 都在对应模块中注册
     /// </summary>
     /// <remarks>

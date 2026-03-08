@@ -52,7 +52,7 @@ namespace LYBT.Desktop.Shell.Extensions
             var connectionMode = GetConnectionMode(configuration);
             // S6-02: 注册 ConnectionMode 为单例，供 MenuManager 等服务使用
             containerRegistry.RegisterInstance(connectionMode);
-            containerRegistry.RegisterDataSources(connectionMode);
+            containerRegistry.RegisterDataSources(connectionMode, configuration);
             containerRegistry.RegisterDataSourceLoggers(connectionMode);
 
             containerRegistry.RegisterHttpServices(configuration);

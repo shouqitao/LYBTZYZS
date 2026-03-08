@@ -6,15 +6,15 @@
 
     <!-- Assembly Information -->
     <AssemblyTitle>LYBT.Desktop.LocalData</AssemblyTitle>
-    <AssemblyDescription>凌隐宝堂中医诊所系统 - 本地数据存储层 | SQLite + EF Core | OpenSpec: implement-local-mode</AssemblyDescription>
+    <AssemblyDescription>凌隐宝堂中医诊所系统 - 本地数据存储层 | SQL Server LocalDB + EF Core | OpenSpec: implement-local-mode</AssemblyDescription>
     <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
     <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
     <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2026</AssemblyCopyright>
   </PropertyGroup>
 
-  <!-- EF Core SQLite -->
+  <!-- EF Core SQL Server (LocalDB) -->
   <ItemGroup Label="Entity Framework">
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

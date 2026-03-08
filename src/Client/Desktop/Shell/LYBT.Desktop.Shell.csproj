@@ -58,9 +58,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
 
-  <!-- OpenSpec: implement-local-mode - SQLite 支持 -->
-  <ItemGroup Label="Entity Framework SQLite">
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  <!-- OpenSpec: implement-local-mode - SQL Server LocalDB 支持 -->
+  <ItemGroup Label="Entity Framework SqlServer">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
   </ItemGroup>
 
   <!-- OpenSpec: standardize-api-architecture - AutoMapper已移除，使用Mapperly -->
