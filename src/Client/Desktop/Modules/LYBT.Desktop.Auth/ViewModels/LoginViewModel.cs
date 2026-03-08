@@ -34,8 +34,9 @@ namespace LYBT.Desktop.Auth.ViewModels
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
 
-        // OpenSpec: refactor-startup-connection-resilience - 连接模式选择（预留本地模式入口）
+        // US-SYNC-008: 连接模式选择 + 切换前置检查
         private ConnectionMode _selectedConnectionMode = ConnectionMode.Remote;
+        private readonly IModeSwitchValidator? _modeSwitchValidator;
 
         public string Username
         {
@@ -137,25 +138,19 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         #endregion
 
-        #region 连接模式 (OpenSpec: refactor-startup-connection-resilience)
+        #region 连接模式 (US-SYNC-008: 模式切换 + 切换前置检查)
 
         /// <summary>
         /// 当前选择的连接模式
-        /// 默认远程模式，本地模式待独立提案实现
+        /// US-SYNC-008: 支持远程/本地模式切换，切换前执行前置检查
         /// </summary>
         public ConnectionMode SelectedConnectionMode
         {
             get => _selectedConnectionMode;
             set
             {
-                if (value == ConnectionMode.Local)
-                {
-                    // 本地模式尚未实现，提示用户并恢复远程模式
-                    _ = CommonDialogService.ShowInfoAsync("本地模式正在开发中，敬请期待。", "功能提示");
-                    return;
-                }
-
-                SetProperty(ref _selectedConnectionMode, value);
+                if (_selectedConnectionMode == value) return;
+                _ = ValidateAndSwitchModeAsync(value);
             }
         }
 
@@ -175,6 +170,50 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             get => _selectedConnectionMode == ConnectionMode.Local;
             set { if (value) SelectedConnectionMode = ConnectionMode.Local; }
+        }
+
+        /// <summary>
+        /// US-SYNC-008: 模式切换前置验证
+        /// 验证通过后切换模式，失败则恢复原模式并提示用户
+        /// </summary>
+        private async Task ValidateAndSwitchModeAsync(ConnectionMode targetMode)
+        {
+            if (_modeSwitchValidator == null)
+            {
+                // 无验证器时直接切换 (向后兼容)
+                ApplyModeSwitch(targetMode);
+                return;
+            }
+
+            var result = targetMode switch
+            {
+                ConnectionMode.Remote => await _modeSwitchValidator.ValidateLocalToRemoteSwitchAsync(),
+                ConnectionMode.Local => await _modeSwitchValidator.ValidateRemoteToLocalSwitchAsync(),
+                _ => ModeSwitchValidationResult.Valid
+            };
+
+            if (result.IsValid)
+            {
+                ApplyModeSwitch(targetMode);
+            }
+            else
+            {
+                // 验证失败: 恢复 RadioButton 状态并提示用户
+                OnPropertyChanged(nameof(IsRemoteMode));
+                OnPropertyChanged(nameof(IsLocalMode));
+                await CommonDialogService.ShowWarningAsync(result.ErrorMessage!, "模式切换");
+            }
+        }
+
+        /// <summary>
+        /// 应用模式切换并通知 UI 更新
+        /// </summary>
+        private void ApplyModeSwitch(ConnectionMode targetMode)
+        {
+            SetProperty(ref _selectedConnectionMode, targetMode);
+            OnPropertyChanged(nameof(IsRemoteMode));
+            OnPropertyChanged(nameof(IsLocalMode));
+            Logger.LogInformation("[VM] Login.ModeSwitch - switched to {Mode}", targetMode);
         }
 
         #endregion
@@ -208,13 +247,15 @@ namespace LYBT.Desktop.Auth.ViewModels
             ILoginCoordinator loginCoordinator,
             IApplicationStateService applicationStateService,
             IUsernameStorageService? usernameStorage = null,
-            ICredentialVault? credentialVault = null)
+            ICredentialVault? credentialVault = null,
+            IModeSwitchValidator? modeSwitchValidator = null)
             : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
             _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
             _usernameStorage = usernameStorage;
             _credentialVault = credentialVault;
+            _modeSwitchValidator = modeSwitchValidator;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());

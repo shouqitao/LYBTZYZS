@@ -89,6 +89,9 @@ public static class DataSourceRegistrationExtensions
         // OpenSpec: implement-data-sync - 注册同步服务
         containerRegistry.RegisterSingleton<ISyncService, SyncService>();
 
+        // US-SYNC-008: 注册模式切换验证器 (本地模式可用时注册)
+        RegisterModeSwitchValidator(containerRegistry, connectionString);
+
         // 注册 DataSource
         containerRegistry.Register<IPatientDataSource, LocalPatientDataSource>();
         containerRegistry.Register<IHerbDataSource, LocalHerbDataSource>();
@@ -96,6 +99,21 @@ public static class DataSourceRegistrationExtensions
         containerRegistry.Register<IMedicalCaseDataSource, LocalMedicalCaseDataSource>();
         containerRegistry.Register<IUserDataSource, LocalUserDataSource>();
         containerRegistry.Register<IRegistrationDataSource, LocalRegistrationDataSource>();
+    }
+
+    /// <summary>
+    /// US-SYNC-008: 注册模式切换验证器
+    /// 本地模式下注册完整验证器 (可检查 Active/Suspended 医案)
+    /// </summary>
+    private static void RegisterModeSwitchValidator(IContainerRegistry containerRegistry, string connectionString)
+    {
+        containerRegistry.RegisterSingleton<IModeSwitchValidator>(resolver =>
+        {
+            var medicalCaseDataSource = resolver.Resolve<IMedicalCaseDataSource>();
+            var loggerFactory = resolver.Resolve<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<ModeSwitchValidator>();
+            return new ModeSwitchValidator(medicalCaseDataSource, connectionString, logger);
+        });
     }
 
     /// <summary>
