@@ -73,6 +73,13 @@ public static class ViewNames
 
     #endregion
 
+    #region 挂号视图
+
+    /// <summary>挂号队列</summary>
+    public const string RegistrationList = "RegistrationListView";
+
+    #endregion
+
     #region 同步视图
 
     /// <summary>数据同步</summary>

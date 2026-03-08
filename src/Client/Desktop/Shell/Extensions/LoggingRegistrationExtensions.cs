@@ -21,6 +21,8 @@ using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.Patients;
 using LYBT.Desktop.Patients.Repositories;
 using LYBT.Desktop.Patients.Services;
+using LYBT.Desktop.Registration;
+using LYBT.Desktop.Registration.Repositories;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Desktop.Printing.Services;
 using LYBT.Desktop.Shell.Services;
@@ -72,6 +74,7 @@ namespace LYBT.Desktop.Shell.Extensions
                 RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalFormulaDataSource>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalMedicalCaseDataSource>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalUserDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalRegistrationDataSource>(containerRegistry);
             }
             else
             {
@@ -80,6 +83,7 @@ namespace LYBT.Desktop.Shell.Extensions
                 RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteFormulaDataSource>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteMedicalCaseDataSource>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteUserDataSource>(containerRegistry);
+                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteRegistrationDataSource>(containerRegistry);
             }
         }
 
@@ -161,6 +165,8 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<FormulaModule>(containerRegistry);
             RegisterLogger<ClinicalModule>(containerRegistry);
             RegisterLogger<AdminModule>(containerRegistry);
+            // PRD: registration.md - 挂号管理模块
+            RegisterLogger<RegistrationModule>(containerRegistry);
         }
 
         /// <summary>注册Repository层Logger</summary>
@@ -171,6 +177,8 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<HerbRepository>(containerRegistry);
             RegisterLogger<FormulaRepository>(containerRegistry);
             RegisterLogger<MedicalCaseRepository>(containerRegistry);
+            // PRD: registration.md - 挂号仓储
+            RegisterLogger<RegistrationRepository>(containerRegistry);
         }
 
         /// <summary>注册业务服务Logger</summary>

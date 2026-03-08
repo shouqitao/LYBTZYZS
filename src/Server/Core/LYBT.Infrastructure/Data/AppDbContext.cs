@@ -7,6 +7,7 @@ using LYBT.Entities.Herbs;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
+using LYBT.Entities.Registrations;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data.Configuration;
 using Microsoft.AspNetCore.Http;
@@ -73,6 +74,9 @@ namespace LYBT.Infrastructure.Data
 
         // 验方管理
         public DbSet<Formula> Formulas { get; set; }
+
+        // 挂号管理
+        public DbSet<Registration> Registrations { get; set; }
 
         // 系统日志
         public DbSet<SystemLog> SystemLogs { get; set; }

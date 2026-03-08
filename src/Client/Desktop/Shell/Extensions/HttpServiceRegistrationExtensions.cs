@@ -82,6 +82,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IHerbApi>(r => RestService.For<IHerbApi>(r.Resolve<HttpClient>(), refitSettings));
             containerRegistry.RegisterSingleton<IFormulaApi>(r => RestService.For<IFormulaApi>(r.Resolve<HttpClient>(), refitSettings));
             containerRegistry.RegisterSingleton<IMedicalCaseApi>(r => RestService.For<IMedicalCaseApi>(r.Resolve<HttpClient>(), refitSettings));
+            containerRegistry.RegisterSingleton<IRegistrationApi>(r => RestService.For<IRegistrationApi>(r.Resolve<HttpClient>(), refitSettings));
             // OpenSpec: implement-data-sync - 同步API客户端
             containerRegistry.RegisterSingleton<ISyncApi>(r => RestService.For<ISyncApi>(r.Resolve<HttpClient>(), refitSettings));
         }

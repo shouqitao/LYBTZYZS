@@ -13,6 +13,7 @@ using LYBT.Desktop.Infrastructure.Logging;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
 // [已删除] using LYBT.Desktop.Prescriptions; - 模块已移除
+using LYBT.Desktop.Registration;
 using LYBT.Desktop.Sync;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.Services;
@@ -352,6 +353,9 @@ public partial class App : PrismApplication
         // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块的ConsultationItem（Entity→DTO→Item模式）
         // [已删除] PrescriptionsModule - 空壳模块已移除，功能已迁移到MedicalCase
         moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.WhenAvailable);
+
+        // PRD: registration.md - 挂号管理模块
+        moduleCatalog.AddModule<RegistrationModule>(InitializationMode.WhenAvailable);
 
         // OpenSpec: integrate-cardreader-module - 身份证读卡模块
         moduleCatalog.AddModule<CardReaderModule>(InitializationMode.WhenAvailable);

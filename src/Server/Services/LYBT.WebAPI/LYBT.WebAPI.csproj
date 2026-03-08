@@ -81,6 +81,8 @@
 		<ProjectReference Include="..\..\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
 		<!-- OpenSpec: implement-data-sync - 数据同步模块 -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
+		<!-- Sprint 2: 挂号模块 -->
+		<ProjectReference Include="..\..\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
 	</ItemGroup>
 
 </Project>

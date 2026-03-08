@@ -80,6 +80,7 @@ public static class ErrorCodeExtensions
             ErrorCode.FormulaDisabled => 403,
             ErrorCode.FormulaNoPermission => 403,
             ErrorCode.CannotDeleteSysAdmin => 403,
+            ErrorCode.RegistrationUnauthorizedCancel => 403,
 
             // 404 Not Found - 资源未找到
             ErrorCode.NotFound => 404,
@@ -95,6 +96,7 @@ public static class ErrorCodeExtensions
             ErrorCode.FormulaNotFound => 404,
             ErrorCode.FormulaDeleteFailed => 404,
             ErrorCode.SyncEntityNotFound => 404,
+            ErrorCode.RegistrationNotFound => 404,
 
             // 409 Conflict - 冲突错误
             ErrorCode.ConcurrencyConflict => 409,
@@ -147,6 +149,11 @@ public static class ErrorCodeExtensions
             ErrorCode.SyncCaseLocked => 422,
             ErrorCode.SyncHerbHasReference => 422,
             ErrorCode.SyncPatientHasReference => 422,
+            ErrorCode.RegistrationInvalidStatusTransition => 422,
+            ErrorCode.RegistrationCancelNotAllowed => 422,
+            ErrorCode.RegistrationPatientDisabled => 422,
+            ErrorCode.RegistrationDoctorNotAvailable => 422,
+            ErrorCode.RegistrationDuplicateWaiting => 409,
 
             // 429 Too Many Requests
             ErrorCode.RateLimitExceeded => 429,
@@ -243,6 +250,7 @@ public static class ErrorCodeExtensions
             ErrorCode.FormulaDisabled => ErrorCategory.Authorization,
             ErrorCode.FormulaNoPermission => ErrorCategory.Authorization,
             ErrorCode.CannotDeleteSysAdmin => ErrorCategory.Authorization,
+            ErrorCode.RegistrationUnauthorizedCancel => ErrorCategory.Authorization,
 
             // 资源错误
             ErrorCode.NotFound => ErrorCategory.Resource,
@@ -258,6 +266,7 @@ public static class ErrorCodeExtensions
             ErrorCode.FormulaNotFound => ErrorCategory.Resource,
             ErrorCode.FormulaDeleteFailed => ErrorCategory.Resource,
             ErrorCode.SyncEntityNotFound => ErrorCategory.Resource,
+            ErrorCode.RegistrationNotFound => ErrorCategory.Resource,
 
             // 并发错误
             ErrorCode.ConcurrencyConflict => ErrorCategory.Concurrency,
@@ -333,6 +342,11 @@ public static class ErrorCodeExtensions
             ErrorCode.SyncDependencyNotSynced => ErrorCategory.Business,
             ErrorCode.SyncPatientRemapFailed => ErrorCategory.Business,
             ErrorCode.SyncLocalActiveCasesExist => ErrorCategory.Business,
+            ErrorCode.RegistrationInvalidStatusTransition => ErrorCategory.Business,
+            ErrorCode.RegistrationCancelNotAllowed => ErrorCategory.Business,
+            ErrorCode.RegistrationPatientDisabled => ErrorCategory.Business,
+            ErrorCode.RegistrationDoctorNotAvailable => ErrorCategory.Business,
+            ErrorCode.RegistrationDuplicateWaiting => ErrorCategory.Business,
 
             // 系统错误
             ErrorCode.InternalError => ErrorCategory.System,
@@ -373,6 +387,7 @@ public static class ErrorCodeExtensions
             < 60000 => "Herbs",
             < 70000 => "Formula",
             < 80000 => "Sync",
+            < 90000 => "Registration",
             _ => "Unknown"
         };
     }

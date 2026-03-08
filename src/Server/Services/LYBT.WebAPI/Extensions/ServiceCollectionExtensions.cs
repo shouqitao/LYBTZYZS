@@ -9,6 +9,7 @@ using LYBT.Module.Formulas;
 using LYBT.Module.Herbs;
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Patients;
+using LYBT.Module.Registration;
 using LYBT.Module.Sync;
 using LYBT.Module.Users;
 using LYBT.Shared.Configuration.Options.Server;
@@ -101,6 +102,9 @@ public static class ServiceCollectionExtensions
 
         // 7. 同步模块 - OpenSpec: implement-data-sync
         services.AddSyncModule(configuration);
+
+        // 8. 挂号模块 - Sprint 2
+        services.AddRegistrationModule();
 
         return services;
     }

@@ -907,4 +907,43 @@ public enum ErrorCode
     SyncLocalActiveCasesExist = 70506,
 
     #endregion
+
+    #region 8xxxx - 挂号模块 (Registration)
+
+    /// <summary>
+    /// 挂号记录不存在
+    /// </summary>
+    RegistrationNotFound = 80001,
+
+    /// <summary>
+    /// 非法状态转换
+    /// </summary>
+    RegistrationInvalidStatusTransition = 80002,
+
+    /// <summary>
+    /// 有活跃/已完成医案，不允许取消
+    /// </summary>
+    RegistrationCancelNotAllowed = 80003,
+
+    /// <summary>
+    /// 无权取消此挂号 (非 Receptionist 或非本人创建)
+    /// </summary>
+    RegistrationUnauthorizedCancel = 80004,
+
+    /// <summary>
+    /// 患者已禁用，不允许创建挂号
+    /// </summary>
+    RegistrationPatientDisabled = 80005,
+
+    /// <summary>
+    /// 指派医生不可用 (禁用/不存在)
+    /// </summary>
+    RegistrationDoctorNotAvailable = 80006,
+
+    /// <summary>
+    /// 该患者已有等待中的挂号记录
+    /// </summary>
+    RegistrationDuplicateWaiting = 80007,
+
+    #endregion
 }

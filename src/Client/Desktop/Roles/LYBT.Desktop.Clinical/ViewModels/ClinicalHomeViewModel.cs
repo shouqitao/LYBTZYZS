@@ -173,6 +173,24 @@ namespace LYBT.Desktop.Clinical.ViewModels
         }
 
         /// <summary>
+        /// 导航到挂号队列
+        /// PRD: registration.md - US-REG-003 查看挂号队列
+        /// </summary>
+        [RelayCommand]
+        private void NavigateToRegistrationQueue()
+        {
+            try
+            {
+                Logger.LogInformation("导航到挂号队列视图");
+                _navigationCoordinator.NavigateTo(ViewNames.RegistrationList);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航到挂号队列时发生异常");
+            }
+        }
+
+        /// <summary>
         /// 导航到数据同步
         /// </summary>
         [RelayCommand]

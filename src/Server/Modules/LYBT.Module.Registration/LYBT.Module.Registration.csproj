@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+	</PropertyGroup>
+
+	<!-- 允许测试项目访问internal类 -->
+	<ItemGroup>
+		<InternalsVisibleTo Include="LYBT.Tests.Server" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Riok.Mapperly" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\Core\LYBT.Entities\LYBT.Entities.csproj" />
+	</ItemGroup>
+
+</Project>

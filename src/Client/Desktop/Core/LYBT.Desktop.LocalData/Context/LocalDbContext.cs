@@ -7,6 +7,7 @@ using LYBT.Entities.Herbs;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
+using LYBT.Entities.Registrations;
 using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -63,6 +64,9 @@ public class LocalDbContext : DbContext
 
     /// <summary>医案打印日志表 - T4-S5-03</summary>
     public DbSet<MedicalCasePrintLog> MedicalCasePrintLogs => Set<MedicalCasePrintLog>();
+
+    /// <summary>挂号表 - Sprint 2</summary>
+    public DbSet<Registration> Registrations => Set<Registration>();
 
     // ==================== 模型配置 ====================
 

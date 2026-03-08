@@ -63,6 +63,7 @@ public static class DataSourceRegistrationExtensions
         containerRegistry.Register<IFormulaDataSource, RemoteFormulaDataSource>();
         containerRegistry.Register<IMedicalCaseDataSource, RemoteMedicalCaseDataSource>();
         containerRegistry.Register<IUserDataSource, RemoteUserDataSource>();
+        containerRegistry.Register<IRegistrationDataSource, RemoteRegistrationDataSource>();
     }
 
     /// <summary>
@@ -85,6 +86,7 @@ public static class DataSourceRegistrationExtensions
         containerRegistry.Register<IFormulaDataSource, LocalFormulaDataSource>();
         containerRegistry.Register<IMedicalCaseDataSource, LocalMedicalCaseDataSource>();
         containerRegistry.Register<IUserDataSource, LocalUserDataSource>();
+        containerRegistry.Register<IRegistrationDataSource, LocalRegistrationDataSource>();
     }
 
     /// <summary>

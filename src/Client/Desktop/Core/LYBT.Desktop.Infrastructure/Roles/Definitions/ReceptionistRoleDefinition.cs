@@ -16,8 +16,9 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
     {
         private static readonly string[] Modules = new[]
         {
-            "UsersModule",    // 用户管理（个人资料、修改密码）
-            "PatientsModule"  // 前台仅需要患者管理功能
+            "UsersModule",        // 用户管理（个人资料、修改密码）
+            "PatientsModule",     // 前台需要患者管理功能
+            "RegistrationModule"  // PRD: registration.md - 挂号管理（前台核心功能）
         };
 
         /// <inheritdoc/>

@@ -199,7 +199,16 @@ public static class ErrorMessages
         [ErrorCode.SyncChecksumTypeError] = ("不支持的 Checksum 实体类型", "Unsupported checksum entity type"),
         [ErrorCode.SyncDependencyNotSynced] = ("请先同步药材和患者数据", "Sync dependencies not satisfied"),
         [ErrorCode.SyncPatientRemapFailed] = ("无法匹配患者，请手动处理", "Patient remap failed"),
-        [ErrorCode.SyncLocalActiveCasesExist] = ("本地有未完成的医案，请先完成或取消后再切换模式", "Local active cases exist, complete or cancel before switching mode")
+        [ErrorCode.SyncLocalActiveCasesExist] = ("本地有未完成的医案，请先完成或取消后再切换模式", "Local active cases exist, complete or cancel before switching mode"),
+
+        // 挂号模块 (8xxxx)
+        [ErrorCode.RegistrationNotFound] = ("挂号记录不存在", "Registration not found"),
+        [ErrorCode.RegistrationInvalidStatusTransition] = ("非法的挂号状态转换", "Invalid registration status transition"),
+        [ErrorCode.RegistrationCancelNotAllowed] = ("有活跃或已完成的医案，不允许取消挂号", "Cannot cancel registration with active or completed medical case"),
+        [ErrorCode.RegistrationUnauthorizedCancel] = ("无权取消此挂号记录", "Unauthorized to cancel this registration"),
+        [ErrorCode.RegistrationPatientDisabled] = ("患者已禁用，不允许创建挂号", "Patient is disabled, cannot create registration"),
+        [ErrorCode.RegistrationDoctorNotAvailable] = ("指派的医生不可用", "Assigned doctor is not available"),
+        [ErrorCode.RegistrationDuplicateWaiting] = ("该患者已有等待中的挂号记录", "Patient already has a waiting registration")
     };
 
     /// <summary>
