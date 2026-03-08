@@ -19,6 +19,9 @@ erDiagram
     PrescriptionItem }o--|| Herb : "N:1"
     User ||--o{ AuthSession : "1:N"
     User ||--o{ RefreshToken : "1:N"
+    Registration }o--|| Patient : "N:1"
+    Registration }o--|| User : "N:1 (指派医生)"
+    Registration ||--o| MedicalCase : "1:0..1"
 ```
 
 ## 聚合根边界
@@ -42,11 +45,15 @@ graph TB
         User
         Herb
         Formula
+        Registration
     end
 
     MC -.->|PatientId| Patient
     MC -.->|UserId| User
     PI -.->|HerbId| Herb
+    Registration -.->|PatientId| Patient
+    Registration -.->|DoctorId| User
+    Registration -.->|MedicalCaseId| MC
 ```
 
 **规则**: 聚合根内的实体 (Consultation, Prescription) 只能通过 MedicalCase 访问和操作，禁止独立的 Repository。
@@ -94,7 +101,7 @@ graph TB
 | 方法 | 说明 |
 |------|------|
 | `Complete()` | 设置 CaseStatus=Completed + CompletedAt=DateTime.Now |
-| `SaveAsDraft()` | 设置 CaseStatus=Draft |
+| `Suspend()` | 设置 CaseStatus=Suspended (MC-D20) |
 | `SoftDelete()` | 设置 IsDeleted=true (取消医案) |
 | `UpdateConsultation(request)` | 从 ConsultationInputDto 更新 Consultation 子实体字段 |
 
@@ -225,6 +232,25 @@ graph TB
 | FormulaType | FormulaType | 是 | 类型 (经典方/经验方) |
 | UserId | Guid? | 否 | 创建医生 |
 
+### Registration (挂号记录)
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| PatientId | Guid | 是 | 关联患者 (FK) |
+| DoctorId | Guid | 是 | 指派医生 (FK -> User) |
+| MedicalCaseId | Guid? | 否 | 关联医案 (FK, 接诊后填入) |
+| Source | RegistrationSource | 是 | 创建来源: Receptionist / Doctor |
+| Status | RegistrationStatus | 是 | 状态: Waiting / InProgress / Completed / Cancelled |
+
+> Registration 继承 BaseEntity (含 Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted)。与 MedicalCase 为 1:0..1 关系: Waiting 状态时无医案，接诊后填入 MedicalCaseId。
+
+**状态机**:
+- `Waiting -> InProgress`: 医生从队列选中 (自动创建 MedicalCase)
+- `Waiting -> Cancelled`: 前台手动取消 (REG-BR-001 校验)
+- `InProgress -> Completed`: 医案 Completed 时自动跟随
+- `InProgress -> Waiting`: 医案 Cancelled 且 Source=Receptionist (回退)
+- `InProgress -> Cancelled`: 医案 Cancelled 且 Source=Doctor (自动)
+
 ### FormulaHerbItem (验方药材项)
 
 | 字段 | 类型 | 必填 | 说明 |
@@ -319,11 +345,11 @@ User 的关联实体，管理用户登录会话和 JWT 刷新令牌:
 
 | 值 | 名称 | 说明 |
 |----|------|------|
-| 0 | Draft | 草稿/暂存 |
+| 0 | Suspended | 已挂起 (医生暂时离开，稍后继续) |
 | 1 | Active | 进行中 |
 | 2 | Completed | 已完成 |
 
-> **注意**: `Cancelled` (原值=3) 已移除。取消操作统一通过 `IsDeleted=true` 软删除实现。
+> **注意**: `Draft` (原值=0) 已重命名为 `Suspended` (MC-D20)。`Cancelled` (原值=3) 已移除，取消操作统一通过 `IsDeleted=true` 软删除实现。
 
 ### UserRole
 
@@ -375,6 +401,22 @@ User 的关联实体，管理用户登录会话和 JWT 刷新令牌:
 | 1 | Classic | 经典方 |
 | 2 | Experience | 经验方 |
 
+### RegistrationSource
+
+| 值 | 名称 | 说明 |
+|----|------|------|
+| 0 | Receptionist | 前台挂号 |
+| 1 | Doctor | 医生直接看诊 |
+
+### RegistrationStatus
+
+| 值 | 名称 | 说明 |
+|----|------|------|
+| 0 | Waiting | 等待接诊 |
+| 1 | InProgress | 接诊中 |
+| 2 | Completed | 已完成 |
+| 3 | Cancelled | 已取消 |
+
 ## 数据库约定
 
 ### 命名规范
@@ -401,7 +443,7 @@ User 的关联实体，管理用户登录会话和 JWT 刷新令牌:
 | IX_MedicalCases_UserId | MedicalCases | UserId | 普通索引 | 按医生查询医案 |
 | IX_MedicalCases_PatientId_Active | MedicalCases | PatientId | **筛选唯一索引** | BR-001 同一患者单活跃医案约束 (MC-D06) |
 
-**BR-001 筛选唯一索引** (MC-D06): 仅对 `CaseStatus IN (Active, Draft)` 的记录建立唯一索引。EF Core 配置:
+**BR-001 筛选唯一索引** (MC-D06): 仅对 `CaseStatus IN (Active, Suspended)` 的记录建立唯一索引。EF Core 配置:
 
 ```csharp
 entity.HasIndex(e => e.PatientId)
@@ -436,6 +478,8 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 | 2026-02-18 | v1.1 | PRD同步: MedicalCase 新增 IsPrinted 字段 (MC-D15, 从 Prescription 提升到聚合根); Prescription 移除 IsPrinted (打印保护由聚合根统一管理); Patient.Status 补充禁用语义 (PAT-D05) |
 | 2026-02-19 | v1.2 | 设计补全: 索引策略章节 (BR-001 筛选唯一索引 MC-D06); Herb 禁用药材显示规则 (MC-D07); Prescription 价格计算公式 (MC-D14) |
 | 2026-02-21 | v1.3 | 打印层级提升: ER 图和聚合根图 PrescriptionPrintLog->MedicalCasePrintLog (FK 改为 MedicalCase); MedicalCase 新增 PrintVersion; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt) |
-| 2026-02-21 | v1.4 | 深度重构同步: MedicalCaseStatus 移除 Cancelled=3 (取消统一为 IsDeleted=true); MedicalCase 新增 DDD 域方法 (Complete/SaveAsDraft/SoftDelete/UpdateConsultation)，从贫血模型演进为充血模型 |
+| 2026-02-21 | v1.4 | 深度重构同步: MedicalCaseStatus 移除 Cancelled=3 (取消统一为 IsDeleted=true); MedicalCase 新增 DDD 域方法 (Complete/Suspend/SoftDelete/UpdateConsultation)，从贫血模型演进为充血模型 |
 | 2026-02-26 | v1.5 | DOC3-10: 新增"辅助实体"章节，汇总 MedicalCasePrintLog/PrescriptionItem/FormulaHerbItem/AuthSession+RefreshToken 的职责和设计要点 |
 | 2026-02-28 | v1.6 | **PRD 偏差修复**: Patient 补充 IdType/EmergencyContact*/DisableReason 字段 (PRD-01); Herb 补充 Remark 字段 (PRD-05); PrintCount/LastPrintedAt 从 Prescription 移到 MedicalCase (PRD-06) |
+| 2026-03-06 | v1.7 | **Draft->Suspended 对齐**: MedicalCaseStatus 枚举 Draft=0 更新为 Suspended=0 (MC-D20); DDD 域方法 SaveAsDraft() 更新为 Suspend(); BR-001 索引描述更新 |
+| 2026-03-06 | v1.8 | **Registration 实体**: ER 图新增 Registration 关系; 独立实体图新增 Registration; 新增 Registration 实体字段表 + 状态机; 新增 RegistrationSource/RegistrationStatus 枚举 |

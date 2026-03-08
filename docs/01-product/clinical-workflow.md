@@ -709,7 +709,21 @@ flowchart TD
     style HD1 fill:#fff3e0,stroke:#e65100
 ```
 
-### 8.2 患者禁用联动
+### 8.2 Registration 医案取消联动
+
+医案取消时，Registration 根据 Source 执行不同的状态回退策略:
+
+| 触发事件 | Source=Receptionist | Source=Doctor |
+|---------|-------------------|---------------|
+| 医案创建 | Status -> InProgress | (创建即 InProgress) |
+| 医案 Completed | Status -> Completed | Status -> Completed |
+| 医案 Cancelled | Status -> Waiting (等前台取消); MedicalCaseId 清空 | Status -> Cancelled (自动) |
+
+**取消挂号前置校验 (REG-BR-001)**: 无关联医案 OR 关联医案状态为 Cancelled。有 Active/Suspended/Completed 医案时拒绝取消。
+
+**设计理由**: 职责对等 -- 前台发起的流程由前台闭环 (回退 Waiting 后手动取消)；医生自动创建的由系统自动闭环 (直接 Cancelled)。
+
+### 8.3 患者禁用联动
 
 ```mermaid
 flowchart TD
@@ -757,3 +771,4 @@ flowchart TD
 | 2026-02-21 | v1.2 | 深度重构同步: 状态机移除 Cancelled (取消=软删除); 状态机补充 Draft->Completed 转换; 补充聚合根域方法说明 |
 | 2026-02-21 | v2.0 | **设计深化**: (1) 新增两种入口模式 (前台挂号/医生直接); (2) 新增 Registration 独立挂号模块 (DoctorId 必填); (3) Section 六: 异常路径 (BR-001 碰撞处理/BR-002 离开界面/并发冲突); (4) Section 七: 子流程 (验方导入含重复药材合并策略 MC-D17/打印保护完整流程/编辑模式切换); (5) Section 八: 跨模块联动影响 (药材禁用/患者禁用); (6) 交互矩阵新增 Registration 模块 |
 | 2026-02-22 | v2.1 | **Draft→Suspended (MC-D20)**: 全文 Draft 替换为 Suspended; 状态机 `[*]→Active↔Suspended→Completed`; BR-001 碰撞处理 Draft→Suspended; BR-002 离开界面 SaveDraft→Suspend; 患者禁用联动 Draft/Active→Active/Suspended; 创建医案初始状态 Active |
+| 2026-03-06 | v2.2 | Section 八新增 8.2 Registration 医案取消联动 (Source 分流策略 + REG-BR-001 校验); 原 8.2 患者禁用联动重编号为 8.3 |

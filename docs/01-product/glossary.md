@@ -83,7 +83,7 @@
 
 | 值 | 英文 | 中文 | 说明 |
 |----|------|------|------|
-| 0 | Draft | 暂存 | 用户暂时保存 |
+| 0 | Suspended | 已挂起 | 医生暂时离开，稍后继续 (MC-D20，原 Draft 重命名) |
 | 1 | Active | 进行中 | 正在诊疗 |
 | 2 | Completed | 已完成 | 诊疗流程全部完成，锁定编辑 |
 
@@ -121,3 +121,4 @@
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 openspec/project.md 和实体代码提取 |
 | 2026-02-21 | v1.1 | MedicalCaseStatus 移除 Cancelled=3 (取消统一为软删除); AuditOperationType 移除 Cancel=5 (合并到 SoftDelete) |
+| 2026-03-06 | v1.2 | MedicalCaseStatus Draft=0 更新为 Suspended=0，对齐代码枚举 (MC-D20) |
