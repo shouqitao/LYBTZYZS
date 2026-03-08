@@ -104,6 +104,11 @@ namespace LYBT.Module.Users.Services
             return Result.Success();
         }
 
+        /// <summary>
+        /// USER-D05 / CODE-04: sysadmin 账户硬兜底检查。
+        /// </summary>
+        private static bool IsSysAdmin(User user) => user.UserName == "sysadmin";
+
         #endregion
 
         /// <inheritdoc />
@@ -145,6 +150,19 @@ namespace LYBT.Module.Users.Services
                     {
                         Id = id,
                         Reason = "用户不存在"
+                    });
+                    result.FailureCount++;
+                    continue;
+                }
+
+                // USER-D05 / CODE-04: sysadmin 硬兜底
+                if (IsSysAdmin(user))
+                {
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Name = user.UserName,
+                        Reason = "系统管理员账号不可被删除"
                     });
                     result.FailureCount++;
                     continue;
@@ -218,6 +236,19 @@ namespace LYBT.Module.Users.Services
                     {
                         Id = id,
                         Reason = "用户不存在"
+                    });
+                    continue;
+                }
+
+                // USER-D05 / CODE-04: sysadmin 硬兜底
+                if (IsSysAdmin(user))
+                {
+                    result.FailureCount++;
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Name = user.UserName,
+                        Reason = "系统管理员账号不可被管理"
                     });
                     continue;
                 }

@@ -666,42 +666,26 @@ public sealed class UserIntegrationTests : IntegrationTestBase
     #region Last Admin Protection (S2-07)
 
     [Fact]
-    public async Task ToggleStatus_DisableLastAdmin_ShouldBeRejected()
+    public async Task ToggleStatus_DisableAdmin_WithSysAdminPresent_ShouldSucceed()
     {
-        // Arrange - 使用 SuperAdmin 客户端
+        // Arrange - 种子数据: sysadmin (SuperAdmin, Enabled) + admin (Admin, Enabled) = 2 admin-level
+        // CODE-04: sysadmin 不可被禁用，但 admin 可以 (因为 sysadmin 作为备份)
         var sysAdmin = await LoginAsSysAdminAsync();
         var admin = await LoginAsAdminAsync();
-
         var adminUserId = await GetAdminUserIdAsync(admin);
-        var sysAdminUserId = await GetSysAdminUserIdAsync(admin);
 
-        // 最后管理员保护逻辑查询 u.Role >= UserRole.Admin && u.Status == Enabled
-        // 种子数据包含 Admin + SysAdmin(SuperAdmin)，需要先禁用 SysAdmin 使 Admin 成为最后一个
-        var disableSysAdminResponse = await sysAdmin
-            .PostAsync($"/api/v1/users/{sysAdminUserId}/toggle-status", null);
-        disableSysAdminResponse.StatusCode.Should().Be(HttpStatusCode.OK,
-            "禁用SysAdmin以使Admin成为最后一个管理员级别用户");
-
-        // Act - SuperAdmin 尝试禁用唯一的管理员
-        // Note: sysAdmin client token is still valid even though the user is disabled,
-        // because JWT tokens are stateless. Re-login to get a fresh admin-level client
-        // that can bypass the CanManageUser check.
+        // Act - SuperAdmin 禁用 admin (sysadmin 仍然活跃，admin 不是最后一个管理员)
         var response = await sysAdmin
             .PostAsync($"/api/v1/users/{adminUserId}/toggle-status", null);
 
-        // Assert - 最后管理员保护应拒绝此操作 (BusinessFail -> 422)
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
-            "禁用最后一个管理员应返回422");
+        // Assert - admin 可以被禁用 (sysadmin 提供管理员保障)
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            "admin 不是最后的管理员级用户 (sysadmin 仍活跃)，可以被禁用");
 
         var body = await response.Content
             .ReadFromJsonAsync<ApiResponse<UserDetailDto>>(JsonOptions);
-        body!.Success.Should().BeFalse();
-        body.Message.Should().Contain("最后一个管理员",
-            "错误消息应说明最后管理员保护原因");
-
-        // Cleanup - 恢复 SysAdmin 状态
-        await sysAdmin
-            .PostAsync($"/api/v1/users/{sysAdminUserId}/toggle-status", null);
+        body!.Success.Should().BeTrue();
+        body.Data!.Status.Should().Be(CommonStatus.Disabled);
     }
 
     #endregion
@@ -725,43 +709,27 @@ public sealed class UserIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task BatchDisable_LastAdminProtection_ShouldReportFailure()
+    public async Task BatchDisable_Admin_WithSysAdminPresent_ShouldSucceed()
     {
-        // Arrange - SuperAdmin 客户端，尝试批量禁用唯一的 Admin
+        // Arrange - CODE-04 保护 sysadmin 后，admin 不再是"最后管理员"
+        // 因为 sysadmin (SuperAdmin) 始终在线
         var sysAdmin = await LoginAsSysAdminAsync();
         var admin = await LoginAsAdminAsync();
-
         var adminUserId = await GetAdminUserIdAsync(admin);
-        var sysAdminUserId = await GetSysAdminUserIdAsync(admin);
-
-        // 最后管理员保护逻辑查询 u.Role >= UserRole.Admin && u.Status == Enabled
-        // 种子数据包含 Admin + SysAdmin(SuperAdmin)，需要先禁用 SysAdmin 使 Admin 成为最后一个
-        var disableSysAdminResponse = await sysAdmin
-            .PostAsync($"/api/v1/users/{sysAdminUserId}/toggle-status", null);
-        disableSysAdminResponse.StatusCode.Should().Be(HttpStatusCode.OK,
-            "禁用SysAdmin以使Admin成为最后一个管理员级别用户");
 
         var batchRequest = new { Ids = new List<Guid> { adminUserId } };
 
-        // Act
+        // Act - 批量禁用 admin
         var response = await sysAdmin
             .PostAsJsonAsync("/api/v1/users/batch-disable", batchRequest);
 
-        // Assert - 批量操作返回 200，但包含失败项
+        // Assert - admin 可以被批量禁用 (sysadmin 提供管理员保障)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content
             .ReadFromJsonAsync<ApiResponse<BatchOperationResultDto>>(JsonOptions);
-        body!.Success.Should().BeTrue();
-        body.Data.Should().NotBeNull();
-        body.Data!.TotalCount.Should().Be(1);
-        body.Data.FailureCount.Should().Be(1, "最后管理员不应被禁用");
-        body.Data.FailedItems.Should().ContainSingle()
-            .Which.Reason.Should().Contain("最后一个管理员");
-
-        // Cleanup - 恢复 SysAdmin 状态
-        await sysAdmin
-            .PostAsync($"/api/v1/users/{sysAdminUserId}/toggle-status", null);
+        body!.Data!.SuccessCount.Should().Be(1, "admin 可以被禁用");
+        body.Data.FailureCount.Should().Be(0);
     }
 
     #endregion
@@ -980,6 +948,154 @@ public sealed class UserIntegrationTests : IntegrationTestBase
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    #endregion
+
+    #region SysAdmin Protection (USER-D05 / CODE-04)
+
+    [Fact]
+    public async Task UpdateSysAdmin_ShouldBeRejected()
+    {
+        // Arrange
+        var admin = await LoginAsAdminAsync();
+        var sysAdminId = await GetSysAdminUserIdAsync(admin);
+        var updateRequest = new UserInputDto
+        {
+            Id = sysAdminId,
+            RealName = "被篡改的名称",
+            Role = UserRole.Admin // 尝试降级 sysadmin 角色
+        };
+
+        // Act
+        var response = await admin
+            .PutAsJsonAsync($"/api/v1/users/{sysAdminId}", updateRequest);
+
+        // Assert - USER-D05: sysadmin 不可被任何人管理
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
+            "修改 sysadmin 账户应被拒绝 (USER-D05)");
+
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<UserDetailDto>>(JsonOptions);
+        body!.Success.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task DeleteSysAdmin_ShouldBeRejected()
+    {
+        // Arrange
+        var admin = await LoginAsAdminAsync();
+        var sysAdminId = await GetSysAdminUserIdAsync(admin);
+
+        // Act - sysAdmin 尝试删除自己 (同一用户)
+        var sysAdmin = await LoginAsSysAdminAsync();
+        var response = await sysAdmin
+            .DeleteAsync($"/api/v1/users/{sysAdminId}");
+
+        // Assert - USER-D05: sysadmin 不可被删除
+        // Controller.Delete 对所有失败统一返回 NotFound(404)
+        // 多层保护: self-delete 保护 + sysadmin 硬兜底 + 最后管理员保护
+        response.IsSuccessStatusCode.Should().BeFalse(
+            "删除 sysadmin 账户不应成功 (USER-D05)");
+
+        // Admin 用户也不能删除 sysadmin (权限不足: Admin 不能管理 SuperAdmin)
+        var adminResponse = await admin
+            .DeleteAsync($"/api/v1/users/{sysAdminId}");
+        adminResponse.IsSuccessStatusCode.Should().BeFalse(
+            "Admin 角色不能删除 SuperAdmin 用户");
+    }
+
+    [Fact]
+    public async Task ResetSysAdminPassword_ShouldBeRejected()
+    {
+        // Arrange
+        var sysAdmin = await LoginAsSysAdminAsync();
+        var admin = await LoginAsAdminAsync();
+        var sysAdminId = await GetSysAdminUserIdAsync(admin);
+
+        var resetRequest = new { MustChangeOnNextLogin = true };
+
+        // Act - 即使 SuperAdmin 也不能重置 sysadmin 密码
+        var response = await sysAdmin
+            .PostAsJsonAsync($"/api/v1/users/{sysAdminId}/reset-password", resetRequest);
+
+        // Assert - USER-D05: sysadmin 密码不可被重置
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
+            "重置 sysadmin 密码应被拒绝 (USER-D05)");
+    }
+
+    [Fact]
+    public async Task ToggleSysAdminStatus_ShouldBeRejected()
+    {
+        // Arrange
+        var sysAdmin = await LoginAsSysAdminAsync();
+        var admin = await LoginAsAdminAsync();
+        var sysAdminId = await GetSysAdminUserIdAsync(admin);
+
+        // Act - 即使 SuperAdmin 也不能禁用 sysadmin
+        var response = await sysAdmin
+            .PostAsync($"/api/v1/users/{sysAdminId}/toggle-status", null);
+
+        // Assert - USER-D05: sysadmin 不可被禁用
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
+            "禁用 sysadmin 账户应被拒绝 (USER-D05)");
+    }
+
+    [Fact]
+    public async Task BatchDeleteIncludingSysAdmin_ShouldFailForSysAdminOnly()
+    {
+        // Arrange - 创建一个普通用户用于对照
+        var admin = await LoginAsAdminAsync();
+        var username = "testbatchsys_" + Guid.NewGuid().ToString("N")[..6];
+        var createResponse = await admin
+            .PostAsJsonAsync("/api/v1/users", new UserInputDto
+            {
+                UserName = username,
+                RealName = "对照用户",
+                Role = UserRole.Doctor
+            });
+        createResponse.IsSuccessStatusCode.Should().BeTrue();
+        var created = await createResponse.Content
+            .ReadFromJsonAsync<ApiResponse<UserDetailDto>>(JsonOptions);
+        var normalUserId = created!.Data!.Id;
+
+        var sysAdminId = await GetSysAdminUserIdAsync(admin);
+
+        // Act - 批量删除包含 sysadmin + 普通用户
+        var batchRequest = new { Ids = new List<Guid> { sysAdminId, normalUserId } };
+        var response = await admin
+            .PostAsJsonAsync("/api/v1/users/batch-delete", batchRequest);
+
+        // Assert - sysadmin 失败，普通用户成功
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<BatchOperationResultDto>>(JsonOptions);
+        body!.Data!.SuccessCount.Should().Be(1, "普通用户应删除成功");
+        body.Data.FailureCount.Should().Be(1, "sysadmin 应删除失败");
+        body.Data.FailedItems.Should().ContainSingle()
+            .Which.Id.Should().Be(sysAdminId);
+    }
+
+    [Fact]
+    public async Task BatchDisableSysAdmin_ShouldFailForSysAdminOnly()
+    {
+        // Arrange
+        var sysAdmin = await LoginAsSysAdminAsync();
+        var admin = await LoginAsAdminAsync();
+        var sysAdminId = await GetSysAdminUserIdAsync(admin);
+
+        // Act - 批量禁用 sysadmin
+        var batchRequest = new { Ids = new List<Guid> { sysAdminId } };
+        var response = await sysAdmin
+            .PostAsJsonAsync("/api/v1/users/batch-disable", batchRequest);
+
+        // Assert - sysadmin 不可被批量禁用
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<BatchOperationResultDto>>(JsonOptions);
+        body!.Data!.FailureCount.Should().Be(1, "sysadmin 不可被批量禁用");
+        body.Data.FailedItems.Should().ContainSingle()
+            .Which.Id.Should().Be(sysAdminId);
     }
 
     #endregion

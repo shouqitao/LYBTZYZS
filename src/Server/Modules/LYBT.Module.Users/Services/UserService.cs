@@ -294,6 +294,13 @@ namespace LYBT.Module.Users.Services
                 return Result<UserDetailDto>.Failure(errors);
             }
 
+            // USER-D05 / CODE-04: sysadmin 硬兜底
+            if (IsSysAdmin(entity))
+            {
+                _logger.LogWarning("[SVC] User.Update → SysAdminProtection - UserId={UserId}", id);
+                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "系统管理员账号不可被修改");
+            }
+
             // Issue #1909: 权限检查 - 只能更新有权限管理的用户
             var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, entity.Role))
@@ -363,6 +370,13 @@ namespace LYBT.Module.Users.Services
             if (targetUser == null)
                 return Result.Failure(GenericErrorCode.UserNotFound);
 
+            // USER-D05 / CODE-04: sysadmin 硬兜底
+            if (IsSysAdmin(targetUser))
+            {
+                _logger.LogWarning("[SVC] User.Delete → SysAdminProtection - UserId={UserId}", id);
+                return Result.Failure(GenericErrorCode.Forbidden, "系统管理员账号不可被删除");
+            }
+
             // Issue #1909: 权限检查和保护逻辑
             var permissionCheck = await CanDeleteUserAsync(id, targetUser.Role);
             if (!permissionCheck.IsSuccess)
@@ -390,6 +404,13 @@ namespace LYBT.Module.Users.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
                 return Result<ResetPasswordResponseDto>.Failure(GenericErrorCode.UserNotFound);
+
+            // USER-D05 / CODE-04: sysadmin 硬兜底
+            if (IsSysAdmin(entity))
+            {
+                _logger.LogWarning("[SVC] User.ResetPassword → SysAdminProtection - UserId={UserId}", id);
+                return Result<ResetPasswordResponseDto>.Failure(GenericErrorCode.Forbidden, "系统管理员账号密码不可被重置");
+            }
 
             // 始终使用配置文件中的默认密码，不再接受请求中的密码参数
             string password = _configuration["Lybt:DefaultPasswords:NewUserPassword"]
@@ -552,6 +573,13 @@ namespace LYBT.Module.Users.Services
 
         // Issue #1757: GenerateTemporaryPassword已移至PasswordHelper.GenerateTemporaryPassword
 
+        /// <summary>
+        /// USER-D05 / CODE-04: sysadmin 账户硬兜底检查。
+        /// sysadmin 不可被任何人管理 (不可修改角色/删除/禁用/重置密码)。
+        /// 自助操作 (/profile, /change-password) 不受此限制。
+        /// </summary>
+        private static bool IsSysAdmin(User user) => user.UserName == "sysadmin";
+
         #endregion
 
         // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法实现 ==========
@@ -565,6 +593,13 @@ namespace LYBT.Module.Users.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
                 return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
+
+            // USER-D05 / CODE-04: sysadmin 硬兜底
+            if (IsSysAdmin(entity))
+            {
+                _logger.LogWarning("[SVC] User.ToggleStatus → SysAdminProtection - UserId={UserId}", id);
+                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "系统管理员账号不可被禁用");
+            }
 
             // 权限检查
             var currentRole = GetCurrentUserRole();
@@ -614,6 +649,13 @@ namespace LYBT.Module.Users.Services
             var entity = await _repository.GetByIdIncludingDeletedAsync(id);
             if (entity == null)
                 return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
+
+            // USER-D05 / CODE-04: sysadmin 硬兜底 (防御性，正常流程 sysadmin 不会被删除)
+            if (IsSysAdmin(entity))
+            {
+                _logger.LogWarning("[SVC] User.Restore → SysAdminProtection - UserId={UserId}", id);
+                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "系统管理员账号不可被管理");
+            }
 
             if (!entity.IsDeleted)
                 return Result<UserDetailDto>.Failure(GenericErrorCode.InvalidRequest, "该用户未被删除，无需恢复");
