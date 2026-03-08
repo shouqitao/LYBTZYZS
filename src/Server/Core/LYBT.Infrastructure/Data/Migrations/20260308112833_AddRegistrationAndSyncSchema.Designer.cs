@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LYBT.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260308110356_AddRegistrationTable")]
-    partial class AddRegistrationTable
+    [Migration("20260308112833_AddRegistrationAndSyncSchema")]
+    partial class AddRegistrationAndSyncSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
