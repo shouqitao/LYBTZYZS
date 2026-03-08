@@ -132,11 +132,18 @@ namespace LYBT.Desktop.Printing.Models
         /// 打印显示文本 - 格式: "药材名 剂量单位(煎法)"
         /// 默认煎法不显示括号标注
         /// </summary>
+        // CODE-37: 药名截断限制
+        private const int HerbNameMaxLength = 10;
+
         public string DisplayText
         {
             get
             {
-                var baseText = $"{HerbName}{Dosage:0.##}{Unit}";
+                // CODE-37: 截断药名到 10 字符，避免溢出打印区域
+                var truncatedName = HerbName.Length > HerbNameMaxLength
+                    ? HerbName[..HerbNameMaxLength]
+                    : HerbName;
+                var baseText = $"{truncatedName}{Dosage:0.##}{Unit}";
                 if (DecocteMethod == DecocteMethod.Default)
                 {
                     return baseText;

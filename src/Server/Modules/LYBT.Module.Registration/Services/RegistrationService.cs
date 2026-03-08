@@ -127,11 +127,15 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
 
     /// <summary>
     /// 分页查询挂号记录
+    /// US-REG-007: 支持按日期范围、患者、医生过滤
     /// </summary>
     public async Task<Result<PagedResult<RegistrationListDto>>> GetPagedAsync(
-        int page = 1, int pageSize = 20, string? keyword = null)
+        int page = 1, int pageSize = 20, string? keyword = null,
+        DateTime? startDate = null, DateTime? endDate = null,
+        Guid? patientId = null, Guid? doctorId = null)
     {
-        var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
+        var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword,
+            startDate, endDate, patientId, doctorId);
         var items = _mapper.ToListDtos(pagedResult.Items.ToList());
 
         var dto = new PagedResult<RegistrationListDto>

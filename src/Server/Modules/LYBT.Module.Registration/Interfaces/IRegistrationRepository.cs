@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using RegistrationEntity = LYBT.Entities.Registrations.Registration;
 
@@ -10,6 +11,14 @@ namespace LYBT.Module.Registration.Interfaces;
 /// </summary>
 public interface IRegistrationRepository : IRepository<RegistrationEntity>
 {
+    /// <summary>
+    /// 分页查询挂号记录 (带高级过滤)
+    /// US-REG-007: 日期范围、患者、医生过滤
+    /// </summary>
+    Task<PagedResult<RegistrationEntity>> GetPagedAsync(
+        int page, int pageSize, string? keyword,
+        DateTime? startDate, DateTime? endDate,
+        Guid? patientId, Guid? doctorId);
     /// <summary>
     /// 查询等待队列 (Status=Waiting，按挂号时间升序)
     /// US-REG-003: 医生查看当前等待接诊的患者队列

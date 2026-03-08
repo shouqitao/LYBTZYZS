@@ -64,20 +64,26 @@ public class RegistrationsController : BaseApiController
 
     /// <summary>
     /// 分页查询挂号记录
+    /// US-REG-007: 支持按日期范围、患者、医生过滤
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<RegistrationListDto>>), 200)]
     public async Task<IActionResult> GetList(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
-        [FromQuery] string? keyword = null)
+        [FromQuery] string? keyword = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] Guid? patientId = null,
+        [FromQuery] Guid? doctorId = null)
     {
         if (page <= 0 || pageSize <= 0 || pageSize > 100)
         {
             return ValidationFail("页码和页大小参数无效 (页码>0, 页大小1-100)");
         }
 
-        var result = await _service.GetPagedAsync(page, pageSize, keyword);
+        var result = await _service.GetPagedAsync(page, pageSize, keyword,
+            startDate, endDate, patientId, doctorId);
         if (!result.IsSuccess || result.Data is null)
         {
             return HandleResult(result);

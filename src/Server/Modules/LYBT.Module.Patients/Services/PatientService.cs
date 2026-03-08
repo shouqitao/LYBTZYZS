@@ -429,6 +429,22 @@ namespace LYBT.Module.Patients.Services
                 return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientNotFound);
             }
 
+            // CODE-22: 禁用患者前检查是否有未完成的医案 (Active/Suspended)
+            if (entity.Status == CommonStatus.Enabled)
+            {
+                var unfinishedCount = await _dbContext.MedicalCases
+                    .Where(mc => mc.PatientId == id && !mc.IsDeleted
+                        && (mc.CaseStatus == MedicalCaseStatus.Active || mc.CaseStatus == MedicalCaseStatus.Suspended))
+                    .CountAsync();
+
+                if (unfinishedCount > 0)
+                {
+                    return Result<PatientDetailDto>.Failure(
+                        GenericErrorCode.PatientHasActiveCases,
+                        $"该患者有 {unfinishedCount} 条进行中的医案，请先完成或取消后再禁用");
+                }
+            }
+
             // 切换状态
             entity.Status = entity.Status == CommonStatus.Enabled
                 ? CommonStatus.Disabled

@@ -1,6 +1,7 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Registration.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -78,5 +79,59 @@ internal class RegistrationRepository : BaseRepository<RegistrationEntity>, IReg
         return await _dbSet.FirstOrDefaultAsync(r =>
             !r.IsDeleted &&
             r.MedicalCaseId == medicalCaseId);
+    }
+
+    /// <summary>
+    /// 分页查询挂号记录 (带高级过滤)
+    /// US-REG-007: 日期范围、患者、医生过滤
+    /// </summary>
+    public async Task<PagedResult<RegistrationEntity>> GetPagedAsync(
+        int page, int pageSize, string? keyword,
+        DateTime? startDate, DateTime? endDate,
+        Guid? patientId, Guid? doctorId)
+    {
+        var query = _dbSet.AsNoTracking().Where(r => !r.IsDeleted);
+
+        // 关键字过滤
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var term = keyword.Trim();
+            query = query.Where(r =>
+                r.PatientName.Contains(term) ||
+                r.DoctorName.Contains(term));
+        }
+
+        // 日期范围过滤
+        if (startDate.HasValue)
+        {
+            query = query.Where(r => r.CreatedAt >= startDate.Value);
+        }
+        if (endDate.HasValue)
+        {
+            query = query.Where(r => r.CreatedAt < endDate.Value);
+        }
+
+        // 患者过滤
+        if (patientId.HasValue)
+        {
+            query = query.Where(r => r.PatientId == patientId.Value);
+        }
+
+        // 医生过滤
+        if (doctorId.HasValue)
+        {
+            query = query.Where(r => r.DoctorId == doctorId.Value);
+        }
+
+        // 默认排序: 最新在前
+        query = query.OrderByDescending(r => r.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<RegistrationEntity>(items, totalCount, page, pageSize);
     }
 }

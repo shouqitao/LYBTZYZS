@@ -14,6 +14,12 @@ public static class AuthEvents
     #region 登录相关事件
 
     /// <summary>
+    /// 登录开始事件 (US-AUTH-013)
+    /// 当登录流程开始前触发，用于 UI 状态显示
+    /// </summary>
+    public class LoginStartedEvent : PubSubEvent<LoginStartedPayload> { }
+
+    /// <summary>
     /// 登录成功事件
     /// 当用户成功登录（手动或自动登录）时触发
     /// </summary>
@@ -28,6 +34,12 @@ public static class AuthEvents
     #endregion
 
     #region 登出相关事件
+
+    /// <summary>
+    /// 登出开始事件 (US-AUTH-013)
+    /// 当登出流程开始前触发，用于 UI 状态显示
+    /// </summary>
+    public class LogoutStartedEvent : PubSubEvent<LogoutStartedPayload> { }
 
     /// <summary>
     /// 登出完成事件
@@ -62,6 +74,12 @@ public static class AuthEvents
     #region Token相关事件
 
     /// <summary>
+    /// 会话延续事件 (US-AUTH-013)
+    /// 当Token刷新成功时触发，表示用户会话已延续
+    /// </summary>
+    public class SessionExtendedEvent : PubSubEvent<SessionExtendedPayload> { }
+
+    /// <summary>
     /// Token刷新成功事件
     /// </summary>
     public class TokenRefreshSucceededEvent : PubSubEvent<TokenRefreshSucceededPayload> { }
@@ -83,6 +101,33 @@ public static class AuthEvents
 }
 
 #region 事件载荷定义
+
+/// <summary>
+/// 登录开始载荷 (US-AUTH-013)
+/// </summary>
+public record LoginStartedPayload
+{
+    /// <summary>尝试登录的用户名</summary>
+    public string? UserName { get; init; }
+
+    /// <summary>是否为自动登录尝试</summary>
+    public bool IsAutoLogin { get; init; }
+
+    /// <summary>时间戳</summary>
+    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// 登出开始载荷 (US-AUTH-013)
+/// </summary>
+public record LogoutStartedPayload
+{
+    /// <summary>登出的用户名</summary>
+    public string? UserName { get; init; }
+
+    /// <summary>时间戳</summary>
+    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+}
 
 /// <summary>
 /// 登录成功载荷
@@ -267,6 +312,18 @@ public record PendingLogoutsClearedPayload
     /// <summary>
     /// 时间戳
     /// </summary>
+    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// 会话延续载荷 (US-AUTH-013)
+/// </summary>
+public record SessionExtendedPayload
+{
+    /// <summary>新的过期时间</summary>
+    public required DateTime NewExpiresAt { get; init; }
+
+    /// <summary>时间戳</summary>
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 }
 

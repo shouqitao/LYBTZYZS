@@ -1,58 +1,55 @@
-# 测试体系重构
+# Sprint 3: 核心业务补全 (6 US)
 
 ## Goal
-化繁为简，确保核心流程端到端跑通。删除假绿测试和即将废弃的本地模式测试。
-
-## Design Document
-docs/plans/2026-03-05-desktop-test-simplification-design.md
-
-## Implementation Plan
-docs/plans/2026-03-05-test-restructuring-plan.md
+完成 Sprint 3 Should Have US 补全，推进 v1.0-beta。
 
 ## Decisions
 | Decision | Rationale |
 |----------|-----------|
-| 取消 Phase 0 (本地 DB 迁移) | 等 SYNC-D02 (Sprint 4) 统一处理，避免重复劳动 |
-| 删除全部本地模式测试 (~131) | DataSource 层 + DesktopFixture 在 SYNC-D02 后整体废弃 |
-| 删除全部 mock-heavy 测试 (~109) | 验证 Received() 不能捕获真实 bug |
-| 新建 LYBT.Tests.Integration | 职责分离: Integration 测远程联通, Desktop 测纯逻辑 |
-| 远程模式与本地模式解耦 | Desktop+WebAPI 联通测试不受本地 DB 选择影响 |
-| Mock 白名单制 | 仅 mock 硬件/Shell/HTTP，其余真实实现 |
+| 执行顺序: B -> C -> A -> D -> E | B 最小快速出成果; C 独立清晰; A 核心业务; D/E 独立后置 |
+| US-HERB-008/MC-010/MC-015 标记 Done | 调研确认已完成，无需额外工作 |
+| CODE-08 修复方案: PrescriptionImportExtensions 接受价格查询 | 在 Service 层主动填充价格，不依赖 UI 被动同步 |
+| US-AUTH-013 排除 SessionExpiring | simplify-auth 设计决策已移除该事件 |
 
 ## Phases
 
-### Phase 1: WebAPI 正确性
+### Phase B: CODE-22 患者状态检查 (US-PAT-013)
 Status: complete
-- [x] Server 1017 tests 全绿
 
-### Phase 2: Desktop + API 联通 (新建 LYBT.Tests.Integration)
-Status: complete
-- [x] Task 1: 创建项目脚手架 (.csproj + GlobalUsings + sln)
-- [x] Task 2: IntegrationFixture (WebApplicationFactory + Refit + Respawn)
-- [x] Task 3: AuthFlowTests (6 tests)
-- [x] Task 4: PatientFlowTests (5 tests)
-- [x] Task 5: HerbFlowTests (4 tests)
-- [x] Task 6: FormulaFlowTests (4 tests)
-- [x] Task 7: MedicalCaseFlowTests (8 tests)
+- [x] Task B.1: RED - 测试禁用有 Active 医案的患者返回 422
+- [x] Task B.2: RED - 测试禁用无活跃医案的患者成功
+- [x] Task B.3: GREEN - PatientService.ToggleStatusAsync() 添加医案检查
+- [x] Task B.4: REFACTOR + 回归 (3/3 tests passed)
 
-### Phase 3: Desktop 精简
+### Phase C: 挂号历史查询 (US-REG-007)
 Status: complete
-- [x] Task 8: 删除全部本地模式测试 (20 files, ~131 tests)
-- [x] Task 9: 删除 mock-heavy ViewModel/PureLogic 测试 (9 files, ~109 tests)
-- [x] Task 10: 清理 .csproj (移除 5 个未使用依赖) + 创建 WpfTestHelper
-- [x] Task 11: 确认剩余测试 269 passed
-- [x] Task 12: ConsultationEditorPureTests (6 tests)
-- [x] Task 13: PrescriptionEditorPureTests (10 tests)
-- [x] Task 14: CardReaderPureTests (11 tests)
-- [x] Task 15: WorkspaceState (+3) + ChangeTracker (+4) 补充测试
 
-### Phase 4: 全量验证
+- [x] Task C.1: RED - 4 个测试 (patientId/doctorId/dateRange/pastDate) 全部 RED 确认
+- [x] Task C.2: GREEN - Controller + IRegistrationService + RegistrationService + IRegistrationRepository + RegistrationRepository 添加 startDate/endDate/patientId/doctorId
+- [x] Task C.3: 4/4 tests passed
+
+### Phase A: CODE-08 价格同步 (US-MC-016 + US-MC-018)
 Status: complete
-- [x] Server 1017 + Integration 27 + Desktop 307 + Arch 76 = 1427 全绿
+
+- [x] Task A.1: RED - 5 个测试 (验方导入填价/无价/未知药 + 历史复制刷新/保持) 全 RED 确认
+- [x] Task A.2: GREEN - PrescriptionImportExtensions 添加 herbPrices 参数 + MedicalCaseCommandsViewModel.BuildHerbPriceLookup()
+- [x] Task A.3: 5/5 tests passed, 全量编译 0 error
+
+### Phase D: 打印修复 (US-PRINT-001)
+Status: complete
+
+- [x] Task D.1: RED - 3 个测试 (null/空Items/无处方) 验证空处方打印阻止
+- [x] Task D.2: GREEN - PrescriptionPrintHandler + PrescriptionPrintService 添加空处方校验 (CODE-24)
+- [x] Task D.3: CODE-36 确认 A4 模板已独立适配 (Margin=57/FontSize 更大); CODE-37 药名截断改为 10 字符硬截断
+- [x] Task D.4: 全量编译 0 error, 3/3 tests passed
+
+### Phase E: 认证事件 (US-AUTH-013)
+Status: complete
+
+- [x] Task E.1: RED - 4 个测试 (LoginAsync/AutoLogin/FailStillPublish/Logout) 全 RED 确认
+- [x] Task E.2: GREEN - SessionExtendedEvent 新增 + AuthenticationService/LogoutService/TokenRefreshHandler 发布事件
+- [x] Task E.3: REFACTOR + 回归 (全量编译 0 error, 310/310 Desktop tests passed)
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
 |-------|---------|------------|
-| 3 files referenced DesktopFixture.InitializeWpf() | 1 | 创建 WpfTestHelper 轻量替代 |
-| Refit DELETE 204 无法反序列化 ApiResponse | 1 | MedicalCase 删除使用原始 HttpClient |
-| Clone 端点 Server 未实现 | 1 | FormulaFlowTests 替换为 ToggleStatus 测试 |

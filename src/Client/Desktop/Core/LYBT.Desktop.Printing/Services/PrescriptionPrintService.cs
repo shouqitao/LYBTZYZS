@@ -48,6 +48,10 @@ namespace LYBT.Desktop.Printing.Services
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
+            // CODE-24: 防御性检查 -- 空处方不应到达打印层
+            if (model.Items == null || model.Items.Count == 0)
+                throw new InvalidOperationException("处方无药材信息，无法打印");
+
             try
             {
                 _logger.LogInformation("[PRINT] PrintAsync started");
@@ -95,6 +99,10 @@ namespace LYBT.Desktop.Printing.Services
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
+
+            // CODE-24: 防御性检查 -- 空处方不应到达打印层
+            if (model.Items == null || model.Items.Count == 0)
+                throw new InvalidOperationException("处方无药材信息，无法预览");
 
             try
             {

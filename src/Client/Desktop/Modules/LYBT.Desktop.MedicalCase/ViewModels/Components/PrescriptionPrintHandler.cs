@@ -77,6 +77,12 @@ public class PrescriptionPrintHandler
                 return PrintResult.Failed("没有可打印的处方数据");
             }
 
+            // CODE-24: 校验空处方 -- 处方存在但无药材项不允许打印
+            if (prescription.Items == null || prescription.Items.Count == 0)
+            {
+                return PrintResult.Failed("处方无药材信息，无法打印");
+            }
+
             // OpenSpec: create-printing-module - 组装PrescriptionPrintModel并调用新接口
             var printModel = BuildPrintModel(prescription, currentPatient, consultationData);
             await _printService.PreviewAsync(printModel);

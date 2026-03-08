@@ -57,13 +57,16 @@ public class LogoutService : ILogoutService, IDisposable
     {
         _logger.LogInformation("开始可靠登出流程");
 
-        // 触发状态机开始登出
-        _stateMachine.Fire(AuthEvent.StartLogout);
-
         // 获取登出所需信息（在清除前获取）
         var loginResponse = await _tokenStorage.GetLoginResponseAsync();
         var username = loginResponse?.User?.UserName;
         var refreshToken = loginResponse?.RefreshToken;
+
+        // US-AUTH-013: 发布登出开始事件
+        PublishLogoutStartedEvent(username);
+
+        // 触发状态机开始登出
+        _stateMachine.Fire(AuthEvent.StartLogout);
 
         // Step 1: 本地登出（始终成功）
         await ExecuteLocalLogoutAsync();
@@ -294,6 +297,24 @@ public class LogoutService : ILogoutService, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "发布服务端登出失败事件失败");
+        }
+    }
+
+    /// <summary>
+    /// US-AUTH-013: 发布登出开始事件
+    /// </summary>
+    private void PublishLogoutStartedEvent(string? username)
+    {
+        if (_eventAggregator == null) return;
+
+        try
+        {
+            _eventAggregator.GetEvent<AuthEvents.LogoutStartedEvent>().Publish(
+                new LogoutStartedPayload { UserName = username });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "发布LogoutStartedEvent失败");
         }
     }
 

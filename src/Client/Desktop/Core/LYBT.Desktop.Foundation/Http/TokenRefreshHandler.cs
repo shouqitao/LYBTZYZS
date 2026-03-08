@@ -402,6 +402,10 @@ namespace LYBT.Desktop.Foundation.Http
                     NewExpiresAt = loginResponse?.ExpiresAt ?? DateTime.UtcNow.AddHours(1)
                 };
                 _eventAggregator.GetEvent<AuthEvents.TokenRefreshSucceededEvent>().Publish(payload);
+
+                // US-AUTH-013: 同时发布 SessionExtendedEvent
+                _eventAggregator.GetEvent<AuthEvents.SessionExtendedEvent>().Publish(
+                    new SessionExtendedPayload { NewExpiresAt = payload.NewExpiresAt });
             }
             catch (Exception ex)
             {

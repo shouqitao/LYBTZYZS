@@ -335,7 +335,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                 return;
             }
 
-            var herbItems = FilterDisabledHerbs(formula.ToPrescriptionItemDtos(herbs), "验方导入");
+            var herbPrices = BuildHerbPriceLookup();
+            var herbItems = FilterDisabledHerbs(formula.ToPrescriptionItemDtos(herbs, herbPrices), "验方导入");
             if (!herbItems.Any())
             {
                 await Host.ShowErrorAsync("验方无有效药材");
@@ -387,7 +388,9 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             }
 
             // T5-P2-21: Filter disabled herbs
-            var herbItems = FilterDisabledHerbs(items.ToPrescriptionItemDtos(), "历史复制");
+            // CODE-08: 复制历史处方时刷新为当前药材价格
+            var herbPrices = BuildHerbPriceLookup();
+            var herbItems = FilterDisabledHerbs(items.ToPrescriptionItemDtos(herbPrices), "历史复制");
             if (!herbItems.Any())
             {
                 await Host.ShowErrorAsync("历史处方无有效药材");
@@ -429,6 +432,19 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         {
             Host.SetBusy(false);
         }
+    }
+
+    /// <summary>
+    /// CODE-08: 从 AllHerbs 构建 HerbId -> 当前价格 查找表
+    /// </summary>
+    private IReadOnlyDictionary<Guid, decimal>? BuildHerbPriceLookup()
+    {
+        var allHerbs = GetAllHerbs?.Invoke();
+        if (allHerbs == null) return null;
+
+        return allHerbs
+            .Where(h => h.Status == CommonStatus.Enabled)
+            .ToDictionary(h => h.Id, h => h.Price);
     }
 
     /// <summary>

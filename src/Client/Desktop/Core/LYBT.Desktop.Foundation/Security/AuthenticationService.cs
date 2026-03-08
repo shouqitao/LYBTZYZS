@@ -4,6 +4,7 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 
 namespace LYBT.Desktop.Foundation.Security
 {
@@ -21,19 +22,22 @@ namespace LYBT.Desktop.Foundation.Security
         private readonly ITokenValidator _tokenValidator;
         private readonly ICredentialVault _credentialVault;
         private readonly ILogger<AuthenticationService> _logger;
+        private readonly IEventAggregator? _eventAggregator;
 
         public AuthenticationService(
             IAuthApi authApi,
             ITokenStorageService tokenStorage,
             ITokenValidator tokenValidator,
             ICredentialVault credentialVault,
-            ILogger<AuthenticationService> logger)
+            ILogger<AuthenticationService> logger,
+            IEventAggregator? eventAggregator = null)
         {
             _authApi = authApi;
             _tokenStorage = tokenStorage;
             _tokenValidator = tokenValidator;
             _credentialVault = credentialVault;
             _logger = logger;
+            _eventAggregator = eventAggregator;
         }
 
         /// <summary>
@@ -52,6 +56,9 @@ namespace LYBT.Desktop.Foundation.Security
         {
             try
             {
+                // US-AUTH-013: 发布登录开始事件
+                PublishLoginStartedEvent(request.UserName, isAutoLogin: false);
+
                 var apiResponse = await _authApi.LoginAsync(request);
 
                 if (apiResponse.Success && apiResponse.Data != null)
@@ -246,6 +253,9 @@ namespace LYBT.Desktop.Foundation.Security
         {
             try
             {
+                // US-AUTH-013: 发布登录开始事件 (自动登录)
+                PublishLoginStartedEvent(request.UserName, isAutoLogin: true);
+
                 _logger.LogInformation("使用AutoLoginToken登录 - UserName: {UserName}", request.UserName);
 
                 var apiResponse = await _authApi.LoginWithAutoTokenAsync(request);
@@ -266,6 +276,28 @@ namespace LYBT.Desktop.Foundation.Security
             {
                 _logger.LogError(ex, "AutoLoginToken登录异常 - UserName: {UserName}", request.UserName);
                 return ServiceResult<LoginResponse>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("自动登录", ex));
+            }
+        }
+
+        /// <summary>
+        /// US-AUTH-013: 发布登录开始事件
+        /// </summary>
+        private void PublishLoginStartedEvent(string? userName, bool isAutoLogin)
+        {
+            if (_eventAggregator == null) return;
+
+            try
+            {
+                _eventAggregator.GetEvent<AuthEvents.LoginStartedEvent>().Publish(
+                    new LoginStartedPayload
+                    {
+                        UserName = userName,
+                        IsAutoLogin = isAutoLogin
+                    });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发布LoginStartedEvent失败");
             }
         }
 

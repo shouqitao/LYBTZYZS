@@ -358,4 +358,97 @@ public sealed class RegistrationIntegrationTests : IntegrationTestBase
     }
 
     #endregion
+
+    #region History Filter (US-REG-007)
+
+    [Fact]
+    public async Task GetList_FilterByPatientId_ShouldReturnOnlyThatPatient()
+    {
+        // Arrange - Create 2 patients, each with a registration
+        var admin = await LoginAsAdminAsync();
+        var (patientId1, patientName1) = await CreatePatientAsync(admin);
+        var (patientId2, patientName2) = await CreatePatientAsync(admin);
+        var (doctorId, doctorName) = await GetDoctorInfoAsync(admin);
+
+        await CreateRegistrationAsync(admin, patientId1, patientName1, doctorId, doctorName);
+        await CreateRegistrationAsync(admin, patientId2, patientName2, doctorId, doctorName);
+
+        // Act - Filter by patient 1
+        var response = await admin.GetAsync($"/api/v1/registrations?patientId={patientId1}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<PagedResult<RegistrationListDto>>>(JsonOptions);
+        body!.Data!.Items.Should().AllSatisfy(r =>
+            r.PatientId.Should().Be(patientId1));
+    }
+
+    [Fact]
+    public async Task GetList_FilterByDoctorId_ShouldReturnOnlyThatDoctor()
+    {
+        // Arrange
+        var admin = await LoginAsAdminAsync();
+        var (patientId, patientName) = await CreatePatientAsync(admin);
+        var (doctorId, doctorName) = await GetDoctorInfoAsync(admin);
+        await CreateRegistrationAsync(admin, patientId, patientName, doctorId, doctorName);
+
+        // Act - Filter by doctor
+        var response = await admin.GetAsync($"/api/v1/registrations?doctorId={doctorId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<PagedResult<RegistrationListDto>>>(JsonOptions);
+        body!.Data!.Items.Should().AllSatisfy(r =>
+            r.DoctorId.Should().Be(doctorId));
+    }
+
+    [Fact]
+    public async Task GetList_FilterByDateRange_ShouldReturnOnlyMatchingRecords()
+    {
+        // Arrange
+        var admin = await LoginAsAdminAsync();
+        var (patientId, patientName) = await CreatePatientAsync(admin);
+        var (doctorId, doctorName) = await GetDoctorInfoAsync(admin);
+        await CreateRegistrationAsync(admin, patientId, patientName, doctorId, doctorName);
+
+        var today = DateTime.Today;
+        var startDate = today.ToString("yyyy-MM-dd");
+        var endDate = today.AddDays(1).ToString("yyyy-MM-dd");
+
+        // Act - Filter by today's date range
+        var response = await admin.GetAsync(
+            $"/api/v1/registrations?startDate={startDate}&endDate={endDate}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<PagedResult<RegistrationListDto>>>(JsonOptions);
+        body!.Data!.Items.Should().NotBeEmpty("today's registration should be in range");
+        body.Data.Items.Should().AllSatisfy(r =>
+            r.CreatedAt.Should().BeOnOrAfter(today));
+    }
+
+    [Fact]
+    public async Task GetList_FilterByPastDateRange_ShouldReturnEmpty()
+    {
+        // Arrange
+        var admin = await LoginAsAdminAsync();
+        var (patientId, patientName) = await CreatePatientAsync(admin);
+        var (doctorId, doctorName) = await GetDoctorInfoAsync(admin);
+        await CreateRegistrationAsync(admin, patientId, patientName, doctorId, doctorName);
+
+        // Act - Filter by a past date range (should not include today's registrations)
+        var response = await admin.GetAsync(
+            "/api/v1/registrations?startDate=2020-01-01&endDate=2020-01-02");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content
+            .ReadFromJsonAsync<ApiResponse<PagedResult<RegistrationListDto>>>(JsonOptions);
+        body!.Data!.Items.Should().BeEmpty("no registrations exist in 2020");
+    }
+
+    #endregion
 }

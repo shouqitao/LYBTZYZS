@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Server.Infrastructure;
@@ -1004,6 +1005,109 @@ public sealed class PatientIntegrationTests : IntegrationTestBase
             .ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
         body!.Data!.BirthDate.Should().BeNull();
         body.Data.Age.Should().BeNull("无BirthDate时Age应为null");
+    }
+
+    #endregion
+
+    #region Toggle Status (CODE-22: Active Medical Case Check)
+
+    [Fact]
+    public async Task ToggleStatus_DisablePatient_WithActiveMedicalCase_ShouldReturn422()
+    {
+        // Arrange - Create patient + active medical case
+        var admin = await LoginAsAdminAsync();
+        var doctor = await LoginAsDoctorAsync();
+        var doctorResponse = await doctor.GetAsync("/api/v1/users/current");
+        var doctorBody = await doctorResponse.Content.ReadFromJsonAsync<ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDetailDto>>(JsonOptions);
+        var doctorUserId = doctorBody!.Data!.Id;
+
+        var patientInput = new PatientInputDto
+        {
+            Name = "CODE22_Active_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Male,
+            BirthDate = new DateTime(1985, 1, 1),
+            PhoneNumber = UniquePhone(),
+            IdNumber = UniqueIdNumber(),
+            Address = "北京市测试区"
+        };
+        var createResp = await admin.PostAsJsonAsync("/api/v1/patients", patientInput);
+        createResp.IsSuccessStatusCode.Should().BeTrue($"创建患者应成功: {createResp.StatusCode}");
+        var createBody = await createResp.Content.ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
+        var patientId = createBody!.Data!.Id;
+
+        // Create medical case (Active status by default)
+        var caseInput = new MedicalCaseInputDto { PatientId = patientId, UserId = doctorUserId };
+        var caseResp = await doctor.PostAsJsonAsync("/api/v1/medicalcases", caseInput);
+        caseResp.IsSuccessStatusCode.Should().BeTrue("创建医案应成功");
+
+        // Act - Try to disable the patient
+        var toggleResponse = await admin.PostAsync($"/api/v1/patients/{patientId}/toggle-status", null);
+
+        // Assert - Should be blocked (422) because patient has active medical case
+        toggleResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
+            "CODE-22: 禁用有进行中医案的患者应返回 422");
+    }
+
+    [Fact]
+    public async Task ToggleStatus_DisablePatient_WithNoActiveCases_ShouldSucceed()
+    {
+        // Arrange - Create patient without medical cases
+        var admin = await LoginAsAdminAsync();
+        var patientInput = new PatientInputDto
+        {
+            Name = "CODE22_NoCase_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Female,
+            BirthDate = new DateTime(1990, 6, 15),
+            PhoneNumber = UniquePhone(),
+            IdNumber = UniqueIdNumber(),
+            Address = "上海市测试区"
+        };
+        var createResp = await admin.PostAsJsonAsync("/api/v1/patients", patientInput);
+        createResp.IsSuccessStatusCode.Should().BeTrue($"创建患者应成功: {createResp.StatusCode}");
+        var createBody = await createResp.Content.ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
+        var patientId = createBody!.Data!.Id;
+
+        // Act - Disable the patient (no active cases)
+        var toggleResponse = await admin.PostAsync($"/api/v1/patients/{patientId}/toggle-status", null);
+
+        // Assert - Should succeed
+        toggleResponse.StatusCode.Should().Be(HttpStatusCode.OK,
+            "无活跃医案的患者应可正常禁用");
+        var body = await toggleResponse.Content.ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
+        body!.Data!.Status.Should().Be(CommonStatus.Disabled);
+    }
+
+    [Fact]
+    public async Task ToggleStatus_EnablePatient_WithActiveMedicalCase_ShouldSucceed()
+    {
+        // Arrange - Create and disable patient
+        var admin = await LoginAsAdminAsync();
+        var patientInput = new PatientInputDto
+        {
+            Name = "CODE22_Enable_" + Guid.NewGuid().ToString("N")[..6],
+            Gender = Gender.Male,
+            BirthDate = new DateTime(1988, 3, 20),
+            PhoneNumber = UniquePhone(),
+            IdNumber = UniqueIdNumber(),
+            Address = "广州市测试区"
+        };
+        var createResp = await admin.PostAsJsonAsync("/api/v1/patients", patientInput);
+        createResp.IsSuccessStatusCode.Should().BeTrue($"创建患者应成功: {createResp.StatusCode}");
+        var createBody = await createResp.Content.ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
+        var patientId = createBody!.Data!.Id;
+
+        // Disable the patient first
+        var disableResp = await admin.PostAsync($"/api/v1/patients/{patientId}/toggle-status", null);
+        disableResp.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act - Re-enable the patient (enable direction should always succeed)
+        var enableResp = await admin.PostAsync($"/api/v1/patients/{patientId}/toggle-status", null);
+
+        // Assert - Enable should always succeed regardless of medical cases
+        enableResp.StatusCode.Should().Be(HttpStatusCode.OK,
+            "重新启用患者应始终成功，不受医案状态限制");
+        var body = await enableResp.Content.ReadFromJsonAsync<ApiResponse<PatientDetailDto>>(JsonOptions);
+        body!.Data!.Status.Should().Be(CommonStatus.Enabled);
     }
 
     #endregion
