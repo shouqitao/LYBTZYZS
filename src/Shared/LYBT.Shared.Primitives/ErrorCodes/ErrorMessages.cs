@@ -44,6 +44,7 @@ public static class ErrorMessages
         [ErrorCode.AuthTokenRevoked] = ("登录已失效，请重新登录", "Token has been revoked"),
         [ErrorCode.AuthRefreshTokenExpired] = ("会话已过期，请重新登录", "Refresh token expired"),
         [ErrorCode.AuthRefreshTokenInvalid] = ("刷新凭据无效", "Refresh token is invalid"),
+        [ErrorCode.AuthAccessTokenExpired] = ("访问令牌已过期，请重新登录", "Access token has expired"),
         [ErrorCode.AuthConcurrentSessionLimit] = ("登录设备数超过限制", "Concurrent session limit exceeded"),
 
         // 患者模块 (2xxxx)

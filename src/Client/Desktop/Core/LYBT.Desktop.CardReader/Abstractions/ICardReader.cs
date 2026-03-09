@@ -93,9 +93,15 @@ public class CardDetectedEventArgs : EventArgs
 
 /// <summary>
 /// 读卡器配置选项
+/// PRD-13: 支持从 appsettings.json 的 "CardReader" 节点读取配置
 /// </summary>
 public class CardReaderOptions
 {
+    /// <summary>
+    /// 配置节名称
+    /// </summary>
+    public const string SectionName = "CardReader";
+
     /// <summary>
     /// 连接超时时间（毫秒）
     /// </summary>

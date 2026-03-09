@@ -21,6 +21,12 @@ public record WorkspaceState(
     public bool IsReadOnly => EditState == EditState.ReadOnly;
     public bool IsHistoricalEditMode => EditType == EditType.EditCompleted;
 
+    /// <summary>
+    /// Show persistent amber edit-mode banner (US-MC-011).
+    /// True when user is actively editing (Editing or DirtyEditing state machine state).
+    /// </summary>
+    public bool ShowEditBanner => IsEditing;
+
     // Button visibility computed properties
     public bool ShowEditButton => IsReadOnly && CanEdit && Mode == WorkspaceMode.Clinical;
     public bool ShowEditButtonTopRight => IsReadOnly && CanEdit && Mode == WorkspaceMode.Management;

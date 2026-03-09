@@ -118,6 +118,12 @@ public class SyncResolution
     /// 跳过的实体ID列表
     /// </summary>
     public List<Guid> Skipped { get; set; } = [];
+
+    /// <summary>
+    /// 要删除的实体ID列表 (本地已软删除，需同步到服务器)
+    /// US-SYNC-006: 客户端删除同步
+    /// </summary>
+    public List<Guid> ToDelete { get; set; } = [];
 }
 
 /// <summary>
@@ -151,12 +157,24 @@ public class SyncExecutionResult
     public int FailedCount { get; set; }
 
     /// <summary>
+    /// 成功删除数量
+    /// US-SYNC-006: 客户端删除同步
+    /// </summary>
+    public int DeletedCount { get; set; }
+
+    /// <summary>
+    /// 删除被拒绝的项 (引用检查未通过)
+    /// US-SYNC-006: AC1 药材被处方引用返回拒绝; AC2 返回具体拒绝原因
+    /// </summary>
+    public List<SyncDeleteRejectedItem> DeleteRejections { get; set; } = [];
+
+    /// <summary>
     /// 错误信息列表
     /// </summary>
     public List<string> Errors { get; set; } = [];
 
     /// <summary>
-    /// 是否全部成功
+    /// 是否全部成功 (删除拒绝不算同步失败，是预期业务行为)
     /// </summary>
     public bool IsSuccess => FailedCount == 0 && Errors.Count == 0;
 }

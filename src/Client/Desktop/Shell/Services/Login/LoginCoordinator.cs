@@ -34,6 +34,7 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly IUsernameStorageService? _usernameStorage;
     private readonly IAuthenticationStateMachine _stateMachine;
     private readonly ILocalAuthService? _localAuthService;
+    private readonly ILocalDbBackupService? _localDbBackupService;
     private readonly ConnectionMode _connectionMode;
     private readonly object _stateLock = new();
 
@@ -54,7 +55,8 @@ public class LoginCoordinator : ILoginCoordinator
         IConfiguration configuration,
         ICredentialVault? credentialVault = null,
         IUsernameStorageService? usernameStorage = null,
-        ILocalAuthService? localAuthService = null)
+        ILocalAuthService? localAuthService = null,
+        ILocalDbBackupService? localDbBackupService = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
@@ -66,6 +68,7 @@ public class LoginCoordinator : ILoginCoordinator
         _credentialVault = credentialVault;
         _usernameStorage = usernameStorage;
         _localAuthService = localAuthService;
+        _localDbBackupService = localDbBackupService;
 
         // OpenSpec: implement-local-mode - 读取连接模式
         var modeString = configuration?["ConnectionMode"];
@@ -213,8 +216,33 @@ public class LoginCoordinator : ILoginCoordinator
         // 本地模式不需要保存 JWT Token，设置一个长期有效的过期时间
         var expiresAt = DateTime.Now.AddYears(1);
 
+        // NFR-AVAIL-001: 本地登录成功后 fire-and-forget 备份数据库
+        TriggerLocalDatabaseBackup();
+
         // Step 3-5: 完成登录流程
         return await CompleteLoginFlowAsync(user, expiresAt);
+    }
+
+    /// <summary>
+    /// NFR-AVAIL-001: 触发本地数据库备份 (fire-and-forget)
+    /// 不阻塞登录流程，备份失败仅记录日志
+    /// </summary>
+    private void TriggerLocalDatabaseBackup()
+    {
+        if (_localDbBackupService == null) return;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _localDbBackupService.BackupAsync();
+                await _localDbBackupService.CleanupOldBackupsAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[Backup] 启动备份任务异常");
+            }
+        });
     }
 
     /// <summary>

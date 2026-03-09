@@ -6,6 +6,7 @@ using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.DataSources;
 using LYBT.Desktop.LocalData.Initialization;
 using LYBT.Desktop.LocalData.Services;
+using LocalDbBackupService = LYBT.Desktop.LocalData.Services.LocalDbBackupService;
 using SyncService = LYBT.Desktop.LocalData.Services.SyncService;
 using LYBT.Desktop.Shell.Services.Session;
 using Microsoft.EntityFrameworkCore;
@@ -85,6 +86,9 @@ public static class DataSourceRegistrationExtensions
 
         // 注册本地认证服务
         containerRegistry.RegisterSingleton<ILocalAuthService, LocalAuthService>();
+
+        // NFR-AVAIL-001: 注册本地数据库备份服务
+        containerRegistry.RegisterSingleton<ILocalDbBackupService, LocalDbBackupService>();
 
         // OpenSpec: implement-data-sync - 注册同步服务
         containerRegistry.RegisterSingleton<ISyncService, SyncService>();

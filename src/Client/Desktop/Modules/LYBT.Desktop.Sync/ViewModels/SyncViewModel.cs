@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Net;
+using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Events;
@@ -7,14 +9,15 @@ using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Sync;
 using Microsoft.Extensions.Logging;
+using Refit;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Sync.ViewModels;
 
 /// <summary>
-/// 数据同步主界面 ViewModel
-/// OpenSpec: implement-data-sync
+/// US-SYNC-007: Phase-based sync workflow ViewModel.
+/// Replaces boolean IsSyncing/HasCheckedDifferences with SyncPhase enum.
 /// </summary>
 public partial class SyncViewModel : NavigableViewModelBase
 {
@@ -22,96 +25,102 @@ public partial class SyncViewModel : NavigableViewModelBase
     private readonly IDialogService _dialogService;
     private readonly IApiHealthCheckService _healthCheckService;
 
+    private SyncRetryDescriptor? _lastRetryDescriptor;
+
     #region Observable Properties
 
-    /// <summary>
-    /// 支持的实体类型
-    /// </summary>
     [ObservableProperty]
     private ObservableCollection<string> _entityTypes = [];
 
-    /// <summary>
-    /// 当前选中的实体类型
-    /// </summary>
     [ObservableProperty]
     private string? _selectedEntityType;
 
-    /// <summary>
-    /// 仅本地有的项（待上传）
-    /// </summary>
     [ObservableProperty]
     private ObservableCollection<SyncItemViewModel> _localOnlyItems = [];
 
-    /// <summary>
-    /// 仅服务器有的项（待下载）
-    /// </summary>
     [ObservableProperty]
     private ObservableCollection<SyncItemViewModel> _serverOnlyItems = [];
 
-    /// <summary>
-    /// 冲突项
-    /// </summary>
     [ObservableProperty]
     private ObservableCollection<SyncItemViewModel> _conflictItems = [];
 
-    /// <summary>
-    /// 上次同步时间
-    /// </summary>
     [ObservableProperty]
     private DateTime? _lastSyncTime;
 
-    /// <summary>
-    /// 同步进度（0-100）
-    /// </summary>
     [ObservableProperty]
     private int _syncProgress;
 
     /// <summary>
-    /// 是否正在同步
+    /// Current workflow phase (replaces IsSyncing + HasCheckedDifferences).
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSyncing))]
     [NotifyCanExecuteChangedFor(nameof(CheckDifferencesCommand))]
     [NotifyCanExecuteChangedFor(nameof(ExecuteSyncCommand))]
-    private bool _isSyncing;
+    [NotifyCanExecuteChangedFor(nameof(RetryCommand))]
+    private SyncPhase _currentPhase = SyncPhase.Idle;
 
     /// <summary>
-    /// 是否已检查差异
+    /// Step indicator text (e.g. "Step 2/4: Reviewing differences").
     /// </summary>
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ExecuteSyncCommand))]
-    private bool _hasCheckedDifferences;
+    private string _phaseDescription = string.Empty;
+
+    /// <summary>
+    /// Per-entity-type result summaries (card display).
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<SyncResultSummary> _resultSummaries = [];
+
+    /// <summary>
+    /// Error message when CurrentPhase == Failed.
+    /// </summary>
+    [ObservableProperty]
+    private string _syncErrorMessage = string.Empty;
+
+    /// <summary>
+    /// Classified error category for retry decisions.
+    /// </summary>
+    [ObservableProperty]
+    private SyncErrorCategory _errorCategory = SyncErrorCategory.Unknown;
+
+    /// <summary>
+    /// Whether retry is available after failure.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RetryCommand))]
+    private bool _canRetry;
 
     #endregion
 
     #region Computed Properties
 
     /// <summary>
-    /// 是否有需要同步的数据
+    /// Computed from CurrentPhase (keeps SyncEvents.StatusChangedEvent working).
     /// </summary>
+    public bool IsSyncing =>
+        CurrentPhase is SyncPhase.CheckingDifferences or SyncPhase.ExecutingSync;
+
     public bool HasDataToSync =>
         LocalOnlyItems.Any(x => x.IsSelected) ||
         ServerOnlyItems.Any(x => x.IsSelected) ||
         ConflictItems.Any(x => x.IsSelected);
 
-    /// <summary>
-    /// 待上传数量
-    /// </summary>
     public int UploadCount => LocalOnlyItems.Count(x => x.IsSelected);
-
-    /// <summary>
-    /// 待下载数量
-    /// </summary>
     public int DownloadCount => ServerOnlyItems.Count(x => x.IsSelected);
-
-    /// <summary>
-    /// 冲突数量
-    /// </summary>
     public int ConflictCount => ConflictItems.Count;
-
-    /// <summary>
-    /// 总差异数量
-    /// </summary>
     public int TotalDifferenceCount => LocalOnlyItems.Count + ServerOnlyItems.Count + ConflictItems.Count;
+
+    #endregion
+
+    #region Nested Types
+
+    private enum SyncRetryAction { CheckDifferences, ExecuteSync }
+
+    private sealed record SyncRetryDescriptor(
+        SyncRetryAction Action,
+        string EntityType,
+        SyncPhase FailedPhase);
 
     #endregion
 
@@ -144,9 +153,6 @@ public partial class SyncViewModel : NavigableViewModelBase
 
     #region Commands
 
-    /// <summary>
-    /// 检查差异命令
-    /// </summary>
     [RelayCommand(CanExecute = nameof(CanCheckDifferences))]
     private async Task CheckDifferencesAsync()
     {
@@ -156,77 +162,84 @@ public partial class SyncViewModel : NavigableViewModelBase
             return;
         }
 
-        // T5-P2-42: 同步前检查认证状态和网络连接
         if (!await ValidatePreConditionsAsync())
             return;
 
-        await ExecuteWithErrorHandlingAsync(async () =>
+        _lastRetryDescriptor = new SyncRetryDescriptor(
+            SyncRetryAction.CheckDifferences,
+            SelectedEntityType,
+            SyncPhase.CheckingDifferences);
+
+        try
         {
+            CurrentPhase = SyncPhase.CheckingDifferences;
             ClearDifferences();
-            IsSyncing = true;
+            SyncErrorMessage = string.Empty;
+            CanRetry = false;
 
             var result = await _syncService.CheckDifferencesAsync(SelectedEntityType);
 
-            // 填充差异列表
             foreach (var diff in result.LocalOnly)
-            {
                 LocalOnlyItems.Add(CreateSyncItemViewModel(diff, true));
-            }
 
             foreach (var diff in result.ServerOnly)
-            {
                 ServerOnlyItems.Add(CreateSyncItemViewModel(diff, true));
-            }
 
             foreach (var diff in result.Conflicts)
-            {
                 ConflictItems.Add(CreateSyncItemViewModel(diff, false));
-            }
 
-            HasCheckedDifferences = true;
             NotifyCountsChanged();
 
             if (!result.HasDifferences)
             {
                 StatusMessage = "数据已同步，无需更新";
+                CurrentPhase = SyncPhase.Completed;
             }
             else
             {
                 StatusMessage = $"发现 {result.TotalDifferences} 条差异";
+                CurrentPhase = SyncPhase.ReviewingDifferences;
             }
-        }, "检查差异");
-
-        IsSyncing = false;
+        }
+        catch (Exception ex)
+        {
+            HandleWorkflowFailure(ex, "检查差异");
+        }
     }
 
-    private bool CanCheckDifferences() => !IsSyncing && !string.IsNullOrEmpty(SelectedEntityType);
+    private bool CanCheckDifferences() =>
+        !string.IsNullOrEmpty(SelectedEntityType) &&
+        CurrentPhase is SyncPhase.Idle or SyncPhase.Completed or SyncPhase.Failed;
 
-    /// <summary>
-    /// 执行同步命令
-    /// </summary>
     [RelayCommand(CanExecute = nameof(CanExecuteSync))]
     private async Task ExecuteSyncAsync()
     {
         if (string.IsNullOrEmpty(SelectedEntityType))
             return;
 
-        // T5-P2-42: 执行同步前二次验证认证状态和网络连接
         if (!await ValidatePreConditionsAsync())
             return;
 
-        // 检查是否有未处理的冲突
-        var unresolvedConflicts = ConflictItems.Where(x => x.IsSelected && !x.ResolutionDecision.HasValue).ToList();
+        var unresolvedConflicts = ConflictItems
+            .Where(x => x.IsSelected && !x.ResolutionDecision.HasValue)
+            .ToList();
         if (unresolvedConflicts.Count > 0)
         {
-            // 显示冲突处理对话框
             await ShowConflictResolutionDialogAsync(unresolvedConflicts);
             return;
         }
 
-        await ExecuteWithErrorHandlingAsync(async () =>
+        _lastRetryDescriptor = new SyncRetryDescriptor(
+            SyncRetryAction.ExecuteSync,
+            SelectedEntityType,
+            SyncPhase.ExecutingSync);
+
+        try
         {
-            IsSyncing = true;
+            CurrentPhase = SyncPhase.ExecutingSync;
             SyncProgress = 0;
+            CanRetry = false;
+            SyncErrorMessage = string.Empty;
 
             var resolution = BuildSyncResolution();
 
@@ -234,58 +247,97 @@ public partial class SyncViewModel : NavigableViewModelBase
             var result = await _syncService.ExecuteSyncAsync(SelectedEntityType, resolution);
             SyncProgress = 100;
 
+            ResultSummaries = new ObservableCollection<SyncResultSummary>(
+                [CreateSummary(result)]);
+
             if (result.IsSuccess)
             {
                 LastSyncTime = DateTime.Now;
-                StatusMessage = $"同步完成: 上传 {result.UploadedCount} 条, 下载 {result.DownloadedCount} 条";
 
-                // 清除已同步的项
+                var statusParts = new List<string>();
+                if (result.UploadedCount > 0) statusParts.Add($"上传 {result.UploadedCount} 条");
+                if (result.DownloadedCount > 0) statusParts.Add($"下载 {result.DownloadedCount} 条");
+                if (result.DeletedCount > 0) statusParts.Add($"删除 {result.DeletedCount} 条");
+                if (result.DeleteRejections.Count > 0) statusParts.Add($"删除拒绝 {result.DeleteRejections.Count} 条");
+                StatusMessage = $"同步完成: {(statusParts.Count > 0 ? string.Join(", ", statusParts) : "无变更")}";
+
                 ClearDifferences();
-                HasCheckedDifferences = false;
+                CurrentPhase = SyncPhase.Completed;
 
-                await ShowSuccessMessageAsync($"同步成功!\n上传: {result.UploadedCount} 条\n下载: {result.DownloadedCount} 条");
+                var successMessage = $"同步成功!\n上传: {result.UploadedCount} 条\n下载: {result.DownloadedCount} 条";
+                if (result.DeletedCount > 0) successMessage += $"\n删除: {result.DeletedCount} 条";
+                if (result.DeleteRejections.Count > 0)
+                    successMessage += $"\n删除被拒绝: {result.DeleteRejections.Count} 条 (引用检查未通过)";
+                await ShowSuccessMessageAsync(successMessage);
             }
             else
             {
                 SetError($"同步失败: {string.Join(", ", result.Errors)}");
+                CurrentPhase = SyncPhase.Failed;
+                CanRetry = true;
             }
-        }, "执行同步");
-
-        IsSyncing = false;
-        SyncProgress = 0;
+        }
+        catch (Exception ex)
+        {
+            HandleWorkflowFailure(ex, "执行同步");
+        }
+        finally
+        {
+            SyncProgress = 0;
+        }
     }
 
-    private bool CanExecuteSync() => !IsSyncing && HasCheckedDifferences && HasDataToSync;
+    private bool CanExecuteSync() =>
+        CurrentPhase == SyncPhase.ReviewingDifferences && HasDataToSync;
 
-    /// <summary>
-    /// 全选上传命令
-    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanRetrySync))]
+    private async Task RetryAsync()
+    {
+        if (_lastRetryDescriptor is null)
+            return;
+
+        switch (_lastRetryDescriptor.Action)
+        {
+            case SyncRetryAction.CheckDifferences:
+                await CheckDifferencesAsync();
+                break;
+            case SyncRetryAction.ExecuteSync:
+                await ExecuteSyncAsync();
+                break;
+        }
+    }
+
+    private bool CanRetrySync() => CanRetry && CurrentPhase == SyncPhase.Failed;
+
+    [RelayCommand]
+    private void Reset()
+    {
+        CurrentPhase = SyncPhase.Idle;
+        SyncErrorMessage = string.Empty;
+        ErrorCategory = SyncErrorCategory.Unknown;
+        CanRetry = false;
+        _lastRetryDescriptor = null;
+        SyncProgress = 0;
+        ResultSummaries.Clear();
+        ClearError();
+    }
+
     [RelayCommand]
     private void SelectAllUpload()
     {
         foreach (var item in LocalOnlyItems)
-        {
             item.IsSelected = true;
-        }
         NotifyCountsChanged();
     }
 
-    /// <summary>
-    /// 全选下载命令
-    /// </summary>
     [RelayCommand]
     private void SelectAllDownload()
     {
         foreach (var item in ServerOnlyItems)
-        {
             item.IsSelected = true;
-        }
         NotifyCountsChanged();
     }
 
-    /// <summary>
-    /// 取消全选命令
-    /// </summary>
     [RelayCommand]
     private void DeselectAll()
     {
@@ -295,35 +347,25 @@ public partial class SyncViewModel : NavigableViewModelBase
         NotifyCountsChanged();
     }
 
-    /// <summary>
-    /// 刷新命令
-    /// </summary>
     [RelayCommand]
     private async Task RefreshAsync()
     {
         if (!string.IsNullOrEmpty(SelectedEntityType))
-        {
             await CheckDifferencesAsync();
-        }
     }
 
     #endregion
 
     #region Private Methods
 
-    /// <summary>
-    /// T5-P2-42: 同步前置条件验证 (认证状态 + 网络连接)
-    /// </summary>
     private async Task<bool> ValidatePreConditionsAsync()
     {
-        // 检查认证状态
         if (!SessionManager.IsAuthenticated)
         {
             SetError("请先登录后再进行同步操作");
             return false;
         }
 
-        // 检查网络连接
         var healthStatus = await _healthCheckService.CheckHealthAsync(timeout: 5000);
         if (healthStatus != ApiHealthStatus.Healthy)
         {
@@ -343,9 +385,7 @@ public partial class SyncViewModel : NavigableViewModelBase
             EntityTypes = new ObservableCollection<string>(types);
 
             if (EntityTypes.Count > 0)
-            {
                 SelectedEntityType = EntityTypes[0];
-            }
         }, "加载实体类型");
     }
 
@@ -376,9 +416,7 @@ public partial class SyncViewModel : NavigableViewModelBase
         item.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(SyncItemViewModel.IsSelected))
-            {
                 NotifyCountsChanged();
-            }
         };
 
         return item;
@@ -388,21 +426,15 @@ public partial class SyncViewModel : NavigableViewModelBase
     {
         var resolution = new SyncResolution();
 
-        // 添加待上传项
         resolution.ToUpload.AddRange(
             LocalOnlyItems.Where(x => x.IsSelected).Select(x => x.EntityId));
 
-        // 添加待下载项
         resolution.ToDownload.AddRange(
             ServerOnlyItems.Where(x => x.IsSelected).Select(x => x.EntityId));
 
-        // 添加冲突解决
         foreach (var conflict in ConflictItems.Where(x => x.IsSelected && x.ResolutionDecision.HasValue))
-        {
             resolution.ConflictResolutions[conflict.EntityId] = conflict.ResolutionDecision!.Value;
-        }
 
-        // 添加跳过的冲突
         resolution.Skipped.AddRange(
             ConflictItems.Where(x => !x.IsSelected).Select(x => x.EntityId));
 
@@ -428,12 +460,52 @@ public partial class SyncViewModel : NavigableViewModelBase
 
         if (result?.Result == ButtonResult.OK)
         {
-            // 对话框已处理冲突决策，更新 ViewModel
             NotifyCountsChanged();
-
-            // 继续执行同步
             await ExecuteSyncAsync();
         }
+    }
+
+    private static SyncResultSummary CreateSummary(SyncExecutionResult result) =>
+        new(result.EntityType,
+            result.UploadedCount,
+            result.DownloadedCount,
+            result.DeletedCount,
+            result.SkippedCount,
+            result.FailedCount,
+            result.DeleteRejections.Select(x => x.Reason).ToList());
+
+    private void HandleWorkflowFailure(Exception ex, string operationName)
+    {
+        Logger.LogError(ex, "{Operation} failed", operationName);
+
+        ErrorCategory = ClassifyException(ex);
+        SyncErrorMessage = ex.Message;
+        CanRetry = ErrorCategory is SyncErrorCategory.TransientNetwork
+            or SyncErrorCategory.ConflictChanged
+            or SyncErrorCategory.AuthExpired;
+
+        CurrentPhase = SyncPhase.Failed;
+        SetError($"{operationName}失败: {ex.Message}");
+    }
+
+    private static SyncErrorCategory ClassifyException(Exception ex)
+    {
+        if (ex is HttpRequestException or TaskCanceledException)
+            return SyncErrorCategory.TransientNetwork;
+
+        if (ex is ApiException apiEx)
+        {
+            return apiEx.StatusCode switch
+            {
+                HttpStatusCode.Unauthorized => SyncErrorCategory.AuthExpired,
+                HttpStatusCode.Conflict => SyncErrorCategory.ConflictChanged,
+                >= HttpStatusCode.BadRequest and < HttpStatusCode.InternalServerError
+                    => SyncErrorCategory.BusinessReject,
+                _ => SyncErrorCategory.Unknown
+            };
+        }
+
+        return SyncErrorCategory.Unknown;
     }
 
     private void NotifyCountsChanged()
@@ -446,22 +518,32 @@ public partial class SyncViewModel : NavigableViewModelBase
         ExecuteSyncCommand.NotifyCanExecuteChanged();
     }
 
-    partial void OnIsSyncingChanged(bool value)
+    partial void OnCurrentPhaseChanged(SyncPhase value)
     {
+        PhaseDescription = value switch
+        {
+            SyncPhase.Idle => "准备就绪",
+            SyncPhase.CheckingDifferences => "Step 1/4: 检查差异",
+            SyncPhase.ReviewingDifferences => "Step 2/4: 审查差异",
+            SyncPhase.ExecutingSync => "Step 3/4: 执行同步",
+            SyncPhase.Completed => "Step 4/4: 完成",
+            SyncPhase.Failed => "同步失败",
+            _ => PhaseDescription
+        };
+
         Events.Publish<SyncEvents.StatusChangedEvent, SyncStatusPayload>(
             new SyncStatusPayload
             {
-                IsSyncing = value,
+                IsSyncing = IsSyncing,
                 LastSyncTime = LastSyncTime,
-                StatusMessage = value ? "正在同步..." : StatusMessage
+                StatusMessage = IsSyncing ? "正在同步..." : StatusMessage
             });
     }
 
     partial void OnSelectedEntityTypeChanged(string? value)
     {
-        // 切换实体类型时清除差异
         ClearDifferences();
-        HasCheckedDifferences = false;
+        Reset();
     }
 
     #endregion
@@ -472,70 +554,25 @@ public partial class SyncViewModel : NavigableViewModelBase
 /// </summary>
 public partial class SyncItemViewModel : ObservableObject
 {
-    /// <summary>
-    /// 实体ID
-    /// </summary>
     public Guid EntityId { get; set; }
-
-    /// <summary>
-    /// 实体类型
-    /// </summary>
     public string EntityType { get; set; } = string.Empty;
 
-    /// <summary>
-    /// 实体名称（显示用）
-    /// </summary>
     [ObservableProperty]
     private string _entityName = string.Empty;
 
-    /// <summary>
-    /// 差异类型
-    /// </summary>
     public SyncDiffType DiffType { get; set; }
-
-    /// <summary>
-    /// 本地 Checksum
-    /// </summary>
     public string? LocalChecksum { get; set; }
-
-    /// <summary>
-    /// 服务器 Checksum
-    /// </summary>
     public string? ServerChecksum { get; set; }
-
-    /// <summary>
-    /// 本地修改时间
-    /// </summary>
     public DateTime? LocalChangedAt { get; set; }
-
-    /// <summary>
-    /// 服务器修改时间
-    /// </summary>
     public DateTime? ServerChangedAt { get; set; }
-
-    /// <summary>
-    /// 变更字段列表
-    /// </summary>
     public List<string>? ChangedFields { get; set; }
 
-    /// <summary>
-    /// 是否选中
-    /// </summary>
     [ObservableProperty]
     private bool _isSelected;
 
-    /// <summary>
-    /// 冲突解决决策（仅用于冲突项）
-    /// true: 使用本地版本
-    /// false: 使用服务器版本
-    /// null: 未决定
-    /// </summary>
     [ObservableProperty]
     private bool? _resolutionDecision;
 
-    /// <summary>
-    /// 显示的操作类型
-    /// </summary>
     public string OperationDisplay => DiffType switch
     {
         SyncDiffType.LocalOnly => "上传",
@@ -544,25 +581,16 @@ public partial class SyncItemViewModel : ObservableObject
         _ => "无"
     };
 
-    /// <summary>
-    /// 显示的变更时间
-    /// </summary>
     public string ChangedAtDisplay
     {
         get
         {
             if (LocalChangedAt.HasValue && ServerChangedAt.HasValue)
-            {
                 return $"本地: {LocalChangedAt:yyyy-MM-dd HH:mm} / 服务器: {ServerChangedAt:yyyy-MM-dd HH:mm}";
-            }
             if (LocalChangedAt.HasValue)
-            {
                 return $"本地: {LocalChangedAt:yyyy-MM-dd HH:mm}";
-            }
             if (ServerChangedAt.HasValue)
-            {
                 return $"服务器: {ServerChangedAt:yyyy-MM-dd HH:mm}";
-            }
             return string.Empty;
         }
     }

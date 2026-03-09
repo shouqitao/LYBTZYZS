@@ -191,6 +191,12 @@ public enum ErrorCode
     /// </summary>
     AuthRefreshTokenInvalid = 10205,
 
+    /// <summary>
+    /// AccessToken 已过期
+    /// US-ERR-007 (CODE-25)
+    /// </summary>
+    AuthAccessTokenExpired = 10206,
+
     // 103xx: 会话错误
 
     /// <summary>

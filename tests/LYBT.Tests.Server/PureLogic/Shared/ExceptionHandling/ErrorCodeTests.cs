@@ -244,6 +244,7 @@ public class ErrorCodeTests
     [Theory]
     [InlineData(ErrorCode.Unauthorized, ErrorCategory.Authentication)]
     [InlineData(ErrorCode.InvalidPassword, ErrorCategory.Authentication)]
+    [InlineData(ErrorCode.AuthAccessTokenExpired, ErrorCategory.Authentication)]
     public void ToCategory_AuthErrors_ReturnsAuthentication(ErrorCode errorCode, ErrorCategory expectedCategory)
     {
         // Act

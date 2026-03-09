@@ -76,6 +76,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotLoggedIn))]
+    [NotifyPropertyChangedFor(nameof(CurrentUserDisplayName))]
     private bool _isLoggedIn;
 
     /// <summary>
@@ -122,6 +123,16 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// 是否未登录状态，用于界面绑定
     /// </summary>
     public bool IsNotLoggedIn => !IsLoggedIn;
+
+    /// <summary>
+    /// 当前用户显示名称 - 状态栏使用
+    /// 优先显示真实姓名，未设置则显示用户名
+    /// US-SHELL-007 (CODE-21)
+    /// </summary>
+    public string CurrentUserDisplayName =>
+        IsLoggedIn && CurrentUser != null
+            ? (string.IsNullOrEmpty(CurrentUser.RealName) ? CurrentUser.UserName : CurrentUser.RealName)
+            : string.Empty;
 
     /// <summary>S6-01: 用户管理菜单可见性 - 委托给 MenuManager</summary>
     public bool IsUserManagementVisible => _menuManager.IsUserManagementVisible;

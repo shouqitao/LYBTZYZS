@@ -11,6 +11,7 @@ namespace LYBT.Desktop.CardReader.Services;
 public class CardReaderService : ICardReaderService
 {
     private readonly ICardReaderFactory _factory;
+    private readonly CardReaderOptions _options;
     private readonly ILogger<CardReaderService>? _logger;
     private readonly object _lockObj = new();
 
@@ -42,10 +43,12 @@ public class CardReaderService : ICardReaderService
     /// 构造函数
     /// </summary>
     /// <param name="factory">读卡器工厂</param>
+    /// <param name="options">读卡器配置选项 (PRD-13: 从 appsettings.json 读取)</param>
     /// <param name="logger">日志记录器（可选）</param>
-    public CardReaderService(ICardReaderFactory factory, ILogger<CardReaderService>? logger = null)
+    public CardReaderService(ICardReaderFactory factory, CardReaderOptions? options = null, ILogger<CardReaderService>? logger = null)
     {
         _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        _options = options ?? new CardReaderOptions();
         _logger = logger;
     }
 
@@ -74,7 +77,7 @@ public class CardReaderService : ICardReaderService
             if (readerType == CardReaderType.Auto)
             {
                 _logger?.LogInformation("开始自动检测读卡器...");
-                reader = await _factory.AutoDetectReaderAsync();
+                reader = await _factory.AutoDetectReaderAsync(_options);
 
                 if (reader == null)
                 {
@@ -87,7 +90,7 @@ public class CardReaderService : ICardReaderService
             }
             else
             {
-                reader = _factory.CreateReader(readerType);
+                reader = _factory.CreateReader(readerType, _options);
                 if (!await reader.ConnectAsync())
                 {
                     _logger?.LogError("连接读卡器失败: {Type}", readerType);

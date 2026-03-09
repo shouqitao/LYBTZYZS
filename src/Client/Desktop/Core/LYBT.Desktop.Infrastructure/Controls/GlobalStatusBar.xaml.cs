@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using LYBT.Desktop.Infrastructure.Constants;
 
 namespace LYBT.Desktop.Infrastructure.Controls
 {
@@ -16,10 +17,20 @@ namespace LYBT.Desktop.Infrastructure.Controls
         public static readonly DependencyProperty StatusMessageProperty = DependencyProperty.Register(nameof(StatusMessage), typeof(string), typeof(GlobalStatusBar), new PropertyMetadata(string.Empty));
         public static readonly DependencyProperty OperationProgressProperty = DependencyProperty.Register(nameof(OperationProgress), typeof(int), typeof(GlobalStatusBar), new PropertyMetadata(0));
 
+        /// <summary>当前登录用户名 - US-SHELL-007 (CODE-21)</summary>
+        public static readonly DependencyProperty CurrentUserNameProperty = DependencyProperty.Register(
+            nameof(CurrentUserName), typeof(string), typeof(GlobalStatusBar), new PropertyMetadata(string.Empty));
+
+        /// <summary>应用版本号 - US-SHELL-007 (CODE-21)</summary>
+        public static readonly DependencyProperty AppVersionProperty = DependencyProperty.Register(
+            nameof(AppVersion), typeof(string), typeof(GlobalStatusBar), new PropertyMetadata(SystemConstants.ApplicationVersion));
+
         public bool IsLoading { get => (bool)GetValue(IsLoadingProperty); set => SetValue(IsLoadingProperty, value); }
         public string LoadingMessage { get => (string)GetValue(LoadingMessageProperty); set => SetValue(LoadingMessageProperty, value); }
         public string StatusMessage { get => (string)GetValue(StatusMessageProperty); set => SetValue(StatusMessageProperty, value); }
         public int OperationProgress { get => (int)GetValue(OperationProgressProperty); set => SetValue(OperationProgressProperty, value); }
+        public string CurrentUserName { get => (string)GetValue(CurrentUserNameProperty); set => SetValue(CurrentUserNameProperty, value ?? string.Empty); }
+        public string AppVersion { get => (string)GetValue(AppVersionProperty); set => SetValue(AppVersionProperty, value); }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

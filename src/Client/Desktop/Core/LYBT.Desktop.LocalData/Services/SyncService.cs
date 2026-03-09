@@ -286,12 +286,28 @@ public class SyncService : ISyncService
             result.DownloadedCount = downloadResult.Count;
         }
 
-        // 3. 记录跳过的
+        // 3. 处理删除（本地已软删除，同步到服务器）
+        // US-SYNC-006: 客户端删除同步
+        if (resolution.ToDelete.Count > 0)
+        {
+            var deleteResult = await DeleteAsync(entityType, resolution.ToDelete, ct);
+            result.DeletedCount = deleteResult.SuccessCount;
+            result.DeleteRejections = deleteResult.Rejected;
+
+            if (deleteResult.RejectedCount > 0)
+            {
+                _logger.LogWarning(
+                    "[SyncService] 删除被拒绝 {RejectedCount} 条 (引用检查未通过)",
+                    deleteResult.RejectedCount);
+            }
+        }
+
+        // 4. 记录跳过的
         result.SkippedCount = resolution.Skipped.Count;
 
         _logger.LogInformation(
-            "[SyncService] 同步完成 - Uploaded={Uploaded}, Downloaded={Downloaded}, Skipped={Skipped}, Failed={Failed}",
-            result.UploadedCount, result.DownloadedCount, result.SkippedCount, result.FailedCount);
+            "[SyncService] 同步完成 - Uploaded={Uploaded}, Downloaded={Downloaded}, Deleted={Deleted}, Skipped={Skipped}, Failed={Failed}",
+            result.UploadedCount, result.DownloadedCount, result.DeletedCount, result.SkippedCount, result.FailedCount);
 
         // 同步完成后清理所有 Desktop 缓存
         _cacheManager?.InvalidateAll();

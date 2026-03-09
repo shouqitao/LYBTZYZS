@@ -63,6 +63,7 @@ public static class ErrorCodeExtensions
             ErrorCode.AuthTokenRevoked => 401,
             ErrorCode.AuthRefreshTokenExpired => 401,
             ErrorCode.AuthRefreshTokenInvalid => 401,
+            ErrorCode.AuthAccessTokenExpired => 401,
             ErrorCode.AuthConcurrentSessionLimit => 401,
 
             // 403 Forbidden - 授权错误
@@ -233,6 +234,7 @@ public static class ErrorCodeExtensions
             ErrorCode.AuthTokenRevoked => ErrorCategory.Authentication,
             ErrorCode.AuthRefreshTokenExpired => ErrorCategory.Authentication,
             ErrorCode.AuthRefreshTokenInvalid => ErrorCategory.Authentication,
+            ErrorCode.AuthAccessTokenExpired => ErrorCategory.Authentication,
             ErrorCode.AuthConcurrentSessionLimit => ErrorCategory.Authentication,
 
             // 授权错误

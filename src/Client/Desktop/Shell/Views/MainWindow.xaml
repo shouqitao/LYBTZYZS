@@ -97,6 +97,7 @@
             <controls:GlobalStatusBar
                 Grid.Row="1"
                 Grid.ColumnSpan="2"
+                CurrentUserName="{Binding CurrentUserDisplayName}"
                 IsLoading="{Binding IsSyncing}"
                 LoadingMessage="正在同步..."
                 StatusMessage="{Binding SyncStatusMessage}" />

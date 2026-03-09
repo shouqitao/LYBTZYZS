@@ -138,6 +138,93 @@ public class PatientCardReaderIntegration : IPatientCardReaderIntegration
     }
 
     /// <summary>
+    /// PRD-15: 患者去重降级链匹配
+    /// 降级链: (1) IdNumber 精确匹配 -> (2) Name+BirthDate 模糊匹配 -> (3) 多条候选 -> (4) 无匹配
+    /// </summary>
+    public async Task<PatientMatchResult> MatchPatientAsync(CardReadResult cardResult)
+    {
+        ArgumentNullException.ThrowIfNull(cardResult);
+
+        if (!cardResult.IsSuccess)
+        {
+            throw new InvalidOperationException($"读卡失败，无法匹配: {cardResult.ErrorMessage}");
+        }
+
+        // Step 1: IdNumber 精确匹配
+        if (!string.IsNullOrWhiteSpace(cardResult.IdNumber))
+        {
+            var exactMatch = await FindPatientByIdNumberAsync(cardResult.IdNumber);
+            if (exactMatch != null)
+            {
+                _logger.LogInformation("身份证号精确匹配成功: {PatientId}", exactMatch.PatientId);
+                return new PatientMatchResult
+                {
+                    MatchType = PatientMatchType.ExactMatch,
+                    Patient = exactMatch
+                };
+            }
+        }
+
+        // Step 2: Name+BirthDate 模糊匹配
+        if (!string.IsNullOrWhiteSpace(cardResult.Name))
+        {
+            var searchResults = await _patientRepository.SearchAsync(cardResult.Name);
+            if (searchResults.Count > 0)
+            {
+                // 逐个获取详情，用 BirthDate 过滤
+                var candidates = new List<PatientFromCardResult>();
+                foreach (var listItem in searchResults)
+                {
+                    var detail = await _patientRepository.GetByIdAsync(listItem.Id);
+                    if (detail == null) continue;
+
+                    // 匹配条件: 姓名相同 + 出生日期相同
+                    if (detail.Name == cardResult.Name && detail.BirthDate == cardResult.BirthDate)
+                    {
+                        candidates.Add(new PatientFromCardResult
+                        {
+                            PatientId = detail.Id,
+                            Name = detail.Name,
+                            IdNumber = detail.IdNumber ?? string.Empty,
+                            IsNewlyCreated = false,
+                            LastVisitTime = detail.LastVisitTime,
+                            VisitCount = detail.VisitCount
+                        });
+                    }
+                }
+
+                if (candidates.Count == 1)
+                {
+                    _logger.LogInformation("姓名+出生日期模糊匹配成功 (单条): {PatientId}", candidates[0].PatientId);
+                    return new PatientMatchResult
+                    {
+                        MatchType = PatientMatchType.FuzzyMatch,
+                        Patient = candidates[0],
+                        Candidates = candidates
+                    };
+                }
+
+                if (candidates.Count > 1)
+                {
+                    _logger.LogInformation("姓名+出生日期模糊匹配发现 {Count} 条候选", candidates.Count);
+                    return new PatientMatchResult
+                    {
+                        MatchType = PatientMatchType.MultipleCandidates,
+                        Candidates = candidates
+                    };
+                }
+            }
+        }
+
+        // Step 4: 无匹配
+        _logger.LogInformation("未找到匹配患者");
+        return new PatientMatchResult
+        {
+            MatchType = PatientMatchType.NoMatch
+        };
+    }
+
+    /// <summary>
     /// 将读卡结果映射为患者输入DTO
     /// </summary>
     private static PatientInputDto MapCardResultToPatientInput(CardReadResult cardResult)

@@ -67,6 +67,8 @@ namespace LYBT.Desktop.Shell.Extensions
                 RegisterLogger<LYBT.Desktop.LocalData.Context.LocalDbContext>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.Services.LocalAuthService>(containerRegistry);
+                // NFR-AVAIL-001: 本地数据库备份
+                RegisterLogger<LYBT.Desktop.LocalData.Services.LocalDbBackupService>(containerRegistry);
                 // OpenSpec: implement-data-sync
                 RegisterLogger<LYBT.Desktop.LocalData.Services.SyncService>(containerRegistry);
                 RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalPatientDataSource>(containerRegistry);

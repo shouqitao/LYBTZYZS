@@ -81,4 +81,11 @@ public class UnauthorizedException : AppException
     /// </summary>
     public static UnauthorizedException SessionExpired() =>
         new(EC.SessionExpired, "会话已过期，请重新登录", "会话已过期");
+
+    /// <summary>
+    /// 访问令牌已过期
+    /// US-ERR-007 (CODE-25)
+    /// </summary>
+    public static UnauthorizedException TokenExpired() =>
+        new(EC.AuthAccessTokenExpired, "访问令牌已过期，请重新登录", "访问令牌已过期");
 }

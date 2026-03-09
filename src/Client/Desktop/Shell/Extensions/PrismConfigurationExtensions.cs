@@ -1,3 +1,4 @@
+using LYBT.Desktop.CardReader.Abstractions;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Configuration.Options.Common;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +38,9 @@ public static class PrismConfigurationExtensions
 
         // 处方配置
         RegisterOptions<PrescriptionOptions>(containerRegistry, configuration, PrescriptionOptions.SectionName);
+
+        // 读卡器配置 (PRD-13)
+        RegisterOptions<CardReaderOptions>(containerRegistry, configuration, CardReaderOptions.SectionName);
     }
 
     /// <summary>

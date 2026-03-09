@@ -68,8 +68,11 @@
 ```
 用户点击"读卡" -> 检测读卡器连接 -> [已连接] 读取身份证
                                    -> [未连接] 提示连接设备
-读取成功 -> 按身份证号查询患者 -> [已存在] 加载患者信息 + 显示就诊历史
-                               -> [不存在] 快速创建患者 -> 返回新患者信息
+读取成功 -> MatchPatientAsync(CardReadResult) 降级链:
+    1. IdNumber 精确匹配 -> ExactMatch: 加载已有患者 + 就诊历史
+    2. Name+BirthDate 模糊匹配 -> FuzzyMatch: 加载已有患者
+    3. 多条命中 -> MultipleCandidates: UI 显示候选列表供用户选择
+    4. 未命中 -> NoMatch: 快速创建新患者
 读取失败 -> CardReadError 事件通知 -> 显示错误信息
 ```
 
@@ -123,6 +126,7 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 5. 可选保存证件照片 (savePhoto 参数)
 6. 连接状态变更通过 ConnectionStateChanged 事件通知
 7. 卡片插入通过 CardDetected 事件通知
+8. 设备参数 (端口/超时等) 从 appsettings.json `["CardReader"]` 节读取 (CardReaderOptions)
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -161,10 +165,11 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 | 排除项 | 原因 |
 |--------|------|
 | 照片 DPAPI 加密存储 (IPhotoStorageService) | CARD-D02 计划中未实现，v1.0 不阻塞核心读卡流程 |
-| 患者去重降级链 (模糊匹配) | CARD-D03 当前仅 IdNumber 精确匹配，降级链待后续迭代 |
 | 服务端读卡 API | 读卡器为纯客户端硬件交互，无服务端组件 |
 | 非身份证类证件支持 | v1.0 仅支持二代身份证，港澳台居住证等待后续扩展 |
 | 自动轮询读卡 | v1.0 用户手动触发读卡，自动轮询检测待后续考虑 |
+
+> 注: 患者去重降级链 (模糊匹配) 已于 Sprint 4 实现 (CARD-D03)，不再列为 Out of Scope。
 
 ---
 
@@ -186,7 +191,7 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 |----|------|------|
 | OQ-CARD-01 | 是否支持连续刷卡模式 (自动轮询检测卡片)? | 延期。v1.0 用户手动触发，后续根据使用反馈决定 |
 | OQ-CARD-02 | 证件照片功能何时实现 DPAPI 加密存储? | 延期。CARD-D02 方案已设计，待排期实现 |
-| OQ-CARD-03 | 患者去重降级链 (模糊匹配) 何时实现? | 延期。CARD-D03 当前精确匹配足够，降级链待用户反馈 |
+| OQ-CARD-03 | 患者去重降级链 (模糊匹配) 何时实现? | **已实现** (Sprint 4)。MatchPatientAsync 实现完整降级链 |
 | OQ-CARD-04 | 是否需要支持港澳台居住证等非身份证类型? | 待定。CardType 枚举已预留，需确认业务需求 |
 
 ---
@@ -216,6 +221,25 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 | Age | int? | 计算属性，根据 BirthDate 自动计算 |
 
 **工厂方法**: `CardReadResult.Success(...)` / `CardReadResult.Failure(errorCode, errorMessage)`
+
+### PatientMatchResult (Sprint 4 新增)
+
+MatchPatientAsync 返回结果:
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| MatchType | PatientMatchType | 匹配类型 (见下) |
+| Patient | PatientDto? | 匹配到的患者 (单条结果时) |
+| Candidates | IReadOnlyList\<PatientDto\> | 候选列表 (MultipleCandidates 时) |
+
+**PatientMatchType 枚举:**
+
+| 值 | 含义 |
+|----|------|
+| ExactMatch | IdNumber 精确匹配成功 |
+| FuzzyMatch | Name+BirthDate 模糊匹配成功 |
+| MultipleCandidates | 多条候选，需用户确认 |
+| NoMatch | 未匹配，需新建患者 |
 
 ### PatientFromCardResult
 
@@ -275,7 +299,7 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 |------|------|----------|------|
 | CARD-D01 | 多厂商驱动加载策略 | US-CARD-001 | 已确定: 工厂模式选择 (ICardReaderFactory + CardReaderType 枚举)，支持自动检测 (AutoDetectReaderAsync)。DLL 放应用目录或 Native/ 子目录。启动时 InitializeAsync() 失败不阻塞。DEBUG 模式下自动回退到 MockCardReader。当前支持 HuaDaHD100 和 Mock 两种类型 |
 | CARD-D02 | 照片存储与保护 | US-CARD-001 | 计划中未实现: DPAPI LocalMachine 加密存 {AppDataLocal}/LYBT/photos/{patientId}.dat。接口 IPhotoStorageService (Save/Load/Delete/Exists)。读取解密到内存不写临时文件。默认关闭 CardReaderOptions.SavePhoto=false。随患者硬删除清理 |
-| CARD-D03 | 患者去重降级 | US-CARD-002 | 当前实现: 仅 IdNumber 精确匹配。设计目标 (未实现): 降级链 (1) IdNumber 精确匹配 (2) Name+BirthDate 模糊匹配->用户确认 (3) 多条命中->列表选择 (4) 未命中->新建 |
+| CARD-D03 | 患者去重降级 | US-CARD-001 | **已实现 (Sprint 4)**: MatchPatientAsync 实现完整降级链: (1) IdNumber 精确匹配->ExactMatch (2) Name+BirthDate 模糊匹配->FuzzyMatch (3) 多条命中->MultipleCandidates (4) 未命中->NoMatch。PatientMatchType 枚举 + PatientMatchResult 类型 |
 
 ### 修订历史
 
@@ -300,3 +324,4 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 | 2026-02-22 | v1.5 | Phase 2 模块功能细化: 新增 CARD-D01/D02/D03 |
 | 2026-02-28 | v1.6 | PRD 偏差修复: CARD-D01/D02/D03 对齐实际实现 |
 | 2026-03-06 | v2.0 | PRD 全面重写: FR->US 格式迁移，新增 Problem Statement/Strategic Context/Success Metrics/Epic Hypothesis/Out of Scope/Dependencies & Risks/Open Questions 7 个章节，移除接口定义章节 (属架构层) |
+| 2026-03-09 | v2.1 | Sprint 4 完成: CARD-D03 降级链已实现 (MatchPatientAsync + PatientMatchType + PatientMatchResult); 操作流程更新; BR-8 CardReaderOptions 配置化; 移出 Out of Scope; OQ-CARD-03 标记已实现; 新增 PatientMatchResult 数据模型 |

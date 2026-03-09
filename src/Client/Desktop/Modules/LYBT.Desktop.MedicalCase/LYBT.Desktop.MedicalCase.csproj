@@ -79,6 +79,11 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Primitives\LYBT.Shared.Primitives.csproj" />
   </ItemGroup>
 
+  <!-- US-MC-011: expose internal constructors to test project -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="LYBT.Tests.Desktop" />
+  </ItemGroup>
+
   <!-- Epic #2175 D5-3: 跨模块 ProjectReference 已全部移除 -->
   <!-- C# 层通过 IHerbSearchProvider/IFormulaSearchProvider (Contracts) 解耦 -->
   <!-- XAML 控件已迁移到 Infrastructure (HerbListControl/FormulaViewControl) -->

@@ -37,6 +37,9 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     private readonly IActiveConsultationService _activeConsultationService;
     private readonly IDialogService? _dialogService;
 
+    /// <summary>US-MC-011: Edit mode FSM (lifecycle tied to parent VM, not DI).</summary>
+    private readonly IEditModeStateMachine _editStateMachine;
+
     #endregion
 
     #region Child VMs
@@ -219,6 +222,10 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
         _dialogService = dialogService;
 
+        // US-MC-011: Create edit mode FSM (lifecycle tied to this VM)
+        _editStateMachine = new EditModeStateMachine(services.LoggerFactory.CreateLogger<EditModeStateMachine>());
+        _editStateMachine.StateChanged += OnEditStateChanged;
+
         // Create child VMs (not container-resolved; coupled to parent lifecycle)
         ConsultationEditor = new ConsultationEditorViewModel(this, this, services.LoggerFactory);
         PrescriptionEditor = new PrescriptionEditorViewModel(this, this, services.LoggerFactory);
@@ -316,6 +323,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         if (medicalCase == null)
         {
             State = new WorkspaceState(Mode: workspaceMode, EditState: EditState.Editing, EditType: EditType.Create, CanEdit: true);
+            InitializeEditStateMachine(canEdit: true, startEditing: true);
             return;
         }
 
@@ -329,6 +337,42 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
         State = State.DetermineFromContext(workspaceMode, isCompleted, isOwner, isAdmin, preferEditing);
         if (isHistoricalEdit) State = State with { EditType = EditType.EditCompleted };
+
+        var canEdit = isAdmin || (isOwner && !isCompleted);
+        InitializeEditStateMachine(canEdit, preferEditing && canEdit);
+    }
+
+    /// <summary>
+    /// US-MC-011: Initialize the FSM from computed context.
+    /// Maps EditState -> WorkspaceEditState for the state machine initial state.
+    /// </summary>
+    private void InitializeEditStateMachine(bool canEdit, bool startEditing)
+    {
+        var initialFsmState = startEditing
+            ? WorkspaceEditState.Editing
+            : WorkspaceEditState.ReadOnly;
+
+        _editStateMachine.Initialize(initialFsmState, guardPredicate: evt =>
+        {
+            // EnterEdit guard: only allowed when CanEdit
+            if (evt == WorkspaceEditEvent.EnterEdit && !canEdit)
+                return false;
+            return true;
+        });
+    }
+
+    /// <summary>
+    /// US-MC-011: Handle FSM state changes -- update WorkspaceState.EditState to match.
+    /// </summary>
+    private void OnEditStateChanged(object? sender, EditStateChangedEventArgs e)
+    {
+        var editState = e.NewState is WorkspaceEditState.Editing or WorkspaceEditState.DirtyEditing
+            ? EditState.Editing
+            : EditState.ReadOnly;
+
+        State = State with { EditState = editState };
+
+        Logger.LogDebug("WorkspaceState.EditState <- {NewEditState} (FSM: {FsmState})", editState, e.NewState);
     }
 
     #endregion
@@ -502,8 +546,9 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
                         var auditReason = await CheckAndGetAuditReasonAsync();
                         if (auditReason == null) { tcs.SetResult(false); return; }
                         if (!string.IsNullOrEmpty(auditReason)) EditReason = auditReason;
+                        _editStateMachine.Fire(WorkspaceEditEvent.Save, "management-leave-save");
                         await SuspendOnlyAsync();
-                        State = State.EnterReadOnlyMode();
+                        _editStateMachine.Fire(WorkspaceEditEvent.SaveCompleted, "management-leave-save-completed");
                         tcs.SetResult(true);
                         break;
                     case ButtonResult.No:
@@ -554,17 +599,19 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             if (!string.IsNullOrEmpty(auditReason)) EditReason = auditReason;
 
             SetBusy(true, "正在保存...");
+            _editStateMachine.Fire(WorkspaceEditEvent.Save, "save-changes");
             var result = await _medicalCaseService.SaveAndSuspendAsync(
                 MedicalCaseId, ConsultationEditor.GetConsultationData(),
                 PrescriptionEditor.GetPrescriptionData(), Remark);
 
             if (result.Success)
             {
-                State = State.EnterReadOnlyMode();
+                _editStateMachine.Fire(WorkspaceEditEvent.SaveCompleted, "save-changes-completed");
                 await ShowSuccessMessageAsync("保存成功");
             }
             else
             {
+                _editStateMachine.Fire(WorkspaceEditEvent.SaveFailed, "save-changes-failed");
                 await ShowErrorMessageAsync(result.Error ?? "保存失败");
             }
         }
@@ -596,6 +643,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             case "TcmDiagnosis":
             case "ItemCount":
                 UpdateState();
+                // US-MC-011: data modification -> FSM MakeChange (Editing -> DirtyEditing)
+                _editStateMachine.Fire(WorkspaceEditEvent.MakeChange);
                 break;
         }
     }
@@ -615,6 +664,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     {
         if (disposing)
         {
+            _editStateMachine.StateChanged -= OnEditStateChanged;
             _activeConsultationService.Unregister();
             EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Unsubscribe(OnConsultationCompleted);
             EventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>().Unsubscribe(OnPrescriptionCompleted);
