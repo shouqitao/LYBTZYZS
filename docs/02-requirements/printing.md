@@ -227,8 +227,8 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 
 | 排除项 | 原因 |
 |--------|------|
-| PDF 导出 | v1.0 不支持，使用 XPS 格式导出。v2.0 评估 PdfSharp 或 XPS→PDF 转换方案 (PRINT-D01) |
-| 草稿水印 | 非 MVP 核心功能，延期到 UX 完善 Sprint (PRINT-19) |
+| ~~PDF 导出~~ | **已实现 (Sprint 6)**。QuestPDF 2025.4.0，ExportPdfCommand + MedicalCaseWorkspaceView 导出按钮 |
+| ~~草稿水印~~ | **已实现 (Sprint 6)**。4 个 XAML 打印模板 + QuestPDF PDF 水印; IsDraft = CaseStatus != Completed |
 | 诊断打印 (PrintType=Consultation) | PrintType 枚举已预留，v1.0 仅实现处方打印 |
 | 医案摘要打印 (PrintType=CaseSummary) | PrintType 枚举已预留，v1.0 仅实现处方打印 |
 | 网络打印 / 云打印 | 仅支持本地 WPF PrintDialog，诊所场景无云打印需求 |
@@ -260,9 +260,9 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 
 | ID | 问题 | 状态 |
 |----|------|------|
-| OQ-PRINT-01 | 草稿医案是否允许打印 (标注"草稿"水印)? | 设计已确定 (PRINT-D06): 允许打印但标注水印。水印功能延期 (PRINT-19) |
+| OQ-PRINT-01 | 草稿医案是否允许打印 (标注"草稿"水印)? | **已实现** (Sprint 6): 允许打印并标注水印。4 XAML 模板 + PDF 水印 |
 | OQ-PRINT-02 | 批量打印时是否需要逐个确认还是全部静默打印? | 已确定 (PRINT-D03): BatchPrintAsync 默认静默模式 (ShowDialog=false)，返回成功计数 |
-| OQ-PRINT-03 | v2.0 PDF 导出采用 PdfSharp 还是 XPS→PDF 转换? | 待评估。v1.0 使用 XPS 格式导出 |
+| OQ-PRINT-03 | v2.0 PDF 导出采用 PdfSharp 还是 XPS→PDF 转换? | **已实现** (Sprint 6): 采用 QuestPDF 2025.4.0，独立 PDF 布局引擎 (非 XPS 转换) |
 | OQ-PRINT-04 | 打印模板是否支持用户自定义 (如调整边距、字号)? | 待决定。v1.0 使用固定模板 |
 
 ---
@@ -354,11 +354,11 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 |------|------|
 | 药材名称截断 | 名称超过 10 个字符时截断 + "..." |
 | 空处方 | 不允许打印 (处方中无药材时打印按钮禁用) |
-| 草稿医案 | 允许打印但标注"草稿"水印 (水印功能延期，见 Out of Scope) |
+| 草稿医案 | 允许打印但标注"草稿"水印 (**已实现**, Sprint 6) |
 | 打印预览 | 预览内容与实际打印完全一致 (WYSIWYG) |
 
-> **[延期 2026-02-21]** 草稿水印功能延期实现
-> 原因: 非 MVP 核心功能  |  计划: UX 完善 Sprint  |  参考: PRINT-19
+> **[已实现 2026-03-09]** 草稿水印功能已在 Sprint 6 实现
+> 4 个 XAML 打印模板 (A5/A4 首页+续页) + QuestPDF PDF 水印 (72pt/-35度旋转/#30FF0000)  |  参考: PRINT-19
 
 ---
 
@@ -386,7 +386,7 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 | 格式 | 状态 | 说明 |
 |------|------|------|
 | XPS | 支持 | WPF 原生支持 |
-| PDF | 暂不支持 | MVP 阶段后续考虑 (见 Out of Scope) |
+| PDF | **已支持 (Sprint 6)** | QuestPDF 2025.4.0，PrescriptionPdfExporter |
 
 ---
 
@@ -459,7 +459,7 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 |------|----------|----------|
 | 无可用打印机 | 日志警告，操作跳过 | 执行打印时没有可用打印机 |
 | 打印异常 | 日志记录，抛出异常 | 打印过程中发生异常 |
-| PDF 导出不支持 | 日志警告，回退 XPS | 请求 PDF 导出 (v1.0 不支持) |
+| ~~PDF 导出不支持~~ | ~~日志警告，回退 XPS~~ | **已支持** (Sprint 6, QuestPDF 2025.4.0) |
 
 ### 批量打印
 
@@ -472,12 +472,12 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
-| PRINT-D01 | PDF 导出功能 | US-PRINT-002 | 已确定: v1.0 不支持，使用 XPS 格式导出。v2.0 评估 PdfSharp 或 XPS→PDF 转换方案 |
+| PRINT-D01 | PDF 导出功能 | US-PRINT-002 | **已实现 (Sprint 6)**: QuestPDF 2025.4.0; PrescriptionPdfExporter; ExportPdfCommand + MedicalCaseWorkspaceView 导出按钮 |
 | PRINT-D02 | 打印模板配置 (诊所信息来源) | US-PRINT-001 | 已确定: 从 ClinicSettings 配置读取 (Name/Department/Address/Phone)。可配置信息统一从配置文件获取，见 [configuration.md](configuration.md) FR-CFG-002 ClinicSettings |
 | PRINT-D03 | 批量打印 | US-PRINT-001 | 已确定: 已实现。BatchPrintAsync 支持多处方连续打印，默认静默模式 (ShowDialog=false)，返回成功计数 |
 | PRINT-D04 | 排版规格 | US-PRINT-001 | 已确定: 标准中医处方笺格式，宋体为主，A5 上下 10mm 左右 8mm 边距 |
 | PRINT-D05 | 分页规则 | US-PRINT-001 | 已确定: A5 单页最多 12 味药，超出自动分页，第二页标注"续上页" |
-| PRINT-D06 | 草稿打印 | US-PRINT-001 | 已确定: 允许打印草稿医案处方，但标注"草稿"水印。水印功能延期 (PRINT-19) |
+| PRINT-D06 | 草稿打印 | US-PRINT-001 | **已实现 (Sprint 6)**: 允许打印草稿医案处方并标注"草稿"水印。4 XAML 模板 + QuestPDF PDF 水印 |
 | PRINT-D07 | 打印层级提升 | 全模块 | 已确定: 打印从处方层提升到医案层。IsPrinted/PrintVersion 在 MedicalCase 聚合根上，PrescriptionPrintLog 重命名为 MedicalCasePrintLog (FK 改为 MedicalCaseId)，新增 PrintType 枚举支持多种打印类型扩展。v1.0 仅实现 PrintType=Prescription |
 
 ### 修订历史
@@ -487,7 +487,7 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 | 2026-02-21 | 打印日期格式对齐代码实现 | 日期格式微小差异不影响功能，PRD 对齐代码 | PRINT-26 |
 | 2026-02-21 | 排版细节要求放宽 | 边距、间距等排版参数允许合理偏差，非功能性微调 | PRINT-27 |
 | 2026-02-21 | 字号要求放宽 | 允许实际实现与 PRD 标注值存在 +/-0.5pt 偏差，可接受 | PRINT-23 |
-| 2026-02-21 | 草稿水印功能延期 | 非 MVP 核心功能，延期到 UX 完善 Sprint | PRINT-19 |
+| 2026-02-21 | ~~草稿水印功能延期~~ | ~~非 MVP 核心功能~~ **Sprint 6 (2026-03-09) 已实现** | PRINT-19 |
 
 ---
 
@@ -508,3 +508,4 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 | 2026-02-22 | v3.2 | 打印字段全提升 (A2): PrintCount/LastPrintedAt 从 Prescription 迁移到 MedicalCase 聚合根; 打印层级模型图更新; FR-PRINT-001 验收标准更新为 MedicalCase.PrintCount/LastPrintedAt |
 | 2026-02-26 | v3.3 | Sprint 4 已实现标记: 字体变更 STKaiti→SimSun (T4-S5-04)、打印分页 12/20 味 (T4-S5-09)、四诊信息区域 (T4-S5-07) |
 | 2026-03-06 | v4.0 | PRD 全面重写: FR→US 格式迁移，新增 Problem Statement/Strategic Context/Success Metrics/Epic Hypothesis/Out of Scope/Dependencies & Risks/Open Questions 7 个章节; 决策编号升级为 PRINT-D0N 格式; 修订注释迁移到 Decision Log 修订历史 |
+| 2026-03-09 | v4.1 | Sprint 6 完成状态同步: PDF 导出 (QuestPDF 2025.4.0) 已实现 (PRINT-D01); 草稿水印 (4 XAML + PDF) 已实现 (PRINT-D06/PRINT-19); ExportFormat.PDF 已支持; Out of Scope/Open Questions/Decision Log 更新 |

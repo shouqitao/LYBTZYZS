@@ -164,7 +164,7 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 
 | 排除项 | 原因 |
 |--------|------|
-| 照片 DPAPI 加密存储 (IPhotoStorageService) | CARD-D02 计划中未实现，v1.0 不阻塞核心读卡流程 |
+| ~~照片 DPAPI 加密存储 (IPhotoStorageService)~~ | **已实现 (Sprint 6)**。DpapiPhotoStorageService + 11 tests; 集成到读卡流程 |
 | 服务端读卡 API | 读卡器为纯客户端硬件交互，无服务端组件 |
 | 非身份证类证件支持 | v1.0 仅支持二代身份证，港澳台居住证等待后续扩展 |
 | 自动轮询读卡 | v1.0 用户手动触发读卡，自动轮询检测待后续考虑 |
@@ -190,7 +190,7 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 | ID | 问题 | 状态 |
 |----|------|------|
 | OQ-CARD-01 | 是否支持连续刷卡模式 (自动轮询检测卡片)? | 延期。v1.0 用户手动触发，后续根据使用反馈决定 |
-| OQ-CARD-02 | 证件照片功能何时实现 DPAPI 加密存储? | 延期。CARD-D02 方案已设计，待排期实现 |
+| OQ-CARD-02 | 证件照片功能何时实现 DPAPI 加密存储? | **已实现** (Sprint 6)。DpapiPhotoStorageService + 11 tests; 集成到读卡流程 |
 | OQ-CARD-03 | 患者去重降级链 (模糊匹配) 何时实现? | **已实现** (Sprint 4)。MatchPatientAsync 实现完整降级链 |
 | OQ-CARD-04 | 是否需要支持港澳台居住证等非身份证类型? | 待定。CardType 枚举已预留，需确认业务需求 |
 
@@ -298,7 +298,7 @@ MatchPatientAsync 返回结果:
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | CARD-D01 | 多厂商驱动加载策略 | US-CARD-001 | 已确定: 工厂模式选择 (ICardReaderFactory + CardReaderType 枚举)，支持自动检测 (AutoDetectReaderAsync)。DLL 放应用目录或 Native/ 子目录。启动时 InitializeAsync() 失败不阻塞。DEBUG 模式下自动回退到 MockCardReader。当前支持 HuaDaHD100 和 Mock 两种类型 |
-| CARD-D02 | 照片存储与保护 | US-CARD-001 | 计划中未实现: DPAPI LocalMachine 加密存 {AppDataLocal}/LYBT/photos/{patientId}.dat。接口 IPhotoStorageService (Save/Load/Delete/Exists)。读取解密到内存不写临时文件。默认关闭 CardReaderOptions.SavePhoto=false。随患者硬删除清理 |
+| CARD-D02 | 照片存储与保护 | US-CARD-001 | **已实现 (Sprint 6)**: DpapiPhotoStorageService -- DPAPI LocalMachine 加密存 {AppDataLocal}/LYBT/photos/{patientId}.dat。接口 IPhotoStorageService (Save/Load/Delete/Exists)。读取解密到内存不写临时文件。11 单元测试。集成到读卡流程 |
 | CARD-D03 | 患者去重降级 | US-CARD-001 | **已实现 (Sprint 4)**: MatchPatientAsync 实现完整降级链: (1) IdNumber 精确匹配->ExactMatch (2) Name+BirthDate 模糊匹配->FuzzyMatch (3) 多条命中->MultipleCandidates (4) 未命中->NoMatch。PatientMatchType 枚举 + PatientMatchResult 类型 |
 
 ### 修订历史
@@ -307,7 +307,7 @@ MatchPatientAsync 返回结果:
 |------|--------|------|------|
 | 2026-02-21 | 读卡数据字段映射 "姓名->RealName" 修订为 "姓名->Name" | 代码使用 Name 字段更简洁合理，PatientFromCardResult.Name | CARD-01 |
 | 2026-02-28 | CARD-D01 对齐工厂模式实现 | PRD 偏差修复 | PRD-13 |
-| 2026-02-28 | CARD-D02 标注 DPAPI 未实现 | PRD 偏差修复 | PRD-14 |
+| 2026-02-28 | ~~CARD-D02 标注 DPAPI 未实现~~ | ~~PRD 偏差修复~~ **Sprint 6 (2026-03-09) 已实现** | PRD-14 |
 | 2026-02-28 | CARD-D03 对齐仅精确匹配实现 | PRD 偏差修复 | PRD-15 |
 
 ---
@@ -325,3 +325,4 @@ MatchPatientAsync 返回结果:
 | 2026-02-28 | v1.6 | PRD 偏差修复: CARD-D01/D02/D03 对齐实际实现 |
 | 2026-03-06 | v2.0 | PRD 全面重写: FR->US 格式迁移，新增 Problem Statement/Strategic Context/Success Metrics/Epic Hypothesis/Out of Scope/Dependencies & Risks/Open Questions 7 个章节，移除接口定义章节 (属架构层) |
 | 2026-03-09 | v2.1 | Sprint 4 完成: CARD-D03 降级链已实现 (MatchPatientAsync + PatientMatchType + PatientMatchResult); 操作流程更新; BR-8 CardReaderOptions 配置化; 移出 Out of Scope; OQ-CARD-03 标记已实现; 新增 PatientMatchResult 数据模型 |
+| 2026-03-09 | v2.2 | Sprint 6 完成状态同步: CARD-D02 照片 DPAPI 加密已实现 (DpapiPhotoStorageService + 11 tests); Out of Scope/OQ-CARD-02/Decision Log 更新 |

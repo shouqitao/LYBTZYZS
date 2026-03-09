@@ -305,14 +305,14 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 | 远程 | 客户端 UI 协调多个 API 调用 |
 | 本地 | 不适用 |
 
-> **[延期 2026-02-21]** 运行时模式切换未实现，当前仅支持登录时选择模式
-> 原因: MVP 阶段登录时选择够用，运行时切换增加复杂度  |  计划: 模式切换 Sprint  |  参考: SYNC-04
+> **[已实现 2026-03-09]** 运行时模式切换已在 Sprint 6 实现 (SYNC-D03)
+> IConnectionModeProvider.SwitchModeAsync 5 步切换; SidebarControl 按钮; MainWindow 遮罩层; 16 tests  |  参考: SYNC-04
 
-> **[延期 2026-02-21]** 切换前未同步变更检查未实现
-> 原因: 依赖运行时模式切换功能  |  计划: 模式切换 Sprint  |  参考: SYNC-05
+> **[已实现 2026-03-09]** 切换前检查已实现: ActiveConsultation 检查 + ModeSwitchValidator 验证
+> 参考: SYNC-05
 
-> **[延期 2026-02-21]** 切换失败回退策略未实现
-> 原因: 依赖运行时模式切换功能  |  计划: 模式切换 Sprint  |  参考: SYNC-13
+> **[已实现 2026-03-09]** 切换异常处理已实现: ConnectionModeProvider 捕获异常并返回 ModeSwitchResult.Failed
+> 参考: SYNC-13
 
 ### US-SYNC-008: 模式切换
 
@@ -320,8 +320,8 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 > so that 我可以根据网络环境选择合适的工作模式。
 
 **Acceptance Criteria:**
-- [ ] 切换到本地模式 → DataSource 使用 SQLite
-- [ ] 切换到远程模式 → DataSource 使用 HTTP API
+- [x] 切换到本地模式 → Repository 使用 LocalXxxRepository (EF Core + LocalDB)
+- [x] 切换到远程模式 → Repository 使用 XxxRepository (Refit HTTP API)
 - [ ] 有未同步数据时切换 → 弹出提示对话框
 - [ ] 网络不可用时切换到远程模式 → 显示网络错误提示
 - [ ] 切换失败 → 自动回退到切换前模式
@@ -341,7 +341,7 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 **远程 → 本地 切换:**
 1. 检查 SQLite 数据库文件是否存在且完整
 2. 不存在 → 提示: "本地数据库不存在，需先执行一次同步"
-3. 存在 → 切换 DataSource 为 SQLite
+3. 存在 → 切换 Repository 为 LocalXxxRepository (Sprint 6: SYNC-D02 废除 DataSource，改用 Factory + Dual Repository)
 4. 切换成功 → 状态栏显示"本地模式"标识
 
 **本地 → 远程 切换:**
@@ -353,7 +353,7 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 3. 网络不可用 → 提示: "无法连接服务器，请检查网络"
 4. 检查认证状态 (Token 是否有效)
 5. Token 过期 → 跳转登录页重新认证
-6. 认证有效 → 切换 DataSource 为 HTTP API
+6. 认证有效 → 切换 Repository 为 XxxRepository (Refit HTTP API)
 7. 切换成功 → 状态栏显示"远程模式"标识
 
 **切换失败回退:**
@@ -374,11 +374,11 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 |--------|------|
 | MedicalCase 同步实现 | 独立 Epic，复杂度极高 (聚合级原子同步+患者去重+编号重分配)，延期至同步体系完善 Epic |
 | 自动同步 / 后台同步 | v1.0 手动触发，v2.0 考虑 NetworkStatusService + 状态栏指示器 |
-| 运行时模式切换 | MVP 阶段登录时选择模式够用，运行时切换增加复杂度 |
+| ~~运行时模式切换~~ | **已实现 (Sprint 6, SYNC-D03)**。IConnectionModeProvider + SidebarControl 按钮 + MainWindow 遮罩层 |
 | ChangedFields 变更字段检测 | 复杂度高，当前 Checksum 比对可识别差异存在 |
 | SyncConflictDetailDto 字段级对比 | 依赖同步基础架构完善，当前 Checksum 展示可满足基本冲突识别 |
-| 切换前未同步变更检查 | 依赖运行时模式切换功能 |
-| 切换失败回退策略 | 依赖运行时模式切换功能 |
+| ~~切换前未同步变更检查~~ | **已实现 (Sprint 6)**。ActiveConsultation 检查 + ModeSwitchValidator 验证 |
+| ~~切换失败回退策略~~ | **已实现 (Sprint 6)**。ConnectionModeProvider 异常捕获 + ModeSwitchResult.Failed |
 
 ---
 
@@ -861,9 +861,9 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 2026-02-21 | ChangedFields 延期标注 | 变更检测复杂度高 | SYNC-08 |
 | 2026-02-21 | SyncConflictDetailDto 延期标注 | 依赖同步基础架构完善 | SYNC-02 |
 | 2026-02-21 | 字段级左右对比 UI 延期标注 | 依赖 SyncConflictDetailDto | SYNC-03 |
-| 2026-02-21 | 运行时模式切换延期标注 | MVP 阶段登录时选择够用 | SYNC-04 |
-| 2026-02-21 | 切换前未同步变更检查延期标注 | 依赖运行时模式切换 | SYNC-05 |
-| 2026-02-21 | 切换失败回退策略延期标注 | 依赖运行时模式切换 | SYNC-13 |
+| 2026-02-21 | ~~运行时模式切换延期标注~~ | ~~MVP 阶段登录时选择够用~~ **Sprint 6 (2026-03-09) 已实现** | SYNC-04 |
+| 2026-02-21 | ~~切换前未同步变更检查延期标注~~ | ~~依赖运行时模式切换~~ **Sprint 6 (2026-03-09) 已实现** | SYNC-05 |
+| 2026-02-21 | ~~切换失败回退策略延期标注~~ | ~~依赖运行时模式切换~~ **Sprint 6 (2026-03-09) 已实现** | SYNC-13 |
 | 2026-02-21 | SYNC-D01 医案同步仅限 Completed | 数据完整性+冲突极简+业务语义 | SYNC-D01 |
 | 2026-02-28 | DisplayName 修正为 EntityName | 对齐代码实现 | PRD-09 |
 
@@ -885,3 +885,4 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 2026-02-23 | v3.4 | 一致性审计: 错误码章节标注 ServiceResult -> Result\<T\> 迁移计划 (D2-2, S5) |
 | 2026-02-28 | v3.5 | PRD 偏差修复: SyncMetadataDto/SyncDiffItemDto/SyncConflictDetailDto/SyncFailedItemDto 中 DisplayName 修正为 EntityName，对齐代码实现 (PRD-09) |
 | 2026-03-06 | v4.0 | PRD 全面重写: FR->US 格式迁移，新增 Problem Statement/Strategic Context/Success Metrics/Epic Hypothesis/Out of Scope/Dependencies & Risks/Open Questions 7 个章节; 修订注释迁移到 Decision Log 修订历史子表 |
+| 2026-03-09 | v4.1 | Sprint 6 完成状态同步: 运行时模式切换 (SYNC-D03) 已实现; DataSource 废除 (SYNC-D02) 改为 Factory + Dual Repository; US-SYNC-008 验收标准更新; Out of Scope/修订历史/延期标注更新 |

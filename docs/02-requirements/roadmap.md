@@ -186,18 +186,33 @@
 | Sprint 3 | W3-W4 | MC + Printing + Herbs + Auth + REG | 0 | 9 | 0 | **COMPLETE** (2026-03-08) |
 | Sprint 4 | W5-W6 | Sync + CardReader + MC | 0 | 5 | 0 | **COMPLETE** (2026-03-09) **v1.0-beta** |
 | Sprint 5 | W7 | Error + Shell + Backup | 0 | 0 | 2+1NFR | **COMPLETE** (2026-03-09) **v1.0-rc** |
+| Sprint 6 | W8 | DataSource 重构 + v2.0 提前 | 0 | 0 | 6 功能 | **COMPLETE** (2026-03-09) |
+
+### Sprint 6: DataSource 重构 + v2.0 功能提前 (6 项) -- COMPLETE (2026-03-09)
+
+**目标**: 废除 DataSource 抽象层，实现运行时模式切换，同时完成 4 项 v2.0 功能提前
+
+| 编号 | 内容 | 完成状态 | 实现说明 |
+|------|------|---------|---------|
+| SYNC-D02 | DataSource 抽象层废除 | Done | 删除 ~24 DataSource 文件; Factory + Dual Repository; 6 个 Repository 接口迁移到 Contracts |
+| SYNC-D03 | 运行时模式切换 | Done | IConnectionModeProvider 5 步切换; SidebarControl 按钮; MainWindow 遮罩层; 16 tests |
+| D2 | 诊所信息配置化 | Done | clinic-settings.json + reloadOnChange 热更新; SystemSettingsView 配置区域 |
+| D1 | PDF 处方导出 | Done | QuestPDF 2025.4.0; ExportPdfCommand; MedicalCaseWorkspaceView 导出按钮 |
+| C2 | 照片 DPAPI 加密 | Done | DpapiPhotoStorageService; 集成读卡流程; 11 tests |
+| D3 | 草稿水印 | Done | 4 XAML 模板 + PDF 水印; IsDraft = CaseStatus != Completed |
 
 ### 汇总
 
 | 指标 | 数值 |
 |------|------|
-| 总 US | 138 (15 模块) |
-| 已完成 US | 135 / 138 (97.8%) |
+| 总 US | 138 (15 模块) + 6 Sprint 6 功能 |
+| 已完成 US | 137 / 138 (99.3%) + 6 Sprint 6 功能 |
 | 已移除 US | 1 (US-AUTH-007) |
-| 有效未完成 | 2 (SYNC-D02 DataSource 废除 + SYNC-D03 运行时切换，延期至 v2.0) |
+| 有效未完成 | 0 (SYNC-D02 + SYNC-D03 已在 Sprint 6 实施) |
 | **v1.0-alpha 达成** | Sprint 2 结束 (已达成) |
 | **v1.0-beta 达成** | Sprint 4 结束 (2026-03-09, 已达成) |
 | **v1.0-rc 达成** | Sprint 5 结束 (2026-03-09, 已达成) |
+| **v1.0 发布就绪** | Sprint 6 结束 (2026-03-09, 全部技术债务清零) |
 
 ---
 
@@ -288,3 +303,4 @@
 | 2026-03-06 | v1.1 | 新增 Registration 模块 (7 US) 纳入 Sprint; Sprint 重编号 (1->2, 2->3, 3->4); 总量 131->138 US |
 | 2026-03-08 | v1.2 | Sprint 3 完成 (9 US); CODE-08/11/22/24/36/37 关闭; 审计项更新状态列 |
 | 2026-03-09 | v1.3 | Sprint 4 完成 (5 US) v1.0-beta 达成; Sprint 5 完成 (2 US + NFR-AVAIL-001) v1.0-rc 达成; CODE-25/CODE-21 关闭; 审计项全部清零 |
+| 2026-03-09 | v1.4 | Sprint 6 完成: SYNC-D02 DataSource 废除 + SYNC-D03 运行时切换 + D1/D2/C2/D3 四项 v2.0 功能; 全部技术债务清零; 1654 tests 全通过 |

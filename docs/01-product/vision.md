@@ -299,11 +299,11 @@ Desktop 客户端使用 Prism IEventAggregator 实现模块间松耦合通信：
 | 功能 | 来源 | 说明 |
 |------|------|------|
 | MedicalCase 数据同步 | FR-SYNC 决策#3 | 聚合根多表级联同步，需保证聚合完整性 |
-| PDF 处方导出 | FR-PRINT 决策#1 | PdfSharp 或 XPS->PDF 转换 |
+| ~~PDF 处方导出~~ | ~~FR-PRINT 决策#1~~ | **Sprint 6 已实现** (QuestPDF 2025.4.0) |
 | 自动同步提示 | FR-SYNC 决策#4 | NetworkStatusService + 状态栏指示器 |
-| 诊所信息配置化 | FR-PRINT 决策#2 | 从 appsettings.json 或数据库读取，替代硬编码 |
+| ~~诊所信息配置化~~ | ~~FR-PRINT 决策#2~~ | **Sprint 6 已实现** (clinic-settings.json + reloadOnChange 热更新) |
 | User 数据同步 | FR-SYNC 决策#2 | User 实体加入同步范围 |
-| SQLite 字段级加密 | NFR-D03 | AES-256 + DPAPI 加密 IdCardNumber/PhoneNumber (替代原 SQLCipher 方案) |
+| LocalDB 字段级加密 | NFR-D03 | AES-256 + DPAPI 加密 IdCardNumber/PhoneNumber (原 SQLite 方案需基于 LocalDB 重新设计) |
 
 ---
 
@@ -315,3 +315,4 @@ Desktop 客户端使用 Prism IEventAggregator 实现模块间松耦合通信：
 | 2026-02-11 | v1.1 | 新增版本路线图 (v1.0 范围 + v2.0 规划) |
 | 2026-02-17 | v2.0 | Round 2 深化: 新增详细业务流程 (首诊/复诊/验方/药材)、模块依赖矩阵、跨模块数据规则、Desktop 事件架构 |
 | 2026-02-18 | v2.1 | PRD 全量闭环分析: FR 总数 120->131，模块清单计数同步更新 (PAT+1/MC+1/SYS+2/ERR+3/LOG+3/CFG+1) |
+| 2026-03-09 | v2.2 | v2.0 路线图更新: PDF 处方导出 + 诊所信息配置化 已在 Sprint 6 提前实现; SQLite 字段级加密更新为 LocalDB 重新设计 |
