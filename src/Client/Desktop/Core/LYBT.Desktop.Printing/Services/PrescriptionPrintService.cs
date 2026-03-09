@@ -135,20 +135,29 @@ namespace LYBT.Desktop.Printing.Services
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentException("文件路径不能为空", nameof(filePath));
 
-            if (format == ExportFormat.Pdf)
-            {
-                _logger.LogWarning("[PRINT] PDF导出暂不支持，将导出为XPS格式");
-                filePath = Path.ChangeExtension(filePath, ".xps");
-            }
-
             try
             {
-                _logger.LogInformation("[PRINT] ExportAsync started - FilePath={FilePath}", filePath);
+                // D1: PDF 导出 (QuestPDF)
+                if (format == ExportFormat.Pdf)
+                {
+                    if (!filePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        filePath = Path.ChangeExtension(filePath, ".pdf");
+                    }
 
+                    _logger.LogInformation("[PRINT] PDF ExportAsync started - FilePath={FilePath}", filePath);
+                    PrescriptionPdfExporter.Export(model, filePath);
+                    _logger.LogInformation("[PRINT] PDF ExportAsync completed - FilePath={FilePath}", filePath);
+                    return await Task.FromResult(true);
+                }
+
+                // XPS 导出 (原有逻辑)
                 if (!filePath.EndsWith(".xps", StringComparison.OrdinalIgnoreCase))
                 {
                     filePath = Path.ChangeExtension(filePath, ".xps");
                 }
+
+                _logger.LogInformation("[PRINT] XPS ExportAsync started - FilePath={FilePath}", filePath);
 
                 var document = BuildFixedDocument(model, A5PageSize);
 
@@ -161,12 +170,12 @@ namespace LYBT.Desktop.Printing.Services
                     }
                 }
 
-                _logger.LogInformation("[PRINT] ExportAsync completed - FilePath={FilePath}", filePath);
+                _logger.LogInformation("[PRINT] XPS ExportAsync completed - FilePath={FilePath}", filePath);
                 return await Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[PRINT] ExportAsync failed");
+                _logger.LogError(ex, "[PRINT] ExportAsync failed - Format={Format}", format);
                 throw;
             }
         }

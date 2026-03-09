@@ -21,13 +21,13 @@
         NavigateToHomeCommand="{Binding NavigateToHomeCommand}"
         EditProfileCommand="{Binding EditProfileCommand}"
         NavigateToSystemSettingsCommand="{Binding NavigateToSystemSettingsCommand}"
-        LogoutCommand="{Binding LogoutCommand}"/>
--->
-<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.SidebarControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
-             x:Name="Root">
+        LogoutCommand="{Binding LogoutCommand}"/>-->
+<UserControl
+    x:Class="LYBT.Desktop.Infrastructure.Controls.SidebarControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+    x:Name="Root">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):
@@ -36,26 +36,32 @@
     -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <!-- 侧边栏宽度转换器 - 需要本地定义（带特定TrueValue/FalseValue参数） -->
-            <converters:BoolToDoubleConverter x:Key="BoolToSidebarWidthConverter" TrueValue="200" FalseValue="56"/>
+            <!--  侧边栏宽度转换器 - 需要本地定义（带特定TrueValue/FalseValue参数）  -->
+            <converters:BoolToDoubleConverter
+                x:Key="BoolToSidebarWidthConverter"
+                FalseValue="56"
+                TrueValue="200" />
 
-            <!-- 侧边栏菜单项样式 -->
+            <!--  侧边栏菜单项样式  -->
             <Style x:Key="SidebarMenuItemStyle" TargetType="Button">
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="Foreground" Value="{DynamicResource SidebarTextBrush}"/>
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Height" Value="48"/>
-                <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource SidebarTextBrush}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Height" Value="48" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" Padding="16,0">
-                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                            <Border
+                                x:Name="ItemBorder"
+                                Padding="16,0"
+                                Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SidebarHoverBrush}"/>
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SidebarHoverBrush}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -66,145 +72,287 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{DynamicResource SidebarBrush}"
-            Width="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BoolToSidebarWidthConverter}}">
+    <Border Width="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BoolToSidebarWidthConverter}}" Background="{DynamicResource SidebarBrush}">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- Row 0: 展开/收缩按钮 -->
-                <RowDefinition Height="Auto"/>  <!-- Row 1: 用户信息 -->
-                <RowDefinition Height="Auto"/>  <!-- Row 2: 分隔线 -->
-                <RowDefinition Height="*"/>     <!-- Row 3: 菜单区域 -->
-                <RowDefinition Height="Auto"/>  <!-- Row 4: 状态信息(网络+时间) -->
-                <RowDefinition Height="Auto"/>  <!-- Row 5: 分隔线 -->
-                <RowDefinition Height="Auto"/>  <!-- Row 6: 退出登录 -->
+                <RowDefinition Height="Auto" />
+                <!--  Row 0: 展开/收缩按钮  -->
+                <RowDefinition Height="Auto" />
+                <!--  Row 1: 用户信息  -->
+                <RowDefinition Height="Auto" />
+                <!--  Row 2: 分隔线  -->
+                <RowDefinition Height="*" />
+                <!--  Row 3: 菜单区域  -->
+                <RowDefinition Height="Auto" />
+                <!--  Row 4: 状态信息(网络+时间)  -->
+                <RowDefinition Height="Auto" />
+                <!--  Row 5: 模式切换 (SYNC-D03)  -->
+                <RowDefinition Height="Auto" />
+                <!--  Row 6: 分隔线  -->
+                <RowDefinition Height="Auto" />
+                <!--  Row 7: 退出登录  -->
             </Grid.RowDefinitions>
 
-            <!-- 展开/收缩按钮 + Logo -->
-            <Button Grid.Row="0" Style="{StaticResource SidebarMenuItemStyle}"
-                    Command="{Binding ToggleCommand, ElementName=Root}" Height="56" ToolTip="展开/收缩 (Ctrl+M)">
+            <!--  展开/收缩按钮 + Logo  -->
+            <Button
+                Grid.Row="0"
+                Height="56"
+                Command="{Binding ToggleCommand, ElementName=Root}"
+                Style="{StaticResource SidebarMenuItemStyle}"
+                ToolTip="展开/收缩 (Ctrl+M)">
                 <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Button}}">
                     <StackPanel Orientation="Horizontal">
-                        <!-- 汉堡图标 -->
-                        <Path Fill="{DynamicResource SidebarTextBrush}" Width="24" Height="24" Stretch="Uniform"
-                              Data="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-                        <!-- 系统名称（展开时显示） -->
-                        <TextBlock Text="凌隐宝堂" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource SidebarTextBrush}"
-                                   VerticalAlignment="Center" Margin="12,0,0,0"
-                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                        <!--  汉堡图标  -->
+                        <Path
+                            Width="24"
+                            Height="24"
+                            Data="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+                            Fill="{DynamicResource SidebarTextBrush}"
+                            Stretch="Uniform" />
+                        <!--  系统名称（展开时显示）  -->
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource SidebarTextBrush}"
+                            Text="凌隐宝堂"
+                            Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
                     </StackPanel>
                 </Grid>
             </Button>
 
-            <!-- 用户信息 -->
+            <!--  用户信息  -->
             <Border Grid.Row="1" Padding="12,12">
                 <StackPanel Orientation="Horizontal">
-                    <!-- 用户头像 -->
-                    <Border Width="32" Height="32" CornerRadius="16" Background="{DynamicResource SidebarAvatarBrush}">
-                        <TextBlock Text="{Binding CurrentUser.RealName, ElementName=Root, Converter={x:Static converters:Cvt.FirstChar}}"
-                                   FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource SidebarTextBrush}"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <!--  用户头像  -->
+                    <Border
+                        Width="32"
+                        Height="32"
+                        Background="{DynamicResource SidebarAvatarBrush}"
+                        CornerRadius="16">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource SidebarTextBrush}"
+                            Text="{Binding CurrentUser.RealName, ElementName=Root, Converter={x:Static converters:Cvt.FirstChar}}" />
                     </Border>
-                    <!-- 用户名和角色（展开时显示） -->
-                    <StackPanel VerticalAlignment="Center" Margin="10,0,0,0"
-                                Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
-                        <TextBlock Text="{Binding CurrentUser.RealName, ElementName=Root}" FontSize="13" Foreground="{DynamicResource SidebarTextBrush}" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding CurrentUser.Role, ElementName=Root, Converter={x:Static converters:Cvt.EnumDesc}}"
-                                   FontSize="11" Foreground="{DynamicResource SidebarSecondaryTextBrush}"/>
+                    <!--  用户名和角色（展开时显示）  -->
+                    <StackPanel
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource SidebarTextBrush}"
+                            Text="{Binding CurrentUser.RealName, ElementName=Root}" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource SidebarSecondaryTextBrush}"
+                            Text="{Binding CurrentUser.Role, ElementName=Root, Converter={x:Static converters:Cvt.EnumDesc}}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
 
-            <!-- 分隔线 -->
-            <Border Grid.Row="2" Height="1" Background="{DynamicResource SidebarDividerBrush}" Margin="12,0"/>
+            <!--  分隔线  -->
+            <Border
+                Grid.Row="2"
+                Height="1"
+                Margin="12,0"
+                Background="{DynamicResource SidebarDividerBrush}" />
 
-            <!-- 菜单项 -->
+            <!--  菜单项  -->
             <StackPanel Grid.Row="3" Margin="0,8">
-                <!-- 返回主页 - OpenSpec: refactor-role-navigation -->
-                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding NavigateToHomeCommand, ElementName=Root}" ToolTip="返回主页">
+                <!--  返回主页 - OpenSpec: refactor-role-navigation  -->
+                <Button
+                    Command="{Binding NavigateToHomeCommand, ElementName=Root}"
+                    Style="{StaticResource SidebarMenuItemStyle}"
+                    ToolTip="返回主页">
                     <StackPanel Orientation="Horizontal">
-                        <Path Fill="{DynamicResource SidebarTextBrush}" Width="20" Height="20" Stretch="Uniform"
-                              Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                        <TextBlock Text="返回主页" VerticalAlignment="Center" Margin="12,0,0,0"
-                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                        <Path
+                            Width="20"
+                            Height="20"
+                            Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
+                            Fill="{DynamicResource SidebarTextBrush}"
+                            Stretch="Uniform" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="返回主页"
+                            Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
                     </StackPanel>
                 </Button>
-                <!-- 账户设置 - OpenSpec: migrate-views-to-role-modules - 合并个人资料+修改密码 -->
-                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding EditProfileCommand, ElementName=Root}" ToolTip="账户设置">
+                <!--  账户设置 - OpenSpec: migrate-views-to-role-modules - 合并个人资料+修改密码  -->
+                <Button
+                    Command="{Binding EditProfileCommand, ElementName=Root}"
+                    Style="{StaticResource SidebarMenuItemStyle}"
+                    ToolTip="账户设置">
                     <StackPanel Orientation="Horizontal">
-                        <Path Fill="{DynamicResource SidebarTextBrush}" Width="20" Height="20" Stretch="Uniform"
-                              Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        <TextBlock Text="账户设置" VerticalAlignment="Center" Margin="12,0,0,0"
-                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                        <Path
+                            Width="20"
+                            Height="20"
+                            Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                            Fill="{DynamicResource SidebarTextBrush}"
+                            Stretch="Uniform" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="账户设置"
+                            Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
                     </StackPanel>
                 </Button>
-                <!-- 系统设置 - OpenSpec: unify-navigation-architecture (ADR-5修正: 从HomeView移至Sidebar全局入口) -->
-                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding NavigateToSystemSettingsCommand, ElementName=Root}" ToolTip="系统设置">
+                <!--  系统设置 - OpenSpec: unify-navigation-architecture (ADR-5修正: 从HomeView移至Sidebar全局入口)  -->
+                <Button
+                    Command="{Binding NavigateToSystemSettingsCommand, ElementName=Root}"
+                    Style="{StaticResource SidebarMenuItemStyle}"
+                    ToolTip="系统设置">
                     <StackPanel Orientation="Horizontal">
-                        <Path Fill="{DynamicResource SidebarTextBrush}" Width="20" Height="20" Stretch="Uniform"
-                              Data="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-                        <TextBlock Text="系统设置" VerticalAlignment="Center" Margin="12,0,0,0"
-                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                        <Path
+                            Width="20"
+                            Height="20"
+                            Data="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
+                            Fill="{DynamicResource SidebarTextBrush}"
+                            Stretch="Uniform" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="系统设置"
+                            Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
                     </StackPanel>
                 </Button>
             </StackPanel>
 
-            <!-- 状态信息: 网络(上) + 时间(下) -->
+            <!--  状态信息: 网络(上) + 时间(下)  -->
             <Border Grid.Row="4" Padding="8,6">
                 <Grid>
-                    <!-- 收缩状态: 垂直居中 -->
-                    <StackPanel Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.InverseBoolToVis}}"
-                                HorizontalAlignment="Center">
-                        <!-- 网络状态(上) -->
-                        <Border Width="24" Height="24" CornerRadius="12" Background="{DynamicResource SidebarBrush}" Margin="0,0,0,6"
-                                HorizontalAlignment="Center" ToolTip="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToText}}">
-                            <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                     Fill="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToColor}}"/>
+                    <!--  收缩状态: 垂直居中  -->
+                    <StackPanel HorizontalAlignment="Center" Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.InverseBoolToVis}}">
+                        <!--  网络状态(上)  -->
+                        <Border
+                            Width="24"
+                            Height="24"
+                            Margin="0,0,0,6"
+                            HorizontalAlignment="Center"
+                            Background="{DynamicResource SidebarBrush}"
+                            CornerRadius="12"
+                            ToolTip="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToText}}">
+                            <Ellipse
+                                Width="12"
+                                Height="12"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Fill="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToColor}}" />
                         </Border>
-                        <!-- 时间(下): 时间+日期 -->
+                        <!--  时间(下): 时间+日期  -->
                         <StackPanel HorizontalAlignment="Center" ToolTip="当前时间">
-                            <TextBlock Text="{Binding CurrentTime, ElementName=Root, StringFormat=HH:mm}" FontSize="12" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource SidebarTextBrush}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="{Binding CurrentTime, ElementName=Root, StringFormat=MM-dd}" FontSize="9"
-                                       Foreground="{DynamicResource SidebarSecondaryTextBrush}" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource SidebarTextBrush}"
+                                Text="{Binding CurrentTime, ElementName=Root, StringFormat=HH:mm}" />
+                            <TextBlock
+                                Margin="0,1,0,0"
+                                HorizontalAlignment="Center"
+                                FontSize="9"
+                                Foreground="{DynamicResource SidebarSecondaryTextBrush}"
+                                Text="{Binding CurrentTime, ElementName=Root, StringFormat=MM-dd}" />
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- 展开状态: 水平布局 -->
-                    <StackPanel Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}"
-                                Margin="4,0,0,0">
-                        <!-- 网络状态(上) -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                            <Ellipse Width="10" Height="10" VerticalAlignment="Center"
-                                     Fill="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToColor}}"/>
-                            <TextBlock Text="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToText}}"
-                                       FontSize="11" Foreground="{DynamicResource SidebarSecondaryTextBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <!--  展开状态: 水平布局  -->
+                    <StackPanel Margin="4,0,0,0" Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
+                        <!--  网络状态(上)  -->
+                        <StackPanel Margin="0,0,0,4" Orientation="Horizontal">
+                            <Ellipse
+                                Width="10"
+                                Height="10"
+                                VerticalAlignment="Center"
+                                Fill="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToColor}}" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="11"
+                                Foreground="{DynamicResource SidebarSecondaryTextBrush}"
+                                Text="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToText}}" />
                         </StackPanel>
-                        <!-- 时间(下): 时间+日期 -->
+                        <!--  时间(下): 时间+日期  -->
                         <StackPanel Orientation="Horizontal">
-                            <Path Fill="{DynamicResource SidebarSecondaryTextBrush}" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"
-                                  Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+                            <Path
+                                Width="14"
+                                Height="14"
+                                VerticalAlignment="Center"
+                                Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"
+                                Fill="{DynamicResource SidebarSecondaryTextBrush}"
+                                Stretch="Uniform" />
                             <StackPanel Margin="8,0,0,0">
-                                <TextBlock Text="{Binding CurrentTime, ElementName=Root, StringFormat=HH:mm:ss}" FontSize="12" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource SidebarTextBrush}"/>
-                                <TextBlock Text="{Binding CurrentTime, ElementName=Root, StringFormat=yyyy-MM-dd}" FontSize="10"
-                                           Foreground="{DynamicResource SidebarSecondaryTextBrush}"/>
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource SidebarTextBrush}"
+                                    Text="{Binding CurrentTime, ElementName=Root, StringFormat=HH:mm:ss}" />
+                                <TextBlock
+                                    FontSize="10"
+                                    Foreground="{DynamicResource SidebarSecondaryTextBrush}"
+                                    Text="{Binding CurrentTime, ElementName=Root, StringFormat=yyyy-MM-dd}" />
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- 分割线 -->
-            <Border Grid.Row="5" Height="1" Background="{DynamicResource SidebarDividerBrush}" Margin="12,0"/>
+            <!--  SYNC-D03: 模式切换按钮  -->
+            <Button
+                Grid.Row="5"
+                Command="{Binding SwitchModeCommand, ElementName=Root}"
+                IsEnabled="{Binding IsSwitchingMode, ElementName=Root, Converter={x:Static converters:Cvt.InverseBool}}"
+                Style="{StaticResource SidebarMenuItemStyle}"
+                ToolTip="{Binding ConnectionModeText, ElementName=Root, StringFormat=当前: {0} (点击切换)}">
+                <StackPanel Orientation="Horizontal">
+                    <!--  切换图标: swap_horiz  -->
+                    <Path
+                        Width="20"
+                        Height="20"
+                        Data="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"
+                        Fill="{DynamicResource SidebarTextBrush}"
+                        Stretch="Uniform" />
+                    <TextBlock
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="{Binding ConnectionModeText, ElementName=Root}"
+                        Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                </StackPanel>
+            </Button>
 
-            <!-- 退出登录（底部） -->
-            <Border Grid.Row="6">
-                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding LogoutCommand, ElementName=Root}" ToolTip="退出登录">
+            <!--  分割线  -->
+            <Border
+                Grid.Row="6"
+                Height="1"
+                Margin="12,0"
+                Background="{DynamicResource SidebarDividerBrush}" />
+
+            <!--  退出登录（底部）  -->
+            <Border Grid.Row="7">
+                <Button
+                    Command="{Binding LogoutCommand, ElementName=Root}"
+                    Style="{StaticResource SidebarMenuItemStyle}"
+                    ToolTip="退出登录">
                     <StackPanel Orientation="Horizontal">
-                        <Path Fill="{DynamicResource DangerBrush}" Width="20" Height="20" Stretch="Uniform"
-                              Data="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
-                        <TextBlock Text="退出登录" Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Center" Margin="12,0,0,0"
-                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                        <Path
+                            Width="20"
+                            Height="20"
+                            Data="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                            Fill="{DynamicResource DangerBrush}"
+                            Stretch="Uniform" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource DangerBrush}"
+                            Text="退出登录"
+                            Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
                     </StackPanel>
                 </Button>
             </Border>

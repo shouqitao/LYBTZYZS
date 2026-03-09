@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.DataSources.Remote;
+using LYBT.Desktop.MedicalCase.Repositories;
+using LYBT.Desktop.Patients.Repositories;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -10,7 +11,7 @@ namespace LYBT.Tests.Integration.Flows;
 
 /// <summary>
 /// MedicalCase lifecycle flow integration tests.
-/// Tests the full chain: RemoteMedicalCaseDataSource -> IMedicalCaseApi -> Server MedicalCaseController -> SQL Server.
+/// Tests the full chain: MedicalCaseRepository -> IMedicalCaseApi -> Server MedicalCaseController -> SQL Server.
 /// </summary>
 [Collection("Integration")]
 public class MedicalCaseFlowTests : IntegrationTestBase
@@ -19,18 +20,18 @@ public class MedicalCaseFlowTests : IntegrationTestBase
 
     public MedicalCaseFlowTests(IntegrationFixture fixture) : base(fixture) { }
 
-    private async Task<(RemoteMedicalCaseDataSource CaseDs, RemotePatientDataSource PatientDs, HttpClient Client)> CreateDataSourcesAsync()
+    private async Task<(MedicalCaseRepository CaseDs, PatientRepository PatientDs, HttpClient Client)> CreateDataSourcesAsync()
     {
         var (client, caseApi) = await LoginAsDoctorWithApiAsync<IMedicalCaseApi>();
         var patientApi = Fixture.CreateApi<IPatientApi>(client);
         return (
-            new RemoteMedicalCaseDataSource(caseApi, NullLogger<RemoteMedicalCaseDataSource>.Instance),
-            new RemotePatientDataSource(patientApi, NullLogger<RemotePatientDataSource>.Instance),
+            new MedicalCaseRepository(caseApi, NullLogger<MedicalCaseRepository>.Instance),
+            new PatientRepository(patientApi, NullLogger<PatientRepository>.Instance),
             client
         );
     }
 
-    private async Task<Guid> CreateTestPatientAsync(RemotePatientDataSource patientDs)
+    private async Task<Guid> CreateTestPatientAsync(PatientRepository patientDs)
     {
         var seq = Interlocked.Increment(ref _counter);
         var patient = await patientDs.CreateAsync(new PatientInputDto
@@ -91,7 +92,7 @@ public class MedicalCaseFlowTests : IntegrationTestBase
                 TcmDiagnosis = "气虚血瘀"
             }
         };
-        var saved = await caseDs.SaveAsync(saveInput);
+        var saved = await caseDs.SaveAsync(created.Id, saveInput);
 
         // Assert
         saved.Should().NotBeNull();

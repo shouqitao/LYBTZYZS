@@ -1,8 +1,11 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
+using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
@@ -11,12 +14,14 @@ namespace LYBT.Tests.Desktop.PureLogic.MedicalCase.Components;
 /// <summary>
 /// PrescriptionPrintHandler 单元测试
 /// CODE-24: 验证空处方打印应被阻止
+/// D2: 验证诊所信息注入到打印模型
 /// </summary>
 public class PrescriptionPrintHandlerTests
 {
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly IMedicalCaseRepository _repository;
     private readonly ISessionManager _sessionManager;
+    private readonly IClinicSettingsService _clinicSettingsService;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IPrintService<PrescriptionPrintModel> _printService;
 
@@ -25,13 +30,18 @@ public class PrescriptionPrintHandlerTests
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
         _repository = Substitute.For<IMedicalCaseRepository>();
         _sessionManager = Substitute.For<ISessionManager>();
+        _clinicSettingsService = Substitute.For<IClinicSettingsService>();
+        _clinicSettingsService.GetSettings().Returns(new ClinicSettingsOptions
+        {
+            Name = "测试诊所", Department = "中医科", Address = "测试地址", Phone = "12345678"
+        });
         _loggerFactory = Substitute.For<ILoggerFactory>();
         _loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
         _printService = Substitute.For<IPrintService<PrescriptionPrintModel>>();
     }
 
     private PrescriptionPrintHandler CreateSut() => new(
-        _medicalCaseService, _repository, _sessionManager, _loggerFactory, _printService);
+        _medicalCaseService, _repository, _sessionManager, _clinicSettingsService, _loggerFactory, _printService);
 
     [Fact]
     public async Task PrintPreviewAsync_NoPrescription_ShouldReturnFailed()

@@ -4,7 +4,8 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Users.Interfaces;
+// SYNC-D02: IUserRepository 迁移到 Contracts.Repositories
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;

@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.CommandHandlers;
-using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 

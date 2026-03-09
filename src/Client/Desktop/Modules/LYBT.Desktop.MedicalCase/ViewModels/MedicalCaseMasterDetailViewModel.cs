@@ -5,6 +5,7 @@ using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Modules.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Models.Items;

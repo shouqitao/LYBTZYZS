@@ -117,6 +117,8 @@
     <!-- Excel 处理 -->
     <PackageVersion Include="EPPlus" Version="7.5.2" />
     <PackageVersion Include="NPOI" Version="2.7.4" />
+    <!-- D1: PDF 处方导出 -->
+    <PackageVersion Include="QuestPDF" Version="2025.4.0" />
   </ItemGroup>
   <ItemGroup Label="Code Analysis and Quality">
     <!-- 代码分析器 -->

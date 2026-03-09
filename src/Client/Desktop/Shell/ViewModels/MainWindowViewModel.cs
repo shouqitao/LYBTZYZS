@@ -31,6 +31,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     private readonly IHealthCheckCoordinator _healthCheckCoordinator;
     private readonly INavigationCoordinator _navigationCoordinator;
+    private readonly IConnectionModeProvider _connectionModeProvider;
     private readonly MenuManager _menuManager;
     private readonly IActiveConsultationService _activeConsultationService;
     private readonly IApplicationTickService _tickService;
@@ -98,6 +99,12 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private bool _isDrawerOpen;
 
     /// <summary>
+    /// 是否正在切换模式 (SYNC-D03)
+    /// </summary>
+    [ObservableProperty]
+    private bool _isSwitchingMode;
+
+    /// <summary>
     /// 是否正在同步数据
     /// </summary>
     [ObservableProperty]
@@ -147,7 +154,10 @@ public partial class MainWindowViewModel : CoreViewModelBase
     public bool IsPasswordChangeVisible => _menuManager.IsPasswordChangeVisible;
 
     /// <summary>S6-02/S6-04: 是否为本地模式</summary>
-    public bool IsLocalMode => _menuManager.CurrentConnectionMode == LYBT.Desktop.Foundation.Application.ConnectionMode.Local;
+    public bool IsLocalMode => _connectionModeProvider.IsLocal;
+
+    /// <summary>SYNC-D03: 当前连接模式显示文本</summary>
+    public string ConnectionModeText => _connectionModeProvider.IsLocal ? "本地模式" : "远程模式";
 
     #endregion
 
@@ -162,6 +172,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IUserNotificationService userNotificationService,
         IHealthCheckCoordinator healthCheckCoordinator,
         INavigationCoordinator navigationCoordinator,
+        IConnectionModeProvider connectionModeProvider,
         MenuManager menuManager,
         IActiveConsultationService activeConsultationService,
         IApplicationTickService tickService,
@@ -177,6 +188,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
         _healthCheckCoordinator = healthCheckCoordinator ?? throw new ArgumentNullException(nameof(healthCheckCoordinator));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
+        _connectionModeProvider = connectionModeProvider ?? throw new ArgumentNullException(nameof(connectionModeProvider));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
@@ -267,6 +279,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     public ICommand NavigateToSystemSettingsCommand => _menuManager.NavigateToSystemSettingsCommand;
 
+    // SwitchModeCommand 由 [RelayCommand] 在 RelayCommand region 自动生成
+
     #endregion
 
     #region RelayCommand
@@ -341,6 +355,52 @@ public partial class MainWindowViewModel : CoreViewModelBase
         }
     }
 
+    /// <summary>
+    /// SYNC-D03: 切换连接模式命令 (远程 <-> 本地)
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSwitchMode))]
+    private async Task SwitchModeAsync()
+    {
+        var targetMode = _connectionModeProvider.IsLocal
+            ? Contracts.ConnectionMode.Remote
+            : Contracts.ConnectionMode.Local;
+
+        var targetText = targetMode == Contracts.ConnectionMode.Local ? "本地模式" : "远程模式";
+
+        // 用户确认
+        var confirmed = await ShowConfirmationAsync(
+            $"确定要切换到{targetText}吗？\n\n切换后当前页面将被重置。",
+            "模式切换确认");
+
+        if (!confirmed) return;
+
+        try
+        {
+            IsSwitchingMode = true;
+            Logger.LogInformation("用户发起模式切换: {Current} -> {Target}",
+                _connectionModeProvider.CurrentMode, targetMode);
+
+            var result = await _connectionModeProvider.SwitchModeAsync(targetMode);
+
+            if (!result.Success)
+            {
+                await ShowWarningMessageAsync($"模式切换失败: {result.ErrorMessage}");
+                Logger.LogWarning("模式切换失败: {Error}", result.ErrorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "模式切换异常");
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("模式切换", ex));
+        }
+        finally
+        {
+            IsSwitchingMode = false;
+        }
+    }
+
+    private bool CanSwitchMode() => !IsSwitchingMode && IsLoggedIn;
+
     #endregion
 
     #region 初始化
@@ -386,6 +446,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         Events.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
         Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(OnTokenLifecycleStateChanged);
         Events.Subscribe<SyncEvents.StatusChangedEvent, SyncStatusPayload>(OnSyncStatusChanged);
+        _connectionModeProvider.ModeChanged += OnConnectionModeChanged;
         _navigationCoordinator.SubscribeToRegionCollection();
     }
 
@@ -420,6 +481,28 @@ public partial class MainWindowViewModel : CoreViewModelBase
             IsSyncing = payload.IsSyncing;
             LastSyncTime = payload.LastSyncTime;
             SyncStatusMessage = payload.StatusMessage;
+        });
+    }
+
+    /// <summary>
+    /// SYNC-D03: 连接模式变更事件处理 - 刷新所有模式相关 UI 属性
+    /// </summary>
+    private void OnConnectionModeChanged(object? sender, ConnectionModeChangedEventArgs e)
+    {
+        Application.Current?.Dispatcher.BeginInvoke(() =>
+        {
+            // 刷新菜单可见性
+            _menuManager.RefreshMenuVisibility();
+            OnPropertyChanged(nameof(IsUserManagementVisible));
+            OnPropertyChanged(nameof(IsSyncVisible));
+            OnPropertyChanged(nameof(IsSystemSettingsVisible));
+            OnPropertyChanged(nameof(IsPasswordChangeVisible));
+            OnPropertyChanged(nameof(IsLocalMode));
+            OnPropertyChanged(nameof(ConnectionModeText));
+            SwitchModeCommand.NotifyCanExecuteChanged();
+
+            Logger.LogInformation("模式切换 UI 已更新: {Previous} -> {Current}",
+                e.PreviousMode, e.CurrentMode);
         });
     }
 
@@ -712,6 +795,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
             CleanupTickSubscription();
             CleanupHealthCheckCoordinator();
             UnsubscribeLoginEvent();
+            _connectionModeProvider.ModeChanged -= OnConnectionModeChanged;
             _navigationCoordinator.UnsubscribeFromRegionCollection();
             _tokenLifecycleService.Dispose(); // Issue #1864: 释放Token生命周期服务
         }

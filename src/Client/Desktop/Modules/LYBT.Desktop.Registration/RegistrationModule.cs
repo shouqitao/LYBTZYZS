@@ -1,4 +1,5 @@
-using LYBT.Desktop.Registration.Interfaces;
+// SYNC-D02: IRegistrationRepository 已迁移到 LYBT.Desktop.Contracts.Repositories
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Registration.Repositories;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -23,8 +24,9 @@ public class RegistrationModule : IModule
     /// <inheritdoc/>
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // Repository (DataSource 抽象层，支持 Local/Remote)
-        containerRegistry.RegisterSingleton<IRegistrationRepository, RegistrationRepository>();
+        // SYNC-D02: IRegistrationRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
+        // 远程模式 -> RegistrationRepository (Registration 模块)
+        // 本地模式 -> LocalRegistrationRepository (LocalData 模块)
 
         // ViewModel
         containerRegistry.Register<ViewModels.RegistrationListViewModel>();

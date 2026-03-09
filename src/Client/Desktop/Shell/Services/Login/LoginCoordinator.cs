@@ -1,7 +1,7 @@
 using System.Windows;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Foundation.Application;
+using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -35,7 +35,7 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly IAuthenticationStateMachine _stateMachine;
     private readonly ILocalAuthService? _localAuthService;
     private readonly ILocalDbBackupService? _localDbBackupService;
-    private readonly ConnectionMode _connectionMode;
+    private readonly IConnectionModeProvider _connectionModeProvider;
     private readonly object _stateLock = new();
 
     private UserDetailDto? _currentUser;
@@ -52,6 +52,7 @@ public class LoginCoordinator : ILoginCoordinator
         IModuleLoadingService moduleLoadingService,
         INavigationCoordinator navigationCoordinator,
         IAuthenticationStateMachine stateMachine,
+        IConnectionModeProvider connectionModeProvider,
         IConfiguration configuration,
         ICredentialVault? credentialVault = null,
         IUsernameStorageService? usernameStorage = null,
@@ -70,11 +71,8 @@ public class LoginCoordinator : ILoginCoordinator
         _localAuthService = localAuthService;
         _localDbBackupService = localDbBackupService;
 
-        // OpenSpec: implement-local-mode - 读取连接模式
-        var modeString = configuration?["ConnectionMode"];
-        _connectionMode = Enum.TryParse<ConnectionMode>(modeString, ignoreCase: true, out var mode)
-            ? mode
-            : ConnectionMode.Remote;
+        // SYNC-D02: 使用 IConnectionModeProvider 替代从 IConfiguration 读取
+        _connectionModeProvider = connectionModeProvider ?? throw new ArgumentNullException(nameof(connectionModeProvider));
 
         // 订阅状态机事件，转发给外部订阅者
         _stateMachine.StateChanged += OnStateMachineStateChanged;
@@ -120,7 +118,7 @@ public class LoginCoordinator : ILoginCoordinator
         }
 
         _logger.LogInformation("开始登录流程 [用户: {Username}, 尝试次数: {AttemptCount}, 模式: {Mode}]",
-            username, _loginAttemptCount, _connectionMode);
+            username, _loginAttemptCount, _connectionModeProvider.CurrentMode);
 
         // OpenSpec: refactor-auth-role-system - 使用统一状态机
         _stateMachine.Fire(AuthEvent.StartLogin, "正在验证身份...");
@@ -128,7 +126,7 @@ public class LoginCoordinator : ILoginCoordinator
         try
         {
             // OpenSpec: implement-local-mode - 根据连接模式选择认证方式
-            if (_connectionMode == ConnectionMode.Local)
+            if (_connectionModeProvider.CurrentMode == ConnectionMode.Local)
             {
                 return await LoginLocalAsync(username, password);
             }

@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.DataSources.Remote;
+using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -7,24 +7,24 @@ namespace LYBT.Tests.Integration.Flows;
 
 /// <summary>
 /// Herb CRUD flow integration tests.
-/// Tests the full chain: RemoteHerbDataSource -> IHerbApi -> Server HerbController -> SQL Server.
+/// Tests the full chain: HerbRepository -> IHerbApi -> Server HerbController -> SQL Server.
 /// </summary>
 [Collection("Integration")]
 public class HerbFlowTests : IntegrationTestBase
 {
     public HerbFlowTests(IntegrationFixture fixture) : base(fixture) { }
 
-    private async Task<RemoteHerbDataSource> CreateDataSourceAsync()
+    private async Task<HerbRepository> CreateRepositoryAsync()
     {
         var (_, api) = await LoginAsAdminWithApiAsync<IHerbApi>();
-        return new RemoteHerbDataSource(api, NullLogger<RemoteHerbDataSource>.Instance);
+        return new HerbRepository(api, NullLogger<HerbRepository>.Instance);
     }
 
     [Fact]
     public async Task CreateAndRetrieve_Herb_Succeeds()
     {
         // Arrange
-        var ds = await CreateDataSourceAsync();
+        var ds = await CreateRepositoryAsync();
         var input = new HerbInputDto
         {
             Name = "黄芪",
@@ -53,7 +53,7 @@ public class HerbFlowTests : IntegrationTestBase
     public async Task ToggleStatus_DisablesAndEnables()
     {
         // Arrange
-        var ds = await CreateDataSourceAsync();
+        var ds = await CreateRepositoryAsync();
         var created = await ds.CreateAsync(new HerbInputDto
         {
             Name = "当归状态",
@@ -65,18 +65,18 @@ public class HerbFlowTests : IntegrationTestBase
         var firstToggle = await ds.ToggleStatusAsync(created.Id);
 
         // Assert
-        firstToggle.Should().BeTrue();
+        firstToggle.Should().NotBeNull();
 
         // Act - toggle back to enabled
         var secondToggle = await ds.ToggleStatusAsync(created.Id);
-        secondToggle.Should().BeTrue();
+        secondToggle.Should().NotBeNull();
     }
 
     [Fact]
     public async Task DeleteHerb_SoftDeletes()
     {
         // Arrange
-        var ds = await CreateDataSourceAsync();
+        var ds = await CreateRepositoryAsync();
         var created = await ds.CreateAsync(new HerbInputDto
         {
             Name = "删除测试药材",
@@ -99,15 +99,15 @@ public class HerbFlowTests : IntegrationTestBase
     public async Task GetPaged_ReturnsHerbList()
     {
         // Arrange
-        var ds = await CreateDataSourceAsync();
+        var ds = await CreateRepositoryAsync();
         await ds.CreateAsync(new HerbInputDto { Name = "分页药材A", Unit = "克", Price = 1.00m });
         await ds.CreateAsync(new HerbInputDto { Name = "分页药材B", Unit = "克", Price = 2.00m });
 
         // Act
-        var (items, total) = await ds.GetPagedAsync(1, 20);
+        var result = await ds.GetPagedAsync(1, 20);
 
         // Assert
-        total.Should().BeGreaterThanOrEqualTo(2);
-        items.Should().NotBeEmpty();
+        result.TotalCount.Should().BeGreaterThanOrEqualTo(2);
+        result.Items.Should().NotBeEmpty();
     }
 }

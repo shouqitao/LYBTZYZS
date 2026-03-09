@@ -25,6 +25,8 @@
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="Prism.DryIoc" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <!-- D1: PDF 处方导出 -->
+    <PackageReference Include="QuestPDF" />
   </ItemGroup>
 
   <!-- Core Dependencies -->

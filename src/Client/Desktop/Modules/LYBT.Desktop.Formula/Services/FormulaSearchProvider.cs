@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Services.CrossModule;
-using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 

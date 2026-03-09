@@ -1,60 +1,77 @@
-using LYBT.Desktop.Infrastructure.Configuration;
+using System.IO;
+using System.Text.Json;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
-    /// 诊所配置服务实现 - OpenSpec: print-prescription-slip
+    /// 诊所配置服务实现
+    /// D2: 从 clinic-settings.json 读取配置，支持热更新 (reloadOnChange)
+    /// SaveSettingsAsync 写入文件后，IConfiguration 自动重载
     /// </summary>
-    /// <remarks>
-    /// 从appsettings.json的ClinicSettings节点读取配置。
-    /// 支持配置热更新（基于IConfiguration的reloadOnChange）。
-    /// </remarks>
     public class ClinicSettingsService : IClinicSettingsService
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<ClinicSettingsService> _logger;
 
-        /// <summary>
-        /// 诊所名称
-        /// </summary>
+        private static readonly JsonSerializerOptions JsonWriteOptions = new()
+        {
+            WriteIndented = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
         public string ClinicName => GetSettings().Name;
-
-        /// <summary>
-        /// 诊所地址
-        /// </summary>
-        public string? ClinicAddress => GetSettings().Address;
-
-        /// <summary>
-        /// 诊所电话
-        /// </summary>
-        public string? ClinicPhone => GetSettings().Phone;
-
-        /// <summary>
-        /// 科别
-        /// </summary>
+        public string ClinicAddress => GetSettings().Address;
+        public string ClinicPhone => GetSettings().Phone;
         public string Department => GetSettings().Department;
+        public string LicenseNumber => GetSettings().LicenseNumber;
+        public string Email => GetSettings().Email;
 
-        /// <summary>
-        /// 构造函数 - 注入配置对象
-        /// </summary>
-        /// <param name="configuration">配置对象</param>
-        public ClinicSettingsService(IConfiguration configuration)
+        public ClinicSettingsService(
+            IConfiguration configuration,
+            ILogger<ClinicSettingsService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         /// <summary>
-        /// 获取当前诊所配置
+        /// 获取当前诊所配置（每次从 IConfiguration 读取，支持热更新）
         /// </summary>
-        /// <returns>诊所配置对象</returns>
-        public ClinicSettings GetSettings()
+        public ClinicSettingsOptions GetSettings()
         {
-            // 每次都从配置中读取以支持热更新
-            var section = _configuration.GetSection(ClinicSettings.SectionName);
-            var settings = section.Get<ClinicSettings>() ?? new ClinicSettings();
+            var section = _configuration.GetSection(ClinicSettingsOptions.SectionName);
+            return section.Get<ClinicSettingsOptions>() ?? new ClinicSettingsOptions();
+        }
 
-            return settings;
+        /// <summary>
+        /// 保存诊所配置到 clinic-settings.json，写入后 IConfiguration 自动重载
+        /// </summary>
+        public async Task<bool> SaveSettingsAsync(ClinicSettingsOptions settings)
+        {
+            try
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "clinic-settings.json");
+
+                var wrapper = new Dictionary<string, ClinicSettingsOptions>
+                {
+                    [ClinicSettingsOptions.SectionName] = settings
+                };
+
+                var json = JsonSerializer.Serialize(wrapper, JsonWriteOptions);
+                await File.WriteAllTextAsync(filePath, json);
+
+                _logger.LogInformation("诊所配置已保存到 {FilePath}", filePath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "保存诊所配置失败");
+                return false;
+            }
         }
     }
 }

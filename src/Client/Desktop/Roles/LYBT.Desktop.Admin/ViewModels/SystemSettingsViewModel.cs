@@ -1,5 +1,7 @@
 using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
@@ -11,19 +13,18 @@ namespace LYBT.Desktop.Admin.ViewModels
 {
     /// <summary>
     /// 系统设置视图模型
-    /// Issue #1831 UI统一化 - 接入UnifiedViewModelBase
-    /// Epic #1832 Phase 2 - 完成真实功能实现
-    /// OpenSpec: refactor-viewmodel-base-classes - 从UnifiedViewModelBase迁移到NavigableViewModelBase
+    /// D2: 增加诊所配置化功能 (clinic-settings.json 热更新)
     /// </summary>
     public class SystemSettingsViewModel : NavigableViewModelBase
     {
         #region 服务依赖
 
         private readonly ISystemSettingsService _settingsService;
+        private readonly IClinicSettingsService _clinicSettingsService;
 
         #endregion
 
-        #region 属性
+        #region 系统设置属性
 
         private string _systemName = "中医诊疗系统";
         public string SystemName
@@ -62,6 +63,52 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         #endregion
 
+        #region 诊所配置属性 (D2)
+
+        private string _clinicName = string.Empty;
+        public string ClinicName
+        {
+            get => _clinicName;
+            set => SetProperty(ref _clinicName, value);
+        }
+
+        private string _clinicAddress = string.Empty;
+        public string ClinicAddress
+        {
+            get => _clinicAddress;
+            set => SetProperty(ref _clinicAddress, value);
+        }
+
+        private string _clinicPhone = string.Empty;
+        public string ClinicPhone
+        {
+            get => _clinicPhone;
+            set => SetProperty(ref _clinicPhone, value);
+        }
+
+        private string _department = "中医科";
+        public string ClinicDepartment
+        {
+            get => _department;
+            set => SetProperty(ref _department, value);
+        }
+
+        private string _licenseNumber = string.Empty;
+        public string LicenseNumber
+        {
+            get => _licenseNumber;
+            set => SetProperty(ref _licenseNumber, value);
+        }
+
+        private string _email = string.Empty;
+        public string ClinicEmail
+        {
+            get => _email;
+            set => SetProperty(ref _email, value);
+        }
+
+        #endregion
+
         #region 命令
 
         public DelegateCommand SaveCommand { get; private set; }
@@ -72,20 +119,17 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         #region 构造函数
 
-        /// <summary>
-        /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
-        /// </summary>
         public SystemSettingsViewModel(
             IViewModelServices services,
-            ISystemSettingsService settingsService)
+            ISystemSettingsService settingsService,
+            IClinicSettingsService clinicSettingsService)
             : base(services)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+            _clinicSettingsService = clinicSettingsService ?? throw new ArgumentNullException(nameof(clinicSettingsService));
 
             PageTitle = "系统设置";
 
-            // 初始化命令
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync());
             ResetCommand = new DelegateCommand(async () => await ExecuteResetAsync());
             BrowseBackupPathCommand = new DelegateCommand(async () => await ExecuteBrowseBackupPathAsync());
@@ -95,21 +139,21 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         #region 初始化
 
-        /// <summary>
-        /// 异步初始化 - 加载系统设置
-        /// </summary>
         protected override Task InitializeAsync(NavigationContext context)
         {
             Logger.LogInformation("加载系统设置");
 
             try
             {
-                // 从服务加载设置
+                // 系统设置
                 SystemName = _settingsService.SystemName;
                 HospitalName = _settingsService.HospitalName;
                 ContactPhone = _settingsService.ContactPhone;
                 AutoBackupEnabled = _settingsService.AutoBackupEnabled;
                 BackupPath = _settingsService.BackupPath;
+
+                // D2: 诊所配置
+                LoadClinicSettings();
 
                 Logger.LogInformation("系统设置加载成功: {SystemName}", SystemName);
             }
@@ -122,31 +166,55 @@ namespace LYBT.Desktop.Admin.ViewModels
             return Task.CompletedTask;
         }
 
+        private void LoadClinicSettings()
+        {
+            var clinicSettings = _clinicSettingsService.GetSettings();
+            ClinicName = clinicSettings.Name;
+            ClinicAddress = clinicSettings.Address;
+            ClinicPhone = clinicSettings.Phone;
+            ClinicDepartment = clinicSettings.Department;
+            LicenseNumber = clinicSettings.LicenseNumber;
+            ClinicEmail = clinicSettings.Email;
+        }
+
         #endregion
 
         #region 命令实现
 
-        /// <summary>
-        /// 执行保存
-        /// </summary>
         private async Task ExecuteSaveAsync()
         {
             try
             {
                 Logger.LogInformation("保存系统设置");
-                SetBusy(true, "正在保存系统设置...");
+                SetBusy(true, "正在保存设置...");
 
-                // 保存到服务
+                // 保存系统设置
                 _settingsService.SystemName = SystemName;
                 _settingsService.HospitalName = HospitalName;
                 _settingsService.ContactPhone = ContactPhone;
                 _settingsService.AutoBackupEnabled = AutoBackupEnabled;
                 _settingsService.BackupPath = BackupPath;
-
                 _settingsService.Save();
 
+                // D2: 保存诊所配置
+                var clinicSettings = new ClinicSettingsOptions
+                {
+                    Name = ClinicName,
+                    Address = ClinicAddress,
+                    Phone = ClinicPhone,
+                    Department = ClinicDepartment,
+                    LicenseNumber = LicenseNumber,
+                    Email = ClinicEmail
+                };
+                var clinicSaved = await _clinicSettingsService.SaveSettingsAsync(clinicSettings);
+                if (!clinicSaved)
+                {
+                    await ShowErrorMessageAsync("诊所配置保存失败，请检查文件权限");
+                    return;
+                }
+
                 Logger.LogInformation("系统设置保存成功");
-                await ShowSuccessMessageAsync("系统设置保存成功");
+                await ShowSuccessMessageAsync("设置保存成功");
             }
             catch (Exception ex)
             {
@@ -159,34 +227,31 @@ namespace LYBT.Desktop.Admin.ViewModels
             }
         }
 
-        /// <summary>
-        /// 执行重置
-        /// </summary>
         private async Task ExecuteResetAsync()
         {
             try
             {
                 var confirmed = await ShowConfirmMessageAsync("确定要重置为默认设置吗？所有自定义配置将丢失。", "确认重置");
-                if (!confirmed)
-                {
-                    return;
-                }
+                if (!confirmed) return;
 
                 Logger.LogInformation("重置系统设置为默认值");
-                SetBusy(true, "正在重置系统设置...");
+                SetBusy(true, "正在重置设置...");
 
-                // 重置服务
+                // 重置系统设置
                 _settingsService.ResetToDefaults();
-
-                // 重新加载到界面
                 SystemName = _settingsService.SystemName;
                 HospitalName = _settingsService.HospitalName;
                 ContactPhone = _settingsService.ContactPhone;
                 AutoBackupEnabled = _settingsService.AutoBackupEnabled;
                 BackupPath = _settingsService.BackupPath;
 
+                // D2: 重置诊所配置
+                var defaultClinic = new ClinicSettingsOptions();
+                await _clinicSettingsService.SaveSettingsAsync(defaultClinic);
+                LoadClinicSettings();
+
                 Logger.LogInformation("系统设置已重置");
-                await ShowSuccessMessageAsync("系统设置已重置为默认值");
+                await ShowSuccessMessageAsync("设置已重置为默认值");
             }
             catch (Exception ex)
             {
@@ -199,9 +264,6 @@ namespace LYBT.Desktop.Admin.ViewModels
             }
         }
 
-        /// <summary>
-        /// 浏览备份路径
-        /// </summary>
         private async Task ExecuteBrowseBackupPathAsync()
         {
             try

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
+using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.ExceptionHandling.Mappers;

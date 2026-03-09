@@ -3,6 +3,8 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 // OpenSpec: migrate-views-to-role-modules - AuditLogDialog/AuditReasonDialog已删除，审计功能后续单独规划
 using LYBT.Desktop.MedicalCase.Dialogs;
+// SYNC-D02: IMedicalCaseRepository 已迁移到 Contracts.Repositories
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.MedicalCase.Models.Items;
@@ -35,10 +37,9 @@ namespace LYBT.Desktop.MedicalCase
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // ADR-002 架构标准：
-            // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
-            // - Repository (数据访问层) 由各业务模块自行注册
-            containerRegistry.RegisterSingleton<IMedicalCaseRepository, MedicalCaseRepository>();
+            // SYNC-D02: IMedicalCaseRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
+            // 远程模式 -> MedicalCaseRepository (MedicalCase 模块)
+            // 本地模式 -> LocalMedicalCaseRepository (LocalData 模块)
 
             // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 

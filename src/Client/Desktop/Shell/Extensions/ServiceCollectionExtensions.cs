@@ -3,6 +3,7 @@ using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
+using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Modules;
@@ -48,12 +49,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterLogging();
             RegisterCacheServices(containerRegistry);
 
-            // OpenSpec: implement-local-mode - 读取连接模式并注册对应的 DataSource
+            // SYNC-D02: 读取连接模式，注册 IConnectionModeProvider + Repository 工厂
             var connectionMode = GetConnectionMode(configuration);
-            // S6-02: 注册 ConnectionMode 为单例，供 MenuManager 等服务使用
-            containerRegistry.RegisterInstance(connectionMode);
-            containerRegistry.RegisterDataSources(connectionMode, configuration);
-            containerRegistry.RegisterDataSourceLoggers(connectionMode);
+            containerRegistry.RegisterRepositories(connectionMode, configuration);
+            containerRegistry.RegisterDataSourceLoggers();
 
             containerRegistry.RegisterHttpServices(configuration);
             RegisterFoundationServices(containerRegistry);
@@ -90,6 +89,7 @@ namespace LYBT.Desktop.Shell.Extensions
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(System.IO.Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("clinic-settings.json", optional: true, reloadOnChange: true)
                 .Build();
             containerRegistry.RegisterInstance<IConfiguration>(configuration);
 
@@ -116,6 +116,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
             containerRegistry.RegisterSingleton<ITokenManager, TokenManager>(); // OpenSpec: refactor-login-authentication
             containerRegistry.RegisterSingleton<ICredentialVault, CredentialVault>(); // OpenSpec: refactor-login-authentication
+            containerRegistry.RegisterSingleton<IPhotoStorageService, DpapiPhotoStorageService>(); // C2: 照片 DPAPI 加密存储
             containerRegistry.RegisterSingleton<IAuthenticationStateMachine, AuthenticationStateMachine>(); // OpenSpec: refactor-auth-role-system (Phase 1.1)
             containerRegistry.RegisterSingleton<ILogoutService, LogoutService>(); // OpenSpec: refactor-login-authentication (Phase 2.3)
             containerRegistry.RegisterSingleton<ITokenValidator, LocalTokenValidator>();

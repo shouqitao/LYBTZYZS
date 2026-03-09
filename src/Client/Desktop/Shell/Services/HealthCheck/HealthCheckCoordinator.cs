@@ -1,7 +1,7 @@
-﻿using LYBT.Desktop.Contracts.Services;
+﻿using LYBT.Desktop.Contracts;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.HealthCheck;
@@ -17,7 +17,7 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
     private readonly IApplicationTickService _tickService;
     private readonly IApplicationStateService _applicationStateService;
     private readonly ILogger<HealthCheckCoordinator> _logger;
-    private readonly ConnectionMode _connectionMode;
+    private readonly IConnectionModeProvider _connectionModeProvider;
 
     private ApiHealthStatus _currentStatus = ApiHealthStatus.Checking;
     private long _lastHealthCheckTick;
@@ -35,19 +35,14 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
         IApiHealthCheckService apiHealthCheckService,
         IApplicationTickService tickService,
         IApplicationStateService applicationStateService,
-        IConfiguration configuration,
+        IConnectionModeProvider connectionModeProvider,
         ILogger<HealthCheckCoordinator> logger)
     {
         _apiHealthCheckService = apiHealthCheckService ?? throw new ArgumentNullException(nameof(apiHealthCheckService));
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
         _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
+        _connectionModeProvider = connectionModeProvider ?? throw new ArgumentNullException(nameof(connectionModeProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-        // OpenSpec: implement-local-mode - 读取连接模式
-        var modeString = configuration?["ConnectionMode"];
-        _connectionMode = Enum.TryParse<ConnectionMode>(modeString, ignoreCase: true, out var mode)
-            ? mode
-            : ConnectionMode.Remote;
     }
 
     /// <inheritdoc />
@@ -74,7 +69,7 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
         }
 
         // OpenSpec: implement-local-mode - 本地模式直接设置为健康状态
-        if (_connectionMode == ConnectionMode.Local)
+        if (_connectionModeProvider.CurrentMode == ConnectionMode.Local)
         {
             _currentStatus = ApiHealthStatus.Healthy;
             _isRunning = true;
@@ -116,7 +111,7 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
         }
 
         // OpenSpec: implement-local-mode - 本地模式直接返回健康状态
-        if (_connectionMode == ConnectionMode.Local)
+        if (_connectionModeProvider.CurrentMode == ConnectionMode.Local)
         {
             if (_currentStatus != ApiHealthStatus.Healthy)
             {

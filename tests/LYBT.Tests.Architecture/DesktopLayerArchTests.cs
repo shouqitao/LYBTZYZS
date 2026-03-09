@@ -195,12 +195,11 @@ public class DesktopLayerArchTests
             .NotHaveDependencyOn("LYBT.Entities")
             .GetResult();
 
-        // 允许Repository/Mapper/DataSource层使用Entity（本地模式EF Core数据访问需要）
+        // 允许Repository/Mapper层使用Entity（本地模式EF Core数据访问需要）
         var allowedPatterns = new[]
         {
             "Repository",       // Repository层 - EF Core数据访问
             "Mapper",           // Mapper层 - Entity↔DTO映射
-            "DataSource",       // DataSource层 - 远程/本地数据源
             "LoginCoordinator"  // 认证协调器 - 需要User Entity
         };
 
@@ -210,7 +209,7 @@ public class DesktopLayerArchTests
 
         Assert.True(
             actualViolations.Count == 0,
-            $"Desktop层直接使用了Entity类（仅Repository/Mapper/DataSource允许）: {string.Join(", ", actualViolations.Select(t => t.FullName))}");
+            $"Desktop层直接使用了Entity类（仅Repository/Mapper允许）: {string.Join(", ", actualViolations.Select(t => t.FullName))}");
     }
 
     /// <summary>
@@ -405,48 +404,65 @@ public class DesktopLayerArchTests
     #region Sprint3-STD: 架构规则固化
 
     /// <summary>
-    /// P-01: 所有 DataSource 接口必须同时有 Remote 和 Local 实现
-    /// 确保双模式 (远程/本地) 实体 100% 完整，新增实体不会遗漏某一端
+    /// P-01: 所有 Repository 接口必须同时有 Remote 和 Local 实现
+    /// 确保双模式 (远程/本地) Repository 100% 完整，新增 Repository 不会遗漏某一端
     /// </summary>
+    /// <remarks>
+    /// SYNC-D02: DataSource 层已废除，双模式通过 Remote Repository (HTTP API) + Local Repository (EF Core) 实现
+    /// Remote: Modules/*/Repositories/*Repository.cs
+    /// Local: LocalData/Repositories/Local*Repository.cs
+    /// </remarks>
     [Fact]
-    public void P01_AllDataSources_Must_Have_Both_Remote_And_Local()
+    public void P01_AllRepositories_Must_Have_Both_Remote_And_Local()
     {
         var contractsAssembly = Assembly.Load("LYBT.Desktop.Contracts");
-        var infrastructureAssembly = Assembly.Load("LYBT.Desktop.Infrastructure");
         var localDataAssembly = Assembly.Load("LYBT.Desktop.LocalData");
 
-        // 查找所有 I{X}DataSource 接口 (排除 IDataSourceBase)
-        var dataSourceInterfaces = contractsAssembly.GetTypes()
+        // 模块程序集 (Remote Repository 实现所在)
+        var moduleAssemblies = new[]
+        {
+            Assembly.Load("LYBT.Desktop.Users"),
+            Assembly.Load("LYBT.Desktop.Patients"),
+            Assembly.Load("LYBT.Desktop.MedicalCase"),
+            Assembly.Load("LYBT.Desktop.Herbs"),
+            Assembly.Load("LYBT.Desktop.Formula"),
+            Assembly.Load("LYBT.Desktop.Registration")
+        };
+
+        // 查找 Contracts/Repositories 中所有 I{X}Repository 接口
+        var repositoryInterfaces = contractsAssembly.GetTypes()
             .Where(t => t.IsInterface &&
-                       t.Name.EndsWith("DataSource") &&
+                       t.Name.EndsWith("Repository") &&
                        t.Name.StartsWith("I") &&
-                       t.Name != "IDataSourceBase")
+                       t.Namespace != null &&
+                       t.Namespace.Contains("Repositories"))
             .ToList();
 
-        Assert.NotEmpty(dataSourceInterfaces);
+        Assert.NotEmpty(repositoryInterfaces);
 
         var missingImplementations = new List<string>();
 
-        foreach (var dsInterface in dataSourceInterfaces)
+        foreach (var repoInterface in repositoryInterfaces)
         {
-            // 从 IFormulaDataSource 提取 "Formula"
-            var entityName = dsInterface.Name[1..^"DataSource".Length];
+            // 从 IFormulaRepository 提取 "Formula"
+            var entityName = repoInterface.Name[1..^"Repository".Length];
 
-            // 检查 Remote 实现
-            var remoteType = infrastructureAssembly.GetTypes()
-                .FirstOrDefault(t => t.Name == $"Remote{entityName}DataSource" && !t.IsAbstract);
+            // 检查 Remote 实现 (在模块程序集中)
+            var remoteType = moduleAssemblies
+                .SelectMany(a => a.GetTypes())
+                .FirstOrDefault(t => t.Name == $"{entityName}Repository" && !t.IsAbstract && !t.IsInterface);
             if (remoteType == null)
-                missingImplementations.Add($"Remote{entityName}DataSource (接口: {dsInterface.Name})");
+                missingImplementations.Add($"{entityName}Repository [Remote] (接口: {repoInterface.Name})");
 
-            // 检查 Local 实现
+            // 检查 Local 实现 (在 LocalData 程序集中)
             var localType = localDataAssembly.GetTypes()
-                .FirstOrDefault(t => t.Name == $"Local{entityName}DataSource" && !t.IsAbstract);
+                .FirstOrDefault(t => t.Name == $"Local{entityName}Repository" && !t.IsAbstract);
             if (localType == null)
-                missingImplementations.Add($"Local{entityName}DataSource (接口: {dsInterface.Name})");
+                missingImplementations.Add($"Local{entityName}Repository [Local] (接口: {repoInterface.Name})");
         }
 
         Assert.True(missingImplementations.Count == 0,
-            $"双模式实体实现不完整，违反 P-01 规则:\n{string.Join("\n", missingImplementations)}");
+            $"双模式 Repository 实现不完整，违反 P-01 规则:\n{string.Join("\n", missingImplementations)}");
     }
 
     /// <summary>
@@ -539,15 +555,15 @@ public class DesktopLayerArchTests
     }
 
     /// <summary>
-    /// 验证所有 Repository 都在对应模块中注册
+    /// 验证所有 Repository 接口定义在 Contracts 层
     /// </summary>
     /// <remarks>
-    /// ADR-002 架构决策：Repository (数据访问层) 由各业务模块自行注册
-    /// 每个模块的 *Module.cs 应包含 RegisterSingleton&lt;IXxxRepository, XxxRepository&gt;()
-    /// Issue #1213
+    /// SYNC-D02: Repository 接口统一在 Contracts/Repositories/ 中定义，
+    /// 由 Shell/Extensions/DataSourceRegistrationExtensions 中央工厂注册。
+    /// 模块程序集不应再包含 Repository 接口定义。
     /// </remarks>
     [Fact]
-    public void All_Repositories_Should_Be_Registered_In_Modules()
+    public void All_Repository_Interfaces_Should_Be_In_Contracts()
     {
         var moduleAssemblies = new[]
         {
@@ -556,45 +572,27 @@ public class DesktopLayerArchTests
             Assembly.Load("LYBT.Desktop.Patients"),
             Assembly.Load("LYBT.Desktop.MedicalCase"),
             Assembly.Load("LYBT.Desktop.Herbs"),
-            Assembly.Load("LYBT.Desktop.Formula")
+            Assembly.Load("LYBT.Desktop.Formula"),
+            Assembly.Load("LYBT.Desktop.Registration")
         };
 
-        var repositoriesWithoutRegistration = new List<string>();
+        var misplacedInterfaces = new List<string>();
 
         foreach (var assembly in moduleAssemblies)
         {
-            // 查找 Repository 接口
-            var repositoryInterfaces = assembly.GetTypes()
-                .Where(t => t.IsInterface && t.Name.EndsWith("Repository"))
+            var repoInterfaces = assembly.GetTypes()
+                .Where(t => t.IsInterface &&
+                           t.Name.EndsWith("Repository") &&
+                           t.Name.StartsWith("I"))
                 .ToList();
 
-            if (!repositoryInterfaces.Any())
-                continue; // 模块没有 Repository，跳过
-
-            // 查找模块类
-            var moduleType = assembly.GetTypes()
-                .FirstOrDefault(t => t.Name.EndsWith("Module") &&
-                                   t.GetInterfaces().Any(i => i.Name == "IModule"));
-
-            if (moduleType == null)
+            foreach (var iface in repoInterfaces)
             {
-                repositoriesWithoutRegistration.Add($"{assembly.GetName().Name}: 未找到 Module 类");
-                continue;
+                misplacedInterfaces.Add($"{iface.FullName} (in {assembly.GetName().Name})");
             }
-
-            // 检查 RegisterTypes 方法
-            var registerMethod = moduleType.GetMethod("RegisterTypes");
-            if (registerMethod == null)
-            {
-                repositoriesWithoutRegistration.Add($"{assembly.GetName().Name}: Module 类未实现 RegisterTypes 方法");
-                continue;
-            }
-
-            // 注意：这里只是验证 Module 类存在且有 RegisterTypes 方法
-            // 实际的注册验证需要运行时检查或源码分析，这里通过集成测试覆盖
-            // 如果模块有 Repository 接口但未注册，应用启动时会失败
         }
 
-        Assert.Empty(repositoriesWithoutRegistration);
+        Assert.True(misplacedInterfaces.Count == 0,
+            $"Repository 接口应定义在 Contracts 层，而非模块中:\n{string.Join("\n", misplacedInterfaces)}");
     }
 }

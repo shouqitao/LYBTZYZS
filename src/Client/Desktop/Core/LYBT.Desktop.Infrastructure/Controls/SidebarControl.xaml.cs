@@ -150,5 +150,53 @@ namespace LYBT.Desktop.Infrastructure.Controls
                 new PropertyMetadata(null));
 
         #endregion
+
+        #region SYNC-D03: 模式切换
+
+        /// <summary>切换模式命令</summary>
+        public ICommand? SwitchModeCommand
+        {
+            get => (ICommand?)GetValue(SwitchModeCommandProperty);
+            set => SetValue(SwitchModeCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty SwitchModeCommandProperty =
+            DependencyProperty.Register(nameof(SwitchModeCommand), typeof(ICommand), typeof(SidebarControl),
+                new PropertyMetadata(null));
+
+        /// <summary>是否为本地模式</summary>
+        public bool IsLocalMode
+        {
+            get => (bool)GetValue(IsLocalModeProperty);
+            set => SetValue(IsLocalModeProperty, value);
+        }
+
+        public static readonly DependencyProperty IsLocalModeProperty =
+            DependencyProperty.Register(nameof(IsLocalMode), typeof(bool), typeof(SidebarControl),
+                new PropertyMetadata(false));
+
+        /// <summary>是否正在切换模式</summary>
+        public bool IsSwitchingMode
+        {
+            get => (bool)GetValue(IsSwitchingModeProperty);
+            set => SetValue(IsSwitchingModeProperty, value);
+        }
+
+        public static readonly DependencyProperty IsSwitchingModeProperty =
+            DependencyProperty.Register(nameof(IsSwitchingMode), typeof(bool), typeof(SidebarControl),
+                new PropertyMetadata(false));
+
+        /// <summary>当前模式显示文本</summary>
+        public string ConnectionModeText
+        {
+            get => (string)GetValue(ConnectionModeTextProperty);
+            set => SetValue(ConnectionModeTextProperty, value);
+        }
+
+        public static readonly DependencyProperty ConnectionModeTextProperty =
+            DependencyProperty.Register(nameof(ConnectionModeText), typeof(string), typeof(SidebarControl),
+                new PropertyMetadata("远程模式"));
+
+        #endregion
     }
 }

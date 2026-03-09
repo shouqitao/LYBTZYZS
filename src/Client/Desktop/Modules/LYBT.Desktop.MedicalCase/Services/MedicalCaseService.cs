@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Shared.ExceptionHandling.Mappers;

@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.CommandHandlers;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 

@@ -38,6 +38,24 @@
     </Window.InputBindings>
 
     <Grid>
+        <!--  SYNC-D03: 模式切换遮罩层  -->
+        <Grid Panel.ZIndex="100" Visibility="{Binding IsSwitchingMode, Converter={x:Static converters:Cvt.BoolToVis}}">
+            <Border Background="#80000000">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Text="正在切换模式..." />
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        FontSize="13"
+                        Foreground="#CCCCCC"
+                        Text="请稍候，系统正在重置连接" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
         <!--  登录界面  -->
         <Grid Visibility="{Binding IsNotLoggedIn, Converter={x:Static converters:Cvt.BoolToVis}}">
             <ContentControl prism:RegionManager.RegionName="LoginRegion" />
@@ -62,12 +80,16 @@
                 Grid.Row="0"
                 Grid.Column="0"
                 ApiStatus="{Binding ApiStatus}"
+                ConnectionModeText="{Binding ConnectionModeText}"
                 CurrentTime="{Binding CurrentTime}"
                 CurrentUser="{Binding CurrentUser}"
                 EditProfileCommand="{Binding EditProfileCommand}"
                 IsExpanded="{Binding IsDrawerOpen}"
+                IsLocalMode="{Binding IsLocalMode}"
+                IsSwitchingMode="{Binding IsSwitchingMode}"
                 LogoutCommand="{Binding LogoutCommand}"
                 NavigateToHomeCommand="{Binding NavigateToHomeCommand}"
+                SwitchModeCommand="{Binding SwitchModeCommand}"
                 ToggleCommand="{Binding ToggleDrawerCommand}" />
 
             <!--  右侧工作区  -->

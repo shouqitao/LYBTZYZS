@@ -1,14 +1,20 @@
-using LYBT.Desktop.Contracts.DataSources;
+using LYBT.Desktop.Contracts;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Foundation.Application;
-using LYBT.Desktop.Infrastructure.DataSources.Remote;
+using LYBT.Desktop.Formula.Repositories;
+using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Desktop.LocalData.Context;
-using LYBT.Desktop.LocalData.DataSources;
 using LYBT.Desktop.LocalData.Initialization;
+using LYBT.Desktop.LocalData.Repositories;
 using LYBT.Desktop.LocalData.Services;
+using LYBT.Desktop.MedicalCase.Repositories;
+using LYBT.Desktop.Patients.Repositories;
+using LYBT.Desktop.Registration.Repositories;
+using LYBT.Desktop.Shell.Services;
+using LYBT.Desktop.Shell.Services.Session;
+using LYBT.Desktop.Users.Repositories;
 using LocalDbBackupService = LYBT.Desktop.LocalData.Services.LocalDbBackupService;
 using SyncService = LYBT.Desktop.LocalData.Services.SyncService;
-using LYBT.Desktop.Shell.Services.Session;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -17,9 +23,10 @@ using Prism.Ioc;
 namespace LYBT.Desktop.Shell.Extensions;
 
 /// <summary>
-/// DataSource DI 注册扩展方法
-/// OpenSpec: implement-local-mode
-/// 根据 ConnectionMode 注册不同的 DataSource 实现
+/// Repository DI 工厂注册 (SYNC-D02/D03)
+/// 两套基础设施始终注册，Repository 通过工厂模式在 resolve 时根据当前模式选择实现。
+/// 远程模式: Repository 通过 Refit API 客户端访问 WebAPI
+/// 本地模式: Repository 通过 EF Core + LocalDbContext 访问 SQL Server LocalDB
 /// </summary>
 public static class DataSourceRegistrationExtensions
 {
@@ -30,102 +37,151 @@ public static class DataSourceRegistrationExtensions
         @"Server=(localdb)\MSSQLLocalDB;Database=LYBTZYZS_Local;Trusted_Connection=True;TrustServerCertificate=True;";
 
     /// <summary>
-    /// 注册 DataSource 服务
+    /// 注册 IConnectionModeProvider + Repository 工厂 + 双模式基础设施 (SYNC-D03)
+    /// 两套基础设施始终注册，支持运行时切换。
     /// </summary>
-    /// <param name="containerRegistry">容器注册器</param>
-    /// <param name="mode">连接模式</param>
-    /// <param name="configuration">配置 (可选，用于读取本地连接字符串)</param>
-    public static void RegisterDataSources(
+    public static void RegisterRepositories(
         this IContainerRegistry containerRegistry,
-        ConnectionMode mode,
+        ConnectionMode initialMode,
         IConfiguration? configuration = null)
     {
-        // 注册 CurrentUserProvider（两种模式都需要）
-        RegisterCurrentUserProvider(containerRegistry);
+        var connectionString = configuration?["LocalConnectionString"] ?? DefaultLocalConnectionString;
 
-        if (mode == ConnectionMode.Remote)
-        {
-            RegisterRemoteDataSources(containerRegistry);
-        }
-        else
-        {
-            var connectionString = configuration?["LocalConnectionString"] ?? DefaultLocalConnectionString;
-            RegisterLocalDataSources(containerRegistry, connectionString);
-        }
-
-    }
-
-    /// <summary>
-    /// 注册 CurrentUserProvider（为 LocalDbContext 提供当前用户信息）
-    /// </summary>
-    private static void RegisterCurrentUserProvider(IContainerRegistry containerRegistry)
-    {
+        // 1. 注册 CurrentUserProvider (两种模式都需要)
         containerRegistry.RegisterSingleton<ICurrentUserProvider, SessionBasedCurrentUserProvider>();
+
+        // 2. 始终注册本地基础设施 (SYNC-D03: 运行时切换需要两套都可用)
+        RegisterLocalInfrastructure(containerRegistry, connectionString);
+
+        // 3. 注册 6 个 Repository (工厂模式，resolve 时根据当前模式选择)
+        RegisterRepositoryFactories(containerRegistry);
+
+        // 4. 注册 IConnectionModeProvider (Singleton, 依赖验证器和导航协调器)
+        RegisterConnectionModeProvider(containerRegistry, initialMode);
     }
 
     /// <summary>
-    /// 注册远程模式 DataSource（通过 WebAPI）
+    /// 注册 ConnectionModeProvider (SYNC-D03)
+    /// 延迟注入依赖: IModeSwitchValidator, IActiveConsultationService, INavigationCoordinator
     /// </summary>
-    private static void RegisterRemoteDataSources(IContainerRegistry containerRegistry)
+    private static void RegisterConnectionModeProvider(
+        IContainerRegistry containerRegistry, ConnectionMode initialMode)
     {
-        containerRegistry.Register<IPatientDataSource, RemotePatientDataSource>();
-        containerRegistry.Register<IHerbDataSource, RemoteHerbDataSource>();
-        containerRegistry.Register<IFormulaDataSource, RemoteFormulaDataSource>();
-        containerRegistry.Register<IMedicalCaseDataSource, RemoteMedicalCaseDataSource>();
-        containerRegistry.Register<IUserDataSource, RemoteUserDataSource>();
-        containerRegistry.Register<IRegistrationDataSource, RemoteRegistrationDataSource>();
-    }
-
-    /// <summary>
-    /// 注册本地模式 DataSource（SQL Server LocalDB）
-    /// </summary>
-    private static void RegisterLocalDataSources(IContainerRegistry containerRegistry, string connectionString)
-    {
-        // 注册本地数据库上下文
-        RegisterLocalDbContext(containerRegistry, connectionString);
-
-        // 注册本地认证服务
-        containerRegistry.RegisterSingleton<ILocalAuthService, LocalAuthService>();
-
-        // NFR-AVAIL-001: 注册本地数据库备份服务
-        containerRegistry.RegisterSingleton<ILocalDbBackupService, LocalDbBackupService>();
-
-        // OpenSpec: implement-data-sync - 注册同步服务
-        containerRegistry.RegisterSingleton<ISyncService, SyncService>();
-
-        // US-SYNC-008: 注册模式切换验证器 (本地模式可用时注册)
-        RegisterModeSwitchValidator(containerRegistry, connectionString);
-
-        // 注册 DataSource
-        containerRegistry.Register<IPatientDataSource, LocalPatientDataSource>();
-        containerRegistry.Register<IHerbDataSource, LocalHerbDataSource>();
-        containerRegistry.Register<IFormulaDataSource, LocalFormulaDataSource>();
-        containerRegistry.Register<IMedicalCaseDataSource, LocalMedicalCaseDataSource>();
-        containerRegistry.Register<IUserDataSource, LocalUserDataSource>();
-        containerRegistry.Register<IRegistrationDataSource, LocalRegistrationDataSource>();
-    }
-
-    /// <summary>
-    /// US-SYNC-008: 注册模式切换验证器
-    /// 本地模式下注册完整验证器 (可检查 Active/Suspended 医案)
-    /// </summary>
-    private static void RegisterModeSwitchValidator(IContainerRegistry containerRegistry, string connectionString)
-    {
-        containerRegistry.RegisterSingleton<IModeSwitchValidator>(resolver =>
+        containerRegistry.RegisterSingleton<IConnectionModeProvider>(resolver =>
         {
-            var medicalCaseDataSource = resolver.Resolve<IMedicalCaseDataSource>();
-            var loggerFactory = resolver.Resolve<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<ModeSwitchValidator>();
-            return new ModeSwitchValidator(medicalCaseDataSource, connectionString, logger);
+            var logger = resolver.Resolve<ILogger<ConnectionModeProvider>>();
+            var validator = resolver.Resolve<IModeSwitchValidator>();
+            var activeConsultation = resolver.Resolve<IActiveConsultationService>();
+            var navigation = resolver.Resolve<INavigationCoordinator>();
+            return new ConnectionModeProvider(initialMode, logger, validator, activeConsultation, navigation);
         });
     }
 
     /// <summary>
-    /// 注册本地数据库上下文和相关服务 (SQL Server LocalDB)
+    /// 工厂模式注册 6 个 Repository (SYNC-D03)
+    /// 每次 resolve 时根据 IConnectionModeProvider.CurrentMode 选择实现。
+    /// Transient 生命周期确保模式切换后获取正确实现。
     /// </summary>
-    private static void RegisterLocalDbContext(IContainerRegistry containerRegistry, string connectionString)
+    private static void RegisterRepositoryFactories(IContainerRegistry containerRegistry)
     {
-        // 注册 DbContextOptions (SQL Server LocalDB)
+        containerRegistry.Register<IPatientRepository>(resolver =>
+            resolver.Resolve<IConnectionModeProvider>().IsRemote
+                ? new PatientRepository(
+                    resolver.Resolve<Desktop.Contracts.Api.IPatientApi>(),
+                    resolver.Resolve<ILogger<PatientRepository>>())
+                : new LocalPatientRepository(
+                    resolver.Resolve<LocalDbContext>(),
+                    resolver.Resolve<ILogger<LocalPatientRepository>>()));
+
+        containerRegistry.Register<IHerbRepository>(resolver =>
+            resolver.Resolve<IConnectionModeProvider>().IsRemote
+                ? new HerbRepository(
+                    resolver.Resolve<Desktop.Contracts.Api.IHerbApi>(),
+                    resolver.Resolve<ILogger<HerbRepository>>())
+                : new LocalHerbRepository(
+                    resolver.Resolve<LocalDbContext>(),
+                    resolver.Resolve<ILogger<LocalHerbRepository>>()));
+
+        containerRegistry.Register<IFormulaRepository>(resolver =>
+            resolver.Resolve<IConnectionModeProvider>().IsRemote
+                ? new FormulaRepository(
+                    resolver.Resolve<Desktop.Contracts.Api.IFormulaApi>(),
+                    resolver.Resolve<ILogger<FormulaRepository>>())
+                : new LocalFormulaRepository(
+                    resolver.Resolve<LocalDbContext>(),
+                    resolver.Resolve<ILogger<LocalFormulaRepository>>()));
+
+        containerRegistry.Register<IUserRepository>(resolver =>
+            resolver.Resolve<IConnectionModeProvider>().IsRemote
+                ? new UserRepository(
+                    resolver.Resolve<Desktop.Contracts.Api.IUserApi>(),
+                    resolver.Resolve<ILogger<UserRepository>>())
+                : new LocalUserRepository(
+                    resolver.Resolve<LocalDbContext>(),
+                    resolver.Resolve<ILogger<LocalUserRepository>>()));
+
+        containerRegistry.Register<IMedicalCaseRepository>(resolver =>
+            resolver.Resolve<IConnectionModeProvider>().IsRemote
+                ? new MedicalCaseRepository(
+                    resolver.Resolve<Desktop.Contracts.Api.IMedicalCaseApi>(),
+                    resolver.Resolve<ILogger<MedicalCaseRepository>>())
+                : new LocalMedicalCaseRepository(
+                    resolver.Resolve<LocalDbContext>(),
+                    resolver.Resolve<ILogger<LocalMedicalCaseRepository>>()));
+
+        containerRegistry.Register<IRegistrationRepository>(resolver =>
+            resolver.Resolve<IConnectionModeProvider>().IsRemote
+                ? new RegistrationRepository(
+                    resolver.Resolve<Desktop.Contracts.Api.IRegistrationApi>(),
+                    resolver.Resolve<ILogger<RegistrationRepository>>())
+                : new LocalRegistrationRepository(
+                    resolver.Resolve<LocalDbContext>(),
+                    resolver.Resolve<ILogger<LocalRegistrationRepository>>()));
+    }
+
+    /// <summary>
+    /// 注册本地模式基础设施 (SYNC-D03: 始终注册，支持运行时切换)
+    /// </summary>
+    private static void RegisterLocalInfrastructure(
+        IContainerRegistry containerRegistry, string connectionString)
+    {
+        // LocalDbContext (Transient，避免 EF Core 并发问题)
+        RegisterLocalDbContext(containerRegistry, connectionString);
+
+        // 本地认证 (BCrypt 密码验证)
+        containerRegistry.RegisterSingleton<ILocalAuthService, LocalAuthService>();
+
+        // NFR-AVAIL-001: 本地数据库备份
+        containerRegistry.RegisterSingleton<ILocalDbBackupService, LocalDbBackupService>();
+
+        // OpenSpec: implement-data-sync - 同步服务
+        containerRegistry.RegisterSingleton<ISyncService, SyncService>();
+
+        // US-SYNC-008: 模式切换验证器 (始终注册，两个方向的切换都需要验证)
+        RegisterModeSwitchValidator(containerRegistry, connectionString);
+    }
+
+    /// <summary>
+    /// US-SYNC-008: 注册模式切换验证器
+    /// </summary>
+    private static void RegisterModeSwitchValidator(
+        IContainerRegistry containerRegistry, string connectionString)
+    {
+        containerRegistry.RegisterSingleton<IModeSwitchValidator>(resolver =>
+        {
+            var loggerFactory = resolver.Resolve<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<ModeSwitchValidator>();
+            return new ModeSwitchValidator(connectionString, logger);
+        });
+    }
+
+    /// <summary>
+    /// 注册本地数据库上下文 (SQL Server LocalDB)
+    /// </summary>
+    private static void RegisterLocalDbContext(
+        IContainerRegistry containerRegistry, string connectionString)
+    {
+        // DbContextOptions (Singleton, 配置不变)
         containerRegistry.RegisterSingleton<DbContextOptions<LocalDbContext>>(_ =>
         {
             var optionsBuilder = new DbContextOptionsBuilder<LocalDbContext>();
@@ -133,7 +189,7 @@ public static class DataSourceRegistrationExtensions
             return optionsBuilder.Options;
         });
 
-        // 注册 LocalDbContext（每次请求新实例，避免并发问题）
+        // LocalDbContext (Transient, 每次请求新实例避免并发问题)
         containerRegistry.Register<LocalDbContext>(resolver =>
         {
             var options = resolver.Resolve<DbContextOptions<LocalDbContext>>();
@@ -141,7 +197,7 @@ public static class DataSourceRegistrationExtensions
             return new LocalDbContext(options, currentUserProvider);
         });
 
-        // 注册数据库初始化器
+        // 数据库初始化器 (Singleton)
         containerRegistry.RegisterSingleton<DatabaseInitializer>(resolver =>
         {
             var context = resolver.Resolve<LocalDbContext>();

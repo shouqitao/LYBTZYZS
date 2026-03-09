@@ -31,20 +31,18 @@
                     Text="系统设置" />
 
                 <!--  右侧: 操作按钮  -->
-                <!-- 返回首页按钮已移除 - 使用导航栏的"首页"按钮统一导航 -->
-                <StackPanel
-                    Grid.Column="1"
-                    Orientation="Horizontal">
+                <!--  返回首页按钮已移除 - 使用导航栏的"首页"按钮统一导航  -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button
+                        Margin="{StaticResource SpacingSmall}"
                         Command="{Binding SaveCommand}"
                         Content="保存配置"
-                        Style="{StaticResource SuccessButton}"
-                        Margin="{StaticResource SpacingSmall}" />
+                        Style="{StaticResource SuccessButton}" />
                     <Button
+                        Margin="{StaticResource SpacingSmall}"
                         Command="{Binding ResetCommand}"
                         Content="重置"
-                        Style="{StaticResource SecondaryButton}"
-                        Margin="{StaticResource SpacingSmall}" />
+                        Style="{StaticResource SecondaryButton}" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -115,6 +113,127 @@
                                 HorizontalAlignment="Left"
                                 Style="{StaticResource BaseTextBox}"
                                 Text="{Binding ContactPhone, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!--  D2: 诊所信息配置  -->
+                <Border Style="{StaticResource ContentContainer}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource TitleText}" Text="诊所信息" />
+
+                        <!--  诊所名称  -->
+                        <Grid Margin="{StaticResource SpacingMedium}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource LabelText}"
+                                Text="诊所名称：" />
+                            <TextBox
+                                Grid.Column="1"
+                                MaxWidth="400"
+                                HorizontalAlignment="Left"
+                                Style="{StaticResource BaseTextBox}"
+                                Text="{Binding ClinicName, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+
+                        <!--  科室  -->
+                        <Grid Margin="{StaticResource SpacingMedium}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource LabelText}"
+                                Text="科室：" />
+                            <TextBox
+                                Grid.Column="1"
+                                MaxWidth="400"
+                                HorizontalAlignment="Left"
+                                Style="{StaticResource BaseTextBox}"
+                                Text="{Binding ClinicDepartment, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+
+                        <!--  地址  -->
+                        <Grid Margin="{StaticResource SpacingMedium}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource LabelText}"
+                                Text="地址：" />
+                            <TextBox
+                                Grid.Column="1"
+                                MaxWidth="400"
+                                HorizontalAlignment="Left"
+                                Style="{StaticResource BaseTextBox}"
+                                Text="{Binding ClinicAddress, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+
+                        <!--  电话  -->
+                        <Grid Margin="{StaticResource SpacingMedium}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource LabelText}"
+                                Text="电话：" />
+                            <TextBox
+                                Grid.Column="1"
+                                MaxWidth="400"
+                                HorizontalAlignment="Left"
+                                Style="{StaticResource BaseTextBox}"
+                                Text="{Binding ClinicPhone, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+
+                        <!--  邮箱  -->
+                        <Grid Margin="{StaticResource SpacingMedium}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource LabelText}"
+                                Text="邮箱：" />
+                            <TextBox
+                                Grid.Column="1"
+                                MaxWidth="400"
+                                HorizontalAlignment="Left"
+                                Style="{StaticResource BaseTextBox}"
+                                Text="{Binding ClinicEmail, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+
+                        <!--  执业许可证号  -->
+                        <Grid Margin="{StaticResource SpacingMedium}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource LabelText}"
+                                Text="许可证号：" />
+                            <TextBox
+                                Grid.Column="1"
+                                MaxWidth="400"
+                                HorizontalAlignment="Left"
+                                Style="{StaticResource BaseTextBox}"
+                                Text="{Binding LicenseNumber, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
                     </StackPanel>
                 </Border>

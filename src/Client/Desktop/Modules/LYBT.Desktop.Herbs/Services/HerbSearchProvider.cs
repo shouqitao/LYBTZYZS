@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Services.CrossModule;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Herbs.Services;

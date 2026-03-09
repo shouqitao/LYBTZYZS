@@ -1,6 +1,7 @@
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Handlers;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;

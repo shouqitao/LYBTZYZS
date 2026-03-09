@@ -1,23 +1,17 @@
-using LYBT.Desktop.Infrastructure.Configuration;
+using LYBT.Shared.Configuration.Options.Client;
 
 namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
-    /// 诊所配置服务接口 - OpenSpec: print-prescription-slip
+    /// 诊所配置服务接口
+    /// D2: 诊所信息配置化，支持运行时热更新和持久化
     /// </summary>
-    /// <remarks>
-    /// 提供诊所相关的配置访问，配置存储在appsettings.json的ClinicSettings节点中。
-    /// 支持配置热更新，修改配置文件后无需重启应用。
-    ///
-    /// 注意：此接口保留在Infrastructure中，因为依赖Infrastructure.Configuration.ClinicSettings
-    /// </remarks>
     public interface IClinicSettingsService
     {
         /// <summary>
-        /// 获取当前诊所配置
+        /// 获取当前诊所配置（只读快照）
         /// </summary>
-        /// <returns>诊所配置对象</returns>
-        ClinicSettings GetSettings();
+        ClinicSettingsOptions GetSettings();
 
         /// <summary>
         /// 诊所名称
@@ -27,16 +21,33 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// <summary>
         /// 诊所地址
         /// </summary>
-        string? ClinicAddress { get; }
+        string ClinicAddress { get; }
 
         /// <summary>
         /// 诊所电话
         /// </summary>
-        string? ClinicPhone { get; }
+        string ClinicPhone { get; }
 
         /// <summary>
         /// 科别
         /// </summary>
         string Department { get; }
+
+        /// <summary>
+        /// 执业许可证号
+        /// </summary>
+        string LicenseNumber { get; }
+
+        /// <summary>
+        /// 电子邮箱
+        /// </summary>
+        string Email { get; }
+
+        /// <summary>
+        /// 保存诊所配置到 clinic-settings.json
+        /// </summary>
+        /// <param name="settings">要保存的配置</param>
+        /// <returns>是否保存成功</returns>
+        Task<bool> SaveSettingsAsync(ClinicSettingsOptions settings);
     }
 }

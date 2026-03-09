@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 // OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Patients.Mappers;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Models.Items;
@@ -32,8 +33,9 @@ namespace LYBT.Desktop.Patients
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Phase 2：Repository由模块自己注册
-            containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
+            // SYNC-D02: IPatientRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
+            // 远程模式 → PatientRepository (Patients 模块)
+            // 本地模式 → LocalPatientRepository (LocalData 模块)
 
             // OpenSpec: integrate-cardreader-module - 患者读卡器集成服务
             containerRegistry.RegisterSingleton<IPatientCardReaderIntegration, PatientCardReaderIntegration>();

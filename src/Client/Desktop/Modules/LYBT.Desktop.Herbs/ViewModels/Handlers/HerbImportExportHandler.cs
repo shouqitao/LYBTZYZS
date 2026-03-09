@@ -1,6 +1,6 @@
 using System.IO;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Contracts.Herbs;

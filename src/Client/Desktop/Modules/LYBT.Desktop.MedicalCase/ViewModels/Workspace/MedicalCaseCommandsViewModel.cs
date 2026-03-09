@@ -59,6 +59,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     public DelegateCommand SuspendCommand { get; }
     public DelegateCommand CompleteCommand { get; }
     public DelegateCommand PrintCommand { get; }
+    public DelegateCommand ExportPdfCommand { get; }
     public DelegateCommand EnterEditModeCommand { get; }
     public DelegateCommand ImportFormulaCommand { get; }
     public DelegateCommand CopyHistoryCommand { get; }
@@ -84,6 +85,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         SuspendCommand = new DelegateCommand(ExecuteSuspend, CanSuspend);
         CompleteCommand = new DelegateCommand(ExecuteComplete, CanComplete);
         PrintCommand = new DelegateCommand(ExecutePrint, CanPrint);
+        ExportPdfCommand = new DelegateCommand(ExecuteExportPdf, CanPrint);
         EnterEditModeCommand = new DelegateCommand(ExecuteEnterEditMode, CanEnterEditMode);
         ImportFormulaCommand = new DelegateCommand(ExecuteImportFormula);
         CopyHistoryCommand = new DelegateCommand(ExecuteCopyHistory);
@@ -100,6 +102,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         SuspendCommand.RaiseCanExecuteChanged();
         CompleteCommand.RaiseCanExecuteChanged();
         PrintCommand.RaiseCanExecuteChanged();
+        ExportPdfCommand.RaiseCanExecuteChanged();
         EnterEditModeCommand.RaiseCanExecuteChanged();
     }
 
@@ -236,6 +239,46 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         {
             Logger.LogError(ex, "打印处方笺失败");
             await Host.ShowErrorAsync("打印失败");
+        }
+        finally
+        {
+            Host.SetBusy(false);
+        }
+    }
+
+    /// <summary>
+    /// D1: 导出处方笺为 PDF
+    /// </summary>
+    private async void ExecuteExportPdf()
+    {
+        try
+        {
+            Host.SetBusy(true, "正在导出PDF...");
+
+            var consultationItem = GetConsultationItem?.Invoke();
+            var consultationData = consultationItem != null
+                ? _consultationMapper.ToInputDto(consultationItem)
+                : null;
+
+            var result = await _printHandler.ExportPdfAsync(
+                _context.MedicalCaseId,
+                GetPrescriptionProvider?.Invoke(),
+                _context.CurrentPatient,
+                consultationData);
+
+            if (!result.IsSuccess)
+            {
+                await Host.ShowErrorAsync(result.ErrorMessage ?? "导出失败");
+            }
+            else
+            {
+                await Host.ShowSuccessAsync("PDF导出成功");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "导出PDF失败");
+            await Host.ShowErrorAsync("导出失败");
         }
         finally
         {

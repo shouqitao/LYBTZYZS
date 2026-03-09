@@ -221,6 +221,15 @@
                             Style="{DynamicResource SecondaryButton}"
                             ToolTip="打印当前处方" />
 
+                        <!--  D1: 导出PDF按钮  -->
+                        <Button
+                            Margin="0,0,8,0"
+                            Command="{Binding Commands.ExportPdfCommand}"
+                            Content="导出PDF"
+                            IsEnabled="{Binding State.CanPrint}"
+                            Style="{DynamicResource SecondaryButton}"
+                            ToolTip="导出处方笺为PDF文件" />
+
                         <!--  Clinical编辑模式: 完成看诊按钮  -->
                         <Button
                             Command="{Binding Commands.CompleteCommand}"

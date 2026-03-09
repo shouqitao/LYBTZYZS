@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
@@ -23,10 +24,9 @@ namespace LYBT.Desktop.Formula
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // ADR-002 架构标准：
-            // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
-            // - Repository (数据访问层) 由各业务模块自行注册
-            containerRegistry.RegisterSingleton<IFormulaRepository, FormulaRepository>();
+            // SYNC-D02: IFormulaRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
+            // 远程模式 -> FormulaRepository (Formula 模块)
+            // 本地模式 -> LocalFormulaRepository (LocalData 模块)
 
             // D5-3: 跨模块验方搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IFormulaSearchProvider, Services.FormulaSearchProvider>();

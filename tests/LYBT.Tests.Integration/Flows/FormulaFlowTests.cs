@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.DataSources.Remote;
+using LYBT.Desktop.Formula.Repositories;
+using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -8,24 +9,24 @@ namespace LYBT.Tests.Integration.Flows;
 
 /// <summary>
 /// Formula CRUD flow integration tests.
-/// Tests the full chain: RemoteFormulaDataSource -> IFormulaApi -> Server FormulaController -> SQL Server.
+/// Tests the full chain: FormulaRepository -> IFormulaApi -> Server FormulaController -> SQL Server.
 /// </summary>
 [Collection("Integration")]
 public class FormulaFlowTests : IntegrationTestBase
 {
     public FormulaFlowTests(IntegrationFixture fixture) : base(fixture) { }
 
-    private async Task<(RemoteFormulaDataSource FormulaDs, RemoteHerbDataSource HerbDs)> CreateDataSourcesAsync()
+    private async Task<(FormulaRepository FormulaDs, HerbRepository HerbDs)> CreateDataSourcesAsync()
     {
         var (client, formulaApi) = await LoginAsAdminWithApiAsync<IFormulaApi>();
         var herbApi = Fixture.CreateApi<IHerbApi>(client);
         return (
-            new RemoteFormulaDataSource(formulaApi, NullLogger<RemoteFormulaDataSource>.Instance),
-            new RemoteHerbDataSource(herbApi, NullLogger<RemoteHerbDataSource>.Instance)
+            new FormulaRepository(formulaApi, NullLogger<FormulaRepository>.Instance),
+            new HerbRepository(herbApi, NullLogger<HerbRepository>.Instance)
         );
     }
 
-    private async Task<Guid> CreateTestHerbAsync(RemoteHerbDataSource herbDs, string name = "测试药材")
+    private async Task<Guid> CreateTestHerbAsync(HerbRepository herbDs, string name = "测试药材")
     {
         var herb = await herbDs.CreateAsync(new HerbInputDto
         {
@@ -90,7 +91,7 @@ public class FormulaFlowTests : IntegrationTestBase
         var toggled = await formulaDs.ToggleStatusAsync(created.Id);
 
         // Assert
-        toggled.Should().BeTrue();
+        toggled.Should().NotBeNull();
     }
 
     [Fact]
@@ -141,10 +142,10 @@ public class FormulaFlowTests : IntegrationTestBase
         });
 
         // Act
-        var (items, total) = await formulaDs.GetPagedAsync(1, 20);
+        var result = await formulaDs.GetPagedAsync(1, 20);
 
         // Assert
-        total.Should().BeGreaterThanOrEqualTo(1);
-        items.Should().NotBeEmpty();
+        result.TotalCount.Should().BeGreaterThanOrEqualTo(1);
+        result.Items.Should().NotBeEmpty();
     }
 }

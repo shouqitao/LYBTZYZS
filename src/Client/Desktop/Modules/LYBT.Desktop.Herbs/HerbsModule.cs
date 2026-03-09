@@ -1,5 +1,5 @@
-﻿using LYBT.Desktop.Contracts.Services.CrossModule;
-using LYBT.Desktop.Herbs.Interfaces;
+﻿using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Herbs.Mappers;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Repositories;
@@ -25,10 +25,9 @@ namespace LYBT.Desktop.Herbs
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // ADR-002 架构标准：
-            // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
-            // - Repository (数据访问层) 由各业务模块自行注册
-            containerRegistry.RegisterSingleton<IHerbRepository, HerbRepository>();
+            // SYNC-D02: IHerbRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
+            // 远程模式 -> HerbRepository (Herbs 模块)
+            // 本地模式 -> LocalHerbRepository (LocalData 模块)
 
             // D5-3: 跨模块药材搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IHerbSearchProvider, Services.HerbSearchProvider>();

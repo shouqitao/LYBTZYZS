@@ -1,5 +1,6 @@
 ﻿using LYBT.Desktop.Infrastructure.DependencyInjection;
-using LYBT.Desktop.Users.Interfaces;
+// SYNC-D02: IUserRepository 迁移到 Contracts.Repositories
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Users.Mappers;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.Models.Items;
@@ -27,8 +28,9 @@ namespace LYBT.Desktop.Users
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Issue #1128: 注册模块内 Repository（覆盖 Shell 层的旧 Repository）
-            containerRegistry.RegisterSingleton<IUserRepository, UserRepository>();
+            // SYNC-D02: IUserRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
+            // 远程模式 -> UserRepository (Users 模块)
+            // 本地模式 -> LocalUserRepository (LocalData 模块)
 
             // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 

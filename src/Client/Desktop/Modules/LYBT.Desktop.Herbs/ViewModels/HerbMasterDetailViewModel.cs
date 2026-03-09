@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.ViewModels.Handlers;
 using LYBT.Desktop.Infrastructure.Services;

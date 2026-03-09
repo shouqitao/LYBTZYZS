@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.DataSources.Remote;
+using LYBT.Desktop.Patients.Repositories;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -8,7 +8,7 @@ namespace LYBT.Tests.Integration.Flows;
 
 /// <summary>
 /// Patient CRUD flow integration tests.
-/// Tests the full chain: RemotePatientDataSource -> IPatientApi -> Server PatientController -> SQL Server.
+/// Tests the full chain: PatientRepository -> IPatientApi -> Server PatientController -> SQL Server.
 /// </summary>
 [Collection("Integration")]
 public class PatientFlowTests : IntegrationTestBase
@@ -17,10 +17,10 @@ public class PatientFlowTests : IntegrationTestBase
 
     public PatientFlowTests(IntegrationFixture fixture) : base(fixture) { }
 
-    private async Task<RemotePatientDataSource> CreateDataSourceAsync()
+    private async Task<PatientRepository> CreateRepositoryAsync()
     {
         var (_, api) = await LoginAsDoctorWithApiAsync<IPatientApi>();
-        return new RemotePatientDataSource(api, NullLogger<RemotePatientDataSource>.Instance);
+        return new PatientRepository(api, NullLogger<PatientRepository>.Instance);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public class PatientFlowTests : IntegrationTestBase
     public async Task CreateAndRetrieve_Patient_Succeeds()
     {
         // Arrange
-        var ds = await CreateDataSourceAsync();
+        var ds = await CreateRepositoryAsync();
         var input = MakePatient("张三");
 
         // Act
@@ -66,7 +66,7 @@ public class PatientFlowTests : IntegrationTestBase
     public async Task UpdatePatient_ChangesFields()
     {
         // Arrange
-        var ds = await CreateDataSourceAsync();
+        var ds = await CreateRepositoryAsync();
         var created = await ds.CreateAsync(MakePatient("李四", Gender.Female));
 
         // Act
@@ -83,7 +83,7 @@ public class PatientFlowTests : IntegrationTestBase
     public async Task DeletePatient_SoftDeletes()
     {
         // Arrange
-        var ds = await CreateDataSourceAsync();
+        var ds = await CreateRepositoryAsync();
         var created = await ds.CreateAsync(MakePatient("王五删除"));
 
         // Act
@@ -102,23 +102,23 @@ public class PatientFlowTests : IntegrationTestBase
     public async Task GetPaged_ReturnsPatientList()
     {
         // Arrange
-        var ds = await CreateDataSourceAsync();
+        var ds = await CreateRepositoryAsync();
         await ds.CreateAsync(MakePatient("分页患者A"));
         await ds.CreateAsync(MakePatient("分页患者B", Gender.Female));
 
         // Act
-        var (items, total) = await ds.GetPagedAsync(1, 20);
+        var result = await ds.GetPagedAsync(1, 20);
 
         // Assert
-        total.Should().BeGreaterThanOrEqualTo(2);
-        items.Should().NotBeEmpty();
+        result.TotalCount.Should().BeGreaterThanOrEqualTo(2);
+        result.Items.Should().NotBeEmpty();
     }
 
     [Fact]
     public async Task Search_ByKeyword_FindsPatient()
     {
         // Arrange
-        var ds = await CreateDataSourceAsync();
+        var ds = await CreateRepositoryAsync();
         var uniqueName = $"搜索测试_{Guid.NewGuid().ToString("N")[..6]}";
         await ds.CreateAsync(MakePatient(uniqueName));
 

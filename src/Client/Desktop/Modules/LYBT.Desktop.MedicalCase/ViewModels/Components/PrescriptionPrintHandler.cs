@@ -1,4 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
@@ -23,6 +25,7 @@ public class PrescriptionPrintHandler
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly IMedicalCaseRepository _repository;
     private readonly ISessionManager _sessionManager;
+    private readonly IClinicSettingsService _clinicSettingsService;
     private readonly ILogger<PrescriptionPrintHandler> _logger;
 
     #endregion
@@ -33,12 +36,14 @@ public class PrescriptionPrintHandler
         IMedicalCaseService medicalCaseService,
         IMedicalCaseRepository repository,
         ISessionManager sessionManager,
+        IClinicSettingsService clinicSettingsService,
         ILoggerFactory loggerFactory,
         IPrintService<PrescriptionPrintModel>? printService = null)
     {
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
+        _clinicSettingsService = clinicSettingsService ?? throw new ArgumentNullException(nameof(clinicSettingsService));
         _logger = loggerFactory.CreateLogger<PrescriptionPrintHandler>();
         _printService = printService;
     }
@@ -100,6 +105,54 @@ public class PrescriptionPrintHandler
     }
 
     /// <summary>
+    /// D1: 导出处方笺为 PDF 文件
+    /// </summary>
+    public async Task<PrintResult> ExportPdfAsync(
+        Guid medicalCaseId,
+        IDataProvider? prescriptionProvider,
+        PatientDetailDto? currentPatient,
+        ConsultationInputDto? consultationData)
+    {
+        try
+        {
+            _logger.LogInformation("导出处方笺PDF，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+            if (_printService == null)
+                return PrintResult.Failed("打印服务未配置");
+
+            var prescription = BuildPrescriptionDetailDto(medicalCaseId, prescriptionProvider);
+            if (prescription == null)
+                return PrintResult.Failed("没有可导出的处方数据");
+
+            if (prescription.Items == null || prescription.Items.Count == 0)
+                return PrintResult.Failed("处方无药材信息，无法导出");
+
+            var printModel = BuildPrintModel(prescription, currentPatient, consultationData);
+
+            // 弹出保存对话框
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "PDF 文件 (*.pdf)|*.pdf",
+                DefaultExt = ".pdf",
+                FileName = $"处方笺_{currentPatient?.Name}_{DateTime.Now:yyyyMMdd}"
+            };
+
+            if (dialog.ShowDialog() != true)
+                return PrintResult.Success(); // 用户取消，非错误
+
+            await _printService.ExportAsync(printModel, dialog.FileName, Printing.Interfaces.ExportFormat.Pdf);
+
+            _logger.LogInformation("PDF导出成功: {FilePath}", dialog.FileName);
+            return PrintResult.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "导出处方笺PDF失败");
+            return PrintResult.Failed($"导出失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// 构建打印数据模型
     /// OpenSpec: create-printing-module
     /// T4-S5-10: 自动绑定DoctorName从当前登录用户
@@ -116,8 +169,17 @@ public class PrescriptionPrintHandler
         // T4-S5-11: 获取折扣值（0-1之间，默认1.0无折扣）
         var discount = prescription.Discount > 0 ? prescription.Discount : 1.0m;
 
+        // D2: 从配置服务读取诊所信息
+        var clinicSettings = _clinicSettingsService.GetSettings();
+
         var model = new PrescriptionPrintModel
         {
+            // D2: 诊所信息 (从 clinic-settings.json 热更新)
+            ClinicName = clinicSettings.Name,
+            Department = clinicSettings.Department,
+            ClinicAddress = clinicSettings.Address,
+            ClinicPhone = clinicSettings.Phone,
+
             // 患者信息
             PatientName = patient?.Name ?? string.Empty,
             Gender = patient?.Gender.ToString() ?? string.Empty,
@@ -145,7 +207,10 @@ public class PrescriptionPrintHandler
 
             // T4-S5-10: 签名 - 自动绑定当前用户
             DoctorName = doctorName,
-            PrescriptionDate = DateTime.Now
+            PrescriptionDate = DateTime.Now,
+
+            // D3: 草稿水印 -- 非 Completed 状态即为草稿
+            IsDraft = _medicalCaseService.Current?.CaseStatus != MedicalCaseStatus.Completed
         };
 
         // T4-S5-11: 计算总价（含折扣）

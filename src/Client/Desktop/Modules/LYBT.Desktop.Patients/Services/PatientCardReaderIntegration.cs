@@ -1,6 +1,8 @@
 using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.CardReader.Models;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Enums;
@@ -15,14 +17,17 @@ namespace LYBT.Desktop.Patients.Services;
 public class PatientCardReaderIntegration : IPatientCardReaderIntegration
 {
     private readonly IPatientRepository _patientRepository;
+    private readonly IPhotoStorageService? _photoStorageService;
     private readonly ILogger<PatientCardReaderIntegration> _logger;
 
     public PatientCardReaderIntegration(
         IPatientRepository patientRepository,
-        ILogger<PatientCardReaderIntegration> logger)
+        ILogger<PatientCardReaderIntegration> logger,
+        IPhotoStorageService? photoStorageService = null)
     {
         _patientRepository = patientRepository;
         _logger = logger;
+        _photoStorageService = photoStorageService;
     }
 
     /// <summary>
@@ -106,6 +111,9 @@ public class PatientCardReaderIntegration : IPatientCardReaderIntegration
         {
             throw new InvalidOperationException($"读卡失败，无法处理: {cardResult.ErrorMessage}");
         }
+
+        // C2: 加密保存照片 (无论查找结果如何，读卡后即保存)
+        await SaveEncryptedPhotoAsync(cardResult);
 
         // 1. 先尝试查找现有患者
         var existingPatient = await FindPatientByIdNumberAsync(cardResult.IdNumber);
@@ -222,6 +230,31 @@ public class PatientCardReaderIntegration : IPatientCardReaderIntegration
         {
             MatchType = PatientMatchType.NoMatch
         };
+    }
+
+    /// <summary>
+    /// C2: 加密保存身份证照片
+    /// </summary>
+    private async Task SaveEncryptedPhotoAsync(CardReadResult cardResult)
+    {
+        if (_photoStorageService == null || cardResult.PhotoData == null || cardResult.PhotoData.Length == 0)
+            return;
+
+        try
+        {
+            var identifier = !string.IsNullOrWhiteSpace(cardResult.IdNumber)
+                ? cardResult.IdNumber
+                : $"{cardResult.Name}_{cardResult.ReadTime:yyyyMMddHHmmss}";
+
+            var encryptedPath = await _photoStorageService.SavePhotoAsync(cardResult.PhotoData, identifier);
+            cardResult.PhotoFilePath = encryptedPath;
+
+            _logger.LogInformation("身份证照片已加密保存: {Path}", encryptedPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "加密保存身份证照片失败，不影响读卡流程");
+        }
     }
 
     /// <summary>

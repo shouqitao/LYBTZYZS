@@ -1,4 +1,4 @@
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Handlers;

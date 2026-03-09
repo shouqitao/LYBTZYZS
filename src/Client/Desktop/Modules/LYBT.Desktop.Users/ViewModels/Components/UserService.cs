@@ -1,5 +1,5 @@
 ﻿using LYBT.Shared.ExceptionHandling.Mappers;
-using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;

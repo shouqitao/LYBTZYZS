@@ -1,6 +1,5 @@
 using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Contracts.DataSources;
-using LYBT.Desktop.Registration.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
 using Microsoft.Extensions.Logging;
@@ -8,102 +7,152 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Registration.Repositories;
 
 /// <summary>
-/// 挂号仓储实现 -- DataSource 抽象层，支持 Local/Remote 双模式
-/// PRD: registration.md US-REG-001~006
+/// 挂号仓储 - 远程模式实现 (SYNC-D02)
+/// 通过 Refit IRegistrationApi 访问 WebAPI，不再依赖 IRegistrationDataSource 中间层。
+/// DI 工厂根据 IConnectionModeProvider 在远程模式下选择此实现。
 /// </summary>
-public class RegistrationRepository : IRegistrationRepository
+public sealed class RegistrationRepository : IRegistrationRepository
 {
-    private readonly IRegistrationDataSource _dataSource;
-    private readonly IRegistrationApi? _api;
-    private readonly ILogger _logger;
+    private readonly IRegistrationApi _api;
+    private readonly ILogger<RegistrationRepository> _logger;
 
     public RegistrationRepository(
-        IRegistrationDataSource dataSource,
-        ILogger<RegistrationRepository> logger,
-        IRegistrationApi? api = null)
+        IRegistrationApi api,
+        ILogger<RegistrationRepository> logger)
     {
-        _dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
+        _api = api ?? throw new ArgumentNullException(nameof(api));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _api = api;
     }
 
     /// <inheritdoc/>
     public async Task<RegistrationDetailDto> CreateAsync(RegistrationInputDto input)
     {
-        _logger.LogDebug("[REG-REPO] 创建挂号: PatientId={PatientId}, DoctorId={DoctorId}, Source={Source}",
-            input.PatientId, input.DoctorId, input.Source);
+        ArgumentNullException.ThrowIfNull(input);
 
-        return await _dataSource.CreateAsync(input);
+        try
+        {
+            _logger.LogInformation("[REPO:Remote] Registration.Create - PatientId={PatientId}, DoctorId={DoctorId}, Source={Source}",
+                input.PatientId, input.DoctorId, input.Source);
+
+            var response = await _api.CreateAsync(input);
+            if (!response.Success || response.Data == null)
+                throw new InvalidOperationException(response.Message ?? "创建挂号失败");
+
+            _logger.LogInformation("[REPO:Remote] Registration.Create completed - Id={Id}", response.Data.Id);
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[REPO:Remote] Registration.Create failed");
+            throw;
+        }
     }
 
     /// <inheritdoc/>
     public async Task<RegistrationDetailDto?> GetByIdAsync(Guid id)
     {
-        return await _dataSource.GetByIdAsync(id);
+        try
+        {
+            _logger.LogDebug("[REPO:Remote] Registration.GetById - Id={Id}", id);
+
+            var response = await _api.GetByIdAsync(id);
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[REPO:Remote] Registration.GetById failed - Id={Id}", id);
+            throw;
+        }
     }
 
     /// <inheritdoc/>
     public async Task<PagedResult<RegistrationListDto>> GetPagedAsync(int page, int pageSize, string? keyword = null)
     {
-        if (_api is not null)
+        try
         {
-            try
-            {
-                var response = await _api.GetListAsync(page, pageSize, keyword);
-                if (response is { Success: true, Data: not null })
-                {
-                    return response.Data;
-                }
+            _logger.LogDebug("[REPO:Remote] Registration.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
+                page, pageSize, keyword);
 
-                _logger.LogWarning("[REG-REPO] 分页查询失败: {Message}", response?.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[REG-REPO] 分页查询异常");
-            }
+            var response = await _api.GetListAsync(page, pageSize, keyword);
+            if (response.Data == null)
+                return new PagedResult<RegistrationListDto> { Items = [], TotalCount = 0, CurrentPage = page };
 
-            return new PagedResult<RegistrationListDto>();
+            return response.Data;
         }
-
-        // Local 模式: 通过 DataSource 的 GetPagedAsync
-        var (items, total) = await _dataSource.GetPagedAsync(page, pageSize, keyword);
-        return new PagedResult<RegistrationListDto>
+        catch (Exception ex)
         {
-            Items = items.Select(d => new RegistrationListDto
-            {
-                Id = d.Id,
-                PatientId = d.PatientId,
-                PatientName = d.PatientName,
-                DoctorId = d.DoctorId,
-                DoctorName = d.DoctorName,
-                MedicalCaseId = d.MedicalCaseId,
-                Source = d.Source,
-                Status = d.Status,
-                CreatedAt = d.CreatedAt
-            }).ToList(),
-            TotalCount = total,
-            CurrentPage = page
-        };
+            _logger.LogError(ex, "[REPO:Remote] Registration.GetPaged failed");
+            throw;
+        }
     }
 
     /// <inheritdoc/>
     public async Task<List<RegistrationListDto>> GetWaitingQueueAsync(Guid? doctorId = null)
     {
-        _logger.LogDebug("[REG-REPO] 获取等待队列: DoctorId={DoctorId}", doctorId);
-        return await _dataSource.GetWaitingQueueAsync(doctorId);
+        try
+        {
+            _logger.LogDebug("[REPO:Remote] Registration.GetWaitingQueue - DoctorId={DoctorId}", doctorId);
+
+            var response = await _api.GetQueueAsync(doctorId);
+            if (!response.Success || response.Data == null)
+            {
+                _logger.LogWarning("[REPO:Remote] Registration.GetWaitingQueue failed: {Message}", response.Message);
+                return [];
+            }
+
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[REPO:Remote] Registration.GetWaitingQueue failed");
+            throw;
+        }
     }
 
     /// <inheritdoc/>
     public async Task<Guid?> StartVisitAsync(Guid id)
     {
-        _logger.LogInformation("[REG-REPO] 接诊: RegistrationId={Id}", id);
-        return await _dataSource.StartVisitAsync(id);
+        try
+        {
+            _logger.LogInformation("[REPO:Remote] Registration.StartVisit - Id={Id}", id);
+
+            var response = await _api.StartVisitAsync(id);
+            if (!response.Success)
+            {
+                _logger.LogWarning("[REPO:Remote] Registration.StartVisit failed: {Message}", response.Message);
+                return null;
+            }
+
+            _logger.LogInformation("[REPO:Remote] Registration.StartVisit completed - Id={Id}, MedicalCaseId={McId}",
+                id, response.Data);
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[REPO:Remote] Registration.StartVisit failed - Id={Id}", id);
+            throw;
+        }
     }
 
     /// <inheritdoc/>
     public async Task<bool> CancelAsync(Guid id)
     {
-        _logger.LogInformation("[REG-REPO] 取消挂号: RegistrationId={Id}", id);
-        return await _dataSource.CancelAsync(id);
+        try
+        {
+            _logger.LogInformation("[REPO:Remote] Registration.Cancel - Id={Id}", id);
+
+            var response = await _api.CancelAsync(id);
+            if (response.Success)
+                _logger.LogInformation("[REPO:Remote] Registration.Cancel completed - Id={Id}", id);
+            else
+                _logger.LogWarning("[REPO:Remote] Registration.Cancel failed - Id={Id}", id);
+
+            return response.Success;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[REPO:Remote] Registration.Cancel failed - Id={Id}", id);
+            return false;
+        }
     }
 }

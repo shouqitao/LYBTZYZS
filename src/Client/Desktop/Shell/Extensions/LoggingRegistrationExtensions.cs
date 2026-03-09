@@ -5,6 +5,7 @@ using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Formula.Repositories;
 using LYBT.Desktop.Formula.Services;
+using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Modules;
@@ -57,36 +58,25 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>
-        /// 注册 DataSource 相关 Logger
-        /// OpenSpec: implement-local-mode
+        /// 注册 Local 基础设施 + 双模式 Repository Logger (SYNC-D03: 始终注册两套)
         /// </summary>
-        public static void RegisterDataSourceLoggers(this IContainerRegistry containerRegistry, ConnectionMode mode)
+        public static void RegisterDataSourceLoggers(this IContainerRegistry containerRegistry)
         {
-            if (mode == ConnectionMode.Local)
-            {
-                RegisterLogger<LYBT.Desktop.LocalData.Context.LocalDbContext>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.LocalData.Services.LocalAuthService>(containerRegistry);
-                // NFR-AVAIL-001: 本地数据库备份
-                RegisterLogger<LYBT.Desktop.LocalData.Services.LocalDbBackupService>(containerRegistry);
-                // OpenSpec: implement-data-sync
-                RegisterLogger<LYBT.Desktop.LocalData.Services.SyncService>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalPatientDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalHerbDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalFormulaDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalMedicalCaseDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalUserDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.LocalData.DataSources.LocalRegistrationDataSource>(containerRegistry);
-            }
-            else
-            {
-                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemotePatientDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteHerbDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteFormulaDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteMedicalCaseDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteUserDataSource>(containerRegistry);
-                RegisterLogger<LYBT.Desktop.Infrastructure.DataSources.Remote.RemoteRegistrationDataSource>(containerRegistry);
-            }
+            // Local 基础设施 Loggers (始终注册，支持运行时切换)
+            RegisterLogger<LYBT.Desktop.LocalData.Context.LocalDbContext>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Services.LocalAuthService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Services.LocalDbBackupService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Services.SyncService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Services.ModeSwitchValidator>(containerRegistry);
+
+            // Local Repository Loggers
+            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalPatientRepository>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalHerbRepository>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalFormulaRepository>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalMedicalCaseRepository>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalUserRepository>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalRegistrationRepository>(containerRegistry);
         }
 
         /// <summary>注册LoggerFactory和泛型ILogger&lt;&gt;</summary>
@@ -122,6 +112,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<TokenStorageService>(containerRegistry);
             RegisterLogger<TokenManager>(containerRegistry); // OpenSpec: refactor-login-authentication
             RegisterLogger<CredentialVault>(containerRegistry); // OpenSpec: refactor-login-authentication
+            RegisterLogger<DpapiPhotoStorageService>(containerRegistry); // C2: 照片加密存储
             RegisterLogger<LYBT.Desktop.Foundation.Security.AuthenticationStateMachine>(containerRegistry); // OpenSpec: refactor-auth-role-system (Phase 1.1)
             RegisterLogger<LogoutService>(containerRegistry); // OpenSpec: refactor-login-authentication (Phase 2.3)
             RegisterLogger<UsernameStorageService>(containerRegistry);

@@ -1,6 +1,7 @@
 using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.CardReader.Models;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
