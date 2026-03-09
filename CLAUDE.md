@@ -78,12 +78,28 @@ dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 ## 修改前必查
 
-1. **查记忆**: `mcp__serena__list_memories()`
-2. **查文档**: context7 / microsoft_docs_mcp
-3. **查案例**: WebSearch
+1. **查记忆**: `mcp__serena__list_memories()` / `mcp__serena__read_memory("文件名")`
+2. **查文档**: `mcp__context7__get-library-docs` / `mcp__plugin_wpf-dev-pack_MicrosoftDocs__microsoft_docs_search`
+3. **查案例**: `mcp__plugin_claude-code-settings_exa__get_code_context_exa` / `mcp__tavily-mcp__tavily-search`
 4. **问用户**: 方案确认后再执行
 
 **IMPORTANT: 禁止未经调研直接编码 | 禁止猜测方案 | 禁止跳过用户确认**
+
+## MCP工具速查
+
+| 场景 | 首选工具 |
+|------|---------|
+| 查项目历史决策/架构知识 | `mcp__serena__list_memories` → `mcp__serena__read_memory` |
+| 查 NuGet 库 / 开源框架文档 | `mcp__context7__resolve-library-id` → `get-library-docs` |
+| 查 MS/WPF/.NET/ASP.NET 官方文档 | `mcp__plugin_wpf-dev-pack_MicrosoftDocs__microsoft_docs_search` |
+| 查 MS 代码示例 | `mcp__plugin_wpf-dev-pack_MicrosoftDocs__microsoft_code_sample_search` |
+| 代码语义搜索 / 技术调研 | `mcp__plugin_claude-code-settings_exa__get_code_context_exa` |
+| 通用网络搜索 | `mcp__tavily-mcp__tavily-search` |
+| GitHub Issue / PR 操作 | `mcp__plugin_github_github__issue_read` / `search_issues` 等 |
+| C# 符号跳转 / 引用查找 | `LSP` tool (csharp-ls 0.22.0，已安装) |
+| 获取当前时间 | `mcp__time__get_current_time(timezone="Asia/Shanghai")` |
+
+详细工具用法见 @.claude/rules/tools.md
 
 ---
 
@@ -127,5 +143,5 @@ docs/
 
 ---
 
-最后更新: 2026-03-04
-文档版本: v6.4-testing-trophy
+最后更新: 2026-03-09
+文档版本: v6.5-mcp-tools

@@ -2,7 +2,7 @@
 
 ## 概述
 
-凌隐宝堂中医诊所管理系统采用 Server/Shared/Client 三层架构。Server 层提供 RESTful API 服务，Client 层为 WPF 桌面应用，Shared 层提供两端共享的 DTO、工具类和组件。系统支持远程 (SQL Server) 和本地 (SQLite) 双模式运行，两种模式共享 Service/Repository 层代码，仅 DbContext Provider 不同。详见 [dual-mode.md](dual-mode.md)。
+凌隐宝堂中医诊所管理系统采用 Server/Shared/Client 三层架构。Server 层提供 RESTful API 服务，Client 层为 WPF 桌面应用，Shared 层提供两端共享的 DTO、工具类和组件。系统支持远程 (SQL Server) 和本地 (SQL Server LocalDB) 双模式运行，两种模式共享 Service/Repository 层代码，仅 DbContext Provider 不同。详见 [dual-mode.md](dual-mode.md)。
 
 ## 系统架构图
 
@@ -32,11 +32,11 @@ graph TB
 
     subgraph Data["数据层"]
         SQLServer["SQL Server"]
-        SQLite["SQLite"]
+        LocalDB["SQL Server LocalDB"]
     end
 
     Core_C -->|"HTTP API"| WebAPI
-    Core_C -->|"本地直连"| SQLite
+    Core_C -->|"本地直连"| LocalDB
     Modules_C --> Models
     Modules_S --> Models
     Infra --> SQLServer
@@ -55,16 +55,16 @@ src/
       LYBT.Desktop.Models/           # 客户端模型
       LYBT.Desktop.Printing/         # 打印服务
       LYBT.Desktop.Utilities/        # 工具类库
-      LYBT.Desktop.LocalData/        # 本地数据访问 (SQLite)
+      LYBT.Desktop.LocalData/        # 本地数据访问 (SQL Server LocalDB)
       LYBT.Desktop.CardReader/       # 身份证读卡器硬件集成
     Modules/                         # 业务模块 (8个)
       LYBT.Desktop.Auth/             # 认证
-      LYBT.Desktop.Consultation/     # 诊断
       LYBT.Desktop.Formula/          # 验方
       LYBT.Desktop.Herbs/            # 药材
-      LYBT.Desktop.MedicalCase/      # 医案 (含处方)
-      LYBT.Desktop.Patients/         # 患者
-      LYBT.Desktop.Sync/             # 数据同步
+      LYBT.Desktop.MedicalCase/      # 医案 (含处方+编辑状态机)
+      LYBT.Desktop.Patients/         # 患者 (含读卡器集成)
+      LYBT.Desktop.Registration/     # 挂号
+      LYBT.Desktop.Sync/             # 数据同步 (含 SyncPhase FSM)
       LYBT.Desktop.Users/            # 用户
     Roles/                           # 角色入口
       LYBT.Desktop.Admin/            # 管理员端
@@ -99,10 +99,11 @@ src/
     LYBT.Shared.Primitives/          # 基础类型和常量
     LYBT.Shared.ExceptionHandling/   # 统一异常类型定义
 
-tests/                               # 测试 (3 个项目, Testing Trophy 架构)
-    LYBT.Tests.Server/               # Server 全量测试 (1185 tests, 真实 SQL Server + Respawn, 零 mock)
-    LYBT.Tests.Desktop/              # Desktop 全量测试 (715 tests, SQLite + 真实 Repository)
+tests/                               # 测试 (4 个项目, Testing Trophy 架构)
+    LYBT.Tests.Server/               # Server 全量测试 (~1185 tests, 真实 SQL Server + Respawn, 零 mock)
+    LYBT.Tests.Desktop/              # Desktop 全量测试 (~493 tests, SQL Server LocalDB + 真实 Repository)
     LYBT.Tests.Architecture/         # 架构防护测试 (76 tests, 含 AntiMockRules)
+    LYBT.Tests.Integration/          # 集成测试 (Desktop+Server, WebApplicationFactory)
 docs/                                # 文档
 openspec/                            # OpenSpec 规范 (将废弃)
 ```
@@ -210,3 +211,5 @@ sequenceDiagram
 | 2026-02-26 | v1.1 | Sprint3-Batch5a DOC3: 标注 Consultation/Prescriptions 空壳模块; 项目数更新为 40+; 新增 Desktop.LocalData/CardReader; 新增 Shared 工具项目 (Logging/Validators/Configuration/Primitives/ExceptionHandling) |
 | 2026-02-26 | v1.2 | DOC3-15: 工具层 4 个辅助项目文档化 (Benchmarks/PerformanceTests/CompatibilityTests/TestConfiguration); tests/ 主项目列表展开 |
 | 2026-03-04 | v1.3 | Testing Trophy 重构: 5+4 项目 -> 3 项目; 辅助测试项目已删除 |
+| 2026-03-09 | v1.4 | Sprint 4: 补充 Registration 模块; Desktop 测试数更新 (482); Integration 测试项目已创建; Consultation Desktop 模块移除 (集成到 MedicalCase) |
+| 2026-03-09 | v1.5 | Sprint 5: SQLite->LocalDB 描述修正 (架构图/目录注释/测试描述); Desktop 测试数更新 (493) |

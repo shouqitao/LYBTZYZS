@@ -99,12 +99,14 @@ LYBT.Desktop.{Domain}/
 |------|--------|------|
 | Auth | Admin + Clinical | 登录、Token 管理 |
 | Users | Admin | 用户 CRUD、密码管理 |
-| Patients | Admin + Clinical | 患者 CRUD、导入导出 |
+| Patients | Admin + Clinical | 患者 CRUD、导入导出、读卡器集成 |
 | Herbs | Admin + Clinical | 药材 CRUD、分类 |
 | Formula | Admin + Clinical | 验方 CRUD、药材绑定 |
-| MedicalCase | Clinical | 医案核心 (含处方) |
-| Consultation | Clinical | 诊断编辑 (注: Desktop 端无独立 Consultation 模块，诊断编辑集成在 MedicalCase 模块内；独立 Consultation 模块仅存在于 Server 端) |
-| Sync | Clinical | 数据同步 (本地模式) |
+| MedicalCase | Clinical | 医案核心 (含处方、EditModeStateMachine) |
+| Registration | Admin + Clinical | 挂号管理 |
+| Sync | Clinical | 数据同步 (SyncPhase FSM、本地模式) |
+
+> 注: Desktop 端无独立 Consultation 模块，诊断编辑集成在 MedicalCase 模块内。
 
 ## Views 和 Controls 目录约定
 
@@ -342,6 +344,49 @@ Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱�
 
 ---
 
+## 编辑模式状态机 (EditModeStateMachine)
+
+> 对应 [US-MC-011](../02-requirements/medical-cases.md)。Sprint 4 实现。
+
+**位置**: `Modules/LYBT.Desktop.MedicalCase/`
+- `Interfaces/IEditModeStateMachine.cs`
+- `ViewModels/Components/EditModeStateMachine.cs`
+- `Models/WorkspaceEditState.cs`
+- `Models/WorkspaceEditEvent.cs`
+
+### 状态 (WorkspaceEditState)
+
+```
+ReadOnly ──BeginEdit──> Editing ──MakeChange──> DirtyEditing
+                           |                         |
+                     SaveRequest              SaveRequest
+                           └─────────> Saving <──────┘
+                                          |
+                                    SaveComplete -> ReadOnly
+                                    SaveFailed   -> DirtyEditing
+
+DirtyEditing ──LeaveRequest──> LeavingConfirming
+                                     |
+                               LeaveConfirmed -> ReadOnly
+                               LeaveCancelled -> DirtyEditing
+
+(任意状态) ──ForceLeave──> ReadOnly
+(Saving/LeavingConfirming) ──重复事件──> TransitionBlocked (reentrancy guard)
+```
+
+**6 状态**: `ReadOnly / Editing / DirtyEditing / Saving / LeavingConfirming / TransitionBlocked`
+
+**10 事件**: `BeginEdit / MakeChange / SaveRequest / SaveComplete / SaveFailed / LeaveRequest / LeaveConfirmed / LeaveCancelled / ForceLeave / Reset`
+
+### 设计要点
+
+- 转换表驱动 (`Dictionary<(State,Event), State>`)，同 AuthenticationStateMachine
+- `lock` 保证线程安全，`StateChanged` 事件在锁外触发
+- `_returnState` private field 记录 LeavingConfirming 后的回退目标 (不作为枚举值)
+- `MedicalCaseWorkspaceViewModel` 通过 `OnEditStateChanged` 响应状态变化，驱动按钮显隐和 Banner 显示
+
+---
+
 ## CardReader 集成
 
 **位置**: `Core/LYBT.Desktop.CardReader/`
@@ -357,8 +402,8 @@ Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱�
 PatientMasterDetailViewModel
     |-- ReadCardCommand
         |-- IPatientCardReaderIntegration
-            |-- FindPatientByIdNumberAsync (按身份证号查患者)
-            |-- QuickCreatePatientAsync (快速创建)
+            |-- MatchPatientAsync(CardReadResult) -> PatientMatchResult
+            |       降级链: IdNumber精确 -> Name+BirthDate模糊 -> MultipleCandidates -> NoMatch
             |-- FindOrCreatePatientAsync (查找或创建)
             |-- GetPatientDetailByIdAsync (获取患者详情)
                 |-- ICardReader
@@ -367,12 +412,18 @@ PatientMasterDetailViewModel
                     |-- DetectCardAsync
 ```
 
+**PatientMatchResult**: `MatchType (PatientMatchType) + Patient? + Candidates IReadOnlyList<>`
+
+**PatientMatchType**: `ExactMatch / FuzzyMatch / MultipleCandidates / NoMatch`
+
+**CardReaderOptions**: 从 `appsettings.json ["CardReader"]` 注入，包含设备端口、超时等硬件参数。
+
 ### 接口
 
 | 接口 | 职责 |
 |------|------|
 | ICardReader | 硬件层: 设备连接、读卡、探测，包含 Name/Vendor/Model 设备信息 |
-| IPatientCardReaderIntegration | 业务层: 患者匹配、创建、数据映射、患者详情获取 |
+| IPatientCardReaderIntegration | 业务层: 患者匹配降级链 (MatchPatientAsync)、创建、数据映射 |
 
 ### 事件
 
@@ -610,19 +661,33 @@ AccountSettingsControl 通过 `MenuManager.EditProfileCommand` 进入:
 
 > 对应 [FR-SYNC-007](../02-requirements/sync.md)。
 
-### 同步进度 UI
+### SyncPhase 状态机 (Sprint 4 实现)
 
-SyncViewModel 管理完整同步流程的 UI 状态:
+`SyncPhase` enum 驱动 SyncViewModel 行为状态 (非视觉向导):
 
 ```
-[1. 检查差异] -> [2. 解决冲突] -> [3. 执行同步] -> [4. 完成]
-       ↓                ↓                ↓              ↓
- 显示当前实体类型    冲突数量显示     进度条+当前项    结果汇总
+Idle -> CheckingDifferences -> ReviewingDifferences -> Syncing -> Completed
+                                                              \-> Failed
 ```
 
-**关键属性**: CurrentStep, CurrentEntityType, ProgressPercent, ConflictCount, SyncResults
+**关键类型**:
 
-**结果汇总**: 按实体类型分组显示 (上传 N / 下载 N / 跳过 N / 失败 N)。失败项可展开查看失败原因。
+| 类型 | 位置 | 说明 |
+|------|------|------|
+| `SyncPhase` (enum) | `LYBT.Desktop.Sync/ViewModels/SyncPhase.cs` | 6 阶段状态 |
+| `SyncResultSummary` (record) | `SyncResultSummary.cs` | per-entity 结果摘要 (上传/下载/跳过/删除/失败) |
+| `SyncRetryDescriptor` | `SyncViewModel.cs` | 工作流级别重试状态 (区别于 Polly 传输级重试) |
+| `SyncErrorCategory` (enum) | `SyncViewModel.cs` | TransientNetwork/AuthExpired/BusinessReject/ConflictChanged/Unknown |
+
+**SyncView.xaml 底栏** (3-column 布局不变，底栏增强):
+- 文本步骤指示器: `"Step 2/4: Reviewing differences"`
+- 错误状态: inline 替换底部状态区 (非 overlay)
+- 结果摘要: card-style `ItemsControl` (per-entity 分组)
+- Retry 按钮 (Primary, 失败态可见) / Reset 按钮 (Completed/Failed 可见)
+
+**关键属性**: `CurrentPhase`, `StepIndicatorText`, `ErrorCategory`, `ErrorMessage`, `ResultSummaries`, `CanRetry`, `CanReset`
+
+**WPF 注意事项**: 底栏元素默认 Visibility 必须在 `Style Setter` 中设置，不能在元素属性上设置 `Visibility="Collapsed"`，否则本地值优先级高于 Style Trigger 导致 DataTrigger 失效。
 
 ### 冲突解决 UI
 
@@ -779,3 +844,4 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 | 2026-02-10 | v1.0 | 初始版本，从 client-layer-architecture/desktop-architecture/viewmodel-conventions specs 整合 |
 | 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (FR-AUTH-009)、Token 刷新失败 (FR-AUTH-011)、客户端异常处理 (FR-ERR-003/005/008)、错误消息映射 (FR-ERR-006)、错误追踪码 (FR-ERR-007)、菜单结构 (FR-SHELL-005)、Desktop 启动诊断 (FR-SHELL-006)、账户设置 (FR-SHELL-007)、同步 UI (FR-SYNC-007)、模式切换 (FR-SYNC-008)、SQLite 加密 (NFR-SEC-004)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |
 | 2026-02-26 | v1.3 | Sprint3-Batch5a DOC3: Consultation 模块 Server-only 标注; Views/Controls 目录约定; CardReader Core 层定位说明; Core 层新增 LocalData/CardReader |
+| 2026-03-09 | v1.4 | Sprint 4: 新增 EditModeStateMachine 章节 (US-MC-011); 更新 CardReader 降级链 (MatchPatientAsync + PatientMatchType); 更新同步 UI (SyncPhase FSM + SyncResultSummary + 底栏增强); 模块清单补充 Registration; 修正 Consultation 说明 |

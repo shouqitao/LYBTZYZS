@@ -4,15 +4,17 @@
 
 系统支持远程模式 (Remote) 和本地模式 (Local) 两种运行模式。远程模式通过 HTTP API 连接 SQL Server 数据库，本地模式使用 SQL Server LocalDB 本地数据库。
 
-**目标架构 (SYNC-D02)**: 两种模式共享 Service/Repository 层代码，仅 DbContext Provider 连接字符串不同 (远程 SQL Server vs 本地 SQL Server LocalDB)。当前代码处于过渡态 (DataSource 策略模式)，将在 Sprint 4 迁移到目标架构。
+**目标架构 (SYNC-D02)**: 两种模式共享 Service/Repository 层代码，仅 DbContext Provider 连接字符串不同 (远程 SQL Server vs 本地 SQL Server LocalDB)。当前代码仍处于过渡态 (DataSource 策略模式)。LocalDB 数据库迁移已完成 (Sprint 2)，DataSource 抽象层废除延期至 v2.0。
 
 ## 目标架构 (SYNC-D02: 统一数据路径)
 
-> 决策日期: 2026-02-22 | 状态: 已确认，待实施 (Sprint 4)
+> 决策日期: 2026-02-22 | 状态: 已确认，部分实施。LocalDB 迁移完成 (Sprint 2); DataSource 抽象层废除延期至 v2.0
 
 ### 设计原则
 
 废除 IDataSource 抽象层，本地模式与远程模式共享同一套 Service/Repository 代码，仅在最底层切换 DbContext 的数据库连接。参考业界标准: Simple EMR 等同类系统。
+
+> **v1.0 实际状态**: LocalDB 数据库迁移已完成，但 DataSource 策略模式仍在使用 (5 对 Remote/Local DataSource 实现)。废除 DataSource 抽象层属于大范围重构，v1.0 时间窗口不允许，延期至 v2.0。当前过渡态功能完整且测试覆盖充分，不影响 v1.0-rc 发布。
 
 ### 架构图
 
@@ -76,7 +78,7 @@ graph TB
 
 ## 当前实现 (过渡态: DataSource 策略模式)
 
-> 以下描述当前代码的实际状态，将在 Sprint 4 迁移到目标架构后删除此章节。
+> 以下描述当前代码的实际状态。DataSource 策略模式在 v1.0 中继续使用，计划在 v2.0 迁移到目标架构后删除此章节。
 
 ### ConnectionMode 枚举
 
@@ -370,7 +372,7 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 
 ### 目标: 运行时软重启 (SYNC-D03)
 
-> 决策日期: 2026-02-22 | 状态: 已确认，待实施 (Sprint 4)
+> 决策日期: 2026-02-22 | 状态: 已确认，延期至 v2.0 实施
 
 参考 Outlook Cached Exchange Mode:
 1. 用户在设置中切换 ConnectionMode
@@ -396,8 +398,8 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 | 编号 | 问题 | 状态 | 说明 |
 |------|------|------|------|
 | SYNC-D01 | MedicalCase 同步范围 | 已确认 | 仅同步 Completed 状态，Active/Suspended 不同步 (Draft 已替换为 Suspended, MC-D20) |
-| SYNC-D02 | 统一本地/远程数据路径 | 已确认，待实施 | 废除 DataSource 策略模式，共享 Service/Repository 层，仅 DbContext 连接字符串不同。LocalDB 迁移已完成 (Sprint 2) |
-| SYNC-D03 | 运行时模式切换 | 已确认，待实施 | 软重启方案，替换 DI 中 DbContext 连接字符串 + 导航回首页 |
+| SYNC-D02 | 统一本地/远程数据路径 | 部分实施，延期 v2.0 | LocalDB 迁移已完成 (Sprint 2)。DataSource 抽象层废除延期至 v2.0 (v1.0 过渡态功能完整) |
+| SYNC-D03 | 运行时模式切换 | 已确认，延期 v2.0 | 软重启方案，替换 DI 中 DbContext 连接字符串 + 导航回首页。v1.0 维持手动修改 appsettings.json + 重启 |
 | SYNC-D04 | 冲突解决策略 | 已确认 | 简单实体 Server Wins; MedicalCase 手动选择 |
 | TBD-01 | 本地模式功能受限范围 | 已确定 | 不可用项: 自动登录 / Token刷新 / 审计日志查询 / User同步 / 服务端API导入导出。不活跃超时: 15 分钟 (可配置)。见 [auth.md](../02-requirements/auth.md) FR-AUTH-006 |
 
@@ -410,3 +412,4 @@ MedicalCase 作为系统核心聚合根，采用聚合级原子同步方案。�
 | 2026-02-19 | v1.2 | TBD-01 补充本地模式不活跃超时时间 (15分钟，可配置) |
 | 2026-02-22 | v2.0 | **架构演进**: 新增 SYNC-D01~D04 决策，标注目标架构 (统一数据路径) 和当前过渡态，重组文档结构 |
 | 2026-03-08 | v2.1 | **LocalDB 迁移**: Local 模式从 SQLite 迁移到 SQL Server LocalDB，删除 IgnoreRowVersion/ApplyDecimalConversion 适配代码 |
+| 2026-03-09 | v2.2 | **v1.0-rc 状态同步**: SYNC-D02 标注部分实施 (DataSource 废除延期 v2.0); SYNC-D03 延期 v2.0; 过渡态章节更新为 v1.0 继续使用 |

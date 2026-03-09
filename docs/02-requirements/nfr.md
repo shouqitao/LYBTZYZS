@@ -45,7 +45,7 @@
 
 | 指标 | 目标 | 说明 |
 |------|------|------|
-| 启动时间 (双击 -> 登录页) | < 5s | WPF + Prism 初始化 + SQLite 检查，非关键模块后台延迟加载 |
+| 启动时间 (双击 -> 登录页) | < 5s | WPF + Prism 初始化 + LocalDB 检查，非关键模块后台延迟加载 |
 | 页面切换 (导航到新模块) | < 1s | Prism Region 导航 + ViewModel 初始化 + 首屏数据加载 |
 | 表单保存响应 | < 2s | 含网络往返 (远程模式) 或本地写入 (本地模式) |
 | 搜索响应 (防抖后) | < 1s | 输入停止后触发搜索 -> 结果渲染完成 |
@@ -67,7 +67,7 @@
 |------|------|
 | 操作系统 | Windows 10 及以上 |
 | 运行时 | .NET 8 Desktop Runtime |
-| 磁盘 | 应用 ~100 MB + SQLite 数据库 (本地模式) |
+| 磁盘 | 应用 ~100 MB + SQL Server LocalDB 数据库 (本地模式) |
 | 网络 | 远程模式需局域网连接到 Server |
 
 > Desktop 应用典型内存占用: ~90-160 MB (WPF 框架 + Prism + 数据 + 缓存)。缓存部分 < 5 MB。
@@ -112,7 +112,7 @@
 | 数据库 | 5 年预估容量 | 说明 |
 |--------|-------------|------|
 | SQL Server (远程) | ~200MB 数据 + ~50MB 索引 | 含日志表定期清理后 |
-| SQLite (本地) | ~100MB | 同步数据子集，不含完整日志 |
+| SQL Server LocalDB (本地) | ~100MB | 同步数据子集，不含完整日志 |
 
 - **说明**: 数据量级别 (万级) 不需要分区策略或读写分离
 - **分页策略**: 默认 20 条/页，可选 [10, 20, 50, 100]，足以覆盖所有列表场景
@@ -136,15 +136,16 @@
 
 | 数据库 | 备份方式 | 频率 | 保留期 | 存储位置 |
 |--------|---------|------|--------|---------|
-| SQL Server | 自动全量备份 | 每日 | 30 天 | 服务器本地磁盘 |
-| SQLite | 应用启动时自动备份 | 每次启动 | 7 天 (最多 7 个备份文件) | 本地 Backup 目录 |
+| SQL Server (远程) | 自动全量备份 | 每日 | 30 天 | 服务器本地磁盘 |
+| SQL Server LocalDB (本地) | 登录成功后自动备份 | 每次登录 | 7 天 (最多 7 个备份文件) | `%AppData%/LYBTZYZS/Backup/` |
 
-- **SQL Server 备份**: 使用 SQL Server Agent 或维护计划，备份文件命名 `LYBTDB_{yyyyMMdd}.bak`
-- **SQLite 备份**: Desktop 应用启动时复制 `.db` 文件到 `{AppData}/LYBT/Backup/lybt_{yyyyMMdd}.db`
+- **SQL Server (远程) 备份**: 使用 SQL Server Agent 或维护计划，备份文件命名 `LYBTDB_{yyyyMMdd}.bak`
+- **SQL Server LocalDB (本地) 备份**: Desktop 本地模式登录成功后，通过 T-SQL `BACKUP DATABASE` 备份到 `%AppData%/LYBTZYZS/Backup/lybt_{yyyyMMdd}.bak`。实现: `ILocalDbBackupService` / `LocalDbBackupService` (Sprint 5 完成)
 - **验收标准**:
-  - [ ] SQL Server 备份文件可成功还原
-  - [ ] SQLite 备份在启动过程中不阻塞用户操作 (后台异步)
-  - [ ] 超过保留期的备份文件自动删除
+  - [x] SQL Server LocalDB 备份通过 BACKUP DATABASE T-SQL 执行
+  - [x] 备份在登录成功后 fire-and-forget 执行，不阻塞用户操作
+  - [x] 超过 7 天的备份文件自动删除 (保留策略)
+  - [ ] SQL Server (远程) 备份文件可成功还原 (运维手册)
 
 ### NFR-AVAIL-002: 故障恢复目标
 
@@ -209,7 +210,9 @@
 > **[延期 2026-02-21]** SQLite 字段级加密整体延期实现
 > 原因: 架构影响面大，需独立设计 EF Core Value Converter + DPAPI 密钥管理方案  |  计划: 安全加固 Epic  |  参考: NFR-01
 
-### NFR-SEC-004: SQLite 本地数据加密
+### NFR-SEC-004: 本地数据加密
+
+> **[待重新设计]** 本地模式已从 SQLite 迁移到 SQL Server LocalDB (Sprint 2)。以下基于 SQLite EF Core Value Converter 的加密方案需基于 LocalDB 重新设计。v1.0 不实现，延期至安全加固 Epic。
 
 - **策略**: 字段级加密
 - **加密范围**:
@@ -443,10 +446,10 @@ EncryptedStringConverter:
 |------|------|------|------|------|
 | NFR-D01 | API 响应时间采用四级分类 (简单/列表/聚合/导入) | 不同操作类型的合理预期不同，统一目标会导致过严或过松 | 2026-02-17 | 已确定 |
 | NFR-D02 | 并发用户目标 1-3 人 | 小型中医诊所典型规模，当前连接池 (20) 已充分冗余 | 2026-02-17 | 已确定 |
-| NFR-D03 | SQLite 采用字段级加密而非 SQLCipher | 仅 IdCardNumber/PhoneNumber 需保护；DPAPI 基础设施已有；不影响非敏感字段查询性能 | 2026-02-17 | 已确定 |
+| NFR-D03 | 本地数据采用字段级加密而非整库加密 | 仅 IdCardNumber/PhoneNumber 需保护；DPAPI 基础设施已有；不影响非敏感字段查询性能。原基于 SQLite，迁移 LocalDB 后待重新设计 | 2026-02-17 | 待重新设计 (v2.0) |
 | NFR-D04 | 安全审计日志保留 1 年 | 医疗行业常见合规要求；系统日志 90 天足以满足日常排查需求 | 2026-02-17 | 已确定 |
 | NFR-D05 | RTO=30min, RPO=24h | 诊所场景，本地模式提供即时降级兜底 | 2026-02-17 | 已确定 |
-| NFR-D06 | 数据备份: SQL Server 日备 30 天 + SQLite 启动备份 7 天 | 平衡数据安全与存储成本 | 2026-02-17 | 已确定 |
+| NFR-D06 | 数据备份: SQL Server (远程) 日备 30 天 + SQL Server LocalDB (本地) 登录备份 7 天 | 平衡数据安全与存储成本。本地备份 Sprint 5 实现 (BACKUP DATABASE T-SQL) | 2026-02-17 | 已实现 (Sprint 5) |
 | NFR-D07 | 缓存失效策略: 主动标签失效 + TTL 双保险 | 纯 TTL 不满足"修改后下次查询即更新"要求; 主动失效开销可忽略 (内存操作) | 2026-02-18 | 已确定 |
 | NFR-D08 | PrescriptionsCache 策略删除 | 处方通过 MedicalCase 聚合根访问，无独立列表端点，缓存策略为死配置 | 2026-02-18 | 已确定 |
 | NFR-D09 | 客户端推荐 8 GB 内存 | 应用典型占用 ~100-160 MB; 4 GB 可运行但紧张; 8 GB 可同时运行办公软件 | 2026-02-18 | 已确定 |
@@ -463,3 +466,4 @@ EncryptedStringConverter:
 | 2026-02-18 | v1.2 | 缓存策略完整重写: 5 个子章节 (OutputCache 策略/MemoryCache 配置/失效映射表/Desktop 端策略/内存占用估算); 删除 PrescriptionsCache (NFR-D08); 新增 NFR-PERF-003 客户端运行环境 (推荐 8GB); 并发能力编号调整为 NFR-PERF-004 |
 | 2026-02-18 | v1.3 | 新增 NFR-API-001 分页参数全局规范 (page>=1, pageSize 1-100); 各模块分页错误码统一注册 (ERR-20705/50106/60108/30602) |
 | 2026-02-21 | v1.4 | PRD vs Code 偏差分析修订: 3 项修订, 1 项延期标注 |
+| 2026-03-09 | v1.5 | LocalDB 迁移同步: NFR-AVAIL-001 更新为 LocalDB BACKUP DATABASE T-SQL; NFR-DATA-002/NFR-PERF-002 SQLite->LocalDB; NFR-SEC-004 标注待重新设计; NFR-D03/D06 状态更新 |
