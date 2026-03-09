@@ -49,13 +49,13 @@ graph TB
 
 | 项目 | 职责 | 主要内容 |
 |------|------|----------|
-| LYBT.Desktop.Contracts | 接口定义 | IApi 接口 (Refit)、IDataSource 接口 (过渡态，SYNC-D02 后废除)、IService 接口 |
+| LYBT.Desktop.Contracts | 接口定义 | IApi 接口 (Refit)、IRepository 接口 (6 个，Sprint 6 SYNC-D02 迁移)、IService 接口 |
 | LYBT.Desktop.Foundation | 基础设施 | HTTP 客户端、缓存、安全、配置、日志、ConnectionMode |
 | LYBT.Desktop.Infrastructure | WPF 服务 | DialogService、NavigationService、控件、转换器、主题 |
 | LYBT.Desktop.Models | 客户端模型 | ViewState、Item 模型、事件模型 |
-| LYBT.Desktop.Printing | 打印服务 | MedicalCase 聚合根打印能力 (v1.0: A5 处方打印模板、打印预览) |
+| LYBT.Desktop.Printing | 打印服务 | MedicalCase 聚合根打印能力 (A5/A4 处方打印模板、打印预览、PDF 导出 QuestPDF) |
 | LYBT.Desktop.Utilities | 工具类库 | 通用辅助方法 |
-| LYBT.Desktop.LocalData | 本地数据访问 | SQLite 数据库操作、本地模式 DbContext |
+| LYBT.Desktop.LocalData | 本地数据访问 | SQL Server LocalDB 操作、本地模式 DbContext、LocalXxxRepository (6 个) |
 | LYBT.Desktop.CardReader | 硬件集成 | 身份证读卡器策略模式、多厂商支持 |
 
 **依赖方向**: Shell -> Roles -> Modules -> Infrastructure -> Foundation -> Contracts
@@ -845,3 +845,4 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 | 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (FR-AUTH-009)、Token 刷新失败 (FR-AUTH-011)、客户端异常处理 (FR-ERR-003/005/008)、错误消息映射 (FR-ERR-006)、错误追踪码 (FR-ERR-007)、菜单结构 (FR-SHELL-005)、Desktop 启动诊断 (FR-SHELL-006)、账户设置 (FR-SHELL-007)、同步 UI (FR-SYNC-007)、模式切换 (FR-SYNC-008)、SQLite 加密 (NFR-SEC-004)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |
 | 2026-02-26 | v1.3 | Sprint3-Batch5a DOC3: Consultation 模块 Server-only 标注; Views/Controls 目录约定; CardReader Core 层定位说明; Core 层新增 LocalData/CardReader |
 | 2026-03-09 | v1.4 | Sprint 4: 新增 EditModeStateMachine 章节 (US-MC-011); 更新 CardReader 降级链 (MatchPatientAsync + PatientMatchType); 更新同步 UI (SyncPhase FSM + SyncResultSummary + 底栏增强); 模块清单补充 Registration; 修正 Consultation 说明 |
+| 2026-03-09 | v1.5 | Sprint 6 同步: Contracts 层 IDataSource→IRepository (6 个); LocalData 层补充 LocalXxxRepository; Printing 层补充 PDF 导出 (QuestPDF) |
