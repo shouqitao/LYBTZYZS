@@ -147,6 +147,7 @@ public partial class MedicalCaseMapper
         return new MedicalCaseDetailDto
         {
             Id = entity.Id,
+            CaseNumber = entity.CaseNumber, // AD-09 Fix: 映射 CaseNumber
             PatientId = entity.PatientId,
             PatientName = entity.PatientName,
             UserId = entity.UserId,
@@ -179,6 +180,7 @@ public partial class MedicalCaseMapper
         {
             // 基础字段
             Id = entity.Id,
+            CaseNumber = entity.CaseNumber, // AD-09 Fix: 映射 CaseNumber
             PatientId = entity.PatientId,
             PatientName = entity.PatientName,
             UserId = entity.UserId,

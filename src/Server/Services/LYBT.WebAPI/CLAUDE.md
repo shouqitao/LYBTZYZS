@@ -176,7 +176,7 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 | ArgumentException | 400 | exception.Message |
 | UnauthorizedAccessException | 401 | 未授权访问 |
 | KeyNotFoundException | 404 | 资源不存在 |
-| BusinessException | 422 | exception.Message |
+| BusinessException | 400 | exception.Message |
 | 其他 Exception | 500 | 服务器内部错误 |
 
 ## 授权策略

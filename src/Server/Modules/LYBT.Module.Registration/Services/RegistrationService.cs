@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Mapping;
 using LYBT.Shared.Models.Common;
@@ -19,14 +20,17 @@ namespace LYBT.Module.Registration.Services;
 public class RegistrationService : BaseService<RegistrationEntity>, IRegistrationService
 {
     private readonly IRegistrationRepository _repository;
+    private readonly IPatientCrossModuleService _patientCrossModule;
     private readonly RegistrationMapper _mapper = new();
 
     public RegistrationService(
         IRegistrationRepository repository,
+        IPatientCrossModuleService patientCrossModule,
         ILogger<RegistrationService> logger)
         : base(logger)
     {
         _repository = repository;
+        _patientCrossModule = patientCrossModule;
     }
 
     /// <summary>
@@ -35,6 +39,22 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
     /// </summary>
     public async Task<Result<RegistrationDetailDto>> CreateAsync(RegistrationInputDto dto)
     {
+        // AD-01 Fix: 检查患者是否被禁用
+        var patient = await _patientCrossModule.GetPatientBasicInfoAsync(dto.PatientId);
+        if (patient == null)
+        {
+            return Result<RegistrationDetailDto>.Failure(
+                GenericErrorCode.RegistrationNotFound,
+                "患者不存在");
+        }
+        if (patient.Status == CommonStatus.Disabled)
+        {
+            _logger.LogWarning("挂号创建被拒绝: 患者已禁用 PatientId={PatientId}", dto.PatientId);
+            return Result<RegistrationDetailDto>.Failure(
+                GenericErrorCode.RegistrationPatientDisabled,
+                "该患者已被禁用，无法创建挂号");
+        }
+
         // REG-70007: 检查患者是否已有等待中的挂号
         var hasDuplicate = await _repository.HasWaitingRegistrationAsync(dto.PatientId);
         if (hasDuplicate)

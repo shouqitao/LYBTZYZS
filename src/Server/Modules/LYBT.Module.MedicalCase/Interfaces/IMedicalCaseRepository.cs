@@ -96,5 +96,12 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// T5-P2-13: 处方编号自动生成
         /// </summary>
         Task<int> CountPrescriptionsByPrefixAsync(string prefix);
+
+        /// <summary>
+        /// 添加打印日志并保存（AD-04 Fix）
+        /// 通过 DbContext.Add 显式标记 PrintLog 为 Added 状态，
+        /// 避免通过导航属性添加时 EF Core 将有预设 Guid 的新实体错误标记为 Modified。
+        /// </summary>
+        Task<int> AddPrintLogAndSaveAsync(MedicalCasePrintLog printLog);
     }
 }

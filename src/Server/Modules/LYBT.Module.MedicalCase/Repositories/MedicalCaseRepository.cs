@@ -601,5 +601,23 @@ namespace LYBT.Module.MedicalCases.Repositories
 
             return result;
         }
+
+        /// <summary>
+        /// 直接保存变更（绕过 BaseRepository 的全局 RowVersion 同步）
+        /// AD-04: FreshAsync 加载的实体 OriginalValue 已经是最新的 DB 值，
+        /// BaseRepository.SaveChangesAsync 的 OriginalValue=CurrentValue 同步
+        /// 反而可能在 AppDbContext.SetAuditFields 触发 DetectChanges 后产生冲突。
+        /// </summary>
+        /// <summary>
+        /// 添加打印日志并保存（AD-04 Fix）
+        /// 通过 DbContext.Add 显式标记 PrintLog 为 Added 状态，
+        /// 避免通过导航属性添加时 EF Core 将有预设 Guid 的新实体错误标记为 Modified。
+        /// </summary>
+        public async Task<int> AddPrintLogAndSaveAsync(MedicalCasePrintLog printLog)
+        {
+            // 显式标记为 Added，避免 DetectChanges 将预设 Guid 的新实体标记为 Modified
+            _context.Set<MedicalCasePrintLog>().Add(printLog);
+            return await SaveChangesAsync();
+        }
     }
 }

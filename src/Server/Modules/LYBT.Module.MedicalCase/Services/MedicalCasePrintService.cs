@@ -8,6 +8,9 @@ namespace LYBT.Module.MedicalCases.Services
     /// <summary>
     /// 医案打印服务实现
     /// 从 MedicalCaseCommandService 拆分，负责打印回写和打印日志记录
+    /// AD-04 Fix: 使用 GetByIdWithDetailsFreshAsync 获取最新 RowVersion，
+    /// 通过 AddPrintLogAndSaveAsync 显式标记 PrintLog 为 Added 状态，
+    /// 避免 EF Core 将预设 Guid 的新实体通过导航属性添加时错误标记为 Modified。
     /// </summary>
     public class MedicalCasePrintService : BaseService<MedicalCase>, IMedicalCasePrintService
     {
@@ -34,7 +37,8 @@ namespace LYBT.Module.MedicalCases.Services
             _logger.LogInformation("[SVC] MedicalCase.RecordPrintCompleted - MedicalCaseId={MedicalCaseId} PrintType={PrintType}",
                 medicalCaseId, printType);
 
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            // AD-04 Fix: 使用 FreshAsync 获取最新 RowVersion
+            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.RecordPrintCompleted -> NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -66,14 +70,15 @@ namespace LYBT.Module.MedicalCases.Services
                 UpdatedAt = DateTime.Now
             };
 
-            medicalCase.PrintLogs.Add(printLog);
-
-            var result = await _repository.UpdateAsync(medicalCase);
+            // AD-04 Fix: 通过 Repository 显式 Add，确保 PrintLog 被标记为 Added 状态。
+            // 不使用 medicalCase.PrintLogs.Add(printLog)，因为 EF Core 的 DetectChanges
+            // 会将有预设 Guid 的新实体通过导航属性添加时错误标记为 Modified。
+            await _repository.AddPrintLogAndSaveAsync(printLog);
 
             _logger.LogInformation("[SVC] MedicalCase.RecordPrintCompleted -> Success - MedicalCaseId={MedicalCaseId} PrintVersion={PrintVersion} PrintCount={PrintCount}",
                 medicalCaseId, medicalCase.PrintVersion, medicalCase.PrintCount);
 
-            return result;
+            return medicalCase;
         }
 
         // ========== T4-S5-02: 打印日志记录 ==========
@@ -91,7 +96,8 @@ namespace LYBT.Module.MedicalCases.Services
             _logger.LogInformation("[SVC] MedicalCase.AddPrintLog - MedicalCaseId={MedicalCaseId} IsSuccess={IsSuccess}",
                 medicalCaseId, isSuccess);
 
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            // AD-04 Fix: 使用 FreshAsync 获取最新 RowVersion
+            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.AddPrintLog -> NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -122,8 +128,8 @@ namespace LYBT.Module.MedicalCases.Services
                 ErrorMessage = errorMessage
             };
 
-            medicalCase.PrintLogs.Add(printLog);
-            await _repository.UpdateAsync(medicalCase);
+            // AD-04 Fix: 显式 Add，确保 PrintLog 被标记为 Added 状态
+            await _repository.AddPrintLogAndSaveAsync(printLog);
 
             _logger.LogInformation("[SVC] MedicalCase.AddPrintLog -> Success - MedicalCaseId={MedicalCaseId} IsSuccess={IsSuccess}",
                 medicalCaseId, isSuccess);
