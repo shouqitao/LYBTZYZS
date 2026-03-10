@@ -3,7 +3,7 @@
 > **版本**: v1.0
 > **创建日期**: 2026-03-06
 > **基于**: MoSCoW 优先级排序 (user-story-map.md) + Code-PRD 审计 (2026-02-28 + 2026-03-06)
-> **审计基线**: 138 US -- 110 Implemented / 19 Partial / 2 Not Implemented / 7 New (Registration)
+> **审计基线**: 138 US -- 初始 110 Implemented / 19 Partial / 2 Not Implemented / 7 New (Registration) -> 最终 137 Done / 1 Removed
 
 ---
 
@@ -76,20 +76,20 @@
 | Shell | US-SHELL-001, 002, 003, 004, 005 | 启动/登录/会话/导航/菜单 |
 | Config | US-CFG-001, 002 | 服务端+客户端配置 |
 
-### Sprint 2: Registration 模块 + Must 补全 (8 US)
+### Sprint 2: Registration 模块 + Must 补全 (8 US) -- COMPLETE
 
 **目标**: 实现挂号管理模块，补全 Must Have
 
-| US 编号 | 模块 | 名称 | 当前状态 | 依赖 | 工作量 |
-|---------|------|------|---------|------|--------|
-| US-REG-001 | Registration | 前台创建挂号 | Not Impl | Patients + Users Done | L |
-| US-REG-002 | Registration | 医生快速看诊 | Not Impl | Patients + Users + MC Done | L |
-| US-REG-003 | Registration | 查看挂号队列 | Not Impl | US-REG-001/002 | M |
-| US-REG-004 | Registration | 前台取消挂号 | Not Impl | US-REG-001 | M |
-| US-REG-005 | Registration | 状态自动跟随医案完成 | Not Impl | US-REG-001/002 + MC | S |
-| US-REG-006 | Registration | 医案取消联动 | Not Impl | US-REG-005 | M |
-| US-FORM-002 | Formulas | 查看验方列表 | Partial | CODE-23: HerbCount 始终为 0; 移除 TotalPrice 列 (经验方不涉及价格) | S |
-| US-SYNC-008 | Sync | 模式切换 | Partial | 切换前同步检查 | M |
+| US 编号 | 模块 | 名称 | 完成状态 | 实现说明 |
+|---------|------|------|---------|---------|
+| US-REG-001 | Registration | 前台创建挂号 | Done | RegistrationsController + RegistrationService 全栈实现; EF Migration |
+| US-REG-002 | Registration | 医生快速看诊 | Done | RegistrationListViewModel 队列接诊流程 |
+| US-REG-003 | Registration | 查看挂号队列 | Done | RegistrationListView 按日期/医生/状态过滤 |
+| US-REG-004 | Registration | 前台取消挂号 | Done | CancelAsync + 权限校验 |
+| US-REG-005 | Registration | 状态自动跟随医案完成 | Done | MedicalCase 完成时联动 Registration 状态 |
+| US-REG-006 | Registration | 医案取消联动 | Done | MedicalCase 取消时联动 Registration 状态 |
+| US-FORM-002 | Formulas | 查看验方列表 | Done | CODE-23 修复: HerbCount 正确显示; TotalPrice 列已移除 |
+| US-SYNC-008 | Sync | 模式切换 | Done | 切换前同步变更检查 + pre-validation 实现 |
 
 **Sprint 2 完成 = v1.0-alpha 达成** (51/51 Must Have)
 
@@ -182,7 +182,7 @@
 | Sprint | 周期 | 重点模块 | Must | Should | Could/NFR | 目标 |
 |--------|------|---------|------|--------|-----------|------|
 | Done | - | 全模块 | 43 | 37 | 30 | 审计确认 |
-| Sprint 2 | W1-W2 | Registration + Formulas + Sync | 8 | 0 | 0 | **v1.0-alpha** (Must 100%) |
+| Sprint 2 | W1-W2 | Registration + Formulas + Sync | 8 | 0 | 0 | **COMPLETE** **v1.0-alpha** (Must 100%) |
 | Sprint 3 | W3-W4 | MC + Printing + Herbs + Auth + REG | 0 | 9 | 0 | **COMPLETE** (2026-03-08) |
 | Sprint 4 | W5-W6 | Sync + CardReader + MC | 0 | 5 | 0 | **COMPLETE** (2026-03-09) **v1.0-beta** |
 | Sprint 5 | W7 | Error + Shell + Backup | 0 | 0 | 2+1NFR | **COMPLETE** (2026-03-09) **v1.0-rc** |
@@ -304,3 +304,4 @@
 | 2026-03-08 | v1.2 | Sprint 3 完成 (9 US); CODE-08/11/22/24/36/37 关闭; 审计项更新状态列 |
 | 2026-03-09 | v1.3 | Sprint 4 完成 (5 US) v1.0-beta 达成; Sprint 5 完成 (2 US + NFR-AVAIL-001) v1.0-rc 达成; CODE-25/CODE-21 关闭; 审计项全部清零 |
 | 2026-03-09 | v1.4 | Sprint 6 完成: SYNC-D02 DataSource 废除 + SYNC-D03 运行时切换 + D1/D2/C2/D3 四项 v2.0 功能; 全部技术债务清零; 1654 tests 全通过 |
+| 2026-03-09 | v1.5 | Sprint 2 状态修正: 8 US 全部标记 Done + COMPLETE; 审计基线更新为最终状态; 时间线视图 Sprint 2 添加 COMPLETE 标记 |

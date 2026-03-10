@@ -280,3 +280,7 @@ update_client_readmes_detailed.py
 
 # Git worktrees
 .worktrees/
+
+# Ralph-Plan loop
+.claude/ralph-plan-state.local
+.claude/ralph-plan-logs/

@@ -255,10 +255,10 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 | 电子病历 (EMR) 标准对接 | 标准对接成本高，v2.0+ 考虑 |
 | 移动端 (iOS/Android) | 仅支持 Windows 桌面端 |
 | MedicalCase 数据同步 | 聚合根多表级联同步复杂度极高，独立 Epic 规划 |
-| PDF 处方导出 | v2.0 规划 (PdfSharp 或 XPS->PDF) |
+| ~~PDF 处方导出~~ | ~~v2.0 规划~~ **已完成** (Sprint 6, QuestPDF 2025.4.0) |
 | 自动同步提示 | v2.0 规划 (NetworkStatusService) |
-| 诊所信息配置化 | v2.0 规划 (替代硬编码) |
-| SQLite 字段级加密 | v2.0 规划 (AES-256 + DPAPI) |
+| ~~诊所信息配置化~~ | ~~v2.0 规划~~ **已完成** (Sprint 6, clinic-settings.json + reloadOnChange 热更新) |
+| LocalDB 字段级加密 | v2.0 规划 (AES-256 + DPAPI，基于 LocalDB 重新设计) |
 
 ### 8.2 v2.0 路线图
 
@@ -274,7 +274,7 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 |------|------|---------|
 | .NET 8 LTS | 运行时，2026-11 EOL | 低 (LTS 周期内) |
 | SQL Server | 远程模式数据库 | 低 (成熟稳定) |
-| SQLite | 本地模式数据库 (待迁移到 SQL Server LocalDB) | 中 (SYNC-D02 待实施) |
+| SQL Server LocalDB | 本地模式数据库 (SYNC-D02 已完成迁移) | 低 |
 | Prism 9.0 | WPF MVVM 框架 | 低 |
 | HandyControl | WPF UI 控件库 | 低 |
 | 华大 HD100 读卡器 | 身份证读卡硬件 | 中 (单一硬件供应商) |
@@ -283,9 +283,9 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 
 | 风险 | 影响 | 缓解措施 | 状态 |
 |------|------|---------|------|
-| SYNC-D02 双模式重构 | 废弃 IDataSource 层，统一 Service/Repository | 已设计 (Sprint 4 实施)，仅切换 DbContext Provider | 规划中 |
-| 本地模式 SQLite -> LocalDB 迁移 | 消除 SQL 方言差异 | 随 SYNC-D02 统一处理 | 规划中 |
-| Code-PRD 偏差 | 28 个 OPEN 项 (2026-02-28 审计) | 持续审计 + Sprint 内修复 | 治理中 |
+| SYNC-D02 双模式重构 | 废弃 IDataSource 层，统一 Service/Repository | Factory + Dual Repository 模式; 6 个 Repository 接口迁移到 Contracts | **已完成** (Sprint 6) |
+| 本地模式 SQLite -> LocalDB 迁移 | 消除 SQL 方言差异 | 随 SYNC-D02 统一迁移到 SQL Server LocalDB | **已完成** (Sprint 6) |
+| Code-PRD 偏差 | 28 个 OPEN 项 (2026-02-28 审计) | 持续审计 + Sprint 内修复 | **已关闭** (Sprint 5 审计项清零) |
 | 华大 HD100 读卡器停产/驱动不兼容 | 身份证读取功能不可用 | CardReader 模块接口抽象化，支持替换硬件驱动 | 监控中 |
 | 单人开发连续性 | 知识集中在个人，项目延续性风险 | PRD + 架构文档体系完善；代码测试覆盖率 80%+；关键决策记录在 docs/ | 持续缓解 |
 
@@ -341,3 +341,4 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 | 2026-03-06 | v1.3 | S7 新增 7.6 发布路线图链接 (roadmap.md) |
 | 2026-03-06 | v1.4 | S9 补充运营风险 (读卡器/单人开发); S10 关闭 OQ-04 (Registration 纳入 v1.0) + OQ-06 (CRITICAL 对齐 roadmap) |
 | 2026-03-06 | v1.5 | 新增 Registration 模块 (7 US: 6 Must + 1 Should); 总量 131->138 US, 14->15 模块 |
+| 2026-03-09 | v1.6 | S8 Out of Scope: PDF 导出 + 诊所信息配置化标记已完成 (Sprint 6); SQLite 更新为 LocalDB; S9 Risks: SYNC-D02/LocalDB 迁移/Code-PRD 偏差状态更新为已完成/已关闭 |
