@@ -76,6 +76,24 @@ public abstract class JourneyTestBase
         return (response, default);
     }
 
+    /// <summary>
+    /// Reads error response body from a failed API call.
+    /// Returns (Message, StatusCode) for assertion.
+    /// </summary>
+    protected async Task<(string Message, int StatusCode)> ReadErrorAsync(HttpResponseMessage response)
+    {
+        var content = await response.Content.ReadAsStringAsync();
+        try
+        {
+            var body = JsonSerializer.Deserialize<ApiResponse<object>>(content, JsonOptions);
+            return (body?.Message ?? content, (int)response.StatusCode);
+        }
+        catch
+        {
+            return (content, (int)response.StatusCode);
+        }
+    }
+
     protected static string UniqueName(string prefix)
         => $"{prefix}_{Guid.NewGuid():N}"[..20];
 
