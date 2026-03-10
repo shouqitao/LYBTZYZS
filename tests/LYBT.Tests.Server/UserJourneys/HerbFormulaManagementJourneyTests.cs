@@ -20,12 +20,12 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// Create herbs, edit price, toggle status, create formulas with
 /// deferred binding, share formulas across doctors, use formula herbs in prescription.
 /// </summary>
-[Collection("Server")]
-public sealed class HerbFormulaManagementJourneyTests : JourneyTestBase
+[Collection("HerbFormula")]
+public sealed class HerbFormulaManagementJourneyTests : JourneyTestBase<HerbFormulaFixture>
 {
     private const string SecondDoctorPassword = "TestDoctor2025@";
 
-    public HerbFormulaManagementJourneyTests(ServerFixture fixture) : base(fixture) { }
+    public HerbFormulaManagementJourneyTests(HerbFormulaFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task HerbFormulaManagement_Full_Journey()

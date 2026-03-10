@@ -8,14 +8,20 @@ using Xunit;
 namespace LYBT.Tests.Server.UserJourneys;
 
 /// <summary>
-/// Base class for UserJourney tests.
-/// Each journey is a single [Fact] method containing all steps sequentially.
-/// Resets DB once at the start, then steps build on prior state via local variables.
+/// Generic base class for UserJourney tests.
+/// Each journey is a single [Fact] containing all steps sequentially.
+///
+/// Usage:
+///   [Collection("Clinical")]
+///   public class MyJourney : JourneyTestBase&lt;ClinicalFixture&gt;
+///   {
+///       public MyJourney(ClinicalFixture fixture) : base(fixture) { }
+///   }
 /// </summary>
-[Collection("Server")]
-public abstract class JourneyTestBase
+public abstract class JourneyTestBase<TFixture>
+    where TFixture : ServerFixture
 {
-    protected ServerFixture Fixture { get; }
+    protected TFixture Fixture { get; }
     protected HttpClient AnonymousClient => Fixture.AnonymousClient;
 
     protected static readonly JsonSerializerOptions JsonOptions = new()
@@ -24,7 +30,7 @@ public abstract class JourneyTestBase
         Converters = { new JsonStringEnumConverter() }
     };
 
-    protected JourneyTestBase(ServerFixture fixture)
+    protected JourneyTestBase(TFixture fixture)
     {
         Fixture = fixture;
     }
@@ -76,10 +82,6 @@ public abstract class JourneyTestBase
         return (response, default);
     }
 
-    /// <summary>
-    /// Reads error response body from a failed API call.
-    /// Returns (Message, StatusCode) for assertion.
-    /// </summary>
     protected async Task<(string Message, int StatusCode)> ReadErrorAsync(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();

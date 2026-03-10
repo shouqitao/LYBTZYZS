@@ -18,10 +18,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// Doctor clinical journey: login, query patients, create medical case,
 /// save diagnosis, add prescription, complete case, admin views case.
 /// </summary>
-[Collection("Server")]
-public sealed class DoctorClinicalJourneyTests : JourneyTestBase
+[Collection("Clinical")]
+public sealed class DoctorClinicalJourneyTests : JourneyTestBase<ClinicalFixture>
 {
-    public DoctorClinicalJourneyTests(ServerFixture fixture) : base(fixture) { }
+    public DoctorClinicalJourneyTests(ClinicalFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task DoctorClinical_Full_Journey()

@@ -11,10 +11,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// <summary>
 /// Patient management journey: create, update, toggle status, check references, delete.
 /// </summary>
-[Collection("Server")]
-public sealed class PatientManagementJourneyTests : JourneyTestBase
+[Collection("Clinical")]
+public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalFixture>
 {
-    public PatientManagementJourneyTests(ServerFixture fixture) : base(fixture) { }
+    public PatientManagementJourneyTests(ClinicalFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task PatientManagement_Full_Journey()

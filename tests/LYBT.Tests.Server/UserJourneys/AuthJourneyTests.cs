@@ -11,10 +11,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// <summary>
 /// Auth journey: login, token validation, refresh, logout, anonymous access denial.
 /// </summary>
-[Collection("Server")]
-public sealed class AuthJourneyTests : JourneyTestBase
+[Collection("Auth")]
+public sealed class AuthJourneyTests : JourneyTestBase<AuthFixture>
 {
-    public AuthJourneyTests(ServerFixture fixture) : base(fixture) { }
+    public AuthJourneyTests(AuthFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task Auth_Full_Journey()

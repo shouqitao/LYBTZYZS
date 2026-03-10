@@ -1,83 +1,102 @@
-# Sprint 6: DataSource 重构 + v2.0 功能提前
+# Task Plan: Test Cleanup + PRD-Driven Refactoring
 
 ## Goal
 
-废除 DataSource 抽象层 (SYNC-D02)，实现运行时模式切换 (SYNC-D03)，同时完成 4 项功能增强 (诊所配置化/PDF导出/照片加密/草稿水印)。
+清理旧测试、迁移 UserJourneys 到 DomainCollection 体系，为 Phase 2 (US Tests) 铺平道路。
 
 ## Decisions
 
-| Decision | Rationale | Source |
-|----------|-----------|--------|
-| 方案 A+ (Factory + Dual Repository) | 远程走 HTTP API、本地走 EF Core，两条路径本质不同，无法用单一 DbContext 统一 | Planner + Gemini 审核确认 |
-| IConnectionModeProvider 抽象 | DryIoc 不支持运行时替换注册，用工厂模式 + Transient 注册绕过 | Gemini 确认 |
-| Singleton 禁止直接注入 Repository | 切换模式后 Singleton 会持有旧实例，必须用 Func<T> 工厂 | Gemini 新发现 |
-| MenuManager 改注入 IConnectionModeProvider | 当前注入 ConnectionMode 枚举值 (固定)，无法响应运行时切换 | Gemini 新发现 |
-| ModeSwitchValidator 查询 ActiveConsultation | 切换时必须检查活跃医案 + 脏数据 | Gemini 新发现 |
-| D2 使用 IOptionsMonitor | 支持运行时热更新，与动态模式主题对齐 | Gemini 建议 |
+| Decision | Rationale |
+|----------|-----------|
+| 删除旧 Features/ 集成测试 | 将被 Phase 2 US 测试完全替代，旧测试设计有超时问题 |
+| 保留 UserJourneys 并迁移 | 跨角色 E2E 流程不可替代 (RBAC, BR-001/003, AD-01/04/09) |
+| 迁移到 DomainCollection | 从 [Collection("Server")] 迁移到 Auth/Clinical/HerbFormula 等，支持并行 |
+| 删除 "Server" Collection | 迁移完成后无测试使用，清除死代码 |
+| 保留 PureLogic/RateLimiting | 稳定、快速、无超时风险 |
 
 ## Phases
 
-### Phase 1: SYNC-D02 DataSource 废除
-Status: complete
+### Phase 0: Test Cleanup -- complete
 
-- [x] 1.1 创建 IConnectionModeProvider 接口
-- [x] 1.2 实现 ConnectionModeProvider
-- [x] 1.3 Singleton 依赖审计 (grep 所有注入 IDataSource/Repository 的 Singleton)
-- [x] 1.4 重构 PatientRepository (试点)
-- [x] 1.5 重构其余 5 个 Repository (Herb/Formula/MedicalCase/User/Registration)
-- [x] 1.6 重写 DataSourceRegistrationExtensions (工厂注册)
-- [x] 1.7 重构 MenuManager 注入 IConnectionModeProvider
-- [x] 1.8 更新 ModeSwitchValidator
-- [x] 1.9 删除 DataSource 文件 (~24个) + 创建 LocalRegistrationMapper
-- [x] 1.10 更新架构测试 (P01 DataSource->Repository, Entity 允许列表, Repository 接口位置验证) + Integration 测试迁移
+#### 0.1: Delete old Features/ integration tests -- complete
+删除 19 个旧集成测试文件 (保留 US_* 新测试):
+- Features/Auth/AuthIntegrationTests.cs
+- Features/Auth/AuthSmokeTests.cs
+- Features/Auth/AuthTokenAdvancedIntegrationTests.cs
+- Features/Formulas/FormulaIntegrationTests.cs
+- Features/Formulas/FormulaServiceIntegrationTests.cs
+- Features/Herbs/HerbIntegrationTests.cs
+- Features/Infrastructure/ApiResponseContractTests.cs
+- Features/Infrastructure/CorrelationIdMiddlewareIntegrationTests.cs
+- Features/Infrastructure/DiagnosticsControllerIntegrationTests.cs
+- Features/Infrastructure/HealthCheckIntegrationTests.cs
+- Features/Infrastructure/PerformanceDataSeeder.cs
+- Features/Infrastructure/PerformanceTests.cs
+- Features/MedicalCases/MedicalCaseIntegrationTests.cs
+- Features/MedicalCases/MedicalCasePermissionAndFilterTests.cs
+- Features/MedicalCases/PrescriptionAggregateTests.cs
+- Features/Patients/PatientIntegrationTests.cs
+- Features/Registration/RegistrationIntegrationTests.cs
+- Features/Sync/SyncIntegrationTests.cs
+- Features/Users/UserIntegrationTests.cs
 
-### Phase 2: SYNC-D03 运行时模式切换
-Status: complete
+#### 0.2: Migrate UserJourneys to DomainCollections -- complete
+每个 Journey 类: 改 [Collection] + 改基类为泛型 JourneyTestBase<TFixture>
 
-- [x] 2.1a 两套基础设施始终注册 (DataSourceRegistrationExtensions 重写)
-- [x] 2.1b Repository 改为工厂注册 (resolve 时根据 CurrentMode 选择实现)
-- [x] 2.1c IConnectionModeProvider 添加 SwitchModeAsync + IsSwitching + ModeSwitchResult
-- [x] 2.1d ConnectionModeProvider 实现 (验证 -> ActiveConsultation 检查 -> Region 清理 -> 切换 -> 导航首页)
-- [x] 2.1e LoggingRegistrationExtensions 始终注册两套 Logger
-- [x] 2.2 实现切换 UI (MainWindowViewModel SwitchModeCommand + SidebarControl 模式切换按钮)
-- [x] 2.3 切换前用户确认对话框 (ActiveConsultation + ModeSwitchValidator 已覆盖核心阻断场景)
-- [x] 2.4 切换遮罩层 UI (MainWindow 半透明遮罩 + IsSwitchingMode 绑定)
-- [x] 2.5 CancellationToken 传播 (SwitchModeAsync API 已支持, 命令层传播)
-- [x] 2.6 单元测试 (16 tests: 初始化/成功切换/阻断条件/验证器路由/取消/异常处理)
+| File | Old Collection | New Collection | New Base |
+|------|---------------|----------------|----------|
+| AuthJourneyTests | Server | Auth | JourneyTestBase<AuthFixture> |
+| AdminSetupJourneyTests | Server | Users | JourneyTestBase<UserFixture> |
+| BootstrapJourneyTests | Server | Users | JourneyTestBase<UserFixture> |
+| FirstVisitJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
+| ReturnVisitJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
+| DoctorClinicalJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
+| MedicalCaseEditJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
+| PatientManagementJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
+| HerbFormulaManagementJourneyTests | Server | HerbFormula | JourneyTestBase<HerbFormulaFixture> |
+| BatchOperationsJourneyTests | Server | HerbFormula | JourneyTestBase<HerbFormulaFixture> |
+| CrossNarrativeValidationTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
 
-### Phase 3: D2 诊所信息配置化
-Status: complete
+#### 0.3: Cleanup dead infrastructure -- complete
+- 删除 ServerTestCollection.cs ([Collection("Server")] 定义)
+- 移除 IntegrationTestBase 非泛型向后兼容类 (如无引用)
+- 移除 JourneyTestBase 非泛型向后兼容类 (如无引用)
 
-- [x] 3.1 扩展 ClinicSettingsOptions 模型 (LicenseNumber/Email) + 删除重复的 Infrastructure ClinicSettings POCO
-- [x] 3.2 分离 clinic-settings.json + reloadOnChange 热更新
-- [x] 3.3 重写 ClinicSettingsService (IConfiguration 热读取 + SaveSettingsAsync 持久化)
-- [x] 3.4 修复打印断链 (PrescriptionPrintHandler 注入 IClinicSettingsService)
-- [x] 3.5 SystemSettingsView 增加诊所信息配置区域 (ViewModel + XAML)
+#### 0.4: Verify compile + test -- complete
+- dotnet build
+- dotnet test (PureLogic + US_* + UserJourneys + RateLimiting 全部 PASS)
 
-### Phase 4: D1 PDF 处方导出
-Status: complete
+### Phase 1: Infrastructure Foundation -- complete (previous session)
 
-- [x] 4.1 评估 QuestPDF vs PdfSharp (QuestPDF 2025.4.0 已选定，上一会话完成)
-- [x] 4.2 实现 PDF 导出 Service (PrescriptionPdfExporter.cs 已实现，上一会话完成)
-- [x] 4.3 UI 集成 (ExportPdfCommand + 导出按钮 + PrescriptionPrintHandler.ExportPdfAsync)
+### Phase 2: Must Have US Tests (46 US) -- complete
 
-### Phase 5: C2 照片 DPAPI 加密存储
-Status: complete
+#### 2.1: Fix existing US_* test failures -- complete
+14 test failures fixed (assertion mismatches + missing DTO fields).
+Result: 100 US_* tests PASS, 871 total server tests PASS
 
-- [x] 5.1 创建 IPhotoStorageService 接口
-- [x] 5.2 DPAPI 加密实现 (11 tests)
-- [x] 5.3 集成到读卡流程 + DI 注册
+#### 2.2: Coverage audit + depth enhancement -- complete
+- PRD audit: 46 Must Have US (not 51), 45 server-testable
+- 12 US with thin coverage (1 test) identified and enhanced
+- Added 14 boundary/negative tests (8 MC + 4 REG + 2 AUTH)
+- Discovery: double-complete is idempotent (200 OK)
+Result: 114 US_* tests, 885 total server tests PASS
 
-### Phase 6: D3 草稿水印
-Status: complete
+### Phase 3: Should Have US Tests (47 server-testable) -- complete
 
-- [x] 6.1 PrescriptionPrintModel 添加 IsDraft
-- [x] 6.2 打印模板添加水印层 (4 个 XAML 模板)
-- [x] 6.3 PDF 导出器添加水印 (QuestPDF Foreground)
-- [x] 6.4 PrescriptionPrintHandler 设置 IsDraft (非 Completed = 草稿)
+Plan: `docs/plans/2026-03-10-phase3-should-have-us-tests.md`
+
+| Batch | Modules | US | Status |
+|-------|---------|-----|--------|
+| 1 | Users | 5 | complete (10 tests) |
+| 2 | Herbs + Formulas | 8 | complete (14 tests) |
+| 3 | Patients + Registration | 3 | complete (8 tests) |
+| 4 | Error Handling | 5 | complete (11 tests) |
+| 5 | MedicalCase | 8 | complete (16 tests) |
+| 6 | Sync | 7 | complete (13 tests) |
+| 7 | Auth + Config + Logging | 10 | complete (10 tests) |
 
 ## Errors Encountered
 
 | Error | Attempt | Resolution |
 |-------|---------|------------|
-| (无) | - | - |
+| (from previous session) PK_Users duplicate key | 1 | Respawn.ResetAsync before SeedBaseDataAsync |

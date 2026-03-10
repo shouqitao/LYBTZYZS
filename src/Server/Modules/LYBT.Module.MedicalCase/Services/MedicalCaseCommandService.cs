@@ -728,8 +728,27 @@ namespace LYBT.Module.MedicalCases.Services
 
             if (prescriptionDto.Items == null || !prescriptionDto.Items.Any()) return items;
 
+            var allHerbIds = prescriptionDto.Items.Select(i => i.HerbId).Distinct().ToList();
+
+            // AD-02: 过滤禁用药材，禁止加入处方
+            var disabledHerbIds = await _herbCrossModule.GetDisabledHerbIdsAsync(allHerbIds);
+            var validItems = prescriptionDto.Items;
+            if (disabledHerbIds.Count > 0)
+            {
+                var skippedNames = prescriptionDto.Items
+                    .Where(i => disabledHerbIds.Contains(i.HerbId))
+                    .Select(i => i.HerbName ?? i.HerbId.ToString())
+                    .Distinct();
+                _logger.LogWarning("[SVC] AD-02: Skipped {Count} disabled herbs from prescription: {HerbNames}",
+                    disabledHerbIds.Count, string.Join(", ", skippedNames));
+
+                validItems = prescriptionDto.Items
+                    .Where(i => !disabledHerbIds.Contains(i.HerbId))
+                    .ToList();
+            }
+
             // T2-S4-02: 批量查询缺失UnitPrice的药材价格
-            var herbIdsNeedingPrice = prescriptionDto.Items
+            var herbIdsNeedingPrice = validItems
                 .Where(i => i.UnitPrice <= 0)
                 .Select(i => i.HerbId)
                 .Distinct()
@@ -743,7 +762,7 @@ namespace LYBT.Module.MedicalCases.Services
                     herbPrices.Count);
             }
 
-            foreach (var itemDto in prescriptionDto.Items)
+            foreach (var itemDto in validItems)
             {
                 var unitPrice = itemDto.UnitPrice;
                 if (unitPrice <= 0 && herbPrices != null && herbPrices.TryGetValue(itemDto.HerbId, out var herbPrice))

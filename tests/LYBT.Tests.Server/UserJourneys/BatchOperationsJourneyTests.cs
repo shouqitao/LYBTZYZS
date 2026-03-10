@@ -12,10 +12,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// Batch operations journey: create multiple herbs, create formula using them,
 /// check herb reference blocks delete, export herbs.
 /// </summary>
-[Collection("Server")]
-public sealed class BatchOperationsJourneyTests : JourneyTestBase
+[Collection("HerbFormula")]
+public sealed class BatchOperationsJourneyTests : JourneyTestBase<HerbFormulaFixture>
 {
-    public BatchOperationsJourneyTests(ServerFixture fixture) : base(fixture) { }
+    public BatchOperationsJourneyTests(HerbFormulaFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task BatchOperations_Full_Journey()

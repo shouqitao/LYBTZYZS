@@ -16,12 +16,12 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// SysAdmin creates users (Admin/Doctor/Receptionist), verifies role-based permissions,
 /// creates herbs with PinYin auto-generation, creates formulas, and validates health endpoint.
 /// </summary>
-[Collection("Server")]
-public sealed class BootstrapJourneyTests : JourneyTestBase
+[Collection("Users")]
+public sealed class BootstrapJourneyTests : JourneyTestBase<UserFixture>
 {
     private const string TestPassword = "TestBootstrap2025@";
 
-    public BootstrapJourneyTests(ServerFixture fixture) : base(fixture) { }
+    public BootstrapJourneyTests(UserFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task Bootstrap_Full_Journey()

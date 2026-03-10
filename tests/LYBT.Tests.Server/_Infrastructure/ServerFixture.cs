@@ -31,9 +31,17 @@ namespace LYBT.Tests.Server.Infrastructure;
 /// - Seeds base data (sysadmin, admin, doctor) through production code paths
 /// - Authenticates via real login endpoint (POST /api/v1/auth/login)
 /// </summary>
-public sealed class ServerFixture : IAsyncLifetime
+public class ServerFixture : IAsyncLifetime
 {
+    /// <summary>
+    /// Serialize concurrent WebApplicationFactory creation across all fixture instances.
+    /// Prevents "The logger is already frozen" race condition when multiple
+    /// DomainFixture collections initialize in parallel.
+    /// </summary>
+    private static readonly SemaphoreSlim InitGate = new(1, 1);
+
     private readonly LocalSqlServerProvider _dbProvider = new();
+    protected WebApplicationFactory<Program> Factory => _factory;
     private WebApplicationFactory<Program> _factory = null!;
     private Respawner _respawner = null!;
 
@@ -63,26 +71,35 @@ public sealed class ServerFixture : IAsyncLifetime
         // 1. Create unique test database
         await _dbProvider.InitializeAsync();
 
-        // 2. Build WebApplicationFactory with dynamic connection string
-        _factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.UseEnvironment("Test");
-
-                // Inject dynamic connection string via configuration
-                builder.UseSetting(
-                    "ConnectionStrings:DefaultConnection",
-                    _dbProvider.ConnectionString);
-
-                builder.ConfigureServices(services =>
+        // 2. Serialize WebApplicationFactory creation to prevent
+        //    "The logger is already frozen" race condition
+        await InitGate.WaitAsync();
+        try
+        {
+            _factory = new WebApplicationFactory<Program>()
+                .WithWebHostBuilder(builder =>
                 {
-                    // Remove all background services to avoid interference
-                    RemoveHostedServices(services);
-                });
-            });
+                    builder.UseEnvironment("Test");
 
-        // 3. Run migrations
-        await MigrateAsync();
+                    // Inject dynamic connection string via configuration
+                    builder.UseSetting(
+                        "ConnectionStrings:DefaultConnection",
+                        _dbProvider.ConnectionString);
+
+                    builder.ConfigureServices(services =>
+                    {
+                        // Remove all background services to avoid interference
+                        RemoveHostedServices(services);
+                    });
+                });
+
+            // 3. Run migrations (inside gate to avoid concurrent DB ops during startup)
+            await MigrateAsync();
+        }
+        finally
+        {
+            InitGate.Release();
+        }
 
         // 4. Create Respawner
         await using var connection = new SqlConnection(_dbProvider.ConnectionString);
@@ -95,7 +112,9 @@ public sealed class ServerFixture : IAsyncLifetime
             TablesToIgnore = [new Respawn.Graph.Table("__EFMigrationsHistory")]
         });
 
-        // 5. Seed base data
+        // 5. Reset any data seeded by app startup (e.g., DatabaseInitializationService),
+        //    then seed our own test data with known credentials
+        await _respawner.ResetAsync(connection);
         await SeedBaseDataAsync();
 
         // 6. Create anonymous client
@@ -220,98 +239,46 @@ public sealed class ServerFixture : IAsyncLifetime
     }
 
     /// <summary>
-    /// Seeds base test data:
-    /// 1. sysadmin (SuperAdmin) - created via DatabaseInitializationService path
-    /// 2. admin (Admin) - created directly in DB
-    /// 3. doctor (Doctor) - created directly in DB
-    ///
-    /// We seed directly to the database (like the existing WebApiFixture) because:
-    /// - DatabaseInitializationService.EnsureSystemAdminExistsAsync is private
-    /// - Creating users via API requires authentication (chicken-and-egg problem)
-    /// - Direct seeding is faster and more reliable for test setup
+    /// Seeds base test data after Respawn reset.
+    /// Post-Respawn the DB is empty -- use direct Add (no Upsert needed).
     /// </summary>
     private async Task SeedBaseDataAsync()
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        // Seed sysadmin (SuperAdmin) - matches production DatabaseInitializationService behavior
-        await UpsertUserAsync(db,
-            id: Guid.Empty, // sysadmin may have Guid.Empty or Guid.NewGuid(); use Empty for consistency
-            userName: "sysadmin",
-            realName: "系统管理员",
-            role: UserRole.SuperAdmin,
-            email: "admin@lybt.com",
-            password: SysAdminPassword);
-
-        // Seed admin
-        await UpsertUserAsync(db,
-            id: AdminUserId,
-            userName: "admin",
-            realName: "测试管理员",
-            role: UserRole.Admin,
-            email: "admin-test@lybt.com",
-            password: AdminPassword);
-
-        // Seed doctor
-        await UpsertUserAsync(db,
-            id: DoctorUserId,
-            userName: "doctor",
-            realName: "测试医生",
-            role: UserRole.Doctor,
-            email: "doctor-test@lybt.com",
-            password: DoctorPassword);
+        db.Set<User>().AddRange(
+            CreateUser(Guid.NewGuid(), "sysadmin", "系统管理员",
+                UserRole.SuperAdmin, "admin@lybt.com", SysAdminPassword),
+            CreateUser(AdminUserId, "admin", "测试管理员",
+                UserRole.Admin, "admin-test@lybt.com", AdminPassword),
+            CreateUser(DoctorUserId, "doctor", "测试医生",
+                UserRole.Doctor, "doctor-test@lybt.com", DoctorPassword)
+        );
 
         await db.SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Upsert a user into the database.
-    /// Uses IgnoreQueryFilters() to handle soft-deleted records (EF Core 8 global filter caveat).
-    /// Uses PasswordHelper.HashPassword() for production-compatible password hashing.
-    /// </summary>
-    private static async Task UpsertUserAsync(
-        AppDbContext db,
-        Guid id,
-        string userName,
-        string realName,
-        UserRole role,
-        string email,
-        string password)
+    private static User CreateUser(
+        Guid id, string userName, string realName,
+        UserRole role, string email, string password)
     {
-        var existing = await db.Set<User>()
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Id == id);
-
-        if (existing != null)
+        var now = DateTime.UtcNow;
+        return new User
         {
-            existing.UserName = userName;
-            existing.RealName = realName;
-            existing.Role = role;
-            existing.Email = email;
-            existing.Status = CommonStatus.Enabled;
-            existing.IsDeleted = false;
-            existing.PasswordHash = PasswordHelper.HashPassword(password, role);
-            existing.UpdatedAt = DateTime.UtcNow;
-        }
-        else
-        {
-            db.Set<User>().Add(new User
-            {
-                Id = id == Guid.Empty ? Guid.NewGuid() : id,
-                UserName = userName,
-                RealName = realName,
-                Role = role,
-                Email = email,
-                Status = CommonStatus.Enabled,
-                PasswordHash = PasswordHelper.HashPassword(password, role),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                CreatedBy = Guid.Empty,
-                UpdatedBy = Guid.Empty,
-                IsDeleted = false
-            });
-        }
+            Id = id,
+            UserName = userName,
+            RealName = realName,
+            Role = role,
+            Email = email,
+            Status = CommonStatus.Enabled,
+            PasswordHash = PasswordHelper.HashPassword(password, role),
+            CreatedAt = now,
+            UpdatedAt = now,
+            CreatedBy = Guid.Empty,
+            UpdatedBy = Guid.Empty,
+            IsDeleted = false
+        };
     }
 
     private static void RemoveHostedServices(IServiceCollection services)

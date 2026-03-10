@@ -19,4 +19,7 @@ public interface IHerbCrossModuleService
 
     /// <summary>批量获取药材单价（用于处方项UnitPrice自动填充）</summary>
     Task<Dictionary<Guid, decimal>> GetHerbPricesAsync(IEnumerable<Guid> herbIds);
+
+    /// <summary>从给定的药材ID中筛选出已禁用的药材ID（AD-02: 禁用药材不可加入处方）</summary>
+    Task<HashSet<Guid>> GetDisabledHerbIdsAsync(IEnumerable<Guid> herbIds);
 }

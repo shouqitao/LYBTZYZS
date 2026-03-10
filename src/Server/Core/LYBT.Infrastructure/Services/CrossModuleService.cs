@@ -55,20 +55,31 @@ public class CrossModuleService :
         if (ids.Count == 0)
             return new Dictionary<Guid, PatientBasicDto>();
 
-        var patients = await _context.Patients
-            .AsNoTracking()
-            .Where(p => ids.Contains(p.Id) && !p.IsDeleted)
-            .Select(p => new PatientBasicDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Gender = p.Gender,
-                Phone = p.PhoneNumber,
-                Status = p.Status  // T5-P2-09
-            })
-            .ToListAsync();
+        // OPENJSON-COMPAT: 逐个查询避免 EF Core 8 List<Guid>.Contains() 生成 OPENJSON WITH 语法
+        // SQL Server 兼容级别 < 130 不支持此语法
+        var result = new Dictionary<Guid, PatientBasicDto>();
+        foreach (var patientId in ids)
+        {
+            var patient = await _context.Patients
+                .AsNoTracking()
+                .Where(p => p.Id == patientId && !p.IsDeleted)
+                .Select(p => new PatientBasicDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Gender = p.Gender,
+                    Phone = p.PhoneNumber,
+                    Status = p.Status  // T5-P2-09
+                })
+                .FirstOrDefaultAsync();
 
-        return patients.ToDictionary(p => p.Id);
+            if (patient != null)
+            {
+                result[patient.Id] = patient;
+            }
+        }
+
+        return result;
     }
 
     /// <inheritdoc />
@@ -155,10 +166,49 @@ public class CrossModuleService :
         var idList = herbIds.ToList();
         if (idList.Count == 0) return new Dictionary<Guid, decimal>();
 
-        return await _context.Herbs
-            .AsNoTracking()
-            .Where(h => idList.Contains(h.Id) && !h.IsDeleted)
-            .ToDictionaryAsync(h => h.Id, h => h.Price);
+        // OPENJSON-COMPAT: 逐个查询避免 EF Core 8 List<Guid>.Contains() 生成 OPENJSON WITH 语法
+        // SQL Server 兼容级别 < 130 不支持此语法
+        var result = new Dictionary<Guid, decimal>();
+        foreach (var herbId in idList)
+        {
+            var herb = await _context.Herbs
+                .AsNoTracking()
+                .Where(h => h.Id == herbId && !h.IsDeleted)
+                .Select(h => new { h.Id, h.Price })
+                .FirstOrDefaultAsync();
+
+            if (herb != null)
+            {
+                result[herb.Id] = herb.Price;
+            }
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<HashSet<Guid>> GetDisabledHerbIdsAsync(IEnumerable<Guid> herbIds)
+    {
+        var idList = herbIds.ToList();
+        if (idList.Count == 0) return new HashSet<Guid>();
+
+        // AD-02: 逐个查询避免 EF Core 8 OPENJSON WITH 语法在低版本 SQL Server 上的兼容性问题
+        var disabledIds = new HashSet<Guid>();
+        foreach (var herbId in idList)
+        {
+            var herb = await _context.Herbs
+                .AsNoTracking()
+                .Where(h => h.Id == herbId && !h.IsDeleted)
+                .Select(h => new { h.Id, h.Status })
+                .FirstOrDefaultAsync();
+
+            if (herb != null && herb.Status == Shared.Models.Enums.CommonStatus.Disabled)
+            {
+                disabledIds.Add(herb.Id);
+            }
+        }
+
+        return disabledIds;
     }
 
     #endregion

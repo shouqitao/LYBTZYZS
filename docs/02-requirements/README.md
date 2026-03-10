@@ -27,6 +27,7 @@
 | 挂号管理 | [registration.md](registration.md) | US-REG-001 ~ 007 | 7 |
 | **非功能性需求** | **[nfr.md](nfr.md)** | **NFR-PERF/DATA/AVAIL/SEC** | **跨模块** |
 | **UI/UX 交互规范** | **[ui-patterns.md](ui-patterns.md)** | **UI-D01~D06** | **跨模块** |
+| **角色权限与数据归属** | **[role-permission-matrix.md](role-permission-matrix.md)** | **-** | **跨模块** |
 
 > **总计: 138 个 User Stories (15 个模块) + NFR 文档 (性能/数据量/可用性/安全)**
 >

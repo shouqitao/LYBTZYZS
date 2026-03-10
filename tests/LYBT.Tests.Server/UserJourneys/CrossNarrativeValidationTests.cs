@@ -31,10 +31,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// Note: X4 (optimistic locking) skipped because MedicalCaseInputDto
 /// has no RowVersion/ConcurrencyToken field exposed at the API level.
 /// </summary>
-[Collection("Server")]
-public sealed class CrossNarrativeValidationTests : JourneyTestBase
+[Collection("Clinical")]
+public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalFixture>
 {
-    public CrossNarrativeValidationTests(ServerFixture fixture) : base(fixture) { }
+    public CrossNarrativeValidationTests(ClinicalFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task X5_PatientDisable_BlocksCaseCreation()

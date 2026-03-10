@@ -18,10 +18,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// Medical case edit journey: setup completed case, edit after completion with reason, audit log.
 /// Note: print-completed step excluded due to known API bug (PrintLogs navigation not loaded → 500).
 /// </summary>
-[Collection("Server")]
-public sealed class MedicalCaseEditJourneyTests : JourneyTestBase
+[Collection("Clinical")]
+public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalFixture>
 {
-    public MedicalCaseEditJourneyTests(ServerFixture fixture) : base(fixture) { }
+    public MedicalCaseEditJourneyTests(ClinicalFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task MedicalCaseEdit_Full_Journey()

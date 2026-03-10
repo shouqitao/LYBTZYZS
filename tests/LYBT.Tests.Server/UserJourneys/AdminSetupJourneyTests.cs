@@ -15,12 +15,12 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// <summary>
 /// Admin setup journey: create doctor, herbs, formulas, patients, verify all queryable.
 /// </summary>
-[Collection("Server")]
-public sealed class AdminSetupJourneyTests : JourneyTestBase
+[Collection("Users")]
+public sealed class AdminSetupJourneyTests : JourneyTestBase<UserFixture>
 {
     private const string DoctorPassword = "TestNewDoctor2025@";
 
-    public AdminSetupJourneyTests(ServerFixture fixture) : base(fixture) { }
+    public AdminSetupJourneyTests(UserFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task AdminSetup_Full_Journey()

@@ -20,10 +20,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// create new case, complete workflow.
 /// Exception: print-then-edit requires EditReason.
 /// </summary>
-[Collection("Server")]
-public sealed class ReturnVisitJourneyTests : JourneyTestBase
+[Collection("Clinical")]
+public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalFixture>
 {
-    public ReturnVisitJourneyTests(ServerFixture fixture) : base(fixture) { }
+    public ReturnVisitJourneyTests(ClinicalFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task ReturnVisit_Normal_Path()
