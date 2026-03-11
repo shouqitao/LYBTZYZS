@@ -97,9 +97,47 @@
 | Phase | Status | Started | Completed |
 |-------|--------|---------|-----------|
 | Phase 1: 权限矩阵缺陷修复 | complete | 2026-03-11 | 2026-03-11 |
-| Phase 2: Journey Test 重构 | in_progress | 2026-03-11 | - |
-| Phase 3: PRD 驱动测试对齐 | pending | - | - |
+| Phase 2: Journey Test 重构 | **complete** | 2026-03-11 | 2026-03-11 |
+| Phase 3: PRD 驱动测试对齐 | **complete** | 2026-03-11 | 2026-03-11 |
 | Phase 4: 全量测试验证 | pending | - | - |
+
+---
+
+## Phase 3: PRD Must Have US 测试覆盖 (Completed)
+
+**目标**: 为 45 个 Must Have US 创建测试覆盖
+
+**执行动作**:
+1. 从 `tests/LYBT.Tests.Server/Features/_Deferred/` 移动 8 个 Must Have 测试文件到 `Features/`:
+   - US_Auth_MustHaveTests.cs
+   - US_User_MustHaveTests.cs
+   - US_Herb_MustHaveTests.cs
+   - US_Formula_MustHaveTests.cs
+   - US_Patient_MustHaveTests.cs
+   - US_MedicalCase_MustHaveTests.cs
+   - US_Registration_MustHaveTests.cs
+   - US_Sync_MustHaveTests.cs
+
+2. 运行所有 Must Have 测试验证通过
+
+**测试结果汇总**:
+
+| Module | US Count | Tests | Status |
+|--------|----------|-------|--------|
+| AUTH (US-AUTH-001/002/003/005/007/008/009/010) | 8 | 20 | Passed |
+| USER (US-USER-001~005) | 5 | 11 | Passed |
+| HERB (US-HERB-001~005) | 5 | 13 | Passed |
+| FORM (US-FORM-001~006) | 6 | 11 | Passed |
+| PAT (US-PAT-001~004) | 4 | 12 | Passed |
+| MC (US-MC-001~009,013) | 10 | 21 | Passed |
+| REG (US-REG-001~006) | 6 | 13 | Passed |
+| SYNC (US-SYNC-008) | 1 | 3 | Passed |
+| **Total** | **45** | **104** | **All Passed** |
+
+**测试执行结果**:
+```
+已通过! - 失败: 0，通过: 104，已跳过: 0，总计: 104，持续时间: 42 s
+```
 
 ---
 
@@ -113,8 +151,7 @@
 
 ## Next Step
 
-**等待用户确认优先级**:
-- 优先处理 Phase 1 (权限矩阵缺陷修复验证)
-- 或优先处理 Phase 2 (Journey Test 重构)
-
-确认后将使用 `superpowers:executing-plans` 或 `superpowers:subagent-driven-development` 开始执行。
+Phase 3 已完成。准备进入 Phase 4: 全量测试验证。
+- Task 4.1: 全量测试运行
+- Task 4.2: 测试覆盖率验证
+- Task 4.3: 文档同步

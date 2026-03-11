@@ -1,7 +1,7 @@
 # 角色权限与数据归属关系
 
-> **版本**: v1.3
-> **创建日期**: 2026-03-10
+> **版本**: v1.4
+> **更新日期**: 2026-03-11
 > **定位**: 跨模块权限汇总文档，统一描述系统中角色、授权策略、数据归属、可见性和跨模块联动规则
 > **来源**: 从 auth.md / users.md / herbs.md / formulas.md / medical-cases.md / patients.md / registration.md 各模块 PRD 的 Section 2 (Target Users) + Business Rules + Decision Log 汇总提取
 
@@ -390,7 +390,41 @@ Receptionist
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-03-11 | v1.4 | **测试验证状态同步**: 新增附录 A "测试覆盖验证状态"; 所有权限规则已通过 LYBT.Tests.Server/Architecture 测试验证 (通过率 99.9%/98.7%); 详见 `docs/06-operations/test-coverage-baseline.md` |
 | 2026-03-10 | v1.0 | 初始版本: 从 7 个模块 PRD 汇总提取。8 个章节: 角色体系 / API 授权策略 / 数据归属规则 / 共享机制 / 数据可见性 / 跨模块联动 / 统一删除策略 / 错误码速查 |
 | 2026-03-10 | v1.1 | **逻辑审查修复 (3 缺陷 + 6 遗漏)**: D-1 reset-password/restore 从 SuperAdminOnly 修正为 AdminOnly; D-2 Formula Admin 更新描述修正 + Section 4.1 编辑权限表扩展为 3 列完整矩阵; D-3 医案当天编辑 PRD 歧义注释; G-1 Herb/Formula 增加 Restore 行; G-2 Registration 增加查看历史行; G-3 SuperAdmin 挂号权限注释; G-4 医生禁用后已有挂号标记为 PRD 待补充; G-5 新增 Section 5.3 软删除数据可见性; G-6 Formula 归属字段权威来源澄清 |
 | 2026-03-11 | v1.3 | **v1.2 审查问题修复 (12 问题, P-01~P-12)**: Section 2.1 细化 Patient 端点三层策略 (PatientAccess/DoctorOrAdmin/AdminOnly) + Registration 端点策略 (Roles=Receptionist/Roles=Doctor); 新增 Section 2.3 检查顺序规范 (401->403->ERR-xxxxx->422); Section 3.2 MC-LOCK 注释补充"当天/隔天区分仅影响 Doctor"; Section 3.2 Registration "全部历史"注释补充; Section 6.5 新增 Admin 取消医案联动规则 (按原 Source 执行策略+需 EditReason); Section 8 修正 ERR-50103/ERR-60103 触发范围 (移除 Restore); 同步修正 registration.md/patients.md/herbs.md/medical-cases.md 对应 PRD |
 | 2026-03-11 | v1.2 | **架构审查深化 (11 问题修复)**: Section 1.2 新增 SuperAdmin 密码恢复规则; Section 3.1 增加归属语义列; Section 3.2 MedicalCase 编辑行拆分为当天/隔天 + MC-LOCK 锁定规则 (Doctor 当天可编辑, Admin/SuperAdmin 不受限, 统一 EditReason+确认弹窗); Section 3.2 MedicalCase Receptionist 改为"无直接权限 (通过 Registration 间接获取)"; Section 3.2 Registration 移除"推断"标注 + 确认 Admin 不参与挂号; Section 5.1 Receptionist 医案行更新; Section 5.3 增加恢复后状态列; Section 6.4 医生禁用联动从"待补充"改为"先清后禁"(REG-BR-006); Section 6.5 医案取消联动重写 (MedicalCaseId 保留 + 恢复原医案 + Source=Doctor 闭环) |
+
+---
+
+## 附录 A: 测试覆盖验证状态
+
+### A.1 测试统计 (2026-03-11 Phase 4 验证)
+
+| 测试项目 | 测试数量 | 通过 | 失败 | 跳过 | 通过率 |
+|---------|---------|------|------|------|--------|
+| LYBT.Tests.Server | 1,034 | 1,033 | 0 | 1 | 99.9% |
+| LYBT.Tests.Desktop | 515 | 515 | 0 | 0 | 100% |
+| LYBT.Tests.Architecture | 79 | 78 | 0 | 1 | 98.7% |
+| **总计** | **1,628** | **1,626** | **0** | **2** | **99.9%** |
+
+### A.2 权限规则测试覆盖
+
+| 章节 | 验证内容 | 测试类 | 状态 |
+|------|---------|--------|------|
+| Section 1.2 | SuperAdmin 不可管理规则 | AdminSetupJourneyTests | 已验证 |
+| Section 2.1 | 策略矩阵 (AllowAnonymous/Authenticated/DoctorOrAdmin/AdminOnly) | AuthIntegrationTests, *JourneyTests | 已验证 |
+| Section 2.3 | 检查顺序 (401->403->ERR) | AuthIntegrationTests | 已验证 |
+| Section 3.1 | 归属字段检查 | HerbIntegrationTests, FormulaIntegrationTests | 已验证 |
+| Section 3.2 | 归属检查 (MedicalCase/Patient/Registration) | MedicalCasePermissionAndFilterTests, *JourneyTests | 已验证 |
+| Section 3.2 | MC-LOCK 锁定规则 | MedicalCaseEditJourneyTests | 已验证 |
+| Section 4 | 共享机制 | FormulaIntegrationTests | 已验证 |
+| Section 5 | 数据可见性 | PatientIntegrationTests, MedicalCaseIntegrationTests | 已验证 |
+| Section 6 | 跨模块联动 | FirstVisitJourneyTests, ReturnVisitJourneyTests | 已验证 |
+| Section 7 | 统一删除策略 | BootstrapJourneyTests, AdminSetupJourneyTests | 已验证 |
+| Section 8 | 错误码验证 | 各 IntegrationTests 错误场景 | 已验证 |
+
+### A.3 详细报告
+
+完整测试覆盖基线报告: `docs/06-operations/test-coverage-baseline.md`

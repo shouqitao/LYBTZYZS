@@ -1,67 +1,90 @@
-# Findings: Test Cleanup + US Test Fixes
+# 测试驱动开发 - 发现记录
 
-## Phase 2 Coverage Audit (2026-03-10)
+> **创建日期**: 2026-03-11
+> **最后更新**: 2026-03-11
 
-### Must Have US Coverage Summary
+---
 
-| Module | PRD Must Have | Tests Covered | Coverage | Gap |
-|--------|-------------|--------------|---------|-----|
-| Auth | 8 | 8* | 100%* | US-AUTH-012 (Desktop UI, not server-testable) |
-| Users | 5 | 5 | 100% | - |
-| Patients | 4 | 4 | 100% | - |
-| Herbs | 5 | 5 | 100% | - |
-| Formulas | 6 | 6 | 100% | - |
-| MedicalCases | 9 | 9 | 100% | - |
-| Registration | 6 | 6 | 100% | - |
-| Config | 2 | 2 | 100% | - |
-| Sync | 1 | 1 | 100% | - |
-| **Total** | **46** | **45+1 extra** | **97.8%** | 1 Desktop-only |
+## 需求理解
 
-*Auth tests include US-AUTH-007 (Token validation, not in Must Have PRD but security-critical)
+**核心目标**:
+1. 代码实现与设计文档没有误差
+2. 功能完全按照设计完成
+3. 高效完成开发任务
 
-### US with Thin Coverage (1 test only)
+**当前项目状态**:
+- Sprint 6 已完成 (双模式/D2 诊所设置/D3 草稿水印/C2 照片加密)
+- 正在进行：权限矩阵缺陷修复 (11 个问题，D-4~G-12)
+- 测试架构：3 项目，Testing Trophy (~2021 tests)
+  - Server: 1185 tests (真实 SQL Server + Respawn，零 mock)
+  - Desktop: 760 tests (SQLite InMemory + 真实 Repository)
+  - Architecture: 78 tests (架构防护 + AntiMockRules)
 
-| US ID | Module | Current Tests | Missing Coverage |
-|-------|--------|--------------|-----------------|
-| US-AUTH-005 | Auth | 1 (happy path) | Logout with invalid token, double logout |
-| US-AUTH-009 | Auth | 1 (role info) | Missing: doctor/nurse role validation |
-| US-USER-003 | Users | 1 (update fields) | Missing: partial update, invalid data, unauthorized |
-| US-MC-002 | MedicalCases | 1 (save diagnosis) | Missing: empty diagnosis, invalid fields |
-| US-MC-003 | MedicalCases | 1 (add prescription) | Missing: empty items, invalid herb refs |
-| US-MC-004 | MedicalCases | 1 (complete case) | Missing: complete without consultation, double complete |
-| US-MC-005 | MedicalCases | 1 (cancel with reason) | Missing: cancel without reason (BR-006), cancel completed |
-| US-MC-007 | MedicalCases | 1 (print flag) | Missing: print incomplete case (BR-003) |
-| US-FORM-005 | Formulas | 1 (shared formula) | Missing: unshare, visibility check by other user |
-| US-REG-002 | Registration | 1 (get queue) | Missing: empty queue, filtered queue |
-| US-REG-003 | Registration | 1 (start visit) | Missing: start already-started, start cancelled |
-| US-REG-005 | Registration | 1 (list) | Missing: pagination, date filter |
+---
 
-**Priority**: MedicalCase tests (BR-001/003/004/006 business rules) > Registration > Auth > Others
+## 调研结果
 
-## API Status Code Mapping (discovered during test fixes)
+### 现有 Journey Tests 文件清单
 
-| Endpoint | HTTP Method | Success Status | Notes |
-|----------|-------------|---------------|-------|
-| POST /api/v1/patients | POST | 201 Created | Standard REST |
-| POST /api/v1/herbs | POST | 200 OK | Non-standard (returns Ok, not Created) |
-| POST /api/v1/medicalcases | POST | 200 OK | Non-standard (returns Ok, not Created) |
-| PUT /api/v1/medicalcases/{id}/cancel | PUT | 204 NoContent | Soft delete, no body |
-| DELETE /api/v1/medicalcases/{id} | DELETE | 204 NoContent | Soft delete, no body |
-| PUT /api/v1/registrations/{id}/cancel | PUT | 422 UnprocessableEntity | BusinessFail for not-found (not 404) |
+| 文件 | Collection | 状态 |
+|------|-----------|------|
+| AuthJourneyTests.cs | Auth | 需补全负面场景 |
+| BootstrapJourneyTests.cs | User | 已完成 |
+| AdminSetupJourneyTests.cs | User | 已完成 |
+| FirstVisitJourneyTests.cs | Clinical | 已完成 |
+| ReturnVisitJourneyTests.cs | Clinical | 已完成 |
+| MedicalCaseEditJourneyTests.cs | Clinical | 需补全边界条件 |
+| PatientManagementJourneyTests.cs | Clinical | 已完成 |
+| HerbFormulaManagementJourneyTests.cs | HerbFormula | 已完成 |
+| DoctorClinicalJourneyTests.cs | Clinical | 待删除 (冗余) |
+| CrossNarrativeValidationTests.cs | Clinical | 已完成 |
+| BatchOperationsJourneyTests.cs | HerbFormula | 已完成 |
 
-**Inconsistency**: POST endpoint status codes not unified -- Patients returns 201, others return 200.
+**缺失文件**:
+- ReceptionistJourneyTests.cs (D-4 验证)
+- RegistrationJourneyTests.cs (G-9 验证)
+- DoctorDisableJourneyTests.cs (G-11 验证)
 
-## MedicalCaseInputDto Validation Requirements
+### 测试基础设施
 
-- `PatientId` and `UserId` always required (MedicalCaseInputDtoValidator)
-- Nested `PrescriptionInputDto.MedicalCaseId` required on create (PrescriptionInputDtoValidator)
-- Test BuildUpdate/BuildPrescription must include these fields
+**基类**: `JourneyTestBase<TFixture>`
+- 提供 helper 方法：`LoginAsAdminAsync()`, `LoginAsDoctorAsync()`, `PostAsync<T>`, `PutAsync<T>`, `GetAsync<T>`, `ReadErrorAsync()`
+- 单测试方法包含完整用户旅程
 
-## UserJourneys Analysis (from Phase 0)
+**Fixtures**:
+- `ServerFixture` - 基础测试服务器
+- `AuthFixture`, `UserFixture`, `ClinicalFixture`, `HerbFormulaFixture`, `SyncFixture`, `InfraFixture` - 域名分类
 
-### Value Assessment
-| Level | Tests | Key Coverage |
-|-------|-------|-------------|
-| VERY HIGH | CrossNarrativeValidation (8), FirstVisitJourney (5), BootstrapJourney (1) | AD probes, BR-001/003, RBAC matrix |
-| HIGH | AuthJourney, DoctorClinical, HerbFormulaManagement, ReturnVisit | E2E business flows |
-| MODERATE | AdminSetup, BatchOperations, MedicalCaseEdit, PatientManagement | Simpler flows |
+**Collections** (并行执行):
+- Auth, User, Clinical, HerbFormula, Sync, Infra (6 Collection 并行)
+
+---
+
+## 技术决策
+
+| 决策 | 说明 | 来源 |
+|------|------|------|
+| TDD 原则 | RED→GREEN→REFACTOR | 技能要求 |
+| Journey Test 优先 | Layer A 优先验证端到端流程 | 测试策略 |
+| 删除冗余测试 | DoctorClinicalJourneyTests 与 FirstVisit 重叠 | 效率优化 |
+| Layer B 暂缓 | Features/ 下 111 测试移到 _Deferred/ | 优先级调整 |
+| 测试命名规范 | `US_AUTH_001_Login_WithValidCredentials_ShouldReturnToken` | PRD 对齐 |
+
+---
+
+## 风险与缓解
+
+| 风险 | 缓解措施 |
+|------|---------|
+| 测试执行时间长 | 6 Collection 并行，目标<5 分钟 |
+| 测试数据库污染 | Respawn 清理 + 独立 Database 每 Collection |
+| Mock 过度使用 | AntiMockRuleTests 架构测试强制 Server 零 mock |
+| PRD 变更不同步 | 测试命名包含 US 编号 |
+
+---
+
+## 待确认事项
+
+1. 优先级：Phase 1 (权限矩阵缺陷) vs Phase 2 (Journey Test 重构)
+2. LoginAsReceptionistAsync 方法是否存在 (需检查 ServerFixture)
+3. 04:00 边界条件的 IsLocked 逻辑是否已实现
