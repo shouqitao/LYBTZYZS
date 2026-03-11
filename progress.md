@@ -1,95 +1,120 @@
-# Progress: Test Cleanup + PRD-Driven Refactoring
+# 测试驱动开发 - 进度记录
 
-## Session: 2026-03-10 (continued)
+> **创建日期**: 2026-03-11
+> **当前 Phase**: 计划创建完成，等待用户确认优先级
 
-### Phase 0: Test Cleanup -- Complete
+---
 
-| Action | Result |
-|--------|--------|
-| Analyzed UserJourneys (Agent) | 11 test classes, 22 tests, HIGH-VERY HIGH business value |
-| Decision: keep UserJourneys | Covers RBAC, BR-001/003, AD-01/04/09, cross-role E2E |
-| Decision: delete old Features/ | 19 files to delete, replaced by Phase 2 US tests |
-| Decision: migrate to DomainCollection | All Journeys from "Server" to domain-specific collections |
-| 0.1: Delete 19 old integration tests | rm 19 files from Features/ (kept US_* new tests) |
-| 0.2: Migrate 11 UserJourneys | Auth(1), Users(2), Clinical(6), HerbFormula(2) |
-| 0.3: Cleanup dead infrastructure | Removed non-generic base classes + ServerTestCollection.cs |
-| 0.4: Build verification | 0 errors, 1 warning (CA1001) |
-| 0.4: PureLogic tests | 750 PASS |
-| 0.4: US_* + RateLimiting tests | 43 PASS |
-| 0.4: UserJourneys tests | 23 PASS (migrated to domain collections) |
-| **Phase 0 total** | **816 tests PASS, 0 failures** |
+## Session: 2026-03-11
 
-### Phase 2: US_* Test Fixes -- Complete
+### Phase 2: Journey Test 重构
 
-| Action | Result |
-|--------|--------|
-| Initial US_* test run | 100 total, 86 PASS, 14 FAIL |
-| Fix: CreatePatientAsync assertion | ShouldBeSuccessWithDataAsync -> ShouldBeCreatedWithDataAsync (POST returns 201) |
-| Fix: CreateHerbAsync assertion | Kept ShouldBeSuccessWithDataAsync (POST returns 200) |
-| Fix: CreateCaseAsync assertion | ShouldBeCreatedWithDataAsync -> ShouldBeSuccessWithDataAsync (POST returns 200) |
-| Fix: US_REG_004 assertion | Expected 404 -> 422 (BusinessFail returns UnprocessableEntity) |
-| Fix: US_MC_005 assertion | Expected 200 -> 204 (Cancel endpoint returns NoContent) |
-| Fix: BuildUpdate missing fields | Added patientId/userId params (MedicalCaseInputDtoValidator requires them) |
-| Fix: BuildPrescription missing MedicalCaseId | Added medicalCaseId param (PrescriptionInputDtoValidator requires it) |
-| Refactor: CreateCaseAsync return type | Guid -> (Guid CaseId, Guid DoctorId) tuple for downstream use |
-| Final US_* test run | **100 PASS, 0 FAIL** |
-| Full server test suite | **871 PASS, 0 FAIL, 0 SKIP** |
+| Task | Description | Status | Files Changed |
+|------|-------------|--------|---------------|
+| 2.1 | Auth & Security 负面测试 | ✅ Complete | AuthJourneyTests.cs (+3 tests) |
+| 2.2 | Chapter 1 - System Bootstrap | ✅ Complete | BootstrapJourneyTests.cs (+6 tests, 1 skipped) |
+| 2.3 | Chapter 2 - Admin Setup | ✅ Complete | AdminSetupJourneyTests.cs (+7 tests) |
+| 2.4 | Chapter 3 - Master Data | ✅ Complete | HerbFormulaManagementJourneyTests.cs (+25 tests) |
 
-### Phase 2.2: Coverage Audit + Depth Enhancement -- Complete
+**Task 2.1 详情:**
+- 添加了 `Auth_Login_NonExistentUser_Returns401` 测试
+- 添加了 `Auth_Login_DisabledUser_Returns403` 测试
+- 添加了 `Auth_Login_EmptyCredentials_Returns400` 测试
+- 所有 4 个测试通过 (原有 1 个 + 新增 3 个)
 
-| Action | Result |
-|--------|--------|
-| Coverage audit (parallel agents) | 46 PRD Must Have US, 45 server-testable, 1 Desktop-only |
-| Gap analysis | 12 US with only 1 test method identified |
-| Added MedicalCase boundary tests (8) | Empty consultation, empty prescription, complete without consultation, double complete (idempotent), cancel without reason, cancel completed, invalid state transition, print active case |
-| Added Registration boundary tests (4) | Empty queue, double start-visit, start cancelled registration, date filter |
-| Added Auth boundary tests (2) | Invalid token logout, double logout |
-| Full test suite | **885 PASS, 0 FAIL, 0 SKIP** (+14 new tests) |
+**测试验证:**
+```
+已通过! - 失败: 0，通过: 4，已跳过: 0，总计: 4
+```
 
-**Discovery**: Double-complete (US-MC-004) returns 200 OK -- API is idempotent for status transitions.
+**Task 2.2 详情:**
+- 重命名主测试方法为 `US_BOOTSTRAP_001_Full_Journey` (符合 US 编号规范)
+- 添加 PRD US 引用文档 (AUTH-001, USER-001/002, HERB-001/002, FORM-001, SYS-001/002/003)
+- 新增 6 个测试覆盖边界/负面场景:
+  - `US_USER_001_CreateUser_DuplicateUsername_ShouldFail`
+  - `US_USER_001_CreateUser_AdminCannotCreateAdmin_ShouldFail`
+  - `US_HERB_001_CreateHerb_DuplicateName_ShouldFail` (skipped - known issue)
+  - `US_AUTH_001_SysAdmin_DefaultLogin_ShouldSucceed`
+  - `US_SYS_001_002_003_HealthEndpoint_AllChecksPass`
+  - `US_USER_001_CreateUser_ReservedUsername_ShouldFail`
 
-### Phase 3: Should Have US Tests (Batch 1-2) -- Complete
+**测试验证:**
+```
+已通过! - 失败: 0，通过: 9，已跳过: 1，总计: 10
+```
 
-| Action | Result |
-|--------|--------|
-| Created US_User_ShouldHaveTests.cs | 10 tests (USER-008~012) |
-| Created US_Herb_ShouldHaveTests.cs | 8 tests (HERB-006,008,009,011) |
-| Created US_Formula_ShouldHaveTests.cs | 6 tests (FORM-008,009,010,012) |
-| Fixed ChangeProfileDto usage | Used RealName field, not DisplayName |
-| Fixed HerbDetailDto.Status | CommonStatus enum, not IsActive bool |
-| Fixed batch-import payload | HerbBatchImportInputDto wrapper required |
-| Discovery: profile update has no ownership check | Doctor can modify other users' profiles (200 OK) |
-| Full test suite | **909 PASS, 0 FAIL, 0 SKIP** (+24 ShouldHave) |
+**Task 2.3 详情:**
+- 重命名主测试方法为 `US_ADMIN_SETUP_001_Full_Journey` (符合 US 编号规范)
+- 添加 PRD US 引用文档 (USER-001/002/003/004/005/008/011, HERB-001/002, FORM-001, PAT-001/002)
+- 新增 7 个测试覆盖边界/负面场景:
+  - `US_USER_001_CreateUser_DuplicateUsername_ShouldFail`
+  - `US_USER_001_CreateUser_ReservedUsername_ShouldFail`
+  - `US_USER_001_CreateUser_AdminCannotCreateAdmin_ShouldFail`
+  - `US_USER_004_UpdateUser_ChangeDoctorRole_ShouldSucceed`
+  - `US_USER_005_DeleteUser_CannotDeleteSelf_ShouldFail`
+  - `US_USER_009_ChangePassword_OldPasswordIncorrect_ShouldFail`
+- 所有 10 个测试通过
 
-### Phase 3: Batch 5-7 (MedicalCase + Sync + Auth/Config/Logging) -- Complete
+**测试验证:**
+```
+已通过! - 失败: 0，通过: 10，已跳过: 0，总计: 10
+```
 
 | Action | Result |
 |--------|--------|
-| Created US_MedicalCase_ShouldHaveTests.cs | 16 tests (MC-008,010,011,014,015,017,018) |
-| Created US_Sync_ShouldHaveTests.cs | 13 tests (SYNC-001~007) |
-| Created US_Auth_ShouldHaveTests.cs | 6 tests (AUTH-004,006,011,013) |
-| Created US_Config_ShouldHaveTests.cs | 3 tests (CFG-003,004) |
-| Created US_Logging_ShouldHaveTests.cs | 3 tests (LOG-001,002,007) |
-| Fixed: MC-011 status transition needs consultation | Added AddConsultationAsync before transition |
-| Full test suite | **967 PASS, 0 FAIL, 0 SKIP** (+39 ShouldHave) |
+| 使用 `superpowers:writing-plans` 技能 | 创建详细实施计划 |
+| 计划文档保存 | `docs/plans/2026-03-11-test-driven-implementation-plan.md` |
+| 更新 planning-with-files 三文件 | task_plan.md / findings.md / progress.md |
+| 读取 role-permission-matrix.md | v1.3 权限矩阵，12 缺陷已修复 (P-01~P-12) |
+| 读取现有 Journey Tests | AuthJourneyTests, ReturnVisitJourneyTests, JourneyTestBase |
+| 调研测试基础设施 | 6 Collections, DomainFixtures, ServerFixture |
 
-### Phase 3: Batch 3-4 (Patient + Registration + ErrorHandling) -- Complete
+**Task 2.5 详情 (Patient Management):**
+- 重构 `PatientManagementJourneyTests.cs` 添加 PRD US 编号引用
+- 新增 15 个测试覆盖 Must Have 场景
+- 测试验证: 已通过! - 失败: 0，通过: 16，已跳过: 0，总计: 16
 
-| Action | Result |
-|--------|--------|
-| Created US_Patient_ShouldHaveTests.cs | 4 tests (PAT-005 delete ref check + PAT-013 toggle status) |
-| Created US_Registration_ShouldHaveTests.cs | 4 tests (REG-007 date range, pagination, keyword, empty) |
-| Created US_ErrorHandling_ShouldHaveTests.cs | 11 tests (ERR-001~006) |
-| Fixed: MedicalCaseBuilder.Build -> BuildCreate | Compilation error resolved |
-| Fixed: FluentAssertions Casing -> ToLowerInvariant | Compilation error resolved |
-| Full test suite | **928 PASS, 0 FAIL, 0 SKIP** (+19 ShouldHave) |
+**Task 2.7 详情 (Return Visit):**
+- 重构 `ReturnVisitJourneyTests.cs` 添加 PRD US 编号引用
+- 重命名现有测试方法添加 US 编号 (`US_PAT_002_MC_009_`, `US_MC_005_`)
+- 新增 4 个测试覆盖 US-REG-006 (G-9) 和 US-MC-018 场景:
+  - `US_REG_006_CancelMedicalCase_ReceptionistSource_RevertToWaiting` - G-9 回退场景
+  - `US_REG_006_CancelMedicalCase_DoctorSource_AutoCancelled` - 医生模式自动取消
+  - `US_MC_018_CopyHistoricalPrescription_Succeeds` - 复制历史处方
+  - `US_MC_018_CopyPrescription_DisabledHerb_Skipped` - 禁用药材跳过
+- 测试验证: 已通过! - 失败: 0，通过: 6，已跳过: 0，总计: 6
 
-### Files Modified
+**输出文件**:
+- `docs/plans/2026-03-11-test-driven-implementation-plan.md` (完整实施计划，17 Tasks)
+- `task_plan.md` (Phase 进度追踪，4 Phases)
+- `findings.md` (调研结果和发现)
+- `progress.md` (Session 日志)
 
-| File | Changes |
-|------|---------|
-| `tests/.../MedicalCases/US_MedicalCase_MustHaveTests.cs` | Fixed 6 assertion mismatches + 8 new boundary tests |
-| `tests/.../Registration/US_Registration_MustHaveTests.cs` | Fixed US_REG_004 + 4 new boundary tests |
-| `tests/.../Auth/US_Auth_MustHaveTests.cs` | 2 new boundary tests |
-| `tests/.../_Infrastructure/TestDataBuilders/MedicalCaseBuilder.cs` | Added patientId/userId to BuildUpdate, medicalCaseId to BuildPrescription |
-| `findings.md` | Coverage audit results + thin coverage analysis |
+---
+
+## Phase Progress
+
+| Phase | Status | Started | Completed |
+|-------|--------|---------|-----------|
+| Phase 1: 权限矩阵缺陷修复 | complete | 2026-03-11 | 2026-03-11 |
+| Phase 2: Journey Test 重构 | in_progress | 2026-03-11 | - |
+| Phase 3: PRD 驱动测试对齐 | pending | - | - |
+| Phase 4: 全量测试验证 | pending | - | - |
+
+---
+
+## Test Results
+
+| Test Run | Passed | Failed | Skipped | Duration |
+|----------|--------|--------|---------|----------|
+| - | - | - | - | - |
+
+---
+
+## Next Step
+
+**等待用户确认优先级**:
+- 优先处理 Phase 1 (权限矩阵缺陷修复验证)
+- 或优先处理 Phase 2 (Journey Test 重构)
+
+确认后将使用 `superpowers:executing-plans` 或 `superpowers:subagent-driven-development` 开始执行。

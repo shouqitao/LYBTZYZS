@@ -1,102 +1,89 @@
-# Task Plan: Test Cleanup + PRD-Driven Refactoring
+# Task Plan: 测试驱动开发 (TDD)
 
 ## Goal
 
-清理旧测试、迁移 UserJourneys 到 DomainCollection 体系，为 Phase 2 (US Tests) 铺平道路。
+通过 TDD 确保权限矩阵缺陷修复 (v1.3) 和 Journey Test 重构按设计完成，实现 80%+ 测试覆盖率。
+
+---
 
 ## Decisions
 
 | Decision | Rationale |
 |----------|-----------|
-| 删除旧 Features/ 集成测试 | 将被 Phase 2 US 测试完全替代，旧测试设计有超时问题 |
-| 保留 UserJourneys 并迁移 | 跨角色 E2E 流程不可替代 (RBAC, BR-001/003, AD-01/04/09) |
-| 迁移到 DomainCollection | 从 [Collection("Server")] 迁移到 Auth/Clinical/HerbFormula 等，支持并行 |
-| 删除 "Server" Collection | 迁移完成后无测试使用，清除死代码 |
-| 保留 PureLogic/RateLimiting | 稳定、快速、无超时风险 |
+| TDD 原则 | RED→GREEN→REFACTOR 循环 |
+| Journey Test 优先 | Layer A 端到端流程优先验证 |
+| 删除冗余测试 | DoctorClinicalJourneyTests 与 FirstVisit 重叠 |
+| Layer B 暂缓 | Features/ 下 111 测试移到 _Deferred/ |
+| 测试命名规范 | 包含 US 编号 (如 `US_AUTH_001_...`) |
+
+---
 
 ## Phases
 
-### Phase 0: Test Cleanup -- complete
+### Phase 1: 权限矩阵缺陷修复验证 (v1.3)
 
-#### 0.1: Delete old Features/ integration tests -- complete
-删除 19 个旧集成测试文件 (保留 US_* 新测试):
-- Features/Auth/AuthIntegrationTests.cs
-- Features/Auth/AuthSmokeTests.cs
-- Features/Auth/AuthTokenAdvancedIntegrationTests.cs
-- Features/Formulas/FormulaIntegrationTests.cs
-- Features/Formulas/FormulaServiceIntegrationTests.cs
-- Features/Herbs/HerbIntegrationTests.cs
-- Features/Infrastructure/ApiResponseContractTests.cs
-- Features/Infrastructure/CorrelationIdMiddlewareIntegrationTests.cs
-- Features/Infrastructure/DiagnosticsControllerIntegrationTests.cs
-- Features/Infrastructure/HealthCheckIntegrationTests.cs
-- Features/Infrastructure/PerformanceDataSeeder.cs
-- Features/Infrastructure/PerformanceTests.cs
-- Features/MedicalCases/MedicalCaseIntegrationTests.cs
-- Features/MedicalCases/MedicalCasePermissionAndFilterTests.cs
-- Features/MedicalCases/PrescriptionAggregateTests.cs
-- Features/Patients/PatientIntegrationTests.cs
-- Features/Registration/RegistrationIntegrationTests.cs
-- Features/Sync/SyncIntegrationTests.cs
-- Features/Users/UserIntegrationTests.cs
+**Status**: complete
 
-#### 0.2: Migrate UserJourneys to DomainCollections -- complete
-每个 Journey 类: 改 [Collection] + 改基类为泛型 JourneyTestBase<TFixture>
+| Task | Description | Test File | Status |
+|------|-------------|-----------|--------|
+| 1.1 | D-4 Receptionist 医案可见性 | ReceptionistJourneyTests.cs | [x] |
+| 1.2 | D-5 归属字段一致性 | MedicalCaseModelTests.cs | [x] |
+| 1.3 | I-2 当天可编辑边界 (04:00) | MedicalCaseEditJourneyTests.cs | [x] |
+| 1.4 | G-9 Registration 回退流程 | RegistrationJourneyTests.cs | [x] |
+| 1.5 | G-11 医生禁用后挂号处理 | DoctorDisableJourneyTests.cs | [x] |
 
-| File | Old Collection | New Collection | New Base |
-|------|---------------|----------------|----------|
-| AuthJourneyTests | Server | Auth | JourneyTestBase<AuthFixture> |
-| AdminSetupJourneyTests | Server | Users | JourneyTestBase<UserFixture> |
-| BootstrapJourneyTests | Server | Users | JourneyTestBase<UserFixture> |
-| FirstVisitJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
-| ReturnVisitJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
-| DoctorClinicalJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
-| MedicalCaseEditJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
-| PatientManagementJourneyTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
-| HerbFormulaManagementJourneyTests | Server | HerbFormula | JourneyTestBase<HerbFormulaFixture> |
-| BatchOperationsJourneyTests | Server | HerbFormula | JourneyTestBase<HerbFormulaFixture> |
-| CrossNarrativeValidationTests | Server | Clinical | JourneyTestBase<ClinicalFixture> |
+---
 
-#### 0.3: Cleanup dead infrastructure -- complete
-- 删除 ServerTestCollection.cs ([Collection("Server")] 定义)
-- 移除 IntegrationTestBase 非泛型向后兼容类 (如无引用)
-- 移除 JourneyTestBase 非泛型向后兼容类 (如无引用)
+### Phase 2: Journey Test 重构 (Chapter 0-8)
 
-#### 0.4: Verify compile + test -- complete
-- dotnet build
-- dotnet test (PureLogic + US_* + UserJourneys + RateLimiting 全部 PASS)
+**Status**: in_progress
 
-### Phase 1: Infrastructure Foundation -- complete (previous session)
+| Task | Chapter | File | Status |
+|------|---------|------|--------|
+| 2.1 | Chapter 0 - Auth & Security | AuthJourneyTests.cs (补全负面) | [x] |
+| 2.2 | Chapter 1 - System Bootstrap | BootstrapJourneyTests.cs | [ ] |
+| 2.3 | Chapter 2 - Admin Setup | AdminSetupJourneyTests.cs | [ ] |
+| 2.4 | Chapter 3 - Master Data | HerbFormulaManagementJourneyTests.cs | [ ] |
+| 2.5 | Chapter 4 - Patient Management | PatientManagementJourneyTests.cs | [x] |
+| 2.6 | Chapter 5 - First Visit | FirstVisitJourneyTests.cs | [ ] |
+| 2.7 | Chapter 6 - Return Visit | ReturnVisitJourneyTests.cs | [x] |
+| 2.8 | Chapter 7 - Medical Case Edit | MedicalCaseEditJourneyTests.cs | [x] |
+| 2.9 | Chapter 8 - Cross-Narrative Guard | CrossNarrativeValidationTests.cs | [ ] |
+| 2.10 | 删除冗余 | DoctorClinicalJourneyTests.cs (删除) | [ ] |
 
-### Phase 2: Must Have US Tests (46 US) -- complete
+---
 
-#### 2.1: Fix existing US_* test failures -- complete
-14 test failures fixed (assertion mismatches + missing DTO fields).
-Result: 100 US_* tests PASS, 871 total server tests PASS
+### Phase 3: PRD 驱动测试对齐 (45 Must Have US)
 
-#### 2.2: Coverage audit + depth enhancement -- complete
-- PRD audit: 46 Must Have US (not 51), 45 server-testable
-- 12 US with thin coverage (1 test) identified and enhanced
-- Added 14 boundary/negative tests (8 MC + 4 REG + 2 AUTH)
-- Discovery: double-complete is idempotent (200 OK)
-Result: 114 US_* tests, 885 total server tests PASS
+**Status**: pending
 
-### Phase 3: Should Have US Tests (47 server-testable) -- complete
+| Module | Must Have US | Test File | Status |
+|--------|-------------|-----------|--------|
+| AUTH | 12 | US_Auth_MustHaveTests.cs | [ ] |
+| USER | 8 | US_User_MustHaveTests.cs | [ ] |
+| HERB | 5 | US_Herb_MustHaveTests.cs | [ ] |
+| FORM | 6 | US_Formula_MustHaveTests.cs | [ ] |
+| PAT | 4 | US_Patient_MustHaveTests.cs | [ ] |
+| MC | 7 | US_MedicalCase_MustHaveTests.cs | [ ] |
+| REG | 6 | US_Registration_MustHaveTests.cs | [ ] |
+| SYNC | 3 | US_Sync_MustHaveTests.cs | [ ] |
 
-Plan: `docs/plans/2026-03-10-phase3-should-have-us-tests.md`
+---
 
-| Batch | Modules | US | Status |
-|-------|---------|-----|--------|
-| 1 | Users | 5 | complete (10 tests) |
-| 2 | Herbs + Formulas | 8 | complete (14 tests) |
-| 3 | Patients + Registration | 3 | complete (8 tests) |
-| 4 | Error Handling | 5 | complete (11 tests) |
-| 5 | MedicalCase | 8 | complete (16 tests) |
-| 6 | Sync | 7 | complete (13 tests) |
-| 7 | Auth + Config + Logging | 10 | complete (10 tests) |
+### Phase 4: 验证与完成
+
+**Status**: pending
+
+| Task | Description | Acceptance Criteria | Status |
+|------|-------------|---------------------|--------|
+| 4.1 | 全量测试运行 | Server >95%, Desktop >95%, Architecture 100% | [ ] |
+| 4.2 | 测试覆盖率验证 | 80%+ (Must Have US 100%) | [ ] |
+| 4.3 | 文档同步 | role-permission-matrix.md, test-coverage-baseline.md | [ ] |
+
+---
 
 ## Errors Encountered
 
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-| (from previous session) PK_Users duplicate key | 1 | Respawn.ResetAsync before SeedBaseDataAsync |
+| Error | Phase | Resolution | Status |
+|-------|-------|------------|--------|
+| - | - | - | - |
