@@ -33,7 +33,7 @@
 |------|---------------------|
 | SuperAdmin | CRUD 全部药材 |
 | Admin | CRUD 全部药材 |
-| Doctor | 查看药材、创建药材 |
+| Doctor | 创建药材; 编辑/删除/启用/禁用自己创建的药材; 查看全部药材 |
 | Receptionist | 无权限 |
 
 > 端点受 `DoctorOrAdmin` 策略保护。Update/Delete/ToggleStatus 包含所有权检查: Admin/SuperAdmin 可操作全部，Doctor 仅可操作自己创建的数据。
@@ -219,7 +219,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 - [ ] Doctor 操作他人创建的药材 → 返回 403 (ERR-50103)
 
 **Business Rules:**
-1. **引用检查: 有处方引用 (PrescriptionItem) 的药材禁止删除，返回 422，建议使用禁用功能** (BR-DEL-001)
+1. **引用检查: 有处方引用 (PrescriptionItem) 或验方引用 (FormulaItem) 的药材禁止删除，返回 422，建议使用禁用功能** (BR-DEL-001, HERB-D03)
 2. 无引用关系时执行软删除，数据保留
 3. 统一所有权检查
 

@@ -33,7 +33,7 @@
 |------|---------------------|
 | SuperAdmin | CRUD 全部患者 + 状态管理 (启用/禁用) |
 | Admin | CRUD 全部患者 + 状态管理 (启用/禁用) |
-| Doctor | CRUD 全部患者 (可见禁用患者，列表标注状态) |
+| Doctor | 创建/查看/更新/删除全部患者 (Restore 为 Admin-only); 可见禁用患者，列表标注状态 |
 | Receptionist | 创建、查看列表/详情、更新患者 (CRU，无删除权限; 自动过滤禁用患者) |
 
 > Doctor/Admin 端点受 `DoctorOrAdmin` 策略保护；Receptionist 端点受 `Authenticated` 策略保护，仅限 CRU 操作。
@@ -240,7 +240,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 
 ### US-PAT-006: 恢复已删除患者
 
-> As a 医生/管理员, I want to 恢复误删的患者档案,
+> As a 管理员, I want to 恢复误删的患者档案,
 > so that 被误操作删除的患者数据可以找回。
 
 **Acceptance Criteria:**

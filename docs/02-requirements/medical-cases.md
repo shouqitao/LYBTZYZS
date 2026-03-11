@@ -102,7 +102,7 @@ stateDiagram-v2
 |------|-----|------|----------|
 | Active | 1 | 进行中 (初始状态) | 编辑、挂起、完成、取消 (软删除) |
 | Suspended | 0 | 已挂起 (MC-D20: 原 Draft 已重命名为 Suspended) | 恢复、完成、取消 (软删除) |
-| Completed | 2 | 已完成 | 查看 (Admin 可编辑需理由) |
+| Completed | 2 | 已完成 | Doctor: 当天可编辑 (需 EditReason), 隔天 403; Admin/SuperAdmin: 可编辑 (需 EditReason), 不受时间限制 |
 
 > **取消操作**: 取消医案统一通过 `IsDeleted=true` 软删除实现，审计类型为 `AuditOperationType.SoftDelete`。已完成的医案不可取消。
 >

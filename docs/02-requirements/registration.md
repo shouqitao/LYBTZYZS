@@ -36,6 +36,9 @@
 | Receptionist (前台) | 创建挂号、取消挂号、查看全部队列 | 患者到达时创建挂号记录，指派医生 |
 | Doctor (医生) | 查看个人队列、从队列接诊、直接看诊 | 按序接诊或跳过挂号直接看诊 |
 | Admin (管理员) | 查看全部队列和历史 (只读) | 统计就诊量 |
+| SuperAdmin (超管) | 与 Admin 相同 (只读) | 系统级监控 |
+
+> SuperAdmin 遵循权限值层级 (USER-D04)，在挂号模块与 Admin 权限对等: 查看全部队列和历史 (只读)，不参与挂号创建和取消操作。
 
 ---
 
@@ -252,7 +255,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 - [ ] 医案取消时检查 Registration.Source:
   - Source=Receptionist: Registration.Status 回退为 Waiting (等前台取消)
   - Source=Doctor: Registration.Status 自动变为 Cancelled
-- [ ] Source=Receptionist 回退后，MedicalCaseId 清空 (恢复为未接诊状态)
+- [ ] Source=Receptionist 回退后，MedicalCaseId **保留** (用于恢复原医案)
 - [ ] Source=Doctor 自动取消后，流程完全闭环
 
 **Dual Mode:**
@@ -373,6 +376,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 | REG-BR-002 | 前台挂号取消权限 | Source=Receptionist 的挂号仅 Receptionist 可取消，Doctor 无权 |
 | REG-BR-003 | 医生模式跳过 Waiting | Source=Doctor 创建时直接进入 InProgress，不经过队列 |
 | REG-BR-004 | 患者不存在时创建 | 查询无结果时提示创建患者，补充必填信息后继续原流程 |
+| REG-BR-005 | 回退后医生重新接诊恢复原医案 | Source=Receptionist 医案取消回退 Waiting 后，医生从队列选中时**恢复**原 MedicalCase (IsDeleted=false, Status -> Active)，保留诊断/处方数据。v1.0 不支持改派，仅原医生可重新接诊 |
 
 ---
 

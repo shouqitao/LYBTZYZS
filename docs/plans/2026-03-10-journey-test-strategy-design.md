@@ -40,7 +40,8 @@
 | PatientAccess | SuperAdmin + Admin + Doctor + Receptionist | 患者管理、挂号管理 |
 | DoctorOrAdmin | SuperAdmin + Admin + Doctor | 药材/验方/医案/同步 |
 | AdminOnly | SuperAdmin + Admin | 用户管理 (CRUD) |
-| SuperAdminOnly | SuperAdmin | 密码重置、用户恢复、系统诊断 |
+| AdminOnly | SuperAdmin + Admin | 密码重置、用户恢复 |
+| SuperAdminOnly | SuperAdmin | 系统诊断 |
 | Roles=Doctor | 仅 Doctor | 创建医案 (唯一一个更严格的端点) |
 
 ### 关键权限特例
