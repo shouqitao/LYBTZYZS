@@ -19,14 +19,14 @@ namespace LYBT.Tests.Server.UserJourneys;
 
 /// <summary>
 /// Cross-narrative validation tests covering:
-/// X5: Patient disable blocks case creation
-/// X6: Herb reference protection blocks deletion
-/// X7: Token refresh for long sessions
-/// X8: Health check endpoint validation
-/// X9: Patient disable should cascade to block registration (AD-01 probe)
-/// X10: Disabled herb should not be usable in prescriptions (AD-02 probe)
-/// X11: Concurrent case number generation race condition (AD-03 probe)
-/// X12: print-completed endpoint 500 error investigation (AD-04 probe)
+/// US-MC-001 + US-PAT-013: Patient disable blocks case creation
+/// US-HERB-005: Herb reference protection blocks deletion
+/// US-AUTH-003: Token refresh for long sessions
+/// US-SYS-001: Health check endpoint validation
+/// US-REG-001 + US-PAT-013: Patient disable should cascade to block registration (AD-01 probe)
+/// US-MC-004 + US-HERB-006: Disabled herb should not be usable in prescriptions (AD-02 probe)
+/// US-MC-001: Case number generation and mapping (AD-09 probe)
+/// US-MC-015: Print completed works after close (AD-04 probe)
 ///
 /// Note: X4 (optimistic locking) skipped because MedicalCaseInputDto
 /// has no RowVersion/ConcurrencyToken field exposed at the API level.
@@ -37,7 +37,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalFixt
     public CrossNarrativeValidationTests(ClinicalFixture fixture) : base(fixture) { }
 
     [Fact]
-    public async Task X5_PatientDisable_BlocksCaseCreation()
+    public async Task US_MC_001_PatientDisable_BlocksCaseCreation()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
@@ -75,7 +75,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalFixt
     }
 
     [Fact]
-    public async Task X6_HerbReferenceProtection()
+    public async Task US_HERB_005_ReferenceProtection_BlocksDeletion()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
@@ -112,7 +112,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalFixt
     }
 
     [Fact]
-    public async Task X7_TokenRefresh_LongSession()
+    public async Task US_AUTH_003_TokenRefresh_LongSession()
     {
         await ResetForJourneyAsync();
 
@@ -147,7 +147,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalFixt
     }
 
     [Fact]
-    public async Task X8_HealthCheck_Endpoint()
+    public async Task US_SYS_001_HealthCheck_Endpoint()
     {
         // Health endpoint should be accessible without authentication
         var healthResponse = await AnonymousClient.GetAsync("/health");
@@ -164,11 +164,11 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalFixt
     // ========== Phase 3: Architecture Probe Tests ==========
 
     /// <summary>
-    /// X9: AD-01 FIXED -- RegistrationService.CreateAsync now checks patient disabled status.
+    /// US-REG-001 + US-PAT-013: AD-01 FIXED -- RegistrationService.CreateAsync now checks patient disabled status.
     /// Registration for disabled patients should be blocked with appropriate error.
     /// </summary>
     [Fact]
-    public async Task X9_PatientDisable_BlocksRegistration_AD01_Fixed()
+    public async Task US_REG_001_PatientDisable_BlocksRegistration()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
@@ -215,13 +215,13 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalFixt
     }
 
     /// <summary>
-    /// X10: AD-02 probe -- Prescription creation does NOT validate herb status.
+    /// US-MC-004 + US-HERB-006: AD-02 probe -- Prescription creation does NOT validate herb status.
     /// CreatePrescriptionItemsAsync only looks up herb prices, never checks if herb is Disabled.
     /// Prescriptions are created through SaveAsync (PUT /{id}), not a separate POST.
     /// Expected: PASS reveals architecture defect (disabled herb accepted in prescription).
     /// </summary>
     [Fact]
-    public async Task X10_DisabledHerb_AcceptedInPrescription_AD02()
+    public async Task US_MC_004_DisabledHerb_AcceptedInPrescription()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
@@ -323,12 +323,12 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalFixt
     }
 
     /// <summary>
-    /// X11: AD-09 FIXED + AD-03 sequential probe.
+    /// US-MC-001: AD-09 FIXED + AD-03 sequential probe.
     /// CaseNumber is now mapped in both MapToMedicalCaseDto and MapToMedicalCaseDetailDto.
     /// Also verifies sequential case number uniqueness (AD-03 concurrency untestable via API).
     /// </summary>
     [Fact]
-    public async Task X11_CaseNumber_MappedAndUnique_AD09_Fixed()
+    public async Task US_MC_001_CaseNumber_MappedAndUnique()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
@@ -376,11 +376,11 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalFixt
     }
 
     /// <summary>
-    /// X12: AD-04 FIXED -- print-completed endpoint now uses GetByIdWithDetailsFreshAsync
+    /// US-MC-015: AD-04 FIXED -- print-completed endpoint now uses GetByIdWithDetailsFreshAsync
     /// to avoid RowVersion conflict after close/complete operations.
     /// </summary>
     [Fact]
-    public async Task X12_PrintCompleted_WorksAfterClose_AD04_Fixed()
+    public async Task US_MC_015_PrintCompleted_WorksAfterClose()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
