@@ -29,7 +29,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalFixture>
     public FirstVisitJourneyTests(ClinicalFixture fixture) : base(fixture) { }
 
     [Fact]
-    public async Task FirstVisit_Normal_Path()
+    public async Task US_REG_001_NormalPath_CompleteFirstVisit()
     {
         // Setup: Reset, create receptionist, login all roles, create herbs
         await ResetForJourneyAsync();
@@ -189,7 +189,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalFixture>
     }
 
     [Fact]
-    public async Task FirstVisit_Exception_BR001_DuplicateActiveCase()
+    public async Task US_MC_009_DuplicateActiveCase_ShouldFail()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
@@ -221,7 +221,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalFixture>
     }
 
     [Fact]
-    public async Task FirstVisit_Exception_BR003_EmptyDiagnosis_BlocksCompletion()
+    public async Task US_MC_004_EmptyDiagnosis_BlocksCompletion()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
@@ -253,7 +253,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalFixture>
     }
 
     [Fact]
-    public async Task FirstVisit_Exception_BR003_NoPrescriptionDecision_BlocksCompletion()
+    public async Task US_MC_004_NoPrescriptionDecision_BlocksCompletion()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
@@ -289,7 +289,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalFixture>
     }
 
     [Fact]
-    public async Task FirstVisit_Exception_CancelRegistration()
+    public async Task US_REG_004_CancelRegistration_Succeeds()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
