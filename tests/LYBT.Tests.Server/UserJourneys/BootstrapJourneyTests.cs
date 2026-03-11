@@ -258,6 +258,8 @@ public sealed class BootstrapJourneyTests : JourneyTestBase<UserFixture>
     /// Note: Current implementation returns 500 due to database unique constraint violation.
     /// This should be improved to return 409 Conflict or 422 UnprocessableEntity.
     /// </summary>
+    // TODO: Implement proper duplicate validation in HerbService (returns 409/422 instead of 500)
+    // Related: Herb duplicate name validation improvement
     [Fact(Skip = "Known issue: Returns 500 instead of expected error code. Herb duplicate validation needs improvement.")]
     public async Task US_HERB_001_CreateHerb_DuplicateName_ShouldFail()
     {

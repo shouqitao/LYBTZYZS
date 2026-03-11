@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Tests.Server.Infrastructure;
 using Xunit;
 
@@ -77,5 +78,70 @@ public sealed class AuthJourneyTests : JourneyTestBase<AuthFixture>
         // Step 8: Anonymous cannot access protected endpoint
         var anonResponse = await AnonymousClient.GetAsync("/api/v1/users/current");
         anonResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Auth_Login_NonExistentUser_Returns401()
+    {
+        // Arrange
+        await ResetForJourneyAsync();
+        var loginRequest = new LoginRequest { UserName = "nonexistent", Password = "Test123!" };
+
+        // Act
+        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Auth_Login_DisabledUser_Returns403()
+    {
+        // Arrange
+        await ResetForJourneyAsync();
+        var adminClient = await LoginAsAdminAsync();
+
+        // Create a new user first
+        var createRequest = new UserInputDto
+        {
+            UserName = "testdisabled",
+            Password = "TestDisabled123!",
+            ConfirmPassword = "TestDisabled123!",
+            RealName = "Test Disabled User",
+            Role = LYBT.Shared.Models.Enums.UserRole.Doctor
+        };
+
+        var createResponse = await adminClient.PostAsJsonAsync("/api/v1/users", createRequest);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createBody = await createResponse.Content.ReadFromJsonAsync<ApiResponse<UserDetailDto>>(JsonOptions);
+        var userId = createBody!.Data!.Id;
+
+        // Disable the user using toggle-status endpoint
+        var disableResponse = await adminClient.PostAsync($"/api/v1/users/{userId}/toggle-status", null);
+        disableResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verify user is disabled
+        var getResponse = await adminClient.GetAsync($"/api/v1/users/{userId}");
+        var userBody = await getResponse.Content.ReadFromJsonAsync<ApiResponse<UserDetailDto>>(JsonOptions);
+        userBody!.Data!.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Disabled);
+
+        // Act: Attempt to login with disabled user
+        var loginRequest = new LoginRequest { UserName = "testdisabled", Password = "TestDisabled123!" };
+        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
+
+        // Assert - Disabled users get 403 Forbidden (credentials valid but access denied)
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Auth_Login_EmptyCredentials_Returns400()
+    {
+        // Arrange + Act
+        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login",
+            new { UserName = "", Password = "" });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
