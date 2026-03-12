@@ -4,7 +4,7 @@ using LYBT.Shared.Configuration.Validation;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Shared.Configuration;
+namespace LYBT.Tests.Server.Unit.Shared.Configuration;
 
 /// <summary>
 /// JwtOptionsValidator 单元测试

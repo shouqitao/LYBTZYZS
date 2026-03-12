@@ -3,7 +3,7 @@ using FluentAssertions;
 using LYBT.Shared.Configuration.Options.Common;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Shared.Configuration;
+namespace LYBT.Tests.Server.Unit.Shared.Configuration;
 
 /// <summary>
 /// JwtOptions 单元测试

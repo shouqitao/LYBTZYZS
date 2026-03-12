@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Shared.Configuration;
+namespace LYBT.Tests.Server.Unit.Shared.Configuration;
 
 /// <summary>
 /// 配置加载集成测试
