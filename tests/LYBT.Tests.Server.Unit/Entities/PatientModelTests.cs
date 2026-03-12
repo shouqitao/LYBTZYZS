@@ -2,7 +2,7 @@ using FluentAssertions;
 using LYBT.Entities.Patients;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Entities.Patients;
+namespace LYBT.Tests.Server.Unit.Entities.Patients;
 
 /// <summary>
 /// Patient entity tests - Age computed property only.

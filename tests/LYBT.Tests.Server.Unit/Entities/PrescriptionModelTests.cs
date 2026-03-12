@@ -2,7 +2,7 @@ using FluentAssertions;
 using LYBT.Entities.Prescriptions;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Entities.Prescriptions;
+namespace LYBT.Tests.Server.Unit.Entities.Prescriptions;
 
 /// <summary>
 /// Prescription entity tests - business defaults and collection behavior only.

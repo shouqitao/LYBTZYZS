@@ -5,7 +5,7 @@ using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Entities.MedicalCases;
+namespace LYBT.Tests.Server.Unit.Entities.MedicalCases;
 
 /// <summary>
 /// MedicalCase entity tests - computed properties, navigation, and business rules.

@@ -3,7 +3,7 @@ using LYBT.Entities.Formulas;
 using Xunit;
 using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
-namespace LYBT.Tests.Server.PureLogic.Entities.Formula;
+namespace LYBT.Tests.Server.Unit.Entities.Formula;
 
 /// <summary>
 /// Formula entity tests - collection navigation property behavior only.
