@@ -11,11 +11,13 @@ namespace LYBT.Tests.Server.Features.Auth;
 /// <summary>
 /// Must Have User Stories for Auth module.
 /// PRD: US-AUTH-001 ~ US-AUTH-010 (8 Must Have)
-/// Collection: AuthUsersFast (transactional, high performance)
+/// Collection: AuthUsers (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("AuthUsersFast")]
-public sealed class US_Auth_MustHaveTests : TransactionalIntegrationTestBase
+[Collection("AuthUsers")]
+public sealed class US_Auth_MustHaveTests : IntegrationTestBase<AuthUsersFixture>
 {
+    public US_Auth_MustHaveTests(AuthUsersFixture fixture) : base(fixture) { }
+
     #region US-AUTH-001: User login with username and password
 
     [Fact]
