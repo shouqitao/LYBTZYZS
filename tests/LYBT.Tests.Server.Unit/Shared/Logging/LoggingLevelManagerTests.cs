@@ -3,7 +3,7 @@ using Xunit;
 using LYBT.Shared.Logging.Management;
 using Serilog.Events;
 
-namespace LYBT.Tests.Server.PureLogic.Shared.Logging;
+namespace LYBT.Tests.Server.Unit.Shared.Logging;
 
 /// <summary>
 /// LoggingLevelManager 单元测试

@@ -2,7 +2,7 @@ using FluentAssertions;
 using Xunit;
 using LYBT.Shared.Logging.Masking;
 
-namespace LYBT.Tests.Server.PureLogic.Shared.Logging;
+namespace LYBT.Tests.Server.Unit.Shared.Logging;
 
 /// <summary>
 /// SensitiveDataMasker 单元测试
