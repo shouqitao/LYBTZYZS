@@ -74,4 +74,60 @@ public abstract class IntegrationTestBase<TFixture> : IAsyncLifetime
     }
 
     #endregion
+
+    #region Parallel-Safe Unique Generators
+
+    // Thread-local storage for test-specific prefix
+    private static readonly ThreadLocal<string> _testPrefix = new(() => Guid.NewGuid().ToString("N")[..8]);
+
+    /// <summary>
+    /// Generates a unique name with thread-specific prefix for parallel test isolation.
+    /// </summary>
+    protected static string UniqueName(string baseName)
+    {
+        return $"{_testPrefix.Value}_{baseName}";
+    }
+
+    /// <summary>
+    /// Generates a unique phone number for parallel test isolation.
+    /// </summary>
+    protected static string UniquePhone()
+    {
+        // Generate unique 11-digit phone: 138 + 8 random digits based on thread prefix
+        var prefix = _testPrefix.Value;
+        var randomPart = prefix.GetHashCode() % 100000000;
+        return $"138{Math.Abs(randomPart):D8}";
+    }
+
+    /// <summary>
+    /// Generates a unique ID number for parallel test isolation.
+    /// </summary>
+    protected static string UniqueIdNumber()
+    {
+        var prefix = _testPrefix.Value;
+        var random = new Random(prefix.GetHashCode());
+        var year = random.Next(1960, 2000);
+        var month = random.Next(1, 13);
+        var day = random.Next(1, 29);
+        var suffix = random.Next(1000, 9999);
+        return $"320101{year}{month:D2}{day:D2}{suffix}";
+    }
+
+    /// <summary>
+    /// Generates a unique email for parallel test isolation.
+    /// </summary>
+    protected static string UniqueEmail(string baseName)
+    {
+        return $"{baseName.ToLower()}_{_testPrefix.Value}@test.com";
+    }
+
+    /// <summary>
+    /// Generates a unique username for parallel test isolation.
+    /// </summary>
+    protected static string UniqueUsername(string baseName)
+    {
+        return $"{baseName.ToLower()}_{_testPrefix.Value}";
+    }
+
+    #endregion
 }
