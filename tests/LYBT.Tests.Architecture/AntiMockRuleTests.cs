@@ -39,11 +39,15 @@ public sealed class AntiMockRuleTests
     [Fact]
     public void ServerTestProject_ShouldNotReference_EFCoreInMemory_ForIntegrationTests()
     {
-        // Integration tests (inheriting IntegrationTestBase) should use real SQL Server via Respawn,
+        // Integration tests (inheriting IntegrationTestBase<T>) should use real SQL Server via Respawn,
         // not EF Core InMemory. InMemory is only allowed for pure logic tests that need a quick DbContext.
-        var integrationTestTypes = Types.InAssembly(ServerTestAssembly)
-            .That().Inherit(typeof(Server.Infrastructure.IntegrationTestBase))
-            .GetTypes();
+        // Get all types that inherit from IntegrationTestBase<> (generic base class)
+        var allTypes = Types.InAssembly(ServerTestAssembly).GetTypes();
+        var integrationTestTypes = allTypes
+            .Where(t => t.BaseType != null &&
+                        t.BaseType.IsGenericType &&
+                        t.BaseType.GetGenericTypeDefinition() == typeof(Server.Infrastructure.IntegrationTestBase<>))
+            .ToList();
 
         foreach (var testType in integrationTestTypes)
         {
