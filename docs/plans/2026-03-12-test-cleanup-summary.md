@@ -126,12 +126,15 @@
 | LYBT.Tests.Server | ✅ 成功 | 8 个 (nullable warnings) |
 | LYBT.Tests.Integration | ✅ 成功 | 2 个 (nullable warnings) |
 | LYBT.Tests.Architecture | ✅ 成功 | 0 |
-| LYBT.Tests.Desktop | 🔄 运行中 | - |
+| LYBT.Tests.Desktop | ✅ 成功 | 0 |
 
 ### 7.2 测试运行状态
 | 项目 | 通过 | 失败 | 跳过 | 总计 |
 |------|------|------|------|------|
 | LYBT.Tests.Architecture | 78 | 0 | 1 | 79 |
+| LYBT.Tests.Desktop | 499 | 0 | 0 | 499 |
+| LYBT.Tests.Server (UserJourneys) | 87 | 2 | 1 | 90 |
+| LYBT.Tests.Server (Features/US_CFG) | 10 | 0 | 0 | 10 |
 | LYBT.Tests.Server (UserJourneys) | 87 | 2 | 1 | 90 |
 | LYBT.Tests.Server (Features/US_CFG) | 10 | 0 | 0 | 10 |
 
