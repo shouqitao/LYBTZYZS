@@ -140,4 +140,33 @@ public static class BusinessAssertions
         body.Should().NotBeNull();
         body!.Success.Should().BeTrue(because ?? "API should indicate success");
     }
+
+    /// <summary>
+    /// Assert HTTP 400 Bad Request with validation error.
+    /// </summary>
+    public static async Task ShouldBeValidationErrorAsync(
+        this HttpResponseMessage response, string? messageContains = null)
+    {
+        await response.ShouldBeBusinessErrorAsync(
+            HttpStatusCode.BadRequest, messageContains);
+    }
+
+    /// <summary>
+    /// Assert HTTP 409 Conflict with business error.
+    /// Typically used for duplicate data conflicts.
+    /// </summary>
+    public static async Task ShouldBeConflictAsync(
+        this HttpResponseMessage response, string? messageContains = null)
+    {
+        await response.ShouldBeBusinessErrorAsync(
+            HttpStatusCode.Conflict, messageContains);
+    }
+
+    /// <summary>
+    /// Assert HTTP 204 No Content for successful delete/update without response body.
+    /// </summary>
+    public static void ShouldBeNoContent(this HttpResponseMessage response)
+    {
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
 }

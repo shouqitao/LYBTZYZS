@@ -5,7 +5,7 @@ using FluentAssertions;
 using LYBT.Tests.Server.Infrastructure;
 using Xunit;
 
-namespace LYBT.Tests.Server.Features.Infrastructure;
+namespace LYBT.Tests.Server.Features;
 
 /// <summary>
 /// Must Have User Stories for Config/Infrastructure module.
