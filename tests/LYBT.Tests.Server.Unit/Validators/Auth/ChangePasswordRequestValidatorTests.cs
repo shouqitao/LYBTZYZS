@@ -4,7 +4,7 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Validators.Auth;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Validators.Auth;
+namespace LYBT.Tests.Server.Unit.Validators.Auth;
 
 /// <summary>
 /// ChangePasswordRequestValidator 单元测试

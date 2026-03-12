@@ -4,7 +4,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Validators.Prescriptions;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Validators.Prescriptions;
+namespace LYBT.Tests.Server.Unit.Validators.Prescriptions;
 
 /// <summary>
 /// PrescriptionInputDtoValidator 单元测试

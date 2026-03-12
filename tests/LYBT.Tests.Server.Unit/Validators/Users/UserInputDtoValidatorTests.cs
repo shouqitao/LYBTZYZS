@@ -6,7 +6,7 @@ using LYBT.Shared.Primitives.Validation;
 using LYBT.Shared.Validators.Users;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Validators.Users;
+namespace LYBT.Tests.Server.Unit.Validators.Users;
 
 /// <summary>
 /// UserInputDtoValidator 单元测试

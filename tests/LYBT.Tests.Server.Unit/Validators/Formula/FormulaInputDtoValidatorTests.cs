@@ -4,7 +4,7 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Validators.Formula;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Validators.Formula;
+namespace LYBT.Tests.Server.Unit.Validators.Formula;
 
 /// <summary>
 /// FormulaInputDtoValidator 单元测试

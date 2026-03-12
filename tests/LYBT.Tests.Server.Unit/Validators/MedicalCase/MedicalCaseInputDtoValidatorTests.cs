@@ -5,7 +5,7 @@ using LYBT.Shared.Primitives.Validation;
 using LYBT.Shared.Validators.MedicalCase;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Validators.MedicalCase;
+namespace LYBT.Tests.Server.Unit.Validators.MedicalCase;
 
 /// <summary>
 /// MedicalCaseInputDtoValidator 单元测试

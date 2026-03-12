@@ -5,7 +5,7 @@ using LYBT.Shared.Primitives.Validation;
 using LYBT.Shared.Validators.Herbs;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Validators.Herbs;
+namespace LYBT.Tests.Server.Unit.Validators.Herbs;
 
 /// <summary>
 /// HerbInputDtoValidator 单元测试

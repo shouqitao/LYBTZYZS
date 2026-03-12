@@ -4,7 +4,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Validators.Consultation;
 using Xunit;
 
-namespace LYBT.Tests.Server.PureLogic.Validators.Consultation;
+namespace LYBT.Tests.Server.Unit.Validators.Consultation;
 
 /// <summary>
 /// ConsultationInputDtoValidator 单元测试
