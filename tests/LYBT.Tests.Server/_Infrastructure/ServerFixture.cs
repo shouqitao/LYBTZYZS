@@ -130,16 +130,32 @@ public class ServerFixture : IAsyncLifetime
 
     /// <summary>
     /// Resets the database to a clean state and re-seeds base data.
+    /// <summary>
+    /// Semaphore to serialize database reset operations within the same fixture.
+    /// Prevents concurrent reset conflicts when tests run in parallel.
+    /// </summary>
+    private readonly SemaphoreSlim _resetGate = new(1, 1);
+
+    /// <summary>
+    /// Resets the database to a clean state and re-seeds base data.
+    /// Thread-safe for parallel execution.
     /// Called before each test via IntegrationTestBase.InitializeAsync.
     /// </summary>
     public async Task ResetAsync()
     {
-        await using var connection = new SqlConnection(_dbProvider.ConnectionString);
-        await connection.OpenAsync();
-        await _respawner.ResetAsync(connection);
-        await SeedBaseDataAsync();
+        await _resetGate.WaitAsync();
+        try
+        {
+            await using var connection = new SqlConnection(_dbProvider.ConnectionString);
+            await connection.OpenAsync();
+            await _respawner.ResetAsync(connection);
+            await SeedBaseDataAsync();
+        }
+        finally
+        {
+            _resetGate.Release();
+        }
     }
-
     /// <summary>
     /// Login as sysadmin and return an authenticated HttpClient.
     /// </summary>
