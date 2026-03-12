@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Tests.Server.Infrastructure;
@@ -76,12 +77,16 @@ public abstract class JourneyTestBase<TFixture>
     // Thread-local storage for test-specific prefix
     private static readonly ThreadLocal<string> _testPrefix = new(() => Guid.NewGuid().ToString("N")[..8]);
 
+    // Static counter for unique value generation (combines with thread prefix for isolation)
+    private static int _globalSequence = 0;
+
     /// <summary>
     /// Generates a unique name with thread-specific prefix for parallel test isolation.
     /// </summary>
     protected static string UniqueName(string baseName)
     {
-        return $"{_testPrefix.Value}_{baseName}";
+        var seq = Interlocked.Increment(ref _globalSequence);
+        return $"{_testPrefix.Value}_{baseName}_{seq}";
     }
 
     /// <summary>
@@ -89,10 +94,12 @@ public abstract class JourneyTestBase<TFixture>
     /// </summary>
     protected static string UniquePhone()
     {
-        // Generate unique 11-digit phone: 138 + 8 random digits based on thread prefix
+        // Generate unique 11-digit phone: 138 + 8 digits
         var prefix = _testPrefix.Value;
-        var randomPart = prefix.GetHashCode() % 100000000;
-        return $"138{Math.Abs(randomPart):D8}";
+        var seq = Interlocked.Increment(ref _globalSequence);
+        var hashPart = Math.Abs(prefix.GetHashCode()) % 1000; // 3 digits
+        var seqPart = seq % 100000; // 5 digits
+        return $"138{hashPart:D3}{seqPart:D5}";
     }
 
     /// <summary>
@@ -101,7 +108,8 @@ public abstract class JourneyTestBase<TFixture>
     protected static string UniqueIdNumber()
     {
         var prefix = _testPrefix.Value;
-        var random = new Random(prefix.GetHashCode());
+        var seq = Interlocked.Increment(ref _globalSequence);
+        var random = new Random(prefix.GetHashCode() + seq);
         var year = random.Next(1960, 2000);
         var month = random.Next(1, 13);
         var day = random.Next(1, 29);
@@ -114,7 +122,8 @@ public abstract class JourneyTestBase<TFixture>
     /// </summary>
     protected static string UniqueEmail(string baseName)
     {
-        return $"{baseName.ToLower()}_{_testPrefix.Value}@test.com";
+        var seq = Interlocked.Increment(ref _globalSequence);
+        return $"{baseName.ToLower()}_{_testPrefix.Value}_{seq}@test.com";
     }
 
     /// <summary>
@@ -122,7 +131,8 @@ public abstract class JourneyTestBase<TFixture>
     /// </summary>
     protected static string UniqueUsername(string baseName)
     {
-        return $"{baseName.ToLower()}_{_testPrefix.Value}";
+        var seq = Interlocked.Increment(ref _globalSequence);
+        return $"{baseName.ToLower()}_{_testPrefix.Value}_{seq}";
     }
 
     #endregion

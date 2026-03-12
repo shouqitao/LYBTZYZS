@@ -61,7 +61,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
 
         // Arrange: Create first patient
         var phone = UniquePhone();
-        var idNumber1 = $"11010119800101{Random.Shared.Next(1000, 9999):D4}";
+        var idNumber1 = UniqueIdNumber();
         await PostAsync<PatientDetailDto>(admin, "/api/v1/patients",
             new PatientInputDto
             {
@@ -98,7 +98,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
         var admin = await LoginAsAdminAsync();
 
         // Arrange: Create first patient
-        var idNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}";
+        var idNumber = UniqueIdNumber();
         await PostAsync<PatientDetailDto>(admin, "/api/v1/patients",
             new PatientInputDto
             {
@@ -141,7 +141,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = DateTime.Now.AddYears(1), // Future date
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"110101{Random.Shared.Next(10000000, 99999999):D8}{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
 
@@ -169,7 +169,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
         await PostAsync<PatientDetailDto>(admin, "/api/v1/patients",
@@ -179,7 +179,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Female,
                 BirthDate = new DateTime(1985, 2, 2),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119850202{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
 
@@ -208,7 +208,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1985, 6, 15),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119850615{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "上海市浦东新区"
             });
         createResponse.IsSuccessStatusCode.Should().BeTrue();
@@ -257,7 +257,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "原地址"
             });
         createResponse.IsSuccessStatusCode.Should().BeTrue();
@@ -300,7 +300,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = phone1,
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址A"
             });
         var (resp2, patient2) = await PostAsync<PatientDetailDto>(admin, "/api/v1/patients",
@@ -310,7 +310,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Female,
                 BirthDate = new DateTime(1985, 2, 2),
                 PhoneNumber = phone2,
-                IdNumber = $"11010119850202{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址B"
             });
         resp1.IsSuccessStatusCode.Should().BeTrue();
@@ -352,7 +352,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
         createResponse.IsSuccessStatusCode.Should().BeTrue();
@@ -388,7 +388,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
         resp.IsSuccessStatusCode.Should().BeTrue();
@@ -433,7 +433,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
         resp.IsSuccessStatusCode.Should().BeTrue();
@@ -468,7 +468,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
         resp.IsSuccessStatusCode.Should().BeTrue();
@@ -499,7 +499,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
         resp.IsSuccessStatusCode.Should().BeTrue();
@@ -532,7 +532,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
         resp.IsSuccessStatusCode.Should().BeTrue();
@@ -582,7 +582,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1980, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999):D4}",
+                IdNumber = UniqueIdNumber(),
                 Address = "地址"
             });
         resp.IsSuccessStatusCode.Should().BeTrue();
