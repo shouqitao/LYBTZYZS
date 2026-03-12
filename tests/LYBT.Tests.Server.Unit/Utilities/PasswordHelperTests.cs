@@ -5,7 +5,7 @@ using LYBT.Shared.Utilities.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace LYBT.Tests.Server.PureLogic.Utilities
+namespace LYBT.Tests.Server.Unit.Utilities
 {
     /// <summary>
     /// PasswordHelper工具类单元测试
