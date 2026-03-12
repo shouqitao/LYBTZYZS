@@ -13,12 +13,12 @@ namespace LYBT.Tests.Server.Features.Patients;
 /// <summary>
 /// Should Have User Stories for Patients module.
 /// PRD: US-PAT-005 (Delete with ref check), US-PAT-013 (Status management)
-/// Collection: Clinical (isolated DB, parallel with other domains)
+/// Collection: ClinicalData (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Clinical")]
-public sealed class US_Patient_ShouldHaveTests : IntegrationTestBase<ClinicalFixture>
+[Collection("ClinicalData")]
+public sealed class US_Patient_ShouldHaveTests : IntegrationTestBase<ClinicalDataFixture>
 {
-    public US_Patient_ShouldHaveTests(ClinicalFixture fixture) : base(fixture) { }
+    public US_Patient_ShouldHaveTests(ClinicalDataFixture fixture) : base(fixture) { }
 
     #region US-PAT-005: Delete patient (with reference protection)
 

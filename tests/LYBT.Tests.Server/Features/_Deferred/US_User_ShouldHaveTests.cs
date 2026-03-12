@@ -11,12 +11,12 @@ namespace LYBT.Tests.Server.Features.Users;
 /// <summary>
 /// Should Have User Stories for Users module.
 /// PRD: US-USER-008 ~ US-USER-012 (5 Should Have)
-/// Collection: Users (isolated DB, parallel with other domains)
+/// Collection: AuthUsers (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Users")]
-public sealed class US_User_ShouldHaveTests : IntegrationTestBase<UserFixture>
+[Collection("AuthUsers")]
+public sealed class US_User_ShouldHaveTests : IntegrationTestBase<AuthUsersFixture>
 {
-    public US_User_ShouldHaveTests(UserFixture fixture) : base(fixture) { }
+    public US_User_ShouldHaveTests(AuthUsersFixture fixture) : base(fixture) { }
 
     #region US-USER-008: Admin reset password
 

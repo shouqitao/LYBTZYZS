@@ -16,12 +16,12 @@ namespace LYBT.Tests.Server.Features.MedicalCases;
 /// <summary>
 /// Should Have User Stories for MedicalCases module.
 /// PRD: US-MC-008, MC-010 ~ MC-018 (8 Should Have)
-/// Collection: Clinical (isolated DB, parallel with other domains)
+/// Collection: ClinicalData (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Clinical")]
-public sealed class US_MedicalCase_ShouldHaveTests : IntegrationTestBase<ClinicalFixture>
+[Collection("ClinicalData")]
+public sealed class US_MedicalCase_ShouldHaveTests : IntegrationTestBase<ClinicalDataFixture>
 {
-    public US_MedicalCase_ShouldHaveTests(ClinicalFixture fixture) : base(fixture) { }
+    public US_MedicalCase_ShouldHaveTests(ClinicalDataFixture fixture) : base(fixture) { }
 
     #region Helpers
 

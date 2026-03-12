@@ -10,12 +10,12 @@ namespace LYBT.Tests.Server.Features.Auth;
 /// <summary>
 /// Should Have User Stories for Auth module.
 /// PRD: US-AUTH-004, AUTH-006, AUTH-011, AUTH-013 (4 Should Have)
-/// Collection: Auth (isolated DB, parallel with other domains)
+/// Collection: AuthUsers (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Auth")]
-public sealed class US_Auth_ShouldHaveTests : IntegrationTestBase<AuthFixture>
+[Collection("AuthUsers")]
+public sealed class US_Auth_ShouldHaveTests : IntegrationTestBase<AuthUsersFixture>
 {
-    public US_Auth_ShouldHaveTests(AuthFixture fixture) : base(fixture) { }
+    public US_Auth_ShouldHaveTests(AuthUsersFixture fixture) : base(fixture) { }
 
     #region US-AUTH-004: Token replay detection
 

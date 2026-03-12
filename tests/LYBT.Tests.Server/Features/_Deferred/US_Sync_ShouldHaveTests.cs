@@ -13,12 +13,12 @@ namespace LYBT.Tests.Server.Features.Sync;
 /// <summary>
 /// Should Have User Stories for Sync module.
 /// PRD: US-SYNC-001 ~ US-SYNC-007 (7 Should Have)
-/// Collection: Sync (isolated DB, parallel with other domains)
+/// Collection: SystemOps (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Sync")]
-public sealed class US_Sync_ShouldHaveTests : IntegrationTestBase<SyncFixture>
+[Collection("SystemOps")]
+public sealed class US_Sync_ShouldHaveTests : IntegrationTestBase<SystemOpsFixture>
 {
-    public US_Sync_ShouldHaveTests(SyncFixture fixture) : base(fixture) { }
+    public US_Sync_ShouldHaveTests(SystemOpsFixture fixture) : base(fixture) { }
 
     #region Helpers
 

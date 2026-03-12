@@ -13,12 +13,12 @@ namespace LYBT.Tests.Server.Features.Users;
 /// <summary>
 /// Must Have User Stories for Users module.
 /// PRD: US-USER-001 ~ US-USER-005 (5 Must Have)
-/// Collection: Users (isolated DB, parallel with other domains)
+/// Collection: AuthUsers (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Users")]
-public sealed class US_User_MustHaveTests : IntegrationTestBase<UserFixture>
+[Collection("AuthUsers")]
+public sealed class US_User_MustHaveTests : IntegrationTestBase<AuthUsersFixture>
 {
-    public US_User_MustHaveTests(UserFixture fixture) : base(fixture) { }
+    public US_User_MustHaveTests(AuthUsersFixture fixture) : base(fixture) { }
 
     #region US-USER-001: Create user (AdminOnly)
 

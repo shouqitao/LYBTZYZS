@@ -15,12 +15,12 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// Chapter 4: Patient Management journey tests.
 /// PRD Coverage: patients.md US-PAT-001 ~ US-PAT-013 (4 Must + 2 Should + 7 Could)
 ///
-/// Collection: Clinical (isolated database per fixture)
+/// Collection: ClinicalData (isolated database per fixture)
 /// </summary>
-[Collection("Clinical")]
-public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalFixture>
+[Collection("ClinicalData")]
+public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalDataFixture>
 {
-    public PatientManagementJourneyTests(ClinicalFixture fixture) : base(fixture) { }
+    public PatientManagementJourneyTests(ClinicalDataFixture fixture) : base(fixture) { }
 
     #region US-PAT-001: Create Patient
 

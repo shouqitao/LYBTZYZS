@@ -12,10 +12,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// Each journey is a single [Fact] containing all steps sequentially.
 ///
 /// Usage:
-///   [Collection("Clinical")]
-///   public class MyJourney : JourneyTestBase&lt;ClinicalFixture&gt;
+///   [Collection("ClinicalData")]
+///   public class MyJourney : JourneyTestBase&lt;ClinicalDataFixture&gt;
 ///   {
-///       public MyJourney(ClinicalFixture fixture) : base(fixture) { }
+///       public MyJourney(ClinicalDataFixture fixture) : base(fixture) { }
 ///   }
 /// </summary>
 public abstract class JourneyTestBase<TFixture>

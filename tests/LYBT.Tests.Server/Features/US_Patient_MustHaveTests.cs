@@ -13,12 +13,12 @@ namespace LYBT.Tests.Server.Features.Patients;
 /// <summary>
 /// Must Have User Stories for Patients module.
 /// PRD: US-PAT-001 ~ US-PAT-004 (4 Must Have)
-/// Collection: Clinical (isolated DB, parallel with other domains)
+/// Collection: ClinicalData (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Clinical")]
-public sealed class US_Patient_MustHaveTests : IntegrationTestBase<ClinicalFixture>
+[Collection("ClinicalData")]
+public sealed class US_Patient_MustHaveTests : IntegrationTestBase<ClinicalDataFixture>
 {
-    public US_Patient_MustHaveTests(ClinicalFixture fixture) : base(fixture) { }
+    public US_Patient_MustHaveTests(ClinicalDataFixture fixture) : base(fixture) { }
 
     #region US-PAT-001: Create patient
 

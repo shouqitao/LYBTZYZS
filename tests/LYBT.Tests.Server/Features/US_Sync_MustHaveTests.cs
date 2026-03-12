@@ -10,12 +10,12 @@ namespace LYBT.Tests.Server.Features.Sync;
 /// <summary>
 /// Must Have User Stories for Sync module.
 /// PRD: US-SYNC-008 (1 Must Have)
-/// Collection: Sync (isolated DB, parallel with other domains)
+/// Collection: SystemOps (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Sync")]
-public sealed class US_Sync_MustHaveTests : IntegrationTestBase<SyncFixture>
+[Collection("SystemOps")]
+public sealed class US_Sync_MustHaveTests : IntegrationTestBase<SystemOpsFixture>
 {
-    public US_Sync_MustHaveTests(SyncFixture fixture) : base(fixture) { }
+    public US_Sync_MustHaveTests(SystemOpsFixture fixture) : base(fixture) { }
 
     #region US-SYNC-008: Get entity types and metadata
 

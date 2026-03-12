@@ -20,10 +20,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// US-MC-014: Lock rules (same-day editable, next-day locked for Doctor)
 /// Note: print-completed step excluded due to known API bug (PrintLogs navigation not loaded → 500).
 /// </summary>
-[Collection("Clinical")]
-public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalFixture>
+[Collection("ClinicalData")]
+public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFixture>
 {
-    public MedicalCaseEditJourneyTests(ClinicalFixture fixture) : base(fixture) { }
+    public MedicalCaseEditJourneyTests(ClinicalDataFixture fixture) : base(fixture) { }
 
     /// <summary>
     /// US-MC-013: Edit permission - Doctor cannot edit other doctor's case

@@ -15,7 +15,7 @@ namespace LYBT.Tests.Server.Features.MedicalCases;
 /// <summary>
 /// Must Have User Stories for MedicalCases module.
 /// PRD: US-MC-001 ~ US-MC-009, US-MC-013 (10 Must Have)
-/// Collection: Clinical (isolated DB, parallel with other domains)
+/// Collection: ClinicalData (isolated DB, parallel with other domains)
 ///
 /// Business Rules tested:
 /// - BR-001: Single active case per patient
@@ -23,10 +23,10 @@ namespace LYBT.Tests.Server.Features.MedicalCases;
 /// - BR-004: State machine (valid transitions only)
 /// - BR-006: Cancel reason required
 /// </summary>
-[Collection("Clinical")]
-public sealed class US_MedicalCase_MustHaveTests : IntegrationTestBase<ClinicalFixture>
+[Collection("ClinicalData")]
+public sealed class US_MedicalCase_MustHaveTests : IntegrationTestBase<ClinicalDataFixture>
 {
-    public US_MedicalCase_MustHaveTests(ClinicalFixture fixture) : base(fixture) { }
+    public US_MedicalCase_MustHaveTests(ClinicalDataFixture fixture) : base(fixture) { }
 
     #region Helpers
 

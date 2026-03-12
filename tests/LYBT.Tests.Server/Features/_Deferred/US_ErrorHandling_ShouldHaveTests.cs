@@ -14,10 +14,10 @@ namespace LYBT.Tests.Server.Features.Infrastructure;
 /// PRD: US-ERR-001 (Global exception), US-ERR-002 (ProblemDetails format),
 ///      US-ERR-004 (Exception type system), US-ERR-005 (Severity classification),
 ///      US-ERR-006 (Error message mapping)
-/// Collection: Infrastructure (isolated DB, parallel with other domains)
+/// Collection: SystemOps (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Infrastructure")]
-public sealed class US_ErrorHandling_ShouldHaveTests : IntegrationTestBase<InfraFixture>
+[Collection("SystemOps")]
+public sealed class US_ErrorHandling_ShouldHaveTests : IntegrationTestBase<SystemOpsFixture>
 {
     private static readonly JsonSerializerOptions ProblemJsonOpts = new()
     {
@@ -25,7 +25,7 @@ public sealed class US_ErrorHandling_ShouldHaveTests : IntegrationTestBase<Infra
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public US_ErrorHandling_ShouldHaveTests(InfraFixture fixture) : base(fixture) { }
+    public US_ErrorHandling_ShouldHaveTests(SystemOpsFixture fixture) : base(fixture) { }
 
     #region US-ERR-001: Global exception handling
 

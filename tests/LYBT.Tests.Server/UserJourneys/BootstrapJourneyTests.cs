@@ -25,12 +25,12 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// - US-FORM-001: Create formula
 /// - US-SYS-001/002/003: Health checks
 /// </summary>
-[Collection("Users")]
-public sealed class BootstrapJourneyTests : JourneyTestBase<UserFixture>
+[Collection("AuthUsers")]
+public sealed class BootstrapJourneyTests : JourneyTestBase<AuthUsersFixture>
 {
     private const string TestPassword = "TestBootstrap2025@";
 
-    public BootstrapJourneyTests(UserFixture fixture) : base(fixture) { }
+    public BootstrapJourneyTests(AuthUsersFixture fixture) : base(fixture) { }
 
     /// <summary>
     /// Full bootstrap journey covering Phase A-D of UAT Narrative 0.

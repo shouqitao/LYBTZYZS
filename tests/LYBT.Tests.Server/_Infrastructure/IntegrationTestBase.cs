@@ -17,10 +17,10 @@ namespace LYBT.Tests.Server.Infrastructure;
 /// - Shared JSON serialization options
 ///
 /// Usage:
-///   [Collection("Clinical")]
-///   public class MyTests : IntegrationTestBase&lt;ClinicalFixture&gt;
+///   [Collection("ClinicalData")]
+///   public class MyTests : IntegrationTestBase&lt;ClinicalDataFixture&gt;
 ///   {
-///       public MyTests(ClinicalFixture fixture) : base(fixture) { }
+///       public MyTests(ClinicalDataFixture fixture) : base(fixture) { }
 ///   }
 /// </summary>
 public abstract class IntegrationTestBase<TFixture> : IAsyncLifetime

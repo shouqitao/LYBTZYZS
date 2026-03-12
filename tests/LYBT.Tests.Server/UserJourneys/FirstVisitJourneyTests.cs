@@ -21,12 +21,12 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// creates medical case, fills diagnosis, sets prescription, completes case.
 /// Includes 4 exception path tests (BR-001, BR-003, cancel registration).
 /// </summary>
-[Collection("Clinical")]
-public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalFixture>
+[Collection("ClinicalData")]
+public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture>
 {
     private const string TestPassword = "TestFirstVisit2025@";
 
-    public FirstVisitJourneyTests(ClinicalFixture fixture) : base(fixture) { }
+    public FirstVisitJourneyTests(ClinicalDataFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task US_REG_001_NormalPath_CompleteFirstVisit()

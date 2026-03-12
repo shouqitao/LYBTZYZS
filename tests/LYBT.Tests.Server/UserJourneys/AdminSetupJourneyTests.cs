@@ -33,13 +33,13 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// - US-PAT-001: Create patient
 /// - US-PAT-002: List patients
 /// </summary>
-[Collection("Users")]
-public sealed class AdminSetupJourneyTests : JourneyTestBase<UserFixture>
+[Collection("AuthUsers")]
+public sealed class AdminSetupJourneyTests : JourneyTestBase<AuthUsersFixture>
 {
     private const string DoctorPassword = "TestNewDoctor2025@";
     private const string ReceptionistPassword = "TestReceptionist2025@";
 
-    public AdminSetupJourneyTests(UserFixture fixture) : base(fixture) { }
+    public AdminSetupJourneyTests(AuthUsersFixture fixture) : base(fixture) { }
 
     /// <summary>
     /// US_ADMIN_SETUP_001: Full admin setup journey covering Phase A-E of UAT Narrative 2.

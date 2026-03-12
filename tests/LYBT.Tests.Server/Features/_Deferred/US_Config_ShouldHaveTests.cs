@@ -9,12 +9,12 @@ namespace LYBT.Tests.Server.Features.Infrastructure;
 /// <summary>
 /// Should Have User Stories for Configuration module.
 /// PRD: US-CFG-003 (Environment config), US-CFG-004 (Startup validation)
-/// Collection: Infrastructure (isolated DB, parallel with other domains)
+/// Collection: SystemOps (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Infrastructure")]
-public sealed class US_Config_ShouldHaveTests : IntegrationTestBase<InfraFixture>
+[Collection("SystemOps")]
+public sealed class US_Config_ShouldHaveTests : IntegrationTestBase<SystemOpsFixture>
 {
-    public US_Config_ShouldHaveTests(InfraFixture fixture) : base(fixture) { }
+    public US_Config_ShouldHaveTests(SystemOpsFixture fixture) : base(fixture) { }
 
     #region US-CFG-003: Environment config via diagnostics
 

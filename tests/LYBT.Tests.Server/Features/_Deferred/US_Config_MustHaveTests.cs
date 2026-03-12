@@ -10,12 +10,12 @@ namespace LYBT.Tests.Server.Features.Infrastructure;
 /// <summary>
 /// Must Have User Stories for Config/Infrastructure module.
 /// PRD: US-CFG-001 ~ US-CFG-002 (2 Must Have)
-/// Collection: Infrastructure (isolated DB, parallel with other domains)
+/// Collection: SystemOps (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Infrastructure")]
-public sealed class US_Config_MustHaveTests : IntegrationTestBase<InfraFixture>
+[Collection("SystemOps")]
+public sealed class US_Config_MustHaveTests : IntegrationTestBase<SystemOpsFixture>
 {
-    public US_Config_MustHaveTests(InfraFixture fixture) : base(fixture) { }
+    public US_Config_MustHaveTests(SystemOpsFixture fixture) : base(fixture) { }
 
     #region US-CFG-001: Health check endpoint
 

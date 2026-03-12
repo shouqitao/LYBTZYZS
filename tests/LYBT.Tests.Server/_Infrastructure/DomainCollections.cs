@@ -8,22 +8,22 @@ namespace LYBT.Tests.Server.Infrastructure;
 ///
 /// Collections run in parallel (xunit.runner.json: parallelizeTestCollections=true).
 /// Tests WITHIN a collection run sequentially (shared fixture, shared DB).
+///
+/// Consolidated from 8 to 4 collections to reduce fixture initialization overhead:
+/// - AuthUsers: Auth + Users (login, token management, user CRUD, profiles)
+/// - ClinicalData: Clinical domain (patients, registrations, medical cases)
+/// - HerbFormula: Herb/Formula domain (unchanged)
+/// - SystemOps: Sync + Infrastructure (sync operations, config, logging, diagnostics)
 /// </summary>
 
-[CollectionDefinition("Auth")]
-public sealed class AuthCollection : ICollectionFixture<AuthFixture>;
+[CollectionDefinition("AuthUsers")]
+public sealed class AuthUsersCollection : ICollectionFixture<AuthUsersFixture>;
 
-[CollectionDefinition("Users")]
-public sealed class UserCollection : ICollectionFixture<UserFixture>;
-
-[CollectionDefinition("Clinical")]
-public sealed class ClinicalCollection : ICollectionFixture<ClinicalFixture>;
+[CollectionDefinition("ClinicalData")]
+public sealed class ClinicalDataCollection : ICollectionFixture<ClinicalDataFixture>;
 
 [CollectionDefinition("HerbFormula")]
 public sealed class HerbFormulaCollection : ICollectionFixture<HerbFormulaFixture>;
 
-[CollectionDefinition("Sync")]
-public sealed class SyncCollection : ICollectionFixture<SyncFixture>;
-
-[CollectionDefinition("Infrastructure")]
-public sealed class InfraCollection : ICollectionFixture<InfraFixture>;
+[CollectionDefinition("SystemOps")]
+public sealed class SystemOpsCollection : ICollectionFixture<SystemOpsFixture>;

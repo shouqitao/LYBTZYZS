@@ -28,10 +28,10 @@ namespace LYBT.Tests.Server.UserJourneys;
 /// - US-MC-018: Copy historical prescription
 /// - US-REG-006: G-9 Registration cancel revert to Waiting
 /// </summary>
-[Collection("Clinical")]
-public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalFixture>
+[Collection("ClinicalData")]
+public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixture>
 {
-    public ReturnVisitJourneyTests(ClinicalFixture fixture) : base(fixture) { }
+    public ReturnVisitJourneyTests(ClinicalDataFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task US_PAT_002_MC_009_ReturnVisit_Normal_Path()

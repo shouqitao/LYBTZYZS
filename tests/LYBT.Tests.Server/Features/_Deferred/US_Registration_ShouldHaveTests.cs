@@ -14,12 +14,12 @@ namespace LYBT.Tests.Server.Features.Registration;
 /// <summary>
 /// Should Have User Stories for Registration module.
 /// PRD: US-REG-007 (Registration history query)
-/// Collection: Clinical (isolated DB, parallel with other domains)
+/// Collection: ClinicalData (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Clinical")]
-public sealed class US_Registration_ShouldHaveTests : IntegrationTestBase<ClinicalFixture>
+[Collection("ClinicalData")]
+public sealed class US_Registration_ShouldHaveTests : IntegrationTestBase<ClinicalDataFixture>
 {
-    public US_Registration_ShouldHaveTests(ClinicalFixture fixture) : base(fixture) { }
+    public US_Registration_ShouldHaveTests(ClinicalDataFixture fixture) : base(fixture) { }
 
     #region Helpers
 

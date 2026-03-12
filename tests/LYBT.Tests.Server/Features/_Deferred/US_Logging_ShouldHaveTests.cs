@@ -12,12 +12,12 @@ namespace LYBT.Tests.Server.Features.Infrastructure;
 /// Should Have User Stories for Logging module.
 /// PRD: US-LOG-001 (Structured logging), US-LOG-002 (Audit logging),
 ///      US-LOG-007 (API request logging)
-/// Collection: Infrastructure (isolated DB, parallel with other domains)
+/// Collection: SystemOps (isolated DB, parallel with other domains)
 /// </summary>
-[Collection("Infrastructure")]
-public sealed class US_Logging_ShouldHaveTests : IntegrationTestBase<InfraFixture>
+[Collection("SystemOps")]
+public sealed class US_Logging_ShouldHaveTests : IntegrationTestBase<SystemOpsFixture>
 {
-    public US_Logging_ShouldHaveTests(InfraFixture fixture) : base(fixture) { }
+    public US_Logging_ShouldHaveTests(SystemOpsFixture fixture) : base(fixture) { }
 
     #region US-LOG-001: Structured logging status
 
