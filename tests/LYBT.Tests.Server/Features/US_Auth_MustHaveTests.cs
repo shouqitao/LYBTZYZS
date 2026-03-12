@@ -16,8 +16,6 @@ namespace LYBT.Tests.Server.Features.Auth;
 [Collection("AuthUsersFast")]
 public sealed class US_Auth_MustHaveTests : TransactionalIntegrationTestBase
 {
-}
-
     #region US-AUTH-001: User login with username and password
 
     [Fact]
