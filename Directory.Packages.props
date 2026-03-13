@@ -119,6 +119,9 @@
     <PackageVersion Include="NPOI" Version="2.7.4" />
     <!-- D1: PDF 处方导出 -->
     <PackageVersion Include="QuestPDF" Version="2025.4.0" />
+    <!-- Security: Upgrade Fonts to fix ImageSharp vulnerabilities (CVE-2025-27598, CVE-2025-54575) -->
+    <!-- SixLabors.Fonts 2.0.9+ depends on ImageSharp 2.1.11+ which patches HIGH severity vulnerabilities -->
+    <PackageVersion Include="SixLabors.Fonts" Version="2.0.9" />
   </ItemGroup>
   <ItemGroup Label="Code Analysis and Quality">
     <!-- 代码分析器 -->
