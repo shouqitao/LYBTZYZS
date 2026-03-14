@@ -89,6 +89,13 @@ namespace LYBT.Module.Herbs.Services
                 return Result<HerbDetailDto>.Failure(errors);
             }
 
+            // US-HERB-001: 检查药材名称是否已存在
+            if (await _repository.ExistsByNameAsync(dto.Name))
+            {
+                _logger.LogWarning("[SVC] Herb.Create → DuplicateName - Name={Name}", dto.Name);
+                return Result<HerbDetailDto>.Failure(GenericErrorCode.InvalidRequest, $"药材名称 '{dto.Name}' 已存在");
+            }
+
             // T5-P2-33: 拼音码自动生成
             if (string.IsNullOrWhiteSpace(dto.PinYinCode))
             {
@@ -118,9 +125,14 @@ namespace LYBT.Module.Herbs.Services
                 return Result<HerbDetailDto>.Failure(errors);
             }
 
-            // T5-P2-34: 名称变更时重新生成拼音码
+            // T5-P2-34: 名称变更时重新生成拼音码，并检查重复
             if (entity.Name != dto.Name)
             {
+                if (await _repository.ExistsByNameAsync(dto.Name, id))
+                {
+                    _logger.LogWarning("[SVC] Herb.Update → DuplicateName - HerbId={HerbId} Name={Name}", id, dto.Name);
+                    return Result<HerbDetailDto>.Failure(GenericErrorCode.InvalidRequest, $"药材名称 '{dto.Name}' 已存在");
+                }
                 dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);
             }
             else if (string.IsNullOrWhiteSpace(dto.PinYinCode))
