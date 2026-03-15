@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Net;
 using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -7,9 +6,9 @@ using LYBT.Desktop.Contracts.Events;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Sync.Services;
 using LYBT.Shared.Models.Contracts.Sync;
 using Microsoft.Extensions.Logging;
-using Refit;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
@@ -24,6 +23,7 @@ public partial class SyncViewModel : NavigableViewModelBase
     private readonly ISyncService _syncService;
     private readonly IDialogService _dialogService;
     private readonly IApiHealthCheckService _healthCheckService;
+    private readonly SyncItemViewModelFactory _itemFactory;
 
     private SyncRetryDescriptor? _lastRetryDescriptor;
 
@@ -130,12 +130,15 @@ public partial class SyncViewModel : NavigableViewModelBase
         IViewModelServices services,
         ISyncService syncService,
         IDialogService dialogService,
-        IApiHealthCheckService healthCheckService)
+        IApiHealthCheckService healthCheckService,
+        SyncItemViewModelFactory itemFactory)
         : base(services)
     {
         _syncService = syncService;
         _dialogService = dialogService;
         _healthCheckService = healthCheckService;
+        _itemFactory = itemFactory;
+        _itemFactory.SetSelectionChangedCallback(NotifyCountsChanged);
 
         PageTitle = "数据同步";
     }
@@ -180,13 +183,13 @@ public partial class SyncViewModel : NavigableViewModelBase
             var result = await _syncService.CheckDifferencesAsync(SelectedEntityType);
 
             foreach (var diff in result.LocalOnly)
-                LocalOnlyItems.Add(CreateSyncItemViewModel(diff, true));
+                LocalOnlyItems.Add(_itemFactory.Create(diff, true));
 
             foreach (var diff in result.ServerOnly)
-                ServerOnlyItems.Add(CreateSyncItemViewModel(diff, true));
+                ServerOnlyItems.Add(_itemFactory.Create(diff, true));
 
             foreach (var diff in result.Conflicts)
-                ConflictItems.Add(CreateSyncItemViewModel(diff, false));
+                ConflictItems.Add(_itemFactory.Create(diff, false));
 
             NotifyCountsChanged();
 
@@ -241,7 +244,7 @@ public partial class SyncViewModel : NavigableViewModelBase
             CanRetry = false;
             SyncErrorMessage = string.Empty;
 
-            var resolution = BuildSyncResolution();
+            var resolution = SyncResolutionBuilder.Build(LocalOnlyItems, ServerOnlyItems, ConflictItems);
 
             SyncProgress = 20;
             var result = await _syncService.ExecuteSyncAsync(SelectedEntityType, resolution);
@@ -397,50 +400,6 @@ public partial class SyncViewModel : NavigableViewModelBase
         NotifyCountsChanged();
     }
 
-    private SyncItemViewModel CreateSyncItemViewModel(SyncDiffDto diff, bool isSelected)
-    {
-        var item = new SyncItemViewModel
-        {
-            EntityId = diff.EntityId,
-            EntityType = diff.EntityType,
-            EntityName = diff.EntityName ?? diff.EntityId.ToString(),
-            DiffType = diff.DiffType,
-            LocalChecksum = diff.LocalChecksum,
-            ServerChecksum = diff.ServerChecksum,
-            LocalChangedAt = diff.LocalChangedAt,
-            ServerChangedAt = diff.ServerChangedAt,
-            ChangedFields = diff.ChangedFields,
-            IsSelected = isSelected
-        };
-
-        item.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(SyncItemViewModel.IsSelected))
-                NotifyCountsChanged();
-        };
-
-        return item;
-    }
-
-    private SyncResolution BuildSyncResolution()
-    {
-        var resolution = new SyncResolution();
-
-        resolution.ToUpload.AddRange(
-            LocalOnlyItems.Where(x => x.IsSelected).Select(x => x.EntityId));
-
-        resolution.ToDownload.AddRange(
-            ServerOnlyItems.Where(x => x.IsSelected).Select(x => x.EntityId));
-
-        foreach (var conflict in ConflictItems.Where(x => x.IsSelected && x.ResolutionDecision.HasValue))
-            resolution.ConflictResolutions[conflict.EntityId] = conflict.ResolutionDecision!.Value;
-
-        resolution.Skipped.AddRange(
-            ConflictItems.Where(x => !x.IsSelected).Select(x => x.EntityId));
-
-        return resolution;
-    }
-
     private async Task ShowConflictResolutionDialogAsync(List<SyncItemViewModel> conflicts)
     {
         var parameters = new DialogParameters
@@ -478,34 +437,12 @@ public partial class SyncViewModel : NavigableViewModelBase
     {
         Logger.LogError(ex, "{Operation} failed", operationName);
 
-        ErrorCategory = ClassifyException(ex);
+        ErrorCategory = SyncErrorClassifier.Classify(ex);
         SyncErrorMessage = ex.Message;
-        CanRetry = ErrorCategory is SyncErrorCategory.TransientNetwork
-            or SyncErrorCategory.ConflictChanged
-            or SyncErrorCategory.AuthExpired;
+        CanRetry = SyncErrorClassifier.IsRetryable(ErrorCategory);
 
         CurrentPhase = SyncPhase.Failed;
         SetError($"{operationName}失败: {ex.Message}");
-    }
-
-    private static SyncErrorCategory ClassifyException(Exception ex)
-    {
-        if (ex is HttpRequestException or TaskCanceledException)
-            return SyncErrorCategory.TransientNetwork;
-
-        if (ex is ApiException apiEx)
-        {
-            return apiEx.StatusCode switch
-            {
-                HttpStatusCode.Unauthorized => SyncErrorCategory.AuthExpired,
-                HttpStatusCode.Conflict => SyncErrorCategory.ConflictChanged,
-                >= HttpStatusCode.BadRequest and < HttpStatusCode.InternalServerError
-                    => SyncErrorCategory.BusinessReject,
-                _ => SyncErrorCategory.Unknown
-            };
-        }
-
-        return SyncErrorCategory.Unknown;
     }
 
     private void NotifyCountsChanged()

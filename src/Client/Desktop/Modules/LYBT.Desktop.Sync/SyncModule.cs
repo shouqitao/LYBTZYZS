@@ -1,3 +1,4 @@
+using LYBT.Desktop.Sync.Services;
 using LYBT.Desktop.Sync.ViewModels;
 using LYBT.Desktop.Sync.Views;
 using Prism.Ioc;
@@ -30,5 +31,8 @@ public class SyncModule : IModule
 
         // 注册对话框
         containerRegistry.RegisterDialog<SyncConflictDialog, SyncConflictDialogViewModel>();
+
+        // 注册同步辅助服务
+        containerRegistry.RegisterSingleton<SyncItemViewModelFactory>();
     }
 }
