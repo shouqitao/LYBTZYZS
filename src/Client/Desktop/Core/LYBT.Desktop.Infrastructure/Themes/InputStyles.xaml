@@ -164,4 +164,14 @@
         <Setter Property="Background" Value="White" />
     </Style>
 
+    <!--
+        验证错误文本样式 - 用于 FormFieldControl
+        Phase 3: 放在此文件中以确保 DesignTokens.xaml 已加载 (FontSizeCaption)
+    -->
+    <Style x:Key="ValidationErrorTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}" />
+        <Setter Property="Foreground" Value="{StaticResource ValidationErrorBrush}" />
+        <Setter Property="Margin" Value="0,2,0,0" />
+    </Style>
+
 </ResourceDictionary>

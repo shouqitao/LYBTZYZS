@@ -377,11 +377,4 @@
         BasedOn="{StaticResource Card}"
         TargetType="Border" />
 
-    <!--  验证错误文本样式  -->
-    <Style x:Key="ValidationErrorTextStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{DynamicResource FontSizeCaption}" />
-        <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}" />
-        <Setter Property="Margin" Value="0,2,0,0" />
-    </Style>
-
 </ResourceDictionary>
