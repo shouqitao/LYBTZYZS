@@ -1,6 +1,4 @@
 using System.Windows.Controls;
-using LYBT.Desktop.Shell.ViewModels;
-using Prism.Ioc;
 
 namespace LYBT.Desktop.Shell.Controls
 {
@@ -11,14 +9,11 @@ namespace LYBT.Desktop.Shell.Controls
     public partial class AccountSettingsControl : UserControl
     {
         /// <summary>
-        /// 构造函数 - 内部DI解析ViewModel
+        /// 构造函数
         /// </summary>
         public AccountSettingsControl()
         {
             InitializeComponent();
-
-            // Control模式：内部解析ViewModel
-            DataContext = ContainerLocator.Container.Resolve<AccountSettingsViewModel>();
         }
     }
 }

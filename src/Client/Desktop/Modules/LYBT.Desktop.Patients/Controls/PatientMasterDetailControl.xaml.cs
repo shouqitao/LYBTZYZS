@@ -1,5 +1,4 @@
 using LYBT.Desktop.Infrastructure.Controls;
-using LYBT.Desktop.Patients.ViewModels;
 
 namespace LYBT.Desktop.Patients.Controls
 {
@@ -14,7 +13,7 @@ namespace LYBT.Desktop.Patients.Controls
         public PatientMasterDetailControl()
         {
             InitializeComponent();
-            InitializeViewModel<PatientMasterDetailViewModel>();
+            InitializeAsyncSupport();
         }
     }
 }

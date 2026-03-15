@@ -1,5 +1,4 @@
 using LYBT.Desktop.Infrastructure.Controls;
-using LYBT.Desktop.Herbs.ViewModels;
 
 namespace LYBT.Desktop.Herbs.Controls
 {
@@ -14,7 +13,7 @@ namespace LYBT.Desktop.Herbs.Controls
         public HerbMasterDetailControl()
         {
             InitializeComponent();
-            InitializeViewModel<HerbMasterDetailViewModel>();
+            InitializeAsyncSupport();
         }
     }
 }

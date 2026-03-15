@@ -1,5 +1,4 @@
 using LYBT.Desktop.Infrastructure.Controls;
-using LYBT.Desktop.Users.ViewModels;
 
 namespace LYBT.Desktop.Users.Controls
 {
@@ -14,7 +13,7 @@ namespace LYBT.Desktop.Users.Controls
         public UserMasterDetailControl()
         {
             InitializeComponent();
-            InitializeViewModel<UserMasterDetailViewModel>();
+            InitializeAsyncSupport();
         }
     }
 }

@@ -179,6 +179,7 @@ public partial class App : PrismApplication
     {
         base.ConfigureViewModelLocator();
         ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
+        ViewModelLocationProvider.Register<Controls.AccountSettingsControl, ViewModels.AccountSettingsViewModel>();
     }
 
     /// <summary>应用程序初始化完成后的回调</summary>

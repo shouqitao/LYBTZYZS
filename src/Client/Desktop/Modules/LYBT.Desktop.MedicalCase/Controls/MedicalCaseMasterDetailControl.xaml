@@ -1,7 +1,7 @@
 ﻿<!--
     MedicalCaseMasterDetailControl - 医案Master-Detail控件
     OpenSpec: refactor-admin-workspace
-
+    
     可复用业务控件，供Admin和Clinical角色台使用
     从MedicalCaseMasterDetailView重构而来
     注意：医案不支持新建，新建通过挂号入口创建
@@ -14,7 +14,8 @@
     xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
     xmlns:local="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
-    xmlns:prism="http://prismlibrary.com/">
+    xmlns:prism="http://prismlibrary.com/"
+    prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):
@@ -24,9 +25,11 @@
     -->
 
     <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}">
-        <!-- ========================================
-             Master区域: 医案列表
-             ======================================== -->
+        <!--
+            ========================================
+            Master区域: 医案列表
+            ========================================
+        -->
         <controls:MasterDetailLayout.MasterContent>
             <Grid>
                 <Grid.RowDefinitions>
@@ -36,13 +39,13 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!-- 工具栏 - 仅刷新和批量删除 -->
+                <!--  工具栏 - 仅刷新和批量删除  -->
                 <controls:DataGridToolbar
                     Grid.Row="0"
                     BatchDeleteCommand="{Binding DeleteCommand}"
                     RefreshCommand="{Binding RefreshCommand}" />
 
-                <!-- 搜索框 -->
+                <!--  搜索框  -->
                 <controls:SearchBox
                     Grid.Row="1"
                     Margin="12,8"
@@ -50,7 +53,7 @@
                     SearchCommand="{Binding SearchCommand}"
                     SearchText="{Binding SearchText, Mode=TwoWay}" />
 
-                <!-- 医案列表 -->
+                <!--  医案列表  -->
                 <DataGrid
                     Grid.Row="2"
                     Margin="0,0,0,8"
@@ -61,7 +64,7 @@
                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                     Style="{DynamicResource MasterDetailDataGridStyle}">
                     <DataGrid.Columns>
-                        <!-- 患者姓名 -->
+                        <!--  患者姓名  -->
                         <DataGridTextColumn
                             Width="100"
                             Binding="{Binding PatientName}"
@@ -76,7 +79,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 就诊日期 -->
+                        <!--  就诊日期  -->
                         <DataGridTextColumn
                             Width="90"
                             Binding="{Binding CreatedAt, StringFormat=yyyy-MM-dd}"
@@ -89,7 +92,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 中医诊断 -->
+                        <!--  中医诊断  -->
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding Diagnosis}"
@@ -103,7 +106,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- 状态 -->
+                        <!--  状态  -->
                         <DataGridTemplateColumn Width="70" Header="状态">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -113,7 +116,7 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
 
-                    <!-- 右键菜单 - ContextMenu需通过PlacementTarget获取DataContext -->
+                    <!--  右键菜单 - ContextMenu需通过PlacementTarget获取DataContext  -->
                     <DataGrid.ContextMenu>
                         <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem Command="{Binding EditCommand}" Header="查看详情" />
@@ -123,7 +126,7 @@
                     </DataGrid.ContextMenu>
                 </DataGrid>
 
-                <!-- 分页控件 -->
+                <!--  分页控件  -->
                 <Border Grid.Row="3" Style="{DynamicResource MasterDetailPaginationPanelStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -133,14 +136,14 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 统计信息 -->
+                        <!--  统计信息  -->
                         <TextBlock Grid.Column="0" Style="{DynamicResource MasterDetailPaginationInfoStyle}">
                             <Run Text="共" />
                             <Run FontWeight="Medium" Text="{Binding TotalCount, Mode=OneWay}" />
                             <Run Text="条记录" />
                         </TextBlock>
 
-                        <!-- 每页条数选择 -->
+                        <!--  每页条数选择  -->
                         <StackPanel
                             Grid.Column="1"
                             Margin="16,0,0,0"
@@ -164,7 +167,7 @@
                                 Text="条" />
                         </StackPanel>
 
-                        <!-- 分页按钮 -->
+                        <!--  分页按钮  -->
                         <StackPanel
                             Grid.Column="3"
                             HorizontalAlignment="Right"
@@ -197,7 +200,7 @@
                     </Grid>
                 </Border>
 
-                <!-- 加载遮罩 -->
+                <!--  加载遮罩  -->
                 <controls:LoadingOverlay
                     Grid.RowSpan="4"
                     IsLoading="{Binding IsLoading}"
@@ -205,9 +208,11 @@
             </Grid>
         </controls:MasterDetailLayout.MasterContent>
 
-        <!-- ========================================
-             Detail区域: 医案详情
-             ======================================== -->
+        <!--
+            ========================================
+            Detail区域: 医案详情
+            ========================================
+        -->
         <controls:MasterDetailLayout.DetailContent>
             <Grid>
                 <Grid.RowDefinitions>
@@ -215,7 +220,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- 详情工具栏 -->
+                <!--  详情工具栏  -->
                 <controls:DetailToolbar
                     Title="{Binding DetailTitle}"
                     Grid.Row="0"
@@ -225,7 +230,7 @@
                     IsEditMode="{Binding IsEditMode}"
                     SaveCommand="{Binding SaveCommand}" />
 
-                <!-- 详情内容 - 查看模式 -->
+                <!--  详情内容 - 查看模式  -->
                 <local:MedicalCaseViewControl
                     Grid.Row="1"
                     Margin="16"
@@ -233,8 +238,8 @@
                     ShowAuditInfo="True"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
 
-                <!-- 详情内容 - 编辑模式 -->
-                <!-- OpenSpec: unify-control-data-binding - 使用对象化绑定代替分散属性 -->
+                <!--  详情内容 - 编辑模式  -->
+                <!--  OpenSpec: unify-control-data-binding - 使用对象化绑定代替分散属性  -->
                 <local:MedicalCaseEditControl
                     Grid.Row="1"
                     Margin="16"
@@ -251,7 +256,7 @@
                     UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
-                <!-- 详情加载遮罩 -->
+                <!--  详情加载遮罩  -->
                 <controls:LoadingOverlay
                     Grid.RowSpan="2"
                     IsLoading="{Binding IsBusy}"
@@ -259,10 +264,12 @@
             </Grid>
         </controls:MasterDetailLayout.DetailContent>
 
-        <!-- ========================================
-             空状态: 未选择医案时显示
-             医案不支持新建，不显示新建按钮
-             ======================================== -->
+        <!--
+            ========================================
+            空状态: 未选择医案时显示
+            医案不支持新建，不显示新建按钮
+            ========================================
+        -->
         <controls:MasterDetailLayout.EmptyContent>
             <controls:EmptyState Title="请选择医案" Subtitle="在左侧列表中选择一个医案查看详情" />
         </controls:MasterDetailLayout.EmptyContent>

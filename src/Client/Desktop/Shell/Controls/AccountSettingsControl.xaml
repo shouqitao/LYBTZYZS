@@ -13,8 +13,10 @@
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
     d:DesignHeight="800"
     d:DesignWidth="1400"
+    prism:ViewModelLocator.AutoWireViewModel="True"
     Background="{DynamicResource SecondaryRegionBrush}"
     mc:Ignorable="d">
 
@@ -189,9 +191,9 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280" />  
+            <ColumnDefinition Width="280" />
             <!--  左侧导航  -->
-            <ColumnDefinition Width="*" />    
+            <ColumnDefinition Width="*" />
             <!--  右侧内容  -->
         </Grid.ColumnDefinitions>
 
@@ -207,15 +209,15 @@
             BorderThickness="0,0,1,0">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />  
+                    <RowDefinition Height="Auto" />
                     <!--  返回按钮  -->
-                    <RowDefinition Height="Auto" />  
+                    <RowDefinition Height="Auto" />
                     <!--  用户信息  -->
-                    <RowDefinition Height="Auto" />  
+                    <RowDefinition Height="Auto" />
                     <!--  分隔线  -->
-                    <RowDefinition Height="Auto" />  
+                    <RowDefinition Height="Auto" />
                     <!--  导航菜单  -->
-                    <RowDefinition Height="*" />     
+                    <RowDefinition Height="*" />
                     <!--  填充  -->
                 </Grid.RowDefinitions>
 

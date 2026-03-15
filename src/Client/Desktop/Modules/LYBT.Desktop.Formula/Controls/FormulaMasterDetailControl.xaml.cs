@@ -1,5 +1,4 @@
 using LYBT.Desktop.Infrastructure.Controls;
-using LYBT.Desktop.Formula.ViewModels;
 
 namespace LYBT.Desktop.Formula.Controls
 {
@@ -14,7 +13,7 @@ namespace LYBT.Desktop.Formula.Controls
         public FormulaMasterDetailControl()
         {
             InitializeComponent();
-            InitializeViewModel<FormulaMasterDetailViewModel>();
+            InitializeAsyncSupport();
         }
     }
 }

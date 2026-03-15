@@ -1,5 +1,4 @@
 using LYBT.Desktop.Infrastructure.Controls;
-using LYBT.Desktop.MedicalCase.ViewModels;
 
 namespace LYBT.Desktop.MedicalCase.Controls
 {
@@ -14,7 +13,7 @@ namespace LYBT.Desktop.MedicalCase.Controls
         public MedicalCaseMasterDetailControl()
         {
             InitializeComponent();
-            InitializeViewModel<MedicalCaseMasterDetailViewModel>();
+            InitializeAsyncSupport();
         }
     }
 }

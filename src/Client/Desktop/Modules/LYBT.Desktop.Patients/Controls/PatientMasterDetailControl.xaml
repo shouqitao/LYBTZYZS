@@ -1,18 +1,20 @@
 ﻿<!--
     PatientMasterDetailControl - 患者Master-Detail控件
     OpenSpec: refactor-admin-workspace
-
+    
     可复用业务控件，供Admin和Clinical角色台使用
     从PatientMasterDetailView重构而来
 -->
-<controls:MasterDetailControlBase x:Class="LYBT.Desktop.Patients.Controls.PatientMasterDetailControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:prism="http://prismlibrary.com/"
-             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:patientControls="clr-namespace:LYBT.Desktop.Patients.Controls">
+<controls:MasterDetailControlBase
+    x:Class="LYBT.Desktop.Patients.Controls.PatientMasterDetailControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
+    xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+    xmlns:patientControls="clr-namespace:LYBT.Desktop.Patients.Controls"
+    xmlns:prism="http://prismlibrary.com/"
+    prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):
@@ -22,291 +24,332 @@
     -->
 
     <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}">
-        <!-- ========================================
-             Master区域: 患者列表
-             ======================================== -->
+        <!--
+            ========================================
+            Master区域: 患者列表
+            ========================================
+        -->
         <controls:MasterDetailLayout.MasterContent>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
-                    <RowDefinition Height="Auto"/>  <!-- 搜索框 -->
-                    <RowDefinition Height="*"/>     <!-- 列表 -->
-                    <RowDefinition Height="Auto"/>  <!-- 分页 -->
+                    <RowDefinition Height="Auto" />  
+                    <!--  工具栏  -->
+                    <RowDefinition Height="Auto" />  
+                    <!--  搜索框  -->
+                    <RowDefinition Height="*" />     
+                    <!--  列表  -->
+                    <RowDefinition Height="Auto" />  
+                    <!--  分页  -->
                 </Grid.RowDefinitions>
 
-                <!-- 工具栏 -->
-                <controls:DataGridToolbar Grid.Row="0"
-                                          CreateCommand="{Binding CreateNewCommand}"
-                                          RefreshCommand="{Binding RefreshCommand}"
-                                          BatchDeleteCommand="{Binding DeleteCommand}">
+                <!--  工具栏  -->
+                <controls:DataGridToolbar
+                    Grid.Row="0"
+                    BatchDeleteCommand="{Binding DeleteCommand}"
+                    CreateCommand="{Binding CreateNewCommand}"
+                    RefreshCommand="{Binding RefreshCommand}">
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="导入"
-                                    Style="{DynamicResource SecondaryButton}"
-                                    Command="{Binding ImportCommand}"
-                                    Padding="12,6"
-                                    Margin="4,0,0,0"/>
-                            <Button Content="导出"
-                                    Style="{DynamicResource SecondaryButton}"
-                                    Command="{Binding ExportCommand}"
-                                    Padding="12,6"
-                                    Margin="4,0,0,0"/>
-                            <Button Content="模板"
-                                    Style="{DynamicResource SecondaryButton}"
-                                    Command="{Binding DownloadTemplateCommand}"
-                                    Padding="12,6"
-                                    Margin="4,0,0,0"/>
-                            <!-- OpenSpec: integrate-cardreader-module - 刷卡录入按钮 -->
-                            <Button Content="刷卡录入"
-                                    Style="{DynamicResource SuccessButton}"
-                                    Command="{Binding ReadCardCommand}"
-                                    IsEnabled="{Binding IsCardReaderConnected}"
-                                    ToolTip="使用身份证读卡器快速录入患者信息"
-                                    Padding="12,6"
-                                    Margin="8,0,0,0"/>
+                            <Button
+                                Margin="4,0,0,0"
+                                Padding="12,6"
+                                Command="{Binding ImportCommand}"
+                                Content="导入"
+                                Style="{DynamicResource SecondaryButton}" />
+                            <Button
+                                Margin="4,0,0,0"
+                                Padding="12,6"
+                                Command="{Binding ExportCommand}"
+                                Content="导出"
+                                Style="{DynamicResource SecondaryButton}" />
+                            <Button
+                                Margin="4,0,0,0"
+                                Padding="12,6"
+                                Command="{Binding DownloadTemplateCommand}"
+                                Content="模板"
+                                Style="{DynamicResource SecondaryButton}" />
+                            <!--  OpenSpec: integrate-cardreader-module - 刷卡录入按钮  -->
+                            <Button
+                                Margin="8,0,0,0"
+                                Padding="12,6"
+                                Command="{Binding ReadCardCommand}"
+                                Content="刷卡录入"
+                                IsEnabled="{Binding IsCardReaderConnected}"
+                                Style="{DynamicResource SuccessButton}"
+                                ToolTip="使用身份证读卡器快速录入患者信息" />
                         </StackPanel>
                     </controls:DataGridToolbar.AdditionalContent>
                 </controls:DataGridToolbar>
 
-                <!-- 搜索框 -->
-                <controls:SearchBox Grid.Row="1"
-                                    SearchText="{Binding SearchText, Mode=TwoWay}"
-                                    SearchCommand="{Binding SearchCommand}"
-                                    Placeholder="搜索患者姓名/手机号..."
-                                    Margin="12,8"/>
+                <!--  搜索框  -->
+                <controls:SearchBox
+                    Grid.Row="1"
+                    Margin="12,8"
+                    Placeholder="搜索患者姓名/手机号..."
+                    SearchCommand="{Binding SearchCommand}"
+                    SearchText="{Binding SearchText, Mode=TwoWay}" />
 
-                <!-- 患者列表 -->
-                <DataGrid Grid.Row="2"
-                          ItemsSource="{Binding Items}"
-                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                          behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
-                          behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=OneWay}"
-                          Style="{DynamicResource MasterDetailDataGridStyle}"
-                          RowHeaderWidth="0"
-                          Margin="0,0,0,8">
+                <!--  患者列表  -->
+                <DataGrid
+                    Grid.Row="2"
+                    Margin="0,0,0,8"
+                    behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=OneWay}"
+                    behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
+                    ItemsSource="{Binding Items}"
+                    RowHeaderWidth="0"
+                    SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                    Style="{DynamicResource MasterDetailDataGridStyle}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="姓名"
-                                            Binding="{Binding Name}"
-                                            Width="100">
+                        <DataGridTextColumn
+                            Width="100"
+                            Binding="{Binding Name}"
+                            Header="姓名">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="8,0"/>
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="Padding" Value="8,0" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="性别"
-                                            Binding="{Binding Gender, Converter={x:Static converters:Cvt.EnumDesc}}"
-                                            Width="50">
+                        <DataGridTextColumn
+                            Width="50"
+                            Binding="{Binding Gender, Converter={x:Static converters:Cvt.EnumDesc}}"
+                            Header="性别">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="TextAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="TextAlignment" Value="Center" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="年龄"
-                                            Width="50">
+                        <DataGridTextColumn Width="50" Header="年龄">
                             <DataGridTextColumn.Binding>
-                                <Binding Path="Age" StringFormat="{}{0}岁"/>
+                                <Binding Path="Age" StringFormat="{}{0}岁" />
                             </DataGridTextColumn.Binding>
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="TextAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="TextAlignment" Value="Center" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="手机号"
-                                            Binding="{Binding PhoneNumber}"
-                                            Width="120">
+                        <DataGridTextColumn
+                            Width="120"
+                            Binding="{Binding PhoneNumber}"
+                            Header="手机号">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontFamily" Value="Consolas"/>
-                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="FontFamily" Value="Consolas" />
+                                    <Setter Property="FontSize" Value="11" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="地址"
-                                            Binding="{Binding Address}"
-                                            Width="*">
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding Address}"
+                            Header="地址">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="11"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="FontSize" Value="11" />
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                     </DataGrid.Columns>
 
-                    <!-- 右键菜单 - ContextMenu需通过PlacementTarget获取DataContext -->
+                    <!--  右键菜单 - ContextMenu需通过PlacementTarget获取DataContext  -->
                     <DataGrid.ContextMenu>
                         <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="编辑" Command="{Binding EditCommand}"/>
-                            <Separator/>
-                            <MenuItem Header="查看医案" Command="{Binding ViewMedicalRecordsCommand}"/>
-                            <MenuItem Header="新建医案" Command="{Binding NewConsultationCommand}"/>
-                            <MenuItem Header="恢复" Command="{Binding RestoreCommand}"/>
-                            <Separator/>
-                            <MenuItem Header="删除" Command="{Binding DeleteCommand}"/>
+                            <MenuItem Command="{Binding EditCommand}" Header="编辑" />
+                            <Separator />
+                            <MenuItem Command="{Binding ViewMedicalRecordsCommand}" Header="查看医案" />
+                            <MenuItem Command="{Binding NewConsultationCommand}" Header="新建医案" />
+                            <MenuItem Command="{Binding RestoreCommand}" Header="恢复" />
+                            <Separator />
+                            <MenuItem Command="{Binding DeleteCommand}" Header="删除" />
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                 </DataGrid>
 
-                <!-- 分页控件 -->
+                <!--  分页控件  -->
                 <Border Grid.Row="3" Style="{DynamicResource MasterDetailPaginationPanelStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0" Style="{DynamicResource MasterDetailPaginationInfoStyle}">
-                            <Run Text="共"/>
-                            <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="Medium"/>
-                            <Run Text="条记录"/>
+                            <Run Text="共" />
+                            <Run FontWeight="Medium" Text="{Binding TotalCount, Mode=OneWay}" />
+                            <Run Text="条记录" />
                         </TextBlock>
 
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="每页" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                            <ComboBox ItemsSource="{Binding PageSizes}"
-                                      SelectedItem="{Binding PageSize, Mode=TwoWay}"
-                                      Width="60"
-                                      Margin="6,0"
-                                      VerticalAlignment="Center"
-                                      IsEditable="False"/>
-                            <TextBlock Text="条" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                Text="每页" />
+                            <ComboBox
+                                Width="60"
+                                Margin="6,0"
+                                VerticalAlignment="Center"
+                                IsEditable="False"
+                                ItemsSource="{Binding PageSizes}"
+                                SelectedItem="{Binding PageSize, Mode=TwoWay}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                Text="条" />
                         </StackPanel>
 
-                        <StackPanel Grid.Column="3"
-                                    Orientation="Horizontal"
-                                    HorizontalAlignment="Right">
-                            <Button Content="首页"
-                                    Style="{DynamicResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding GoToFirstPageCommand}"
-                                    Margin="0,0,4,0"/>
-                            <Button Content="上一页"
-                                    Style="{DynamicResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding GoToPreviousPageCommand}"
-                                    Margin="0,0,4,0"/>
+                        <StackPanel
+                            Grid.Column="3"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
+                            <Button
+                                Margin="0,0,4,0"
+                                Command="{Binding GoToFirstPageCommand}"
+                                Content="首页"
+                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                            <Button
+                                Margin="0,0,4,0"
+                                Command="{Binding GoToPreviousPageCommand}"
+                                Content="上一页"
+                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
                             <TextBlock Style="{DynamicResource MasterDetailPaginationPageStyle}">
-                                <Run Text="{Binding CurrentPage, Mode=OneWay}"/>
-                                <Run Text="/"/>
-                                <Run Text="{Binding TotalPages, Mode=OneWay}"/>
+                                <Run Text="{Binding CurrentPage, Mode=OneWay}" />
+                                <Run Text="/" />
+                                <Run Text="{Binding TotalPages, Mode=OneWay}" />
                             </TextBlock>
-                            <Button Content="下一页"
-                                    Style="{DynamicResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding GoToNextPageCommand}"
-                                    Margin="0,0,4,0"/>
-                            <Button Content="末页"
-                                    Style="{DynamicResource MasterDetailPaginationButtonStyle}"
-                                    Command="{Binding GoToLastPageCommand}"/>
+                            <Button
+                                Margin="0,0,4,0"
+                                Command="{Binding GoToNextPageCommand}"
+                                Content="下一页"
+                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                            <Button
+                                Command="{Binding GoToLastPageCommand}"
+                                Content="末页"
+                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
-                <!-- 加载遮罩 -->
-                <controls:LoadingOverlay Grid.RowSpan="4"
-                                         IsLoading="{Binding IsLoading}"
-                                         LoadingText="{Binding BusyMessage}"/>
+                <!--  加载遮罩  -->
+                <controls:LoadingOverlay
+                    Grid.RowSpan="4"
+                    IsLoading="{Binding IsLoading}"
+                    LoadingText="{Binding BusyMessage}" />
             </Grid>
         </controls:MasterDetailLayout.MasterContent>
 
-        <!-- ========================================
-             Detail区域: 患者详情/编辑
-             ======================================== -->
+        <!--
+            ========================================
+            Detail区域: 患者详情/编辑
+            ========================================
+        -->
         <controls:MasterDetailLayout.DetailContent>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- 详情工具栏 -->
-                <controls:DetailToolbar Grid.Row="0"
-                                        Title="{Binding DetailTitle}"
-                                        IsEditMode="{Binding IsEditMode}"
-                                        EditCommand="{Binding EditCommand}"
-                                        SaveCommand="{Binding SaveCommand}"
-                                        CancelCommand="{Binding CancelCommand}"
-                                        DeleteCommand="{Binding DeleteCommand}"/>
+                <!--  详情工具栏  -->
+                <controls:DetailToolbar
+                    Title="{Binding DetailTitle}"
+                    Grid.Row="0"
+                    CancelCommand="{Binding CancelCommand}"
+                    DeleteCommand="{Binding DeleteCommand}"
+                    EditCommand="{Binding EditCommand}"
+                    IsEditMode="{Binding IsEditMode}"
+                    SaveCommand="{Binding SaveCommand}" />
 
-                <!-- 查看模式内容 -->
+                <!--  查看模式内容  -->
                 <patientControls:PatientViewControl
                     Grid.Row="1"
-                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}"
-                    PatientName="{Binding CurrentDetail.Name}"
-                    PinYinCode="{Binding CurrentDetail.PinYinCode}"
-                    Gender="{Binding CurrentDetail.Gender}"
-                    BirthDate="{Binding CurrentDetail.BirthDate}"
-                    Age="{Binding CurrentDetail.Age}"
-                    IdNumber="{Binding CurrentDetail.IdNumber}"
-                    MaritalStatus="{Binding CurrentDetail.MaritalStatus}"
-                    BloodType="{Binding CurrentDetail.BloodType}"
-                    PhoneNumber="{Binding CurrentDetail.PhoneNumber}"
+                    Margin="16"
                     Address="{Binding CurrentDetail.Address}"
+                    Age="{Binding CurrentDetail.Age}"
+                    AllergyHistory="{Binding CurrentDetail.AllergyHistory}"
+                    BirthDate="{Binding CurrentDetail.BirthDate}"
+                    BloodType="{Binding CurrentDetail.BloodType}"
+                    CreatedAt="{Binding CurrentDetail.CreatedAt}"
                     EmergencyContactName="{Binding CurrentDetail.EmergencyContactName}"
                     EmergencyContactPhone="{Binding CurrentDetail.EmergencyContactPhone}"
                     EmergencyContactRelation="{Binding CurrentDetail.EmergencyContactRelation}"
-                    AllergyHistory="{Binding CurrentDetail.AllergyHistory}"
-                    MedicalHistory="{Binding CurrentDetail.MedicalHistory}"
+                    Gender="{Binding CurrentDetail.Gender}"
+                    IdNumber="{Binding CurrentDetail.IdNumber}"
                     LastVisitTime="{Binding CurrentDetail.LastVisitTime}"
-                    VisitCount="{Binding CurrentDetail.VisitCount}"
-                    Status="{Binding CurrentDetail.Status}"
-                    CreatedAt="{Binding CurrentDetail.CreatedAt}"
-                    UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
+                    MaritalStatus="{Binding CurrentDetail.MaritalStatus}"
+                    MedicalHistory="{Binding CurrentDetail.MedicalHistory}"
+                    PatientName="{Binding CurrentDetail.Name}"
+                    PhoneNumber="{Binding CurrentDetail.PhoneNumber}"
+                    PinYinCode="{Binding CurrentDetail.PinYinCode}"
                     ShowStatus="True"
-                    Margin="16"/>
+                    Status="{Binding CurrentDetail.Status}"
+                    UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
+                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}"
+                    VisitCount="{Binding CurrentDetail.VisitCount}" />
 
-                <!-- 编辑模式内容 -->
+                <!--  编辑模式内容  -->
                 <patientControls:PatientEditControl
                     Grid.Row="1"
-                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}"
-                    PatientName="{Binding CurrentDetail.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    PinYinCode="{Binding CurrentDetail.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Margin="16"
+                    Address="{Binding CurrentDetail.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Age="{Binding CurrentDetail.Age}"
+                    BirthDate="{Binding CurrentDetail.BirthDate, Mode=TwoWay}"
+                    ErrorsSource="{Binding CurrentDetail.Errors}"
                     Gender="{Binding CurrentDetail.Gender, Mode=TwoWay}"
                     GenderOptions="{Binding GenderOptions}"
-                    BirthDate="{Binding CurrentDetail.BirthDate, Mode=TwoWay}"
-                    Age="{Binding CurrentDetail.Age}"
                     IdNumber="{Binding CurrentDetail.IdNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    PatientName="{Binding CurrentDetail.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     PhoneNumber="{Binding CurrentDetail.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    Address="{Binding CurrentDetail.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    PinYinCode="{Binding CurrentDetail.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    ShowStatus="True"
                     Status="{Binding CurrentDetail.Status, Mode=TwoWay}"
                     StatusOptions="{Binding StatusOptions}"
-                    ErrorsSource="{Binding CurrentDetail.Errors}"
-                    ShowStatus="True"
-                    Margin="16"/>
+                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
-                <!-- 详情加载遮罩 -->
-                <controls:LoadingOverlay Grid.RowSpan="2"
-                                         IsLoading="{Binding IsBusy}"
-                                         LoadingText="正在处理..."/>
+                <!--  详情加载遮罩  -->
+                <controls:LoadingOverlay
+                    Grid.RowSpan="2"
+                    IsLoading="{Binding IsBusy}"
+                    LoadingText="正在处理..." />
             </Grid>
         </controls:MasterDetailLayout.DetailContent>
 
-        <!-- ========================================
-             空状态: 未选择患者时显示
-             ======================================== -->
+        <!--
+            ========================================
+            空状态: 未选择患者时显示
+            ========================================
+        -->
         <controls:MasterDetailLayout.EmptyContent>
             <controls:EmptyState
                 Title="请选择患者"
-                Subtitle="在左侧列表中选择一位患者查看详情，或点击新增按钮新建患者"
+                ActionCommand="{Binding CreateNewCommand}"
                 ActionText="新增患者"
-                ActionCommand="{Binding CreateNewCommand}"/>
+                Subtitle="在左侧列表中选择一位患者查看详情，或点击新增按钮新建患者" />
         </controls:MasterDetailLayout.EmptyContent>
     </controls:MasterDetailLayout>
 </controls:MasterDetailControlBase>
