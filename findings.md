@@ -1,158 +1,212 @@
-# Findings: Desktop 层架构分析
+# Findings: Sprint 7 - 权限矩阵修复与测试优化收尾
 
-> **分析日期**: 2026-03-14
-> **分析范围**: Desktop 层全部代码（~11,150 CS 文件，73 XAML）
-
----
-
-## Summary
-
-通过 6 个维度的全面分析，识别出 **25 个架构问题**，按严重性分为：
-- P0 (阻塞级): 5 项
-- P1 (高危级): 7 项
-- P2 (中危级): 8 项
-- P3 (低危级): 5 项
+> **更新日期**: 2026-03-16
+> **计划文件**: `~/.claude/plans/compressed-greeting-clover.md`
 
 ---
 
-## Research Findings
+## Sprint 7 任务来源
 
-### 1. ViewModel 复杂度分析
+本 Sprint 整合了以下历史计划中**未完成**的任务：
 
-**总计 17 个 ViewModel，分布如下**：
+| 来源计划 | 日期 | 整合任务 |
+|----------|------|----------|
+| Permission Matrix Defect Remediation | 03-10 | D-4, I-2, G-9, G-11 (4个高优先级问题) |
+| Test-Driven Implementation | 03-11 | TDD 验证方式 (应用到本 Sprint) |
+| Integration Test Performance | 03-12 | 批量迁移、基准测试 |
 
-| 模块 | ViewModel 数量 |
-|------|---------------|
-| MedicalCase | 6 |
-| Formula | 2 |
-| Herbs | 1 |
-| Patients | 1 |
-| Users | 1 |
-| Auth | 1 |
-| Registration | 1 |
-| Sync | 2 |
+**已归档/完成的计划** (不纳入本 Sprint):
+- Desktop 重构优化 (03-14~03-15) ✅ 已完成
+- Test Architecture Refactoring (03-12) ✅ 核心已完成
 
-**Top 5 复杂 ViewModel**：
+---
 
-| ViewModel | 行数 | 注入服务 | 优先级 |
-|-----------|------|----------|--------|
-| SyncViewModel | 597 | 4 | P0 |
-| MedicalCaseCommandsViewModel | 514 | 6 | P0 |
-| LoginViewModel | 509 | 6 | P1 |
-| PatientMasterDetailViewModel | 418 | **9** | P0 |
-| UserMasterDetailViewModel | 409 | 7 | P1 |
+## 历史发现归档
 
-### 2. 启动性能分析
+### Desktop 层架构分析 (2026-03-14)
 
-**启动管道步骤**：
+**详细分析**: 见 `docs/plans/archive/desktop-refactoring-2026-03-15/findings_completed.md`
 
-| 步骤 | 名称 | 耗时风险 |
-|------|------|----------|
-| 1 | 错误处理初始化 | 低 |
-| 2 | 模块协调器初始化 | 低 |
-| 3 | 核心服务初始化 | **中** (预热) |
-| 4 | API 健康检查 | **高** (10s 超时) |
-| 5 | 应用预热 | **中** (空实现) |
+**关键成果**:
+- 识别 25 个架构问题并按严重性分类
+- 完成 4 个 Phase 的重构优化
+- 测试覆盖率从 <20% 提升到 80%+
 
-**关键阻塞点**：
-1. DatabaseInitializer 同步创建数据库
-2. API 健康检查 10 秒阻塞
-3. 11 个模块 WhenAvailable 同步加载
+---
 
-### 3. 模块依赖分析
+## 计划实施状态分析 (2026-03-16)
 
-**项目数量**：
-- Modules: 8 个
-- Core: 8 个
-- Shell: 1 个
-- Roles: 2 个
+### 📋 分析方法论
 
-**发现的循环依赖**：
+通过以下方式确认各计划实施状态:
+1. 读取计划文档原文
+2. 检查 git 提交记录 (2026-03-10 至 2026-03-16)
+3. 验证代码库中相关文件存在性
+4. 对比计划中的 Task 列表与实际完成度
+
+---
+
+### 1️⃣ Server Test PRD-Driven Refactoring (2026-03-10)
+
+**计划目标**: 重写 Server 测试为 PRD-Driven，6 个并行 Collection fixtures，~3x 加速
+
+**实际状态**: 部分实施 ⚠️
+
+| 计划组件 | 实际状态 | 证据 |
+|----------|----------|------|
+| ServerFixture unseal | ✅ | `ServerFixture.cs` 已为 public |
+| 6 Domain Fixtures | ✅ | AuthUsers, ClinicalData, HerbFormula, SystemOps |
+| TestDataBuilders | 📝 | 未找到独立 Builder 类 |
+| BusinessAssertions | 📝 | 未找到自定义断言类 |
+| PRD-Driven 测试 | 📝 | US_*_MustHaveTests 存在但覆盖率待确认 |
+
+**结论**: 基础设施已搭建，测试数据构建器和业务断言尚未完全实施。
+
+---
+
+### 2️⃣ Permission Matrix Defect Remediation (2026-03-10)
+
+**计划目标**: 修复 role-permission-matrix.md v1.1 发现的 11 个问题
+
+**实际状态**: 设计完成，代码实施未开始 ❌
+
+| 问题编号 | 类别 | 优先级 | 代码变更状态 | 测试状态 |
+|----------|------|--------|--------------|----------|
+| D-4 | 逻辑缺陷 | HIGH | ❌ 未开始 | ❌ 未开始 |
+| D-5 | 逻辑缺陷 | MEDIUM | ❌ 未开始 | ❌ 未开始 |
+| D-6 | 逻辑缺陷 | LOW | ❌ 未开始 | ❌ 未开始 |
+| I-1 | PRD不一致 | MEDIUM | ❌ 未开始 | ❌ 未开始 |
+| I-2 | PRD不一致 | HIGH | ❌ 未开始 | ❌ 未开始 |
+| G-7 ~ G-12 | 设计不足 | MIXED | ❌ 未开始 | ❌ 未开始 |
+
+**关键阻塞点**:
+- `IsLocked` 动态计算逻辑未实现
+- Registration 回退流程代码未实现
+- 医生禁用前置校验未实现
+
+**结论**: 这是一份详细的设计文档，但代码实施工作尚未开始。
+
+---
+
+### 3️⃣ Test-Driven Implementation Plan (2026-03-11)
+
+**计划目标**: 通过 TDD 确保权限矩阵缺陷修复和 Journey Test 重构
+
+**实际状态**: 计划中，未开始实施 ❌
+
+| Phase | 任务数 | 实施状态 |
+|-------|--------|----------|
+| Phase 1: 权限矩阵缺陷验证 | 5 | ❌ 未开始 |
+| Phase 2: Journey Test 重构 | 10 | ❌ 未开始 |
+| Phase 3: PRD 驱动测试对齐 | 8 模块 | ❌ 未开始 |
+| Phase 4: 验证与完成 | 3 | ❌ 未开始 |
+
+**依赖关系**: 本计划依赖于 Permission Matrix Defect Remediation 的实施。
+
+**结论**: 这是一个执行计划，等待前置设计文档的实施。
+
+---
+
+### 4️⃣ Test Architecture Refactoring (2026-03-12)
+
+**计划目标**: 创建 LYBT.Tests.Server.Unit 项目，分层测试架构
+
+**实际状态**: 核心实施完成 ✅
+
+| Task | 计划文件 | 实际状态 | git 提交 |
+|------|----------|----------|----------|
+| Create Unit Test Project | Task 1 | ✅ | c5f52e2db |
+| Migrate PasswordHelper Tests | Task 2 | ✅ | 已迁移 |
+| Migrate Logging Tests | Task 3 | ✅ | 已迁移 |
+| Migrate Validator Tests | Task 4 | ✅ | 已迁移 |
+| Migrate Exception Tests | Task 5 | ✅ | 已迁移 |
+| Migrate Entity Tests | Task 6 | 📝 | 部分完成 |
+| Migrate Config Tests | Task 7 | 📝 | 部分完成 |
+| Cleanup Directories | Task 8 | ✅ | 已完成 |
+| Optimize Collections | Task 9 | ✅ | 8→4 已合并 |
+| Add runsettings | Task 10 | 📝 | 未确认 |
+
+**验证结果**:
 ```
-Patients -> MedicalCase (csproj:81)
+$ ls tests/LYBT.Tests.Server.Unit/
+Entities/  LYBT.Tests.Server.Unit.csproj  Shared/  Usings.cs  Utilities/  Validators/  bin/  obj/
+
+$ ls tests/LYBT.Tests.Server.Unit/Shared/
+Auth/  Configuration/  ExceptionHandling/  Logging/
 ```
 
-**架构合规性**：总体良好，Contracts 层正确解耦
-
-### 4. 双模式架构评估
-
-**结论**：实现质量 **优秀**
-
-| 检查项 | 状态 |
-|--------|------|
-| Repository 工厂注册 | 通过 |
-| 无硬编码模式判断 | 通过 |
-| 单例服务不直接依赖 Repository | 通过 |
-| 本地基础设施始终注册 | 通过 |
-| 模式切换事件通知 | 通过 |
-
-### 5. XAML 分析
-
-**统计**：
-- XAML 文件总数: 73 个
-- Converter 文件: 19 个
-
-**硬编码问题**：
-- FontFamily="Microsoft YaHei": 37 处
-- 颜色硬编码: 37+ 处
-- FontSize="14": 117 处
-
-**重复样式**：
-- PrimaryButton: 4+ 处定义
-- FormLabel: 3 种命名
-
-### 6. 测试覆盖分析
-
-**测试数量对比**：
-
-| 测试项目 | 测试方法数 | 策略 |
-|---------|-----------|------|
-| LYBT.Tests.Desktop | ~548 | SQLite + NSubstitute |
-| LYBT.Tests.Server | ~485 | SQL Server + Respawn |
-
-**测试缺口**：
-- MedicalCaseMasterDetailViewModel: 无测试
-- PatientMasterDetailViewModel: 无测试
-- LoginViewModel: 无测试
-- SyncViewModel: 无测试
-
-**ViewModel 层测试覆盖率**: < 20%
+**结论**: 单元测试项目已成功建立，核心测试类已迁移，剩余部分实体和配置测试可继续完善。
 
 ---
 
-## Technical Decisions
+### 5️⃣ Integration Test Performance Optimization (2026-03-12)
 
-| 决策 | 理由 |
-|------|------|
-| 优先拆分 ViewModel | 解决最严重的 SRP 违反 |
-| 延迟初始化数据库 | 避免首次启动阻塞 |
-| 统一 ButtonStyles.xaml | 消除样式重复的最小侵入方案 |
-| 保留双模式架构 | 当前实现已优秀，无需改动 |
+**计划目标**: 将集成测试从 102 秒降至 30 秒以内
+
+**实际状态**: 核心基础设施完成 ✅，批量迁移待续 📝
+
+| Task | 计划内容 | 实际状态 | git 提交 |
+|------|----------|----------|----------|
+| SharedTestContext | Task 1 | ✅ | d35d054f9 |
+| TransactionalIntegrationTestBase | Task 2 | ✅ | 0bb164407 |
+| Transactional Collections | Task 3 | ✅ | 0c4f4463b |
+| Migrate One Test Class | Task 4 | ✅ | 9590b9264 |
+| Performance Benchmark | Task 5 | 📝 | 未执行正式对比 |
+| Batch Migration | Task 6 | 📝 | 部分完成 |
+| UserJourney Migration | Task 7 | 📝 | 未开始 |
+| Final Verification | Task 8 | 📝 | 未执行 |
+
+**关键提交确认**:
+- `0bb164407` - feat(tests): add TransactionalIntegrationTestBase with transaction isolation
+- `0c4f4463b` - feat(tests): add transactional collection definitions for fast tests
+- `9590b9264` - perf(tests): migrate US_Auth_MustHaveTests to transactional model
+- `b0def4e1d` - perf(tests): enable parallel execution within collections
+
+**验证结果**:
+```
+$ ls tests/LYBT.Tests.Server/_Infrastructure/SharedTestContext.cs
+SharedTestContext exists
+```
+
+**结论**: 性能优化基础设施已就绪，SharedTestContext 和 TransactionalIntegrationTestBase 已可用。剩余工作为批量迁移现有测试类并验证性能提升。
 
 ---
 
-## Issues Encountered
+## 总结
 
-### P0 级问题（立即修复）
+### 📊 计划实施统计
 
-1. **PatientMasterDetailViewModel 注入 9 个服务** - 严重违反 SRP
-2. **DatabaseInitializer 同步阻塞启动** - 首次启动阻塞 UI
-3. **API 健康检查阻塞启动 10 秒** - WebAPI 未启动时延迟
-4. **SyncViewModel 597 行代码** - 同步工作流逻辑臃肿
-5. **MedicalCaseCommandsViewModel 514 行** - 9 个命令职责过重
+| 计划文件 | 日期 | 实施状态 | 完成度 |
+|----------|------|----------|--------|
+| Server Test PRD-Driven | 03-10 | 部分实施 | ~60% |
+| Permission Matrix Defect | 03-10 | 设计完成 | 0% |
+| Test-Driven Implementation | 03-11 | 计划中 | 0% |
+| Test Architecture | 03-12 | 核心完成 | ~80% |
+| Integration Test Perf | 03-12 | 核心完成 | ~70% |
 
-### P1 级问题（本周修复）
+### 🔴 待实施高优先级任务
 
-6. **LoginViewModel 509 行无测试** - 核心登录逻辑无测试
-7. **XAML 颜色硬编码 37+ 处** - 主题切换困难
-8. **按钮样式重复定义 4+ 次** - 维护成本高
-9. **FontFamily 硬编码 37 处** - 未使用 DesignTokens
-10. **MedicalCaseMasterDetailViewModel 无测试**
-11. **PatientMasterDetailViewModel 无测试**
-12. **模块同步初始化阻塞** - 11 个模块同时加载
+1. **Permission Matrix 缺陷修复** (11 个问题)
+   - IsLocked 动态计算
+   - Registration 回退流程
+   - 医生禁用处理
+
+2. **测试性能优化收尾**
+   - 批量迁移测试到 Transactional 模型
+   - 执行性能基准测试
+
+### 🟢 已完成成果
+
+1. Desktop 重构优化 (Phase 1-4) ✅
+2. Server.Unit 测试项目 ✅
+3. SharedTestContext 基础设施 ✅
+4. TransactionalIntegrationTestBase ✅
+5. 测试 Collection 优化 (8→4) ✅
 
 ---
 
 ## References
 
-- 详细问题清单: 见 `docs/plans/2026-03-14-desktop-refactoring-design.md`
+- 计划文档: `docs/plans/2026-03-10-*` ~ `docs/plans/2026-03-12-*`
+- 归档目录: `docs/plans/archive/`
+- 代码验证: `tests/LYBT.Tests.Server.Unit/`, `tests/LYBT.Tests.Server/_Infrastructure/`

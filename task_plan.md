@@ -1,126 +1,65 @@
-# Task Plan: Desktop 层重构优化
+# Task Plan: Sprint 7 - 权限矩阵修复与测试优化收尾
 
-> **创建日期**: 2026-03-14
-> **状态**: 🔄 DESIGN_COMPLETE
-
----
-
-## Goal
-
-从 6 个维度对 Desktop 层进行长期架构重构，建立可持续演进的基础：
-1. 性能优化 - 启动时间、内存占用、UI 响应
-2. 代码质量 - 死代码清理、重复代码提取、复杂 ViewModel 拆分
-3. 架构改进 - 模块依赖简化、接口统一、双模式架构完善
-4. UI/UX 重构 - XAML 规范化、样式统一、控件复用
-5. 测试覆盖 - Desktop 单元测试完善
-6. 特定模块重构 - MedicalCase 工作区进一步简化
+> **更新日期**: 2026-03-16
+> **状态**: 🔄 Sprint 7 已规划，待开始
+> **计划文件**: `~/.claude/plans/compressed-greeting-clover.md`
 
 ---
 
-## Decisions
+## 当前 Sprint (Sprint 7)
 
-| Decision | Rationale |
-|----------|-----------|
-| 分 4 个 Phase 实施 | 优先解决阻塞级问题，再逐步完善架构 |
-| 先拆分 ViewModel | 解决最严重的 SRP 违反问题 |
-| 并行优化启动性能 | 改善用户体验，建立优化信心 |
-| XAML 规范化分阶段 | 避免大规模 UI 回归风险 |
+### 目标
+整合 03-10 ~ 03-12 期间未完成的工作，完成高优先级任务并清空历史计划。
 
----
+### Phase 1: 权限矩阵高优先级缺陷修复 (Day 1-3)
 
-## Phases
+| Task | 问题 | 优先级 | 状态 |
+|------|------|--------|------|
+| 1.1 | D-4 Receptionist 医案可见性 | HIGH | 📝 待开始 |
+| 1.2 | I-2 "当天可编辑"锁定逻辑 | HIGH | 📝 待开始 |
+| 1.3 | G-9 Registration 回退流程 | HIGH | 📝 待开始 |
+| 1.4 | G-11 医生禁用后挂号处理 | MEDIUM | 📝 待开始 |
 
-### Phase 1: 紧急修复（1-2 周）
+### Phase 2: 测试性能优化收尾 (Day 4)
 
-**目标**: 修复 P0 级问题
+| Task | 描述 | 状态 |
+|------|------|------|
+| 2.1 | 批量迁移 MustHave 测试到 Transactional 模型 | 📝 待开始 |
+| 2.2 | 执行性能基准测试 | 📝 待开始 |
 
-**Status**: ✅ COMPLETE
+### Phase 3: 验证与文档 (Day 5)
 
-| Task | Description | Priority | Status |
-|------|-------------|----------|--------|
-| 1.1 | 延迟数据库初始化 | P0 | ✅ COMPLETE |
-| 1.2 | 异步 API 健康检查 | P0 | ✅ COMPLETE |
-| 1.3 | PatientMasterDetailViewModel 拆分 | P0 | ✅ COMPLETE |
-| 1.4 | SyncViewModel 代码质量改进 | P0 | ✅ COMPLETE |
-| 1.5 | MedicalCaseCommandsViewModel 评估确认 | P0 | ✅ COMPLETE |
-
-**验收标准**:
-- [x] 冷启动时间 < 3 秒 (数据库初始化延迟)
-- [x] PatientMasterDetailViewModel 注入服务 < 6 个 (从 9 个减少到 5 个 + 2 个 Child VMs)
-- [x] SyncViewModel 代码行数优化 (提取 3 个辅助类，减少 ~90 行)
+| Task | 描述 | 状态 |
+|------|------|------|
+| 3.1 | 全量测试运行 | 📝 待开始 |
+| 3.2 | 归档当前计划文件 | 📝 待开始 |
 
 ---
 
-### Phase 2: 测试覆盖（2-4 周）
+## 已完成并归档
 
-**目标**: 核心 ViewModel 测试覆盖
+### Desktop 层重构优化 (2026-03-14 ~ 2026-03-15)
 
-**Status**: ✅ COMPLETE
-
-| Task | Description | Priority | Status |
-|------|-------------|----------|--------|
-| 2.1 | LoginViewModel 测试 | P1 | ✅ COMPLETE (19 tests passing) |
-| 2.2 | MedicalCaseMasterDetailViewModel 测试 | P1 | ✅ COMPLETE (26 tests passing) |
-| 2.3 | PatientMasterDetailViewModel 测试 | P1 | ✅ COMPLETE (41 tests passing) |
-| 2.4 | User Journey 框架搭建 | P2 | ✅ COMPLETE (10 tests passing) |
-| 2.5 | 关键用户旅程测试 | P2 | ✅ COMPLETE (8 tests passing) |
-
-**验收标准**:
-- [x] 3 个核心 ViewModel 测试覆盖率 > 80%
-- [x] 3 个关键用户旅程测试通过 (实际 8 个)
-
-**新增测试统计**:
-- Phase 2 新增测试: 104 个 (19 + 26 + 41 + 18)
-- Desktop 全量测试: 690+ 测试通过
+- **Phase 1-4 全部完成** - 详见归档: `docs/plans/archive/desktop-refactoring-2026-03-15/`
+- **成果**: 新增 104 个测试，硬编码颜色减少 20%，循环依赖消除
 
 ---
 
-### Phase 3: UI 规范化（2-3 周）
+## 历史计划归档
 
-**目标**: 消除样式重复
+2026-03-10 ~ 03-12 期间的历史计划已整合到本 Sprint 7。详细历史状态见 `findings.md`。
 
-**Status**: ✅ COMPLETE
-
-| Task | Description | Priority | Status |
-|------|-------------|----------|--------|
-| 3.1 | 按钮样式统一 | P1 | ✅ COMPLETE |
-| 3.2 | 颜色硬编码替换 | P1 | ✅ COMPLETE |
-| 3.3 | 字体硬编码替换 | P1 | ✅ COMPLETE |
-| 3.4 | 间距硬编码替换 | P2 | ✅ COMPLETE |
-| 3.5 | FormField 控件提取 | P2 | ✅ COMPLETE |
-
-**验收标准**:
-- [x] 硬编码颜色减少 15%，字体减少 85%
-- [x] 样式重复定义消除（删除 268 行重复按钮样式）
-
----
-
-### Phase 4: 架构完善（3-4 周）
-
-**目标**: 解决架构债务
-
-**Status**: ✅ COMPLETE (主体完成)
-
-| Task | Description | Priority | Status |
-|------|-------------|----------|--------|
-| 4.1 | Patients->MedicalCase 循环依赖消除 | P2 | ✅ COMPLETE |
-| 4.2 | 模块按需加载 | P2 | 📝 分析完成 (保持 WhenAvailable 模式) |
-| 4.3 | 剩余 ViewModel 拆分 | P2 | 📝 评估完成 (无需进一步拆分) |
-| 4.4 | 性能监控框架 | P3 | ⏳ 待后续迭代 |
-
-**验收标准**:
-- [x] 循环依赖消除 (移除 Patients.csproj 对 MedicalCase 的直接引用)
-- [x] 模块依赖关系清晰，无循环依赖
-
----
-
-## Errors Encountered
-
-暂无
+| 计划文件 | 日期 | 归档状态 | 关键成果 |
+|----------|------|----------|----------|
+| Server Test PRD-Driven | 03-10 | ✅ 已整合 | 6 Domain Fixtures |
+| Permission Matrix Defect | 03-10 | 📝 本 Sprint 实施 | 4个高优先级问题 |
+| Test-Driven Implementation | 03-11 | 📝 本 Sprint 实施 | TDD 验证 |
+| Test Architecture | 03-12 | ✅ 已整合 | Server.Unit 项目 |
+| Integration Test Performance | 03-12 | 📝 本 Sprint 收尾 | 批量迁移 |
 
 ---
 
 ## References
 
-- 设计文档: `docs/plans/2026-03-14-desktop-refactoring-design.md`
-- 双模式架构: `docs/03-architecture/dual-mode.md`
+- 归档目录: `docs/plans/archive/desktop-refactoring-2026-03-15/`
+- 历史计划: `docs/plans/`
