@@ -24,6 +24,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 /// All operations go through the MedicalCase aggregate root via IMedicalCaseService.
 /// Import operations (formula/history/clear) are handled directly, replacing PrescriptionImportHandler callbacks.
 /// </summary>
+/// <remarks>
+/// ARCHITECTURE-NOTE: This VM is intentionally kept as a single cohesive unit despite having 9 commands.
+/// The commands are highly coupled (sharing _context, _medicalCaseService, delegates from parent)
+/// and represent a single responsibility: "Medical Case Lifecycle Commands".
+/// Attempting to split would introduce unnecessary complexity and cross-VM coordination overhead.
+/// See: Phase 1 Architecture Review 2026-03-15
+/// </remarks>
 public class MedicalCaseCommandsViewModel : ChildViewModelBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
