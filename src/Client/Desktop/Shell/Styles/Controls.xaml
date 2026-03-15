@@ -11,133 +11,16 @@
         - 控件高度: 36px (标准) / 40px (大按钮)
     -->
 
-    <!--  ========== 按钮样式 (OpenSpec: optimize-module-list-ui - UI-025) ==========  -->
+    <!--  ========== 按钮样式 (从 ButtonStyles.xaml 引用) ==========  -->
 
-    <!--  主按钮 (Primary Button) - Fluent Design #0078D4  -->
-    <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Height" Value="36" />
-        <Setter Property="Padding" Value="16,0" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="FontFamily" Value="Microsoft YaHei" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border
-                        x:Name="border"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="4">
-                        <ContentPresenter
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DarkPrimaryBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DarkPrimaryBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!--  次级按钮 (Secondary Button) - Fluent Design  -->
-    <Style x:Key="SecondaryButton" TargetType="Button">
-        <Setter Property="Background" Value="White" />
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+    <!--  Shell 特有的按钮样式扩展  -->
+    <Style
+        x:Key="OutlineButton"
+        BasedOn="{StaticResource SecondaryButton}"
+        TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Height" Value="36" />
-        <Setter Property="Padding" Value="16,0" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="FontFamily" Value="Microsoft YaHei" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border
-                        x:Name="border"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="4">
-                        <ContentPresenter
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource ThirdlyRegionBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource SecondaryRegionBrush}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!--  危险按钮 (Danger Button) - #D32F2F, Hover: #B71C1C  -->
-    <Style x:Key="DangerButton" TargetType="Button">
-        <Setter Property="Background" Value="{DynamicResource DangerBrush}" />
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Height" Value="36" />
-        <Setter Property="Padding" Value="16,0" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="FontFamily" Value="Microsoft YaHei" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border
-                        x:Name="border"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="4">
-                        <ContentPresenter
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DarkDangerBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DarkDangerBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <!--  ========== 输入控件样式 ==========  -->
@@ -348,54 +231,10 @@
         <Setter Property="BorderThickness" Value="0,0,1,0" />
     </Style>
 
-    <!--  ========== 成功按钮样式 ==========  -->
-
-    <!--  成功按钮 (Success Button) - #388E3C, Hover: #2E7D32  -->
-    <Style x:Key="SuccessButton" TargetType="Button">
-        <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Height" Value="36" />
-        <Setter Property="Padding" Value="16,0" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="FontFamily" Value="Microsoft YaHei" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border
-                        x:Name="border"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="4">
-                        <ContentPresenter
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DarkSuccessBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DarkSuccessBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
     <!--  ========== 兼容性别名 (Legacy Compatibility) ==========  -->
     <!--
         以下别名用于兼容旧代码中的样式引用
-        新代码应使用新命名: PrimaryButton, SecondaryButton, DangerButton
+        新代码应使用 ButtonStyles.xaml 中的样式: PrimaryButton, SecondaryButton, DangerButton 等
     -->
 
     <!--  按钮样式别名  -->
@@ -414,6 +253,14 @@
     <Style
         x:Key="SuccessButtonStyle"
         BasedOn="{StaticResource SuccessButton}"
+        TargetType="Button" />
+    <Style
+        x:Key="WarningButtonStyle"
+        BasedOn="{StaticResource WarningButton}"
+        TargetType="Button" />
+    <Style
+        x:Key="OutlineButtonStyle"
+        BasedOn="{StaticResource OutlineButton}"
         TargetType="Button" />
 
     <!--  输入控件样式别名  -->
@@ -504,95 +351,6 @@
         </Setter>
     </Style>
 
-    <!--  ========== 警告按钮样式 ==========  -->
-
-    <!--  警告按钮 (Warning Button) - #F57C00, Hover: #E65100  -->
-    <Style x:Key="WarningButton" TargetType="Button">
-        <Setter Property="Background" Value="{DynamicResource WarningBrush}" />
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Height" Value="36" />
-        <Setter Property="Padding" Value="16,0" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="FontFamily" Value="Microsoft YaHei" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border
-                        x:Name="border"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="4">
-                        <ContentPresenter
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DarkWarningBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DarkWarningBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!--  轮廓按钮 (Outline Button) - Fluent Design  -->
-    <Style x:Key="OutlineButton" TargetType="Button">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Height" Value="36" />
-        <Setter Property="Padding" Value="16,0" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="FontFamily" Value="Microsoft YaHei" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border
-                        x:Name="border"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="4">
-                        <ContentPresenter
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource ThirdlyRegionBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource SecondaryRegionBrush}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!--  ========== 更多兼容性别名 ==========  -->
-
     <!--  卡片容器样式别名  -->
     <Style
         x:Key="PanelCardStyle"
@@ -618,15 +376,5 @@
         x:Key="CardStyle"
         BasedOn="{StaticResource Card}"
         TargetType="Border" />
-
-    <!--  按钮样式别名(补充)  -->
-    <Style
-        x:Key="WarningButtonStyle"
-        BasedOn="{StaticResource WarningButton}"
-        TargetType="Button" />
-    <Style
-        x:Key="OutlineButtonStyle"
-        BasedOn="{StaticResource OutlineButton}"
-        TargetType="Button" />
 
 </ResourceDictionary>
