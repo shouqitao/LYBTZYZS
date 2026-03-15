@@ -17,7 +17,7 @@
 - **Day 5**: Phase 3 - 验证与文档 (全量测试、归档)
 
 ### Sprint 任务清单
-- [ ] Task 1.1: D-4 Receptionist 医案可见性
+- [x] Task 1.1: D-4 Receptionist 医案可见性
 - [ ] Task 1.2: I-2 "当天可编辑"锁定逻辑
 - [ ] Task 1.3: G-9 Registration 回退流程
 - [ ] Task 1.4: G-11 医生禁用后挂号处理
@@ -44,6 +44,33 @@
 ---
 
 ## 当前会话 (2026-03-16)
+
+### Task 1.1 完成 - D-4 Receptionist 医案可见性
+
+**实施内容**:
+1. **DTO 更新**: `RegistrationListDto` 添加 `HasMedicalCase` 计算属性
+   - 文件: `src/Shared/LYBT.Shared.Models/Contracts/Registration/RegistrationListDto.cs`
+   - 实现: `public bool HasMedicalCase => MedicalCaseId.HasValue;`
+
+2. **测试基础设施**: 添加 Receptionist 角色支持
+   - `ServerFixture`: 添加 Receptionist 用户种子数据
+   - `IntegrationTestBase`: 添加 `LoginAsReceptionistAsync()` 方法
+
+3. **D-4 验证测试** (2个):
+   - `D4_Receptionist_CanAccessQueue_WithMedicalCaseHint`: 验证 Receptionist 可访问队列
+   - `D4_Registration_HasMedicalCase_ComputedCorrectly`: 验证计算属性逻辑正确
+
+**测试运行结果**:
+```
+测试总数: 2
+     通过数: 2
+     失败数: 0
+```
+
+**遗留问题** (记录到 findings.md):
+- MedicalCase 创建时未自动更新 Registration.MedicalCaseId (设计文档 D6 要求)
+- 当前 `HasMedicalCase` 始终为 false (因为 MedicalCaseId 未被填充)
+- 需要后续实现 Registration-MedicalCase 关联逻辑
 
 ### 任务梳理完成
 

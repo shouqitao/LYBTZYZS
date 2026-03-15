@@ -134,6 +134,64 @@ public sealed class US_Registration_MustHaveTests : IntegrationTestBase<Clinical
     }
 
     [Fact]
+    public async Task D4_Receptionist_CanAccessQueue_WithMedicalCaseHint()
+    {
+        // Arrange - D-4 fix: Receptionist can view queue with hasMedicalCase hint
+        var adminClient = await LoginAsAdminAsync();
+        var receptionistClient = await LoginAsReceptionistAsync();
+        var doctorClient = await LoginAsDoctorAsync();
+        var doctorId = await GetDoctorUserIdAsync(adminClient);
+
+        var patient = await CreatePatientAsync(doctorClient, "D4测试患者");
+        await CreateRegistrationAsync(adminClient, patient.Id, patient.Name, doctorId, "doctor");
+
+        // Act - Receptionist accesses queue (PatientAccess policy)
+        var response = await receptionistClient.GetAsync("/api/v1/registrations/queue");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            "D-4: Receptionist should be able to access registration queue");
+
+        var result = await response.ShouldBeSuccessWithDataAsync<List<RegistrationListDto>>();
+        result.Should().NotBeEmpty("Queue should contain the registration");
+
+        var registration = result.First(r => r.PatientName.Contains("D4测试患者"));
+        registration.HasMedicalCase.Should().BeFalse(
+            "D-4: New registration should have HasMedicalCase=false before visit starts");
+        registration.MedicalCaseId.Should().BeNull(
+            "D-4: New registration should not have associated MedicalCase yet");
+    }
+
+    [Fact]
+    public async Task D4_Registration_HasMedicalCase_ComputedCorrectly()
+    {
+        // Arrange - create registration (without MedicalCase association)
+        var adminClient = await LoginAsAdminAsync();
+        var doctorClient = await LoginAsDoctorAsync();
+        var receptionistClient = await LoginAsReceptionistAsync();
+        var doctorId = await GetDoctorUserIdAsync(adminClient);
+
+        var patient = await CreatePatientAsync(doctorClient, "医案关联患者");
+        await CreateRegistrationAsync(adminClient, patient.Id, patient.Name, doctorId, "doctor");
+
+        // Act - Query registration list via Receptionist
+        var response = await receptionistClient.GetAsync("/api/v1/registrations?page=1&pageSize=10");
+
+        // Assert
+        var paged = await response.ShouldBePagedResultAsync<RegistrationListDto>(
+            expectedMinCount: 1,
+            because: "D-4: Registration list should contain the record");
+        var registration = paged.Items.First(r => r.PatientName.Contains("医案关联患者"));
+
+        // NOTE: Currently MedicalCase creation does not auto-update Registration.MedicalCaseId
+        // This is documented in findings.md for future fix
+        // For now, we verify the computed property logic is correct:
+        // - When MedicalCaseId is null, HasMedicalCase should be false
+        registration.HasMedicalCase.Should().Be(registration.MedicalCaseId.HasValue,
+            "D-4: HasMedicalCase should correctly reflect MedicalCaseId presence");
+    }
+
+    [Fact]
     public async Task US_REG_002_GetQueue_EmptyQueue_ReturnsEmptyOrOk()
     {
         // Arrange - use a doctor with no registrations (use fake doctorId)

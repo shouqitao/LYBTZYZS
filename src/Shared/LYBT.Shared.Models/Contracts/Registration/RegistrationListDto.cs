@@ -44,4 +44,8 @@ public class RegistrationListDto
     /// <summary>挂号时间</summary>
     [DisplayName("挂号时间")]
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>是否已创建医案</summary>
+    [DisplayName("已创建医案")]
+    public bool HasMedicalCase => MedicalCaseId.HasValue;
 }

@@ -48,11 +48,13 @@ public class ServerFixture : IAsyncLifetime
     // Fixed test user IDs for predictable seeding
     private static readonly Guid AdminUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private static readonly Guid DoctorUserId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+    private static readonly Guid ReceptionistUserId = Guid.Parse("00000000-0000-0000-0000-000000000003");
 
     // Test credentials
     private const string SysAdminPassword = "TestAdmin2025@";
     private const string AdminPassword = "TestAdmin2025@";
     private const string DoctorPassword = "TestDoctor2025@";
+    private const string ReceptionistPassword = "TestReceptionist2025@";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -175,6 +177,12 @@ public class ServerFixture : IAsyncLifetime
         => LoginAsAsync("doctor", DoctorPassword);
 
     /// <summary>
+    /// Login as receptionist and return an authenticated HttpClient.
+    /// </summary>
+    public Task<HttpClient> LoginAsReceptionistAsync()
+        => LoginAsAsync("receptionist", ReceptionistPassword);
+
+    /// <summary>
     /// Login via POST /api/v1/auth/login and return an authenticated HttpClient.
     /// Uses the real authentication pipeline.
     /// </summary>
@@ -269,7 +277,9 @@ public class ServerFixture : IAsyncLifetime
             CreateUser(AdminUserId, "admin", "测试管理员",
                 UserRole.Admin, "admin-test@lybt.com", AdminPassword),
             CreateUser(DoctorUserId, "doctor", "测试医生",
-                UserRole.Doctor, "doctor-test@lybt.com", DoctorPassword)
+                UserRole.Doctor, "doctor-test@lybt.com", DoctorPassword),
+            CreateUser(ReceptionistUserId, "receptionist", "测试前台",
+                UserRole.Receptionist, "receptionist-test@lybt.com", ReceptionistPassword)
         );
 
         await db.SaveChangesAsync();

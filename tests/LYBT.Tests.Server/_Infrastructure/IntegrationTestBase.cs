@@ -48,6 +48,7 @@ public abstract class IntegrationTestBase<TFixture> : IAsyncLifetime
 
     protected Task<HttpClient> LoginAsAdminAsync() => Fixture.LoginAsAdminAsync();
     protected Task<HttpClient> LoginAsDoctorAsync() => Fixture.LoginAsDoctorAsync();
+    protected Task<HttpClient> LoginAsReceptionistAsync() => Fixture.LoginAsReceptionistAsync();
     protected Task<HttpClient> LoginAsSysAdminAsync() => Fixture.LoginAsSysAdminAsync();
     protected HttpClient AnonymousClient => Fixture.AnonymousClient;
 

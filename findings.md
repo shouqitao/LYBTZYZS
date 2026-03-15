@@ -184,12 +184,26 @@ SharedTestContext exists
 | Test Architecture | 03-12 | 核心完成 | ~80% |
 | Integration Test Perf | 03-12 | 核心完成 | ~70% |
 
+### D-4 实施发现 (2026-03-16)
+
+**已完成**:
+- `RegistrationListDto` 添加 `HasMedicalCase` 计算属性
+- Receptionist 可以访问 `/api/v1/registrations/queue` (PatientAccess 策略)
+- 2 个测试验证 D-4 修复
+
+**遗留问题**: MedicalCase-Registration 关联未实现
+- 设计文档 D6 要求: "MedicalCase 创建 | Registration.MedicalCaseId 填入"
+- 当前实现: 创建 MedicalCase 时不更新 Registration.MedicalCaseId
+- 影响: `HasMedicalCase` 始终为 false (MedicalCaseId 始终为 null)
+- 建议: 在 MedicalCaseCommandService.CreateFromInputDtoAsync 中添加 Registration 关联逻辑
+
 ### 🔴 待实施高优先级任务
 
 1. **Permission Matrix 缺陷修复** (11 个问题)
-   - IsLocked 动态计算
-   - Registration 回退流程
-   - 医生禁用处理
+   - ✅ D-4: Receptionist 医案可见性 (已完成，有遗留关联问题)
+   - I-2: "当天可编辑"锁定逻辑
+   - G-9: Registration 回退流程
+   - G-11: 医生禁用处理
 
 2. **测试性能优化收尾**
    - 批量迁移测试到 Transactional 模型
