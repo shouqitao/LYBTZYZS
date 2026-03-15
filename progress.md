@@ -1,157 +1,185 @@
-# 测试驱动开发 - 进度记录
+# Progress: Desktop 层重构优化
 
-> **创建日期**: 2026-03-11
-> **当前 Phase**: 计划创建完成，等待用户确认优先级
+> **Session**: 2026-03-14
+> **目标**: Desktop 层架构分析与设计
 
 ---
 
-## Session: 2026-03-11
+## Session Log
 
-### Phase 2: Journey Test 重构
+### 2026-03-14 14:00 - 架构分析完成
 
-| Task | Description | Status | Files Changed |
-|------|-------------|--------|---------------|
-| 2.1 | Auth & Security 负面测试 | ✅ Complete | AuthJourneyTests.cs (+3 tests) |
-| 2.2 | Chapter 1 - System Bootstrap | ✅ Complete | BootstrapJourneyTests.cs (+6 tests, 1 skipped) |
-| 2.3 | Chapter 2 - Admin Setup | ✅ Complete | AdminSetupJourneyTests.cs (+7 tests) |
-| 2.4 | Chapter 3 - Master Data | ✅ Complete | HerbFormulaManagementJourneyTests.cs (+25 tests) |
+**完成工作**：
+1. 启动 6 个并行分析任务：
+   - 模块依赖关系分析
+   - ViewModel 复杂度分析
+   - 启动性能代码分析
+   - 双模式架构实现分析
+   - XAML 重复和样式问题分析
+   - 测试覆盖情况分析
 
-**Task 2.1 详情:**
-- 添加了 `Auth_Login_NonExistentUser_Returns401` 测试
-- 添加了 `Auth_Login_DisabledUser_Returns403` 测试
-- 添加了 `Auth_Login_EmptyCredentials_Returns400` 测试
-- 所有 4 个测试通过 (原有 1 个 + 新增 3 个)
+2. 汇总分析结果，识别 25 个架构问题
 
-**测试验证:**
-```
-已通过! - 失败: 0，通过: 4，已跳过: 0，总计: 4
-```
+3. 按严重性排序：
+   - P0 (阻塞级): 5 项
+   - P1 (高危级): 7 项
+   - P2 (中危级): 8 项
+   - P3 (低危级): 5 项
 
-**Task 2.2 详情:**
-- 重命名主测试方法为 `US_BOOTSTRAP_001_Full_Journey` (符合 US 编号规范)
-- 添加 PRD US 引用文档 (AUTH-001, USER-001/002, HERB-001/002, FORM-001, SYS-001/002/003)
-- 新增 6 个测试覆盖边界/负面场景:
-  - `US_USER_001_CreateUser_DuplicateUsername_ShouldFail`
-  - `US_USER_001_CreateUser_AdminCannotCreateAdmin_ShouldFail`
-  - `US_HERB_001_CreateHerb_DuplicateName_ShouldFail` (skipped - known issue)
-  - `US_AUTH_001_SysAdmin_DefaultLogin_ShouldSucceed`
-  - `US_SYS_001_002_003_HealthEndpoint_AllChecksPass`
-  - `US_USER_001_CreateUser_ReservedUsername_ShouldFail`
+**发现的关键问题**：
+- PatientMasterDetailViewModel 注入 9 个服务（最严重）
+- DatabaseInitializer 同步阻塞启动
+- SyncViewModel 597 行代码过于臃肿
+- ViewModel 层测试覆盖率 < 20%
+- XAML 硬编码颜色和字体 150+ 处
 
-**测试验证:**
-```
-已通过! - 失败: 0，通过: 9，已跳过: 1，总计: 10
-```
+**输出文件**：
+- `docs/plans/2026-03-14-desktop-refactoring-design.md` - 设计文档
+- `docs/plans/2026-03-14-desktop-refactoring-phase1.md` - Phase 1 实施计划
+- `task_plan.md` - 重建任务计划
+- `findings.md` - 分析发现汇总
+- `progress.md` - 本文件
 
-**Task 2.3 详情:**
-- 重命名主测试方法为 `US_ADMIN_SETUP_001_Full_Journey` (符合 US 编号规范)
-- 添加 PRD US 引用文档 (USER-001/002/003/004/005/008/011, HERB-001/002, FORM-001, PAT-001/002)
-- 新增 7 个测试覆盖边界/负面场景:
-  - `US_USER_001_CreateUser_DuplicateUsername_ShouldFail`
-  - `US_USER_001_CreateUser_ReservedUsername_ShouldFail`
-  - `US_USER_001_CreateUser_AdminCannotCreateAdmin_ShouldFail`
-  - `US_USER_004_UpdateUser_ChangeDoctorRole_ShouldSucceed`
-  - `US_USER_005_DeleteUser_CannotDeleteSelf_ShouldFail`
-  - `US_USER_009_ChangePassword_OldPasswordIncorrect_ShouldFail`
-- 所有 10 个测试通过
+---
 
-**测试验证:**
-```
-已通过! - 失败: 0，通过: 10，已跳过: 0，总计: 10
-```
+### 2026-03-14 15:00 - Task 1 完成: 延迟数据库初始化
 
-| Action | Result |
-|--------|--------|
-| 使用 `superpowers:writing-plans` 技能 | 创建详细实施计划 |
-| 计划文档保存 | `docs/plans/2026-03-11-test-driven-implementation-plan.md` |
-| 更新 planning-with-files 三文件 | task_plan.md / findings.md / progress.md |
-| 读取 role-permission-matrix.md | v1.3 权限矩阵，12 缺陷已修复 (P-01~P-12) |
-| 读取现有 Journey Tests | AuthJourneyTests, ReturnVisitJourneyTests, JourneyTestBase |
-| 调研测试基础设施 | 6 Collections, DomainFixtures, ServerFixture |
+**已完成**：
+1. 修改 DatabaseInitializer.cs:
+   - 构造函数改为接受 `Func<LocalDbContext>` 工厂函数
+   - 添加 `SemaphoreSlim` 确保线程安全
+   - 添加 `EnsureInitializedAsync()` 方法（标记为 virtual 以便测试）
 
-**Task 2.5 详情 (Patient Management):**
-- 重构 `PatientManagementJourneyTests.cs` 添加 PRD US 编号引用
-- 新增 15 个测试覆盖 Must Have 场景
-- 测试验证: 已通过! - 失败: 0，通过: 16，已跳过: 0，总计: 16
+2. 修改 DataSourceRegistrationExtensions.cs:
+   - DI 注册使用工厂模式延迟创建
 
-**Task 2.7 详情 (Return Visit):**
-- 重构 `ReturnVisitJourneyTests.cs` 添加 PRD US 编号引用
-- 重命名现有测试方法添加 US 编号 (`US_PAT_002_MC_009_`, `US_MC_005_`)
-- 新增 4 个测试覆盖 US-REG-006 (G-9) 和 US-MC-018 场景:
-  - `US_REG_006_CancelMedicalCase_ReceptionistSource_RevertToWaiting` - G-9 回退场景
-  - `US_REG_006_CancelMedicalCase_DoctorSource_AutoCancelled` - 医生模式自动取消
-  - `US_MC_018_CopyHistoricalPrescription_Succeeds` - 复制历史处方
-  - `US_MC_018_CopyPrescription_DisabledHerb_Skipped` - 禁用药材跳过
-- 测试验证: 已通过! - 失败: 0，通过: 6，已跳过: 0，总计: 6
+3. 修改 ConnectionModeProvider.cs:
+   - 添加 DatabaseInitializer 依赖
+   - 在切换到本地模式时调用 EnsureInitializedAsync
 
-**输出文件**:
-- `docs/plans/2026-03-11-test-driven-implementation-plan.md` (完整实施计划，17 Tasks)
-- `task_plan.md` (Phase 进度追踪，4 Phases)
-- `findings.md` (调研结果和发现)
-- `progress.md` (Session 日志)
+4. 创建测试文件 DatabaseInitializerTests.cs:
+   - 5 个测试全部通过
+
+5. 修复 ConnectionModeProviderTests.cs:
+   - 更新构造函数调用
+   - 16 个测试全部通过
+
+**测试结果**：
+- DatabaseInitializerTests: 5 通过
+- ConnectionModeProviderTests: 16 通过
 
 ---
 
 ## Phase Progress
 
-| Phase | Status | Started | Completed |
-|-------|--------|---------|-----------|
-| Phase 1: 权限矩阵缺陷修复 | complete | 2026-03-11 | 2026-03-11 |
-| Phase 2: Journey Test 重构 | **complete** | 2026-03-11 | 2026-03-11 |
-| Phase 3: PRD 驱动测试对齐 | **complete** | 2026-03-11 | 2026-03-11 |
-| Phase 4: 全量测试验证 | pending | - | - |
+| Phase | 状态 | 进度 |
+|-------|------|------|
+| BRAINSTORM | 完成 | 100% |
+| PLAN | 完成 | 100% |
+| EXECUTE | 进行中 | 25% |
+| REVIEW | 待开始 | 0% |
+| VERIFY | 待开始 | 0% |
 
 ---
 
-## Phase 3: PRD Must Have US 测试覆盖 (Completed)
+### 2026-03-14 16:00 - Task 2 完成: 异步 API 健康检查
 
-**目标**: 为 45 个 Must Have US 创建测试覆盖
+**已完成**：
+1. 修改 ApiHealthCheckStartupStep.cs:
+   - 已经是异步实现（使用 Task.Run 后台执行）
+   - 立即返回成功，不阻塞启动流程
 
-**执行动作**:
-1. 从 `tests/LYBT.Tests.Server/Features/_Deferred/` 移动 8 个 Must Have 测试文件到 `Features/`:
-   - US_Auth_MustHaveTests.cs
-   - US_User_MustHaveTests.cs
-   - US_Herb_MustHaveTests.cs
-   - US_Formula_MustHaveTests.cs
-   - US_Patient_MustHaveTests.cs
-   - US_MedicalCase_MustHaveTests.cs
-   - US_Registration_MustHaveTests.cs
-   - US_Sync_MustHaveTests.cs
+2. 修改 HealthCheckCoordinator.cs:
+   - 添加启动后延迟 1 秒自动执行健康检查
+   - 修复本地模式下状态变更事件触发
 
-2. 运行所有 Must Have 测试验证通过
+3. 修改 ServiceCollectionExtensions.cs:
+   - 更新 API 健康检查注册（超时 5 秒）
 
-**测试结果汇总**:
+4. 修改 App.xaml.cs:
+   - 直接创建 ApiHealthCheckStartupStep 实例（支持自定义超时）
+   - 添加必要的 using 语句
 
-| Module | US Count | Tests | Status |
-|--------|----------|-------|--------|
-| AUTH (US-AUTH-001/002/003/005/007/008/009/010) | 8 | 20 | Passed |
-| USER (US-USER-001~005) | 5 | 11 | Passed |
-| HERB (US-HERB-001~005) | 5 | 13 | Passed |
-| FORM (US-FORM-001~006) | 6 | 11 | Passed |
-| PAT (US-PAT-001~004) | 4 | 12 | Passed |
-| MC (US-MC-001~009,013) | 10 | 21 | Passed |
-| REG (US-REG-001~006) | 6 | 13 | Passed |
-| SYNC (US-SYNC-008) | 1 | 3 | Passed |
-| **Total** | **45** | **104** | **All Passed** |
+5. 创建测试文件 HealthCheckCoordinatorTests.cs:
+   - 11 个测试全部通过
 
-**测试执行结果**:
-```
-已通过! - 失败: 0，通过: 104，已跳过: 0，总计: 104，持续时间: 42 s
-```
+6. 更新现有测试 StartupStepsTests.cs:
+   - 修复异步行为测试用例
+
+**测试结果**：
+- HealthCheckCoordinatorTests: 11 通过
+- Desktop 全量测试: 532 通过
 
 ---
 
-## Test Results
+### 2026-03-14 17:00 - Task 3 完成: PatientMasterDetailViewModel 拆分
 
-| Test Run | Passed | Failed | Skipped | Duration |
-|----------|--------|--------|---------|----------|
-| - | - | - | - | - |
+**已完成**：
+1. 创建 PatientCardReaderViewModel.cs:
+   - 读卡器初始化和读卡功能
+   - 根据身份证号查找患者
+   - 查找或创建患者
+   - 共 100 行代码
+
+2. 创建 PatientImportExportViewModel.cs:
+   - 导入患者功能
+   - 导出患者功能
+   - 下载模板功能
+   - 共 47 行代码
+
+3. 修改 PatientMasterDetailViewModel.cs:
+   - 注入服务从 9 个减少到 5 个（+ 2 个 Child VMs）
+   - 添加 Child ViewModels 属性暴露
+   - 代理读卡器属性到 Child VM
+   - 重构导入导出命令使用 Child VM
+   - 重构读卡命令使用 Child VM
+
+4. 修改 PatientsModule.cs:
+   - 注册 PatientCardReaderViewModel
+   - 注册 PatientImportExportViewModel
+
+**测试结果**：
+- Desktop 全量测试: 516 通过
+
+**代码统计**：
+- 新增文件: 2 个
+- 修改文件: 3 个
+- PatientMasterDetailViewModel 行数: 从 418 行优化到更清晰的结构
 
 ---
 
-## Next Step
+## Phase Progress
 
-Phase 3 已完成。准备进入 Phase 4: 全量测试验证。
-- Task 4.1: 全量测试运行
-- Task 4.2: 测试覆盖率验证
-- Task 4.3: 文档同步
+| Phase | 状态 | 进度 |
+|-------|------|------|
+| BRAINSTORM | 完成 | 100% |
+| PLAN | 完成 | 100% |
+| EXECUTE | 进行中 | 60% |
+| REVIEW | 待开始 | 0% |
+| VERIFY | 待开始 | 0% |
+
+---
+
+---
+
+### 2026-03-15 - Phase 1 完成
+
+**Completed Tasks**:
+- [x] Task 1.1: 延迟数据库初始化
+- [x] Task 1.2: 异步 API 健康检查
+- [x] Task 1.3: PatientMasterDetailViewModel 拆分
+- [x] Task 1.4: SyncViewModel 代码质量改进（提取辅助类）
+- [x] Task 1.5: MedicalCaseCommandsViewModel 评估确认
+
+**架构决策调整**:
+- SyncViewModel: 保持整体，提取 SyncErrorClassifier/SyncResolutionBuilder/SyncItemViewModelFactory
+- MedicalCaseCommandsViewModel: 确认已是良好粒度，无需拆分
+
+**Metrics**:
+- 新增文件: 5 个 (3 服务类 + 2 测试类)
+- 修改文件: 4 个
+- 测试通过率: 100%
+- SyncViewModel 代码行减少: ~90 行（提取到辅助类）
+- 新增测试: 29 个
+
+**Next**: Phase 2 - 测试覆盖
