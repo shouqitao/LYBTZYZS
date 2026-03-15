@@ -259,8 +259,8 @@ namespace LYBT.Module.Users.Services
             }
             else
             {
-                // 从配置读取默认密码：Lybt:DefaultPasswords:NewUserPassword
-                passwordToHash = _configuration["Lybt:DefaultPasswords:NewUserPassword"] ?? "Lybt2025@TempPass!";
+                // 从配置读取默认密码：DefaultPasswords:NewUserPassword
+                passwordToHash = _configuration["DefaultPasswords:NewUserPassword"] ?? "Lybt2025@TempPass!";
                 _logger.LogInformation("[SVC] User.Create → DefaultPassword - UserName={UserName}", dto.UserName);
             }
 
@@ -413,7 +413,7 @@ namespace LYBT.Module.Users.Services
             }
 
             // 始终使用配置文件中的默认密码，不再接受请求中的密码参数
-            string password = _configuration["Lybt:DefaultPasswords:NewUserPassword"]
+            string password = _configuration["DefaultPasswords:NewUserPassword"]
                 ?? PasswordHelper.GenerateTemporaryPassword();
 
             // 哈希密码并更新

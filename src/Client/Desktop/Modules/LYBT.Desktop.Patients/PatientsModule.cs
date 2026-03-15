@@ -78,6 +78,11 @@ namespace LYBT.Desktop.Patients
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // PatientMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.PatientMasterDetailViewModel>();
+
+            // OpenSpec: refactor-viewmodel-composition - Child ViewModels
+            // 拆分PatientMasterDetailViewModel的读卡器和导入导出功能
+            containerRegistry.Register<ViewModels.PatientCardReaderViewModel>();
+            containerRegistry.Register<ViewModels.PatientImportExportViewModel>();
         }
     }
 }

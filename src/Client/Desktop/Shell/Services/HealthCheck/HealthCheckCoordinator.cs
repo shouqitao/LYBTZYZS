@@ -71,8 +71,10 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
         // OpenSpec: implement-local-mode - 本地模式直接设置为健康状态
         if (_connectionModeProvider.CurrentMode == ConnectionMode.Local)
         {
+            var previousStatus = _currentStatus;
             _currentStatus = ApiHealthStatus.Healthy;
             _isRunning = true;
+            RaiseStatusChanged(previousStatus, _currentStatus);
             SyncToApplicationState(ApiHealthStatus.Healthy);
             _logger.LogInformation("健康检查协调器已启动 [本地模式，跳过 API 检查]");
             return;
@@ -82,8 +84,12 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
         _tickService.Tick += OnTick;
         _isRunning = true;
 
-        // 立即执行一次健康检查
-        _ = Task.Run(CheckNowAsync);
+        // 延迟1秒后执行首次健康检查，避免启动时阻塞
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(1000);
+            await CheckNowAsync();
+        });
 
         _logger.LogInformation("健康检查协调器已启动 [间隔: {Interval}秒]", CheckIntervalSeconds);
     }

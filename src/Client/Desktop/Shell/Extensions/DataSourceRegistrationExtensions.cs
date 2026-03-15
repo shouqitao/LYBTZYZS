@@ -73,7 +73,8 @@ public static class DataSourceRegistrationExtensions
             var validator = resolver.Resolve<IModeSwitchValidator>();
             var activeConsultation = resolver.Resolve<IActiveConsultationService>();
             var navigation = resolver.Resolve<INavigationCoordinator>();
-            return new ConnectionModeProvider(initialMode, logger, validator, activeConsultation, navigation);
+            var databaseInitializer = resolver.Resolve<DatabaseInitializer>();
+            return new ConnectionModeProvider(initialMode, logger, validator, activeConsultation, navigation, databaseInitializer);
         });
     }
 
@@ -197,13 +198,13 @@ public static class DataSourceRegistrationExtensions
             return new LocalDbContext(options, currentUserProvider);
         });
 
-        // 数据库初始化器 (Singleton)
+        // 数据库初始化器 (Singleton) - 延迟初始化，使用工厂模式
         containerRegistry.RegisterSingleton<DatabaseInitializer>(resolver =>
         {
-            var context = resolver.Resolve<LocalDbContext>();
             var loggerFactory = resolver.Resolve<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<DatabaseInitializer>();
-            return new DatabaseInitializer(context, logger);
+            return new DatabaseInitializer(
+                () => resolver.Resolve<LocalDbContext>(),
+                loggerFactory.CreateLogger<DatabaseInitializer>());
         });
     }
 }

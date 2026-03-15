@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.Shell.Services;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -272,12 +273,21 @@ public class ConnectionModeProviderTests
 
     private ConnectionModeProvider CreateProvider(ConnectionMode initialMode)
     {
+        var databaseInitializer = Substitute.For<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>(
+            Substitute.For<System.Func<LocalDbContext>>(),
+            Substitute.For<ILogger<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>>());
+
+        // 设置 EnsureInitializedAsync 返回已完成的 Task
+        databaseInitializer.EnsureInitializedAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+
         return new ConnectionModeProvider(
             initialMode,
             _logger,
             _validator,
             _activeConsultation,
-            _navigation);
+            _navigation,
+            databaseInitializer);
     }
 
     private void SetupValidatorSuccess()

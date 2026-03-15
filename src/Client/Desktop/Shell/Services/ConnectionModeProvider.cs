@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.LocalData.Initialization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services;
@@ -18,6 +19,7 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
     private readonly IModeSwitchValidator _validator;
     private readonly IActiveConsultationService _activeConsultation;
     private readonly INavigationCoordinator _navigation;
+    private readonly DatabaseInitializer _databaseInitializer;
     private ConnectionMode _currentMode;
     private bool _isSwitching;
 
@@ -26,13 +28,15 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
         ILogger<ConnectionModeProvider> logger,
         IModeSwitchValidator validator,
         IActiveConsultationService activeConsultation,
-        INavigationCoordinator navigation)
+        INavigationCoordinator navigation,
+        DatabaseInitializer databaseInitializer)
     {
         _currentMode = initialMode;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _activeConsultation = activeConsultation ?? throw new ArgumentNullException(nameof(activeConsultation));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        _databaseInitializer = databaseInitializer ?? throw new ArgumentNullException(nameof(databaseInitializer));
 
         _logger.LogInformation(
             "[ConnectionModeProvider] Initialized with mode: {Mode}", _currentMode);
@@ -97,6 +101,22 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
             _logger.LogInformation(
                 "[ConnectionModeProvider] Mode switched: {Previous} -> {Current}",
                 previousMode, _currentMode);
+
+            // Step 4.5: 切换到本地模式时，延迟初始化数据库
+            if (_currentMode == ConnectionMode.Local)
+            {
+                try
+                {
+                    await _databaseInitializer.EnsureInitializedAsync(ct);
+                    _logger.LogInformation("[ConnectionModeProvider] 本地数据库初始化完成");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[ConnectionModeProvider] 本地数据库初始化失败");
+                    _currentMode = previousMode;
+                    return ModeSwitchResult.Failed($"本地数据库初始化失败: {ex.Message}");
+                }
+            }
 
             // Step 5: 通知所有订阅者
             ModeChanged?.Invoke(this, new ConnectionModeChangedEventArgs(previousMode, _currentMode));

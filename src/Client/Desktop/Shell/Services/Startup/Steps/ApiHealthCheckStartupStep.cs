@@ -35,29 +35,34 @@ public class ApiHealthCheckStartupStep : IStartupStep
     public bool IsRequired => false;
 
     /// <inheritdoc />
-    public async Task<StartupStepResult> ExecuteAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    public Task<StartupStepResult> ExecuteAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
-        progress?.Report("正在检查API连接...");
+        progress?.Report("API健康检查将在后台进行...");
 
-        try
+        // 在后台异步执行健康检查，不阻塞启动流程
+        _ = Task.Run(async () =>
         {
-            var isHealthy = await _applicationStateService.CheckApiHealthAsync(_timeoutSeconds);
+            try
+            {
+                _logger.LogInformation("[Startup] 后台API健康检查开始...");
+                var isHealthy = await _applicationStateService.CheckApiHealthAsync(_timeoutSeconds);
 
-            if (isHealthy)
-            {
-                _logger.LogInformation("API健康检查通过");
-                return StartupStepResult.Succeeded(TimeSpan.Zero);
+                if (isHealthy)
+                {
+                    _logger.LogInformation("[Startup] API健康检查通过");
+                }
+                else
+                {
+                    _logger.LogWarning("[Startup] API健康检查未通过，服务可能不可用");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogWarning("API健康检查未通过，服务可能不可用");
-                return StartupStepResult.Failed("API服务不可用，请检查WebAPI是否已启动");
+                _logger.LogWarning(ex, "[Startup] 后台API健康检查失败，将在HealthCheckCoordinator中重试");
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "API健康检查失败");
-            return StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("API健康检查", ex), ex);
-        }
+        }, cancellationToken);
+
+        // 立即返回成功，不等待健康检查完成
+        return Task.FromResult(StartupStepResult.Succeeded(TimeSpan.Zero));
     }
 }

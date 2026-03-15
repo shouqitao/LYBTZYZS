@@ -266,9 +266,9 @@ public class StartupStepsTests
         }
 
         [Fact]
-        public async Task ExecuteAsync_WhenApiUnhealthy_ShouldReturnFailed()
+        public async Task ExecuteAsync_WhenApiUnhealthy_ShouldStillReturnSuccess_DoesNotBlockStartup()
         {
-            // Arrange
+            // Arrange - API不健康，但启动步骤不应阻塞
             _applicationStateService
                 .CheckApiHealthAsync(Arg.Any<int>())
                 .Returns(false);
@@ -276,15 +276,15 @@ public class StartupStepsTests
             // Act
             var result = await _sut.ExecuteAsync();
 
-            // Assert
-            result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("API服务不可用");
+            // Assert - 后台异步执行，即使API不健康也立即返回成功
+            result.Success.Should().BeTrue();
+            result.Duration.Should().Be(TimeSpan.Zero); // 立即返回，无等待
         }
 
         [Fact]
-        public async Task ExecuteAsync_WhenServiceThrows_ShouldReturnFailed()
+        public async Task ExecuteAsync_WhenServiceThrows_ShouldStillReturnSuccess_ExceptionHandledInBackground()
         {
-            // Arrange
+            // Arrange - API检查抛出异常
             _applicationStateService
                 .CheckApiHealthAsync(Arg.Any<int>())
                 .ThrowsAsync(new HttpRequestException("Connection refused"));
@@ -292,10 +292,27 @@ public class StartupStepsTests
             // Act
             var result = await _sut.ExecuteAsync();
 
-            // Assert
-            result.Success.Should().BeFalse();
-            // ERR-012: 异常消息安全化 - 错误消息不应包含原始异常信息，应使用安全的用户友好消息
-            result.ErrorMessage.Should().Contain("API健康检查失败");
+            // Assert - 后台异步执行，异常在后台处理，启动不阻塞
+            result.Success.Should().BeTrue();
+            result.Duration.Should().Be(TimeSpan.Zero); // 立即返回，无等待
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_ShouldTriggerBackgroundHealthCheck()
+        {
+            // Arrange
+            _applicationStateService
+                .CheckApiHealthAsync(Arg.Any<int>())
+                .Returns(true);
+
+            // Act
+            var result = await _sut.ExecuteAsync();
+
+            // Assert - 立即返回成功，但后台应触发健康检查
+            result.Success.Should().BeTrue();
+            // 给后台任务一点时间执行
+            await Task.Delay(100);
+            await _applicationStateService.Received().CheckApiHealthAsync(Arg.Any<int>());
         }
 
         [Fact]

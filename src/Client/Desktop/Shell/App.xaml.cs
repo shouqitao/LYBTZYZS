@@ -4,6 +4,7 @@ using LYBT.Desktop.Auth;
 using LYBT.Desktop.CardReader;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Security;
 using Microsoft.Extensions.Caching.Memory;
 // [已删除] using LYBT.Desktop.Consultation; - 模块已废弃，功能已迁移到MedicalCase模块
@@ -18,6 +19,7 @@ using LYBT.Desktop.Sync;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
+using LYBT.Desktop.Shell.Services.Startup.Steps;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
@@ -237,7 +239,11 @@ public partial class App : PrismApplication
             Container.Resolve<IStartupStep>("ErrorHandling"),
             Container.Resolve<IStartupStep>("ModuleCoordinator"),
             Container.Resolve<IStartupStep>("CoreServices"),
-            Container.Resolve<IStartupStep>("ApiHealthCheck"),
+            // API健康检查 - 直接创建实例以使用特定超时配置（5秒）
+            new ApiHealthCheckStartupStep(
+                Container.Resolve<IApplicationStateService>(),
+                Container.Resolve<ILogger<ApiHealthCheckStartupStep>>(),
+                timeoutSeconds: 5),
             Container.Resolve<IStartupStep>("Warmup")
         };
 

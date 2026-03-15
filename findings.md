@@ -1,90 +1,158 @@
-# 测试驱动开发 - 发现记录
+# Findings: Desktop 层架构分析
 
-> **创建日期**: 2026-03-11
-> **最后更新**: 2026-03-11
-
----
-
-## 需求理解
-
-**核心目标**:
-1. 代码实现与设计文档没有误差
-2. 功能完全按照设计完成
-3. 高效完成开发任务
-
-**当前项目状态**:
-- Sprint 6 已完成 (双模式/D2 诊所设置/D3 草稿水印/C2 照片加密)
-- 正在进行：权限矩阵缺陷修复 (11 个问题，D-4~G-12)
-- 测试架构：3 项目，Testing Trophy (~2021 tests)
-  - Server: 1185 tests (真实 SQL Server + Respawn，零 mock)
-  - Desktop: 760 tests (SQLite InMemory + 真实 Repository)
-  - Architecture: 78 tests (架构防护 + AntiMockRules)
+> **分析日期**: 2026-03-14
+> **分析范围**: Desktop 层全部代码（~11,150 CS 文件，73 XAML）
 
 ---
 
-## 调研结果
+## Summary
 
-### 现有 Journey Tests 文件清单
-
-| 文件 | Collection | 状态 |
-|------|-----------|------|
-| AuthJourneyTests.cs | Auth | 需补全负面场景 |
-| BootstrapJourneyTests.cs | User | 已完成 |
-| AdminSetupJourneyTests.cs | User | 已完成 |
-| FirstVisitJourneyTests.cs | Clinical | 已完成 |
-| ReturnVisitJourneyTests.cs | Clinical | 已完成 |
-| MedicalCaseEditJourneyTests.cs | Clinical | 需补全边界条件 |
-| PatientManagementJourneyTests.cs | Clinical | 已完成 |
-| HerbFormulaManagementJourneyTests.cs | HerbFormula | 已完成 |
-| DoctorClinicalJourneyTests.cs | Clinical | 待删除 (冗余) |
-| CrossNarrativeValidationTests.cs | Clinical | 已完成 |
-| BatchOperationsJourneyTests.cs | HerbFormula | 已完成 |
-
-**缺失文件**:
-- ReceptionistJourneyTests.cs (D-4 验证)
-- RegistrationJourneyTests.cs (G-9 验证)
-- DoctorDisableJourneyTests.cs (G-11 验证)
-
-### 测试基础设施
-
-**基类**: `JourneyTestBase<TFixture>`
-- 提供 helper 方法：`LoginAsAdminAsync()`, `LoginAsDoctorAsync()`, `PostAsync<T>`, `PutAsync<T>`, `GetAsync<T>`, `ReadErrorAsync()`
-- 单测试方法包含完整用户旅程
-
-**Fixtures**:
-- `ServerFixture` - 基础测试服务器
-- `AuthFixture`, `UserFixture`, `ClinicalFixture`, `HerbFormulaFixture`, `SyncFixture`, `InfraFixture` - 域名分类
-
-**Collections** (并行执行):
-- Auth, User, Clinical, HerbFormula, Sync, Infra (6 Collection 并行)
+通过 6 个维度的全面分析，识别出 **25 个架构问题**，按严重性分为：
+- P0 (阻塞级): 5 项
+- P1 (高危级): 7 项
+- P2 (中危级): 8 项
+- P3 (低危级): 5 项
 
 ---
 
-## 技术决策
+## Research Findings
 
-| 决策 | 说明 | 来源 |
-|------|------|------|
-| TDD 原则 | RED→GREEN→REFACTOR | 技能要求 |
-| Journey Test 优先 | Layer A 优先验证端到端流程 | 测试策略 |
-| 删除冗余测试 | DoctorClinicalJourneyTests 与 FirstVisit 重叠 | 效率优化 |
-| Layer B 暂缓 | Features/ 下 111 测试移到 _Deferred/ | 优先级调整 |
-| 测试命名规范 | `US_AUTH_001_Login_WithValidCredentials_ShouldReturnToken` | PRD 对齐 |
+### 1. ViewModel 复杂度分析
+
+**总计 17 个 ViewModel，分布如下**：
+
+| 模块 | ViewModel 数量 |
+|------|---------------|
+| MedicalCase | 6 |
+| Formula | 2 |
+| Herbs | 1 |
+| Patients | 1 |
+| Users | 1 |
+| Auth | 1 |
+| Registration | 1 |
+| Sync | 2 |
+
+**Top 5 复杂 ViewModel**：
+
+| ViewModel | 行数 | 注入服务 | 优先级 |
+|-----------|------|----------|--------|
+| SyncViewModel | 597 | 4 | P0 |
+| MedicalCaseCommandsViewModel | 514 | 6 | P0 |
+| LoginViewModel | 509 | 6 | P1 |
+| PatientMasterDetailViewModel | 418 | **9** | P0 |
+| UserMasterDetailViewModel | 409 | 7 | P1 |
+
+### 2. 启动性能分析
+
+**启动管道步骤**：
+
+| 步骤 | 名称 | 耗时风险 |
+|------|------|----------|
+| 1 | 错误处理初始化 | 低 |
+| 2 | 模块协调器初始化 | 低 |
+| 3 | 核心服务初始化 | **中** (预热) |
+| 4 | API 健康检查 | **高** (10s 超时) |
+| 5 | 应用预热 | **中** (空实现) |
+
+**关键阻塞点**：
+1. DatabaseInitializer 同步创建数据库
+2. API 健康检查 10 秒阻塞
+3. 11 个模块 WhenAvailable 同步加载
+
+### 3. 模块依赖分析
+
+**项目数量**：
+- Modules: 8 个
+- Core: 8 个
+- Shell: 1 个
+- Roles: 2 个
+
+**发现的循环依赖**：
+```
+Patients -> MedicalCase (csproj:81)
+```
+
+**架构合规性**：总体良好，Contracts 层正确解耦
+
+### 4. 双模式架构评估
+
+**结论**：实现质量 **优秀**
+
+| 检查项 | 状态 |
+|--------|------|
+| Repository 工厂注册 | 通过 |
+| 无硬编码模式判断 | 通过 |
+| 单例服务不直接依赖 Repository | 通过 |
+| 本地基础设施始终注册 | 通过 |
+| 模式切换事件通知 | 通过 |
+
+### 5. XAML 分析
+
+**统计**：
+- XAML 文件总数: 73 个
+- Converter 文件: 19 个
+
+**硬编码问题**：
+- FontFamily="Microsoft YaHei": 37 处
+- 颜色硬编码: 37+ 处
+- FontSize="14": 117 处
+
+**重复样式**：
+- PrimaryButton: 4+ 处定义
+- FormLabel: 3 种命名
+
+### 6. 测试覆盖分析
+
+**测试数量对比**：
+
+| 测试项目 | 测试方法数 | 策略 |
+|---------|-----------|------|
+| LYBT.Tests.Desktop | ~548 | SQLite + NSubstitute |
+| LYBT.Tests.Server | ~485 | SQL Server + Respawn |
+
+**测试缺口**：
+- MedicalCaseMasterDetailViewModel: 无测试
+- PatientMasterDetailViewModel: 无测试
+- LoginViewModel: 无测试
+- SyncViewModel: 无测试
+
+**ViewModel 层测试覆盖率**: < 20%
 
 ---
 
-## 风险与缓解
+## Technical Decisions
 
-| 风险 | 缓解措施 |
-|------|---------|
-| 测试执行时间长 | 6 Collection 并行，目标<5 分钟 |
-| 测试数据库污染 | Respawn 清理 + 独立 Database 每 Collection |
-| Mock 过度使用 | AntiMockRuleTests 架构测试强制 Server 零 mock |
-| PRD 变更不同步 | 测试命名包含 US 编号 |
+| 决策 | 理由 |
+|------|------|
+| 优先拆分 ViewModel | 解决最严重的 SRP 违反 |
+| 延迟初始化数据库 | 避免首次启动阻塞 |
+| 统一 ButtonStyles.xaml | 消除样式重复的最小侵入方案 |
+| 保留双模式架构 | 当前实现已优秀，无需改动 |
 
 ---
 
-## 待确认事项
+## Issues Encountered
 
-1. 优先级：Phase 1 (权限矩阵缺陷) vs Phase 2 (Journey Test 重构)
-2. LoginAsReceptionistAsync 方法是否存在 (需检查 ServerFixture)
-3. 04:00 边界条件的 IsLocked 逻辑是否已实现
+### P0 级问题（立即修复）
+
+1. **PatientMasterDetailViewModel 注入 9 个服务** - 严重违反 SRP
+2. **DatabaseInitializer 同步阻塞启动** - 首次启动阻塞 UI
+3. **API 健康检查阻塞启动 10 秒** - WebAPI 未启动时延迟
+4. **SyncViewModel 597 行代码** - 同步工作流逻辑臃肿
+5. **MedicalCaseCommandsViewModel 514 行** - 9 个命令职责过重
+
+### P1 级问题（本周修复）
+
+6. **LoginViewModel 509 行无测试** - 核心登录逻辑无测试
+7. **XAML 颜色硬编码 37+ 处** - 主题切换困难
+8. **按钮样式重复定义 4+ 次** - 维护成本高
+9. **FontFamily 硬编码 37 处** - 未使用 DesignTokens
+10. **MedicalCaseMasterDetailViewModel 无测试**
+11. **PatientMasterDetailViewModel 无测试**
+12. **模块同步初始化阻塞** - 11 个模块同时加载
+
+---
+
+## References
+
+- 详细问题清单: 见 `docs/plans/2026-03-14-desktop-refactoring-design.md`

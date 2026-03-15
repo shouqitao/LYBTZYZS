@@ -14,9 +14,7 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.CardReader.Models;
-using LYBT.Desktop.CardReader.Services;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
@@ -31,12 +29,11 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly PatientService _commandHandler;
         private readonly IPatientRepository _patientRepository;
         private readonly IPatientStatusHandler _statusHandler;
-        private readonly IPatientImportExportHandler _importExportHandler;
-
-        // OpenSpec: integrate-cardreader-module - 读卡器服务
-        private readonly ICardReaderService _cardReaderService;
-        private readonly IPatientCardReaderIntegration _patientCardReaderIntegration;
         private readonly IDesktopCacheManager _cacheManager;
+
+        // Child ViewModels - OpenSpec: refactor-viewmodel-composition
+        private readonly PatientCardReaderViewModel _cardReaderViewModel;
+        private readonly PatientImportExportViewModel _importExportViewModel;
 
         #region 扩展属性
 
@@ -57,25 +54,30 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #endregion
 
-        #region 读卡器属性 - OpenSpec: integrate-cardreader-module
+        #region Child ViewModels - OpenSpec: refactor-viewmodel-composition
+
+        /// <summary>读卡器功能 ViewModel</summary>
+        public PatientCardReaderViewModel CardReaderViewModel => _cardReaderViewModel;
+
+        /// <summary>导入导出功能 ViewModel</summary>
+        public PatientImportExportViewModel ImportExportViewModel => _importExportViewModel;
+
+        #endregion
+
+        #region 读卡器属性 - 代理到 Child ViewModel
 
         /// <summary>是否已连接读卡器</summary>
-        public bool IsCardReaderConnected => _cardReaderService.IsConnected;
+        public bool IsCardReaderConnected => _cardReaderViewModel.IsCardReaderConnected;
 
         /// <summary>是否正在读卡</summary>
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        private bool _isReadingCard;
-        public bool IsReadingCard
-        {
-            get => _isReadingCard;
-            private set => SetProperty(ref _isReadingCard, value);
-        }
+        public bool IsReadingCard => _cardReaderViewModel.IsReadingCard;
 
         #endregion
 
         /// <summary>
         /// 构造函数
         /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// OpenSpec: refactor-viewmodel-composition - 使用Child ViewModels拆分功能
         /// </summary>
         public PatientMasterDetailViewModel(
             IViewModelServices viewModelServices,
@@ -83,19 +85,20 @@ namespace LYBT.Desktop.Patients.ViewModels
             PatientService commandHandler,
             IPatientRepository patientRepository,
             IPatientStatusHandler statusHandler,
-            IPatientImportExportHandler importExportHandler,
-            ICardReaderService cardReaderService,
-            IPatientCardReaderIntegration patientCardReaderIntegration,
-            IDesktopCacheManager cacheManager)
+            IDesktopCacheManager cacheManager,
+            // Child ViewModels
+            PatientCardReaderViewModel cardReaderViewModel,
+            PatientImportExportViewModel importExportViewModel)
             : base(viewModelServices, masterDetailServices)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
-            _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
-            _cardReaderService = cardReaderService ?? throw new ArgumentNullException(nameof(cardReaderService));
-            _patientCardReaderIntegration = patientCardReaderIntegration ?? throw new ArgumentNullException(nameof(patientCardReaderIntegration));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+
+            // Child ViewModels - 注入服务从9个减少到5个（+2个Child VMs）
+            _cardReaderViewModel = cardReaderViewModel ?? throw new ArgumentNullException(nameof(cardReaderViewModel));
+            _importExportViewModel = importExportViewModel ?? throw new ArgumentNullException(nameof(importExportViewModel));
 
             PageTitle = "患者管理";
         }
@@ -262,7 +265,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         [RelayCommand]
         private async Task ImportAsync()
         {
-            if (await _importExportHandler.ImportAsync())
+            if (await _importExportViewModel.ImportAsync())
             {
                 _cacheManager.InvalidatePatientCaches();
                 await RefreshAsync();
@@ -273,14 +276,14 @@ namespace LYBT.Desktop.Patients.ViewModels
         [RelayCommand]
         private async Task ExportAsync()
         {
-            await _importExportHandler.ExportAsync(SearchText);
+            await _importExportViewModel.ExportAsync(SearchText);
         }
 
         /// <summary>下载模板</summary>
         [RelayCommand]
         private async Task DownloadTemplateAsync()
         {
-            await _importExportHandler.DownloadTemplateAsync();
+            await _importExportViewModel.DownloadTemplateAsync();
         }
 
         /// <summary>查看医案</summary>
@@ -311,37 +314,21 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region 读卡器命令 - OpenSpec: integrate-cardreader-module
 
-        /// <summary>刷卡录入命令</summary>
+        /// <summary>刷卡录入命令 - 委托给 Child ViewModel</summary>
         [RelayCommand(CanExecute = nameof(CanReadCard))]
         private async Task ReadCardAsync()
         {
-            if (!_cardReaderService.IsConnected)
-            {
-                // 尝试初始化读卡器
-                var initialized = await _cardReaderService.InitializeAsync();
-                if (!initialized)
-                {
-                    await MasterDetailServices.Dialog.ShowErrorAsync("读卡器未连接，请检查设备", "读卡器未连接");
-                    return;
-                }
-            }
+            MasterDetailServices.Loading.BeginLoading("正在读取身份证...");
 
             try
             {
-                IsReadingCard = true;
-                MasterDetailServices.Loading.BeginLoading("正在读取身份证...");
+                var result = await _cardReaderViewModel.ReadCardAsync();
+                if (result == null) return;
 
-                var result = await _cardReaderService.ReadCardAsync();
-                if (!result.IsSuccess)
-                {
-                    await MasterDetailServices.Dialog.ShowErrorAsync($"读卡失败：{result.ErrorMessage}", "读卡失败");
-                    return;
-                }
-
-                Logger.LogInformation("读卡成功：{Name}，身份证号：{IdNumber}", result.Name, MaskIdNumber(result.IdNumber));
+                Logger.LogInformation("读卡成功：{Name}，身份证号：{IdNumber}", result.Name, PatientCardReaderViewModel.MaskIdNumber(result.IdNumber));
 
                 // 查找患者
-                var existingPatient = await _patientCardReaderIntegration.FindPatientByIdNumberAsync(result.IdNumber);
+                var existingPatient = await _cardReaderViewModel.FindPatientByIdNumberAsync(result.IdNumber);
                 if (existingPatient != null)
                 {
                     // 找到患者，选中并显示
@@ -354,25 +341,19 @@ namespace LYBT.Desktop.Patients.ViewModels
                     await HandleNewPatientFromCardAsync(result);
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "读卡时发生异常");
-                await MasterDetailServices.Dialog.ShowErrorAsync("读卡失败，请重试", "读卡失败");
-            }
             finally
             {
-                IsReadingCard = false;
                 MasterDetailServices.Loading.EndLoading();
             }
         }
 
-        private bool CanReadCard() => !IsReadingCard;
+        private bool CanReadCard() => !_cardReaderViewModel.IsReadingCard;
 
         /// <summary>处理新患者（从读卡结果创建）</summary>
         private async Task HandleNewPatientFromCardAsync(CardReadResult cardResult)
         {
             var message = $"未找到患者记录：{cardResult.Name}\n" +
-                         $"身份证号：{MaskIdNumber(cardResult.IdNumber)}\n\n" +
+                         $"身份证号：{PatientCardReaderViewModel.MaskIdNumber(cardResult.IdNumber)}\n\n" +
                          "是否创建新患者档案？";
 
             var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync(message, "创建新患者");
@@ -380,7 +361,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             if (confirmed)
             {
                 // 创建新患者并选中
-                var patientResult = await _patientCardReaderIntegration.FindOrCreatePatientAsync(cardResult);
+                var patientResult = await _cardReaderViewModel.FindOrCreatePatientAsync(cardResult);
                 Logger.LogInformation("患者创建成功：{PatientId}, {Name}", patientResult.PatientId, patientResult.Name);
                 await MasterDetailServices.Dialog.ShowSuccessAsync($"患者 {patientResult.Name} 创建成功", "创建成功");
 
@@ -403,14 +384,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 SelectedItem = patient;
             }
-        }
-
-        /// <summary>掩码身份证号（保护隐私）</summary>
-        private static string MaskIdNumber(string idNumber)
-        {
-            if (string.IsNullOrEmpty(idNumber) || idNumber.Length < 10)
-                return idNumber;
-            return idNumber[..6] + "****" + idNumber[^4..];
         }
 
         #endregion

@@ -31,6 +31,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         // OpenSpec: simplify-login-options - 记住账号+记住密码
         private bool _rememberUsername;
         private bool _rememberPassword;
+        private bool _hasSavedPassword;
         private string? _savedUsername;
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
@@ -45,7 +46,15 @@ namespace LYBT.Desktop.Auth.ViewModels
             set
             {
                 var shouldClearPassword = _savedUsername != null && !string.IsNullOrEmpty(_savedUsername) && !string.IsNullOrEmpty(value) && value != _savedUsername && !string.IsNullOrEmpty(_password);
-                if (SetProperty(ref _username, value)) { if (shouldClearPassword) Password = string.Empty; (LoginCommand as DelegateCommand)?.RaiseCanExecuteChanged(); }
+                if (SetProperty(ref _username, value))
+                {
+                    if (shouldClearPassword)
+                    {
+                        Password = string.Empty;
+                        HasSavedPassword = false;
+                    }
+                    (LoginCommand as DelegateCommand)?.RaiseCanExecuteChanged();
+                }
             }
         }
 
@@ -97,6 +106,15 @@ namespace LYBT.Desktop.Auth.ViewModels
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 是否有已保存的密码 - 用于显示"已保存"提示
+        /// </summary>
+        public bool HasSavedPassword
+        {
+            get => _hasSavedPassword;
+            set => SetProperty(ref _hasSavedPassword, value);
         }
 
         /// <summary>
@@ -319,6 +337,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                             _savedUsername = savedUsername;
                             Username = savedUsername;
                             RememberUsername = isRememberMeEnabled;
+                            HasSavedPassword = hasSavedPassword;
 
                             // OpenSpec: redesign-login-remember-password - 填充密码
                             if (!string.IsNullOrEmpty(savedPassword))

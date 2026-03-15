@@ -211,7 +211,13 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.Register<IStartupStep, ErrorHandlingStartupStep>("ErrorHandling");
             containerRegistry.Register<IStartupStep, ModuleCoordinatorStartupStep>("ModuleCoordinator");
             containerRegistry.Register<IStartupStep, CoreServicesStartupStep>("CoreServices");
-            containerRegistry.Register<IStartupStep, ApiHealthCheckStartupStep>("ApiHealthCheck");
+            // API健康检查 - 5秒超时，后台异步执行（Transient生命周期，每次解析新实例）
+            containerRegistry.Register<IStartupStep>(resolver =>
+            {
+                var appState = resolver.Resolve<IApplicationStateService>();
+                var logger = resolver.Resolve<ILogger<ApiHealthCheckStartupStep>>();
+                return new ApiHealthCheckStartupStep(appState, logger, timeoutSeconds: 5);
+            });
             containerRegistry.Register<IStartupStep, WarmupStartupStep>("Warmup");
 
             // Shell架构整合 - HealthCheckCoordinator服务
