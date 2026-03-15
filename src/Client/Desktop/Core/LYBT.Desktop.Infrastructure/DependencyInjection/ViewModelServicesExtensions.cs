@@ -1,4 +1,6 @@
+using LYBT.Desktop.Contracts.Performance;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Performance;
 using LYBT.Desktop.Infrastructure.Services;
 using Prism.Ioc;
 
@@ -40,6 +42,9 @@ namespace LYBT.Desktop.Infrastructure.DependencyInjection
             // 组合服务 - Transient
             containerRegistry.Register(typeof(IListViewServices<>), typeof(ListViewServices<>));
             containerRegistry.Register(typeof(IMasterDetailServices<,>), typeof(MasterDetailServices<,>));
+
+            // 性能监控服务 - Singleton
+            containerRegistry.RegisterSingleton<IPerformanceMonitor, PerformanceMonitor>();
 
             return containerRegistry;
         }

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using LYBT.Desktop.Contracts.Performance;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Shell.Services.Startup;
 using Microsoft.Extensions.Logging;
@@ -12,12 +13,14 @@ namespace LYBT.Tests.Desktop.PureLogic.Shell.Startup;
 public class StartupPipelineTests
 {
     private readonly ILogger<StartupPipeline> _logger;
+    private readonly IPerformanceMonitor _performanceMonitor;
     private readonly StartupPipeline _sut;
 
     public StartupPipelineTests()
     {
         _logger = Substitute.For<ILogger<StartupPipeline>>();
-        _sut = new StartupPipeline(_logger);
+        _performanceMonitor = Substitute.For<IPerformanceMonitor>();
+        _sut = new StartupPipeline(_logger, _performanceMonitor);
     }
 
     #region 初始状态测试

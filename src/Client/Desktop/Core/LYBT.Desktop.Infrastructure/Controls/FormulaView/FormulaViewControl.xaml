@@ -1,24 +1,25 @@
-<!--
+﻿<!--
     FormulaViewControl - 验方预览控件
     OpenSpec: extract-detail-controls Task 1.1
     OpenSpec: optimize-preview-layout - 优化布局和视觉层次
     OpenSpec: refactor-master-detail-layout - 详情区域UI优化
     OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
-
+    
     独立的验方预览控件，可在FormulaDetailView和FormulaImportDialog中复用
     通过DependencyProperty接收数据（使用object类型支持FormulaDetailModel和FormulaDetailDto）
-
+    
     UI优化 (2025-12-16):
     - 采用多卡片分组布局，充分利用详情区域空间
     - 分为：基本信息、功效用法、药材组成、系统信息四个逻辑区域
     - 使用统一的DetailLabelStyle和DetailValueStyle样式
 -->
-<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.FormulaView.FormulaViewControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
-             x:Name="Root">
+<UserControl
+    x:Class="LYBT.Desktop.Infrastructure.Controls.FormulaView.FormulaViewControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+    x:Name="Root">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):
@@ -27,115 +28,195 @@
         - 此控件无本地资源，所有样式来自全局
     -->
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" DataContext="{Binding ElementName=Root}">
+    <ScrollViewer DataContext="{Binding ElementName=Root}" VerticalScrollBarVisibility="Auto">
         <StackPanel>
-            <!-- ========================================
-                 基本信息卡片
-                 ======================================== -->
+            <!--
+                ========================================
+                基本信息卡片
+                ========================================
+            -->
             <controls:InfoCard Title="基本信息" ShowTitle="True">
                 <controls:InfoCard.Content>
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 验方名称 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="验方名称" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Formula.Name}" Style="{DynamicResource DetailValueStyle}" FontWeight="SemiBold"/>
+                        <!--  验方名称  -->
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="验方名称" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            FontWeight="SemiBold"
+                            Style="{DynamicResource DetailValueStyle}"
+                            Text="{Binding Formula.Name}" />
 
-                        <!-- 分类 -->
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="分类" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Formula.Category, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}"/>
+                        <!--  分类  -->
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="分类" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="3"
+                            Style="{DynamicResource DetailValueStyle}"
+                            Text="{Binding Formula.Category, TargetNullValue='-'}" />
 
-                        <!-- 性味归经 -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="性味归经" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Formula.Property, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}" TextWrapping="Wrap"/>
+                        <!--  性味归经  -->
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="性味归经" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            Style="{DynamicResource DetailValueStyle}"
+                            Text="{Binding Formula.Property, TargetNullValue='-'}"
+                            TextWrapping="Wrap" />
 
-                        <!-- 药材数量 -->
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="药材数量" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Style="{DynamicResource DetailValueStyle}">
-                            <Run Text="{Binding Formula.HerbCount, Mode=OneWay}"/>
-                            <Run Text="味"/>
+                        <!--  药材数量  -->
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="药材数量" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Style="{DynamicResource DetailValueStyle}">
+                            <Run Text="{Binding Formula.HerbCount, Mode=OneWay}" />
+                            <Run Text="味" />
                         </TextBlock>
 
-                        <!-- 状态 -->
-                        <TextBlock Grid.Row="2" Grid.Column="2" Text="状态" Style="{DynamicResource DetailLabelStyle}"/>
-                        <controls:StatusBadge Grid.Row="2" Grid.Column="3"
-                                              Status="{Binding Formula.Status}"
-                                              HorizontalAlignment="Left"
-                                              Margin="0,4,0,4"/>
+                        <!--  状态  -->
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="状态" />
+                        <controls:StatusBadge
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Margin="0,4,0,4"
+                            HorizontalAlignment="Left"
+                            Status="{Binding Formula.Status}" />
                     </Grid>
                 </controls:InfoCard.Content>
             </controls:InfoCard>
 
-            <!-- ========================================
-                 功效用法卡片
-                 ======================================== -->
-            <controls:InfoCard Title="功效用法" ShowTitle="True" Margin="0,12,0,0">
+            <!--
+                ========================================
+                功效用法卡片
+                ========================================
+            -->
+            <controls:InfoCard
+                Title="功效用法"
+                Margin="0,12,0,0"
+                ShowTitle="True">
                 <controls:InfoCard.Content>
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 功效 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="功效" Style="{DynamicResource DetailLabelStyle}" VerticalAlignment="Top"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Formula.Effect, TargetNullValue='-'}"
-                                   Style="{DynamicResource DetailValueStyle}" TextWrapping="Wrap"/>
+                        <!--  功效  -->
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            VerticalAlignment="Top"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="功效" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Style="{DynamicResource DetailValueStyle}"
+                            Text="{Binding Formula.Effect, TargetNullValue='-'}"
+                            TextWrapping="Wrap" />
 
-                        <!-- 用法 -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="用法" Style="{DynamicResource DetailLabelStyle}" VerticalAlignment="Top"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Formula.Usage, TargetNullValue='-'}"
-                                   Style="{DynamicResource DetailValueStyle}" TextWrapping="Wrap"/>
+                        <!--  用法  -->
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            VerticalAlignment="Top"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="用法" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Style="{DynamicResource DetailValueStyle}"
+                            Text="{Binding Formula.Usage, TargetNullValue='-'}"
+                            TextWrapping="Wrap" />
 
-                        <!-- 备注 -->
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="备注" Style="{DynamicResource DetailLabelStyle}" VerticalAlignment="Top"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Formula.Remark, TargetNullValue='-'}"
-                                   Style="{DynamicResource DetailValueStyle}" TextWrapping="Wrap"/>
+                        <!--  备注  -->
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            VerticalAlignment="Top"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="备注" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Style="{DynamicResource DetailValueStyle}"
+                            Text="{Binding Formula.Remark, TargetNullValue='-'}"
+                            TextWrapping="Wrap" />
                     </Grid>
                 </controls:InfoCard.Content>
             </controls:InfoCard>
 
-            <!-- ========================================
-                 药材组成卡片
-                 ======================================== -->
-            <controls:InfoCard Title="药材组成" ShowTitle="True" Margin="0,12,0,0">
+            <!--
+                ========================================
+                药材组成卡片
+                ========================================
+            -->
+            <controls:InfoCard
+                Title="药材组成"
+                Margin="0,12,0,0"
+                ShowTitle="True">
                 <controls:InfoCard.Content>
-                    <!-- 药材列表 - 网格布局，一行4个 -->
+                    <!--  药材列表 - 网格布局，一行4个  -->
                     <ItemsControl ItemsSource="{Binding Formula.Herbs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <UniformGrid Columns="4"/>
+                                <UniformGrid Columns="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Style="{DynamicResource HerbTagStyle}">
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <TextBlock Text="{Binding HerbName}" Style="{DynamicResource HerbTagNameStyle}"/>
-                                        <TextBlock Text="{Binding Dosage, StringFormat={}{0}g}" Style="{DynamicResource HerbTagDosageStyle}"/>
-                                        <!-- 煎法显示（仅非默认时显示） -->
-                                        <TextBlock Foreground="#E65100"
-                                                   FontSize="11"
-                                                   Margin="4,0,0,0"
-                                                   VerticalAlignment="Center"
-                                                   Visibility="{Binding DecocteMethod, Converter={x:Static converters:Cvt.DecocteMethodToVis}}">
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <TextBlock Style="{DynamicResource HerbTagNameStyle}" Text="{Binding HerbName}" />
+                                        <TextBlock Style="{DynamicResource HerbTagDosageStyle}" Text="{Binding Dosage, StringFormat={}{0}g}" />
+                                        <!--  煎法显示（仅非默认时显示）  -->
+                                        <TextBlock
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="{DynamicResource AccentOrangeBrush}"
+                                            Visibility="{Binding DecocteMethod, Converter={x:Static converters:Cvt.DecocteMethodToVis}}">
                                             <TextBlock.Text>
-                                                <Binding Path="DecocteMethod" Converter="{x:Static converters:Cvt.EnumDesc}"/>
+                                                <Binding Converter="{x:Static converters:Cvt.EnumDesc}" Path="DecocteMethod" />
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </StackPanel>
@@ -146,46 +227,77 @@
                 </controls:InfoCard.Content>
             </controls:InfoCard>
 
-            <!-- ========================================
-                 系统信息卡片
-                 ======================================== -->
-            <controls:InfoCard Title="系统信息" ShowTitle="True" Margin="0,12,0,0"
-                               Visibility="{Binding ShowAuditInfo, Converter={x:Static converters:Cvt.BoolToVis}}">
+            <!--
+                ========================================
+                系统信息卡片
+                ========================================
+            -->
+            <controls:InfoCard
+                Title="系统信息"
+                Margin="0,12,0,0"
+                ShowTitle="True"
+                Visibility="{Binding ShowAuditInfo, Converter={x:Static converters:Cvt.BoolToVis}}">
                 <controls:InfoCard.Content>
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 是否共享 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="是否共享" Style="{DynamicResource DetailLabelStyle}"/>
-                        <controls:StatusBadge Grid.Row="0" Grid.Column="1"
-                                              Status="{Binding Formula.IsShared}"
-                                              HorizontalAlignment="Left"
-                                              Margin="0,4,0,4"/>
+                        <!--  是否共享  -->
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="是否共享" />
+                        <controls:StatusBadge
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="0,4,0,4"
+                            HorizontalAlignment="Left"
+                            Status="{Binding Formula.IsShared}" />
 
-                        <!-- 来源 -->
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="来源" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Formula.Source, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}"/>
+                        <!--  来源  -->
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="来源" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="3"
+                            Style="{DynamicResource DetailValueStyle}"
+                            Text="{Binding Formula.Source, TargetNullValue='-'}" />
 
-                        <!-- 创建时间 -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="创建时间" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1"
-                                   Text="{Binding Formula.CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
-                                   Style="{DynamicResource DetailValueStyle}"/>
+                        <!--  创建时间  -->
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="创建时间" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Style="{DynamicResource DetailValueStyle}"
+                            Text="{Binding Formula.CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}" />
 
-                        <!-- 更新时间 -->
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="更新时间" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="3"
-                                   Text="{Binding Formula.UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
-                                   Style="{DynamicResource DetailValueStyle}"/>
+                        <!--  更新时间  -->
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Style="{DynamicResource DetailLabelStyle}"
+                            Text="更新时间" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="3"
+                            Style="{DynamicResource DetailValueStyle}"
+                            Text="{Binding Formula.UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}" />
                     </Grid>
                 </controls:InfoCard.Content>
             </controls:InfoCard>

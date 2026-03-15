@@ -22,7 +22,7 @@
             x:Key="SuccessStatusStyle"
             BasedOn="{StaticResource StatusTextStyle}"
             TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#2E7D32" />
+            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
         </Style>
 
         <!--  错误状态样式  -->
@@ -30,7 +30,7 @@
             x:Key="ErrorStatusStyle"
             BasedOn="{StaticResource StatusTextStyle}"
             TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#D32F2F" />
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
         </Style>
 
         <!--  警告状态样式  -->
@@ -38,7 +38,7 @@
             x:Key="WarningStatusStyle"
             BasedOn="{StaticResource StatusTextStyle}"
             TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#F57C00" />
+            <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
         </Style>
 
         <!--  信息状态样式  -->
@@ -46,14 +46,14 @@
             x:Key="InfoStatusStyle"
             BasedOn="{StaticResource StatusTextStyle}"
             TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#1976D2" />
+            <Setter Property="Foreground" Value="{DynamicResource InfoBrush}" />
         </Style>
 
         <!--  进度条样式  -->
         <Style x:Key="StatusProgressBarStyle" TargetType="ProgressBar">
             <Setter Property="Height" Value="3" />
             <Setter Property="Background" Value="{DynamicResource BorderLightBrush}" />
-            <Setter Property="Foreground" Value="#4CAF50" />
+            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
 
@@ -99,7 +99,7 @@
                         Width="16"
                         Height="16"
                         RenderTransformOrigin="0.5,0.5"
-                        Stroke="#4CAF50"
+                        Stroke="{DynamicResource SuccessBrush}"
                         StrokeDashArray="8 4"
                         StrokeThickness="2">
                         <Ellipse.RenderTransform>
@@ -125,7 +125,7 @@
                 <!--  当前用户名 - US-SHELL-007 (CODE-21)  -->
                 <TextBlock
                     Grid.Column="3"
-                    Foreground="#555555"
+                    Foreground="{DynamicResource PrimaryTextBrush}"
                     Style="{StaticResource StatusTextStyle}"
                     Text="{Binding CurrentUserName}"
                     Visibility="{Binding CurrentUserName, Converter={x:Static converters:Cvt.StringToVis}}" />
@@ -133,14 +133,14 @@
                 <!--  版本号 - US-SHELL-007 (CODE-21)  -->
                 <TextBlock
                     Grid.Column="4"
-                    Foreground="#AAAAAA"
+                    Foreground="{DynamicResource ThirdlyTextBrush}"
                     Style="{StaticResource StatusTextStyle}"
                     Text="{Binding AppVersion, StringFormat=v{0}}" />
 
                 <!--  系统时间  -->
                 <TextBlock
                     Grid.Column="5"
-                    Foreground="#888888"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
                     Style="{StaticResource StatusTextStyle}"
                     Text="{Binding Source={x:Static local:SystemTimeProvider.Instance}, Path=CurrentTime, StringFormat=HH:mm:ss}" />
             </Grid>

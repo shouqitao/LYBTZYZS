@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Performance;
 using LYBT.Desktop.LocalData.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -7,18 +8,24 @@ namespace LYBT.Desktop.LocalData.Initialization;
 /// <summary>
 /// 数据库初始化器 - 负责创建 SQL Server LocalDB 数据库和初始化数据
 /// OpenSpec: implement-local-mode
+/// Phase 4 Task 4.4: 集成数据库初始化性能监控
 /// </summary>
 public class DatabaseInitializer
 {
     private readonly Func<LocalDbContext> _contextFactory;
+    private readonly IPerformanceMonitor? _performanceMonitor;
     private readonly ILogger<DatabaseInitializer> _logger;
     private readonly SemaphoreSlim _initLock = new(1, 1);
     private bool _isInitialized;
 
-    public DatabaseInitializer(Func<LocalDbContext> contextFactory, ILogger<DatabaseInitializer> logger)
+    public DatabaseInitializer(
+        Func<LocalDbContext> contextFactory,
+        ILogger<DatabaseInitializer> logger,
+        IPerformanceMonitor? performanceMonitor = null)
     {
         _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _performanceMonitor = performanceMonitor;
     }
 
     /// <summary>
@@ -44,8 +51,17 @@ public class DatabaseInitializer
             }
 
             _logger.LogInformation("[LocalData] 开始初始化数据库...");
+
+            // Phase 4 Task 4.4: 监控数据库初始化性能
+            _performanceMonitor?.StartTiming("Database_Initialize");
+            _performanceMonitor?.RecordMemoryBaseline("Database_Initialize_Memory");
+
             await InitializeAsync(ct);
             _isInitialized = true;
+
+            _performanceMonitor?.StopTiming("Database_Initialize");
+            _performanceMonitor?.RecordMemoryBaseline("Database_Initialize_Complete_Memory");
+
             _logger.LogInformation("[LocalData] 数据库初始化完成");
         }
         finally

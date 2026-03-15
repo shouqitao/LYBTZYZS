@@ -3,6 +3,7 @@ using LYBT.Desktop.Admin;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.CardReader;
 using LYBT.Desktop.Clinical;
+using LYBT.Desktop.Contracts.Performance;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Security;
@@ -185,6 +186,11 @@ public partial class App : PrismApplication
     {
         base.OnInitialized();
 
+        // Phase 4 Task 4.4: 集成性能监控框架
+        var performanceMonitor = Container.Resolve<IPerformanceMonitor>();
+        performanceMonitor.StartTiming("App_Startup_Total");
+        performanceMonitor.RecordMemoryBaseline("App_Startup_Memory");
+
         _performanceMonitor = new StartupPerformanceMonitor(Container.Resolve<ILoggerFactory>());
         _performanceMonitor.StartMonitoring();
         _performanceMonitor.StartStage("应用初始化");
@@ -285,6 +291,25 @@ public partial class App : PrismApplication
         {
             _performanceMonitor?.EndStage();
             _performanceMonitor?.Finish();
+
+            // Phase 4 Task 4.4: 记录启动性能指标并输出报告
+            try
+            {
+                var performanceMonitor = Container.Resolve<IPerformanceMonitor>();
+                performanceMonitor.StopTiming("App_Startup_Total");
+                performanceMonitor.RecordMemoryBaseline("App_Startup_Complete_Memory");
+
+                var report = performanceMonitor.GenerateReport();
+                var logger = Container.Resolve<ILogger<App>>();
+                logger.LogInformation("应用程序启动性能报告:\n{PerformanceReport}", report.GetFormattedReport());
+            }
+            catch (Exception ex)
+            {
+                // 性能监控不应影响正常启动流程
+                var logger = Container.Resolve<ILogger<App>>();
+                logger.LogWarning(ex, "生成性能报告时发生错误");
+            }
+
             _splashScreen?.Close();
             _splashScreen = null;
             MainWindow?.Show();

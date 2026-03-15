@@ -141,10 +141,10 @@
                                 <Setter Property="Padding" Value="8,4" />
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#F0F0F0" />
+                                        <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
                                     </Trigger>
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="#E3F2FD" />
+                                        <Setter Property="Background" Value="{DynamicResource SelectedBackgroundBrush}" />
                                         <Setter Property="Foreground" Value="Black" />
                                     </Trigger>
                                 </Style.Triggers>

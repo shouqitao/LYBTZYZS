@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     EmptyState - 空状态控件
     OpenSpec: refactor-master-detail-layout
 
@@ -14,13 +14,13 @@
     <controls:EmptyState
         Title="暂无数据"
         ActionText="新增记录"
-        ActionCommand="{Binding CreateCommand}"/>
--->
-<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.EmptyState"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
-             x:Name="Root">
+        ActionCommand="{Binding CreateCommand}"/>-->
+<UserControl
+    x:Class="LYBT.Desktop.Infrastructure.Controls.EmptyState"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+    x:Name="Root">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):
@@ -29,52 +29,58 @@
     -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <!-- 默认空状态图标 -->
+            <!--  默认空状态图标  -->
             <Geometry x:Key="DefaultEmptyIcon">M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z</Geometry>
             <Geometry x:Key="SelectItemIcon">M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z</Geometry>
             <Geometry x:Key="NoDataIcon">M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z</Geometry>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel VerticalAlignment="Center"
-                HorizontalAlignment="Center"
-                DataContext="{Binding ElementName=Root}"
-                Opacity="0.7">
+    <StackPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        DataContext="{Binding ElementName=Root}"
+        Opacity="0.7">
 
-        <!-- 图标 -->
-        <Path Data="{Binding Icon, TargetNullValue={StaticResource SelectItemIcon}}"
-              Fill="#BBBBBB"
-              Width="64" Height="64"
-              Stretch="Uniform"
-              HorizontalAlignment="Center"
-              Margin="0,0,0,20"/>
+        <!--  图标  -->
+        <Path
+            Width="64"
+            Height="64"
+            Margin="0,0,0,20"
+            HorizontalAlignment="Center"
+            Data="{Binding Icon, TargetNullValue={StaticResource SelectItemIcon}}"
+            Fill="{DynamicResource ThirdlyTextBrush}"
+            Stretch="Uniform" />
 
-        <!-- 主标题 -->
-        <TextBlock Text="{Binding Title}"
-                   FontSize="18"
-                   FontWeight="Medium"
-                   Foreground="#666666"
-                   HorizontalAlignment="Center"
-                   TextWrapping="Wrap"
-                   MaxWidth="300"/>
+        <!--  主标题  -->
+        <TextBlock
+            MaxWidth="300"
+            HorizontalAlignment="Center"
+            FontSize="18"
+            FontWeight="Medium"
+            Foreground="{DynamicResource SecondaryTextBrush}"
+            Text="{Binding Title}"
+            TextWrapping="Wrap" />
 
-        <!-- 副标题 -->
-        <TextBlock Text="{Binding Subtitle}"
-                   FontSize="14"
-                   Foreground="#999999"
-                   HorizontalAlignment="Center"
-                   TextWrapping="Wrap"
-                   MaxWidth="300"
-                   Margin="0,8,0,0"
-                   Visibility="{Binding Subtitle, Converter={x:Static converters:Cvt.NullToVis}}"/>
+        <!--  副标题  -->
+        <TextBlock
+            MaxWidth="300"
+            Margin="0,8,0,0"
+            HorizontalAlignment="Center"
+            FontSize="14"
+            Foreground="{DynamicResource ThirdlyTextBrush}"
+            Text="{Binding Subtitle}"
+            TextWrapping="Wrap"
+            Visibility="{Binding Subtitle, Converter={x:Static converters:Cvt.NullToVis}}" />
 
-        <!-- 操作按钮 -->
-        <Button Content="{Binding ActionText}"
-                Command="{Binding ActionCommand}"
-                Style="{DynamicResource PrimaryButtonStyle}"
-                HorizontalAlignment="Center"
-                Padding="20,10"
-                Margin="0,20,0,0"
-                Visibility="{Binding ActionCommand, Converter={x:Static converters:Cvt.NullToVis}}"/>
+        <!--  操作按钮  -->
+        <Button
+            Margin="0,20,0,0"
+            Padding="20,10"
+            HorizontalAlignment="Center"
+            Command="{Binding ActionCommand}"
+            Content="{Binding ActionText}"
+            Style="{DynamicResource PrimaryButtonStyle}"
+            Visibility="{Binding ActionCommand, Converter={x:Static converters:Cvt.NullToVis}}" />
     </StackPanel>
 </UserControl>

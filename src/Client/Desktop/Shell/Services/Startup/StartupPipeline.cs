@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using LYBT.Desktop.Contracts.Performance;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,7 @@ namespace LYBT.Desktop.Shell.Services.Startup;
 public class StartupPipeline : IStartupPipeline
 {
     private readonly ILogger<StartupPipeline> _logger;
+    private readonly IPerformanceMonitor _performanceMonitor;
     private readonly List<IStartupStep> _steps = new();
     private readonly ConcurrentDictionary<string, StartupStepResult> _stepResults = new();
     private readonly object _stateLock = new();
@@ -21,9 +23,12 @@ public class StartupPipeline : IStartupPipeline
     private Stopwatch? _totalStopwatch;
     private int _completedSteps;
 
-    public StartupPipeline(ILogger<StartupPipeline> logger)
+    public StartupPipeline(
+        ILogger<StartupPipeline> logger,
+        IPerformanceMonitor performanceMonitor)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _performanceMonitor = performanceMonitor ?? throw new ArgumentNullException(nameof(performanceMonitor));
     }
 
     /// <inheritdoc />
@@ -225,12 +230,19 @@ public class StartupPipeline : IStartupPipeline
     {
         var stepStopwatch = Stopwatch.StartNew();
 
+        // Phase 4 Task 4.4: 开始性能监控
+        var timingKey = $"StartupStep_{step.Name}";
+        _performanceMonitor.StartTiming(timingKey);
+
         _logger.LogDebug("开始执行步骤: {StepName}", step.Name);
 
         try
         {
             var result = await step.ExecuteAsync(progress, cancellationToken);
             stepStopwatch.Stop();
+
+            // Phase 4 Task 4.4: 停止性能监控
+            _performanceMonitor.StopTiming(timingKey);
 
             // 更新结果中的Duration
             var finalResult = result with { Duration = stepStopwatch.Elapsed };
@@ -251,12 +263,14 @@ public class StartupPipeline : IStartupPipeline
         catch (OperationCanceledException)
         {
             stepStopwatch.Stop();
+            _performanceMonitor.StopTiming(timingKey);
             _logger.LogWarning("步骤 {StepName} 被取消", step.Name);
             return StartupStepResult.Failed("步骤被取消", duration: stepStopwatch.Elapsed);
         }
         catch (Exception ex)
         {
             stepStopwatch.Stop();
+            _performanceMonitor.StopTiming(timingKey);
             _logger.LogError(ex, "步骤 {StepName} 执行异常", step.Name);
             return StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("执行步骤", ex), ex, stepStopwatch.Elapsed);
         }

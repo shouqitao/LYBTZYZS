@@ -206,4 +206,8 @@
     <SolidColorBrush x:Key="BorderLightBrush" Color="{StaticResource BorderLightColor}" />
     <SolidColorBrush x:Key="BorderMediumBrush" Color="{StaticResource BorderMediumColor}" />
 
+    <!--  控件特定语义化画刷 - Phase 3.5 添加  -->
+    <SolidColorBrush x:Key="AccentOrangeBrush" Color="#E65100" />
+    <SolidColorBrush x:Key="ProgressBarBrush" Color="#0078D4" />
+
 </ResourceDictionary>

@@ -71,11 +71,11 @@
                 <TextBlock
                     Margin="0,0,16,0"
                     VerticalAlignment="Center"
-                    Foreground="#666">
+                    Foreground="{DynamicResource SecondaryTextBrush}">
                     <Run Text="共" />
                     <Run
                         FontWeight="SemiBold"
-                        Foreground="#2196F3"
+                        Foreground="{DynamicResource PrimaryBrush}"
                         Text="{Binding ValidItemCount, Mode=OneWay}" />
                     <Run Text="味药材" />
                 </TextBlock>
