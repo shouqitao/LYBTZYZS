@@ -1,134 +1,151 @@
-<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.HerbItem.HerbItemControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbItem"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
-             xmlns:enums="clr-namespace:LYBT.Shared.Models.Enums;assembly=LYBT.Shared.Models"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             mc:Ignorable="d"
-             d:DesignHeight="40" d:DesignWidth="220">
-    <!-- OpenSpec: herb-editor-control-refactoring -->
-    <!-- OpenSpec: cross-module-decoupling - 迁移到Infrastructure -->
+﻿<UserControl
+    x:Class="LYBT.Desktop.Infrastructure.Controls.HerbItem.HerbItemControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:enums="clr-namespace:LYBT.Shared.Models.Enums;assembly=LYBT.Shared.Models"
+    xmlns:local="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbItem"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    d:DesignHeight="40"
+    d:DesignWidth="220"
+    mc:Ignorable="d">
+    <!--  OpenSpec: herb-editor-control-refactoring  -->
+    <!--  OpenSpec: cross-module-decoupling - 迁移到Infrastructure  -->
     <UserControl.Resources>
-        <ObjectDataProvider x:Key="DecocteMethodValues"
-                            MethodName="GetValues"
-                            ObjectType="{x:Type sys:Enum}">
+        <ObjectDataProvider
+            x:Key="DecocteMethodValues"
+            MethodName="GetValues"
+            ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="enums:DecocteMethod"/>
+                <x:Type TypeName="enums:DecocteMethod" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </UserControl.Resources>
 
-    <!-- 单行布局: 药材名 + 剂量 + 煎法 (右键菜单删除) -->
-    <!-- x:Name="LayoutRoot" 用于内部DataContext绑定，避免覆盖UserControl的DataContext -->
-    <Border x:Name="LayoutRoot"
-            BorderBrush="#E0E0E0"
-            BorderThickness="1"
-            CornerRadius="4"
-            Background="White"
-            Margin="2"
-            Padding="6,4">
-        <!-- 右键菜单：编辑模式下可删除药材 -->
+    <!--  单行布局: 药材名 + 剂量 + 煎法 (右键菜单删除)  -->
+    <!--  x:Name="LayoutRoot" 用于内部DataContext绑定，避免覆盖UserControl的DataContext  -->
+    <Border
+        x:Name="LayoutRoot"
+        Margin="2"
+        Padding="6,4"
+        Background="White"
+        BorderBrush="{DynamicResource BorderLightBrush}"
+        BorderThickness="1"
+        CornerRadius="4">
+        <!--  右键菜单：编辑模式下可删除药材  -->
         <Border.ContextMenu>
             <ContextMenu x:Name="HerbContextMenu">
-                <MenuItem Header="删除药材"
-                          Click="OnDeleteMenuItemClick"
-                          Foreground="#DC3545">
+                <MenuItem
+                    Click="OnDeleteMenuItemClick"
+                    Foreground="{DynamicResource DangerBrush}"
+                    Header="删除药材">
                     <MenuItem.Icon>
-                        <TextBlock Text="x" FontWeight="Bold" Foreground="#DC3545"/>
+                        <TextBlock
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource DangerBrush}"
+                            Text="x" />
                     </MenuItem.Icon>
                 </MenuItem>
             </ContextMenu>
         </Border.ContextMenu>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>      <!-- 药材名称 -->
-                <ColumnDefinition Width="Auto"/>   <!-- 剂量区域 -->
-                <ColumnDefinition Width="Auto"/>   <!-- 煎法选择 -->
+                <ColumnDefinition Width="*" />
+                <!--  药材名称  -->
+                <ColumnDefinition Width="Auto" />
+                <!--  剂量区域  -->
+                <ColumnDefinition Width="Auto" />
+                <!--  煎法选择  -->
             </Grid.ColumnDefinitions>
 
-            <!-- Column 0: 药材名称输入框 -->
-            <TextBox x:Name="HerbNameTextBox"
-                     Grid.Column="0"
-                     Text="{Binding HerbName, UpdateSourceTrigger=PropertyChanged}"
-                     PreviewKeyDown="OnTextBoxPreviewKeyDown"
-                     TextChanged="OnTextBoxTextChanged"
-                     GotFocus="OnTextBoxGotFocus"
-                     LostFocus="OnTextBoxLostFocus"
-                     IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
-                     FontSize="13"
-                     Height="28"
-                     MinWidth="60"
-                     Padding="4,2"
-                     VerticalContentAlignment="Center"/>
+            <!--  Column 0: 药材名称输入框  -->
+            <TextBox
+                x:Name="HerbNameTextBox"
+                Grid.Column="0"
+                Height="28"
+                MinWidth="60"
+                Padding="4,2"
+                VerticalContentAlignment="Center"
+                FontSize="13"
+                GotFocus="OnTextBoxGotFocus"
+                IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                LostFocus="OnTextBoxLostFocus"
+                PreviewKeyDown="OnTextBoxPreviewKeyDown"
+                Text="{Binding HerbName, UpdateSourceTrigger=PropertyChanged}"
+                TextChanged="OnTextBoxTextChanged" />
 
-            <!-- Column 1: 剂量输入框 -->
-            <TextBox x:Name="DosageTextBox"
-                     Grid.Column="1"
-                     Width="42"
-                     Height="28"
-                     Text="{Binding Dosage, UpdateSourceTrigger=PropertyChanged}"
-                     PreviewKeyDown="OnDosageKeyDown"
-                     GotFocus="OnDosageGotFocus"
-                     IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
-                     FontSize="12"
-                     Margin="6,0,0,0"
-                     Padding="2"
-                     VerticalContentAlignment="Center"
-                     HorizontalContentAlignment="Right"/>
+            <!--  Column 1: 剂量输入框  -->
+            <TextBox
+                x:Name="DosageTextBox"
+                Grid.Column="1"
+                Width="42"
+                Height="28"
+                Margin="6,0,0,0"
+                Padding="2"
+                HorizontalContentAlignment="Right"
+                VerticalContentAlignment="Center"
+                FontSize="12"
+                GotFocus="OnDosageGotFocus"
+                IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                PreviewKeyDown="OnDosageKeyDown"
+                Text="{Binding Dosage, UpdateSourceTrigger=PropertyChanged}" />
 
-            <!-- Column 2: 煎法下拉选择器 -->
-            <ComboBox x:Name="DecocteMethodComboBox"
-                      Grid.Column="2"
-                      Width="56"
-                      Height="28"
-                      Margin="6,0,0,0"
-                      ItemsSource="{Binding Source={StaticResource DecocteMethodValues}}"
-                      SelectedItem="{Binding DecocteMethod, Mode=TwoWay}"
-                      IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
-                      FontSize="11"
-                      Padding="4,2"
-                      HorizontalContentAlignment="Center"
-                      VerticalContentAlignment="Center">
+            <!--  Column 2: 煎法下拉选择器  -->
+            <ComboBox
+                x:Name="DecocteMethodComboBox"
+                Grid.Column="2"
+                Width="56"
+                Height="28"
+                Margin="6,0,0,0"
+                Padding="4,2"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                FontSize="11"
+                IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                ItemsSource="{Binding Source={StaticResource DecocteMethodValues}}"
+                SelectedItem="{Binding DecocteMethod, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Converter={x:Static converters:Cvt.EnumDesc}}"/>
+                        <TextBlock Text="{Binding Converter={x:Static converters:Cvt.EnumDesc}}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
-            <!-- 建议列表Popup (挂在药材名称输入框下方) -->
-            <Popup x:Name="SuggestionsPopup"
-                   PlacementTarget="{Binding ElementName=HerbNameTextBox}"
-                   Placement="Bottom"
-                   StaysOpen="True"
-                   AllowsTransparency="True"
-                   PopupAnimation="Slide">
-                <Border Background="White"
-                        BorderBrush="#E0E0E0"
-                        BorderThickness="1"
-                        MaxHeight="200"
-                        MinWidth="{Binding ActualWidth, Source={x:Reference HerbNameTextBox}}">
-                    <ListBox x:Name="SuggestionsListBox"
-                             ItemsSource="{Binding FilteredHerbs}"
-                             DisplayMemberPath="Name"
-                             PreviewMouseDown="OnListBoxPreviewMouseDown"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             Focusable="False"
-                             IsHitTestVisible="True">
+            <!--  建议列表Popup (挂在药材名称输入框下方)  -->
+            <Popup
+                x:Name="SuggestionsPopup"
+                AllowsTransparency="True"
+                Placement="Bottom"
+                PlacementTarget="{Binding ElementName=HerbNameTextBox}"
+                PopupAnimation="Slide"
+                StaysOpen="True">
+                <Border
+                    MinWidth="{Binding ActualWidth, Source={x:Reference HerbNameTextBox}}"
+                    MaxHeight="200"
+                    Background="White"
+                    BorderBrush="{DynamicResource BorderLightBrush}"
+                    BorderThickness="1">
+                    <ListBox
+                        x:Name="SuggestionsListBox"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        DisplayMemberPath="Name"
+                        Focusable="False"
+                        IsHitTestVisible="True"
+                        ItemsSource="{Binding FilteredHerbs}"
+                        PreviewMouseDown="OnListBoxPreviewMouseDown">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
-                                <Setter Property="Padding" Value="8,4"/>
+                                <Setter Property="Padding" Value="8,4" />
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#F0F0F0"/>
+                                        <Setter Property="Background" Value="#F0F0F0" />
                                     </Trigger>
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="#E3F2FD"/>
-                                        <Setter Property="Foreground" Value="Black"/>
+                                        <Setter Property="Background" Value="#E3F2FD" />
+                                        <Setter Property="Foreground" Value="Black" />
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>

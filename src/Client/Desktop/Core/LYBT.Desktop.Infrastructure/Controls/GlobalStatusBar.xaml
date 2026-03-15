@@ -52,7 +52,7 @@
         <!--  进度条样式  -->
         <Style x:Key="StatusProgressBarStyle" TargetType="ProgressBar">
             <Setter Property="Height" Value="3" />
-            <Setter Property="Background" Value="#E0E0E0" />
+            <Setter Property="Background" Value="{DynamicResource BorderLightBrush}" />
             <Setter Property="Foreground" Value="#4CAF50" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
@@ -69,8 +69,8 @@
     </UserControl.Resources>
 
     <Border
-        Background="White"
-        BorderBrush="#E0E0E0"
+        Background="{DynamicResource RegionBrush}"
+        BorderBrush="{DynamicResource BorderLightBrush}"
         BorderThickness="0,1,0,0">
         <Grid>
             <Grid.RowDefinitions>

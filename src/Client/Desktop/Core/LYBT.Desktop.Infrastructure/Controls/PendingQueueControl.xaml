@@ -15,13 +15,13 @@
         RefreshCommand="{Binding RefreshPendingQueueCommand}"
         SelectCommand="{Binding StartMedicalCaseCommand}"
         IsRefreshing="{Binding IsRefreshing}"
-        IsEmpty="{Binding HasNoPendingPatients}"/>
--->
-<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.PendingQueueControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:enums="clr-namespace:LYBT.Shared.Models.Enums;assembly=LYBT.Shared.Models"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters">
+        IsEmpty="{Binding HasNoPendingPatients}"/>-->
+<UserControl
+    x:Class="LYBT.Desktop.Infrastructure.Controls.PendingQueueControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+    xmlns:enums="clr-namespace:LYBT.Shared.Models.Enums;assembly=LYBT.Shared.Models">
 
     <!--
         资源加载说明 (OpenSpec: migrate-to-handycontrol):
@@ -29,195 +29,217 @@
         - 待诊状态颜色保留本地定义（控件特有）
     -->
     <UserControl.Resources>
-        <!-- OpenSpec: optimize-medicalcase-ui - 待诊状态颜色（控件特有，保留本地定义） -->
-        <SolidColorBrush x:Key="PendingWaitingBrush" Color="#E0E0E0"/>
-        <SolidColorBrush x:Key="PendingInProgressBrush" Color="#4CAF50"/>
-        <SolidColorBrush x:Key="PendingSuspendedBrush" Color="#FF9800"/>
-        <SolidColorBrush x:Key="PendingWaitingTextBrush" Color="#666666"/>
-        <SolidColorBrush x:Key="PendingInProgressTextBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="PendingSuspendedTextBrush" Color="#FFFFFF"/>
-        <!-- OpenSpec: refactor-medicalcase-workspace Phase 5 - 挂起状态行背景 -->
-        <SolidColorBrush x:Key="PendingSuspendedRowBrush" Color="#FFF3E0"/>
+        <!--  OpenSpec: optimize-medicalcase-ui - 待诊状态颜色（控件特有，保留本地定义）  -->
+        <SolidColorBrush x:Key="PendingWaitingBrush" Color="#E0E0E0" />
+        <SolidColorBrush x:Key="PendingInProgressBrush" Color="#4CAF50" />
+        <SolidColorBrush x:Key="PendingSuspendedBrush" Color="#FF9800" />
+        <SolidColorBrush x:Key="PendingWaitingTextBrush" Color="#666666" />
+        <SolidColorBrush x:Key="PendingInProgressTextBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="PendingSuspendedTextBrush" Color="#FFFFFF" />
+        <!--  OpenSpec: refactor-medicalcase-workspace Phase 5 - 挂起状态行背景  -->
+        <SolidColorBrush x:Key="PendingSuspendedRowBrush" Color="#FFF3E0" />
     </UserControl.Resources>
 
-    <!-- 使用DynamicResource：Shell Design Tokens通过App级别加载 -->
-    <Border Background="{DynamicResource SecondaryRegionBrush}"
-            Padding="15"
-            CornerRadius="5"
-            BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="1">
+    <!--  使用DynamicResource：Shell Design Tokens通过App级别加载  -->
+    <Border
+        Padding="15"
+        Background="{DynamicResource SecondaryRegionBrush}"
+        BorderBrush="{DynamicResource BorderBrush}"
+        BorderThickness="1"
+        CornerRadius="5">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- 标题和刷新按钮 -->
+            <!--  标题和刷新按钮  -->
             <Grid Grid.Row="0" Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0"
-                           Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='待看诊队列'}"
-                           FontWeight="Bold"
-                           FontSize="14"
-                           Foreground="{DynamicResource PrimaryTextBrush}"
-                           VerticalAlignment="Center"/>
+                <TextBlock
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource PrimaryTextBrush}"
+                    Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='待看诊队列'}" />
 
-                <Button Grid.Column="1"
-                        Content="刷新"
-                        ToolTip="刷新待诊队列"
-                        Command="{Binding RefreshCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        Width="50" Height="28"
-                        FontSize="12"
-                        Style="{DynamicResource SecondaryButton}">
+                <Button
+                    Grid.Column="1"
+                    Width="50"
+                    Height="28"
+                    Command="{Binding RefreshCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    Content="刷新"
+                    FontSize="12"
+                    Style="{DynamicResource SecondaryButton}"
+                    ToolTip="刷新待诊队列">
                     <Button.IsEnabled>
-                        <Binding Path="IsRefreshing"
-                                 RelativeSource="{RelativeSource AncestorType=UserControl}"
-                                 Converter="{x:Static converters:Cvt.InverseBool}"/>
+                        <Binding
+                            Converter="{x:Static converters:Cvt.InverseBool}"
+                            Path="IsRefreshing"
+                            RelativeSource="{RelativeSource AncestorType=UserControl}" />
                     </Button.IsEnabled>
                 </Button>
             </Grid>
 
-            <!-- 待诊列表 -->
-            <DataGrid x:Name="PendingDataGrid"
-                      Grid.Row="1"
-                      ItemsSource="{Binding PendingQueue, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                      SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      SelectionMode="Single"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      CanUserResizeRows="False"
-                      HeadersVisibility="Column"
-                      GridLinesVisibility="None"
-                      BorderThickness="0"
-                      Background="Transparent"
-                      RowHeight="36"
-                      FontFamily="Microsoft YaHei"
-                      FontSize="13"
-                      MouseDoubleClick="PendingDataGrid_MouseDoubleClick">
+            <!--  待诊列表  -->
+            <DataGrid
+                x:Name="PendingDataGrid"
+                Grid.Row="1"
+                AutoGenerateColumns="False"
+                Background="Transparent"
+                BorderThickness="0"
+                CanUserAddRows="False"
+                CanUserDeleteRows="False"
+                CanUserResizeRows="False"
+                FontFamily="Microsoft YaHei"
+                FontSize="13"
+                GridLinesVisibility="None"
+                HeadersVisibility="Column"
+                IsReadOnly="True"
+                ItemsSource="{Binding PendingQueue, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                MouseDoubleClick="PendingDataGrid_MouseDoubleClick"
+                RowHeight="36"
+                SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+                SelectionMode="Single">
 
                 <DataGrid.Style>
                     <Style TargetType="DataGrid">
-                        <Setter Property="Visibility" Value="Visible"/>
+                        <Setter Property="Visibility" Value="Visible" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsEmpty, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Visibility" Value="Collapsed" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </DataGrid.Style>
 
-                <!-- 键盘导航支持 -->
+                <!--  键盘导航支持  -->
                 <DataGrid.InputBindings>
-                    <KeyBinding Key="Return"
-                                Command="{Binding SelectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    <KeyBinding
+                        Key="Return"
+                        Command="{Binding SelectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                 </DataGrid.InputBindings>
 
-                <!-- 列头样式 -->
+                <!--  列头样式  -->
                 <DataGrid.ColumnHeaderStyle>
                     <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-                        <Setter Property="FontSize" Value="12"/>
-                        <Setter Property="FontWeight" Value="Medium"/>
-                        <Setter Property="Height" Value="32"/>
-                        <Setter Property="Padding" Value="8,0"/>
-                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                        <Setter Property="FontSize" Value="12" />
+                        <Setter Property="FontWeight" Value="Medium" />
+                        <Setter Property="Height" Value="32" />
+                        <Setter Property="Padding" Value="8,0" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
                     </Style>
                 </DataGrid.ColumnHeaderStyle>
 
-                <!-- 单元格样式 -->
+                <!--  单元格样式  -->
                 <DataGrid.CellStyle>
                     <Style TargetType="DataGridCell">
-                        <Setter Property="Padding" Value="8,0"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="Padding" Value="8,0" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="VerticalAlignment" Value="Center" />
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="DataGridCell">
-                                    <Border Padding="{TemplateBinding Padding}"
-                                            Background="{TemplateBinding Background}">
-                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                        <ContentPresenter VerticalAlignment="Center" />
                                     </Border>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
                             </Trigger>
                         </Style.Triggers>
                     </Style>
                 </DataGrid.CellStyle>
 
                 <DataGrid.Columns>
-                    <!-- OpenSpec: redesign-pending-queue - 序号列 -->
-                    <DataGridTextColumn Header="序号" Binding="{Binding QueueNumber}" Width="40">
+                    <!--  OpenSpec: redesign-pending-queue - 序号列  -->
+                    <DataGridTextColumn
+                        Width="40"
+                        Binding="{Binding QueueNumber}"
+                        Header="序号">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="HorizontalAlignment" Value="Center" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <!-- 患者姓名 -->
-                    <DataGridTextColumn Header="姓名" Binding="{Binding PatientName}" Width="70">
+                    <!--  患者姓名  -->
+                    <DataGridTextColumn
+                        Width="70"
+                        Binding="{Binding PatientName}"
+                        Header="姓名">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
-                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <!-- 手机号（脱敏） -->
-                    <DataGridTextColumn Header="电话" Binding="{Binding PhoneMasked}" Width="120">
+                    <!--  手机号（脱敏）  -->
+                    <DataGridTextColumn
+                        Width="120"
+                        Binding="{Binding PhoneMasked}"
+                        Header="电话">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <!-- 状态 - OpenSpec: optimize-medicalcase-ui - 使用MedicalCaseStatus枚举 -->
-                    <DataGridTemplateColumn Header="状态" Width="70">
+                    <!--  状态 - OpenSpec: optimize-medicalcase-ui - 使用MedicalCaseStatus枚举  -->
+                    <DataGridTemplateColumn Width="70" Header="状态">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border CornerRadius="3" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Border
+                                    Padding="6,2"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    CornerRadius="3">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="{StaticResource PendingWaitingBrush}"/>
+                                            <Setter Property="Background" Value="{StaticResource PendingWaitingBrush}" />
                                             <Style.Triggers>
-                                                <!-- Active = 进行中 -->
+                                                <!--  Active = 进行中  -->
                                                 <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Active}">
-                                                    <Setter Property="Background" Value="{StaticResource PendingInProgressBrush}"/>
+                                                    <Setter Property="Background" Value="{StaticResource PendingInProgressBrush}" />
                                                 </DataTrigger>
-                                                <!-- Suspended = 挂起/待诊 (默认灰色即可) -->
+                                                <!--  Suspended = 挂起/待诊 (默认灰色即可)  -->
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <TextBlock Text="{Binding CaseStatus, Converter={x:Static converters:Cvt.EnumDesc}}" FontWeight="Medium" FontSize="11">
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="Medium"
+                                        Text="{Binding CaseStatus, Converter={x:Static converters:Cvt.EnumDesc}}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="{StaticResource PendingWaitingTextBrush}"/>
+                                                <Setter Property="Foreground" Value="{StaticResource PendingWaitingTextBrush}" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Active}">
-                                                        <Setter Property="Foreground" Value="{StaticResource PendingInProgressTextBrush}"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource PendingInProgressTextBrush}" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -229,80 +251,84 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
 
-                <!-- 行样式 -->
+                <!--  行样式  -->
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#F0F0F0"/>
-                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}" />
+                        <Setter Property="Margin" Value="0" />
                         <Style.Triggers>
-                            <!-- OpenSpec: optimize-medicalcase-ui - 挂起状态行背景 (Suspended) -->
+                            <!--  OpenSpec: optimize-medicalcase-ui - 挂起状态行背景 (Suspended)  -->
                             <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Suspended}">
-                                <Setter Property="Background" Value="{StaticResource PendingSuspendedRowBrush}"/>
+                                <Setter Property="Background" Value="{StaticResource PendingSuspendedRowBrush}" />
                             </DataTrigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource LightPrimaryBrush}"/>
+                                <Setter Property="Background" Value="{DynamicResource LightPrimaryBrush}" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource RegionBrush}"/>
+                                <Setter Property="Background" Value="{DynamicResource RegionBrush}" />
                             </Trigger>
                             <Trigger Property="AlternationIndex" Value="1">
-                                <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
+                                <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
                             </Trigger>
                         </Style.Triggers>
                     </Style>
                 </DataGrid.RowStyle>
             </DataGrid>
 
-            <!-- 开始看诊按钮 - OpenSpec: optimize-medicalcase-navigation -->
-            <Button Grid.Row="2"
-                    Content="开始看诊"
-                    Command="{Binding SelectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                    CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                    HorizontalAlignment="Stretch"
-                    Margin="0,10,0,0"
-                    Height="36">
+            <!--  开始看诊按钮 - OpenSpec: optimize-medicalcase-navigation  -->
+            <Button
+                Grid.Row="2"
+                Height="36"
+                Margin="0,10,0,0"
+                HorizontalAlignment="Stretch"
+                Command="{Binding SelectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Content="开始看诊">
                 <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-                        <Setter Property="Visibility" Value="Visible"/>
+                    <Style BasedOn="{StaticResource PrimaryButton}" TargetType="Button">
+                        <Setter Property="Visibility" Value="Visible" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsEmpty, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Visibility" Value="Collapsed" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Button.Style>
             </Button>
 
-            <!-- 空状态提示 -->
-            <StackPanel Grid.Row="1"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center">
+            <!--  空状态提示  -->
+            <StackPanel
+                Grid.Row="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
                 <StackPanel.Style>
                     <Style TargetType="StackPanel">
-                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Setter Property="Visibility" Value="Collapsed" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsEmpty, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Visibility" Value="Visible" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </StackPanel.Style>
 
-                <!-- 主标题 -->
-                <TextBlock Text="{Binding EmptyTitle, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='暂无待诊患者'}"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource SecondaryTextBrush}"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,10"/>
+                <!--  主标题  -->
+                <TextBlock
+                    Margin="0,0,0,10"
+                    HorizontalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    Text="{Binding EmptyTitle, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='暂无待诊患者'}" />
 
-                <!-- 副标题 -->
-                <TextBlock Text="{Binding EmptyMessage, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='从列表选择患者或等待新的挂号'}"
-                           FontSize="12"
-                           Foreground="{DynamicResource ThirdlyTextBrush}"
-                           HorizontalAlignment="Center"/>
+                <!--  副标题  -->
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{DynamicResource ThirdlyTextBrush}"
+                    Text="{Binding EmptyMessage, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='从列表选择患者或等待新的挂号'}" />
             </StackPanel>
         </Grid>
     </Border>

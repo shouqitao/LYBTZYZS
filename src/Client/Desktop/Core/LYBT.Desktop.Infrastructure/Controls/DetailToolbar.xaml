@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     DetailToolbar - 详情工具栏控件
     OpenSpec: refactor-master-detail-layout
 
@@ -12,13 +12,13 @@
         EditCommand="{Binding EditCommand}"
         SaveCommand="{Binding SaveCommand}"
         CancelCommand="{Binding CancelCommand}"
-        DeleteCommand="{Binding DeleteCommand}"/>
--->
-<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.DetailToolbar"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
-             x:Name="Root">
+        DeleteCommand="{Binding DeleteCommand}"/>-->
+<UserControl
+    x:Class="LYBT.Desktop.Infrastructure.Controls.DetailToolbar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+    x:Name="Root">
 
     <!--
         资源加载说明 (OpenSpec: migrate-to-handycontrol):
@@ -26,68 +26,77 @@
         - BasedOn 的 StaticResource 引用通过 Application.Resources 解析
     -->
     <UserControl.Resources>
-        <!-- 危险按钮样式 - BasedOn 通过 Application.Resources 获取 -->
-        <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+        <!--  危险按钮样式 - BasedOn 通过 Application.Resources 获取  -->
+        <Style
+            x:Key="DangerButtonStyle"
+            BasedOn="{StaticResource SecondaryButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource LightDangerBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource LightDangerBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
-    <Border Background="#FAFAFA"
-            BorderBrush="#E0E0E0"
-            BorderThickness="0,0,0,1"
-            Padding="16,12"
-            DataContext="{Binding ElementName=Root}">
+    <Border
+        Padding="16,12"
+        Background="{DynamicResource SecondaryRegionBrush}"
+        BorderBrush="{DynamicResource BorderLightBrush}"
+        BorderThickness="0,0,0,1"
+        DataContext="{Binding ElementName=Root}">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- 标题区域（可选） -->
-            <TextBlock Grid.Column="0"
-                       Text="{Binding Title}"
-                       FontSize="16"
-                       FontWeight="SemiBold"
-                       VerticalAlignment="Center"
-                       Visibility="{Binding Title, Converter={x:Static converters:Cvt.NullToVis}}"/>
+            <!--  标题区域（可选）  -->
+            <TextBlock
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                FontSize="16"
+                FontWeight="SemiBold"
+                Text="{Binding Title}"
+                Visibility="{Binding Title, Converter={x:Static converters:Cvt.NullToVis}}" />
 
-            <!-- 按钮组 -->
+            <!--  按钮组  -->
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <!-- 查看模式 - 编辑按钮 -->
-                <Button Content="编辑"
-                        Style="{DynamicResource PrimaryButtonStyle}"
-                        Command="{Binding EditCommand}"
-                        Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}"
-                        Padding="16,8"
-                        Margin="0,0,8,0"/>
+                <!--  查看模式 - 编辑按钮  -->
+                <Button
+                    Margin="0,0,8,0"
+                    Padding="16,8"
+                    Command="{Binding EditCommand}"
+                    Content="编辑"
+                    Style="{DynamicResource PrimaryButtonStyle}"
+                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
 
-                <!-- 编辑模式 - 保存按钮 -->
-                <Button Content="保存"
-                        Style="{DynamicResource PrimaryButtonStyle}"
-                        Command="{Binding SaveCommand}"
-                        Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}"
-                        Padding="16,8"
-                        Margin="0,0,8,0"/>
+                <!--  编辑模式 - 保存按钮  -->
+                <Button
+                    Margin="0,0,8,0"
+                    Padding="16,8"
+                    Command="{Binding SaveCommand}"
+                    Content="保存"
+                    Style="{DynamicResource PrimaryButtonStyle}"
+                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
-                <!-- 编辑模式 - 取消按钮 -->
-                <Button Content="取消"
-                        Style="{DynamicResource SecondaryButtonStyle}"
-                        Command="{Binding CancelCommand}"
-                        Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}"
-                        Padding="16,8"
-                        Margin="0,0,8,0"/>
+                <!--  编辑模式 - 取消按钮  -->
+                <Button
+                    Margin="0,0,8,0"
+                    Padding="16,8"
+                    Command="{Binding CancelCommand}"
+                    Content="取消"
+                    Style="{DynamicResource SecondaryButtonStyle}"
+                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
-                <!-- 删除按钮 -->
-                <Button Content="删除"
-                        Style="{StaticResource DangerButtonStyle}"
-                        Command="{Binding DeleteCommand}"
-                        Visibility="{Binding ShowDeleteButton, Converter={x:Static converters:Cvt.BoolToVis}}"
-                        Padding="16,8"/>
+                <!--  删除按钮  -->
+                <Button
+                    Padding="16,8"
+                    Command="{Binding DeleteCommand}"
+                    Content="删除"
+                    Style="{StaticResource DangerButtonStyle}"
+                    Visibility="{Binding ShowDeleteButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
             </StackPanel>
         </Grid>
     </Border>

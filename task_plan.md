@@ -55,19 +55,23 @@
 
 **目标**: 核心 ViewModel 测试覆盖
 
-**Status**: ⏳ PENDING
+**Status**: ✅ COMPLETE
 
 | Task | Description | Priority | Status |
 |------|-------------|----------|--------|
-| 2.1 | LoginViewModel 测试 | P1 | ⏳ |
-| 2.2 | MedicalCaseMasterDetailViewModel 测试 | P1 | ⏳ |
-| 2.3 | PatientMasterDetailViewModel 测试 | P1 | ⏳ |
-| 2.4 | User Journey 框架搭建 | P2 | ⏳ |
-| 2.5 | 关键用户旅程测试 | P2 | ⏳ |
+| 2.1 | LoginViewModel 测试 | P1 | ✅ COMPLETE (19 tests passing) |
+| 2.2 | MedicalCaseMasterDetailViewModel 测试 | P1 | ✅ COMPLETE (26 tests passing) |
+| 2.3 | PatientMasterDetailViewModel 测试 | P1 | ✅ COMPLETE (41 tests passing) |
+| 2.4 | User Journey 框架搭建 | P2 | ✅ COMPLETE (10 tests passing) |
+| 2.5 | 关键用户旅程测试 | P2 | ✅ COMPLETE (8 tests passing) |
 
 **验收标准**:
-- [ ] 3 个核心 ViewModel 测试覆盖率 > 80%
-- [ ] 3 个关键用户旅程测试通过
+- [x] 3 个核心 ViewModel 测试覆盖率 > 80%
+- [x] 3 个关键用户旅程测试通过 (实际 8 个)
+
+**新增测试统计**:
+- Phase 2 新增测试: 104 个 (19 + 26 + 41 + 18)
+- Desktop 全量测试: 690+ 测试通过
 
 ---
 

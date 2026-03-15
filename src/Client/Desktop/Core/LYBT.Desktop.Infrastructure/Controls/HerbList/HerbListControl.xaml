@@ -1,82 +1,92 @@
-<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.HerbList.HerbListControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbList"
-             xmlns:herbItem="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbItem"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
-             mc:Ignorable="d"
-             d:DesignHeight="200" d:DesignWidth="800">
-    <!-- OpenSpec: herb-editor-control-refactoring -->
-    <!-- OpenSpec: cross-module-decoupling - 迁移到Infrastructure -->
+﻿<UserControl
+    x:Class="LYBT.Desktop.Infrastructure.Controls.HerbList.HerbListControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:herbItem="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbItem"
+    xmlns:local="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbList"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="200"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <!--  OpenSpec: herb-editor-control-refactoring  -->
+    <!--  OpenSpec: cross-module-decoupling - 迁移到Infrastructure  -->
     <UserControl.Resources>
         <Style x:Key="HerbItemStyle" TargetType="ContentPresenter">
-            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Margin" Value="2" />
         </Style>
     </UserControl.Resources>
 
-    <!-- x:Name="LayoutRoot" 用于内部DataContext绑定，避免覆盖UserControl的DataContext -->
-    <Border x:Name="LayoutRoot"
-            BorderBrush="#E0E0E0"
-            BorderThickness="1"
-            CornerRadius="4"
-            Background="#FAFAFA"
-            Padding="4">
+    <!--  x:Name="LayoutRoot" 用于内部DataContext绑定，避免覆盖UserControl的DataContext  -->
+    <Border
+        x:Name="LayoutRoot"
+        Padding="4"
+        Background="{DynamicResource SecondaryRegionBrush}"
+        BorderBrush="{DynamicResource BorderLightBrush}"
+        BorderThickness="1"
+        CornerRadius="4">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- 药材列表区域 -->
-            <ScrollViewer Grid.Row="0"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                <ItemsControl x:Name="ItemsHost"
-                              ItemsSource="{Binding Items}"
-                              ItemContainerStyle="{StaticResource HerbItemStyle}">
+            <!--  药材列表区域  -->
+            <ScrollViewer
+                Grid.Row="0"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <ItemsControl
+                    x:Name="ItemsHost"
+                    ItemContainerStyle="{StaticResource HerbItemStyle}"
+                    ItemsSource="{Binding Items}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid x:Name="ItemsGrid"
-                                         Columns="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Columns}"/>
+                            <UniformGrid x:Name="ItemsGrid" Columns="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Columns}" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <!-- OpenSpec: fix-elementname-binding-architecture - 使用具体类型避免UserControl歧义 -->
+                            <!--  OpenSpec: fix-elementname-binding-architecture - 使用具体类型避免UserControl歧义  -->
                             <herbItem:HerbItemControl
                                 AllHerbs="{Binding AllHerbs}"
-                                IsEditMode="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:HerbListControl}}, Path=IsEditMode}"
-                                ItemIndex="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
-                                ItemChanged="OnHerbItemChanged"
                                 DeleteRequested="OnHerbItemDeleteRequested"
-                                NextItemRequested="OnHerbItemNextRequested"/>
+                                IsEditMode="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:HerbListControl}}, Path=IsEditMode}"
+                                ItemChanged="OnHerbItemChanged"
+                                ItemIndex="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
+                                NextItemRequested="OnHerbItemNextRequested" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
 
-            <!-- 底部操作栏(仅编辑模式显示) -->
-            <StackPanel Grid.Row="1"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        Margin="0,8,0,0"
-                        Visibility="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}">
-                <TextBlock VerticalAlignment="Center"
-                           Margin="0,0,16,0"
-                           Foreground="#666">
-                    <Run Text="共"/>
-                    <Run Text="{Binding ValidItemCount, Mode=OneWay}" FontWeight="SemiBold" Foreground="#2196F3"/>
-                    <Run Text="味药材"/>
+            <!--  底部操作栏(仅编辑模式显示)  -->
+            <StackPanel
+                Grid.Row="1"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Visibility="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}">
+                <TextBlock
+                    Margin="0,0,16,0"
+                    VerticalAlignment="Center"
+                    Foreground="#666">
+                    <Run Text="共" />
+                    <Run
+                        FontWeight="SemiBold"
+                        Foreground="#2196F3"
+                        Text="{Binding ValidItemCount, Mode=OneWay}" />
+                    <Run Text="味药材" />
                 </TextBlock>
-                <Button Content="清空全部"
-                        Command="{Binding ClearAllCommand}"
-                        Padding="12,4"
-                        Foreground="#DC3545"
-                        Background="Transparent"
-                        BorderBrush="#DC3545"
-                        Cursor="Hand"/>
+                <Button
+                    Padding="12,4"
+                    Background="Transparent"
+                    BorderBrush="{DynamicResource DangerBrush}"
+                    Command="{Binding ClearAllCommand}"
+                    Content="清空全部"
+                    Cursor="Hand"
+                    Foreground="{DynamicResource DangerBrush}" />
             </StackPanel>
         </Grid>
     </Border>
