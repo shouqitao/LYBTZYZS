@@ -88,6 +88,13 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         /// <summary>是否有处方（计算属性）</summary>
         public bool HasPrescription => PrescriptionId.HasValue;
 
+        /// <summary>
+        /// 是否已锁定(隔天不可编辑). 动态计算: CompletedAt.Date &lt; Today
+        /// </summary>
+        public bool IsLocked => CaseStatus == MedicalCaseStatus.Completed &&
+                                CompletedAt.HasValue &&
+                                CompletedAt.Value.Date < DateTime.Today;
+
         // ========== 打印管理字段 ==========
 
         /// <summary>当前打印版本号</summary>

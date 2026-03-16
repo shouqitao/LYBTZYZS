@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Server.Infrastructure;
 using LYBT.Tests.Server.Infrastructure.TestDataBuilders;
@@ -608,6 +609,99 @@ public sealed class US_MedicalCase_MustHaveTests : IntegrationTestBase<ClinicalD
         // Assert - should have at least Create + Update entries
         response.StatusCode.Should().Be(HttpStatusCode.OK,
             "US-MC-013: audit log should include update entries");
+    }
+
+    #endregion
+
+    #region MedicalCase-Registration Link (Design D6)
+
+    [Fact]
+    public async Task CreateCase_WithRegistrationId_LinksRegistration()
+    {
+        // Arrange - create a registration first
+        var doctorClient = await LoginAsDoctorAsync();
+        var patientId = await CreatePatientAsync(doctorClient);
+        var doctorId = await GetDoctorUserIdAsync(await LoginAsAdminAsync());
+
+        // Create a registration
+        var regPayload = new
+        {
+            PatientId = patientId,
+            DoctorId = doctorId,
+            RegistrationType = 0, // Normal
+            AppointmentDate = DateTime.UtcNow
+        };
+        var regResponse = await doctorClient.PostAsJsonAsync("/api/v1/registrations", regPayload);
+        var regData = await regResponse.ShouldBeCreatedWithDataAsync<object>();
+        var registrationId = GetIdFromAnonymousType(regData);
+
+        // Create medical case with registration ID
+        var casePayload = MedicalCaseBuilder.Default()
+            .ForPatient(patientId)
+            .WithDoctor(doctorId)
+            .WithRegistration(registrationId)
+            .BuildCreate();
+
+        // Act
+        var response = await doctorClient.PostAsJsonAsync("/api/v1/medicalcases", casePayload);
+
+        // Assert
+        var data = await response.ShouldBeSuccessWithDataAsync<MedicalCaseDetailDto>();
+        data.Id.Should().NotBeEmpty();
+
+        // Verify - registration should now have MedicalCaseId
+        var getRegResp = await doctorClient.GetAsync($"/api/v1/registrations/{registrationId}");
+        var regDetail = await getRegResp.ShouldBeSuccessWithDataAsync<RegistrationDetailDto>();
+        regDetail.MedicalCaseId.Should().Be(data.Id);
+    }
+
+    private static Guid GetIdFromAnonymousType(object obj)
+    {
+        var type = obj.GetType();
+        var idProp = type.GetProperty("Id");
+        return idProp != null ? (Guid)idProp.GetValue(obj)! : Guid.Empty;
+    }
+
+    #endregion
+
+    #region I-2: IsLocked - Same-day editable permission
+
+    [Fact]
+    public async Task I2_CompletedCase_SameDay_NotLocked()
+    {
+        // Arrange - create and complete a medical case
+        var doctorClient = await LoginAsDoctorAsync();
+        var patientId = await CreatePatientAsync(doctorClient);
+        var caseId = await CreateCompleteCaseAsync(doctorClient, patientId);
+
+        // Act - get case details
+        var getResp = await doctorClient.GetAsync($"/api/v1/medicalcases/{caseId}");
+        var data = await getResp.ShouldBeSuccessWithDataAsync<MedicalCaseDetailDto>();
+
+        // Assert - verify IsLocked is false on same day
+        data.IsLocked.Should().BeFalse("I-2: Completed case on same day should NOT be locked");
+        data.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
+        data.CompletedAt.Should().NotBeNull();
+    }
+
+    [Fact(Skip = "Requires time manipulation - IsLocked logic is tested via unit test")]
+    public async Task I2_CompletedCase_NextDay_IsLocked()
+    {
+        // Arrange - create and complete a medical case
+        var doctorClient = await LoginAsDoctorAsync();
+        var patientId = await CreatePatientAsync(doctorClient);
+        var caseId = await CreateCompleteCaseAsync(doctorClient, patientId);
+
+        // Act - get case details (simulated next day)
+        // Note: Integration test cannot manipulate server time.
+        // The IsLocked logic (CompletedAt.Date < DateTime.Today) is verified via unit test.
+        var getResp = await doctorClient.GetAsync($"/api/v1/medicalcases/{caseId}");
+        var data = await getResp.ShouldBeSuccessWithDataAsync<MedicalCaseDetailDto>();
+
+        // Assert - document expected behavior
+        data.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
+        data.CompletedAt.Should().NotBeNull();
+        // IsLocked would be true if CompletedAt.Date < Today
     }
 
     #endregion
