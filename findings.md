@@ -209,6 +209,27 @@ SharedTestContext exists
    - 批量迁移测试到 Transactional 模型
    - 执行性能基准测试
 
+### ✅ Phase 0 完成: MedicalCase-Registration 关联 (2026-03-16)
+
+**设计文档 D6 要求**: MedicalCase 创建时自动更新 Registration.MedicalCaseId
+
+**实施方案**:
+| 组件 | 变更 | 文件 |
+|------|------|------|
+| DTO | 添加 `RegistrationId` 可选属性 | `MedicalCaseInputDto.cs` |
+| Server | 创建时自动回填关联 | `MedicalCaseCommandService.cs` |
+| Client API | 接口添加可选参数 | `IMedicalCaseCommandService.cs` |
+| Client Impl | 实现传递 RegistrationId | `MedicalCaseService.cs` |
+| Mapper | 忽略 RegistrationId 映射 | `MedicalCaseDetailModelMapper.cs` |
+| Test Builder | 添加 `WithRegistration()` 方法 | `MedicalCaseBuilder.cs` |
+| Test | 验证关联逻辑测试 | `US_MedicalCase_MustHaveTests.cs` |
+
+**使用方式**:
+```csharp
+// 从前台挂号创建医案时传入 RegistrationId
+var result = await _medicalCaseService.CreateMedicalCaseAsync(patientId, registrationId);
+```
+
 ### 🟢 已完成成果
 
 1. Desktop 重构优化 (Phase 1-4) ✅

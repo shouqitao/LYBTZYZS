@@ -142,6 +142,7 @@ public partial class MedicalCaseDetailModelMapper
     [MapperIgnoreSource(nameof(MedicalCaseDetailModel.HasErrorsDictionary))]
     [MapperIgnoreTarget(nameof(MedicalCaseInputDto.Id))]
     [MapperIgnoreTarget(nameof(MedicalCaseInputDto.UserId))]
+    [MapperIgnoreTarget(nameof(MedicalCaseInputDto.RegistrationId))] // RegistrationId 从外部传入，不在 Model 中
     [MapperIgnoreTarget(nameof(MedicalCaseInputDto.EditReason))]
     [MapperIgnoreTarget(nameof(MedicalCaseInputDto.Consultation))]
     [MapperIgnoreTarget(nameof(MedicalCaseInputDto.Prescription))]

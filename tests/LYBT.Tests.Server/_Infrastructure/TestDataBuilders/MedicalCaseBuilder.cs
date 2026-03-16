@@ -7,9 +7,15 @@ public sealed class MedicalCaseBuilder
 {
     private Guid _patientId;
     private Guid _userId;
+    private Guid? _registrationId;
     private string? _remark;
 
     public static MedicalCaseBuilder Default() => new();
+
+    public MedicalCaseBuilder WithRegistration(Guid registrationId)
+    {
+        _registrationId = registrationId; return this;
+    }
 
     public MedicalCaseBuilder ForPatient(Guid patientId)
     {
@@ -30,6 +36,7 @@ public sealed class MedicalCaseBuilder
     {
         PatientId = _patientId,
         UserId = _userId,
+        RegistrationId = _registrationId,
         Remark = _remark
     };
 

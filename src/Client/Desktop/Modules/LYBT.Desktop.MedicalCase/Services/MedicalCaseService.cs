@@ -433,11 +433,14 @@ public class MedicalCaseService : IMedicalCaseService
     /// 创建新医案
     /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
-    public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId)
+    /// <param name="patientId">患者ID</param>
+    /// <param name="registrationId">关联挂号ID（可选，从前台挂号创建时传入）</param>
+    public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null)
     {
         try
         {
-            _logger.LogInformation("[SVC] MedicalCase.CreateNew started - PatientId={PatientId}", patientId);
+            _logger.LogInformation("[SVC] MedicalCase.CreateNew started - PatientId={PatientId} RegistrationId={RegistrationId}",
+                patientId, registrationId);
 
             // 验证SessionManager和CurrentUser
             if (_sessionManager == null)
@@ -459,6 +462,7 @@ public class MedicalCaseService : IMedicalCaseService
                 Id = null,
                 PatientId = patientId,
                 UserId = _sessionManager.CurrentUser.Id,
+                RegistrationId = registrationId,
                 Remark = null
             };
 

@@ -12,17 +12,30 @@
 整合 03-10 ~ 03-12 期间未完成的工作，完成高优先级权限矩阵缺陷修复和测试性能优化收尾。
 
 ### 时间线
+- **Day 0**: Phase 0 - 遗留问题修复 (MedicalCase-Registration 关联)
 - **Day 1-3**: Phase 1 - 权限矩阵缺陷修复 (4个高优先级问题)
 - **Day 4**: Phase 2 - 测试性能优化收尾 (批量迁移、基准测试)
 - **Day 5**: Phase 3 - 验证与文档 (全量测试、归档)
 
 ### Sprint 任务清单
+
+**Phase 0: 遗留问题修复 (已完成)**
+- [x] Task 0.1: MedicalCaseInputDto 添加 RegistrationId
+- [x] Task 0.2: MedicalCaseCommandService 实现自动回填
+- [x] Task 0.3: 添加验证测试 `CreateCase_WithRegistrationId_LinksRegistration`
+- [x] Task 0.4: 更新 Client 端调用 `CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null)`
+
+**Phase 1: 权限矩阵缺陷修复**
 - [x] Task 1.1: D-4 Receptionist 医案可见性
 - [ ] Task 1.2: I-2 "当天可编辑"锁定逻辑
 - [ ] Task 1.3: G-9 Registration 回退流程
 - [ ] Task 1.4: G-11 医生禁用后挂号处理
+
+**Phase 2: 测试性能优化收尾**
 - [ ] Task 2.1: 批量迁移 MustHave 测试
 - [ ] Task 2.2: 执行性能基准测试
+
+**Phase 3: 验证与文档**
 - [ ] Task 3.1: 全量测试运行
 - [ ] Task 3.2: 归档计划文件
 
@@ -67,8 +80,51 @@
      失败数: 0
 ```
 
-**遗留问题** (记录到 findings.md):
-- MedicalCase 创建时未自动更新 Registration.MedicalCaseId (设计文档 D6 要求)
+---
+
+## 当前会话 (2026-03-16 续)
+
+### Phase 1 计划完成 - 权限矩阵缺陷修复
+
+**创建实施计划**: `docs/plans/2026-03-16-phase1-permission-matrix-fixes-plan.md`
+
+**包含任务**:
+| 任务 | 问题 | 设计要点 |
+|------|------|---------|
+| Task 1 | I-2 "当天可编辑" | IsLocked动态计算 + 角色分层权限检查 |
+| Task 2 | G-9 Registration回退 | 取消分流: Receptionist回退/Doctor闭环 |
+| Task 3 | G-11 医生禁用检查 | 禁用前置校验Waiting挂号数量 |
+| Task 4 | 全量测试 | 验证所有修复不破坏现有功能 |
+
+---
+
+### Phase 0 完成 - MedicalCase-Registration 关联修复
+
+**实施内容**:
+1. **DTO 更新**: `MedicalCaseInputDto` 添加 `RegistrationId` 可选属性
+   - 文件: `src/Shared/LYBT.Shared.Models/Contracts/MedicalCase/MedicalCaseInputDto.cs`
+
+2. **Server端逻辑**: `MedicalCaseCommandService.CreateFromInput` 实现自动回填
+   - 文件: `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseCommandService.cs`
+   - 创建医案时自动更新 `Registration.MedicalCaseId`
+
+3. **Client端更新**: `CreateMedicalCaseAsync` 添加可选 `registrationId` 参数
+   - 接口: `IMedicalCaseCommandService`
+   - 实现: `MedicalCaseService`
+
+4. **验证测试**: 添加 `CreateCase_WithRegistrationId_LinksRegistration` 测试
+   - 文件: `tests/LYBT.Tests.Server/Features/US_MedicalCase_MustHaveTests.cs`
+   - 测试构建器: `MedicalCaseBuilder.WithRegistration()`
+
+**修改文件**:
+```
+src/Shared/LYBT.Shared.Models/Contracts/MedicalCase/MedicalCaseInputDto.cs
+src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseCommandService.cs
+src/Client/Desktop/Core/LYBT.Desktop.Contracts/Services/IMedicalCaseCommandService.cs
+src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Services/MedicalCaseService.cs
+tests/LYBT.Tests.Server/_Infrastructure/TestDataBuilders/MedicalCaseBuilder.cs
+tests/LYBT.Tests.Server/Features/US_MedicalCase_MustHaveTests.cs
+```
 - 当前 `HasMedicalCase` 始终为 false (因为 MedicalCaseId 未被填充)
 - 需要后续实现 Registration-MedicalCase 关联逻辑
 

@@ -97,14 +97,15 @@ public static class ServiceCollectionExtensions
         // OpenSpec: refactor-server-srp-patterns - Consultation/Prescriptions模块已删除
         // 诊断和处方功能已整合到MedicalCase聚合根
 
-        // 6. 病例模块
+        // 6. 挂号模块 - Sprint 2
+        // 必须在 MedicalCase 之前注册，因为 MedicalCaseCommandService 依赖 IRegistrationRepository
+        services.AddRegistrationModule();
+
+        // 7. 病例模块
         services.AddMedicalCaseModule();
 
-        // 7. 同步模块 - OpenSpec: implement-data-sync
+        // 8. 同步模块 - OpenSpec: implement-data-sync
         services.AddSyncModule(configuration);
-
-        // 8. 挂号模块 - Sprint 2
-        services.AddRegistrationModule();
 
         return services;
     }

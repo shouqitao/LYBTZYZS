@@ -35,6 +35,7 @@ public interface IMedicalCaseCommandService
     /// 创建新医案
     /// </summary>
     /// <param name="patientId">患者ID</param>
+    /// <param name="registrationId">关联挂号ID（可选，从前台挂号创建时传入）</param>
     /// <returns>(是否成功, 医案ID, 错误信息)</returns>
-    Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId);
+    Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null);
 }

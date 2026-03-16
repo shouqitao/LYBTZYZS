@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.ExceptionHandling.Exceptions;
@@ -24,6 +25,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IMedicalCaseAuditService _auditService;
         private readonly IMedicalCasePermissionService _permissionService;
         private readonly ICacheInvalidationService _cacheInvalidation;
+        private readonly IRegistrationRepository _registrationRepository;
 
         public MedicalCaseStateService(
             IMedicalCaseRepository repository,
@@ -31,7 +33,8 @@ namespace LYBT.Module.MedicalCases.Services
             IMedicalCaseAuditService auditService,
             IMedicalCasePermissionService permissionService,
             ILogger<MedicalCaseStateService> logger,
-            ICacheInvalidationService cacheInvalidation)
+            ICacheInvalidationService cacheInvalidation,
+            IRegistrationRepository registrationRepository)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -39,6 +42,7 @@ namespace LYBT.Module.MedicalCases.Services
             _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
+            _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
         }
 
         /// <summary>
@@ -283,6 +287,10 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 保存
             var result = await _repository.UpdateAsync(medicalCase);
+
+            // G-9: 医案取消后，根据挂号来源回退挂号状态
+            await RollbackRegistrationAsync(id, result.CaseNumber ?? "N/A");
+
             await _cacheInvalidation.InvalidateAsync("medicalcases");
 
             // 记录审计日志
@@ -297,6 +305,41 @@ namespace LYBT.Module.MedicalCases.Services
                 reason: reason);
 
             return result;
+        }
+
+        /// <summary>
+        /// G-9: 医案取消后回退挂号状态
+        /// - Receptionist来源: 回退到Waiting状态，保留MedicalCaseId（用于恢复）
+        /// - Doctor来源: 设置为Cancelled（闭环）
+        /// </summary>
+        private async Task RollbackRegistrationAsync(Guid medicalCaseId, string caseNumber)
+        {
+            var registration = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId);
+            if (registration == null)
+            {
+                _logger.LogInformation("[SVC] MedicalCase.Cancel → NoRegistrationFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return;
+            }
+
+            if (registration.Source == RegistrationSource.Receptionist)
+            {
+                // 前台挂号: 回退到Waiting，保留MedicalCaseId用于恢复
+                registration.Status = RegistrationStatus.Waiting;
+                registration.UpdatedAt = DateTime.Now;
+                // MedicalCaseId保留不变，用于后续恢复关联
+                await _registrationRepository.UpdateAsync(registration);
+                _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationRolledBack - RegistrationId={RegistrationId} Source=Receptionist Status=Waiting MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
+                    registration.Id, medicalCaseId, caseNumber);
+            }
+            else if (registration.Source == RegistrationSource.Doctor)
+            {
+                // 医生直接看诊: 设置为Cancelled（闭环）
+                registration.Status = RegistrationStatus.Cancelled;
+                registration.UpdatedAt = DateTime.Now;
+                await _registrationRepository.UpdateAsync(registration);
+                _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationCancelled - RegistrationId={RegistrationId} Source=Doctor Status=Cancelled MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
+                    registration.Id, medicalCaseId, caseNumber);
+            }
         }
 
         #region Private Helper Methods (委托给 MedicalCaseServiceHelper)

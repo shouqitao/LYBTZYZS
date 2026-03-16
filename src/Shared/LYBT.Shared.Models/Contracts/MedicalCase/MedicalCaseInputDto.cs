@@ -38,6 +38,13 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public Guid PatientId { get; set; }
 
         /// <summary>
+        /// 关联挂号ID（可选，从前台挂号创建医案时传入）
+        /// 传入后自动更新 Registration.MedicalCaseId 关联
+        /// </summary>
+        [DisplayName("挂号ID")]
+        public Guid? RegistrationId { get; set; }
+
+        /// <summary>
         /// 医生ID（可选，Server端可自动填充当前用户）
         /// OpenSpec: simplify-medicalcase-dataflow - 重命名自DoctorId
         /// </summary>

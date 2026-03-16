@@ -11,7 +11,18 @@
 ### 目标
 整合 03-10 ~ 03-12 期间未完成的工作，完成高优先级任务并清空历史计划。
 
-### Phase 1: 权限矩阵高优先级缺陷修复 (Day 1-3)
+### Phase 0: 遗留问题修复 (MedicalCase-Registration 关联) ✅
+
+| Task | 描述 | 状态 |
+|------|------|------|
+| 0.1 | MedicalCaseInputDto 添加 RegistrationId | ✅ 已完成 |
+| 0.2 | MedicalCaseCommandService 实现自动回填 | ✅ 已完成 |
+| 0.3 | 添加验证测试 | ✅ 已完成 |
+| 0.4 | 更新 Client 端调用 | ✅ 已完成 |
+
+### Phase 1: 权限矩阵高优先级缺陷修复 (Day 1-3) 🔄
+
+**实施计划**: `docs/plans/2026-03-16-phase1-permission-matrix-fixes-plan.md`
 
 | Task | 问题 | 优先级 | 状态 |
 |------|------|--------|------|

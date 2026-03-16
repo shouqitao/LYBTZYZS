@@ -6,6 +6,7 @@ using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mapping;
+using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -25,6 +26,7 @@ namespace LYBT.Module.MedicalCases.Services
     public class MedicalCaseCommandService : BaseService<MedicalCase>, IMedicalCaseCommandService
     {
         private readonly IMedicalCaseRepository _repository;
+        private readonly IRegistrationRepository _registrationRepository;
         private readonly IPatientCrossModuleService _patientCrossModule;
         private readonly IUserCrossModuleService _userCrossModule;
         private readonly IHerbCrossModuleService _herbCrossModule;
@@ -35,6 +37,7 @@ namespace LYBT.Module.MedicalCases.Services
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
+            IRegistrationRepository registrationRepository,
             IPatientCrossModuleService patientCrossModule,
             IUserCrossModuleService userCrossModule,
             IHerbCrossModuleService herbCrossModule,
@@ -45,6 +48,7 @@ namespace LYBT.Module.MedicalCases.Services
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
             _patientCrossModule = patientCrossModule ?? throw new ArgumentNullException(nameof(patientCrossModule));
             _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _herbCrossModule = herbCrossModule ?? throw new ArgumentNullException(nameof(herbCrossModule));
@@ -141,6 +145,25 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             var result = await _repository.AddAsync(medicalCase);
+
+            // 如果传入了 RegistrationId，更新关联挂号的 MedicalCaseId
+            if (request.RegistrationId.HasValue)
+            {
+                var registration = await _registrationRepository.GetByIdAsync(request.RegistrationId.Value);
+                if (registration != null)
+                {
+                    registration.MedicalCaseId = result.Id;
+                    await _registrationRepository.UpdateAsync(registration);
+                    _logger.LogInformation("[SVC] MedicalCase.CreateFromInput -> Registration linked - RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
+                        registration.Id, result.Id);
+                }
+                else
+                {
+                    _logger.LogWarning("[SVC] MedicalCase.CreateFromInput -> Registration not found - RegistrationId={RegistrationId}",
+                        request.RegistrationId.Value);
+                }
+            }
+
             await _cacheInvalidation.InvalidateAsync("medicalcases");
 
             // 记录创建审计日志
