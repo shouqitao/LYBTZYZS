@@ -155,6 +155,7 @@ public static class ErrorCodeExtensions
             ErrorCode.RegistrationPatientDisabled => 422,
             ErrorCode.RegistrationDoctorNotAvailable => 422,
             ErrorCode.RegistrationDuplicateWaiting => 409,
+            ErrorCode.RegistrationDoctorHasWaiting => 422,
 
             // 429 Too Many Requests
             ErrorCode.RateLimitExceeded => 429,
@@ -349,6 +350,7 @@ public static class ErrorCodeExtensions
             ErrorCode.RegistrationPatientDisabled => ErrorCategory.Business,
             ErrorCode.RegistrationDoctorNotAvailable => ErrorCategory.Business,
             ErrorCode.RegistrationDuplicateWaiting => ErrorCategory.Business,
+            ErrorCode.RegistrationDoctorHasWaiting => ErrorCategory.Business,
 
             // 系统错误
             ErrorCode.InternalError => ErrorCategory.System,

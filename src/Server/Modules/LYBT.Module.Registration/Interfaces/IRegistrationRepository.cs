@@ -45,4 +45,11 @@ public interface IRegistrationRepository : IRepository<RegistrationEntity>
     /// </summary>
     /// <param name="medicalCaseId">医案 ID</param>
     Task<RegistrationEntity?> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
+    /// <summary>
+    /// G-11: 获取医生等待中的挂号记录数量
+    /// 用于禁用医生前检查
+    /// </summary>
+    /// <param name="doctorId">医生 ID</param>
+    Task<int> GetWaitingCountByDoctorAsync(Guid doctorId, CancellationToken ct = default);
 }

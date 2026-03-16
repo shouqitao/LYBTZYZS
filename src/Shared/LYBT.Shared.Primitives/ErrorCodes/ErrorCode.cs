@@ -951,5 +951,10 @@ public enum ErrorCode
     /// </summary>
     RegistrationDuplicateWaiting = 80007,
 
+    /// <summary>
+    /// G-11: 医生有等待中的挂号记录，无法禁用
+    /// </summary>
+    RegistrationDoctorHasWaiting = 80008,
+
     #endregion
 }

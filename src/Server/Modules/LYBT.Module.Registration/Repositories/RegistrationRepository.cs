@@ -82,6 +82,18 @@ internal class RegistrationRepository : BaseRepository<RegistrationEntity>, IReg
     }
 
     /// <summary>
+    /// G-11: 获取医生等待中的挂号记录数量
+    /// 用于禁用医生前检查
+    /// </summary>
+    public async Task<int> GetWaitingCountByDoctorAsync(Guid doctorId, CancellationToken ct = default)
+    {
+        return await _dbSet
+            .CountAsync(r => r.DoctorId == doctorId &&
+                             r.Status == RegistrationStatus.Waiting &&
+                             !r.IsDeleted, ct);
+    }
+
+    /// <summary>
     /// 分页查询挂号记录 (带高级过滤)
     /// US-REG-007: 日期范围、患者、医生过滤
     /// </summary>

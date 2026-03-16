@@ -82,24 +82,24 @@ public static class ServiceCollectionExtensions
         // 1. 认证模块
         services.AddAuthModule(configuration);
 
-        // 2. 用户模块
+        // 2. 挂号模块 - Sprint 2
+        // 必须在 Users 和 MedicalCase 之前注册，因为 UserService 和 MedicalCaseCommandService 依赖 IRegistrationRepository
+        services.AddRegistrationModule();
+
+        // 3. 用户模块
         services.AddUsersModule(configuration);
 
-        // 3. 患者模块
+        // 4. 患者模块
         services.AddPatientsModule(configuration);
 
-        // 4. 中药模块
+        // 5. 中药模块
         services.AddHerbsModule(configuration);
 
-        // 5. 配方模块
+        // 6. 配方模块
         services.AddFormulaModule();
 
         // OpenSpec: refactor-server-srp-patterns - Consultation/Prescriptions模块已删除
         // 诊断和处方功能已整合到MedicalCase聚合根
-
-        // 6. 挂号模块 - Sprint 2
-        // 必须在 MedicalCase 之前注册，因为 MedicalCaseCommandService 依赖 IRegistrationRepository
-        services.AddRegistrationModule();
 
         // 7. 病例模块
         services.AddMedicalCaseModule();

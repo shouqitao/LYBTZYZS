@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Server.Infrastructure;
 using LYBT.Tests.Server.Infrastructure.TestDataBuilders;
@@ -522,6 +523,98 @@ public sealed class US_Registration_MustHaveTests : IntegrationTestBase<Clinical
             regAfter.Status.Should().Be(RegistrationStatus.Cancelled,
                 "G-9: Doctor registration should be set to Cancelled after MedicalCase cancellation (closed loop)");
         }
+    }
+
+    #endregion
+
+    #region G-11: Disable doctor with waiting registrations
+
+    [Fact]
+    public async Task G11_DisableDoctor_WithWaitingRegistration_Returns422()
+    {
+        // Arrange - Create a doctor user
+        var adminClient = await LoginAsAdminAsync();
+        var doctorPayload = UserBuilder.Default()
+            .WithUserName($"g11doctor_{Guid.NewGuid():N}"[..12])
+            .WithRealName("G11测试医生")
+            .WithRole(UserRole.Doctor)
+            .Build();
+        var createResp = await adminClient.PostAsJsonAsync("/api/v1/users", doctorPayload);
+        var doctor = await createResp.ShouldBeCreatedWithDataAsync<UserDetailDto>();
+
+        // Create a patient and registration for this doctor
+        var patient = await CreatePatientAsync(adminClient, "G11测试患者");
+        await CreateRegistrationAsync(adminClient, patient.Id, patient.Name, doctor.Id, doctor.RealName);
+
+        // Act - Try to disable the doctor (POST /api/v1/users/{id}/toggle-status)
+        var response = await adminClient.PostAsync($"/api/v1/users/{doctor.Id}/toggle-status", null);
+
+        // Assert - Should return 422 with specific error message
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
+            "G-11: Disabling doctor with waiting registrations should return 422");
+
+        // Parse JSON response to verify error message
+        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse>(JsonOptions);
+        apiResponse!.Success.Should().BeFalse();
+        apiResponse.Message.Should().Contain("等待中的挂号记录",
+            "G-11: Error message should mention waiting registrations");
+    }
+
+    [Fact]
+    public async Task G11_DisableDoctor_NoWaitingRegistration_Succeeds()
+    {
+        // Arrange - Create a doctor user (no registrations)
+        var adminClient = await LoginAsAdminAsync();
+        var doctorPayload = UserBuilder.Default()
+            .WithUserName($"g11clean_{Guid.NewGuid():N}"[..12])
+            .WithRealName("G11无挂号医生")
+            .WithRole(UserRole.Doctor)
+            .Build();
+        var createResp = await adminClient.PostAsJsonAsync("/api/v1/users", doctorPayload);
+        var doctor = await createResp.ShouldBeCreatedWithDataAsync<UserDetailDto>();
+
+        // Verify doctor is enabled
+        doctor.Status.Should().Be(CommonStatus.Enabled);
+
+        // Act - Disable the doctor (POST /api/v1/users/{id}/toggle-status)
+        var response = await adminClient.PostAsync($"/api/v1/users/{doctor.Id}/toggle-status", null);
+
+        // Assert - Should succeed
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            "G-11: Disabling doctor without waiting registrations should succeed");
+
+        var result = await response.ShouldBeSuccessWithDataAsync<UserDetailDto>();
+        result.Status.Should().Be(CommonStatus.Disabled,
+            "G-11: Doctor should be disabled");
+    }
+
+    [Fact]
+    public async Task G11_DisableDoctor_WithCancelledRegistration_Succeeds()
+    {
+        // Arrange - Create a doctor user
+        var adminClient = await LoginAsAdminAsync();
+        var doctorPayload = UserBuilder.Default()
+            .WithUserName($"g11cancel_{Guid.NewGuid():N}"[..12])
+            .WithRealName("G11已取消挂号医生")
+            .WithRole(UserRole.Doctor)
+            .Build();
+        var createResp = await adminClient.PostAsJsonAsync("/api/v1/users", doctorPayload);
+        var doctor = await createResp.ShouldBeCreatedWithDataAsync<UserDetailDto>();
+
+        // Create a patient and registration, then cancel it
+        var patient = await CreatePatientAsync(adminClient, "G11取消患者");
+        var regId = await CreateRegistrationAsync(adminClient, patient.Id, patient.Name, doctor.Id, doctor.RealName);
+
+        // Cancel the registration
+        var cancelResp = await adminClient.PutAsync($"/api/v1/registrations/{regId}/cancel", null);
+        cancelResp.StatusCode.Should().Be(HttpStatusCode.OK, "Should be able to cancel registration");
+
+        // Act - Try to disable the doctor (registration is cancelled, not waiting)
+        var response = await adminClient.PostAsync($"/api/v1/users/{doctor.Id}/toggle-status", null);
+
+        // Assert - Should succeed because registration is not in Waiting status
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            "G-11: Disabling doctor with only cancelled registrations should succeed");
     }
 
     #endregion

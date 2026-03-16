@@ -209,7 +209,8 @@ public static class ErrorMessages
         [ErrorCode.RegistrationUnauthorizedCancel] = ("无权取消此挂号记录", "Unauthorized to cancel this registration"),
         [ErrorCode.RegistrationPatientDisabled] = ("患者已禁用，不允许创建挂号", "Patient is disabled, cannot create registration"),
         [ErrorCode.RegistrationDoctorNotAvailable] = ("指派的医生不可用", "Assigned doctor is not available"),
-        [ErrorCode.RegistrationDuplicateWaiting] = ("该患者已有等待中的挂号记录", "Patient already has a waiting registration")
+        [ErrorCode.RegistrationDuplicateWaiting] = ("该患者已有等待中的挂号记录", "Patient already has a waiting registration"),
+        [ErrorCode.RegistrationDoctorHasWaiting] = ("该医生有 {0} 条等待中的挂号记录，请先由前台取消后再禁用", "Doctor has {0} waiting registrations, please cancel them before disabling")
     };
 
     /// <summary>

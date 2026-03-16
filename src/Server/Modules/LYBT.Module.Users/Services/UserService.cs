@@ -33,6 +33,7 @@ namespace LYBT.Module.Users.Services
         private readonly IValidator<UserInputDto> _validator;
         private readonly ICrossModuleAuthService _authService;
         private readonly IUserBatchOperationService _batchService;
+        private readonly LYBT.Module.Registration.Interfaces.IRegistrationRepository _registrationRepository;
         private readonly UserMapper _mapper = new();
 
         public UserService(
@@ -42,7 +43,8 @@ namespace LYBT.Module.Users.Services
             IHttpContextAccessor httpContextAccessor,
             IValidator<UserInputDto> validator,
             ICrossModuleAuthService authService,
-            IUserBatchOperationService batchService)
+            IUserBatchOperationService batchService,
+            LYBT.Module.Registration.Interfaces.IRegistrationRepository registrationRepository)
             : base(logger)
         {
             _repository = repository;
@@ -51,6 +53,7 @@ namespace LYBT.Module.Users.Services
             _validator = validator;
             _authService = authService;
             _batchService = batchService;
+            _registrationRepository = registrationRepository;
         }
 
         #region 权限检查辅助方法（Issue #1909）
@@ -619,6 +622,19 @@ namespace LYBT.Module.Users.Services
                 {
                     _logger.LogWarning("[SVC] User.ToggleStatus → LastAdminProtection - UserId={UserId} Role={Role}", id, entity.Role);
                     return Result<UserDetailDto>.Failure(GenericErrorCode.CannotDeleteSysAdmin, "不能禁用最后一个管理员");
+                }
+            }
+
+            // G-11: 禁用医生前检查是否有等待中的挂号记录
+            if (entity.Status == CommonStatus.Enabled && entity.Role == UserRole.Doctor)
+            {
+                var waitingCount = await _registrationRepository.GetWaitingCountByDoctorAsync(id);
+                if (waitingCount > 0)
+                {
+                    _logger.LogWarning("[SVC] User.ToggleStatus → DoctorHasWaitingRegistrations - UserId={UserId} Count={Count}", id, waitingCount);
+                    return Result<UserDetailDto>.Failure(
+                        GenericErrorCode.RegistrationDoctorHasWaiting,
+                        $"该医生有 {waitingCount} 条等待中的挂号记录，请先由前台取消后再禁用");
                 }
             }
 
