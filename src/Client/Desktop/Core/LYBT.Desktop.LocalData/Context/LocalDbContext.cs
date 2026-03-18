@@ -161,7 +161,7 @@ public class LocalDbContext : DbContext
     private void SetAuditFields()
     {
         var userId = _currentUserProvider?.CurrentUserId;
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
 
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {

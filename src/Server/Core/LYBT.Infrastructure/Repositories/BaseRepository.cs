@@ -456,7 +456,7 @@ namespace LYBT.Infrastructure.Repositories
             }
 
             entity.IsDeleted = true;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             _dbSet.Update(entity);
             await SaveChangesAsync();
@@ -490,7 +490,7 @@ namespace LYBT.Infrastructure.Repositories
             foreach (var entity in entities)
             {
                 entity.IsDeleted = true;
-                entity.UpdatedAt = DateTime.Now;
+                entity.UpdatedAt = DateTime.UtcNow;
             }
 
             _dbSet.UpdateRange(entities);
@@ -521,7 +521,7 @@ namespace LYBT.Infrastructure.Repositories
             }
 
             entity.IsDeleted = false;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             _dbSet.Update(entity);
             await SaveChangesAsync();
