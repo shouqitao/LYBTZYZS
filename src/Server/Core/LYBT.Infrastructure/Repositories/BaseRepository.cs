@@ -427,7 +427,7 @@ namespace LYBT.Infrastructure.Repositories
 
             foreach (var entity in entityList)
             {
-                entity.UpdatedAt = DateTime.Now;
+                entity.UpdatedAt = DateTime.UtcNow;
             }
 
             _dbSet.UpdateRange(entityList);

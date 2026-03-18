@@ -139,7 +139,7 @@ namespace LYBT.Infrastructure.Data
                            (e.State == EntityState.Added || e.State == EntityState.Modified));
 
             var userId = GetCurrentUserId();
-            var timestamp = DateTime.Now;
+            var timestamp = DateTime.UtcNow;
 
             foreach (var entry in entries)
             {
