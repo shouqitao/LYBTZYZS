@@ -98,6 +98,32 @@
 
 ---
 
+### Phase 1 完成 - 权限矩阵缺陷修复
+
+**实施计划**: `docs/plans/2026-03-16-phase1-permission-matrix-fixes-plan.md`
+
+| Task | 问题 | 实施文件 | 测试 |
+|------|------|---------|------|
+| Task 1 | I-2 IsLocked 计算 | `MedicalCaseDetailDto.cs`, `MedicalCasePermissionService.cs` | I2_CompletedCase_SameDay_NotLocked ✅ |
+| Task 2 | G-9 Registration回退 | `MedicalCaseStateService.cs`, `RegistrationRepository.cs` | G9_CancelMedicalCase_* (2 tests) ✅ |
+| Task 3 | G-11 医生禁用检查 | `UserService.cs`, `RegistrationRepository.cs` | G11_DisableDoctor_* (3 tests) ✅ |
+| Task 4 | 全量测试 | - | 470 passed, 0 failed, 2 skipped ✅ |
+
+**修改文件汇总** (12 files):
+```
+src/Shared/LYBT.Shared.Models/Contracts/MedicalCase/MedicalCaseDetailDto.cs
+src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseStateService.cs
+src/Server/Modules/LYBT.Module.Registration/Repositories/RegistrationRepository.cs
+src/Server/Modules/LYBT.Module.Registration/Interfaces/IRegistrationRepository.cs
+src/Server/Modules/LYBT.Module.Users/Services/UserService.cs
+src/Server/Modules/LYBT.Module.Users/LYBT.Module.Users.csproj
+src/Shared/LYBT.Shared.Primitives/ErrorCodes/*
+tests/LYBT.Tests.Server/Features/US_MedicalCase_MustHaveTests.cs
+tests/LYBT.Tests.Server/Features/US_Registration_MustHaveTests.cs
+```
+
+---
+
 ### Phase 0 完成 - MedicalCase-Registration 关联修复
 
 **实施内容**:

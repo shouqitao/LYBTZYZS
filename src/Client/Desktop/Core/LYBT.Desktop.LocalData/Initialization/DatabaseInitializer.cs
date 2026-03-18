@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Initialization;
 using LYBT.Desktop.Contracts.Performance;
 using LYBT.Desktop.LocalData.Context;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ namespace LYBT.Desktop.LocalData.Initialization;
 /// OpenSpec: implement-local-mode
 /// Phase 4 Task 4.4: 集成数据库初始化性能监控
 /// </summary>
-public class DatabaseInitializer
+public class DatabaseInitializer : IDatabaseInitializer
 {
     private readonly Func<LocalDbContext> _contextFactory;
     private readonly IPerformanceMonitor? _performanceMonitor;

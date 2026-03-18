@@ -197,13 +197,39 @@ SharedTestContext exists
 - 影响: `HasMedicalCase` 始终为 false (MedicalCaseId 始终为 null)
 - 建议: 在 MedicalCaseCommandService.CreateFromInputDtoAsync 中添加 Registration 关联逻辑
 
-### 🔴 待实施高优先级任务
+### ✅ Phase 1 完成: 权限矩阵缺陷修复 (2026-03-16)
 
-1. **Permission Matrix 缺陷修复** (11 个问题)
-   - ✅ D-4: Receptionist 医案可见性 (已完成，有遗留关联问题)
-   - I-2: "当天可编辑"锁定逻辑
-   - G-9: Registration 回退流程
-   - G-11: 医生禁用处理
+**实施任务** (3个高优先级问题):
+
+| 问题 | 实施摘要 | 关键文件 |
+|------|---------|---------|
+| I-2 | MedicalCase 添加 `IsLocked` 计算属性，隔天锁定Doctor编辑权限 | `MedicalCaseDetailDto.cs` |
+| G-9 | MedicalCase取消时分流: Receptionist回退Waiting保留MedicalCaseId, Doctor闭环Cancelled | `MedicalCaseStateService.cs` |
+| G-11 | 禁用Doctor前检查Waiting挂号数量，>0则返回422 | `UserService.cs` |
+
+**新增测试** (6个):
+- I2_CompletedCase_SameDay_NotLocked ✅
+- G9_CancelMedicalCase_FromReceptionist_RollbackToWaiting ✅
+- G9_CancelMedicalCase_FromDoctor_SetToCancelled ✅
+- G11_DisableDoctor_WithWaitingRegistration_Returns422 ✅
+- G11_DisableDoctor_NoWaitingRegistration_Succeeds ✅
+- G11_DisableDoctor_WithCancelledRegistration_Succeeds ✅
+
+**测试结果**: 470 passed, 0 failed, 2 skipped
+
+---
+
+### 🔴 待实施任务 (剩余)
+
+1. **Permission Matrix 缺陷修复** (剩余 8 个问题)
+   - ✅ D-4: Receptionist 医案可见性 (已完成)
+   - ✅ I-2: "当天可编辑"锁定逻辑 (已完成)
+   - ✅ G-9: Registration 回退流程 (已完成)
+   - ✅ G-11: 医生禁用处理 (已完成)
+   - D-5: 归属字段命名不一致 (文档修复)
+   - D-6: SuperAdmin 挂号权限 (文档修复)
+   - I-1: Herb PRD Target Users (文档修复)
+   - G-7/G-8/G-10/G-12: 设计决策确认
 
 2. **测试性能优化收尾**
    - 批量迁移测试到 Transactional 模型

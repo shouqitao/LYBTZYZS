@@ -273,9 +273,8 @@ public class ConnectionModeProviderTests
 
     private ConnectionModeProvider CreateProvider(ConnectionMode initialMode)
     {
-        var databaseInitializer = Substitute.For<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>(
-            Substitute.For<System.Func<LocalDbContext>>(),
-            Substitute.For<ILogger<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>>());
+        // Mock 接口而非具体类，避免构造函数签名变更导致测试断裂
+        var databaseInitializer = Substitute.For<LYBT.Desktop.Contracts.Initialization.IDatabaseInitializer>();
 
         // 设置 EnsureInitializedAsync 返回已完成的 Task
         databaseInitializer.EnsureInitializedAsync(Arg.Any<CancellationToken>())

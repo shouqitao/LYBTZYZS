@@ -1,6 +1,6 @@
 using LYBT.Desktop.Contracts;
+using LYBT.Desktop.Contracts.Initialization;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.LocalData.Initialization;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services;
@@ -19,7 +19,7 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
     private readonly IModeSwitchValidator _validator;
     private readonly IActiveConsultationService _activeConsultation;
     private readonly INavigationCoordinator _navigation;
-    private readonly DatabaseInitializer _databaseInitializer;
+    private readonly IDatabaseInitializer _databaseInitializer;
     private ConnectionMode _currentMode;
     private bool _isSwitching;
 
@@ -29,7 +29,7 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
         IModeSwitchValidator validator,
         IActiveConsultationService activeConsultation,
         INavigationCoordinator navigation,
-        DatabaseInitializer databaseInitializer)
+        IDatabaseInitializer databaseInitializer)
     {
         _currentMode = initialMode;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

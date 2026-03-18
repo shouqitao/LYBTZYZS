@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts;
+using LYBT.Desktop.Contracts.Initialization;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Repositories;
@@ -73,7 +74,7 @@ public static class DataSourceRegistrationExtensions
             var validator = resolver.Resolve<IModeSwitchValidator>();
             var activeConsultation = resolver.Resolve<IActiveConsultationService>();
             var navigation = resolver.Resolve<INavigationCoordinator>();
-            var databaseInitializer = resolver.Resolve<DatabaseInitializer>();
+            var databaseInitializer = resolver.Resolve<IDatabaseInitializer>();
             return new ConnectionModeProvider(initialMode, logger, validator, activeConsultation, navigation, databaseInitializer);
         });
     }
@@ -206,5 +207,9 @@ public static class DataSourceRegistrationExtensions
                 () => resolver.Resolve<LocalDbContext>(),
                 loggerFactory.CreateLogger<DatabaseInitializer>());
         });
+
+        // 数据库初始化器接口注册
+        containerRegistry.RegisterSingleton<IDatabaseInitializer>(resolver =>
+            resolver.Resolve<DatabaseInitializer>());
     }
 }
