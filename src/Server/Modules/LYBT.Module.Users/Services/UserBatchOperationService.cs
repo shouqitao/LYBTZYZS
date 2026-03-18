@@ -184,7 +184,7 @@ namespace LYBT.Module.Users.Services
 
                 // CODE-34: 标记软删除，不立即 SaveChanges，最后统一提交
                 user.IsDeleted = true;
-                user.UpdatedAt = DateTime.Now;
+                user.UpdatedAt = DateTime.UtcNow;
                 result.SuccessCount++;
                 _logger.LogInformation("[SVC] UserBatch.BatchDelete -> ItemMarked - UserId={UserId} UserName={UserName}", id, user.UserName);
             }
@@ -287,7 +287,7 @@ namespace LYBT.Module.Users.Services
                 }
 
                 user.Status = status;
-                user.UpdatedAt = DateTime.Now;
+                user.UpdatedAt = DateTime.UtcNow;
                 await _repository.UpdateAsync(user);
                 result.SuccessCount++;
 

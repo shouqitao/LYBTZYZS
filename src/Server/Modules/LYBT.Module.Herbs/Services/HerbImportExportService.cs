@@ -38,7 +38,7 @@ namespace LYBT.Module.Herbs.Services
             var result = new ImportResultDto<HerbDetailDto>
             {
                 FileName = fileName,
-                ImportTime = DateTime.Now
+                ImportTime = DateTime.UtcNow
             };
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -121,7 +121,7 @@ namespace LYBT.Module.Herbs.Services
                         Usage = usage,
                         Remark = remark,
                         Status = CommonStatus.Enabled,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow
                     };
 
                     var savedHerb = await _repository.AddAsync(herb);
@@ -274,7 +274,7 @@ namespace LYBT.Module.Herbs.Services
 
             var result = new HerbBatchImportResultDto
             {
-                ImportTime = DateTime.Now
+                ImportTime = DateTime.UtcNow
             };
 
             // BR-006: 批量导入数量限制
@@ -318,7 +318,7 @@ namespace LYBT.Module.Herbs.Services
                                 if (existingHerb != null)
                                 {
                                     _mapper.UpdateEntity(dto, existingHerb);
-                                    existingHerb.UpdatedAt = DateTime.Now;
+                                    existingHerb.UpdatedAt = DateTime.UtcNow;
                                     await _repository.UpdateAsync(existingHerb);
                                     result.SuccessCount++;
                                     _logger.LogDebug("[SVC] Herb.BatchImport → Updated - HerbName={HerbName}", dto.Name);
@@ -341,7 +341,7 @@ namespace LYBT.Module.Herbs.Services
 
                     // 创建新药材
                     var entity = _mapper.ToEntity(dto);
-                    entity.CreatedAt = DateTime.Now;
+                    entity.CreatedAt = DateTime.UtcNow;
                     entity.Status = CommonStatus.Enabled;
 
                     await _repository.AddAsync(entity);

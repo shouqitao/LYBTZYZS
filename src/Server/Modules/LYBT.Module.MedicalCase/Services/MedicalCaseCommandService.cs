@@ -105,8 +105,8 @@ namespace LYBT.Module.MedicalCases.Services
                 UserId = doctorId,
                 DoctorName = doctor.RealName,
                 Remark = request.Remark,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             // 创建Consultation（聚合根模式：共享主键）
@@ -114,8 +114,8 @@ namespace LYBT.Module.MedicalCases.Services
             var consultation = new Consultation
             {
                 Id = medicalCase.Id,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             // 如果DTO中提供了诊断数据，填充Consultation字段
@@ -226,7 +226,7 @@ namespace LYBT.Module.MedicalCases.Services
             consultation.TongueDiagnosis = request.TongueDiagnosis;
             consultation.PulseDiagnosis = request.PulseDiagnosis;
             consultation.TcmDiagnosis = request.TcmDiagnosis;
-            consultation.UpdatedAt = DateTime.Now;
+            consultation.UpdatedAt = DateTime.UtcNow;
 
             // CODE-02: 编辑已打印医案时重置 IsPrinted（防御性编程）
             if (medicalCase.IsPrinted)
@@ -273,7 +273,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 更新NeedsPrescription标志
             // OpenSpec: consultation-field-alignment - 处方标志统一在MedicalCase管理
             medicalCase.NeedsPrescription = needsPrescription;
-            medicalCase.UpdatedAt = DateTime.Now;
+            medicalCase.UpdatedAt = DateTime.UtcNow;
 
             // T5-P2-12: 标记不需要处方时，软删除已有处方
             if (!needsPrescription)
@@ -326,14 +326,14 @@ namespace LYBT.Module.MedicalCases.Services
             prescription.Id = Guid.NewGuid();
             prescription.PrescriptionNumber = await GeneratePrescriptionNumberAsync();  // T5-P2-13
             prescription.MedicalCaseId = medicalCaseId;
-            prescription.CreatedAt = DateTime.Now;
-            prescription.UpdatedAt = DateTime.Now;
+            prescription.CreatedAt = DateTime.UtcNow;
+            prescription.UpdatedAt = DateTime.UtcNow;
 
             // T2-S4-02: 使用统一的CreatePrescriptionItemsAsync确保UnitPrice自动填充
             prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, request);
 
             medicalCase.Prescription = prescription;
-            medicalCase.UpdatedAt = DateTime.Now;
+            medicalCase.UpdatedAt = DateTime.UtcNow;
             await _repository.UpdateAsync(medicalCase);
             await _cacheInvalidation.InvalidateAsync("medicalcases");
 
@@ -394,8 +394,8 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 通过Mapperly更新Prescription子实体（不包含Items）
             _mapper.UpdatePrescriptionEntity(request, medicalCase.Prescription);
-            medicalCase.Prescription.UpdatedAt = DateTime.Now;
-            medicalCase.UpdatedAt = DateTime.Now;
+            medicalCase.Prescription.UpdatedAt = DateTime.UtcNow;
+            medicalCase.UpdatedAt = DateTime.UtcNow;
 
             // T2-S4-02: 使用统一的CreatePrescriptionItemsAsync确保UnitPrice自动填充
             if (request.Items != null)
@@ -464,11 +464,11 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 软删除Prescription
             medicalCase.Prescription.IsDeleted = true;
-            medicalCase.Prescription.UpdatedAt = DateTime.Now;
+            medicalCase.Prescription.UpdatedAt = DateTime.UtcNow;
 
             // 清空导航属性（保持聚合根一致性）
             medicalCase.Prescription = null;
-            medicalCase.UpdatedAt = DateTime.Now;
+            medicalCase.UpdatedAt = DateTime.UtcNow;
 
             // 通过聚合根保存
             await _repository.UpdateAsync(medicalCase);
@@ -609,7 +609,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 medicalCase.Remark = request.Remark;
             }
-            medicalCase.UpdatedAt = DateTime.Now;
+            medicalCase.UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -621,7 +621,7 @@ namespace LYBT.Module.MedicalCases.Services
             consultation.TongueDiagnosis = dto.TongueDiagnosis;
             consultation.PulseDiagnosis = dto.PulseDiagnosis;
             consultation.TcmDiagnosis = dto.TcmDiagnosis;
-            consultation.UpdatedAt = DateTime.Now;
+            consultation.UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -676,7 +676,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase.Prescription != null && !medicalCase.Prescription.IsDeleted)
             {
                 medicalCase.Prescription.IsDeleted = true;
-                medicalCase.Prescription.UpdatedAt = DateTime.Now;
+                medicalCase.Prescription.UpdatedAt = DateTime.UtcNow;
                 _logger.LogInformation("[SVC] MedicalCase.Save → PrescriptionSoftDeleted - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                     medicalCase.Id, medicalCase.Prescription.Id);
             }
@@ -700,8 +700,8 @@ namespace LYBT.Module.MedicalCases.Services
                 ReferencedFormulas = prescriptionDto.ReferencedFormulas,
                 Discount = prescriptionDto.Discount,
                 Remark = prescriptionDto.Remark,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
                 Items = new List<LYBT.Entities.Prescriptions.PrescriptionItem>()
             };
             prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, prescriptionDto);
@@ -724,7 +724,7 @@ namespace LYBT.Module.MedicalCases.Services
             prescription.ReferencedFormulas = prescriptionDto.ReferencedFormulas;
             prescription.Discount = prescriptionDto.Discount;
             prescription.Remark = prescriptionDto.Remark;
-            prescription.UpdatedAt = DateTime.Now;
+            prescription.UpdatedAt = DateTime.UtcNow;
 
             prescription.Items.Clear();
             foreach (var item in await CreatePrescriptionItemsAsync(prescription.Id, prescriptionDto))
@@ -883,7 +883,7 @@ namespace LYBT.Module.MedicalCases.Services
                     MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, entity, operatorId, isAdmin, "BatchDelete", _logger);
 
                     entity.IsDeleted = true;
-                    entity.UpdatedAt = DateTime.Now;
+                    entity.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(entity);
 
                     result.SuccessCount++;

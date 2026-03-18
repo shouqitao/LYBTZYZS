@@ -299,7 +299,7 @@ namespace LYBT.Module.Formulas.Services
             entity.Status = entity.Status == CommonStatus.Enabled
                 ? CommonStatus.Disabled
                 : CommonStatus.Enabled;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.ToDetailDto(result);
@@ -329,7 +329,7 @@ namespace LYBT.Module.Formulas.Services
 
             // 恢复软删除
             entity.IsDeleted = false;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.ToDetailDto(result);
@@ -372,7 +372,7 @@ namespace LYBT.Module.Formulas.Services
 
                     // 软删除
                     entity.IsDeleted = true;
-                    entity.UpdatedAt = DateTime.Now;
+                    entity.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(entity);
 
                     result.SuccessCount++;
@@ -431,7 +431,7 @@ namespace LYBT.Module.Formulas.Services
                     }
 
                     formula.Status = status;
-                    formula.UpdatedAt = DateTime.Now;
+                    formula.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(formula);
 
                     result.SuccessCount++;

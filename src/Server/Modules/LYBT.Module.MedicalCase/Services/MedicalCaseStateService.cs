@@ -81,7 +81,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 更新状态（仅 Draft <-> Active）
             medicalCase.CaseStatus = status;
-            medicalCase.UpdatedAt = DateTime.Now;
+            medicalCase.UpdatedAt = DateTime.UtcNow;
 
             // 保存
             return await _repository.UpdateAsync(medicalCase);
@@ -325,7 +325,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 // 前台挂号: 回退到Waiting，保留MedicalCaseId用于恢复
                 registration.Status = RegistrationStatus.Waiting;
-                registration.UpdatedAt = DateTime.Now;
+                registration.UpdatedAt = DateTime.UtcNow;
                 // MedicalCaseId保留不变，用于后续恢复关联
                 await _registrationRepository.UpdateAsync(registration);
                 _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationRolledBack - RegistrationId={RegistrationId} Source=Receptionist Status=Waiting MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
@@ -335,7 +335,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 // 医生直接看诊: 设置为Cancelled（闭环）
                 registration.Status = RegistrationStatus.Cancelled;
-                registration.UpdatedAt = DateTime.Now;
+                registration.UpdatedAt = DateTime.UtcNow;
                 await _registrationRepository.UpdateAsync(registration);
                 _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationCancelled - RegistrationId={RegistrationId} Source=Doctor Status=Cancelled MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
                     registration.Id, medicalCaseId, caseNumber);

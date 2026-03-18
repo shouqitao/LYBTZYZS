@@ -59,7 +59,7 @@ namespace LYBT.Module.MedicalCases.Services
                     OldValues = oldValues,
                     NewValues = newValues,
                     Reason = reason,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 _dbContext.MedicalCaseAuditLogs.Add(auditLog);

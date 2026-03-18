@@ -449,7 +449,7 @@ namespace LYBT.Module.Patients.Services
             entity.Status = entity.Status == CommonStatus.Enabled
                 ? CommonStatus.Disabled
                 : CommonStatus.Enabled;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.ToDetailDto(result);
@@ -474,7 +474,7 @@ namespace LYBT.Module.Patients.Services
                 return Result<PatientDetailDto>.Failure(GenericErrorCode.InvalidPatientStatus, "该患者未被删除，无需恢复");
 
             entity.IsDeleted = false;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.ToDetailDto(result);
@@ -535,7 +535,7 @@ namespace LYBT.Module.Patients.Services
 
                     // 软删除
                     entity.IsDeleted = true;
-                    entity.UpdatedAt = DateTime.Now;
+                    entity.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(entity);
 
                     result.SuccessCount++;

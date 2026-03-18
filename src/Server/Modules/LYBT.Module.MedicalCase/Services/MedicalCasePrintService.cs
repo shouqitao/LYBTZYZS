@@ -48,8 +48,8 @@ namespace LYBT.Module.MedicalCases.Services
             // 更新打印管理字段
             medicalCase.IsPrinted = true;
             medicalCase.PrintCount++;
-            medicalCase.LastPrintedAt = DateTime.Now;
-            medicalCase.UpdatedAt = DateTime.Now;
+            medicalCase.LastPrintedAt = DateTime.UtcNow;
+            medicalCase.UpdatedAt = DateTime.UtcNow;
 
             // T2-X8-10: PrintVersion 递增 (每次打印递增版本号)
             medicalCase.PrintVersion++;
@@ -61,13 +61,13 @@ namespace LYBT.Module.MedicalCases.Services
                 MedicalCaseId = medicalCaseId,
                 PrintType = printType,
                 PrintVersion = medicalCase.PrintVersion,
-                PrintedAt = DateTime.Now,
+                PrintedAt = DateTime.UtcNow,
                 PrintedBy = printedBy,
                 PrintedByName = printedByName,
                 PrinterName = printerName,
                 IsSuccess = true,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             // AD-04 Fix: 通过 Repository 显式 Add，确保 PrintLog 被标记为 Added 状态。

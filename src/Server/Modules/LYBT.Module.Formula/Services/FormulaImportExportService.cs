@@ -48,8 +48,8 @@ public class FormulaImportExportService : IFormulaImportExportService
         var result = new FormulaBatchImportResultDto
         {
             FileName = fileName,
-            ImportTime = DateTime.Now,
-            StartTime = DateTime.Now,
+            ImportTime = DateTime.UtcNow,
+            StartTime = DateTime.UtcNow,
             TotalCount = formulas.Count
         };
 
@@ -82,7 +82,7 @@ public class FormulaImportExportService : IFormulaImportExportService
                     Remark = formulaImportItem.Remark,
                     Status = CommonStatus.Enabled,
                     ValidationStatus = FormulaValidationStatus.Draft,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     Herbs = new List<FormulaHerbItem>()
                 };
 
@@ -141,7 +141,7 @@ public class FormulaImportExportService : IFormulaImportExportService
             }
         }
 
-        result.EndTime = DateTime.Now;
+        result.EndTime = DateTime.UtcNow;
         result.IsSuccess = true;
         result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条，药材匹配 {result.MatchedHerbsCount} 个，未匹配 {result.UnmatchedHerbsCount} 个";
 

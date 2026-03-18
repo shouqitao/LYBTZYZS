@@ -641,7 +641,7 @@ namespace LYBT.Module.Users.Services
             entity.Status = entity.Status == CommonStatus.Enabled
                 ? CommonStatus.Disabled
                 : CommonStatus.Enabled;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.ToDetailDto(result);
@@ -686,7 +686,7 @@ namespace LYBT.Module.Users.Services
             }
 
             entity.IsDeleted = false;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.ToDetailDto(result);

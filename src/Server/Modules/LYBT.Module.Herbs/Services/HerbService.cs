@@ -308,7 +308,7 @@ namespace LYBT.Module.Herbs.Services
             entity.Status = entity.Status == CommonStatus.Enabled
                 ? CommonStatus.Disabled
                 : CommonStatus.Enabled;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.ToDetailDto(result);
@@ -338,7 +338,7 @@ namespace LYBT.Module.Herbs.Services
 
             // 恢复软删除
             entity.IsDeleted = false;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             var result = await _repository.UpdateAsync(entity);
             var dto = _mapper.ToDetailDto(result);
@@ -382,7 +382,7 @@ namespace LYBT.Module.Herbs.Services
                     }
 
                     entity.Status = status;
-                    entity.UpdatedAt = DateTime.Now;
+                    entity.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(entity);
 
                     result.SuccessCount++;
@@ -453,7 +453,7 @@ namespace LYBT.Module.Herbs.Services
 
                     // 软删除
                     entity.IsDeleted = true;
-                    entity.UpdatedAt = DateTime.Now;
+                    entity.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(entity);
 
                     result.SuccessCount++;

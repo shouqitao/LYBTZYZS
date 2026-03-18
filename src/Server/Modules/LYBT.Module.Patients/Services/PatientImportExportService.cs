@@ -43,7 +43,7 @@ namespace LYBT.Module.Patients.Services
         {
             var result = new PatientBatchImportResultDto
             {
-                ImportTime = DateTime.Now
+                ImportTime = DateTime.UtcNow
             };
 
             // 设置EPPlus许可证上下文（非商业用途）
