@@ -96,7 +96,7 @@ public sealed class MockCardReader : ICardReader
                 ValidFrom = new DateTime(2020, 1, 1),
                 ValidTo = new DateTime(2040, 1, 1),
                 CardType = CardType.IdCard,
-                ReadTime = DateTime.Now
+                ReadTime = DateTime.UtcNow
             };
         }, cancellationToken);
     }

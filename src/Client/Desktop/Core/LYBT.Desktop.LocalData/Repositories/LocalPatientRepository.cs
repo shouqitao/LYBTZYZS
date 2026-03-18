@@ -123,7 +123,7 @@ public sealed class LocalPatientRepository : IPatientRepository
 
             var entity = _mapper.ToEntity(patient);
             entity.Id = Guid.NewGuid();
-            entity.CreatedAt = DateTime.Now;
+            entity.CreatedAt = DateTime.UtcNow;
 
             _context.Patients.Add(entity);
             await _context.SaveChangesAsync();
@@ -165,7 +165,7 @@ public sealed class LocalPatientRepository : IPatientRepository
             existing.EmergencyContactName = patient.EmergencyContactName;
             existing.EmergencyContactPhone = patient.EmergencyContactPhone;
             existing.EmergencyContactRelation = patient.EmergencyContactRelation;
-            existing.UpdatedAt = DateTime.Now;
+            existing.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

@@ -121,8 +121,8 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
             _currentUserName = userName;
             _currentUserRole = userRole;
             _tokenExpiresAt = tokenExpiresAt;
-            _sessionStartTime = DateTime.Now;
-            _lastActivityTime = DateTime.Now;
+            _sessionStartTime = DateTime.UtcNow;
+            _lastActivityTime = DateTime.UtcNow;
             _tokenRefreshCount = 0;
         }
 
@@ -187,7 +187,7 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
                 lock (_stateLock)
                 {
                     _tokenRefreshCount++;
-                    _lastTokenRefreshTime = DateTime.Now;
+                    _lastTokenRefreshTime = DateTime.UtcNow;
                 }
 
                 TransitionTo(SessionState.Authenticated);
@@ -228,7 +228,7 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
     {
         lock (_stateLock)
         {
-            _lastActivityTime = DateTime.Now;
+            _lastActivityTime = DateTime.UtcNow;
         }
 
         _userActivityTracker.ResetActivity();

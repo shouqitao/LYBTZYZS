@@ -131,7 +131,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
 
             var entity = _mapper.ToEntity(dto);
             entity.Id = Guid.NewGuid();
-            entity.CreatedAt = DateTime.Now;
+            entity.CreatedAt = DateTime.UtcNow;
             entity.CaseStatus = MedicalCaseStatus.Suspended;
 
             // 补充患者/医生名称 (InputDto 不携带，需从数据库查找)
@@ -162,7 +162,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
                     TongueDiagnosis = dto.Consultation.TongueDiagnosis,
                     PulseDiagnosis = dto.Consultation.PulseDiagnosis,
                     TcmDiagnosis = dto.Consultation.TcmDiagnosis,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
             }
 
@@ -179,7 +179,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
                     ReferencedFormulas = dto.Prescription.ReferencedFormulas,
                     Discount = dto.Prescription.Discount,
                     Remark = dto.Prescription.Remark,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 foreach (var itemInput in dto.Prescription.Items)
@@ -234,7 +234,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
 
             // 更新基本属性
             existing.Remark = dto.Remark;
-            existing.UpdatedAt = DateTime.Now;
+            existing.UpdatedAt = DateTime.UtcNow;
 
             // 更新 Consultation
             if (dto.Consultation != null)
@@ -248,7 +248,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
                         TongueDiagnosis = dto.Consultation.TongueDiagnosis,
                         PulseDiagnosis = dto.Consultation.PulseDiagnosis,
                         TcmDiagnosis = dto.Consultation.TcmDiagnosis,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow
                     };
                     _context.Consultations.Add(existing.Consultation);
                 }
@@ -258,7 +258,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
                     existing.Consultation.TongueDiagnosis = dto.Consultation.TongueDiagnosis;
                     existing.Consultation.PulseDiagnosis = dto.Consultation.PulseDiagnosis;
                     existing.Consultation.TcmDiagnosis = dto.Consultation.TcmDiagnosis;
-                    existing.Consultation.UpdatedAt = DateTime.Now;
+                    existing.Consultation.UpdatedAt = DateTime.UtcNow;
                 }
             }
 
@@ -277,7 +277,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
                         ReferencedFormulas = dto.Prescription.ReferencedFormulas,
                         Discount = dto.Prescription.Discount,
                         Remark = dto.Prescription.Remark,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow
                     };
 
                     foreach (var itemInput in dto.Prescription.Items)
@@ -307,7 +307,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
                     existing.Prescription.ReferencedFormulas = dto.Prescription.ReferencedFormulas;
                     existing.Prescription.Discount = dto.Prescription.Discount;
                     existing.Prescription.Remark = dto.Prescription.Remark;
-                    existing.Prescription.UpdatedAt = DateTime.Now;
+                    existing.Prescription.UpdatedAt = DateTime.UtcNow;
 
                     // 更新处方项 (删除旧的，添加新的)
                     _context.PrescriptionItems.RemoveRange(existing.Prescription.Items);
@@ -515,7 +515,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
             }
 
             entity.CaseStatus = MedicalCaseStatus.Completed;
-            entity.CompletedAt = DateTime.Now;
+            entity.CompletedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("[REPO:Local] MedicalCase.CloseCase completed - Id={Id}", medicalCaseId);
@@ -589,7 +589,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
             }
 
             entity.CaseStatus = MedicalCaseStatus.Suspended;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             // 挂起时可选保存诊断数据
             if (request != null && entity.Consultation != null)
@@ -598,7 +598,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
                 entity.Consultation.TongueDiagnosis = request.TongueDiagnosis;
                 entity.Consultation.PulseDiagnosis = request.PulseDiagnosis;
                 entity.Consultation.TcmDiagnosis = request.TcmDiagnosis;
-                entity.Consultation.UpdatedAt = DateTime.Now;
+                entity.Consultation.UpdatedAt = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();
@@ -637,10 +637,10 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
             }
 
             entity.CaseStatus = request.Status;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             if (request.Status == MedicalCaseStatus.Completed)
-                entity.CompletedAt = DateTime.Now;
+                entity.CompletedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -730,7 +730,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
             }
 
             entity.NeedsPrescription = request.NeedsPrescription;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("[REPO:Local] MedicalCase.SetPrescriptionFlag completed - Id={Id}", id);
@@ -766,7 +766,7 @@ public sealed class LocalMedicalCaseRepository : IMedicalCaseRepository
 
             entity.IsPrinted = true;
             entity.PrintCount++;
-            entity.LastPrintedAt = DateTime.Now;
+            entity.LastPrintedAt = DateTime.UtcNow;
             entity.PrintVersion++;
             await _context.SaveChangesAsync();
 

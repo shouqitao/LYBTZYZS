@@ -23,6 +23,6 @@ public class ApiStatusChangedEventArgs : EventArgs
         IsHealthy = isHealthy;
         ConnectionStatus = connectionStatus;
         LastError = lastError;
-        CheckTime = DateTime.Now;
+        CheckTime = DateTime.UtcNow;
     }
 }

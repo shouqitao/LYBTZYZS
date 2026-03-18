@@ -131,7 +131,7 @@ public sealed class LocalUserRepository : IUserRepository
 
             var entity = _mapper.ToEntity(dto);
             entity.Id = Guid.NewGuid();
-            entity.CreatedAt = DateTime.Now;
+            entity.CreatedAt = DateTime.UtcNow;
             entity.Status = CommonStatus.Enabled;
 
             // 密码哈希处理
@@ -186,7 +186,7 @@ public sealed class LocalUserRepository : IUserRepository
             existing.Email = dto.Email;
             if (dto.Role.HasValue) existing.Role = dto.Role.Value;
             existing.Remark = dto.Remark;
-            existing.UpdatedAt = DateTime.Now;
+            existing.UpdatedAt = DateTime.UtcNow;
 
             // 确保密码不被覆盖
             existing.PasswordHash = passwordHash;
@@ -403,7 +403,7 @@ public sealed class LocalUserRepository : IUserRepository
                 return ServiceResult<ResetPasswordResponseDto>.Failure("用户不存在");
 
             entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(DefaultResetPassword);
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("[REPO:Local] User.ResetPassword completed - UserId={UserId}", userId);
@@ -491,7 +491,7 @@ public sealed class LocalUserRepository : IUserRepository
             }
 
             entity.IsDeleted = false;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("[REPO:Local] User.Restore completed - Id={Id}", id);

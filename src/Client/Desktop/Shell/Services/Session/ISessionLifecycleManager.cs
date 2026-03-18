@@ -131,7 +131,7 @@ public class SessionStateChangedEventArgs : EventArgs
     {
         PreviousState = previousState;
         CurrentState = currentState;
-        Timestamp = DateTime.Now;
+        Timestamp = DateTime.UtcNow;
     }
 }
 

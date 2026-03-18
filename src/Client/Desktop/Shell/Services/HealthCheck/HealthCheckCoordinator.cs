@@ -209,7 +209,7 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
         try
         {
             _applicationStateService.IsApiHealthy = status == ApiHealthStatus.Healthy;
-            _applicationStateService.LastHealthCheckTime = DateTime.Now;
+            _applicationStateService.LastHealthCheckTime = DateTime.UtcNow;
 
             switch (status)
             {

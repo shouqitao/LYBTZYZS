@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Printing.Models
         public string? ErrorMessage { get; init; }
 
         /// <summary>打印时间</summary>
-        public DateTime PrintedAt { get; init; } = DateTime.Now;
+        public DateTime PrintedAt { get; init; } = DateTime.UtcNow;
 
         /// <summary>创建成功日志</summary>
         public static PrintLogEntry Succeeded(string? printerName = null)

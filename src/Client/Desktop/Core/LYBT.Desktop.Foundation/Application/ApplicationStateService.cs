@@ -92,7 +92,7 @@ namespace LYBT.Desktop.Foundation.Application
 
                 var status = await _apiHealthCheckService.CheckHealthAsync(timeoutMs);
 
-                LastHealthCheckTime = DateTime.Now;
+                LastHealthCheckTime = DateTime.UtcNow;
 
                 switch (status)
                 {
@@ -135,7 +135,7 @@ namespace LYBT.Desktop.Foundation.Application
             IsApiHealthy = isHealthy;
             ConnectionStatus = connectionStatus;
             LastError = lastError;
-            LastHealthCheckTime = DateTime.Now;
+            LastHealthCheckTime = DateTime.UtcNow;
 
             // 状态变化时触发事件
             if (previousHealthy != isHealthy || previousStatus != connectionStatus)

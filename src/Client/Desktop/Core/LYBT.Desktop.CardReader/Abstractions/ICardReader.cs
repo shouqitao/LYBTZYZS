@@ -88,7 +88,7 @@ public class CardReaderConnectionEventArgs : EventArgs
 public class CardDetectedEventArgs : EventArgs
 {
     /// <summary>检测到卡片的时间</summary>
-    public DateTime DetectedTime { get; init; } = DateTime.Now;
+    public DateTime DetectedTime { get; init; } = DateTime.UtcNow;
 }
 
 /// <summary>

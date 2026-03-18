@@ -60,7 +60,7 @@ public class LocalAuthService : ILocalAuthService
         }
 
         // 检查账户锁定
-        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.Now)
+        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
         {
             _logger.LogWarning("[LocalAuth] 登录失败 - 账户已锁定至 {LockoutEnd}: {Username}",
                 user.LockoutEnd.Value, username);
@@ -76,7 +76,7 @@ public class LocalAuthService : ILocalAuthService
             // 检查是否需要锁定
             if (user.FailedLoginCount >= MaxFailedLoginCount)
             {
-                user.LockoutEnd = DateTime.Now.AddMinutes(LockoutMinutes);
+                user.LockoutEnd = DateTime.UtcNow.AddMinutes(LockoutMinutes);
                 _logger.LogWarning("[LocalAuth] 账户已锁定 {Minutes} 分钟: {Username}",
                     LockoutMinutes, username);
             }
@@ -91,7 +91,7 @@ public class LocalAuthService : ILocalAuthService
         // 登录成功，重置失败次数
         user.FailedLoginCount = 0;
         user.LockoutEnd = null;
-        user.LastLoginTime = DateTime.Now;
+        user.LastLoginTime = DateTime.UtcNow;
         await _context.SaveChangesAsync(ct);
 
         _logger.LogInformation("[LocalAuth] 登录成功: {Username} ({RealName})",

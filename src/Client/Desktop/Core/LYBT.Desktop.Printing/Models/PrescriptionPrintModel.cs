@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Printing.Models
         /// <summary>年龄</summary>
         public int Age { get; set; }
         /// <summary>就诊时间</summary>
-        public DateTime ConsultationDate { get; set; } = DateTime.Now;
+        public DateTime ConsultationDate { get; set; } = DateTime.UtcNow;
         /// <summary>门诊号</summary>
         public string? OutpatientNumber { get; set; }
         /// <summary>患者电话</summary>
@@ -92,7 +92,7 @@ namespace LYBT.Desktop.Printing.Models
         /// <summary>医师（开方医生）</summary>
         public string DoctorName { get; set; } = string.Empty;
         /// <summary>处方日期</summary>
-        public DateTime PrescriptionDate { get; set; } = DateTime.Now;
+        public DateTime PrescriptionDate { get; set; } = DateTime.UtcNow;
         /// <summary>审核人</summary>
         public string? Reviewer { get; set; }
         /// <summary>调配人</summary>

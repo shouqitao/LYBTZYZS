@@ -127,7 +127,7 @@ public sealed class LocalHerbRepository : IHerbRepository
 
             var entity = _mapper.ToEntity(dto);
             entity.Id = Guid.NewGuid();
-            entity.CreatedAt = DateTime.Now;
+            entity.CreatedAt = DateTime.UtcNow;
             entity.Status = CommonStatus.Enabled;
 
             _context.Herbs.Add(entity);
@@ -166,7 +166,7 @@ public sealed class LocalHerbRepository : IHerbRepository
             existing.Effect = dto.Effect;
             existing.Usage = dto.Usage;
             existing.Remark = dto.Remark;
-            existing.UpdatedAt = DateTime.Now;
+            existing.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

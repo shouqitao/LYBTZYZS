@@ -55,8 +55,8 @@ public static class SeedData
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(DefaultAdminPassword),
             Role = UserRole.SuperAdmin,
             Status = CommonStatus.Enabled,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
         context.Users.Add(admin);

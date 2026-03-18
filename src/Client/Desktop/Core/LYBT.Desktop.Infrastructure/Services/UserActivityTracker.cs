@@ -51,7 +51,7 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
         {
             lock (_lock)
             {
-                var elapsed = DateTime.Now - _lastActivityTime;
+                var elapsed = DateTime.UtcNow - _lastActivityTime;
                 return elapsed.TotalMinutes < _inactivityTimeoutMinutes;
             }
         }
@@ -64,7 +64,7 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
         {
             lock (_lock)
             {
-                var elapsed = DateTime.Now - _lastActivityTime;
+                var elapsed = DateTime.UtcNow - _lastActivityTime;
                 var remaining = TimeSpan.FromMinutes(_inactivityTimeoutMinutes) - elapsed;
                 return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
             }
@@ -105,7 +105,7 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
         _warningBeforeTimeoutMinutes = warningBeforeTimeoutMinutes;
         _activityCheckIntervalSeconds = activityCheckIntervalSeconds;
 
-        _lastActivityTime = DateTime.Now;
+        _lastActivityTime = DateTime.UtcNow;
 
         _logger.LogDebug("UserActivityTracker已创建 (超时={Timeout}分钟, 警告={Warning}分钟, 检查间隔={Interval}秒)",
             _inactivityTimeoutMinutes, _warningBeforeTimeoutMinutes, _activityCheckIntervalSeconds);
@@ -132,7 +132,7 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
                 return;
             }
 
-            _lastActivityTime = DateTime.Now;
+            _lastActivityTime = DateTime.UtcNow;
             _lastCheckTickCount = _tickService.TickCount;
 
             // 订阅输入事件 - 必须在UI线程执行
@@ -188,7 +188,7 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
     {
         lock (_lock)
         {
-            _lastActivityTime = DateTime.Now;
+            _lastActivityTime = DateTime.UtcNow;
         }
 
         _logger.LogDebug("用户活动计时器已重置");
@@ -211,7 +211,7 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
 
         lock (_lock)
         {
-            _lastActivityTime = DateTime.Now;
+            _lastActivityTime = DateTime.UtcNow;
         }
     }
 
@@ -244,7 +244,7 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
             return;
         }
 
-        var elapsed = DateTime.Now - lastActivity;
+        var elapsed = DateTime.UtcNow - lastActivity;
         var totalTimeoutMinutes = _inactivityTimeoutMinutes;
 
         // 检查是否已超时 - 直接过期，不显示警告对话框

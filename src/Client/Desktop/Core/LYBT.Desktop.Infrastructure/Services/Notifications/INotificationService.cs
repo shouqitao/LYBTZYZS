@@ -91,7 +91,7 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
         public string Message { get; set; } = string.Empty;
         public string? Title { get; set; }
         public NotificationType Type { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -101,6 +101,6 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
     {
         public bool IsLoading { get; set; }
         public string Message { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }

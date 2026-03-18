@@ -45,7 +45,7 @@ public class CardReadResult
     public string? PhotoFilePath { get; set; }
 
     /// <summary>读取时间</summary>
-    public DateTime ReadTime { get; set; } = DateTime.Now;
+    public DateTime ReadTime { get; set; } = DateTime.UtcNow;
 
     /// <summary>是否读取成功</summary>
     public bool IsSuccess { get; set; }
@@ -98,7 +98,7 @@ public class CardReadResult
             IssuingAuthority = department.Trim(),
             ValidFrom = ParseDate(effectDate),
             ValidTo = ParseExpireDate(expireDate),
-            ReadTime = DateTime.Now
+            ReadTime = DateTime.UtcNow
         };
     }
 
@@ -112,7 +112,7 @@ public class CardReadResult
             IsSuccess = false,
             ErrorCode = errorCode,
             ErrorMessage = errorMessage ?? GetErrorMessage(errorCode),
-            ReadTime = DateTime.Now
+            ReadTime = DateTime.UtcNow
         };
     }
 

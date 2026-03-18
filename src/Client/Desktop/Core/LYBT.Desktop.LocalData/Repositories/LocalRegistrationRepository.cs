@@ -40,7 +40,7 @@ public sealed class LocalRegistrationRepository : IRegistrationRepository
             var entity = _mapper.ToEntity(input);
             entity.Id = Guid.NewGuid();
             entity.Status = RegistrationStatus.Waiting;
-            entity.CreatedAt = DateTime.Now;
+            entity.CreatedAt = DateTime.UtcNow;
 
             _context.Registrations.Add(entity);
             await _context.SaveChangesAsync();
@@ -169,7 +169,7 @@ public sealed class LocalRegistrationRepository : IRegistrationRepository
             }
 
             entity.Status = RegistrationStatus.InProgress;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("[REPO:Local] Registration.StartVisit completed - Id={Id}", id);
@@ -204,7 +204,7 @@ public sealed class LocalRegistrationRepository : IRegistrationRepository
             }
 
             entity.Status = RegistrationStatus.Cancelled;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("[REPO:Local] Registration.Cancel completed - Id={Id}", id);

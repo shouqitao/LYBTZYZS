@@ -190,6 +190,6 @@ public class AuthStateChangedEventArgs : EventArgs
         CurrentState = currentState;
         Trigger = trigger;
         StatusMessage = statusMessage;
-        Timestamp = DateTime.Now;
+        Timestamp = DateTime.UtcNow;
     }
 }

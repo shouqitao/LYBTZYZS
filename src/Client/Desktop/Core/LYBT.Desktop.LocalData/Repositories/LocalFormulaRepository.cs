@@ -133,7 +133,7 @@ public sealed class LocalFormulaRepository : IFormulaRepository
 
             var entity = _mapper.ToEntity(dto);
             entity.Id = Guid.NewGuid();
-            entity.CreatedAt = DateTime.Now;
+            entity.CreatedAt = DateTime.UtcNow;
             entity.Status = CommonStatus.Enabled;
             entity.ValidationStatus = FormulaValidationStatus.Draft;
 
@@ -179,7 +179,7 @@ public sealed class LocalFormulaRepository : IFormulaRepository
             existing.Category = dto.Category;
             existing.IsShared = dto.IsShared;
             existing.Remark = dto.Remark;
-            existing.UpdatedAt = DateTime.Now;
+            existing.UpdatedAt = DateTime.UtcNow;
 
             // 更新药材项 (删除旧的，添加新的)
             // 注意: 必须先 ToList() 避免迭代时修改集合

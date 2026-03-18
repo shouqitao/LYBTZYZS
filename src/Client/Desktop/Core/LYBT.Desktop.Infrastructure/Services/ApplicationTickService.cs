@@ -110,7 +110,7 @@ public class ApplicationTickService : IApplicationTickService, IDisposable
         var args = new ApplicationTickEventArgs
         {
             TickCount = currentTick,
-            Timestamp = DateTime.Now
+            Timestamp = DateTime.UtcNow
         };
 
         try
