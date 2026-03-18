@@ -132,8 +132,8 @@ namespace LYBT.Entities.MedicalCases
         public void Complete()
         {
             CaseStatus = MedicalCaseStatus.Completed;
-            CompletedAt = DateTime.Now;
-            UpdatedAt = DateTime.Now;
+            CompletedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace LYBT.Entities.MedicalCases
         public void Suspend()
         {
             CaseStatus = MedicalCaseStatus.Suspended;
-            UpdatedAt = DateTime.Now;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace LYBT.Entities.MedicalCases
         public void SoftDelete()
         {
             IsDeleted = true;
-            UpdatedAt = DateTime.Now;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -165,8 +165,8 @@ namespace LYBT.Entities.MedicalCases
             Consultation.TongueDiagnosis = tongueDiagnosis;
             Consultation.PulseDiagnosis = pulseDiagnosis;
             Consultation.TcmDiagnosis = tcmDiagnosis;
-            Consultation.UpdatedAt = DateTime.Now;
-            UpdatedAt = DateTime.Now;
+            Consultation.UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
         }
     }
 }
