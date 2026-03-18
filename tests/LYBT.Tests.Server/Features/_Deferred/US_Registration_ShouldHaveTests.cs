@@ -60,8 +60,8 @@ public sealed class US_Registration_ShouldHaveTests : IntegrationTestBase<Clinic
         var patient = await CreatePatientAsync(doctorClient, "日期范围查询");
         await CreateRegistrationAsync(adminClient, patient.Id, patient.Name, doctorId, "doctor");
 
-        var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
-        var tomorrow = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd");
+        var today = DateTime.Now.ToString("yyyy-MM-dd");
+        var tomorrow = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd");
 
         // Act - query with date range
         var response = await adminClient.GetAsync(

@@ -673,7 +673,7 @@ public class MedicalCaseMasterDetailViewModelTests
             PatientName = patientName,
             DoctorName = "测试医生",
             CaseStatus = MedicalCaseStatus.Active,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
     }
 
@@ -686,7 +686,7 @@ public class MedicalCaseMasterDetailViewModelTests
             PatientName = "测试患者",
             DoctorName = "测试医生",
             CaseStatus = MedicalCaseStatus.Active,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
     }
 
@@ -698,7 +698,7 @@ public class MedicalCaseMasterDetailViewModelTests
             PatientId = Guid.NewGuid(),
             PatientName = "测试患者",
             Status = MedicalCaseStatus.Active,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
     }
 

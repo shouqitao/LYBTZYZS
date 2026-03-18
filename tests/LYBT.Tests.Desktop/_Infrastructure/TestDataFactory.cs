@@ -39,12 +39,12 @@ public static class TestDataFactory
             PinYinCode = $"CSHZ{_patientCounter}",
             Gender = gender ?? Gender.Male,
             PhoneNumber = phoneNumber ?? $"1380013{8000 + _patientCounter:D4}",
-            BirthDate = birthDate ?? DateTime.Now.AddYears(-30),
+            BirthDate = birthDate ?? DateTime.UtcNow.AddYears(-30),
             IdNumber = idNumber ?? $"11010119900101{_patientCounter:D4}",
             Address = address ?? $"测试地址{_patientCounter}",
             Status = CommonStatus.Enabled,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 
@@ -69,8 +69,8 @@ public static class TestDataFactory
             Role = role ?? UserRole.Doctor,
             PasswordHash = passwordHash ?? "$2a$11$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // BCrypt hash placeholder
             Status = CommonStatus.Enabled,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 
@@ -85,7 +85,7 @@ public static class TestDataFactory
         MedicalCaseStatus? status = null)
     {
         _medicalCaseCounter++;
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
 
         return new MedicalCase
         {
@@ -118,8 +118,8 @@ public static class TestDataFactory
             TongueDiagnosis = tongueDiagnosis ?? "舌淡红，苔薄白",
             PulseDiagnosis = pulseDiagnosis ?? "脉浮数",
             TcmDiagnosis = tcmDiagnosis ?? "风热感冒",
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 
@@ -136,13 +136,13 @@ public static class TestDataFactory
         {
             Id = Guid.NewGuid(),
             MedicalCaseId = medicalCaseId ?? Guid.NewGuid(),
-            PrescriptionNumber = $"RX{DateTime.Now:yyyyMMdd}{Guid.NewGuid().ToString("N")[..4]}",
+            PrescriptionNumber = $"RX{DateTime.UtcNow:yyyyMMdd}{Guid.NewGuid().ToString("N")[..4]}",
             DosageCount = dosageCount ?? 7,
             Discount = 1.0m,
             Usage = usage ?? "水煎服，每日一剂",
             Advice = advice ?? "忌辛辣油腻",
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 
@@ -259,8 +259,8 @@ public static class TestDataFactory
             Gender = Gender.Male,
             PhoneNumber = "13800138000",
             Status = CommonStatus.Enabled,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 
@@ -274,8 +274,8 @@ public static class TestDataFactory
             Role = UserRole.Doctor,
             PasswordHash = "$2a$11$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
             Status = CommonStatus.Enabled,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 }

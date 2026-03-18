@@ -445,7 +445,7 @@ public class AuthenticationStateMachineTests
         receivedArgs!.PreviousState.Should().Be(AuthState.Idle);
         receivedArgs.CurrentState.Should().Be(AuthState.Authenticating);
         receivedArgs.Trigger.Should().Be(AuthEvent.StartLogin);
-        receivedArgs.Timestamp.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
+        receivedArgs.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     /// <summary>

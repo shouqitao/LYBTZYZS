@@ -57,7 +57,7 @@ public class PatientMatchFallbackChainTests
             IdNumber = idNumber,
             BirthDate = birthDate ?? new DateTime(1990, 1, 1),
             Gender = Gender.Male,
-            LastVisitTime = DateTime.Now.AddDays(-7),
+            LastVisitTime = DateTime.UtcNow.AddDays(-7),
             VisitCount = 3
         };
     }

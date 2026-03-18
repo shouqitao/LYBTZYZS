@@ -150,11 +150,11 @@ public class UserActivityTrackerTests
     {
         // Arrange
         using var tracker = new UserActivityTracker(_mockLogger, _mockTickService);
-        var beforeStart = DateTime.Now;
+        var beforeStart = DateTime.UtcNow;
 
         // Act
         tracker.StartTracking();
-        var afterStart = DateTime.Now;
+        var afterStart = DateTime.UtcNow;
 
         // Assert
         tracker.LastActivityTime.Should().BeOnOrAfter(beforeStart);
@@ -232,11 +232,11 @@ public class UserActivityTrackerTests
 
         // 等待一小段时间以确保时间差
         Thread.Sleep(10);
-        var beforeReset = DateTime.Now;
+        var beforeReset = DateTime.UtcNow;
 
         // Act
         tracker.ResetActivity();
-        var afterReset = DateTime.Now;
+        var afterReset = DateTime.UtcNow;
 
         // Assert
         tracker.LastActivityTime.Should().BeOnOrAfter(beforeReset);

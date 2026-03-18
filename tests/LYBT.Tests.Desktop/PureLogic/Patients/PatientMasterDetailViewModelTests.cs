@@ -923,7 +923,7 @@ public class PatientMasterDetailViewModelTests
             Gender = Gender.Male,
             PhoneNumber = "13800138000",
             VisitCount = 0,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
     }
 
@@ -938,7 +938,7 @@ public class PatientMasterDetailViewModelTests
             PhoneNumber = "13800138000",
             Status = CommonStatus.Enabled,
             VisitCount = 0,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
     }
 
