@@ -29,7 +29,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <summary>
         /// 验证时间
         /// </summary>
-        public DateTime ValidationTime { get; set; } = DateTime.Now;
+        public DateTime ValidationTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// 创建成功结果

@@ -29,6 +29,6 @@ namespace LYBT.Shared.Models.Contracts.Common
 
         /// <summary>导入时间</summary>
         [DisplayName("导入时间")]
-        public DateTime ImportTime { get; set; } = DateTime.Now;
+        public DateTime ImportTime { get; set; } = DateTime.UtcNow;
     }
 }

@@ -21,6 +21,6 @@ namespace LYBT.Shared.Models.Contracts.Common
 
         /// <summary>操作时间</summary>
         [DisplayName("操作时间")]
-        public DateTime OperationTime { get; set; } = DateTime.Now;
+        public DateTime OperationTime { get; set; } = DateTime.UtcNow;
     }
 }
