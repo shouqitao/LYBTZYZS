@@ -87,7 +87,7 @@ namespace LYBT.WebAPI.Controllers
                             ?? throw new InvalidOperationException("未配置系统管理员Email: Lybt:SystemAdmin:Email"),
                         Status = CommonStatus.Enabled,
                         CreatedAt = DateTime.MinValue,
-                        UpdatedAt = DateTime.Now
+                        UpdatedAt = DateTime.UtcNow
                     };
                     return Success(superAdminDto);
                 }
