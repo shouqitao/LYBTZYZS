@@ -212,7 +212,7 @@ public class LoginCoordinator : ILoginCoordinator
         _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
 
         // 本地模式不需要保存 JWT Token，设置一个长期有效的过期时间
-        var expiresAt = DateTime.Now.AddYears(1);
+        var expiresAt = DateTime.UtcNow.AddYears(1);
 
         // NFR-AVAIL-001: 本地登录成功后 fire-and-forget 备份数据库
         TriggerLocalDatabaseBackup();
@@ -385,7 +385,7 @@ public class LoginCoordinator : ILoginCoordinator
         lock (_stateLock)
         {
             _currentUser = user;
-            _loginTime = DateTime.Now;
+            _loginTime = DateTime.UtcNow;
         }
 
         var userRole = user.Role.ToString();

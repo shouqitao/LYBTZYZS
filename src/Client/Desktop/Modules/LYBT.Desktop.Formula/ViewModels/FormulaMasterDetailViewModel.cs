@@ -183,7 +183,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 else
                 {
                     await _formulaRepository.UpdateAsync(inputDto);
-                    detail.UpdatedAt = DateTime.Now;
+                    detail.UpdatedAt = DateTime.UtcNow;
                     Logger.LogInformation("验方更新成功: {FormulaId} - {FormulaName}", detail.Id, detail.Name);
                 }
 

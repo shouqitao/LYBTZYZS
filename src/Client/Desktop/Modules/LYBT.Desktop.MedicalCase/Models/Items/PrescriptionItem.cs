@@ -213,7 +213,7 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
 
     #region 审计字段
 
-    private DateTime _createdAt = DateTime.Now;
+    private DateTime _createdAt = DateTime.UtcNow;
     /// <summary>
     /// 创建时间
     /// </summary>
