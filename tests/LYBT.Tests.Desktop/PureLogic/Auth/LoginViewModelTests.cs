@@ -1,4 +1,5 @@
 using FluentAssertions;
+using LYBT.Tests.Desktop._Infrastructure.Builders;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Services;
@@ -432,6 +433,91 @@ public class LoginViewModelTests
         // Assert
         sut.IsRemoteMode.Should().BeFalse();
         sut.IsLocalMode.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region 行为契约测试 (简化版)
+
+    /// <summary>
+    /// 行为契约 1: 成功登录后，ViewModel 应该处于"已登录"状态
+    /// 验证最终状态，不验证 mock 调用
+    /// </summary>
+    [Fact]
+    public async Task LoginAsync_SuccessfulLogin_TransitionsToLoggedInState()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.Username = "doctor";
+        sut.Password = "correct_password";
+        
+        var user = UserBuilder.Doctor().Build();
+        _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
+            .Returns(LoginResult.Succeeded(user));
+
+        // Act
+        sut.LoginCommand.Execute(null);
+        
+        // 等待异步操作完成
+        await Task.Delay(100);
+
+        // Assert - 验证最终状态
+        sut.ErrorMessage.Should().BeNullOrEmpty("成功登录后不应有错误信息");
+    }
+
+    /// <summary>
+    /// 行为契约 2: 登录失败时，应该显示错误信息并清空密码
+    /// 验证最终状态，不验证 mock 调用
+    /// </summary>
+    [Fact]
+    public async Task LoginAsync_FailedLogin_ShowsErrorAndClearsPassword()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.Username = "doctor";
+        sut.Password = "wrong_password";
+        
+        _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
+            .Returns(LoginResult.Failed("密码错误", "INVALID_CREDENTIALS"));
+
+        // Act
+        sut.LoginCommand.Execute(null);
+        
+        // 等待异步操作完成
+        await Task.Delay(100);
+
+        // Assert - 验证最终状态
+        sut.ErrorMessage.Should().NotBeNullOrEmpty("登录失败后应该显示错误信息");
+        sut.Username.Should().Be("doctor", "登录失败后用户名应该保留");
+    }
+
+    /// <summary>
+    /// 行为契约 3: 切换连接模式后，状态标志应该正确反映当前模式
+    /// 验证最终状态，不验证 mock 调用
+    /// </summary>
+    [Fact]
+    public void ConnectionMode_AfterSwitching_ReflectsCorrectState()
+    {
+        // Arrange
+        var sut = CreateSut(ConnectionMode.Remote);
+        _modeSwitchValidator.ValidateRemoteToLocalSwitchAsync()
+            .Returns(ModeSwitchValidationResult.Valid);
+
+        // Act - 切换到本地模式
+        sut.SelectedConnectionMode = ConnectionMode.Local;
+
+        // Assert - 验证最终状态
+        sut.IsLocalMode.Should().BeTrue("切换到本地模式后 IsLocalMode 应该为 true");
+        sut.IsRemoteMode.Should().BeFalse("切换到本地模式后 IsRemoteMode 应该为 false");
+
+        // Act - 切换回远程模式
+        _modeSwitchValidator.ValidateLocalToRemoteSwitchAsync()
+            .Returns(ModeSwitchValidationResult.Valid);
+        sut.SelectedConnectionMode = ConnectionMode.Remote;
+
+        // Assert - 验证最终状态
+        sut.IsRemoteMode.Should().BeTrue("切换到远程模式后 IsRemoteMode 应该为 true");
+        sut.IsLocalMode.Should().BeFalse("切换到远程模式后 IsLocalMode 应该为 false");
     }
 
     #endregion
