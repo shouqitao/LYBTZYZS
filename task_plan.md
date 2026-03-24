@@ -1,76 +1,81 @@
-# Task Plan: Sprint 7 - 权限矩阵修复与测试优化收尾
+# Desktop 架构优化任务计划
 
-> **更新日期**: 2026-03-16
-> **状态**: 🔄 Sprint 7 已规划，待开始
-> **计划文件**: `~/.claude/plans/compressed-greeting-clover.md`
+**目标**: 修复 WPF Desktop 架构中的不合理之处，提升代码质量和可维护性
+
+**创建时间**: 2026-03-19
+**计划文档**: `docs/plans/2026-03-19-desktop-architecture-optimization-plan.md`
 
 ---
 
-## 当前 Sprint (Sprint 7)
+## 决策记录
 
-### 目标
-整合 03-10 ~ 03-12 期间未完成的工作，完成高优先级任务并清空历史计划。
-
-### Phase 0: 遗留问题修复 (MedicalCase-Registration 关联) ✅
-
-| Task | 描述 | 状态 |
+| 编号 | 决策 | 状态 |
 |------|------|------|
-| 0.1 | MedicalCaseInputDto 添加 RegistrationId | ✅ 已完成 |
-| 0.2 | MedicalCaseCommandService 实现自动回填 | ✅ 已完成 |
-| 0.3 | 添加验证测试 | ✅ 已完成 |
-| 0.4 | 更新 Client 端调用 | ✅ 已完成 |
-
-### Phase 1: 权限矩阵高优先级缺陷修复 (Day 1-3) 🔄
-
-**实施计划**: `docs/plans/2026-03-16-phase1-permission-matrix-fixes-plan.md`
-
-| Task | 问题 | 优先级 | 状态 |
-|------|------|--------|------|
-| 1.1 | D-4 Receptionist 医案可见性 | HIGH | ✅ 已完成 |
-| 1.2 | I-2 "当天可编辑"锁定逻辑 | HIGH | 📝 待开始 |
-| 1.3 | G-9 Registration 回退流程 | HIGH | 📝 待开始 |
-| 1.4 | G-11 医生禁用后挂号处理 | MEDIUM | 📝 待开始 |
-
-### Phase 2: 测试性能优化收尾 (Day 4)
-
-| Task | 描述 | 状态 |
-|------|------|------|
-| 2.1 | 批量迁移 MustHave 测试到 Transactional 模型 | 📝 待开始 |
-| 2.2 | 执行性能基准测试 | 📝 待开始 |
-
-### Phase 3: 验证与文档 (Day 5)
-
-| Task | 描述 | 状态 |
-|------|------|------|
-| 3.1 | 全量测试运行 | 📝 待开始 |
-| 3.2 | 归档当前计划文件 | 📝 待开始 |
+| ARCH-D01 | 抽象 UI 线程调度器，创建 IUiThreadDispatcher | 待执行 |
+| ARCH-D02 | 修复 Models 层依赖方向 | **已取消** (IViewModelServices 已在 Contracts) |
+| ARCH-D03 | 清理 ISessionManager 兼容方法 (注释"兼容性保留"的3个方法) | 待执行 |
+| ARCH-D04 | 清理死代码文件 (ProblemDetails.cs) | 待执行 |
 
 ---
 
-## 已完成并归档
+## Phases
 
-### Desktop 层重构优化 (2026-03-14 ~ 2026-03-15)
+### Phase 1: 抽象 UI 线程调度器 (P0)
+**状态**: pending
+**目标**: 解除 CoreViewModelBase 对 WPF Application.Dispatcher 的直接依赖
 
-- **Phase 1-4 全部完成** - 详见归档: `docs/plans/archive/desktop-refactoring-2026-03-15/`
-- **成果**: 新增 104 个测试，硬编码颜色减少 20%，循环依赖消除
-
----
-
-## 历史计划归档
-
-2026-03-10 ~ 03-12 期间的历史计划已整合到本 Sprint 7。详细历史状态见 `findings.md`。
-
-| 计划文件 | 日期 | 归档状态 | 关键成果 |
-|----------|------|----------|----------|
-| Server Test PRD-Driven | 03-10 | ✅ 已整合 | 6 Domain Fixtures |
-| Permission Matrix Defect | 03-10 | 📝 本 Sprint 实施 | 4个高优先级问题 |
-| Test-Driven Implementation | 03-11 | 📝 本 Sprint 实施 | TDD 验证 |
-| Test Architecture | 03-12 | ✅ 已整合 | Server.Unit 项目 |
-| Integration Test Performance | 03-12 | 📝 本 Sprint 收尾 | 批量迁移 |
+Tasks:
+- [ ] Task 1: 创建 `IUiThreadDispatcher` 接口 (Contracts/Services)
+- [ ] Task 2: 创建 `WpfUiThreadDispatcher` 实现 (Infrastructure/Services)
+- [ ] Task 3: 注册 `IUiThreadDispatcher` 到 DI 容器 (Shell)
+- [ ] Task 4: 更新 `IViewModelServices` 添加 `IUiThreadDispatcher` 属性
+- [ ] Task 5: 重构 `CoreViewModelBase.RunOnUIThread` 委托给接口
+- [ ] Task 6: 添加 `WpfUiThreadDispatcherTests` 单元测试
 
 ---
 
-## References
+### Phase 2: 清理兼容方法 (P1)
+**状态**: pending
+**目标**: 移除 ISessionManager 中3个"兼容性保留"方法（无调用方）
 
-- 归档目录: `docs/plans/archive/desktop-refactoring-2026-03-15/`
-- 历史计划: `docs/plans/`
+Tasks:
+- [ ] Task 7: 确认搜索无调用方后，从接口和实现中删除 SetCurrentUser / SetUserSession / ClearUserSession
+
+---
+
+### Phase 3: 清理死代码 (P2)
+**状态**: pending
+**目标**: 删除无引用的文件和空 XML 节点
+
+Tasks:
+- [ ] Task 8: 删除 ProblemDetails.cs（无引用），清理 Infrastructure.csproj 空 ItemGroup
+- [ ] Task 9: 全量验证（编译 + 测试）
+
+---
+
+## 依赖关系
+
+```
+Task 1 (IUiThreadDispatcher 接口)
+    |
+Task 2 (WpfUiThreadDispatcher 实现)   Task 4 (IViewModelServices 更新)
+    |                                       |
+Task 3 (DI 注册)                       Task 5 (CoreViewModelBase 重构) <- 依赖 Task 3 + 4
+    |
+Task 6 (测试) <- 依赖 Task 2
+
+Task 7, Task 8 (并行，独立任务)
+    |
+Task 9 (全量验证)
+```
+
+---
+
+## 测试策略
+
+每 Phase 完成后执行:
+```bash
+dotnet build LYBT.All.sln
+dotnet test tests/LYBT.Tests.Desktop/
+dotnet test tests/LYBT.Tests.Architecture/
+```
