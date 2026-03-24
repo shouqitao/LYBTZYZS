@@ -407,7 +407,7 @@ public class PatientMasterDetailViewModelTests
         var listItem = CreatePatientListDto();
         var exception = new Exception("Database connection failed");
 
-        _patientRepository.GetByIdAsync(listItem.Id).Returns(Task.FromException<PatientDetailDto>(exception));
+        _patientRepository.GetByIdAsync(listItem.Id).Returns(Task.FromException<PatientDetailDto?>(exception));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);

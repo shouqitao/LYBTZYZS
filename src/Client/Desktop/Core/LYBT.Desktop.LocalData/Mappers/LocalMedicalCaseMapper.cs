@@ -148,6 +148,7 @@ internal partial class LocalMedicalCaseMapper
     [MapperIgnoreTarget(nameof(MedicalCase.LastPrintedAt))]
     [MapperIgnoreTarget(nameof(MedicalCase.PrintCount))]
     [MapperIgnoreTarget(nameof(MedicalCase.IsPrinted))]
+    [MapperIgnoreSource(nameof(MedicalCaseInputDto.RegistrationId))] // 忽略未映射的源属性
     [MapperIgnoreTarget(nameof(MedicalCase.CreatedAt))]
     [MapperIgnoreTarget(nameof(MedicalCase.UpdatedAt))]
     [MapperIgnoreTarget(nameof(MedicalCase.CreatedBy))]

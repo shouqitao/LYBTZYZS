@@ -261,7 +261,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var detailDto = CreateMedicalCaseDetailDto();
         var herbs = new List<HerbListDto> { new() { Id = Guid.NewGuid(), Name = "人参" } };
 
-        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult(detailDto));
+        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult<MedicalCaseDetailDto?>(detailDto));
         _herbSearchProvider.SearchHerbsAsync(string.Empty).Returns(Task.FromResult<IReadOnlyList<HerbListDto>>(herbs));
 
         // Act
@@ -306,7 +306,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var exception = new Exception("Database connection failed");
         var herbs = new List<HerbListDto>();
 
-        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromException<MedicalCaseDetailDto>(exception));
+        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromException<MedicalCaseDetailDto?>(exception));
         _herbSearchProvider.SearchHerbsAsync(string.Empty).Returns(Task.FromResult<IReadOnlyList<HerbListDto>>(herbs));
 
         // Act
@@ -325,7 +325,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var detailDto = CreateMedicalCaseDetailDto();
         var herbs = new List<HerbListDto> { new() { Id = Guid.NewGuid(), Name = "人参" } };
 
-        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult(detailDto));
+        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult<MedicalCaseDetailDto?>(detailDto));
         _herbSearchProvider.SearchHerbsAsync(string.Empty).Returns(Task.FromResult<IReadOnlyList<HerbListDto>>(herbs));
 
         // Act
@@ -348,7 +348,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var allHerbsProperty = sut.GetType().GetProperty("AllHerbs");
         allHerbsProperty?.SetValue(sut, new System.Collections.ObjectModel.ObservableCollection<HerbListDto>(herbs));
 
-        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult(detailDto));
+        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult<MedicalCaseDetailDto?>(detailDto));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);

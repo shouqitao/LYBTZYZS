@@ -25,6 +25,8 @@ internal partial class LocalRegistrationMapper
     [MapperIgnoreSource(nameof(Registration.RowVersion))]
     [MapperIgnoreSource(nameof(Registration.IsDeleted))]
     [MapperIgnoreSource(nameof(Registration.Remark))]
+    [MapperIgnoreSource(nameof(Registration.UpdatedAt))]
+    [MapperIgnoreSource(nameof(Registration.CreatedBy))]
     public partial RegistrationListDto ToListDto(Registration entity);
 
     /// <summary>
