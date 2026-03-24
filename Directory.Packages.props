@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup Label="Core Framework Packages">
     <!-- .NET Core 基础框架包 -->
+    <PackageVersion Include="Autofac" Version="9.1.0" />
     <PackageVersion Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
     <PackageVersion Include="HandyControl" Version="3.5.1" />
@@ -46,7 +47,6 @@
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <!-- OpenSpec: adopt-mapperly-unified-mapping - 编译时映射源生成器 -->
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
-
   </ItemGroup>
   <ItemGroup Label="Web API Packages">
     <!-- ASP.NET Core Web API - 统一到 8.0.x 版本 -->
