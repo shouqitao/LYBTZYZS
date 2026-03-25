@@ -113,6 +113,7 @@ public class RealTestComposition
         _services.AddSingleton<IAuthenticationService, AuthenticationService>();
 
         _services.AddSingleton<IAuthApi>(_ => CreateMockAuthApi());
+        _services.AddSingleton<ILoginCoordinator>(_ => Substitute.For<ILoginCoordinator>());
 
         _services.AddTransient<LoginViewModel>();
     }

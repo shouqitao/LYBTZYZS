@@ -12,7 +12,7 @@ namespace LYBT.Tests.Desktop.Infrastructure;
 /// User Journey 测试夹具
 /// 管理测试生命周期：SQLite InMemory 数据库初始化和清理
 /// </summary>
-public class UserJourneyFixture : IAsyncLifetime
+public class UserJourneyFixture : IAsyncLifetime, IDisposable
 {
     private SqliteConnection? _connection;
     private ServiceProvider? _serviceProvider;
@@ -76,6 +76,14 @@ public class UserJourneyFixture : IAsyncLifetime
         }
 
         _isInitialized = false;
+    }
+
+    /// <summary>
+    /// 同步清理测试夹具
+    /// </summary>
+    public void Dispose()
+    {
+        DisposeAsync().GetAwaiter().GetResult();
     }
 
     /// <summary>

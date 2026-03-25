@@ -5,10 +5,12 @@ using FluentAssertions;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Tests.Desktop.Integration.Fixtures;
+using LYBT.Tests.Desktop._Infrastructure;
 using Xunit;
 
 namespace LYBT.Tests.Desktop.Integration.Flows;
 
+[IntegrationTest]
 [Collection("WebApiIntegration")]
 public class AuthenticationFlowTests : IDisposable
 {

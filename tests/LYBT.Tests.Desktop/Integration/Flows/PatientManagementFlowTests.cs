@@ -5,11 +5,13 @@ using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Desktop.Integration.Fixtures;
+using LYBT.Tests.Desktop._Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace LYBT.Tests.Desktop.Integration.Flows;
 
+[IntegrationTest]
 [Collection("WebApiIntegration")]
 public class PatientManagementFlowTests : IDisposable
 {

@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Security;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,7 +24,8 @@ namespace LYBT.Tests.Desktop.Integration.Fixtures;
 /// 
 /// 设计决策：
 /// - 使用 WebApplicationFactory 启动真实 WebApi
-/// - 替换 SQL Server 为 SQLite In-Memory 数据库
+/// - 使用 SQL Server LocalDB（与生产环境一致）
+/// - 每个测试运行独立数据库，自动清理
 /// - 预置测试用户 (test_doctor / password123)
 /// - 实现 IAsyncLifetime 接口进行资源管理
 /// - 提供 HttpClient 和 IServiceProvider 访问
@@ -36,7 +37,9 @@ public class WebApiFixture : IAsyncLifetime
     /// </summary>
     private static readonly SemaphoreSlim InitGate = new(1, 1);
 
-    private SqliteConnection? _sqliteConnection;
+    private readonly string _databaseName;
+    private readonly string _masterConnectionString;
+    private readonly string _testConnectionString;
 
     /// <summary>
     /// WebApplicationFactory 实例
@@ -69,11 +72,17 @@ public class WebApiFixture : IAsyncLifetime
         Converters = { new JsonStringEnumConverter() }
     };
 
+    public WebApiFixture()
+    {
+        _databaseName = $"LYBT_Test_{Guid.NewGuid():N}";
+        _masterConnectionString = "Server=(localdb)\\MSSQLLocalDB;Database=master;Trusted_Connection=True;";
+        _testConnectionString = $"Server=(localdb)\\MSSQLLocalDB;Database={_databaseName};Trusted_Connection=True;Encrypt=False;";
+    }
+
     public async Task InitializeAsync()
     {
-        // 1. 创建 SQLite In-Memory 连接（保持打开状态以维持数据库）
-        _sqliteConnection = new SqliteConnection("DataSource=:memory:");
-        await _sqliteConnection.OpenAsync();
+        // 1. 创建测试数据库
+        await CreateDatabaseAsync();
 
         // 2. 序列化 WebApplicationFactory 创建
         await InitGate.WaitAsync();
@@ -84,29 +93,12 @@ public class WebApiFixture : IAsyncLifetime
                 {
                     builder.UseEnvironment("Test");
 
-                    // 注入 SQLite 连接字符串
                     builder.UseSetting(
                         "ConnectionStrings:DefaultConnection",
-                        _sqliteConnection.ConnectionString);
+                        _testConnectionString);
 
                     builder.ConfigureServices(services =>
                     {
-                        // 移除现有的 DbContext 注册
-                        var descriptor = services.SingleOrDefault(
-                            d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
-                        if (descriptor != null)
-                        {
-                            services.Remove(descriptor);
-                        }
-
-                        // 注册 SQLite DbContext
-                        services.AddDbContext<AppDbContext>(options =>
-                        {
-                            options.UseSqlite(_sqliteConnection);
-                            options.EnableSensitiveDataLogging(false);
-                            options.EnableDetailedErrors(true);
-                        });
-
                         // 移除后台服务避免干扰
                         RemoveHostedServices(services);
                     });
@@ -136,11 +128,7 @@ public class WebApiFixture : IAsyncLifetime
             await Factory.DisposeAsync();
         }
 
-        if (_sqliteConnection != null)
-        {
-            await _sqliteConnection.CloseAsync();
-            await _sqliteConnection.DisposeAsync();
-        }
+        await DropDatabaseAsync();
     }
 
     /// <summary>
@@ -237,6 +225,28 @@ public class WebApiFixture : IAsyncLifetime
         await db.Database.MigrateAsync();
     }
 
+    private async Task CreateDatabaseAsync()
+    {
+        using var conn = new SqlConnection(_masterConnectionString);
+        await conn.OpenAsync();
+        using var cmd = new SqlCommand($"CREATE DATABASE [{_databaseName}]", conn);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    private async Task DropDatabaseAsync()
+    {
+        try
+        {
+            using var conn = new SqlConnection(_masterConnectionString);
+            await conn.OpenAsync();
+            using var cmd = new SqlCommand($@"
+                ALTER DATABASE [{_databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                DROP DATABASE [{_databaseName}];", conn);
+            await cmd.ExecuteNonQueryAsync();
+        }
+        catch { }
+    }
+
     /// <summary>
     /// 预置测试数据
     /// </summary>
@@ -244,6 +254,11 @@ public class WebApiFixture : IAsyncLifetime
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        // 清除现有用户数据，避免主键冲突
+        var existingUsers = await db.Set<User>().IgnoreQueryFilters().ToListAsync();
+        db.Set<User>().RemoveRange(existingUsers);
+        await db.SaveChangesAsync();
 
         var now = DateTime.UtcNow;
 

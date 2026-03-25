@@ -370,7 +370,7 @@ public class PatientMasterDetailViewModelTests
         // Arrange
         var sut = CreateSut();
         var listItem = CreatePatientListDto();
-        var detailDto = CreatePatientDetailDto();
+        PatientDetailDto detailDto = CreatePatientDetailDto();
 
         _patientRepository.GetByIdAsync(listItem.Id).Returns(Task.FromResult<PatientDetailDto?>(detailDto));
 
@@ -407,7 +407,7 @@ public class PatientMasterDetailViewModelTests
         var listItem = CreatePatientListDto();
         var exception = new Exception("Database connection failed");
 
-        _patientRepository.GetByIdAsync(listItem.Id).Returns(Task.FromException<PatientDetailDto>(exception));
+        _patientRepository.GetByIdAsync(listItem.Id).Returns(Task.FromException<PatientDetailDto?>(exception));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
@@ -422,7 +422,7 @@ public class PatientMasterDetailViewModelTests
         // Arrange
         var sut = CreateSut();
         var listItem = CreatePatientListDto();
-        var detailDto = CreatePatientDetailDto();
+        PatientDetailDto detailDto = CreatePatientDetailDto();
         detailDto.PinYinCode = null;
         detailDto.Name = "张三";
 
