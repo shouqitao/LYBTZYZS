@@ -24,6 +24,8 @@
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
     <ProjectReference Include="..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
     <ProjectReference Include="..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
+    <ProjectReference Include="..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
   </ItemGroup>
 
 </Project>

@@ -100,7 +100,7 @@ namespace LYBT.WebAPI.Controllers
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, guid => _herbService.GetByIdAsync(guid, cancellationToken), "药材");
             if (ownershipError != null) return ownershipError;
 
             dto.Id = id;
@@ -125,7 +125,7 @@ namespace LYBT.WebAPI.Controllers
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, guid => _herbService.GetByIdAsync(guid, cancellationToken), "药材");
             if (ownershipError != null) return ownershipError;
 
             var result = await _herbService.DeleteAsync(id, cancellationToken);
@@ -347,7 +347,7 @@ namespace LYBT.WebAPI.Controllers
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, guid => _herbService.GetByIdAsync(guid, cancellationToken), "药材");
             if (ownershipError != null) return ownershipError;
 
             var result = await _herbService.ToggleStatusAsync(id, cancellationToken);
@@ -417,7 +417,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-disable")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)

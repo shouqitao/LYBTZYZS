@@ -120,8 +120,8 @@ namespace LYBT.WebAPI.Controllers
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法（DTO版本）
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
-                id, _service.GetByIdAsync, "患者");
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<PatientDetailDto>(
+                id, guid => _service.GetByIdAsync(guid), "患者");
             if (ownershipError != null) return ownershipError;
 
             var entityResult = await _service.UpdateEntityAsync(id, dto);
@@ -152,8 +152,8 @@ namespace LYBT.WebAPI.Controllers
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法（DTO版本）
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
-                id, _service.GetByIdAsync, "患者");
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<PatientDetailDto>(
+                id, guid => _service.GetByIdAsync(guid), "患者");
             if (ownershipError != null) return ownershipError;
 
             var result = await _service.DeleteAsync(id);
@@ -264,7 +264,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "患者");
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<PatientDetailDto>(id, guid => _service.GetByIdAsync(guid), "患者");
             if (ownershipError != null) return ownershipError;
 
             var result = await _service.ToggleStatusAsync(id);

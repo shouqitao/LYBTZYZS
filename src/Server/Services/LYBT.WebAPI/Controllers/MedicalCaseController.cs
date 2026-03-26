@@ -24,6 +24,7 @@ namespace LYBT.WebAPI.Controllers
     /// optimize-api-permissions: 医案管理需Doctor或Admin角色
     /// 资源级授权由Service层 IMedicalCasePermissionService 实现
     [Obsolete("This controller is deprecated. Use the new split controllers: MedicalCasesController, MedicalCaseWorkflowController, MedicalCasePrintController, MedicalCaseAuditController")]
+    [NonController]
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/medicalcases")]
