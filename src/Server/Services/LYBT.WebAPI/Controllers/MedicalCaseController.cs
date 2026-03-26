@@ -1,5 +1,4 @@
-using Asp.Versioning;
-using LYBT.Entities.MedicalCases;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -156,7 +155,7 @@ namespace LYBT.WebAPI.Controllers
     {
         /// <summary>打印类型</summary>
         public PrintType PrintType { get; set; }
-        
+
         /// <summary>打印机名称</summary>
         public string? PrinterName { get; set; }
     }

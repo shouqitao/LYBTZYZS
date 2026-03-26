@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -41,7 +41,7 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("Login")]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
-        public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
+        public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateModel() is { } modelError) return modelError;
@@ -55,8 +55,7 @@ namespace LYBT.WebAPI.Controllers
             if (string.IsNullOrWhiteSpace(request.Password))
                 return ValidationFail("密码不能为空");
 
-            var result = await _authService.LoginAsync(request);
-            // Issue #1864: 使用HandleAuthResult根据ErrorCode返回正确HTTP状态码
+            var result = await _authService.LoginAsync(request, cancellationToken);
             return HandleAuthResult(result, "登录成功");
         }
 
@@ -76,7 +75,7 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("Login")]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
-        public async Task<IActionResult> AutoLoginAsync([FromBody] AutoLoginRequest request)
+        public async Task<IActionResult> AutoLoginAsync([FromBody] AutoLoginRequest request, CancellationToken cancellationToken = default)
         {
             if (ValidateModel() is { } modelError) return modelError;
 
@@ -89,19 +88,17 @@ namespace LYBT.WebAPI.Controllers
             if (string.IsNullOrWhiteSpace(request.AutoLoginToken))
                 return ValidationFail("AutoLoginToken不能为空");
 
-            var result = await _authService.LoginWithAutoTokenAsync(request);
+            var result = await _authService.LoginWithAutoTokenAsync(request, cancellationToken);
             return HandleAuthResult(result, "自动登录成功");
         }
 
         /// <summary>
         /// 用户登出
-        /// Issue #1864 AUTH-008: 允许过期Token登出，确保服务端会话被正确清理
-        /// Issue #1864 AUTH-009: Logout后必须重新登录，不支持会话恢复
         /// </summary>
         [HttpPost("logout")]
-        [AllowAnonymous] // Issue #1864: 允许过期Token访问登出端点
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse), 200)]
-        public async Task<IActionResult> LogoutAsync([FromBody] LogoutRequest request)
+        public async Task<IActionResult> LogoutAsync([FromBody] LogoutRequest request, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateModel() is { } modelError) return modelError;
@@ -109,12 +106,10 @@ namespace LYBT.WebAPI.Controllers
             if (request == null)
                 return ValidationFail("登出请求不能为空");
 
-            // Issue #1864: 登出请求必须提供RefreshToken或用户名
-            // RefreshToken用于精确定位会话，用户名用于审计日志
             if (string.IsNullOrWhiteSpace(request.RefreshToken) && string.IsNullOrWhiteSpace(request.UserName))
                 return ValidationFail("必须提供RefreshToken或用户名");
 
-            var result = await _authService.LogoutAsync(request);
+            var result = await _authService.LogoutAsync(request, cancellationToken);
             return HandleBoolResult(result, "登出成功");
         }
 
@@ -125,7 +120,7 @@ namespace LYBT.WebAPI.Controllers
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
-        public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequest request)
+        public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateModel() is { } modelError) return modelError;
@@ -136,9 +131,7 @@ namespace LYBT.WebAPI.Controllers
             if (string.IsNullOrWhiteSpace(request.RefreshToken))
                 return ValidationFail("RefreshToken不能为空");
 
-            var result = await _authService.RefreshTokenAsync(request.RefreshToken);
-            // Issue #1864: 使用HandleAuthResult根据ErrorCode返回正确HTTP状态码
-            // TokenRevoked/RefreshTokenExpired/RefreshTokenInvalid -> 401
+            var result = await _authService.RefreshTokenAsync(request.RefreshToken, cancellationToken);
             return HandleAuthResult(result, "Token刷新成功");
         }
 
@@ -148,7 +141,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
-        public async Task<IActionResult> ValidateTokenFromHeaderAsync()
+        public async Task<IActionResult> ValidateTokenFromHeaderAsync(CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var authHeader = Request.Headers.Authorization.FirstOrDefault();
@@ -168,11 +161,11 @@ namespace LYBT.WebAPI.Controllers
                 return Unauthorized(new { valid = false, message = "Missing token in Authorization header", errorCode = "TokenInvalid" });
             }
 
-            var result = await _authService.ValidateTokenAsync(token);
+            var result = await _authService.ValidateTokenAsync(token, cancellationToken);
 
             if (result.IsSuccess && result.Data == true)
             {
-                var sessionInfo = await _authService.GetSessionInfoAsync(token);
+                var sessionInfo = await _authService.GetSessionInfoAsync(token, cancellationToken);
                 object response = new
                 {
                     valid = true,
@@ -183,7 +176,6 @@ namespace LYBT.WebAPI.Controllers
             }
             else
             {
-                // Sprint3-Batch3: 使用统一 ModuleErrorCode
                 var errorCode = result.ModuleErrorCode?.ToFormattedString() ?? "ERR-10202";
                 return Unauthorized(new { valid = false, message = result.ErrorMessage ?? "Token is invalid", errorCode });
             }

@@ -1,5 +1,4 @@
-using Asp.Versioning;
-using LYBT.Entities.MedicalCases;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -46,12 +45,13 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
         public async Task<IActionResult> SetPrescriptionFlag(
             Guid id,
-            [FromBody] SetPrescriptionFlagRequest request)
+            [FromBody] SetPrescriptionFlagRequest request,
+            CancellationToken cancellationToken = default)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _facade.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
+            var result = await _facade.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin, cancellationToken);
             if (result == null)
             {
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
@@ -72,12 +72,13 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         public async Task<IActionResult> RecordPrintCompleted(
             Guid id,
-            [FromBody] PrintCompletedRequest request)
+            [FromBody] PrintCompletedRequest request,
+            CancellationToken cancellationToken = default)
         {
             var (operatorId, operatorName, _) = GetOperator();
 
             var result = await _facade.RecordPrintCompletedAsync(
-                id, request.PrintType, operatorId, operatorName, request.PrinterName);
+                id, request.PrintType, operatorId, operatorName, request.PrinterName, cancellationToken);
 
             if (result == null)
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
@@ -98,14 +99,16 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> AddPrintLog(
             Guid id,
-            [FromBody] PrintLogInputDto request)
+            [FromBody] PrintLogInputDto request,
+            CancellationToken cancellationToken = default)
         {
             var (operatorId, operatorName, _) = GetOperator();
 
             var result = await _facade.AddPrintLogAsync(
                 id, request.PrintType, request.IsSuccess,
                 operatorId, operatorName,
-                request.PrinterName, request.ErrorMessage);
+                request.PrinterName, request.ErrorMessage,
+                cancellationToken);
 
             if (!result)
                 return NotFound(ApiResponse<object>.CreateFail("医案不存在"));

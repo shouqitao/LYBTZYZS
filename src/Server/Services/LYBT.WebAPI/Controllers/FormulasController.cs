@@ -26,7 +26,7 @@ namespace LYBT.WebAPI.Controllers
         private readonly IFormulaImportExportService _importExportService;
 
         public FormulasController(
-            IFormulaService service, 
+            IFormulaService service,
             IFormulaImportExportService importExportService,
             ILogger<FormulasController> logger)
             : base(logger)
@@ -36,7 +36,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取验方列表 - 支持分页和查询（Issue #1164: 扩展支持分类筛选）
+        /// 获取验方列表 - 支持分页和查询
         /// optimize-api-permissions: 添加角色过滤，Doctor只能看到自己的和共享的验方
         /// </summary>
         [HttpGet]
@@ -152,7 +152,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 批量导入验方数据 (Issue #1166, #1758)
+        /// 批量导入验方数据
         /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
         /// OpenSpec: standardize-api-naming - REQ-API-002 批量操作URL模式
         /// </summary>
@@ -182,7 +182,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 导出验方数据到Excel (Issue #1166)
+        /// 导出验方数据到Excel
         /// </summary>
         [HttpGet("export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
@@ -204,7 +204,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 下载验方导入模板 (Issue #1166)
+        /// 下载验方导入模板
         /// </summary>
         [HttpGet("import-template")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
@@ -222,7 +222,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取待校验的验方列表 (Issue #1349)
+        /// 获取待校验的验方列表
         /// </summary>
         [HttpGet("pending-validation")]
         [ProducesResponseType(typeof(ApiResponse<List<FormulaDetailDto>>), 200)]
@@ -240,7 +240,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
+        /// 验证验方药材 - 手动绑定药材到系统药材库
         /// </summary>
         [HttpPost("{formulaId}/herbs/{herbItemId}/validate")]
         [ProducesResponseType(typeof(ApiResponse), 200)]

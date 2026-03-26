@@ -32,7 +32,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取药材分页列表（Issue #1164: 扩展支持分类筛选）
+        /// 获取药材分页列表
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "HerbsCache")]
@@ -141,7 +141,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 批量导入药材数据 (Issue #1166)
+        /// 批量导入药材数据
         /// </summary>
         [HttpPost("import")]
         [RequestSizeLimit(10 * 1024 * 1024)]
@@ -181,7 +181,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 导出药材数据到Excel (Issue #1166)
+        /// 导出药材数据到Excel
         /// </summary>
         [HttpGet("export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
@@ -202,7 +202,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 下载药材导入模板 (Issue #1166)
+        /// 下载药材导入模板
         /// </summary>
         [HttpGet("import-template")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
@@ -218,7 +218,7 @@ namespace LYBT.WebAPI.Controllers
                 fileName);
         }
 
-        // ========== Epic #1962: 批量导入/导出和引用检查端点 ==========
+        // ========== 批量导入/导出和引用检查端点 ==========
 
         /// <summary>
         /// 批量导入药材数据
@@ -243,7 +243,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (result.IsSuccess && result.Data != null)
             {
-                LogOperation("批量导入药材（Epic #1962）",
+                LogOperation("批量导入药材",
                     new
                     {
                         TotalCount = result.Data.TotalCount,
@@ -270,7 +270,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (result.IsSuccess && result.Data != null)
             {
-                LogOperation("导出药材数据（Epic #1962）",
+                LogOperation("导出药材数据",
                     new { Category = category, Count = result.Data.Count },
                     null);
             }
@@ -321,7 +321,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (result.IsSuccess && result.Data != null)
             {
-                LogOperation("批量检查药材引用（Epic #1962）",
+                LogOperation("批量检查药材引用",
                     new { Count = result.Data.Count },
                     null);
             }

@@ -1,5 +1,4 @@
-using Asp.Versioning;
-using LYBT.Entities.MedicalCases;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -46,14 +45,15 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
         public async Task<IActionResult> UpdateStatus(
             Guid id,
-            [FromBody] UpdateStatusRequest request)
+            [FromBody] UpdateStatusRequest request,
+            CancellationToken cancellationToken = default)
         {
             // Completed 状态通过 CompleteAsync 统一入口处理
             if (request.Status == MedicalCaseStatus.Completed)
             {
                 var (operatorId, _, operatorRole) = GetOperator();
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-                var completeResult = await _facade.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: false);
+                var completeResult = await _facade.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: false, cancellationToken);
                 if (completeResult == null)
                     return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
 
@@ -61,7 +61,7 @@ namespace LYBT.WebAPI.Controllers
                 return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(completeDto, "医案已完成"));
             }
 
-            var result = await _facade.UpdateStatusAsync(id, request.Status);
+            var result = await _facade.UpdateStatusAsync(id, request.Status, cancellationToken);
 
             if (result == null)
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
@@ -79,11 +79,11 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id}/close")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
-        public async Task<IActionResult> CloseMedicalCase(Guid id)
+        public async Task<IActionResult> CloseMedicalCase(Guid id, CancellationToken cancellationToken = default)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-            var result = await _facade.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: true);
+            var result = await _facade.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: true, cancellationToken);
 
             if (result == null)
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
@@ -104,12 +104,13 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
         public async Task<IActionResult> Suspend(
             Guid id,
-            [FromBody] ConsultationInputDto? request = null)
+            [FromBody] ConsultationInputDto? request = null,
+            CancellationToken cancellationToken = default)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _facade.SuspendAsync(id, request, operatorId, isAdmin);
+            var result = await _facade.SuspendAsync(id, request, operatorId, isAdmin, cancellationToken);
             if (result == null)
             {
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
@@ -130,12 +131,13 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 403)]
         public async Task<IActionResult> CancelMedicalCase(
             Guid id,
-            [FromBody] CancelMedicalCaseRequest? request = null)
+            [FromBody] CancelMedicalCaseRequest? request = null,
+            CancellationToken cancellationToken = default)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _facade.CancelAsync(id, operatorId, isAdmin, request?.Reason);
+            var result = await _facade.CancelAsync(id, operatorId, isAdmin, request?.Reason, cancellationToken);
             if (result == null)
             {
                 return NotFound(ApiResponse.CreateFail("医案不存在"));

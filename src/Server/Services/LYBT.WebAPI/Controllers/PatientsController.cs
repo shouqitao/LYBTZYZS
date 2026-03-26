@@ -1,8 +1,8 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Patients.Mapping;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -16,7 +16,6 @@ namespace LYBT.WebAPI.Controllers
     /// 患者管理 API - 基础CRUD功能
     /// </summary>
     /// optimize-api-permissions: 患者管理需Doctor或Admin角色
-    /// T5-P2-30: 扩展为PatientAccess策略，包含Receptionist
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
@@ -41,7 +40,8 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            [FromQuery] string? keyword = null)
+            [FromQuery] string? keyword = null,
+            CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (page <= 0 || pageSize <= 0 || pageSize > 100)
@@ -53,7 +53,7 @@ namespace LYBT.WebAPI.Controllers
             var isAdmin = User?.IsInRole(RoleConstants.Admin) == true || User?.IsInRole(RoleConstants.SuperAdmin) == true;
             var filterDisabled = !isAdmin;
 
-            var result = await _service.GetPagedAsync(page, pageSize, keyword, filterDisabled);
+            var result = await _service.GetPagedAsync(page, pageSize, keyword, filterDisabled, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "查询失败");
@@ -67,12 +67,12 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "患者ID") is { } error) return error;
 
-            var entityResult = await _service.GetByIdEntityAsync(id);
+            var entityResult = await _service.GetByIdEntityAsync(id, cancellationToken);
             if (!entityResult.IsSuccess || entityResult.Data == null)
             {
                 return NotFound(entityResult.ErrorMessage ?? "患者不存在");
@@ -91,10 +91,10 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
+        public async Task<IActionResult> Create([FromBody] PatientInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var entityResult = await _service.CreateEntityAsync(dto);
+            var entityResult = await _service.CreateEntityAsync(dto, cancellationToken);
             if (!entityResult.IsSuccess || entityResult.Data == null)
             {
                 return ValidationFail(entityResult.ErrorMessage ?? "新增患者失败");
@@ -116,7 +116,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法（DTO版本）
@@ -124,7 +124,7 @@ namespace LYBT.WebAPI.Controllers
                 id, _service.GetByIdAsync, "患者");
             if (ownershipError != null) return ownershipError;
 
-            var entityResult = await _service.UpdateEntityAsync(id, dto);
+            var entityResult = await _service.UpdateEntityAsync(id, dto, cancellationToken);
             if (!entityResult.IsSuccess || entityResult.Data == null)
             {
                 if (entityResult.ErrorMessage?.Contains("不存在") == true)
@@ -148,7 +148,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法（DTO版本）
@@ -156,7 +156,7 @@ namespace LYBT.WebAPI.Controllers
                 id, _service.GetByIdAsync, "患者");
             if (ownershipError != null) return ownershipError;
 
-            var result = await _service.DeleteAsync(id);
+            var result = await _service.DeleteAsync(id, cancellationToken);
             if (!result.IsSuccess)
             {
                 // X7: 区分引用阻塞(422)和不存在(404)
@@ -176,7 +176,7 @@ namespace LYBT.WebAPI.Controllers
         [RequestSizeLimit(10 * 1024 * 1024)]
         [ProducesResponseType(typeof(ApiResponse<PatientBatchImportResultDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PatientBatchImportResultDto>), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Import(IFormFile file)
+        public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (file == null || file.Length == 0)
@@ -196,7 +196,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             using var stream = file.OpenReadStream();
-            var result = await _service.BatchImportAsync(stream, file.FileName);
+            var result = await _service.BatchImportAsync(stream, file.FileName, cancellationToken);
 
             if (!result.IsSuccess || result.Data == null)
             {
@@ -216,7 +216,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("import-template")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        public async Task<IActionResult> ExportTemplate()
+        public async Task<IActionResult> ExportTemplate(CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var config = new ExportTemplateDto
@@ -224,7 +224,7 @@ namespace LYBT.WebAPI.Controllers
                 IncludeSampleData = true,
                 SampleRowCount = 3
             };
-            var stream = await _service.ExportTemplateAsync(config);
+            var stream = await _service.ExportTemplateAsync(config, cancellationToken);
             var fileName = $"患者导入模板_{DateTime.Now:yyyyMMdd}.xlsx";
 
             return File(stream,
@@ -238,10 +238,10 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        public async Task<IActionResult> ExportPatients([FromQuery] string? keyword = null)
+        public async Task<IActionResult> ExportPatients([FromQuery] string? keyword = null, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var stream = await _service.ExportPatientsAsync(keyword);
+            var stream = await _service.ExportPatientsAsync(keyword, cancellationToken);
             var fileName = string.IsNullOrWhiteSpace(keyword)
                 ? $"患者数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
                 : $"患者数据_{keyword}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
@@ -262,12 +262,12 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> ToggleStatus(Guid id)
+        public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken cancellationToken = default)
         {
             var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "患者");
             if (ownershipError != null) return ownershipError;
 
-            var result = await _service.ToggleStatusAsync(id);
+            var result = await _service.ToggleStatusAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "状态切换失败");
@@ -284,7 +284,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Restore(Guid id)
+        public async Task<IActionResult> Restore(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "患者ID") is { } error) return error;
@@ -292,7 +292,7 @@ namespace LYBT.WebAPI.Controllers
             // 注: Restore不能使用GetEntityWithOwnershipCheckAsync，因为GetByIdAsync
             // 受全局软删除过滤器影响无法找到已删除记录。
             // RestoreAsync内部使用GetByIdIncludingDeletedAsync绕过过滤器。
-            var result = await _service.RestoreAsync(id);
+            var result = await _service.RestoreAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "恢复失败");
@@ -310,7 +310,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-delete")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -318,7 +318,7 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("请至少选择一个患者");
             }
 
-            var result = await _service.BatchDeleteAsync(dto.Ids);
+            var result = await _service.BatchDeleteAsync(dto.Ids, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "批量删除失败");
@@ -335,11 +335,11 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id}/check-reference")]
         [ProducesResponseType(typeof(ApiResponse<PatientReferenceCheckDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> CheckReference(Guid id)
+        public async Task<IActionResult> CheckReference(Guid id, CancellationToken cancellationToken = default)
         {
             if (ValidateGuid(id, "患者ID") is { } error) return error;
 
-            var result = await _service.CheckReferenceAsync(id);
+            var result = await _service.CheckReferenceAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "引用检查失败");
@@ -354,7 +354,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-check-reference")]
         [ProducesResponseType(typeof(ApiResponse<List<PatientReferenceCheckDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto request)
+        public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto request, CancellationToken cancellationToken = default)
         {
             if (request.PatientIds == null || request.PatientIds.Count == 0)
             {
@@ -366,7 +366,7 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("批量检查最多支持100条记录");
             }
 
-            var result = await _service.BatchCheckReferenceAsync(request.PatientIds);
+            var result = await _service.BatchCheckReferenceAsync(request.PatientIds, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "批量引用检查失败");

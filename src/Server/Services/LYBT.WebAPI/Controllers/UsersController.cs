@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Users.Interfaces;
@@ -44,14 +44,15 @@ namespace LYBT.WebAPI.Controllers
             int pageSize = 20,
             string? keyword = null,
             UserRole? role = null,
-            CommonStatus? status = null)
+            CommonStatus? status = null,
+            CancellationToken cancellationToken = default)
         {
             if (page < 1)
                 return ValidationFail("页码必须大于0");
             if (pageSize < 1 || pageSize > 100)
                 return ValidationFail("每页数量必须在1-100之间");
 
-            var result = await _userService.GetPagedAsync(page, pageSize, keyword, role, status);
+            var result = await _userService.GetPagedAsync(page, pageSize, keyword, role, status, cancellationToken);
             return SuccessPaged(result.Data!, "查询成功");
         }
 
@@ -61,7 +62,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("current")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(401)]
-        public async Task<IActionResult> GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -93,7 +94,7 @@ namespace LYBT.WebAPI.Controllers
                 }
             }
 
-            var result = await _userService.GetByIdAsync(userId);
+            var result = await _userService.GetByIdAsync(userId, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return NotFound(result.ErrorMessage ?? "用户不存在");
@@ -108,12 +109,12 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.GetByIdAsync(id);
+            var result = await _userService.GetByIdAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return NotFound(result.ErrorMessage ?? "用户不存在");
@@ -128,10 +129,10 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Create([FromBody] UserInputDto dto)
+        public async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var result = await _userService.CreateAsync(dto);
+            var result = await _userService.CreateAsync(dto, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -151,12 +152,12 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.UpdateAsync(id, dto);
+            var result = await _userService.UpdateAsync(id, dto, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -174,12 +175,12 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.DeleteAsync(id);
+            var result = await _userService.DeleteAsync(id, cancellationToken);
 
             if (result.IsSuccess)
             {
@@ -197,12 +198,12 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.SuperAdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request)
+        public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.ResetPasswordAsync(id, request);
+            var result = await _userService.ResetPasswordAsync(id, request, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -220,12 +221,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto)
+        public async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.ChangeProfileAsync(id, dto);
+            var result = await _userService.ChangeProfileAsync(id, dto, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -243,12 +244,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> ChangePassword(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request)
+        public async Task<IActionResult> ChangePassword(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword);
+            var result = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword, cancellationToken);
 
             if (result.IsSuccess)
             {
@@ -268,12 +269,12 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> ToggleStatus(Guid id)
+        public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.ToggleStatusAsync(id);
+            var result = await _userService.ToggleStatusAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "状态切换失败");
@@ -290,12 +291,12 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.SuperAdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Restore(Guid id)
+        public async Task<IActionResult> Restore(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.RestoreAsync(id);
+            var result = await _userService.RestoreAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "恢复失败");
@@ -315,7 +316,7 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -331,7 +332,7 @@ namespace LYBT.WebAPI.Controllers
                 currentUserId = parsedId;
             }
 
-            var result = await _userService.BatchDeleteAsync(dto.Ids, currentUserId);
+            var result = await _userService.BatchDeleteAsync(dto.Ids, currentUserId, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "批量删除失败");
@@ -349,7 +350,7 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -364,7 +365,7 @@ namespace LYBT.WebAPI.Controllers
                 currentUserId = parsedId;
             }
 
-            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled, currentUserId);
+            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled, currentUserId, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "批量启用失败");
@@ -381,7 +382,7 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -396,7 +397,7 @@ namespace LYBT.WebAPI.Controllers
                 currentUserId = parsedId;
             }
 
-            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled, currentUserId);
+            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled, currentUserId, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
