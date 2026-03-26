@@ -18,13 +18,15 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="printedBy">打印人ID</param>
         /// <param name="printedByName">打印人姓名</param>
         /// <param name="printerName">打印机名称</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>更新后的医案实体</returns>
         Task<MedicalCase?> RecordPrintCompletedAsync(
             Guid medicalCaseId,
             LYBT.Shared.Models.Enums.PrintType printType,
             Guid printedBy,
             string printedByName,
-            string? printerName = null);
+            string? printerName = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 添加打印日志（支持成功/失败记录）
@@ -37,6 +39,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="printedByName">打印人姓名</param>
         /// <param name="printerName">打印机名称</param>
         /// <param name="errorMessage">错误信息（失败时）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>是否记录成功</returns>
         Task<bool> AddPrintLogAsync(
             Guid medicalCaseId,
@@ -45,6 +48,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
             Guid printedBy,
             string printedByName,
             string? printerName = null,
-            string? errorMessage = null);
+            string? errorMessage = null,
+            CancellationToken cancellationToken = default);
     }
 }

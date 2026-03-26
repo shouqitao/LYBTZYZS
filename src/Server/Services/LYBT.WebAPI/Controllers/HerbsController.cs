@@ -22,13 +22,16 @@ namespace LYBT.WebAPI.Controllers
     public class HerbsController : BaseApiController
     {
         private readonly IHerbService _herbService;
+        private readonly IOutputCacheStore _outputCacheStore;
 
         public HerbsController(
             IHerbService herbService,
+            IOutputCacheStore outputCacheStore,
             ILogger<HerbsController> logger)
             : base(logger)
         {
             _herbService = herbService;
+            _outputCacheStore = outputCacheStore;
         }
 
         /// <summary>
@@ -76,12 +79,13 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
-        public async Task<IActionResult> Create([FromBody] HerbInputDto dto)
+        public async Task<IActionResult> Create([FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var result = await _herbService.CreateAsync(dto);
             if (result.IsSuccess && result.Data != null)
             {
+                await _outputCacheStore.EvictByTagAsync("herbs", cancellationToken);
                 LogOperation("创建药材", result.Data, result.Data.Id);
                 return Success(result.Data, "药材创建成功");
             }
@@ -95,7 +99,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
@@ -107,6 +111,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _herbService.UpdateAsync(id, dto);
             if (result.IsSuccess && result.Data != null)
             {
+                await _outputCacheStore.EvictByTagAsync("herbs", cancellationToken);
                 LogOperation("更新药材信息", result.Data, id);
                 return Success(result.Data, "药材信息更新成功");
             }
@@ -120,7 +125,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
@@ -136,6 +141,8 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound(result.ErrorMessage ?? "药材不存在");
             }
 
+            await _outputCacheStore.EvictByTagAsync("herbs", cancellationToken);
+            await _outputCacheStore.EvictByTagAsync("herbs", cancellationToken);
             LogOperation("删除药材", null, id);
             return Success("删除成功");
         }
@@ -342,7 +349,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> ToggleStatus(Guid id)
+        public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
@@ -355,6 +362,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "状态切换失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("herbs", cancellationToken);
             LogOperation("切换药材状态", new { NewStatus = result.Data.Status }, id);
             return Success(result.Data, $"药材已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
@@ -366,7 +374,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Restore(Guid id)
+        public async Task<IActionResult> Restore(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "药材ID") is { } error) return error;
@@ -380,6 +388,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "恢复失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("herbs", cancellationToken);
             LogOperation("恢复药材", null, id);
             return Success(result.Data, "药材已恢复");
         }
@@ -392,7 +401,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-enable")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -406,6 +415,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "批量启用失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("herbs", cancellationToken);
             LogOperation("批量启用药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }
@@ -416,7 +426,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-disable")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -430,6 +440,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("herbs", cancellationToken);
             LogOperation("批量禁用药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }
@@ -437,7 +448,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-delete")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -451,6 +462,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "批量删除失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("herbs", cancellationToken);
             LogOperation("批量删除药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }

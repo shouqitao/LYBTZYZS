@@ -18,8 +18,9 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 根据ID获取医案详情
         /// </summary>
         /// <param name="id">医案ID</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>医案实体（包含完整关联数据）</returns>
-        Task<MedicalCase?> GetByIdAsync(Guid id);
+        Task<MedicalCase?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 查询医案列表（分页）
@@ -31,6 +32,8 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="pageSize">每页大小</param>
         /// <param name="currentDoctorId">当前用户ID（用于角色过滤）</param>
         /// <param name="isAdmin">是否为管理员</param>
+        /// <param name="keyword">搜索关键词</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>分页结果</returns>
         Task<PagedResult<MedicalCase>> GetListAsync(
             MedicalCaseStatus? status,
@@ -39,12 +42,14 @@ namespace LYBT.Module.MedicalCases.Interfaces
             int pageSize,
             Guid? currentDoctorId = null,
             bool isAdmin = false,
-            string? keyword = null);
+            string? keyword = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 查询医案列表（分页，返回MedicalCaseListDto，用于列表视图）
         /// OpenSpec: optimize-entity-data-flow - 增量API方法
         /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
         Task<PagedResult<MedicalCaseListDto>> GetListDtoAsync(
             MedicalCaseStatus? status,
             Guid? patientId,
@@ -52,29 +57,33 @@ namespace LYBT.Module.MedicalCases.Interfaces
             int pageSize,
             Guid? currentDoctorId = null,
             bool isAdmin = false,
-            string? keyword = null);
+            string? keyword = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 查询辨证记录列表
         /// </summary>
         /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>辨证记录DTO列表</returns>
-        Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId);
+        Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 查询处方列表
         /// </summary>
         /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>处方DTO列表</returns>
-        Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId);
+        Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>未完成的医案实体（包含关联数据），若无则返回null</returns>
-        Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
+        Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取待看诊队列（Status = Active的医案患者列表）
@@ -82,13 +91,16 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="doctorId">医生ID</param>
         /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>待诊队列列表</returns>
-        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null);
+        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取所有待看诊队列（管理员专用）
         /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>待诊队列列表</returns>
+        Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 跨医案搜索（支持多条件组合查询）
@@ -100,6 +112,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="endDate">结束日期</param>
         /// <param name="page">页码（从1开始）</param>
         /// <param name="pageSize">每页大小</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>分页结果（含嵌套Consultation/Prescription）</returns>
         Task<PagedResult<MedicalCaseDetailDto>> SearchMedicalCasesAsync(
             string? patientName = null,
@@ -107,7 +120,8 @@ namespace LYBT.Module.MedicalCases.Interfaces
             DateTime? startDate = null,
             DateTime? endDate = null,
             int page = 1,
-            int pageSize = 20);
+            int pageSize = 20,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取患者最近医案列表
@@ -116,10 +130,9 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <param name="count">返回数量（默认5）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>最近医案列表（按创建时间倒序，含完整Prescription数据）</returns>
-        Task<List<MedicalCaseDetailDto>> GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5);
-
-        Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync();
+        Task<List<MedicalCaseDetailDto>> GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 统一查询接口
@@ -127,8 +140,9 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 根据QueryType分发到不同查询逻辑
         /// </summary>
         /// <param name="query">查询参数</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>分页查询结果</returns>
-        Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query);
+        Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 批量获取医案详情
@@ -136,7 +150,8 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 解决N+1查询问题，一次请求获取多个医案详情（含处方）
         /// </summary>
         /// <param name="ids">医案ID列表（最多50个）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>医案实体列表</returns>
-        Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids);
+        Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids, CancellationToken cancellationToken = default);
     }
 }

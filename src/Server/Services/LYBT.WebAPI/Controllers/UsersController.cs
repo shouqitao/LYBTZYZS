@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -23,12 +24,14 @@ namespace LYBT.WebAPI.Controllers
     {
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
+        private readonly IOutputCacheStore _outputCacheStore;
 
-        public UsersController(IUserService userService, IConfiguration configuration, ILogger<UsersController> logger)
+        public UsersController(IUserService userService, IConfiguration configuration, IOutputCacheStore outputCacheStore, ILogger<UsersController> logger)
             : base(logger)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _outputCacheStore = outputCacheStore;
         }
 
         /// <summary>
@@ -37,6 +40,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet]
         [Authorize(Policy = PolicyConstants.AdminOnly)]
+        [OutputCache(PolicyName = "UsersCache")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<UserListDto>>), 200)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> GetList(
@@ -136,6 +140,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (result.IsSuccess && result.Data != null)
             {
+                await _outputCacheStore.EvictByTagAsync("users", cancellationToken);
                 LogOperation("创建用户", dto, result.Data.Id);
                 return CreatedAtAction(nameof(GetById),
                     new { id = result.Data.Id, version = "1" },
@@ -161,6 +166,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (result.IsSuccess && result.Data != null)
             {
+                await _outputCacheStore.EvictByTagAsync("users", cancellationToken);
                 LogOperation("更新用户", dto, id);
                 return Success(result.Data, "用户更新成功");
             }
@@ -184,6 +190,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (result.IsSuccess)
             {
+                await _outputCacheStore.EvictByTagAsync("users", cancellationToken);
                 LogOperation("删除用户", null, id);
                 return Success("删除成功");
             }
@@ -280,6 +287,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "状态切换失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("users", cancellationToken);
             LogOperation("切换用户状态", new { NewStatus = result.Data.Status }, id);
             return Success(result.Data, $"用户已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
@@ -302,6 +310,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "恢复失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("users", cancellationToken);
             LogOperation("恢复用户", null, id);
             return Success(result.Data, "用户已恢复");
         }
@@ -338,6 +347,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "批量删除失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("users", cancellationToken);
             LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }
@@ -371,6 +381,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "批量启用失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("users", cancellationToken);
             LogOperation("批量启用用户", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }
@@ -403,6 +414,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("users", cancellationToken);
             LogOperation("批量禁用用户", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }

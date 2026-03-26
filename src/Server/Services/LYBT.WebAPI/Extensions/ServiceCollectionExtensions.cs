@@ -12,7 +12,6 @@ using LYBT.Module.Patients;
 using LYBT.Module.Registration;
 using LYBT.Module.Sync;
 using LYBT.Module.Users;
-using LYBT.Shared.Configuration.Options.Server;
 using LYBT.WebAPI.Filters;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using LYBT.Shared.Logging.Masking;
 using Microsoft.AspNetCore.Mvc.Filters;
 

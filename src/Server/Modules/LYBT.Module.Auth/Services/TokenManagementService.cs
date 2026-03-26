@@ -44,14 +44,14 @@ public class TokenManagementService : ITokenManagementService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<LoginResponse>> RefreshTokenAsync(string refreshToken)
+    public async Task003cResult003cLoginResponse003e003e RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(refreshToken))
             return Result<LoginResponse>.Failure(GenericErrorCode.AuthRefreshTokenInvalid, "RefreshToken不能为空");
 
         // 1. 查询 RefreshToken 记录
         var tokenRecord = await _dbContext.RefreshTokens
-            .FirstOrDefaultAsync(t => t.Token == refreshToken);
+            .FirstOrDefaultAsync(t =003e t.Token == refreshToken, cancellationToken);
 
         if (tokenRecord == null)
         {
@@ -72,7 +72,7 @@ public class TokenManagementService : ITokenManagementService
 
             if (!string.IsNullOrEmpty(tokenRecord.FamilyId))
             {
-                await RevokeTokenFamilyAsync(tokenRecord.FamilyId, "检测到重放攻击，整个Token Family已失效");
+                await RevokeTokenFamilyAsync(tokenRecord.FamilyId, "检测到重放攻击，整个Token Family已失效", cancellationToken);
             }
 
             await _auditService.LogAsync(new SecurityAuditEvent
@@ -130,7 +130,7 @@ public class TokenManagementService : ITokenManagementService
         }
 
         // 5. 通过 IUserCrossModuleService 获取用户信息
-        var userBasic = await _crossModuleQuery.GetUserBasicInfoAsync(tokenRecord.UserId);
+        var userBasic = await _crossModuleQuery.GetUserBasicInfoAsync(tokenRecord.UserId, cancellationToken);
         if (userBasic == null)
             return Result<LoginResponse>.Failure(GenericErrorCode.UserNotFound);
 
@@ -164,7 +164,7 @@ public class TokenManagementService : ITokenManagementService
         };
 
         _dbContext.RefreshTokens.Add(newTokenRecord);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         // 8. 返回新 Token 对
         var response = new LoginResponse
@@ -192,7 +192,7 @@ public class TokenManagementService : ITokenManagementService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<bool>> ValidateTokenAsync(string token)
+    public async Task003cResult003cbool003e003e ValidateTokenAsync(string token, CancellationToken cancellationToken = default)
     {
         await Task.CompletedTask;
 
@@ -212,7 +212,7 @@ public class TokenManagementService : ITokenManagementService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<object>> GetSessionInfoAsync(string token)
+    public async Task003cResult003cobject003e003e GetSessionInfoAsync(string token, CancellationToken cancellationToken = default)
     {
         await Task.CompletedTask;
 
@@ -231,20 +231,20 @@ public class TokenManagementService : ITokenManagementService
     }
 
     /// <inheritdoc/>
-    public async Task RevokeTokenFamilyAsync(string familyId, string reason)
+    public async Task RevokeTokenFamilyAsync(string familyId, string reason, CancellationToken cancellationToken = default)
     {
         try
         {
             var familyTokens = await _dbContext.RefreshTokens
                 .Where(t => t.FamilyId == familyId && !t.IsRevoked)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             foreach (var token in familyTokens)
             {
                 token.Revoke(reason, "System:ReplayAttackDetection");
             }
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogWarning("[SVC] TokenMgmt.RevokeTokenFamily completed - FamilyId={FamilyId} RevokedCount={Count} Reason={Reason}",
                 familyId, familyTokens.Count, reason);

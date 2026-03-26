@@ -4,9 +4,7 @@ using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
-using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using LybtMemoryCacheOptions = LYBT.Shared.Configuration.Options.Server.MemoryCacheOptions;
 
 namespace LYBT.WebAPI.Extensions;
@@ -63,27 +61,44 @@ public static class DatabaseServiceCollectionExtensions
         });
 
         // 输出缓存配置（.NET 7+）
+        // Task 2.2: 配置 API 响应缓存策略
         services.AddOutputCache(options =>
         {
             // 默认策略
             options.AddBasePolicy(builder =>
                 builder.Expire(TimeSpan.FromMinutes(5)));
 
-            // 草材数据智能缓存：支持搜索参数区分，缓存30分钟
-            // 不同搜索条件(page, pageSize, keyword, category)会有独立缓存
+            // Herbs cache - 30 minutes
             options.AddPolicy("HerbsCache", builder =>
-                builder.Expire(TimeSpan.FromMinutes(30))
-                       .Tag("herbs"));
+            {
+                builder.Expire(TimeSpan.FromMinutes(30));
+                builder.Tag("herbs");
+                builder.VaryByQuery("page", "pageSize", "keyword", "category");
+            });
 
-            // 配方模板缓存2小时
+            // Formulas cache - 2 hours (less frequently changed)
             options.AddPolicy("FormulasCache", builder =>
-                builder.Expire(TimeSpan.FromHours(2))
-                       .Tag("formulas"));
+            {
+                builder.Expire(TimeSpan.FromHours(2));
+                builder.Tag("formulas");
+                builder.VaryByQuery("page", "pageSize", "keyword", "category");
+            });
 
-            // 患者数据缓存策略（30分钟）
+            // Users cache - 15 minutes (more dynamic)
+            options.AddPolicy("UsersCache", builder =>
+            {
+                builder.Expire(TimeSpan.FromMinutes(15));
+                builder.Tag("users");
+                builder.VaryByQuery("page", "pageSize", "keyword", "role", "status");
+            });
+
+            // Patients cache - 30 minutes
             options.AddPolicy("PatientsCache", builder =>
-                builder.Expire(TimeSpan.FromMinutes(30))
-                       .Tag("patients"));
+            {
+                builder.Expire(TimeSpan.FromMinutes(30));
+                builder.Tag("patients");
+                builder.VaryByQuery("page", "pageSize", "keyword");
+            });
 
             // 处方缓存策略（10分钟，更新频繁）
             options.AddPolicy("PrescriptionsCache", builder =>

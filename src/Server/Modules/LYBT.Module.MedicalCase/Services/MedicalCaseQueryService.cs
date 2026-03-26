@@ -12,9 +12,9 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
-    /// 医案查询服务实现 - 读操作
+    /// 医案查询服务实现 - 读操�?
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
-    /// 职责：GetById, GetList, Search等查询操作
+    /// 职责：GetById, GetList, Search等查询操�?
     /// OpenSpec: adopt-mapperly-unified-mapping - 使用MedicalCaseMapper替代AutoMapper
     /// </summary>
     public class MedicalCaseQueryService : BaseService<MedicalCase>, IMedicalCaseQueryService
@@ -34,7 +34,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// 根据ID获取医案详情（包含完整关联数据）
         /// Epic #1612: 使用GetDetailQuery预加载Consultation和Prescription
         /// </summary>
-        public async Task<MedicalCase?> GetByIdAsync(Guid id)
+        public async Task\u003cMedicalCase?\u003e GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             var result = await _repository.GetByIdWithDetailsAsync(id);
@@ -44,16 +44,16 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 查询医案列表（分页）
         /// Epic #1612: 支持按状态、患者ID过滤
-        /// Sprint3-X6: 全部筛选迁移到 Repository DB 层执行
+        /// Sprint3-X6: 全部筛选迁移到 Repository DB 层执�?
         /// </summary>
-        public async Task<PagedResult<MedicalCase>> GetListAsync(
+        public async Task\u003cPagedResult\u003cMedicalCase\u003e\u003e GetListAsync(
             MedicalCaseStatus? status,
             Guid? patientId,
             int page,
             int pageSize,
             Guid? currentDoctorId = null,
             bool isAdmin = false,
-            string? keyword = null)
+            string? keyword = null, CancellationToken cancellationToken = default)
         {
             // Sprint3-X6: 全部筛选在 DB 层执行，TotalCount 自然正确
             return await _repository.GetPagedWithDetailsAsync(
@@ -62,18 +62,18 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 查询医案列表（分页，返回MedicalCaseListDto，用于列表视图）
-        /// Sprint3-X6: 复用 GetListAsync 结果 + 映射，消除重复代码
+        /// Sprint3-X6: 复用 GetListAsync 结果 + 映射，消除重复代�?
         /// </summary>
-        public async Task<PagedResult<MedicalCaseListDto>> GetListDtoAsync(
+        public async Task\u003cPagedResult\u003cMedicalCaseListDto\u003e\u003e GetListDtoAsync(
             MedicalCaseStatus? status,
             Guid? patientId,
             int page,
             int pageSize,
             Guid? currentDoctorId = null,
             bool isAdmin = false,
-            string? keyword = null)
+            string? keyword = null, CancellationToken cancellationToken = default)
         {
-            // Sprint3-X6: 复用 GetListAsync（已在 DB 层完成全部筛选）
+            // Sprint3-X6: 复用 GetListAsync（已�?DB 层完成全部筛选）
             var result = await GetListAsync(status, patientId, page, pageSize, currentDoctorId, isAdmin, keyword);
             var dtos = _mapper.ToListDtos(result.Items.ToList());
 
@@ -88,9 +88,9 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 查询辨证记录列表
-        /// Epic #1612: 返回医案的所有历史辨证记录
+        /// Epic #1612: 返回医案的所有历史辨证记�?
         /// </summary>
-        public async Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId)
+        public async Task\u003cList\u003cConsultationDetailDto\u003e\u003e GetConsultationListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
@@ -99,16 +99,16 @@ namespace LYBT.Module.MedicalCases.Services
                 return new List<ConsultationDetailDto>();
             }
 
-            // 当前架构下只有一条Consultation（共享主键），直接映射
+            // 当前架构下只有一条Consultation（共享主键），直接映�?
             var dto = _mapper.ToConsultationDetailDto(medicalCase.Consultation);
             return new List<ConsultationDetailDto> { dto };
         }
 
         /// <summary>
         /// 查询处方列表
-        /// Epic #1612: 返回医案的所有历史处方记录
+        /// Epic #1612: 返回医案的所有历史处方记�?
         /// </summary>
-        public async Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId)
+        public async Task\u003cList\u003cPrescriptionDetailDto\u003e\u003e GetPrescriptionListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
@@ -117,17 +117,17 @@ namespace LYBT.Module.MedicalCases.Services
                 return new List<PrescriptionDetailDto>();
             }
 
-            // 当前架构下只有一条Prescription（一诊一方），直接映射
+            // 当前架构下只有一条Prescription（一诊一方），直接映�?
             var dto = _mapper.ToPrescriptionDetailDto(medicalCase.Prescription);
             return new List<PrescriptionDetailDto> { dto };
         }
 
         /// <summary>
-        /// 获取患者的未完成医案（Status != Completed）
+        /// 获取患者的未完成医案（Status != Completed�?
         /// Epic #1676 Phase 4 Task 4.1
         /// Epic #2210 Task 3.1.2: 添加doctorId参数
         /// </summary>
-        public async Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
+        public async Task\u003cMedicalCase?\u003e GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             _logger.LogInformation("[SVC] MedicalCase.GetUnfinished started - PatientId={PatientId} DoctorId={DoctorId}",
@@ -138,12 +138,12 @@ namespace LYBT.Module.MedicalCases.Services
 
             if (result != null)
             {
-                _logger.LogInformation("[SVC] MedicalCase.GetUnfinished → Found - MedicalCaseId={MedicalCaseId} CaseStatus={CaseStatus} UserId={UserId}",
+                _logger.LogInformation("[SVC] MedicalCase.GetUnfinished �?Found - MedicalCaseId={MedicalCaseId} CaseStatus={CaseStatus} UserId={UserId}",
                     result.Id, result.CaseStatus, result.UserId);
             }
             else
             {
-                _logger.LogInformation("[SVC] MedicalCase.GetUnfinished → NotFound - PatientId={PatientId} DoctorId={DoctorId}",
+                _logger.LogInformation("[SVC] MedicalCase.GetUnfinished �?NotFound - PatientId={PatientId} DoctorId={DoctorId}",
                     patientId, doctorId);
             }
 
@@ -153,16 +153,16 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 获取待看诊队列（Status = Active的医案患者列表）
         /// Epic #2210 Phase 3: P0 Bug修复 - 实现缺失的Service方法
-        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
+        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛�?
         /// </summary>
-        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null)
+        public async Task\u003cList\u003cPendingMedicalCaseDto\u003e\u003e GetPendingCasesAsync(Guid doctorId, Guid? patientId = null, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             _logger.LogInformation("[SVC] MedicalCase.GetPendingCases started - DoctorId={DoctorId} PatientId={PatientId}",
                 doctorId, patientId);
 
             // Epic #2210: 直接委托给Repository，传递doctorId进行数据隔离
-            // OpenSpec: unify-pending-query-api: 传递patientId支持按患者筛选
+            // OpenSpec: unify-pending-query-api: 传递patientId支持按患者筛�?
             var result = await _repository.GetPendingCasesAsync(doctorId, patientId);
 
             _logger.LogInformation("[SVC] MedicalCase.GetPendingCases completed - DoctorId={DoctorId} PatientId={PatientId} Count={Count}",
@@ -172,10 +172,10 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 获取所有待看诊队列（管理员专用）
-        /// 业务规则：返回所有Active状态医案的患者信息，不限定医生
+        /// 获取所有待看诊队列（管理员专用�?
+        /// 业务规则：返回所有Active状态医案的患者信息，不限定医�?
         /// </summary>
-        public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
+        public async Task\u003cList\u003cPendingMedicalCaseDto\u003e\u003e GetAllPendingCasesAsync(CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             _logger.LogInformation("[SVC] MedicalCase.GetAllPendingCases started - Admin");
@@ -192,13 +192,13 @@ namespace LYBT.Module.MedicalCases.Services
         /// 跨医案搜索（支持多条件组合查询）
         /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
         /// </summary>
-        public async Task<PagedResult<MedicalCaseDetailDto>> SearchMedicalCasesAsync(
+        public async Task\u003cPagedResult\u003cMedicalCaseDetailDto\u003e\u003e SearchMedicalCasesAsync(
             string? patientName = null,
             string? diagnosisKeyword = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
             int page = 1,
-            int pageSize = 20)
+            int pageSize = 20, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             _logger.LogInformation(
@@ -218,7 +218,7 @@ namespace LYBT.Module.MedicalCases.Services
                 .Take(pageSize)
                 .ToList();
 
-            // 映射为DTO（包含嵌套Consultation/Prescription）
+            // 映射为DTO（包含嵌套Consultation/Prescription�?
             var dtos = _mapper.ToDetailDtos(pagedEntities);
 
             _logger.LogInformation("[SVC] MedicalCase.Search completed - TotalCount={TotalCount} ReturnedCount={ReturnedCount}",
@@ -228,31 +228,31 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 获取患者最近医案列表
+        /// 获取患者最近医案列�?
         /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-016)
-        /// 用于处方编辑器历史处方参考
+        /// 用于处方编辑器历史处方参�?
         /// </summary>
-        public async Task<List<MedicalCaseDetailDto>> GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5)
+        public async Task\u003cList\u003cMedicalCaseDetailDto\u003e\u003e GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             _logger.LogInformation("[SVC] MedicalCase.GetPatientRecent started - PatientId={PatientId} Count={Count}", patientId, count);
 
-            // 获取患者所有医案
+            // 获取患者所有医�?
             var entities = await _repository.GetByPatientIdAsync(patientId);
 
             if (entities == null || !entities.Any())
             {
-                _logger.LogInformation("[SVC] MedicalCase.GetPatientRecent → NoHistory - PatientId={PatientId}", patientId);
+                _logger.LogInformation("[SVC] MedicalCase.GetPatientRecent �?NoHistory - PatientId={PatientId}", patientId);
                 return new List<MedicalCaseDetailDto>();
             }
 
-            // 按创建时间倒序，取前count条
+            // 按创建时间倒序，取前count�?
             var recentEntities = entities
                 .OrderByDescending(e => e.CreatedAt)
                 .Take(count)
                 .ToList();
 
-            // 映射为DTO（包含嵌套Consultation/Prescription）
+            // 映射为DTO（包含嵌套Consultation/Prescription�?
             var dtos = _mapper.ToDetailDtos(recentEntities);
 
             _logger.LogInformation("[SVC] MedicalCase.GetPatientRecent completed - PatientId={PatientId} ReturnedCount={ReturnedCount}",
@@ -266,7 +266,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// OpenSpec: optimize-medicalcase-api - 整合多个查询端点为统一接口
         /// 根据QueryType分发到不同查询逻辑
         /// </summary>
-        public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query)
+        public async Task\u003cPagedResult\u003cMedicalCaseListDto\u003e\u003e QueryAsync(MedicalCaseQueryDto query, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.Query started - QueryType={QueryType} PatientId={PatientId} DoctorId={DoctorId}",
                 query.QueryType, query.PatientId, query.DoctorId);
@@ -285,7 +285,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// 批量获取医案详情
         /// OpenSpec: consolidate-medicalcase-detail-queries
         /// </summary>
-        public async Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids)
+        public async Task\u003cList\u003cMedicalCase\u003e\u003e GetBatchAsync(List\u003cGuid\u003e ids, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.GetBatch started - Count={Count}", ids?.Count ?? 0);
 
@@ -304,7 +304,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             if (!query.PatientId.HasValue)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Query → ByPatient requires PatientId");
+                _logger.LogWarning("[SVC] MedicalCase.Query �?ByPatient requires PatientId");
                 return new PagedResult<MedicalCaseListDto>();
             }
 
@@ -331,7 +331,7 @@ namespace LYBT.Module.MedicalCases.Services
                 pendingCases = await GetPendingCasesAsync(query.DoctorId.Value);
             }
 
-            // 转换为ListDto格式，过滤掉没有MedicalCaseId的挂号记录
+            // 转换为ListDto格式，过滤掉没有MedicalCaseId的挂号记�?
             var dtos = pendingCases
                 .Where(p => p.MedicalCaseId.HasValue)
                 .Select(p => new MedicalCaseListDto
@@ -350,7 +350,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             if (!query.PatientId.HasValue)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Query → Unfinished requires PatientId");
+                _logger.LogWarning("[SVC] MedicalCase.Query �?Unfinished requires PatientId");
                 return new PagedResult<MedicalCaseListDto>();
             }
 
@@ -370,7 +370,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             if (!query.PatientId.HasValue)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Query → Recent requires PatientId");
+                _logger.LogWarning("[SVC] MedicalCase.Query �?Recent requires PatientId");
                 return new PagedResult<MedicalCaseListDto>();
             }
 

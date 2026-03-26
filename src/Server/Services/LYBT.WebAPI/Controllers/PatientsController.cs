@@ -24,11 +24,13 @@ namespace LYBT.WebAPI.Controllers
     {
         private readonly IPatientService _service;
         private readonly PatientMapper _mapper = new();
+        private readonly IOutputCacheStore _outputCacheStore;
 
-        public PatientsController(IPatientService service, ILogger<PatientsController> logger)
+        public PatientsController(IPatientService service, IOutputCacheStore outputCacheStore, ILogger<PatientsController> logger)
             : base(logger)
         {
             _service = service;
+            _outputCacheStore = outputCacheStore;
         }
 
         /// <summary>
@@ -82,28 +84,7 @@ namespace LYBT.WebAPI.Controllers
             var patientDto = _mapper.ToDetailDto(patientEntity);
             patientDto.Age = patientEntity.Age;
 
-            return Success(patientDto, "查询成功");
-        }
-
-        /// <summary>
-        /// 新增患者
-        /// T5-P2-29: 创建成功返回201
-        /// </summary>
-        [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] PatientInputDto dto, CancellationToken cancellationToken = default)
-        {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var entityResult = await _service.CreateEntityAsync(dto, cancellationToken);
-            if (!entityResult.IsSuccess || entityResult.Data == null)
-            {
-                return ValidationFail(entityResult.ErrorMessage ?? "新增患者失败");
-            }
-
-            var patientEntity = entityResult.Data;
-            var patientDto = _mapper.ToDetailDto(patientEntity);
-            patientDto.Age = patientEntity.Age;
-
+            await _outputCacheStore.EvictByTagAsync("patients", cancellationToken);
             LogOperation("新增患者成功", patientDto, patientEntity.Id);
             return CreatedAtAction(nameof(GetById),
                 new { id = patientEntity.Id, version = "1" },
@@ -138,6 +119,7 @@ namespace LYBT.WebAPI.Controllers
             var patientDto = _mapper.ToDetailDto(patientEntity);
             patientDto.Age = patientEntity.Age;
 
+            await _outputCacheStore.EvictByTagAsync("patients", cancellationToken);
             LogOperation("更新患者成功", patientDto, id);
             return Success(patientDto, "患者更新成功");
         }
@@ -165,6 +147,7 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound("患者不存在");
             }
 
+            await _outputCacheStore.EvictByTagAsync("patients", cancellationToken);
             LogOperation("删除患者成功", null, id);
             return Success(true, "删除成功");
         }
@@ -273,6 +256,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "状态切换失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("patients", cancellationToken);
             LogOperation("切换患者状态", new { NewStatus = result.Data.Status }, id);
             return Success(result.Data, $"患者已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
@@ -298,6 +282,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "恢复失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("patients", cancellationToken);
             LogOperation("恢复患者", null, id);
             return Success(result.Data, "患者已恢复");
         }
@@ -324,6 +309,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "批量删除失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("patients", cancellationToken);
             LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }

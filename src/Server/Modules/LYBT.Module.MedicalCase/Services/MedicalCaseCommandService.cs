@@ -1,4 +1,4 @@
-ï»¿using LYBT.Entities.Consultations;
+using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Caching;
@@ -18,10 +18,10 @@ using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
-    /// åŒ»æ¡ˆå‘½ä»¤æœåŠ¡å®ç° - å†™æ“ä½œ
-    /// Phase 3: ä»MedicalCaseServiceæ‹†åˆ†ï¼Œéµå¾ªCQRSåŸåˆ™
-    /// èŒè´£ï¼šCreate, Update, Deleteæ“ä½œ
-    /// OpenSpec: adopt-mapperly-unified-mapping - ä½¿ç”¨MedicalCaseMapperæ›¿ä»£AutoMapper
+    /// Ò½°¸ÃüÁî·şÎñÊµÏÖ - Ğ´²Ù×÷
+    /// Phase 3: ´ÓMedicalCaseService²ğ·Ö£¬×ñÑ­CQRSÔ­Ôò
+    /// Ö°Ôğ£ºCreate, Update, Delete²Ù×÷
+    /// OpenSpec: adopt-mapperly-unified-mapping - Ê¹ÓÃMedicalCaseMapperÌæ´úAutoMapper
     /// </summary>
     public class MedicalCaseCommandService : BaseService<MedicalCase>, IMedicalCaseCommandService
     {
@@ -58,9 +58,9 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// åˆ›å»ºæ–°åŒ»æ¡ˆ (å§”æ‰˜ç»™ CreateFromInputDtoAsync)
+        /// ´´½¨ĞÂÒ½°¸ (Î¯ÍĞ¸ø CreateFromInputDtoAsync)
         /// </summary>
-        public async Task<MedicalCase?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId)
+        public async Task\u003cMedicalCase?\u003e CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId, CancellationToken cancellationToken = default)
         {
             var request = new MedicalCaseInputDto
             {
@@ -72,32 +72,32 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// ä»InputDtoåˆ›å»ºåŒ»æ¡ˆï¼ˆç»Ÿä¸€SaveAsyncçš„åˆ›å»ºåˆ†æ”¯ï¼‰
-        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - ç»Ÿä¸€åˆ›å»º/æ›´æ–°
+        /// ´ÓInputDto´´½¨Ò½°¸£¨Í³Ò»SaveAsyncµÄ´´½¨·ÖÖ§£©
+        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - Í³Ò»´´½¨/¸üĞÂ
         /// </summary>
-        /// <param name="request">ç»Ÿä¸€è¾“å…¥DTO</param>
-        /// <param name="currentUserId">å½“å‰æ“ä½œç”¨æˆ·IDï¼ˆå¦‚æœDTOæœªæä¾›UserIdåˆ™ä½¿ç”¨æ­¤å€¼ï¼‰</param>
-        /// <param name="isAdmin">æ˜¯å¦ç®¡ç†å‘˜</param>
-        /// <returns>åˆ›å»ºçš„åŒ»æ¡ˆå®ä½“</returns>
+        /// <param name="request">Í³Ò»ÊäÈëDTO</param>
+        /// <param name="currentUserId">µ±Ç°²Ù×÷ÓÃ»§ID£¨Èç¹ûDTOÎ´Ìá¹©UserIdÔòÊ¹ÓÃ´ËÖµ£©</param>
+        /// <param name="isAdmin">ÊÇ·ñ¹ÜÀíÔ±</param>
+        /// <returns>´´½¨µÄÒ½°¸ÊµÌå</returns>
         private async Task<MedicalCase?> CreateFromInputDtoAsync(
             MedicalCaseInputDto request,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false, CancellationToken cancellationToken = default)
         {
             var doctorId = request.UserId != Guid.Empty ? request.UserId : currentUserId;
 
             _logger.LogInformation("[SVC] MedicalCase.CreateFromInput started - PatientId={PatientId} UserId={UserId}",
                 request.PatientId, doctorId);
 
-            // ç»Ÿä¸€éªŒè¯: å‚æ•°ã€Patientã€Doctorã€BR-001
+            // Í³Ò»ÑéÖ¤: ²ÎÊı¡¢Patient¡¢Doctor¡¢BR-001
             var (patient, doctor) = await MedicalCaseServiceHelper.ValidateAndFetchCreationContextAsync(
                 request.PatientId, doctorId, _patientCrossModule, _userCrossModule, _repository, _logger);
 
-            // åˆ›å»ºMedicalCaseå®ä½“
+            // ´´½¨MedicalCaseÊµÌå
             var medicalCase = new MedicalCase
             {
                 Id = Guid.NewGuid(),
-                CaseNumber = await GenerateCaseNumberAsync(),  // T5-P2-11: è‡ªåŠ¨ç”ŸæˆåŒ»æ¡ˆç¼–å·
+                CaseNumber = await GenerateCaseNumberAsync(),  // T5-P2-11: ×Ô¶¯Éú³ÉÒ½°¸±àºÅ
                 PatientId = request.PatientId,
                 PatientName = patient.Name,
                 CaseStatus = MedicalCaseStatus.Active,
@@ -109,8 +109,8 @@ namespace LYBT.Module.MedicalCases.Services
                 UpdatedAt = DateTime.UtcNow
             };
 
-            // åˆ›å»ºConsultationï¼ˆèšåˆæ ¹æ¨¡å¼ï¼šå…±äº«ä¸»é”®ï¼‰
-            // OpenSpec: refactor-server-ddd-aggregates - ç§»é™¤åå‘å¯¼èˆªï¼Œä»…ä½¿ç”¨å…±äº«ä¸»é”®å…³è”
+            // ´´½¨Consultation£¨¾ÛºÏ¸ùÄ£Ê½£º¹²ÏíÖ÷¼ü£©
+            // OpenSpec: refactor-server-ddd-aggregates - ÒÆ³ı·´Ïòµ¼º½£¬½öÊ¹ÓÃ¹²ÏíÖ÷¼ü¹ØÁª
             var consultation = new Consultation
             {
                 Id = medicalCase.Id,
@@ -118,16 +118,16 @@ namespace LYBT.Module.MedicalCases.Services
                 UpdatedAt = DateTime.UtcNow
             };
 
-            // å¦‚æœDTOä¸­æä¾›äº†è¯Šæ–­æ•°æ®ï¼Œå¡«å……Consultationå­—æ®µ
+            // Èç¹ûDTOÖĞÌá¹©ÁËÕï¶ÏÊı¾İ£¬Ìî³äConsultation×Ö¶Î
             if (request.Consultation != null)
             {
-                // T5-P2-10: åˆ›å»ºæ—¶ä¹ŸéªŒè¯TcmDiagnosiséç©º
-                // æ³¨: UpdateConsultationAsync é€šè¿‡ FluentValidation Pipeline éªŒè¯ï¼Œ
-                // ä½† CreateFromInputDtoAsync çš„ Consultation æ•°æ®æ˜¯ç›´æ¥æ˜ å°„ï¼Œä¸ç»è¿‡éªŒè¯å™¨
+                // T5-P2-10: ´´½¨Ê±Ò²ÑéÖ¤TcmDiagnosis·Ç¿Õ
+                // ×¢: UpdateConsultationAsync Í¨¹ı FluentValidation Pipeline ÑéÖ¤£¬
+                // µ« CreateFromInputDtoAsync µÄ Consultation Êı¾İÊÇÖ±½ÓÓ³Éä£¬²»¾­¹ıÑéÖ¤Æ÷
                 if (string.IsNullOrWhiteSpace(request.Consultation.TcmDiagnosis))
                 {
                     _logger.LogInformation("[SVC] MedicalCase.Create -> TcmDiagnosisEmpty");
-                    throw new BusinessException(EC.MedicalCaseMissingDiagnosis, "ä¸­åŒ»è¯Šæ–­ä¸èƒ½ä¸ºç©º");
+                    throw new BusinessException(EC.MedicalCaseMissingDiagnosis, "ÖĞÒ½Õï¶Ï²»ÄÜÎª¿Õ");
                 }
 
                 consultation.PresentIllness = request.Consultation.PresentIllness;
@@ -138,7 +138,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             medicalCase.Consultation = consultation;
 
-            // å¦‚æœDTOä¸­æä¾›äº†å¤„æ–¹æ•°æ®ä¸”éœ€è¦å¼€å¤„æ–¹ï¼Œåˆ›å»ºPrescription
+            // Èç¹ûDTOÖĞÌá¹©ÁË´¦·½Êı¾İÇÒĞèÒª¿ª´¦·½£¬´´½¨Prescription
             if (request.Prescription != null && request.Prescription.NeedsPrescription)
             {
                 await CreateNewPrescriptionAsync(medicalCase, request.Prescription);
@@ -146,7 +146,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             var result = await _repository.AddAsync(medicalCase);
 
-            // å¦‚æœä¼ å…¥äº† RegistrationIdï¼Œæ›´æ–°å…³è”æŒ‚å·çš„ MedicalCaseId
+            // Èç¹û´«ÈëÁË RegistrationId£¬¸üĞÂ¹ØÁª¹ÒºÅµÄ MedicalCaseId
             if (request.RegistrationId.HasValue)
             {
                 var registration = await _registrationRepository.GetByIdAsync(request.RegistrationId.Value);
@@ -166,7 +166,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             await _cacheInvalidation.InvalidateAsync("medicalcases");
 
-            // è®°å½•åˆ›å»ºå®¡è®¡æ—¥å¿—
+            // ¼ÇÂ¼´´½¨Éó¼ÆÈÕÖ¾
             await _auditService.LogAsync(
                 before: null,
                 after: result,
@@ -179,48 +179,48 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// æ›´æ–°è¾¨è¯ä¿¡æ¯ï¼ˆä¸‰æ­¥æµç¨‹Step 1ï¼‰
-        /// Epic #1612: é€šè¿‡èšåˆæ ¹åè°ƒConsultationæ›´æ–°
-        /// ä¸šåŠ¡è§„åˆ™ï¼šAR-001ï¼ˆèšåˆæ ¹çº¦æŸï¼‰ã€BF-002ï¼ˆä¸‰æ­¥æµç¨‹ï¼‰
+        /// ¸üĞÂ±æÖ¤ĞÅÏ¢£¨Èı²½Á÷³ÌStep 1£©
+        /// Epic #1612: Í¨¹ı¾ÛºÏ¸ùĞ­µ÷Consultation¸üĞÂ
+        /// ÒµÎñ¹æÔò£ºAR-001£¨¾ÛºÏ¸ùÔ¼Êø£©¡¢BF-002£¨Èı²½Á÷³Ì£©
         /// </summary>
-        public async Task<MedicalCase?> UpdateConsultationAsync(
+        public async Task\u003cMedicalCase?\u003e UpdateConsultationAsync(
             Guid medicalCaseId,
             ConsultationInputDto request,
             Guid currentUserId,
             bool isAdmin = false,
-            string? editReason = null)
+            string? editReason = null, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
-            // è·å–èšåˆæ ¹ï¼ˆå®Œæ•´åŠ è½½ï¼‰
+            // »ñÈ¡¾ÛºÏ¸ù£¨ÍêÕû¼ÓÔØ£©
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogInformation("åŒ»æ¡ˆä¸å­˜åœ¨ï¼ŒMedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                _logger.LogInformation("Ò½°¸²»´æÔÚ£¬MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                 return null;
             }
 
-            // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - ä¿å­˜å˜æ›´å‰çš„çŠ¶æ€ç”¨äºå®¡è®¡
+            // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - ±£´æ±ä¸üÇ°µÄ×´Ì¬ÓÃÓÚÉó¼Æ
             var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
-            // æƒé™æ£€æŸ¥
+            // È¨ÏŞ¼ì²é
             MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "UpdateConsultation", _logger);
 
-            // S3: éœ€è¦ä¿®æ”¹åŸå› æ—¶ï¼ŒéªŒè¯ editReason ä¸ä¸ºç©º
+            // S3: ĞèÒªĞŞ¸ÄÔ­ÒòÊ±£¬ÑéÖ¤ editReason ²»Îª¿Õ
             if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(editReason))
             {
-                throw new BusinessException(EC.McPrintedRequiresReason, "è¯¥åŒ»æ¡ˆéœ€è¦æä¾›ä¿®æ”¹åŸå› ");
+                throw new BusinessException(EC.McPrintedRequiresReason, "¸ÃÒ½°¸ĞèÒªÌá¹©ĞŞ¸ÄÔ­Òò");
             }
 
-            // ç¡®ä¿Consultationå­˜åœ¨
+            // È·±£Consultation´æÔÚ
             if (medicalCase.Consultation == null)
             {
-                _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation â†’ ConsultationNotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(EC.McConsultationNotFound, "åŒ»æ¡ˆçš„è¾¨è¯ä¿¡æ¯ä¸å­˜åœ¨");
+                _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation ¡ú ConsultationNotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw new BusinessException(EC.McConsultationNotFound, "Ò½°¸µÄ±æÖ¤ĞÅÏ¢²»´æÔÚ");
             }
 
-            // Issue #2231: æ‰‹åŠ¨æ˜ å°„å±æ€§ä»¥é¿å…EF Coreå…±äº«ä¸»é”®å†²çª
-            // OpenSpec: refactor-diagnosis-fields - ç²¾ç®€ä¸º4ä¸ªæ ¸å¿ƒå­—æ®µ
+            // Issue #2231: ÊÖ¶¯Ó³ÉäÊôĞÔÒÔ±ÜÃâEF Core¹²ÏíÖ÷¼ü³åÍ»
+            // OpenSpec: refactor-diagnosis-fields - ¾«¼òÎª4¸öºËĞÄ×Ö¶Î
             var consultation = medicalCase.Consultation;
             consultation.PresentIllness = request.PresentIllness;
             consultation.TongueDiagnosis = request.TongueDiagnosis;
@@ -228,7 +228,7 @@ namespace LYBT.Module.MedicalCases.Services
             consultation.TcmDiagnosis = request.TcmDiagnosis;
             consultation.UpdatedAt = DateTime.UtcNow;
 
-            // CODE-02: ç¼–è¾‘å·²æ‰“å°åŒ»æ¡ˆæ—¶é‡ç½® IsPrintedï¼ˆé˜²å¾¡æ€§ç¼–ç¨‹ï¼‰
+            // CODE-02: ±à¼­ÒÑ´òÓ¡Ò½°¸Ê±ÖØÖÃ IsPrinted£¨·ÀÓùĞÔ±à³Ì£©
             if (medicalCase.IsPrinted)
             {
                 medicalCase.IsPrinted = false;
@@ -236,52 +236,52 @@ namespace LYBT.Module.MedicalCases.Services
                 _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation -> ResetIsPrinted - MedicalCaseId={Id}", medicalCase.Id);
             }
 
-            // é€šè¿‡èšåˆæ ¹ä¿å­˜ï¼ˆEF Coreä¼šè·Ÿè¸ªå­å®ä½“å˜æ›´ï¼‰
+            // Í¨¹ı¾ÛºÏ¸ù±£´æ£¨EF Core»á¸ú×Ù×ÓÊµÌå±ä¸ü£©
             var result = await _repository.UpdateAsync(medicalCase);
             await _cacheInvalidation.InvalidateAsync("medicalcases");
-            // S3-03: ä¼ é€’ editReason åˆ°å®¡è®¡æ—¥å¿—
+            // S3-03: ´«µİ editReason µ½Éó¼ÆÈÕÖ¾
             await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, editReason);
             return result;
         }
 
         /// <summary>
-        /// æ ‡è®°æ˜¯å¦éœ€è¦å¼€å¤„æ–¹ï¼ˆä¸‰æ­¥æµç¨‹Step 2ï¼‰
+        /// ±ê¼ÇÊÇ·ñĞèÒª¿ª´¦·½£¨Èı²½Á÷³ÌStep 2£©
         /// </summary>
         public async Task<MedicalCase?> SetPrescriptionFlagAsync(
             Guid medicalCaseId,
             bool needsPrescription,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
                 medicalCaseId, needsPrescription);
 
-            // è·å–èšåˆæ ¹
+            // »ñÈ¡¾ÛºÏ¸ù
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("[SVC] MedicalCase.SetPrescriptionFlag â†’ NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("[SVC] MedicalCase.SetPrescriptionFlag ¡ú NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return null;
             }
 
-            // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - ä¿å­˜å˜æ›´å‰çš„çŠ¶æ€ç”¨äºå®¡è®¡
+            // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - ±£´æ±ä¸üÇ°µÄ×´Ì¬ÓÃÓÚÉó¼Æ
             var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
-            // æƒé™æ£€æŸ¥
+            // È¨ÏŞ¼ì²é
             MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "SetPrescriptionFlag", _logger);
 
-            // æ›´æ–°NeedsPrescriptionæ ‡å¿—
-            // OpenSpec: consultation-field-alignment - å¤„æ–¹æ ‡å¿—ç»Ÿä¸€åœ¨MedicalCaseç®¡ç†
+            // ¸üĞÂNeedsPrescription±êÖ¾
+            // OpenSpec: consultation-field-alignment - ´¦·½±êÖ¾Í³Ò»ÔÚMedicalCase¹ÜÀí
             medicalCase.NeedsPrescription = needsPrescription;
             medicalCase.UpdatedAt = DateTime.UtcNow;
 
-            // T5-P2-12: æ ‡è®°ä¸éœ€è¦å¤„æ–¹æ—¶ï¼Œè½¯åˆ é™¤å·²æœ‰å¤„æ–¹
+            // T5-P2-12: ±ê¼Ç²»ĞèÒª´¦·½Ê±£¬ÈíÉ¾³ıÒÑÓĞ´¦·½
             if (!needsPrescription)
             {
                 SoftDeletePrescriptionIfExists(medicalCase);
             }
 
-            // ä¿å­˜
+            // ±£´æ
             var result = await _repository.UpdateAsync(medicalCase);
             await _cacheInvalidation.InvalidateAsync("medicalcases");
             await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin);
@@ -289,9 +289,9 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// åˆ›å»ºå¤„æ–¹ï¼ˆä¸‰æ­¥æµç¨‹Step 3aï¼‰
-        /// Epic #1612: é€šè¿‡èšåˆæ ¹åˆ›å»ºPrescription
-        /// ä¸šåŠ¡è§„åˆ™ï¼šAR-001ï¼ˆèšåˆæ ¹çº¦æŸï¼‰ã€AR-003ï¼ˆä¸€è¯Šä¸€æ–¹çº¦æŸï¼‰
+        /// ´´½¨´¦·½£¨Èı²½Á÷³ÌStep 3a£©
+        /// Epic #1612: Í¨¹ı¾ÛºÏ¸ù´´½¨Prescription
+        /// ÒµÎñ¹æÔò£ºAR-001£¨¾ÛºÏ¸ùÔ¼Êø£©¡¢AR-003£¨Ò»ÕïÒ»·½Ô¼Êø£©
         /// </summary>
         public async Task<Prescription?> CreatePrescriptionAsync(
             Guid medicalCaseId,
@@ -303,7 +303,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// æ‰§è¡Œå•æ¬¡å¤„æ–¹åˆ›å»º
+        /// Ö´ĞĞµ¥´Î´¦·½´´½¨
         /// </summary>
         private async Task<Prescription?> ExecuteCreatePrescriptionAsync(
             Guid medicalCaseId,
@@ -317,10 +317,10 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             if (medicalCase.NeedsPrescription != true)
-                throw new BusinessException(EC.McPrescriptionFlagNotSet, "æœªæ ‡è®°éœ€è¦å¼€å¤„æ–¹ï¼Œè¯·å…ˆè®¾ç½®å¤„æ–¹éœ€æ±‚æ ‡è®°");
+                throw new BusinessException(EC.McPrescriptionFlagNotSet, "Î´±ê¼ÇĞèÒª¿ª´¦·½£¬ÇëÏÈÉèÖÃ´¦·½ĞèÇó±ê¼Ç");
 
             if (medicalCase.Prescription != null && !medicalCase.Prescription.IsDeleted)
-                throw new BusinessException(EC.McPrescriptionAlreadyExists, $"åŒ»æ¡ˆå·²å­˜åœ¨å¤„æ–¹ï¼ˆID: {medicalCase.Prescription.Id}ï¼‰ï¼Œè¯·ä½¿ç”¨æ›´æ–°æ¥å£");
+                throw new BusinessException(EC.McPrescriptionAlreadyExists, $"Ò½°¸ÒÑ´æÔÚ´¦·½£¨ID: {medicalCase.Prescription.Id}£©£¬ÇëÊ¹ÓÃ¸üĞÂ½Ó¿Ú");
 
             var prescription = _mapper.ToPrescriptionEntity(request);
             prescription.Id = Guid.NewGuid();
@@ -329,7 +329,7 @@ namespace LYBT.Module.MedicalCases.Services
             prescription.CreatedAt = DateTime.UtcNow;
             prescription.UpdatedAt = DateTime.UtcNow;
 
-            // T2-S4-02: ä½¿ç”¨ç»Ÿä¸€çš„CreatePrescriptionItemsAsyncç¡®ä¿UnitPriceè‡ªåŠ¨å¡«å……
+            // T2-S4-02: Ê¹ÓÃÍ³Ò»µÄCreatePrescriptionItemsAsyncÈ·±£UnitPrice×Ô¶¯Ìî³ä
             prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, request);
 
             medicalCase.Prescription = prescription;
@@ -344,16 +344,16 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// æ›´æ–°å¤„æ–¹ï¼ˆä¸‰æ­¥æµç¨‹Step 3bï¼‰
-        /// Epic #1612: é€šè¿‡èšåˆæ ¹æ›´æ–°Prescription
+        /// ¸üĞÂ´¦·½£¨Èı²½Á÷³ÌStep 3b£©
+        /// Epic #1612: Í¨¹ı¾ÛºÏ¸ù¸üĞÂPrescription
         /// </summary>
-        public async Task<Prescription?> UpdatePrescriptionAsync(
+        public async Task\u003cPrescription?\u003e UpdatePrescriptionAsync(
             Guid medicalCaseId,
             Guid prescriptionId,
             PrescriptionInputDto request,
             Guid currentUserId,
             bool isAdmin = false,
-            string? editReason = null)
+            string? editReason = null, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdatePrescription - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                 medicalCaseId, prescriptionId);
@@ -361,43 +361,43 @@ namespace LYBT.Module.MedicalCases.Services
             var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription â†’ NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription ¡ú NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return null;
             }
 
-            // S3-03: ä¿å­˜å˜æ›´å‰çš„çŠ¶æ€ç”¨äºå®¡è®¡
+            // S3-03: ±£´æ±ä¸üÇ°µÄ×´Ì¬ÓÃÓÚÉó¼Æ
             var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
-            // æƒé™æ£€æŸ¥
+            // È¨ÏŞ¼ì²é
             MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "UpdatePrescription", _logger);
 
-            // S3: éœ€è¦ä¿®æ”¹åŸå› æ—¶ï¼ŒéªŒè¯ editReason ä¸ä¸ºç©º
+            // S3: ĞèÒªĞŞ¸ÄÔ­ÒòÊ±£¬ÑéÖ¤ editReason ²»Îª¿Õ
             if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(editReason))
             {
-                throw new BusinessException(EC.McPrintedRequiresReason, "è¯¥åŒ»æ¡ˆéœ€è¦æä¾›ä¿®æ”¹åŸå› ");
+                throw new BusinessException(EC.McPrintedRequiresReason, "¸ÃÒ½°¸ĞèÒªÌá¹©ĞŞ¸ÄÔ­Òò");
             }
 
-            // éªŒè¯Prescriptionå­˜åœ¨ä¸”IDåŒ¹é…
+            // ÑéÖ¤Prescription´æÔÚÇÒIDÆ¥Åä
             if (medicalCase.Prescription == null || medicalCase.Prescription.Id != prescriptionId)
             {
-                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription â†’ PrescriptionNotFound - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
+                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription ¡ú PrescriptionNotFound - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                     medicalCaseId, prescriptionId);
                 return null;
             }
 
-            // T2-X8-01: æ‰“å°ä¿æŠ¤ -- å·²æ‰“å°çš„å®Œæˆæ€åŒ»æ¡ˆç¦æ­¢ä¿®æ”¹å¤„æ–¹
+            // T2-X8-01: ´òÓ¡±£»¤ -- ÒÑ´òÓ¡µÄÍê³ÉÌ¬Ò½°¸½ûÖ¹ĞŞ¸Ä´¦·½
             if (medicalCase.IsPrinted && medicalCase.IsCompleted)
             {
-                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription â†’ PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(EC.McPrintedCannotDelete, "åŒ»æ¡ˆå·²æ‰“å°å¹¶å®Œæˆï¼Œä¸å…è®¸ä¿®æ”¹å¤„æ–¹");
+                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription ¡ú PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw new BusinessException(EC.McPrintedCannotDelete, "Ò½°¸ÒÑ´òÓ¡²¢Íê³É£¬²»ÔÊĞíĞŞ¸Ä´¦·½");
             }
 
-            // é€šè¿‡Mapperlyæ›´æ–°Prescriptionå­å®ä½“ï¼ˆä¸åŒ…å«Itemsï¼‰
+            // Í¨¹ıMapperly¸üĞÂPrescription×ÓÊµÌå£¨²»°üº¬Items£©
             _mapper.UpdatePrescriptionEntity(request, medicalCase.Prescription);
             medicalCase.Prescription.UpdatedAt = DateTime.UtcNow;
             medicalCase.UpdatedAt = DateTime.UtcNow;
 
-            // T2-S4-02: ä½¿ç”¨ç»Ÿä¸€çš„CreatePrescriptionItemsAsyncç¡®ä¿UnitPriceè‡ªåŠ¨å¡«å……
+            // T2-S4-02: Ê¹ÓÃÍ³Ò»µÄCreatePrescriptionItemsAsyncÈ·±£UnitPrice×Ô¶¯Ìî³ä
             if (request.Items != null)
             {
                 medicalCase.Prescription.Items.Clear();
@@ -407,7 +407,7 @@ namespace LYBT.Module.MedicalCases.Services
                 }
             }
 
-            // CODE-02: ç¼–è¾‘å·²æ‰“å°åŒ»æ¡ˆæ—¶é‡ç½® IsPrintedï¼ˆé˜²å¾¡æ€§ç¼–ç¨‹ï¼‰
+            // CODE-02: ±à¼­ÒÑ´òÓ¡Ò½°¸Ê±ÖØÖÃ IsPrinted£¨·ÀÓùĞÔ±à³Ì£©
             if (medicalCase.IsPrinted)
             {
                 medicalCase.IsPrinted = false;
@@ -418,22 +418,22 @@ namespace LYBT.Module.MedicalCases.Services
             await _repository.UpdateAsync(medicalCase);
             await _cacheInvalidation.InvalidateAsync("medicalcases");
 
-            // S3-03: è®°å½•å¤„æ–¹æ›´æ–°å®¡è®¡æ—¥å¿— (å« editReason)
+            // S3-03: ¼ÇÂ¼´¦·½¸üĞÂÉó¼ÆÈÕÖ¾ (º¬ editReason)
             await LogUpdateAuditAsync(beforeState, medicalCase, currentUserId, isAdmin, editReason);
 
             return medicalCase.Prescription;
         }
 
         /// <summary>
-        /// åˆ é™¤å¤„æ–¹ï¼ˆè½¯åˆ é™¤ï¼‰
-        /// Epic #1612: é€šè¿‡èšåˆæ ¹åˆ é™¤Prescription
-        /// ä¸šåŠ¡è§„åˆ™ï¼šä»…å…è®¸åˆ é™¤æœªæ‰“å°å¤„æ–¹
+        /// É¾³ı´¦·½£¨ÈíÉ¾³ı£©
+        /// Epic #1612: Í¨¹ı¾ÛºÏ¸ùÉ¾³ıPrescription
+        /// ÒµÎñ¹æÔò£º½öÔÊĞíÉ¾³ıÎ´´òÓ¡´¦·½
         /// </summary>
-        public async Task<bool> DeletePrescriptionAsync(
+        public async Task\u003cbool\u003e DeletePrescriptionAsync(
             Guid medicalCaseId,
             Guid prescriptionId,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.DeletePrescription - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                 medicalCaseId, prescriptionId);
@@ -441,47 +441,47 @@ namespace LYBT.Module.MedicalCases.Services
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription â†’ NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription ¡ú NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return false;
             }
 
-            // æƒé™æ£€æŸ¥
+            // È¨ÏŞ¼ì²é
             MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, medicalCase, currentUserId, isAdmin, "DeletePrescription", _logger);
 
-            // éªŒè¯Prescriptionå­˜åœ¨ä¸”IDåŒ¹é…
+            // ÑéÖ¤Prescription´æÔÚÇÒIDÆ¥Åä
             if (medicalCase.Prescription == null || medicalCase.Prescription.Id != prescriptionId)
             {
-                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription â†’ PrescriptionNotFound - PrescriptionId={PrescriptionId}", prescriptionId);
+                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription ¡ú PrescriptionNotFound - PrescriptionId={PrescriptionId}", prescriptionId);
                 return false;
             }
 
-            // T2-X8-01: æ‰“å°ä¿æŠ¤ -- å·²æ‰“å°çš„å®Œæˆæ€åŒ»æ¡ˆç¦æ­¢åˆ é™¤å¤„æ–¹
+            // T2-X8-01: ´òÓ¡±£»¤ -- ÒÑ´òÓ¡µÄÍê³ÉÌ¬Ò½°¸½ûÖ¹É¾³ı´¦·½
             if (medicalCase.IsPrinted && medicalCase.IsCompleted)
             {
-                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription â†’ PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(EC.McPrintedCannotDelete, "åŒ»æ¡ˆå·²æ‰“å°å¹¶å®Œæˆï¼Œä¸å…è®¸åˆ é™¤å¤„æ–¹");
+                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription ¡ú PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw new BusinessException(EC.McPrintedCannotDelete, "Ò½°¸ÒÑ´òÓ¡²¢Íê³É£¬²»ÔÊĞíÉ¾³ı´¦·½");
             }
 
-            // è½¯åˆ é™¤Prescription
+            // ÈíÉ¾³ıPrescription
             medicalCase.Prescription.IsDeleted = true;
             medicalCase.Prescription.UpdatedAt = DateTime.UtcNow;
 
-            // æ¸…ç©ºå¯¼èˆªå±æ€§ï¼ˆä¿æŒèšåˆæ ¹ä¸€è‡´æ€§ï¼‰
+            // Çå¿Õµ¼º½ÊôĞÔ£¨±£³Ö¾ÛºÏ¸ùÒ»ÖÂĞÔ£©
             medicalCase.Prescription = null;
             medicalCase.UpdatedAt = DateTime.UtcNow;
 
-            // é€šè¿‡èšåˆæ ¹ä¿å­˜
+            // Í¨¹ı¾ÛºÏ¸ù±£´æ
             await _repository.UpdateAsync(medicalCase);
             await _cacheInvalidation.InvalidateAsync("medicalcases");
             return true;
         }
 
         /// <summary>
-        /// åˆ é™¤åŒ»æ¡ˆï¼ˆè½¯åˆ é™¤ï¼‰
+        /// É¾³ıÒ½°¸£¨ÈíÉ¾³ı£©
         /// OpenSpec: clarify-cancel-consultation-logic
-        /// ä½¿ç”¨BaseRepositoryé»˜è®¤è½¯åˆ é™¤æœºåˆ¶ï¼ˆIsDeleted=trueï¼‰
+        /// Ê¹ÓÃBaseRepositoryÄ¬ÈÏÈíÉ¾³ı»úÖÆ£¨IsDeleted=true£©
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, bool isAdmin)
+        public async Task\u003cbool\u003e DeleteAsync(Guid id, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.Delete - MedicalCaseId={MedicalCaseId} OperatorId={OperatorId}", id, operatorId);
 
@@ -492,7 +492,7 @@ namespace LYBT.Module.MedicalCases.Services
                 return false;
             }
 
-            // æƒé™æ£€æŸ¥: ç¡®ä¿æ“ä½œè€…æœ‰æƒåˆ é™¤æ­¤åŒ»æ¡ˆ
+            // È¨ÏŞ¼ì²é: È·±£²Ù×÷ÕßÓĞÈ¨É¾³ı´ËÒ½°¸
             MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, medicalCase, operatorId, isAdmin, "Delete", _logger);
 
             var result = await _repository.DeleteAsync(id);
@@ -504,18 +504,18 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// ç»Ÿä¸€ä¿å­˜åŒ»æ¡ˆï¼ˆæ”¯æŒåˆ›å»ºå’Œæ›´æ–°ï¼‰
-        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - ç»Ÿä¸€SaveAsync
-        /// - Idä¸ºnullæ—¶ï¼šåˆ›å»ºæ–°MedicalCase
-        /// - Idæœ‰å€¼æ—¶ï¼šæ›´æ–°ç°æœ‰MedicalCase
-        /// - åœ¨å•ä¸ªäº‹åŠ¡ä¸­åŒæ—¶ä¿å­˜è¯Šæ–­å’Œå¤„æ–¹æ•°æ®
+        /// Í³Ò»±£´æÒ½°¸£¨Ö§³Ö´´½¨ºÍ¸üĞÂ£©
+        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - Í³Ò»SaveAsync
+        /// - IdÎªnullÊ±£º´´½¨ĞÂMedicalCase
+        /// - IdÓĞÖµÊ±£º¸üĞÂÏÖÓĞMedicalCase
+        /// - ÔÚµ¥¸öÊÂÎñÖĞÍ¬Ê±±£´æÕï¶ÏºÍ´¦·½Êı¾İ
         /// </summary>
-        public async Task<MedicalCase?> SaveAsync(
+        public async Task\u003cMedicalCase?\u003e SaveAsync(
             MedicalCaseInputDto request,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false, CancellationToken cancellationToken = default)
         {
-            // OpenSpec: simplify-medicalcase-dataflow - ç»Ÿä¸€åˆ›å»º/æ›´æ–°é€»è¾‘
+            // OpenSpec: simplify-medicalcase-dataflow - Í³Ò»´´½¨/¸üĞÂÂß¼­
             if (!request.Id.HasValue)
             {
                 return await CreateFromInputDtoAsync(request, currentUserId, isAdmin);
@@ -528,8 +528,8 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// æ‰§è¡Œå•æ¬¡ä¿å­˜å°è¯•
-        /// consolidate-code-quality: ä»SaveAsyncæå–æ ¸å¿ƒé€»è¾‘
+        /// Ö´ĞĞµ¥´Î±£´æ³¢ÊÔ
+        /// consolidate-code-quality: ´ÓSaveAsyncÌáÈ¡ºËĞÄÂß¼­
         /// </summary>
         private async Task<MedicalCase> ExecuteSaveAttemptAsync(
             MedicalCaseInputDto request,
@@ -538,45 +538,45 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin)
         {
 
-            // è·å–èšåˆæ ¹
+            // »ñÈ¡¾ÛºÏ¸ù
             var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId)
                 ?? throw ExceptionFactory.MedicalCase.NotFound(medicalCaseId);
 
-            // ä¿å­˜å˜æ›´å‰çš„çŠ¶æ€ç”¨äºå®¡è®¡
+            // ±£´æ±ä¸üÇ°µÄ×´Ì¬ÓÃÓÚÉó¼Æ
             var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
-            // æƒé™æ£€æŸ¥
+            // È¨ÏŞ¼ì²é
             ValidateEditPermission(medicalCase, currentUserId, isAdmin);
 
-            // S3-03: éœ€è¦ä¿®æ”¹åŸå› æ—¶ï¼ŒéªŒè¯ editReason ä¸ä¸ºç©º
+            // S3-03: ĞèÒªĞŞ¸ÄÔ­ÒòÊ±£¬ÑéÖ¤ editReason ²»Îª¿Õ
             if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(request.EditReason))
             {
-                throw new BusinessException(EC.McPrintedRequiresReason, "è¯¥åŒ»æ¡ˆéœ€è¦æä¾›ä¿®æ”¹åŸå› ");
+                throw new BusinessException(EC.McPrintedRequiresReason, "¸ÃÒ½°¸ĞèÒªÌá¹©ĞŞ¸ÄÔ­Òò");
             }
 
-            // æ›´æ–°åŸºç¡€å­—æ®µ
+            // ¸üĞÂ»ù´¡×Ö¶Î
             UpdateMedicalCaseBasicFields(medicalCase, request);
 
-            // æ›´æ–°è¯Šæ–­
+            // ¸üĞÂÕï¶Ï
             if (request.Consultation != null && medicalCase.Consultation != null)
             {
                 UpdateConsultationFields(medicalCase.Consultation, request.Consultation);
             }
 
-            // æ›´æ–°å¤„æ–¹
+            // ¸üĞÂ´¦·½
             if (request.Prescription != null)
             {
-                // T2-X8-01: æ‰“å°ä¿æŠ¤ -- å·²æ‰“å°çš„å®Œæˆæ€åŒ»æ¡ˆç¦æ­¢ä¿®æ”¹å¤„æ–¹
+                // T2-X8-01: ´òÓ¡±£»¤ -- ÒÑ´òÓ¡µÄÍê³ÉÌ¬Ò½°¸½ûÖ¹ĞŞ¸Ä´¦·½
                 if (medicalCase.IsPrinted && medicalCase.IsCompleted)
                 {
-                    _logger.LogWarning("[SVC] MedicalCase.Save â†’ PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                    throw new BusinessException(EC.McPrintedCannotDelete, "åŒ»æ¡ˆå·²æ‰“å°å¹¶å®Œæˆï¼Œä¸å…è®¸ä¿®æ”¹å¤„æ–¹");
+                    _logger.LogWarning("[SVC] MedicalCase.Save ¡ú PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                    throw new BusinessException(EC.McPrintedCannotDelete, "Ò½°¸ÒÑ´òÓ¡²¢Íê³É£¬²»ÔÊĞíĞŞ¸Ä´¦·½");
                 }
 
                 await HandlePrescriptionUpdateAsync(medicalCase, request.Prescription);
             }
 
-            // CODE-02: ç¼–è¾‘å·²æ‰“å°åŒ»æ¡ˆæ—¶é‡ç½® IsPrinted
+            // CODE-02: ±à¼­ÒÑ´òÓ¡Ò½°¸Ê±ÖØÖÃ IsPrinted
             if (medicalCase.IsPrinted)
             {
                 medicalCase.IsPrinted = false;
@@ -584,24 +584,24 @@ namespace LYBT.Module.MedicalCases.Services
                 _logger.LogInformation("[SVC] MedicalCase.Save -> ResetIsPrinted - MedicalCaseId={Id}", medicalCase.Id);
             }
 
-            // ä¿å­˜å¹¶å®¡è®¡
+            // ±£´æ²¢Éó¼Æ
             var result = await _repository.UpdateAsync(medicalCase);
             await _cacheInvalidation.InvalidateAsync("medicalcases");
             _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
-            // S3-03: ä¼ é€’ editReason åˆ°å®¡è®¡æ—¥å¿—
+            // S3-03: ´«µİ editReason µ½Éó¼ÆÈÕÖ¾
             await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, request.EditReason);
             return result;
         }
 
         /// <summary>
-        /// éªŒè¯ç¼–è¾‘æƒé™ (å§”æ‰˜ç»™ ServiceHelper)
+        /// ÑéÖ¤±à¼­È¨ÏŞ (Î¯ÍĞ¸ø ServiceHelper)
         /// </summary>
         private void ValidateEditPermission(MedicalCase medicalCase, Guid currentUserId, bool isAdmin)
             => MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "Save", _logger);
 
         /// <summary>
-        /// æ›´æ–°åŒ»æ¡ˆåŸºç¡€å­—æ®µ
+        /// ¸üĞÂÒ½°¸»ù´¡×Ö¶Î
         /// </summary>
         private static void UpdateMedicalCaseBasicFields(MedicalCase medicalCase, MedicalCaseInputDto request)
         {
@@ -613,7 +613,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// æ›´æ–°è¯Šæ–­å­—æ®µ
+        /// ¸üĞÂÕï¶Ï×Ö¶Î
         /// </summary>
         private static void UpdateConsultationFields(Consultation consultation, ConsultationInputDto dto)
         {
@@ -625,10 +625,10 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// è®°å½•æ›´æ–°å®¡è®¡æ—¥å¿—
-        /// S3-03: æ–°å¢ editReason å‚æ•°ï¼Œä¼ é€’åˆ°å®¡è®¡æ—¥å¿—
+        /// ¼ÇÂ¼¸üĞÂÉó¼ÆÈÕÖ¾
+        /// S3-03: ĞÂÔö editReason ²ÎÊı£¬´«µİµ½Éó¼ÆÈÕÖ¾
         /// </summary>
-        private async Task LogUpdateAuditAsync(MedicalCase before, MedicalCase after, Guid currentUserId, bool isAdmin, string? editReason = null)
+        private async Task LogUpdateAuditAsync(MedicalCase before, MedicalCase after, Guid currentUserId, bool isAdmin, string? editReason = null, CancellationToken cancellationToken = default)
         {
             var operatorInfo = await GetOperatorInfoAsync(currentUserId, isAdmin);
             await _auditService.LogAsync(
@@ -643,8 +643,8 @@ namespace LYBT.Module.MedicalCases.Services
 
 
         /// <summary>
-        /// å¤„ç†å¤„æ–¹æ›´æ–°(åˆ›å»º/æ›´æ–°/è½¯åˆ é™¤)
-        /// consolidate-code-quality: ä»SaveAsyncæå–ï¼Œé™ä½åœˆå¤æ‚åº¦
+        /// ´¦Àí´¦·½¸üĞÂ(´´½¨/¸üĞÂ/ÈíÉ¾³ı)
+        /// consolidate-code-quality: ´ÓSaveAsyncÌáÈ¡£¬½µµÍÈ¦¸´ÔÓ¶È
         /// </summary>
         private async Task HandlePrescriptionUpdateAsync(
             MedicalCase medicalCase,
@@ -669,7 +669,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// è½¯åˆ é™¤ç°æœ‰å¤„æ–¹
+        /// ÈíÉ¾³ıÏÖÓĞ´¦·½
         /// </summary>
         private void SoftDeletePrescriptionIfExists(MedicalCase medicalCase)
         {
@@ -677,13 +677,13 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 medicalCase.Prescription.IsDeleted = true;
                 medicalCase.Prescription.UpdatedAt = DateTime.UtcNow;
-                _logger.LogInformation("[SVC] MedicalCase.Save â†’ PrescriptionSoftDeleted - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
+                _logger.LogInformation("[SVC] MedicalCase.Save ¡ú PrescriptionSoftDeleted - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                     medicalCase.Id, medicalCase.Prescription.Id);
             }
         }
 
         /// <summary>
-        /// åˆ›å»ºæ–°å¤„æ–¹
+        /// ´´½¨ĞÂ´¦·½
         /// </summary>
         private async Task CreateNewPrescriptionAsync(
             MedicalCase medicalCase,
@@ -692,7 +692,7 @@ namespace LYBT.Module.MedicalCases.Services
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
-                PrescriptionNumber = await GeneratePrescriptionNumberAsync(),  // T5-P2-13: è‡ªåŠ¨ç”Ÿæˆå¤„æ–¹ç¼–å·
+                PrescriptionNumber = await GeneratePrescriptionNumberAsync(),  // T5-P2-13: ×Ô¶¯Éú³É´¦·½±àºÅ
                 MedicalCaseId = medicalCase.Id,
                 DosageCount = prescriptionDto.DosageCount,
                 Usage = prescriptionDto.Usage,
@@ -707,12 +707,12 @@ namespace LYBT.Module.MedicalCases.Services
             prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, prescriptionDto);
 
             medicalCase.Prescription = prescription;
-            _logger.LogInformation("[SVC] MedicalCase.Save â†’ PrescriptionCreated - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId} ItemCount={ItemCount}",
+            _logger.LogInformation("[SVC] MedicalCase.Save ¡ú PrescriptionCreated - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId} ItemCount={ItemCount}",
                 medicalCase.Id, prescription.Id, prescription.Items.Count);
         }
 
         /// <summary>
-        /// æ›´æ–°ç°æœ‰å¤„æ–¹
+        /// ¸üĞÂÏÖÓĞ´¦·½
         /// </summary>
         private async Task UpdateExistingPrescriptionAsync(
             Prescription prescription,
@@ -732,16 +732,16 @@ namespace LYBT.Module.MedicalCases.Services
                 prescription.Items.Add(item);
             }
 
-            _logger.LogInformation("[SVC] MedicalCase.Save â†’ PrescriptionUpdated - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId} ItemCount={ItemCount}",
+            _logger.LogInformation("[SVC] MedicalCase.Save ¡ú PrescriptionUpdated - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId} ItemCount={ItemCount}",
                 prescription.MedicalCaseId, prescription.Id, prescription.Items.Count);
         }
 
         /// <summary>
-        /// åˆ›å»ºå¤„æ–¹é¡¹åˆ—è¡¨ï¼ˆå«UnitPriceè‡ªåŠ¨å¡«å……ï¼‰
+        /// ´´½¨´¦·½ÏîÁĞ±í£¨º¬UnitPrice×Ô¶¯Ìî³ä£©
         /// </summary>
         /// <remarks>
-        /// T2-S4-02: å½“å®¢æˆ·ç«¯æœªä¼ UnitPriceï¼ˆå€¼ä¸º0ï¼‰æ—¶ï¼Œä»è¯æåº“è‡ªåŠ¨æŸ¥è¯¢å½“å‰ä»·æ ¼å¡«å……ã€‚
-        /// é˜²å¾¡æ€§è®¾è®¡ï¼Œç¡®ä¿TotalPriceè®¡ç®—æ­£ç¡®ã€‚
+        /// T2-S4-02: µ±¿Í»§¶ËÎ´´«UnitPrice£¨ÖµÎª0£©Ê±£¬´ÓÒ©²Ä¿â×Ô¶¯²éÑ¯µ±Ç°¼Û¸ñÌî³ä¡£
+        /// ·ÀÓùĞÔÉè¼Æ£¬È·±£TotalPrice¼ÆËãÕıÈ·¡£
         /// </remarks>
         private async Task<List<LYBT.Entities.Prescriptions.PrescriptionItem>> CreatePrescriptionItemsAsync(
             Guid prescriptionId,
@@ -753,7 +753,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             var allHerbIds = prescriptionDto.Items.Select(i => i.HerbId).Distinct().ToList();
 
-            // AD-02: è¿‡æ»¤ç¦ç”¨è¯æï¼Œç¦æ­¢åŠ å…¥å¤„æ–¹
+            // AD-02: ¹ıÂË½ûÓÃÒ©²Ä£¬½ûÖ¹¼ÓÈë´¦·½
             var disabledHerbIds = await _herbCrossModule.GetDisabledHerbIdsAsync(allHerbIds);
             var validItems = prescriptionDto.Items;
             if (disabledHerbIds.Count > 0)
@@ -770,7 +770,7 @@ namespace LYBT.Module.MedicalCases.Services
                     .ToList();
             }
 
-            // T2-S4-02: æ‰¹é‡æŸ¥è¯¢ç¼ºå¤±UnitPriceçš„è¯æä»·æ ¼
+            // T2-S4-02: ÅúÁ¿²éÑ¯È±Ê§UnitPriceµÄÒ©²Ä¼Û¸ñ
             var herbIdsNeedingPrice = validItems
                 .Where(i => i.UnitPrice <= 0)
                 .Select(i => i.HerbId)
@@ -820,8 +820,8 @@ namespace LYBT.Module.MedicalCases.Services
             => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger);
 
         /// <summary>
-        /// ç”ŸæˆåŒ»æ¡ˆç¼–å·ï¼ˆæ ¼å¼ï¼šMC + å¹´æœˆæ—¥ + åºå·ï¼‰
-        /// T5-P2-11: å‚è€ƒ LocalMedicalCaseDataSource.GenerateCaseNumber
+        /// Éú³ÉÒ½°¸±àºÅ£¨¸ñÊ½£ºMC + ÄêÔÂÈÕ + ĞòºÅ£©
+        /// T5-P2-11: ²Î¿¼ LocalMedicalCaseDataSource.GenerateCaseNumber
         /// </summary>
         private async Task<string> GenerateCaseNumberAsync()
         {
@@ -829,13 +829,13 @@ namespace LYBT.Module.MedicalCases.Services
             var dateStr = today.ToString("yyyyMMdd");
             var prefix = $"MC{dateStr}";
 
-            // æŸ¥è¯¢ä»Šå¤©çš„åŒ»æ¡ˆæ•°é‡ï¼ˆåŒ…å«è½¯åˆ é™¤çš„ï¼Œé¿å…ç¼–å·é‡å¤ï¼‰
+            // ²éÑ¯½ñÌìµÄÒ½°¸ÊıÁ¿£¨°üº¬ÈíÉ¾³ıµÄ£¬±ÜÃâ±àºÅÖØ¸´£©
             var count = await _repository.CountByPrefixAsync(prefix);
             return $"{prefix}{(count + 1):D3}";
         }
 
         /// <summary>
-        /// ç”Ÿæˆå¤„æ–¹ç¼–å·ï¼ˆæ ¼å¼ï¼šRX + å¹´æœˆæ—¥ + åºå·ï¼‰
+        /// Éú³É´¦·½±àºÅ£¨¸ñÊ½£ºRX + ÄêÔÂÈÕ + ĞòºÅ£©
         /// T5-P2-13
         /// </summary>
         private async Task<string> GeneratePrescriptionNumberAsync()
@@ -850,10 +850,10 @@ namespace LYBT.Module.MedicalCases.Services
 
         #endregion
 
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - æ‰¹é‡æ“ä½œ ==========
+        // ========== OpenSpec: optimize-batch-operations Phase 2 - ÅúÁ¿²Ù×÷ ==========
 
         /// <inheritdoc />
-        public async Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin)
+        public async Task\u003cLYBT.Shared.Models.Common.Result\u003cLYBT.Shared.Models.Contracts.Common.BatchOperationResultDto\u003e\u003e BatchDeleteAsync(List\u003cGuid\u003e ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default)
         {
             var result = new LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto
             {
@@ -874,12 +874,12 @@ namespace LYBT.Module.MedicalCases.Services
                         result.FailedItems.Add(new LYBT.Shared.Models.Contracts.Common.BatchOperationFailureItem
                         {
                             Id = id,
-                            Reason = "åŒ»æ¡ˆä¸å­˜åœ¨"
+                            Reason = "Ò½°¸²»´æÔÚ"
                         });
                         continue;
                     }
 
-                    // æƒé™æ£€æŸ¥: ç¡®ä¿æ“ä½œè€…æœ‰æƒåˆ é™¤æ­¤åŒ»æ¡ˆ
+                    // È¨ÏŞ¼ì²é: È·±£²Ù×÷ÕßÓĞÈ¨É¾³ı´ËÒ½°¸
                     MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, entity, operatorId, isAdmin, "BatchDelete", _logger);
 
                     entity.IsDeleted = true;
@@ -888,24 +888,24 @@ namespace LYBT.Module.MedicalCases.Services
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(id);
-                    _logger.LogInformation("[SVC] MedicalCase.BatchDelete â†’ ItemSuccess - MedicalCaseId={MedicalCaseId}", id);
+                    _logger.LogInformation("[SVC] MedicalCase.BatchDelete ¡ú ItemSuccess - MedicalCaseId={MedicalCaseId}", id);
                 }
                 catch (Exception ex)
                 {
-                    // ä¿ç•™é¡¹çº§é”™è¯¯éš”ç¦»ï¼ŒERR-012: ä½¿ç”¨å®‰å…¨é”™è¯¯æ¶ˆæ¯
+                    // ±£ÁôÏî¼¶´íÎó¸ôÀë£¬ERR-012: Ê¹ÓÃ°²È«´íÎóÏûÏ¢
                     result.FailureCount++;
                     result.FailedIds.Add(id);
                     result.FailedItems.Add(new LYBT.Shared.Models.Contracts.Common.BatchOperationFailureItem
                     {
                         Id = id,
-                        Reason = "åˆ é™¤æ“ä½œå¤±è´¥"
+                        Reason = "É¾³ı²Ù×÷Ê§°Ü"
                     });
-                    _logger.LogError(ex, "[SVC] MedicalCase.BatchDelete â†’ ItemFailed - MedicalCaseId={MedicalCaseId}", id);
+                    _logger.LogError(ex, "[SVC] MedicalCase.BatchDelete ¡ú ItemFailed - MedicalCaseId={MedicalCaseId}", id);
                 }
             }
 
             result.IsSuccess = result.SuccessCount > 0;
-            result.Message = $"æ‰¹é‡åˆ é™¤å®Œæˆï¼šæˆåŠŸ {result.SuccessCount} æ¡ï¼Œå¤±è´¥ {result.FailureCount} æ¡";
+            result.Message = $"ÅúÁ¿É¾³ıÍê³É£º³É¹¦ {result.SuccessCount} Ìõ£¬Ê§°Ü {result.FailureCount} Ìõ";
 
             return LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>.Success(result);
         }

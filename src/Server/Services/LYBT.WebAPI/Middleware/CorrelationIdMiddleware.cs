@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using LYBT.Infrastructure.Constants;
+﻿using LYBT.Infrastructure.Constants;
 using Serilog.Context;
 
 namespace LYBT.WebAPI.Middleware
@@ -42,7 +41,7 @@ namespace LYBT.WebAPI.Middleware
         {
             // LOG-013: 优先从traceparent header提取CorrelationId (W3C Trace Context)
             var correlationId = context.Request.Headers[TraceparentHeader].FirstOrDefault();
-            
+
             // 回退到X-Correlation-ID header
             if (string.IsNullOrWhiteSpace(correlationId))
             {

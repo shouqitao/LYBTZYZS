@@ -281,7 +281,7 @@ public class AuthService : IAuthService
     /// <summary>
     /// 用户登出
     /// </summary>
-    public async Task<Result<bool>> LogoutAsync(LogoutRequest request)
+    public async Task003cResult003cbool003e003e LogoutAsync(LogoutRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -290,7 +290,7 @@ public class AuthService : IAuthService
 
             if (!string.IsNullOrEmpty(request.RefreshToken))
             {
-                tokenRecord = await _dbContext.RefreshTokens
+                    .FirstOrDefaultAsync(t =003e t.Token == request.RefreshToken, cancellationToken);
                     .FirstOrDefaultAsync(t => t.Token == request.RefreshToken);
 
                 if (tokenRecord != null && string.IsNullOrEmpty(userName))
@@ -335,20 +335,20 @@ public class AuthService : IAuthService
     /// <summary>
     /// 刷新令牌 - 委托给 ITokenManagementService
     /// </summary>
-    public Task<Result<LoginResponse>> RefreshTokenAsync(string refreshToken)
-        => _tokenManagement.RefreshTokenAsync(refreshToken);
+    public Task003cResult003cLoginResponse003e003e RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+        => _tokenManagement.RefreshTokenAsync(refreshToken, cancellationToken);
 
     /// <summary>
     /// 验证令牌 - 委托给 ITokenManagementService
     /// </summary>
-    public Task<Result<bool>> ValidateTokenAsync(string token)
-        => _tokenManagement.ValidateTokenAsync(token);
+    public Task003cResult003cbool003e003e ValidateTokenAsync(string token, CancellationToken cancellationToken = default)
+        => _tokenManagement.ValidateTokenAsync(token, cancellationToken);
 
     /// <summary>
     /// 获取会话信息 - 委托给 ITokenManagementService
     /// </summary>
-    public Task<Result<object>> GetSessionInfoAsync(string token)
-        => _tokenManagement.GetSessionInfoAsync(token);
+    public Task003cResult003cobject003e003e GetSessionInfoAsync(string token, CancellationToken cancellationToken = default)
+        => _tokenManagement.GetSessionInfoAsync(token, cancellationToken);
 
     /// <summary>
     /// 使用 AutoLoginToken 自动登录
@@ -388,7 +388,7 @@ public class AuthService : IAuthService
 
             if (!string.IsNullOrEmpty(tokenRecord.FamilyId))
             {
-                await RevokeAutoLoginTokenFamilyAsync(tokenRecord.FamilyId, "检测到重放攻击");
+                await RevokeAutoLoginTokenFamilyAsync(tokenRecord.FamilyId, "检测到重放攻击", cancellationToken);
             }
 
             await _auditService.LogAsync(new SecurityAuditEvent
@@ -539,11 +539,11 @@ public class AuthService : IAuthService
     /// <summary>
     /// 撤销 AutoLoginToken Family
     /// </summary>
-    private async Task RevokeAutoLoginTokenFamilyAsync(string familyId, string reason)
+    private async Task RevokeAutoLoginTokenFamilyAsync(string familyId, string reason, CancellationToken cancellationToken = default)
     {
         try
         {
-            var familyTokens = await _dbContext.Set<LYBT.Entities.Auth.AutoLoginToken>()
+                .ToListAsync(cancellationToken);
                 .Where(t => t.FamilyId == familyId && !t.IsRevoked)
                 .ToListAsync();
 
@@ -552,7 +552,7 @@ public class AuthService : IAuthService
                 token.Revoke(reason, "System:ReplayAttackDetection");
             }
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogWarning("[SVC] Auth.RevokeAutoLoginTokenFamily completed - FamilyId={FamilyId} RevokedCount={Count} Reason={Reason}",
                 familyId, familyTokens.Count, reason);

@@ -28,7 +28,7 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 用户登出
         /// </summary>
-        Task<Result<bool>> LogoutAsync(LogoutRequest request);
+        Task<Result<bool>> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken = default);
 
         // Issue #1909: ChangeSysAdminPasswordAsync已移除
         // SuperAdmin现在统一使用UserService.ChangePasswordAsync进行密码修改
@@ -41,17 +41,17 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 刷新Token
         /// </summary>
-        Task<Result<LoginResponse>> RefreshTokenAsync(string refreshToken);
+        Task<Result<LoginResponse>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 验证Token有效性
         /// </summary>
-        Task<Result<bool>> ValidateTokenAsync(string token);
+        Task<Result<bool>> ValidateTokenAsync(string token, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取用户会话信息
         /// </summary>
-        Task<Result<object>> GetSessionInfoAsync(string token);
+        Task<Result<object>> GetSessionInfoAsync(string token, CancellationToken cancellationToken = default);
 
     }
 }

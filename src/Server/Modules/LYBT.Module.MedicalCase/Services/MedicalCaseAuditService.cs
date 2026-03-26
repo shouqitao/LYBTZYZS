@@ -39,7 +39,7 @@ namespace LYBT.Module.MedicalCases.Services
             string operatorName,
             UserRole role,
             AuditOperationType operationType,
-            string? reason = null)
+            string? reason = null, CancellationToken cancellationToken = default)
         {
             if (after == null)
                 throw new ArgumentNullException(nameof(after));
@@ -72,12 +72,12 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 _logger.LogError(ex, "[SVC] MedicalCase.Audit failed - MedicalCaseId={MedicalCaseId} OperatorId={OperatorId}",
                     after.Id, operatorId);
-                // 审计日志失败不应影响主业务流程
+                // 审计日志失败不应影响主业务流�?
             }
         }
 
         /// <inheritdoc/>
-        public async Task<List<MedicalCaseAuditLog>> GetLogsAsync(Guid medicalCaseId)
+        public async Task\u003cList\u003cMedicalCaseAuditLog\u003e\u003e GetLogsAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
         {
             return await _dbContext.MedicalCaseAuditLogs
                 .Where(l => l.MedicalCaseId == medicalCaseId)
@@ -86,10 +86,10 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <inheritdoc/>
-        public async Task<(List<MedicalCaseAuditLog> Logs, int TotalCount)> GetLogsPagedAsync(
+        public async Task\u003c(List\u003cMedicalCaseAuditLog\u003e Logs, int TotalCount)\u003e GetLogsPagedAsync(
             Guid medicalCaseId,
             int page = 1,
-            int pageSize = 20)
+            int pageSize = 20, CancellationToken cancellationToken = default)
         {
             var query = _dbContext.MedicalCaseAuditLogs
                 .Where(l => l.MedicalCaseId == medicalCaseId)
@@ -116,7 +116,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             if (before == null)
             {
-                // 创建操作 - 只记录新值
+                // 创建操作 - 只记录新�?
                 // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
                 var newValues = new Dictionary<string, object?>
                 {
@@ -152,7 +152,7 @@ namespace LYBT.Module.MedicalCases.Services
             CompareField("IsDeleted", before.IsDeleted, after.IsDeleted, changedFields, oldValues, newValuesDict);
             CompareField("CompletedAt", before.CompletedAt, after.CompletedAt, changedFields, oldValues, newValuesDict);
 
-            // 嵌套实体: Consultation 变更检测
+            // 嵌套实体: Consultation 变更检�?
             if (before.Consultation != null && after.Consultation != null)
             {
                 CompareField("Consultation.PresentIllness", before.Consultation.PresentIllness, after.Consultation.PresentIllness, changedFields, oldValues, newValuesDict);
@@ -166,7 +166,7 @@ namespace LYBT.Module.MedicalCases.Services
                 newValuesDict["Consultation"] = "Created";
             }
 
-            // 嵌套实体: Prescription 变更检测
+            // 嵌套实体: Prescription 变更检�?
             if (before.Prescription != null && after.Prescription != null)
             {
                 CompareField("Prescription.Usage", before.Prescription.Usage, after.Prescription.Usage, changedFields, oldValues, newValuesDict);
@@ -204,7 +204,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 比较单个字段的变更
+        /// 比较单个字段的变�?
         /// </summary>
         private static void CompareField<T>(
             string fieldName,

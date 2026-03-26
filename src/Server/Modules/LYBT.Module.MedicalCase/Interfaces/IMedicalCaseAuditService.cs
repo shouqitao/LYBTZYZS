@@ -20,6 +20,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="role">操作者角色</param>
         /// <param name="operationType">操作类型</param>
         /// <param name="reason">修改原因（历史医案修改时必填）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         Task LogAsync(
             MedicalCase? before,
             MedicalCase after,
@@ -27,14 +28,16 @@ namespace LYBT.Module.MedicalCases.Interfaces
             string operatorName,
             UserRole role,
             AuditOperationType operationType,
-            string? reason = null);
+            string? reason = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取医案的审计日志列表
         /// </summary>
         /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>审计日志列表，按创建时间倒序</returns>
-        Task<List<MedicalCaseAuditLog>> GetLogsAsync(Guid medicalCaseId);
+        Task<List<MedicalCaseAuditLog>> GetLogsAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取医案的审计日志列表（分页）
@@ -42,10 +45,12 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="medicalCaseId">医案ID</param>
         /// <param name="page">页码</param>
         /// <param name="pageSize">每页大小</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>审计日志列表，按创建时间倒序</returns>
         Task<(List<MedicalCaseAuditLog> Logs, int TotalCount)> GetLogsPagedAsync(
             Guid medicalCaseId,
             int page = 1,
-            int pageSize = 20);
+            int pageSize = 20,
+            CancellationToken cancellationToken = default);
     }
 }

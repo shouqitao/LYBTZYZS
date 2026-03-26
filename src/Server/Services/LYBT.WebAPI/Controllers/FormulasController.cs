@@ -24,15 +24,18 @@ namespace LYBT.WebAPI.Controllers
     {
         private readonly IFormulaService _service;
         private readonly IFormulaImportExportService _importExportService;
+        private readonly IOutputCacheStore _outputCacheStore;
 
         public FormulasController(
             IFormulaService service,
             IFormulaImportExportService importExportService,
+            IOutputCacheStore outputCacheStore,
             ILogger<FormulasController> logger)
             : base(logger)
         {
             _service = service;
             _importExportService = importExportService;
+            _outputCacheStore = outputCacheStore;
         }
 
         /// <summary>
@@ -90,7 +93,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
-        public async Task<IActionResult> Create([FromBody] FormulaInputDto dto)
+        public async Task<IActionResult> Create([FromBody] FormulaInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // OpenSpec: implement-formula-copy-flow - 获取当前用户ID并传递给服务
@@ -101,6 +104,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "新增验方失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("formulas", cancellationToken);
             LogOperation("新增验方成功", result.Data, result.Data.Id);
             return Success(result.Data, "验方创建成功");
         }
@@ -111,7 +115,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
@@ -124,6 +128,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "更新验方失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("formulas", cancellationToken);
             LogOperation("更新验方成功", result.Data, id);
             return Success(result.Data, "验方更新成功");
         }
@@ -134,19 +139,14 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
             var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
             if (ownershipError != null) return ownershipError;
 
-            var result = await _service.DeleteAsync(id);
-            if (!result.IsSuccess)
-            {
-                return NotFound("验方不存在");
-            }
-
+            await _outputCacheStore.EvictByTagAsync("formulas", cancellationToken);
             LogOperation("删除验方成功", null, id);
             return Success("删除成功");
         }
@@ -278,7 +278,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> ToggleStatus(Guid id)
+        public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
@@ -291,6 +291,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "状态切换失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("formulas", cancellationToken);
             LogOperation("切换验方状态", new { NewStatus = result.Data.Status }, id);
             return Success(result.Data, $"验方已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
@@ -302,7 +303,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Restore(Guid id)
+        public async Task<IActionResult> Restore(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "验方ID") is { } error) return error;
@@ -316,6 +317,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "恢复失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("formulas", cancellationToken);
             LogOperation("恢复验方", null, id);
             return Success(result.Data, "验方已恢复");
         }
@@ -328,7 +330,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-delete")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -338,6 +340,7 @@ namespace LYBT.WebAPI.Controllers
             if (!result.IsSuccess || result.Data == null)
                 return BusinessFail(result.ErrorMessage ?? "批量删除失败");
 
+            await _outputCacheStore.EvictByTagAsync("formulas", cancellationToken);
             LogOperation("批量删除方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }
@@ -348,7 +351,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-enable")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -362,6 +365,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "批量启用失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("formulas", cancellationToken);
             LogOperation("批量启用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }
@@ -372,7 +376,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-disable")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -386,6 +390,7 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
             }
 
+            await _outputCacheStore.EvictByTagAsync("formulas", cancellationToken);
             LogOperation("批量禁用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }

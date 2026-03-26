@@ -13,9 +13,9 @@ using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
-    /// 医案状态服务实现 - 状态管理操作
+    /// 医案状态服务实�?- 状态管理操�?
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
-    /// 职责：UpdateStatus, Complete, CloseCase, Suspend, Cancel等状态流转操作
+    /// 职责：UpdateStatus, Complete, CloseCase, Suspend, Cancel等状态流转操�?
     /// OpenSpec: adopt-mapperly-unified-mapping - 移除IMapper依赖（此Service无映射需求）
     /// </summary>
     public class MedicalCaseStateService : BaseService<MedicalCase>, IMedicalCaseStateService
@@ -46,8 +46,8 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 更新医案状态
-        /// 支持 Draft/Active/Completed 状态流转（Cancelled 已移除，使用 IsDeleted 替代）
+        /// 更新医案状�?
+        /// 支持 Draft/Active/Completed 状态流转（Cancelled 已移除，使用 IsDeleted 替代�?
         /// </summary>
         public async Task<MedicalCase?> UpdateStatusAsync(
             Guid medicalCaseId,
@@ -59,27 +59,27 @@ namespace LYBT.Module.MedicalCases.Services
             // Guard: 完成状态必须通过 CompleteAsync，不允许通过 UpdateStatus 直接设置
             if (status == MedicalCaseStatus.Completed)
             {
-                _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → CompletedBlocked - 请使用 CompleteAsync");
+                _logger.LogWarning("[SVC] MedicalCase.UpdateStatus �?CompletedBlocked - 请使�?CompleteAsync");
                 throw new BusinessException(EC.McInvalidStatusTransition, "完成医案请使用专用的 Complete 接口，不允许通过状态更新直接设置为 Completed");
             }
 
-            // 获取聚合根
+            // 获取聚合�?
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("[SVC] MedicalCase.UpdateStatus �?NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return null;
             }
 
-            // 业务规则验证：状态流转合法性
+            // 业务规则验证：状态流转合法�?
             if (!MedicalCaseRules.IsValidStatusTransition(medicalCase.CaseStatus, status))
             {
-                _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → InvalidTransition - OldStatus={OldStatus} NewStatus={NewStatus}",
+                _logger.LogWarning("[SVC] MedicalCase.UpdateStatus �?InvalidTransition - OldStatus={OldStatus} NewStatus={NewStatus}",
                     medicalCase.CaseStatus, status);
-                throw new BusinessException(EC.McInvalidStatusTransition, $"不允许从{medicalCase.CaseStatus}状态转换到{status}状态");
+                throw new BusinessException(EC.McInvalidStatusTransition, $"不允许从{medicalCase.CaseStatus}状态转换到{status}状�?);
             }
 
-            // 更新状态（仅 Draft <-> Active）
+            // 更新状态（�?Draft <-> Active�?
             medicalCase.CaseStatus = status;
             medicalCase.UpdatedAt = DateTime.UtcNow;
 
@@ -89,8 +89,8 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 统一完成医案入口
-        /// skipWorkflowValidation=false: 验证 NeedsPrescription + 处方存在性 (BR-003)
-        /// skipWorkflowValidation=true: 直接完成 (原 CloseCaseAsync 行为)
+        /// skipWorkflowValidation=false: 验证 NeedsPrescription + 处方存在�?(BR-003)
+        /// skipWorkflowValidation=true: 直接完成 (�?CloseCaseAsync 行为)
         /// 始终设置 CompletedAt
         /// </summary>
         public async Task<MedicalCase?> CompleteAsync(
@@ -102,51 +102,51 @@ namespace LYBT.Module.MedicalCases.Services
             _logger.LogInformation("[SVC] MedicalCase.Complete - MedicalCaseId={MedicalCaseId} SkipValidation={Skip}",
                 medicalCaseId, skipWorkflowValidation);
 
-            // 获取聚合根
+            // 获取聚合�?
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
             if (medicalCase == null)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Complete → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                _logger.LogWarning("[SVC] MedicalCase.Complete �?NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return null;
             }
 
             // 工作流验证（skipWorkflowValidation=false 时执行）
             if (!skipWorkflowValidation)
             {
-                // 业务规则验证：处方需求标记
+                // 业务规则验证：处方需求标�?
                 if (medicalCase.NeedsPrescription == null)
                 {
-                    _logger.LogWarning("[SVC] MedicalCase.Complete → NeedsPrescriptionNotSet - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                    _logger.LogWarning("[SVC] MedicalCase.Complete �?NeedsPrescriptionNotSet - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                     throw new BusinessException(EC.McPrescriptionFlagRequired, "请先标记是否需要开处方");
                 }
 
-                // 如果标记需要开处方，验证处方存在
+                // 如果标记需要开处方，验证处方存�?
                 if (medicalCase.NeedsPrescription == true)
                 {
                     if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
                     {
-                        _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                        _logger.LogWarning("[SVC] MedicalCase.Complete �?PrescriptionRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                         throw new BusinessException(EC.McPrescriptionRequired, "已标记需要开处方，但处方不存在，无法完成医案");
                     }
 
-                    // T5-P2-15: 验证处方明细不为空
+                    // T5-P2-15: 验证处方明细不为�?
                     if (medicalCase.Prescription.Items == null || !medicalCase.Prescription.Items.Any())
                     {
-                        _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionItemsEmpty - MedicalCaseId={MedicalCaseId}",
+                        _logger.LogWarning("[SVC] MedicalCase.Complete �?PrescriptionItemsEmpty - MedicalCaseId={MedicalCaseId}",
                             medicalCaseId);
-                        throw new BusinessException(EC.McPrescriptionItemsRequired, "处方必须包含至少一项药材才能完成医案");
+                        throw new BusinessException(EC.McPrescriptionItemsRequired, "处方必须包含至少一项药材才能完成医�?);
                     }
                 }
             }
 
-            // CODE-01: 完成医案时验证中医诊断必填
+            // CODE-01: 完成医案时验证中医诊断必�?
             if (string.IsNullOrWhiteSpace(medicalCase.Consultation?.TcmDiagnosis))
             {
                 _logger.LogWarning("[SVC] MedicalCase.Complete -> TcmDiagnosisRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(EC.MedicalCaseMissingDiagnosis, "中医诊断不能为空，请先填写中医诊断");
+                throw new BusinessException(EC.MedicalCaseMissingDiagnosis, "中医诊断不能为空，请先填写中医诊�?);
             }
 
-            // DDD: 委托给聚合根域方法
+            // DDD: 委托给聚合根域方�?
             medicalCase.Complete();
 
             // 保存
@@ -156,10 +156,10 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 关闭医案（直接标记为Completed，不验证三步流程）
-        /// 委托给统一的 CompleteAsync(skipWorkflowValidation: true)
+        /// 关闭医案（直接标记为Completed，不验证三步流程�?
+        /// 委托给统一�?CompleteAsync(skipWorkflowValidation: true)
         /// </summary>
-        public async Task<MedicalCase?> CloseCaseAsync(Guid id)
+        public async Task\u003cMedicalCase?\u003e CloseCaseAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await CompleteAsync(id, Guid.Empty, isAdmin: false, skipWorkflowValidation: true);
         }
@@ -177,35 +177,35 @@ namespace LYBT.Module.MedicalCases.Services
         {
             _logger.LogInformation("[SVC] MedicalCase.Suspend - MedicalCaseId={MedicalCaseId}", id);
 
-            // 获取聚合根
+            // 获取聚合�?
             var medicalCase = await _repository.GetByIdWithDetailsAsync(id);
             if (medicalCase == null)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Suspend → NotFound - MedicalCaseId={MedicalCaseId}", id);
+                _logger.LogWarning("[SVC] MedicalCase.Suspend �?NotFound - MedicalCaseId={MedicalCaseId}", id);
                 return null;
             }
 
-            // 保存变更前的状态用于审计
+            // 保存变更前的状态用于审�?
             var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
-            // 权限检查
+            // 权限检�?
             MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, operatorId, isAdmin, "Suspend", _logger);
 
-            // 业务规则验证：只有Suspended/Active状态可以挂起
+            // 业务规则验证：只有Suspended/Active状态可以挂�?
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Suspend → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
+                _logger.LogWarning("[SVC] MedicalCase.Suspend �?AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
                 throw new BusinessException(EC.McCompletedCannotSuspend, "已完成的医案不可挂起");
             }
 
-            // 已软删除的医案不可挂起
+            // 已软删除的医案不可挂�?
             if (medicalCase.IsDeleted)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Suspend → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
+                _logger.LogWarning("[SVC] MedicalCase.Suspend �?AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
                 throw new BusinessException(EC.McDeletedCannotSuspend, "已删除的医案不可挂起");
             }
 
-            // DDD: 委托给聚合根域方法
+            // DDD: 委托给聚合根域方�?
             if (request != null)
             {
                 medicalCase.UpdateConsultation(
@@ -233,8 +233,8 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 取消医案（统一为软删除）
-        /// 原 LIFECYCLE-011: 设置 IsDeleted=true 替代 CaseStatus=Cancelled
+        /// 取消医案（统一为软删除�?
+        /// �?LIFECYCLE-011: 设置 IsDeleted=true 替代 CaseStatus=Cancelled
         /// </summary>
         public async Task<MedicalCase?> CancelAsync(
             Guid id,
@@ -244,18 +244,18 @@ namespace LYBT.Module.MedicalCases.Services
         {
             _logger.LogInformation("[SVC] MedicalCase.Cancel - MedicalCaseId={MedicalCaseId}", id);
 
-            // 获取聚合根
+            // 获取聚合�?
             var medicalCase = await _repository.GetByIdWithDetailsAsync(id);
             if (medicalCase == null)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Cancel → NotFound - MedicalCaseId={MedicalCaseId}", id);
+                _logger.LogWarning("[SVC] MedicalCase.Cancel �?NotFound - MedicalCaseId={MedicalCaseId}", id);
                 return null;
             }
 
-            // 保存变更前的状态用于审计
+            // 保存变更前的状态用于审�?
             var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
-            // 权限检查
+            // 权限检�?
             MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, operatorId, isAdmin, "Cancel", _logger);
 
             // T5-P2-16: 非当天本人取消需原因
@@ -263,32 +263,32 @@ namespace LYBT.Module.MedicalCases.Services
             var isOwner = medicalCase.UserId == operatorId;
             if (!(isSameDay && isOwner) && string.IsNullOrWhiteSpace(reason))
             {
-                _logger.LogWarning("[SVC] MedicalCase.Cancel → ReasonRequired - MedicalCaseId={MedicalCaseId} IsOwner={IsOwner} IsSameDay={IsSameDay}",
+                _logger.LogWarning("[SVC] MedicalCase.Cancel �?ReasonRequired - MedicalCaseId={MedicalCaseId} IsOwner={IsOwner} IsSameDay={IsSameDay}",
                     id, isOwner, isSameDay);
-                throw new BusinessException(EC.McCancelReasonRequired, "非当天本人创建的医案取消时必须提供取消原因");
+                throw new BusinessException(EC.McCancelReasonRequired, "非当天本人创建的医案取消时必须提供取消原�?);
             }
 
-            // 业务规则验证：只有Draft/Active状态可以取消
+            // 业务规则验证：只有Draft/Active状态可以取�?
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
+                _logger.LogWarning("[SVC] MedicalCase.Cancel �?AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
                 throw new BusinessException(EC.McCompletedCannotCancel, "已完成的医案不可取消");
             }
 
             // 已软删除的不重复处理
             if (medicalCase.IsDeleted)
             {
-                _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
+                _logger.LogWarning("[SVC] MedicalCase.Cancel �?AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
                 throw new BusinessException(EC.McAlreadyDeleted, "医案已被删除");
             }
 
-            // DDD: 委托给聚合根域方法
+            // DDD: 委托给聚合根域方�?
             medicalCase.SoftDelete();
 
             // 保存
             var result = await _repository.UpdateAsync(medicalCase);
 
-            // G-9: 医案取消后，根据挂号来源回退挂号状态
+            // G-9: 医案取消后，根据挂号来源回退挂号状�?
             await RollbackRegistrationAsync(id, result.CaseNumber ?? "N/A");
 
             await _cacheInvalidation.InvalidateAsync("medicalcases");
@@ -308,7 +308,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// G-9: 医案取消后回退挂号状态
+        /// G-9: 医案取消后回退挂号状�?
         /// - Receptionist来源: 回退到Waiting状态，保留MedicalCaseId（用于恢复）
         /// - Doctor来源: 设置为Cancelled（闭环）
         /// </summary>
@@ -317,7 +317,7 @@ namespace LYBT.Module.MedicalCases.Services
             var registration = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId);
             if (registration == null)
             {
-                _logger.LogInformation("[SVC] MedicalCase.Cancel → NoRegistrationFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                _logger.LogInformation("[SVC] MedicalCase.Cancel �?NoRegistrationFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return;
             }
 
@@ -326,9 +326,9 @@ namespace LYBT.Module.MedicalCases.Services
                 // 前台挂号: 回退到Waiting，保留MedicalCaseId用于恢复
                 registration.Status = RegistrationStatus.Waiting;
                 registration.UpdatedAt = DateTime.UtcNow;
-                // MedicalCaseId保留不变，用于后续恢复关联
+                // MedicalCaseId保留不变，用于后续恢复关�?
                 await _registrationRepository.UpdateAsync(registration);
-                _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationRolledBack - RegistrationId={RegistrationId} Source=Receptionist Status=Waiting MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
+                _logger.LogInformation("[SVC] MedicalCase.Cancel �?RegistrationRolledBack - RegistrationId={RegistrationId} Source=Receptionist Status=Waiting MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
                     registration.Id, medicalCaseId, caseNumber);
             }
             else if (registration.Source == RegistrationSource.Doctor)
@@ -337,12 +337,12 @@ namespace LYBT.Module.MedicalCases.Services
                 registration.Status = RegistrationStatus.Cancelled;
                 registration.UpdatedAt = DateTime.UtcNow;
                 await _registrationRepository.UpdateAsync(registration);
-                _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationCancelled - RegistrationId={RegistrationId} Source=Doctor Status=Cancelled MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
+                _logger.LogInformation("[SVC] MedicalCase.Cancel �?RegistrationCancelled - RegistrationId={RegistrationId} Source=Doctor Status=Cancelled MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
                     registration.Id, medicalCaseId, caseNumber);
             }
         }
 
-        #region Private Helper Methods (委托给 MedicalCaseServiceHelper)
+        #region Private Helper Methods (委托�?MedicalCaseServiceHelper)
 
         private static MedicalCase CloneMedicalCaseForAudit(MedicalCase source)
             => MedicalCaseServiceHelper.CloneMedicalCaseForAudit(source);

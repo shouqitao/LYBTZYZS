@@ -29,18 +29,19 @@ namespace LYBT.Module.Users.Interfaces
             int pageSize = 20,
             string? keyword = null,
             UserRole? role = null,
-            CommonStatus? status = null);
+            CommonStatus? status = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 根据ID获取用户详情
         /// </summary>
-        Task<Result<UserDetailDto>> GetByIdAsync(Guid id);
+        Task<Result<UserDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 搜索用户（返回所有匹配结果）
         /// </summary>
         /// <param name="keyword">搜索关键字</param>
-        Task<Result<List<UserListDto>>> SearchAsync(string keyword);
+        Task<Result<List<UserListDto>>> SearchAsync(string keyword, CancellationToken cancellationToken = default);
 
         #endregion
 
@@ -59,14 +60,14 @@ namespace LYBT.Module.Users.Interfaces
         /// <summary>
         /// 删除用户（软删除）
         /// </summary>
-        Task<Result> DeleteAsync(Guid id);
+        Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 管理员重置密码（Issue #1162: 支持自动生成临时密码）
         /// </summary>
         /// <param name="id">用户ID</param>
         /// <param name="request">重置密码请求</param>
-        Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request);
+        Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 验证用户密码
@@ -75,19 +76,19 @@ namespace LYBT.Module.Users.Interfaces
         /// <param name="userName">用户名</param>
         /// <param name="password">明文密码</param>
         /// <returns>验证成功返回用户信息，失败返回错误</returns>
-        Task<Result<UserDetailDto>> ValidatePasswordAsync(string userName, string password);
+        Task<Result<UserDetailDto>> ValidatePasswordAsync(string userName, string password, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 更改密码
         /// </summary>
-        Task<Result> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
+        Task<Result> ChangePasswordAsync(Guid id, string oldPassword, string newPassword, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 修改个人信息 (Issue #1888)
         /// </summary>
         /// <param name="userId">用户ID</param>
         /// <param name="dto">个人资料DTO</param>
-        Task<Result<UserDetailDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto);
+        Task<Result<UserDetailDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto, CancellationToken cancellationToken = default);
 
         #endregion
 
@@ -97,13 +98,13 @@ namespace LYBT.Module.Users.Interfaces
         /// 切换用户状态（启用/禁用）
         /// </summary>
         /// <param name="id">用户ID</param>
-        Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id);
+        Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 恢复软删除的用户
         /// </summary>
         /// <param name="id">用户ID</param>
-        Task<Result<UserDetailDto>> RestoreAsync(Guid id);
+        Task<Result<UserDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default);
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
@@ -112,7 +113,7 @@ namespace LYBT.Module.Users.Interfaces
         /// </summary>
         /// <param name="ids">要删除的用户ID列表</param>
         /// <param name="currentUserId">当前操作用户ID（不能删除自己）</param>
-        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null);
+        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 批量更新用户状态
@@ -120,6 +121,6 @@ namespace LYBT.Module.Users.Interfaces
         /// <param name="ids">用户ID列表</param>
         /// <param name="status">目标状态</param>
         /// <param name="currentUserId">当前操作用户ID（不能修改自己的状态）</param>
-        Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null);
+        Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null, CancellationToken cancellationToken = default);
     }
 }

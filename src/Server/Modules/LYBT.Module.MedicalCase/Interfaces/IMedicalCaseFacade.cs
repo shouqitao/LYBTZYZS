@@ -19,22 +19,22 @@ public interface IMedicalCaseFacade
     /// <summary>
     /// 统一保存医案（支持创建和更新）
     /// </summary>
-    Task<MedicalCase?> SaveAsync(MedicalCaseInputDto input, Guid operatorId, bool isAdmin);
+    Task<MedicalCase?> SaveAsync(MedicalCaseInputDto input, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 标记是否需要开处方
     /// </summary>
-    Task<MedicalCase?> SetPrescriptionFlagAsync(Guid id, bool flag, Guid operatorId, bool isAdmin);
+    Task<MedicalCase?> SetPrescriptionFlagAsync(Guid id, bool flag, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 删除医案（软删除）
     /// </summary>
-    Task<bool> DeleteAsync(Guid id, Guid operatorId, bool isAdmin);
+    Task<bool> DeleteAsync(Guid id, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 批量删除医案
     /// </summary>
-    Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin);
+    Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 记录打印完成
@@ -44,7 +44,8 @@ public interface IMedicalCaseFacade
         LYBT.Shared.Models.Enums.PrintType printType,
         Guid printedBy,
         string printedByName,
-        string? printerName = null);
+        string? printerName = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 添加打印日志（支持成功/失败）
@@ -57,63 +58,65 @@ public interface IMedicalCaseFacade
         Guid printedBy,
         string printedByName,
         string? printerName = null,
-        string? errorMessage = null);
+        string? errorMessage = null,
+        CancellationToken cancellationToken = default);
 
     // ===== 状态操作 (StateService) =====
 
     /// <summary>
     /// 更新医案状态
     /// </summary>
-    Task<MedicalCase?> UpdateStatusAsync(Guid id, MedicalCaseStatus status);
+    Task<MedicalCase?> UpdateStatusAsync(Guid id, MedicalCaseStatus status, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 统一完成医案入口
     /// </summary>
-    Task<MedicalCase?> CompleteAsync(Guid id, Guid operatorId, bool isAdmin, bool skipWorkflowValidation = false);
+    Task<MedicalCase?> CompleteAsync(Guid id, Guid operatorId, bool isAdmin, bool skipWorkflowValidation = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 挂起医案（暂停处理）
     /// </summary>
-    Task<MedicalCase?> SuspendAsync(Guid id, ConsultationInputDto? input, Guid operatorId, bool isAdmin);
+    Task<MedicalCase?> SuspendAsync(Guid id, ConsultationInputDto? input, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 取消医案
     /// </summary>
-    Task<MedicalCase?> CancelAsync(Guid id, Guid operatorId, bool isAdmin, string? reason = null);
+    Task<MedicalCase?> CancelAsync(Guid id, Guid operatorId, bool isAdmin, string? reason = null, CancellationToken cancellationToken = default);
 
     // ===== 读操作 (QueryService) =====
 
     /// <summary>
     /// 根据ID获取医案详情
     /// </summary>
-    Task<MedicalCase?> GetByIdAsync(Guid id);
+    Task<MedicalCase?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 查询医案列表（分页，返回MedicalCaseListDto）
     /// </summary>
     Task<PagedResult<MedicalCaseListDto>> GetListDtoAsync(
         MedicalCaseStatus? status, Guid? patientId, int page, int pageSize,
-        Guid? currentDoctorId = null, bool isAdmin = false, string? keyword = null);
+        Guid? currentDoctorId = null, bool isAdmin = false, string? keyword = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 查询辨证记录列表
     /// </summary>
-    Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId);
+    Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 查询处方列表
     /// </summary>
-    Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId);
+    Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 获取待看诊队列（医生维度）
     /// </summary>
-    Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null);
+    Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 获取所有待看诊队列（管理员专用）
     /// </summary>
-    Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync();
+    Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 跨医案搜索（支持多条件组合查询）
@@ -121,17 +124,18 @@ public interface IMedicalCaseFacade
     Task<PagedResult<MedicalCaseDetailDto>> SearchMedicalCasesAsync(
         string? patientName = null, string? diagnosisKeyword = null,
         DateTime? startDate = null, DateTime? endDate = null,
-        int page = 1, int pageSize = 20);
+        int page = 1, int pageSize = 20,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 统一查询接口
     /// </summary>
-    Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query);
+    Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 批量获取医案详情
     /// </summary>
-    Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids);
+    Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids, CancellationToken cancellationToken = default);
 
     // ===== 权限/审计 =====
 
@@ -144,5 +148,5 @@ public interface IMedicalCaseFacade
     /// 获取医案的审计日志列表（分页）
     /// </summary>
     Task<(List<MedicalCaseAuditLog> Logs, int TotalCount)> GetAuditLogsPagedAsync(
-        Guid medicalCaseId, int page = 1, int pageSize = 20);
+        Guid medicalCaseId, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default);
 }

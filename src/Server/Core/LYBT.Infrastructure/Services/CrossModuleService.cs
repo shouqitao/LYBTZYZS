@@ -216,7 +216,7 @@ public class CrossModuleService :
     #region 用户查询 (IUserCrossModuleService)
 
     /// <inheritdoc />
-    public async Task<UserBasicDto?> GetUserBasicInfoAsync(Guid userId)
+    public async Task<UserBasicDto?> GetUserBasicInfoAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .AsNoTracking()
@@ -239,11 +239,11 @@ public class CrossModuleService :
                 UpdatedAt = u.UpdatedAt,
                 Remark = u.Remark
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<UserCredentialDto?> GetUserByUsernameAsync(string username)
+    public async Task<UserCredentialDto?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .AsNoTracking()
@@ -267,44 +267,44 @@ public class CrossModuleService :
                 Remark = u.Remark,
                 PasswordHash = u.PasswordHash
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task UpdateUserPasswordHashAsync(Guid userId, string newPasswordHash)
+    public async Task UpdateUserPasswordHashAsync(Guid userId, string newPasswordHash, CancellationToken cancellationToken = default)
     {
         // 不使用 FindAsync: 当实体不在 ChangeTracker 中时，FindAsync 会应用全局查询过滤器 (IsDeleted)
         // 仅更新未删除用户的密码哈希
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
         if (user != null)
         {
             user.PasswordHash = newPasswordHash;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
     /// <inheritdoc />
-    public async Task<bool> UserExistsAsync(Guid userId)
+    public async Task<bool> UserExistsAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .AsNoTracking()
-            .AnyAsync(u => u.Id == userId && !u.IsDeleted);
+            .AnyAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
     }
 
     /// <inheritdoc />
     /// <summary>
     /// T5-P2-01: 更新登录失败状态
     /// </summary>
-    public async Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
+    public async Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
         if (user != null)
         {
             user.FailedLoginCount = failedLoginCount;
             user.LockoutEnd = lockoutEnd;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
@@ -312,16 +312,16 @@ public class CrossModuleService :
     /// <summary>
     /// T5-P2-01: 重置登录状态 (成功登录后)
     /// </summary>
-    public async Task ResetLoginStateAsync(Guid userId)
+    public async Task ResetLoginStateAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
         if (user != null)
         {
             user.FailedLoginCount = 0;
             user.LockoutEnd = null;
             user.LastLoginTime = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
