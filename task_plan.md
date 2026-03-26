@@ -52,15 +52,15 @@ Tasks:
 ---
 
 ### Phase 2: 完善 MedicalCase 模块 (P1)
-**状态**: pending
+**状态**: ✅ 完成
 **目标**: 清理旧控制器，优化代码结构
 
 Tasks:
-- [ ] Task 2.1: 评估是否可以删除 MedicalCaseController.cs（确认无其他依赖）
-- [ ] Task 2.2: 删除 MedicalCaseController.cs（如果安全）
-- [ ] Task 2.3: 更新 CLAUDE.md 中的控制器列表
-- [ ] Task 2.4: 更新 API 文档和路由配置
-- [ ] Task 2.5: 验证所有 MedicalCase 相关功能正常
+- [x] Task 2.1: 评估是否可以删除 MedicalCaseController.cs（确认无其他依赖）
+- [x] Task 2.2: 删除 MedicalCaseController.cs（如果安全）
+- [x] Task 2.3: 更新 CLAUDE.md 中的控制器列表
+- [x] Task 2.4: 更新 API 文档和路由配置
+- [x] Task 2.5: 验证所有 MedicalCase 相关功能正常
 
 ---
 

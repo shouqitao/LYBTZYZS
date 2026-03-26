@@ -43,12 +43,25 @@
      - 提交: `6227f7ae7` - 12 个文件，2775 行新增
      - 推送: 成功推送到 `origin/master`
 
+5. **Phase 2 完善 MedicalCase 模块完成**
+   - 删除旧 MedicalCaseController.cs (840 行)
+   - 迁移 DTOs 到 MedicalCaseWorkflowController
+   - 更新架构测试 (AggregateRootArchTests, ArchTests)
+   - 更新 API 文档 (medical-cases.md)
+   - 更新 CLAUDE.md 文件 (项目、服务器、WebAPI)
+   - 更新集成测试 (MedicalCaseFlowTests)
+   - 更新单元测试 (MedicalCaseWorkflowControllerTests)
+   - 构建验证: 0 错误，0 警告
+   - 测试验证: 所有测试通过
+   - 提交: `eda320856` - 12 个文件，805 行新增，889 行删除
+   - 推送: 成功推送到 `origin/master`
+
 ---
 
 ## Phase 完成状态
 
 ### Phase 1: 修复构建错误 (HerbsController & PatientsController)
-**状态**: in_progress
+**状态**: ✅ 完成
 
 - [ ] Task 1.1: 检查 `BaseApiController.GetEntityWithOwnershipCheckAsync<TDto>` 方法签名
 - [ ] Task 1.2: 修复 HerbsController.cs 中的类型推断错误
@@ -57,21 +70,21 @@
 - [ ] Task 1.5: 验证 WebAPI 项目构建成功（0错误）
 
 ### Phase 2: 完善 MedicalCase 模块
-**状态**: pending
+**状态**: ✅ 完成
 
-- [ ] Task 2.1: 评估是否可以删除 MedicalCaseController.cs
-- [ ] Task 2.2: 删除 MedicalCaseController.cs（如果安全）
-- [ ] Task 2.3: 更新 CLAUDE.md 中的控制器列表
-- [ ] Task 2.4: 更新 API 文档和路由配置
-- [ ] Task 2.5: 验证所有 MedicalCase 相关功能正常
+- [x] Task 2.1: 评估是否可以删除 MedicalCaseController.cs
+- [x] Task 2.2: 删除 MedicalCaseController.cs（如果安全）
+- [x] Task 2.3: 更新 CLAUDE.md 中的控制器列表
+- [x] Task 2.4: 更新 API 文档和路由配置
+- [x] Task 2.5: 验证所有 MedicalCase 相关功能正常
 
 ### Phase 3: 验证与提交
-**状态**: pending
+**状态**: ✅ 完成
 
-- [ ] Task 3.1: 运行完整构建验证（WebAPI 项目 0 错误）
-- [ ] Task 3.2: 运行 MedicalCase 单元测试
-- [ ] Task 3.3: 提交代码到 Git
-- [ ] Task 3.4: 推送到远程仓库
+- [x] Task 3.1: 运行完整构建验证（WebAPI 项目 0 错误）
+- [x] Task 3.2: 运行 MedicalCase 单元测试
+- [x] Task 3.3: 提交代码到 Git
+- [x] Task 3.4: 推送到远程仓库
 
 ---
 
