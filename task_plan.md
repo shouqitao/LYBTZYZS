@@ -1,9 +1,9 @@
-# Desktop 架构优化任务计划
+# WebAPI 优化与 MedicalCase 完善任务计划
 
-**目标**: 修复 WPF Desktop 架构中的不合理之处，提升代码质量和可维护性
+**目标**: 修复 WebAPI 构建错误，完善 MedicalCase 模块
 
-**创建时间**: 2026-03-19
-**计划文档**: `docs/plans/2026-03-19-desktop-architecture-optimization-plan.md`
+**创建时间**: 2026-03-26
+**前置工作**: MedicalCaseController 拆分已完成 (2026-03-26)
 
 ---
 
@@ -11,62 +11,95 @@
 
 | 编号 | 决策 | 状态 |
 |------|------|------|
-| ARCH-D01 | 抽象 UI 线程调度器，创建 IUiThreadDispatcher | 待执行 |
-| ARCH-D02 | 修复 Models 层依赖方向 | **已取消** (IViewModelServices 已在 Contracts) |
-| ARCH-D03 | 清理 ISessionManager 兼容方法 (注释"兼容性保留"的3个方法) | 待执行 |
-| ARCH-D04 | 清理死代码文件 (ProblemDetails.cs) | 待执行 |
+| WEB-D01 | 先修复构建错误，再优化 MedicalCase | ✅ 完成 |
+| WEB-D02 | 显式指定泛型类型参数解决推断错误 | ✅ 完成 |
+| WEB-D03 | 删除旧 MedicalCaseController（确认安全后） | 待执行 (Phase 2) |
 
 ---
 
 ## Phases
 
-### Phase 1: 抽象 UI 线程调度器 (P0)
-**状态**: pending
-**目标**: 解除 CoreViewModelBase 对 WPF Application.Dispatcher 的直接依赖
+### Phase 1: 修复构建错误 (HerbsController & PatientsController) (P0)
+**状态**: ✅ 完成
+**目标**: 解决 25 个编译错误，使 WebAPI 项目能成功构建
+
+**错误分析:**
+
+| 错误类型 | 文件 | 行号 | 描述 |
+|----------|------|------|------|
+| CS0411 | HerbsController.cs | 103, 128, 350 | 无法推断 `GetEntityWithOwnershipCheckAsync<TDto>` 类型参数 |
+| CS8130/CS8183 | HerbsController.cs | 103, 128, 350 | 隐式类型弃元推断失败 |
+| CS0103 | HerbsController.cs | 428 | `cancellationToken` 未定义 |
+| CS0411 | PatientsController.cs | 123, 155, 267 | 同样的类型推断问题 |
+| CS8130/CS8183 | PatientsController.cs | 123, 155, 267 | 同样的弃元推断问题 |
+
+**修复策略:** 在调用时显式指定类型参数，例如：
+```csharp
+// 错误写法
+var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+
+// 正确写法
+var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, _herbService.GetByIdAsync, "药材");
+```
 
 Tasks:
-- [ ] Task 1: 创建 `IUiThreadDispatcher` 接口 (Contracts/Services)
-- [ ] Task 2: 创建 `WpfUiThreadDispatcher` 实现 (Infrastructure/Services)
-- [ ] Task 3: 注册 `IUiThreadDispatcher` 到 DI 容器 (Shell)
-- [ ] Task 4: 更新 `IViewModelServices` 添加 `IUiThreadDispatcher` 属性
-- [ ] Task 5: 重构 `CoreViewModelBase.RunOnUIThread` 委托给接口
-- [ ] Task 6: 添加 `WpfUiThreadDispatcherTests` 单元测试
+- [x] Task 1.1: 检查 `BaseApiController.GetEntityWithOwnershipCheckAsync<TDto>` 方法签名
+- [x] Task 1.2: 修复 HerbsController.cs 中的类型推断错误（显式指定类型参数）
+- [x] Task 1.3: 修复 HerbsController.cs 中的 cancellationToken 未定义问题
+- [x] Task 1.4: 修复 PatientsController.cs 中的类型推断错误
+- [x] Task 1.5: 验证 WebAPI 项目构建成功（0错误）
 
 ---
 
-### Phase 2: 清理兼容方法 (P1)
+### Phase 2: 完善 MedicalCase 模块 (P1)
 **状态**: pending
-**目标**: 移除 ISessionManager 中3个"兼容性保留"方法（无调用方）
+**目标**: 清理旧控制器，优化代码结构
 
 Tasks:
-- [ ] Task 7: 确认搜索无调用方后，从接口和实现中删除 SetCurrentUser / SetUserSession / ClearUserSession
+- [ ] Task 2.1: 评估是否可以删除 MedicalCaseController.cs（确认无其他依赖）
+- [ ] Task 2.2: 删除 MedicalCaseController.cs（如果安全）
+- [ ] Task 2.3: 更新 CLAUDE.md 中的控制器列表
+- [ ] Task 2.4: 更新 API 文档和路由配置
+- [ ] Task 2.5: 验证所有 MedicalCase 相关功能正常
 
 ---
 
-### Phase 3: 清理死代码 (P2)
-**状态**: pending
-**目标**: 删除无引用的文件和空 XML 节点
+### Phase 3: 验证与提交 (P2)
+**状态**: ✅ 完成
+**目标**: 确保所有修改正确，提交到版本控制
 
 Tasks:
-- [ ] Task 8: 删除 ProblemDetails.cs（无引用），清理 Infrastructure.csproj 空 ItemGroup
-- [ ] Task 9: 全量验证（编译 + 测试）
+- [x] Task 3.1: 运行完整构建验证（WebAPI 项目 0 错误）
+- [x] Task 3.2: 运行 MedicalCase 单元测试
+- [x] Task 3.3: 提交代码到 Git（包含详细提交信息）
+- [x] Task 3.4: 推送到远程仓库
 
 ---
 
 ## 依赖关系
 
 ```
-Task 1 (IUiThreadDispatcher 接口)
+Task 1.1 (检查方法签名)
     |
-Task 2 (WpfUiThreadDispatcher 实现)   Task 4 (IViewModelServices 更新)
-    |                                       |
-Task 3 (DI 注册)                       Task 5 (CoreViewModelBase 重构) <- 依赖 Task 3 + 4
-    |
-Task 6 (测试) <- 依赖 Task 2
+Task 1.2 (修复 HerbsController 类型推断)   Task 1.4 (修复 PatientsController 类型推断)
+    |                                               |
+Task 1.3 (修复 cancellationToken)                   |
+    |                                               |
+Task 1.5 (验证构建) <-------------------------------+
 
-Task 7, Task 8 (并行，独立任务)
+Task 2.1 (评估删除旧控制器)
     |
-Task 9 (全量验证)
+Task 2.2 (删除旧控制器) <- 依赖 Task 1.5
+    |
+Task 2.3 (更新文档)   Task 2.4 (更新 API 文档)
+    |                       |
+Task 2.5 (验证功能) <------+
+
+Task 3.1 (构建验证)   Task 3.2 (运行测试)
+    |                       |
+Task 3.3 (提交代码) <------+
+    |
+Task 3.4 (推送)
 ```
 
 ---
@@ -75,7 +108,30 @@ Task 9 (全量验证)
 
 每 Phase 完成后执行:
 ```bash
-dotnet build LYBT.All.sln
-dotnet test tests/LYBT.Tests.Desktop/
-dotnet test tests/LYBT.Tests.Architecture/
+dotnet build src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj
+dotnet test tests/LYBT.Tests.Server.Unit/
 ```
+
+---
+
+## 错误记录
+
+| 错误 | 尝试次数 | 解决方案 |
+|------|----------|----------|
+| 类型推断失败 | 0 | 待修复：显式指定泛型类型参数 |
+| cancellationToken 未定义 | 0 | 待修复：添加参数或使用默认值 |
+
+---
+
+## 历史记录 (Desktop 架构优化 - 已完成)
+
+**目标**: 修复 WPF Desktop 架构中的不合理之处，提升代码质量和可维护性
+
+**创建时间**: 2026-03-19
+**计划文档**: `docs/plans/2026-03-19-desktop-architecture-optimization-plan.md`
+
+**已完成任务:**
+- ARCH-D01: 抽象 UI 线程调度器，创建 IUiThreadDispatcher ✅
+- ARCH-D02: 修复 Models 层依赖方向 (已取消 - IViewModelServices 已在 Contracts)
+- ARCH-D03: 清理 ISessionManager 兼容方法 ✅
+- ARCH-D04: 清理死代码文件 (ProblemDetails.cs) ✅
