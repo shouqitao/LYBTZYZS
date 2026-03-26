@@ -3,6 +3,7 @@ using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
+using System.Threading;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Shared.Models.Common;
@@ -48,7 +49,7 @@ namespace LYBT.Module.Patients.Services
             _importExport = importExport;
         }
 
-        public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false)
+        public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // Bug #1587修复：支持关键字搜索（姓名/拼音码/手机号）
@@ -83,7 +84,7 @@ namespace LYBT.Module.Patients.Services
         /// 分页查询患者列表（返回PatientListDto，用于列表视图）
         /// OpenSpec: optimize-entity-data-flow - 增量API方法
         /// </summary>
-        public async Task<Result<PagedResult<PatientListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false)
+        public async Task<Result<PagedResult<PatientListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch
             // T5-P2-27: filterDisabled=true时只显示启用状态患者
@@ -112,7 +113,7 @@ namespace LYBT.Module.Patients.Services
             return Result<PagedResult<PatientListDto>>.Success(result);
         }
 
-        public async Task<Result<PatientDetailDto>> GetByIdAsync(Guid id)
+        public async Task<Result<PatientDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 业务逻辑检查保留在外部，无需ExecuteAsync包装
             var entity = await _repository.GetByIdAsync(id);
@@ -126,7 +127,7 @@ namespace LYBT.Module.Patients.Services
             return Result<PatientDetailDto>.Success(dto);
         }
 
-        public async Task<Result<PatientDetailDto>> CreateAsync(PatientInputDto dto)
+        public async Task<Result<PatientDetailDto>> CreateAsync(PatientInputDto dto, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，保留业务验证
             // FluentValidation 验证（Phase 1 Task 1.7）
@@ -173,7 +174,7 @@ namespace LYBT.Module.Patients.Services
             return Result<PatientDetailDto>.Success(resultDto);
         }
 
-        public async Task<Result<PatientDetailDto>> UpdateAsync(Guid id, PatientInputDto dto)
+        public async Task<Result<PatientDetailDto>> UpdateAsync(Guid id, PatientInputDto dto, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，保留业务逻辑检查
             var entity = await _repository.GetByIdAsync(id);
@@ -232,7 +233,7 @@ namespace LYBT.Module.Patients.Services
             return Result<PatientDetailDto>.Success(resultDto);
         }
 
-        public async Task<Result<List<PatientDetailDto>>> SearchAsync(string keyword)
+        public async Task<Result<List<PatientDetailDto>>> SearchAsync(string keyword, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，修复ERR-012违规(ex.Message)
             // 如果关键字为空，返回空列表
@@ -251,7 +252,7 @@ namespace LYBT.Module.Patients.Services
             return Result<List<PatientDetailDto>>.Success(patientDtos);
         }
 
-        public async Task<Result> DeleteAsync(Guid id)
+        public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // X7: 删除前强制引用检查
             var refCheck = await CheckReferenceAsync(id);
@@ -273,16 +274,16 @@ namespace LYBT.Module.Patients.Services
         // ========== Import/Export 职责委托给 IPatientImportExportService ==========
 
         /// <inheritdoc/>
-        public Task<Result<PatientBatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null)
-            => _importExport.BatchImportAsync(stream, fileName);
+        public Task<Result<PatientBatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null, CancellationToken cancellationToken = default)
+            => _importExport.BatchImportAsync(stream, fileName, cancellationToken);
 
         /// <inheritdoc/>
-        public Task<MemoryStream> ExportTemplateAsync(ExportTemplateDto config)
-            => _importExport.ExportTemplateAsync(config);
+        public Task<MemoryStream> ExportTemplateAsync(ExportTemplateDto config, CancellationToken cancellationToken = default)
+            => _importExport.ExportTemplateAsync(config, cancellationToken);
 
         /// <inheritdoc/>
-        public Task<MemoryStream> ExportPatientsAsync(string? keyword = null)
-            => _importExport.ExportPatientsAsync(keyword);
+        public Task<MemoryStream> ExportPatientsAsync(string? keyword = null, CancellationToken cancellationToken = default)
+            => _importExport.ExportPatientsAsync(keyword, cancellationToken);
 
         #region IPatientServiceOptimized 实现 - Entity直接返回方法
 
@@ -290,7 +291,7 @@ namespace LYBT.Module.Patients.Services
         /// 获取分页患者数据（直接返回Patient Entity）
         /// Phase 3 Task 3.1: 消除双重映射，提升性能15-20%
         /// </summary>
-        public async Task<Result<PagedResult<Patient>>> GetPagedEntityAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<Result<PagedResult<Patient>>> GetPagedEntityAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch
             var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
@@ -301,7 +302,7 @@ namespace LYBT.Module.Patients.Services
         /// 根据ID获取患者（直接返回Patient Entity）
         /// Phase 3 Task 3.1: 消除Entity→DTO映射，提升性能
         /// </summary>
-        public async Task<Result<Patient>> GetByIdEntityAsync(Guid id)
+        public async Task<Result<Patient>> GetByIdEntityAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，保留业务检查
             var entity = await _repository.GetByIdAsync(id);
@@ -315,7 +316,7 @@ namespace LYBT.Module.Patients.Services
         /// 创建患者（直接返回Patient Entity）
         /// Phase 3 Task 3.1: 消除DTO→Entity→DTO双重映射
         /// </summary>
-        public async Task<Result<Patient>> CreateEntityAsync(PatientInputDto dto)
+        public async Task<Result<Patient>> CreateEntityAsync(PatientInputDto dto, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，保留业务验证
             // FluentValidation 验证
@@ -360,7 +361,7 @@ namespace LYBT.Module.Patients.Services
         /// 更新患者（直接返回Patient Entity）
         /// Phase 3 Task 3.1: 消除DTO→Entity→DTO双重映射
         /// </summary>
-        public async Task<Result<Patient>> UpdateEntityAsync(Guid id, PatientInputDto dto)
+        public async Task<Result<Patient>> UpdateEntityAsync(Guid id, PatientInputDto dto, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，保留业务逻辑检查
             // Issue #2245 Fix: 检查实体存在性(包括软删除状态)
@@ -421,7 +422,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 切换患者状态（启用/禁用）
         /// </summary>
-        public async Task<Result<PatientDetailDto>> ToggleStatusAsync(Guid id)
+        public async Task<Result<PatientDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
@@ -463,7 +464,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 恢复软删除的患者
         /// </summary>
-        public async Task<Result<PatientDetailDto>> RestoreAsync(Guid id)
+        public async Task<Result<PatientDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，保留业务逻辑检查
             var entity = await _repository.GetByIdIncludingDeletedAsync(id);
@@ -492,7 +493,7 @@ namespace LYBT.Module.Patients.Services
         /// <remarks>
         /// eliminate-service-catch-return: 保留项级错误隔离，修复ERR-012违规
         /// </remarks>
-        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, CancellationToken cancellationToken = default)
         {
             var result = new BatchOperationResultDto
             {
@@ -568,7 +569,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 检查患者是否被医案引用
         /// </summary>
-        public async Task<Result<PatientReferenceCheckDto>> CheckReferenceAsync(Guid patientId)
+        public async Task<Result<PatientReferenceCheckDto>> CheckReferenceAsync(Guid patientId, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 异常由IExceptionHandler统一处理
             var patient = await _repository.GetByIdAsync(patientId);
@@ -616,7 +617,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 批量检查患者引用关系
         /// </summary>
-        public async Task<Result<List<PatientReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> patientIds)
+        public async Task<Result<List<PatientReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> patientIds, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 异常由IExceptionHandler统一处理
             const int MAX_CHECK_SIZE = 100;

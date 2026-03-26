@@ -1,3 +1,4 @@
+using System.Threading;
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -78,11 +79,12 @@ namespace LYBT.Module.MedicalCases.Services
             IUserCrossModuleService userCrossModule,
             Guid userId,
             bool isAdmin,
-            ILogger? logger = null)
+            ILogger? logger = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
-                var user = await userCrossModule.GetUserBasicInfoAsync(userId);
+                var user = await userCrossModule.GetUserBasicInfoAsync(userId, cancellationToken);
                 if (user != null)
                 {
                     return (user.RealName, user.Role);
@@ -110,7 +112,8 @@ namespace LYBT.Module.MedicalCases.Services
             IPatientCrossModuleService patientCrossModule,
             IUserCrossModuleService userCrossModule,
             IMedicalCaseRepository medicalCaseRepository,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken cancellationToken = default)
         {
             if (doctorId == Guid.Empty)
             {
@@ -118,7 +121,7 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new ArgumentException("DoctorId/UserId 不能为空");
             }
 
-            var patient = await patientCrossModule.GetPatientBasicInfoAsync(patientId)
+            var patient = await patientCrossModule.GetPatientBasicInfoAsync(patientId, cancellationToken)
                 ?? throw new InvalidOperationException($"患者不存在，PatientId: {patientId}");
 
             // T5-P2-09: 检查患者状态
@@ -129,11 +132,11 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new BusinessException(EC.McPatientDisabled, "该患者已被禁用，无法创建医案");
             }
 
-            var doctor = await userCrossModule.GetUserBasicInfoAsync(doctorId)
+            var doctor = await userCrossModule.GetUserBasicInfoAsync(doctorId, cancellationToken)
                 ?? throw new InvalidOperationException($"医生不存在，DoctorId: {doctorId}");
 
             // BR-001: 单患者仅一条未完成医案
-            var existingCases = await medicalCaseRepository.GetByPatientIdAsync(patientId);
+            var existingCases = await medicalCaseRepository.GetByPatientIdAsync(patientId, cancellationToken);
             if (!MedicalCaseRules.CanCreateNewCase(existingCases))
             {
                 if (MedicalCaseRules.HasActiveCase(existingCases))

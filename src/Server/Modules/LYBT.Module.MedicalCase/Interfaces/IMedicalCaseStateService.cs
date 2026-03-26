@@ -1,3 +1,4 @@
+using System.Threading;
 using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
@@ -17,21 +18,29 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="medicalCaseId">医案ID</param>
         /// <param name="status">目标状态</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>更新后的医案实体</returns>
         Task<MedicalCase?> UpdateStatusAsync(
             Guid medicalCaseId,
-            MedicalCaseStatus status);
+            MedicalCaseStatus status,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 统一完成医案入口
         /// skipWorkflowValidation=false: 验证 NeedsPrescription + 处方存在性 (BR-003)
         /// skipWorkflowValidation=true: 直接完成 (原 CloseCaseAsync 行为)
         /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="operatorId">操作者ID</param>
+        /// <param name="isAdmin">是否管理员</param>
+        /// <param name="skipWorkflowValidation">是否跳过工作流验证</param>
+        /// <param name="cancellationToken">取消令牌</param>
         Task<MedicalCase?> CompleteAsync(
             Guid medicalCaseId,
             Guid operatorId,
             bool isAdmin = false,
-            bool skipWorkflowValidation = false);
+            bool skipWorkflowValidation = false,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 关闭医案（直接标记为Completed）
@@ -39,14 +48,9 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 业务规则：直接设置状态为Completed，不验证三步流程
         /// </summary>
         /// <param name="id">医案ID</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>关闭是否成功</returns>
-        /// <summary>
-    /// 关闭医案（直接标记为Completed）
-    /// OpenSpec: optimize-medicalcase-api - 返回完整医案实体用于DTO映射
-    /// </summary>
-    /// <param name="id">医案ID</param>
-    /// <returns>更新后的医案实体，不存在返回null</returns>
-    Task<MedicalCase?> CloseCaseAsync(Guid id);
+        Task<MedicalCase?> CloseCaseAsync(Guid id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 挂起医案（暂停处理）
@@ -57,12 +61,14 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="request">可选的诊断信息更新</param>
         /// <param name="operatorId">操作者ID</param>
         /// <param name="isAdmin">是否管理员</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>更新后的医案实体</returns>
         Task<MedicalCase?> SuspendAsync(
             Guid id,
             ConsultationInputDto? request,
             Guid operatorId,
-            bool isAdmin = false);
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 取消医案
@@ -73,11 +79,13 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="operatorId">操作者ID</param>
         /// <param name="isAdmin">是否管理员</param>
         /// <param name="reason">取消原因（审计时必填）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>更新后的医案实体</returns>
         Task<MedicalCase?> CancelAsync(
             Guid id,
             Guid operatorId,
             bool isAdmin = false,
-            string? reason = null);
+            string? reason = null,
+            CancellationToken cancellationToken = default);
     }
 }

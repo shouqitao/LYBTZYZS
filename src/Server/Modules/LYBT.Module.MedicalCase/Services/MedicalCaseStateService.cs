@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.MedicalCases.Services
@@ -51,7 +52,8 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<MedicalCase?> UpdateStatusAsync(
             Guid medicalCaseId,
-            MedicalCaseStatus status)
+            MedicalCaseStatus status,
+            CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdateStatus - MedicalCaseId={MedicalCaseId} Status={Status}",
                 medicalCaseId, status);
@@ -64,7 +66,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 获取聚合根
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -84,7 +86,7 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.UpdatedAt = DateTime.UtcNow;
 
             // 保存
-            return await _repository.UpdateAsync(medicalCase);
+            return await _repository.UpdateAsync(medicalCase, cancellationToken);
         }
 
         /// <summary>
@@ -97,13 +99,14 @@ namespace LYBT.Module.MedicalCases.Services
             Guid medicalCaseId,
             Guid operatorId,
             bool isAdmin = false,
-            bool skipWorkflowValidation = false)
+            bool skipWorkflowValidation = false,
+            CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.Complete - MedicalCaseId={MedicalCaseId} SkipValidation={Skip}",
                 medicalCaseId, skipWorkflowValidation);
 
             // 获取聚合根
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Complete → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -150,18 +153,18 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.Complete();
 
             // 保存
-            var result = await _repository.UpdateAsync(medicalCase);
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
             return result;
         }
 
         /// <summary>
-        /// 关闭医案（直接标记为Completed，不验证三步流程）
+        /// 关闭医案（直接标记为Completed）
         /// 委托给统一的 CompleteAsync(skipWorkflowValidation: true)
         /// </summary>
-        public async Task<MedicalCase?> CloseCaseAsync(Guid id)
+        public async Task<MedicalCase?> CloseCaseAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await CompleteAsync(id, Guid.Empty, isAdmin: false, skipWorkflowValidation: true);
+            return await CompleteAsync(id, Guid.Empty, isAdmin: false, skipWorkflowValidation: true, cancellationToken);
         }
 
         /// <summary>
@@ -173,12 +176,13 @@ namespace LYBT.Module.MedicalCases.Services
             Guid id,
             ConsultationInputDto? request,
             Guid operatorId,
-            bool isAdmin = false)
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.Suspend - MedicalCaseId={MedicalCaseId}", id);
 
             // 获取聚合根
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(id);
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(id, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Suspend → NotFound - MedicalCaseId={MedicalCaseId}", id);
@@ -216,18 +220,19 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.Suspend();
 
             // 保存
-            var result = await _repository.UpdateAsync(medicalCase);
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
             // 记录审计日志
-            var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin);
+            var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin, cancellationToken);
             await _auditService.LogAsync(
                 before: beforeState,
                 after: result,
                 operatorId: operatorId,
                 operatorName: operatorInfo.Name,
                 role: operatorInfo.Role,
-                operationType: AuditOperationType.Update);
+                operationType: AuditOperationType.Update,
+                cancellationToken: cancellationToken);
 
             return result;
         }
@@ -240,12 +245,13 @@ namespace LYBT.Module.MedicalCases.Services
             Guid id,
             Guid operatorId,
             bool isAdmin = false,
-            string? reason = null)
+            string? reason = null,
+            CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.Cancel - MedicalCaseId={MedicalCaseId}", id);
 
             // 获取聚合根
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(id);
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(id, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → NotFound - MedicalCaseId={MedicalCaseId}", id);
@@ -286,15 +292,15 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.SoftDelete();
 
             // 保存
-            var result = await _repository.UpdateAsync(medicalCase);
+            var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
 
             // G-9: 医案取消后，根据挂号来源回退挂号状态
-            await RollbackRegistrationAsync(id, result.CaseNumber ?? "N/A");
+            await RollbackRegistrationAsync(id, result.CaseNumber ?? "N/A", cancellationToken);
 
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
             // 记录审计日志
-            var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin);
+            var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin, cancellationToken);
             await _auditService.LogAsync(
                 before: beforeState,
                 after: result,
@@ -302,7 +308,8 @@ namespace LYBT.Module.MedicalCases.Services
                 operatorName: operatorInfo.Name,
                 role: operatorInfo.Role,
                 operationType: AuditOperationType.SoftDelete,
-                reason: reason);
+                reason: reason,
+                cancellationToken: cancellationToken);
 
             return result;
         }
@@ -312,9 +319,9 @@ namespace LYBT.Module.MedicalCases.Services
         /// - Receptionist来源: 回退到Waiting状态，保留MedicalCaseId（用于恢复）
         /// - Doctor来源: 设置为Cancelled（闭环）
         /// </summary>
-        private async Task RollbackRegistrationAsync(Guid medicalCaseId, string caseNumber)
+        private async Task RollbackRegistrationAsync(Guid medicalCaseId, string caseNumber, CancellationToken cancellationToken = default)
         {
-            var registration = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId);
+            var registration = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId, cancellationToken);
             if (registration == null)
             {
                 _logger.LogInformation("[SVC] MedicalCase.Cancel → NoRegistrationFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -327,7 +334,7 @@ namespace LYBT.Module.MedicalCases.Services
                 registration.Status = RegistrationStatus.Waiting;
                 registration.UpdatedAt = DateTime.UtcNow;
                 // MedicalCaseId保留不变，用于后续恢复关联
-                await _registrationRepository.UpdateAsync(registration);
+                await _registrationRepository.UpdateAsync(registration, cancellationToken);
                 _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationRolledBack - RegistrationId={RegistrationId} Source=Receptionist Status=Waiting MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
                     registration.Id, medicalCaseId, caseNumber);
             }
@@ -336,7 +343,7 @@ namespace LYBT.Module.MedicalCases.Services
                 // 医生直接看诊: 设置为Cancelled（闭环）
                 registration.Status = RegistrationStatus.Cancelled;
                 registration.UpdatedAt = DateTime.UtcNow;
-                await _registrationRepository.UpdateAsync(registration);
+                await _registrationRepository.UpdateAsync(registration, cancellationToken);
                 _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationCancelled - RegistrationId={RegistrationId} Source=Doctor Status=Cancelled MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
                     registration.Id, medicalCaseId, caseNumber);
             }
@@ -347,8 +354,8 @@ namespace LYBT.Module.MedicalCases.Services
         private static MedicalCase CloneMedicalCaseForAudit(MedicalCase source)
             => MedicalCaseServiceHelper.CloneMedicalCaseForAudit(source);
 
-        private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin)
-            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger);
+        private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin, CancellationToken cancellationToken = default)
+            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger, cancellationToken);
 
         #endregion
     }

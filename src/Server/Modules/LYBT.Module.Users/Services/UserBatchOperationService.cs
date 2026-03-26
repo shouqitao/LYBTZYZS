@@ -82,7 +82,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 检查是否可以删除指定用户（包含最后一个保护）
         /// </summary>
-        private async Task<Result> CanDeleteUserAsync(Guid userId, UserRole targetRole)
+        private async Task<Result> CanDeleteUserAsync(Guid userId, UserRole targetRole, CancellationToken cancellationToken = default)
         {
             var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, targetRole))
@@ -92,7 +92,7 @@ namespace LYBT.Module.Users.Services
 
             if (targetRole == UserRole.SuperAdmin || targetRole == UserRole.Admin)
             {
-                var users = await _repository.FindAsync(u => u.Role == targetRole);
+                var users = await _repository.FindAsync(u => u.Role == targetRole, cancellationToken);
                 var count = users.Count();
                 if (count <= 1)
                 {
@@ -112,7 +112,7 @@ namespace LYBT.Module.Users.Services
         #endregion
 
         /// <inheritdoc />
-        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null)
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // ERR-012: 修复ex.Message暴露
@@ -143,7 +143,7 @@ namespace LYBT.Module.Users.Services
                     continue;
                 }
 
-                var user = await _repository.GetByIdAsync(id);
+                var user = await _repository.GetByIdAsync(id, cancellationToken);
                 if (user == null)
                 {
                     result.FailedItems.Add(new BatchOperationFailureItem
@@ -169,7 +169,7 @@ namespace LYBT.Module.Users.Services
                 }
 
                 // 权限检查
-                var permissionCheck = await CanDeleteUserAsync(id, user.Role);
+                var permissionCheck = await CanDeleteUserAsync(id, user.Role, cancellationToken);
                 if (!permissionCheck.IsSuccess)
                 {
                     result.FailedItems.Add(new BatchOperationFailureItem
@@ -192,7 +192,7 @@ namespace LYBT.Module.Users.Services
             // CODE-34: 统一 SaveChanges 确保单事务
             if (result.SuccessCount > 0)
             {
-                await _repository.SaveChangesAsync();
+                await _repository.SaveChangesAsync(cancellationToken);
             }
 
             _logger.LogInformation("[SVC] UserBatch.BatchDelete completed - TotalCount={Total} SuccessCount={Success} FailureCount={Failure}",
@@ -202,7 +202,7 @@ namespace LYBT.Module.Users.Services
         }
 
         /// <inheritdoc />
-        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null)
+        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // ERR-012: 修复ex.Message暴露
@@ -228,7 +228,7 @@ namespace LYBT.Module.Users.Services
                     continue;
                 }
 
-                var user = await _repository.GetByIdAsync(id);
+                var user = await _repository.GetByIdAsync(id, cancellationToken);
                 if (user == null || user.IsDeleted)
                 {
                     result.FailureCount++;
@@ -272,7 +272,7 @@ namespace LYBT.Module.Users.Services
                     && user.Role >= UserRole.Admin)
                 {
                     var activeAdmins = await _repository.FindAsync(
-                        u => u.Role >= UserRole.Admin && u.Status == CommonStatus.Enabled);
+                        u => u.Role >= UserRole.Admin && u.Status == CommonStatus.Enabled, cancellationToken);
                     if (activeAdmins.Count() <= 1)
                     {
                         result.FailureCount++;
@@ -288,7 +288,7 @@ namespace LYBT.Module.Users.Services
 
                 user.Status = status;
                 user.UpdatedAt = DateTime.UtcNow;
-                await _repository.UpdateAsync(user);
+                await _repository.UpdateAsync(user, cancellationToken);
                 result.SuccessCount++;
 
                 // X3: 禁用用户时撤销所有 Token

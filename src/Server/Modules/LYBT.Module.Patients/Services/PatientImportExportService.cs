@@ -39,7 +39,7 @@ namespace LYBT.Module.Patients.Services
         /// 实现BR-002失败恢复机制：部分成功模式 + 详细失败信息
         /// eliminate-service-catch-return: 移除外层try-catch，保留行级错误隔离
         /// </summary>
-        public async Task<Result<PatientBatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null)
+        public async Task<Result<PatientBatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null, CancellationToken cancellationToken = default)
         {
             var result = new PatientBatchImportResultDto
             {
@@ -84,7 +84,7 @@ namespace LYBT.Module.Patients.Services
                     var inputDto = ParseExcelRow(worksheet, row);
 
                     // FluentValidation验证
-                    var validationResult = await _validator.ValidateAsync(inputDto);
+                    var validationResult = await _validator.ValidateAsync(inputDto, cancellationToken);
 
                     if (!validationResult.IsValid)
                     {
@@ -218,7 +218,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 导出患者导入模板 (Epic #1934 FR-002)
         /// </summary>
-        public async Task<MemoryStream> ExportTemplateAsync(ExportTemplateDto config)
+        public async Task<MemoryStream> ExportTemplateAsync(ExportTemplateDto config, CancellationToken cancellationToken = default)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -267,7 +267,7 @@ namespace LYBT.Module.Patients.Services
 
             // 返回Excel文件流
             var stream = new MemoryStream();
-            await package.SaveAsAsync(stream);
+            await package.SaveAsAsync(stream, cancellationToken);
             stream.Position = 0;
             return stream;
         }
@@ -275,7 +275,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 导出患者数据到Excel (Epic #1934 FR-003)
         /// </summary>
-        public async Task<MemoryStream> ExportPatientsAsync(string? keyword = null)
+        public async Task<MemoryStream> ExportPatientsAsync(string? keyword = null, CancellationToken cancellationToken = default)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -335,7 +335,7 @@ namespace LYBT.Module.Patients.Services
 
             // 返回Excel文件流
             var stream = new MemoryStream();
-            await package.SaveAsAsync(stream);
+            await package.SaveAsAsync(stream, cancellationToken);
             stream.Position = 0;
             return stream;
         }

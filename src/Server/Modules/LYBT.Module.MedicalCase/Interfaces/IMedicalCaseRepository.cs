@@ -1,4 +1,5 @@
-﻿using LYBT.Entities.MedicalCases;
+﻿using System.Threading;
+using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -14,19 +15,19 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <summary>
         /// 根据患者ID获取医疗案例
         /// </summary>
-        Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId);
+        Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 根据ID获取医案（包含所有关联数据）
         /// </summary>
-        Task<MedicalCase> GetByIdWithDetailsAsync(Guid id);
+        Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 根据ID获取医案（包含所有关联数据）- 强制刷新版本
         /// 分离ChangeTracker中的缓存实体后重新查询，确保获取最新RowVersion
         /// 用于并发场景下避免DbUpdateConcurrencyException
         /// </summary>
-        Task<MedicalCase?> GetByIdWithDetailsFreshAsync(Guid id);
+        Task<MedicalCase?> GetByIdWithDetailsFreshAsync(Guid id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取分页列表（包含关联数据 + 全部筛选条件，DB 层执行）
@@ -35,7 +36,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(
             int pageNumber, int pageSize,
             MedicalCaseStatus? status, Guid? patientId, Guid? doctorId,
-            bool isAdmin, string? keyword = null);
+            bool isAdmin, string? keyword = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取待看诊医案列表（Status=Active）
@@ -45,13 +46,15 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="doctorId">医生ID</param>
         /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
-        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null);
+        /// <param name="cancellationToken">取消令牌</param>
+        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取所有待看诊医案列表（管理员专用）
         /// 查询所有Active状态的医案，不限定医生
         /// </summary>
-        Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync();
+        /// <param name="cancellationToken">取消令牌</param>
+        Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 查询医案列表（支持多条件组合查询）
@@ -61,11 +64,13 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="startDate">开始日期（过滤CreatedAt）</param>
         /// <param name="endDate">结束日期（过滤CreatedAt）</param>
         /// <param name="diagnosisKeyword">诊断关键字（搜索TcmDiagnosis）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         Task<List<MedicalCase>> QueryAsync(
             string? patientName = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
-            string? diagnosisKeyword = null);
+            string? diagnosisKeyword = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
@@ -74,34 +79,39 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>未完成的医案实体，若无则返回null</returns>
-        Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
+        Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 批量获取医案详情（包含所有关联数据）
         /// OpenSpec: consolidate-medicalcase-detail-queries
         /// </summary>
         /// <param name="ids">医案ID列表</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>医案实体列表</returns>
-        Task<List<MedicalCase>> GetBatchWithDetailsAsync(List<Guid> ids);
+        Task<List<MedicalCase>> GetBatchWithDetailsAsync(List<Guid> ids, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 按前缀统计医案编号数量（包含软删除，避免编号重复）
         /// T5-P2-11: 医案编号自动生成
         /// </summary>
-        Task<int> CountByPrefixAsync(string prefix);
+        /// <param name="cancellationToken">取消令牌</param>
+        Task<int> CountByPrefixAsync(string prefix, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 按前缀统计处方编号数量（包含软删除，避免编号重复）
         /// T5-P2-13: 处方编号自动生成
         /// </summary>
-        Task<int> CountPrescriptionsByPrefixAsync(string prefix);
+        /// <param name="cancellationToken">取消令牌</param>
+        Task<int> CountPrescriptionsByPrefixAsync(string prefix, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 添加打印日志并保存（AD-04 Fix）
         /// 通过 DbContext.Add 显式标记 PrintLog 为 Added 状态，
         /// 避免通过导航属性添加时 EF Core 将有预设 Guid 的新实体错误标记为 Modified。
         /// </summary>
-        Task<int> AddPrintLogAndSaveAsync(MedicalCasePrintLog printLog);
+        /// <param name="cancellationToken">取消令牌</param>
+        Task<int> AddPrintLogAndSaveAsync(MedicalCasePrintLog printLog, CancellationToken cancellationToken = default);
     }
 }

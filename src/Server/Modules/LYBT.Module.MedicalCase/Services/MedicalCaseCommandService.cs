@@ -13,6 +13,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.MedicalCases.Services
@@ -60,7 +61,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 创建新医案 (委托给 CreateFromInputDtoAsync)
         /// </summary>
-        public async Task<MedicalCase?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId)
+        public async Task<MedicalCase?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId, CancellationToken cancellationToken = default)
         {
             var request = new MedicalCaseInputDto
             {
@@ -68,7 +69,7 @@ namespace LYBT.Module.MedicalCases.Services
                 UserId = doctorId
             };
 
-            return await CreateFromInputDtoAsync(request, doctorId);
+            return await CreateFromInputDtoAsync(request, doctorId, false, cancellationToken);
         }
 
         /// <summary>
@@ -78,11 +79,13 @@ namespace LYBT.Module.MedicalCases.Services
         /// <param name="request">统一输入DTO</param>
         /// <param name="currentUserId">当前操作用户ID（如果DTO未提供UserId则使用此值）</param>
         /// <param name="isAdmin">是否管理员</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>创建的医案实体</returns>
         private async Task<MedicalCase?> CreateFromInputDtoAsync(
             MedicalCaseInputDto request,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default)
         {
             var doctorId = request.UserId != Guid.Empty ? request.UserId : currentUserId;
 
@@ -91,13 +94,13 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 统一验证: 参数、Patient、Doctor、BR-001
             var (patient, doctor) = await MedicalCaseServiceHelper.ValidateAndFetchCreationContextAsync(
-                request.PatientId, doctorId, _patientCrossModule, _userCrossModule, _repository, _logger);
+                request.PatientId, doctorId, _patientCrossModule, _userCrossModule, _repository, _logger, cancellationToken);
 
             // 创建MedicalCase实体
             var medicalCase = new MedicalCase
             {
                 Id = Guid.NewGuid(),
-                CaseNumber = await GenerateCaseNumberAsync(),  // T5-P2-11: 自动生成医案编号
+                CaseNumber = await GenerateCaseNumberAsync(cancellationToken),  // T5-P2-11: 自动生成医案编号
                 PatientId = request.PatientId,
                 PatientName = patient.Name,
                 CaseStatus = MedicalCaseStatus.Active,
@@ -141,19 +144,19 @@ namespace LYBT.Module.MedicalCases.Services
             // 如果DTO中提供了处方数据且需要开处方，创建Prescription
             if (request.Prescription != null && request.Prescription.NeedsPrescription)
             {
-                await CreateNewPrescriptionAsync(medicalCase, request.Prescription);
+                await CreateNewPrescriptionAsync(medicalCase, request.Prescription, cancellationToken);
             }
 
-            var result = await _repository.AddAsync(medicalCase);
+            var result = await _repository.AddAsync(medicalCase, cancellationToken);
 
             // 如果传入了 RegistrationId，更新关联挂号的 MedicalCaseId
             if (request.RegistrationId.HasValue)
             {
-                var registration = await _registrationRepository.GetByIdAsync(request.RegistrationId.Value);
+                var registration = await _registrationRepository.GetByIdAsync(request.RegistrationId.Value, cancellationToken);
                 if (registration != null)
                 {
                     registration.MedicalCaseId = result.Id;
-                    await _registrationRepository.UpdateAsync(registration);
+                    await _registrationRepository.UpdateAsync(registration, cancellationToken);
                     _logger.LogInformation("[SVC] MedicalCase.CreateFromInput -> Registration linked - RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
                         registration.Id, result.Id);
                 }
@@ -164,7 +167,7 @@ namespace LYBT.Module.MedicalCases.Services
                 }
             }
 
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
             // 记录创建审计日志
             await _auditService.LogAsync(
@@ -173,7 +176,8 @@ namespace LYBT.Module.MedicalCases.Services
                 operatorId: doctorId,
                 operatorName: doctor.RealName,
                 role: doctor.Role,
-                operationType: AuditOperationType.Create);
+                operationType: AuditOperationType.Create,
+                cancellationToken: cancellationToken);
 
             return result;
         }
@@ -188,12 +192,13 @@ namespace LYBT.Module.MedicalCases.Services
             ConsultationInputDto request,
             Guid currentUserId,
             bool isAdmin = false,
-            string? editReason = null)
+            string? editReason = null,
+            CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // 获取聚合根（完整加载）
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogInformation("医案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
@@ -237,10 +242,10 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 通过聚合根保存（EF Core会跟踪子实体变更）
-            var result = await _repository.UpdateAsync(medicalCase);
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
             // S3-03: 传递 editReason 到审计日志
-            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, editReason);
+            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, editReason, cancellationToken);
             return result;
         }
 
@@ -251,13 +256,14 @@ namespace LYBT.Module.MedicalCases.Services
             Guid medicalCaseId,
             bool needsPrescription,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
                 medicalCaseId, needsPrescription);
 
             // 获取聚合根
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.SetPrescriptionFlag → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -282,9 +288,9 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 保存
-            var result = await _repository.UpdateAsync(medicalCase);
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
-            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin);
+            var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
+            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, cancellationToken: cancellationToken);
             return result;
         }
 
@@ -295,10 +301,11 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<Prescription?> CreatePrescriptionAsync(
             Guid medicalCaseId,
-            PrescriptionInputDto request)
+            PrescriptionInputDto request,
+            CancellationToken cancellationToken = default)
         {
             return await MedicalCaseServiceHelper.ExecuteWithConcurrencyRetryAsync(
-                () => ExecuteCreatePrescriptionAsync(medicalCaseId, request),
+                () => ExecuteCreatePrescriptionAsync(medicalCaseId, request, cancellationToken),
                 "CreatePrescription", _logger);
         }
 
@@ -307,9 +314,10 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         private async Task<Prescription?> ExecuteCreatePrescriptionAsync(
             Guid medicalCaseId,
-            PrescriptionInputDto request)
+            PrescriptionInputDto request,
+            CancellationToken cancellationToken = default)
         {
-            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
+            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.CreatePrescription -> NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -324,18 +332,18 @@ namespace LYBT.Module.MedicalCases.Services
 
             var prescription = _mapper.ToPrescriptionEntity(request);
             prescription.Id = Guid.NewGuid();
-            prescription.PrescriptionNumber = await GeneratePrescriptionNumberAsync();  // T5-P2-13
+            prescription.PrescriptionNumber = await GeneratePrescriptionNumberAsync(cancellationToken);  // T5-P2-13
             prescription.MedicalCaseId = medicalCaseId;
             prescription.CreatedAt = DateTime.UtcNow;
             prescription.UpdatedAt = DateTime.UtcNow;
 
             // T2-S4-02: 使用统一的CreatePrescriptionItemsAsync确保UnitPrice自动填充
-            prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, request);
+            prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, request, cancellationToken);
 
             medicalCase.Prescription = prescription;
             medicalCase.UpdatedAt = DateTime.UtcNow;
-            await _repository.UpdateAsync(medicalCase);
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            await _repository.UpdateAsync(medicalCase, cancellationToken);
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
             _logger.LogInformation("[SVC] MedicalCase.CreatePrescription completed - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                 medicalCaseId, prescription.Id);
@@ -353,12 +361,13 @@ namespace LYBT.Module.MedicalCases.Services
             PrescriptionInputDto request,
             Guid currentUserId,
             bool isAdmin = false,
-            string? editReason = null)
+            string? editReason = null,
+            CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdatePrescription - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                 medicalCaseId, prescriptionId);
 
-            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
+            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -401,7 +410,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (request.Items != null)
             {
                 medicalCase.Prescription.Items.Clear();
-                foreach (var item in await CreatePrescriptionItemsAsync(prescriptionId, request))
+                foreach (var item in await CreatePrescriptionItemsAsync(prescriptionId, request, cancellationToken))
                 {
                     medicalCase.Prescription.Items.Add(item);
                 }
@@ -415,11 +424,11 @@ namespace LYBT.Module.MedicalCases.Services
                 _logger.LogInformation("[SVC] MedicalCase.UpdatePrescription -> ResetIsPrinted - MedicalCaseId={Id}", medicalCase.Id);
             }
 
-            await _repository.UpdateAsync(medicalCase);
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            await _repository.UpdateAsync(medicalCase, cancellationToken);
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
             // S3-03: 记录处方更新审计日志 (含 editReason)
-            await LogUpdateAuditAsync(beforeState, medicalCase, currentUserId, isAdmin, editReason);
+            await LogUpdateAuditAsync(beforeState, medicalCase, currentUserId, isAdmin, editReason, cancellationToken);
 
             return medicalCase.Prescription;
         }
@@ -433,12 +442,13 @@ namespace LYBT.Module.MedicalCases.Services
             Guid medicalCaseId,
             Guid prescriptionId,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.DeletePrescription - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                 medicalCaseId, prescriptionId);
 
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -471,8 +481,8 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.UpdatedAt = DateTime.UtcNow;
 
             // 通过聚合根保存
-            await _repository.UpdateAsync(medicalCase);
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            await _repository.UpdateAsync(medicalCase, cancellationToken);
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
             return true;
         }
 
@@ -481,11 +491,11 @@ namespace LYBT.Module.MedicalCases.Services
         /// OpenSpec: clarify-cancel-consultation-logic
         /// 使用BaseRepository默认软删除机制（IsDeleted=true）
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, bool isAdmin)
+        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.Delete - MedicalCaseId={MedicalCaseId} OperatorId={OperatorId}", id, operatorId);
 
-            var medicalCase = await _repository.GetByIdAsync(id);
+            var medicalCase = await _repository.GetByIdAsync(id, cancellationToken);
             if (medicalCase == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Delete -> NotFound - MedicalCaseId={MedicalCaseId}", id);
@@ -495,10 +505,10 @@ namespace LYBT.Module.MedicalCases.Services
             // 权限检查: 确保操作者有权删除此医案
             MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, medicalCase, operatorId, isAdmin, "Delete", _logger);
 
-            var result = await _repository.DeleteAsync(id);
+            var result = await _repository.DeleteAsync(id, cancellationToken);
             if (result)
             {
-                await _cacheInvalidation.InvalidateAsync("medicalcases");
+                await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
             }
             return result;
         }
@@ -513,17 +523,18 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<MedicalCase?> SaveAsync(
             MedicalCaseInputDto request,
             Guid currentUserId,
-            bool isAdmin = false)
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default)
         {
             // OpenSpec: simplify-medicalcase-dataflow - 统一创建/更新逻辑
             if (!request.Id.HasValue)
             {
-                return await CreateFromInputDtoAsync(request, currentUserId, isAdmin);
+                return await CreateFromInputDtoAsync(request, currentUserId, isAdmin, cancellationToken);
             }
 
             var medicalCaseId = request.Id.Value;
             return await MedicalCaseServiceHelper.ExecuteWithConcurrencyRetryAsync(
-                () => ExecuteSaveAttemptAsync(request, medicalCaseId, currentUserId, isAdmin),
+                () => ExecuteSaveAttemptAsync(request, medicalCaseId, currentUserId, isAdmin, cancellationToken),
                 "Save", _logger);
         }
 
@@ -535,11 +546,12 @@ namespace LYBT.Module.MedicalCases.Services
             MedicalCaseInputDto request,
             Guid medicalCaseId,
             Guid currentUserId,
-            bool isAdmin)
+            bool isAdmin,
+            CancellationToken cancellationToken = default)
         {
 
             // 获取聚合根
-            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId)
+            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId, cancellationToken)
                 ?? throw ExceptionFactory.MedicalCase.NotFound(medicalCaseId);
 
             // 保存变更前的状态用于审计
@@ -585,12 +597,12 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 保存并审计
-            var result = await _repository.UpdateAsync(medicalCase);
-            await _cacheInvalidation.InvalidateAsync("medicalcases");
+            var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
             _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
             // S3-03: 传递 editReason 到审计日志
-            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, request.EditReason);
+            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, request.EditReason, cancellationToken);
             return result;
         }
 
@@ -628,9 +640,9 @@ namespace LYBT.Module.MedicalCases.Services
         /// 记录更新审计日志
         /// S3-03: 新增 editReason 参数，传递到审计日志
         /// </summary>
-        private async Task LogUpdateAuditAsync(MedicalCase before, MedicalCase after, Guid currentUserId, bool isAdmin, string? editReason = null)
+        private async Task LogUpdateAuditAsync(MedicalCase before, MedicalCase after, Guid currentUserId, bool isAdmin, string? editReason = null, CancellationToken cancellationToken = default)
         {
-            var operatorInfo = await GetOperatorInfoAsync(currentUserId, isAdmin);
+            var operatorInfo = await GetOperatorInfoAsync(currentUserId, isAdmin, cancellationToken);
             await _auditService.LogAsync(
                 before: before,
                 after: after,
@@ -638,7 +650,8 @@ namespace LYBT.Module.MedicalCases.Services
                 operatorName: operatorInfo.Name,
                 role: operatorInfo.Role,
                 operationType: AuditOperationType.Update,
-                reason: editReason);
+                reason: editReason,
+                cancellationToken: cancellationToken);
         }
 
 
@@ -648,7 +661,8 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         private async Task HandlePrescriptionUpdateAsync(
             MedicalCase medicalCase,
-            PrescriptionInputDto prescriptionDto)
+            PrescriptionInputDto prescriptionDto,
+            CancellationToken cancellationToken = default)
         {
             medicalCase.NeedsPrescription = prescriptionDto.NeedsPrescription;
 
@@ -660,11 +674,11 @@ namespace LYBT.Module.MedicalCases.Services
 
             if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
             {
-                await CreateNewPrescriptionAsync(medicalCase, prescriptionDto);
+                await CreateNewPrescriptionAsync(medicalCase, prescriptionDto, cancellationToken);
             }
             else
             {
-                await UpdateExistingPrescriptionAsync(medicalCase.Prescription, prescriptionDto);
+                await UpdateExistingPrescriptionAsync(medicalCase.Prescription, prescriptionDto, cancellationToken);
             }
         }
 
@@ -687,12 +701,13 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         private async Task CreateNewPrescriptionAsync(
             MedicalCase medicalCase,
-            PrescriptionInputDto prescriptionDto)
+            PrescriptionInputDto prescriptionDto,
+            CancellationToken cancellationToken = default)
         {
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
-                PrescriptionNumber = await GeneratePrescriptionNumberAsync(),  // T5-P2-13: 自动生成处方编号
+                PrescriptionNumber = await GeneratePrescriptionNumberAsync(cancellationToken),  // T5-P2-13: 自动生成处方编号
                 MedicalCaseId = medicalCase.Id,
                 DosageCount = prescriptionDto.DosageCount,
                 Usage = prescriptionDto.Usage,
@@ -704,7 +719,7 @@ namespace LYBT.Module.MedicalCases.Services
                 UpdatedAt = DateTime.UtcNow,
                 Items = new List<LYBT.Entities.Prescriptions.PrescriptionItem>()
             };
-            prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, prescriptionDto);
+            prescription.Items = await CreatePrescriptionItemsAsync(prescription.Id, prescriptionDto, cancellationToken);
 
             medicalCase.Prescription = prescription;
             _logger.LogInformation("[SVC] MedicalCase.Save → PrescriptionCreated - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId} ItemCount={ItemCount}",
@@ -716,7 +731,8 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         private async Task UpdateExistingPrescriptionAsync(
             Prescription prescription,
-            PrescriptionInputDto prescriptionDto)
+            PrescriptionInputDto prescriptionDto,
+            CancellationToken cancellationToken = default)
         {
             prescription.DosageCount = prescriptionDto.DosageCount;
             prescription.Usage = prescriptionDto.Usage;
@@ -727,7 +743,7 @@ namespace LYBT.Module.MedicalCases.Services
             prescription.UpdatedAt = DateTime.UtcNow;
 
             prescription.Items.Clear();
-            foreach (var item in await CreatePrescriptionItemsAsync(prescription.Id, prescriptionDto))
+            foreach (var item in await CreatePrescriptionItemsAsync(prescription.Id, prescriptionDto, cancellationToken))
             {
                 prescription.Items.Add(item);
             }
@@ -745,7 +761,8 @@ namespace LYBT.Module.MedicalCases.Services
         /// </remarks>
         private async Task<List<LYBT.Entities.Prescriptions.PrescriptionItem>> CreatePrescriptionItemsAsync(
             Guid prescriptionId,
-            PrescriptionInputDto prescriptionDto)
+            PrescriptionInputDto prescriptionDto,
+            CancellationToken cancellationToken = default)
         {
             var items = new List<LYBT.Entities.Prescriptions.PrescriptionItem>();
 
@@ -754,7 +771,7 @@ namespace LYBT.Module.MedicalCases.Services
             var allHerbIds = prescriptionDto.Items.Select(i => i.HerbId).Distinct().ToList();
 
             // AD-02: 过滤禁用药材，禁止加入处方
-            var disabledHerbIds = await _herbCrossModule.GetDisabledHerbIdsAsync(allHerbIds);
+            var disabledHerbIds = await _herbCrossModule.GetDisabledHerbIdsAsync(allHerbIds, cancellationToken);
             var validItems = prescriptionDto.Items;
             if (disabledHerbIds.Count > 0)
             {
@@ -780,7 +797,7 @@ namespace LYBT.Module.MedicalCases.Services
             Dictionary<Guid, decimal>? herbPrices = null;
             if (herbIdsNeedingPrice.Count > 0)
             {
-                herbPrices = await _herbCrossModule.GetHerbPricesAsync(herbIdsNeedingPrice);
+                herbPrices = await _herbCrossModule.GetHerbPricesAsync(herbIdsNeedingPrice, cancellationToken);
                 _logger.LogInformation("[SVC] Auto-populated UnitPrice for {Count} herbs from herb catalog",
                     herbPrices.Count);
             }
@@ -816,21 +833,21 @@ namespace LYBT.Module.MedicalCases.Services
         private static MedicalCase CloneMedicalCaseForAudit(MedicalCase source)
             => MedicalCaseServiceHelper.CloneMedicalCaseForAudit(source);
 
-        private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin)
-            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger);
+        private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin, CancellationToken cancellationToken = default)
+            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger, cancellationToken);
 
         /// <summary>
         /// 生成医案编号（格式：MC + 年月日 + 序号）
         /// T5-P2-11: 参考 LocalMedicalCaseDataSource.GenerateCaseNumber
         /// </summary>
-        private async Task<string> GenerateCaseNumberAsync()
+        private async Task<string> GenerateCaseNumberAsync(CancellationToken cancellationToken = default)
         {
             var today = DateTime.Today;
             var dateStr = today.ToString("yyyyMMdd");
             var prefix = $"MC{dateStr}";
 
             // 查询今天的医案数量（包含软删除的，避免编号重复）
-            var count = await _repository.CountByPrefixAsync(prefix);
+            var count = await _repository.CountByPrefixAsync(prefix, cancellationToken);
             return $"{prefix}{(count + 1):D3}";
         }
 
@@ -838,13 +855,13 @@ namespace LYBT.Module.MedicalCases.Services
         /// 生成处方编号（格式：RX + 年月日 + 序号）
         /// T5-P2-13
         /// </summary>
-        private async Task<string> GeneratePrescriptionNumberAsync()
+        private async Task<string> GeneratePrescriptionNumberAsync(CancellationToken cancellationToken = default)
         {
             var today = DateTime.Today;
             var dateStr = today.ToString("yyyyMMdd");
             var prefix = $"RX{dateStr}";
 
-            var count = await _repository.CountPrescriptionsByPrefixAsync(prefix);
+            var count = await _repository.CountPrescriptionsByPrefixAsync(prefix, cancellationToken);
             return $"{prefix}{(count + 1):D4}";
         }
 
@@ -853,7 +870,7 @@ namespace LYBT.Module.MedicalCases.Services
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <inheritdoc />
-        public async Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin)
+        public async Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default)
         {
             var result = new LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto
             {
@@ -866,7 +883,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 try
                 {
-                    var entity = await _repository.GetByIdAsync(id);
+                    var entity = await _repository.GetByIdAsync(id, cancellationToken);
                     if (entity == null)
                     {
                         result.FailureCount++;
@@ -884,7 +901,7 @@ namespace LYBT.Module.MedicalCases.Services
 
                     entity.IsDeleted = true;
                     entity.UpdatedAt = DateTime.UtcNow;
-                    await _repository.UpdateAsync(entity);
+                    await _repository.UpdateAsync(entity, cancellationToken);
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(id);

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Threading;
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -39,7 +40,8 @@ namespace LYBT.Module.MedicalCases.Services
             string operatorName,
             UserRole role,
             AuditOperationType operationType,
-            string? reason = null)
+            string? reason = null,
+            CancellationToken cancellationToken = default)
         {
             if (after == null)
                 throw new ArgumentNullException(nameof(after));
@@ -63,7 +65,7 @@ namespace LYBT.Module.MedicalCases.Services
                 };
 
                 _dbContext.MedicalCaseAuditLogs.Add(auditLog);
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync(cancellationToken);
 
                 _logger.LogInformation("[SVC] MedicalCase.Audit completed - MedicalCaseId={MedicalCaseId} OperationType={OperationType} OperatorName={OperatorName} OperatorRole={OperatorRole} ChangedFields={ChangedFields}",
                     after.Id, operationType, operatorName, role, changedFields);
@@ -77,30 +79,31 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <inheritdoc/>
-        public async Task<List<MedicalCaseAuditLog>> GetLogsAsync(Guid medicalCaseId)
+        public async Task<List<MedicalCaseAuditLog>> GetLogsAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
         {
             return await _dbContext.MedicalCaseAuditLogs
                 .Where(l => l.MedicalCaseId == medicalCaseId)
                 .OrderByDescending(l => l.CreatedAt)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
         public async Task<(List<MedicalCaseAuditLog> Logs, int TotalCount)> GetLogsPagedAsync(
             Guid medicalCaseId,
             int page = 1,
-            int pageSize = 20)
+            int pageSize = 20,
+            CancellationToken cancellationToken = default)
         {
             var query = _dbContext.MedicalCaseAuditLogs
                 .Where(l => l.MedicalCaseId == medicalCaseId)
                 .OrderByDescending(l => l.CreatedAt);
 
-            var totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync(cancellationToken);
 
             var logs = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return (logs, totalCount);
         }

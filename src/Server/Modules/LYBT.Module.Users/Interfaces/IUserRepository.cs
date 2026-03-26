@@ -27,21 +27,23 @@ namespace LYBT.Module.Users.Interfaces
         /// 根据用户名获取用户（支持用户名或邮箱登录）
         /// </summary>
         /// <param name="username">用户名或邮箱</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>用户对象，不存在时返回null</returns>
-        Task<User?> GetByUsernameAsync(string username);
+        Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 检查用户名是否已存在
         /// </summary>
         /// <param name="username">待检查的用户名</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>存在返回true，否则返回false</returns>
-        Task<bool> UsernameExistsAsync(string username);
+        Task<bool> UsernameExistsAsync(string username, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 分页查询用户（支持 keyword/role/status 筛选，DB 层执行）
         /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
         /// </summary>
-        Task<PagedResult<User>> GetPagedAsync(int pageNumber, int pageSize, string? keyword, UserRole? role, CommonStatus? status);
+        Task<PagedResult<User>> GetPagedAsync(int pageNumber, int pageSize, string? keyword, UserRole? role, CommonStatus? status, CancellationToken cancellationToken = default);
 
         // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
 
@@ -50,6 +52,7 @@ namespace LYBT.Module.Users.Interfaces
         /// 用于Restore操作时获取已删除的实体
         /// </summary>
         /// <param name="id">实体ID</param>
-        Task<User?> GetByIdIncludingDeletedAsync(Guid id);
+        /// <param name="cancellationToken">取消令牌</param>
+        Task<User?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default);
     }
 }

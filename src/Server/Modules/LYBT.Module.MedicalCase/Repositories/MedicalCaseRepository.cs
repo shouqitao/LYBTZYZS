@@ -1,4 +1,5 @@
-﻿using LYBT.Entities.Consultations;
+﻿using System.Threading;
+using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
@@ -47,29 +48,29 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// <summary>
         /// 根据患者ID获取医疗案例（简化版）
         /// </summary>
-        public async Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId)
+        public async Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId, CancellationToken cancellationToken = default)
         {
             return await GetBaseQuery()
                 .Where(m => m.PatientId == patientId)
                 .OrderByDescending(m => m.CreatedAt)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>
         /// 根据ID获取医案（包含关联数据）
         /// </summary>
-        public async Task<MedicalCase> GetByIdWithDetailsAsync(Guid id)
+        public async Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return (await GetDetailQuery()
                 .Where(m => m.Id == id)
-                .SingleOrDefaultAsync())!;
+                .SingleOrDefaultAsync(cancellationToken))!;
         }
 
         /// <summary>
         /// 根据ID获取医案（包含关联数据，强制从数据库刷新，不使用缓存）
         /// 用于处理并发场景，确保获取最新的RowVersion
         /// </summary>
-        public async Task<MedicalCase?> GetByIdWithDetailsFreshAsync(Guid id)
+        public async Task<MedicalCase?> GetByIdWithDetailsFreshAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // 分离所有相关缓存实体：MedicalCase、Consultation、Prescription及PrescriptionItems
             var medicalCaseEntry = _context.ChangeTracker.Entries<MedicalCase>()
@@ -114,7 +115,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             // 重新查询获取最新数据
             return await GetDetailQuery()
                 .Where(m => m.Id == id)
-                .SingleOrDefaultAsync();
+                .SingleOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -124,7 +125,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         public async Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(
             int pageNumber, int pageSize,
             MedicalCaseStatus? status, Guid? patientId, Guid? doctorId,
-            bool isAdmin, string? keyword = null)
+            bool isAdmin, string? keyword = null, CancellationToken cancellationToken = default)
         {
             var query = GetDetailQuery();
 
@@ -159,7 +160,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             // 按创建时间倒序
             query = query.OrderByDescending(m => m.CreatedAt);
 
-            return await GetPagedResultAsync(query, pageNumber, pageSize);
+            return await GetPagedResultAsync(query, pageNumber, pageSize, cancellationToken);
         }
 
         /// <summary>
@@ -173,7 +174,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// 当医案状态变更为Closed时，自动删除关联的Consultation和Prescription
         /// Issue #1669 Phase 7: 支持tracked和detached两种entity状态
         /// </summary>
-        public override async Task<MedicalCase> UpdateAsync(MedicalCase entity)
+        public override async Task<MedicalCase> UpdateAsync(MedicalCase entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -184,10 +185,10 @@ namespace LYBT.Module.MedicalCases.Repositories
                 entity.Id, entry.State, entity.Prescription != null);
 
             // 修复Prescription及Items的实体状态
-            await FixPrescriptionEntityStatesAsync(entity);
+            await FixPrescriptionEntityStatesAsync(entity, cancellationToken);
 
             // 获取或加载已存在的实体
-            var existingEntity = await GetOrLoadExistingEntityAsync(entity);
+            var existingEntity = await GetOrLoadExistingEntityAsync(entity, cancellationToken);
 
             // Issue #2242: 完成医案时保留关联数据供历史查询
             if (entity.CaseStatus == MedicalCaseStatus.Completed)
@@ -198,7 +199,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             // 诊断日志
             LogTrackedEntitiesState();
 
-            await SaveChangesAsync();
+            await SaveChangesAsync(cancellationToken);
             return existingEntity;
         }
 
@@ -207,7 +208,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// 修复Prescription及PrescriptionItems的实体状态
         /// consolidate-code-quality: 从UpdateAsync提取，降低圈复杂度
         /// </summary>
-        private async Task FixPrescriptionEntityStatesAsync(MedicalCase entity)
+        private async Task FixPrescriptionEntityStatesAsync(MedicalCase entity, CancellationToken cancellationToken = default)
         {
             if (entity.Prescription == null) return;
 
@@ -218,7 +219,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             if (prescriptionEntry.State != EntityState.Modified) return;
 
             var prescriptionExistsInDb = await _context.Set<Prescription>()
-                .AnyAsync(p => p.Id == entity.Prescription.Id);
+                .AnyAsync(p => p.Id == entity.Prescription.Id, cancellationToken);
 
             if (!prescriptionExistsInDb)
             {
@@ -228,7 +229,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             }
             else
             {
-                await FixExistingPrescriptionItemsStateAsync(entity.Prescription);
+                await FixExistingPrescriptionItemsStateAsync(entity.Prescription, cancellationToken);
             }
         }
 
@@ -254,7 +255,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// 修复已存在Prescription的Items状态(检查每个Item是否存在)
         /// Issue #2250 Phase 3: 更新时新添加的Items需改为Added
         /// </summary>
-        private async Task FixExistingPrescriptionItemsStateAsync(Prescription prescription)
+        private async Task FixExistingPrescriptionItemsStateAsync(Prescription prescription, CancellationToken cancellationToken = default)
         {
             if (prescription.Items == null || !prescription.Items.Any()) return;
 
@@ -264,7 +265,7 @@ namespace LYBT.Module.MedicalCases.Repositories
                 if (itemEntry.State != EntityState.Modified) continue;
 
                 var itemExistsInDb = await _context.Set<PrescriptionItem>()
-                    .AnyAsync(pi => pi.Id == item.Id);
+                    .AnyAsync(pi => pi.Id == item.Id, cancellationToken);
 
                 if (!itemExistsInDb)
                 {
@@ -278,7 +279,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// 获取或加载已存在的医案实体
         /// consolidate-code-quality: 处理Detached vs Tracked场景
         /// </summary>
-        private async Task<MedicalCase> GetOrLoadExistingEntityAsync(MedicalCase entity)
+        private async Task<MedicalCase> GetOrLoadExistingEntityAsync(MedicalCase entity, CancellationToken cancellationToken = default)
         {
             var entry = _context.Entry(entity);
 
@@ -292,7 +293,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             var existingEntity = await _dbSet
                 .Include(m => m.Consultation)
                 .Include(m => m.Prescription)
-                .FirstOrDefaultAsync(m => m.Id == entity.Id);
+                .FirstOrDefaultAsync(m => m.Id == entity.Id, cancellationToken);
 
             if (existingEntity == null)
                 throw new InvalidOperationException($"医案 {entity.Id} 不存在");
@@ -325,7 +326,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// OpenSpec: redesign-pending-queue - 正确的状态判定和序号计算
         /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
-        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null)
+        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null, CancellationToken cancellationToken = default)
         {
             // Epic #2210 Phase 3: 按医生ID过滤，实现多医生数据隔离
             // Bug Fix: 包含Suspended和Active两种未完成状态，挂起后的医案应显示在待诊队列
@@ -360,7 +361,7 @@ namespace LYBT.Module.MedicalCases.Repositories
                     MedicalCaseId = r.MedicalCase.Id,
                     CreatedAt = r.MedicalCase.CreatedAt
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             // 在内存中应用电话脱敏并转换为DTO
             var result = rawData.Select(r => new PendingMedicalCaseDto
@@ -390,7 +391,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// Bug Fix: 应包含Suspended和Active两种未完成状态
         /// OpenSpec: redesign-pending-queue - 正确的状态判定和序号计算
         /// </summary>
-        public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
+        public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync(CancellationToken cancellationToken = default)
         {
             // Bug Fix: 包含Suspended和Active两种未完成状态
             // OpenSpec: unify-case-status - 直接使用CaseStatus，已移除PendingCaseType枚举
@@ -413,7 +414,7 @@ namespace LYBT.Module.MedicalCases.Repositories
                     MedicalCaseId = r.MedicalCase.Id,
                     CreatedAt = r.MedicalCase.CreatedAt
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             // 在内存中应用电话脱敏并转换为DTO
             var result = rawData.Select(r => new PendingMedicalCaseDto
@@ -457,7 +458,8 @@ namespace LYBT.Module.MedicalCases.Repositories
             string? patientName = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
-            string? diagnosisKeyword = null)
+            string? diagnosisKeyword = null,
+            CancellationToken cancellationToken = default)
         {
             // 使用GetDetailQuery()以包含Consultation数据（用于诊断关键字搜索）
             var query = GetDetailQuery();
@@ -492,7 +494,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             // 按创建时间倒序排列
             var result = await query
                 .OrderByDescending(m => m.CreatedAt)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             _logger?.LogInformation("查询医案列表，共 {Count} 条记录，条件：患者={PatientName}, 日期={StartDate}~{EndDate}, 诊断={DiagnosisKeyword}",
                 result.Count, patientName ?? "无", startDate, endDate, diagnosisKeyword ?? "无");
@@ -508,7 +510,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
         /// <returns>未完成的医案实体（包含关联数据），若无则返回null</returns>
-        public async Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
+        public async Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, CancellationToken cancellationToken = default)
         {
             _logger?.LogInformation("查询患者未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
                 patientId, doctorId);
@@ -538,7 +540,7 @@ namespace LYBT.Module.MedicalCases.Repositories
 
             var result = await query
                 .OrderByDescending(m => m.CreatedAt)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (result != null)
             {
@@ -558,22 +560,22 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// 按前缀统计医案编号数量（包含软删除，避免编号重复）
         /// T5-P2-11: 医案编号自动生成
         /// </summary>
-        public async Task<int> CountByPrefixAsync(string prefix)
+        public async Task<int> CountByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
         {
             return await _dbSet
                 .IgnoreQueryFilters()
-                .CountAsync(mc => mc.CaseNumber != null && mc.CaseNumber.StartsWith(prefix));
+                .CountAsync(mc => mc.CaseNumber != null && mc.CaseNumber.StartsWith(prefix), cancellationToken);
         }
 
         /// <summary>
         /// 按前缀统计处方编号数量（包含软删除，避免编号重复）
         /// T5-P2-13: 处方编号自动生成
         /// </summary>
-        public async Task<int> CountPrescriptionsByPrefixAsync(string prefix)
+        public async Task<int> CountPrescriptionsByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
         {
             return await _context.Set<Prescription>()
                 .IgnoreQueryFilters()
-                .CountAsync(p => p.PrescriptionNumber != null && p.PrescriptionNumber.StartsWith(prefix));
+                .CountAsync(p => p.PrescriptionNumber != null && p.PrescriptionNumber.StartsWith(prefix), cancellationToken);
         }
 
         /// <summary>
@@ -583,7 +585,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// </summary>
         /// <param name="ids">医案ID列表</param>
         /// <returns>医案实体列表</returns>
-        public async Task<List<MedicalCase>> GetBatchWithDetailsAsync(List<Guid> ids)
+        public async Task<List<MedicalCase>> GetBatchWithDetailsAsync(List<Guid> ids, CancellationToken cancellationToken = default)
         {
             if (ids == null || !ids.Any())
             {
@@ -599,7 +601,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             {
                 var entity = await GetDetailQuery()
                     .Where(m => m.Id == id)
-                    .SingleOrDefaultAsync();
+                    .SingleOrDefaultAsync(cancellationToken);
 
                 if (entity != null)
                 {
@@ -626,11 +628,11 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// 通过 DbContext.Add 显式标记 PrintLog 为 Added 状态，
         /// 避免通过导航属性添加时 EF Core 将有预设 Guid 的新实体错误标记为 Modified。
         /// </summary>
-        public async Task<int> AddPrintLogAndSaveAsync(MedicalCasePrintLog printLog)
+        public async Task<int> AddPrintLogAndSaveAsync(MedicalCasePrintLog printLog, CancellationToken cancellationToken = default)
         {
             // 显式标记为 Added，避免 DetectChanges 将预设 Guid 的新实体标记为 Modified
             _context.Set<MedicalCasePrintLog>().Add(printLog);
-            return await SaveChangesAsync();
+            return await SaveChangesAsync(cancellationToken);
         }
     }
 }

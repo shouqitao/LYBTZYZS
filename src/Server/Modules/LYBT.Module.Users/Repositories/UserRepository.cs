@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Users;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Users.Interfaces;
@@ -58,7 +58,7 @@ namespace LYBT.Module.Users.Repositories
         /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
         /// </summary>
         public async Task<PagedResult<User>> GetPagedAsync(
-            int pageNumber, int pageSize, string? keyword, UserRole? role, CommonStatus? status)
+            int pageNumber, int pageSize, string? keyword, UserRole? role, CommonStatus? status, CancellationToken cancellationToken = default)
         {
             var query = _dbSet.AsNoTracking().Where(e => !e.IsDeleted);
 
@@ -83,7 +83,7 @@ namespace LYBT.Module.Users.Repositories
             // 默认排序（复用模板方法）
             query = ApplyDefaultOrdering(query);
 
-            return await GetPagedResultAsync(query, pageNumber, pageSize);
+            return await GetPagedResultAsync(query, pageNumber, pageSize, cancellationToken);
         }
 
         #endregion
@@ -93,7 +93,7 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 根据用户名获取用户（支持用户名或邮箱登录）
         /// </summary>
-        public async Task<User?> GetByUsernameAsync(string username)
+        public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(username))
                 return null;
@@ -102,7 +102,7 @@ namespace LYBT.Module.Users.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u =>
                     (u.UserName == username || u.Email == username) &&
-                    !u.IsDeleted);
+                    !u.IsDeleted, cancellationToken);
 
             // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] User.GetByUsername({Username}) → {Result}",
@@ -114,13 +114,13 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 检查用户名是否已存在
         /// </summary>
-        public async Task<bool> UsernameExistsAsync(string username)
+        public async Task<bool> UsernameExistsAsync(string username, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(username))
                 return false;
 
             return await _dbSet
-                .AnyAsync(u => u.UserName == username && !u.IsDeleted);
+                .AnyAsync(u => u.UserName == username && !u.IsDeleted, cancellationToken);
         }
 
         #endregion
@@ -132,11 +132,11 @@ namespace LYBT.Module.Users.Repositories
         /// 使用IgnoreQueryFilters绕过全局软删除过滤器
         /// 注: FindAsync在EF Core 8中会应用全局查询过滤器，无法查到已删除记录
         /// </summary>
-        public async Task<User?> GetByIdIncludingDeletedAsync(Guid id)
+        public async Task<User?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _dbSet
                 .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(e => e.Id == id);
+                .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Threading;
 using LYBT.Module.Users.Mapping;
 using FluentValidation;
 using LYBT.Entities.Users;
@@ -370,7 +371,7 @@ namespace LYBT.Module.Users.Services
             }
 
             // 获取目标用户
-            var targetUser = await _repository.GetByIdAsync(id);
+            var targetUser = await _repository.GetByIdAsync(id, cancellationToken);
             if (targetUser == null)
                 return Result.Failure(GenericErrorCode.UserNotFound);
 
@@ -541,7 +542,7 @@ namespace LYBT.Module.Users.Services
             }
 
             // 获取用户实体
-            var entity = await _repository.GetByIdAsync(userId);
+            var entity = await _repository.GetByIdAsync(userId, cancellationToken);
             if (entity == null)
             {
                 _logger.LogWarning("[SVC] User.ChangeProfile → NotFound - UserId={UserId}", userId);
@@ -618,7 +619,7 @@ namespace LYBT.Module.Users.Services
             if (entity.Status == CommonStatus.Enabled && entity.Role >= UserRole.Admin)
             {
                 var activeAdmins = await _repository.FindAsync(
-                    u => u.Role >= UserRole.Admin && u.Status == CommonStatus.Enabled);
+                    u => u.Role >= UserRole.Admin && u.Status == CommonStatus.Enabled, cancellationToken);
                 if (activeAdmins.Count() <= 1)
                 {
                     _logger.LogWarning("[SVC] User.ToggleStatus → LastAdminProtection - UserId={UserId} Role={Role}", id, entity.Role);
@@ -629,7 +630,7 @@ namespace LYBT.Module.Users.Services
             // G-11: 禁用医生前检查是否有等待中的挂号记录
             if (entity.Status == CommonStatus.Enabled && entity.Role == UserRole.Doctor)
             {
-                var waitingCount = await _registrationRepository.GetWaitingCountByDoctorAsync(id);
+                var waitingCount = await _registrationRepository.GetWaitingCountByDoctorAsync(id, cancellationToken);
                 if (waitingCount > 0)
                 {
                     _logger.LogWarning("[SVC] User.ToggleStatus → DoctorHasWaitingRegistrations - UserId={UserId} Count={Count}", id, waitingCount);

@@ -44,7 +44,8 @@ public interface IRegistrationRepository : IRepository<RegistrationEntity>
     /// US-REG-005/006: 医案状态变更联动
     /// </summary>
     /// <param name="medicalCaseId">医案 ID</param>
-    Task<RegistrationEntity?> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+    /// <param name="cancellationToken">取消令牌</param>
+    Task<RegistrationEntity?> GetByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// G-11: 获取医生等待中的挂号记录数量

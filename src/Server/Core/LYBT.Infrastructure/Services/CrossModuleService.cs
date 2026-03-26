@@ -1,3 +1,4 @@
+using System.Threading;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Contracts.Common;
@@ -31,7 +32,7 @@ public class CrossModuleService :
     #region 患者查询 (IPatientCrossModuleService)
 
     /// <inheritdoc />
-    public async Task<PatientBasicDto?> GetPatientBasicInfoAsync(Guid patientId)
+    public async Task<PatientBasicDto?> GetPatientBasicInfoAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _context.Patients
             .AsNoTracking()
@@ -44,12 +45,12 @@ public class CrossModuleService :
                 Phone = p.PhoneNumber,
                 Status = p.Status  // T5-P2-09
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<Dictionary<Guid, PatientBasicDto>> GetPatientsBasicInfoAsync(
-        IEnumerable<Guid> patientIds)
+        IEnumerable<Guid> patientIds, CancellationToken cancellationToken = default)
     {
         var ids = patientIds.ToList();
         if (ids.Count == 0)
@@ -71,7 +72,7 @@ public class CrossModuleService :
                     Phone = p.PhoneNumber,
                     Status = p.Status  // T5-P2-09
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (patient != null)
             {
@@ -83,19 +84,19 @@ public class CrossModuleService :
     }
 
     /// <inheritdoc />
-    public async Task<bool> PatientExistsAsync(Guid patientId)
+    public async Task<bool> PatientExistsAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _context.Patients
             .AsNoTracking()
-            .AnyAsync(p => p.Id == patientId && !p.IsDeleted);
+            .AnyAsync(p => p.Id == patientId && !p.IsDeleted, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<ReferenceCheckResult> CheckPatientReferenceAsync(Guid patientId)
+    public async Task<ReferenceCheckResult> CheckPatientReferenceAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         var count = await _context.MedicalCases
             .AsNoTracking()
-            .CountAsync(mc => mc.PatientId == patientId && !mc.IsDeleted);
+            .CountAsync(mc => mc.PatientId == patientId && !mc.IsDeleted, cancellationToken);
 
         return new ReferenceCheckResult(
             HasReferences: count > 0,
@@ -112,7 +113,7 @@ public class CrossModuleService :
     #region 药材查询 (IHerbCrossModuleService)
 
     /// <inheritdoc />
-    public async Task<HerbBasicDto?> GetHerbBasicInfoAsync(Guid herbId)
+    public async Task<HerbBasicDto?> GetHerbBasicInfoAsync(Guid herbId, CancellationToken cancellationToken = default)
     {
         return await _context.Herbs
             .AsNoTracking()
@@ -124,11 +125,11 @@ public class CrossModuleService :
                 Pinyin = h.PinYinCode,
                 Category = h.Category
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<HerbBasicDto?> GetHerbByNameOrPinyinAsync(string nameOrPinyin)
+    public async Task<HerbBasicDto?> GetHerbByNameOrPinyinAsync(string nameOrPinyin, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(nameOrPinyin))
             return null;
@@ -144,15 +145,15 @@ public class CrossModuleService :
                 Pinyin = h.PinYinCode,
                 Category = h.Category
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<ReferenceCheckResult> CheckHerbReferenceAsync(Guid herbId)
+    public async Task<ReferenceCheckResult> CheckHerbReferenceAsync(Guid herbId, CancellationToken cancellationToken = default)
     {
         var count = await _context.PrescriptionItems
             .AsNoTracking()
-            .CountAsync(pi => pi.HerbId == herbId);
+            .CountAsync(pi => pi.HerbId == herbId, cancellationToken);
 
         return new ReferenceCheckResult(
             HasReferences: count > 0,
@@ -161,7 +162,7 @@ public class CrossModuleService :
     }
 
     /// <inheritdoc />
-    public async Task<Dictionary<Guid, decimal>> GetHerbPricesAsync(IEnumerable<Guid> herbIds)
+    public async Task<Dictionary<Guid, decimal>> GetHerbPricesAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default)
     {
         var idList = herbIds.ToList();
         if (idList.Count == 0) return new Dictionary<Guid, decimal>();
@@ -175,7 +176,7 @@ public class CrossModuleService :
                 .AsNoTracking()
                 .Where(h => h.Id == herbId && !h.IsDeleted)
                 .Select(h => new { h.Id, h.Price })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (herb != null)
             {
@@ -187,7 +188,7 @@ public class CrossModuleService :
     }
 
     /// <inheritdoc />
-    public async Task<HashSet<Guid>> GetDisabledHerbIdsAsync(IEnumerable<Guid> herbIds)
+    public async Task<HashSet<Guid>> GetDisabledHerbIdsAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default)
     {
         var idList = herbIds.ToList();
         if (idList.Count == 0) return new HashSet<Guid>();
@@ -200,7 +201,7 @@ public class CrossModuleService :
                 .AsNoTracking()
                 .Where(h => h.Id == herbId && !h.IsDeleted)
                 .Select(h => new { h.Id, h.Status })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (herb != null && herb.Status == Shared.Models.Enums.CommonStatus.Disabled)
             {
@@ -216,7 +217,7 @@ public class CrossModuleService :
     #region 用户查询 (IUserCrossModuleService)
 
     /// <inheritdoc />
-    public async Task<UserBasicDto?> GetUserBasicInfoAsync(Guid userId)
+    public async Task<UserBasicDto?> GetUserBasicInfoAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .AsNoTracking()
@@ -239,11 +240,11 @@ public class CrossModuleService :
                 UpdatedAt = u.UpdatedAt,
                 Remark = u.Remark
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<UserCredentialDto?> GetUserByUsernameAsync(string username)
+    public async Task<UserCredentialDto?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .AsNoTracking()
@@ -267,44 +268,44 @@ public class CrossModuleService :
                 Remark = u.Remark,
                 PasswordHash = u.PasswordHash
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task UpdateUserPasswordHashAsync(Guid userId, string newPasswordHash)
+    public async Task UpdateUserPasswordHashAsync(Guid userId, string newPasswordHash, CancellationToken cancellationToken = default)
     {
         // 不使用 FindAsync: 当实体不在 ChangeTracker 中时，FindAsync 会应用全局查询过滤器 (IsDeleted)
         // 仅更新未删除用户的密码哈希
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
         if (user != null)
         {
             user.PasswordHash = newPasswordHash;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
     /// <inheritdoc />
-    public async Task<bool> UserExistsAsync(Guid userId)
+    public async Task<bool> UserExistsAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .AsNoTracking()
-            .AnyAsync(u => u.Id == userId && !u.IsDeleted);
+            .AnyAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
     }
 
     /// <inheritdoc />
     /// <summary>
     /// T5-P2-01: 更新登录失败状态
     /// </summary>
-    public async Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
+    public async Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
         if (user != null)
         {
             user.FailedLoginCount = failedLoginCount;
             user.LockoutEnd = lockoutEnd;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
@@ -312,16 +313,16 @@ public class CrossModuleService :
     /// <summary>
     /// T5-P2-01: 重置登录状态 (成功登录后)
     /// </summary>
-    public async Task ResetLoginStateAsync(Guid userId)
+    public async Task ResetLoginStateAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
         if (user != null)
         {
             user.FailedLoginCount = 0;
             user.LockoutEnd = null;
             user.LastLoginTime = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 

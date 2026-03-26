@@ -74,11 +74,11 @@ internal class RegistrationRepository : BaseRepository<RegistrationEntity>, IReg
             r.Status == RegistrationStatus.Waiting);
     }
 
-    public async Task<RegistrationEntity?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+    public async Task<RegistrationEntity?> GetByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
     {
         return await _dbSet.FirstOrDefaultAsync(r =>
             !r.IsDeleted &&
-            r.MedicalCaseId == medicalCaseId);
+            r.MedicalCaseId == medicalCaseId, cancellationToken);
     }
 
     /// <summary>

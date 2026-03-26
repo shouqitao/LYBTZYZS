@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Threading;
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
@@ -60,12 +61,12 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 根据ID获取实体
         /// </summary>
-        public virtual async Task<TEntity?> GetByIdAsync(Guid id)
+        public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             var entity = await _dbSet
                 .Where(e => e.Id == id && !e.IsDeleted)
-                .SingleOrDefaultAsync();
+                .SingleOrDefaultAsync(cancellationToken);
 
             _logger.LogDebug("[REPO] {EntityType}.GetById({Id}) → {Result}",
                 typeof(TEntity).Name, id, entity != null ? "Found" : "NotFound");
@@ -82,30 +83,30 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 获取所有实体
         /// </summary>
-        public virtual async Task<List<TEntity>> GetAllAsync()
+        public virtual async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _dbSet
                 .Where(e => !e.IsDeleted)
                 .OrderByDescending(e => e.CreatedAt)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         // IRepository实现
-        async Task<IEnumerable<TEntity>> IRepository<TEntity>.GetAllAsync()
+        async Task<IEnumerable<TEntity>> IRepository<TEntity>.GetAllAsync(CancellationToken cancellationToken)
         {
-            return await GetAllAsync();
+            return await GetAllAsync(cancellationToken);
         }
 
         /// <summary>
         /// 根据条件查询
         /// </summary>
-        public virtual async Task<List<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<List<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             return await _dbSet
                 .Where(e => !e.IsDeleted)
                 .Where(predicate)
                 .OrderByDescending(e => e.CreatedAt)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -191,9 +192,9 @@ namespace LYBT.Infrastructure.Repositories
         // 使用GetPagedAsync替代
 
         // IRepository实现
-        async Task<IEnumerable<TEntity>> IRepository<TEntity>.FindAsync(Expression<Func<TEntity, bool>> predicate)
+        async Task<IEnumerable<TEntity>> IRepository<TEntity>.FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
         {
-            return await FindAsync(predicate);
+            return await FindAsync(predicate, cancellationToken);
         }
 
         /// <summary>
@@ -202,12 +203,13 @@ namespace LYBT.Infrastructure.Repositories
         /// <param name="pageNumber">页码（从1开始）</param>
         /// <param name="pageSize">每页数量</param>
         /// <param name="keyword">搜索关键字（可选）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>分页结果</returns>
         /// <remarks>
         /// 子类通过覆盖ApplyKeywordFilter和ApplyDefaultOrdering提供自定义逻辑，
         /// 不再需要重写整个GetPagedAsync方法
         /// </remarks>
-        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null)
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null, CancellationToken cancellationToken = default)
         {
             var query = _dbSet.AsNoTracking().Where(e => !e.IsDeleted);
 
@@ -220,12 +222,12 @@ namespace LYBT.Infrastructure.Repositories
             // 应用默认排序（模板方法）
             query = ApplyDefaultOrdering(query);
 
-            var totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return new PagedResult<TEntity>(items, totalCount, pageNumber, pageSize);
         }
@@ -285,12 +287,12 @@ namespace LYBT.Infrastructure.Repositories
 
 
         // IRepository GetSingleAsync实现
-        async Task<TEntity?> IRepository<TEntity>.GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        async Task<TEntity?> IRepository<TEntity>.GetSingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
         {
             return await _dbSet
                 .Where(e => !e.IsDeleted)
                 .Where(predicate)
-                .SingleOrDefaultAsync();
+                .SingleOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -318,9 +320,9 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 获取实体总数（IRepository接口实现）
         /// </summary>
-        public virtual async Task<int> CountAsync()
+        public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
-            return await _dbSet.CountAsync(e => !e.IsDeleted);
+            return await _dbSet.CountAsync(e => !e.IsDeleted, cancellationToken);
         }
 
         /// <summary>
@@ -347,15 +349,15 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 添加实体
         /// </summary>
-        public virtual async Task<TEntity> AddAsync(TEntity entity)
+        public virtual async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
             entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
 
-            await _dbSet.AddAsync(entity);
-            await SaveChangesAsync();
+            await _dbSet.AddAsync(entity, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
 
             // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.Add({Id})", typeof(TEntity).Name, entity.Id);
@@ -366,7 +368,7 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 批量添加实体
         /// </summary>
-        public virtual async Task<List<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities)
+        public virtual async Task<List<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
@@ -378,8 +380,8 @@ namespace LYBT.Infrastructure.Repositories
                 entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
             }
 
-            await _dbSet.AddRangeAsync(entityList);
-            await SaveChangesAsync();
+            await _dbSet.AddRangeAsync(entityList, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
 
             // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.AddRange Count={Count}",
@@ -389,9 +391,9 @@ namespace LYBT.Infrastructure.Repositories
         }
 
         // IRepository AddRangeAsync显式接口实现
-        async Task<IEnumerable<TEntity>> IRepository<TEntity>.AddRangeAsync(IEnumerable<TEntity> entities)
+        async Task<IEnumerable<TEntity>> IRepository<TEntity>.AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken)
         {
-            return await AddRangeAsync(entities);
+            return await AddRangeAsync(entities, cancellationToken);
         }
 
         #endregion
@@ -401,13 +403,13 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 更新实体
         /// </summary>
-        public virtual async Task<TEntity> UpdateAsync(TEntity entity)
+        public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
             _dbSet.Update(entity);
-            await SaveChangesAsync();
+            await SaveChangesAsync(cancellationToken);
 
             // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.Update({Id})", typeof(TEntity).Name, entity.Id);
@@ -445,9 +447,9 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 软删除实体
         /// </summary>
-        public virtual async Task<bool> DeleteAsync(Guid id)
+        public virtual async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var entity = await GetByIdAsync(id);
+            var entity = await GetByIdAsync(id, cancellationToken);
             if (entity == null)
             {
                 // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
@@ -459,7 +461,7 @@ namespace LYBT.Infrastructure.Repositories
             entity.UpdatedAt = DateTime.UtcNow;
 
             _dbSet.Update(entity);
-            await SaveChangesAsync();
+            await SaveChangesAsync(cancellationToken);
 
             // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.Delete({Id})", typeof(TEntity).Name, id);
@@ -586,17 +588,19 @@ namespace LYBT.Infrastructure.Repositories
         /// <param name="query">已配置的查询（包含Where和Include）</param>
         /// <param name="pageNumber">页码（从1开始）</param>
         /// <param name="pageSize">每页大小</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>PagedResult分页结果</returns>
         protected async Task<PagedResult<TEntity>> GetPagedResultAsync(
             IQueryable<TEntity> query,
             int pageNumber,
-            int pageSize)
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
-            var totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync(cancellationToken);
             var items = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return new PagedResult<TEntity>(items, totalCount, pageNumber, pageSize);
         }
@@ -625,7 +629,7 @@ namespace LYBT.Infrastructure.Repositories
         /// 全局RowVersion同步：在SaveChanges前同步所有tracked实体的RowVersion，
         /// 防止同一请求内多次操作导致的不必要并发异常
         /// </summary>
-        public virtual async Task<int> SaveChangesAsync()
+        public virtual async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -650,7 +654,7 @@ namespace LYBT.Infrastructure.Repositories
                     }
                 }
 
-                return await _context.SaveChangesAsync();
+                return await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {
