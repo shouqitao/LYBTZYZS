@@ -24,11 +24,11 @@ namespace LYBT.Shared.Validators.Herbs
                 .WithMessage($"拼音码长度不能超过{ValidationConstants.CodeMaxLength}个字符")
                 .When(x => !string.IsNullOrEmpty(x.PinYinCode));
 
-            // BR-004: 分类50字符以内（可选）
+            // BR-004: 分类必填，50字符以内
             RuleFor(x => x.Category)
+                .NotEmpty().WithMessage("分类不能为空")
                 .MaximumLength(ValidationConstants.CodeMaxLength)
-                .WithMessage($"分类长度不能超过{ValidationConstants.CodeMaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.Category));
+                .WithMessage($"分类长度不能超过{ValidationConstants.CodeMaxLength}个字符");
 
             // 产地100字符以内（可选）
             RuleFor(x => x.Origin)

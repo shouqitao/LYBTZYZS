@@ -14,6 +14,10 @@ namespace LYBT.Shared.Validators.Formula
                 .NotEmpty().WithMessage("方剂名称不能为空")
                 .MaximumLength(100).WithMessage("方剂名称长度不能超过100个字符");
 
+            RuleFor(x => x.Category)
+                .NotEmpty().WithMessage("分类不能为空")
+                .MaximumLength(100).WithMessage("分类长度不能超过100个字符");
+
             RuleFor(x => x.Effect)
                 .MaximumLength(500).WithMessage("功效长度不能超过500个字符")
                 .When(x => !string.IsNullOrEmpty(x.Effect));

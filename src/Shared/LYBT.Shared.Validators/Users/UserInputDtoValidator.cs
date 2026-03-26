@@ -9,9 +9,11 @@ namespace LYBT.Shared.Validators.Users
     {
         public UserInputDtoValidator()
         {
-            // 用户名：创建时必填（Id为null），更新时可选
+            // 用户名：创建时必填（Id为null），更新时可选，必须符合格式
             RuleFor(x => x.UserName)
                 .NotEmpty().WithMessage("用户名不能为空")
+                .Length(3, 32).WithMessage("用户名长度必须在3-32个字符之间")
+                .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("用户名只能包含字母、数字和下划线")
                 .When(x => x.Id == null || x.Id == Guid.Empty);
 
             // 真实姓名：创建时必填
