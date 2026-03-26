@@ -132,12 +132,18 @@ public static class ServiceCollectionExtensions
         });
         services.AddFluentValidationClientsideAdapters();
 
-        // Epic #1934: 配置文件上传限制（10MB）
         services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
         {
-            options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
-            options.ValueLengthLimit = int.MaxValue;
-            options.MultipartHeadersLengthLimit = int.MaxValue;
+            options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
+            options.ValueLengthLimit = 1024 * 1024;
+            options.MultipartHeadersLengthLimit = 32768;
+            options.MemoryBufferThreshold = 1024 * 1024;
+        });
+
+        services.Configure<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>(options =>
+        {
+            options.Limits.MaxRequestBodySize = 10 * 1024 * 1024;
+            options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(30);
         });
 
         services.AddControllers(options =>
