@@ -34,7 +34,7 @@ services.AddFormulaModule();
 | AuthController | /api/v1/auth | 登录、登出、Token刷新 |
 | UsersController | /api/v1/users | 用户 CRUD、角色管理 |
 | PatientsController | /api/v1/patients | 患者档案、搜索 |
-| MedicalCaseController | /api/v1/medicalcases | 医案流程、状态迁移 |
+| MedicalCase* (4个控制器) | /api/v1/medicalcases | 医案流程、状态迁移、打印、审计 |
 | HerbsController | /api/v1/herbs | 药材搜索、价格维护 |
 | FormulasController | /api/v1/formulas | 验方模板、方剂库 |
 | HealthController | /health | 健康检查 |

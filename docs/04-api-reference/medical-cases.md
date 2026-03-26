@@ -1,6 +1,6 @@
 # 医案 API
 
-> Controller: `MedicalCaseController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
+> Controllers: `MedicalCasesController`, `MedicalCaseWorkflowController`, `MedicalCasePrintController`, `MedicalCaseAuditController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
 
 ## 概述
 

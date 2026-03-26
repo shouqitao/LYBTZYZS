@@ -36,9 +36,15 @@ GET    /api/v1/patients/search         # 搜索患者 (姓名/手机号/拼音)
 GET    /api/v1/patients/{id}/history   # 获取患者病史
 ```
 
-### MedicalCaseController (/api/v1/medicalcases)
+### MedicalCase Controllers (/api/v1/medicalcases)
 
-```
+已拆分为4个控制器：
+- **MedicalCasesController**: CRUD 操作
+- **MedicalCaseWorkflowController**: 状态流转（更新状态、关闭、挂起、取消）
+- **MedicalCasePrintController**: 打印管理（记录打印完成、添加打印日志）
+- **MedicalCaseAuditController**: 审计查询（权限、审计日志）
+
+``
 GET    /api/v1/medicalcases                         # 分页查询医案
 GET    /api/v1/medicalcases/{id}                    # 医案详情
 POST   /api/v1/medicalcases                         # 创建医案
@@ -212,14 +218,17 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 
 ## 代码文件结构
 
-### Controllers/ (9 文件)
+### Controllers/ (12 文件)
 
 | 文件 | 类 | 继承 | 用途 |
 |------|-----|------|------|
 | AuthController.cs | `AuthController` | BaseApiController | 认证控制器: 登录/自动登录/登出/Token刷新/Token验证 |
 | UsersController.cs | `UsersController` | BaseApiController | 用户管理: CRUD/密码管理/状态切换/批量操作 |
 | PatientsController.cs | `PatientsController` | BaseApiController | 患者管理: CRUD/导入导出/引用检查/批量操作 |
-| MedicalCaseController.cs | `MedicalCaseController` | BaseApiController | 医案管理: 聚合保存/状态流转/打印管理/统一查询 |
+| MedicalCasesController.cs | `MedicalCasesController` | BaseApiController | 医案CRUD: 创建/更新/删除/查询/搜索 |
+| MedicalCaseWorkflowController.cs | `MedicalCaseWorkflowController` | BaseApiController | 医案工作流: 状态更新/关闭/挂起/取消 |
+| MedicalCasePrintController.cs | `MedicalCasePrintController` | BaseApiController | 医案打印: 打印记录/日志 |
+| MedicalCaseAuditController.cs | `MedicalCaseAuditController` | BaseApiController | 医案审计: 权限查询/审计日志 |
 | HerbsController.cs | `HerbsController` | BaseApiController | 药材管理: CRUD/导入导出/引用检查/批量操作 |
 | FormulasController.cs | `FormulasController` | BaseApiController | 验方管理: CRUD/导入导出/药材验证/批量操作 |
 | SyncController.cs | `SyncController` | BaseApiController | 数据同步: 元数据/比对/上传/下载/删除 |
@@ -274,7 +283,7 @@ GET    /api/v1/patients/{id}/check-reference [PatientAccess] 检查引用关系
 POST   /api/v1/patients/batch-check-reference [PatientAccess] 批量引用检查
 ```
 
-#### MedicalCaseController 端点
+#### MedicalCase Controllers 端点
 
 ```
 # Write Layer (写操作)
@@ -445,8 +454,8 @@ GET    /api/v1/health/details          [Authorize] 详细健康检查(含数据�
 
 | 所在文件 | 类名 | 用途 |
 |----------|------|------|
-| MedicalCaseController.cs | `UpdateStatusRequest` | 更新医案状态请求 (Status字段) |
-| MedicalCaseController.cs | `CancelMedicalCaseRequest` | 取消医案请求 (Reason字段) |
+| MedicalCaseWorkflowController.cs | `UpdateStatusRequest` | 更新医案状态请求 (Status字段) |
+| MedicalCaseWorkflowController.cs | `CancelMedicalCaseRequest` | 取消医案请求 (Reason字段) |
 | DiagnosticsController.cs | `EnableDebugModeRequest` | 启用调试模式请求 (Level/DurationMinutes) |
 | DiagnosticsController.cs | `SetLoggingLevelRequest` | 设置日志级别请求 (Level) |
 

@@ -11,7 +11,7 @@ namespace LYBT.Tests.Integration.Flows;
 
 /// <summary>
 /// MedicalCase lifecycle flow integration tests.
-/// Tests the full chain: MedicalCaseRepository -> IMedicalCaseApi -> Server MedicalCaseController -> SQL Server.
+/// Tests the full chain: MedicalCaseRepository -> IMedicalCaseApi -> Server MedicalCasesController -> SQL Server.
 /// </summary>
 [Collection("Integration")]
 public class MedicalCaseFlowTests : IntegrationTestBase

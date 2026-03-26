@@ -46,7 +46,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
         public async Task<IActionResult> UpdateStatus(
             Guid id,
-            [FromBody] UpdateStatusRequest request)
+            [FromBody] MedicalCaseStatusInputDto request)
         {
             // Completed 状态通过 CompleteAsync 统一入口处理
             if (request.Status == MedicalCaseStatus.Completed)
@@ -137,7 +137,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 403)]
         public async Task<IActionResult> CancelMedicalCase(
             Guid id,
-            [FromBody] CancelMedicalCaseRequest? request = null)
+            [FromBody] CancelMedicalCaseRequestDto? request = null)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;

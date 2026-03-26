@@ -66,7 +66,7 @@ public class MedicalCaseWorkflowControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var request = new UpdateStatusRequest { Status = MedicalCaseStatus.Active };
+        var request = new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Active };
 
         var updatedEntity = new MedicalCase
         {
@@ -99,7 +99,7 @@ public class MedicalCaseWorkflowControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var request = new UpdateStatusRequest { Status = MedicalCaseStatus.Completed };
+        var request = new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Completed };
         var doctorId = Guid.Parse(_controller.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
         var completedEntity = new MedicalCase
@@ -134,7 +134,7 @@ public class MedicalCaseWorkflowControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var request = new UpdateStatusRequest { Status = MedicalCaseStatus.Draft };
+        var request = new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Suspended };
 
         _facade.UpdateStatusAsync(id, request.Status)
             .Returns((MedicalCase?)null);
@@ -316,7 +316,7 @@ public class MedicalCaseWorkflowControllerTests
         // Arrange
         var id = Guid.NewGuid();
         var doctorId = Guid.Parse(_controller.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var request = new CancelMedicalCaseRequest { Reason = "Test cancellation" };
+        var request = new CancelMedicalCaseRequestDto { Reason = "Test cancellation" };
 
         var cancelledEntity = new MedicalCase
         {
@@ -390,22 +390,4 @@ public class MedicalCaseWorkflowControllerTests
     }
 
     #endregion
-}
-
-/// <summary>
-/// 更新医案状态请求
-/// </summary>
-public class UpdateStatusRequest
-{
-    /// <summary>目标状态</summary>
-    public MedicalCaseStatus Status { get; set; }
-}
-
-/// <summary>
-/// 取消医案请求
-/// </summary>
-public class CancelMedicalCaseRequest
-{
-    /// <summary>取消原因</summary>
-    public string? Reason { get; set; }
 }

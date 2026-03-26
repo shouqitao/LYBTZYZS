@@ -52,7 +52,6 @@ public class ArchTests
         // 暂时排除的控制器（计划后续重构移除Entities依赖）
         var excludedControllers = new[]
         {
-            "MedicalCaseController",    // 医案控制器因枚举类型需要Entities引用
             "PatientsController"        // 患者控制器因枚举类型需要Entities引用
         };
 
