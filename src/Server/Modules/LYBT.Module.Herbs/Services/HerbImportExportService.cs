@@ -32,7 +32,7 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 从Excel文件导入药材数据 (Issue #1166)
         /// </summary>
-        public async Task<Result<ImportResultDto<HerbDetailDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
+        public async Task<Result<ImportResultDto<HerbDetailDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除外层冗余try-catch，保留行级错误隔离
             var result = new ImportResultDto<HerbDetailDto>
@@ -65,6 +65,7 @@ namespace LYBT.Module.Herbs.Services
 
             for (int row = 2; row <= rowCount; row++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     var name = worksheet.Cells[row, 1].Text?.Trim();
@@ -153,7 +154,7 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 导出药材数据到Excel (Issue #1166)
         /// </summary>
-        public async Task<MemoryStream> ExportAsync(string? category = null)
+        public async Task<MemoryStream> ExportAsync(string? category = null, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -267,7 +268,7 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 批量导入药材（Epic #1962 Task 2.2）
         /// </summary>
-        public async Task<Result<HerbBatchImportResultDto>> BatchImportAsync(List<HerbInputDto> herbs, DuplicateStrategy strategy)
+        public async Task<Result<HerbBatchImportResultDto>> BatchImportAsync(List<HerbInputDto> herbs, DuplicateStrategy strategy, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除外层冗余try-catch，保留行级错误隔离
             const int MAX_IMPORT_SIZE = 10000; // BR-006
@@ -287,6 +288,7 @@ namespace LYBT.Module.Herbs.Services
 
             for (int i = 0; i < herbs.Count; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var dto = herbs[i];
                 var rowNumber = i + 2; // Excel行号（从第2行开始）
 
@@ -372,7 +374,7 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 获取所有药材数据用于导出（Epic #1962 Task 3.1）
         /// </summary>
-        public async Task<Result<List<HerbDetailDto>>> GetAllForExportAsync(string? category = null)
+        public async Task<Result<List<HerbDetailDto>>> GetAllForExportAsync(string? category = null, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var herbs = await _repository.GetAllAsync();

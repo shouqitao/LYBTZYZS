@@ -50,7 +50,7 @@ namespace LYBT.Module.Herbs.Services
             _importExport = importExport;
         }
 
-        public async Task<Result<PagedResult<HerbListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+        public async Task<Result<PagedResult<HerbListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null, CancellationToken cancellationToken = default)
         {
             // Sprint3-X6: keyword + category 筛选均在 DB 层执行，TotalCount 自然正确
             var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword, category);
@@ -66,7 +66,7 @@ namespace LYBT.Module.Herbs.Services
             return Result<PagedResult<HerbListDto>>.Success(dto);
         }
 
-        public async Task<Result<HerbDetailDto>> GetByIdAsync(Guid id)
+        public async Task<Result<HerbDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
@@ -77,11 +77,11 @@ namespace LYBT.Module.Herbs.Services
             return Result<HerbDetailDto>.Success(dto);
         }
 
-        public async Task<Result<HerbDetailDto>> CreateAsync(HerbInputDto dto)
+        public async Task<Result<HerbDetailDto>> CreateAsync(HerbInputDto dto, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // FluentValidation 验证（Phase 1 Task 1.8）
-            var validationResult = await _validator.ValidateAsync(dto);
+            var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
@@ -109,7 +109,7 @@ namespace LYBT.Module.Herbs.Services
             return Result<HerbDetailDto>.Success(resultDto);
         }
 
-        public async Task<Result<HerbDetailDto>> UpdateAsync(Guid id, HerbInputDto dto)
+        public async Task<Result<HerbDetailDto>> UpdateAsync(Guid id, HerbInputDto dto, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
@@ -117,7 +117,7 @@ namespace LYBT.Module.Herbs.Services
                 return Result<HerbDetailDto>.Failure(GenericErrorCode.HerbNotFound);
 
             // FluentValidation 验证（Phase 1 Task 1.8）
-            var validationResult = await _validator.ValidateAsync(dto);
+            var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
@@ -148,10 +148,10 @@ namespace LYBT.Module.Herbs.Services
             return Result<HerbDetailDto>.Success(resultDto);
         }
 
-        public async Task<Result> DeleteAsync(Guid id)
+        public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // X7: 删除前强制引用检查
-            var refCheck = await CheckReferenceAsync(id);
+            var refCheck = await CheckReferenceAsync(id, cancellationToken);
             if (refCheck.IsSuccess && refCheck.Data != null && refCheck.Data.HasReferences)
             {
                 _logger.LogWarning("[SVC] Herb.Delete → HasReferences - HerbId={HerbId} ReferenceCount={Count}",
@@ -164,7 +164,7 @@ namespace LYBT.Module.Herbs.Services
             return Result.Success();
         }
 
-        public async Task<Result<List<HerbDetailDto>>> SearchAsync(string keyword)
+        public async Task<Result<List<HerbDetailDto>>> SearchAsync(string keyword, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entities = await _repository.FindAsync(h =>
@@ -177,30 +177,30 @@ namespace LYBT.Module.Herbs.Services
         // ========== Import/Export 职责委托给 IHerbImportExportService ==========
 
         /// <inheritdoc/>
-        public Task<Result<ImportResultDto<HerbDetailDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
-            => _importExport.ImportFromExcelAsync(stream, fileName);
+        public Task<Result<ImportResultDto<HerbDetailDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null, CancellationToken cancellationToken = default)
+            => _importExport.ImportFromExcelAsync(stream, fileName, cancellationToken);
 
         /// <inheritdoc/>
-        public Task<MemoryStream> ExportAsync(string? category = null)
-            => _importExport.ExportAsync(category);
+        public Task<MemoryStream> ExportAsync(string? category = null, CancellationToken cancellationToken = default)
+            => _importExport.ExportAsync(category, cancellationToken);
 
         /// <inheritdoc/>
         public MemoryStream GenerateImportTemplate()
             => _importExport.GenerateImportTemplate();
 
         /// <inheritdoc/>
-        public Task<Result<HerbBatchImportResultDto>> BatchImportAsync(List<HerbInputDto> herbs, DuplicateStrategy strategy)
-            => _importExport.BatchImportAsync(herbs, strategy);
+        public Task<Result<HerbBatchImportResultDto>> BatchImportAsync(List<HerbInputDto> herbs, DuplicateStrategy strategy, CancellationToken cancellationToken = default)
+            => _importExport.BatchImportAsync(herbs, strategy, cancellationToken);
 
         /// <inheritdoc/>
-        public Task<Result<List<HerbDetailDto>>> GetAllForExportAsync(string? category = null)
-            => _importExport.GetAllForExportAsync(category);
+        public Task<Result<List<HerbDetailDto>>> GetAllForExportAsync(string? category = null, CancellationToken cancellationToken = default)
+            => _importExport.GetAllForExportAsync(category, cancellationToken);
 
         /// <summary>
         /// 检查药材是否被处方引用（Epic #1962 Task 4.2）
         /// OpenSpec: implement-data-sync - 实现处方引用检查
         /// </summary>
-        public async Task<Result<HerbReferenceCheckDto>> CheckReferenceAsync(Guid herbId)
+        public async Task<Result<HerbReferenceCheckDto>> CheckReferenceAsync(Guid herbId, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var herb = await _repository.GetByIdAsync(herbId);
@@ -211,11 +211,11 @@ namespace LYBT.Module.Herbs.Services
 
             // 查询处方引用计数
             var prescriptionRefCount = await _dbContext.PrescriptionItems
-                .CountAsync(pi => pi.HerbId == herbId);
+                .CountAsync(pi => pi.HerbId == herbId, cancellationToken);
 
             // CODE-11: 查询验方引用计数 (FormulaHerbItem.HerbId 可空，仅统计已绑定的)
             var formulaRefCount = await _dbContext.Set<FormulaHerbItem>()
-                .CountAsync(fhi => fhi.HerbId != null && fhi.HerbId == herbId);
+                .CountAsync(fhi => fhi.HerbId != null && fhi.HerbId == herbId, cancellationToken);
 
             var referenceCount = prescriptionRefCount + formulaRefCount;
 
@@ -237,7 +237,7 @@ namespace LYBT.Module.Herbs.Services
                     Status = mc.IsPrinted ? "已打印" : "未打印"
                 })
                 .Take(5)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             var hasReferences = referenceCount > 0;
             var deleteWarning = hasReferences
@@ -263,7 +263,7 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 批量检查药材引用关系（Epic #1962 Task 4.2）
         /// </summary>
-        public async Task<Result<List<HerbReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> herbIds)
+        public async Task<Result<List<HerbReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> herbIds, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             const int MAX_CHECK_SIZE = 100; // BR-006
@@ -283,6 +283,7 @@ namespace LYBT.Module.Herbs.Services
                 {
                     results.Add(checkResult.Data);
                 }
+                cancellationToken.ThrowIfCancellationRequested();
             }
 
             _logger.LogInformation("[SVC] Herb.BatchCheckReference completed - Count={Count}", results.Count);
@@ -295,7 +296,7 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 切换药材状态（启用/禁用）
         /// </summary>
-        public async Task<Result<HerbDetailDto>> ToggleStatusAsync(Guid id)
+        public async Task<Result<HerbDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id);
@@ -321,7 +322,7 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 恢复软删除的药材
         /// </summary>
-        public async Task<Result<HerbDetailDto>> RestoreAsync(Guid id)
+        public async Task<Result<HerbDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // 使用GetByIdIncludingDeletedAsync获取包括已删除的实体
@@ -353,7 +354,7 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 批量更新药材状态
         /// </summary>
-        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status)
+        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken cancellationToken = default)
         {
             var statusText = status == CommonStatus.Enabled ? "启用" : "禁用";
 
@@ -366,6 +367,7 @@ namespace LYBT.Module.Herbs.Services
 
             foreach (var id in ids)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     var entity = await _repository.GetByIdAsync(id);
@@ -409,7 +411,7 @@ namespace LYBT.Module.Herbs.Services
             return Result<BatchOperationResultDto>.Success(result);
         }
 
-        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, CancellationToken cancellationToken = default)
         {
             var result = new BatchOperationResultDto
             {
@@ -420,6 +422,7 @@ namespace LYBT.Module.Herbs.Services
 
             foreach (var id in ids)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     var entity = await _repository.GetByIdAsync(id);
@@ -436,7 +439,7 @@ namespace LYBT.Module.Herbs.Services
                     }
 
                     // CODE-11: 批量删除前检查引用（跳过有引用的项，不中断批量操作）
-                    var refCheck = await CheckReferenceAsync(id);
+                    var refCheck = await CheckReferenceAsync(id, cancellationToken);
                     if (refCheck.IsSuccess && refCheck.Data != null && refCheck.Data.HasReferences)
                     {
                         result.FailureCount++;

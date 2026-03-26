@@ -114,7 +114,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 检查是否可以删除指定用户（包含最后一个保护）
         /// </summary>
-        private async Task<Result> CanDeleteUserAsync(Guid userId, UserRole targetRole)
+        private async Task<Result> CanDeleteUserAsync(Guid userId, UserRole targetRole, CancellationToken cancellationToken = default)
         {
             // 权限检查
             var currentRole = GetCurrentUserRole();
@@ -127,7 +127,7 @@ namespace LYBT.Module.Users.Services
             if (targetRole == UserRole.SuperAdmin || targetRole == UserRole.Admin)
             {
                 // 使用FindAsync查询符合条件的用户数量（IRepository<T>无带参数的CountAsync）
-                var users = await _repository.FindAsync(u => u.Role == targetRole);
+                var users = await _repository.FindAsync(u => u.Role == targetRole, cancellationToken);
                 var count = users.Count();
                 if (count <= 1)
                 {
@@ -152,10 +152,11 @@ namespace LYBT.Module.Users.Services
             int pageSize = 20,
             string? keyword = null,
             UserRole? role = null,
-            CommonStatus? status = null)
+            CommonStatus? status = null,
+            CancellationToken cancellationToken = default)
         {
             // Sprint3-X6: keyword/role/status 筛选均在 DB 层执行，TotalCount 自然正确
-            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword, role, status);
+            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword, role, status, cancellationToken);
             var dtos = _mapper.ToListDtos(pagedResult.Items.ToList());
 
             var result = new PagedResult<UserListDto>
@@ -172,10 +173,10 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 根据ID获取用户详情
         /// </summary>
-        public async Task<Result<UserDetailDto>> GetByIdAsync(Guid id)
+        public async Task<Result<UserDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
                 return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
 
@@ -186,13 +187,13 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 搜索用户（返回所有匹配结果）
         /// </summary>
-        public async Task<Result<List<UserListDto>>> SearchAsync(string keyword)
+        public async Task<Result<List<UserListDto>>> SearchAsync(string keyword, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entities = await _repository.FindAsync(u =>
                 u.UserName.Contains(keyword) ||
                 u.RealName.Contains(keyword) ||
-                (u.Email != null && u.Email.Contains(keyword)));
+                (u.Email != null && u.Email.Contains(keyword)), cancellationToken);
 
             var dtos = _mapper.ToListDtos(entities.ToList());
             return Result<List<UserListDto>>.Success(dtos);
@@ -241,7 +242,7 @@ namespace LYBT.Module.Users.Services
             // Issue #1262: 检查用户名是否已存在（唯一性验证）
             // 使用IUserRepository特定方法检查用户名是否存在
             // FluentValidation已确保UserName不为null，使用!操作符消除编译器警告
-            var existingUser = await _repository.UsernameExistsAsync(dto.UserName!);
+            var existingUser = await _repository.UsernameExistsAsync(dto.UserName!, cancellationToken);
             if (existingUser)
             {
                 _logger.LogWarning("[SVC] User.Create → DuplicateUsername - UserName={UserName}", dto.UserName);
@@ -270,7 +271,7 @@ namespace LYBT.Module.Users.Services
             // Issue #2547: 使用统一PasswordHelper进行密码哈希
             entity.PasswordHash = PasswordHelper.HashPassword(passwordToHash, entity.Role, _logger);
 
-            var result = await _repository.AddAsync(entity);
+            var result = await _repository.AddAsync(entity, cancellationToken);
             var resultDto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] User.Create completed - UserName={UserName} Role={Role}", resultDto.UserName, resultDto.Role);
@@ -284,7 +285,7 @@ namespace LYBT.Module.Users.Services
         public async Task<Result<UserDetailDto>> UpdateAsync(Guid id, UserInputDto dto, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
                 return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
 
@@ -339,7 +340,7 @@ namespace LYBT.Module.Users.Services
                     oldRealName, dto.RealName, entity.PinYinCode);
             }
 
-            var result = await _repository.UpdateAsync(entity);
+            var result = await _repository.UpdateAsync(entity, cancellationToken);
             var resultDto = _mapper.ToDetailDto(result);
 
             // X3-02: 角色变更后撤销 Token
@@ -356,7 +357,7 @@ namespace LYBT.Module.Users.Services
         /// 删除用户（软删除）
         /// Issue #1909: 添加三角色权限控制和最后一个保护
         /// </summary>
-        public async Task<Result> DeleteAsync(Guid id)
+        public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
 
@@ -381,7 +382,7 @@ namespace LYBT.Module.Users.Services
             }
 
             // Issue #1909: 权限检查和保护逻辑
-            var permissionCheck = await CanDeleteUserAsync(id, targetUser.Role);
+            var permissionCheck = await CanDeleteUserAsync(id, targetUser.Role, cancellationToken);
             if (!permissionCheck.IsSuccess)
             {
                 _logger.LogWarning("[SVC] User.Delete → PermissionDenied - UserId={UserId} Reason={Reason}",
@@ -392,7 +393,7 @@ namespace LYBT.Module.Users.Services
             // X3-03: 删除前撤销所有 Token
             await _authService.RevokeUserTokensAsync(id, "用户已删除");
 
-            var result = await _repository.DeleteAsync(id);
+            var result = await _repository.DeleteAsync(id, cancellationToken);
             _logger.LogInformation("[SVC] User.Delete completed - UserId={UserId} Role={Role}", id, targetUser.Role);
             return result ? Result.Success() : Result.Failure(GenericErrorCode.InternalError, "删除失败");
         }
@@ -401,10 +402,10 @@ namespace LYBT.Module.Users.Services
         /// 管理员重置密码（Issue #1162: 使用配置文件中的默认密码）
         /// 修复：重置密码不再接受新密码参数，始终使用配置文件中的默认密码
         /// </summary>
-        public async Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request)
+        public async Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
                 return Result<ResetPasswordResponseDto>.Failure(GenericErrorCode.UserNotFound);
 
@@ -423,7 +424,7 @@ namespace LYBT.Module.Users.Services
             entity.PasswordHash = PasswordHelper.HashPassword(password, entity.Role, _logger);
             // T5-P2-31: 重置密码后标记下次登录须改密
             entity.MustChangeOnNextLogin = true;
-            await _repository.UpdateAsync(entity);
+            await _repository.UpdateAsync(entity, cancellationToken);
 
             // X3-04: 重置密码后撤销所有 Token，强制重新登录
             await _authService.RevokeUserTokensAsync(id, "密码已重置，强制重新登录");
@@ -443,7 +444,7 @@ namespace LYBT.Module.Users.Services
         /// 验证用户密码
         /// Issue #1864: Auth/User职责分离，密码验证由UserService负责
         /// </summary>
-        public async Task<Result<UserDetailDto>> ValidatePasswordAsync(string userName, string password)
+        public async Task<Result<UserDetailDto>> ValidatePasswordAsync(string userName, string password, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             if (string.IsNullOrWhiteSpace(userName))
@@ -452,7 +453,7 @@ namespace LYBT.Module.Users.Services
             if (string.IsNullOrWhiteSpace(password))
                 return Result<UserDetailDto>.Failure(GenericErrorCode.ValidationFailed, "密码不能为空");
 
-            var entity = await _repository.GetByUsernameAsync(userName);
+            var entity = await _repository.GetByUsernameAsync(userName, cancellationToken);
             if (entity == null)
             {
                 _logger.LogWarning("[SVC] User.ValidatePassword → NotFound - UserName={UserName}", userName);
@@ -478,7 +479,7 @@ namespace LYBT.Module.Users.Services
             if (verificationResult.NewHashedPassword != null)
             {
                 entity.PasswordHash = verificationResult.NewHashedPassword;
-                await _repository.UpdateAsync(entity);
+                await _repository.UpdateAsync(entity, cancellationToken);
                 _logger.LogInformation("[SVC] User.ValidatePassword → HashUpgraded - UserName={UserName}", userName);
             }
 
@@ -489,7 +490,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 更改密码
         /// </summary>
-        public async Task<Result> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
+        public async Task<Result> ChangePasswordAsync(Guid id, string oldPassword, string newPassword, CancellationToken cancellationToken = default)
         {
             // S2: 新密码策略验证
             if (!PasswordPolicyValidator.Validate(newPassword, out var policyErrors))
@@ -498,7 +499,7 @@ namespace LYBT.Module.Users.Services
             }
 
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
                 return Result.Failure(GenericErrorCode.UserNotFound);
 
@@ -513,7 +514,7 @@ namespace LYBT.Module.Users.Services
             entity.PasswordHash = PasswordHelper.HashPassword(newPassword, entity.Role, _logger);
             // T5-P2-31: 修改密码后清除须改密标记
             entity.MustChangeOnNextLogin = false;
-            await _repository.UpdateAsync(entity);
+            await _repository.UpdateAsync(entity, cancellationToken);
 
             // X3-05: 修改密码后撤销所有 Token，强制重新登录
             await _authService.RevokeUserTokensAsync(id, "密码已修改，强制重新登录");
@@ -524,7 +525,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 修改个人信息 (Issue #1888)
         /// </summary>
-        public async Task<Result<UserDetailDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto)
+        public async Task<Result<UserDetailDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
 
@@ -563,7 +564,7 @@ namespace LYBT.Module.Users.Services
             }
 
             // 保存更改
-            var updatedEntity = await _repository.UpdateAsync(entity);
+            var updatedEntity = await _repository.UpdateAsync(entity, cancellationToken);
             var resultDto = _mapper.ToDetailDto(updatedEntity);
 
             _logger.LogInformation("[SVC] User.ChangeProfile completed - UserId={UserId} RealName={RealName}", userId, dto.RealName);
@@ -590,10 +591,10 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 切换用户状态（启用/禁用）
         /// </summary>
-        public async Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id)
+        public async Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
                 return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
 
@@ -643,7 +644,7 @@ namespace LYBT.Module.Users.Services
                 : CommonStatus.Enabled;
             entity.UpdatedAt = DateTime.UtcNow;
 
-            var result = await _repository.UpdateAsync(entity);
+            var result = await _repository.UpdateAsync(entity, cancellationToken);
             var dto = _mapper.ToDetailDto(result);
 
             // X3-06: 禁用用户时撤销所有 Token
@@ -659,10 +660,10 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 恢复软删除的用户
         /// </summary>
-        public async Task<Result<UserDetailDto>> RestoreAsync(Guid id)
+        public async Task<Result<UserDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdIncludingDeletedAsync(id);
+            var entity = await _repository.GetByIdIncludingDeletedAsync(id, cancellationToken);
             if (entity == null)
                 return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
 
@@ -688,7 +689,7 @@ namespace LYBT.Module.Users.Services
             entity.IsDeleted = false;
             entity.UpdatedAt = DateTime.UtcNow;
 
-            var result = await _repository.UpdateAsync(entity);
+            var result = await _repository.UpdateAsync(entity, cancellationToken);
             var dto = _mapper.ToDetailDto(result);
 
             _logger.LogInformation("[SVC] User.Restore completed - UserId={UserId} UserName={UserName}", id, entity.UserName);
@@ -699,11 +700,11 @@ namespace LYBT.Module.Users.Services
         // ========== 批量操作委托给 IUserBatchOperationService ==========
 
         /// <inheritdoc />
-        public Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null)
-            => _batchService.BatchDeleteAsync(ids, currentUserId);
+        public Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null, CancellationToken cancellationToken = default)
+            => _batchService.BatchDeleteAsync(ids, currentUserId, cancellationToken);
 
         /// <inheritdoc />
-        public Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null)
-            => _batchService.BatchUpdateStatusAsync(ids, status, currentUserId);
+        public Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null, CancellationToken cancellationToken = default)
+            => _batchService.BatchUpdateStatusAsync(ids, status, currentUserId, cancellationToken);
     }
 }

@@ -38,6 +38,7 @@ namespace LYBT.WebAPI.Controllers
         [OutputCache(PolicyName = "HerbsCache")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<HerbListDto>>), 200)]
         public async Task<IActionResult> GetList(
+            CancellationToken cancellationToken = default,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -49,7 +50,7 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
             }
 
-            var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category);
+            var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category, cancellationToken);
             return Success(result.Data!, "查询成功");
         }
 
@@ -58,12 +59,12 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var result = await _herbService.GetByIdAsync(id);
+            var result = await _herbService.GetByIdAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return NotFound(result.ErrorMessage ?? "药材不存在");
@@ -76,10 +77,10 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
-        public async Task<IActionResult> Create([FromBody] HerbInputDto dto)
+        public async Task<IActionResult> Create([FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var result = await _herbService.CreateAsync(dto);
+            var result = await _herbService.CreateAsync(dto, cancellationToken);
             if (result.IsSuccess && result.Data != null)
             {
                 LogOperation("创建药材", result.Data, result.Data.Id);
@@ -95,7 +96,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
@@ -104,7 +105,7 @@ namespace LYBT.WebAPI.Controllers
 
             dto.Id = id;
 
-            var result = await _herbService.UpdateAsync(id, dto);
+            var result = await _herbService.UpdateAsync(id, dto, cancellationToken);
             if (result.IsSuccess && result.Data != null)
             {
                 LogOperation("更新药材信息", result.Data, id);
@@ -120,14 +121,14 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
             var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
             if (ownershipError != null) return ownershipError;
 
-            var result = await _herbService.DeleteAsync(id);
+            var result = await _herbService.DeleteAsync(id, cancellationToken);
             if (!result.IsSuccess)
             {
                 // X7: 区分引用阻塞(422)和不存在(404)
@@ -146,7 +147,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("import")]
         [RequestSizeLimit(10 * 1024 * 1024)]
         [ProducesResponseType(typeof(ApiResponse<ImportResultDto<HerbDetailDto>>), 200)]
-        public async Task<IActionResult> Import(IFormFile file)
+        public async Task<IActionResult> Import(IFormFile file, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (file == null || file.Length == 0)
@@ -166,7 +167,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             using var stream = file.OpenReadStream();
-            var result = await _herbService.ImportFromExcelAsync(stream, file.FileName);
+            var result = await _herbService.ImportFromExcelAsync(stream, file.FileName, cancellationToken);
 
             if (!result.IsSuccess || result.Data == null)
             {
@@ -186,10 +187,10 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        public async Task<IActionResult> Export([FromQuery] string? category = null)
+        public async Task<IActionResult> Export([FromQuery] string? category = null, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var stream = await _herbService.ExportAsync(category);
+            var stream = await _herbService.ExportAsync(category, cancellationToken);
             var fileName = string.IsNullOrWhiteSpace(category)
                 ? $"药材数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
                 : $"药材数据_{category}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
@@ -226,7 +227,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-import")]
         [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request)
+        public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (request.Herbs == null || request.Herbs.Count == 0)
@@ -239,7 +240,7 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("批量导入最多支持10000条记录");
             }
 
-            var result = await _herbService.BatchImportAsync(request.Herbs, request.Strategy);
+            var result = await _herbService.BatchImportAsync(request.Herbs, request.Strategy, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -263,10 +264,10 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("export-all")]
         [ProducesResponseType(typeof(ApiResponse<List<HerbDetailDto>>), 200)]
-        public async Task<IActionResult> GetAllForExport([FromQuery] string? category = null)
+        public async Task<IActionResult> GetAllForExport([FromQuery] string? category = null, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var result = await _herbService.GetAllForExportAsync(category);
+            var result = await _herbService.GetAllForExportAsync(category, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -285,12 +286,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<HerbReferenceCheckDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> CheckReference(Guid id)
+        public async Task<IActionResult> CheckReference(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var result = await _herbService.CheckReferenceAsync(id);
+            var result = await _herbService.CheckReferenceAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "引用检查失败");
@@ -304,7 +305,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-check-reference")]
         [ProducesResponseType(typeof(ApiResponse<List<HerbReferenceCheckDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchCheckReference([FromBody] HerbBatchCheckReferenceInputDto request)
+        public async Task<IActionResult> BatchCheckReference([FromBody] HerbBatchCheckReferenceInputDto request, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (request.HerbIds == null || request.HerbIds.Count == 0)
@@ -317,7 +318,7 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("批量检查最多支持100条记录");
             }
 
-            var result = await _herbService.BatchCheckReferenceAsync(request.HerbIds);
+            var result = await _herbService.BatchCheckReferenceAsync(request.HerbIds, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -342,14 +343,14 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> ToggleStatus(Guid id)
+        public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             // 使用统一的所有权检查方法
             var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
             if (ownershipError != null) return ownershipError;
 
-            var result = await _herbService.ToggleStatusAsync(id);
+            var result = await _herbService.ToggleStatusAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "状态切换失败");
@@ -366,7 +367,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Restore(Guid id)
+        public async Task<IActionResult> Restore(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "药材ID") is { } error) return error;
@@ -374,7 +375,7 @@ namespace LYBT.WebAPI.Controllers
             // 注: Restore不能使用GetEntityWithOwnershipCheckAsync，因为GetByIdAsync
             // 受全局软删除过滤器影响无法找到已删除记录。
             // RestoreAsync内部使用GetByIdIncludingDeletedAsync绕过过滤器。
-            var result = await _herbService.RestoreAsync(id);
+            var result = await _herbService.RestoreAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "恢复失败");
@@ -392,7 +393,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-enable")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -400,7 +401,7 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("请至少选择一个药材");
             }
 
-            var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled);
+            var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "批量启用失败");
@@ -424,7 +425,7 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("请至少选择一个药材");
             }
 
-            var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled);
+            var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
@@ -437,7 +438,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-delete")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
@@ -445,7 +446,7 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("请至少选择一个药材");
             }
 
-            var result = await _herbService.BatchDeleteAsync(dto.Ids);
+            var result = await _herbService.BatchDeleteAsync(dto.Ids, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return BusinessFail(result.ErrorMessage ?? "批量删除失败");

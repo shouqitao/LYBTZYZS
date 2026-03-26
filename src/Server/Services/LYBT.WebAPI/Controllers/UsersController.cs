@@ -40,6 +40,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PagedResult<UserListDto>>), 200)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> GetList(
+            CancellationToken cancellationToken,
             int page = 1,
             int pageSize = 20,
             string? keyword = null,
@@ -51,7 +52,7 @@ namespace LYBT.WebAPI.Controllers
             if (pageSize < 1 || pageSize > 100)
                 return ValidationFail("每页数量必须在1-100之间");
 
-            var result = await _userService.GetPagedAsync(page, pageSize, keyword, role, status);
+            var result = await _userService.GetPagedAsync(page, pageSize, keyword, role, status, cancellationToken);
             return SuccessPaged(result.Data!, "查询成功");
         }
 
@@ -61,7 +62,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("current")]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(401)]
-        public async Task<IActionResult> GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -93,7 +94,7 @@ namespace LYBT.WebAPI.Controllers
                 }
             }
 
-            var result = await _userService.GetByIdAsync(userId);
+            var result = await _userService.GetByIdAsync(userId, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
                 return NotFound(result.ErrorMessage ?? "用户不存在");
@@ -108,7 +109,7 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
@@ -128,7 +129,7 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Create([FromBody] UserInputDto dto)
+        public async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var result = await _userService.CreateAsync(dto);
