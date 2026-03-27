@@ -4,6 +4,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using FluentValidation.AspNetCore;
 using LYBT.Infrastructure.Serialization;
+using LYBT.WebAPI.Serialization;
 using LYBT.Module.Auth;
 using LYBT.Module.Formulas;
 using LYBT.Module.Herbs;
@@ -62,6 +63,17 @@ public static class ServiceCollectionExtensions
 
         // 9）安全服务（数据保护、密钥管理、密钥旋转）
         services.AddSecurityServices(configuration, environment);
+
+        // 10）CORS配置（WPF客户端跨域访问）
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            });
+        });
 
         // 10）环境感知配置校验 - 已移除，统一使用 LYBT.Shared.Configuration 配置验证
 
@@ -178,6 +190,9 @@ public static class ServiceCollectionExtensions
                 options.JsonSerializerOptions.Encoder = jsonConfig.UnsafeRelaxedEscaping
                     ? JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                     : JavaScriptEncoder.Default;
+
+                // Issue 4.2: JSON Source Generation - 使用编译时生成的序列化器
+                options.JsonSerializerOptions.TypeInfoResolverChain.Insert(0, LybtJsonContext.Default);
             });
 
         // Epic #1731 Phase 3: 配置自动模型验证行为
