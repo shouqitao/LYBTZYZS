@@ -1,4 +1,3 @@
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Roles;
@@ -144,7 +143,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 // 首次导航时初始化
                 if (!IsInitialized)
                 {
-                    _ = Application.Current.Dispatcher.InvokeAsync(async () =>
+                    _ = Services.UiThreadDispatcher.InvokeAsync(async () =>
                     {
                         try
                         {

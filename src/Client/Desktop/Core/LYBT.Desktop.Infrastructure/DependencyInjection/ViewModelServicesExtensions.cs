@@ -24,6 +24,9 @@ namespace LYBT.Desktop.Infrastructure.DependencyInjection
             // OpenSpec: enhance-viewmodel-architecture - ViewModel服务聚合
             containerRegistry.RegisterSingleton<IViewModelServices, ViewModelServices>();
 
+            // UI线程调度器 - Singleton
+            containerRegistry.RegisterSingleton<IUiThreadDispatcher, WpfUiThreadDispatcher>();
+
             // 共享服务 - Singleton
             containerRegistry.RegisterSingleton<IDialogManager, DialogManager>();
             // [已删除] IViewNavigationService - OpenSpec: unify-navigation-architecture (ADR-7)

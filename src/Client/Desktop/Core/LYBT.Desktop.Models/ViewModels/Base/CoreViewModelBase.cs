@@ -1,5 +1,4 @@
 using System.Reactive.Disposables;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
@@ -55,6 +54,11 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// 使用此属性订阅事件，Dispose时自动清理
         /// </summary>
         protected EventSubscriptionManager Events => _eventManager ??= new EventSubscriptionManager(EventAggregator);
+
+        /// <summary>
+        /// UI线程调度器
+        /// </summary>
+        protected IUiThreadDispatcher UiDispatcher => Services.UiThreadDispatcher;
 
         #endregion
 
@@ -261,20 +265,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected void RunOnUIThread(Action action)
         {
-            if (Application.Current?.Dispatcher == null)
-            {
-                action();
-                return;
-            }
-
-            if (Application.Current.Dispatcher.CheckAccess())
-            {
-                action();
-            }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(action);
-            }
+            UiDispatcher.Invoke(action);
         }
 
         /// <summary>
@@ -282,12 +273,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         protected Task RunOnUIThreadAsync(Func<Task> action)
         {
-            if (Application.Current?.Dispatcher == null)
-            {
-                return action();
-            }
-
-            return Application.Current.Dispatcher.InvokeAsync(action).Task;
+            return UiDispatcher.InvokeAsync(action);
         }
 
         #endregion

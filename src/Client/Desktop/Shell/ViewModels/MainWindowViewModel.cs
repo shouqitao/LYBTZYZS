@@ -515,7 +515,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         Logger.LogWarning("用户会话因不活跃已过期，执行自动登出");
 
-        await Application.Current.Dispatcher.InvokeAsync(async () =>
+        await Services.UiThreadDispatcher.InvokeAsync(async () =>
         {
             await ShowSuccessMessageAsync("您的会话因长时间未操作已过期，请重新登录。");
 
@@ -533,7 +533,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         Logger.LogDebug("Token生命周期状态变更: {Previous} -> {Current}", args.PreviousState, args.CurrentState);
 
-        await Application.Current.Dispatcher.InvokeAsync(async () =>
+        await Services.UiThreadDispatcher.InvokeAsync(async () =>
         {
             switch (args.CurrentState)
             {
@@ -558,7 +558,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         var user = args.User;
 
-        Application.Current.Dispatcher.InvokeAsync(() =>
+        Services.UiThreadDispatcher.InvokeAsync(() =>
         {
             // 更新UI状态
             IsLoggedIn = true;
@@ -598,7 +598,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private void OnPasswordChanged(PasswordChangedPayload payload)
     {
         Logger.LogInformation("收到密码修改成功事件 [用户: {UserName}]，导航到登录界面", payload.UserName);
-        Application.Current.Dispatcher.InvokeAsync(() =>
+        Services.UiThreadDispatcher.InvokeAsync(() =>
         {
             CurrentUser = null;
             IsLoggedIn = false;

@@ -50,5 +50,10 @@ namespace LYBT.Desktop.Contracts.Services
         /// 角色注册表
         /// </summary>
         IRoleRegistry RoleRegistry { get; }
+
+        /// <summary>
+        /// UI线程调度器
+        /// </summary>
+        IUiThreadDispatcher UiThreadDispatcher { get; }
     }
 }
