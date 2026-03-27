@@ -32,20 +32,12 @@ namespace LYBT.Desktop.Infrastructure.Services
         public bool IsAuthenticated => !string.IsNullOrEmpty(_authService.GetToken());
         public bool IsLoggedIn => IsAuthenticated;
 
-        public void SetCurrentUser(UserDetailDto user, string token)
-        {
-            _cachedUser = user ?? throw new ArgumentNullException(nameof(user));
-            ArgumentNullException.ThrowIfNull(token);
-        }
-
         public void SetSession(UserDetailDto user, string accessToken, string? refreshToken = null)
         {
             _cachedUser = user ?? throw new ArgumentNullException(nameof(user));
             ArgumentNullException.ThrowIfNull(accessToken);
             SessionChanged?.Invoke(this, new SessionChangedEventArgs(true, user));
         }
-
-        public void SetUserSession(UserDetailDto user, string token) => SetSession(user, token);
 
         public void ClearSession()
         {
@@ -55,7 +47,6 @@ namespace LYBT.Desktop.Infrastructure.Services
             if (wasAuthenticated) SessionChanged?.Invoke(this, new SessionChangedEventArgs(false));
         }
 
-        public void ClearUserSession() => ClearSession();
         public bool HasPermission(UserRole requiredRole) => CurrentUser != null && CurrentUser.Role >= requiredRole;
         public bool HasPermission(string permission) => IsAuthenticated && CurrentUser != null;
         public bool HasRole(string role) => CurrentUser != null && CurrentUser.Role.ToString().Equals(role, StringComparison.OrdinalIgnoreCase);

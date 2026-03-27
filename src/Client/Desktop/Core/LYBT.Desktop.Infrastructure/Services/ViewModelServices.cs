@@ -19,6 +19,7 @@ namespace LYBT.Desktop.Infrastructure.Services
         public IUserNotificationService UserNotificationService { get; }
         public ICommonDialogService CommonDialogService { get; }
         public IRoleRegistry RoleRegistry { get; }
+        public IUiThreadDispatcher UiThreadDispatcher { get; }
 
         public ViewModelServices(
             ILoggerFactory loggerFactory,
@@ -27,7 +28,8 @@ namespace LYBT.Desktop.Infrastructure.Services
             ISessionManager sessionManager,
             IUserNotificationService userNotificationService,
             ICommonDialogService commonDialogService,
-            IRoleRegistry roleRegistry)
+            IRoleRegistry roleRegistry,
+            IUiThreadDispatcher uiThreadDispatcher)
         {
             LoggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
@@ -36,6 +38,7 @@ namespace LYBT.Desktop.Infrastructure.Services
             UserNotificationService = userNotificationService ?? throw new ArgumentNullException(nameof(userNotificationService));
             CommonDialogService = commonDialogService ?? throw new ArgumentNullException(nameof(commonDialogService));
             RoleRegistry = roleRegistry ?? throw new ArgumentNullException(nameof(roleRegistry));
+            UiThreadDispatcher = uiThreadDispatcher ?? throw new ArgumentNullException(nameof(uiThreadDispatcher));
         }
     }
 }

@@ -296,13 +296,13 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             try
             {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                await Services.UiThreadDispatcher.InvokeAsync(() =>
                 {
                     if (_applicationStateService.IsApiHealthy) { ApiStatus = ApiHealthStatus.Healthy; ApiStatusMessage = "WebAPI 已连接"; }
                     else { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = $"WebAPI 连接失败: {_applicationStateService.ConnectionStatus}"; }
                 });
             }
-            catch (Exception ex) { Logger.LogError(ex, "[VM] Login.LoadApiStatus failed"); await Application.Current.Dispatcher.InvokeAsync(() => { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = "加载API状态失败，请稍后重试"; }); }
+            catch (Exception ex) { Logger.LogError(ex, "[VM] Login.LoadApiStatus failed"); await Services.UiThreadDispatcher.InvokeAsync(() => { ApiStatus = ApiHealthStatus.Unhealthy; ApiStatusMessage = "加载API状态失败，请稍后重试"; }); }
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                             }
                         }
 
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        await Services.UiThreadDispatcher.InvokeAsync(() =>
                         {
                             _savedUsername = savedUsername;
                             Username = savedUsername;
@@ -367,8 +367,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             try
             {
-                if (Application.Current?.Dispatcher is null) return;
-                Application.Current.Dispatcher.InvokeAsync(() =>
+                Services.UiThreadDispatcher.InvokeAsync(() =>
                 {
                     if (e.IsHealthy)
                     {
@@ -481,7 +480,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 // 触发ApplicationStateService重新检查API健康状态
                 await _applicationStateService.CheckApiHealthAsync();
 
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                await Services.UiThreadDispatcher.InvokeAsync(() =>
                 {
                     if (_applicationStateService.IsApiHealthy)
                     {
@@ -498,7 +497,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "[VM] Login.RetryApiCheck failed");
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                await Services.UiThreadDispatcher.InvokeAsync(() =>
                 {
                     ApiStatus = ApiHealthStatus.Unhealthy;
                     ApiStatusMessage = "连接检查失败，请稍后重试";

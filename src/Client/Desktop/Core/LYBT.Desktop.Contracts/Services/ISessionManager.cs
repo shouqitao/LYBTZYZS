@@ -43,29 +43,14 @@ namespace LYBT.Desktop.Contracts.Services
         // ==================== 会话管理方法 ====================
 
         /// <summary>
-        /// 设置当前用户
-        /// </summary>
-        void SetCurrentUser(UserDetailDto user, string token);
-
-        /// <summary>
         /// 设置会话信息（支持刷新令牌）
         /// </summary>
         void SetSession(UserDetailDto user, string accessToken, string? refreshToken = null);
 
         /// <summary>
-        /// 设置用户会话（SetSession 的别名，兼容性保留）
-        /// </summary>
-        void SetUserSession(UserDetailDto user, string token);
-
-        /// <summary>
         /// 清除会话
         /// </summary>
         void ClearSession();
-
-        /// <summary>
-        /// 清除用户会话（ClearSession 的别名，兼容性保留）
-        /// </summary>
-        void ClearUserSession();
 
         // ==================== 权限检查方法 ====================
 
