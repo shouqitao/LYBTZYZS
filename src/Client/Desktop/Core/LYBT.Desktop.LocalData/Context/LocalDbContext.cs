@@ -78,6 +78,9 @@ public class LocalDbContext : DbContext
 
         // 配置实体关系
         ConfigureRelationships(modelBuilder);
+
+        // 配置索引优化查询性能
+        ConfigureIndexes(modelBuilder);
     }
 
     /// <summary>
@@ -142,6 +145,35 @@ public class LocalDbContext : DbContext
         modelBuilder.Entity<MedicalCasePrintLog>()
             .Property(l => l.PrintType)
             .HasConversion<int>();
+    }
+
+    /// <summary>
+    /// 配置索引优化查询性能
+    /// </summary>
+    private static void ConfigureIndexes(ModelBuilder modelBuilder)
+    {
+        // Patient: 按手机号和身份证号查询
+        modelBuilder.Entity<Patient>()
+            .HasIndex(p => p.PhoneNumber);
+
+        modelBuilder.Entity<Patient>()
+            .HasIndex(p => p.IdCardNumber);
+
+        // User: 按用户名查询（登录）
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.UserName)
+            .IsUnique();
+
+        // MedicalCase: 按患者ID和医案编号查询
+        modelBuilder.Entity<MedicalCase>()
+            .HasIndex(mc => mc.PatientId);
+
+        modelBuilder.Entity<MedicalCase>()
+            .HasIndex(mc => mc.CaseNumber);
+
+        // Registration: 按患者ID查询挂号记录
+        modelBuilder.Entity<Registration>()
+            .HasIndex(r => r.PatientId);
     }
 
     // ==================== 审计字段自动化 ====================
