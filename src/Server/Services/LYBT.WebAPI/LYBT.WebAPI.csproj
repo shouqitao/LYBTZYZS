@@ -64,6 +64,9 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
 		<!-- .env文件支持 -->
 		<PackageReference Include="DotNetEnv" />
+		<!-- Issue #3.1: Redis 分布式缓存支持 -->
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+		<PackageReference Include="AspNetCore.HealthChecks.Redis" />
 	</ItemGroup>
 
 	<ItemGroup>

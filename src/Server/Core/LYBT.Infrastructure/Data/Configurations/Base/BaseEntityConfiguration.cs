@@ -42,7 +42,7 @@ public abstract class BaseEntityConfiguration<T> : IEntityTypeConfiguration<T>
             .IsRequired()
             .HasDefaultValue(false);
 
-        // 软删除全局查询过滤器
-        builder.HasQueryFilter(e => !e.IsDeleted);
+        // 注意: 全局查询过滤器在 EntityOptimizationExtensions.ApplyOptimizations() 中统一配置
+        // 避免重复配置导致冲突
     }
 }

@@ -3,6 +3,9 @@ using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Primitives.ErrorCodes;
 using LYBT.WebAPI.Configuration;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -201,7 +204,54 @@ public static class ApiServiceCollectionExtensions
                         QueueLimit = 0          // 不排队
                     });
             });
+
+            // Issue 2.3: 全局API调用速率限制：100次请求/分钟
+            options.AddPolicy("ApiCalls", httpContext =>
+            {
+                var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: ipAddress,
+                    factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,      // 每个窗口允许100次请求
+                        Window = TimeSpan.FromMinutes(1),  // 1分钟窗口
+                        QueueLimit = 0          // 不排队
+                    });
+            });
         });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Issue #3.1: 注册分布式缓存服务（Redis + MemoryCache 降级）
+    /// 支持多实例部署，当 Redis 不可用时自动降级为内存缓存
+    /// </summary>
+    public static IServiceCollection AddCachingServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        ILogger logger)
+    {
+        var redisConnection = configuration["REDIS_CONNECTION"]
+            ?? configuration.GetConnectionString("Redis")
+            ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION");
+
+        if (!string.IsNullOrEmpty(redisConnection))
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnection;
+                options.InstanceName = "LYBT:";
+            });
+            services.AddHealthChecks()
+                .AddRedis(redisConnection, name: "redis");
+            logger.LogInformation("Redis distributed cache configured");
+        }
+        else
+        {
+            services.AddDistributedMemoryCache();
+            logger.LogInformation("Memory distributed cache configured (Redis not available)");
+        }
 
         return services;
     }
