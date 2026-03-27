@@ -95,7 +95,7 @@ dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 | 查 MS 代码示例 | `mcp__plugin_wpf-dev-pack_MicrosoftDocs__microsoft_code_sample_search` |
 | 代码语义搜索 / 技术调研 | `mcp__plugin_claude-code-settings_exa__get_code_context_exa` |
 | 通用网络搜索 | `mcp__tavily-mcp__tavily-search` |
-| GitHub Issue / PR 操作 | `mcp__plugin_github_github__issue_read` / `search_issues` 等 |
+| GitHub Issue / PR 操作 | `gh issue list/create/edit/close` / `gh pr list/create/merge` |
 | C# 符号跳转 / 引用查找 | `LSP` tool (csharp-ls 0.22.0，已安装) |
 | 获取当前时间 | `mcp__time__get_current_time(timezone="Asia/Shanghai")` |
 

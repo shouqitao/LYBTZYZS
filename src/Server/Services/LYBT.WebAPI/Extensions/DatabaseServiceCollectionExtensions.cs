@@ -136,7 +136,8 @@ public static class DatabaseServiceCollectionExtensions
                     databaseOptions.RetryPolicy.MaxRetryCount,
                     TimeSpan.FromMilliseconds(databaseOptions.RetryPolicy.MaxDelayMs),
                     null);
-                sqlOptions.CommandTimeout(databaseOptions.CommandTimeoutSeconds);
+                sqlOptions.CommandTimeout(databaseOptions.ConnectionPool.CommandTimeoutSeconds);
+                sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
 
             options.EnableSensitiveDataLogging(false);
