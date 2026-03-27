@@ -126,7 +126,9 @@ public static class DatabaseServiceCollectionExtensions
         // 注册 AppDbContext（connectionString 已通过上方检查，必定非空）
         services.AddDbContext<LYBT.Infrastructure.Data.AppDbContext>((serviceProvider, options) =>
         {
-            var sqlOptions = options.UseSqlServer(connectionString, sqlOptions =>
+            var environment = serviceProvider.GetRequiredService<IHostEnvironment>();
+
+            options.UseSqlServer(connectionString, sqlOptions =>
             {
                 sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
                 // unify-configuration-system: 使用强类型配置
@@ -134,13 +136,13 @@ public static class DatabaseServiceCollectionExtensions
                     databaseOptions.RetryPolicy.MaxRetryCount,
                     TimeSpan.FromMilliseconds(databaseOptions.RetryPolicy.MaxDelayMs),
                     null);
+                sqlOptions.CommandTimeout(databaseOptions.CommandTimeoutSeconds);
             });
 
             options.EnableSensitiveDataLogging(false);
-            options.EnableDetailedErrors(true);
+            // 生产环境禁用详细错误，防止泄露数据库架构
+            options.EnableDetailedErrors(environment.IsDevelopment());
             options.EnableServiceProviderCaching();
-
-            options.UseSqlServer(opt => opt.CommandTimeout(30));
         });
 
         // Phase 1: 注册泛型Repository基础设施
