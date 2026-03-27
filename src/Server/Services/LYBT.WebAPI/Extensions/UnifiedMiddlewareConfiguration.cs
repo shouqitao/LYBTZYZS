@@ -61,8 +61,8 @@ public static class UnifiedMiddlewareConfiguration
         // 3.1 路由（必须在认证之前）
         app.UseRouting();
 
-        // 3.2 CORS（如需要，在认证之前）
-        // app.UseCors(); // 根据需要启用
+        // 3.2 CORS（在认证之前）
+        app.UseCors();
 
         // 3.3 速率限制 - A2-02: 启用速率限制中间件
         app.UseRateLimiter();
