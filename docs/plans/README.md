@@ -11,6 +11,7 @@
 | 文件 | 内容 | 最后更新 |
 |------|------|----------|
 | [剩余任务](2026-03-01-remaining-tasks.md) | Sprint 5 遗留 + 审计报告 OPEN 项整合 | 2026-03-01 |
+| [Desktop 架构优化](2026-03-19-desktop-architecture-optimization-plan.md) | UI线程抽象、ViewModel重构、死代码清理 | 2026-03-19 |
 
 ## 归档文档
 
@@ -64,6 +65,14 @@
 | code-vs-prd-full-audit-report | 2026-02-28 | 全量审计报告，发现项已分批处理 |
 | sprint5-remaining-tasks | 2026-02-28 | 原 28 项任务清单，14 项已完成，剩余已转入新文档 |
 
+### WebAPI 优化 (3 个, 2026-03-26 归档)
+
+| 文件 | 完成日期 | 说明 |
+|------|----------|------|
+| webapi-optimization-plan | 2026-03-26 | MedicalCaseController 拆分 + CancellationToken 支持 + API 优化 |
+| 2026-03-26-fix-webapi-build-errors | 2026-03-26 | HerbsController/PatientsController 25 个构建错误修复 |
+| phase2-medicalcase-cleanup-plan | 2026-03-26 | MedicalCase 模块清理 Phase 2（删除旧控制器、更新文档） |
+
 ### 一次性分析报告 (7 个)
 
 | 文件 | 说明 |
@@ -98,4 +107,4 @@
 
 ---
 
-*文档版本: v1.3 | 最后更新: 2026-03-01*
+*文档版本: v1.4 | 最后更新: 2026-03-26*
