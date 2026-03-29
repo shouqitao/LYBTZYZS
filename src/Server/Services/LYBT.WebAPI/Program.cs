@@ -104,7 +104,7 @@ public class Program
             Log.Information("强类型配置注册完成");
 
             // 验证默认密码配置（所有环境）
-            ValidateDefaultPasswordConfiguration(builder.Configuration);
+            ValidateDefaultPasswordConfiguration(builder.Configuration, builder.Environment);
 
             builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
 
@@ -180,9 +180,16 @@ public class Program
     /// </summary>
     /// <param name="configuration">应用程序配置</param>
     /// <exception cref="InvalidOperationException">当缺少必需的密码配置时抛出</exception>
-    private static void ValidateDefaultPasswordConfiguration(IConfiguration configuration)
+    /// <summary>
+    /// 验证默认密码配置
+    /// 开发环境：只验证存在和长度 >= 8，且不是常见弱密码
+    /// 生产环境：完整密码复杂度验证
+    /// </summary>
+    /// <param name="configuration">应用程序配置</param>
+    /// <param name="environment">主机环境</param>
+    /// <exception cref="InvalidOperationException">当配置无效时抛出</exception>
+    private static void ValidateDefaultPasswordConfiguration(IConfiguration configuration, IWebHostEnvironment environment)
     {
-        // unify-configuration-system: 使用扁平化配置路径
         var sysAdminPassword = configuration["DefaultPasswords:SysAdminPassword"];
         var newUserPassword = configuration["DefaultPasswords:NewUserPassword"];
         var systemAdminEmail = configuration["SystemAdmin:Email"];
@@ -190,74 +197,49 @@ public class Program
         var missingConfigurations = new List<string>();
 
         if (string.IsNullOrWhiteSpace(sysAdminPassword))
-        {
             missingConfigurations.Add("DefaultPasswords:SysAdminPassword");
-        }
 
         if (string.IsNullOrWhiteSpace(newUserPassword))
-        {
             missingConfigurations.Add("DefaultPasswords:NewUserPassword");
-        }
 
         if (string.IsNullOrWhiteSpace(systemAdminEmail))
-        {
             missingConfigurations.Add("SystemAdmin:Email");
-        }
 
         if (missingConfigurations.Any())
         {
-            var configList = string.Join(Environment.NewLine, missingConfigurations.Select(config => $"  - {config}"));
-            var errorMessage = $@"缺少必需的默认密码配置，应用程序无法启动。
-
-缺少的配置项：
+            var configList = string.Join(Environment.NewLine, missingConfigurations.Select(c => $"  - {c}"));
+            throw new InvalidOperationException($@"缺少必需的配置项：
 {configList}
 
-解决方案：
-1. 在 appsettings.json 中添加以下配置：
-{{
-  ""DefaultPasswords"": {{
-    ""SysAdminPassword"": ""您的系统管理员默认密码"",
-    ""NewUserPassword"": ""您的新用户默认密码""
-  }},
-  ""SystemAdmin"": {{
-    ""Email"": ""admin@yourdomain.com""
-  }}
-}}
-
-2. 或者在环境变量中设置：
-  - DEFAULTPASSWORDS__SYSADMINPASSWORD
-  - DEFAULTPASSWORDS__NEWUSERPASSWORD
-  - SYSTEMADMIN__EMAIL
-
-注意：密码不能为空，密码长度至少8位，建议包含大小写字母、数字和特殊字符。";
-
-            throw new InvalidOperationException(errorMessage);
+请在 appsettings.Development.json 或环境变量中配置。");
         }
 
-        // 验证密码长度
+        // 验证长度
         if (sysAdminPassword!.Length < 8)
-        {
             throw new InvalidOperationException("系统管理员默认密码长度不能少于8位");
-        }
 
         if (newUserPassword!.Length < 8)
-        {
             throw new InvalidOperationException("新用户默认密码长度不能少于8位");
-        }
 
-        // 验证密码复杂度
-        if (!PasswordPolicyValidator.Validate(sysAdminPassword, out var sysAdminErrors))
+        // 生产环境：完整复杂度验证
+        if (environment.IsProduction())
         {
-            var errorMsg = string.Join(", ", sysAdminErrors);
-            throw new InvalidOperationException($"系统管理员默认密码不符合安全策略: {errorMsg}");
-        }
+            if (!PasswordPolicyValidator.Validate(sysAdminPassword, out var sysAdminErrors))
+                throw new InvalidOperationException($"系统管理员密码不符合安全策略: {string.Join(", ", sysAdminErrors)}");
 
-        if (!PasswordPolicyValidator.Validate(newUserPassword, out var newUserErrors))
+            if (!PasswordPolicyValidator.Validate(newUserPassword, out var newUserErrors))
+                throw new InvalidOperationException($"新用户密码不符合安全策略: {string.Join(", ", newUserErrors)}");
+        }
+        // 开发环境：只验证不是明显弱密码
+        else if (environment.IsDevelopment())
         {
-            var errorMsg = string.Join(", ", newUserErrors);
-            throw new InvalidOperationException($"新用户默认密码不符合安全策略: {errorMsg}");
+            if (PasswordPolicyValidator.IsCommonWeakPassword(sysAdminPassword))
+                throw new InvalidOperationException("开发环境密码也不能使用常见弱密码如 'password', '123456' 等");
+
+            if (PasswordPolicyValidator.IsCommonWeakPassword(newUserPassword))
+                throw new InvalidOperationException("新用户默认密码不能使用常见弱密码");
         }
 
-        Log.Information("默认密码配置验证通过");
+        Log.Information("默认密码配置验证通过 (环境: {Environment})", environment.EnvironmentName);
     }
 }

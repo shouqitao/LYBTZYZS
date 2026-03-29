@@ -1,9 +1,12 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
+using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Registration;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,25 +22,102 @@ namespace LYBT.WebAPI.Controllers;
 [Authorize(Policy = PolicyConstants.PatientAccess)]
 public class RegistrationsController : BaseApiController
 {
-    private readonly IRegistrationService _service;
+    private readonly IRegistrationService _registrationService;
+    private readonly IMedicalCaseCommandService _medicalCaseService;
 
     public RegistrationsController(
-        IRegistrationService service,
+        IRegistrationService registrationService,
+        IMedicalCaseCommandService medicalCaseService,
         ILogger<RegistrationsController> logger)
         : base(logger)
     {
-        _service = service;
+        _registrationService = registrationService;
+        _medicalCaseService = medicalCaseService;
     }
 
     /// <summary>
     /// 创建挂号 (前台模式)
     /// US-REG-001: Source=Receptionist, Status=Waiting
     /// </summary>
+
+    /// <summary>
+    /// 医生快速看诊 (后台静默创建 Registration + MedicalCase)
+    /// US-REG-002: Source=Doctor, Status=InProgress, 医生无感知
+    /// </summary>
+    [HttpPost("quick-visit")]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
+    [ProducesResponseType(typeof(ApiResponse<QuickVisitResultDto>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto dto)
+    {
+        // 获取当前医生信息
+        var (doctorId, doctorName, _) = GetOperator();
+
+        // 1. 创建 Registration (Source=Doctor, Status=InProgress)
+        var registrationInput = new RegistrationInputDto
+        {
+            PatientId = dto.PatientId,
+            PatientName = dto.PatientName,
+            DoctorId = doctorId,
+            DoctorName = doctorName,
+            Source = RegistrationSource.Doctor,
+            Remark = dto.Remark
+        };
+
+        var registrationResult = await _registrationService.CreateAsync(registrationInput);
+        if (!registrationResult.IsSuccess || registrationResult.Data is null)
+        {
+            return HandleResult(registrationResult);
+        }
+
+        var registration = registrationResult.Data;
+
+        // 2. 创建 MedicalCase (关联 RegistrationId)
+        var medicalCaseInput = new MedicalCaseInputDto
+        {
+            PatientId = dto.PatientId,
+            UserId = doctorId,
+            RegistrationId = registration.Id
+        };
+
+        var medicalCase = await _medicalCaseService.SaveAsync(
+            medicalCaseInput,
+            doctorId,
+            isAdmin: false);
+
+        if (medicalCase == null)
+        {
+            // 医案创建失败，记录错误但挂号已创建，不需要回滚
+            _logger.LogError("快速看诊-医案创建失败: RegistrationId={RegistrationId}", registration.Id);
+            return BusinessFail("医案创建失败，但挂号记录已创建");
+        }
+
+        _logger.LogInformation(
+            "快速看诊成功: RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
+            registration.Id, medicalCase.Id);
+
+        // 3. 返回结果
+        var result = new QuickVisitResultDto
+        {
+            RegistrationId = registration.Id,
+            MedicalCaseId = medicalCase.Id,
+            PatientId = dto.PatientId,
+            PatientName = dto.PatientName,
+            DoctorId = doctorId,
+            DoctorName = doctorName,
+            CreatedAt = registration.CreatedAt
+        };
+
+        LogOperation("医生快速看诊", dto, result.RegistrationId);
+        return CreatedAtAction(nameof(GetById),
+            new { id = result.RegistrationId, version = "1" },
+            ApiResponse<QuickVisitResultDto>.CreateSuccess(result, "快速看诊创建成功"));
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<RegistrationDetailDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] RegistrationInputDto dto)
     {
-        var result = await _service.CreateAsync(dto);
+        var result = await _registrationService.CreateAsync(dto);
         if (!result.IsSuccess || result.Data is null)
         {
             return HandleResult(result);
@@ -58,7 +138,7 @@ public class RegistrationsController : BaseApiController
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _service.GetByIdAsync(id);
+        var result = await _registrationService.GetByIdAsync(id);
         return HandleResult(result);
     }
 
@@ -82,7 +162,7 @@ public class RegistrationsController : BaseApiController
             return ValidationFail("页码和页大小参数无效 (页码>0, 页大小1-100)");
         }
 
-        var result = await _service.GetPagedAsync(page, pageSize, keyword,
+        var result = await _registrationService.GetPagedAsync(page, pageSize, keyword,
             startDate, endDate, patientId, doctorId);
         if (!result.IsSuccess || result.Data is null)
         {
@@ -100,7 +180,7 @@ public class RegistrationsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<RegistrationListDto>>), 200)]
     public async Task<IActionResult> GetQueue([FromQuery] Guid? doctorId = null)
     {
-        var result = await _service.GetWaitingQueueAsync(doctorId);
+        var result = await _registrationService.GetWaitingQueueAsync(doctorId);
         return HandleResult(result);
     }
 
@@ -115,7 +195,7 @@ public class RegistrationsController : BaseApiController
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _service.StartVisitAsync(id);
+        var result = await _registrationService.StartVisitAsync(id);
         if (!result.IsSuccess)
         {
             return HandleResult(result);
@@ -135,7 +215,7 @@ public class RegistrationsController : BaseApiController
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _service.CancelAsync(id);
+        var result = await _registrationService.CancelAsync(id);
         if (!result.IsSuccess)
         {
             return BusinessFail(result.ErrorMessage ?? "取消挂号失败");

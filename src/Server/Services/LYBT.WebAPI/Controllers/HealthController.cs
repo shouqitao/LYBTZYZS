@@ -1,14 +1,16 @@
 ﻿using Asp.Versioning;
-using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Web;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Health;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.WebAPI.Controllers;
 
 /// <summary>
-/// 健康检查控制器 - MVP简化版（Issue #1733 Task 1.1）
+/// 健康检查控制器 - 遵循三层架构
+/// Architecture Fix: 使用IHealthCheckService替代直接DbContext依赖
 /// </summary>
 [ApiController]
 [ApiVersion("1")]
@@ -16,12 +18,12 @@ namespace LYBT.WebAPI.Controllers;
 [Authorize]  // 默认需要认证，公开端点使用 AllowAnonymous 覆盖
 public class HealthController : BaseApiController
 {
-    private readonly AppDbContext _dbContext;
+    private readonly IHealthCheckService _healthCheckService;
 
-    public HealthController(AppDbContext dbContext, ILogger<HealthController> logger)
+    public HealthController(IHealthCheckService healthCheckService, ILogger<HealthController> logger)
         : base(logger)
     {
-        _dbContext = dbContext;
+        _healthCheckService = healthCheckService;
     }
     /// <summary>
     /// 基础健康检查 - 快速探活端点
@@ -31,7 +33,7 @@ public class HealthController : BaseApiController
     [AllowAnonymous]  // 基础健康检查允许匿名访问
     public IActionResult Get()
     {
-        return Ok(new
+        return Success(new
         {
             status = "Healthy",
             timestamp = DateTime.UtcNow
@@ -46,7 +48,7 @@ public class HealthController : BaseApiController
     [AllowAnonymous]  // Ping端点允许匿名访问
     public IActionResult Ping()
     {
-        return Ok(new
+        return Success(new
         {
             message = "pong",
             timestamp = DateTime.UtcNow
@@ -61,19 +63,25 @@ public class HealthController : BaseApiController
     [Authorize]  // 详细健康检查需要认证
     public async Task<IActionResult> GetDetailedHealth()
     {
-        // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-        // 执行数据库连接检查
-        var dbCheck = await CheckDatabase();
+        // Architecture Fix: 使用IHealthCheckService执行健康检查
+        var dbCheck = await _healthCheckService.CheckDatabaseAsync();
 
-        var overallStatus = dbCheck.Status; // 直接使用 CheckDatabase 返回的准确状态 (Healthy/Degraded/Unhealthy)
+        var overallStatus = dbCheck.Status;
+        var statusString = overallStatus switch
+        {
+            HealthStatus.Healthy => "Healthy",
+            HealthStatus.Degraded => "Degraded",
+            HealthStatus.Unhealthy => "Unhealthy",
+            _ => "Unknown"
+        };
 
         var response = new
         {
-            status = overallStatus,
+            status = statusString,
             timestamp = DateTime.UtcNow,
             database = new
             {
-                status = dbCheck.Status,
+                status = statusString,
                 duration = dbCheck.Duration,
                 provider = dbCheck.Provider,
                 pendingMigrations = dbCheck.PendingMigrationCount,
@@ -81,86 +89,7 @@ public class HealthController : BaseApiController
             }
         };
 
-        var statusCode = overallStatus == "Healthy" ? 200 : 503;
-        return StatusCode(statusCode, response);
-    }
-
-    private async Task<HealthCheck> CheckDatabase()
-    {
-        var check = new HealthCheck("db", "Database Connectivity");
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        try
-        {
-            var canConnect = await _dbContext.Database.CanConnectAsync();
-            if (!canConnect)
-            {
-                check.Status = "Unhealthy";
-                return check;
-            }
-
-            // 获取数据库 Provider 名称
-            check.Provider = _dbContext.Database.ProviderName;
-
-            // 检查是否为关系型数据库（排除 InMemory 数据库）
-            var isRelationalDatabase = _dbContext.Database.IsRelational();
-
-            if (isRelationalDatabase)
-            {
-                // 获取服务器版本信息
-                try
-                {
-                    var connection = _dbContext.Database.GetDbConnection();
-                    if (connection.State == System.Data.ConnectionState.Open)
-                    {
-                        check.ServerVersion = connection.ServerVersion;
-                    }
-                }
-                catch
-                {
-                    // ServerVersion 获取失败不影响健康检查
-                }
-
-                // 仅在关系型数据库上检查迁移
-                var pendingMigrations = await _dbContext.Database.GetPendingMigrationsAsync();
-                var pendingCount = pendingMigrations.Count();
-                check.PendingMigrationCount = pendingCount;
-
-                check.Status = pendingCount == 0 ? "Healthy" : "Degraded";
-            }
-            else
-            {
-                // InMemory 或其他非关系型数据库
-                check.Status = "Healthy";
-            }
-        }
-        catch (Exception ex)
-        {
-            check.Status = "Unhealthy";
-            _logger.LogError(ex, "Database health check failed");
-        }
-        finally
-        {
-            stopwatch.Stop();
-            check.Duration = stopwatch.ElapsedMilliseconds;
-        }
-
-        return check;
-    }
-
-    private class HealthCheck
-    {
-        public HealthCheck(string name, string description)
-        {
-            Name = name;
-            Status = "Unknown";
-        }
-
-        public string Name { get; }
-        public string Status { get; set; } = string.Empty;
-        public long Duration { get; set; }
-        public string? Provider { get; set; }
-        public int PendingMigrationCount { get; set; }
-        public string? ServerVersion { get; set; }
+        var statusCode = overallStatus == HealthStatus.Healthy ? 200 : 503;
+        return StatusCode(statusCode, ApiResponse<object>.CreateSuccess(response));
     }
 }

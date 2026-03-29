@@ -1,0 +1,1353 @@
+newman
+
+8b29579a-3f70-47eb-a560-87264ab24c1f
+
+□ 8dc5f422-4994-4a2b-aa59-e50bfa4281c1
+└ 
+  POST https://localhost:5001/api/v1/auth/login [200 OK, 1.9kB, 194ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+  √  Store auth tokens
+
+└ 
+  POST https://localhost:5001/api/v1/auth/auto-login [401 Unauthorized, 977B, 8ms]
+  √  Response time < 5000ms
+
+└ 
+  POST https://localhost:5001/api/v1/auth/logout [200 OK, 908B, 7ms]
+  √  Response time < 5000ms
+
+└ 
+  POST https://localhost:5001/api/v1/auth/refresh [401 Unauthorized, 978B, 7ms]
+  √  Response time < 5000ms
+
+└ 
+  GET https://localhost:5001/api/v1/auth/validate [200 OK, 1.06kB, 4ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+□ da64a9b4-7789-4b56-a674-4c84f6d295cc
+└ 
+  ┌
+  │ 'Generated unique values:'
+  │ '  Phone:', '13800002396'
+  │ '  ID:', '110101199001010318'
+  │ '  Herb:', 'TestHerb2396'
+  │ '  Formula:', 'TestFormula2396'
+  └
+  POST https://localhost:5001/api/v1/patients [201 Created, 1.46kB, 12ms]
+  √  Response time < 5000ms
+  √  Status code is 201
+  √  ApiResponse structure is valid
+  ┌
+  │ 'Created test patient with ID:', '28795b8f-a559-4359-9
+  │ a19-9ded23013619'
+  └
+  √  Store test patient ID
+
+└ 
+  ┌
+  │ 'Generated unique values:'
+  │ '  Phone:', '13800002056'
+  │ '  ID:', '110101199001014931'
+  │ '  Herb:', 'TestHerb2056'
+  │ '  Formula:', 'TestFormula2056'
+  └
+  GET https://localhost:5001/api/v1/users?page=1&pageSize=1&Role=1 [200 OK, 1.29kB, 7ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  ┌
+  │ 'Found doctor:', '3804dd99-061f-41f4-b795-0ae076496b86
+  │ ', undefined
+  └
+  √  Store doctor info
+
+└ 
+  ┌
+  │ 'Generated unique values:'
+  │ '  Phone:', '13800042972'
+  │ '  ID:', '110101199001019687'
+  │ '  Herb:', 'TestHerb42972'
+  │ '  Formula:', 'TestFormula42972'
+  └
+  POST https://localhost:5001/api/v1/Formulas [200 OK, 1.56kB, 8ms]
+  √  Response time < 5000ms
+  √  Status code is 200 or 201
+  ┌
+  │ 'Created test formula with ID:', 'dbc50908-359d-45e9-a
+  │ bba-e33e7bf75b29'
+  └
+  √  Store test formula ID
+
+└ 
+  ┌
+  │ 'Generated unique values:'
+  │ '  Phone:', '13800020479'
+  │ '  ID:', '110101199001012001'
+  │ '  Herb:', 'TestHerb20479'
+  │ '  Formula:', 'TestFormula20479'
+  └
+  POST https://localhost:5001/api/v1/Herbs [200 OK, 1.23kB, 9ms]
+  √  Response time < 5000ms
+  √  Status code is 200 or 201
+  ┌
+  │ 'Created test herb with ID:', 'c1f1ebc4-b20b-468a-a82e
+  │ -3095005e8e54'
+  └
+  √  Store test herb ID
+
+□ fb0c2eb4-0a72-49d5-a23f-13606af16694
+└ 
+  GET https://localhost:5001/api/v1/users?page=1&pageSize=20&keyword=&Role=&status= [200 OK, 4.02kB, 7ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+  √  PagedResult structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/users/current [200 OK, 1.27kB, 4ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/users/null [404 Not Found, 1.07kB, 2ms]
+  √  Response time < 5000ms
+  1. Status code is 200
+  2. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/users [201 Created, 1.34kB, 145ms]
+  √  Response time < 5000ms
+  √  Status code is 200 or 201
+  √  ApiResponse structure is valid
+  √  Store created ID
+
+└ 
+  PUT https://localhost:5001/api/v1/users/ [405 Method Not Allowed, 1.09kB, 3ms]
+  √  Response time < 5000ms
+  3. Status code is 200
+  4. ApiResponse structure is valid
+
+└ 
+  DELETE https://localhost:5001/api/v1/users/ [405 Method Not Allowed, 1.09kB, 2ms]
+  √  Response time < 5000ms
+  5. Status code is 200
+  6. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/users//reset-Password [404 Not Found, 1.08kB, 1ms]
+  √  Response time < 5000ms
+  7. Status code is 200
+  8. ApiResponse structure is valid
+
+└ 
+  PUT https://localhost:5001/api/v1/users//profile [404 Not Found, 1.07kB, 2ms]
+  √  Response time < 5000ms
+  9. Status code is 200
+ 10. ApiResponse structure is valid
+
+└ 
+  PUT https://localhost:5001/api/v1/users//change-Password [404 Not Found, 1.08kB, 3ms]
+  √  Response time < 5000ms
+ 11. Status code is 200
+ 12. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/users//toggle-status [404 Not Found, 1.08kB, 2ms]
+  √  Response time < 5000ms
+ 13. Status code is 200
+ 14. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/users//restore [404 Not Found, 1.07kB, 2ms]
+  √  Response time < 5000ms
+ 15. Status code is 200
+ 16. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/users/batch-delete [400 Bad Request, 1.07kB, 3ms]
+  √  Response time < 5000ms
+ 17. Status code is 200
+ 18. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/users/batch-enable [400 Bad Request, 1.07kB, 3ms]
+  √  Response time < 5000ms
+ 19. Status code is 200
+ 20. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/users/batch-disable [400 Bad Request, 1.07kB, 2ms]
+  √  Response time < 5000ms
+ 21. Status code is 200
+ 22. ApiResponse structure is valid
+
+□ f4eff736-df9f-4894-a9dd-8a26fafff934
+└ 
+  GET https://localhost:5001/api/v1/patients?page=1&pageSize=20&keyword= [200 OK, 6.02kB, 7ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+  √  PagedResult structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/patients/ [200 OK, 6.02kB, 5ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/patients [201 Created, 1.5kB, 8ms]
+  √  Response time < 5000ms
+ 23. Status code is 200
+  √  ApiResponse structure is valid
+  √  Store created ID
+
+└ 
+  PUT https://localhost:5001/api/v1/patients/ [405 Method Not Allowed, 1.1kB, 3ms]
+  √  Response time < 5000ms
+ 24. Status code is 200
+ 25. ApiResponse structure is valid
+
+└ 
+  DELETE https://localhost:5001/api/v1/patients/ [405 Method Not Allowed, 1.09kB, 2ms]
+  √  Response time < 5000ms
+ 26. Status code is 200
+ 27. ApiResponse structure is valid
+
+└ 
+  ┌
+  │ 'Form param `file`, file load error: missing file sour
+  │ ce'
+  └
+  POST https://localhost:5001/api/v1/patients/import [400 Bad Request, 944B, 5ms]
+  √  Response time < 5000ms
+
+└ 
+  GET https://localhost:5001/api/v1/patients/export?keyword= [200 OK, 6.86kB, 36ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+ 28. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/patients//toggle-status [404 Not Found, 1.08kB, 2ms]
+  √  Response time < 5000ms
+ 29. Status code is 200
+ 30. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/patients//restore [404 Not Found, 1.07kB, 2ms]
+  √  Response time < 5000ms
+ 31. Status code is 200
+ 32. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/patients/batch-delete [400 Bad Request, 1.07kB, 3ms]
+  √  Response time < 5000ms
+ 33. Status code is 200
+ 34. ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/patients//check-reference [404 Not Found, 1.08kB, 3ms]
+  √  Response time < 5000ms
+ 35. Status code is 200
+ 36. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/patients/batch-check-reference [400 Bad Request, 1.09kB, 3ms]
+  √  Response time < 5000ms
+ 37. Status code is 200
+ 38. ApiResponse structure is valid
+
+□ 0f8e28b3-2957-4bb5-91d5-d02239659962
+└ 
+  POST https://localhost:5001/api/v1/medicalcases [403 Forbidden, 1.07kB, 2ms]
+  √  Response time < 5000ms
+ 39. Status code is 200
+ 40. ApiResponse structure is valid
+  √  Store created ID
+
+└ 
+  PUT https://localhost:5001/api/v1/medicalcases//Prescription-flag [404 Not Found, 1.09kB, 2ms]
+  √  Response time < 5000ms
+ 41. Status code is 200
+ 42. ApiResponse structure is valid
+
+└ 
+  PUT https://localhost:5001/api/v1/medicalcases/ [405 Method Not Allowed, 1.1kB, 2ms]
+  √  Response time < 5000ms
+ 43. Status code is 200
+ 44. ApiResponse structure is valid
+
+└ 
+  DELETE https://localhost:5001/api/v1/medicalcases/ [405 Method Not Allowed, 1.1kB, 2ms]
+  √  Response time < 5000ms
+ 45. Status code is 200
+ 46. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/medicalcases/batch-delete [400 Bad Request, 1.07kB, 2ms]
+  √  Response time < 5000ms
+ 47. Status code is 200
+ 48. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/medicalcases/batch-details [400 Bad Request, 1.07kB, 3ms]
+  √  Response time < 5000ms
+ 49. Status code is 200
+ 50. ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/medicalcases/ [200 OK, 1.36kB, 17ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/medicalcases?status=&PatientId=&page=1&pageSize=20&includeAllDoctors=false&keyword= [200 OK, 1.36kB, 5ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+  √  PagedResult structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/medicalcases/query?queryType=All&PatientId=&DoctorId=&keyword=&page=1&pageSize=20 [200 OK, 1.36kB, 4ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+  √  PagedResult structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/medicalcases/search?PatientName=&diagnosisKeyword=&startDate=&endDate=&page=1&pageSize=20 [200 OK, 1.52kB, 14ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+  √  PagedResult structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/medicalcases//Consultations [404 Not Found, 1.08kB, 4ms]
+  √  Response time < 5000ms
+ 51. Status code is 200
+ 52. ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/medicalcases//Prescriptions [404 Not Found, 1.08kB, 2ms]
+  √  Response time < 5000ms
+ 53. Status code is 200
+ 54. ApiResponse structure is valid
+
+□ c92bc164-e06d-4b4c-b314-ef8788d6f896
+└ 
+  PUT https://localhost:5001/api/v1/medicalcases//status [404 Not Found, 1.08kB, 2ms]
+  √  Response time < 5000ms
+ 55. Status code is 200
+ 56. ApiResponse structure is valid
+
+└ 
+  PUT https://localhost:5001/api/v1/medicalcases//close [404 Not Found, 1.08kB, 2ms]
+  √  Response time < 5000ms
+ 57. Status code is 200
+ 58. ApiResponse structure is valid
+
+└ 
+  PUT https://localhost:5001/api/v1/medicalcases//suspend [404 Not Found, 1.08kB, 1ms]
+  √  Response time < 5000ms
+ 59. Status code is 200
+ 60. ApiResponse structure is valid
+
+└ 
+  PUT https://localhost:5001/api/v1/medicalcases//cancel [404 Not Found, 1.08kB, 2ms]
+  √  Response time < 5000ms
+ 61. Status code is 200
+ 62. ApiResponse structure is valid
+
+□ bd80b966-a8d8-445d-82a2-ad1da9ee3854
+└ 
+  GET https://localhost:5001/api/v1/medicalcases//permissions [404 Not Found, 1.08kB, 1ms]
+  √  Response time < 5000ms
+ 63. Status code is 200
+ 64. ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/medicalcases//audit-logs?page=1&pageSize=20 [404 Not Found, 1.08kB, 2ms]
+  √  Response time < 5000ms
+ 65. Status code is 200
+ 66. ApiResponse structure is valid
+  √  PagedResult structure is valid
+
+□ 9e6e7d54-81dc-4168-abb0-77f58d7d442c
+└ 
+  PUT https://localhost:5001/api/v1/medicalcases//print-completed [404 Not Found, 1.09kB, 2ms]
+  √  Response time < 5000ms
+ 67. Status code is 200
+ 68. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/medicalcases//print-logs [404 Not Found, 1.08kB, 3ms]
+  √  Response time < 5000ms
+ 69. Status code is 200
+ 70. ApiResponse structure is valid
+
+□ 3bc3dcc0-af20-47cb-a037-5728fb053690
+└ 
+  GET https://localhost:5001/api/v1/Herbs?page=1&pageSize=20&keyword=&Category= [200 OK, 5.12kB, 7ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+  √  PagedResult structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/Herbs/ [200 OK, 5.12kB, 5ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Herbs [422 Unprocessable Entity, 949B, 3ms]
+  √  Response time < 5000ms
+ 71. Status code is 200
+ 72. ApiResponse structure is valid
+  √  Store created ID
+
+└ 
+  PUT https://localhost:5001/api/v1/Herbs/ [405 Method Not Allowed, 1.09kB, 2ms]
+  √  Response time < 5000ms
+ 73. Status code is 200
+ 74. ApiResponse structure is valid
+
+└ 
+  DELETE https://localhost:5001/api/v1/Herbs/ [405 Method Not Allowed, 1.09kB, 2ms]
+  √  Response time < 5000ms
+ 75. Status code is 200
+ 76. ApiResponse structure is valid
+
+└ 
+  ┌
+  │ 'Form param `file`, file load error: missing file sour
+  │ ce'
+  └
+  POST https://localhost:5001/api/v1/Herbs/import [400 Bad Request, 944B, 3ms]
+  √  Response time < 5000ms
+
+└ 
+  GET https://localhost:5001/api/v1/Herbs/import-template [200 OK, 4.03kB, 15ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+ 77. ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/Herbs/export?Category= [200 OK, 5.23kB, 25ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+ 78. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Herbs/batch-import [200 OK, 1.33kB, 4ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/Herbs/export-all?Category= [200 OK, 13.04kB, 4ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/Herbs//check-reference [404 Not Found, 1.08kB, 2ms]
+  √  Response time < 5000ms
+ 79. Status code is 200
+ 80. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Herbs/batch-check-reference [400 Bad Request, 1.08kB, 3ms]
+  √  Response time < 5000ms
+ 81. Status code is 200
+ 82. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Herbs//toggle-status [404 Not Found, 1.08kB, 1ms]
+  √  Response time < 5000ms
+ 83. Status code is 200
+ 84. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Herbs//restore [404 Not Found, 1.07kB, 1ms]
+  √  Response time < 5000ms
+ 85. Status code is 200
+ 86. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Herbs/batch-enable [400 Bad Request, 1.07kB, 2ms]
+  √  Response time < 5000ms
+ 87. Status code is 200
+ 88. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Herbs/batch-disable [400 Bad Request, 1.07kB, 2ms]
+  √  Response time < 5000ms
+ 89. Status code is 200
+ 90. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Herbs/batch-delete [400 Bad Request, 1.07kB, 3ms]
+  √  Response time < 5000ms
+ 91. Status code is 200
+ 92. ApiResponse structure is valid
+
+□ d84dd3ca-4449-4181-ba19-afe4fd2d2528
+└ 
+  GET https://localhost:5001/api/v1/Formulas?page=1&pageSize=20&keyword=&Category= [200 OK, 5.36kB, 10ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+  √  PagedResult structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/Formulas/ [200 OK, 5.36kB, 5ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Formulas [200 OK, 1.55kB, 5ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+  √  Store created ID
+
+└ 
+  PUT https://localhost:5001/api/v1/Formulas/ [405 Method Not Allowed, 1.1kB, 2ms]
+  √  Response time < 5000ms
+ 93. Status code is 200
+ 94. ApiResponse structure is valid
+
+└ 
+  DELETE https://localhost:5001/api/v1/Formulas/ [405 Method Not Allowed, 1.1kB, 2ms]
+  √  Response time < 5000ms
+ 95. Status code is 200
+ 96. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Formulas/batch-import [200 OK, 2.27kB, 7ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/Formulas/export?Category= [200 OK, 11.59kB, 87ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+ 97. ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/Formulas/import-template [200 OK, 4.87kB, 16ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+ 98. ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/Formulas/pending-validation [200 OK, 58.31kB, 6ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Formulas//Herbs//validate [404 Not Found, 1.08kB, 3ms]
+  √  Response time < 5000ms
+ 99. Status code is 200
+100. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Formulas//toggle-status [404 Not Found, 1.08kB, 1ms]
+  √  Response time < 5000ms
+101. Status code is 200
+102. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Formulas//restore [404 Not Found, 1.07kB, 2ms]
+  √  Response time < 5000ms
+103. Status code is 200
+104. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Formulas/batch-delete [400 Bad Request, 1.07kB, 4ms]
+  √  Response time < 5000ms
+105. Status code is 200
+106. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Formulas/batch-enable [400 Bad Request, 1.07kB, 3ms]
+  √  Response time < 5000ms
+107. Status code is 200
+108. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/Formulas/batch-disable [400 Bad Request, 1.07kB, 2ms]
+  √  Response time < 5000ms
+109. Status code is 200
+110. ApiResponse structure is valid
+
+□ 4d292d01-ea48-4b6f-b878-881bd72ea1d5
+└ 
+  GET https://localhost:5001/api/v1/sync/entity-types [200 OK, 944B, 3ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/sync/metadata?entityType=Herb [200 OK, 10.88kB, 4ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/sync/compare [400 Bad Request, 1.11kB, 3ms]
+  √  Response time < 5000ms
+111. Status code is 200
+112. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/sync/upload [200 OK, 1.19kB, 3ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/sync/download [400 Bad Request, 1.08kB, 1ms]
+  √  Response time < 5000ms
+113. Status code is 200
+114. ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/sync/delete [400 Bad Request, 1.08kB, 3ms]
+  √  Response time < 5000ms
+115. Status code is 200
+116. ApiResponse structure is valid
+
+□ 002c974c-26ed-4097-a14d-935d138db220
+└ 
+  POST https://localhost:5001/api/v1/registrations [400 Bad Request, 1.07kB, 3ms]
+  √  Response time < 5000ms
+117. Status code is 200
+118. ApiResponse structure is valid
+  √  Store registration ID
+
+└ 
+  GET https://localhost:5001/api/v1/registrations/ [200 OK, 1.35kB, 6ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/registrations?page=1&pageSize=20&keyword=&startDate=&endDate=&PatientId=&DoctorId= [200 OK, 1.35kB, 5ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/registrations/queue?DoctorId= [200 OK, 918B, 9ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  PUT https://localhost:5001/api/v1/registrations//start-visit [404 Not Found, 1.08kB, 6ms]
+  √  Response time < 5000ms
+119. Status code is 200
+120. ApiResponse structure is valid
+
+└ 
+  PUT https://localhost:5001/api/v1/registrations//cancel [404 Not Found, 1.08kB, 5ms]
+  √  Response time < 5000ms
+121. Status code is 200
+122. ApiResponse structure is valid
+
+□ 6827cd81-9648-469d-9125-71bd1e766970
+└ 
+  GET https://localhost:5001/api/v1/diagnostics/logging/status [200 OK, 994B, 3ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/diagnostics/logging/debug/enable [200 OK, 1.11kB, 3ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/diagnostics/logging/debug/disable [200 OK, 1.03kB, 3ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  POST https://localhost:5001/api/v1/diagnostics/logging/level [200 OK, 1kB, 3ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+□ cf4558be-ce2f-40b8-b70f-81728d77dbde
+└ 
+  GET https://localhost:5001/api/v1/health [200 OK, 979B, 3ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/health/ping [200 OK, 977B, 3ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+└ 
+  GET https://localhost:5001/api/v1/health/details [200 OK, 1.09kB, 7ms]
+  √  Response time < 5000ms
+  √  Status code is 200
+  √  ApiResponse structure is valid
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │              106 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │              207 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │              208 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │              324 │              122 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 10s                                       │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 169.36kB (approx)                        │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 8ms [min: 1ms, max: 194ms, s.d.: 24ms] │
+└───────────────────────────────────────────────────────────────┘
+
+[31m    # [39m[31m failure        [39m[31m detail                                                                               [39m
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 001.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 0509a9cd-882f-44e9-9189-043a60ab62fb" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 002.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 0509a9cd-882f-44e9-9189-043a60ab62fb" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 003.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 58a3a473-2553-4698-8ae6-c6b1fe81a194" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 004.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 58a3a473-2553-4698-8ae6-c6b1fe81a194" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 005.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 4ba74572-6495-4312-bcbb-b6f7052ced02" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 006.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 4ba74572-6495-4312-bcbb-b6f7052ced02" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 007.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 7c88a712-5eda-4f5c-b8fe-e2bb3b46bb33" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 008.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 7c88a712-5eda-4f5c-b8fe-e2bb3b46bb33" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 009.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 5003f5a0-81da-4b53-86a6-46831e3c0efe" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 010.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 5003f5a0-81da-4b53-86a6-46831e3c0efe" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 011.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / fe512d3b-b0e7-49f1-929c-8ba1f21a838a" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 012.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / fe512d3b-b0e7-49f1-929c-8ba1f21a838a" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 013.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 91c1607e-c56a-4f8d-9551-4ac0db299d0d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 014.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 91c1607e-c56a-4f8d-9551-4ac0db299d0d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 015.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 83e6b189-fee5-4616-89bb-1caa5f48b18d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 016.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 83e6b189-fee5-4616-89bb-1caa5f48b18d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 017.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / b5139fcc-f494-4f50-8a9d-452352012b72" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 018.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / b5139fcc-f494-4f50-8a9d-452352012b72" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 019.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 85d6f631-2671-421d-a160-12c29681b8c2" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 020.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / 85d6f631-2671-421d-a160-12c29681b8c2" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 021.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / f162f926-8b27-4780-8251-5c76935c81f5" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 022.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "fb0c2eb4-0a72-49d5-a23f-13606af16694 / f162f926-8b27-4780-8251-5c76935c81f5" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 023.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 201                                
+                       at assertion:0 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / 43b623ce-ee09-4403-b3c6-67899c05de5b" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 024.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / b06a665c-1be8-4860-a551-896298eb6277" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 025.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / b06a665c-1be8-4860-a551-896298eb6277" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 026.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / f5a89e0b-b0b4-495a-9482-a93fbb807651" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 027.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / f5a89e0b-b0b4-495a-9482-a93fbb807651" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 028.  JSONError       ApiResponse structure is valid                                                       
+                       Unexpected token 'P' at 1:1                                                          
+                       PK  7g}\�H��  3    [Content_Types].xml��                 ���J1�_e                                             
+                       ^                                                                                    
+                       at assertion:1 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / cacfcbdb-065a-4972-80f3-55073eba3a57" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 029.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / b358e192-745f-4cee-8ff7-c01546224774" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 030.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / b358e192-745f-4cee-8ff7-c01546224774" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 031.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / 3966c632-a684-413a-bd24-67cbac1d272f" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 032.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / 3966c632-a684-413a-bd24-67cbac1d272f" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 033.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / 6d74aa7e-6cef-4662-82f6-e8a8f4056baf" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 034.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / 6d74aa7e-6cef-4662-82f6-e8a8f4056baf" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 035.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / 64794a57-a827-4a59-b1bf-27c8427deca5" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 036.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / 64794a57-a827-4a59-b1bf-27c8427deca5" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 037.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / ba919d8c-580a-472c-b73a-0299190ac5a6" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 038.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "f4eff736-df9f-4894-a9dd-8a26fafff934 / ba919d8c-580a-472c-b73a-0299190ac5a6" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 039.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 403                                
+                       at assertion:0 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 28a49169-193a-4583-a860-15c61905dbed" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 040.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 28a49169-193a-4583-a860-15c61905dbed" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 041.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / cb1881cc-c040-46a4-a037-5cb351482a14" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 042.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / cb1881cc-c040-46a4-a037-5cb351482a14" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 043.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 48bacbda-f10e-48a2-81a8-19da536fbecf" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 044.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 48bacbda-f10e-48a2-81a8-19da536fbecf" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 045.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 6dfd7e38-a765-4853-9b0c-29b6a34ccc13" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 046.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 6dfd7e38-a765-4853-9b0c-29b6a34ccc13" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 047.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 7117dcfe-ec1a-493a-b6b1-d86295a51ae7" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 048.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 7117dcfe-ec1a-493a-b6b1-d86295a51ae7" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 049.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / dec94b49-cd43-467f-a074-d80a05ed7c95" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 050.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / dec94b49-cd43-467f-a074-d80a05ed7c95" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 051.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / afe2cd4d-692d-4610-8197-78e4f296c365" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 052.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / afe2cd4d-692d-4610-8197-78e4f296c365" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 053.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 2829e180-2720-4af6-91d1-2badab54d200" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 054.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "0f8e28b3-2957-4bb5-91d5-d02239659962 / 2829e180-2720-4af6-91d1-2badab54d200" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 055.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "c92bc164-e06d-4b4c-b314-ef8788d6f896 / dc5745cf-beb3-45ef-986f-2b3f9c786ead" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 056.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "c92bc164-e06d-4b4c-b314-ef8788d6f896 / dc5745cf-beb3-45ef-986f-2b3f9c786ead" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 057.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "c92bc164-e06d-4b4c-b314-ef8788d6f896 / 09994e47-c1b6-4793-b930-7f31bff40321" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 058.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "c92bc164-e06d-4b4c-b314-ef8788d6f896 / 09994e47-c1b6-4793-b930-7f31bff40321" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 059.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "c92bc164-e06d-4b4c-b314-ef8788d6f896 / d5620b15-1578-425c-b65f-e1fe0e1821a9" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 060.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "c92bc164-e06d-4b4c-b314-ef8788d6f896 / d5620b15-1578-425c-b65f-e1fe0e1821a9" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 061.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "c92bc164-e06d-4b4c-b314-ef8788d6f896 / 3d813458-622e-42a0-9ce3-bfb1b9f406eb" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 062.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "c92bc164-e06d-4b4c-b314-ef8788d6f896 / 3d813458-622e-42a0-9ce3-bfb1b9f406eb" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 063.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "bd80b966-a8d8-445d-82a2-ad1da9ee3854 / e44a0b8a-5e9a-405c-9136-3a8eb4c0cbb1" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 064.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "bd80b966-a8d8-445d-82a2-ad1da9ee3854 / e44a0b8a-5e9a-405c-9136-3a8eb4c0cbb1" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 065.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "bd80b966-a8d8-445d-82a2-ad1da9ee3854 / 24610d32-182f-4604-8844-cbce429781c5" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 066.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "bd80b966-a8d8-445d-82a2-ad1da9ee3854 / 24610d32-182f-4604-8844-cbce429781c5" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 067.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "9e6e7d54-81dc-4168-abb0-77f58d7d442c / 6bdba3c8-9f1a-48cf-98c5-2ae2d4213da4" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 068.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "9e6e7d54-81dc-4168-abb0-77f58d7d442c / 6bdba3c8-9f1a-48cf-98c5-2ae2d4213da4" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 069.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "9e6e7d54-81dc-4168-abb0-77f58d7d442c / 98617cd9-eda8-4bd2-975d-50d888bdec33" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 070.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "9e6e7d54-81dc-4168-abb0-77f58d7d442c / 98617cd9-eda8-4bd2-975d-50d888bdec33" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 071.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 422                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / cf4b4809-bde1-4f2e-bea0-f3b7d528155d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 072.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(3) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / cf4b4809-bde1-4f2e-bea0-f3b7d528155d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 073.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 10fc241c-73a2-4422-bf7b-9927266ab5eb" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 074.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 10fc241c-73a2-4422-bf7b-9927266ab5eb" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 075.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 5dc3d9ae-d85f-4072-aaeb-68da34938b3a" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 076.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 5dc3d9ae-d85f-4072-aaeb-68da34938b3a" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 077.  JSONError       ApiResponse structure is valid                                                       
+                       Unexpected token 'P' at 1:1                                                          
+                       PK  9g}\�H��  3    [Content_Types].xml��                 ���J1�_e                                             
+                       ^                                                                                    
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / c323305d-9aa8-431f-ac77-34140c8dbaea" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 078.  JSONError       ApiResponse structure is valid                                                       
+                       Unexpected token 'P' at 1:1                                                          
+                       PK  9g}\�H��  3    [Content_Types].xml��                 ���J1�_e                                             
+                       ^                                                                                    
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 6dc3e64b-a399-48be-a027-25b4b7337520" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 079.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 12ca94a0-8f4c-4e97-84ad-9b787a57c24f" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 080.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 12ca94a0-8f4c-4e97-84ad-9b787a57c24f" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 081.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 536c2041-10af-44ba-baa3-186e0f0c24a8" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 082.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 536c2041-10af-44ba-baa3-186e0f0c24a8" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 083.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / b2e6ca26-9b25-4c8a-ab29-184dddbcc7ab" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 084.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / b2e6ca26-9b25-4c8a-ab29-184dddbcc7ab" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 085.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / eed3af1a-83a6-4740-a4f4-6fb6cbbc9e01" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 086.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / eed3af1a-83a6-4740-a4f4-6fb6cbbc9e01" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 087.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 71a2736d-5e82-4515-9565-e4a726b1f513" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 088.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 71a2736d-5e82-4515-9565-e4a726b1f513" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 089.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 89bb011f-1af9-4d7f-819a-468597e9437e" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 090.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / 89bb011f-1af9-4d7f-819a-468597e9437e" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 091.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / b1060d2d-a753-470a-992b-6f95504b3b7b" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 092.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "3bc3dcc0-af20-47cb-a037-5728fb053690 / b1060d2d-a753-470a-992b-6f95504b3b7b" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 093.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 7bb806bf-9b3a-4eaa-b2c9-78c67e85450d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 094.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 7bb806bf-9b3a-4eaa-b2c9-78c67e85450d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 095.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 405                                
+                       at assertion:0 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / ea451b5f-dd64-45dc-b9b5-091205a401ce" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 096.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / ea451b5f-dd64-45dc-b9b5-091205a401ce" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 097.  JSONError       ApiResponse structure is valid                                                       
+                       Unexpected token 'P' at 1:1                                                          
+                       PK  9g}\x���  �    [Content_Types].xml��                 �SMK1�+K                                             
+                       ^                                                                                    
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / f9063ac2-f947-4dbc-b1d6-5129f3f62e0a" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 098.  JSONError       ApiResponse structure is valid                                                       
+                       Unexpected token 'P' at 1:1                                                          
+                       PK  9g}\x���  �    [Content_Types].xml��                 �SMK1�+K                                             
+                       ^                                                                                    
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 0e042adb-7892-4c44-a5be-a0ec2b8774f6" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 099.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / a49f6584-fd8b-46d0-81a1-3176b94f2faf" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 100.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / a49f6584-fd8b-46d0-81a1-3176b94f2faf" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 101.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 5601e52c-1498-420a-8446-5ee1f587be3f" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 102.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 5601e52c-1498-420a-8446-5ee1f587be3f" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 103.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 4d071109-f090-4209-9e5d-83f038de1bc8" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 104.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 4d071109-f090-4209-9e5d-83f038de1bc8" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 105.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 40f545f3-34b6-46b9-9e67-907c566cede8" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 106.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 40f545f3-34b6-46b9-9e67-907c566cede8" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 107.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / bb08b14f-63d4-47c9-a2e7-72250543deb4" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 108.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / bb08b14f-63d4-47c9-a2e7-72250543deb4" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 109.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 74277611-0904-46c2-b099-0a54f5947ab7" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 110.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "d84dd3ca-4449-4181-ba19-afe4fd2d2528 / 74277611-0904-46c2-b099-0a54f5947ab7" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 111.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "4d292d01-ea48-4b6f-b878-881bd72ea1d5 / 40ce3b38-2815-4e52-ab8a-260290b3d32e" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 112.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "4d292d01-ea48-4b6f-b878-881bd72ea1d5 / 40ce3b38-2815-4e52-ab8a-260290b3d32e" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 113.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "4d292d01-ea48-4b6f-b878-881bd72ea1d5 / 47ae8a33-292e-454d-9fd1-566291ac4c6d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 114.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "4d292d01-ea48-4b6f-b878-881bd72ea1d5 / 47ae8a33-292e-454d-9fd1-566291ac4c6d" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 115.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "4d292d01-ea48-4b6f-b878-881bd72ea1d5 / 68d1808e-65b9-4990-9f83-1812619f2405" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 116.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "4d292d01-ea48-4b6f-b878-881bd72ea1d5 / 68d1808e-65b9-4990-9f83-1812619f2405" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 117.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 400                                
+                       at assertion:0 in test-script                                                        
+                       inside "002c974c-26ed-4097-a14d-935d138db220 / ca31b076-8d1d-4e9c-a679-9088891080a4" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 118.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { success: false, …(4) } to have property 'data'                            
+                       at assertion:1 in test-script                                                        
+                       inside "002c974c-26ed-4097-a14d-935d138db220 / ca31b076-8d1d-4e9c-a679-9088891080a4" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 119.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "002c974c-26ed-4097-a14d-935d138db220 / 743526f7-d0be-4372-bbc1-c9f12eec71c6" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 120.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "002c974c-26ed-4097-a14d-935d138db220 / 743526f7-d0be-4372-bbc1-c9f12eec71c6" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 121.  AssertionError  Status code is 200                                                                   
+                       expected response to have status code 200 but got 404                                
+                       at assertion:0 in test-script                                                        
+                       inside "002c974c-26ed-4097-a14d-935d138db220 / b3f97ec6-3432-4f4f-a9b1-e7bd1528e217" 
+[90m      [39m[90m                [39m[90m                                                                                      [39m
+ 122.  AssertionError  ApiResponse structure is valid                                                       
+                       expected { …(9) } to have property 'success'                                         
+                       at assertion:1 in test-script                                                        
+                       inside "002c974c-26ed-4097-a14d-935d138db220 / b3f97ec6-3432-4f4f-a9b1-e7bd1528e217" 

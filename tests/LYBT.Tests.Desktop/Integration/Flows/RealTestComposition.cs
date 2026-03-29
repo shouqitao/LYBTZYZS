@@ -101,6 +101,7 @@ public class RealTestComposition
         _services.AddSingleton<IUserNotificationService>(_ => Substitute.For<IUserNotificationService>());
         _services.AddSingleton<ICommonDialogService>(_ => Substitute.For<ICommonDialogService>());
         _services.AddSingleton<IRoleRegistry>(_ => Substitute.For<IRoleRegistry>());
+        _services.AddSingleton<IUiThreadDispatcher>(_ => Substitute.For<IUiThreadDispatcher>());
 
         _services.AddSingleton<IViewModelServices, ViewModelServices>();
         _services.AddSingleton<IApplicationStateService>(_ => CreateMockApplicationStateService());
@@ -189,6 +190,7 @@ public class ViewModelServices : IViewModelServices
     public IUserNotificationService UserNotificationService { get; }
     public ICommonDialogService CommonDialogService { get; }
     public IRoleRegistry RoleRegistry { get; }
+    public IUiThreadDispatcher UiThreadDispatcher { get; }
 
     public ViewModelServices(
         ILoggerFactory loggerFactory,
@@ -197,7 +199,8 @@ public class ViewModelServices : IViewModelServices
         ISessionManager sessionManager,
         IUserNotificationService userNotificationService,
         ICommonDialogService commonDialogService,
-        IRoleRegistry roleRegistry)
+        IRoleRegistry roleRegistry,
+        IUiThreadDispatcher uiThreadDispatcher)
     {
         LoggerFactory = loggerFactory;
         EventAggregator = eventAggregator;
@@ -206,5 +209,6 @@ public class ViewModelServices : IViewModelServices
         UserNotificationService = userNotificationService;
         CommonDialogService = commonDialogService;
         RoleRegistry = roleRegistry;
+        UiThreadDispatcher = uiThreadDispatcher;
     }
 }

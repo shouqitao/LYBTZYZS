@@ -1,17 +1,16 @@
 ﻿using FluentValidation;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Caching;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
 using System.Threading;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Mapping;
+using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
@@ -29,24 +28,24 @@ namespace LYBT.Module.Patients.Services
         private readonly IPatientRepository _repository;
         private readonly IValidator<PatientInputDto> _validator;
         private readonly PatientMapper _mapper = new();
-        private readonly AppDbContext _dbContext;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly IPatientImportExportService _importExport;
+        private readonly IMedicalCaseReferenceService _medicalCaseReferenceService;
 
         public PatientService(
             IPatientRepository repository,
             ILogger<PatientService> logger,
             IValidator<PatientInputDto> validator,
-            AppDbContext dbContext,
             ICacheInvalidationService cacheInvalidation,
-            IPatientImportExportService importExport)
+            IPatientImportExportService importExport,
+            IMedicalCaseReferenceService medicalCaseReferenceService)
             : base(logger)
         {
             _repository = repository;
             _validator = validator;
-            _dbContext = dbContext;
             _cacheInvalidation = cacheInvalidation;
             _importExport = importExport;
+            _medicalCaseReferenceService = medicalCaseReferenceService;
         }
 
         public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false, CancellationToken cancellationToken = default)
@@ -431,12 +430,10 @@ namespace LYBT.Module.Patients.Services
             }
 
             // CODE-22: 禁用患者前检查是否有未完成的医案 (Active/Suspended)
+            // Architecture Fix: 使用IMedicalCaseReferenceService替代直接DbContext查询
             if (entity.Status == CommonStatus.Enabled)
             {
-                var unfinishedCount = await _dbContext.MedicalCases
-                    .Where(mc => mc.PatientId == id && !mc.IsDeleted
-                        && (mc.CaseStatus == MedicalCaseStatus.Active || mc.CaseStatus == MedicalCaseStatus.Suspended))
-                    .CountAsync();
+                var unfinishedCount = await _medicalCaseReferenceService.CountUnfinishedMedicalCasesAsync(id);
 
                 if (unfinishedCount > 0)
                 {
@@ -520,8 +517,8 @@ namespace LYBT.Module.Patients.Services
                     }
 
                     // X7: 批量删除逐个引用检查
-                    var refCount = await _dbContext.MedicalCases
-                        .CountAsync(mc => mc.PatientId == id && !mc.IsDeleted);
+                    // Architecture Fix: 使用IMedicalCaseReferenceService替代直接DbContext查询
+                    var refCount = await _medicalCaseReferenceService.CountMedicalCasesAsync(id);
                     if (refCount > 0)
                     {
                         result.FailureCount++;
@@ -578,23 +575,12 @@ namespace LYBT.Module.Patients.Services
                 return Result<PatientReferenceCheckDto>.Failure(GenericErrorCode.PatientNotFound);
             }
 
+            // Architecture Fix: 使用IMedicalCaseReferenceService替代直接DbContext查询
             // 查询医案引用计数
-            var referenceCount = await _dbContext.MedicalCases
-                .CountAsync(mc => mc.PatientId == patientId && !mc.IsDeleted);
+            var referenceCount = await _medicalCaseReferenceService.CountMedicalCasesAsync(patientId);
 
             // 获取最近5条引用记录
-            var recentMedicalCases = await _dbContext.MedicalCases
-                .Where(mc => mc.PatientId == patientId && !mc.IsDeleted)
-                .OrderByDescending(mc => mc.CreatedAt)
-                .Take(5)
-                .Select(mc => new MedicalCaseReferenceDto
-                {
-                    MedicalCaseId = mc.Id,
-                    CaseNumber = mc.CaseNumber ?? string.Empty,
-                    CreatedAt = mc.CreatedAt,
-                    Status = mc.CaseStatus.ToString()
-                })
-                .ToListAsync();
+            var recentMedicalCases = await _medicalCaseReferenceService.GetRecentMedicalCasesAsync(patientId, 5);
 
             var hasReferences = referenceCount > 0;
             var result = new PatientReferenceCheckDto

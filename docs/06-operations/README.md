@@ -22,6 +22,9 @@
 |------|------|
 | [deployment.md](./deployment.md) | 服务端部署、客户端部署、数据库运维 |
 | [configuration.md](./configuration.md) | 完整配置项说明 (JWT/密码策略/会话/限流/数据库/缓存/Kestrel) |
+| [postman-guide.md](./postman-guide.md) | Postman API 测试工具使用指南 |
+| `LYBTZYZS_API_Collection.json` | Postman Collection v2.1 (102 个端点) |
+| `LYBTZYZS_API_Tests.md` | API 测试用例文档 (120+ 场景) |
 
 ---
 

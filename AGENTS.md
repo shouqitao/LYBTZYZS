@@ -1,18 +1,70 @@
-<!-- OPENSPEC:START -->
-# OpenSpec Instructions
+# LYBTZYZS - 凌隐宝堂中医诊所管理系统
 
-These instructions are for AI assistants working in this project.
+**.NET 8** | WPF/Prism | ASP.NET Core | EF Core | SQL Server + SQLite dual-mode
 
-Always open `@/openspec/AGENTS.md` when the request:
-- Mentions planning or proposals (words like proposal, spec, change, plan)
-- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
-- Sounds ambiguous and you need the authoritative spec before coding
+---
 
-Use `@/openspec/AGENTS.md` to learn:
-- How to create and apply change proposals
-- Spec format and conventions
-- Project structure and guidelines
+## Build & Test
 
-Keep this managed block so 'openspec update' can refresh the instructions.
+```bash
+dotnet build LYBT.All.sln
 
-<!-- OPENSPEC:END -->
+# Test projects (~2021 tests total)
+dotnet test tests/LYBT.Tests.Server/        # 1185 tests (real SQL Server + Respawn)
+dotnet test tests/LYBT.Tests.Desktop/       # 760 tests (SQLite InMemory)
+dotnet test tests/LYBT.Tests.Architecture/  # 76 tests (architecture guards)
+```
+
+## Architecture
+
+- **3-Layer**: Controller → Service → Repository → DbContext
+- **MVVM**: View (XAML) ← binding → ViewModel → Repository → API
+- **DDD**: MedicalCase is the sole aggregate root (Consultation + Prescription are internal entities)
+- **Dual-Mode**: Remote (SQL Server) + Local (SQLite), shared Service/Repository layer
+
+## Terminology
+
+| Term | Meaning | Not |
+|------|---------|-----|
+| Consultation | 中医诊断 (TCM diagnosis) | "问诊" or "就诊" |
+| MedicalCase | 医案 (medical case) | "病历" |
+| Formula | 验方/经验方 (empirical recipe) | "公式" |
+
+## Dev Rules
+
+1. **Architecture First** - Prioritize architectural integrity
+2. **Root Cause Analysis** - No surface-level patches
+3. **Test Coverage** - New features must include tests
+4. **Documentation** - Update `docs/` for architectural decisions and API changes
+
+## Common Pitfalls
+
+- `FindAsync` applies global query filters (`IsDeleted`) when entity is not in ChangeTracker — use `IgnoreQueryFilters()` for soft-deleted records
+- WPF Desktop tests require `net8.0-windows` target framework — cannot mix with Server tests
+- `MedicalCase.HasPrescription` is a computed property depending on `PrescriptionId.HasValue` — Mapper must set it explicitly
+
+## Module Docs
+
+```
+docs/
+├── 01-product/          # Product docs
+├── 02-requirements/     # PRD (9 modules, 92 requirements)
+├── 03-architecture/     # Architecture, data model, security, ADR
+├── 04-api-reference/    # 99 API endpoints
+├── 05-development/      # Dev guide, coding standards, testing
+└── 06-operations/       # Deployment, config, monitoring
+```
+
+Sub-directory `CLAUDE.md` files provide module-specific guidance throughout `src/`.
+
+## MCP Tools Quick Reference
+
+| Use Case | Tool |
+|----------|------|
+| Project architecture knowledge | Serena: `list_memories` → `read_memory` |
+| NuGet / framework docs | Context7: `resolve-library-id` → `query-docs` |
+| Microsoft official docs | `microsoft_docs_search` |
+| Code semantic search | `get_code_context_exa` |
+| Web search | `tavily_search` / `brave_web_search` |
+| GitHub operations | `gh` CLI |
+| Current time | `get_current_time(timezone="Asia/Shanghai")` |

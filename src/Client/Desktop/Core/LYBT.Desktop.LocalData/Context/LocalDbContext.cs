@@ -157,7 +157,7 @@ public class LocalDbContext : DbContext
             .HasIndex(p => p.PhoneNumber);
 
         modelBuilder.Entity<Patient>()
-            .HasIndex(p => p.IdCardNumber);
+            .HasIndex(p => p.IdNumber);
 
         // User: 按用户名查询（登录）
         modelBuilder.Entity<User>()

@@ -61,5 +61,16 @@ public interface IRegistrationService
     /// 医案取消联动: 根据 Source 分流处理
     /// US-REG-006, D4 决策
     /// </summary>
+
+    /// <summary>
+    /// 医生快速看诊 (后台静默创建 Registration + MedicalCase)
+    /// US-REG-002: Source=Doctor, Status=InProgress, 医生无感知
+    /// </summary>
+    /// <param name="dto">快速看诊输入</param>
+    /// <param name="doctorId">当前医生ID</param>
+    /// <param name="doctorName">当前医生姓名</param>
+    /// <returns>快速看诊结果，包含 RegistrationId 和 MedicalCaseId</returns>
+    
+
     Task<Result> HandleMedicalCaseCancelledAsync(Guid medicalCaseId);
 }

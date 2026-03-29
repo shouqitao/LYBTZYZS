@@ -261,4 +261,10 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
 
         return Result.Success();
     }
+
+    /// <summary>
+    /// 医生快速看诊 (后台静默创建 Registration + MedicalCase)
+    /// US-REG-002: Source=Doctor, Status=InProgress, 医生无感知
+    /// </summary>
+    
 }

@@ -36,7 +36,7 @@ public class DiagnosticsController : BaseApiController
     public IActionResult GetLoggingStatus()
     {
         var status = _loggingLevelManager.GetStatus();
-        return Ok(new
+        return Success(new
         {
             currentLevel = status.CurrentLevel,
             defaultLevel = status.DefaultLevel,
@@ -81,7 +81,7 @@ public class DiagnosticsController : BaseApiController
             "调试模式已启用 - 操作者: {OperatorName}({OperatorId}), 级别: {Level}, 持续时间: {Duration}分钟, 过期时间: {ExpiresAt}",
             operatorName, operatorId, level, durationMinutes, result.ExpiresAt);
 
-        return Ok(new
+        return Success(new
         {
             message = "调试模式已启用",
             previousLevel = result.PreviousLevel,
@@ -107,7 +107,7 @@ public class DiagnosticsController : BaseApiController
             "调试模式已禁用 - 操作者: {OperatorName}({OperatorId}), 恢复级别: {Level}",
             operatorName, operatorId, result.CurrentLevel);
 
-        return Ok(new
+        return Success(new
         {
             message = "调试模式已禁用，已恢复默认日志级别",
             previousLevel = result.PreviousLevel,
@@ -146,7 +146,7 @@ public class DiagnosticsController : BaseApiController
             "日志级别已手动更改 - 操作者: {OperatorName}({OperatorId}), 从 {PreviousLevel} 改为 {NewLevel}",
             operatorName, operatorId, previousLevel, level);
 
-        return Ok(new
+        return Success(new
         {
             message = "日志级别已更新",
             previousLevel,

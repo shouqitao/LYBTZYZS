@@ -1,0 +1,61 @@
+{
+  "id": "lybt-local",
+  "name": "LYBT Local Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:5001",
+      "enabled": true
+    },
+    {
+      "key": "authToken",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIwYTM0ZDQxNi0xNDBmLTQ0NDQtYTJiYS05NjZiY2EzNDRkNzAiLCJ1bmlxdWVfbmFtZSI6InN5c2FkbWluIiwicm9sZSI6IlN1cGVyQWRtaW4iLCJ1c2VyX3R5cGUiOiJzdXBlcmFkbWluIiwianRpIjoiMmEwY2M3M2QtZjc1Mi00ZDA3LTk1MzUtNjY3N2UzMzY1YTVlIiwiaWF0IjoxNzc0NzY4NDQ1LCJuYmYiOjE3NzQ3Njg0NDUsImV4cCI6MTc3NDc3MjA0NSwiaXNzIjoiTFlCVC5XZWJBUEkuRGV2IiwiYXVkIjoiTFlCVC5DbGllbnQuRGV2In0.UNtSqLiGJ3rp5NDA-D4t0qHWnVmGzlodm54BUHMgURo",
+      "enabled": true
+    },
+    {
+      "key": "refreshToken",
+      "value": "6JTbxhP2HPZCrGv0JEhIww/KnDGfyFjnCNv1lXFEblX0F9SWPOq+Q7JqrPEMhgnL0HBaEqx5yzY6jipaLNzhag==",
+      "enabled": true
+    },
+    {
+      "key": "currentUserId",
+      "value": "0a34d416-140f-4444-a2ba-966bca344d70",
+      "enabled": true
+    },
+    {
+      "key": "currentUsername",
+      "value": "sysadmin",
+      "enabled": true
+    },
+    {
+      "key": "testPatientId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "testMedicalCaseId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "testHerbId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "testFormulaId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "testRegistrationId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "testUserId",
+      "value": "",
+      "enabled": true
+    }
+  ]
+}

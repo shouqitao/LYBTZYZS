@@ -1,4 +1,5 @@
 ﻿using LYBT.Infrastructure.DependencyInjection;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
@@ -167,6 +168,8 @@ public static class DatabaseServiceCollectionExtensions
         services.AddScoped<IUserCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
         services.AddScoped<ICrossModuleAuthService>(sp => sp.GetRequiredService<CrossModuleService>());
 
+        // Architecture Fix: 注册健康检查服务 (Task 1.1)
+        services.AddScoped<IHealthCheckService, HealthCheckService>();
 
         // Issue #1726 Phase 3: 数据库健康检查与启动诊断
         services.AddHealthChecks()

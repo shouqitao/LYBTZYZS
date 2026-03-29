@@ -60,6 +60,7 @@ public partial class UserMapper
     [MapperIgnoreTarget(nameof(User.UpdatedBy))]
     [MapperIgnoreTarget(nameof(User.RowVersion))]
     [MapperIgnoreTarget(nameof(User.IsDeleted))]
+    [MapperIgnoreTarget(nameof(User.MustChangeOnNextLogin))]
     public partial User ToEntity(UserInputDto dto);
 
     /// <summary>
@@ -82,5 +83,6 @@ public partial class UserMapper
     [MapperIgnoreTarget(nameof(User.UpdatedBy))]
     [MapperIgnoreTarget(nameof(User.RowVersion))]
     [MapperIgnoreTarget(nameof(User.IsDeleted))]
+    [MapperIgnoreTarget(nameof(User.MustChangeOnNextLogin))]
     public partial void UpdateEntity(UserInputDto dto, User entity);
 }

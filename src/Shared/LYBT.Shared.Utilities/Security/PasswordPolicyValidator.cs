@@ -278,7 +278,7 @@ namespace LYBT.Shared.Utilities.Security
         /// <summary>
         /// 检查是否为常见弱密码
         /// </summary>
-        private static bool IsCommonWeakPassword(string password)
+        public static bool IsCommonWeakPassword(string password)
         {
             var commonPasswords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {

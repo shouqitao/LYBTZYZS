@@ -31,6 +31,9 @@ namespace LYBT.Module.MedicalCases
             services.AddScoped<IMedicalCaseStateService, MedicalCaseStateService>();
             services.AddScoped<IMedicalCasePrintService, MedicalCasePrintService>();
 
+            // Architecture Fix: 注册跨模块查询服务 (Task 1.2)
+            services.AddScoped<IMedicalCaseReferenceService, MedicalCaseReferenceService>();
+
             // OpenSpec: refactor-medicalcase-management - 权限服务
             services.AddScoped<IMedicalCasePermissionService, MedicalCasePermissionService>();
 

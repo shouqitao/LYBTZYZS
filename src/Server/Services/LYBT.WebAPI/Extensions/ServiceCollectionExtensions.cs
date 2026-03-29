@@ -201,25 +201,22 @@ public static class ServiceCollectionExtensions
             // 启用自动400响应（模型验证失败时）
             options.SuppressModelStateInvalidFilter = false;
 
-            // 自定义400响应格式（使用ProblemDetails）
+            // 自定义400响应格式（使用ApiResponse统一格式）
             options.InvalidModelStateResponseFactory = context =>
             {
-                var problemDetails = new ValidationProblemDetails(context.ModelState)
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "模型验证失败",
-                    Detail = "请求数据包含验证错误，请检查输入",
-                    Instance = context.HttpContext.Request.Path
-                };
+                var errors = context.ModelState
+                    .Where(e => e.Value?.Errors.Count > 0)
+                    .SelectMany(e => e.Value!.Errors.Select(err => $"{e.Key}: {err.ErrorMessage}"))
+                    .ToList();
 
-                // 添加追踪信息
-                problemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
-                problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+                var response = LYBT.Shared.Models.Contracts.Common.ApiResponse.CreateFail(
+                    "参数验证失败",
+                    errors
+                );
+                response.RequestId = context.HttpContext.TraceIdentifier;
+                response.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-                return new BadRequestObjectResult(problemDetails)
-                {
-                    ContentTypes = { "application/problem+json" }
-                };
+                return new BadRequestObjectResult(response);
             };
         });
 
