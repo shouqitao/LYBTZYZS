@@ -159,10 +159,10 @@ namespace LYBT.WebAPI.Controllers
         /// 资源级权限由 Service 层 EnsureCanEdit/EnsureCanDelete 统一检查
         /// </summary>
         [HttpDelete("{id}")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         [ProducesResponseType(typeof(ApiResponse), 403)]
-        public async Task<ActionResult> DeleteMedicalCase(Guid id)
+        public async Task<IActionResult> DeleteMedicalCase(Guid id)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var (operatorId, _, operatorRole) = GetOperator();
@@ -173,7 +173,7 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound(ApiResponse.CreateFail("医案不存在"));
 
             _logger.LogInformation("医案已软删除，MedicalCaseId: {Id}, OperatorId: {OperatorId}", id, operatorId);
-            return NoContent();
+            return Success(true, "医案已删除");
         }
 
         /// <summary>

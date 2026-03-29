@@ -138,7 +138,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             LogOperation("删除药材", null, id);
-            return Success("删除成功");
+            return Success(true, "删除成功");
         }
 
         /// <summary>
