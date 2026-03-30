@@ -378,9 +378,9 @@ public class SyncService : ISyncService
     }
 
     /// <summary>
-    /// 获取本地实体并序列化为 JSON
+    /// 获取本地实体并序列化为 JSON 字符串
     /// </summary>
-    private async Task<List<JsonElement>> GetLocalEntitiesAsJsonAsync(
+    private async Task<List<string>> GetLocalEntitiesAsJsonAsync(
         string entityType,
         List<Guid> entityIds,
         CancellationToken ct)
@@ -394,7 +394,7 @@ public class SyncService : ISyncService
         };
     }
 
-    private async Task<List<JsonElement>> GetHerbsAsJsonAsync(List<Guid> entityIds, CancellationToken ct)
+    private async Task<List<string>> GetHerbsAsJsonAsync(List<Guid> entityIds, CancellationToken ct)
     {
         var herbs = await _context.Herbs
             .IgnoreQueryFilters()
@@ -402,10 +402,10 @@ public class SyncService : ISyncService
             .AsNoTracking()
             .ToListAsync(ct);
 
-        return herbs.Select(h => JsonSerializer.SerializeToElement(h, JsonOptions)).ToList();
+        return herbs.Select(h => JsonSerializer.Serialize(h, JsonOptions)).ToList();
     }
 
-    private async Task<List<JsonElement>> GetPatientsAsJsonAsync(List<Guid> entityIds, CancellationToken ct)
+    private async Task<List<string>> GetPatientsAsJsonAsync(List<Guid> entityIds, CancellationToken ct)
     {
         var patients = await _context.Patients
             .IgnoreQueryFilters()
@@ -413,10 +413,10 @@ public class SyncService : ISyncService
             .AsNoTracking()
             .ToListAsync(ct);
 
-        return patients.Select(p => JsonSerializer.SerializeToElement(p, JsonOptions)).ToList();
+        return patients.Select(p => JsonSerializer.Serialize(p, JsonOptions)).ToList();
     }
 
-    private async Task<List<JsonElement>> GetFormulasAsJsonAsync(List<Guid> entityIds, CancellationToken ct)
+    private async Task<List<string>> GetFormulasAsJsonAsync(List<Guid> entityIds, CancellationToken ct)
     {
         var formulas = await _context.Formulas
             .Include(f => f.Herbs)
@@ -425,7 +425,7 @@ public class SyncService : ISyncService
             .AsNoTracking()
             .ToListAsync(ct);
 
-        return formulas.Select(f => JsonSerializer.SerializeToElement(f, JsonOptions)).ToList();
+        return formulas.Select(f => JsonSerializer.Serialize(f, JsonOptions)).ToList();
     }
 
     /// <summary>
@@ -433,7 +433,7 @@ public class SyncService : ISyncService
     /// </summary>
     private async Task SaveDownloadedEntitiesAsync(
         string entityType,
-        List<JsonElement> entities,
+        List<string> entities,
         CancellationToken ct)
     {
         switch (entityType)
@@ -452,11 +452,11 @@ public class SyncService : ISyncService
         }
     }
 
-    private async Task SaveHerbsAsync(List<JsonElement> entities, CancellationToken ct)
+    private async Task SaveHerbsAsync(List<string> entities, CancellationToken ct)
     {
-        foreach (var jsonElement in entities)
+        foreach (var jsonString in entities)
         {
-            var herb = JsonSerializer.Deserialize<Herb>(jsonElement.GetRawText(), JsonOptions);
+            var herb = JsonSerializer.Deserialize<Herb>(jsonString, JsonOptions);
             if (herb == null) continue;
 
             var existing = await _context.Herbs
@@ -476,11 +476,11 @@ public class SyncService : ISyncService
         await _context.SaveChangesAsync(ct);
     }
 
-    private async Task SavePatientsAsync(List<JsonElement> entities, CancellationToken ct)
+    private async Task SavePatientsAsync(List<string> entities, CancellationToken ct)
     {
-        foreach (var jsonElement in entities)
+        foreach (var jsonString in entities)
         {
-            var patient = JsonSerializer.Deserialize<Patient>(jsonElement.GetRawText(), JsonOptions);
+            var patient = JsonSerializer.Deserialize<Patient>(jsonString, JsonOptions);
             if (patient == null) continue;
 
             var existing = await _context.Patients
@@ -500,11 +500,11 @@ public class SyncService : ISyncService
         await _context.SaveChangesAsync(ct);
     }
 
-    private async Task SaveFormulasAsync(List<JsonElement> entities, CancellationToken ct)
+    private async Task SaveFormulasAsync(List<string> entities, CancellationToken ct)
     {
-        foreach (var jsonElement in entities)
+        foreach (var jsonString in entities)
         {
-            var formula = JsonSerializer.Deserialize<Formula>(jsonElement.GetRawText(), JsonOptions);
+            var formula = JsonSerializer.Deserialize<Formula>(jsonString, JsonOptions);
             if (formula == null) continue;
 
             var existing = await _context.Formulas

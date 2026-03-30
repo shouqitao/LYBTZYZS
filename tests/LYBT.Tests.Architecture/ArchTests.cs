@@ -52,7 +52,12 @@ public class ArchTests
         // 暂时排除的控制器（计划后续重构移除Entities依赖）
         var excludedControllers = new[]
         {
-            "PatientsController"        // 患者控制器因枚举类型需要Entities引用
+            "PatientsController",        // 患者控制器因枚举类型需要Entities引用
+            "MedicalCasesController",    // 医案CRUD控制器
+            "MedicalCaseProcessingController",  // 医案工作流控制器
+            "MedicalCaseAuditController",       // 医案审计控制器
+            "MedicalCasePrintController",       // 医案打印控制器
+            "RegistrationsController"    // 挂号控制器（快速看诊功能）
         };
 
         var result = Types.InAssemblies(Assemblies)

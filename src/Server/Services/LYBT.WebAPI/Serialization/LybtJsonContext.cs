@@ -140,7 +140,7 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(SyncUploadResultDto))]
 [JsonSerializable(typeof(SyncDeleteInputDto))]
 [JsonSerializable(typeof(SyncDeleteResultDto))]
-[JsonSerializable(typeof(System.Text.Json.JsonElement))]
+// JsonElement no longer used in DTOs - using string instead
 
 // ============================================================
 // Generic Types (common combinations)

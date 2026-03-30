@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace LYBT.Shared.Models.Contracts.Sync;
 
 /// <summary>
@@ -13,9 +11,9 @@ public class SyncDownloadResultDto
     public string EntityType { get; set; } = string.Empty;
 
     /// <summary>
-    /// 实体数据列表（JSON 格式）
+    /// 实体数据列表（JSON 字符串格式）
     /// </summary>
-    public List<JsonElement> Entities { get; set; } = new();
+    public List<string> Entities { get; set; } = new();
 
     /// <summary>
     /// 下载数量

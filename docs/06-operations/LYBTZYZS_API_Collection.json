@@ -165,6 +165,15 @@
                   "        pm.expect(jsonData).to.have.property('success');",
                   "        pm.expect(jsonData).to.have.property('message');",
                   "        pm.expect(jsonData).to.have.property('data');",
+                  "        // Extract and store auth token",
+                  "        if (jsonData.data && jsonData.data.token) {",
+                  "            pm.environment.set('authToken', jsonData.data.token);",
+                  "            console.log('Auth token stored successfully');",
+                  "        }",
+                  "        // Store refresh token if available",
+                  "        if (jsonData.data && jsonData.data.refreshToken) {",
+                  "            pm.environment.set('RefreshToken', jsonData.data.refreshToken);",
+                  "        }",
                   "    } else {",
                   "        // Binary file (Excel) - just check it's not empty",
                   "        pm.expect(pm.response.responseSize).to.be.greaterThan(0);",
@@ -201,36 +210,6 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"UserName\": \"sysadmin\",\n  \"AutoLoginToken\": \"string\"\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Logout",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/logout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "logout"
-              ]
-            },
-            "description": "",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"UserName\": \"sysadmin\",\n  \"RefreshToken\": \"{{RefreshToken}}\"\n}"
             }
           },
           "response": []
@@ -446,9 +425,15 @@
                   "    if (j.success && j.data) {",
                   "        const token = j.data.token;",
                   "        const userId = j.data.user?.id;",
+                  "        const userName = j.data.user?.userName;",
                   "        pm.environment.set('doctorToken', token);",
                   "        pm.environment.set('doctorUserId', userId);",
-                  "        console.log('Logged in as doctor, token stored');",
+                  "        // Also update authToken so subsequent requests use doctor credentials",
+                  "        pm.environment.set('authToken', token);",
+                  "        // Set testDoctorId for Registration tests",
+                  "        pm.environment.set('testDoctorId', userId);",
+                  "        pm.environment.set('testDoctorName', userName || 'Test Doctor');",
+                  "        console.log('Logged in as doctor, token stored and authToken updated, doctorId:', userId);",
                   "    }",
                   "});"
                 ]
@@ -589,17 +574,22 @@
                   "});",
                   "",
                   "pm.test('Store doctor info', function () {",
+                  "    // Only update if request was successful and testDoctorId is not already set",
+                  "    if (pm.response.code !== 200) {",
+                  "        console.log('Get Doctor Info failed, using existing testDoctorId:', pm.environment.get('testDoctorId'));",
+                  "        return;",
+                  "    }",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.items && jsonData.data.items.length > 0) {",
                   "        const doctor = jsonData.data.items[0];",
                   "        pm.environment.set('testDoctorId', doctor.id);",
                   "        pm.environment.set('testDoctorName', doctor.UserName || doctor.Name || 'Test Doctor');",
                   "        console.log('Found doctor:', doctor.id, doctor.UserName);",
-                  "    } else {",
-                  "        // Fallback to current user if no doctor found",
-                  "        pm.environment.set('testDoctorId', pm.environment.get('currentUserId'));",
+                  "    } else if (!pm.environment.get('testDoctorId')) {",
+                  "        // Fallback only if testDoctorId is not already set",
+                  "        pm.environment.set('testDoctorId', pm.environment.get('currentUserId') || pm.environment.get('testUserId'));",
                   "        pm.environment.set('testDoctorName', 'Test Doctor');",
-                  "        console.log('Using current user as doctor');",
+                  "        console.log('Using fallback for doctor');",
                   "    }",
                   "});"
                 ]
@@ -746,36 +736,41 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "// Generate unique test data for each run",
-              "const timestamp = Date.now();",
-              "const randomSuffix = Math.floor(Math.random() * 100000);",
-              "",
-              "// Generate valid Chinese phone number (11 digits starting with 1)",
-              "const phone = \"138\" + String(randomSuffix).padStart(8, \"0\");",
-              "",
-              "// Generate valid Chinese ID number (18 digits)",
-              "// Format: 6 digit area + 8 digit birth date + 3 digit sequence + 1 check digit",
-              "const areaCode = \"110101\"; // Beijing Dongcheng",
-              "const birthDate = \"19900101\";",
-              "const sequence = String(Math.floor(Math.random() * 1000)).padStart(3, \"0\");",
-              "const checkDigit = String(Math.floor(Math.random() * 10));",
-              "const idNumber = areaCode + birthDate + sequence + checkDigit;",
-              "",
-              "// Generate unique names",
-              "const herbName = \"TestHerb\" + randomSuffix;",
-              "const formulaName = \"TestFormula\" + randomSuffix;",
-              "",
-              "// Store in collection variables",
-              "pm.environment.set(\"uniquePhone\", phone);",
-              "pm.environment.set(\"uniqueIdNumber\", idNumber);",
-              "pm.environment.set(\"uniqueHerbName\", herbName);",
-              "pm.environment.set(\"uniqueFormulaName\", formulaName);",
-              "",
-              "console.log(\"Generated unique values:\");",
-              "console.log(\"  Phone:\", phone);",
-              "console.log(\"  ID:\", idNumber);",
-              "console.log(\"  Herb:\", herbName);",
-              "console.log(\"  Formula:\", formulaName);"
+              "// Generate unique test data for each run (only if not already set)",
+              "if (!pm.environment.get('uniquePhone')) {",
+              "    const timestamp = Date.now();",
+              "    const randomSuffix = Math.floor(Math.random() * 100000);",
+              "    ",
+              "    // Generate valid Chinese phone number (11 digits starting with 1)",
+              "    const phone = \"138\" + String(randomSuffix).padStart(8, \"0\");",
+              "    ",
+              "    // Generate valid Chinese ID number (18 digits)",
+              "    // Format: 6 digit area + 8 digit birth date + 3 digit sequence + 1 check digit",
+              "    const areaCode = \"110101\"; // Beijing Dongcheng",
+              "    const birthDate = \"19900101\";",
+              "    const sequence = String(Math.floor(Math.random() * 1000)).padStart(3, \"0\");",
+              "    const checkDigit = String(Math.floor(Math.random() * 10));",
+              "    const idNumber = areaCode + birthDate + sequence + checkDigit;",
+              "    ",
+              "    // Generate unique names",
+              "    const herbName = \"TestHerb\" + randomSuffix;",
+              "    const formulaName = \"TestFormula\" + randomSuffix;",
+              "    ",
+              "    // Store in collection variables",
+              "    pm.environment.set('uniquePhone', phone);",
+              "    pm.environment.set('uniqueIdNumber', idNumber);",
+              "    pm.environment.set('uniqueHerbName', herbName);",
+              "    pm.environment.set('uniqueFormulaName', formulaName);",
+              "    ",
+              "    console.log('Generated unique values:');",
+              "    console.log('  Phone:', phone);",
+              "    console.log('  ID:', idNumber);",
+              "    console.log('  Herb:', herbName);",
+              "    console.log('  Formula:', formulaName);",
+              "} else {",
+              "    console.log('Using existing unique values:');",
+              "    console.log('  Phone:', pm.environment.get('uniquePhone'));",
+              "}"
             ]
           }
         }
@@ -1029,7 +1024,7 @@
                 "api",
                 "v1",
                 "patients",
-                "{{testPatientId}}",
+                "00000000-0000-0000-0000-000000000000",
                 "toggle-status"
               ]
             },
@@ -1088,7 +1083,7 @@
                 "api",
                 "v1",
                 "patients",
-                "{{testPatientId}}",
+                "00000000-0000-0000-0000-000000000000",
                 "restore"
               ]
             },
@@ -1157,7 +1152,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"Ids\": [\n    \"{{testPatientId}}\"\n  ]\n}"
+              "raw": "{\n  \"Ids\": [\n    \"00000000-0000-0000-0000-000000000000\"\n  ]\n}"
             }
           },
           "response": [],
@@ -1213,7 +1208,7 @@
                 "api",
                 "v1",
                 "patients",
-                "{{testPatientId}}",
+                "00000000-0000-0000-0000-000000000000",
                 "check-reference"
               ]
             },
@@ -1282,7 +1277,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"Ids\": [\n    \"{{testPatientId}}\"\n  ]\n}"
+              "raw": "{\n  \"Ids\": [\n    \"00000000-0000-0000-0000-000000000000\"\n  ]\n}"
             }
           },
           "response": [],
@@ -4411,7 +4406,7 @@
             },
             "description": ""
           },
-            "response": [],
+          "response": [],
           "event": [
             {
               "listen": "prerequest",
@@ -5312,8 +5307,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
                   "});",
                   "",
                   "pm.test('ApiResponse structure is valid', function () {",
@@ -5487,9 +5482,9 @@
           ]
         },
         {
-          "name": "Get Queue",
+          "name": "Cancel Registration",
           "request": {
-            "method": "GET",
+            "method": "PUT",
             "header": [
               {
                 "key": "Authorization",
@@ -5497,7 +5492,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/registrations/queue",
+              "raw": "{{baseUrl}}/api/v1/registrations/{{testRegistrationId}}/cancel",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -5505,14 +5500,8 @@
                 "api",
                 "v1",
                 "registrations",
-                "queue"
-              ],
-              "query": [
-                {
-                  "key": "DoctorId",
-                  "value": "",
-                  "description": ""
-                }
+                "{{testRegistrationId}}",
+                "cancel"
               ]
             },
             "description": ""
@@ -5552,6 +5541,85 @@
           ]
         },
         {
+          "name": "Create Registration for Start Visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"PatientId\": \"{{testPatientId}}\",\n  \"PatientName\": \"测试患者张三\",\n  \"DoctorId\": \"{{testDoctorId}}\",\n  \"DoctorName\": \"{{testDoctorName}}\",\n  \"Source\": 0,\n  \"Remark\": \"测试挂号\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Check dependencies",
+                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "    pm.expect.fail('No authToken found. Please run Login first.');",
+                  "}",
+                  "if (!pm.environment.get('testPatientId') && !pm.environment.get('testPatientId')) {",
+                  "    pm.expect.fail('No testPatientId found. Please run Setup > Create Test Patient first.');",
+                  "}",
+                  "if (!pm.environment.get('testDoctorId') && !pm.environment.get('testDoctorId')) {",
+                  "    pm.expect.fail('No testDoctorId found. Please run Setup > Get Doctor Info first.');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('ApiResponse structure is valid', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "pm.test('Store registration ID', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "        pm.environment.set('testRegistrationIdForStartVisit', jsonData.data.id);",
+                  "        console.log('Created registration with ID:', jsonData.data.id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "id": "new-unique-id-for-start-visit-reg"
+        },
+        {
           "name": "Start Visit",
           "request": {
             "method": "PUT",
@@ -5570,7 +5638,7 @@
                 "api",
                 "v1",
                 "registrations",
-                "{{testRegistrationId}}",
+                "{{testRegistrationIdForStartVisit}}",
                 "start-visit"
               ]
             },
@@ -5611,9 +5679,9 @@
           ]
         },
         {
-          "name": "Cancel Registration",
+          "name": "Get Queue",
           "request": {
-            "method": "PUT",
+            "method": "GET",
             "header": [
               {
                 "key": "Authorization",
@@ -5621,7 +5689,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/registrations/{{testRegistrationId}}/cancel",
+              "raw": "{{baseUrl}}/api/v1/registrations/queue",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -5629,8 +5697,14 @@
                 "api",
                 "v1",
                 "registrations",
-                "{{testRegistrationId}}",
-                "cancel"
+                "queue"
+              ],
+              "query": [
+                {
+                  "key": "DoctorId",
+                  "value": "",
+                  "description": ""
+                }
               ]
             },
             "description": ""
@@ -6075,6 +6149,36 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/logout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "logout"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"UserName\": \"sysadmin\",\n  \"RefreshToken\": \"{{RefreshToken}}\"\n}"
+        }
+      },
+      "response": []
     }
   ],
   "header": [

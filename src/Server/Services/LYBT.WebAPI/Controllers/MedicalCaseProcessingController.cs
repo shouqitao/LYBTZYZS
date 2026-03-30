@@ -21,15 +21,15 @@ namespace LYBT.WebAPI.Controllers
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/medicalcases")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
-    public class MedicalCaseWorkflowController : BaseApiController
+    public class MedicalCaseProcessingController : BaseApiController
     {
         private readonly IMedicalCaseFacade _facade;
         private readonly MedicalCaseMapper _mapper;
 
-        public MedicalCaseWorkflowController(
+        public MedicalCaseProcessingController(
             IMedicalCaseFacade facade,
             MedicalCaseMapper mapper,
-            ILogger<MedicalCaseWorkflowController> logger)
+            ILogger<MedicalCaseProcessingController> logger)
             : base(logger)
         {
             _facade = facade;

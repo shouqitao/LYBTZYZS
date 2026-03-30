@@ -168,8 +168,12 @@ public class SyncService : ISyncService
         var conflictCount = 0;
         var errorCount = 0;
 
-        foreach (var entityJson in input.Entities)
+        foreach (var entityJsonString in input.Entities)
         {
+            // Parse string to JsonElement for deserialization
+            using var doc = JsonDocument.Parse(entityJsonString);
+            var entityJson = doc.RootElement.Clone();
+
             var result = input.EntityType switch
             {
                 "Herb" => await UploadHerbAsync(entityJson, input.OverwriteConflicts),
@@ -207,21 +211,21 @@ public class SyncService : ISyncService
             return ServiceResult<SyncDownloadResultDto>.Failure(errorMessage!);
         }
 
-        var entities = new List<JsonElement>();
+        var entities = new List<string>();
 
         foreach (var entityId in input.EntityIds)
         {
-            var entity = input.EntityType switch
+            var entityJson = input.EntityType switch
             {
-                "Herb" => await GetHerbJsonAsync(entityId),
-                "Patient" => await GetPatientJsonAsync(entityId),
-                "Formula" => await GetFormulaJsonAsync(entityId),
+                "Herb" => await GetHerbJsonStringAsync(entityId),
+                "Patient" => await GetPatientJsonStringAsync(entityId),
+                "Formula" => await GetFormulaJsonStringAsync(entityId),
                 _ => null
             };
 
-            if (entity.HasValue)
+            if (!string.IsNullOrEmpty(entityJson))
             {
-                entities.Add(entity.Value);
+                entities.Add(entityJson);
             }
         }
 
@@ -498,25 +502,23 @@ public class SyncService : ISyncService
 
     #region 私有方法 - 下载处理
 
-    private async Task<JsonElement?> GetHerbJsonAsync(Guid id)
+    private async Task<string?> GetHerbJsonStringAsync(Guid id)
     {
         var herb = await _dbContext.Herbs.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id);
         if (herb == null) return null;
 
-        var json = JsonSerializer.Serialize(herb, JsonOptions);
-        return JsonDocument.Parse(json).RootElement.Clone();
+        return JsonSerializer.Serialize(herb, JsonOptions);
     }
 
-    private async Task<JsonElement?> GetPatientJsonAsync(Guid id)
+    private async Task<string?> GetPatientJsonStringAsync(Guid id)
     {
         var patient = await _dbContext.Patients.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
         if (patient == null) return null;
 
-        var json = JsonSerializer.Serialize(patient, JsonOptions);
-        return JsonDocument.Parse(json).RootElement.Clone();
+        return JsonSerializer.Serialize(patient, JsonOptions);
     }
 
-    private async Task<JsonElement?> GetFormulaJsonAsync(Guid id)
+    private async Task<string?> GetFormulaJsonStringAsync(Guid id)
     {
         var formula = await _dbContext.Formulas
             .Include(f => f.Herbs)
@@ -524,8 +526,7 @@ public class SyncService : ISyncService
             .FirstOrDefaultAsync(f => f.Id == id);
         if (formula == null) return null;
 
-        var json = JsonSerializer.Serialize(formula, JsonOptions);
-        return JsonDocument.Parse(json).RootElement.Clone();
+        return JsonSerializer.Serialize(formula, JsonOptions);
     }
 
     #endregion

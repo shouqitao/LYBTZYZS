@@ -18,7 +18,7 @@ namespace LYBT.WebAPI.Controllers
     /// 资源级授权由Service层所有权检查实现
     [ApiController]
     [ApiVersion("1")]
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [Route("api/v{version:apiVersion}/Formulas")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class FormulasController : BaseApiController
     {
@@ -248,14 +248,14 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> ValidateHerb(
             Guid formulaId,
             Guid herbItemId,
-            [FromBody] Guid selectedHerbId)
+            [FromBody] ValidateFormulaHerbInputDto request)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(formulaId, "验方ID") is { } error1) return error1;
             if (ValidateGuid(herbItemId, "药材项ID") is { } error2) return error2;
-            if (ValidateGuid(selectedHerbId, "系统药材ID") is { } error3) return error3;
+            if (ValidateGuid(request.SelectedHerbId, "系统药材ID") is { } error3) return error3;
 
-            var result = await _service.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
+            var result = await _service.ValidateFormulaHerbAsync(formulaId, herbItemId, request.SelectedHerbId);
 
             if (!result.IsSuccess)
             {
@@ -263,7 +263,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             LogOperation("验证验方药材",
-                new { FormulaId = formulaId, HerbItemId = herbItemId, SelectedHerbId = selectedHerbId },
+                new { FormulaId = formulaId, HerbItemId = herbItemId, SelectedHerbId = request.SelectedHerbId },
                 formulaId);
 
             return Success(result.Message ?? "药材验证成功");

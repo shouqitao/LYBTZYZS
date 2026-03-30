@@ -61,7 +61,7 @@ public class AggregateRootArchTests
         var newControllerNames = new[]
         {
             "MedicalCasesController",
-            "MedicalCaseWorkflowController"
+            "MedicalCaseProcessingController"
         };
 
         foreach (var controllerName in newControllerNames)

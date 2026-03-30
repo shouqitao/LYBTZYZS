@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mapping;
 using LYBT.Module.MedicalCases.Repositories;
@@ -33,6 +34,8 @@ namespace LYBT.Module.MedicalCases
 
             // Architecture Fix: 注册跨模块查询服务 (Task 1.2)
             services.AddScoped<IMedicalCaseReferenceService, MedicalCaseReferenceService>();
+            // Architecture Fix: 注册跨模块服务接口，供Patients模块使用
+            services.AddScoped<IMedicalCaseCrossModuleService, MedicalCaseReferenceService>();
 
             // OpenSpec: refactor-medicalcase-management - 权限服务
             services.AddScoped<IMedicalCasePermissionService, MedicalCasePermissionService>();

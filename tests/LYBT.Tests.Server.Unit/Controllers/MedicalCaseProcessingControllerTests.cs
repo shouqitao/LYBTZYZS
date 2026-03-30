@@ -14,22 +14,22 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Tests.Server.Unit.Controllers;
 
 /// <summary>
-/// MedicalCaseWorkflowController 单元测试
+/// MedicalCaseProcessingController 单元测试
 /// 测试工作流操作（4个方法）
 /// </summary>
-public class MedicalCaseWorkflowControllerTests
+public class MedicalCaseProcessingControllerTests
 {
     private readonly IMedicalCaseFacade _facade;
     private readonly MedicalCaseMapper _mapper;
-    private readonly ILogger<MedicalCaseWorkflowController> _logger;
-    private readonly MedicalCaseWorkflowController _controller;
+    private readonly ILogger<MedicalCaseProcessingController> _logger;
+    private readonly MedicalCaseProcessingController _controller;
 
-    public MedicalCaseWorkflowControllerTests()
+    public MedicalCaseProcessingControllerTests()
     {
         _facade = Substitute.For<IMedicalCaseFacade>();
         _mapper = new MedicalCaseMapper();
-        _logger = Substitute.For<ILogger<MedicalCaseWorkflowController>>();
-        _controller = new MedicalCaseWorkflowController(_facade, _mapper, _logger);
+        _logger = Substitute.For<ILogger<MedicalCaseProcessingController>>();
+        _controller = new MedicalCaseProcessingController(_facade, _mapper, _logger);
         SetupControllerContext(_controller);
     }
 

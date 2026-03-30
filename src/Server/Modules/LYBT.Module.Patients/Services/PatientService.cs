@@ -2,10 +2,10 @@
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.CrossModule;
 using System.Threading;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Mapping;
-using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -30,7 +30,7 @@ namespace LYBT.Module.Patients.Services
         private readonly PatientMapper _mapper = new();
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly IPatientImportExportService _importExport;
-        private readonly IMedicalCaseReferenceService _medicalCaseReferenceService;
+        private readonly IMedicalCaseCrossModuleService _medicalCaseCrossModuleService;
 
         public PatientService(
             IPatientRepository repository,
@@ -38,14 +38,14 @@ namespace LYBT.Module.Patients.Services
             IValidator<PatientInputDto> validator,
             ICacheInvalidationService cacheInvalidation,
             IPatientImportExportService importExport,
-            IMedicalCaseReferenceService medicalCaseReferenceService)
+            IMedicalCaseCrossModuleService medicalCaseCrossModuleService)
             : base(logger)
         {
             _repository = repository;
             _validator = validator;
             _cacheInvalidation = cacheInvalidation;
             _importExport = importExport;
-            _medicalCaseReferenceService = medicalCaseReferenceService;
+            _medicalCaseCrossModuleService = medicalCaseCrossModuleService;
         }
 
         public async Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false, CancellationToken cancellationToken = default)
@@ -430,10 +430,10 @@ namespace LYBT.Module.Patients.Services
             }
 
             // CODE-22: 禁用患者前检查是否有未完成的医案 (Active/Suspended)
-            // Architecture Fix: 使用IMedicalCaseReferenceService替代直接DbContext查询
+            // Architecture Fix: 使用IMedicalCaseCrossModuleService替代直接DbContext查询（解决循环依赖）
             if (entity.Status == CommonStatus.Enabled)
             {
-                var unfinishedCount = await _medicalCaseReferenceService.CountUnfinishedMedicalCasesAsync(id);
+                var unfinishedCount = await _medicalCaseCrossModuleService.CountUnfinishedMedicalCasesAsync(id);
 
                 if (unfinishedCount > 0)
                 {
@@ -517,8 +517,8 @@ namespace LYBT.Module.Patients.Services
                     }
 
                     // X7: 批量删除逐个引用检查
-                    // Architecture Fix: 使用IMedicalCaseReferenceService替代直接DbContext查询
-                    var refCount = await _medicalCaseReferenceService.CountMedicalCasesAsync(id);
+                    // Architecture Fix: 使用IMedicalCaseCrossModuleService替代直接DbContext查询（解决循环依赖）
+                    var refCount = await _medicalCaseCrossModuleService.CountMedicalCasesAsync(id);
                     if (refCount > 0)
                     {
                         result.FailureCount++;
@@ -575,12 +575,12 @@ namespace LYBT.Module.Patients.Services
                 return Result<PatientReferenceCheckDto>.Failure(GenericErrorCode.PatientNotFound);
             }
 
-            // Architecture Fix: 使用IMedicalCaseReferenceService替代直接DbContext查询
+            // Architecture Fix: 使用IMedicalCaseCrossModuleService替代直接DbContext查询（解决循环依赖）
             // 查询医案引用计数
-            var referenceCount = await _medicalCaseReferenceService.CountMedicalCasesAsync(patientId);
+            var referenceCount = await _medicalCaseCrossModuleService.CountMedicalCasesAsync(patientId);
 
             // 获取最近5条引用记录
-            var recentMedicalCases = await _medicalCaseReferenceService.GetRecentMedicalCasesAsync(patientId, 5);
+            var recentMedicalCases = await _medicalCaseCrossModuleService.GetRecentMedicalCasesAsync(patientId, 5);
 
             var hasReferences = referenceCount > 0;
             var result = new PatientReferenceCheckDto

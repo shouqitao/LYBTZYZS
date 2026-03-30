@@ -4,17 +4,17 @@
   "values": [
     {
       "type": "any",
-      "value": "https://localhost:5001",
+      "value": "http://localhost:5000",
       "key": "baseUrl"
     },
     {
       "type": "any",
-      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIwYTM0ZDQxNi0xNDBmLTQ0NDQtYTJiYS05NjZiY2EzNDRkNzAiLCJ1bmlxdWVfbmFtZSI6InN5c2FkbWluIiwicm9sZSI6IlN1cGVyQWRtaW4iLCJ1c2VyX3R5cGUiOiJzdXBlcmFkbWluIiwianRpIjoiMmEwY2M3M2QtZjc1Mi00ZDA3LTk1MzUtNjY3N2UzMzY1YTVlIiwiaWF0IjoxNzc0NzY4NDQ1LCJuYmYiOjE3NzQ3Njg0NDUsImV4cCI6MTc3NDc3MjA0NSwiaXNzIjoiTFlCVC5XZWJBUEkuRGV2IiwiYXVkIjoiTFlCVC5DbGllbnQuRGV2In0.UNtSqLiGJ3rp5NDA-D4t0qHWnVmGzlodm54BUHMgURo",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIwYTM0ZDQxNi0xNDBmLTQ0NDQtYTJiYS05NjZiY2EzNDRkNzAiLCJ1bmlxdWVfbmFtZSI6InN5c2FkbWluIiwicm9sZSI6IlN1cGVyQWRtaW4iLCJ1c2VyX3R5cGUiOiJzdXBlcmFkbWluIiwianRpIjoiMTFmODRjY2QtNTk0Ny00Y2I3LWE2MWEtNDNlNGY0MzZlYzNiIiwiaWF0IjoxNzc0Nzk3NDQ5LCJuYmYiOjE3NzQ3OTc0NDksImV4cCI6MTc3NDgwMTA0OSwiaXNzIjoiTFlCVC5XZWJBUEkuRGV2IiwiYXVkIjoiTFlCVC5DbGllbnQuRGV2In0.2-HlxYfGATuB42AiGatL1GJJ2JaNazwHkfbgRFSF1Ms",
       "key": "authToken"
     },
     {
       "type": "any",
-      "value": "6JTbxhP2HPZCrGv0JEhIww/KnDGfyFjnCNv1lXFEblX0F9SWPOq+Q7JqrPEMhgnL0HBaEqx5yzY6jipaLNzhag==",
+      "value": "KhNVC/WyHrMMlheHUJ0CgBKAEvfqCxkyTbOjg9gUpKjNV1hzFvrpwPaHlGhCXOjXEWZbZbfV9GAeUqslxk3VTQ==",
       "key": "refreshToken"
     },
     {
@@ -29,12 +29,12 @@
     },
     {
       "type": "any",
-      "value": "13ea0b5c-828d-47fb-81cd-472bb7cae074",
+      "value": "5726a85c-3760-4c4d-ac49-c48989b11f58",
       "key": "testPatientId"
     },
     {
       "type": "any",
-      "value": "",
+      "value": "d901787d-0fe3-4fc7-a31d-1abc2455e871",
       "key": "testMedicalCaseId"
     },
     {
@@ -49,7 +49,7 @@
     },
     {
       "type": "any",
-      "value": "",
+      "value": "b53af892-924b-465f-a542-86011c633847",
       "key": "testRegistrationId"
     },
     {
@@ -84,7 +84,7 @@
     },
     {
       "type": "any",
-      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMjg0MmMxMC1kMzc2LTQ3NjgtODkzOC1hNGYyNjM0ZWE2NmQiLCJ1bmlxdWVfbmFtZSI6InRlc3R1c2VyMTM4MDAwODk0MzciLCJyb2xlIjoiRG9jdG9yIiwidXNlcl90eXBlIjoidXNlciIsImp0aSI6IjI0OTYxYTU5LTU1ZDItNDM5ZS05MDY1LWFjNTMxYWIwY2MwNCIsImlhdCI6MTc3NDc3MTQzOSwibmJmIjoxNzc0NzcxNDM5LCJleHAiOjE3NzQ3NzUwMzksImlzcyI6IkxZQlQuV2ViQVBJLkRldiIsImF1ZCI6IkxZQlQuQ2xpZW50LkRldiJ9.lnAc90bUPFnZ9pAFCKoKIAmw-c4Pr0LLEololDxuea8",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMWEyODVlZi01ODFiLTRjZjUtOTY5YS01NDQ3MjNhNGIwODIiLCJ1bmlxdWVfbmFtZSI6InRlc3Rkb2N0b3IyMDI1Iiwicm9sZSI6IkRvY3RvciIsInVzZXJfdHlwZSI6InVzZXIiLCJqdGkiOiI0MjI1ZTAzNy03Njc5LTQ2NGQtYTFkMS0yNDZhNWQxNTY0OGYiLCJpYXQiOjE3NzQ3OTc0NjIsIm5iZiI6MTc3NDc5NzQ2MiwiZXhwIjoxNzc0ODAxMDYyLCJpc3MiOiJMWUJULldlYkFQSS5EZXYiLCJhdWQiOiJMWUJULkNsaWVudC5EZXYifQ.D_8hbEUHPlYcgV6TRGCqiYGANghy0BuYsKZlv2Bd75I",
       "key": "doctorToken"
     },
     {
