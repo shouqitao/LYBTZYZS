@@ -182,46 +182,6 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 导出验方数据到Excel (Issue #1166)
-        /// </summary>
-        [HttpGet("export")]
-        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-        [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        public async Task<IActionResult> Export([FromQuery] string? category = null)
-        {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // OpenSpec: refactor-server-srp-patterns - 使用独立的导入导出服务
-            var stream = await _importExportService.ExportAsync(category);
-            var fileName = string.IsNullOrWhiteSpace(category)
-                ? $"验方数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
-                : $"验方数据_{category}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-
-            LogOperation("导出验方数据", new { Category = category, FileName = fileName }, null);
-
-            return File(stream,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                fileName);
-        }
-
-        /// <summary>
-        /// 下载验方导入模板 (Issue #1166)
-        /// </summary>
-        [HttpGet("import-template")]
-        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-        [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        public IActionResult ExportTemplate()
-        {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // OpenSpec: refactor-server-srp-patterns - 使用独立的导入导出服务
-            var stream = _importExportService.GenerateImportTemplate();
-            var fileName = $"验方导入模板_{DateTime.Now:yyyyMMdd}.xlsx";
-
-            return File(stream,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                fileName);
-        }
-
-        /// <summary>
         /// 获取待校验的验方列表 (Issue #1349)
         /// </summary>
         [HttpGet("pending-validation")]
