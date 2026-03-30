@@ -137,128 +137,69 @@ public partial class MedicalCaseMapper
     public partial List<PrescriptionItemDto> ToPrescriptionItemDtos(List<PrescriptionItem> entities);
 
     /// <summary>
-    /// 医案实体转换为MedicalCaseDetailDto（简化版，无嵌套DTO）
-    /// </summary>
-    /// <param name="entity">医案实体</param>
-    /// <returns>医案详情DTO（仅基础字段）</returns>
-    [UserMapping(Default = false)]
-    public MedicalCaseDetailDto MapToMedicalCaseDto(MedicalCase entity)
-    {
-        return new MedicalCaseDetailDto
-        {
-            Id = entity.Id,
-            CaseNumber = entity.CaseNumber, // AD-09 Fix: 映射 CaseNumber
-            PatientId = entity.PatientId,
-            PatientName = entity.PatientName,
-            UserId = entity.UserId,
-            DoctorName = entity.DoctorName,
-            // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
-            // ConsultationDate = entity.CreatedAt,
-            CaseStatus = entity.CaseStatus,
-            Remark = entity.Remark,
-            Diagnosis = entity.Consultation?.TcmDiagnosis,
-            CreatedAt = entity.CreatedAt,
-            // Issue #2231: 添加ConsultationId字段（共享主键，值等于MedicalCase.Id）
-            ConsultationId = entity.Id,
-            // 打印管理字段
-            PrintVersion = entity.PrintVersion,
-            LastPrintedAt = entity.LastPrintedAt,
-            PrintCount = entity.PrintCount,
-            IsPrinted = entity.IsPrinted
-        };
-    }
-
-    /// <summary>
-    /// 医案实体转换为MedicalCaseDetailDto（完整版，包含嵌套Consultation和Prescription）
+    /// 医案实体转换为MedicalCaseDetailDto（完整版）
+    /// 基于Mapperly生成的ToDetailDto，再补充嵌套对象和计算字段
+    /// Architecture Fix: 统一使用Mapperly + 手动丰富模式
     /// </summary>
     /// <param name="entity">医案实体（需包含导航属性）</param>
     /// <returns>医案完整详情DTO</returns>
-    [UserMapping(Default = false)]
     public MedicalCaseDetailDto MapToMedicalCaseDetailDto(MedicalCase entity)
     {
-        return new MedicalCaseDetailDto
-        {
-            // 基础字段
-            Id = entity.Id,
-            CaseNumber = entity.CaseNumber, // AD-09 Fix: 映射 CaseNumber
-            PatientId = entity.PatientId,
-            PatientName = entity.PatientName,
-            UserId = entity.UserId,
-            DoctorName = entity.DoctorName,
-            // OpenSpec: simplify-medicalcase-dataflow - ConsultationDate字段已移除
-            // ConsultationDate = entity.CreatedAt,
-            CaseStatus = entity.CaseStatus,
-            Remark = entity.Remark,
-            Diagnosis = entity.Consultation?.TcmDiagnosis,
-            CreatedAt = entity.CreatedAt,
-            // Fix: ConsultationId/PrescriptionId 需要手动设置，HasConsultation/HasPrescription 依赖这些值
-            ConsultationId = entity.Consultation != null ? entity.Id : null,
-            PrescriptionId = entity.Prescription != null && !entity.Prescription.IsDeleted ? entity.Prescription.Id : null,
-            CompletedAt = entity.CompletedAt,
-            // 打印管理字段
-            PrintVersion = entity.PrintVersion,
-            LastPrintedAt = entity.LastPrintedAt,
-            PrintCount = entity.PrintCount,
-            IsPrinted = entity.IsPrinted,
+        // 1. 使用Mapperly生成的基础映射
+        var dto = ToDetailDto(entity);
 
-            // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
-            PresentIllness = entity.Consultation?.PresentIllness,
+        // 2. 补充Mapperly忽略的字段（依赖导航属性/计算逻辑）
+        dto.CaseNumber = entity.CaseNumber;
+        dto.Diagnosis = entity.Consultation?.TcmDiagnosis;
+        dto.PresentIllness = entity.Consultation?.PresentIllness;
+        dto.ConsultationId = entity.Consultation != null ? entity.Id : null;
+        dto.PrescriptionId = entity.Prescription != null && !entity.Prescription.IsDeleted ? entity.Prescription.Id : null;
 
-            // Consultation - OpenSpec: refactor-diagnosis-fields 精简为4个核心字段
-            Consultation = entity.Consultation != null ? new ConsultationDetailDto
-            {
-                Id = entity.Consultation.Id,
-                MedicalCaseId = entity.Id,
-                PatientId = entity.PatientId,
-                UserId = entity.UserId,
-                PatientName = entity.PatientName,
-                DoctorName = entity.DoctorName,
-                PresentIllness = entity.Consultation.PresentIllness,
-                TongueDiagnosis = entity.Consultation.TongueDiagnosis,
-                PulseDiagnosis = entity.Consultation.PulseDiagnosis,
-                TcmDiagnosis = entity.Consultation.TcmDiagnosis,
-                CreatedAt = entity.Consultation.CreatedAt,
-                UpdatedAt = entity.Consultation.UpdatedAt
-            } : null,
+        // 3. 嵌套Consultation DTO（使用Mapperly映射 + 补充上下文字段）
+        dto.Consultation = entity.Consultation != null
+            ? EnrichConsultationDetailDto(entity)
+            : null;
 
-            // Prescription
-            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
-            Prescription = entity.Prescription != null && !entity.Prescription.IsDeleted ? new PrescriptionDetailDto
-            {
-                Id = entity.Prescription.Id,
-                MedicalCaseId = entity.Id,
-                PrescriptionNumber = entity.Prescription.PrescriptionNumber,
-                // OpenSpec: simplify-medicalcase-dataflow - Indication字段已移除
-                // Indication = entity.Prescription.Indication,
-                DosageCount = entity.Prescription.DosageCount,
-                Discount = entity.Prescription.Discount,
-                Advice = entity.Prescription.Advice,
-                // OpenSpec: simplify-medicalcase-dataflow - FormulaSource已移除，使用ReferencedFormulas
-                // FormulaSource = entity.Prescription.FormulaSource,
-                ReferencedFormulas = entity.Prescription.ReferencedFormulas,
-                Remark = entity.Prescription.Remark,
-                Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
-                {
-                    Id = item.Id,
-                    HerbId = item.HerbId,
-                    HerbName = item.HerbName,
-                    Dosage = item.Dosage,
-                    Unit = item.Unit,
-                    UnitPrice = item.UnitPrice,
-                    TotalPrice = item.Amount,
-                    TotalWeight = item.Dosage,
-                    Subtotal = item.Amount,
-                    Usage = item.Usage,
-                    Remark = item.Remark,
-                    DecocteMethod = item.DecocteMethod
-                }).ToList() ?? new List<PrescriptionItemDto>(),
-                SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0,
-                TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount,
-                TotalWeight = entity.Prescription.Items?.Sum(x => x.Dosage) ?? 0,
-                Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
-                CreatedAt = entity.Prescription.CreatedAt,
-                UpdatedAt = entity.Prescription.UpdatedAt
-            } : null
-        };
+        // 4. 嵌套Prescription DTO（使用Mapperly映射 + 补充计算字段）
+        dto.Prescription = entity.Prescription != null && !entity.Prescription.IsDeleted
+            ? EnrichPrescriptionDetailDto(entity)
+            : null;
+
+        return dto;
+    }
+
+    /// <summary>
+    /// 丰富Consultation DTO - 使用Mapperly映射后补充父级上下文字段
+    /// </summary>
+    private ConsultationDetailDto EnrichConsultationDetailDto(MedicalCase entity)
+    {
+        var consultationDto = ToConsultationDetailDto(entity.Consultation!);
+        consultationDto.MedicalCaseId = entity.Id;
+        consultationDto.PatientId = entity.PatientId;
+        consultationDto.UserId = entity.UserId;
+        consultationDto.PatientName = entity.PatientName;
+        consultationDto.DoctorName = entity.DoctorName;
+        return consultationDto;
+    }
+
+    /// <summary>
+    /// 丰富Prescription DTO - 使用Mapperly映射后补充计算字段和Items
+    /// </summary>
+    private PrescriptionDetailDto EnrichPrescriptionDetailDto(MedicalCase entity)
+    {
+        var prescription = entity.Prescription!;
+        var dto = ToPrescriptionDetailDto(prescription);
+        dto.MedicalCaseId = entity.Id;
+
+        // Items映射（使用Mapperly）
+        dto.Items = prescription.Items?.Select(ToPrescriptionItemDto).ToList() ?? new List<PrescriptionItemDto>();
+
+        // 计算字段（Service层关注点，非Mapper职责）
+        dto.SingleDosePrice = prescription.Items?.Sum(x => x.Amount) ?? 0;
+        dto.TotalPrice = dto.SingleDosePrice * prescription.DosageCount * prescription.Discount;
+        dto.TotalWeight = prescription.Items?.Sum(x => x.Dosage) ?? 0;
+        dto.Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled;
+
+        return dto;
     }
 }

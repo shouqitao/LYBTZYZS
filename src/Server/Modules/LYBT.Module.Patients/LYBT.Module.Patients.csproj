@@ -27,7 +27,8 @@
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Core/LYBT.Entities/LYBT.Entities.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
-		<ProjectReference Include="..\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
+		<!-- Phase 4: 已通过 IMedicalCaseCrossModuleService 接口解耦，不再需要直接引用 MedicalCase 模块 -->
+		<!-- <ProjectReference Include="..\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" /> -->
 	</ItemGroup>
 
 </Project>

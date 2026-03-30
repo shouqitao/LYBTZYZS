@@ -1,118 +1,44 @@
-# 进度跟踪
+# 架构评估进度
 
-**最后更新**: 2026-03-26
+## 评估时间: 2026-03-30
 
----
+| 维度 | 状态 |
+|------|------|
+| 1. 项目结构与依赖方向 | ✅ 完成 |
+| 2. Controller 层 | ✅ 完成 |
+| 3. Service 层 | ✅ 完成 |
+| 4. Repository & 数据层 | ✅ 完成 |
+| 5. 安全 | ✅ 完成 |
+| 6. 横切关注点 | ✅ 完成 |
+| 7. 代码质量 | ✅ 完成 |
 
-## 当前任务：WebAPI 优化与 MedicalCase 完善
+## Phase 改进进度
 
-**开始时间**: 2026-03-26
-**状态**: 规划完成，准备执行
+| Phase | 描述 | 状态 |
+|-------|------|------|
+| Phase 1 | Mapperly 统一映射 | ✅ 完成 |
+| Phase 2 | 工作单元模式（AddWithoutSave/UpdateWithoutSave/DeleteWithoutSave/SaveAllChanges） | ✅ 完成 |
+| Phase 3 | 消除 IConfiguration 直接注入 | ⏭️ 跳过 — 未发现任何 Service 注入 IConfiguration |
+| Phase 4 | 解耦 Patients → MedicalCase 模块引用 | ✅ 完成 — 移除 csproj 直接引用，已通过 IMedicalCaseCrossModuleService 解耦 |
+| Phase 5 | 统一文件编码为 UTF-8 | ✅ 完成 — .editorconfig charset 从 utf-8-bom 改为 utf-8 |
 
----
+### Phase 2 详情
+- `IRepository<T>` 新增：`AddWithoutSaveAsync`, `UpdateWithoutSaveAsync`, `DeleteWithoutSaveAsync`, `SaveAllChangesAsync`
+- `BaseRepository<T>` 实现了以上方法，不调用 SaveChanges
+- 原有 AddAsync/UpdateAsync/DeleteAsync 保持不变（向后兼容）
 
-## Session Log
+### Phase 4 详情
+- Patients.csproj 引用 MedicalCase 模块 → 已注释掉
+- PatientService 仅通过 Infrastructure 层的 `IMedicalCaseCrossModuleService` 接口交互
+- DI 注册在 WebAPI 层完成，Patients 模块无需知道 MedicalCase 模块的存在
 
-### 2026-03-26
-
-1. **MedicalCaseController 拆分完成**
-   - 创建 4 个新控制器：MedicalCasesController, MedicalCaseWorkflowController, MedicalCasePrintController, MedicalCaseAuditController
-   - 创建 40+ 单元测试方法
-   - 解决路由冲突（添加 [NonController]）
-   - Desktop 层验证无需修改
-   - MedicalCase 模块构建成功（0错误0警告）
-
-2. **规划下一步任务**
-   - 用户要求：修复构建错误（方向1）+ 完善 MedicalCase（方向2）
-   - 更新 planning-with-files 体系
-   - 更新 task_plan.md, findings.md, progress.md
-
-3. **发现构建错误**
-   - WebAPI 项目有 25 个编译错误
-   - HerbsController.cs: 16 个错误（泛型类型推断 + cancellationToken）
-   - PatientsController.cs: 8 个错误（泛型类型推断）
-   - 问题根源：`GetEntityWithOwnershipCheckAsync<TDto>` 调用时未显式指定类型参数
-
-4. **修复构建错误完成**
-   - Phase 1 (修复构建错误): ✅ 完成
-     - HerbsController: 添加显式泛型类型 `<HerbDetailDto>` (3处) + 添加 CancellationToken 参数
-     - PatientsController: 添加显式泛型类型 `<PatientDetailDto>` (3处)
-     - 使用 Lambda 表达式包装方法调用
-   - Phase 3 (验证与提交): ✅ 完成
-     - 构建验证: 0 错误，0 警告
-     - 提交: `6227f7ae7` - 12 个文件，2775 行新增
-     - 推送: 成功推送到 `origin/master`
-
-5. **Phase 2 完善 MedicalCase 模块完成**
-   - 删除旧 MedicalCaseController.cs (840 行)
-   - 迁移 DTOs 到 MedicalCaseWorkflowController
-   - 更新架构测试 (AggregateRootArchTests, ArchTests)
-   - 更新 API 文档 (medical-cases.md)
-   - 更新 CLAUDE.md 文件 (项目、服务器、WebAPI)
-   - 更新集成测试 (MedicalCaseFlowTests)
-   - 更新单元测试 (MedicalCaseWorkflowControllerTests)
-   - 构建验证: 0 错误，0 警告
-   - 测试验证: 所有测试通过
-   - 提交: `eda320856` - 12 个文件，805 行新增，889 行删除
-   - 推送: 成功推送到 `origin/master`
-
----
-
-## Phase 完成状态
-
-### Phase 1: 修复构建错误 (HerbsController & PatientsController)
-**状态**: ✅ 完成
-
-- [ ] Task 1.1: 检查 `BaseApiController.GetEntityWithOwnershipCheckAsync<TDto>` 方法签名
-- [ ] Task 1.2: 修复 HerbsController.cs 中的类型推断错误
-- [ ] Task 1.3: 修复 HerbsController.cs 中的 cancellationToken 未定义问题
-- [ ] Task 1.4: 修复 PatientsController.cs 中的类型推断错误
-- [ ] Task 1.5: 验证 WebAPI 项目构建成功（0错误）
-
-### Phase 2: 完善 MedicalCase 模块
-**状态**: ✅ 完成
-
-- [x] Task 2.1: 评估是否可以删除 MedicalCaseController.cs
-- [x] Task 2.2: 删除 MedicalCaseController.cs（如果安全）
-- [x] Task 2.3: 更新 CLAUDE.md 中的控制器列表
-- [x] Task 2.4: 更新 API 文档和路由配置
-- [x] Task 2.5: 验证所有 MedicalCase 相关功能正常
-
-### Phase 3: 验证与提交
-**状态**: ✅ 完成
-
-- [x] Task 3.1: 运行完整构建验证（WebAPI 项目 0 错误）
-- [x] Task 3.2: 运行 MedicalCase 单元测试
-- [x] Task 3.3: 提交代码到 Git
-- [x] Task 3.4: 推送到远程仓库
-
----
-
-## 错误记录
-
-| 错误 | 尝试次数 | 解决方案 | 状态 |
-|------|----------|----------|------|
-| 类型推断失败 | 0 | 显式指定泛型类型参数 | 待修复 |
-| cancellationToken 未定义 | 0 | 检查方法签名和变量名 | 待修复 |
-
----
-
-## 历史任务：Desktop 架构优化 (2026-03-19)
-
-**任务**: Desktop 架构检查与优化
-**开始时间**: 2026-03-19
-**状态**: 分析完成，准备执行
-
-已完成工作:
-1. 项目状态检查
-2. 架构分析执行
-3. 三文件创建
-4. 代码深度调研
-5. 实施计划生成
-
-总体评分: **7.9/10**
-
-待执行:
-- Phase 1: UI 线程抽象 (Task 1-6) - pending
-- Phase 2: 兼容方法清理 (Task 7) - pending
-- Phase 3: 死代码清理 (Task 8-9) - pending
+## 检查的关键文件
+- 所有 .csproj（18个项目）
+- 11个 Controller
+- MedicalCase 9个 Service + Facade
+- BaseRepository, BaseService, BaseApiController
+- AuthService, JwtService, PasswordHelper
+- Program.cs, 所有 Extensions
+- 异常处理器（Business/System）
+- 中间件（CorrelationId, SecurityHeaders, UnifiedMiddleware）
+- Mapperly 映射器

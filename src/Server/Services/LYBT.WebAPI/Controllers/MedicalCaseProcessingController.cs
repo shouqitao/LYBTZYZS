@@ -57,7 +57,7 @@ namespace LYBT.WebAPI.Controllers
                 if (completeResult == null)
                     return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
 
-                var completeDto = _mapper.MapToMedicalCaseDto(completeResult);
+                var completeDto = _mapper.MapToMedicalCaseDetailDto(completeResult);
                 return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(completeDto, "医案已完成"));
             }
 
@@ -66,7 +66,7 @@ namespace LYBT.WebAPI.Controllers
             if (result == null)
                 return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
 
-            var dto = _mapper.MapToMedicalCaseDto(result);
+            var dto = _mapper.MapToMedicalCaseDetailDto(result);
             _logger.LogInformation("医案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}",
                 id, request.Status);
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "状态更新成功"));
@@ -121,7 +121,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             // Entity → DTO映射
-            var dto = _mapper.MapToMedicalCaseDto(result);
+            var dto = _mapper.MapToMedicalCaseDetailDto(result);
 
             _logger.LogInformation("医案暂存成功，MedicalCaseId: {Id}", id);
             return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "医案已暂存"));

@@ -1,255 +1,389 @@
-# 研究发现
+# LYBTZYZS WebAPI 架构评估报告
 
-**最后更新**: 2026-03-26
+**评估日期**: 2026-03-30  
+**技术栈**: .NET 8 + EF Core 8 + ASP.NET Core  
+**评估范围**: src/Server/ + src/Shared/（排除 src/Client/）
 
 ---
 
-## 第一部分：WebAPI 构建错误分析 (2026-03-26)
+## 1. 项目结构与依赖方向
 
-### 1. 构建错误详细分析
+### ✅ 整体架构清晰
+项目采用模块化分层架构：
+- `LYBT.WebAPI` → 各 Module → `LYBT.Infrastructure` → `LYBT.Entities`
+- `LYBT.Shared.*` 作为横切共享库，被各层正确引用
 
-#### 1.1 错误统计
+### 🟢 Info: 模块间存在少量直接引用
+- `MedicalCase` 引用 `Registration` 项目（`LYBT.Module.MedicalCase.csproj`）
+- `Patients` 引用 `MedicalCase` 项目
+- `Users` 引用 `Registration` 项目
 
-| 文件 | 错误数 | 主要问题 |
-|------|--------|----------|
-| HerbsController.cs | 16 | 泛型类型推断 + cancellationToken 未定义 |
-| PatientsController.cs | 8 | 泛型类型推断 |
-| **总计** | **25** | |
+**文件**: `src/Server/Modules/LYBT.Module.MedicalCase/LYBT.Module.MedicalCase.csproj`
 
-#### 1.2 错误详情
+**评价**: 这形成了 `Patients → MedicalCase → Registration` 的引用链。虽然不是循环依赖，但 Patients 依赖 MedicalCase 在领域模型上不太自然（患者应该是更基础的实体）。建议未来通过 `ICrossModuleService` 接口完全解耦。
 
-**CS0411: 无法推断泛型类型参数**
+### 🟢 Info: 无循环依赖 ✅
+经检查所有 csproj，未发现循环引用。依赖方向总体正确：Controller → Module(Service) → Infrastructure(Repository) → Entities。
 
-位置：
-- HerbsController.cs:103, 128, 350
-- PatientsController.cs:123, 155, 267
+### 🟢 Info: Shared 项目职责划分合理
+- `LYBT.Shared.Models` - DTO/枚举/通用模型
+- `LYBT.Shared.Configuration` - 配置选项类
+- `LYBT.Shared.Utilities` - 工具类（密码、文本）
+- `LYBT.Shared.ExceptionHandling` - 异常体系
+- `LYBT.Shared.Logging` - Serilog 配置与脱敏
+- `LYBT.Shared.Validators` - 验证器
+- `LYBT.Shared.Primitives` - 错误码等基础类型
 
-错误代码示例：
-```csharp
-var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+---
+
+## 2. Controller 层
+
+### 🟢 Info: 控制器设计规范
+- 所有控制器继承 `BaseApiController`，统一响应格式
+- 使用 `ApiResponse<T>` 包装所有响应
+- 控制器按职责拆分：`MedicalCasesController`(CRUD)、`MedicalCaseProcessingController`(状态流转)、`MedicalCasePrintController`(打印)、`MedicalCaseAuditController`(审计)
+- 无明显业务逻辑泄漏
+
+### 🟢 Info: 权限标注完整
+- 类级别 `[Authorize(Policy = PolicyConstants.DoctorOrAdmin)]`
+- 方法级别精确控制，如 `[Authorize(Roles = RoleConstants.Doctor)]` 用于创建
+- 实现了 FallbackPolicy，默认要求认证，AllowAnonymous 需显式标注
+
+**文件**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs` 行 27-30
+
+### 🟢 Info: API 路由 RESTful 且版本化
+- `api/v{version:apiVersion}/medicalcases` 遵循 REST 规范
+- 使用 URL 段版本控制 `ApiVersion("1")`
+- HTTP 方法语义正确：POST创建、PUT更新、DELETE删除
+
+### 🟡 Warning: 控制器中直接使用 Mapper 实例
+- `MedicalCasesController` 中直接 `new MedicalCaseMapper()` 并使用手写的 `MapToMedicalCaseDetailDto` 方法
+- 应统一使用 Mapperly 生成的 `ToDetailDto` 方法，保持映射逻辑一致
+
+**文件**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs` 行 35-36, 69
+
+### 🟡 Warning: 部分控制器返回 `Ok()` 而非使用 BaseApi 方法
+- `MedicalCasesController.CreateMedicalCase` 直接构造 `ApiResponse<T>` 返回 `Ok()`，未使用 `Success<T>()` 方法
+- 这绕过了 `RequestId` 自动填充
+
+**文件**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs` 行 69-71
+
+### 🟢 Info: 错误处理统一
+- 全局 `BusinessExceptionHandler` + `SystemExceptionHandler`（IExceptionHandler 模式）
+- 控制器内已移除 try-catch，由全局处理器接管
+- 业务错误返回 422，系统错误返回 500
+
+**文件**: `src/Shared/LYBT.Shared.ExceptionHandling/Handlers/Server/BusinessExceptionHandler.cs`
+
+---
+
+## 3. Service 层
+
+### 🟢 Info: MedicalCase 多 Service 拆分合理（CQRS 思想）
+拆分为 6 个专职 Service：
+- `MedicalCaseCommandService` - 写操作
+- `MedicalCaseQueryService` - 读操作
+- `MedicalCaseStateService` - 状态流转
+- `MedicalCasePermissionService` - 权限检查
+- `MedicalCaseAuditService` - 审计日志
+- `MedicalCasePrintService` - 打印
+
+通过 `MedicalCaseFacade` 门面模式聚合，减少 Controller 依赖数。**这是优秀的设计**。
+
+**文件**: `src/Server/Modules/LYBT.Module.MedicalCase/Services/`
+
+### 🟢 Info: BaseService 提供统一权限验证基类
+- 实现"当天可改"规则（医生只能修改当天创建的记录）
+- 管理员拥有全权限
+- 权限逻辑集中在 BaseService，避免各 Service 重复
+
+**文件**: `src/Server/Core/LYBT.Infrastructure/Services/BaseService.cs`
+
+### 🟡 Warning: UserService 依赖过多（7个构造函数参数）
 ```
-
-问题原因：
-- `GetEntityWithOwnershipCheckAsync<TDto>` 是泛型方法
-- 编译器无法从 `Func<Guid, Task<Result<TDto>>>` 推断 `TDto` 类型
-- 需要显式指定类型参数
-
-修复方案：
-```csharp
-var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, _herbService.GetByIdAsync, "药材");
+IUserRepository, ILogger, IConfiguration, IHttpContextAccessor, 
+IValidator<UserInputDto>, ICrossModuleAuthService, IUserBatchOperationService, 
+IRegistrationRepository
 ```
+`IConfiguration` 和 `IHttpContextAccessor` 的注入暗示有配置/上下文逻辑未封装。
 
-**CS8130/CS8183: 隐式类型弃元推断失败**
+**文件**: `src/Server/Modules/LYBT.Module.Users/Services/UserService.cs` 行 34-43
 
-位置：与 CS0411 相同行
+### 🟡 Warning: Service 层直接引用 `IConfiguration`
+- `UserService` 和 `AuthService` 都注入了 `IConfiguration`
+- 应通过强类型 Options 模式（`IOptions<T>`）访问配置
 
-问题原因：
-- 弃元 `_` 和 `ownershipError` 依赖于泛型类型推断
-- 当泛型类型推断失败时，弃元类型也无法推断
+**文件**: `src/Server/Modules/LYBT.Module.Users/Services/UserService.cs` 行 37  
+**文件**: `src/Server/Modules/LYBT.Module.Auth/Services/AuthService.cs` 行 17
 
-修复方案：
-- 修复 CS0411 后，此问题自动解决
-- 或显式声明变量类型
+### 🟡 Warning: CrossModule 接口定义在 Infrastructure 层
+跨模块接口（`ICrossModuleAuthService`, `IUserCrossModuleService` 等）定义在 `LYBT.Infrastructure/Services/CrossModule/`，但接口实现在各 Module 内部。这虽然可行，但将接口移到 Shared 层会更清晰。
 
-**CS0103: cancellationToken 未定义**
-
-位置：HerbsController.cs:428
-
-问题原因：
-- 方法签名中参数名为 `CancellationToken cancellationToken`
-- 但代码中使用了未定义的 `cancellationToken`（可能拼写错误或作用域问题）
-
-修复方案：
-- 检查方法签名和变量名是否一致
-- 确保在正确的作用域内使用
+**文件**: `src/Server/Core/LYBT.Infrastructure/Services/CrossModule/`
 
 ---
 
-### 2. MedicalCase 模块状态
+## 4. Repository & 数据层
 
-#### 2.1 已完成的拆分工作
+### 🟢 Info: BaseRepository 实现质量高
+- 泛型基类提供完整 CRUD + 分页 + 软删除
+- 模板方法模式（`ApplyKeywordFilter`, `ApplyDefaultOrdering`）支持子类定制
+- 所有查询自动过滤 `IsDeleted`
+- `AsNoTracking` 用于分页查询
+- 提供 `GetQueryable()` / `GetNoTrackingQueryable()` 灵活查询
 
-| 新控制器 | 方法数 | 状态 |
-|----------|--------|------|
-| MedicalCasesController | 12 | ✅ 已创建 |
-| MedicalCaseWorkflowController | 4 | ✅ 已创建 |
-| MedicalCasePrintController | 2 | ✅ 已创建 |
-| MedicalCaseAuditController | 2 | ✅ 已创建 |
+**文件**: `src/Server/Core/LYBT.Infrastructure/Repositories/BaseRepository.cs`
 
-#### 2.2 单元测试
+### 🟢 Info: RowVersion 并发处理
+- `SaveChangesAsync` 中同步 RowVersion 的 OriginalValue/CurrentValue
+- 捕获 `DbUpdateConcurrencyException` 并抛出友好错误
 
-| 测试文件 | 测试方法数 | 状态 |
-|----------|-----------|------|
-| MedicalCasesControllerTests.cs | 24 | ✅ 已创建 |
-| MedicalCaseWorkflowControllerTests.cs | 11 | ✅ 已创建 |
-| MedicalCasePrintControllerTests.cs | 8 | ✅ 已创建 |
-| MedicalCaseAuditControllerTests.cs | 9 | ✅ 已创建 |
+**文件**: `src/Server/Core/LYBT.Infrastructure/Repositories/BaseRepository.cs` (SaveChangesAsync 方法)
 
----
+### 🟢 Info: 审计字段自动填充
+- `AppDbContext.SaveChangesAsync` 调用 `SetAuditFields()` 自动设置 `UpdatedAt`、`UpdatedBy` 等字段
+- 通过 `IHttpContextAccessor` 获取当前用户
 
-### 3. 关键发现
+**文件**: `src/Server/Core/LYBT.Infrastructure/Data/AppDbContext.cs`
 
-#### 3.1 泛型方法调用模式
-
-在 BaseApiController 中，`GetEntityWithOwnershipCheckAsync<TDto>` 方法被多个控制器使用。但在 HerbsController 和 PatientsController 中调用时，未显式指定类型参数，导致编译器无法推断。
-
-影响范围：
-- 所有使用 `GetEntityWithOwnershipCheckAsync` 的地方都需要显式指定类型参数
-
-#### 3.2 MedicalCase 模块拆分策略
-
-MedicalCase 模块采用 CQRS 模式拆分：
-- **读操作**：MedicalCasesController (查询、搜索、批量获取)
-- **写操作**：MedicalCasesController (创建、更新、删除)
-- **工作流**：MedicalCaseWorkflowController (状态更新、关闭、挂起、取消)
-- **打印**：MedicalCasePrintController (打印记录、打印日志)
-- **审计**：MedicalCaseAuditController (权限查询、审计日志)
-
-#### 3.3 路由冲突解决
-
-旧控制器通过 `[NonController]` 属性禁用，避免与新控制器的路由冲突。文件保留用于参考。
-
----
-
-## 第二部分：Desktop 架构分析发现 (2026-03-19) [历史记录]
-
-**分析时间**: 2026-03-19
-**分析范围**: src/Client/Desktop (WPF + Prism)
-
----
-
-## 架构评分
-
-| 维度 | 评分 | 说明 |
-|------|------|------|
-| 模块划分 | 8/10 | 整体清晰，Models依赖方向需调整 |
-| MVVM合规 | 7/10 | 基础良好，Dispatcher直接引用是主要问题 |
-| 依赖注入 | 9/10 | 工厂模式实现优秀 |
-| Repository模式 | 8/10 | 双模式架构设计良好 |
-| 服务层设计 | 7/10 | 职责分离可进一步优化 |
-| 跨模块通信 | 8/10 | EventAggregator和接口解耦使用得当 |
-| 代码质量 | 8/10 | 无明显超大类，近期重构效果显著 |
-| **总体** | **7.9/10** | 架构设计良好，优先处理P0和P1问题 |
-
----
-
-## Critical Issues (P0)
-
-### 1. CoreViewModelBase 直接依赖 WPF Dispatcher
-**位置**: `CoreViewModelBase.cs` 第262-291行
-
-**问题描述**:
+### 🟡 Warning: BaseRepository 每个 Add/Update 操作都立即 SaveChanges
 ```csharp
-protected void RunOnUIThread(Action action)
+public virtual async Task<TEntity> AddAsync(TEntity entity, ...)
 {
-    if (Application.Current?.Dispatcher == null)  // 直接依赖WPF Application
-    {
-        action();
-        return;
-    }
-    // ...
+    await _dbSet.AddAsync(entity, cancellationToken);
+    await SaveChangesAsync(cancellationToken); // 每次操作都提交
+    return entity;
 }
 ```
+这导致无法在 Service 层实现工作单元模式（多个操作在同一个事务中提交）。对于需要事务的场景，Service 需要直接使用 `Database.BeginTransactionAsync()`。
 
-**影响**:
-- 违反 MVVM 原则，ViewModel 与 WPF 框架强耦合
-- 无法单元测试（需要真实的 WPF Application）
-- 阻碍跨平台移植
+**文件**: `src/Server/Core/LYBT.Infrastructure/Repositories/BaseRepository.cs` AddAsync/UpdateAsync/DeleteAsync 方法
 
-**优化方案**:
-创建 `IUiThreadDispatcher` 接口，通过 DI 注入:
+### 🟡 Warning: `FromSqlRawAsync` 存在 SQL 注入风险
 ```csharp
-public interface IUiThreadDispatcher
-{
-    void RunOnUIThread(Action action);
-    Task RunOnUIThreadAsync(Func<Task> action);
-}
+public virtual async Task<List<TEntity>> FromSqlRawAsync(string sql, params object[] parameters)
 ```
+虽然方法签名支持参数化查询，但 `sql` 参数是裸字符串，调用者可能拼接 SQL。
+
+**文件**: `src/Server/Core/LYBT.Infrastructure/Repositories/BaseRepository.cs`
+
+### 🟢 Info: Mapperly 已全面采用
+- 所有 Module 使用 Mapperly 替代 AutoMapper
+- Patient、MedicalCase、Herb、Formula 等均有 Mapperly 映射器
+- 编译时生成映射代码，性能优异
+
+**文件**: `src/Server/Modules/LYBT.Module.Patients/Mapping/PatientMapper.cs`  
+**文件**: `src/Server/Modules/LYBT.Module.MedicalCase/Mapping/MedicalCaseMapper.cs`
+
+### 🟢 Info: EF Core 配置使用 IEntityTypeConfiguration
+- `AppDbContext.OnModelCreating` 使用 `ApplyConfigurationsFromAssembly`
+- 符合 EF Core 最佳实践
+
+**文件**: `src/Server/Core/LYBT.Infrastructure/Data/AppDbContext.cs` OnModelCreating 方法
 
 ---
 
-## 修正说明 (代码调研后)
+## 5. 安全
 
-| 原报告问题 | 实际情况 | 处理 |
-|-----------|---------|------|
-| "IViewModelServices 定义在 Infrastructure" | 已在 Contracts 层 (`Services/IViewModelServices.cs`) | 取消 Phase 2 |
-| "ErrorHandlingServiceExtensions 死代码" | 文件已不存在 | 无需处理 |
-| "[COMPAT] 标记" | 代码中未用此标记，而是注释"兼容性保留" | 按实际处理 |
+### 🟢 Info: 密码使用 BCrypt 存储 ✅
+- `PasswordHelper` 使用 BCrypt，工作因子 11（合理范围 10-15）
+- 支持弱密码检测
+- 支持密码强度评估
 
----
+**文件**: `src/Shared/LYBT.Shared.Utilities/Security/PasswordHelper.cs`
 
-## High/Medium Issues (P1)
+### 🟢 Info: JWT 实现质量高
+- 密钥长度验证（≥32字符）
+- 生产环境禁止使用默认密钥
+- Token 验证参数齐全（Issuer、Audience、Lifetime、SigningKey）
+- 时钟偏移可配置
+- 支持 Token 撤销服务
 
-### 2. ISessionManager 兼容方法未清理 (已验证)
-**位置**: `ISessionManager.cs:48,58,68` / `SessionManager.cs:35,48,58`
+**文件**: `src/Server/Modules/LYBT.Module.Auth/Services/JwtService.cs`  
+**文件**: `src/Server/Services/LYBT.WebAPI/Extensions/AuthenticationServiceCollectionExtensions.cs`
 
-**问题描述**:
-`SetCurrentUser`, `SetUserSession`, `ClearUserSession` 3个方法标注"兼容性保留"，
-经搜索确认在Desktop层无任何调用方（`.SetCurrentUser(`等搜索结果为空）。
+### 🟢 Info: 账户锁定机制完善
+- 5次失败登录后锁定15分钟
+- 记录失败次数和锁定结束时间
 
-**影响**:
-- 接口污染，增加实现者负担
-- 混淆 API 语义（SetSession/ClearSession 是正式 API）
+**文件**: `src/Server/Modules/LYBT.Module.Auth/Services/AuthService.cs` 行 55-58
 
-**优化方案**:
-直接从接口和实现中删除这3个方法。
+### 🟢 Info: 安全头中间件完善
+- X-Content-Type-Options: nosniff
+- X-Frame-Options: DENY
+- X-XSS-Protection: 1; mode=block
+- Referrer-Policy: strict-origin-when-cross-origin
+- Permissions-Policy: 禁用 camera/microphone/geolocation
+- 生产环境 CSP + HSTS
+- 移除 X-Powered-By 和 Server 头
 
----
+**文件**: `src/Server/Services/LYBT.WebAPI/Middleware/SecurityHeadersMiddleware.cs`
 
-## Medium Issues (P2)
+### 🟢 Info: 敏感数据脱敏
+- `SensitiveDataMasker` 用于日志脱敏
+- `BaseApiController.LogOperation` 自动脱敏
 
-### 4. Repository 与 DataSource 职责边界模糊
+**文件**: `src/Shared/LYBT.Shared.Logging/Masking/SensitiveDataMasker.cs`
 
-**问题描述**:
-部分 Repository 直接转发给 DataSource，部分有额外逻辑，职责边界不够清晰。
+### 🟡 Warning: 开发环境使用硬编码默认 JWT 密钥
+```csharp
+jwtSecret = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
+```
+虽然仅限非生产环境，但如果开发/测试环境使用真实数据，仍有风险。
 
-**优化方案**:
-- 明确 Repository 是业务层，DataSource 是数据访问层
-- 文档化职责边界
-- 重构职责模糊处
+**文件**: `src/Server/Services/LYBT.WebAPI/Extensions/AuthenticationServiceCollectionExtensions.cs`
 
----
+### 🟢 Info: 输入验证
+- 使用 FluentValidation 进行 DTO 验证
+- Controller 层有 `ValidateModel()` / `ValidateGuid()` 便捷方法
+- `[ApiController]` 自动触发模型验证
 
-### 5. 服务命名不一致
+### 🟢 Info: 生产配置验证
+- `ProductionConfigurationValidator` 在启动时检查关键配置项
+- 生产环境缺失关键配置会阻止启动
 
-**问题描述**:
-部分叫 `XxxService`，部分叫 `XxxManager`，部分叫 `XxxCoordinator`。
-例如: `SessionManager` vs `NavigationCoordinator`
+**文件**: `src/Server/Services/LYBT.WebAPI/Program.cs` (configValidator 相关代码)
 
-**优化方案**:
-统一命名规范:
-- `Service` - 业务服务
-- `Manager` - 资源/生命周期管理
-- `Coordinator` - 流程编排
+### 🟢 Info: 限流已启用
+- `app.UseRateLimiter()` 已在中间件管道中注册
 
----
-
-## Low Issues (P3)
-
-### 6. 死代码
-
-| 文件 | 位置 | 说明 |
-|------|------|------|
-| `ProblemDetails.cs` | Models/Http/ | 疑似死代码，无外部引用 |
-| `ErrorHandlingServiceExtensions.cs` | Shell/Extensions/ | 未使用方法 |
-| 空 ItemGroup | Infrastructure.csproj 第75-77行 | 遗留迁移痕迹 |
-
----
-
-### 7. 其他小问题
-
-- `MasterDetailViewModelBase` 继承 `ObservableObject` 而非 `CoreViewModelBase`（项目依赖限制）
-- `ContainerLocator` 服务定位器使用（`AccountSettingsControl.xaml.cs`）
-- 反射获取私有属性（`ApplicationInitializationService.cs`）
+**文件**: `src/Server/Services/LYBT.WebAPI/Extensions/UnifiedMiddlewareConfiguration.cs` 行 54
 
 ---
 
-## 架构优势总结
+## 6. 横切关注点
 
-| 优势 | 说明 |
-|------|------|
-| 双模式架构 | 远程/本地模式运行时切换，工厂模式实现优雅 |
-| ViewModel服务聚合 | `IViewModelServices` 将7个服务聚合为1个，简化子类 |
-| Composite ViewModel | `MedicalCaseWorkspaceViewModel` 拆分为5个子VM，职责清晰 |
-| 接口驱动设计 | Contracts层定义清晰，模块间通过接口解耦 |
-| 源生成器使用 | 广泛使用CommunityToolkit.Mvvm源生成器，减少样板代码 |
+### 🟢 Info: 日志系统完善
+- Serilog 两阶段初始化（Bootstrap Logger + Final Logger）
+- 支持运行时动态调整日志级别（`LoggingLevelManager`）
+- CorrelationId 端到端追踪（支持 W3C traceparent）
+- 敏感数据自动脱敏（`WithSensitiveDataMasking()`）
+- 审计字段自动填充
+
+**文件**: `src/Server/Services/LYBT.WebAPI/Program.cs`  
+**文件**: `src/Server/Services/LYBT.WebAPI/Middleware/CorrelationIdMiddleware.cs`
+
+### 🟢 Info: 异常处理分层
+- `BusinessExceptionHandler`：处理 `AppException`，返回 4xx
+- `SystemExceptionHandler`：处理未预期异常，返回 500
+- 使用 ASP.NET Core 8 的 `IExceptionHandler` 接口（优于传统的 ExceptionHandler 中间件）
+- 配合 `UseStatusCodePagesWithProblemDetails()` 实现 RFC 7807
+
+**文件**: `src/Shared/LYBT.Shared.ExceptionHandling/Handlers/Server/`
+
+### 🟢 Info: DI 注册模块化
+- `ApiServiceCollectionExtensions` - API 相关服务
+- `AuthenticationServiceCollectionExtensions` - 认证授权
+- `DatabaseServiceCollectionExtensions` - 数据库
+- `ServiceCollectionExtensions` - 总注册入口
+- `UnifiedApplicationInitialization` - 应用初始化
+
+**文件**: `src/Server/Services/LYBT.WebAPI/Extensions/`
+
+### 🟢 Info: 配置管理规范
+- 统一使用 `LYBT.Shared.Configuration` 中的强类型 Options
+- 支持 `.env` 文件 + `appsettings.json` 双配置模式
+- 环境感知（`ConfigureEnvironmentAwareHosting`）
+
+### 🟡 Warning: Program.Main 方法过长
+- `Program.cs` 的 `Main` 方法包含大量启动逻辑
+- 虽然通过 Extension 方法拆分了部分逻辑，但 Main 本身仍有约 100+ 行
+- 建议进一步提取为独立的 `Startup` 或 `WebApplicationBuilder` 扩展
+
+**文件**: `src/Server/Services/LYBT.WebAPI/Program.cs`
+
+---
+
+## 7. 代码质量
+
+### 🟢 Info: 命名规范良好
+- 类名、方法名遵循 C# 命名规范
+- 中英文注释混合使用，XML 文档注释完整
+- 接口以 `I` 前缀，Service/Repository 后缀统一
+
+### 🟡 Warning: 源文件中存在大量编码为 GBK/GB2312 的中文注释
+在读取过程中发现很多 `.cs` 文件中的中文注释显示为乱码（如 `/// <summary>` 后的中文）。这可能是源文件编码问题。虽然不影响编译，但影响代码可读性和团队协作。
+
+**文件**: 多个 Infrastructure/Repositories/Auth 服务文件
+
+### 🟢 Info: 魔法字符串已收敛
+- 使用常量类 `PolicyConstants`、`RoleConstants`、`HttpHeaderConstants`
+- 错误码使用 `ErrorCode` 枚举
+- 业务常量使用 `const`（如 `MaxFailedLoginCount = 5`, `LockoutMinutes = 15`）
+
+### 🟢 Info: 注释质量高
+- 方法级别 XML 文档注释完整
+- 关键设计决策有 Issue 编号引用（如 `Issue #2103`, `OpenSpec: ...`）
+- 代码中的 `//` 注释解释了"为什么"而非"做什么"
+
+### 🟡 Warning: `MedicalCaseMapper` 中混合了 Mapperly 和手写映射
+```csharp
+// Mapperly 生成的 partial 方法
+public partial MedicalCaseDetailDto ToDetailDto(MedicalCase entity);
+
+// 手写方法
+public MedicalCaseDetailDto MapToMedicalCaseDetailDto(MedicalCase entity) { ... }
+```
+Controller 中使用手写的 `MapToMedicalCaseDetailDto`，而 Mapperly 的 `ToDetailDto` 未被充分使用。应统一到 Mapperly。
+
+**文件**: `src/Server/Modules/LYBT.Module.MedicalCase/Mapping/MedicalCaseMapper.cs`
+
+---
+
+## 总结评分
+
+### 评分: **B+**
+
+**优点**:
+1. **架构层次清晰** - 模块化设计，职责分离良好
+2. **安全基础扎实** - BCrypt、JWT、安全头、限流、账户锁定一应俱全
+3. **横切关注点完善** - 日志、异常处理、配置管理、审计追踪体系完整
+4. **MedicalCase 模块拆分优秀** - Facade + CQRS 思想，SRP 贯彻到位
+5. **技术选型现代** - Mapperly、FluentValidation、Serilog、API Versioning
+6. **代码注释质量高** - 有 Issue 追溯、设计决策记录
+
+**不足**:
+1. 部分 Service 依赖注入过多（UserService 8个参数）
+2. Repository 即时提交模式限制事务控制
+3. IConfiguration 直接注入（应使用 Options 模式）
+4. MedicalCaseMapper 手写映射与 Mapperly 并存
+5. Patients → MedicalCase 模块引用方向可优化
+
+---
+
+## Top 5 改进建议
+
+### 1. 🟡 统一使用 Mapperly，移除手写映射（优先级: 高）
+- 删除 `MedicalCaseMapper.MapToMedicalCaseDetailDto()` 等手写方法
+- Controller 统一使用 Mapperly 生成的 `ToDetailDto()`
+- 确保 Mapperly 配置覆盖所有映射场景
+
+### 2. 🟡 引入工作单元模式（优先级: 高）
+- 将 `BaseRepository.AddAsync/UpdateAsync` 拆分为"操作"和"提交"两步
+- 或提供 `AddWithoutSave` / `UpdateWithoutSave` 变体
+- 让 Service 层控制事务边界
+
+### 3. 🟡 消除 IConfiguration 直接注入（优先级: 中）
+- `UserService`、`AuthService` 中的 `IConfiguration` 替换为 `IOptions<T>`
+- 将相关配置项提取到强类型 Options 类
+
+### 4. 🟡 解耦 Patients → MedicalCase 模块引用（优先级: 中）
+- Patients 模块不应直接引用 MedicalCase 模块
+- 通过 `ICrossModuleService` 接口解耦
+- 保持依赖方向：基础模块 → 上层模块
+
+### 5. 🟢 统一文件编码为 UTF-8（优先级: 低）
+- 确保所有 `.cs` 文件使用 UTF-8 编码
+- 在 `.editorconfig` 中强制指定 `charset = utf-8`
+- 提升跨平台协作可读性
+
+---
+
+## 发现统计
+
+| 严重程度 | 数量 |
+|---------|------|
+| 🔴 Critical | 0 |
+| 🟡 Warning | 8 |
+| 🟢 Info | 22 |
+| **总计** | **30** |

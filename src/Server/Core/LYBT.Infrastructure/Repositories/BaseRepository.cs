@@ -622,6 +622,71 @@ namespace LYBT.Infrastructure.Repositories
         //       throw;
         //   }
 
+        #region 工作单元方法 (Unit of Work)
+
+        /// <summary>
+        /// 添加实体但不保存（用于组合多个操作后统一提交）
+        /// </summary>
+        public virtual async Task<TEntity> AddWithoutSaveAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
+
+            await _dbSet.AddAsync(entity, cancellationToken);
+
+            _logger.LogDebug("[REPO] {EntityType}.AddWithoutSave({Id})", typeof(TEntity).Name, entity.Id);
+
+            return entity;
+        }
+
+        /// <summary>
+        /// 更新实体但不保存（用于组合多个操作后统一提交）
+        /// </summary>
+        public virtual Task<TEntity> UpdateWithoutSaveAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            _dbSet.Update(entity);
+
+            _logger.LogDebug("[REPO] {EntityType}.UpdateWithoutSave({Id})", typeof(TEntity).Name, entity.Id);
+
+            return Task.FromResult(entity);
+        }
+
+        /// <summary>
+        /// 软删除实体但不保存（用于组合多个操作后统一提交）
+        /// </summary>
+        public virtual async Task<bool> DeleteWithoutSaveAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var entity = await GetByIdAsync(id, cancellationToken);
+            if (entity == null)
+            {
+                _logger.LogWarning("[REPO] {EntityType}.DeleteWithoutSave({Id}) → NotFound", typeof(TEntity).Name, id);
+                return false;
+            }
+
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
+
+            _dbSet.Update(entity);
+
+            _logger.LogDebug("[REPO] {EntityType}.DeleteWithoutSave({Id})", typeof(TEntity).Name, id);
+            return true;
+        }
+
+        /// <summary>
+        /// 显式保存所有更改（工作单元提交）
+        /// </summary>
+        public virtual Task<int> SaveAllChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return SaveChangesAsync(cancellationToken);
+        }
+
+        #endregion
+
         #region 保护方法
 
         /// <summary>

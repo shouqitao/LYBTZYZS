@@ -118,4 +118,26 @@ public interface IRepository<T> where T : class
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>受影响的行数</returns>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    // ========== 工作单元方法 (Unit of Work) ==========
+
+    /// <summary>
+    /// 添加实体但不保存（用于组合多个操作后统一提交）
+    /// </summary>
+    Task<T> AddWithoutSaveAsync(T entity, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 更新实体但不保存（用于组合多个操作后统一提交）
+    /// </summary>
+    Task<T> UpdateWithoutSaveAsync(T entity, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 删除实体但不保存（用于组合多个操作后统一提交）
+    /// </summary>
+    Task<bool> DeleteWithoutSaveAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 显式保存所有更改（工作单元提交）
+    /// </summary>
+    Task<int> SaveAllChangesAsync(CancellationToken cancellationToken = default);
 }
