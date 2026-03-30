@@ -42,11 +42,11 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - 统一使用SaveAsync
         /// - 支持创建时同时包含Consultation和Prescription数据
         /// - Id=null时创建新医案
-        /// optimize-api-permissions: 只有Doctor可以创建新医案，Admin不能创建
+        /// optimize-api-permissions: Doctor或Admin可以创建新医案
         /// </summary>
         /// <param name="dto">创建请求（Id应为null）</param>
         [HttpPost]
-        [Authorize(Roles = RoleConstants.Doctor)]
+        [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]

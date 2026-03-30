@@ -1,44 +1,27 @@
-# 架构评估进度
+# 进度追踪
 
-## 评估时间: 2026-03-30
+## Phase 1: 删除根目录调试脚本 (.py)
+- 状态: ✅ 完成 — 删除 12 个 .py 文件
 
-| 维度 | 状态 |
-|------|------|
-| 1. 项目结构与依赖方向 | ✅ 完成 |
-| 2. Controller 层 | ✅ 完成 |
-| 3. Service 层 | ✅ 完成 |
-| 4. Repository & 数据层 | ✅ 完成 |
-| 5. 安全 | ✅ 完成 |
-| 6. 横切关注点 | ✅ 完成 |
-| 7. 代码质量 | ✅ 完成 |
+## Phase 2: 删除根目录调试输出 (.txt)
+- 状态: ✅ 完成 — 删除 18 个 .txt 文件
 
-## Phase 改进进度
+## Phase 3: 删除根目录调试 JSON
+- 状态: ✅ 完成 — 删除 5 个 .json 文件
 
-| Phase | 描述 | 状态 |
-|-------|------|------|
-| Phase 1 | Mapperly 统一映射 | ✅ 完成 |
-| Phase 2 | 工作单元模式（AddWithoutSave/UpdateWithoutSave/DeleteWithoutSave/SaveAllChanges） | ✅ 完成 |
-| Phase 3 | 消除 IConfiguration 直接注入 | ⏭️ 跳过 — 未发现任何 Service 注入 IConfiguration |
-| Phase 4 | 解耦 Patients → MedicalCase 模块引用 | ✅ 完成 — 移除 csproj 直接引用，已通过 IMedicalCaseCrossModuleService 解耦 |
-| Phase 5 | 统一文件编码为 UTF-8 | ✅ 完成 — .editorconfig charset 从 utf-8-bom 改为 utf-8 |
+## Phase 4: 删除旧规划文件 + 调试报告
+- 状态: ✅ 完成 — 删除 task_plan/findings/progress.md + 3 个调试报告
 
-### Phase 2 详情
-- `IRepository<T>` 新增：`AddWithoutSaveAsync`, `UpdateWithoutSaveAsync`, `DeleteWithoutSaveAsync`, `SaveAllChangesAsync`
-- `BaseRepository<T>` 实现了以上方法，不调用 SaveChanges
-- 原有 AddAsync/UpdateAsync/DeleteAsync 保持不变（向后兼容）
+## Phase 5: 删除旧 sln + 其他
+- 状态: ✅ 完成 — 删除 LYBT.All.sln, Test.sln, .slnLaunch.user, TestApi.exe, .webapi.log, .webapi.pid, debug.log, nul, openspec 快捷方式
 
-### Phase 4 详情
-- Patients.csproj 引用 MedicalCase 模块 → 已注释掉
-- PatientService 仅通过 Infrastructure 层的 `IMedicalCaseCrossModuleService` 接口交互
-- DI 注册在 WebAPI 层完成，Patients 模块无需知道 MedicalCase 模块的存在
+## Phase 6: 清理 logs/
+- 状态: ✅ 完成 — 删除 3 个旧 bootstrap 日志
 
-## 检查的关键文件
-- 所有 .csproj（18个项目）
-- 11个 Controller
-- MedicalCase 9个 Service + Facade
-- BaseRepository, BaseService, BaseApiController
-- AuthService, JwtService, PasswordHelper
-- Program.cs, 所有 Extensions
-- 异常处理器（Business/System）
-- 中间件（CorrelationId, SecurityHeaders, UnifiedMiddleware）
-- Mapperly 映射器
+## Phase 7: 清理 newman/
+- 状态: ✅ 完成 — 清空 newman/ 目录
+
+## 总计
+- 删除约 50 个文件
+- 释放约 40MB+ 磁盘空间
+- 根目录从 46 个散落文件 → 10 个必要文件
