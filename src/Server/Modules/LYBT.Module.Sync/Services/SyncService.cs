@@ -2,12 +2,10 @@ using System.Text.Json;
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Patients;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Sync;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Sync.Services;
@@ -18,7 +16,7 @@ namespace LYBT.Module.Sync.Services;
 /// </summary>
 public class SyncService : ISyncService
 {
-    private readonly AppDbContext _dbContext;
+    private readonly ISyncRepository _syncRepository;
     private readonly IHerbCrossModuleService _herbCrossModule;
     private readonly IPatientCrossModuleService _patientCrossModule;
     private readonly ILogger<SyncService> _logger;
@@ -32,12 +30,12 @@ public class SyncService : ISyncService
     };
 
     public SyncService(
-        AppDbContext dbContext,
+        ISyncRepository syncRepository,
         IHerbCrossModuleService herbCrossModule,
         IPatientCrossModuleService patientCrossModule,
         ILogger<SyncService> logger)
     {
-        _dbContext = dbContext;
+        _syncRepository = syncRepository;
         _herbCrossModule = herbCrossModule;
         _patientCrossModule = patientCrossModule;
         _logger = logger;
@@ -188,7 +186,7 @@ public class SyncService : ISyncService
             else errorCount++;
         }
 
-        await _dbContext.SaveChangesAsync();
+        await _syncRepository.SaveChangesAsync();
 
         _logger.LogInformation(
             "上传 {EntityType} 完成: Success={Success}, Conflict={Conflict}, Error={Error}",
@@ -287,7 +285,7 @@ public class SyncService : ISyncService
             }
         }
 
-        await _dbContext.SaveChangesAsync();
+        await _syncRepository.SaveChangesAsync();
 
         _logger.LogInformation(
             "删除 {EntityType} 完成: Success={Success}, Rejected={Rejected}",
@@ -305,10 +303,7 @@ public class SyncService : ISyncService
     private async Task<List<SyncMetadataDto>> GetHerbMetadataAsync()
     {
         // T5-P2-40: IgnoreQueryFilters 确保软删除记录参与 Checksum 比对
-        var herbs = await _dbContext.Herbs
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .ToListAsync();
+        var herbs = await _syncRepository.GetAllHerbsIncludingDeletedAsync();
 
         return herbs.Select(h => new SyncMetadataDto
         {
@@ -324,10 +319,7 @@ public class SyncService : ISyncService
     private async Task<List<SyncMetadataDto>> GetPatientMetadataAsync()
     {
         // T5-P2-40: IgnoreQueryFilters 确保软删除记录参与 Checksum 比对
-        var patients = await _dbContext.Patients
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .ToListAsync();
+        var patients = await _syncRepository.GetAllPatientsIncludingDeletedAsync();
 
         return patients.Select(p => new SyncMetadataDto
         {
@@ -343,11 +335,7 @@ public class SyncService : ISyncService
     private async Task<List<SyncMetadataDto>> GetFormulaMetadataAsync()
     {
         // T5-P2-40: IgnoreQueryFilters 确保软删除记录参与 Checksum 比对
-        var formulas = await _dbContext.Formulas
-            .Include(f => f.Herbs)
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .ToListAsync();
+        var formulas = await _syncRepository.GetAllFormulasWithHerbsIncludingDeletedAsync();
 
         return formulas.Select(f => new SyncMetadataDto
         {
@@ -374,7 +362,7 @@ public class SyncService : ISyncService
                 return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON 反序列化失败" };
             }
 
-            var existing = await _dbContext.Herbs.FindAsync(herb.Id);
+            var existing = await _syncRepository.FindHerbAsync(herb.Id);
             if (existing != null)
             {
                 if (!overwriteConflicts)
@@ -389,11 +377,11 @@ public class SyncService : ISyncService
                 }
 
                 // 覆盖更新
-                _dbContext.Entry(existing).CurrentValues.SetValues(herb);
+                _syncRepository.UpdateHerbValues(existing, herb);
             }
             else
             {
-                _dbContext.Herbs.Add(herb);
+                _syncRepository.AddHerb(herb);
             }
 
             return new SyncUploadItemResult { EntityId = herb.Id, Success = true };
@@ -415,7 +403,7 @@ public class SyncService : ISyncService
                 return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON 反序列化失败" };
             }
 
-            var existing = await _dbContext.Patients.FindAsync(patient.Id);
+            var existing = await _syncRepository.FindPatientAsync(patient.Id);
             if (existing != null)
             {
                 if (!overwriteConflicts)
@@ -429,11 +417,11 @@ public class SyncService : ISyncService
                     };
                 }
 
-                _dbContext.Entry(existing).CurrentValues.SetValues(patient);
+                _syncRepository.UpdatePatientValues(existing, patient);
             }
             else
             {
-                _dbContext.Patients.Add(patient);
+                _syncRepository.AddPatient(patient);
             }
 
             return new SyncUploadItemResult { EntityId = patient.Id, Success = true };
@@ -455,9 +443,7 @@ public class SyncService : ISyncService
                 return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON 反序列化失败" };
             }
 
-            var existing = await _dbContext.Formulas
-                .Include(f => f.Herbs)
-                .FirstOrDefaultAsync(f => f.Id == formula.Id);
+            var existing = await _syncRepository.FindFormulaWithHerbsAsync(formula.Id);
 
             if (existing != null)
             {
@@ -473,20 +459,20 @@ public class SyncService : ISyncService
                 }
 
                 // 删除旧的 Herbs 并添加新的
-                _dbContext.RemoveRange(existing.Herbs);
-                _dbContext.Entry(existing).CurrentValues.SetValues(formula);
+                _syncRepository.RemoveFormulaHerbs(existing.Herbs);
+                _syncRepository.UpdateFormulaValues(existing, formula);
                 if (formula.Herbs != null)
                 {
                     foreach (var herb in formula.Herbs)
                     {
                         herb.FormulaId = formula.Id;
-                        _dbContext.Add(herb);
+                        _syncRepository.AddFormulaHerbItem(herb);
                     }
                 }
             }
             else
             {
-                _dbContext.Formulas.Add(formula);
+                _syncRepository.AddFormula(formula);
             }
 
             return new SyncUploadItemResult { EntityId = formula.Id, Success = true };
@@ -504,7 +490,7 @@ public class SyncService : ISyncService
 
     private async Task<string?> GetHerbJsonStringAsync(Guid id)
     {
-        var herb = await _dbContext.Herbs.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id);
+        var herb = await _syncRepository.GetHerbByIdNoTrackingAsync(id);
         if (herb == null) return null;
 
         return JsonSerializer.Serialize(herb, JsonOptions);
@@ -512,7 +498,7 @@ public class SyncService : ISyncService
 
     private async Task<string?> GetPatientJsonStringAsync(Guid id)
     {
-        var patient = await _dbContext.Patients.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+        var patient = await _syncRepository.GetPatientByIdNoTrackingAsync(id);
         if (patient == null) return null;
 
         return JsonSerializer.Serialize(patient, JsonOptions);
@@ -520,10 +506,7 @@ public class SyncService : ISyncService
 
     private async Task<string?> GetFormulaJsonStringAsync(Guid id)
     {
-        var formula = await _dbContext.Formulas
-            .Include(f => f.Herbs)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(f => f.Id == id);
+        var formula = await _syncRepository.GetFormulaWithHerbsByIdNoTrackingAsync(id);
         if (formula == null) return null;
 
         return JsonSerializer.Serialize(formula, JsonOptions);
@@ -560,22 +543,13 @@ public class SyncService : ISyncService
         switch (entityType)
         {
             case "Herb":
-                var herb = await _dbContext.Herbs.FindAsync(entityId);
-                if (herb == null || herb.IsDeleted) return false;
-                herb.IsDeleted = true;
-                return true;
+                return await _syncRepository.SoftDeleteHerbAsync(entityId);
 
             case "Patient":
-                var patient = await _dbContext.Patients.FindAsync(entityId);
-                if (patient == null || patient.IsDeleted) return false;
-                patient.IsDeleted = true;
-                return true;
+                return await _syncRepository.SoftDeletePatientAsync(entityId);
 
             case "Formula":
-                var formula = await _dbContext.Formulas.FindAsync(entityId);
-                if (formula == null || formula.IsDeleted) return false;
-                formula.IsDeleted = true;
-                return true;
+                return await _syncRepository.SoftDeleteFormulaAsync(entityId);
 
             default:
                 return false;

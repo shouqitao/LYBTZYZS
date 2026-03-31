@@ -26,6 +26,9 @@ namespace LYBT.Module.Users
 
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserQueryService, UserQueryService>();
+            services.AddScoped<IUserPasswordService, UserPasswordService>();
+            services.AddScoped<IUserStatusService, UserStatusService>();
             services.AddScoped<IUserBatchOperationService, UserBatchOperationService>();
 
             // 注册验证器 - 自动注册所有Validator

@@ -35,6 +35,9 @@ namespace LYBT.Module.Users.Services
         private readonly ICrossModuleAuthService _authService;
         private readonly IUserBatchOperationService _batchService;
         private readonly LYBT.Module.Registration.Interfaces.IRegistrationRepository _registrationRepository;
+        private readonly IUserQueryService _queryService;
+        private readonly IUserPasswordService _passwordService;
+        private readonly IUserStatusService _statusService;
         private readonly UserMapper _mapper = new();
 
         public UserService(
@@ -45,7 +48,10 @@ namespace LYBT.Module.Users.Services
             IValidator<UserInputDto> validator,
             ICrossModuleAuthService authService,
             IUserBatchOperationService batchService,
-            LYBT.Module.Registration.Interfaces.IRegistrationRepository registrationRepository)
+            LYBT.Module.Registration.Interfaces.IRegistrationRepository registrationRepository,
+            IUserQueryService queryService,
+            IUserPasswordService passwordService,
+            IUserStatusService statusService)
             : base(logger)
         {
             _repository = repository;
@@ -55,6 +61,9 @@ namespace LYBT.Module.Users.Services
             _authService = authService;
             _batchService = batchService;
             _registrationRepository = registrationRepository;
+            _queryService = queryService;
+            _passwordService = passwordService;
+            _statusService = statusService;
         }
 
         #region 权限检查辅助方法（Issue #1909）
@@ -148,57 +157,26 @@ namespace LYBT.Module.Users.Services
         /// 分页获取用户列表（返回UserListDto，用于列表视图）
         /// OpenSpec: refactor-dto-simplification - 使用扁平化DTO
         /// </summary>
-        public async Task<Result<PagedResult<UserListDto>>> GetPagedAsync(
+        public Task<Result<PagedResult<UserListDto>>> GetPagedAsync(
             int page = 1,
             int pageSize = 20,
             string? keyword = null,
             UserRole? role = null,
             CommonStatus? status = null,
             CancellationToken cancellationToken = default)
-        {
-            // Sprint3-X6: keyword/role/status 筛选均在 DB 层执行，TotalCount 自然正确
-            var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword, role, status, cancellationToken);
-            var dtos = _mapper.ToListDtos(pagedResult.Items.ToList());
-
-            var result = new PagedResult<UserListDto>
-            {
-                Items = dtos,
-                TotalCount = pagedResult.TotalCount,
-                CurrentPage = page,
-                PageSize = pageSize
-            };
-
-            return Result<PagedResult<UserListDto>>.Success(result);
-        }
+            => _queryService.GetPagedAsync(page, pageSize, keyword, role, status, cancellationToken);
 
         /// <summary>
         /// 根据ID获取用户详情
         /// </summary>
-        public async Task<Result<UserDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdAsync(id, cancellationToken);
-            if (entity == null)
-                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
-
-            var dto = _mapper.ToDetailDto(entity);
-            return Result<UserDetailDto>.Success(dto);
-        }
+        public Task<Result<UserDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => _queryService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// 搜索用户（返回所有匹配结果）
         /// </summary>
-        public async Task<Result<List<UserListDto>>> SearchAsync(string keyword, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entities = await _repository.FindAsync(u =>
-                u.UserName.Contains(keyword) ||
-                u.RealName.Contains(keyword) ||
-                (u.Email != null && u.Email.Contains(keyword)), cancellationToken);
-
-            var dtos = _mapper.ToListDtos(entities.ToList());
-            return Result<List<UserListDto>>.Success(dtos);
-        }
+        public Task<Result<List<UserListDto>>> SearchAsync(string keyword, CancellationToken cancellationToken = default)
+            => _queryService.SearchAsync(keyword, cancellationToken);
 
         #endregion
 
@@ -403,125 +381,21 @@ namespace LYBT.Module.Users.Services
         /// 管理员重置密码（Issue #1162: 使用配置文件中的默认密码）
         /// 修复：重置密码不再接受新密码参数，始终使用配置文件中的默认密码
         /// </summary>
-        public async Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdAsync(id, cancellationToken);
-            if (entity == null)
-                return Result<ResetPasswordResponseDto>.Failure(GenericErrorCode.UserNotFound);
-
-            // USER-D05 / CODE-04: sysadmin 硬兜底
-            if (IsSysAdmin(entity))
-            {
-                _logger.LogWarning("[SVC] User.ResetPassword → SysAdminProtection - UserId={UserId}", id);
-                return Result<ResetPasswordResponseDto>.Failure(GenericErrorCode.Forbidden, "系统管理员账号密码不可被重置");
-            }
-
-            // 始终使用配置文件中的默认密码，不再接受请求中的密码参数
-            string password = _configuration["DefaultPasswords:NewUserPassword"]
-                ?? PasswordHelper.GenerateTemporaryPassword();
-
-            // 哈希密码并更新
-            entity.PasswordHash = PasswordHelper.HashPassword(password, entity.Role, _logger);
-            // T5-P2-31: 重置密码后标记下次登录须改密
-            entity.MustChangeOnNextLogin = true;
-            await _repository.UpdateAsync(entity, cancellationToken);
-
-            // X3-04: 重置密码后撤销所有 Token，强制重新登录
-            await _authService.RevokeUserTokensAsync(id, "密码已重置，强制重新登录");
-
-            var response = new ResetPasswordResponseDto
-            {
-                Success = true,
-                TemporaryPassword = password
-            };
-
-            _logger.LogInformation("[SVC] User.ResetPassword completed - UserId={UserId}", id);
-
-            return Result<ResetPasswordResponseDto>.Success(response);
-        }
+        public Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request, CancellationToken cancellationToken = default)
+            => _passwordService.ResetPasswordAsync(id, request, cancellationToken);
 
         /// <summary>
         /// 验证用户密码
         /// Issue #1864: Auth/User职责分离，密码验证由UserService负责
         /// </summary>
-        public async Task<Result<UserDetailDto>> ValidatePasswordAsync(string userName, string password, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            if (string.IsNullOrWhiteSpace(userName))
-                return Result<UserDetailDto>.Failure(GenericErrorCode.ValidationFailed, "用户名不能为空");
-
-            if (string.IsNullOrWhiteSpace(password))
-                return Result<UserDetailDto>.Failure(GenericErrorCode.ValidationFailed, "密码不能为空");
-
-            var entity = await _repository.GetByUsernameAsync(userName, cancellationToken);
-            if (entity == null)
-            {
-                _logger.LogWarning("[SVC] User.ValidatePassword → NotFound - UserName={UserName}", userName);
-                return Result<UserDetailDto>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名或密码错误");
-            }
-
-            // 检查用户状态
-            if (entity.Status == CommonStatus.Disabled)
-            {
-                _logger.LogWarning("[SVC] User.ValidatePassword → Disabled - UserName={UserName}", userName);
-                return Result<UserDetailDto>.Failure(GenericErrorCode.UserDisabled, "用户已被禁用");
-            }
-
-            // 验证密码
-            var verificationResult = PasswordHelper.VerifyPassword(password, entity.PasswordHash, entity.Role, _logger);
-            if (!verificationResult.IsSuccess)
-            {
-                _logger.LogWarning("[SVC] User.ValidatePassword → InvalidPassword - UserName={UserName}", userName);
-                return Result<UserDetailDto>.Failure(GenericErrorCode.AuthInvalidCredentials, "用户名或密码错误");
-            }
-
-            // 如果需要重新哈希密码（升级哈希算法场景）
-            if (verificationResult.NewHashedPassword != null)
-            {
-                entity.PasswordHash = verificationResult.NewHashedPassword;
-                await _repository.UpdateAsync(entity, cancellationToken);
-                _logger.LogInformation("[SVC] User.ValidatePassword → HashUpgraded - UserName={UserName}", userName);
-            }
-
-            var userDto = _mapper.ToDetailDto(entity);
-            return Result<UserDetailDto>.Success(userDto);
-        }
+        public Task<Result<UserDetailDto>> ValidatePasswordAsync(string userName, string password, CancellationToken cancellationToken = default)
+            => _passwordService.ValidatePasswordAsync(userName, password, cancellationToken);
 
         /// <summary>
         /// 更改密码
         /// </summary>
-        public async Task<Result> ChangePasswordAsync(Guid id, string oldPassword, string newPassword, CancellationToken cancellationToken = default)
-        {
-            // S2: 新密码策略验证
-            if (!PasswordPolicyValidator.Validate(newPassword, out var policyErrors))
-            {
-                return Result.Failure(string.Join("; ", policyErrors));
-            }
-
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdAsync(id, cancellationToken);
-            if (entity == null)
-                return Result.Failure(GenericErrorCode.UserNotFound);
-
-            // 验证旧密码并获取验证结果
-            var verificationResult = PasswordHelper.VerifyPassword(oldPassword, entity.PasswordHash, entity.Role, _logger);
-            if (!verificationResult.IsSuccess)
-                return Result.Failure(GenericErrorCode.InvalidPassword, "原密码错误");
-
-            // S1-fix: 始终使用新密码哈希，而非旧密码的 rehash
-            // verificationResult.NewHashedPassword 是旧密码的新算法哈希（用于升级场景），
-            // 在修改密码时必须使用 newPassword 哈希，否则新密码会被丢弃
-            entity.PasswordHash = PasswordHelper.HashPassword(newPassword, entity.Role, _logger);
-            // T5-P2-31: 修改密码后清除须改密标记
-            entity.MustChangeOnNextLogin = false;
-            await _repository.UpdateAsync(entity, cancellationToken);
-
-            // X3-05: 修改密码后撤销所有 Token，强制重新登录
-            await _authService.RevokeUserTokensAsync(id, "密码已修改，强制重新登录");
-
-            return Result.Success();
-        }
+        public Task<Result> ChangePasswordAsync(Guid id, string oldPassword, string newPassword, CancellationToken cancellationToken = default)
+            => _passwordService.ChangePasswordAsync(id, oldPassword, newPassword, cancellationToken);
 
         /// <summary>
         /// 修改个人信息 (Issue #1888)
@@ -587,115 +461,11 @@ namespace LYBT.Module.Users.Services
 
         #endregion
 
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法实现 ==========
+        public Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default)
+            => _statusService.ToggleStatusAsync(id, cancellationToken);
 
-        /// <summary>
-        /// 切换用户状态（启用/禁用）
-        /// </summary>
-        public async Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdAsync(id, cancellationToken);
-            if (entity == null)
-                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
-
-            // USER-D05 / CODE-04: sysadmin 硬兜底
-            if (IsSysAdmin(entity))
-            {
-                _logger.LogWarning("[SVC] User.ToggleStatus → SysAdminProtection - UserId={UserId}", id);
-                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "系统管理员账号不可被禁用");
-            }
-
-            // 权限检查
-            var currentRole = GetCurrentUserRole();
-            if (!CanManageUser(currentRole, entity.Role))
-            {
-                _logger.LogWarning("[SVC] User.ToggleStatus → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
-                    currentRole, id, entity.Role);
-                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "您没有权限修改该用户状态");
-            }
-
-            // S2-07: 最后管理员保护 - 禁用管理员级用户前检查是否是最后一个
-            if (entity.Status == CommonStatus.Enabled && entity.Role >= UserRole.Admin)
-            {
-                var activeAdmins = await _repository.FindAsync(
-                    u => u.Role >= UserRole.Admin && u.Status == CommonStatus.Enabled, cancellationToken);
-                if (activeAdmins.Count() <= 1)
-                {
-                    _logger.LogWarning("[SVC] User.ToggleStatus → LastAdminProtection - UserId={UserId} Role={Role}", id, entity.Role);
-                    return Result<UserDetailDto>.Failure(GenericErrorCode.CannotDeleteSysAdmin, "不能禁用最后一个管理员");
-                }
-            }
-
-            // G-11: 禁用医生前检查是否有等待中的挂号记录
-            if (entity.Status == CommonStatus.Enabled && entity.Role == UserRole.Doctor)
-            {
-                var waitingCount = await _registrationRepository.GetWaitingCountByDoctorAsync(id, cancellationToken);
-                if (waitingCount > 0)
-                {
-                    _logger.LogWarning("[SVC] User.ToggleStatus → DoctorHasWaitingRegistrations - UserId={UserId} Count={Count}", id, waitingCount);
-                    return Result<UserDetailDto>.Failure(
-                        GenericErrorCode.RegistrationDoctorHasWaiting,
-                        $"该医生有 {waitingCount} 条等待中的挂号记录，请先由前台取消后再禁用");
-                }
-            }
-
-            entity.Status = entity.Status == CommonStatus.Enabled
-                ? CommonStatus.Disabled
-                : CommonStatus.Enabled;
-            entity.UpdatedAt = DateTime.UtcNow;
-
-            var result = await _repository.UpdateAsync(entity, cancellationToken);
-            var dto = _mapper.ToDetailDto(result);
-
-            // X3-06: 禁用用户时撤销所有 Token
-            if (entity.Status == CommonStatus.Disabled)
-            {
-                await _authService.RevokeUserTokensAsync(id, "用户已禁用，强制登出");
-            }
-
-            _logger.LogInformation("[SVC] User.ToggleStatus completed - UserId={UserId} Status={Status}", id, entity.Status);
-            return Result<UserDetailDto>.Success(dto);
-        }
-
-        /// <summary>
-        /// 恢复软删除的用户
-        /// </summary>
-        public async Task<Result<UserDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            var entity = await _repository.GetByIdIncludingDeletedAsync(id, cancellationToken);
-            if (entity == null)
-                return Result<UserDetailDto>.Failure(GenericErrorCode.UserNotFound);
-
-            // USER-D05 / CODE-04: sysadmin 硬兜底 (防御性，正常流程 sysadmin 不会被删除)
-            if (IsSysAdmin(entity))
-            {
-                _logger.LogWarning("[SVC] User.Restore → SysAdminProtection - UserId={UserId}", id);
-                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "系统管理员账号不可被管理");
-            }
-
-            if (!entity.IsDeleted)
-                return Result<UserDetailDto>.Failure(GenericErrorCode.InvalidRequest, "该用户未被删除，无需恢复");
-
-            // 权限检查
-            var currentRole = GetCurrentUserRole();
-            if (!CanManageUser(currentRole, entity.Role))
-            {
-                _logger.LogWarning("[SVC] User.Restore → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
-                    currentRole, id, entity.Role);
-                return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "您没有权限恢复该用户");
-            }
-
-            entity.IsDeleted = false;
-            entity.UpdatedAt = DateTime.UtcNow;
-
-            var result = await _repository.UpdateAsync(entity, cancellationToken);
-            var dto = _mapper.ToDetailDto(result);
-
-            _logger.LogInformation("[SVC] User.Restore completed - UserId={UserId} UserName={UserName}", id, entity.UserName);
-            return Result<UserDetailDto>.Success(dto);
-        }
+        public Task<Result<UserDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
+            => _statusService.RestoreAsync(id, cancellationToken);
 
 
         // ========== 批量操作委托给 IUserBatchOperationService ==========

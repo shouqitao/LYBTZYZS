@@ -131,9 +131,8 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 // 3. 业务模块 (AddAuthModule, AddUsersModule, ...)
 // 4. Controllers + 全局过滤器 (ValidateModelState, ApiExceptionFilter)
 // 5. JWT 认证 + 授权策略 (AdminOnly, DoctorOrAdmin)
-// 6. CORS
-// 7. Swagger (OpenAPI + JWT SecurityDefinition)
-// 8. HealthChecks (database + custom)
+// 6. Swagger (OpenAPI + JWT SecurityDefinition)
+// 7. HealthChecks (database + custom)
 ```
 
 ## API 统一响应格式
@@ -210,7 +209,6 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 
 | 问题 | 原因 | 解决方案 |
 |------|------|----------|
-| CORS 必须在认证/授权中间件前注册 | ASP.NET Core 管道顺序要求 | 确保 UseCors 在 UseAuthentication 之前 |
 | Swagger 仅开发环境启用 | 生产环境不应暴露 API 文档 | IsDevelopment() 条件判断 |
 | JSON 序列化使用 PascalCase | 默认是 camelCase，但 WPF DTO 是 PascalCase | PropertyNamingPolicy = null |
 | FindAsync 与全局查询过滤器 | EF Core 8 的 FindAsync 在实体不在 ChangeTracker 中时会应用 IsDeleted 过滤器 | 用 IgnoreQueryFilters() 查询软删除记录 |

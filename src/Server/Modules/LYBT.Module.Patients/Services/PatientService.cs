@@ -79,39 +79,6 @@ namespace LYBT.Module.Patients.Services
             return Result<PagedResult<PatientListDto>>.Success(dto);
         }
 
-        /// <summary>
-        /// 分页查询患者列表（返回PatientListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        public async Task<Result<PagedResult<PatientListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch
-            // T5-P2-27: filterDisabled=true时只显示启用状态患者
-            var pagedResult = filterDisabled
-                ? await _repository.GetPagedWithStatusFilterAsync(page, pageSize, keyword, CommonStatus.Enabled)
-                : await _repository.GetPagedAsync(page, pageSize, keyword);
-            var dtos = _mapper.ToListDtos(pagedResult.Items.ToList());
-
-            // 确保Age属性正确计算
-            foreach (var dto in dtos)
-            {
-                var entity = pagedResult.Items.FirstOrDefault(e => e.Id == dto.Id);
-                if (entity != null)
-                {
-                    dto.Age = entity.Age;
-                }
-            }
-
-            var result = new PagedResult<PatientListDto>
-            {
-                Items = dtos,
-                TotalCount = pagedResult.TotalCount,
-                CurrentPage = page,
-                PageSize = pageSize
-            };
-            return Result<PagedResult<PatientListDto>>.Success(result);
-        }
-
         public async Task<Result<PatientDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 业务逻辑检查保留在外部，无需ExecuteAsync包装

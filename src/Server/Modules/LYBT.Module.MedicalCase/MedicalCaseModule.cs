@@ -25,6 +25,8 @@ namespace LYBT.Module.MedicalCases
         {
             // 仓储层 - 统一实现
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
+            services.AddScoped<IMedicalCaseAuditLogRepository, MedicalCaseAuditLogRepository>();
+            services.AddScoped<IMedicalCaseReferenceRepository, MedicalCaseReferenceRepository>();
 
             // 服务层 - Phase 3: CQRS拆分（Command/Query/State/Print分离）
             services.AddScoped<IMedicalCaseCommandService, MedicalCaseCommandService>();

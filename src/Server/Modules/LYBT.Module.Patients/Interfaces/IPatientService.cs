@@ -22,16 +22,6 @@ namespace LYBT.Module.Patients.Interfaces
         Task<Result<PagedResult<PatientListDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 分页查询患者列表（返回PatientListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
-        /// </summary>
-        /// <param name="page">页码</param>
-        /// <param name="pageSize">每页数量</param>
-        /// <param name="keyword">搜索关键词</param>
-        /// <param name="filterDisabled">T5-P2-27: 是否过滤禁用患者</param>
-        Task<Result<PagedResult<PatientListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, bool filterDisabled = false, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// 根据ID获取患者详情
         /// </summary>
         Task<Result<PatientDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);

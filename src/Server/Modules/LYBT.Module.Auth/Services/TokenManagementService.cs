@@ -1,4 +1,3 @@
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
@@ -7,7 +6,6 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
@@ -23,7 +21,7 @@ public class TokenManagementService : ITokenManagementService
     private readonly IJwtService _jwtService;
     private readonly IUserCrossModuleService _crossModuleQuery;
     private readonly ILogger<TokenManagementService> _logger;
-    private readonly AppDbContext _dbContext;
+    private readonly IRefreshTokenRepository _tokenRepository;
     private readonly IConfiguration _configuration;
     private readonly ISecurityAuditService _auditService;
 
@@ -31,14 +29,14 @@ public class TokenManagementService : ITokenManagementService
         IJwtService jwtService,
         IUserCrossModuleService crossModuleQuery,
         ILogger<TokenManagementService> logger,
-        AppDbContext dbContext,
+        IRefreshTokenRepository tokenRepository,
         IConfiguration configuration,
         ISecurityAuditService auditService)
     {
         _jwtService = jwtService;
         _crossModuleQuery = crossModuleQuery;
         _logger = logger;
-        _dbContext = dbContext;
+        _tokenRepository = tokenRepository;
         _configuration = configuration;
         _auditService = auditService;
     }
@@ -50,8 +48,7 @@ public class TokenManagementService : ITokenManagementService
             return Result<LoginResponse>.Failure(GenericErrorCode.AuthRefreshTokenInvalid, "RefreshToken不能为空");
 
         // 1. 查询 RefreshToken 记录
-        var tokenRecord = await _dbContext.RefreshTokens
-            .FirstOrDefaultAsync(t => t.Token == refreshToken);
+        var tokenRecord = await _tokenRepository.GetByTokenAsync(refreshToken);
 
         if (tokenRecord == null)
         {
@@ -163,8 +160,8 @@ public class TokenManagementService : ITokenManagementService
             FamilyId = tokenRecord.FamilyId ?? Guid.NewGuid().ToString()
         };
 
-        _dbContext.RefreshTokens.Add(newTokenRecord);
-        await _dbContext.SaveChangesAsync();
+        await _tokenRepository.AddAsync(newTokenRecord);
+        await _tokenRepository.SaveChangesAsync();
 
         // 8. 返回新 Token 对
         var response = new LoginResponse
@@ -235,16 +232,14 @@ public class TokenManagementService : ITokenManagementService
     {
         try
         {
-            var familyTokens = await _dbContext.RefreshTokens
-                .Where(t => t.FamilyId == familyId && !t.IsRevoked)
-                .ToListAsync();
+            var familyTokens = await _tokenRepository.GetActiveTokensByFamilyIdAsync(familyId);
 
             foreach (var token in familyTokens)
             {
                 token.Revoke(reason, "System:ReplayAttackDetection");
             }
 
-            await _dbContext.SaveChangesAsync();
+            await _tokenRepository.UpdateRangeAsync(familyTokens);
 
             _logger.LogWarning("[SVC] TokenMgmt.RevokeTokenFamily completed - FamilyId={FamilyId} RevokedCount={Count} Reason={Reason}",
                 familyId, familyTokens.Count, reason);

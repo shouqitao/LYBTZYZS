@@ -61,6 +61,19 @@ dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 - **DDD**: MedicalCase 是唯一聚合根 (Consultation + Prescription 是内部实体)
 - **双模式**: 远程 (SQL Server) + 本地 (SQLite)，共享 Service/Repository 层，仅 DbContext Provider 不同 (SYNC-D02)。详见 [dual-mode.md](docs/03-architecture/dual-mode.md)
 
+## Repository 规范 (Task 6)
+
+**核心原则**: Service 层禁止直接注入 `AppDbContext`，必须通过 Repository 接口访问数据。
+
+| 层级 | 职责 | 注入规则 |
+|------|------|----------|
+| Controller | HTTP 请求处理 | 注入 Service 接口 |
+| Service | 业务逻辑编排 | 注入 Repository 接口，禁止注入 DbContext |
+| Repository | 数据访问封装 | 注入 DbContext，封装查询/命令 |
+| DbContext | EF Core 基础设施 | 仅 Repository 层直接依赖 |
+
+**架构测试**: `P10_Services_Should_Not_Directly_Inject_AppDbContext` 强制约束，详见 `tests/LYBT.Tests.Architecture/ServerArchTests.cs`
+
 ## 术语铁律
 
 - **Consultation** = 仅指中医诊断部分，不是"问诊"或"就诊"

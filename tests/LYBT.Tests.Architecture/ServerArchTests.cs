@@ -548,5 +548,51 @@ public class ServerArchTests
         }
     }
 
+    /// <summary>
+    /// P-10: 服务层不得直接注入 AppDbContext，必须通过 Repository 层访问数据
+    /// Task 6: Repository 规范统一 - 消除服务层直接依赖 DbContext
+    /// </summary>
+    [Fact]
+    public void P10_Services_Should_Not_Directly_Inject_AppDbContext()
+    {
+        var serviceTypes = Types.InAssemblies(ServerAssemblies)
+            .That()
+            .HaveNameEndingWith("Service")
+            .And()
+            .AreClasses()
+            .And()
+            .ArePublic()
+            .GetTypes();
+
+        var violatingServices = new List<string>();
+
+        foreach (var serviceType in serviceTypes)
+        {
+            // 排除基类、Repository（允许注入DbContext）和已知的特殊服务
+            var isRepository = serviceType.Name.EndsWith("Repository");
+            var isBaseClass = serviceType.Name.StartsWith("Base");
+            var isSyncService = serviceType.Name == "SyncService"; // SyncService 使用 ISyncRepository
+
+            if (isRepository || isBaseClass)
+                continue;
+
+            var constructors = serviceType.GetConstructors();
+            foreach (var constructor in constructors)
+            {
+                var parameters = constructor.GetParameters();
+                var hasDbContext = parameters.Any(p =>
+                    p.ParameterType.Name == "AppDbContext" ||
+                    p.ParameterType.FullName?.Contains("AppDbContext") == true);
+
+                if (hasDbContext)
+                {
+                    violatingServices.Add($"{serviceType.Name}.{constructor.Name}");
+                }
+            }
+        }
+
+        Assert.Empty(violatingServices);
+    }
+
     #endregion
 }

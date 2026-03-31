@@ -21,6 +21,7 @@ namespace LYBT.Module.Herbs
         {
             // 注册仓储
             services.AddScoped<IHerbRepository, HerbRepository>();
+            services.AddScoped<IHerbReferenceRepository, HerbReferenceRepository>();
             // services.AddScoped<IHerbCategoryRepository, HerbCategoryRepository>();
 
             // 注册服务实现类（统一使用Shared接口）

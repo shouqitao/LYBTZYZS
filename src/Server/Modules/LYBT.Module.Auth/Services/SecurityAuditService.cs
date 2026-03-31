@@ -1,5 +1,4 @@
 using LYBT.Entities.Auth;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
 using Microsoft.AspNetCore.Http;
@@ -13,16 +12,16 @@ namespace LYBT.Module.Auth.Services;
 /// </summary>
 public class SecurityAuditService : ISecurityAuditService
 {
-    private readonly AppDbContext _context;
+    private readonly ISecurityAuditRepository _auditRepository;
     private readonly ILogger<SecurityAuditService> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public SecurityAuditService(
-        AppDbContext context,
+        ISecurityAuditRepository auditRepository,
         ILogger<SecurityAuditService> logger,
         IHttpContextAccessor httpContextAccessor)
     {
-        _context = context;
+        _auditRepository = auditRepository;
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
     }
@@ -56,8 +55,8 @@ public class SecurityAuditService : ISecurityAuditService
             };
 
             // 异步记录到数据库
-            await _context.SecurityAuditLogs.AddAsync(auditLog);
-            await _context.SaveChangesAsync();
+            await _auditRepository.AddAsync(auditLog);
+            await _auditRepository.SaveChangesAsync();
 
             _logger.LogInformation("[SVC] SecurityAudit.Log completed - EventType={EventType} UserId={UserId} Success={Success}",
                 auditEvent.EventType, auditEvent.UserId, auditEvent.Success);

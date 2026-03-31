@@ -1,10 +1,9 @@
 using FluentAssertions;
 using LYBT.Entities.Auth;
-using LYBT.Infrastructure.Data;
+using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Xunit;
 
 namespace LYBT.Tests.Server.PureLogic.Auth;
@@ -13,28 +12,20 @@ namespace LYBT.Tests.Server.PureLogic.Auth;
 /// TokenRevocationService 单元测试
 /// Issue #1870 - Token撤销服务测试
 /// </summary>
-public class TokenRevocationServiceTests : IDisposable
+public class TokenRevocationServiceTests
 {
-    private readonly AppDbContext _context;
-    private readonly ILogger<TokenRevocationService> _logger;
+    private readonly IRefreshTokenRepository _tokenRepository;
+    private readonly ISecurityAuditRepository _auditRepository;
     private readonly TokenRevocationService _sut;
 
     public TokenRevocationServiceTests()
     {
-        // 使用内存数据库
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-
-        _context = new AppDbContext(options);
-        _logger = NullLogger<TokenRevocationService>.Instance;
-        _sut = new TokenRevocationService(_context, _logger);
-    }
-
-    public void Dispose()
-    {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        _tokenRepository = Substitute.For<IRefreshTokenRepository>();
+        _auditRepository = Substitute.For<ISecurityAuditRepository>();
+        _sut = new TokenRevocationService(
+            _tokenRepository,
+            _auditRepository,
+            NullLogger<TokenRevocationService>.Instance);
     }
 
     #region RevokeTokenAsync 测试
@@ -59,25 +50,21 @@ public class TokenRevocationServiceTests : IDisposable
             CreatedAt = DateTime.UtcNow
         };
 
-        await _context.RefreshTokens.AddAsync(token);
-        await _context.SaveChangesAsync();
+        _tokenRepository.GetByTokenAsync(tokenString).Returns(token);
 
         // Act
         var result = await _sut.RevokeTokenAsync(tokenString, reason);
 
         // Assert
         result.Should().BeTrue();
+        token.IsRevoked.Should().BeTrue();
+        token.RevokedAt.Should().NotBeNull();
+        token.RevokedReason.Should().Be(reason);
 
-        var revokedToken = await _context.RefreshTokens.FirstAsync(t => t.Token == tokenString);
-        revokedToken.IsRevoked.Should().BeTrue();
-        revokedToken.RevokedAt.Should().NotBeNull();
-        revokedToken.RevokedReason.Should().Be(reason);
-
-        // 验证审计日志已创建
-        var auditLog = await _context.SecurityAuditLogs
-            .FirstOrDefaultAsync(l => l.EventType == "TokenRevoked" && l.UserId == userId);
-        auditLog.Should().NotBeNull();
-        auditLog!.Success.Should().BeTrue();
+        await _tokenRepository.Received(1).SaveChangesAsync();
+        await _auditRepository.Received(1).AddAsync(
+            Arg.Is<SecurityAuditLog>(l => l.EventType == "TokenRevoked" && l.UserId == userId && l.Success));
+        await _auditRepository.Received(1).SaveChangesAsync();
     }
 
     [Fact]
@@ -87,15 +74,15 @@ public class TokenRevocationServiceTests : IDisposable
         var tokenString = "non-existent-token";
         var reason = "Test";
 
+        _tokenRepository.GetByTokenAsync(tokenString).Returns((RefreshToken?)null);
+
         // Act
         var result = await _sut.RevokeTokenAsync(tokenString, reason);
 
         // Assert
         result.Should().BeFalse();
-
-        // 验证没有审计日志被创建
-        var auditLogs = await _context.SecurityAuditLogs.ToListAsync();
-        auditLogs.Should().BeEmpty();
+        await _tokenRepository.DidNotReceive().SaveChangesAsync();
+        await _auditRepository.DidNotReceive().AddAsync(Arg.Any<SecurityAuditLog>());
     }
 
     [Fact]
@@ -120,18 +107,15 @@ public class TokenRevocationServiceTests : IDisposable
             CreatedAt = DateTime.UtcNow.AddDays(-1)
         };
 
-        await _context.RefreshTokens.AddAsync(token);
-        await _context.SaveChangesAsync();
+        _tokenRepository.GetByTokenAsync(tokenString).Returns(token);
 
         // Act
         var result = await _sut.RevokeTokenAsync(tokenString, reason);
 
         // Assert
         result.Should().BeFalse();
-
-        // 验证Token状态未改变
-        var unchangedToken = await _context.RefreshTokens.FirstAsync(t => t.Token == tokenString);
-        unchangedToken.RevokedReason.Should().Be("Original reason");
+        token.RevokedReason.Should().Be("Original reason");
+        await _tokenRepository.DidNotReceive().SaveChangesAsync();
     }
 
     #endregion
@@ -157,8 +141,7 @@ public class TokenRevocationServiceTests : IDisposable
             CreatedAt = DateTime.UtcNow.AddDays(-1)
         };
 
-        await _context.RefreshTokens.AddAsync(token);
-        await _context.SaveChangesAsync();
+        _tokenRepository.GetByTokenAsync(tokenString).Returns(token);
 
         // Act
         var result = await _sut.IsTokenRevokedAsync(tokenString);
@@ -184,8 +167,7 @@ public class TokenRevocationServiceTests : IDisposable
             CreatedAt = DateTime.UtcNow
         };
 
-        await _context.RefreshTokens.AddAsync(token);
-        await _context.SaveChangesAsync();
+        _tokenRepository.GetByTokenAsync(tokenString).Returns(token);
 
         // Act
         var result = await _sut.IsTokenRevokedAsync(tokenString);
@@ -199,6 +181,7 @@ public class TokenRevocationServiceTests : IDisposable
     {
         // Arrange
         var tokenString = "non-existent-token";
+        _tokenRepository.GetByTokenAsync(tokenString).Returns((RefreshToken?)null);
 
         // Act
         var result = await _sut.IsTokenRevokedAsync(tokenString);

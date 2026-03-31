@@ -1,8 +1,6 @@
 ﻿using FluentValidation;
-using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Caching;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Mapping;
@@ -11,7 +9,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Text;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
@@ -30,7 +27,7 @@ namespace LYBT.Module.Herbs.Services
         private readonly IHerbRepository _repository;
         private readonly IValidator<HerbInputDto> _validator;
         private readonly HerbMapper _mapper = new();
-        private readonly AppDbContext _dbContext;
+        private readonly IHerbReferenceRepository _herbReferenceRepository;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly IHerbImportExportService _importExport;
 
@@ -38,14 +35,14 @@ namespace LYBT.Module.Herbs.Services
             IHerbRepository repository,
             ILogger<HerbService> logger,
             IValidator<HerbInputDto> validator,
-            AppDbContext dbContext,
+            IHerbReferenceRepository herbReferenceRepository,
             ICacheInvalidationService cacheInvalidation,
             IHerbImportExportService importExport)
             : base(logger)
         {
             _repository = repository;
             _validator = validator;
-            _dbContext = dbContext;
+            _herbReferenceRepository = herbReferenceRepository;
             _cacheInvalidation = cacheInvalidation;
             _importExport = importExport;
         }
@@ -210,34 +207,15 @@ namespace LYBT.Module.Herbs.Services
             }
 
             // 查询处方引用计数
-            var prescriptionRefCount = await _dbContext.PrescriptionItems
-                .CountAsync(pi => pi.HerbId == herbId, cancellationToken);
+            var prescriptionRefCount = await _herbReferenceRepository.GetPrescriptionReferenceCountAsync(herbId, cancellationToken);
 
             // CODE-11: 查询验方引用计数 (FormulaHerbItem.HerbId 可空，仅统计已绑定的)
-            var formulaRefCount = await _dbContext.Set<FormulaHerbItem>()
-                .CountAsync(fhi => fhi.HerbId != null && fhi.HerbId == herbId, cancellationToken);
+            var formulaRefCount = await _herbReferenceRepository.GetFormulaReferenceCountAsync(herbId, cancellationToken);
 
             var referenceCount = prescriptionRefCount + formulaRefCount;
 
-            // 获取最近5条处方引用记录（使用 Join 查询，因为 PrescriptionItem 没有导航属性）
-            var recentReferences = await (
-                from pi in _dbContext.PrescriptionItems
-                join p in _dbContext.Prescriptions on pi.PrescriptionId equals p.Id
-                join mc in _dbContext.MedicalCases on p.MedicalCaseId equals mc.Id
-                join patient in _dbContext.Patients on mc.PatientId equals patient.Id
-                where pi.HerbId == herbId
-                orderby p.CreatedAt descending
-                select new PrescriptionReferenceDto
-                {
-                    PrescriptionId = p.Id,
-                    PrescriptionNumber = p.PrescriptionNumber ?? string.Empty,
-                    PatientName = patient.Name,
-                    CreatedAt = p.CreatedAt,
-                    // T2-X8-09: IsPrinted 已迁移到 MedicalCase 层级
-                    Status = mc.IsPrinted ? "已打印" : "未打印"
-                })
-                .Take(5)
-                .ToListAsync(cancellationToken);
+            // 获取最近5条处方引用记录
+            var recentReferences = await _herbReferenceRepository.GetRecentPrescriptionReferencesAsync(herbId, 5, cancellationToken);
 
             var hasReferences = referenceCount > 0;
             var deleteWarning = hasReferences

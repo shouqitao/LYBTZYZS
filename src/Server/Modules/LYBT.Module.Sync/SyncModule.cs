@@ -1,4 +1,5 @@
 using LYBT.Module.Sync.Interfaces;
+using LYBT.Module.Sync.Repositories;
 using LYBT.Module.Sync.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -17,7 +18,8 @@ public static class SyncModule
     /// </summary>
     public static IServiceCollection AddSyncModule(this IServiceCollection services, IConfiguration configuration)
     {
-        // 注册同步服务
+        // 注册同步仓储和服务
+        services.AddScoped<ISyncRepository, SyncRepository>();
         services.AddScoped<ISyncService, SyncService>();
 
         return services;

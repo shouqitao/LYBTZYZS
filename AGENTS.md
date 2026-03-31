@@ -68,3 +68,48 @@ Sub-directory `CLAUDE.md` files provide module-specific guidance throughout `src
 | Web search | `tavily_search` / `brave_web_search` |
 | GitHub operations | `gh` CLI |
 | Current time | `get_current_time(timezone="Asia/Shanghai")` |
+
+## Self-Improvement & Learnings
+
+**Skill**: `self-improvement` — Log learnings and errors for continuous improvement.
+
+### Usage
+
+When you encounter:
+- **Errors**: Command failures, API errors, test failures → Log to `.learnings/ERRORS.md`
+- **Corrections**: User corrects your approach → Log to `.learnings/LEARNINGS.md`
+- **Feature Requests**: User wants missing capability → Log to `.learnings/FEATURE_REQUESTS.md`
+- **Best Practices**: Discovered better approach → Log to `.learnings/LEARNINGS.md`
+
+### File Locations
+
+```
+.learnings/
+├── LEARNINGS.md          # Corrections, insights, knowledge gaps
+├── ERRORS.md             # Command failures, integration errors
+└── FEATURE_REQUESTS.md   # User-requested capabilities
+```
+
+### Format
+
+```markdown
+## [LRN-YYYYMMDD-XXX] category
+
+**Logged**: ISO-8601 timestamp
+**Priority**: low | medium | high | critical
+**Status**: pending | resolved | promoted
+
+### Summary
+One-line description
+
+### Details
+Full context
+
+### Suggested Action
+Specific fix or improvement
+
+### Metadata
+- Source: conversation | error | user_feedback
+- Related Files: path/to/file.ext
+- Tags: tag1, tag2
+```

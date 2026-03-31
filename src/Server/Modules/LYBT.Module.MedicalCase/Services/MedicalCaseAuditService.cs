@@ -1,10 +1,8 @@
 using System.Text.Json;
 using System.Threading;
 using LYBT.Entities.MedicalCases;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCases.Services
@@ -15,7 +13,7 @@ namespace LYBT.Module.MedicalCases.Services
     /// </summary>
     public class MedicalCaseAuditService : IMedicalCaseAuditService
     {
-        private readonly AppDbContext _dbContext;
+        private readonly IMedicalCaseAuditLogRepository _auditLogRepository;
         private readonly ILogger<MedicalCaseAuditService> _logger;
 
         private static readonly JsonSerializerOptions _jsonOptions = new()
@@ -25,10 +23,10 @@ namespace LYBT.Module.MedicalCases.Services
         };
 
         public MedicalCaseAuditService(
-            AppDbContext dbContext,
+            IMedicalCaseAuditLogRepository auditLogRepository,
             ILogger<MedicalCaseAuditService> logger)
         {
-            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _auditLogRepository = auditLogRepository ?? throw new ArgumentNullException(nameof(auditLogRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -64,8 +62,8 @@ namespace LYBT.Module.MedicalCases.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
-                _dbContext.MedicalCaseAuditLogs.Add(auditLog);
-                await _dbContext.SaveChangesAsync(cancellationToken);
+                await _auditLogRepository.AddAsync(auditLog, cancellationToken);
+                await _auditLogRepository.SaveChangesAsync(cancellationToken);
 
                 _logger.LogInformation("[SVC] MedicalCase.Audit completed - MedicalCaseId={MedicalCaseId} OperationType={OperationType} OperatorName={OperatorName} OperatorRole={OperatorRole} ChangedFields={ChangedFields}",
                     after.Id, operationType, operatorName, role, changedFields);
@@ -81,10 +79,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// <inheritdoc/>
         public async Task<List<MedicalCaseAuditLog>> GetLogsAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
         {
-            return await _dbContext.MedicalCaseAuditLogs
-                .Where(l => l.MedicalCaseId == medicalCaseId)
-                .OrderByDescending(l => l.CreatedAt)
-                .ToListAsync(cancellationToken);
+            return await _auditLogRepository.GetByMedicalCaseIdAsync(medicalCaseId, cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -94,18 +89,7 @@ namespace LYBT.Module.MedicalCases.Services
             int pageSize = 20,
             CancellationToken cancellationToken = default)
         {
-            var query = _dbContext.MedicalCaseAuditLogs
-                .Where(l => l.MedicalCaseId == medicalCaseId)
-                .OrderByDescending(l => l.CreatedAt);
-
-            var totalCount = await query.CountAsync(cancellationToken);
-
-            var logs = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return (logs, totalCount);
+            return await _auditLogRepository.GetPagedByMedicalCaseIdAsync(medicalCaseId, page, pageSize, cancellationToken);
         }
 
         #region Private Methods
