@@ -37,7 +37,6 @@
     "docs-archive",
     "scripts",
     ".github",
-    ".claude",
     ".config",
     ".githooks",
     ".git",
@@ -73,7 +72,6 @@
     "allowed_files: 精确文件名匹配",
     "allowed_patterns: 支持通配符（如*.sln）",
     "allowed_dirs: 允许的目录（包括隐藏目录）",
-    "blocked_patterns: 明确禁止的模式（优先级高于允许规则）",
-    "shrimp-rules.md: shrimp-task-manager MCP工具的必需配置文件"
+    "blocked_patterns: 明确禁止的模式（优先级高于允许规则）"
   ]
 }
