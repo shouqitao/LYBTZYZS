@@ -49,7 +49,7 @@ Extensions/
 ### Options/Common/JwtOptions.cs
 **JwtOptions** | JWT 认证配置，Server 和 Client 共用
 
-属性: SecretKey (Base64编码签名密钥), Issuer, Audience, AccessTokenExpirationMinutes (默认30), RefreshTokenExpirationDays (默认7), ClockSkewSeconds (默认300)。使用 DataAnnotations 进行基本验证。
+属性: SecretKey (Base64编码签名密钥), Issuer, Audience, AccessTokenExpirationMinutes (默认30), RefreshTokenExpirationDays (默认7), ClockSkewSeconds (默认30)。使用 DataAnnotations 进行基本验证。
 
 ### Options/Server/DatabaseOptions.cs
 **DatabaseOptions** | 数据库配置，包含连接字符串、迁移设置和三个嵌套配置类

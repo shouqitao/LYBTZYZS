@@ -18,7 +18,7 @@ namespace LYBT.WebAPI.Controllers
     /// 资源级授权由Service层所有权检查实现
     [ApiController]
     [ApiVersion("1")]
-    [Route("api/v{version:apiVersion}/Formulas")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class FormulasController : BaseApiController
     {
@@ -49,10 +49,7 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? category = null)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (page <= 0 || pageSize <= 0 || pageSize > 100)
-            {
-                return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
-            }
+            if (ValidatePagination(page, pageSize) is { } error) return error;
 
             // optimize-api-permissions: 获取当前用户信息用于角色过滤
             var (operatorId, _, operatorRole) = GetOperator();

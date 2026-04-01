@@ -45,10 +45,7 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? category = null)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (page <= 0 || pageSize <= 0 || pageSize > 100)
-            {
-                return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
-            }
+            if (ValidatePagination(page, pageSize) is { } error) return error;
 
             var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category, cancellationToken);
             return Success(result.Data!, "查询成功");

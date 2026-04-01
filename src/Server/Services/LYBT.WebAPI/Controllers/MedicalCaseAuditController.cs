@@ -18,6 +18,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/medicalcases")]
+    [Tags("MedicalCases")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCaseAuditController : BaseApiController
     {
@@ -50,7 +51,7 @@ namespace LYBT.WebAPI.Controllers
             var entity = await _facade.GetByIdAsync(id);
 
             if (entity == null)
-                return NotFound(ApiResponse<MedicalCasePermissionDto>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
 
             // 获取当前用户信息
             var (userId, _, role) = GetOperator();
@@ -61,7 +62,7 @@ namespace LYBT.WebAPI.Controllers
             _logger.LogDebug("权限查询: 用户 {UserId}({Role}) 对医案 {MedicalCaseId} 的权限: CanEdit={CanEdit}, CanDelete={CanDelete}",
                 userId, role, id, permissions.CanEdit, permissions.CanDelete);
 
-            return Ok(ApiResponse<MedicalCasePermissionDto>.CreateSuccess(permissions, "查询成功"));
+            return Success(permissions, "查询成功");
         }
 
         /// <summary>
@@ -85,14 +86,10 @@ namespace LYBT.WebAPI.Controllers
             // 验证医案是否存在
             var entity = await _facade.GetByIdAsync(id);
             if (entity == null)
-                return NotFound(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
 
             // 参数验证
-            if (page <= 0 || pageSize <= 0 || pageSize > 100)
-            {
-                return BadRequest(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateFail(
-                    "页码和页大小参数无效（页码>0，页大小1-100）"));
-            }
+            if (ValidatePagination(page, pageSize) is { } error) return error;
 
             // 获取审计日志
             var (logs, totalCount) = await _facade.GetAuditLogsPagedAsync(id, page, pageSize);
@@ -124,7 +121,7 @@ namespace LYBT.WebAPI.Controllers
             _logger.LogDebug("审计日志查询: 医案 {MedicalCaseId}, 第 {Page} 页, 共 {TotalCount} 条",
                 id, page, totalCount);
 
-            return Ok(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateSuccess(result, "查询成功"));
+            return Success(result, "查询成功");
         }
     }
 }

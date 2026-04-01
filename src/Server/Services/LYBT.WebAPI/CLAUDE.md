@@ -201,7 +201,7 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 | 全局异常中间件 | 统一错误格式，防止内部信息泄露 | 初始设计 |
 | Serilog 结构化日志 | 按日滚动文件，满足小型诊所运维审计 | 初始设计 |
 | PascalCase JSON 序列化 | 与 WPF 客户端 DTO 命名一致，避免额外映射 | 初始设计 |
-| ClockSkew = Zero | 移除 JWT 默认 5 分钟宽限期，严格过期控制 | 初始设计 |
+| ClockSkew = 30 seconds | JWT 时钟偏差容忍 30 秒（默认 5 分钟过大） | 初始设计 |
 | 速率限制 (RateLimiting) | 防止登录端点暴力攻击 | 后续增强 |
 | BackgroundServices 缓存失效 | 事件驱动的缓存失效机制 | 2026-02 |
 

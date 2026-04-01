@@ -2,6 +2,7 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Logging.Management;
+using LYBT.Shared.Models.Contracts.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog.Events;
@@ -153,31 +154,4 @@ public class DiagnosticsController : BaseApiController
             currentLevel = level.ToString()
         });
     }
-}
-
-/// <summary>
-/// 启用调试模式请求
-/// </summary>
-public class EnableDebugModeRequest
-{
-    /// <summary>
-    /// 目标日志级别（Verbose/Debug/Information，默认Debug）
-    /// </summary>
-    public string? Level { get; set; }
-
-    /// <summary>
-    /// 持续时间（分钟，默认30，最大120）
-    /// </summary>
-    public int? DurationMinutes { get; set; }
-}
-
-/// <summary>
-/// 设置日志级别请求
-/// </summary>
-public class SetLoggingLevelRequest
-{
-    /// <summary>
-    /// 目标日志级别（Verbose/Debug/Information/Warning/Error/Fatal）
-    /// </summary>
-    public string Level { get; set; } = string.Empty;
 }

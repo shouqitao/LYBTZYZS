@@ -21,6 +21,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/medicalcases")]
+    [Tags("MedicalCases")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCasesController : BaseApiController
     {
@@ -65,7 +66,7 @@ namespace LYBT.WebAPI.Controllers
             var entity = await _facade.SaveAsync(dto, doctorId, isAdmin: false);
 
             if (entity == null)
-                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("患者不存在"));
+                return NotFound("患者不存在");
 
             _logger.LogInformation("医案创建成功，ID: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
                 entity.Id, entity.DoctorName, entity.PatientName);
@@ -73,7 +74,7 @@ namespace LYBT.WebAPI.Controllers
             // Entity → MedicalCaseDetailDto 映射
             var responseDto = _mapper.MapToMedicalCaseDetailDto(entity);
 
-            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(responseDto, "医案创建成功"));
+            return Success(responseDto, "医案创建成功");
         }
 
         /// <summary>
@@ -97,7 +98,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _facade.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
             if (result == null)
             {
-                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
             }
 
             // Entity → DTO映射
@@ -105,7 +106,7 @@ namespace LYBT.WebAPI.Controllers
 
             _logger.LogInformation("处方标记更新成功，MedicalCaseId: {Id}, NeedsPrescription: {Flag}",
                 id, request.NeedsPrescription);
-            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "处方标记更新成功"));
+            return Success(dto, "处方标记更新成功");
         }
 
         /// <summary>
@@ -130,7 +131,7 @@ namespace LYBT.WebAPI.Controllers
             // 验证请求ID与路由ID一致
             if (request.Id != id)
             {
-                return BadRequest(ApiResponse<MedicalCaseDetailDto>.CreateFail("请求ID与路由ID不一致"));
+                return Error("请求ID与路由ID不一致");
             }
 
             // 获取当前用户信息
@@ -142,14 +143,14 @@ namespace LYBT.WebAPI.Controllers
 
             if (result == null)
             {
-                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
             }
 
             // Entity → MedicalCaseDetailDto 映射
             var detailDto = _mapper.MapToMedicalCaseDetailDto(result);
 
             _logger.LogInformation("医案聚合保存成功，MedicalCaseId: {MedicalCaseId}", id);
-            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(detailDto, "保存成功"));
+            return Success(detailDto, "保存成功");
         }
 
         /// <summary>
@@ -170,7 +171,7 @@ namespace LYBT.WebAPI.Controllers
 
             var result = await _facade.DeleteAsync(id, operatorId, isAdmin);
             if (!result)
-                return NotFound(ApiResponse.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
 
             _logger.LogInformation("医案已软删除，MedicalCaseId: {Id}, OperatorId: {OperatorId}", id, operatorId);
             return Success(true, "医案已删除");
@@ -243,12 +244,12 @@ namespace LYBT.WebAPI.Controllers
             var result = await _facade.GetByIdAsync(id);
 
             if (result == null)
-                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
 
             // Entity → DTO映射 - 使用MapToMedicalCaseDetailDto返回完整详情
             var dto = _mapper.MapToMedicalCaseDetailDto(result);
 
-            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "查询成功"));
+            return Success(dto, "查询成功");
         }
 
         /// <summary>
@@ -270,11 +271,7 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? keyword = null)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (page <= 0 || pageSize <= 0 || pageSize > 100)
-            {
-                return BadRequest(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateFail(
-                    "页码和页大小参数无效（页码>0，页大小1-100）"));
-            }
+            if (ValidatePagination(page, pageSize) is { } error) return error;
 
             // OpenSpec: optimize-module-list-ui - 获取当前用户信息用于角色过滤
             // OpenSpec: fix-history-copy-all-patients - includeAllDoctors=true时跳过医生过滤
@@ -288,7 +285,7 @@ namespace LYBT.WebAPI.Controllers
                 isAdmin: isAdmin,
                 keyword: keyword);
 
-            return Ok(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateSuccess(result, "查询成功"));
+            return Success(result, "查询成功");
         }
 
         /// <summary>
@@ -304,11 +301,7 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetMedicalCases([FromQuery] MedicalCaseQueryDto query)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (query.PageIndex <= 0 || query.PageSize <= 0 || query.PageSize > 100)
-            {
-                return BadRequest(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateFail(
-                    "页码和页大小参数无效（页码>0，页大小1-100）"));
-            }
+            if (ValidatePagination(query.PageIndex, query.PageSize) is { } error) return error;
 
             // 获取当前用户信息
             var (operatorId, _, operatorRole) = GetOperator();
@@ -330,7 +323,7 @@ namespace LYBT.WebAPI.Controllers
             _logger.LogInformation("统一查询完成，QueryType: {QueryType}, 返回{Count}条记录",
                 query.QueryType, result.Items.Count);
 
-            return Ok(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateSuccess(result, "查询成功"));
+            return Success(result, "查询成功");
         }
 
         /// <summary>
@@ -357,16 +350,12 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int pageSize = 20)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (page <= 0 || pageSize <= 0 || pageSize > 100)
-            {
-                return BadRequest(ApiResponse<PagedResult<MedicalCaseDetailDto>>.CreateFail(
-                    "页码和页大小参数无效（页码>0，页大小1-100）"));
-            }
+            if (ValidatePagination(page, pageSize) is { } error) return error;
 
             var result = await _facade.SearchMedicalCasesAsync(
                 patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
 
-            return Ok(ApiResponse<PagedResult<MedicalCaseDetailDto>>.CreateSuccess(result, "搜索成功"));
+            return Success(result, "搜索成功");
         }
 
         /// <summary>
@@ -381,7 +370,7 @@ namespace LYBT.WebAPI.Controllers
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var result = await _facade.GetConsultationListAsync(medicalCaseId);
 
-            return Ok(ApiResponse<List<ConsultationDetailDto>>.CreateSuccess(result, "查询成功"));
+            return Success(result, "查询成功");
         }
 
         /// <summary>
@@ -396,7 +385,7 @@ namespace LYBT.WebAPI.Controllers
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var result = await _facade.GetPrescriptionListAsync(medicalCaseId);
 
-            return Ok(ApiResponse<List<PrescriptionDetailDto>>.CreateSuccess(result, "查询成功"));
+            return Success(result, "查询成功");
         }
     }
 }

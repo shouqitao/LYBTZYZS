@@ -45,5 +45,5 @@ public sealed class JwtOptions
     /// 时钟偏差容忍度 (秒)
     /// </summary>
     [Range(0, 600)]
-    public int ClockSkewSeconds { get; set; } = 300;
+    public int ClockSkewSeconds { get; set; } = 30;
 }

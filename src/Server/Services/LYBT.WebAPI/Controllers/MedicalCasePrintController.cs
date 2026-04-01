@@ -18,6 +18,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/medicalcases")]
+    [Tags("MedicalCases")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCasePrintController : BaseApiController
     {
@@ -53,13 +54,13 @@ namespace LYBT.WebAPI.Controllers
                 id, request.PrintType, operatorId, operatorName, request.PrinterName);
 
             if (result == null)
-                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
 
             var dto = _mapper.MapToMedicalCaseDetailDto(result);
 
             _logger.LogInformation("打印完成记录成功，MedicalCaseId: {Id}, PrintVersion: {Version}, PrintCount: {Count}",
                 id, result.PrintVersion, result.PrintCount);
-            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "打印记录更新成功"));
+            return Success(dto, "打印记录更新成功");
         }
 
         /// <summary>
@@ -83,11 +84,11 @@ namespace LYBT.WebAPI.Controllers
                 request.PrinterName, request.ErrorMessage);
 
             if (!result)
-                return NotFound(ApiResponse<object>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
 
             _logger.LogInformation("打印日志记录成功，MedicalCaseId: {Id}, IsSuccess: {IsSuccess}",
                 id, request.IsSuccess);
-            return Ok(ApiResponse<object>.CreateSuccess(null, "打印日志记录成功"));
+            return Success("打印日志记录成功");
         }
     }
 }

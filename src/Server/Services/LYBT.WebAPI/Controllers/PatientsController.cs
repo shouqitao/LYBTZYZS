@@ -44,10 +44,7 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? keyword = null)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (page <= 0 || pageSize <= 0 || pageSize > 100)
-            {
-                return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
-            }
+            if (ValidatePagination(page, pageSize) is { } error) return error;
 
             // T5-P2-27: 非Admin角色只看到启用患者
             var isAdmin = User?.IsInRole(RoleConstants.Admin) == true || User?.IsInRole(RoleConstants.SuperAdmin) == true;

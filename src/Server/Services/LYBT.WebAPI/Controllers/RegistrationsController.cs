@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.Registration.Interfaces;
@@ -24,15 +25,18 @@ public class RegistrationsController : BaseApiController
 {
     private readonly IRegistrationService _registrationService;
     private readonly IMedicalCaseCommandService _medicalCaseService;
+    private readonly AppDbContext _dbContext;
 
     public RegistrationsController(
         IRegistrationService registrationService,
         IMedicalCaseCommandService medicalCaseService,
+        AppDbContext dbContext,
         ILogger<RegistrationsController> logger)
         : base(logger)
     {
         _registrationService = registrationService;
         _medicalCaseService = medicalCaseService;
+        _dbContext = dbContext;
     }
 
     /// <summary>
@@ -63,54 +67,66 @@ public class RegistrationsController : BaseApiController
             Remark = dto.Remark
         };
 
-        var registrationResult = await _registrationService.CreateAsync(registrationInput);
-        if (!registrationResult.IsSuccess || registrationResult.Data is null)
+        using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        try
         {
-            return HandleResult(registrationResult);
+            var registrationResult = await _registrationService.CreateAsync(registrationInput);
+            if (!registrationResult.IsSuccess || registrationResult.Data is null)
+            {
+                await transaction.RollbackAsync();
+                return HandleResult(registrationResult);
+            }
+
+            var registration = registrationResult.Data;
+
+            // 2. 创建 MedicalCase (关联 RegistrationId)
+            var medicalCaseInput = new MedicalCaseInputDto
+            {
+                PatientId = dto.PatientId,
+                UserId = doctorId,
+                RegistrationId = registration.Id
+            };
+
+            var medicalCase = await _medicalCaseService.SaveAsync(
+                medicalCaseInput,
+                doctorId,
+                isAdmin: false);
+
+            if (medicalCase == null)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError("快速看诊-医案创建失败: RegistrationId={RegistrationId}", registration.Id);
+                return BusinessFail("医案创建失败，但挂号记录已创建");
+            }
+
+            await transaction.CommitAsync();
+
+            _logger.LogInformation(
+                "快速看诊成功: RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
+                registration.Id, medicalCase.Id);
+
+            // 3. 返回结果
+            var result = new QuickVisitResultDto
+            {
+                RegistrationId = registration.Id,
+                MedicalCaseId = medicalCase.Id,
+                PatientId = dto.PatientId,
+                PatientName = dto.PatientName,
+                DoctorId = doctorId,
+                DoctorName = doctorName,
+                CreatedAt = registration.CreatedAt
+            };
+
+            LogOperation("医生快速看诊", dto, result.RegistrationId);
+            return CreatedAtAction(nameof(GetById),
+                new { id = result.RegistrationId, version = "1" },
+                ApiResponse<QuickVisitResultDto>.CreateSuccess(result, "快速看诊创建成功"));
         }
-
-        var registration = registrationResult.Data;
-
-        // 2. 创建 MedicalCase (关联 RegistrationId)
-        var medicalCaseInput = new MedicalCaseInputDto
+        catch
         {
-            PatientId = dto.PatientId,
-            UserId = doctorId,
-            RegistrationId = registration.Id
-        };
-
-        var medicalCase = await _medicalCaseService.SaveAsync(
-            medicalCaseInput,
-            doctorId,
-            isAdmin: false);
-
-        if (medicalCase == null)
-        {
-            // 医案创建失败，记录错误但挂号已创建，不需要回滚
-            _logger.LogError("快速看诊-医案创建失败: RegistrationId={RegistrationId}", registration.Id);
-            return BusinessFail("医案创建失败，但挂号记录已创建");
+            await transaction.RollbackAsync();
+            throw;
         }
-
-        _logger.LogInformation(
-            "快速看诊成功: RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
-            registration.Id, medicalCase.Id);
-
-        // 3. 返回结果
-        var result = new QuickVisitResultDto
-        {
-            RegistrationId = registration.Id,
-            MedicalCaseId = medicalCase.Id,
-            PatientId = dto.PatientId,
-            PatientName = dto.PatientName,
-            DoctorId = doctorId,
-            DoctorName = doctorName,
-            CreatedAt = registration.CreatedAt
-        };
-
-        LogOperation("医生快速看诊", dto, result.RegistrationId);
-        return CreatedAtAction(nameof(GetById),
-            new { id = result.RegistrationId, version = "1" },
-            ApiResponse<QuickVisitResultDto>.CreateSuccess(result, "快速看诊创建成功"));
     }
 
     [HttpPost]
@@ -157,10 +173,7 @@ public class RegistrationsController : BaseApiController
         [FromQuery] Guid? patientId = null,
         [FromQuery] Guid? doctorId = null)
     {
-        if (page <= 0 || pageSize <= 0 || pageSize > 100)
-        {
-            return ValidationFail("页码和页大小参数无效 (页码>0, 页大小1-100)");
-        }
+        if (ValidatePagination(page, pageSize) is { } error) return error;
 
         var result = await _registrationService.GetPagedAsync(page, pageSize, keyword,
             startDate, endDate, patientId, doctorId);

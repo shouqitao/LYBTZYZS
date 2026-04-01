@@ -20,6 +20,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/medicalcases")]
+    [Tags("MedicalCases")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCaseProcessingController : BaseApiController
     {
@@ -55,21 +56,21 @@ namespace LYBT.WebAPI.Controllers
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
                 var completeResult = await _facade.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: false);
                 if (completeResult == null)
-                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
+                    return NotFound("医案不存在");
 
                 var completeDto = _mapper.MapToMedicalCaseDetailDto(completeResult);
-                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(completeDto, "医案已完成"));
+                return Success(completeDto, "医案已完成");
             }
 
             var result = await _facade.UpdateStatusAsync(id, request.Status);
 
             if (result == null)
-                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
 
             var dto = _mapper.MapToMedicalCaseDetailDto(result);
             _logger.LogInformation("医案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}",
                 id, request.Status);
-            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "状态更新成功"));
+            return Success(dto, "状态更新成功");
         }
 
         /// <summary>
@@ -88,11 +89,11 @@ namespace LYBT.WebAPI.Controllers
             var result = await _facade.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: true);
 
             if (result == null)
-                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
 
             var dto = _mapper.MapToMedicalCaseDetailDto(result);
             _logger.LogInformation("医案关闭，MedicalCaseId: {Id}", id);
-            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "医案已关闭"));
+            return Success(dto, "医案已关闭");
         }
 
         /// <summary>
@@ -117,14 +118,14 @@ namespace LYBT.WebAPI.Controllers
             var result = await _facade.SuspendAsync(id, request, operatorId, isAdmin);
             if (result == null)
             {
-                return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
             }
 
             // Entity → DTO映射
             var dto = _mapper.MapToMedicalCaseDetailDto(result);
 
             _logger.LogInformation("医案暂存成功，MedicalCaseId: {Id}", id);
-            return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(dto, "医案已暂存"));
+            return Success(dto, "医案已暂存");
         }
 
         /// <summary>
@@ -145,7 +146,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _facade.CancelAsync(id, operatorId, isAdmin, request?.Reason);
             if (result == null)
             {
-                return NotFound(ApiResponse.CreateFail("医案不存在"));
+                return NotFound("医案不存在");
             }
 
             _logger.LogInformation("医案取消成功(软删除)，MedicalCaseId: {Id}", id);

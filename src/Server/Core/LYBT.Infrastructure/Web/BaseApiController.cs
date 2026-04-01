@@ -434,6 +434,17 @@ namespace LYBT.Infrastructure.Web
             return null;
         }
 
+        /// <summary>
+        /// 验证分页参数
+        /// </summary>
+        protected IActionResult? ValidatePagination(int page, int pageSize)
+        {
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
+                return ValidationFail("分页参数无效：page 和 pageSize 必须大于 0，pageSize 不能超过 100");
+
+            return null;
+        }
+
         #endregion
     }
 }
