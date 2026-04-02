@@ -24,6 +24,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly IApplicationStateService _applicationStateService;
         private readonly IUsernameStorageService? _usernameStorage;
         private readonly ICredentialVault? _credentialVault;
+        private CancellationTokenSource? _cts;
 
         private string _username = string.Empty;
         private string _password = string.Empty;
@@ -280,10 +281,25 @@ namespace LYBT.Desktop.Auth.ViewModels
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
             RetryApiCheckCommand = new DelegateCommand(async () => await ExecuteRetryApiCheckAsync(), () => ApiStatus == ApiHealthStatus.Unhealthy);
 
-            // OpenSpec: refactor-startup-connection-resilience - 订阅状态变更事件，事件驱动UI更新
             _applicationStateService.StatusChanged += OnApiStatusChanged;
 
-            _ = Task.Run(async () => { await Task.Delay(100); await LoadSavedCredentialsAsync(); await LoadApiStatusFromStateServiceAsync(); });
+            _cts = new CancellationTokenSource();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(100, _cts.Token);
+                    await LoadSavedCredentialsAsync();
+                    await LoadApiStatusFromStateServiceAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "[VM] Login.BackgroundInit failed");
+                }
+            }, _cts.Token);
         }
 
         public override void OnNavigatedTo(NavigationContext navigationContext)
@@ -503,6 +519,20 @@ namespace LYBT.Desktop.Auth.ViewModels
                     ApiStatusMessage = "连接检查失败，请稍后重试";
                 });
             }
+        }
+
+        protected override void OnDisposing()
+        {
+            _applicationStateService.StatusChanged -= OnApiStatusChanged;
+
+            if (_cts != null)
+            {
+                _cts.Cancel();
+                _cts.Dispose();
+                _cts = null;
+            }
+
+            base.OnDisposing();
         }
     }
 }

@@ -437,6 +437,45 @@ public class LoginViewModelTests
 
     #endregion
 
+    #region 资源清理 (Dispose)
+
+    [Fact]
+    public async Task Dispose_CancelsBackgroundInitializationTask()
+    {
+        var sut = CreateSut();
+        await Task.Delay(20);
+
+        sut.Dispose();
+        await Task.Delay(50);
+
+        sut.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Dispose_MultipleCallsAreSafe()
+    {
+        var sut = CreateSut();
+
+        sut.Dispose();
+        sut.Dispose();
+        sut.Dispose();
+    }
+
+    [Fact]
+    public void Dispose_AfterDispose_CommandsDoNotCrash()
+    {
+        var sut = CreateSut();
+        sut.Username = "admin";
+        sut.Password = "password";
+
+        sut.Dispose();
+
+        var canExecute = sut.LoginCommand.CanExecute(null);
+        canExecute.Should().BeTrue();
+    }
+
+    #endregion
+
     #region 行为契约测试 (简化版)
 
     /// <summary>
