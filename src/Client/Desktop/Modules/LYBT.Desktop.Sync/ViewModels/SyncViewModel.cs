@@ -532,3 +532,16 @@ public partial class SyncItemViewModel : ObservableObject
         }
     }
 }
+
+#region SyncViewModel Disposal
+
+partial class SyncViewModel
+{
+    protected override void OnDisposing()
+    {
+        _itemFactory.SetSelectionChangedCallback(null);
+        base.OnDisposing();
+    }
+}
+
+#endregion

@@ -378,5 +378,17 @@ namespace LYBT.Desktop.Formula.ViewModels
         }
 
         #endregion
+
+        #region Disposal
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+            }
+            base.Dispose(disposing);
+        }
+
+        #endregion
     }
 }

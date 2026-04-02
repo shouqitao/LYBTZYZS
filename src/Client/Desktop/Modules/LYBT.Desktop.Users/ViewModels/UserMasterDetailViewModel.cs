@@ -406,4 +406,16 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     }
 
     #endregion
+
+    #region Disposal
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+        }
+        base.Dispose(disposing);
+    }
+
+    #endregion
 }
