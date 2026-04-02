@@ -19,15 +19,45 @@ public static class UnifiedMiddlewareConfiguration
     public static WebApplication ConfigureAllMiddleware(this WebApplication app)
     {
         // ===== 阶段1: 错误处理和安全 =====
-        // 1.1 异常处理（最外层，捕获所有异常）
-        if (app.Environment.IsDevelopment())
+        // 1.1 统一异常处理(所有环境使用相同JSON格式)
+        app.UseExceptionHandler(exceptionHandlerApp =>
         {
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseExceptionHandler();
-        }
+            exceptionHandlerApp.Run(async context =>
+            {
+                var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+
+                if (exception == null)
+                {
+                    return;
+                }
+
+                // Resolve and invoke IExceptionHandler chain (BusinessExceptionHandler → SystemExceptionHandler)
+                // CRITICAL: Use Microsoft.AspNetCore.Diagnostics.IExceptionHandler (NOT LYBT.Shared.ExceptionHandling.Handlers.IExceptionHandler)
+                var handlers = context.RequestServices.GetServices<Microsoft.AspNetCore.Diagnostics.IExceptionHandler>();
+                
+                foreach (var handler in handlers)
+                {
+                    var handled = await handler.TryHandleAsync(context, exception, context.RequestAborted);
+                    if (handled)
+                    {
+                        return; // Handler wrote ApiResponse to response stream
+                    }
+                }
+
+                // Fallback: No handler processed exception, write generic ApiResponse
+                context.Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError;
+                context.Response.ContentType = "application/json";
+                
+                var fallbackResponse = LYBT.Shared.Models.Contracts.Common.ApiResponse.CreateFail(
+                    app.Environment.IsDevelopment() 
+                        ? $"[DEV] {exception.GetType().Name}: {exception.Message}\n{exception.StackTrace}" 
+                        : "An unexpected error occurred"
+                );
+                fallbackResponse.RequestId = context.TraceIdentifier;
+                
+                await context.Response.WriteAsJsonAsync(fallbackResponse);
+            });
+        });
 
         // 1.1.1 StatusCodePages（处理非异常的HTTP错误状态码）
         // refactor-logging-system: RFC 7807标准化状态码响应

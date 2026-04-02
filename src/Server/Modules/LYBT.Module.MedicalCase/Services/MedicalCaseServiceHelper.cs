@@ -122,7 +122,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             var patient = await patientCrossModule.GetPatientBasicInfoAsync(patientId, cancellationToken)
-                ?? throw new InvalidOperationException($"患者不存在，PatientId: {patientId}");
+                ?? throw new KeyNotFoundException($"患者不存在，PatientId: {patientId}");
 
             // T5-P2-09: 检查患者状态
             if (patient.Status != CommonStatus.Enabled)
@@ -133,7 +133,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             var doctor = await userCrossModule.GetUserBasicInfoAsync(doctorId, cancellationToken)
-                ?? throw new InvalidOperationException($"医生不存在，DoctorId: {doctorId}");
+                ?? throw new KeyNotFoundException($"医生不存在，DoctorId: {doctorId}");
 
             // BR-001: 单患者仅一条未完成医案
             var existingCases = await medicalCaseRepository.GetByPatientIdAsync(patientId, cancellationToken);

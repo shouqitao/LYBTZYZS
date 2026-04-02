@@ -325,7 +325,17 @@ namespace LYBT.Module.Users.Services
             // X3-02: 角色变更后撤销 Token
             if (roleChanged)
             {
-                await _authService.RevokeUserTokensAsync(id, "角色变更，强制重新认证");
+                try
+                {
+                    await _authService.RevokeUserTokensAsync(id, "角色变更,强制重新认证");
+                    _logger.LogInformation("[SVC] User.Update → TokensRevoked - UserId={UserId}", id);
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail update operation
+                    _logger.LogError(ex, "[SVC] User.Update → TokenRevocationFailed - UserId={UserId}", id);
+                    // User update succeeded, token revocation failed (user must re-login manually)
+                }
             }
 
             _logger.LogInformation("[SVC] User.Update completed - UserId={UserId}", id);
@@ -435,6 +445,15 @@ namespace LYBT.Module.Users.Services
             // T5-P3-19: 更新 Email (仅当 DTO 提供了值时)
             if (dto.Email != null)
             {
+                if (!string.Equals(entity.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+                {
+                    var existingUser = await _repository.GetByUsernameAsync(dto.Email, cancellationToken);
+                    if (existingUser != null && existingUser.Id != userId)
+                    {
+                        _logger.LogWarning("[SVC] User.ChangeProfile → EmailExists - Email={Email}", dto.Email);
+                        return Result<UserDetailDto>.Failure(GenericErrorCode.ValidationFailed, "该邮箱已被使用");
+                    }
+                }
                 entity.Email = dto.Email;
             }
 

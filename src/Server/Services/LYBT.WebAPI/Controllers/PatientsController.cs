@@ -111,7 +111,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新患者信息
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto)
         {
@@ -143,7 +143,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除患者（软删除）
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> Delete(Guid id)
         {

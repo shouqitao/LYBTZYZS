@@ -117,7 +117,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="id">医案ID</param>
         /// <param name="request">聚合保存请求</param>
         /// <returns>更新后的医案详情</returns>
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
@@ -159,7 +159,7 @@ namespace LYBT.WebAPI.Controllers
         /// 使用BaseRepository默认软删除机制（IsDeleted=true）
         /// 资源级权限由 Service 层 EnsureCanEdit/EnsureCanDelete 统一检查
         /// </summary>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         [ProducesResponseType(typeof(ApiResponse), 403)]

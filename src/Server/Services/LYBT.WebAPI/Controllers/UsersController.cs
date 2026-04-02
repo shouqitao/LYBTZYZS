@@ -17,7 +17,7 @@ namespace LYBT.WebAPI.Controllers
     /// 管理端点通过方法级 [Authorize(Policy = PolicyConstants.AdminOnly)] 限制
     [ApiController]
     [ApiVersion("1")]
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [Route("api/v{version:apiVersion}/users")]
     [Authorize]
     public class UsersController : BaseApiController
     {
