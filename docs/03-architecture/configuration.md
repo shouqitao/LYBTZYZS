@@ -2,7 +2,7 @@
 
 ## 概述
 
-系统使用 .NET Options 模式 (`IOptions<T>` / `IOptionsMonitor<T>`) 进行强类型配置管理。所有配置类集中在 `LYBT.Shared.Configuration` 项目中，Server 和 Client 各有独立的 DI 注册扩展方法。
+系统使用 .NET Options 模式 (`IOptions<T>` / `IOptionsMonitor<T>`) 进行强类型配置管理。大部分配置类集中在 `LYBT.Shared.Configuration` 项目中，Server 和 Client 各有独立的 DI 注册扩展方法。少数仅单一项目使用的 Options (如 `JsonOptions`) 直接定义在消费方项目中。
 
 配置管道: `appsettings.json` → 环境覆盖 → Options 绑定 → DataAnnotations 验证 → `IValidateOptions<T>` 自定义验证 → `ValidateOnStart` 启动时验证。
 
@@ -68,9 +68,7 @@ appsettings.json                  # 基础配置 (所有环境共享的默认值
 | Options | 跳过 ValidateOnStart | 原因 |
 |---------|:-------------------:|------|
 | LoggingOptions (Server) | ✓ | 日志级别需要运行时动态调整，不能被启动验证锁定 |
-| FeatureToggleOptions (Client) | ✓ | 功能开关需要运行时切换，无需重启 |
-| PrescriptionOptions (Client) | ✓ | 处方配置可能在运行时调整 |
-| SyncOptions (Client) | ✓ | 同步策略可能在运行时调整 |
+| FeatureToggleOptions (Client) | ✓ | 功能开关、处方配置、同步策略等需要运行时切换，无需重启 |
 
 其余所有 Options 均启用 `ValidateOnStart()`，确保无效配置在启动时快速失败。
 
@@ -91,7 +89,7 @@ appsettings.json                  # 基础配置 (所有环境共享的默认值
 
 ## Client 端注册
 
-`AddLybtClientConfiguration(services, configuration)` 注册 7 个 Options 和 1 个验证器:
+`AddLybtClientConfiguration(services, configuration)` 注册 5 个 Options 和 1 个验证器:
 
 | Options | 配置节 | 验证器 | ValidateOnStart |
 |---------|--------|--------|:---------------:|
@@ -100,8 +98,6 @@ appsettings.json                  # 基础配置 (所有环境共享的默认值
 | ClientSessionOptions | `ClientSession` | — | ✓ |
 | FeatureToggleOptions | `FeatureToggles` | — | ✗ (热更新) |
 | ClinicSettingsOptions | `ClinicSettings` | — | ✓ |
-| PrescriptionOptions | `Prescription` | — | ✗ (热更新) |
-| SyncOptions | `Sync` | — | ✗ (热更新) |
 
 ## 配置节命名约定
 
@@ -134,3 +130,9 @@ services.AddOptions<JwtOptions>()
 | 日期 | 变更内容 |
 |------|----------|
 | 2026-04-03 | 初始版本: Options 模式重构完成后的架构文档 |
+| 2026-04-03 | PrescriptionOptions + SyncOptions 合并入 FeatureToggleOptions；JsonOptions 从 Shared.Configuration 迁移至 WebAPI 项目；客户端注册从 7 → 5 个 Options |
+
+## 相关文档
+
+- [配置需求规格 (PRD)](../02-requirements/configuration.md) — Options 类清单、功能需求、决策记录
+- [服务端配置运维指南](../06-operations/configuration.md) — Server 端 appsettings.json 配置项详细说明

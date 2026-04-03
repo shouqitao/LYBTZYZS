@@ -59,7 +59,7 @@
 配置模块采用 ASP.NET Core Options 模式，实现强类型、可验证、分环境的配置管理体系:
 
 **核心能力:**
-- **强类型绑定**: 17 个 Options 类 (12 服务端 + 5 客户端) 通过 `IServiceCollection.Configure<T>()` 绑定 appsettings.json 配置节
+- **强类型绑定**: 14 个 Options 类 (8 服务端 + 1 共享 + 4 客户端 + 1 WebAPI 专用) 通过 `IServiceCollection.Configure<T>()` 绑定 appsettings.json 配置节
 - **DataAnnotation 验证**: 所有 Options 类支持 `[Required]`、`[Range]`、`[MinLength]` 等验证注解，启动时自动校验
 - **分环境覆盖**: appsettings.json -> appsettings.{Environment}.json -> 环境变量，三级优先级
 - **生产启动验证**: ProductionConfigurationValidator 在 Production 环境启动时强制检查关键配置
@@ -508,8 +508,12 @@ CRITICAL 错误（必须修复）:
 配置模块不引入独立数据库实体。所有配置通过 appsettings.json + 环境变量管理，运行时绑定到强类型 Options 类。
 
 Options 类分布:
-- **Server (12 个)**: JwtOptions, SessionOptions, SecurityOptions, PasswordPolicyOptions, DefaultPasswordsOptions, DatabaseOptions, MemoryCacheOptions, SystemAdminOptions, UserManagementOptions, LoggingOptions, SwaggerOptions, JsonOptions
-- **Client (5 个)**: ApiClientOptions, ClientSessionOptions, FeatureTogglesOptions, ClinicSettingsOptions, PrescriptionOptions
+- **Server (8 个, Shared.Configuration)**: SessionOptions, SecurityOptions, DefaultPasswordOptions, DatabaseOptions, MemoryCacheOptions, SystemAdminOptions, LoggingOptions, SwaggerOptions
+- **Server (1 个, WebAPI)**: JsonOptions (仅 WebAPI 使用，已从 Shared.Configuration 迁出)
+- **Common (1 个)**: JwtOptions (Server/Client 共享)
+- **Client (4 个)**: ApiClientOptions, ClientSessionOptions, FeatureToggleOptions, ClinicSettingsOptions
+
+> **变更记录**: PrescriptionOptions + SyncOptions 已合并入 FeatureToggleOptions；PasswordPolicyOptions + UserManagementOptions 为死代码已删除；JsonOptions 迁移至 WebAPI 项目。
 
 ---
 
@@ -555,3 +559,4 @@ Options 类分布:
 | 2026-02-17 | v2.1 | PRD审查修复: A3-InactivityTimeout 5->15min/Warning 0->2min, A5-DefaultRole Staff->Doctor |
 | 2026-02-21 | v2.2 | PRD vs Code 偏差分析修订: 2 项修订, 1 项延期标注 |
 | 2026-03-06 | v3.0 | PRD 全面重写: FR->US 格式迁移，新增 Problem Statement/Strategic Context/Success Metrics/Epic Hypothesis/Out of Scope/Dependencies & Risks/Open Questions 7 个章节，决策记录迁移为 CFG-D01~D06 编号体系 |
+| 2026-04-03 | v3.1 | Data Model 对齐代码: Options 类数量从 17→14，反映 PrescriptionOptions/SyncOptions 合并、PasswordPolicyOptions/UserManagementOptions 删除、JsonOptions 迁移 |
