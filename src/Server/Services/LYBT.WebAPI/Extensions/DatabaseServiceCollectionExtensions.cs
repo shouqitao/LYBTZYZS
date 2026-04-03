@@ -153,12 +153,6 @@ public static class DatabaseServiceCollectionExtensions
         // 常用服务
         services.AddHttpContextAccessor();
 
-        // unify-configuration-system: 注册 Options 供 DatabaseInitializationService 使用
-        services.Configure<DefaultPasswordOptions>(
-            configuration.GetSection(DefaultPasswordOptions.SectionName));
-        services.Configure<SystemAdminOptions>(
-            configuration.GetSection(SystemAdminOptions.SectionName));
-
         services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
 
         // D5-1: 跨模块服务 ISP 注册 (CrossModuleService 实现全部接口，共享 Scoped 实例)
