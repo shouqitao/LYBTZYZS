@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Patients
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
             // OpenSpec: cleanup-patient-dead-code - PatientStateManager已删除（死代码，从未被使用）
             containerRegistry.Register<Services.PatientService>();
-            containerRegistry.Register<ViewModels.Components.PatientValidator>();
+            containerRegistry.Register<IPatientValidator, ViewModels.Components.PatientValidator>();
 
             // OpenSpec: migrate-views-to-role-modules - 视图模型和视图已迁移到角色台模块
             // PatientDetailViewModel/PatientDetailView已删除，改用PatientMasterDetailControl（内嵌在角色台的PatientManagementView中）

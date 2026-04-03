@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +11,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
     /// 集成FluentValidation Validators提供组件级验证接口
     /// Epic #1773 Task 4: Patients模块组件化改造
     /// </summary>
-    public class PatientValidator
+    public class PatientValidator : IPatientValidator
     {
         private readonly IValidator<PatientInputDto> _patientInputValidator;
         private readonly ILogger<PatientValidator> _logger;
