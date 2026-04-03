@@ -61,7 +61,30 @@ public static class UnifiedMiddlewareConfiguration
 
         // 1.1.1 StatusCodePages（处理非异常的HTTP错误状态码）
         // refactor-logging-system: RFC 7807标准化状态码响应
-        app.UseStatusCodePagesWithProblemDetails();
+        app.UseStatusCodePages(async context =>
+        {
+            var statusCode = context.HttpContext.Response.StatusCode;
+            if (statusCode < 400) return;
+
+            var correlationId = context.HttpContext.Items["CorrelationId"]?.ToString() ?? context.HttpContext.TraceIdentifier;
+            var traceId = context.HttpContext.TraceIdentifier;
+
+            var errorResponse = LYBT.Shared.Models.Contracts.Common.ApiResponse.CreateFail(
+                $"请求处理失败 (HTTP {statusCode})",
+                new
+                {
+                    statusCode,
+                    path = context.HttpContext.Request.Path.Value,
+                    correlationId,
+                    traceId,
+                    timestamp = DateTime.UtcNow
+                }
+            );
+            errorResponse.RequestId = traceId;
+
+            context.HttpContext.Response.ContentType = "application/json";
+            await context.HttpContext.Response.WriteAsJsonAsync(errorResponse);
+        });
 
         // 1.2 CorrelationId追踪（尽早注册，确保所有后续日志都包含追踪ID）
         // refactor-logging-system: 实现端到端请求追踪

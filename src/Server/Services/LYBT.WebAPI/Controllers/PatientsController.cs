@@ -62,7 +62,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 获取患者详情
         /// </summary>
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -172,7 +172,7 @@ namespace LYBT.WebAPI.Controllers
         /// 切换患者状态（启用/禁用）
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
-        [HttpPost("{id}/toggle-status")]
+        [HttpPost("{id:guid}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
@@ -194,7 +194,7 @@ namespace LYBT.WebAPI.Controllers
         /// 恢复已删除的患者
         /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
-        [HttpPost("{id}/restore")]
+        [HttpPost("{id:guid}/restore")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Restore(Guid id)
@@ -245,7 +245,7 @@ namespace LYBT.WebAPI.Controllers
         /// 检查患者引用关系
         /// X7: 删除前检查是否有关联医案
         /// </summary>
-        [HttpGet("{id}/check-reference")]
+        [HttpGet("{id:guid}/check-reference")]
         [ProducesResponseType(typeof(ApiResponse<PatientReferenceCheckDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> CheckReference(Guid id)
