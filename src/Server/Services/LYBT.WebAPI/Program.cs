@@ -92,7 +92,9 @@ public class Program
                 .Enrich.WithMachineName()
                 .Enrich.WithThreadId()
                 .Enrich.WithProperty("Application", "LYBT.WebAPI")
-                .WithSensitiveDataMasking());
+                .WithSensitiveDataMasking()
+                .AddMSSqlServerSinkWithColumnOptions(
+                    context.Configuration.GetConnectionString("DefaultConnection")));
 
             // refactor-logging-system: 注册LoggingLevelManager为单例，供AdminController使用
             builder.Services.AddSingleton(LoggingLevelManager);
