@@ -74,14 +74,26 @@ public class PendingQueueManager : IPendingQueueManager
             if (response.Success && response.Data != null)
             {
                 // Epic #2210 Phase 3: 使用Dispatcher在UI线程更新ObservableCollection
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                var dispatcher = System.Windows.Application.Current?.Dispatcher;
+                if (dispatcher != null)
+                {
+                    dispatcher.Invoke(() =>
+                    {
+                        PendingQueue.Clear();
+                        foreach (var item in response.Data)
+                        {
+                            PendingQueue.Add(item);
+                        }
+                    });
+                }
+                else
                 {
                     PendingQueue.Clear();
                     foreach (var item in response.Data)
                     {
                         PendingQueue.Add(item);
                     }
-                });
+                }
 
                 _logger.LogInformation("待看诊队列加载完成，共{Count}条记录", PendingQueue.Count);
 
