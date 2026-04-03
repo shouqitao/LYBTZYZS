@@ -16,8 +16,8 @@
 | Failed (pre-existing) | 5 (1.0%) |
 | Skipped (pre-existing) | 2 (0.4%) |
 | New tests added (this session) | 24 (all passing) |
-| PRD requirements with test coverage | 95 / 125 (76.0%) |
-| Uncovered requirements | 30 (24.0%) |
+| PRD requirements with test coverage | 92 / 125 (73.6%) |
+| Uncovered requirements | 33 (26.4%) |
 
 ---
 
@@ -98,19 +98,19 @@ All 24 new tests pass.
 | Configuration (`configuration.md`) | 4 | 4 | 100.0% | — |
 | Error Handling (`error-handling.md`) | 8 | 5 | 62.5% | ERR-003, ERR-007, ERR-008 |
 | Formula (`formulas.md`) | 13 | 10 | 76.9% | FORM-007, FORM-011, FORM-013 |
-| Health/Diagnostics (`health-diagnostics.md`) | 9 | 2* | 22.2%* | SYS-002–SYS-009* |
+| Health/Diagnostics (`health-diagnostics.md`) | 9 | 2* | 22.2%* | 7 of SYS-001 to SYS-009* |
 | Herbs (`herbs.md`) | 13 | 9 | 69.2% | HERB-007, HERB-010, HERB-012, HERB-013 |
 | Logging (`logging.md`) | 7 | 3 | 42.9% | LOG-003, LOG-004, LOG-005, LOG-006 |
 | MedicalCase (`medical-cases.md`) | 18 | 16 | 88.9% | MC-012, MC-016 |
 | Patients (`patients.md`) | 13 | 6 | 46.2% | PAT-006–PAT-012 |
 | Registration (`registration.md`) | 7 | 7 | 100.0% | — |
-| Sync (`sync.md`) | 8 | 8+2** | 100.0%** | — |
+| Sync (`sync.md`) | 8 | 8** | 100.0%** | — |
 | Users (`users.md`) | 12 | 10 | 83.3% | USER-006, USER-007 |
-| **Total** | **125** | **95** | **76.0%** | **30** |
+| **Total** | **125** | **92** | **73.6%** | **33** |
 
-\* Health/Diagnostics tests use custom IDs (US-HEALTH-001, US-DIAG-001) rather than PRD's US-SYS-XXX format. Actual SYS coverage is low — tests exist but traceability mapping needs alignment.
+\* Health/Diagnostics tests use custom IDs (US-HEALTH-001, US-DIAG-001) rather than PRD's US-SYS-XXX format. 16 test methods exist but only 2 unique PRD-level IDs are mapped; 7 SYS requirements have no mapped test. Actual SYS coverage needs alignment.
 
-\*\* Sync tests cover all 8 PRD requirements plus 2 additional scenarios (SYNC-008, SYNC-009 beyond PRD scope).
+\*\* Sync tests cover all 8 PRD requirements (SYNC-001 to SYNC-007 via ShouldHave, SYNC-008 via MustHave). 2 additional MustHave tests (SYNC-009, SYNC-010) go beyond PRD scope and are not counted in PRD coverage.
 
 ### Covered Requirements Detail
 
