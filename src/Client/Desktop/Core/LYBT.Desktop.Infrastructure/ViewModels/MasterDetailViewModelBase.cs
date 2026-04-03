@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -645,7 +646,23 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         public virtual void OnNavigatedFrom(NavigationContext navigationContext) { }
 
-        public virtual async void OnNavigatedTo(NavigationContext navigationContext)
+        /// <summary>
+        /// 导航到视图时调用（同步入口）
+        /// OpenSpec: desktop-refactoring - 使用SafeFireAndForget模式替代async void
+        /// </summary>
+        public virtual void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            OnNavigatedToAsync(navigationContext).SafeFireAndForget(
+                ex => MasterDetailServices.ErrorHandler.HandleException(ex, $"OnNavigatedTo failed in {GetType().Name}"));
+        }
+
+        /// <summary>
+        /// 导航到视图时调用的异步实现
+        /// 子类应重写此方法而非OnNavigatedTo
+        /// </summary>
+        /// <param name="navigationContext">导航上下文</param>
+        /// <returns>异步任务</returns>
+        protected virtual async Task OnNavigatedToAsync(NavigationContext navigationContext)
         {
             Logger.LogDebug("导航到Master-Detail视图: {ViewType}", GetType().Name);
             await LoadListAsync();
