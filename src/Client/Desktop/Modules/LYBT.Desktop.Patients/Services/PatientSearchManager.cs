@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Patients.Services;
 /// </summary>
 public class PatientSearchManager
 {
-    private readonly PatientService _commandHandler;
+    private readonly IPatientService _commandHandler;
     private readonly IPatientSearchCache _searchCache;
     private readonly ILogger<PatientSearchManager> _logger;
 
@@ -65,7 +65,7 @@ public class PatientSearchManager
     public event EventHandler<SearchCompletedEventArgs>? SearchCompleted;
 
     public PatientSearchManager(
-        PatientService commandHandler,
+        IPatientService commandHandler,
         IPatientSearchCache searchCache,
         ILogger<PatientSearchManager> logger)
     {

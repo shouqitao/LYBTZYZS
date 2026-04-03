@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Api; // IMedicalCaseApi
 using LYBT.Desktop.Contracts.Services; // ISessionManager
+using LYBT.Desktop.Patients.Interfaces;
 // OpenSpec: refactor-frontend-srp-patterns - PatientService已迁移到Services命名空间
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -15,7 +16,7 @@ namespace LYBT.Desktop.Patients.Services;
 public class PendingQueueManager : IPendingQueueManager
 {
     private readonly IMedicalCaseApi _medicalCaseApi;
-    private readonly PatientService _commandHandler;
+    private readonly IPatientService _commandHandler;
     private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
     private readonly ILogger<PendingQueueManager> _logger;
     private readonly ISessionManager _sessionManager;
@@ -37,7 +38,7 @@ public class PendingQueueManager : IPendingQueueManager
 
     public PendingQueueManager(
         IMedicalCaseApi medicalCaseApi,
-        PatientService commandHandler,
+        IPatientService commandHandler,
         UnfinishedCaseHandler unfinishedCaseHandler,
         ISessionManager sessionManager,
         ILogger<PendingQueueManager> logger)
