@@ -3,6 +3,7 @@ using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Configuration.Validation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Shared.Configuration.Extensions;
 
@@ -19,35 +20,26 @@ public static class ServerConfigurationExtensions
         IConfiguration configuration)
     {
         // 注册验证器
-        services.AddSingleton<JwtOptionsValidator>();
-        services.AddSingleton<DatabaseOptionsValidator>();
-        services.AddSingleton<SecurityOptionsValidator>();
+        services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
+        services.AddSingleton<IValidateOptions<DatabaseOptions>, DatabaseOptionsValidator>();
+        services.AddSingleton<IValidateOptions<SecurityOptions>, SecurityOptionsValidator>();
 
         // JWT 配置
         services.AddOptions<JwtOptions>()
             .Bind(configuration.GetSection(JwtOptions.SectionName))
             .ValidateDataAnnotations()
-            .Validate<JwtOptionsValidator>((options, validator) => 
-                validator.Validate(null, options).Succeeded, 
-                "JWT 配置验证失败")
             .ValidateOnStart();
 
         // 数据库配置
         services.AddOptions<DatabaseOptions>()
             .Bind(configuration.GetSection(DatabaseOptions.SectionName))
             .ValidateDataAnnotations()
-            .Validate<DatabaseOptionsValidator>((options, validator) => 
-                validator.Validate(null, options).Succeeded, 
-                "数据库配置验证失败")
             .ValidateOnStart();
 
         // 安全配置
         services.AddOptions<SecurityOptions>()
             .Bind(configuration.GetSection(SecurityOptions.SectionName))
             .ValidateDataAnnotations()
-            .Validate<SecurityOptionsValidator>((options, validator) => 
-                validator.Validate(null, options).Succeeded, 
-                "安全配置验证失败")
             .ValidateOnStart();
 
         // 会话配置

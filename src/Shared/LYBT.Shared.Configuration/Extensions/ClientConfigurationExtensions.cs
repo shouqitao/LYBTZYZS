@@ -3,6 +3,7 @@ using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Validation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Shared.Configuration.Extensions;
 
@@ -19,15 +20,12 @@ public static class ClientConfigurationExtensions
         IConfiguration configuration)
     {
         // 注册验证器
-        services.AddSingleton<JwtOptionsValidator>();
+        services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
 
         // JWT 配置 (客户端用于令牌验证)
         services.AddOptions<JwtOptions>()
             .Bind(configuration.GetSection(JwtOptions.SectionName))
             .ValidateDataAnnotations()
-            .Validate<JwtOptionsValidator>((options, validator) => 
-                validator.Validate(null, options).Succeeded, 
-                "JWT 配置验证失败")
             .ValidateOnStart();
 
         // API 客户端配置
