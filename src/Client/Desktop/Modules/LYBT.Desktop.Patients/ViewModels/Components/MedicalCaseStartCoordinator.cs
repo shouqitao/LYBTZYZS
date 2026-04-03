@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -17,7 +18,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components;
 /// - 协调对话框交互
 /// - 执行关闭/继续/新建医案操作
 /// </summary>
-public class MedicalCaseStartCoordinator
+public class MedicalCaseStartCoordinator : IMedicalCaseStartCoordinator
 {
     private readonly ILogger<MedicalCaseStartCoordinator> _logger;
     private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
