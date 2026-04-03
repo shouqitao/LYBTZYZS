@@ -6,7 +6,6 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Patients.Models;
-using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels.Handlers;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -26,7 +25,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// </summary>
     public partial class PatientMasterDetailViewModel : MasterDetailViewModelBase<PatientListDto, PatientDetailModel>
     {
-        private readonly PatientService _commandHandler;
+        private readonly IPatientService _commandHandler;
         private readonly IPatientRepository _patientRepository;
         private readonly IPatientStatusHandler _statusHandler;
         private readonly IDesktopCacheManager _cacheManager;
@@ -82,7 +81,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         public PatientMasterDetailViewModel(
             IViewModelServices viewModelServices,
             IMasterDetailServices<PatientListDto, PatientDetailModel> masterDetailServices,
-            PatientService commandHandler,
+            IPatientService commandHandler,
             IPatientRepository patientRepository,
             IPatientStatusHandler statusHandler,
             IDesktopCacheManager cacheManager,

@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -190,7 +191,8 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// <summary>
         /// 加载验方列表
         /// </summary>
-        private async void LoadFormulasAsync()
+        private void LoadFormulasAsync() => LoadFormulasInternalAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载验方列表失败"));
+        private async Task LoadFormulasInternalAsync()
         {
             try
             {
@@ -287,7 +289,8 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// 加载验方预览（药材详情）
         /// OpenSpec: extract-detail-controls Task 1.4 - 保存完整detail供FormulaViewControl使用
         /// </summary>
-        private async void LoadFormulaPreviewAsync()
+        private void LoadFormulaPreviewAsync() => LoadFormulaPreviewInternalAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载验方预览失败"));
+        private async Task LoadFormulaPreviewInternalAsync()
         {
             if (SelectedFormula == null)
             {

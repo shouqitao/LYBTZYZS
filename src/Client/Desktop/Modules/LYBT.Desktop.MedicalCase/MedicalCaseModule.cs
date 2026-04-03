@@ -101,6 +101,7 @@ namespace LYBT.Desktop.MedicalCase
             // OpenSpec: migrate-views-to-role-modules - MedicalCaseDetailViewModel已删除（无调用）
 
             // OpenSpec: refactor-medicalcase-management - Master-Detail视图模型
+            containerRegistry.RegisterSingleton<MedicalCaseDetailModelMapper>();
             containerRegistry.Register<ViewModels.MedicalCaseMasterDetailViewModel>();
 
             // [已删除] FormulaSelectionDialog - 过时代码，已被FormulaImportDialog替代

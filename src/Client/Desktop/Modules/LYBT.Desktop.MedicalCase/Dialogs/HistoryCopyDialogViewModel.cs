@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -297,7 +298,8 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// 加载当前患者历史医案列表（默认模式）
         /// UX改进：只加载已完成状态的医案，默认显示5条
         /// </summary>
-        private async void LoadCasesAsync()
+        private void LoadCasesAsync() => LoadCasesInternalAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载患者历史医案失败"));
+        private async Task LoadCasesInternalAsync()
         {
             if (_patientId == Guid.Empty)
             {
@@ -358,7 +360,8 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// 加载全部患者的历史医案（全局查询模式）
         /// 使用分页循环获取所有数据，遵循SystemConstants.MaxPageSize规范
         /// </summary>
-        private async void LoadAllPatientsAsync()
+        private void LoadAllPatientsAsync() => LoadAllPatientsInternalAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载全部患者历史医案失败"));
+        private async Task LoadAllPatientsInternalAsync()
         {
             try
             {
@@ -503,7 +506,8 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// <summary>
         /// 加载选中医案的完整详情（用于右栏预览）
         /// </summary>
-        private async void LoadCaseDetailAsync()
+        private void LoadCaseDetailAsync() => LoadCaseDetailInternalAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载医案详情失败"));
+        private async Task LoadCaseDetailInternalAsync()
         {
             if (SelectedCase == null)
             {

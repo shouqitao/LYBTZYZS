@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.ViewModels.Composition;
 using LYBT.Desktop.MedicalCase.Extensions;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -125,7 +126,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
     #region Core Command Implementations
 
-    private async void ExecuteSave()
+    private void ExecuteSave() => ExecuteSaveAsync().SafeFireAndForget(ex => Logger.LogError(ex, "保存医案数据失败"));
+    private async Task ExecuteSaveAsync()
     {
         try
         {
@@ -153,7 +155,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private async void ExecuteSuspend()
+    private void ExecuteSuspend() => ExecuteSuspendAsync().SafeFireAndForget(ex => Logger.LogError(ex, "暂存医案失败"));
+    private async Task ExecuteSuspendAsync()
     {
         try
         {
@@ -185,7 +188,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private async void ExecuteComplete()
+    private void ExecuteComplete() => ExecuteCompleteAsync().SafeFireAndForget(ex => Logger.LogError(ex, "完成医案失败"));
+    private async Task ExecuteCompleteAsync()
     {
         try
         {
@@ -220,7 +224,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private async void ExecutePrint()
+    private void ExecutePrint() => ExecutePrintAsync().SafeFireAndForget(ex => Logger.LogError(ex, "打印处方笺失败"));
+    private async Task ExecutePrintAsync()
     {
         try
         {
@@ -256,7 +261,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     /// <summary>
     /// D1: 导出处方笺为 PDF
     /// </summary>
-    private async void ExecuteExportPdf()
+    private void ExecuteExportPdf() => ExecuteExportPdfAsync().SafeFireAndForget(ex => Logger.LogError(ex, "导出PDF失败"));
+    private async Task ExecuteExportPdfAsync()
     {
         try
         {
@@ -339,7 +345,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         });
     }
 
-    private async void ExecuteClearHerbs()
+    private void ExecuteClearHerbs() => ExecuteClearHerbsAsync().SafeFireAndForget(ex => Logger.LogError(ex, "清空药材失败"));
+    private async Task ExecuteClearHerbsAsync()
     {
         var prescription = GetPrescriptionItem?.Invoke();
         if (prescription == null)

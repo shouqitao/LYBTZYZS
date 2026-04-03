@@ -30,7 +30,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 {
     private readonly IMedicalCaseRepository _repository;
     private readonly IHerbSearchProvider _herbSearchProvider;
-    private readonly MedicalCaseDetailModelMapper _mapper = new();
+    private readonly MedicalCaseDetailModelMapper _mapper;
     private readonly IDesktopCacheManager _cacheManager;
 
     #region 扩展属性
@@ -90,12 +90,14 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> masterDetailServices,
         IMedicalCaseRepository repository,
         IHerbSearchProvider herbSearchProvider,
-        IDesktopCacheManager cacheManager)
+        IDesktopCacheManager cacheManager,
+        MedicalCaseDetailModelMapper mapper)
         : base(viewModelServices, masterDetailServices)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
         _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
         PageTitle = "医案管理";
         // DetailTitle 已由基类自动通知
@@ -312,15 +314,13 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 
     #region 导航
 
-    public override async void OnNavigatedTo(NavigationContext navigationContext)
+    protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
     {
-        base.OnNavigatedTo(navigationContext);
+        await base.OnNavigatedToAsync(navigationContext);
 
         // 预加载药材列表
         if (AllHerbs.Count == 0)
-        {
             await LoadHerbsAsync();
-        }
     }
 
     #endregion

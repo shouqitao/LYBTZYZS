@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
@@ -125,13 +126,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         PageTitle = "用户管理";
 
         // 监听属性变化 - DetailTitle 已由基类自动通知
-        PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName is nameof(CurrentDetail) or nameof(IsEditMode))
-            {
-                OnPropertyChanged(nameof(IsUserNameReadOnly));
-            }
-        };
+        PropertyChanged += OnDetailPropertyChanged;
     }
 
     #region 基类抽象方法实现
@@ -409,10 +404,19 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
 
     #region Disposal
 
+    private void OnDetailPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(CurrentDetail) or nameof(IsEditMode))
+        {
+            OnPropertyChanged(nameof(IsUserNameReadOnly));
+        }
+    }
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
+            PropertyChanged -= OnDetailPropertyChanged;
         }
         base.Dispose(disposing);
     }

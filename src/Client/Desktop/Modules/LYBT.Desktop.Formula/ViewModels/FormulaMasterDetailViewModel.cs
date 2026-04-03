@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
@@ -29,7 +30,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
         private readonly IHerbSearchProvider _herbSearchProvider;
         private readonly IDesktopCacheManager _cacheManager;
-        private readonly FormulaDetailModelMapper _mapper = new();
+        private readonly FormulaDetailModelMapper _mapper;
 
         // 编辑模式下的药材列表
         private ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
@@ -67,24 +68,20 @@ namespace LYBT.Desktop.Formula.ViewModels
             IFormulaRepository formulaRepository,
             IFormulaStatusHandler statusHandler,
             IHerbSearchProvider herbSearchProvider,
-            IDesktopCacheManager cacheManager)
+            IDesktopCacheManager cacheManager,
+            FormulaDetailModelMapper mapper)
             : base(viewModelServices, masterDetailServices)
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             PageTitle = "验方管理";
 
             // 监听属性变化 - DetailTitle 已由基类自动通知
-            PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(IsEditMode) && IsEditMode)
-                {
-                    PopulateEditHerbItems();
-                }
-            };
+            PropertyChanged += OnSelfPropertyChanged;
         }
 
         #region 基类抽象方法实现
@@ -352,9 +349,9 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 导航
 
-        public override async void OnNavigatedTo(NavigationContext navigationContext)
+        protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
         {
-            base.OnNavigatedTo(navigationContext);
+            await base.OnNavigatedToAsync(navigationContext);
             await LoadAllHerbsAsync();
         }
 
@@ -381,10 +378,19 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Disposal
 
+        private void OnSelfPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IsEditMode) && IsEditMode)
+            {
+                PopulateEditHerbItems();
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
+                PropertyChanged -= OnSelfPropertyChanged;
             }
             base.Dispose(disposing);
         }

@@ -36,6 +36,7 @@ namespace LYBT.Desktop.Formula
             // OpenSpec: standardize-service-layer - 统一使用Service命名
             containerRegistry.Register<IFormulaService, Services.FormulaService>();
             containerRegistry.Register<Services.FormulaValidator>();
+            containerRegistry.RegisterSingleton<Mappers.FormulaDetailModelMapper>();
 
             // OpenSpec: migrate-views-to-role-modules - FormulaDetailView/FormulaValidationView已删除（无调用）
             // OpenSpec: migrate-views-to-role-modules - EditFormulaDialog已删除（无调用）
