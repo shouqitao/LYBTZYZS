@@ -257,8 +257,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         SaveChangesCommand = new DelegateCommand(ExecuteSaveChanges, () => State.ShowSaveButton);
 
         // Event subscriptions
-        EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Subscribe(OnConsultationCompleted, ThreadOption.UIThread);
-        EventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>().Subscribe(OnPrescriptionCompleted, ThreadOption.UIThread);
+        Events.Subscribe<CaseEvents.ConsultationCompletedEvent, CaseConsultationCompletedPayload>(OnConsultationCompleted);
+        Events.Subscribe<CaseEvents.PrescriptionCompletedEvent, CasePrescriptionCompletedPayload>(OnPrescriptionCompleted);
     }
 
     #endregion
