@@ -3,6 +3,7 @@ using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
+using LYBT.Desktop.Formula.Mappers;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Formula.Services;
 using LYBT.Desktop.Formula.ViewModels.Handlers;
@@ -22,6 +23,7 @@ public class FormulaMasterDetailViewModelDisposalTests
     private readonly IFormulaStatusHandler _statusHandler;
     private readonly IHerbSearchProvider _herbSearchProvider;
     private readonly IDesktopCacheManager _cacheManager;
+    private readonly FormulaDetailModelMapper _mapper;
 
     public FormulaMasterDetailViewModelDisposalTests()
     {
@@ -31,6 +33,7 @@ public class FormulaMasterDetailViewModelDisposalTests
         _statusHandler = Substitute.For<IFormulaStatusHandler>();
         _herbSearchProvider = Substitute.For<IHerbSearchProvider>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
+        _mapper = new FormulaDetailModelMapper();
     }
 
     private FormulaMasterDetailViewModel CreateSut()
@@ -41,7 +44,8 @@ public class FormulaMasterDetailViewModelDisposalTests
             _formulaRepository,
             _statusHandler,
             _herbSearchProvider,
-            _cacheManager);
+            _cacheManager,
+            _mapper);
     }
 
     [Fact]

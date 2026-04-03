@@ -75,14 +75,22 @@ public class WebApiFixture : IAsyncLifetime
     public WebApiFixture()
     {
         _databaseName = $"LYBT_Test_{Guid.NewGuid():N}";
-        _masterConnectionString = "Server=(localdb)\\MSSQLLocalDB;Database=master;Trusted_Connection=True;";
-        _testConnectionString = $"Server=(localdb)\\MSSQLLocalDB;Database={_databaseName};Trusted_Connection=True;Encrypt=False;";
+        _masterConnectionString = "Server=(localdb)\\MSSQLLocalDB;Database=master;Trusted_Connection=True;Connect Timeout=5;";
+        _testConnectionString = $"Server=(localdb)\\MSSQLLocalDB;Database={_databaseName};Trusted_Connection=True;Encrypt=False;Connect Timeout=5;";
     }
 
     public async Task InitializeAsync()
     {
-        // 1. 创建测试数据库
-        await CreateDatabaseAsync();
+        try
+        {
+            // 1. 创建测试数据库
+            await CreateDatabaseAsync();
+        }
+        catch (SqlException ex)
+        {
+            throw new InvalidOperationException(
+                $"SQL Server LocalDB 不可用，跳过集成测试。错误: {ex.Message}", ex);
+        }
 
         // 2. 序列化 WebApplicationFactory 创建
         await InitGate.WaitAsync();
@@ -239,7 +247,7 @@ public class WebApiFixture : IAsyncLifetime
         {
             using var conn = new SqlConnection(_masterConnectionString);
             await conn.OpenAsync();
-            using var cmd = new SqlCommand($@"
+            using var cmd = new SqlCommand(@"
                 ALTER DATABASE [{_databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
                 DROP DATABASE [{_databaseName}];", conn);
             await cmd.ExecuteNonQueryAsync();

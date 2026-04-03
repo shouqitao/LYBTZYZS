@@ -3,6 +3,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Desktop.Modules.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.Common;
@@ -29,6 +30,7 @@ public class MedicalCaseMasterDetailViewModelTests
     private readonly IDesktopCacheManager _cacheManager;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<MedicalCaseMasterDetailViewModel> _logger;
+    private readonly MedicalCaseDetailModelMapper _mapper;
 
     // MasterDetailServices 组件
     private readonly IListViewServices<MedicalCaseListDto> _listViewServices;
@@ -97,6 +99,7 @@ public class MedicalCaseMasterDetailViewModelTests
         _repository = Substitute.For<IMedicalCaseRepository>();
         _herbSearchProvider = Substitute.For<IHerbSearchProvider>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
+        _mapper = new MedicalCaseDetailModelMapper();
     }
 
     private MedicalCaseMasterDetailViewModel CreateSut()
@@ -106,7 +109,8 @@ public class MedicalCaseMasterDetailViewModelTests
             _masterDetailServices,
             _repository,
             _herbSearchProvider,
-            _cacheManager);
+            _cacheManager,
+            _mapper);
     }
 
     #region 构造函数和初始化
@@ -130,7 +134,8 @@ public class MedicalCaseMasterDetailViewModelTests
             _masterDetailServices,
             null!,
             _herbSearchProvider,
-            _cacheManager);
+            _cacheManager,
+            _mapper);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("repository");
     }
@@ -144,7 +149,8 @@ public class MedicalCaseMasterDetailViewModelTests
             _masterDetailServices,
             _repository,
             null!,
-            _cacheManager);
+            _cacheManager,
+            _mapper);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("herbSearchProvider");
     }
@@ -158,7 +164,8 @@ public class MedicalCaseMasterDetailViewModelTests
             _masterDetailServices,
             _repository,
             _herbSearchProvider,
-            null!);
+            null!,
+            _mapper);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cacheManager");
     }
