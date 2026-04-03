@@ -3,6 +3,7 @@ using LYBT.Shared.Configuration.Extensions;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
+using LYBT.Shared.Configuration.Validation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -37,8 +38,6 @@ public class ConfigurationLoadingTests
         serviceProvider.GetService<IOptions<SystemAdminOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<LoggingOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<MemoryCacheOptions>>().Should().NotBeNull();
-        serviceProvider.GetService<IOptions<SwaggerOptions>>().Should().NotBeNull();
-        serviceProvider.GetService<IOptions<JsonOptions>>().Should().NotBeNull();
     }
 
     [Fact]
@@ -90,6 +89,7 @@ public class ConfigurationLoadingTests
         serviceProvider.GetService<IOptions<ClinicSettingsOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<FeatureToggleOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<PrescriptionOptions>>().Should().NotBeNull();
+        serviceProvider.GetService<IOptions<SyncOptions>>().Should().NotBeNull();
     }
 
     [Fact]
@@ -208,6 +208,74 @@ public class ConfigurationLoadingTests
 
     #endregion
 
+    #region IValidateOptions 验证器注册测试
+
+    [Fact]
+    public void ServerConfiguration_RegistersIValidateOptions_ForJwtOptions()
+    {
+        // Arrange
+        var configuration = CreateServerConfiguration();
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddLybtServerConfiguration(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert - IValidateOptions<JwtOptions> 应注册为 JwtOptionsValidator
+        var validators = serviceProvider.GetServices<IValidateOptions<JwtOptions>>().ToList();
+        validators.Should().ContainSingle(v => v is JwtOptionsValidator);
+    }
+
+    [Fact]
+    public void ServerConfiguration_RegistersIValidateOptions_ForDatabaseOptions()
+    {
+        // Arrange
+        var configuration = CreateServerConfiguration();
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddLybtServerConfiguration(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert - IValidateOptions<DatabaseOptions> 应注册为 DatabaseOptionsValidator
+        var validators = serviceProvider.GetServices<IValidateOptions<DatabaseOptions>>().ToList();
+        validators.Should().ContainSingle(v => v is DatabaseOptionsValidator);
+    }
+
+    [Fact]
+    public void ServerConfiguration_RegistersIValidateOptions_ForSecurityOptions()
+    {
+        // Arrange
+        var configuration = CreateServerConfiguration();
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddLybtServerConfiguration(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert - IValidateOptions<SecurityOptions> 应注册为 SecurityOptionsValidator
+        var validators = serviceProvider.GetServices<IValidateOptions<SecurityOptions>>().ToList();
+        validators.Should().ContainSingle(v => v is SecurityOptionsValidator);
+    }
+
+    [Fact]
+    public void ClientConfiguration_RegistersIValidateOptions_ForJwtOptions()
+    {
+        // Arrange
+        var configuration = CreateClientConfiguration();
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddLybtClientConfiguration(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert - IValidateOptions<JwtOptions> 应注册为 JwtOptionsValidator
+        var validators = serviceProvider.GetServices<IValidateOptions<JwtOptions>>().ToList();
+        validators.Should().ContainSingle(v => v is JwtOptionsValidator);
+    }
+
+    #endregion
+
     #region 辅助方法
 
     private static IConfiguration CreateServerConfiguration()
@@ -248,14 +316,7 @@ public class ConfigurationLoadingTests
 
             // MemoryCache 配置
             ["MemoryCache:SlidingExpirationMinutes"] = "30",
-            ["MemoryCache:AbsoluteExpirationMinutes"] = "60",
-
-            // Swagger 配置
-            ["Swagger:Enable"] = "true",
-            ["Swagger:Title"] = "LYBT API",
-
-            // Json 配置
-            ["Json:PropertyNamingPolicy"] = "CamelCase"
+            ["MemoryCache:AbsoluteExpirationMinutes"] = "60"
         };
 
         return new ConfigurationBuilder()
@@ -292,7 +353,10 @@ public class ConfigurationLoadingTests
             ["FeatureToggles:PrescriptionCreate"] = "false",
 
             // Prescription 配置
-            ["Prescription:DefaultPageSize"] = "10"
+            ["Prescription:DefaultPageSize"] = "10",
+
+            // Sync 配置
+            ["Sync:OverwriteConflicts"] = "false"
         };
 
         return new ConfigurationBuilder()
