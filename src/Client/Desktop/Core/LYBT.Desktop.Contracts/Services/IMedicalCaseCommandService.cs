@@ -1,4 +1,5 @@
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using System.Threading;
 
 namespace LYBT.Desktop.Contracts.Services;
 
@@ -23,13 +24,13 @@ public interface IMedicalCaseCommandService
     /// 保存变更
     /// </summary>
     /// <returns>是否保存成功</returns>
-    Task<bool> SaveAsync();
+    Task<bool> SaveAsync(CancellationToken ct = default);
 
     /// <summary>
     /// 删除当前医案
     /// </summary>
     /// <returns>是否删除成功</returns>
-    Task<bool> DeleteAsync();
+    Task<bool> DeleteAsync(CancellationToken ct = default);
 
     /// <summary>
     /// 创建新医案
@@ -37,5 +38,5 @@ public interface IMedicalCaseCommandService
     /// <param name="patientId">患者ID</param>
     /// <param name="registrationId">关联挂号ID（可选，从前台挂号创建时传入）</param>
     /// <returns>(是否成功, 医案ID, 错误信息)</returns>
-    Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null);
+    Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default);
 }

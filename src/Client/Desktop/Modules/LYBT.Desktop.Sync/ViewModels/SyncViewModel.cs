@@ -26,6 +26,7 @@ public partial class SyncViewModel : NavigableViewModelBase
     private readonly SyncItemViewModelFactory _itemFactory;
 
     private SyncRetryDescriptor? _lastRetryDescriptor;
+    private readonly CancellationTokenSource _cts = new();
 
     #region Observable Properties
 
@@ -415,7 +416,7 @@ public partial class SyncViewModel : NavigableViewModelBase
                 _dialogService.ShowDialog("SyncConflictDialog", parameters, r => dialogResult = r);
             });
             return dialogResult;
-        });
+        }, _cts.Token);
 
         if (result?.Result == ButtonResult.OK)
         {
@@ -539,6 +540,8 @@ partial class SyncViewModel
 {
     protected override void OnDisposing()
     {
+        _cts.Cancel();
+        _cts.Dispose();
         _itemFactory.SetSelectionChangedCallback(null);
         base.OnDisposing();
     }

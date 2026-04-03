@@ -5,6 +5,7 @@ using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace LYBT.Desktop.Patients.Services
 {
@@ -34,7 +35,7 @@ namespace LYBT.Desktop.Patients.Services
         /// 创建患者
         /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
         /// </summary>
-        public async Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto)
+        public async Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto, CancellationToken ct = default)
         {
             try
             {

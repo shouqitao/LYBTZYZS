@@ -3,6 +3,7 @@ using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace LYBT.Desktop.Formula.Services
 {
@@ -39,7 +40,8 @@ namespace LYBT.Desktop.Formula.Services
             string category,
             string remark,
             bool isShared,
-            List<FormulaHerbItemInputDto> herbInputDtos)
+            List<FormulaHerbItemInputDto> herbInputDtos,
+            CancellationToken ct = default)
         {
             try
             {

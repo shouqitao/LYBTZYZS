@@ -1,6 +1,7 @@
 using LYBT.Desktop.Contracts.CommandHandlers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
+using System.Threading;
 
 namespace LYBT.Desktop.Patients.Interfaces
 {
@@ -16,7 +17,7 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// <summary>
         /// 创建患者
         /// </summary>
-        Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto);
+        Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto, CancellationToken ct = default);
 
         /// <summary>
         /// 更新患者

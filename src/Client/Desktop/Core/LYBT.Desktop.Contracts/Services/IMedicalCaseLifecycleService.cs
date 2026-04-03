@@ -1,6 +1,7 @@
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using System.Threading;
 
 namespace LYBT.Desktop.Contracts.Services;
 
@@ -30,19 +31,19 @@ public interface IMedicalCaseLifecycleService
     /// 初始化并加载医案数据
     /// </summary>
     /// <param name="entityId">医案ID</param>
-    Task InitializeAsync(Guid entityId);
+    Task InitializeAsync(Guid entityId, CancellationToken ct = default);
 
     /// <summary>
     /// 重新加载数据
     /// </summary>
-    Task ReloadAsync();
+    Task ReloadAsync(CancellationToken ct = default);
 
     /// <summary>
     /// 挂起医案
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
     /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId);
+    Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default);
 
     /// <summary>
     /// 取消医案
@@ -50,19 +51,19 @@ public interface IMedicalCaseLifecycleService
     /// <param name="medicalCaseId">医案ID</param>
     /// <param name="reason">取消原因</param>
     /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null);
+    Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default);
 
     /// <summary>
     /// 完成医案
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
     /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId);
+    Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
 
     /// <summary>
     /// 恢复挂起医案为Active状态
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
     /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId);
+    Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default);
 }

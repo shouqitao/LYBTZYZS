@@ -10,6 +10,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace LYBT.Desktop.MedicalCase.Services;
 
@@ -60,7 +61,7 @@ public class MedicalCaseService : IMedicalCaseService
     #region IDataManager实现
 
     /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
-    public async Task InitializeAsync(Guid entityId)
+    public async Task InitializeAsync(Guid entityId, CancellationToken ct = default)
     {
         try
         {
@@ -76,7 +77,7 @@ public class MedicalCaseService : IMedicalCaseService
     }
 
     /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
-    public virtual async Task<bool> SaveAsync()
+    public virtual async Task<bool> SaveAsync(CancellationToken ct = default)
     {
         if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.Save → NoData"); return false; }
         if (!HasChanges) { _logger.LogDebug("[SVC] MedicalCase.Save → NoChanges - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return true; }
@@ -102,7 +103,7 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Save failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return false; }
     }
 
-    public virtual async Task<bool> DeleteAsync()
+    public virtual async Task<bool> DeleteAsync(CancellationToken ct = default)
     {
         if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.Delete → NoData"); return false; }
         try
@@ -123,7 +124,7 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Delete failed - MedicalCaseId={MedicalCaseId}", _currentDetail?.Id ?? Guid.Empty); return false; }
     }
 
-    public virtual async Task ReloadAsync()
+    public virtual async Task ReloadAsync(CancellationToken ct = default)
     {
         if (_currentDetail != null)
         {
@@ -153,7 +154,7 @@ public class MedicalCaseService : IMedicalCaseService
     // ViewModel应直接使用Repository进行CRUD操作
 
     // OpenSpec: consolidate-medicalcase-detail-queries - GetByIdWithDetailsAsync已删除，使用GetByIdAsync
-    public virtual async Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null)
+    public virtual async Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null, CancellationToken ct = default)
     {
         try
         {
@@ -170,7 +171,7 @@ public class MedicalCaseService : IMedicalCaseService
     /// 统一查询医案
     /// OpenSpec: optimize-medicalcase-api
     /// </summary>
-    public virtual async Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query)
+    public virtual async Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query, CancellationToken ct = default)
     {
         try
         {
@@ -220,7 +221,7 @@ public class MedicalCaseService : IMedicalCaseService
     // - ClearPrescriptionAsync: Server端从未实现
     // - ImportFormulaIntoPrescriptionAsync: Server端从未实现
 
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId)
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
@@ -244,7 +245,7 @@ public class MedicalCaseService : IMedicalCaseService
     }
 
     // OpenSpec: consolidate-medicalcase-detail-queries - 使用QueryAsync替代废弃的GetUnfinishedCaseByPatientIdAsync
-    public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
+    public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false, CancellationToken ct = default)
     {
         try
         {
@@ -435,7 +436,7 @@ public class MedicalCaseService : IMedicalCaseService
     /// </summary>
     /// <param name="patientId">患者ID</param>
     /// <param name="registrationId">关联挂号ID（可选，从前台挂号创建时传入）</param>
-    public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null)
+    public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default)
     {
         try
         {
@@ -488,7 +489,7 @@ public class MedicalCaseService : IMedicalCaseService
     /// 挂起医案
     /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId)
+    public virtual async Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
@@ -515,7 +516,7 @@ public class MedicalCaseService : IMedicalCaseService
     /// 取消医案
     /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null)
+    public virtual async Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default)
     {
         try
         {
@@ -543,7 +544,7 @@ public class MedicalCaseService : IMedicalCaseService
     /// 完成医案
     /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId)
+    public virtual async Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
@@ -576,7 +577,7 @@ public class MedicalCaseService : IMedicalCaseService
     /// 恢复挂起医案为Active状态
     /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId)
+    public virtual async Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {

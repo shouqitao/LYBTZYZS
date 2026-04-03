@@ -1,3 +1,4 @@
+using System.Threading;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Formula.Interfaces
@@ -23,7 +24,8 @@ namespace LYBT.Desktop.Formula.Interfaces
             string category,
             string remark,
             bool isShared,
-            List<FormulaHerbItemInputDto> herbInputDtos);
+            List<FormulaHerbItemInputDto> herbInputDtos,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 复制配方

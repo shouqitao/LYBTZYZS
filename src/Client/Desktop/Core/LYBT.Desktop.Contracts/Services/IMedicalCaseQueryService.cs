@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using System.Threading;
 
 namespace LYBT.Desktop.Contracts.Services;
 
@@ -18,14 +19,14 @@ public interface IMedicalCaseQueryService
     /// <param name="pageSize">每页数量</param>
     /// <param name="searchText">搜索关键字</param>
     /// <returns>分页结果</returns>
-    Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null);
+    Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null, CancellationToken ct = default);
 
     /// <summary>
     /// 统一查询医案
     /// </summary>
     /// <param name="query">查询条件</param>
     /// <returns>分页结果</returns>
-    Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query);
+    Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query, CancellationToken ct = default);
 
     /// <summary>
     /// 获取患者未完成的医案
@@ -37,12 +38,13 @@ public interface IMedicalCaseQueryService
     Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(
         Guid patientId,
         Guid doctorId,
-        bool checkAllDoctors = false);
+        bool checkAllDoctors = false,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 关闭医案
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
     /// <returns>API响应，包含关闭后的医案详情</returns>
-    Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId);
+    Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
 }

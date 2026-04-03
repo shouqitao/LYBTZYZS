@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Windows;
 using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Models;
 // OpenSpec: refactor-frontend-srp-patterns - PatientService已迁移到Services命名空间
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ namespace LYBT.Desktop.Patients.Services;
 /// </summary>
 public class PatientImportExecutor : IDisposable
 {
-    private readonly PatientService _commandHandler;
+    private readonly IPatientService _commandHandler;
     private readonly PatientImportDataMapper _dataMapper;
     private readonly ILogger<PatientImportExecutor> _logger;
     private CancellationTokenSource? _cts;
@@ -26,7 +27,7 @@ public class PatientImportExecutor : IDisposable
     public bool IsImporting { get; private set; }
 
     public PatientImportExecutor(
-        PatientService commandHandler,
+        IPatientService commandHandler,
         PatientImportDataMapper dataMapper,
         ILogger<PatientImportExecutor> logger)
     {
