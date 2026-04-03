@@ -61,21 +61,9 @@ public static class ServerConfigurationExtensions
             .Bind(configuration.GetSection(LoggingOptions.SectionName))
             .ValidateDataAnnotations();
 
-        // 用户管理配置
-        services.AddOptions<UserManagementOptions>()
-            .Bind(configuration.GetSection(UserManagementOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
         // 系统管理员配置
         services.AddOptions<SystemAdminOptions>()
             .Bind(configuration.GetSection(SystemAdminOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        // 密码策略配置
-        services.AddOptions<PasswordPolicyOptions>()
-            .Bind(configuration.GetSection(PasswordPolicyOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 

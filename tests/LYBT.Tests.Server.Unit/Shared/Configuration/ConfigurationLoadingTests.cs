@@ -33,8 +33,6 @@ public class ConfigurationLoadingTests
         serviceProvider.GetService<IOptions<DatabaseOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<SecurityOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<SessionOptions>>().Should().NotBeNull();
-        serviceProvider.GetService<IOptions<UserManagementOptions>>().Should().NotBeNull();
-        serviceProvider.GetService<IOptions<PasswordPolicyOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<DefaultPasswordOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<SystemAdminOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<LoggingOptions>>().Should().NotBeNull();
@@ -237,16 +235,6 @@ public class ConfigurationLoadingTests
 
             // Session 配置
             ["Session:TimeoutMinutes"] = "45",
-
-            // UserManagement 配置
-            ["UserManagement:MaxLoginAttempts"] = "5",
-            ["UserManagement:LockoutDurationMinutes"] = "15",
-
-            // PasswordPolicy 配置
-            ["PasswordPolicy:MinLength"] = "8",
-            ["PasswordPolicy:RequireUppercase"] = "true",
-            ["PasswordPolicy:RequireLowercase"] = "true",
-            ["PasswordPolicy:RequireDigit"] = "true",
 
             // DefaultPassword 配置
             ["DefaultPassword:Password"] = "Lybt@123",
