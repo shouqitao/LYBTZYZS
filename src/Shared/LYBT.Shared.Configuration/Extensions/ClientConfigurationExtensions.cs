@@ -51,16 +51,6 @@ public static class ClientConfigurationExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // 处方配置
-        services.AddOptions<PrescriptionOptions>()
-            .Bind(configuration.GetSection(PrescriptionOptions.SectionName))
-            .ValidateDataAnnotations();
-
-        // 同步配置
-        services.AddOptions<SyncOptions>()
-            .Bind(configuration.GetSection(SyncOptions.SectionName))
-            .ValidateDataAnnotations();
-
         return services;
     }
 }

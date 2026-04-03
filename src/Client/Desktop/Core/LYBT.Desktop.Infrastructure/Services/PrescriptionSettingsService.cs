@@ -31,8 +31,8 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <param name="configuration">配置对象（注入）</param>
         public PrescriptionSettingsService(IConfiguration configuration)
         {
-            // 从配置文件的Prescription节点读取设置
-            var section = configuration.GetSection("Prescription");
+            // 从配置文件的FeatureToggles节点读取设置 (从 PrescriptionOptions 合并)
+            var section = configuration.GetSection("FeatureToggles");
             DuplicateHerbMergeStrategy = section.GetValue<string>("DuplicateHerbMergeStrategy") ?? DefaultMergeStrategy;
 
             // 设置静态实例供POCO类访问

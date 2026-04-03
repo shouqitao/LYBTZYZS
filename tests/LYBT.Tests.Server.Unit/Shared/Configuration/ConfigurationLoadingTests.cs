@@ -88,8 +88,6 @@ public class ConfigurationLoadingTests
         serviceProvider.GetService<IOptions<ClientSessionOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<ClinicSettingsOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<FeatureToggleOptions>>().Should().NotBeNull();
-        serviceProvider.GetService<IOptions<PrescriptionOptions>>().Should().NotBeNull();
-        serviceProvider.GetService<IOptions<SyncOptions>>().Should().NotBeNull();
     }
 
     [Fact]
@@ -351,12 +349,8 @@ public class ConfigurationLoadingTests
             // FeatureToggle 配置
             ["FeatureToggles:ConsultationCreate"] = "true",
             ["FeatureToggles:PrescriptionCreate"] = "false",
-
-            // Prescription 配置
-            ["Prescription:DefaultPageSize"] = "10",
-
-            // Sync 配置
-            ["Sync:OverwriteConflicts"] = "false"
+            ["FeatureToggles:DuplicateHerbMergeStrategy"] = "Max",
+            ["FeatureToggles:OverwriteConflicts"] = "false"
         };
 
         return new ConfigurationBuilder()

@@ -36,9 +36,6 @@ public static class PrismConfigurationExtensions
         // 诊所设置配置
         RegisterOptions<ClinicSettingsOptions>(containerRegistry, configuration, ClinicSettingsOptions.SectionName);
 
-        // 处方配置
-        RegisterOptions<PrescriptionOptions>(containerRegistry, configuration, PrescriptionOptions.SectionName);
-
         // 读卡器配置 (PRD-13)
         RegisterOptions<CardReaderOptions>(containerRegistry, configuration, CardReaderOptions.SectionName);
     }
