@@ -2,8 +2,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
-using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Extensions;
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
@@ -71,7 +72,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
 
             // 加载当前用户信息
-            LoadCurrentUser();
+            LoadCurrentUserAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载当前用户信息失败"));
 
             // 加载今日统计数据
             LoadTodayStatistics();
@@ -251,7 +252,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// <summary>
         /// 加载当前用户信息 (Issue #1887-1891)
         /// </summary>
-        private async void LoadCurrentUser()
+        private async Task LoadCurrentUserAsync()
         {
             try
             {

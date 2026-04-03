@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
@@ -72,7 +73,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
 
             // 加载当前用户信息
-            LoadCurrentUser();
+            LoadCurrentUserAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载当前用户信息失败"));
         }
 
         #endregion 构造函数
@@ -186,7 +187,7 @@ namespace LYBT.Desktop.Admin.ViewModels
         /// Issue #1887-1892: 个人信息修改
         /// Issue #1909: 三角色体系统一认证
         /// </summary>
-        private async void LoadCurrentUser()
+        private async Task LoadCurrentUserAsync()
         {
             try
             {

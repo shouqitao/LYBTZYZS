@@ -8,6 +8,7 @@ using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Contracts.Events;
 using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -444,7 +445,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _loginCoordinator.LoginSucceeded += OnLoginCoordinatorSuccess;
         // OpenSpec: unify-event-system - 使用AuthEvents聚合类
         Events.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
-        Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(OnTokenLifecycleStateChanged);
+        Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(
+            args => OnTokenLifecycleStateChangedAsync(args).SafeFireAndForget(ex => Logger.LogError(ex, "Token生命周期事件处理异常")));
         Events.Subscribe<SyncEvents.StatusChangedEvent, SyncStatusPayload>(OnSyncStatusChanged);
         _connectionModeProvider.ModeChanged += OnConnectionModeChanged;
         _navigationCoordinator.SubscribeToRegionCollection();
@@ -460,7 +462,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
         // UI线程更新时间显示（避免应用关闭时空引用）
-        Application.Current?.Dispatcher.BeginInvoke(() => CurrentTime = DateTime.Now);
+        Services.UiThreadDispatcher.InvokeAsync(() => CurrentTime = DateTime.Now);
     }
 
     /// <summary>
@@ -468,7 +470,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     private void OnHealthStatusChanged(object? sender, HealthStatusChangedEventArgs e)
     {
-        Application.Current?.Dispatcher.BeginInvoke(() => ApiStatus = e.CurrentStatus);
+        Services.UiThreadDispatcher.InvokeAsync(() => ApiStatus = e.CurrentStatus);
     }
 
     /// <summary>
@@ -476,7 +478,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     private void OnSyncStatusChanged(SyncStatusPayload payload)
     {
-        Application.Current?.Dispatcher.BeginInvoke(() =>
+        Services.UiThreadDispatcher.InvokeAsync(() =>
         {
             IsSyncing = payload.IsSyncing;
             LastSyncTime = payload.LastSyncTime;
@@ -489,7 +491,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     private void OnConnectionModeChanged(object? sender, ConnectionModeChangedEventArgs e)
     {
-        Application.Current?.Dispatcher.BeginInvoke(() =>
+        Services.UiThreadDispatcher.InvokeAsync(() =>
         {
             // 刷新菜单可见性
             _menuManager.RefreshMenuVisibility();
@@ -511,7 +513,12 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// <summary>
     /// 会话已过期事件处理 - 执行自动登出
     /// </summary>
-    private async void OnSessionExpired(object? sender, EventArgs e)
+    private void OnSessionExpired(object? sender, EventArgs e)
+    {
+        OnSessionExpiredAsync().SafeFireAndForget(ex => Logger.LogError(ex, "会话过期处理异常"));
+    }
+
+    private async Task OnSessionExpiredAsync()
     {
         Logger.LogWarning("用户会话因不活跃已过期，执行自动登出");
 
@@ -529,7 +536,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// Issue #1864: 客户端Token生命周期管理
     /// 移除Warning对话框，静默处理，仅在Token真正过期时提示
     /// </summary>
-    private async void OnTokenLifecycleStateChanged(TokenLifecycleStateChangedEventArgs args)
+    private async Task OnTokenLifecycleStateChangedAsync(TokenLifecycleStateChangedEventArgs args)
     {
         Logger.LogDebug("Token生命周期状态变更: {Previous} -> {Current}", args.PreviousState, args.CurrentState);
 

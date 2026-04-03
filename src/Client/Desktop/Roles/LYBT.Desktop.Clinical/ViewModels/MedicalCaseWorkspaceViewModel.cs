@@ -5,6 +5,7 @@ using LYBT.Desktop.Clinical.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
@@ -264,9 +265,14 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     #region Navigation Lifecycle
 
-    public override async void OnNavigatedTo(NavigationContext navigationContext)
+    public override void OnNavigatedTo(NavigationContext navigationContext)
     {
         base.OnNavigatedTo(navigationContext);
+        OnNavigatedToAsync(navigationContext).SafeFireAndForget(ex => Logger.LogError(ex, "医案工作区导航初始化失败"));
+    }
+
+    private async Task OnNavigatedToAsync(NavigationContext navigationContext)
+    {
         MedicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
         CurrentPatient = navigationContext.Parameters.GetValue<PatientDetailDto>("CurrentPatient");
         var workspaceMode = navigationContext.Parameters.GetValue<WorkspaceMode>(MedicalCaseNavigationParameters.WorkspaceModeKey);
@@ -590,7 +596,10 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     }
 
     /// <summary>Management模式: 审计确认 + 保存 + 进入只读</summary>
-    private async void ExecuteSaveChanges()
+    private void ExecuteSaveChanges()
+        => ExecuteSaveChangesAsync().SafeFireAndForget(ex => Logger.LogError(ex, "保存医案失败"));
+
+    private async Task ExecuteSaveChangesAsync()
     {
         try
         {

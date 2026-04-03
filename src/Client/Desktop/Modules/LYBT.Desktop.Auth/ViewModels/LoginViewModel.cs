@@ -7,6 +7,7 @@ using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Regions;
@@ -284,22 +285,21 @@ namespace LYBT.Desktop.Auth.ViewModels
             _applicationStateService.StatusChanged += OnApiStatusChanged;
 
             _cts = new CancellationTokenSource();
-            _ = Task.Run(async () =>
+            BackgroundInitAsync().SafeFireAndForget(ex => Logger.LogError(ex, "[VM] Login.BackgroundInit failed"));
+        }
+
+        private async Task BackgroundInitAsync()
+        {
+            try
             {
-                try
-                {
-                    await Task.Delay(100, _cts.Token);
-                    await LoadSavedCredentialsAsync();
-                    await LoadApiStatusFromStateServiceAsync();
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "[VM] Login.BackgroundInit failed");
-                }
-            }, _cts.Token);
+                await Task.Delay(100, _cts?.Token ?? CancellationToken.None);
+                await LoadSavedCredentialsAsync();
+                await LoadApiStatusFromStateServiceAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when ViewModel is disposed during initialization
+            }
         }
 
         public override void OnNavigatedTo(NavigationContext navigationContext)
