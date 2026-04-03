@@ -1,4 +1,6 @@
 using LYBT.Infrastructure.Data;
+using LYBT.Shared.Configuration.Options.Server;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,12 +17,12 @@ public class LogCleanupService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<LogCleanupService> _logger;
-    private readonly LogCleanupOptions _options;
+    private readonly LoggingOptions _options;
 
     public LogCleanupService(
         IServiceProvider serviceProvider,
         ILogger<LogCleanupService> logger,
-        IOptions<LogCleanupOptions> options)
+        IOptions<LoggingOptions> options)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -29,7 +31,7 @@ public class LogCleanupService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!_options.Enabled)
+        if (!_options.Cleanup.Enabled)
         {
             _logger.LogInformation("日志清理服务已禁用");
             return;
@@ -37,11 +39,11 @@ public class LogCleanupService : BackgroundService
 
         _logger.LogInformation(
             "日志清理服务已启动 - 保留天数: {RetentionDays}, 清理间隔: {IntervalHours}小时",
-            _options.RetentionDays,
-            _options.CleanupIntervalHours);
+            _options.Cleanup.RetentionDays,
+            _options.Cleanup.CleanupIntervalHours);
 
         // 初始延迟，避免启动时立即执行
-        await Task.Delay(TimeSpan.FromMinutes(_options.InitialDelayMinutes), stoppingToken);
+        await Task.Delay(TimeSpan.FromMinutes(_options.Cleanup.InitialDelayMinutes), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -55,7 +57,7 @@ public class LogCleanupService : BackgroundService
             }
 
             // 等待下一次清理
-            await Task.Delay(TimeSpan.FromHours(_options.CleanupIntervalHours), stoppingToken);
+            await Task.Delay(TimeSpan.FromHours(_options.Cleanup.CleanupIntervalHours), stoppingToken);
         }
     }
 
@@ -64,7 +66,7 @@ public class LogCleanupService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var cutoffDate = DateTime.UtcNow.AddDays(-_options.RetentionDays);
+        var cutoffDate = DateTime.UtcNow.AddDays(-_options.Cleanup.RetentionDays);
 
         _logger.LogInformation(
             "开始清理日志 - 截止日期: {CutoffDate:yyyy-MM-dd HH:mm:ss}",
@@ -82,7 +84,7 @@ public class LogCleanupService : BackgroundService
                 // V1.0.0: Error/Fatal级别日志永久保留，仅清理Warning及以下级别
                 deletedInBatch = await dbContext.Database.ExecuteSqlRawAsync(
                     "DELETE TOP (@batchSize) FROM SystemLogs WHERE Timestamp < @cutoffDate AND Level NOT IN ('Error', 'Fatal')",
-                    new Microsoft.Data.SqlClient.SqlParameter("@batchSize", _options.BatchSize),
+                    new Microsoft.Data.SqlClient.SqlParameter("@batchSize", _options.Cleanup.BatchSize),
                     new Microsoft.Data.SqlClient.SqlParameter("@cutoffDate", cutoffDate));
 
                 totalDeleted += deletedInBatch;
@@ -95,7 +97,7 @@ public class LogCleanupService : BackgroundService
                     await Task.Delay(100, cancellationToken);
                 }
 
-            } while (deletedInBatch == _options.BatchSize && !cancellationToken.IsCancellationRequested);
+            } while (deletedInBatch == _options.Cleanup.BatchSize && !cancellationToken.IsCancellationRequested);
 
             _logger.LogInformation(
                 "日志清理完成 - 共删除 {TotalDeleted} 条过期记录",
@@ -107,40 +109,4 @@ public class LogCleanupService : BackgroundService
             throw;
         }
     }
-}
-
-/// <summary>
-/// 日志清理配置选项
-/// </summary>
-public class LogCleanupOptions
-{
-    /// <summary>
-    /// 配置节名称
-    /// </summary>
-    public const string SectionName = "Lybt:Logging:Cleanup";
-
-    /// <summary>
-    /// 是否启用日志清理（默认true）
-    /// </summary>
-    public bool Enabled { get; set; } = true;
-
-    /// <summary>
-    /// 日志保留天数（默认90天）
-    /// </summary>
-    public int RetentionDays { get; set; } = 90;
-
-    /// <summary>
-    /// 清理间隔（小时，默认24小时）
-    /// </summary>
-    public int CleanupIntervalHours { get; set; } = 24;
-
-    /// <summary>
-    /// 初始延迟（分钟，默认5分钟，避免启动时立即执行）
-    /// </summary>
-    public int InitialDelayMinutes { get; set; } = 5;
-
-    /// <summary>
-    /// 批量删除大小（默认1000条/批）
-    /// </summary>
-    public int BatchSize { get; set; } = 1000;
 }

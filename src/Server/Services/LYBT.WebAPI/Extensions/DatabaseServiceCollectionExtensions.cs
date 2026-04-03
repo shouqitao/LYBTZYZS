@@ -180,8 +180,6 @@ public static class DatabaseServiceCollectionExtensions
         services.AddHostedService<LYBT.WebAPI.BackgroundServices.SecurityAuditCleanupService>();
 
         // refactor-logging-system: 日志清理后台服务
-        services.Configure<LYBT.Infrastructure.Logging.LogCleanupOptions>(
-            configuration.GetSection(LYBT.Infrastructure.Logging.LogCleanupOptions.SectionName));
         services.AddHostedService<LogCleanupService>();
 
         return services;
