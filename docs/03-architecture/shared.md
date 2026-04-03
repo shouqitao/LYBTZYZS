@@ -345,30 +345,29 @@ LYBT.Shared.Configuration/
       DatabaseOptions.cs   # 数据库连接配置
       SecurityOptions.cs   # 安全策略
       SessionOptions.cs    # 会话管理
-      PasswordPolicyOptions.cs  # 密码策略 (过期天数、复杂度)
       LoggingOptions.cs    # 日志配置
       SystemAdminOptions.cs # 系统管理员初始化
       DefaultPasswordOptions.cs # 默认密码策略
       MemoryCacheOptions.cs # 缓存配置
       SwaggerOptions.cs    # Swagger 配置
       JsonOptions.cs       # JSON 序列化配置
-      UserManagementOptions.cs # 用户管理配置
     Client/
       ApiClientOptions.cs  # API 客户端配置 (BaseUrl, Timeout)
+      ClientSessionOptions.cs # 客户端会话配置
       FeatureToggleOptions.cs # 功能开关
       ClinicSettingsOptions.cs # 诊所设置
       PrescriptionOptions.cs # 处方默认值
-      ClientSessionOptions.cs # 客户端会话配置
-  Validation/              # 配置验证器
+      SyncOptions.cs       # 数据同步配置
+  Validation/              # 配置验证器 (IValidateOptions<T> 实现)
     JwtOptionsValidator.cs
     DatabaseOptionsValidator.cs
     SecurityOptionsValidator.cs
   Extensions/              # DI 绑定扩展
     ServerConfigurationExtensions.cs
     ClientConfigurationExtensions.cs
-  Constants/
-    ConfigurationSections.cs # appsettings.json 节名常量
 ```
+
+> 详细的配置架构说明 (验证管道、环境分层、热更新策略) 请参见 [configuration.md](configuration.md)。
 
 **约束**: 引用 Microsoft.Extensions.Options，禁止引用业务逻辑。
 

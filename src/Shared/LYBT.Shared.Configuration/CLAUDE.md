@@ -5,9 +5,6 @@
 ## 代码文件结构
 
 ```
-Constants/
-└── ConfigurationSections.cs     # 配置节名称常量，所有 Options 的 SectionName 引用此处
-
 Options/
 ├── Common/
 │   └── JwtOptions.cs            # JWT 认证配置 (Server/Client 共用)
@@ -17,9 +14,7 @@ Options/
 │   ├── SessionOptions.cs        # 服务端会话配置
 │   ├── LoggingOptions.cs        # 日志配置 (含日志清理子类)
 │   ├── SystemAdminOptions.cs    # 系统管理员配置
-│   ├── PasswordPolicyOptions.cs # 密码策略配置 [SUSPECT]
 │   ├── DefaultPasswordOptions.cs# 默认密码配置
-│   ├── UserManagementOptions.cs # 用户管理配置 [SUSPECT]
 │   ├── MemoryCacheOptions.cs    # 内存缓存配置
 │   ├── SwaggerOptions.cs        # Swagger API 文档配置
 │   └── JsonOptions.cs           # JSON 序列化配置 [DEAD]
@@ -41,10 +36,19 @@ Extensions/
 └── ClientConfigurationExtensions.cs  # 客户端配置 DI 注册
 ```
 
-### Constants/ConfigurationSections.cs
-**ConfigurationSections** (static class) | 所有配置节名称的集中定义，避免魔法字符串
+## 配置节命名约定
 
-所有 Options 类通过 `public const string SectionName = ConfigurationSections.Xxx` 引用。包含: Jwt, Database, Swagger, Json, Security, Session, Logging, UserManagement, SystemAdmin, PasswordPolicy, DefaultPasswords, MemoryCache, ApiClient, Sync, ClientSession, FeatureToggles, ClinicSettings, Prescription。
+每个 Options 类内联定义 `SectionName` 常量，直接对应 appsettings.json 中的配置节名称:
+
+```csharp
+public class JwtOptions
+{
+    public const string SectionName = "Jwt";
+    // ...
+}
+```
+
+绑定时引用: `configuration.GetSection(JwtOptions.SectionName)`
 
 ### Options/Common/JwtOptions.cs
 **JwtOptions** | JWT 认证配置，Server 和 Client 共用
@@ -86,14 +90,8 @@ Extensions/
 ### Options/Server/SystemAdminOptions.cs
 **SystemAdminOptions** | 系统管理员初始化配置: UserName/Email/DisplayName/AutoCreateOnStartup/SessionTimeoutMinutes(240)
 
-### Options/Server/PasswordPolicyOptions.cs
-**PasswordPolicyOptions** | 密码策略: MinLength(8)/RequireDigit/RequireLowercase/RequireUppercase/RequireSpecialChar
-
 ### Options/Server/DefaultPasswordOptions.cs
 **DefaultPasswordOptions** | 默认密码配置: SysAdminPassword/NewUserPassword/ForceChangeOnFirstLogin/EnableInDevelopment/AllowInProduction(false)/OnlyWhenDatabaseEmpty/ExpiryDays(30)
-
-### Options/Server/UserManagementOptions.cs
-**UserManagementOptions** | 用户管理: DefaultRole("Staff")/AllowSelfRegistration(false)/RequireEmailConfirmation/EnableUserCache/MaxBatchOperationSize(100)
 
 ### Options/Server/MemoryCacheOptions.cs
 **MemoryCacheOptions** | 内存缓存: Enabled/SizeLimit(100MB)/CompactionPercentage(0.05)/ExpirationScanFrequencySeconds(60)/DefaultExpirationMinutes(5)
@@ -150,24 +148,21 @@ Extensions/
 
 | 方法 | 说明 |
 |------|------|
-| AddLybtServerConfiguration(services, configuration) | 注册全部服务端 Options + 验证器，绑定 IConfiguration，启用 ValidateOnStart (Logging 除外，支持热更新) |
+| AddLybtServerConfiguration(services, configuration) | 注册 8 个服务端 Options + 3 个 IValidateOptions 验证器单例，绑定 IConfiguration，启用 ValidateOnStart (Logging 除外，支持热更新) |
 
 ### Extensions/ClientConfigurationExtensions.cs
 **ClientConfigurationExtensions** (static class) | 客户端配置 DI 注册入口
 
 | 方法 | 说明 |
 |------|------|
-| AddLybtClientConfiguration(services, configuration) | 注册全部客户端 Options + JWT 验证器，绑定 IConfiguration，FeatureToggles/Prescription/Sync 支持热更新 |
+| AddLybtClientConfiguration(services, configuration) | 注册 7 个客户端 Options + JwtOptionsValidator 验证器单例，绑定 IConfiguration，FeatureToggles/Prescription/Sync 支持热更新 |
 
 ## 死代码与废弃标记
 
 | 类型/方法 | 状态 | 替代方案 | 清理计划 |
 |-----------|------|----------|----------|
 | JsonOptions | [DEAD] | 仅在 ServerConfigurationExtensions 外由 WebAPI ServiceCollectionExtensions 引用一次，但 ServerConfigurationExtensions 自身未注册此 Options | 确认 WebAPI 侧是否独立注册，若未注册则清理 |
-| PasswordPolicyOptions | [SUSPECT] | 仅通过 ServerConfigurationExtensions 注册到 DI，未见任何 Service 注入使用 | 确认是否有 Service 通过 IOptions\<PasswordPolicyOptions\> 使用 |
-| UserManagementOptions | [SUSPECT] | 仅通过 ServerConfigurationExtensions 注册到 DI，未见任何 Service 注入使用 | 确认是否有 Service 通过 IOptions\<UserManagementOptions\> 使用 |
 | LoggingOptions / LogCleanupOptions | [SUSPECT] | 仅通过 ServerConfigurationExtensions 注册，未见消费端 | 确认日志清理后台任务是否使用 |
-| AddLybtServerConfiguration | [SUSPECT] | 仅在 WebAPI Program.cs 调用一次，但部分 Options (PasswordPolicy/UserManagement/Logging) 注册后无消费端 | 审查消费端注入情况 |
 
 ## 设计分析
 
@@ -176,7 +171,6 @@ Extensions/
 | JsonOptions.cs | ServerConfigurationExtensions 未注册此 Options | WebAPI 通过自己的 ServiceCollectionExtensions 单独使用，但如果其未调用 AddOptions 绑定则为死代码 | 统一到 ServerConfigurationExtensions 或确认独立注册 |
 | SecurityOptions.cs | 类层次嵌套较深 (4 个 class 在同一文件) | RateLimitOptions -> LoginRateLimitOptions/ApiRateLimitOptions 继承链合理但文件较大 (73 行) | 可接受，嵌套配置类放同一文件是常见模式 |
 | DatabaseOptions.cs | 同文件包含 4 个类 | ConnectionPoolOptions/MonitoringOptions/RetryPolicyOptions 作为 DatabaseOptions 的子配置，逻辑内聚 | 可接受 |
-| ServerConfigurationExtensions | 使用非标准的 Validate 委托模式 | `.Validate<TValidator>((options, validator) => ...)` 而非 `.Services.AddSingleton<IValidateOptions<T>, TValidator>()` | 两种模式均可，当前方式需额外注册 Singleton，稍显冗余 |
 
 ## 已知陷阱
 
