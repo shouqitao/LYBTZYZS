@@ -25,8 +25,8 @@ public class ProductionConfigurationValidator
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Jwt:SecretKey",
-            EnvVarName = "Lybt__Jwt__SecretKey",
+            Key = "Jwt:SecretKey",
+            EnvVarName = "Jwt__SecretKey",
             Severity = Severity.Critical,
             Description = "JWT 签名密钥",
             MinLength = 32,
@@ -34,32 +34,32 @@ public class ProductionConfigurationValidator
         },
         new ConfigurationItem
         {
-            Key = "Lybt:DefaultPasswords:SysAdminPassword",
-            EnvVarName = "Lybt__DefaultPasswords__SysAdminPassword",
+            Key = "DefaultPasswords:SysAdminPassword",
+            EnvVarName = "DefaultPasswords__SysAdminPassword",
             Severity = Severity.Important,
             Description = "系统管理员默认密码",
             Example = "Admin@123456"
         },
         new ConfigurationItem
         {
-            Key = "Lybt:DefaultPasswords:NewUserPassword",
-            EnvVarName = "Lybt__DefaultPasswords__NewUserPassword",
+            Key = "DefaultPasswords:NewUserPassword",
+            EnvVarName = "DefaultPasswords__NewUserPassword",
             Severity = Severity.Important,
             Description = "新用户默认密码",
             Example = "User@123456"
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Business:SystemAdmin:UserName",
-            EnvVarName = "Lybt__Business__SystemAdmin__Username",
+            Key = "SystemAdmin:UserName",
+            EnvVarName = "SystemAdmin__UserName",
             Severity = Severity.Important,
             Description = "系统管理员用户名",
             Example = "admin"
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Business:SystemAdmin:Email",
-            EnvVarName = "Lybt__Business__SystemAdmin__Email",
+            Key = "SystemAdmin:Email",
+            EnvVarName = "SystemAdmin__Email",
             Severity = Severity.Important,
             Description = "系统管理员邮箱",
             Pattern = @"^[^@]+@[^@]+\.[^@]+$",
@@ -67,24 +67,24 @@ public class ProductionConfigurationValidator
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Jwt:Issuer",
-            EnvVarName = "Lybt__Jwt__Issuer",
+            Key = "Jwt:Issuer",
+            EnvVarName = "Jwt__Issuer",
             Severity = Severity.Important,
             Description = "JWT 发行者标识",
             Example = "LYBT-WebAPI"
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Jwt:Audience",
-            EnvVarName = "Lybt__Jwt__Audience",
+            Key = "Jwt:Audience",
+            EnvVarName = "Jwt__Audience",
             Severity = Severity.Important,
             Description = "JWT 受众标识",
             Example = "LYBT-Client"
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Business:SystemAdmin:DisplayName",
-            EnvVarName = "Lybt__Business__SystemAdmin__DisplayName",
+            Key = "SystemAdmin:DisplayName",
+            EnvVarName = "SystemAdmin__DisplayName",
             Severity = Severity.Important,
             Description = "系统管理员显示名称",
             Example = "系统管理员"
