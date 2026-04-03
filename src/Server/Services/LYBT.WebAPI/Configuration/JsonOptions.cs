@@ -1,7 +1,7 @@
-namespace LYBT.Shared.Configuration.Options.Server;
+namespace LYBT.WebAPI.Configuration;
 
 /// <summary>
-/// JSON 序列化配置
+/// JSON 序列化配置（仅 WebAPI 使用）
 /// </summary>
 public sealed class JsonOptions
 {
