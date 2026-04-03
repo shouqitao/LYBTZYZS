@@ -1,5 +1,3 @@
-using LYBT.Shared.Configuration.Constants;
-
 namespace LYBT.Shared.Configuration.Options.Client;
 
 /// <summary>
@@ -7,7 +5,7 @@ namespace LYBT.Shared.Configuration.Options.Client;
 /// </summary>
 public sealed class SyncOptions
 {
-    public const string SectionName = ConfigurationSections.Sync;
+    public const string SectionName = "Sync";
 
     /// <summary>
     /// 冲突时是否覆盖服务器数据，默认 false

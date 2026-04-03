@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class SessionOptions
 {
-    public const string SectionName = ConfigurationSections.Session;
+    public const string SectionName = "Session";
 
     /// <summary>
     /// 会话超时时间 (分钟)

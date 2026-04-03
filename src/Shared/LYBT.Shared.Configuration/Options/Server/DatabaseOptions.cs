@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class DatabaseOptions
 {
-    public const string SectionName = ConfigurationSections.Database;
+    public const string SectionName = "Database";
 
     /// <summary>
     /// 连接字符串（可选，代码有fallback链：此处 → ConnectionStrings:DefaultConnection → 环境变量）

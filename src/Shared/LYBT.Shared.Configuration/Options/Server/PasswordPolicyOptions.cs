@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class PasswordPolicyOptions
 {
-    public const string SectionName = ConfigurationSections.PasswordPolicy;
+    public const string SectionName = "PasswordPolicy";
 
     /// <summary>
     /// 最小长度

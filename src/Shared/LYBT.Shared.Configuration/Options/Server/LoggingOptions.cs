@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class LoggingOptions
 {
-    public const string SectionName = ConfigurationSections.Logging;
+    public const string SectionName = "Logging";
 
     /// <summary>
     /// 日志清理配置

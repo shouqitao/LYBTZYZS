@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Client;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Client;
 /// </summary>
 public sealed class ClientSessionOptions
 {
-    public const string SectionName = ConfigurationSections.ClientSession;
+    public const string SectionName = "ClientSession";
 
     /// <summary>
     /// 无活动超时时间 (分钟)

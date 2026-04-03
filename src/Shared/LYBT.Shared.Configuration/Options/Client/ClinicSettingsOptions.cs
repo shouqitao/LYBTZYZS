@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Client;
 
@@ -9,7 +8,7 @@ namespace LYBT.Shared.Configuration.Options.Client;
 /// </summary>
 public sealed class ClinicSettingsOptions
 {
-    public const string SectionName = ConfigurationSections.ClinicSettings;
+    public const string SectionName = "ClinicSettings";
 
     /// <summary>
     /// 诊所名称

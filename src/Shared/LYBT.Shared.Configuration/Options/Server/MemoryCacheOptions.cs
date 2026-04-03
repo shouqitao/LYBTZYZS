@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class MemoryCacheOptions
 {
-    public const string SectionName = ConfigurationSections.MemoryCache;
+    public const string SectionName = "MemoryCache";
 
     /// <summary>
     /// 是否启用缓存

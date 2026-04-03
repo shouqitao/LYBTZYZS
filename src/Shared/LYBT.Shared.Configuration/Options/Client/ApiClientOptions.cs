@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Client;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Client;
 /// </summary>
 public sealed class ApiClientOptions
 {
-    public const string SectionName = ConfigurationSections.ApiClient;
+    public const string SectionName = "ApiClient";
 
     /// <summary>
     /// API 基础地址

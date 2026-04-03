@@ -1,5 +1,3 @@
-using LYBT.Shared.Configuration.Constants;
-
 namespace LYBT.Shared.Configuration.Options.Client;
 
 /// <summary>
@@ -7,7 +5,7 @@ namespace LYBT.Shared.Configuration.Options.Client;
 /// </summary>
 public sealed class FeatureToggleOptions
 {
-    public const string SectionName = ConfigurationSections.FeatureToggles;
+    public const string SectionName = "FeatureToggles";
 
     // Consultation 模块
     public bool ConsultationCreate { get; set; } = false;

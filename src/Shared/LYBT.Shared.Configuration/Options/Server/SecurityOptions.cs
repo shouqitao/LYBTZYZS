@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class SecurityOptions
 {
-    public const string SectionName = ConfigurationSections.Security;
+    public const string SectionName = "Security";
 
     /// <summary>
     /// 速率限制配置

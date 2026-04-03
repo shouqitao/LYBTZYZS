@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Common;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Common;
 /// </summary>
 public sealed class JwtOptions
 {
-    public const string SectionName = ConfigurationSections.Jwt;
+    public const string SectionName = "Jwt";
 
     /// <summary>
     /// JWT 签名密钥 (Base64 编码)

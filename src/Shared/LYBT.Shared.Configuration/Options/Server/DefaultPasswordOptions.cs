@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class DefaultPasswordOptions
 {
-    public const string SectionName = ConfigurationSections.DefaultPasswords;
+    public const string SectionName = "DefaultPasswords";
 
     /// <summary>
     /// 系统管理员默认密码

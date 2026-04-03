@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class UserManagementOptions
 {
-    public const string SectionName = ConfigurationSections.UserManagement;
+    public const string SectionName = "UserManagement";
 
     /// <summary>
     /// 默认角色

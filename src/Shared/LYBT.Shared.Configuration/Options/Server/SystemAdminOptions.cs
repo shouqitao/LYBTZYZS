@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Configuration.Constants;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -8,7 +7,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class SystemAdminOptions
 {
-    public const string SectionName = ConfigurationSections.SystemAdmin;
+    public const string SectionName = "SystemAdmin";
 
     /// <summary>
     /// 用户名

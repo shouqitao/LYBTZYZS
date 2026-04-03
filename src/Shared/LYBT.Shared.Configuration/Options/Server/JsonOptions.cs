@@ -1,5 +1,3 @@
-using LYBT.Shared.Configuration.Constants;
-
 namespace LYBT.Shared.Configuration.Options.Server;
 
 /// <summary>
@@ -7,7 +5,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 /// </summary>
 public sealed class JsonOptions
 {
-    public const string SectionName = ConfigurationSections.Json;
+    public const string SectionName = "Json";
 
     /// <summary>
     /// 是否使用 UnsafeRelaxedJsonEscaping
