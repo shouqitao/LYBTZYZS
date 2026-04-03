@@ -84,17 +84,25 @@ public class Program
             // Phase 2: Final Logger - 完整配置的生产级日志系统
             // 从配置文件读取，添加所有Enrichers和敏感数据脱敏
             // refactor-logging-system: 使用LoggingLevelSwitch支持运行时动态调整
-            builder.Host.UseSerilog((context, services, configuration) => configuration
-                .MinimumLevel.ControlledBy(LoggingLevelManager.LevelSwitch)
-                .ReadFrom.Configuration(context.Configuration)
-                .ReadFrom.Services(services)
-                .Enrich.FromLogContext()
-                .Enrich.WithMachineName()
-                .Enrich.WithThreadId()
-                .Enrich.WithProperty("Application", "LYBT.WebAPI")
-                .WithSensitiveDataMasking()
-                .AddMSSqlServerSinkWithColumnOptions(
-                    context.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Host.UseSerilog((context, services, configuration) =>
+            {
+                configuration
+                    .MinimumLevel.ControlledBy(LoggingLevelManager.LevelSwitch)
+                    .ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(services)
+                    .Enrich.FromLogContext()
+                    .Enrich.WithMachineName()
+                    .Enrich.WithThreadId()
+                    .Enrich.WithProperty("Application", "LYBT.WebAPI")
+                    .WithSensitiveDataMasking();
+
+                // 测试环境跳过 SQL Server Sink，避免 AutoCreateSqlTable 与 EF 迁移冲突
+                if (!context.HostingEnvironment.IsEnvironment("Test"))
+                {
+                    configuration.AddMSSqlServerSinkWithColumnOptions(
+                        context.Configuration.GetConnectionString("DefaultConnection"));
+                }
+            });
 
             // refactor-logging-system: 注册LoggingLevelManager为单例，供AdminController使用
             builder.Services.AddSingleton(LoggingLevelManager);
