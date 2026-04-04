@@ -1,27 +1,104 @@
-# 进度追踪
+# Progress Log
 
-## Phase 1: 删除根目录调试脚本 (.py)
-- 状态: ✅ 完成 — 删除 12 个 .py 文件
+<!-- 
+  WHAT: Your session log - a chronological record of what you did, when, and what happened.
+  WHY: Answers "What have I done?" in the 5-Question Reboot Test. Helps you resume after breaks.
+  WHEN: Update after completing each phase or encountering errors. More detailed than task_plan.md.
+-->
 
-## Phase 2: 删除根目录调试输出 (.txt)
-- 状态: ✅ 完成 — 删除 18 个 .txt 文件
+## Session: 2026-04-04
 
-## Phase 3: 删除根目录调试 JSON
-- 状态: ✅ 完成 — 删除 5 个 .json 文件
+### Phase 1: Add CancellationToken to Async Methods
+<!-- 
+  WHAT: Detailed log of actions taken during this phase.
+  WHY: Provides context for what was done, making it easier to resume or debug.
+  WHEN: Update as you work through the phase, or at least when you complete it.
+-->
+- **Status:** in_progress
+- **Started:** 2026-04-04
+<!-- 
+  STATUS: Same as task_plan.md (pending, in_progress, complete)
+  TIMESTAMP: When you started this phase (e.g., "2026-01-15 10:00")
+-->
+- Actions taken:
+  <!-- 
+    WHAT: List of specific actions you performed.
+    EXAMPLE:
+      - Created todo.py with basic structure
+      - Implemented add functionality
+      - Fixed FileNotFoundError
+  -->
+  -
+- Files created/modified:
+  <!-- 
+    WHAT: Which files you created or changed.
+    WHY: Quick reference for what was touched. Helps with debugging and review.
+    EXAMPLE:
+      - todo.py (created)
+      - todos.json (created by app)
+      - task_plan.md (updated)
+  -->
+  -
 
-## Phase 4: 删除旧规划文件 + 调试报告
-- 状态: ✅ 完成 — 删除 task_plan/findings/progress.md + 3 个调试报告
+### Phase 2: Standardize Error Handling
+<!-- 
+  WHAT: Same structure as Phase 1, for the next phase.
+  WHY: Keep a separate log entry for each phase to track progress clearly.
+-->
+- **Status:** pending
+- Actions taken:
+  -
+- Files created/modified:
+  -
 
-## Phase 5: 删除旧 sln + 其他
-- 状态: ✅ 完成 — 删除 LYBT.All.sln, Test.sln, .slnLaunch.user, TestApi.exe, .webapi.log, .webapi.pid, debug.log, nul, openspec 快捷方式
+## Test Results
+<!-- 
+  WHAT: Table of tests you ran, what you expected, what actually happened.
+  WHY: Documents verification of functionality. Helps catch regressions.
+  WHEN: Update as you test features, especially during Phase 4 (Testing & Verification).
+-->
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+|      |       |          |        |        |
 
-## Phase 6: 清理 logs/
-- 状态: ✅ 完成 — 删除 3 个旧 bootstrap 日志
+## Error Log
+<!-- 
+  WHAT: Detailed log of every error encountered, with timestamps and resolution attempts.
+  WHY: More detailed than task_plan.md's error table. Helps you learn from mistakes.
+  WHEN: Add immediately when an error occurs, even if you fix it quickly.
+-->
+<!-- Keep ALL errors - they help avoid repetition -->
+| Timestamp | Error | Attempt | Resolution |
+|-----------|-------|---------|------------|
+|           |       | 1       |            |
 
-## Phase 7: 清理 newman/
-- 状态: ✅ 完成 — 清空 newman/ 目录
+## 5-Question Reboot Check
+<!-- 
+  WHAT: Five questions that verify your context is solid. If you can answer these, you're on track.
+  WHY: This is the "reboot test" - if you can answer all 5, you can resume work effectively.
+  WHEN: Update periodically, especially when resuming after a break or context reset.
+  
+  THE 5 QUESTIONS:
+  1. Where am I? → Current phase in task_plan.md
+  2. Where am I going? → Remaining phases
+  3. What's the goal? → Goal statement in task_plan.md
+  4. What have I learned? → See findings.md
+  5. What have I done? → See above
+-->
+<!-- If you can answer these, context is solid -->
+| Question | Answer |
+|----------|--------|
+| Where am I? | Phase 1: Adding CancellationToken |
+| Where am I going? | Phases 2-5: Error handling, injection, interface, testing |
+| What's the goal? | Implement service architectural improvements |
+| What have I learned? | See findings.md |
+| What have I done? | Set up planning files, ready to start implementation |
 
-## 总计
-- 删除约 50 个文件
-- 释放约 40MB+ 磁盘空间
-- 根目录从 46 个散落文件 → 10 个必要文件
+---
+<!-- 
+  REMINDER: 
+  - Update after completing each phase or encountering errors
+  - Be detailed - this is your "what happened" log
+  - Include timestamps for errors to track when issues occurred
+-->
+*Update after completing each phase or encountering errors*
