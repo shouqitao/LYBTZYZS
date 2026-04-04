@@ -30,6 +30,8 @@ namespace LYBT.Tests.Integration;
 /// </summary>
 public sealed class IntegrationFixture : IAsyncLifetime
 {
+    private static readonly SemaphoreSlim InitGate = new(1, 1);
+
     private WebApplicationFactory<Program> _factory = null!;
     private Respawner _respawner = null!;
     private string _connectionString = null!;
@@ -68,26 +70,34 @@ public sealed class IntegrationFixture : IAsyncLifetime
 
         await CreateDatabaseAsync();
 
-        // 2. Build WebApplicationFactory with dynamic connection string
-        _factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.UseEnvironment("Test");
-
-                // Inject dynamic connection string via configuration
-                builder.UseSetting(
-                    "ConnectionStrings:DefaultConnection",
-                    _connectionString);
-
-                builder.ConfigureServices(services =>
+        // 2. Build WebApplicationFactory — serialized to prevent "logger is already frozen" race
+        await InitGate.WaitAsync();
+        try
+        {
+            _factory = new WebApplicationFactory<Program>()
+                .WithWebHostBuilder(builder =>
                 {
-                    // Remove all background services to avoid interference
-                    RemoveHostedServices(services);
-                });
-            });
+                    builder.UseEnvironment("Test");
 
-        // 3. Run migrations
-        await MigrateAsync();
+                    // Inject dynamic connection string via configuration
+                    builder.UseSetting(
+                        "ConnectionStrings:DefaultConnection",
+                        _connectionString);
+
+                    builder.ConfigureServices(services =>
+                    {
+                        // Remove all background services to avoid interference
+                        RemoveHostedServices(services);
+                    });
+                });
+
+            // 3. Run migrations
+            await MigrateAsync();
+        }
+        finally
+        {
+            InitGate.Release();
+        }
 
         // 4. Create Respawner
         await using var connection = new SqlConnection(_connectionString);

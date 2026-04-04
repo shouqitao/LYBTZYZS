@@ -55,13 +55,13 @@ namespace LYBT.Desktop.Patients.Services
         /// <summary>
         /// 更新患者
         /// </summary>
-        public async Task<CommandResult<PatientDetailDto>> UpdatePatientAsync(PatientInputDto inputDto)
+        public async Task<CommandResult<PatientDetailDto>> UpdatePatientAsync(PatientInputDto inputDto, CancellationToken ct = default)
         {
             try
             {
                 _logger.LogInformation("[SVC] Patient.Update started - PatientId={PatientId}", inputDto.Id);
 
-                var patient = await _patientRepository.UpdateAsync(inputDto);
+                var patient = await _patientRepository.UpdateAsync(inputDto, ct);
                 _logger.LogInformation("[SVC] Patient.Update completed - PatientId={PatientId}", patient.Id);
                 return CommandResult<PatientDetailDto>.Succeeded(patient);
             }
@@ -75,13 +75,13 @@ namespace LYBT.Desktop.Patients.Services
         /// <summary>
         /// 删除患者
         /// </summary>
-        public async Task<CommandResult<bool>> DeletePatientAsync(Guid patientId)
+        public async Task<CommandResult<bool>> DeletePatientAsync(Guid patientId, CancellationToken ct = default)
         {
             try
             {
                 _logger.LogInformation("[SVC] Patient.Delete started - PatientId={PatientId}", patientId);
 
-                await _patientRepository.DeleteAsync(patientId);
+                await _patientRepository.DeleteAsync(patientId, ct);
                 _logger.LogInformation("[SVC] Patient.Delete completed - PatientId={PatientId}", patientId);
                 return CommandResult<bool>.Succeeded(true);
             }
@@ -100,7 +100,7 @@ namespace LYBT.Desktop.Patients.Services
         /// 批量删除患者
         /// OpenSpec: optimize-batch-operations Phase 2 - 使用单次批量API调用
         /// </summary>
-        public async Task<CommandResult<BatchOperationResultDto>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds)
+        public async Task<CommandResult<BatchOperationResultDto>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds, CancellationToken ct = default)
         {
             try
             {
@@ -113,7 +113,7 @@ namespace LYBT.Desktop.Patients.Services
                 }
 
                 // OpenSpec: optimize-batch-operations - 使用单次批量API调用替代N+1模式
-                var result = await _patientRepository.BatchDeleteAsync(ids);
+                var result = await _patientRepository.BatchDeleteAsync(ids, ct);
                 if (result == null)
                 {
                     _logger.LogWarning("[SVC] Patient.BatchDelete failed");
@@ -146,13 +146,13 @@ namespace LYBT.Desktop.Patients.Services
         /// <summary>
         /// 搜索患者
         /// </summary>
-        public async Task<CommandResult<IEnumerable<PatientListDto>>> SearchPatientsAsync(string keyword)
+        public async Task<CommandResult<IEnumerable<PatientListDto>>> SearchPatientsAsync(string keyword, CancellationToken ct = default)
         {
             try
             {
                 _logger.LogDebug("[SVC] Patient.Search started - Keyword={Keyword}", keyword);
 
-                var patients = await _patientRepository.SearchAsync(keyword);
+                var patients = await _patientRepository.SearchAsync(keyword, ct);
                 _logger.LogDebug("[SVC] Patient.Search completed - Count={Count}", patients.Count);
                 return CommandResult<IEnumerable<PatientListDto>>.Succeeded(patients);
             }
@@ -166,13 +166,13 @@ namespace LYBT.Desktop.Patients.Services
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        public async Task<CommandResult<PagedResult<PatientListDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null)
+        public async Task<CommandResult<PagedResult<PatientListDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null, CancellationToken ct = default)
         {
             try
             {
                 _logger.LogDebug("[SVC] Patient.GetPaged started - Page={Page} PageSize={PageSize}", page, pageSize);
 
-                var result = await _patientRepository.GetPagedAsync(page, pageSize, keyword);
+                var result = await _patientRepository.GetPagedAsync(page, pageSize, keyword, ct);
                 _logger.LogDebug("[SVC] Patient.GetPaged completed - Count={Count}", result.Items.Count);
                 return CommandResult<PagedResult<PatientListDto>>.Succeeded(result);
             }
@@ -186,13 +186,13 @@ namespace LYBT.Desktop.Patients.Services
         /// <summary>
         /// 根据ID获取患者（Issue #1788: 支持单个患者查询）
         /// </summary>
-        public async Task<CommandResult<PatientDetailDto>> GetByIdAsync(Guid patientId)
+        public async Task<CommandResult<PatientDetailDto>> GetByIdAsync(Guid patientId, CancellationToken ct = default)
         {
             try
             {
                 _logger.LogDebug("[SVC] Patient.GetById started - PatientId={PatientId}", patientId);
 
-                var patient = await _patientRepository.GetByIdAsync(patientId);
+                var patient = await _patientRepository.GetByIdAsync(patientId, ct);
 
                 if (patient == null)
                 {

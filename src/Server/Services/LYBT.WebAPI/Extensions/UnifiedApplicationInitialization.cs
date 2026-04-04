@@ -45,6 +45,11 @@ public static class UnifiedApplicationInitialization
     {
         try
         {
+            if (app.Environment.IsEnvironment("Test"))
+            {
+                return;
+            }
+
             var dbInitService = scope.ServiceProvider.GetRequiredService<LYBT.Infrastructure.Data.DatabaseInitializationService>();
             await dbInitService.InitializeDatabaseAsync();
 

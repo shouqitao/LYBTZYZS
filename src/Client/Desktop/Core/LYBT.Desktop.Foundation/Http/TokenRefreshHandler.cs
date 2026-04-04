@@ -128,7 +128,7 @@ namespace LYBT.Desktop.Foundation.Http
                             _userActivityState?.ResetActivity();
 
                             // 发布Prism PubSubEvent
-                            PublishTokenRefreshSucceededEvent();
+                            await PublishTokenRefreshSucceededEventAsync();
                         }
                         else
                         {
@@ -389,7 +389,7 @@ namespace LYBT.Desktop.Foundation.Http
         /// <summary>
         /// 发布Token刷新成功事件（Phase 3.2）
         /// </summary>
-        private async void PublishTokenRefreshSucceededEvent()
+        private async Task PublishTokenRefreshSucceededEventAsync()
         {
             if (_eventAggregator == null)
                 return;
@@ -521,7 +521,7 @@ namespace LYBT.Desktop.Foundation.Http
                     username, apiResponse.Data.ExpiresAt);
 
                 // 发布成功事件
-                PublishTokenRefreshSucceededEvent();
+                await PublishTokenRefreshSucceededEventAsync();
 
                 return TokenRefreshResult.Succeeded();
             }

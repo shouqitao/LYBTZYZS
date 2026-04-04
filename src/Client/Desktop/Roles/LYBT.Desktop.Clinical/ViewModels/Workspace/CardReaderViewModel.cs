@@ -420,10 +420,10 @@ public class CardReaderViewModel : ChildViewModelBase
         OnPropertyChanged(nameof(IsConnected));
     }
 
-    private async void OnCardReadCompleted(object? sender, CardReadResult e)
+    private void OnCardReadCompleted(object? sender, CardReadResult e)
     {
         Logger.LogInformation("自动读卡完成：{Name}", e.Name);
-        await HandleCardReadResultAsync(e);
+        _ = HandleCardReadResultAsync(e);
     }
 
     private void OnCardReadError(object? sender, CardReadErrorEventArgs e)

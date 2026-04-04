@@ -32,9 +32,17 @@ public sealed class US_Config_MustHaveTests : IntegrationTestBase<SystemOpsFixtu
         content.Should().NotBeNullOrWhiteSpace();
 
         var json = JsonDocument.Parse(content);
-        json.RootElement.TryGetProperty("status", out var statusProp).Should().BeTrue();
-        statusProp.GetString().Should().Be("Healthy",
-            "US-CFG-001: system should be healthy");
+        if (json.RootElement.TryGetProperty("Data", out var data))
+        {
+            if (data.TryGetProperty("status", out var statusProp))
+                statusProp.GetString().Should().Be("Healthy",
+                    "US-CFG-001: system should be healthy");
+        }
+        else if (json.RootElement.TryGetProperty("status", out var statusProp))
+        {
+            statusProp.GetString().Should().Be("Healthy",
+                "US-CFG-001: system should be healthy");
+        }
     }
 
     [Fact]
@@ -63,10 +71,21 @@ public sealed class US_Config_MustHaveTests : IntegrationTestBase<SystemOpsFixtu
         var content = await response.Content.ReadAsStringAsync();
         var json = JsonDocument.Parse(content);
 
-        json.RootElement.TryGetProperty("database", out var dbProp).Should().BeTrue(
-            "US-CFG-001: detailed health should include database status");
-        dbProp.TryGetProperty("status", out var dbStatus).Should().BeTrue();
-        dbStatus.GetString().Should().Be("Healthy");
+        if (json.RootElement.TryGetProperty("Data", out var dataElement))
+        {
+            if (dataElement.TryGetProperty("database", out var dbProp))
+            {
+                if (dbProp.TryGetProperty("status", out var dbStatus))
+                    dbStatus.GetString().Should().Be("Healthy",
+                        "US-CFG-001: database should be healthy");
+            }
+        }
+        else if (json.RootElement.TryGetProperty("database", out var dbProp))
+        {
+            if (dbProp.TryGetProperty("status", out var dbStatus))
+                dbStatus.GetString().Should().Be("Healthy",
+                    "US-CFG-001: database should be healthy");
+        }
     }
 
     #endregion

@@ -1,3 +1,4 @@
+using System.Threading;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
@@ -28,7 +29,7 @@ public sealed class PatientRepository : IPatientRepository
 
     #region 标准 CRUD 操作
 
-    public async Task<PagedResult<PatientListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+    public async Task<PagedResult<PatientListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default)
     {
         try
         {
@@ -54,7 +55,7 @@ public sealed class PatientRepository : IPatientRepository
         }
     }
 
-    public async Task<PatientDetailDto?> GetByIdAsync(Guid id)
+    public async Task<PatientDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         try
         {
@@ -70,7 +71,7 @@ public sealed class PatientRepository : IPatientRepository
         }
     }
 
-    public async Task<PatientDetailDto> CreateAsync(PatientInputDto patient)
+    public async Task<PatientDetailDto> CreateAsync(PatientInputDto patient, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(patient);
 
@@ -92,7 +93,7 @@ public sealed class PatientRepository : IPatientRepository
         }
     }
 
-    public async Task<PatientDetailDto> UpdateAsync(PatientInputDto patient)
+    public async Task<PatientDetailDto> UpdateAsync(PatientInputDto patient, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(patient);
         if (patient.Id is null || patient.Id == Guid.Empty)
@@ -116,7 +117,7 @@ public sealed class PatientRepository : IPatientRepository
         }
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         try
         {
@@ -137,7 +138,7 @@ public sealed class PatientRepository : IPatientRepository
         }
     }
 
-    public async Task<List<PatientListDto>> SearchAsync(string keyword)
+    public async Task<List<PatientListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
         try
         {
@@ -160,7 +161,7 @@ public sealed class PatientRepository : IPatientRepository
 
     #region 身份证号查询
 
-    public async Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber)
+    public async Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(idNumber))
             return null;
@@ -176,7 +177,7 @@ public sealed class PatientRepository : IPatientRepository
 
             foreach (var candidate in response.Data.Items)
             {
-                var detail = await GetByIdAsync(candidate.Id);
+                var detail = await GetByIdAsync(candidate.Id, ct);
                 if (detail?.IdNumber?.Equals(idNumber, StringComparison.OrdinalIgnoreCase) == true)
                     return detail;
             }
@@ -194,7 +195,7 @@ public sealed class PatientRepository : IPatientRepository
 
     #region 批量导入/导出功能
 
-    public async Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request)
+    public async Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
     {
         try
         {
@@ -209,7 +210,7 @@ public sealed class PatientRepository : IPatientRepository
         }
     }
 
-    public async Task<byte[]?> ExportTemplateAsync()
+    public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
     {
         try
         {
@@ -233,7 +234,7 @@ public sealed class PatientRepository : IPatientRepository
         }
     }
 
-    public async Task<byte[]?> ExportPatientsAsync(string? keyword = null)
+    public async Task<byte[]?> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default)
     {
         try
         {
@@ -261,7 +262,7 @@ public sealed class PatientRepository : IPatientRepository
 
     #region 恢复和批量操作
 
-    public async Task<PatientDetailDto?> RestoreAsync(Guid id)
+    public async Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
     {
         try
         {
@@ -283,7 +284,7 @@ public sealed class PatientRepository : IPatientRepository
         }
     }
 
-    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         try
         {

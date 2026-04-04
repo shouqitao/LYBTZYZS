@@ -31,9 +31,8 @@ public static partial class SensitiveDataMasker
 
     /// <summary>
     /// Bearer Token模式
-    /// 匹配: Bearer eyJhbGciOiJI... 等
     /// </summary>
-    [GeneratedRegex(@"(?i)bearer\s+[\w\-._~+/]+=*", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    [GeneratedRegex(@"(?i)bearer\s+[\w\-._~+/]+(\.?[\w\-._~+/]+)*=*", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
     private static partial Regex BearerTokenPattern();
 
     /// <summary>
@@ -204,6 +203,9 @@ public static partial class SensitiveDataMasker
 
         var sanitized = input;
 
+        // 替换Bearer Token（必须在PasswordPattern之前，避免bearer被PasswordPattern部分匹配）
+        sanitized = BearerTokenPattern().Replace(sanitized, "Bearer [REDACTED]");
+
         // 替换密码模式: password=xxx -> password=[REDACTED]
         sanitized = PasswordPattern().Replace(sanitized, match =>
         {
@@ -217,9 +219,6 @@ public static partial class SensitiveDataMasker
             var key = match.Groups[1].Value;
             return $"{key}=[REDACTED]";
         });
-
-        // 替换Bearer Token
-        sanitized = BearerTokenPattern().Replace(sanitized, "Bearer [REDACTED]");
 
         return sanitized;
     }

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
@@ -276,86 +277,104 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         private void SubscribeToServiceEvents()
         {
             // Loading状态变更
-            _masterDetailServices.Loading.PropertyChanged += (s, e) =>
-            {
-                OnPropertyChanged(e.PropertyName);
-                if (e.PropertyName == nameof(ILoadingStateManager.IsBusy))
-                {
-                    NotifyCommandsCanExecuteChanged();
-                }
-            };
+            _masterDetailServices.Loading.PropertyChanged += OnLoadingPropertyChanged;
 
             // Pagination变更
             // OpenSpec: refactor-masterdetail-command-refresh - 修复翻页按钮不生效问题
-            _masterDetailServices.Pagination.PropertyChanged += (s, e) =>
-            {
-                OnPropertyChanged(e.PropertyName);
-                // 分页状态变化时刷新分页命令的CanExecute状态
-                if (e.PropertyName is nameof(IPaginationService.CurrentPage)
-                    or nameof(IPaginationService.TotalPages)
-                    or nameof(IPaginationService.TotalCount)
-                    or nameof(IPaginationService.CanGoToFirstPage)
-                    or nameof(IPaginationService.CanGoToPreviousPage)
-                    or nameof(IPaginationService.CanGoToNextPage)
-                    or nameof(IPaginationService.CanGoToLastPage))
-                {
-                    NotifyPaginationCommandsCanExecuteChanged();
-                }
-            };
+            _masterDetailServices.Pagination.PropertyChanged += OnPaginationPropertyChanged;
 
-            _masterDetailServices.Pagination.PageChanged += async (s, e) =>
-            {
-                await LoadListAsync();
-            };
+            _masterDetailServices.Pagination.PageChanged += OnPaginationPageChanged;
 
             // Search变更
-            _masterDetailServices.Search.PropertyChanged += (s, e) =>
-            {
-                OnPropertyChanged(e.PropertyName);
-            };
+            _masterDetailServices.Search.PropertyChanged += OnSearchPropertyChanged;
 
             // Selection变更
-            _masterDetailServices.Selection.PropertyChanged += (s, e) =>
-            {
-                OnPropertyChanged(e.PropertyName);
-                if (e.PropertyName == nameof(ISelectionService<TListItem>.SelectedItem))
-                {
-                    NotifyCommandsCanExecuteChanged();
-                    // OpenSpec: refactor-masterdetail-command-refresh - 选择变化时刷新ShowDetailPanel
-                    OnPropertyChanged(nameof(ShowDetailPanel));
-                }
-            };
+            _masterDetailServices.Selection.PropertyChanged += OnSelectionPropertyChanged;
 
-            _masterDetailServices.Selection.SelectionChanged += async (s, e) =>
-            {
-                await OnSelectionChangedAsync(e);
-            };
+            _masterDetailServices.Selection.SelectionChanged += OnSelectionSelectionChanged;
 
             // DetailEditor变更
-            _masterDetailServices.DetailEditor.PropertyChanged += (s, e) =>
-            {
-                OnPropertyChanged(e.PropertyName);
-                if (e.PropertyName == nameof(IDetailEditorService<TDetail>.IsEditMode))
-                {
-                    NotifyCommandsCanExecuteChanged();
-                    // OpenSpec: refactor-masterdetail-command-refresh - 编辑模式变化时刷新ShowDetailPanel
-                    OnPropertyChanged(nameof(ShowDetailPanel));
-                }
-
-                // DetailTitle 依赖 CurrentDetail/IsEditMode/IsNew，自动通知
-                if (e.PropertyName is nameof(IDetailEditorService<TDetail>.CurrentDetail)
-                    or nameof(IDetailEditorService<TDetail>.IsEditMode)
-                    or nameof(IDetailEditorService<TDetail>.IsNew))
-                {
-                    OnPropertyChanged(nameof(DetailTitle));
-                }
-            };
+            _masterDetailServices.DetailEditor.PropertyChanged += OnDetailEditorPropertyChanged;
 
             // Error变更
-            _masterDetailServices.ErrorHandler.PropertyChanged += (s, e) =>
+            _masterDetailServices.ErrorHandler.PropertyChanged += OnErrorHandlerPropertyChanged;
+        }
+
+        private void OnLoadingPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(e.PropertyName);
+            if (e.PropertyName == nameof(ILoadingStateManager.IsBusy))
             {
-                OnPropertyChanged(e.PropertyName);
-            };
+                NotifyCommandsCanExecuteChanged();
+            }
+        }
+
+        private void OnPaginationPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(e.PropertyName);
+            // 分页状态变化时刷新分页命令的CanExecute状态
+            if (e.PropertyName is nameof(IPaginationService.CurrentPage)
+                or nameof(IPaginationService.TotalPages)
+                or nameof(IPaginationService.TotalCount)
+                or nameof(IPaginationService.CanGoToFirstPage)
+                or nameof(IPaginationService.CanGoToPreviousPage)
+                or nameof(IPaginationService.CanGoToNextPage)
+                or nameof(IPaginationService.CanGoToLastPage))
+            {
+                NotifyPaginationCommandsCanExecuteChanged();
+            }
+        }
+
+        private async void OnPaginationPageChanged(object? sender, EventArgs e)
+        {
+            LoadListAsync().SafeFireAndForget(
+                ex => MasterDetailServices.ErrorHandler.HandleException(ex, $"Pagination change failed in {GetType().Name}"));
+        }
+
+        private void OnSearchPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(e.PropertyName);
+        }
+
+        private void OnSelectionPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(e.PropertyName);
+            if (e.PropertyName == nameof(ISelectionService<TListItem>.SelectedItem))
+            {
+                NotifyCommandsCanExecuteChanged();
+                // OpenSpec: refactor-masterdetail-command-refresh - 选择变化时刷新ShowDetailPanel
+                OnPropertyChanged(nameof(ShowDetailPanel));
+            }
+        }
+
+        private async void OnSelectionSelectionChanged(object? sender, SelectionChangedEventArgs<TListItem> e)
+        {
+            OnSelectionChangedAsync(e).SafeFireAndForget(
+                ex => MasterDetailServices.ErrorHandler.HandleException(ex, $"Selection change failed in {GetType().Name}"));
+        }
+
+        private void OnDetailEditorPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(e.PropertyName);
+            if (e.PropertyName == nameof(IDetailEditorService<TDetail>.IsEditMode))
+            {
+                NotifyCommandsCanExecuteChanged();
+                // OpenSpec: refactor-masterdetail-command-refresh - 编辑模式变化时刷新ShowDetailPanel
+                OnPropertyChanged(nameof(ShowDetailPanel));
+            }
+
+            // DetailTitle 依赖 CurrentDetail/IsEditMode/IsNew，自动通知
+            if (e.PropertyName is nameof(IDetailEditorService<TDetail>.CurrentDetail)
+                or nameof(IDetailEditorService<TDetail>.IsEditMode)
+                or nameof(IDetailEditorService<TDetail>.IsNew))
+            {
+                OnPropertyChanged(nameof(DetailTitle));
+            }
+        }
+
+        private void OnErrorHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(e.PropertyName);
         }
 
         /// <summary>
@@ -684,6 +703,16 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
             if (disposing)
             {
+                // 取消订阅事件处理器
+                _masterDetailServices.Loading.PropertyChanged -= OnLoadingPropertyChanged;
+                _masterDetailServices.Pagination.PropertyChanged -= OnPaginationPropertyChanged;
+                _masterDetailServices.Pagination.PageChanged -= OnPaginationPageChanged;
+                _masterDetailServices.Search.PropertyChanged -= OnSearchPropertyChanged;
+                _masterDetailServices.Selection.PropertyChanged -= OnSelectionPropertyChanged;
+                _masterDetailServices.Selection.SelectionChanged -= OnSelectionSelectionChanged;
+                _masterDetailServices.DetailEditor.PropertyChanged -= OnDetailEditorPropertyChanged;
+                _masterDetailServices.ErrorHandler.PropertyChanged -= OnErrorHandlerPropertyChanged;
+
                 _masterDetailServices.Dispose();
             }
 

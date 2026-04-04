@@ -172,7 +172,7 @@ public sealed class US_Herb_ShouldHaveTests : IntegrationTestBase<HerbFormulaFix
         await CreateHerbAsync(client, "导出测试");
 
         // Act
-        var response = await client.GetAsync("/api/v1/herbs/export");
+        var response = await client.GetAsync("/api/v1/herbs/export-all");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK,
@@ -183,7 +183,7 @@ public sealed class US_Herb_ShouldHaveTests : IntegrationTestBase<HerbFormulaFix
     public async Task US_HERB_011_Export_Anonymous_Returns401()
     {
         // Act
-        var response = await AnonymousClient.GetAsync("/api/v1/herbs/export");
+        var response = await AnonymousClient.GetAsync("/api/v1/herbs/export-all");
 
         // Assert
         response.ShouldBeUnauthorized();

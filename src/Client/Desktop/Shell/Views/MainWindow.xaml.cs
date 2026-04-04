@@ -27,9 +27,17 @@ namespace LYBT.Desktop.Shell.Views
         /// </summary>
         private async void OnWindowLoaded(object sender, RoutedEventArgs e)
         {
-            if (DataContext is MainWindowViewModel viewModel)
+            try
             {
-                await viewModel.OnWindowLoadedAsync();
+                if (DataContext is MainWindowViewModel viewModel)
+                {
+                    await viewModel.OnWindowLoadedAsync();
+                }
+            }
+            catch (Exception)
+            {
+                // 异常已在ViewModel中记录，此处静默处理避免崩溃
+                // 登录状态检查失败不应阻止窗口加载
             }
         }
 
@@ -49,7 +57,14 @@ namespace LYBT.Desktop.Shell.Views
                 {
                     if (DataContext is MainWindowViewModel viewModel)
                     {
-                        await viewModel.RequestCloseApplicationAsync();
+                        try
+                        {
+                            await viewModel.RequestCloseApplicationAsync();
+                        }
+                        catch (Exception)
+                        {
+                            // 异常已在ViewModel中记录，关闭请求失败时不阻止其他操作
+                        }
                     }
                 }
                 // 非登录界面：Alt+F4被完全阻止

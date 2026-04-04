@@ -1,3 +1,4 @@
+using System.Threading;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.Mappers;
@@ -29,7 +30,7 @@ public sealed class LocalPatientRepository : IPatientRepository
 
     #region 标准 CRUD 操作
 
-    public async Task<PagedResult<PatientListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+    public async Task<PagedResult<PatientListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default)
     {
         try
         {
@@ -47,12 +48,12 @@ public sealed class LocalPatientRepository : IPatientRepository
                     (p.PinYinCode != null && p.PinYinCode.Contains(keyword)));
             }
 
-            var total = await query.CountAsync();
+            var total = await query.CountAsync(ct);
             var items = await query
                 .OrderByDescending(p => p.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(ct);
 
             var listDtos = items.Select(e =>
             {
@@ -88,7 +89,7 @@ public sealed class LocalPatientRepository : IPatientRepository
         }
     }
 
-    public async Task<PatientDetailDto?> GetByIdAsync(Guid id)
+    public async Task<PatientDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         try
         {
@@ -96,7 +97,7 @@ public sealed class LocalPatientRepository : IPatientRepository
 
             var entity = await _context.Patients
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id, ct);
 
             if (entity == null)
             {
@@ -113,7 +114,7 @@ public sealed class LocalPatientRepository : IPatientRepository
         }
     }
 
-    public async Task<PatientDetailDto> CreateAsync(PatientInputDto patient)
+    public async Task<PatientDetailDto> CreateAsync(PatientInputDto patient, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(patient);
 
@@ -126,7 +127,7 @@ public sealed class LocalPatientRepository : IPatientRepository
             entity.CreatedAt = DateTime.UtcNow;
 
             _context.Patients.Add(entity);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
 
             _logger.LogInformation("[REPO:Local] Patient.Create completed - Id={Id}", entity.Id);
             return _mapper.ToDetailDto(entity);
@@ -138,7 +139,7 @@ public sealed class LocalPatientRepository : IPatientRepository
         }
     }
 
-    public async Task<PatientDetailDto> UpdateAsync(PatientInputDto patient)
+    public async Task<PatientDetailDto> UpdateAsync(PatientInputDto patient, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(patient);
         var id = patient.Id ?? throw new ArgumentException("更新DTO必须包含有效的ID", nameof(patient));
@@ -147,7 +148,7 @@ public sealed class LocalPatientRepository : IPatientRepository
         {
             _logger.LogInformation("[REPO:Local] Patient.Update - Id={Id}", id);
 
-            var existing = await _context.Patients.FindAsync(id)
+            var existing = await _context.Patients.FindAsync(new object[] { id }, ct)
                 ?? throw new InvalidOperationException($"患者不存在: {id}");
 
             existing.Name = patient.Name;
@@ -167,7 +168,7 @@ public sealed class LocalPatientRepository : IPatientRepository
             existing.EmergencyContactRelation = patient.EmergencyContactRelation;
             existing.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
 
             _logger.LogInformation("[REPO:Local] Patient.Update completed - Id={Id}", id);
             return _mapper.ToDetailDto(existing);
@@ -179,13 +180,13 @@ public sealed class LocalPatientRepository : IPatientRepository
         }
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         try
         {
             _logger.LogInformation("[REPO:Local] Patient.Delete - Id={Id}", id);
 
-            var entity = await _context.Patients.FindAsync(id);
+            var entity = await _context.Patients.FindAsync(new object[] { id }, ct);
             if (entity == null)
             {
                 _logger.LogWarning("[REPO:Local] Patient.Delete - NotFound: {Id}", id);
@@ -193,7 +194,7 @@ public sealed class LocalPatientRepository : IPatientRepository
             }
 
             entity.IsDeleted = true;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
 
             _logger.LogInformation("[REPO:Local] Patient.Delete completed - Id={Id}", id);
             return true;
@@ -205,7 +206,7 @@ public sealed class LocalPatientRepository : IPatientRepository
         }
     }
 
-    public async Task<List<PatientListDto>> SearchAsync(string keyword)
+    public async Task<List<PatientListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
         try
         {
@@ -223,7 +224,7 @@ public sealed class LocalPatientRepository : IPatientRepository
                     (p.PinYinCode != null && p.PinYinCode.Contains(keyword)))
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(100)
-                .ToListAsync();
+                .ToListAsync(ct);
 
             return entities.Select(e =>
             {
@@ -255,7 +256,7 @@ public sealed class LocalPatientRepository : IPatientRepository
 
     #region 身份证号查询
 
-    public async Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber)
+    public async Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(idNumber))
             return null;
@@ -266,7 +267,7 @@ public sealed class LocalPatientRepository : IPatientRepository
 
             var entity = await _context.Patients
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.IdNumber == idNumber);
+                .FirstOrDefaultAsync(p => p.IdNumber == idNumber, ct);
 
             return entity == null ? null : _mapper.ToDetailDto(entity);
         }
@@ -281,19 +282,19 @@ public sealed class LocalPatientRepository : IPatientRepository
 
     #region 批量导入/导出 (本地模式: 导入支持, 导出不支持)
 
-    public Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request)
+    public Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
     {
         _logger.LogWarning("[REPO:Local] Patient.BatchImport - 本地模式不支持批量导入");
         return Task.FromResult<PatientBatchImportResultDto?>(null);
     }
 
-    public Task<byte[]?> ExportTemplateAsync()
+    public Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
     {
         _logger.LogWarning("[REPO:Local] Patient.ExportTemplate - 本地模式不支持导出模板");
         return Task.FromResult<byte[]?>(null);
     }
 
-    public Task<byte[]?> ExportPatientsAsync(string? keyword = null)
+    public Task<byte[]?> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default)
     {
         _logger.LogWarning("[REPO:Local] Patient.ExportPatients - 本地模式不支持导出");
         return Task.FromResult<byte[]?>(null);
@@ -303,7 +304,7 @@ public sealed class LocalPatientRepository : IPatientRepository
 
     #region 恢复和批量操作
 
-    public async Task<PatientDetailDto?> RestoreAsync(Guid id)
+    public async Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
     {
         try
         {
@@ -311,7 +312,7 @@ public sealed class LocalPatientRepository : IPatientRepository
 
             var entity = await _context.Patients
                 .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id, ct);
 
             if (entity == null)
             {
@@ -320,7 +321,7 @@ public sealed class LocalPatientRepository : IPatientRepository
             }
 
             entity.IsDeleted = false;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
 
             _logger.LogInformation("[REPO:Local] Patient.Restore completed - Id={Id}", id);
             return _mapper.ToDetailDto(entity);
@@ -332,7 +333,7 @@ public sealed class LocalPatientRepository : IPatientRepository
         }
     }
 
-    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         try
         {
@@ -346,7 +347,7 @@ public sealed class LocalPatientRepository : IPatientRepository
 
             foreach (var id in ids)
             {
-                var entity = await _context.Patients.FindAsync(id);
+                var entity = await _context.Patients.FindAsync(new object[] { id }, ct);
                 if (entity != null)
                 {
                     entity.IsDeleted = true;
@@ -365,7 +366,7 @@ public sealed class LocalPatientRepository : IPatientRepository
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
 
             _logger.LogInformation("[REPO:Local] Patient.BatchDelete completed - Success={Success}, Failure={Failure}",
                 result.SuccessCount, result.FailureCount);
