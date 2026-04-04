@@ -152,6 +152,8 @@ nul
 
 # Claude Code 工具文件 - 保留本地但不上传
 .claude/
+.opencode/
+.sisyphus/
 !.claude/commands/
 !.claude/core/
 !.claude/modes/
@@ -163,6 +165,7 @@ nul
 .gemini/
 .codex/
 .serena/
+.kiro/
 .ai/*
 
 # Planning with Files 临时规划目录
