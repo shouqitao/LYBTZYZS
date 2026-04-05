@@ -34,6 +34,18 @@ public sealed class SystemAdminOptions
     public bool AutoCreateOnStartup { get; set; } = true;
 
     /// <summary>
+    /// 是否在Production环境中允许自动创建系统管理员
+    /// 默认：false（安全默认值）。设为true时需要配置InitialSetupToken
+    /// </summary>
+    public bool AllowAutoCreateInProduction { get; set; } = false;
+
+    /// <summary>
+    /// 在Production环境中创建系统管理员时需要的一次性设置令牌
+    /// 应通过环境变量提供，永远不要提交到源代码
+    /// </summary>
+    public string? InitialSetupToken { get; set; }
+
+    /// <summary>
     /// 会话超时时间 (分钟)
     /// </summary>
     [Range(30, 480)]
