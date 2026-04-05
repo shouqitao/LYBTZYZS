@@ -105,6 +105,6 @@ public class AuthFlowTests : IntegrationTestBase
 
         // Assert
         response.Should().NotBeNull();
-        response.Status.Should().Be("Healthy");
+        response.Data!.Status.Should().Be("Healthy");
     }
 }
