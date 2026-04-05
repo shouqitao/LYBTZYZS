@@ -377,6 +377,34 @@ namespace LYBT.Shared.Utilities.Security
 
         /// <summary>
         /// 生成安全的随机密码（从PasswordLegacyHelper迁移并增强）
+        /// 使用RandomNumberGenerator确保密码学安全
+        /// </summary>
+        /// <returns>生成的随机密码</returns>
+        public static string GenerateSecurePassword()
+            => GenerateSecurePassword(12, true, true, true, true);
+
+        /// <summary>
+        /// 生成安全的随机密码（从PasswordLegacyHelper迁移并增强）
+        /// 使用RandomNumberGenerator确保密码学安全
+        /// </summary>
+        /// <param name="length">密码长度（默认20，最小12）</param>
+        /// <returns>生成的随机密码</returns>
+        public static string GenerateSecurePassword(int length = 20)
+            => GenerateSecurePassword(length, true, true, true, true);
+
+        private static int GetRandomInt(int maxValue) => RandomNumberGenerator.GetInt32(maxValue);
+
+        private static void Shuffle(Span<char> array)
+        {
+            for (int i = array.Length - 1; i > 0; i--)
+            {
+                int j = GetRandomInt(i + 1);
+                (array[i], array[j]) = (array[j], array[i]);
+            }
+        }
+
+        /// <summary>
+        /// 生成安全的随机密码（从PasswordLegacyHelper迁移并增强）
         /// </summary>
         /// <param name="length">密码长度（默认12）</param>
         /// <param name="includeUppercase">包含大写字母</param>
@@ -385,7 +413,7 @@ namespace LYBT.Shared.Utilities.Security
         /// <param name="includeSpecialChars">包含特殊字符</param>
         /// <returns>生成的随机密码</returns>
         public static string GenerateSecurePassword(
-            int length = 12,
+            int length,
             bool includeUppercase = true,
             bool includeLowercase = true,
             bool includeDigits = true,
@@ -444,6 +472,21 @@ namespace LYBT.Shared.Utilities.Security
 
             return new string(result);
         }
+
+        /// <summary>
+        /// 生成安全的随机密码（从PasswordLegacyHelper迁移并增强）
+        /// </summary>
+        /// <param name="includeUppercase">包含大写字母</param>
+        /// <param name="includeLowercase">包含小写字母</param>
+        /// <param name="includeDigits">包含数字</param>
+        /// <param name="includeSpecialChars">包含特殊字符</param>
+        /// <returns>生成的随机密码</returns>
+        public static string GenerateSecurePassword(
+            bool includeUppercase,
+            bool includeLowercase,
+            bool includeDigits,
+            bool includeSpecialChars)
+            => GenerateSecurePassword(12, includeUppercase, includeLowercase, includeDigits, includeSpecialChars);
 
         /// <summary>
         /// 安全字符串比较，防止时间攻击（从PasswordLegacyHelper迁移）
