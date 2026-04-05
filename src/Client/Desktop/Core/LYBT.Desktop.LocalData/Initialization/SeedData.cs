@@ -1,6 +1,7 @@
 using LYBT.Desktop.LocalData.Context;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -52,7 +53,7 @@ public static class SeedData
             Id = Guid.NewGuid(),
             UserName = DefaultAdminUsername,
             RealName = "系统管理员",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(DefaultAdminPassword),
+            PasswordHash = PasswordHelper.HashPassword(DefaultAdminPassword, UserRole.SuperAdmin, logger),
             Role = UserRole.SuperAdmin,
             Status = CommonStatus.Enabled,
             CreatedAt = DateTime.UtcNow,

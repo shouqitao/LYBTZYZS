@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -137,7 +138,7 @@ public sealed class LocalUserRepository : IUserRepository
             // 密码哈希处理
             if (!string.IsNullOrEmpty(dto.Password))
             {
-                entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+                entity.PasswordHash = PasswordHelper.HashPassword(dto.Password, entity.Role, _logger);
             }
 
             _context.Users.Add(entity);
@@ -370,14 +371,15 @@ public sealed class LocalUserRepository : IUserRepository
                 return ServiceResult.Failure("用户不存在");
 
             // 验证旧密码
-            if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, entity.PasswordHash))
+            var verificationResult = PasswordHelper.VerifyPassword(request.OldPassword, entity.PasswordHash, entity.Role, _logger);
+            if (!verificationResult.IsSuccess)
             {
                 _logger.LogWarning("[REPO:Local] User.ChangePassword - Invalid old password: {UserId}", userId);
                 return ServiceResult.Failure("旧密码不正确");
             }
 
             // 更新密码
-            entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            entity.PasswordHash = PasswordHelper.HashPassword(request.NewPassword, entity.Role, _logger);
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("[REPO:Local] User.ChangePassword completed - UserId={UserId}", userId);
@@ -402,7 +404,7 @@ public sealed class LocalUserRepository : IUserRepository
             if (entity == null)
                 return ServiceResult<ResetPasswordResponseDto>.Failure("用户不存在");
 
-            entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(DefaultResetPassword);
+            entity.PasswordHash = PasswordHelper.HashPassword(DefaultResetPassword, entity.Role, _logger);
             entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 

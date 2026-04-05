@@ -233,7 +233,7 @@ namespace LYBT.Desktop.Foundation.Security
 
                 // 调用健康检查API验证服务可用性
                 var healthResponse = await _authApi.HealthCheckAsync();
-                return healthResponse != null && healthResponse.Status == "Healthy";
+                return healthResponse != null && healthResponse.Success && healthResponse.Data?.Status == "Healthy";
             }
             catch
             {

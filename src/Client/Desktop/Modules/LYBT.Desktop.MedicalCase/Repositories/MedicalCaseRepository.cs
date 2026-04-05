@@ -235,14 +235,14 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
                 id, request?.Reason ?? "无");
 
             var response = await _api.CancelMedicalCaseAsync(id, request);
-            if (response.Success)
+            if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("[REPO:Remote] MedicalCase.Cancel completed - Id={Id}", id);
-                return response.Data;
+                return null;
             }
 
-            _logger.LogWarning("[REPO:Remote] MedicalCase.Cancel failed - Id={Id}, Message={Message}",
-                id, response.Message);
+            _logger.LogWarning("[REPO:Remote] MedicalCase.Cancel failed - Id={Id}, StatusCode={StatusCode}",
+                id, response.StatusCode);
             return null;
         }
         catch (Exception ex)

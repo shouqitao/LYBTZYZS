@@ -3,6 +3,7 @@ using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.Mappers;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -68,7 +69,8 @@ public class LocalAuthService : ILocalAuthService
         }
 
         // 验证密码
-        if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        var verificationResult = PasswordHelper.VerifyPassword(password, user.PasswordHash, user.Role, _logger);
+        if (!verificationResult.IsSuccess)
         {
             // 增加失败次数
             user.FailedLoginCount++;
@@ -121,14 +123,15 @@ public class LocalAuthService : ILocalAuthService
         }
 
         // 验证旧密码
-        if (!BCrypt.Net.BCrypt.Verify(oldPassword, user.PasswordHash))
+        var verificationResult = PasswordHelper.VerifyPassword(oldPassword, user.PasswordHash, user.Role, _logger);
+        if (!verificationResult.IsSuccess)
         {
             _logger.LogWarning("[LocalAuth] 修改密码失败 - 旧密码错误: {Username}", user.UserName);
             return false;
         }
 
         // 更新密码
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        user.PasswordHash = PasswordHelper.HashPassword(newPassword, user.Role, _logger);
         await _context.SaveChangesAsync(ct);
 
         _logger.LogInformation("[LocalAuth] 密码修改成功: {Username}", user.UserName);

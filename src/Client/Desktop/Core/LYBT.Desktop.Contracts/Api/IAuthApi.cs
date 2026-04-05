@@ -119,6 +119,6 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>响应: 返回服务状态信息，包含状态和时间戳，无需认证</para>
         /// </remarks>
         [Refit.Get("/api/v1/health")]
-        Task<HealthCheckResponse> HealthCheckAsync();
+        Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync();
     }
 }
