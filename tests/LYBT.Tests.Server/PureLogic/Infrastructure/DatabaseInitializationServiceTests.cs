@@ -1,5 +1,6 @@
 using Xunit;
 using FluentAssertions;
+using System.Collections.Generic;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Configuration.Options.Server;
@@ -57,11 +58,12 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime
 
     private DatabaseInitializationService CreateService(
         SystemAdminOptions? adminOptions = null,
-        DefaultPasswordOptions? passwordOptions = null)
+        DefaultPasswordOptions? passwordOptions = null,
+        ILogger<DatabaseInitializationService>? logger = null)
     {
         return new DatabaseInitializationService(
             _dbContext,
-            _logger,
+            logger ?? _logger,
             Options.Create(adminOptions ?? DefaultAdminOptions),
             Options.Create(passwordOptions ?? DefaultPasswordOpts));
     }
@@ -261,6 +263,363 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime
             .ToListAsync();
 
         superAdmins.Should().HaveCount(1, "多次调用不应创建重复的SuperAdmin");
+    }
+
+    #endregion
+
+    #region EnsureSystemAdminExistsAsync - 新增行为约束 (RED)
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_WhenCreated_SetsMustChangeOnNextLogin_WhenForceChangeEnabled()
+    {
+        // Arrange
+        var service = CreateService(passwordOptions: new DefaultPasswordOptions
+        {
+            SysAdminPassword = DefaultPasswordOpts.SysAdminPassword,
+            NewUserPassword = "TempUser2025@",
+            ForceChangeOnFirstLogin = true
+        });
+
+        // Act
+        await service.InitializeDatabaseAsync();
+
+        // Assert
+        var superAdmin = await _dbContext.Users
+            .IgnoreQueryFilters()
+            .SingleAsync(u => u.Role == UserRole.SuperAdmin);
+
+        superAdmin.MustChangeOnNextLogin.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_WhenCreated_DoesNotSetMustChangeOnNextLogin_WhenForceChangeDisabled()
+    {
+        // Arrange
+        var logger = new CapturingLogger<DatabaseInitializationService>();
+        var service = CreateService(passwordOptions: new DefaultPasswordOptions
+        {
+            SysAdminPassword = DefaultPasswordOpts.SysAdminPassword,
+            NewUserPassword = "TempUser2025@",
+            ForceChangeOnFirstLogin = false
+        }, logger: logger);
+
+        // Act
+        await service.InitializeDatabaseAsync();
+
+        // Assert
+        var superAdmin = await _dbContext.Users
+            .IgnoreQueryFilters()
+            .SingleAsync(u => u.Role == UserRole.SuperAdmin);
+
+        superAdmin.MustChangeOnNextLogin.Should().BeFalse();
+        logger.Entries.Should().Contain(entry => entry.Level == LogLevel.Warning,
+            "关闭首次登录强制改密时应记录安全警告");
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_Production_AutoCreateDisabled_DoesNotCreateAdmin()
+    {
+        // Arrange
+        var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Production");
+
+        try
+        {
+            var service = CreateService(adminOptions: new SystemAdminOptions
+            {
+                UserName = "sysadmin",
+                Email = "admin@lybt.com",
+                DisplayName = "系统管理员",
+                AutoCreateOnStartup = true,
+                AllowAutoCreateInProduction = false,
+                InitialSetupToken = "token-123"
+            });
+
+            // Act
+            await service.InitializeDatabaseAsync();
+
+            // Assert
+            var superAdmins = await _dbContext.Users
+                .IgnoreQueryFilters()
+                .Where(u => u.Role == UserRole.SuperAdmin)
+                .ToListAsync();
+
+            superAdmins.Should().BeEmpty();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", originalEnv);
+        }
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_Production_AutoCreateEnabled_ValidToken_CreatesAdmin()
+    {
+        // Arrange
+        var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var originalToken = Environment.GetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Production");
+        Environment.SetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN", "match-token");
+
+        try
+        {
+            var service = CreateService(adminOptions: new SystemAdminOptions
+            {
+                UserName = "sysadmin",
+                Email = "admin@lybt.com",
+                DisplayName = "系统管理员",
+                AutoCreateOnStartup = true,
+                AllowAutoCreateInProduction = true,
+                InitialSetupToken = "match-token"
+            }, passwordOptions: new DefaultPasswordOptions
+            {
+                SysAdminPassword = DefaultPasswordOpts.SysAdminPassword,
+                NewUserPassword = "TempUser2025@",
+                ForceChangeOnFirstLogin = true
+            });
+
+            // Act
+            await service.InitializeDatabaseAsync();
+
+            // Assert
+            var superAdmin = await _dbContext.Users
+                .IgnoreQueryFilters()
+                .SingleAsync(u => u.Role == UserRole.SuperAdmin);
+
+            superAdmin.Should().NotBeNull();
+            superAdmin.MustChangeOnNextLogin.Should().BeTrue();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", originalEnv);
+            Environment.SetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN", originalToken);
+        }
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_Production_AutoCreateEnabled_InvalidToken_DoesNotCreateAdmin()
+    {
+        // Arrange
+        var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var originalToken = Environment.GetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Production");
+        // 不设置 LYBT_INITIAL_SETUP_TOKEN，令牌验证将失败
+        Environment.SetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN", null);
+
+        try
+        {
+            var service = CreateService(adminOptions: new SystemAdminOptions
+            {
+                UserName = "sysadmin",
+                Email = "admin@lybt.com",
+                DisplayName = "系统管理员",
+                AutoCreateOnStartup = true,
+                AllowAutoCreateInProduction = true,
+                InitialSetupToken = "wrong-token"
+            });
+
+            // Act
+            await service.InitializeDatabaseAsync();
+
+            // Assert
+            var superAdmins = await _dbContext.Users
+                .IgnoreQueryFilters()
+                .Where(u => u.Role == UserRole.SuperAdmin)
+                .ToListAsync();
+
+            superAdmins.Should().BeEmpty();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", originalEnv);
+            Environment.SetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN", originalToken);
+        }
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_Development_AlwaysCreatesAdmin()
+    {
+        // Arrange
+        var originalEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+
+        try
+        {
+            var service = CreateService(passwordOptions: new DefaultPasswordOptions
+            {
+                SysAdminPassword = DefaultPasswordOpts.SysAdminPassword,
+                NewUserPassword = "TempUser2025@",
+                ForceChangeOnFirstLogin = true
+            });
+
+            // Act
+            await service.InitializeDatabaseAsync();
+
+            // Assert
+            var superAdmin = await _dbContext.Users
+                .IgnoreQueryFilters()
+                .SingleAsync(u => u.Role == UserRole.SuperAdmin);
+
+            superAdmin.Should().NotBeNull();
+            superAdmin.MustChangeOnNextLogin.Should().BeTrue();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", originalEnvironment);
+        }
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_LogsCreationEvent_WithStructuredData()
+    {
+        // Arrange
+        var logger = new CapturingLogger<DatabaseInitializationService>();
+        var service = CreateService(logger: logger);
+
+        // Act
+        await service.InitializeDatabaseAsync();
+
+        // Assert
+        logger.Entries.Should().ContainSingle(entry => entry.Level == LogLevel.Warning);
+        var entry = logger.Entries.Single(e => e.Level == LogLevel.Warning);
+        entry.Properties.Should().NotBeNull();
+        entry.Properties!.Should().Contain(kvp => kvp.Key == "UserName");
+        entry.Properties!.Should().Contain(kvp => kvp.Key == "Email");
+        entry.Properties!.Should().Contain(kvp => kvp.Key == "Role");
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_ExistingAdmin_DoesNotResetMustChangeFlag()
+    {
+        // Arrange
+        _dbContext.Users.Add(new User
+        {
+            Id = Guid.NewGuid(),
+            UserName = "existing_admin",
+            RealName = "已有管理员",
+            Email = "existing@lybt.com",
+            Role = UserRole.SuperAdmin,
+            Status = CommonStatus.Enabled,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("ExistingPass123@"),
+            MustChangeOnNextLogin = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await _dbContext.SaveChangesAsync();
+
+        var logger = new CapturingLogger<DatabaseInitializationService>();
+        var service = CreateService(logger: logger);
+
+        // Act
+        await service.InitializeDatabaseAsync();
+
+        // Assert
+        var existingAdmin = await _dbContext.Users
+            .IgnoreQueryFilters()
+            .SingleAsync(u => u.UserName == "existing_admin");
+
+        existingAdmin.MustChangeOnNextLogin.Should().BeFalse();
+        logger.Entries.Should().Contain(entry => entry.Level == LogLevel.Warning,
+            "检测到已存在的系统管理员时应记录告警级事件");
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_ExistingAdmin_DoesNotChangePassword()
+    {
+        // Arrange
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword("ExistingPass123@");
+        _dbContext.Users.Add(new User
+        {
+            Id = Guid.NewGuid(),
+            UserName = "existing_admin",
+            RealName = "已有管理员",
+            Email = "existing@lybt.com",
+            Role = UserRole.SuperAdmin,
+            Status = CommonStatus.Enabled,
+            PasswordHash = passwordHash,
+            MustChangeOnNextLogin = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await _dbContext.SaveChangesAsync();
+
+        var logger = new CapturingLogger<DatabaseInitializationService>();
+        var service = CreateService(logger: logger);
+
+        // Act
+        await service.InitializeDatabaseAsync();
+
+        // Assert
+        var existingAdmin = await _dbContext.Users
+            .IgnoreQueryFilters()
+            .SingleAsync(u => u.UserName == "existing_admin");
+
+        existingAdmin.PasswordHash.Should().Be(passwordHash);
+        logger.Entries.Should().Contain(entry => entry.Level == LogLevel.Warning,
+            "跳过已有系统管理员时应记录告警级事件");
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_NewAdmin_PasswordIsHashedWithBCrypt()
+    {
+        // Arrange
+        var service = CreateService(passwordOptions: new DefaultPasswordOptions
+        {
+            SysAdminPassword = DefaultPasswordOpts.SysAdminPassword,
+            NewUserPassword = "TempUser2025@",
+            ForceChangeOnFirstLogin = true
+        });
+
+        // Act
+        await service.InitializeDatabaseAsync();
+
+        // Assert
+        var superAdmin = await _dbContext.Users
+            .IgnoreQueryFilters()
+            .SingleAsync(u => u.Role == UserRole.SuperAdmin);
+
+        superAdmin.PasswordHash.Should().MatchRegex(@"^\$(2a|2b)\$");
+        superAdmin.MustChangeOnNextLogin.Should().BeTrue();
+    }
+
+    private sealed class CapturingLogger<T> : ILogger<T>
+    {
+        public List<LogEntry> Entries { get; } = new();
+
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            Entries.Add(new LogEntry(
+                logLevel,
+                eventId,
+                formatter(state, exception),
+                exception,
+                state as IEnumerable<KeyValuePair<string, object?>>));
+        }
+    }
+
+    private sealed record LogEntry(
+        LogLevel Level,
+        EventId EventId,
+        string Message,
+        Exception? Exception,
+        IEnumerable<KeyValuePair<string, object?>>? Properties);
+
+    private sealed class NullScope : IDisposable
+    {
+        public static readonly NullScope Instance = new();
+
+        public void Dispose()
+        {
+        }
     }
 
     #endregion
