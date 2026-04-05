@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 
@@ -96,6 +96,23 @@ public class ProductionConfigurationValidator
             Severity = Severity.Optional,
             Description = "允许的主机名（多个用分号分隔）",
             Example = "example.com;*.example.com"
+        },
+        new ConfigurationItem
+        {
+            Key = "SystemAdmin:AllowAutoCreateInProduction",
+            EnvVarName = "SystemAdmin__AllowAutoCreateInProduction",
+            Severity = Severity.Optional,
+            Description = "是否允许在生产环境自动创建系统管理员",
+            Example = "false"
+        },
+        new ConfigurationItem
+        {
+            Key = "SystemAdmin:InitialSetupToken",
+            EnvVarName = "SystemAdmin__InitialSetupToken",
+            Severity = Severity.Optional,
+            Description = "初始化安全令牌（AllowAutoCreateInProduction=true 时必须提供）",
+            MinLength = 32,
+            Example = "[至少 32 字符的随机安全令牌]"
         }
     };
 
@@ -169,6 +186,8 @@ public class ProductionConfigurationValidator
         {
             ValidateItem(item);
         }
+
+        ValidateCrossFieldRules();
     }
 
     private void ValidateItem(ConfigurationItem item)
@@ -220,6 +239,55 @@ public class ProductionConfigurationValidator
         }
     }
 
+    private void ValidateCrossFieldRules()
+    {
+        var allowAutoCreate = _configuration["SystemAdmin:AllowAutoCreateInProduction"];
+
+        // 仅当明确启用生产环境自动创建时才检查
+        if (!string.Equals(allowAutoCreate, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var token = _configuration["SystemAdmin:InitialSetupToken"];
+        var tokenItem = RequiredItems.First(i => i.Key == "SystemAdmin:InitialSetupToken");
+
+        // 检查 Token 是否存在
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            _errors.Add(new ConfigurationError
+            {
+                Item = tokenItem,
+                ErrorType = ErrorType.CrossFieldDependency,
+                Message = "AllowAutoCreateInProduction=true 时必须提供 InitialSetupToken"
+            });
+            return;
+        }
+
+        // 检查是否为未展开的环境变量占位符
+        if (token.StartsWith("${") && token.EndsWith("}"))
+        {
+            _errors.Add(new ConfigurationError
+            {
+                Item = tokenItem,
+                ErrorType = ErrorType.CrossFieldDependency,
+                Message = "InitialSetupToken 仍为未展开的环境变量占位符"
+            });
+            return;
+        }
+
+        // 检查最小长度
+        if (token.Length < 32)
+        {
+            _errors.Add(new ConfigurationError
+            {
+                Item = tokenItem,
+                ErrorType = ErrorType.CrossFieldDependency,
+                Message = $"InitialSetupToken 长度不足（需要至少 32 字符，当前 {token.Length}）"
+            });
+        }
+    }
+
     private string GetDetailedErrorMessage()
     {
         var sb = new StringBuilder();
@@ -250,6 +318,17 @@ public class ProductionConfigurationValidator
             sb.AppendLine(" IMPORTANT 错误（建议修复）:");
             sb.AppendLine();
             foreach (var error in importantErrors)
+            {
+                AppendErrorDetail(sb, error);
+            }
+        }
+
+        var crossFieldErrors = _errors.Where(e => e.ErrorType == ErrorType.CrossFieldDependency).ToList();
+        if (crossFieldErrors.Any())
+        {
+            sb.AppendLine("⚠ 跨字段安全验证错误（必须修复）:");
+            sb.AppendLine();
+            foreach (var error in crossFieldErrors)
             {
                 AppendErrorDetail(sb, error);
             }
@@ -312,9 +391,10 @@ public enum Severity
 /// </summary>
 public enum ErrorType
 {
-    Missing,        // 配置缺失
-    Placeholder,    // 仍为占位符
-    InvalidFormat   // 格式不正确
+    Missing,            // 配置缺失
+    Placeholder,        // 仍为占位符
+    InvalidFormat,      // 格式不正确
+    CrossFieldDependency // 跨字段依赖不满足
 }
 
 /// <summary>

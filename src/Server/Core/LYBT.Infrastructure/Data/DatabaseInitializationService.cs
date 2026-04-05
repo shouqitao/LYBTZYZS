@@ -1,10 +1,12 @@
-﻿using LYBT.Entities.Users;
+using LYBT.Entities.Users;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace LYBT.Infrastructure.Data;
 
@@ -139,6 +141,22 @@ public class DatabaseInitializationService
 
             var config = _systemAdminOptions;
 
+            // 生产环境安全门控
+            if (!IsDevelopment())
+            {
+                if (!config.AllowAutoCreateInProduction)
+                {
+                    _logger.LogWarning("非开发环境且 AllowAutoCreateInProduction=false，跳过系统管理员自动创建");
+                    return;
+                }
+
+                if (!ValidateSetupToken(config.InitialSetupToken))
+                {
+                    _logger.LogWarning("非开发环境初始设置令牌验证失败，跳过系统管理员自动创建");
+                    return;
+                }
+            }
+
             // 检查是否已存在SuperAdmin用户（包括已删除的）
             var existingSuperAdmin = await _context.Users
                 .IgnoreQueryFilters()
@@ -146,7 +164,7 @@ public class DatabaseInitializationService
 
             if (existingSuperAdmin != null)
             {
-                _logger.LogInformation(
+                _logger.LogWarning(
                     "系统管理员已存在，跳过创建。UserName: {UserName}, Email: {Email}, IsDeleted: {IsDeleted}",
                     existingSuperAdmin.UserName,
                     existingSuperAdmin.Email,
@@ -167,6 +185,12 @@ public class DatabaseInitializationService
                 return;
             }
 
+            // 安全警告：首次登录强制改密关闭
+            if (!_defaultPasswordOptions.ForceChangeOnFirstLogin)
+            {
+                _logger.LogWarning("安全警告：ForceChangeOnFirstLogin 已关闭，系统管理员将不会被要求首次登录时修改密码");
+            }
+
             // 不存在，创建新的SuperAdmin用户
             var defaultPassword = _defaultPasswordOptions.SysAdminPassword;
 
@@ -179,6 +203,7 @@ public class DatabaseInitializationService
                 Role = UserRole.SuperAdmin,
                 Status = CommonStatus.Enabled,
                 PasswordHash = PasswordHelper.HashPassword(defaultPassword),
+                MustChangeOnNextLogin = _defaultPasswordOptions.ForceChangeOnFirstLogin,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 CreatedBy = Guid.Empty,  // 系统创建
@@ -189,7 +214,7 @@ public class DatabaseInitializationService
             _context.Users.Add(superAdmin);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation(
+            _logger.LogWarning(
                 "系统管理员创建成功。UserName: {UserName}, Email: {Email}, Role: {Role}",
                 superAdmin.UserName,
                 superAdmin.Email,
@@ -200,5 +225,37 @@ public class DatabaseInitializationService
             _logger.LogError(ex, "创建系统管理员失败");
             throw;
         }
+    }
+
+    /// <summary>
+    /// 判断当前是否为开发环境。
+    /// 仅当 ASPNETCORE_ENVIRONMENT 为 "Development"（不区分大小写）时返回 true。
+    /// 环境变量为 null/空字符串时视为开发环境（兼容测试和本地运行）。
+    /// </summary>
+    private static bool IsDevelopment()
+    {
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (string.IsNullOrEmpty(env))
+            return true; // 未设置环境变量时视为开发环境
+        return string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// 验证初始设置令牌。
+    /// 将配置中的 InitialSetupToken 与环境变量 LYBT_INITIAL_SETUP_TOKEN 进行常量时间比较。
+    /// </summary>
+    private static bool ValidateSetupToken(string? configuredToken)
+    {
+        if (string.IsNullOrEmpty(configuredToken))
+            return false;
+
+        var expectedToken = Environment.GetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN");
+        if (string.IsNullOrEmpty(expectedToken))
+            return false;
+
+        var configBytes = Encoding.UTF8.GetBytes(configuredToken);
+        var expectedBytes = Encoding.UTF8.GetBytes(expectedToken);
+
+        return CryptographicOperations.FixedTimeEquals(configBytes, expectedBytes);
     }
 }
