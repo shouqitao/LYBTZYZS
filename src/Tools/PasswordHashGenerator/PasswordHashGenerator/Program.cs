@@ -19,7 +19,9 @@ namespace PasswordHashGenerator
             try
             {
                 // 解析命令行参数
-                string password = GetDefaultAdminPassword();
+                string? password = GetDefaultAdminPassword();
+                if (password == null)
+                    return 1;
                 UserRole role = UserRole.Doctor;
                 bool showConfig = false;
 
@@ -94,7 +96,7 @@ namespace PasswordHashGenerator
             Console.WriteLine("  PasswordHashGenerator --show-config");
         }
 
-        static string GetDefaultAdminPassword()
+        static string? GetDefaultAdminPassword()
         {
             try
             {
@@ -117,10 +119,8 @@ namespace PasswordHashGenerator
                 Console.WriteLine($"⚠️  无法读取配置文件: {ex.Message}");
             }
 
-            // 硬编码的默认值作为后备
-            const string fallbackPassword = "LybtAdmin2025@SecurePass#";
-            Console.WriteLine($"📋 使用硬编码默认管理员密码");
-            return fallbackPassword;
+            Console.WriteLine("❌ 错误: 未找到默认管理员密码。请在 appsettings.json 中配置 Lybt:DefaultPasswords:SysAdminPassword，或通过 --password 参数提供密码。");
+            return null;
         }
 
         static void ShowConfiguration()

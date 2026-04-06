@@ -125,10 +125,22 @@ services.AddOptions<JwtOptions>()
 | ServerConfigurationExtensionsTests | 4 | DI 注册正确性 (JwtOptions, DatabaseOptions, SecurityOptions, SessionOptions) |
 | ValidateOnStartTests | 9 | 验证失败场景 (无效 JWT 密钥、短密钥、过期时间矛盾、连接池范围、重试延迟范围、速率限制范围) + 成功场景 |
 
+## 子配置类
+
+部分 Options 包含嵌套的子配置类:
+
+| 父 Options | 子配置类 | 配置节 | 说明 |
+|------------|----------|--------|------|
+| SecurityOptions | `AccountLockoutOptions` | `Security:AccountLockout` | 账户锁定策略: Enabled (默认 true)、MaxFailedCount (默认 5, 范围 1-100)、LockoutMinutes (默认 15, 范围 1-1440) |
+| SecurityOptions | `RateLimitOptions` | `Security:RateLimiting` | API 速率限制配置 |
+
+详见 [安全与密码管理](../05-development/security-password-management.md)。
+
 ## 变更记录
 
 | 日期 | 变更内容 |
 |------|----------|
+| 2026-04-06 | 新增子配置类章节，记录 AccountLockoutOptions；关联安全文档 |
 | 2026-04-03 | 初始版本: Options 模式重构完成后的架构文档 |
 | 2026-04-03 | PrescriptionOptions + SyncOptions 合并入 FeatureToggleOptions；JsonOptions 从 Shared.Configuration 迁移至 WebAPI 项目；客户端注册从 7 → 5 个 Options |
 

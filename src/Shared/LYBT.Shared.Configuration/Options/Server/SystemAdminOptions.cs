@@ -34,6 +34,11 @@ public sealed class SystemAdminOptions
     public bool AutoCreateOnStartup { get; set; } = true;
 
     /// <summary>
+    /// 启动时强制重置系统管理员密码（仅开发/测试环境有效，生产环境始终忽略）
+    /// </summary>
+    public bool ForceResetOnStartup { get; set; } = false;
+
+    /// <summary>
     /// 是否在Production环境中允许自动创建系统管理员
     /// 默认：false（安全默认值）。设为true时需要配置InitialSetupToken
     /// </summary>

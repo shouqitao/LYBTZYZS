@@ -19,6 +19,11 @@ public sealed class SecurityOptions
     /// </summary>
     [Range(30, 3650)]
     public int AuditRetentionDays { get; set; } = 365;
+
+    /// <summary>
+    /// 账户锁定配置
+    /// </summary>
+    public AccountLockoutOptions AccountLockout { get; set; } = new();
 }
 
 /// <summary>
@@ -68,4 +73,27 @@ public sealed class LoginRateLimitOptions : RateLimitOptions
 public sealed class ApiRateLimitOptions : RateLimitOptions
 {
     public int AdminPermitLimit { get; set; } = 200;
+}
+
+/// <summary>
+/// 账户锁定配置
+/// </summary>
+public sealed class AccountLockoutOptions
+{
+    /// <summary>
+    /// 是否启用账户锁定（测试/开发环境建议设为 false）
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// 最大失败登录次数（达到后锁定账户）
+    /// </summary>
+    [Range(1, 100)]
+    public int MaxFailedCount { get; set; } = 5;
+
+    /// <summary>
+    /// 账户锁定时间（分钟）
+    /// </summary>
+    [Range(1, 1440)]
+    public int LockoutMinutes { get; set; } = 15;
 }

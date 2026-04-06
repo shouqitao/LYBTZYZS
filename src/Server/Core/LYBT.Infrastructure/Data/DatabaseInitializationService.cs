@@ -164,11 +164,27 @@ public class DatabaseInitializationService
 
             if (existingSuperAdmin != null)
             {
-                _logger.LogWarning(
-                    "系统管理员已存在，跳过创建。UserName: {UserName}, Email: {Email}, IsDeleted: {IsDeleted}",
-                    existingSuperAdmin.UserName,
-                    existingSuperAdmin.Email,
-                    existingSuperAdmin.IsDeleted);
+                if (config.ForceResetOnStartup && IsDevelopment())
+                {
+                    existingSuperAdmin.PasswordHash = PasswordHelper.HashPassword(_defaultPasswordOptions.SysAdminPassword);
+                    existingSuperAdmin.FailedLoginCount = 0;
+                    existingSuperAdmin.LockoutEnd = null;
+                    existingSuperAdmin.Status = CommonStatus.Enabled;
+                    existingSuperAdmin.IsDeleted = false;
+                    existingSuperAdmin.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    _logger.LogWarning(
+                        "[ForceResetOnStartup] 系统管理员密码及锁定状态已重置。UserName: {UserName}",
+                        existingSuperAdmin.UserName);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "系统管理员已存在，跳过创建。UserName: {UserName}, Email: {Email}, IsDeleted: {IsDeleted}",
+                        existingSuperAdmin.UserName,
+                        existingSuperAdmin.Email,
+                        existingSuperAdmin.IsDeleted);
+                }
                 return;
             }
 

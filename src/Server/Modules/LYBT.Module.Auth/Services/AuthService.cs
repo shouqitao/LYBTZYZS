@@ -1,12 +1,14 @@
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
+using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.Auth.Services;
@@ -27,6 +29,7 @@ public class AuthService : IAuthService
     private readonly IAutoLoginService _autoLoginService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IAutoLoginTokenRepository _autoLoginTokenRepository;
+    private readonly SecurityOptions _securityOptions;
 
     public AuthService(
         IJwtService jwtService,
@@ -38,7 +41,8 @@ public class AuthService : IAuthService
         ITokenManagementService tokenManagement,
         IAutoLoginService autoLoginService,
         IRefreshTokenRepository refreshTokenRepository,
-        IAutoLoginTokenRepository autoLoginTokenRepository)
+        IAutoLoginTokenRepository autoLoginTokenRepository,
+        IOptions<SecurityOptions> securityOptions)
     {
         _jwtService = jwtService;
         _crossModuleQuery = crossModuleQuery;
@@ -50,6 +54,7 @@ public class AuthService : IAuthService
         _autoLoginService = autoLoginService;
         _refreshTokenRepository = refreshTokenRepository;
         _autoLoginTokenRepository = autoLoginTokenRepository;
+        _securityOptions = securityOptions?.Value ?? throw new ArgumentNullException(nameof(securityOptions));
     }
 
     #region 核心认证操作
@@ -65,16 +70,6 @@ public class AuthService : IAuthService
 
         return Result<string>.Success(result.Data!.Id.ToString());
     }
-
-    /// <summary>
-    /// T5-P2-01: 最大失败登录次数
-    /// </summary>
-    private const int MaxFailedLoginCount = 5;
-
-    /// <summary>
-    /// T5-P2-01: 锁定时间（分钟）
-    /// </summary>
-    private const int LockoutMinutes = 15;
 
     private async Task<Result<Shared.Models.DTOs.Users.UserCredentialDto>> VerifyCredentialsInternalAsync(LoginRequest request)
     {
@@ -115,11 +110,11 @@ public class AuthService : IAuthService
             var newFailedCount = user.FailedLoginCount + 1;
             DateTime? lockoutEnd = null;
 
-            if (newFailedCount >= MaxFailedLoginCount)
+            if (_securityOptions.AccountLockout.Enabled && newFailedCount >= _securityOptions.AccountLockout.MaxFailedCount)
             {
-                lockoutEnd = DateTime.UtcNow.AddMinutes(LockoutMinutes);
+                lockoutEnd = DateTime.UtcNow.AddMinutes(_securityOptions.AccountLockout.LockoutMinutes);
                 _logger.LogWarning("[SVC] Auth.VerifyCredentials -> AccountLocked - UserName={UserName} FailedCount={Count} LockoutMinutes={Minutes}",
-                    request.UserName, newFailedCount, LockoutMinutes);
+                    request.UserName, newFailedCount, _securityOptions.AccountLockout.LockoutMinutes);
             }
             else
             {
