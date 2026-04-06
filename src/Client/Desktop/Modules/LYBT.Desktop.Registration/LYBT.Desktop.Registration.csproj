@@ -59,6 +59,12 @@
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Cross-Module Dependencies">
+    <ProjectReference Include="..\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
+    <ProjectReference Include="..\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
+    <ProjectReference Include="..\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj" />
+  </ItemGroup>
+
   <ItemGroup Label="Desktop Core">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
   </ItemGroup>

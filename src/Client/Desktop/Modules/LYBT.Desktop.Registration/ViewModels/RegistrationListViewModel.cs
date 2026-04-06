@@ -1,14 +1,16 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
-// SYNC-D02: IRegistrationRepository 已迁移到 LYBT.Desktop.Contracts.Repositories
-using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Registration.ViewModels;
 
@@ -22,7 +24,10 @@ namespace LYBT.Desktop.Registration.ViewModels;
 /// </summary>
 public partial class RegistrationListViewModel : NavigableViewModelBase
 {
-    private readonly IRegistrationRepository _repository;
+    private readonly IRegistrationService _registrationService;
+    private readonly INavigationCoordinator _navigationCoordinator;
+    private readonly IPatientApi _patientApi;
+    private readonly IDialogService? _dialogService;
 
     #region Observable Properties
 
@@ -63,13 +68,18 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
 
     public RegistrationListViewModel(
         IViewModelServices services,
-        IRegistrationRepository repository)
+        IRegistrationService registrationService,
+        INavigationCoordinator navigationCoordinator,
+        IPatientApi patientApi,
+        IDialogService? dialogService = null)
         : base(services)
     {
-        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _registrationService = registrationService;
+        _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
+        _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
+        _dialogService = dialogService;
         PageTitle = "挂号队列";
 
-        // 角色判断
         var currentRole = SessionManager.CurrentUser?.Role;
         IsReceptionist = currentRole == UserRole.Receptionist || currentRole == UserRole.Admin || currentRole == UserRole.SuperAdmin;
         IsDoctor = currentRole == UserRole.Doctor;
@@ -103,6 +113,26 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         await LoadQueueAsync();
     }
 
+    /// <summary>新建挂号 -- 打开挂号弹窗</summary>
+    [RelayCommand]
+    private void CreateRegistration()
+    {
+        if (_dialogService is null)
+        {
+            Logger.LogWarning("[REG-VM] IDialogService 未注入，无法打开新建挂号弹窗");
+            return;
+        }
+
+        _dialogService.ShowDialog("RegistrationCreateDialog", null, result =>
+        {
+            if (result.Result == ButtonResult.OK)
+            {
+                Logger.LogInformation("[REG-VM] 新建挂号成功，刷新队列");
+                _ = LoadQueueAsync();
+            }
+        });
+    }
+
     /// <summary>
     /// 接诊: 从队列选中患者，创建医案
     /// US-REG-003 验收标准第4条
@@ -116,21 +146,36 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         {
             SetBusy(true, "正在接诊...");
 
-            var medicalCaseId = await _repository.StartVisitAsync(SelectedRegistration.Id);
-            if (medicalCaseId.HasValue)
+            var result = await _registrationService.StartVisitAsync(SelectedRegistration.Id);
+            if (!result.Success || result.Data == Guid.Empty)
             {
-                Logger.LogInformation("[REG-VM] 接诊成功: RegistrationId={Id}, MedicalCaseId={McId}",
-                    SelectedRegistration.Id, medicalCaseId.Value);
-
-                // 刷新队列
-                await LoadQueueAsync();
-
-                // FUTURE: 接诊后导航到医案工作区 (US-REG-004)
+                await ShowErrorMessageAsync(result.Error ?? "接诊失败，请稍后重试");
+                return;
             }
-            else
+
+            Logger.LogInformation("[REG-VM] 接诊成功: RegistrationId={Id}, MedicalCaseId={McId}",
+                SelectedRegistration.Id, result.Data);
+
+            // 刷新队列
+            await LoadQueueAsync();
+
+            // 获取患者详情（MedicalCaseWorkspace 需要完整 PatientDetailDto）
+            var patientResult = await _patientApi.GetPatientByIdAsync(SelectedRegistration.PatientId);
+            if (!patientResult.Success || patientResult.Data == null)
             {
-                await ShowErrorMessageAsync("接诊失败，请稍后重试");
+                await ShowErrorMessageAsync("接诊成功，但无法获取患者信息，请手动打开医案");
+                return;
             }
+
+            // 导航到医案工作区（Clinical 模式，编辑状态）
+            var navParams = new Dictionary<string, object>
+            {
+                { MedicalCaseNavigationParameters.MedicalCaseIdKey, result.Data },
+                { "CurrentPatient", patientResult.Data },
+                { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
+                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
+            };
+            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, navParams);
         }
         catch (Exception ex)
         {
@@ -164,15 +209,15 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         {
             SetBusy(true, "正在取消挂号...");
 
-            var success = await _repository.CancelAsync(SelectedRegistration.Id);
-            if (success)
+            var result = await _registrationService.CancelAsync(SelectedRegistration.Id);
+            if (result.Success)
             {
                 Logger.LogInformation("[REG-VM] 取消挂号成功: RegistrationId={Id}", SelectedRegistration.Id);
                 await LoadQueueAsync();
             }
             else
             {
-                await ShowErrorMessageAsync("取消挂号失败，可能存在关联的活跃医案");
+                await ShowErrorMessageAsync(result.Error ?? "取消挂号失败，可能存在关联的活跃医案");
             }
         }
         catch (Exception ex)
@@ -204,10 +249,16 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
 
             // Doctor 只看自己的队列，Receptionist/Admin 看全部
             var doctorId = IsDoctor ? SessionManager.CurrentUserId : null;
-            var queue = await _repository.GetWaitingQueueAsync(doctorId);
+            var result = await _registrationService.GetQueueAsync(doctorId);
 
-            WaitingQueue = new ObservableCollection<RegistrationListDto>(queue);
-            QueueCount = queue.Count;
+            if (!result.Success || result.Data == null)
+            {
+                SetError(result.Error ?? "加载队列失败");
+                return;
+            }
+
+            WaitingQueue = new ObservableCollection<RegistrationListDto>(result.Data);
+            QueueCount = result.Data.Count;
             SelectedRegistration = null;
 
             OnPropertyChanged(nameof(HasQueueData));
