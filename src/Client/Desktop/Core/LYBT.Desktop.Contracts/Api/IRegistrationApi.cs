@@ -24,12 +24,17 @@ public interface IRegistrationApi
 
     /// <summary>
     /// 分页查询挂号记录
+    /// US-REG-007: 支持按日期范围、患者、医生过滤
     /// </summary>
     [Refit.Get("/api/v1/registrations")]
     Task<ApiResponse<PagedResult<RegistrationListDto>>> GetListAsync(
         [Refit.Query] int page = 1,
         [Refit.Query] int pageSize = 20,
-        [Refit.Query] string? keyword = null);
+        [Refit.Query] string? keyword = null,
+        [Refit.Query] DateTime? startDate = null,
+        [Refit.Query] DateTime? endDate = null,
+        [Refit.Query] Guid? patientId = null,
+        [Refit.Query] Guid? doctorId = null);
 
     /// <summary>
     /// 获取等待队列

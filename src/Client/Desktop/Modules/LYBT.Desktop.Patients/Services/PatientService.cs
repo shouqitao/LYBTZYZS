@@ -211,6 +211,80 @@ namespace LYBT.Desktop.Patients.Services
         }
 
         #endregion
+
+        #region 批量导入/导出
+
+        /// <summary>
+        /// 批量导入患者数据
+        /// </summary>
+        public async Task<CommandResult<PatientBatchImportResultDto>> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Patient.BatchImport started");
+
+                var result = await _patientRepository.BatchImportAsync(request, ct);
+                if (result == null)
+                    return CommandResult<PatientBatchImportResultDto>.Failed("批量导入操作失败");
+
+                _logger.LogInformation("[SVC] Patient.BatchImport completed - Success={Success}, Failed={Failed}",
+                    result.SuccessCount, result.FailureCount);
+                return CommandResult<PatientBatchImportResultDto>.Succeeded(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Patient.BatchImport failed");
+                return CommandResult<PatientBatchImportResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量导入患者", ex));
+            }
+        }
+
+        /// <summary>
+        /// 下载患者导入模板
+        /// </summary>
+        public async Task<CommandResult<byte[]>> ExportTemplateAsync(CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Patient.ExportTemplate started");
+
+                var data = await _patientRepository.ExportTemplateAsync(ct);
+                if (data == null)
+                    return CommandResult<byte[]>.Failed("导出模板操作失败");
+
+                _logger.LogInformation("[SVC] Patient.ExportTemplate completed - Size={Size} bytes", data.Length);
+                return CommandResult<byte[]>.Succeeded(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Patient.ExportTemplate failed");
+                return CommandResult<byte[]>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导出患者模板", ex));
+            }
+        }
+
+        /// <summary>
+        /// 导出患者数据到Excel
+        /// </summary>
+        public async Task<CommandResult<byte[]>> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Patient.ExportPatients started - Keyword={Keyword}", keyword);
+
+                var data = await _patientRepository.ExportPatientsAsync(keyword, ct);
+                if (data == null)
+                    return CommandResult<byte[]>.Failed("导出患者数据操作失败");
+
+                _logger.LogInformation("[SVC] Patient.ExportPatients completed - Size={Size} bytes", data.Length);
+                return CommandResult<byte[]>.Succeeded(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Patient.ExportPatients failed - Keyword={Keyword}", keyword);
+                return CommandResult<byte[]>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导出患者数据", ex));
+            }
+        }
+
+        #endregion
     }
 
     // OpenSpec: cleanup-patient-dead-code - 本地CommandResult<T>已迁移到LYBT.Desktop.Contracts.CommandHandlers

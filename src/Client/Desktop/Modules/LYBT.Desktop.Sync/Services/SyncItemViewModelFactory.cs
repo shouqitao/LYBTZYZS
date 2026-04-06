@@ -14,7 +14,7 @@ public class SyncItemViewModelFactory
     /// <summary>
     /// 设置选择变更回调
     /// </summary>
-    public void SetSelectionChangedCallback(Action callback)
+    public void SetSelectionChangedCallback(Action? callback)
     {
         _onSelectionChanged = callback;
     }

@@ -136,6 +136,7 @@ internal partial class LocalMedicalCaseMapper
     [MapperIgnoreSource(nameof(MedicalCaseInputDto.EditReason))]
     [MapperIgnoreSource(nameof(MedicalCaseInputDto.Consultation))]
     [MapperIgnoreSource(nameof(MedicalCaseInputDto.Prescription))]
+    [MapperIgnoreSource(nameof(MedicalCaseInputDto.RegistrationId))]
     [MapperIgnoreTarget(nameof(MedicalCase.PatientName))]
     [MapperIgnoreTarget(nameof(MedicalCase.DoctorName))]
     [MapperIgnoreTarget(nameof(MedicalCase.CaseNumber))]

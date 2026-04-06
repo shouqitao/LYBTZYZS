@@ -553,4 +553,26 @@ public sealed class LocalFormulaRepository : IFormulaRepository
     }
 
     #endregion
+
+    #region 批量导入/导出 (本地模式不支持)
+
+    public Task<FormulaBatchImportResultDto?> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)
+    {
+        _logger.LogWarning("[REPO:Local] Formula.BatchImport - 本地模式不支持批量导入操作");
+        return Task.FromResult<FormulaBatchImportResultDto?>(null);
+    }
+
+    public Task<byte[]?> ExportFormulasAsync(string? category = null, CancellationToken ct = default)
+    {
+        _logger.LogWarning("[REPO:Local] Formula.ExportFormulas - 本地模式不支持导出操作");
+        return Task.FromResult<byte[]?>(null);
+    }
+
+    public Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
+    {
+        _logger.LogWarning("[REPO:Local] Formula.ExportTemplate - 本地模式不支持导出模板操作");
+        return Task.FromResult<byte[]?>(null);
+    }
+
+    #endregion
 }

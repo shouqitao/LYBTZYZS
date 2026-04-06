@@ -58,5 +58,24 @@ namespace LYBT.Desktop.Patients.Interfaces
         Task<CommandResult<PatientDetailDto>> GetByIdAsync(Guid patientId, CancellationToken ct = default);
 
         #endregion
+
+        #region 批量导入/导出
+
+        /// <summary>
+        /// 批量导入患者数据
+        /// </summary>
+        Task<CommandResult<PatientBatchImportResultDto>> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default);
+
+        /// <summary>
+        /// 下载患者导入模板
+        /// </summary>
+        Task<CommandResult<byte[]>> ExportTemplateAsync(CancellationToken ct = default);
+
+        /// <summary>
+        /// 导出患者数据到Excel
+        /// </summary>
+        Task<CommandResult<byte[]>> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default);
+
+        #endregion
     }
 }

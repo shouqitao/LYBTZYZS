@@ -95,5 +95,24 @@ namespace LYBT.Desktop.Formula.Interfaces
         Task<CommandResult<BatchOperationResultDto>> BatchDisableAsync(List<Guid> formulaIds, CancellationToken ct = default);
 
         #endregion
+
+        #region 批量导入/导出
+
+        /// <summary>
+        /// 批量导入验方数据
+        /// </summary>
+        Task<CommandResult<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default);
+
+        /// <summary>
+        /// 导出验方数据到Excel
+        /// </summary>
+        Task<CommandResult<byte[]>> ExportFormulasAsync(string? category = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// 下载验方导入模板
+        /// </summary>
+        Task<CommandResult<byte[]>> ExportTemplateAsync(CancellationToken ct = default);
+
+        #endregion
     }
 }

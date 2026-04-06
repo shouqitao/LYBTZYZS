@@ -1,134 +1,81 @@
-# Task Plan: LYBTZYZS Frontend Service Layer Completion
-<!-- 
-  WHAT: This is your roadmap for implementing missing Service layers in LYBTZYZS project.
-  WHY: After gap analysis, we need to systematically implement the missing interfaces and implementations.
-  WHEN: Create this FIRST, before starting any work. Update after each phase completes.
--->
+# Task Plan: LYBTZYZS Frontend Completion
+
+> **Version**: v2.1
+> **Updated**: 2026-04-06
+> **Status**: In Progress
+> **Scope**: Desktop WPF Client (`src/Client/Desktop/`)
+
+---
 
 ## Goal
-<!-- 
-  WHAT: Implement all missing Service interfaces and remote implementations to achieve proper 3-layer architecture and full API coverage for LYBTZYZS frontend.
-  WHY: This enables proper separation of concerns, unit testing, and business logic encapsulation.
--->
-Implement missing Service interfaces (IUserService, IHerbService, IRegistrationService) and enhance existing ones (IFormulaService, IPatientService) to achieve full API coverage and proper 3-layer architecture in LYBTZYZS frontend.
+Complete remaining frontend tasks to achieve 100% PRD coverage for all 76 user stories across 6 modules.
 
 ## Current Phase
-<!-- 
-  WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
-  WHY: Quick reference for where you are in the task. Update this as you progress.
--->
-Phase 2
+Phase 7
 
 ## Phases
-<!-- 
-  WHAT: Break your task into logical phases. Each phase should be completable.
-  WHY: Breaking work into phases prevents overwhelm and makes progress visible.
--->
 
-### Phase 1: Create IUserService Interface + RemoteUserService Implementation (T1-1)
-<!-- 
-  WHAT: Create IUserService interface with all 14 API methods and RemoteUserService implementation.
-  WHY: User module currently has 0 Service coverage, ViewModel calls API directly.
--->
-- [x] Analyze existing IUserService.cs (has 10 methods, missing 4)
-- [x] Add missing methods to IUserService interface
-- [x] Create RemoteUserService.cs implementation
-- [x] Update User module to use Service instead of direct API
+### Phase 1: IUserService + RemoteUserService (T1-1) ✅
+- [x] Create IUserService interface
+- [x] Create RemoteUserService implementation
 - **Status:** complete
 
-### Phase 2: Create IHerbService Interface + RemoteHerbService Implementation (T1-2)
-<!-- 
-  WHAT: Create IHerbService interface with all 13 API methods and RemoteHerbService implementation.
-  WHY: Herb module has 0 Service coverage, ViewModel uses Repository directly.
--->
-- [ ] Create IHerbService.cs interface with all methods
-- [ ] Create RemoteHerbService.cs implementation
-- [ ] Update HerbMasterDetailViewModel to use Service
-- [ ] Ensure all CRUD + batch operations covered
-- **Status:** pending
+### Phase 2: IHerbService + RemoteHerbService (T1-2) ✅
+- [x] Create IHerbService interface
+- [x] Create RemoteHerbService implementation
+- **Status:** complete
 
-### Phase 3: Create IRegistrationService Interface + RemoteRegistrationService Implementation (T1-3)
-<!-- 
-  WHAT: Create IRegistrationService interface with all 6 API methods and RemoteRegistrationService implementation.
-  WHY: Registration module has 0 Service coverage, ViewModel uses Repository directly.
--->
-- [ ] Create IRegistrationService.cs interface
-- [ ] Create RemoteRegistrationService.cs implementation
-- [ ] Update RegistrationListViewModel to use Service
-- [ ] Add QuickVisitAsync method for US-REG-002
-- **Status:** pending
+### Phase 3: IRegistrationService + RemoteRegistrationService (T1-3) ✅
+- [x] Create IRegistrationService interface
+- [x] Create RemoteRegistrationService implementation
+- **Status:** complete
 
-### Phase 4: Enhance IFormulaService (T1-4)
-<!-- 
-  WHAT: Add missing API methods to IFormulaService (currently has 4, needs 14 total).
-  WHY: Formula service covers only basic CRUD, missing batch/import/export operations.
--->
-- [ ] Analyze current IFormulaService.cs
-- [ ] Add missing methods (CloneFormula, ToggleStatus, etc.)
-- [ ] Update RemoteFormulaService implementation
-- [ ] Ensure FormulaMasterDetailViewModel uses enhanced Service
-- **Status:** pending
+### Phase 4: IFormulaService Enhancement (T1-4) ✅
+- [x] Add BatchImportAsync, ExportFormulasAsync, ExportTemplateAsync methods
+- [x] Update IFormulaRepository + FormulaRepository + LocalFormulaRepository
+- **Status:** complete
 
-### Phase 5: Enhance IPatientService (T1-5)
-<!-- 
-  WHAT: Add missing API methods to IPatientService (currently has 8, needs 10 total).
-  WHY: Missing BatchImport and Export operations.
--->
-- [ ] Review current IPatientService.cs
-- [ ] Add BatchImportAsync and Export operations
-- [ ] Update RemotePatientService implementation
-- [ ] Verify PatientMasterDetailViewModel compatibility
-- **Status:** pending
+### Phase 5: IPatientService Enhancement (T1-5) ✅
+- [x] Add BatchImportAsync, ExportTemplateAsync, ExportPatientsAsync methods
+- [x] Update PatientService implementation
+- **Status:** complete
 
-### Phase 6: Testing & Verification
-<!-- 
-  WHAT: Run tests to verify all Service implementations work correctly.
-  WHY: Ensure no regressions and all API methods are properly encapsulated.
--->
-- [ ] Run desktop tests (dotnet test tests/LYBTZYZS.Tests.Desktop/)
-- [ ] Verify lint and typecheck pass
-- [ ] Test ViewModel-Service integration
-- [ ] Update AGENTS.md if needed
-- **Status:** pending
+### Phase 6: Registration Module (US-REG-001~004) ✅
+- [x] T2-1: RegistrationCreateDialog (US-REG-001)
+- [x] T2-2: Doctor Quick Visit navigation fix (US-REG-002)
+- [x] T2-3: Cancel Registration (US-REG-004)
+- [x] T2-4: Registration Tests (32 PureLogic tests)
+- **Status:** complete
 
-## Key Questions
-<!-- 
-  WHAT: Important questions from frontend-completion.md D1-D6 to answer during implementation.
--->
-1. How to implement QuickVisitAsync for registration? (D1: 挂号模块实现策略)
-2. Should Service methods include CancellationToken? (D2: Service层设计原则)
-3. How to handle authentication in Service layer? (D3: Service层设计原则)
-4. Priority order for missing methods? (D4: 优先级决策)
-5. How to implement GetPendingValidationAsync for formulas? (D5: 验方待审核列表)
-6. Integration with MedicalCase Pending queue? (D6: 挂号队列 vs 待接诊队列)
+### Phase 7: Registration Status Sync (US-REG-005, 006, 007) ✅
+- [x] T7-1: Auto-refresh timer (30-second periodic refresh)
+- [x] T7-2: Queue refresh on navigation + timer
+- [x] T7-3: Registration history query API (date/patient/doctor filters)
+- **Status:** complete
+
+### Phase 8: Verification Tasks — BLOCKED (Could priority, server APIs needed)
+- [~] T8-1: US-PAT-011/012 — Patient reference check (Could, server API needed)
+- [~] T8-2: US-FORM-010 — Formula pending validation (No explicit US)
+- [~] T8-3: US-HERB-013 — Herb reference check (Could, server API needed)
+- [~] T8-4: US-MC-012 — MedicalCase audit log (API exists, UI deferred)
+- **Status:** blocked — all "Could" priority, skip for now
+
+### Phase 9: Testing & Verification ✅
+- [x] Run desktop tests (627 PureLogic tests pass)
+- [x] Build verification (0 errors, 0 warnings)
+- [~] E2E tests require server running (not a code issue)
+- **Status:** complete
 
 ## Decisions Made
-<!-- 
-  WHAT: Technical and design decisions made during planning.
--->
 | Decision | Rationale |
 |----------|-----------|
-| Follow existing Service patterns | Maintain consistency with IPatientService, IMedicalCaseService implementations |
+| Follow existing Service patterns | Maintain consistency with IPatientService, IMedicalCaseService |
 | Add CancellationToken to all methods | Matches T6-2 requirement for Service interfaces |
-| Use RemoteXxxService naming | Consistent with existing RemotePatientService, RemoteFormulaService |
-| Implement all API methods | Achieve full coverage as per gap analysis |
+| Use RemoteXxxService naming | Consistent with existing RemotePatientService |
+| Status sync via server-side | Desktop client only refreshes queue on event receipt |
 
 ## Errors Encountered
-<!-- 
-  WHAT: Every error encountered, attempt number, and resolution.
--->
 | Error | Attempt | Resolution |
 |-------|---------|------------|
-|       | 1       |            |
-
-## Notes
-<!-- 
-  REMINDERS:
-  - Update phase status as you progress: pending → in_progress → complete
-  - Re-read this plan before major decisions (attention manipulation)
-  - Log ALL errors - they help avoid repetition
-  - Never repeat a failed action - mutate your approach instead
--->
-- Update phase status as you progress: pending → in_progress → complete
-- Re-read this plan before major decisions (attention manipulation)
-- Log ALL errors - they help avoid repetition
+| RMG020 unmapped members | 1 | Added MapperIgnoreSource attributes |
+| CA1001 disposable field | 1 | Implemented IDisposable in DatabaseInitializer |

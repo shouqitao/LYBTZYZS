@@ -303,5 +303,70 @@ namespace LYBT.Desktop.Formula.Services
         }
 
         #endregion
+
+        #region 批量导入/导出
+
+        public async Task<CommandResult<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Formula.BatchImport started");
+
+                var result = await _repository.BatchImportAsync(request, ct);
+                if (result == null)
+                    return CommandResult<FormulaBatchImportResultDto>.Failed("批量导入操作失败");
+
+                _logger.LogInformation("[SVC] Formula.BatchImport completed - Success={Success}, Failed={Failed}",
+                    result.SuccessCount, result.FailureCount);
+                return CommandResult<FormulaBatchImportResultDto>.Succeeded(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.BatchImport failed");
+                return CommandResult<FormulaBatchImportResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量导入验方", ex));
+            }
+        }
+
+        public async Task<CommandResult<byte[]>> ExportFormulasAsync(string? category = null, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Formula.ExportFormulas started - Category={Category}", category);
+
+                var data = await _repository.ExportFormulasAsync(category, ct);
+                if (data == null)
+                    return CommandResult<byte[]>.Failed("导出验方数据操作失败");
+
+                _logger.LogInformation("[SVC] Formula.ExportFormulas completed - Size={Size} bytes", data.Length);
+                return CommandResult<byte[]>.Succeeded(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.ExportFormulas failed - Category={Category}", category);
+                return CommandResult<byte[]>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导出验方数据", ex));
+            }
+        }
+
+        public async Task<CommandResult<byte[]>> ExportTemplateAsync(CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Formula.ExportTemplate started");
+
+                var data = await _repository.ExportTemplateAsync(ct);
+                if (data == null)
+                    return CommandResult<byte[]>.Failed("导出模板操作失败");
+
+                _logger.LogInformation("[SVC] Formula.ExportTemplate completed - Size={Size} bytes", data.Length);
+                return CommandResult<byte[]>.Succeeded(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.ExportTemplate failed");
+                return CommandResult<byte[]>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导出验方模板", ex));
+            }
+        }
+
+        #endregion
     }
 }

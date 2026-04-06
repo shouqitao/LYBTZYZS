@@ -75,4 +75,23 @@ public interface IFormulaRepository
     Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids);
 
     #endregion
+
+    #region 批量导入/导出
+
+    /// <summary>
+    /// 批量导入验方数据
+    /// </summary>
+    Task<FormulaBatchImportResultDto?> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default);
+
+    /// <summary>
+    /// 导出验方数据到Excel
+    /// </summary>
+    Task<byte[]?> ExportFormulasAsync(string? category = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// 下载验方导入模板
+    /// </summary>
+    Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default);
+
+    #endregion
 }

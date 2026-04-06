@@ -19,6 +19,7 @@ internal partial class LocalUserMapper
     [MapperIgnoreSource(nameof(User.UpdatedBy))]
     [MapperIgnoreSource(nameof(User.RowVersion))]
     [MapperIgnoreSource(nameof(User.IsDeleted))]
+    [MapperIgnoreSource(nameof(User.MustChangeOnNextLogin))]
     [MapperIgnoreTarget(nameof(UserDetailDto.IsEnabled))]
     public partial UserDetailDto ToDetailDto(User entity);
 
@@ -27,6 +28,7 @@ internal partial class LocalUserMapper
     /// </summary>
     [MapperIgnoreSource(nameof(UserInputDto.Password))]
     [MapperIgnoreSource(nameof(UserInputDto.ConfirmPassword))]
+    [MapperIgnoreTarget(nameof(User.MustChangeOnNextLogin))]
     [MapperIgnoreTarget(nameof(User.PasswordHash))]
     [MapperIgnoreTarget(nameof(User.Status))]
     [MapperIgnoreTarget(nameof(User.FailedLoginCount))]

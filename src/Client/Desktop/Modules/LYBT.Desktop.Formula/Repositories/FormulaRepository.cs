@@ -308,4 +308,80 @@ public sealed class FormulaRepository : IFormulaRepository
     }
 
     #endregion
+
+    #region 批量导入/导出
+
+    public async Task<FormulaBatchImportResultDto?> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)
+    {
+        try
+        {
+            _logger.LogInformation("[REPO:Remote] Formula.BatchImport started");
+
+            var response = await _api.BatchImportAsync(request);
+            if (!response.Success || response.Data == null)
+            {
+                _logger.LogWarning("[REPO:Remote] Formula.BatchImport failed: {Message}", response.Message);
+                return null;
+            }
+
+            _logger.LogInformation("[REPO:Remote] Formula.BatchImport completed - Success={Success}, Failed={Failed}",
+                response.Data.SuccessCount, response.Data.FailureCount);
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[REPO:Remote] Formula.BatchImport failed");
+            return null;
+        }
+    }
+
+    public async Task<byte[]?> ExportFormulasAsync(string? category = null, CancellationToken ct = default)
+    {
+        try
+        {
+            _logger.LogInformation("[REPO:Remote] Formula.ExportFormulas - Category={Category}", category);
+
+            var response = await _api.ExportFormulasAsync(category);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("[REPO:Remote] Formula.ExportFormulas failed: StatusCode={StatusCode}", response.StatusCode);
+                return null;
+            }
+
+            var data = await response.Content.ReadAsByteArrayAsync(ct);
+            _logger.LogInformation("[REPO:Remote] Formula.ExportFormulas completed - Size={Size} bytes", data.Length);
+            return data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[REPO:Remote] Formula.ExportFormulas failed");
+            return null;
+        }
+    }
+
+    public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            _logger.LogInformation("[REPO:Remote] Formula.ExportTemplate started");
+
+            var response = await _api.ExportTemplateAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("[REPO:Remote] Formula.ExportTemplate failed: StatusCode={StatusCode}", response.StatusCode);
+                return null;
+            }
+
+            var data = await response.Content.ReadAsByteArrayAsync(ct);
+            _logger.LogInformation("[REPO:Remote] Formula.ExportTemplate completed - Size={Size} bytes", data.Length);
+            return data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[REPO:Remote] Formula.ExportTemplate failed");
+            return null;
+        }
+    }
+
+    #endregion
 }

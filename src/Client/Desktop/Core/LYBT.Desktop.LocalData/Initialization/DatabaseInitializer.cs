@@ -11,13 +11,14 @@ namespace LYBT.Desktop.LocalData.Initialization;
 /// OpenSpec: implement-local-mode
 /// Phase 4 Task 4.4: 集成数据库初始化性能监控
 /// </summary>
-public class DatabaseInitializer : IDatabaseInitializer
+public class DatabaseInitializer : IDatabaseInitializer, IDisposable
 {
     private readonly Func<LocalDbContext> _contextFactory;
     private readonly IPerformanceMonitor? _performanceMonitor;
     private readonly ILogger<DatabaseInitializer> _logger;
     private readonly SemaphoreSlim _initLock = new(1, 1);
     private bool _isInitialized;
+    private bool _disposed;
 
     public DatabaseInitializer(
         Func<LocalDbContext> contextFactory,
@@ -114,6 +115,15 @@ public class DatabaseInitializer : IDatabaseInitializer
         catch
         {
             return false;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _initLock.Dispose();
+            _disposed = true;
         }
     }
 }

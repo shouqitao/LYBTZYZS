@@ -21,6 +21,7 @@ namespace LYBT.Desktop.Registration.ViewModels;
 /// 职责:
 /// - Receptionist: 查看全部队列，创建/取消挂号
 /// - Doctor: 查看个人队列，接诊
+/// - 定时刷新队列（每30秒），确保状态同步
 /// </summary>
 public partial class RegistrationListViewModel : NavigableViewModelBase
 {
@@ -28,6 +29,8 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IPatientApi _patientApi;
     private readonly IDialogService? _dialogService;
+    private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(30));
+    private CancellationTokenSource? _timerCts;
 
     #region Observable Properties
 
@@ -91,6 +94,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     protected override async Task InitializeAsync(NavigationContext context)
     {
         await LoadQueueAsync();
+        StartAutoRefresh();
     }
 
     /// <summary>每次导航到此页面时刷新</summary>
@@ -99,6 +103,38 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         if (IsInitialized)
         {
             _ = LoadQueueAsync();
+            StartAutoRefresh();
+        }
+    }
+
+    /// <summary>离开页面时停止刷新</summary>
+    protected override void OnNavigatedFromCore(NavigationContext context)
+    {
+        StopAutoRefresh();
+    }
+
+    private void StartAutoRefresh()
+    {
+        if (_timerCts is not null) return;
+
+        _timerCts = new CancellationTokenSource();
+        _ = RunAutoRefreshLoopAsync(_timerCts.Token);
+    }
+
+    private void StopAutoRefresh()
+    {
+        _timerCts?.Cancel();
+        _timerCts?.Dispose();
+        _timerCts = null;
+    }
+
+    private async Task RunAutoRefreshLoopAsync(CancellationToken ct)
+    {
+        while (await _refreshTimer.WaitForNextTickAsync(ct))
+        {
+            if (IsBusy) continue;
+            Logger.LogDebug("[REG-VM] 定时刷新队列");
+            await LoadQueueAsync();
         }
     }
 
