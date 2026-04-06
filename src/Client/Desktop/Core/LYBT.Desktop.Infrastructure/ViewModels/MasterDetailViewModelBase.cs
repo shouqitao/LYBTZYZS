@@ -325,7 +325,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             }
         }
 
-        private async void OnPaginationPageChanged(object? sender, EventArgs e)
+        private void OnPaginationPageChanged(object? sender, EventArgs e)
         {
             LoadListAsync().SafeFireAndForget(
                 ex => MasterDetailServices.ErrorHandler.HandleException(ex, $"Pagination change failed in {GetType().Name}"));
@@ -347,7 +347,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             }
         }
 
-        private async void OnSelectionSelectionChanged(object? sender, SelectionChangedEventArgs<TListItem> e)
+        private void OnSelectionSelectionChanged(object? sender, SelectionChangedEventArgs<TListItem> e)
         {
             OnSelectionChangedAsync(e).SafeFireAndForget(
                 ex => MasterDetailServices.ErrorHandler.HandleException(ex, $"Selection change failed in {GetType().Name}"));

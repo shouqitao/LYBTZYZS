@@ -19,7 +19,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <summary>
         /// 加载医案详情并缓存
         /// </summary>
-        Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadDetailsAsync(Guid medicalCaseId);
+        Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default);
 
         /// <summary>
         /// 缓存的医案详情
@@ -53,7 +53,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
             ConsultationInputDto? consultation,
             PrescriptionInputDto? prescription,
             string? remark = null,
-            string? editReason = null);
+            string? editReason = null,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 保存后完成医案
@@ -65,7 +66,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
             IValidatable? consultationValidator,
             IValidatable? prescriptionValidator,
             string? remark = null,
-            bool isPrescriptionEnabled = true);
+            bool isPrescriptionEnabled = true,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 保存后挂起医案
@@ -74,7 +76,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
             Guid medicalCaseId,
             ConsultationInputDto? consultation,
             PrescriptionInputDto? prescription,
-            string? remark = null);
+            string? remark = null,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 保存后取消医案
@@ -83,7 +86,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
             Guid medicalCaseId,
             ConsultationInputDto? consultation,
             PrescriptionInputDto? prescription,
-            string? remark = null);
+            string? remark = null,
+            CancellationToken ct = default);
 
         #endregion
     }

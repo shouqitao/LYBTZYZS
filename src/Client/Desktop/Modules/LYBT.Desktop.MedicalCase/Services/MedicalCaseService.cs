@@ -610,7 +610,7 @@ public class MedicalCaseService : IMedicalCaseService
 
     #region 数据加载与缓存 (合并自 Coordinator)
 
-    public async Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadDetailsAsync(Guid medicalCaseId)
+    public async Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
@@ -655,7 +655,8 @@ public class MedicalCaseService : IMedicalCaseService
         ConsultationInputDto? consultation,
         PrescriptionInputDto? prescription,
         string? remark = null,
-        string? editReason = null)
+        string? editReason = null,
+        CancellationToken ct = default)
     {
         try
         {
@@ -693,7 +694,8 @@ public class MedicalCaseService : IMedicalCaseService
         IValidatable? consultationValidator,
         IValidatable? prescriptionValidator,
         string? remark = null,
-        bool isPrescriptionEnabled = true)
+        bool isPrescriptionEnabled = true,
+        CancellationToken ct = default)
     {
         // 验证诊断数据
         if (consultationValidator != null && !consultationValidator.Validate())
@@ -715,7 +717,8 @@ public class MedicalCaseService : IMedicalCaseService
         Guid medicalCaseId,
         ConsultationInputDto? consultation,
         PrescriptionInputDto? prescription,
-        string? remark = null)
+        string? remark = null,
+        CancellationToken ct = default)
     {
         var (saveOk, _, saveError) = await AggregateSaveAsync(medicalCaseId, consultation, prescription, remark);
         if (!saveOk) return (false, saveError);
@@ -727,7 +730,8 @@ public class MedicalCaseService : IMedicalCaseService
         Guid medicalCaseId,
         ConsultationInputDto? consultation,
         PrescriptionInputDto? prescription,
-        string? remark = null)
+        string? remark = null,
+        CancellationToken ct = default)
     {
         // 取消前保存供审计
         try

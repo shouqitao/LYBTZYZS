@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Users.Interfaces;
@@ -65,9 +66,10 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
         Title = "新建挂号";
     }
 
-    protected override async void OnDialogOpenedCore(IDialogParameters? parameters)
+    protected override void OnDialogOpenedCore(IDialogParameters? parameters)
     {
-        await LoadDoctorsAsync();
+        LoadDoctorsAsync().SafeFireAndForget(
+            ex => Logger.LogError(ex, "[REG-DIALOG] 加载医生列表失败"));
     }
 
     protected override bool CanConfirm() =>
@@ -76,10 +78,16 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
         && !IsBusy
         && !IsLoading;
 
-    protected override async void Confirm()
+    protected override void Confirm()
     {
         if (SelectedPatient is null || SelectedDoctor is null) return;
 
+        ConfirmAsync().SafeFireAndForget(
+            ex => Logger.LogError(ex, "[REG-DIALOG] 创建挂号失败"));
+    }
+
+    private async Task ConfirmAsync()
+    {
         try
         {
             SetBusy(true, "正在创建挂号...");
