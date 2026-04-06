@@ -50,6 +50,7 @@
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Sync\LYBT.Desktop.Sync.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Registration\LYBT.Desktop.Registration.csproj" />
     <!-- Desktop Shell + Roles -->
     <ProjectReference Include="..\..\src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj" />
     <!-- Shared + Entities -->
