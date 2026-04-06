@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.ViewModels.Handlers;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -22,7 +23,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// </summary>
     public partial class HerbMasterDetailViewModel : MasterDetailViewModelBase<HerbListDto, HerbDetailModel>
     {
-        private readonly IHerbRepository _herbRepository;
+        private readonly IHerbService _herbService;
         private readonly IHerbStatusHandler _statusHandler;
         private readonly IHerbImportExportHandler _importExportHandler;
         private readonly IDesktopCacheManager _cacheManager;
@@ -49,13 +50,13 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public HerbMasterDetailViewModel(
             IViewModelServices viewModelServices,
             IMasterDetailServices<HerbListDto, HerbDetailModel> masterDetailServices,
-            IHerbRepository herbRepository,
+            IHerbService herbService,
             IHerbStatusHandler statusHandler,
             IHerbImportExportHandler importExportHandler,
             IDesktopCacheManager cacheManager)
             : base(viewModelServices, masterDetailServices)
         {
-            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
@@ -76,11 +77,17 @@ namespace LYBT.Desktop.Herbs.ViewModels
             {
                 await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
-                    var pagedData = await _herbRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                    MasterDetailServices.Pagination.TotalCount = pagedData.TotalCount;
+                    var result = await _herbService.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                    if (!result.Success || result.Data == null)
+                    {
+                        MasterDetailServices.ErrorHandler.SetError("LoadList", result.Error ?? "获取药材列表失败");
+                        return;
+                    }
+
+                    MasterDetailServices.Pagination.TotalCount = result.Data.TotalCount;
 
                     Items.Clear();
-                    foreach (var item in pagedData.Items ?? Enumerable.Empty<HerbListDto>())
+                    foreach (var item in result.Data.Items ?? Enumerable.Empty<HerbListDto>())
                     {
                         Items.Add(item);
                     }
@@ -96,15 +103,15 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>加载详情数据</summary>
         protected override async Task LoadDetailAsync(HerbListDto item)
         {
-            // OpenSpec: simplify-desktop-data-layer - 使用Repository替代Service
-            var result = await _herbRepository.GetByIdWithResultAsync(item.Id);
-            if (!result.success || result.data == null)
+            // OpenSpec: standardize-service-layer - 使用Service替代Repository
+            var result = await _herbService.GetByIdAsync(item.Id);
+            if (!result.Success || result.Data == null)
             {
-                MasterDetailServices.ErrorHandler.SetError("LoadDetail", result.error ?? "加载药材详情失败");
+                MasterDetailServices.ErrorHandler.SetError("LoadDetail", result.Error ?? "加载药材详情失败");
                 return;
             }
 
-            var herb = result.data;
+            var herb = result.Data;
             var detail = new HerbDetailModel
             {
                 Id = herb.Id,
@@ -175,31 +182,31 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 Remark = detail.Remark?.Trim()
             };
 
-            // OpenSpec: simplify-desktop-data-layer - 使用Repository替代Service
+            // OpenSpec: standardize-service-layer - 使用Service替代Repository
             var result = IsNew
-                ? await _herbRepository.CreateWithResultAsync(input)
-                : await _herbRepository.UpdateWithResultAsync(detail.Id, input);
+                ? await _herbService.CreateAsync(input)
+                : await _herbService.UpdateAsync(input);
 
-            if (!result.success)
+            if (!result.Success)
             {
-                MasterDetailServices.ErrorHandler.SetError("Save", result.error ?? "保存药材失败");
+                MasterDetailServices.ErrorHandler.SetError("Save", result.Error ?? "保存药材失败");
                 return false;
             }
 
-            if (result.data != null)
+            if (result.Data != null)
             {
-                detail.Id = result.data.Id;
-                detail.Name = result.data.Name;
-                detail.PinYinCode = result.data.PinYinCode ?? detail.PinYinCode ?? string.Empty;
-                detail.Origin = result.data.Origin;
-                detail.Spec = result.data.Spec;
-                detail.Unit = result.data.Unit;
-                detail.Price = result.data.Price;
-                detail.CostPrice = result.data.CostPrice;
-                detail.Effect = result.data.Effect;
-                detail.Usage = result.data.Usage;
-                detail.Remark = result.data.Remark;
-                detail.Status = result.data.Status;
+                detail.Id = result.Data.Id;
+                detail.Name = result.Data.Name;
+                detail.PinYinCode = result.Data.PinYinCode ?? detail.PinYinCode ?? string.Empty;
+                detail.Origin = result.Data.Origin;
+                detail.Spec = result.Data.Spec;
+                detail.Unit = result.Data.Unit;
+                detail.Price = result.Data.Price;
+                detail.CostPrice = result.Data.CostPrice;
+                detail.Effect = result.Data.Effect;
+                detail.Usage = result.Data.Usage;
+                detail.Remark = result.Data.Remark;
+                detail.Status = result.Data.Status;
 
             }
 
@@ -210,11 +217,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>删除项</summary>
         protected override async Task<bool> DeleteItemAsync(HerbListDto item)
         {
-            // OpenSpec: simplify-desktop-data-layer - 使用Repository替代Service
-            var result = await _herbRepository.DeleteWithResultAsync(item.Id);
-            if (!result.success)
+            // OpenSpec: standardize-service-layer - 使用Service替代Repository
+            var result = await _herbService.DeleteAsync(item.Id);
+            if (!result.Success)
             {
-                MasterDetailServices.ErrorHandler.SetError("Delete", result.error ?? "删除药材失败");
+                MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? "删除药材失败");
                 return false;
             }
 

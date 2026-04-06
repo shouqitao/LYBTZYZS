@@ -1,15 +1,15 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.CommandHandlers;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
-using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Formula.Mappers;
 using LYBT.Desktop.Formula.ViewModels.Handlers;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
-using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// </summary>
     public partial class FormulaMasterDetailViewModel : MasterDetailViewModelBase<FormulaListDto, FormulaDetailModel>
     {
-        private readonly IFormulaRepository _formulaRepository;
+        private readonly IFormulaService _formulaService;
         private readonly IFormulaStatusHandler _statusHandler;
         // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
         private readonly IHerbSearchProvider _herbSearchProvider;
@@ -65,14 +65,14 @@ namespace LYBT.Desktop.Formula.ViewModels
         public FormulaMasterDetailViewModel(
             IViewModelServices viewModelServices,
             IMasterDetailServices<FormulaListDto, FormulaDetailModel> masterDetailServices,
-            IFormulaRepository formulaRepository,
+            IFormulaService formulaService,
             IFormulaStatusHandler statusHandler,
             IHerbSearchProvider herbSearchProvider,
             IDesktopCacheManager cacheManager,
             FormulaDetailModelMapper mapper)
             : base(viewModelServices, masterDetailServices)
         {
-            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
+            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
@@ -96,7 +96,14 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
-                    var pagedData = await _formulaRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                    var result = await _formulaService.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                    if (!result)
+                    {
+                        MasterDetailServices.ErrorHandler.SetError("Load", result.Error ?? "加载验方列表失败");
+                        return;
+                    }
+
+                    var pagedData = result.Data!;
                     MasterDetailServices.Pagination.TotalCount = pagedData.TotalCount;
 
                     Items.Clear();
@@ -118,14 +125,15 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                var dto = await _formulaRepository.GetByIdAsync(item.Id);
-                if (dto == null)
+                var result = await _formulaService.GetByIdAsync(item.Id);
+                if (!result)
                 {
-                    await MasterDetailServices.Dialog.ShowErrorAsync($"验方 '{item.Name}' 不存在或已被删除", "加载失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync(
+                        result.Error ?? $"验方 '{item.Name}' 不存在或已被删除", "加载失败");
                     return;
                 }
 
-                var detail = _mapper.ToItem(dto);
+                var detail = _mapper.ToItem(result.Data!);
                 MasterDetailServices.DetailEditor.LoadDetail(detail);
             }
             catch (Exception ex)
@@ -153,36 +161,44 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 // 从编辑控件收集药材数据
-                detail.Herbs.Clear();
-                foreach (var herb in EditHerbItems.Where(h => h.HerbId != Guid.Empty || !string.IsNullOrWhiteSpace(h.HerbName)))
-                {
-                    detail.Herbs.Add(new FormulaHerbItemDto
+                var herbInputDtos = EditHerbItems
+                    .Where(h => h.HerbId != Guid.Empty || !string.IsNullOrWhiteSpace(h.HerbName))
+                    .Select(h => new FormulaHerbItemInputDto
                     {
-                        HerbId = herb.HerbId == Guid.Empty ? null : herb.HerbId,
-                        HerbName = herb.HerbName,
-                        Dosage = herb.Dosage,
-                        Unit = herb.Unit,
-                        ProcessingMethod = herb.Remark,
-                        DecocteMethod = herb.DecocteMethod
-                    });
+                        HerbId = h.HerbId == Guid.Empty ? null : h.HerbId,
+                        HerbName = h.HerbName,
+                        Dosage = h.Dosage,
+                        Unit = h.Unit,
+                        ProcessingMethod = h.Remark,
+                        DecocteMethod = h.DecocteMethod
+                    })
+                    .ToList();
+
+                // 构建当前验方DTO（用于传递Id以区分创建/更新）
+                var currentFormulaDto = new FormulaDetailDto { Id = detail.Id };
+
+                var result = await _formulaService.SaveFormulaAsync(
+                    currentFormulaDto,
+                    detail.Name,
+                    detail.Effect ?? string.Empty,
+                    detail.Usage ?? string.Empty,
+                    detail.Property ?? string.Empty,
+                    detail.Category ?? string.Empty,
+                    detail.Remark ?? string.Empty,
+                    detail.IsShared,
+                    herbInputDtos);
+
+                if (!result)
+                {
+                    MasterDetailServices.ErrorHandler.SetError("Save", result.Error ?? "保存验方失败");
+                    return false;
                 }
 
-                // OpenSpec: adopt-mapperly-unified-mapping - 使用MappingService替代手动映射
-                var inputDto = _mapper.ToInputDto(detail);
-
-                if (IsNew)
-                {
-                    var result = await _formulaRepository.CreateAsync(inputDto);
-                    detail.Id = result.Id;
-                    detail.CreatedAt = result.CreatedAt;
-                    Logger.LogInformation("验方创建成功: {FormulaId} - {FormulaName}", result.Id, result.Name);
-                }
-                else
-                {
-                    await _formulaRepository.UpdateAsync(inputDto);
-                    detail.UpdatedAt = DateTime.UtcNow;
-                    Logger.LogInformation("验方更新成功: {FormulaId} - {FormulaName}", detail.Id, detail.Name);
-                }
+                var savedFormula = result.Data!;
+                detail.Id = savedFormula.Id;
+                detail.CreatedAt = savedFormula.CreatedAt;
+                detail.UpdatedAt = savedFormula.UpdatedAt;
+                Logger.LogInformation("验方保存成功: {FormulaId} - {FormulaName}", savedFormula.Id, savedFormula.Name);
 
                 _cacheManager.InvalidateFormulaCaches();
                 return true;
@@ -190,9 +206,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存验方失败: {FormulaName}", detail.Name);
-                var errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
-                    IsNew ? "创建验方" : "更新验方", ex);
-                MasterDetailServices.ErrorHandler.SetError("Save", errorMessage);
+                MasterDetailServices.ErrorHandler.SetError("Save", "保存验方时发生异常，请重试");
                 return false;
             }
         }
@@ -200,18 +214,16 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>删除项</summary>
         protected override async Task<bool> DeleteItemAsync(FormulaListDto item)
         {
-            // OpenSpec: simplify-desktop-data-layer - 使用Repository替代Service
-            var success = await _formulaRepository.DeleteAsync(item.Id);
-            if (!success)
+            var result = await _formulaService.DeleteFormulaAsync(item.Id);
+            if (!result)
             {
-                MasterDetailServices.ErrorHandler.SetError("Delete", $"删除验方 '{item.Name}' 失败");
+                MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? $"删除验方 '{item.Name}' 失败");
+                return false;
             }
-            else
-            {
-                Logger.LogInformation("验方删除成功: {FormulaId} - {FormulaName}", item.Id, item.Name);
-                _cacheManager.InvalidateFormulaCaches();
-            }
-            return success;
+
+            Logger.LogInformation("验方删除成功: {FormulaId} - {FormulaName}", item.Id, item.Name);
+            _cacheManager.InvalidateFormulaCaches();
+            return true;
         }
 
         #endregion
@@ -277,17 +289,24 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync($"确认复制验方 [{SelectedItem.Name}] 吗？", "复制确认");
                 if (!confirmed) return;
 
-                var result = await _formulaRepository.CloneFormulaAsync(SelectedItem.Id);
-                if (result != null)
+                var detailResult = await _formulaService.GetByIdAsync(SelectedItem.Id);
+                if (!detailResult)
                 {
-                    Logger.LogInformation("验方复制成功: {SourceName} -> {NewName}", SelectedItem.Name, result.Name);
-                    await MasterDetailServices.Dialog.ShowSuccessAsync($"验方已复制为 '{result.Name}'", "操作成功");
+                    await MasterDetailServices.Dialog.ShowErrorAsync(detailResult.Error ?? "获取验方详情失败", "操作失败");
+                    return;
+                }
+
+                var copyResult = await _formulaService.CopyFormulaAsync(detailResult.Data!);
+                if (copyResult)
+                {
+                    Logger.LogInformation("验方复制成功: {SourceName} -> {NewName}", SelectedItem.Name, copyResult.Data!.Name);
+                    await MasterDetailServices.Dialog.ShowSuccessAsync($"验方已复制为 '{copyResult.Data!.Name}'", "操作成功");
                     _cacheManager.InvalidateFormulaCaches();
                     await RefreshAsync();
                 }
                 else
                 {
-                    await MasterDetailServices.Dialog.ShowErrorAsync("复制验方失败", "操作失败");
+                    await MasterDetailServices.Dialog.ShowErrorAsync(copyResult.Error ?? "复制验方失败", "操作失败");
                 }
             }
             catch (Exception ex)

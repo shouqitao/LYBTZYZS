@@ -1,27 +1,28 @@
 using LYBT.Desktop.Contracts.Services.CrossModule;
-using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Desktop.Herbs.Interfaces;
 
 namespace LYBT.Desktop.Herbs.Services;
 
 /// <summary>
 /// 药材搜索提供者实现 (D5-3)
-/// 委托给 IHerbRepository，供跨模块使用
+/// 委托给 IHerbService，供跨模块使用
 /// </summary>
 public class HerbSearchProvider : IHerbSearchProvider
 {
-    private readonly IHerbRepository _herbRepository;
+    private readonly IHerbService _herbService;
 
-    public HerbSearchProvider(IHerbRepository herbRepository)
+    public HerbSearchProvider(IHerbService herbService)
     {
-        _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+        _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
     }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<HerbListDto>> SearchHerbsAsync(string keyword)
     {
-        var results = await _herbRepository.SearchAsync(keyword);
-        return results.AsReadOnly();
+        var result = await _herbService.SearchAsync(keyword);
+        return result.Success && result.Data != null ? result.Data.AsReadOnly() : Array.Empty<HerbListDto>();
     }
 
     /// <inheritdoc />
@@ -34,10 +35,10 @@ public class HerbSearchProvider : IHerbSearchProvider
 
         while (true)
         {
-            var pagedResult = await _herbRepository.GetPagedAsync(currentPage, pageSize);
-            if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
-            allHerbs.AddRange(pagedResult.Items);
-            if (pagedResult.Items.Count < pageSize) break;
+            var result = await _herbService.GetPagedAsync(currentPage, pageSize);
+            if (!result.Success || result.Data?.Items == null || !result.Data.Items.Any()) break;
+            allHerbs.AddRange(result.Data.Items);
+            if (result.Data.Items.Count < pageSize) break;
             currentPage++;
         }
 

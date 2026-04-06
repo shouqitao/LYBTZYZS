@@ -8,6 +8,7 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Desktop.Users.ViewModels.Handlers;
+using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -23,7 +24,7 @@ namespace LYBT.Desktop.Users.ViewModels;
 /// </summary>
 public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserListDto, UserDetailModel>
 {
-    private readonly UserService _commandHandler;
+    private readonly IUserService _commandHandler;
     private readonly IUserPasswordHandler _passwordHandler;
     private readonly IUserStatusHandler _statusHandler;
     private readonly IUserImportExportHandler _importExportHandler;
@@ -110,7 +111,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     public UserMasterDetailViewModel(
         IViewModelServices viewModelServices,
         IMasterDetailServices<UserListDto, UserDetailModel> masterDetailServices,
-        UserService commandHandler,
+        IUserService commandHandler,
         IUserPasswordHandler passwordHandler,
         IUserStatusHandler statusHandler,
         IUserImportExportHandler importExportHandler,
@@ -142,12 +143,12 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
             await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
             {
                 var result = await _commandHandler.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                if (result.success && result.data != null)
+                if (result.Success && result.Data != null)
                 {
-                    MasterDetailServices.Pagination.TotalCount = result.data.TotalCount;
+                    MasterDetailServices.Pagination.TotalCount = result.Data.TotalCount;
 
                     Items.Clear();
-                    var filteredItems = ApplyFilters(result.data.Items);
+                    var filteredItems = ApplyFilters(result.Data.Items);
                     foreach (var item in filteredItems)
                     {
                         Items.Add(item);
@@ -185,7 +186,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         try
         {
             var result = await _commandHandler.GetByIdAsync(item.Id);
-            if (!result.success || result.user == null)
+            if (!result.Success || result.Data == null)
             {
                 await MasterDetailServices.Dialog.ShowErrorAsync($"用户 '{item.UserName}' 不存在或已被删除", "加载失败");
                 return;
@@ -193,18 +194,18 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
 
             var detail = new UserDetailModel
             {
-                Id = result.user.Id,
-                UserName = result.user.UserName,
-                RealName = result.user.RealName,
-                PinYinCode = result.user.PinYinCode ?? string.Empty,
-                PhoneNumber = result.user.PhoneNumber,
-                Email = result.user.Email,
-                Role = result.user.Role,
-                Status = result.user.Status,
-                LastLoginTime = result.user.LastLoginTime,
-                CreatedAt = result.user.CreatedAt,
-                UpdatedAt = result.user.UpdatedAt,
-                Remark = result.user.Remark
+                Id = result.Data.Id,
+                UserName = result.Data.UserName,
+                RealName = result.Data.RealName,
+                PinYinCode = result.Data.PinYinCode ?? string.Empty,
+                PhoneNumber = result.Data.PhoneNumber,
+                Email = result.Data.Email,
+                Role = result.Data.Role,
+                Status = result.Data.Status,
+                LastLoginTime = result.Data.LastLoginTime,
+                CreatedAt = result.Data.CreatedAt,
+                UpdatedAt = result.Data.UpdatedAt,
+                Remark = result.Data.Remark
             };
 
             MasterDetailServices.DetailEditor.LoadDetail(detail);
@@ -251,30 +252,30 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
                 ? await _commandHandler.CreateAsync(dto)
                 : await _commandHandler.UpdateAsync(dto);
 
-            if (result.success && result.user != null)
+            if (result.Success && result.Data != null)
             {
                 // 回填服务器返回数据
-                detail.Id = result.user.Id;
-                detail.UserName = result.user.UserName;
-                detail.RealName = result.user.RealName;
-                detail.PinYinCode = result.user.PinYinCode ?? detail.PinYinCode ?? string.Empty;
-                detail.PhoneNumber = result.user.PhoneNumber;
-                detail.Email = result.user.Email;
-                detail.Role = result.user.Role;
-                detail.Status = result.user.Status;
-                detail.CreatedAt = result.user.CreatedAt;
-                detail.UpdatedAt = result.user.UpdatedAt;
-                detail.Remark = result.user.Remark;
+                detail.Id = result.Data.Id;
+                detail.UserName = result.Data.UserName;
+                detail.RealName = result.Data.RealName;
+                detail.PinYinCode = result.Data.PinYinCode ?? detail.PinYinCode ?? string.Empty;
+                detail.PhoneNumber = result.Data.PhoneNumber;
+                detail.Email = result.Data.Email;
+                detail.Role = result.Data.Role;
+                detail.Status = result.Data.Status;
+                detail.CreatedAt = result.Data.CreatedAt;
+                detail.UpdatedAt = result.Data.UpdatedAt;
+                detail.Remark = result.Data.Remark;
 
                 Logger.LogInformation("用户{Action}成功: {UserId} - {UserName}",
-                    IsNew ? "创建" : "更新", result.user.Id, result.user.UserName);
+                    IsNew ? "创建" : "更新", result.Data.Id, result.Data.UserName);
 
                 _cacheManager.InvalidateUserCaches();
                 return true;
             }
 
-            var errorMessage = !string.IsNullOrEmpty(result.errorMessage)
-                ? result.errorMessage
+            var errorMessage = !string.IsNullOrEmpty(result.Error)
+                ? result.Error
                 : (IsNew ? "创建用户失败" : "更新用户失败");
             MasterDetailServices.ErrorHandler.SetError("Save", errorMessage);
             return false;
@@ -301,16 +302,16 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         }
 
         var result = await _commandHandler.DeleteAsync(item.Id);
-        if (!result.success)
+        if (!result.Success)
         {
-            MasterDetailServices.ErrorHandler.SetError("Delete", result.errorMessage ?? $"删除用户 '{item.UserName}' 失败");
+            MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? $"删除用户 '{item.UserName}' 失败");
         }
         else
         {
             Logger.LogInformation("用户删除成功: {UserId} - {UserName}", item.Id, item.UserName);
             _cacheManager.InvalidateUserCaches();
         }
-        return result.success;
+        return result.Success;
     }
 
     #endregion

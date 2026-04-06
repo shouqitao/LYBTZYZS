@@ -2,8 +2,8 @@ using System.Net.Http;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Handlers;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.Models;
-using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -16,11 +16,11 @@ namespace LYBT.Desktop.Users.ViewModels.Handlers;
 /// </summary>
 public class UserStatusHandler : BaseStatusHandler<UserListDto>, IUserStatusHandler
 {
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
     private readonly IUserRepository _userRepository;
 
     public UserStatusHandler(
-        UserService userService,
+        IUserService userService,
         IUserRepository userRepository,
         IMasterDetailServices<UserListDto, UserDetailModel> masterDetailServices,
         ILogger<UserStatusHandler> logger)
@@ -44,13 +44,13 @@ public class UserStatusHandler : BaseStatusHandler<UserListDto>, IUserStatusHand
         try
         {
             var result = await _userService.ToggleStatusAsync(user.Id);
-            if (result.success)
+            if (result.Success)
             {
                 Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
                 return true;
             }
 
-            await Dialog.ShowErrorAsync(result.errorMessage ?? "切换用户状态失败", "操作失败");
+            await Dialog.ShowErrorAsync(result.Error ?? "切换用户状态失败", "操作失败");
             return false;
         }
         catch (HttpRequestException ex)

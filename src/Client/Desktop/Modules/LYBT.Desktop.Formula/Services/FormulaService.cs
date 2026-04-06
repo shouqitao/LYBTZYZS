@@ -1,6 +1,8 @@
+using LYBT.Desktop.Contracts.CommandHandlers;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using System.Threading;
@@ -11,7 +13,7 @@ namespace LYBT.Desktop.Formula.Services
     /// 配方Service实现
     /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// OpenSpec: cleanup-formula-dead-code - 清理未使用的占位方法和FormulaValidation方法
-    /// 提供配方CRUD和业务操作的统一处理
+    /// 使用 CommandResult&lt;T&gt; 统一返回类型，遵循 RemoteUserService 金标准模式
     /// </summary>
     public class FormulaService : IFormulaService
     {
@@ -24,14 +26,50 @@ namespace LYBT.Desktop.Formula.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        #region 查询操作
+
+        public async Task<CommandResult<FormulaDetailDto>> GetByIdAsync(Guid formulaId, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogDebug("[SVC] Formula.GetById - FormulaId={FormulaId}", formulaId);
+
+                var formula = await _repository.GetByIdAsync(formulaId);
+                if (formula == null)
+                    return CommandResult<FormulaDetailDto>.NotFound("验方不存在");
+
+                return CommandResult<FormulaDetailDto>.Succeeded(formula);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.GetById failed - FormulaId={FormulaId}", formulaId);
+                return CommandResult<FormulaDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("获取验方", ex));
+            }
+        }
+
+        public async Task<CommandResult<PagedResult<FormulaListDto>>> GetPagedAsync(
+            int page, int pageSize, string? keyword = null, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogDebug("[SVC] Formula.GetPaged - Page={Page}, PageSize={PageSize}, Keyword={Keyword}",
+                    page, pageSize, keyword);
+
+                var result = await _repository.GetPagedAsync(page, pageSize, keyword);
+                return CommandResult<PagedResult<FormulaListDto>>.Succeeded(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.GetPaged failed - Page={Page}, Keyword={Keyword}", page, keyword);
+                return CommandResult<PagedResult<FormulaListDto>>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("分页查询验方", ex));
+            }
+        }
+
+        #endregion
+
         #region 保存操作
 
-        /// <summary>
-        /// 保存配方
-        /// Issue #2149: 优化双重映射，直接接收InputDto以提升性能
-        /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
-        /// </summary>
-        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> SaveFormulaAsync(
+        public async Task<CommandResult<FormulaDetailDto>> SaveFormulaAsync(
             FormulaDetailDto currentFormula,
             string formulaName,
             string effect,
@@ -48,10 +86,9 @@ namespace LYBT.Desktop.Formula.Services
                 var isNewFormula = currentFormula.Id == Guid.Empty;
                 _logger.LogInformation("[SVC] Formula.Save started - FormulaId={FormulaId} IsNew={IsNew}", currentFormula.Id, isNewFormula);
 
-                // 验证至少有一味药材
                 if (herbInputDtos == null || herbInputDtos.Count == 0)
                 {
-                    return (false, null, "验方必须包含至少一味中药材");
+                    return CommandResult<FormulaDetailDto>.Failed("验方必须包含至少一味中药材");
                 }
 
                 var inputDto = new FormulaInputDto
@@ -67,7 +104,6 @@ namespace LYBT.Desktop.Formula.Services
                     Herbs = herbInputDtos
                 };
 
-                // OpenSpec: implement-formula-copy-flow - 根据Id判断新建或更新
                 FormulaDetailDto resultFormula;
                 if (isNewFormula)
                 {
@@ -82,12 +118,12 @@ namespace LYBT.Desktop.Formula.Services
                     _logger.LogInformation("[SVC] Formula.Update completed - FormulaId={FormulaId}", resultFormula.Id);
                 }
 
-                return (true, resultFormula, null);
+                return CommandResult<FormulaDetailDto>.Succeeded(resultFormula);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.Save failed - FormulaId={FormulaId}", currentFormula.Id);
-                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存配方", ex));
+                return CommandResult<FormulaDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存配方", ex));
             }
         }
 
@@ -95,10 +131,7 @@ namespace LYBT.Desktop.Formula.Services
 
         #region 复制操作
 
-        /// <summary>
-        /// 复制配方
-        /// </summary>
-        public async Task<(bool success, FormulaDetailDto? formula, string? errorMessage)> CopyFormulaAsync(FormulaDetailDto sourceFormula)
+        public async Task<CommandResult<FormulaDetailDto>> CopyFormulaAsync(FormulaDetailDto sourceFormula, CancellationToken ct = default)
         {
             try
             {
@@ -110,7 +143,7 @@ namespace LYBT.Desktop.Formula.Services
                     Effect = sourceFormula.Effect!,
                     Usage = sourceFormula.Usage!,
                     Remark = sourceFormula.Remark!,
-                    IsShared = false, // 副本默认不共享
+                    IsShared = false,
                     Herbs = sourceFormula.Herbs?.Select(h => new FormulaHerbItemInputDto
                     {
                         HerbId = h.HerbId,
@@ -127,12 +160,12 @@ namespace LYBT.Desktop.Formula.Services
 
                 var newFormula = await _repository.CreateAsync(createDto);
                 _logger.LogInformation("[SVC] Formula.Copy completed - NewId={FormulaId} Name={FormulaName}", newFormula.Id, newFormula.Name);
-                return (true, newFormula, $"配方复制成功！新配方名称：{newFormula.Name}");
+                return CommandResult<FormulaDetailDto>.Succeeded(newFormula);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.Copy failed - SourceId={FormulaId}", sourceFormula.Id);
-                return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("复制配方", ex));
+                return CommandResult<FormulaDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("复制配方", ex));
             }
         }
 
@@ -140,10 +173,7 @@ namespace LYBT.Desktop.Formula.Services
 
         #region 删除操作
 
-        /// <summary>
-        /// 删除配方
-        /// </summary>
-        public async Task<(bool success, string? errorMessage)> DeleteFormulaAsync(Guid formulaId)
+        public async Task<CommandResult<bool>> DeleteFormulaAsync(Guid formulaId, CancellationToken ct = default)
         {
             try
             {
@@ -151,19 +181,127 @@ namespace LYBT.Desktop.Formula.Services
 
                 await _repository.DeleteAsync(formulaId);
                 _logger.LogInformation("[SVC] Formula.Delete completed - FormulaId={FormulaId}", formulaId);
-                return (true, null);
+                return CommandResult<bool>.Succeeded(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SVC] Formula.Delete failed - FormulaId={FormulaId}", formulaId);
-                return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除配方", ex));
+                return CommandResult<bool>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除配方", ex));
             }
         }
 
         #endregion
 
-        // OpenSpec: simplify-desktop-data-layer - 已删除基本CRUD操作(CreateAsync/UpdateAsync)，ViewModel直接使用Repository
-        // OpenSpec: cleanup-formula-dead-code - 已删除PrintFormulaAsync/ViewUsageHistoryAsync占位方法
-        // OpenSpec: cleanup-formula-dead-code - 已删除GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync（FormulaValidationViewModel已删除）
+        #region 状态管理
+
+        public async Task<CommandResult<FormulaDetailDto>> ToggleStatusAsync(Guid formulaId, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Formula.ToggleStatus started - FormulaId={FormulaId}", formulaId);
+
+                var formula = await _repository.ToggleStatusAsync(formulaId);
+                if (formula == null)
+                    return CommandResult<FormulaDetailDto>.NotFound("验方不存在");
+
+                _logger.LogInformation("[SVC] Formula.ToggleStatus completed - FormulaId={FormulaId}, Status={Status}",
+                    formulaId, formula.Status);
+                return CommandResult<FormulaDetailDto>.Succeeded(formula);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.ToggleStatus failed - FormulaId={FormulaId}", formulaId);
+                return CommandResult<FormulaDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("切换验方状态", ex));
+            }
+        }
+
+        public async Task<CommandResult<FormulaDetailDto>> RestoreAsync(Guid formulaId, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Formula.Restore started - FormulaId={FormulaId}", formulaId);
+
+                var formula = await _repository.RestoreAsync(formulaId);
+                if (formula == null)
+                    return CommandResult<FormulaDetailDto>.NotFound("验方不存在或未被删除");
+
+                _logger.LogInformation("[SVC] Formula.Restore completed - FormulaId={FormulaId}", formulaId);
+                return CommandResult<FormulaDetailDto>.Succeeded(formula);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.Restore failed - FormulaId={FormulaId}", formulaId);
+                return CommandResult<FormulaDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("恢复验方", ex));
+            }
+        }
+
+        #endregion
+
+        #region 批量操作
+
+        public async Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> formulaIds, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Formula.BatchDelete started - Count={Count}", formulaIds.Count);
+
+                var result = await _repository.BatchDeleteAsync(formulaIds);
+                if (result == null)
+                    return CommandResult<BatchOperationResultDto>.Failed("批量删除验方返回空结果");
+
+                _logger.LogInformation("[SVC] Formula.BatchDelete completed - Success={Success}, Failed={Failed}",
+                    result.SuccessCount, result.FailureCount);
+                return CommandResult<BatchOperationResultDto>.Succeeded(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.BatchDelete failed - Count={Count}", formulaIds.Count);
+                return CommandResult<BatchOperationResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量删除验方", ex));
+            }
+        }
+
+        public async Task<CommandResult<BatchOperationResultDto>> BatchEnableAsync(List<Guid> formulaIds, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Formula.BatchEnable started - Count={Count}", formulaIds.Count);
+
+                var result = await _repository.BatchEnableAsync(formulaIds);
+                if (result == null)
+                    return CommandResult<BatchOperationResultDto>.Failed("批量启用验方返回空结果");
+
+                _logger.LogInformation("[SVC] Formula.BatchEnable completed - Success={Success}, Failed={Failed}",
+                    result.SuccessCount, result.FailureCount);
+                return CommandResult<BatchOperationResultDto>.Succeeded(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.BatchEnable failed - Count={Count}", formulaIds.Count);
+                return CommandResult<BatchOperationResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量启用验方", ex));
+            }
+        }
+
+        public async Task<CommandResult<BatchOperationResultDto>> BatchDisableAsync(List<Guid> formulaIds, CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Formula.BatchDisable started - Count={Count}", formulaIds.Count);
+
+                var result = await _repository.BatchDisableAsync(formulaIds);
+                if (result == null)
+                    return CommandResult<BatchOperationResultDto>.Failed("批量禁用验方返回空结果");
+
+                _logger.LogInformation("[SVC] Formula.BatchDisable completed - Success={Success}, Failed={Failed}",
+                    result.SuccessCount, result.FailureCount);
+                return CommandResult<BatchOperationResultDto>.Succeeded(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.BatchDisable failed - Count={Count}", formulaIds.Count);
+                return CommandResult<BatchOperationResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量禁用验方", ex));
+            }
+        }
+
+        #endregion
     }
 }

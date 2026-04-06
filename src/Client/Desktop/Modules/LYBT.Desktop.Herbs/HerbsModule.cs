@@ -1,9 +1,10 @@
-﻿using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Herbs.Mappers;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Repositories;
 // OpenSpec: simplify-desktop-data-layer - HerbService已删除
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Prism.Ioc;
@@ -28,6 +29,9 @@ namespace LYBT.Desktop.Herbs
             // SYNC-D02: IHerbRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
             // 远程模式 -> HerbRepository (Herbs 模块)
             // 本地模式 -> LocalHerbRepository (LocalData 模块)
+
+            // OpenSpec: standardize-service-layer - 统一使用Service层
+            containerRegistry.Register<IHerbService, Services.RemoteHerbService>();
 
             // D5-3: 跨模块药材搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IHerbSearchProvider, Services.HerbSearchProvider>();

@@ -1,6 +1,6 @@
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.Models;
-using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -13,12 +13,12 @@ namespace LYBT.Desktop.Users.ViewModels.Handlers;
 /// </summary>
 public class UserPasswordHandler : IUserPasswordHandler
 {
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
     private readonly IMasterDetailServices<UserListDto, UserDetailModel> _masterDetailServices;
     private readonly ILogger<UserPasswordHandler> _logger;
 
     public UserPasswordHandler(
-        UserService userService,
+        IUserService userService,
         IMasterDetailServices<UserListDto, UserDetailModel> masterDetailServices,
         ILogger<UserPasswordHandler> logger)
     {
@@ -38,15 +38,15 @@ public class UserPasswordHandler : IUserPasswordHandler
             if (!confirmed) return;
 
             var result = await _userService.ResetPasswordAsync(user.Id, null!);
-            if (result.success && result.response != null)
+            if (result.Success && result.Data != null)
             {
                 await _masterDetailServices.Dialog.ShowSuccessAsync(
-                    $"用户 [{user.RealName ?? user.UserName}] 的密码已重置\n\n新密码：{result.response.TemporaryPassword}",
+                    $"用户 [{user.RealName ?? user.UserName}] 的密码已重置\n\n新密码：{result.Data.TemporaryPassword}",
                     "重置成功");
             }
             else
             {
-                await _masterDetailServices.Dialog.ShowErrorAsync(result.errorMessage ?? "重置密码失败", "操作失败");
+                await _masterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "重置密码失败", "操作失败");
             }
         }
         catch (Exception ex)
