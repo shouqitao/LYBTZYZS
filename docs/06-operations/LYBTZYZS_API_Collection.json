@@ -173,7 +173,7 @@
             "description": "User login to get JWT access token",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"UserName\": \"sysadmin\",\n  \"Password\": \"DevPass123\",\n  \"RememberMe\": false\n}"
+              "raw": "{\n  \"UserName\": \"sysadmin\",\n  \"Password\": \"DevPass123!\",\n  \"RememberMe\": false\n}"
             }
           },
           "response": [],
@@ -5904,7 +5904,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"UserName\":\"sysadmin\",\"Password\":\"DevPass123\",\"RememberMe\":false}"
+              "raw": "{\"UserName\":\"sysadmin\",\"Password\":\"DevPass123!\",\"RememberMe\":false}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/login",
@@ -5954,7 +5954,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"UserName\":\"sysadmin\",\"Password\":\"DevPass123\",\"RememberMe\":false}"
+              "raw": "{\"UserName\":\"sysadmin\",\"Password\":\"DevPass123!\",\"RememberMe\":false}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/login",
