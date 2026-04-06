@@ -1,4 +1,5 @@
 using System.Windows;
+using LYBT.Desktop.Contracts.Services;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services.Notifications
@@ -10,10 +11,12 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
     public class NotificationService : INotificationService
     {
         private readonly ILogger<NotificationService> _logger;
+        private readonly IUiThreadDispatcher _dispatcher;
 
-        public NotificationService(ILogger<NotificationService> logger)
+        public NotificationService(ILogger<NotificationService> logger, IUiThreadDispatcher dispatcher)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         }
 
         /// <summary>
@@ -97,13 +100,7 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
         {
             try
             {
-                if (Application.Current?.Dispatcher == null)
-                {
-                    _logger.LogWarning("无法获取UI线程，返回默认值false");
-                    return false;
-                }
-
-                var result = await Application.Current.Dispatcher.InvokeAsync(() =>
+                var result = await _dispatcher.InvokeAsync(() =>
                 {
                     var messageBoxResult = MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
                     return messageBoxResult == MessageBoxResult.Yes;
@@ -183,14 +180,11 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
                 });
 
                 // 在UI线程显示MessageBox
-                if (Application.Current?.Dispatcher != null)
+                _dispatcher.Invoke(() =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        var messageBoxImage = GetMessageBoxImage(type);
-                        MessageBox.Show(message, title, MessageBoxButton.OK, messageBoxImage);
-                    });
-                }
+                    var messageBoxImage = GetMessageBoxImage(type);
+                    MessageBox.Show(message, title, MessageBoxButton.OK, messageBoxImage);
+                });
 
                 _logger.LogInformation("显示{Type}消息: {Message}", type, message);
             }

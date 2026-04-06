@@ -1,4 +1,5 @@
 using System.Windows;
+using LYBT.Desktop.Contracts.Services;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services
@@ -10,9 +11,11 @@ namespace LYBT.Desktop.Infrastructure.Services
     public class AsyncExecutor : IAsyncExecutor
     {
         private readonly ILogger<AsyncExecutor>? _logger;
+        private readonly IUiThreadDispatcher _dispatcher;
 
-        public AsyncExecutor(ILogger<AsyncExecutor>? logger = null)
+        public AsyncExecutor(IUiThreadDispatcher dispatcher, ILogger<AsyncExecutor>? logger = null)
         {
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _logger = logger;
         }
 
@@ -111,38 +114,26 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <inheritdoc/>
         public void ExecuteOnUIThread(Action action)
         {
-            if (Application.Current?.Dispatcher == null)
-            {
-                action();
-                return;
-            }
-
-            if (Application.Current.Dispatcher.CheckAccess())
+            if (_dispatcher.CheckAccess())
             {
                 action();
             }
             else
             {
-                Application.Current.Dispatcher.Invoke(action);
+                _dispatcher.Invoke(action);
             }
         }
 
         /// <inheritdoc/>
         public Task ExecuteOnUIThreadAsync(Action action)
         {
-            if (Application.Current?.Dispatcher == null)
+            if (_dispatcher.CheckAccess())
             {
                 action();
                 return Task.CompletedTask;
             }
 
-            if (Application.Current.Dispatcher.CheckAccess())
-            {
-                action();
-                return Task.CompletedTask;
-            }
-
-            return Application.Current.Dispatcher.InvokeAsync(action).Task;
+            return _dispatcher.InvokeAsync(action);
         }
 
         /// <inheritdoc/>
