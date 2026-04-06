@@ -30,7 +30,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
 {
     #region 依赖服务
 
-    private readonly IHealthCheckCoordinator _healthCheckCoordinator;
+    private readonly IApiHealthMonitor _apiHealthMonitor;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IConnectionModeProvider _connectionModeProvider;
     private readonly MenuManager _menuManager;
@@ -171,7 +171,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     public MainWindowViewModel(
         IViewModelServices services,
         IUserNotificationService userNotificationService,
-        IHealthCheckCoordinator healthCheckCoordinator,
+        IApiHealthMonitor apiHealthMonitor,
         INavigationCoordinator navigationCoordinator,
         IConnectionModeProvider connectionModeProvider,
         MenuManager menuManager,
@@ -187,7 +187,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         CommonDialogService = services.CommonDialogService;
         UserNotificationService = userNotificationService;
 
-        _healthCheckCoordinator = healthCheckCoordinator ?? throw new ArgumentNullException(nameof(healthCheckCoordinator));
+        _apiHealthMonitor = apiHealthMonitor ?? throw new ArgumentNullException(nameof(apiHealthMonitor));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _connectionModeProvider = connectionModeProvider ?? throw new ArgumentNullException(nameof(connectionModeProvider));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
@@ -330,7 +330,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private async Task RetryHealthCheckAsync()
     {
         Logger.LogInformation("用户手动触发 API 健康检查");
-        await _healthCheckCoordinator.CheckNowAsync();
+        await _apiHealthMonitor.ForceCheckAsync();
     }
 
     /// <summary>
@@ -432,8 +432,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     private void InitializeHealthCheck()
     {
-        _healthCheckCoordinator.StatusChanged += OnHealthStatusChanged;
-        _healthCheckCoordinator.Start();
+        _apiHealthMonitor.StatusChanged += OnHealthStatusChanged;
+        _apiHealthMonitor.StartMonitoringAsync().SafeFireAndForget(ex => Logger.LogError(ex, "启动健康监控失败"));
     }
 
     /// <summary>
@@ -468,9 +468,15 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// <summary>
     /// 健康状态变更事件处理
     /// </summary>
-    private void OnHealthStatusChanged(object? sender, HealthStatusChangedEventArgs e)
+    private void OnHealthStatusChanged(object? sender, ApiHealthMonitorChangedEventArgs e)
     {
-        Services.UiThreadDispatcher.InvokeAsync(() => ApiStatus = e.CurrentStatus);
+        var apiStatus = e.NewStatus switch
+        {
+            ApiMonitorHealthStatus.Healthy => ApiHealthStatus.Healthy,
+            ApiMonitorHealthStatus.Unhealthy => ApiHealthStatus.Unhealthy,
+            _ => ApiHealthStatus.Checking
+        };
+        Services.UiThreadDispatcher.InvokeAsync(() => ApiStatus = apiStatus);
     }
 
     /// <summary>
@@ -800,7 +806,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         try
         {
             CleanupTickSubscription();
-            CleanupHealthCheckCoordinator();
+            CleanupHealthMonitor();
             UnsubscribeLoginEvent();
             _connectionModeProvider.ModeChanged -= OnConnectionModeChanged;
             _navigationCoordinator.UnsubscribeFromRegionCollection();
@@ -824,14 +830,14 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// <summary>
     /// 清理健康检查协调器订阅
     /// </summary>
-    private void CleanupHealthCheckCoordinator()
+    private void CleanupHealthMonitor()
     {
         try
         {
-            _healthCheckCoordinator.StatusChanged -= OnHealthStatusChanged;
-            _healthCheckCoordinator.Dispose();
+            _apiHealthMonitor.StatusChanged -= OnHealthStatusChanged;
+            _apiHealthMonitor.Dispose();
         }
-        catch (Exception ex) { Logger.LogError(ex, "清理健康检查协调器失败"); }
+        catch (Exception ex) { Logger.LogError(ex, "清理健康监控器失败"); }
     }
 
     /// <summary>
