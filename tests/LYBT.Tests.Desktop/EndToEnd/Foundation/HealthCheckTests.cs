@@ -46,6 +46,33 @@ public class HealthCheckTests : WebApiE2ETestBase
     }
 
     /// <summary>
+    /// Test: GET /api/v1/health/ping
+    /// 预期: 200 OK, 返回 pong
+    /// </summary>
+    [Fact]
+    [Trait("Category", "E2E")]
+    [Trait("Phase", "Health")]
+    public async Task PingEndpoint_ShouldReturnPong()
+    {
+        Logger.LogInformation("Testing ping endpoint...");
+        
+        var httpClient = new System.Net.Http.HttpClient
+        {
+            BaseAddress = new System.Uri(Configuration["ApiBaseUrl"] ?? "http://localhost:5001")
+        };
+        
+        var response = await httpClient.GetAsync("/api/v1/health/ping");
+        response.EnsureSuccessStatusCode();
+        
+        var content = await response.Content.ReadAsStringAsync();
+        _output.WriteLine("Ping Response: {0}", content);
+        
+        content.Should().Contain("pong");
+        
+        Logger.LogInformation("Ping check passed");
+    }
+
+    /// <summary>
     /// Test: GET /api/v1/health via IAuthApi
     /// 预期: 200 OK, 详细信息
     /// </summary>
