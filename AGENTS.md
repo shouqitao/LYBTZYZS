@@ -42,6 +42,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # 76 tests (architecture guards)
 - `FindAsync` applies global query filters (`IsDeleted`) when entity is not in ChangeTracker — use `IgnoreQueryFilters()` for soft-deleted records
 - WPF Desktop tests require `net8.0-windows` target framework — cannot mix with Server tests
 - `MedicalCase.HasPrescription` is a computed property depending on `PrescriptionId.HasValue` — Mapper must set it explicitly
+- Edit tool requires distinct oldString and newString — never use identical or empty strings (see ERR-20260406-003)
 
 ## Module Docs
 
