@@ -73,6 +73,23 @@ Sub-directory `CLAUDE.md` files provide module-specific guidance throughout `src
 
 **Skill**: `self-improvement` — Log learnings and errors for continuous improvement.
 
+### Session Start (MANDATORY)
+
+At session start, BEFORE executing any commands:
+
+1. **Read `.learnings/ERRORS.md`** — Check for known error patterns
+2. **Read `.learnings/LEARNINGS.md`** — Check for project-specific conventions
+3. **Apply patterns** — Avoid repeating documented mistakes
+
+### Platform-Specific Rules (CRITICAL)
+
+This project runs on **Windows PowerShell**. NEVER use bash-specific syntax:
+- ❌ `export VAR=value` — Use `git` directly (env vars injected by tool)
+- ❌ `$(cat <<'EOF')` heredoc — Use simple string messages
+- ❌ `ls -la` — Use `dir` or tool's native file listing
+- ✅ `git add <files>` — Direct git commands work fine
+- ✅ `git commit -m "simple message"` — Single-line messages only
+
 ### Usage
 
 When you encounter:
