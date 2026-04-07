@@ -42,6 +42,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task CreateUser_ValidInput_ReturnsCreatedUser()
     {
         await LoginAsSysadminAsync();
@@ -58,6 +59,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task GetUserById_ExistingUser_ReturnsUserDetail()
     {
         await LoginAsSysadminAsync();
@@ -76,6 +78,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task UpdateUser_ValidInput_ReturnsUpdatedUser()
     {
         await LoginAsSysadminAsync();
@@ -95,6 +98,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task GetUsers_WithPagination_ReturnsPagedResult()
     {
         await LoginAsSysadminAsync();
@@ -117,6 +121,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task ToggleStatus_EnabledUser_DisablesUser()
     {
         await LoginAsSysadminAsync();
@@ -138,6 +143,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task DeleteAndRestore_User_CompletesSuccessfully()
     {
         await LoginAsSysadminAsync();
@@ -168,6 +174,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task BatchDelete_MultipleUsers_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -192,6 +199,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task BatchEnable_MultipleUsers_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -215,6 +223,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task BatchDisable_MultipleUsers_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -242,6 +251,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task ChangePassword_ExistingUser_Succeeds()
     {
         await LoginAsSysadminAsync();
@@ -264,6 +274,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task ResetPassword_ExistingUser_ReturnsNewPassword()
     {
         await LoginAsSysadminAsync();
@@ -287,6 +298,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task ChangeProfile_ExistingUser_ReturnsUpdatedProfile()
     {
         await LoginAsSysadminAsync();
@@ -316,6 +328,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task GetUsers_WithKeyword_FiltersResults()
     {
         await LoginAsSysadminAsync();
@@ -340,6 +353,7 @@ public class UserTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
+    [Trait("Role", "Admin")]
     public async Task UserFullLifecycle_CreateUpdateToggleDeleteRestore_AllSucceed()
     {
         await LoginAsSysadminAsync();

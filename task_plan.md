@@ -1,81 +1,122 @@
-# Task Plan: LYBTZYZS Frontend Completion
+# Desktop E2E 测试架构全面重构计划
 
-> **Version**: v2.1
-> **Updated**: 2026-04-06
-> **Status**: In Progress
-> **Scope**: Desktop WPF Client (`src/Client/Desktop/`)
+> **目标**：以真实API集成测试为核心，重构 `tests/LYBT.Tests.Desktop/` 测试架构，使其能真实暴露代码缺陷
+> **原则**：不为测试而测试 | 不繁冗拖沓 | 结合实际API测试 | 真实反映场景和数据交互
 
----
+## 当前问题分析
 
-## Goal
-Complete remaining frontend tasks to achieve 100% PRD coverage for all 76 user stories across 6 modules.
+| 问题 | 影响 | 严重度 |
+|------|------|--------|
+| 所有E2E测试使用sysadmin账户 | 无法验证角色权限边界 | 高 |
+| 无负面路径测试 | 无法发现输入验证缺陷 | 高 |
+| 无跨模块工作流测试 | 无法发现模块间数据一致性问题 | 高 |
+| 每个测试独立登录 | 浪费时间且不必要 | 中 |
+| 无数据清理策略 | 测试间可能互相影响 | 中 |
+| mock-based ApiIntegration/ 与E2E方向冲突 | 维护成本，偏离用户需求 | 低 |
 
-## Current Phase
-Phase 7
+## Phase 1: 基础设施增强 `[status: pending]`
 
-## Phases
+### 1.1 共享登录状态（减少冗余API调用）
+- [ ] 创建 `E2ECollectionFixture` 实现 `IAsyncLifetime`
+- [ ] 在 fixture 中一次性登录，测试类共享 token
+- [ ] 为每个角色（Admin/Doctor/Receptionist/SuperAdmin）创建独立 fixture
+- [ ] 更新 `appsettings.Test.json` 添加多角色测试账户配置
 
-### Phase 1: IUserService + RemoteUserService (T1-1) ✅
-- [x] Create IUserService interface
-- [x] Create RemoteUserService implementation
-- **Status:** complete
+### 1.2 测试数据生命周期管理
+- [ ] 在 `WebApiE2ETestBase` 中添加 `TrackCreated<T>(id)` / `CleanupTrackedAsync()` 
+- [ ] 实现 `IAsyncLifetime.DisposeAsync` 自动清理已创建的测试数据
+- [ ] 创建 `TestDataTracker` 按创建顺序反向删除（处理依赖关系）
 
-### Phase 2: IHerbService + RemoteHerbService (T1-2) ✅
-- [x] Create IHerbService interface
-- [x] Create RemoteHerbService implementation
-- **Status:** complete
+### 1.3 通用断言助手
+- [ ] `AssertSuccess<T>(response)` — 验证 Success + Data 非空
+- [ ] `AssertError(response, expectedMessage?)` — 验证失败响应
+- [ ] `AssertPaged<T>(response, expectedMinCount?)` — 验证分页结果
+- [ ] `AssertUnauthorized(action)` — 验证权限拒绝
 
-### Phase 3: IRegistrationService + RemoteRegistrationService (T1-3) ✅
-- [x] Create IRegistrationService interface
-- [x] Create RemoteRegistrationService implementation
-- **Status:** complete
+## Phase 2: 负面路径测试（暴露真实缺陷） `[status: pending]`
 
-### Phase 4: IFormulaService Enhancement (T1-4) ✅
-- [x] Add BatchImportAsync, ExportFormulasAsync, ExportTemplateAsync methods
-- [x] Update IFormulaRepository + FormulaRepository + LocalFormulaRepository
-- **Status:** complete
+为每个模块添加**能发现真实 bug 的**负面测试（不是凑数的）：
 
-### Phase 5: IPatientService Enhancement (T1-5) ✅
-- [x] Add BatchImportAsync, ExportTemplateAsync, ExportPatientsAsync methods
-- [x] Update PatientService implementation
-- **Status:** complete
+### 2.1 用户模块 (UserTests.cs)
+- [ ] 创建用户 — 缺少必填字段（用户名/密码）
+- [ ] 创建用户 — 重复用户名
+- [ ] 更新用户 — 无效角色值
+- [ ] 删除用户 — 自己删除自己
 
-### Phase 6: Registration Module (US-REG-001~004) ✅
-- [x] T2-1: RegistrationCreateDialog (US-REG-001)
-- [x] T2-2: Doctor Quick Visit navigation fix (US-REG-002)
-- [x] T2-3: Cancel Registration (US-REG-004)
-- [x] T2-4: Registration Tests (32 PureLogic tests)
-- **Status:** complete
+### 2.2 患者模块 (PatientTests.cs)
+- [ ] 创建患者 — 无效手机号格式
+- [ ] 创建患者 — 超长姓名（边界值）
+- [ ] 更新患者 — 不存在的患者ID
 
-### Phase 7: Registration Status Sync (US-REG-005, 006, 007) ✅
-- [x] T7-1: Auto-refresh timer (30-second periodic refresh)
-- [x] T7-2: Queue refresh on navigation + timer
-- [x] T7-3: Registration history query API (date/patient/doctor filters)
-- **Status:** complete
+### 2.3 药材模块 (HerbTests.cs)
+- [ ] 创建药材 — 重复名称
+- [ ] 删除药材 — 被方剂引用的药材（引用检查）
+- [ ] 批量操作 — 空列表/超大列表
 
-### Phase 8: Verification Tasks — BLOCKED (Could priority, server APIs needed)
-- [~] T8-1: US-PAT-011/012 — Patient reference check (Could, server API needed)
-- [~] T8-2: US-FORM-010 — Formula pending validation (No explicit US)
-- [~] T8-3: US-HERB-013 — Herb reference check (Could, server API needed)
-- [~] T8-4: US-MC-012 — MedicalCase audit log (API exists, UI deferred)
-- **Status:** blocked — all "Could" priority, skip for now
+### 2.4 方剂模块 (FormulaTests.cs)
+- [ ] 创建方剂 — 包含不存在的药材ID
+- [ ] 创建方剂 — 空药材列表
+- [ ] 克隆方剂 — 不存在的方剂ID
 
-### Phase 9: Testing & Verification ✅
-- [x] Run desktop tests (627 PureLogic tests pass)
-- [x] Build verification (0 errors, 0 warnings)
-- [~] E2E tests require server running (not a code issue)
-- **Status:** complete
+### 2.5 医案模块 (MedicalCaseTests.cs)
+- [ ] 创建医案 — 不存在的患者
+- [ ] 保存处方 — 空处方内容
+- [ ] 权限测试 — 非创建者编辑医案
 
-## Decisions Made
-| Decision | Rationale |
-|----------|-----------|
-| Follow existing Service patterns | Maintain consistency with IPatientService, IMedicalCaseService |
-| Add CancellationToken to all methods | Matches T6-2 requirement for Service interfaces |
-| Use RemoteXxxService naming | Consistent with existing RemotePatientService |
-| Status sync via server-side | Desktop client only refreshes queue on event receipt |
+### 2.6 挂号模块 (RegistrationTests.cs)
+- [ ] 重复挂号 — 同一患者同一时段
+- [ ] 取消已完成的挂号
+- [ ] 接诊已取消的挂号
 
-## Errors Encountered
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-| RMG020 unmapped members | 1 | Added MapperIgnoreSource attributes |
-| CA1001 disposable field | 1 | Implemented IDisposable in DatabaseInitializer |
+### 2.7 同步模块 (SyncTests.cs)
+- [ ] 上传 — 无效实体类型
+- [ ] 下载 — 超大批量请求
+- [ ] 比较 — 篡改的元数据
+
+## Phase 3: 跨模块业务流程测试（NEW） `[status: pending]`
+
+### 3.1 完整门诊流程 (PatientVisitWorkflowTests.cs)
+- [ ] 前台登记 → 创建患者 → 挂号 → 医生接诊 → 诊断 → 开方 → 关闭
+- [ ] 验证整个链路的数据一致性
+- [ ] 验证各阶段状态转换正确
+
+### 3.2 药材-方剂关联测试 (HerbFormulaIntegrityTests.cs)
+- [ ] 创建药材 → 创建包含该药材的方剂 → 验证引用
+- [ ] 尝试删除被引用药材 → 验证引用保护
+- [ ] 方剂导入医案处方 → 验证药材数据完整
+
+### 3.3 数据同步完整性测试 (SyncIntegrityTests.cs)
+- [ ] 创建本地数据 → 上传 → 验证远程一致
+- [ ] 远程修改 → 下载 → 验证本地更新
+
+## Phase 4: 角色权限边界测试（真实角色） `[status: pending]`
+
+### 4.1 增强现有 PermissionBoundaryTests.cs
+- [ ] Doctor角色：能创建医案，不能管理用户/药材
+- [ ] Receptionist角色：能创建挂号/患者，不能创建医案
+- [ ] Admin角色：能管理用户/药材，不能代替医生操作
+- [ ] 普通用户：仅能查看自己的数据
+
+### 4.2 角色越权测试
+- [ ] 每个角色尝试访问非授权端点 → 验证返回 403
+- [ ] 降级用户后验证权限立即生效
+
+## Phase 5: 清理与文档 `[status: pending]`
+
+### 5.1 评估 ApiIntegration/ 目录
+- [ ] 审查mock-based测试是否有不可替代的价值
+- [ ] 决定：保留有价值的部分（Polly、网络错误模拟），删除冗余的
+- [ ] 更新 README
+
+### 5.2 更新文档
+- [ ] 更新 EndToEnd/README.md 反映新架构
+- [ ] 更新测试运行指南
+
+## 预期产出
+
+| 类别 | 当前 | 重构后 | 价值 |
+|------|------|--------|------|
+| E2E模块测试 | 74 | ~110 | +负面路径（发现验证缺陷） |
+| 工作流测试 | 2 | ~8 | +跨模块数据一致性 |
+| 权限测试 | 2 | ~15 | +真实角色边界验证 |
+| 基础设施 | 基础 | 完善 | +共享登录+数据清理+断言助手 |

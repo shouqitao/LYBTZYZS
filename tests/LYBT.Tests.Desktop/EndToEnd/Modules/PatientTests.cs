@@ -54,6 +54,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task CreatePatient_ValidInput_ReturnsCreatedPatient()
     {
         await LoginAsSysadminAsync();
@@ -70,6 +71,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task GetPatientById_ExistingPatient_ReturnsDetail()
     {
         await LoginAsSysadminAsync();
@@ -88,6 +90,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task UpdatePatient_ValidInput_ReturnsUpdatedPatient()
     {
         await LoginAsSysadminAsync();
@@ -107,6 +110,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task GetPatients_WithPagination_ReturnsPagedResult()
     {
         await LoginAsSysadminAsync();
@@ -128,6 +132,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task DeleteAndRestore_Patient_CompletesSuccessfully()
     {
         await LoginAsSysadminAsync();
@@ -154,6 +159,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task BatchDelete_MultiplePatients_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -182,6 +188,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task GetPatients_WithKeyword_FiltersResults()
     {
         await LoginAsSysadminAsync();
@@ -206,6 +213,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact(Skip = "Export/Import endpoints not yet implemented")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task ExportTemplate_ReturnsFileResponse()
     {
         await LoginAsSysadminAsync();
@@ -221,6 +229,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact(Skip = "Export/Import endpoints not yet implemented")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task ExportPatients_WithKeyword_ReturnsFileResponse()
     {
         await LoginAsSysadminAsync();
@@ -243,6 +252,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact(Skip = "Export/Import endpoints not yet implemented")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task BatchImport_ValidPatients_ReturnsImportResult()
     {
         await LoginAsSysadminAsync();
@@ -290,6 +300,7 @@ public class PatientTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task PatientFullLifecycle_CreateUpdateDeleteRestore_AllSucceed()
     {
         await LoginAsSysadminAsync();

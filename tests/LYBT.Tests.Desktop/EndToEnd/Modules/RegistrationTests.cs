@@ -95,6 +95,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task CreateRegistration_ValidInput_ReturnsCreatedRegistration()
     {
         await LoginAsSysadminAsync();
@@ -128,6 +129,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task GetRegistrationById_ExistingRegistration_ReturnsDetail()
     {
         await LoginAsSysadminAsync();
@@ -150,6 +152,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task GetRegistrations_WithPagination_ReturnsPagedResult()
     {
         await LoginAsSysadminAsync();
@@ -171,6 +174,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task GetQueue_WithDoctorFilter_ReturnsWaitingList()
     {
         await LoginAsSysadminAsync();
@@ -192,6 +196,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task GetQueue_WithoutDoctorFilter_ReturnsAllWaitingList()
     {
         await LoginAsSysadminAsync();
@@ -212,6 +217,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task StartVisit_WaitingRegistration_ChangesToInProgress()
     {
         await LoginAsSysadminAsync();
@@ -237,6 +243,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task CancelRegistration_WaitingRegistration_CancelsSuccessfully()
     {
         await LoginAsSysadminAsync();
@@ -258,6 +265,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task GetRegistrations_WithKeyword_FiltersResults()
     {
         await LoginAsSysadminAsync();
@@ -278,6 +286,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task RegistrationFullLifecycle_CreateStartVisitCancel_AllSucceed()
     {
         await LoginAsSysadminAsync();
@@ -329,6 +338,7 @@ public class RegistrationTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task RegistrationFullLifecycle_ReceptionistFlow_Succeeds()
     {
         await LoginAsSysadminAsync();

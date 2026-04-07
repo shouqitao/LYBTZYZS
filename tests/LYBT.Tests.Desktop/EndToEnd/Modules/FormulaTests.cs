@@ -60,6 +60,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task CreateFormula_ValidInput_ReturnsCreatedFormula()
     {
         await LoginAsSysadminAsync();
@@ -77,6 +78,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task GetFormulaById_ExistingFormula_ReturnsDetail()
     {
         await LoginAsSysadminAsync();
@@ -96,6 +98,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task UpdateFormula_ValidInput_ReturnsUpdatedFormula()
     {
         await LoginAsSysadminAsync();
@@ -116,6 +119,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task GetFormulas_WithPagination_ReturnsPagedResult()
     {
         await LoginAsSysadminAsync();
@@ -138,6 +142,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact(Skip = "Clone endpoint not yet implemented on server")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task CloneFormula_ExistingFormula_ReturnsClonedFormula()
     {
         await LoginAsSysadminAsync();
@@ -161,6 +166,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task ToggleStatus_EnabledFormula_TogglesSuccessfully()
     {
         await LoginAsSysadminAsync();
@@ -183,6 +189,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task DeleteAndRestore_Formula_CompletesSuccessfully()
     {
         await LoginAsSysadminAsync();
@@ -219,6 +226,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task BatchDelete_MultipleFormulas_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -241,6 +249,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task BatchEnable_MultipleFormulas_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -262,6 +271,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task BatchDisable_MultipleFormulas_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -283,6 +293,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact(Skip = "Export/Import endpoints not yet implemented")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task BatchImport_ValidData_ReturnsImportResult()
     {
         await LoginAsSysadminAsync();
@@ -321,6 +332,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact(Skip = "Export/Import endpoints not yet implemented")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task ExportTemplate_ReturnsFileResponse()
     {
         await LoginAsSysadminAsync();
@@ -335,6 +347,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact(Skip = "Export/Import endpoints not yet implemented")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task ExportFormulas_WithCategory_ReturnsFileResponse()
     {
         await LoginAsSysadminAsync();
@@ -354,6 +367,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task GetFormulas_WithKeyword_FiltersResults()
     {
         await LoginAsSysadminAsync();
@@ -379,6 +393,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Fact(Skip = "Clone endpoint not yet implemented on server")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
+    [Trait("Role", "Doctor")]
     public async Task FormulaFullLifecycle_CreateCloneToggleDeleteRestore_AllSucceed()
     {
         await LoginAsSysadminAsync();

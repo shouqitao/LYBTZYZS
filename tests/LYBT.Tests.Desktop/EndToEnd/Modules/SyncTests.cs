@@ -22,6 +22,7 @@ public class SyncTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "SyncManagement")]
+    [Trait("Role", "Admin")]
     public async Task GetEntityTypes_ReturnsSupportedTypes()
     {
         // Arrange
@@ -42,6 +43,7 @@ public class SyncTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "SyncManagement")]
+    [Trait("Role", "Admin")]
     public async Task GetMetadata_WithHerbType_ReturnsMetadataList()
     {
         // Arrange
@@ -60,6 +62,7 @@ public class SyncTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "SyncManagement")]
+    [Trait("Role", "Admin")]
     public async Task Compare_WithEmptyLocalList_ReturnsServerOnlyDiffs()
     {
         // Arrange
@@ -86,6 +89,7 @@ public class SyncTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "SyncManagement")]
+    [Trait("Role", "Admin")]
     public async Task Compare_WithSampleLocalData_ReturnsDiffResult()
     {
         // Arrange
@@ -121,6 +125,7 @@ public class SyncTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "SyncManagement")]
+    [Trait("Role", "Admin")]
     public async Task Upload_WithInvalidEntity_ReturnsErrorResult()
     {
         // Arrange
@@ -154,6 +159,7 @@ public class SyncTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "SyncManagement")]
+    [Trait("Role", "Admin")]
     public async Task Download_WithEmptyList_ReturnsEmptyResult()
     {
         // Arrange
@@ -179,6 +185,7 @@ public class SyncTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "SyncManagement")]
+    [Trait("Role", "Admin")]
     public async Task Delete_WithNonExistentIds_ReturnsEmptySuccess()
     {
         // Arrange
@@ -202,6 +209,7 @@ public class SyncTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "SyncManagement")]
+    [Trait("Role", "Admin")]
     public async Task SyncFullWorkflow_CompareUploadDownloadDelete_Succeeds()
     {
         // Step 1: Get entity types

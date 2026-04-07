@@ -75,6 +75,34 @@ public abstract class WebApiE2ETestBase : IDisposable
     }
 
     /// <summary>
+    /// 以指定用户身份登录
+    /// </summary>
+    protected async Task<LoginResponse> LoginAsAsync(string username, string password)
+    {
+        Logger.LogInformation("Logging in as {Username}", username);
+        
+        var response = await AuthApi.LoginAsync(new LoginRequest
+        {
+            UserName = username,
+            Password = password
+        });
+        
+        if (!response.Success || response.Data == null)
+        {
+            throw new InvalidOperationException($"Login failed for {username}: {response.Message}");
+        }
+        
+        AccessToken = response.Data.Token;
+        RefreshToken = response.Data.RefreshToken;
+        TokenExpiresAt = response.Data.ExpiresAt;
+        TokenHolderInstance.AccessToken = AccessToken;
+        
+        Logger.LogInformation("Login successful for {Username}, token expires at {ExpiresAt}", username, TokenExpiresAt);
+        
+        return response.Data;
+    }
+
+    /// <summary>
     /// 执行 sysadmin 登录，获取 JWT Token
     /// </summary>
     protected async Task<LoginResponse> LoginAsSysadminAsync()

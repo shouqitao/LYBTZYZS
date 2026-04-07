@@ -36,6 +36,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task CreateHerb_ValidInput_ReturnsCreatedHerb()
     {
         await LoginAsSysadminAsync();
@@ -52,6 +53,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task GetHerbById_ExistingHerb_ReturnsDetail()
     {
         await LoginAsSysadminAsync();
@@ -70,6 +72,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task UpdateHerb_ValidInput_ReturnsUpdatedHerb()
     {
         await LoginAsSysadminAsync();
@@ -89,6 +92,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task GetHerbs_WithPagination_ReturnsPagedResult()
     {
         await LoginAsSysadminAsync();
@@ -110,6 +114,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task ToggleStatus_EnabledHerb_TogglesSuccessfully()
     {
         await LoginAsSysadminAsync();
@@ -131,6 +136,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task DeleteAndRestore_Herb_CompletesSuccessfully()
     {
         await LoginAsSysadminAsync();
@@ -165,6 +171,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task BatchDelete_MultipleHerbs_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -189,6 +196,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task BatchEnable_MultipleHerbs_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -210,6 +218,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task BatchDisable_MultipleHerbs_ReturnsOperationResult()
     {
         await LoginAsSysadminAsync();
@@ -235,6 +244,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task GetHerbs_WithKeyword_FiltersResults()
     {
         await LoginAsSysadminAsync();
@@ -255,6 +265,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task GetHerbs_WithCategory_FiltersResults()
     {
         await LoginAsSysadminAsync();
@@ -278,6 +289,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact(Skip = "Export/Import endpoints not yet implemented")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task ExportTemplate_ReturnsFileResponse()
     {
         await LoginAsSysadminAsync();
@@ -292,6 +304,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact(Skip = "Export/Import endpoints not yet implemented")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task ExportHerbs_WithKeyword_ReturnsFileResponse()
     {
         await LoginAsSysadminAsync();
@@ -311,6 +324,7 @@ public class HerbTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
+    [Trait("Role", "Admin")]
     public async Task HerbFullLifecycle_CreateUpdateToggleDeleteRestore_AllSucceed()
     {
         await LoginAsSysadminAsync();

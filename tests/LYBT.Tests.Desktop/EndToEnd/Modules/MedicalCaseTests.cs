@@ -85,6 +85,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task CreateMedicalCase_WithConsultation_ReturnsCreatedCase()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -101,6 +102,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task GetMedicalCaseById_ExistingCase_ReturnsDetail()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -121,6 +123,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task GetMedicalCases_WithPagination_ReturnsPagedResult()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -143,6 +146,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task SaveMedicalCase_UpdateConsultation_Succeeds()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -169,6 +173,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task QueryMedicalCases_ByPatient_ReturnsMatchingCases()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -189,6 +194,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task SearchMedicalCases_ByDiagnosisKeyword_ReturnsMatchingCases()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -212,6 +218,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task SetPrescriptionFlag_ToggleFlag_Succeeds()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -232,6 +239,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task SaveMedicalCase_WithPrescription_Succeeds()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -278,6 +286,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task CloseCase_ActiveCase_ClosesSuccessfully()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -296,6 +305,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task SuspendCase_ActiveCase_SuspendsSuccessfully()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -314,6 +324,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task CancelMedicalCase_ActiveCase_CancelsSuccessfully()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -334,6 +345,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task UpdateStatus_ActiveToSuspended_UpdatesSuccessfully()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -358,6 +370,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact(Skip = "Obsolete endpoint migrated to /query, skip for now")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task GetPendingCases_ReturnsListSuccessfully()
     {
         await LoginAsSysadminAsync();
@@ -376,6 +389,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task GetPermissions_ExistingCase_ReturnsPermissions()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -395,6 +409,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task GetAuditLogs_ExistingCase_ReturnsAuditLogs()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -418,6 +433,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task RecordPrintCompleted_ExistingCase_RecordsSuccessfully()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -438,6 +454,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task AddPrintLog_ExistingCase_AddsSuccessfully()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -467,6 +484,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task DeleteMedicalCase_ExistingCase_Succeeds()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -485,6 +503,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact(Skip = "Cannot create multiple active cases for same patient — business rule")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task BatchDelete_MultipleCases_ReturnsOperationResult()
     {
         var loginResponse = await LoginAsSysadminAsync();
@@ -516,6 +535,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
     [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
     public async Task MedicalCaseFullLifecycle_CreateSavePrescriptionClose_AllSucceed()
     {
         var loginResponse = await LoginAsSysadminAsync();
