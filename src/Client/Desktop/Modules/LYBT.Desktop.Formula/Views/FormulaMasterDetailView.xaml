@@ -1,0 +1,14 @@
+<!--
+    FormulaMasterDetailView - 验方Master-Detail视图
+    包装FormulaMasterDetailControl，供导航使用
+-->
+<UserControl x:Class="LYBT.Desktop.Formula.Views.FormulaMasterDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Formula.Controls"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <Grid>
+        <controls:FormulaMasterDetailControl DataContext="{Binding}" />
+    </Grid>
+</UserControl>

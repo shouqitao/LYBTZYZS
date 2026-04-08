@@ -1,0 +1,111 @@
+<!--
+    PendingQueueView - 待诊队列视图
+    展示待处理的医案列表，供医生快速切换
+-->
+<UserControl x:Class="LYBT.Desktop.Clinical.Views.PendingQueueView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource PrimaryBrush}" 
+                Padding="12,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                           Text="待诊队列" 
+                           FontSize="16" 
+                           FontWeight="SemiBold"
+                           Foreground="White" />
+                
+                <Button Grid.Column="1"
+                        Command="{Binding RefreshCommand}"
+                        Style="{DynamicResource IconButton}">
+                    <TextBlock Text="&#xE72C;" 
+                               FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" 
+                               Foreground="White" />
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- 待诊列表 -->
+        <ScrollViewer Grid.Row="1" 
+                      VerticalScrollBarVisibility="Auto"
+                      MaxHeight="400">
+            <ItemsControl ItemsSource="{Binding Queue}"
+                          Margin="8">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource CardBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Margin="0,4"
+                                Padding="12,8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                
+                                <!-- 患者姓名和状态 -->
+                                <StackPanel Grid.Row="0" 
+                                            Orientation="Horizontal">
+                                    <TextBlock Text="{Binding PatientName}" 
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource PrimaryTextBrush}" />
+                                    <Border Background="{DynamicResource InfoBrush}"
+                                            CornerRadius="3"
+                                            Padding="6,2"
+                                            Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding CaseStatus}" 
+                                                   FontSize="11"
+                                                   Foreground="White" />
+                                    </Border>
+                                </StackPanel>
+                                
+                                <!-- 就诊时间 -->
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding CreatedAt, StringFormat='就诊时间: {0:yyyy-MM-dd HH:mm}'}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           Margin="0,4,0,0" />
+                                
+                                <!-- 操作按钮 -->
+                                <Button Grid.Row="2"
+                                        Command="{Binding DataContext.SelectCommand, 
+                                                 RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Content="继续看诊"
+                                        Style="{DynamicResource PrimaryButton}"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,8,0,0"
+                                        Padding="16,6" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- 空状态 -->
+        <controls:EmptyState Grid.Row="1"
+                             Title="暂无待诊患者"
+                             Subtitle="当前没有待处理的医案"
+                             Visibility="{Binding HasNoPendingCases, Converter={StaticResource BoolToVisibilityConverter}}" />
+    </Grid>
+</UserControl>

@@ -1,0 +1,25 @@
+<!--
+    BaseDialogWindow - 基础对话框窗口
+    统一所有Dialog的样式和行为
+    OpenSpec: unify-dialog-implementation
+-->
+<Window x:Class="LYBT.Desktop.Infrastructure.Windows.BaseDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}"
+        Background="{DynamicResource DialogBackgroundBrush}"
+        WindowStyle="SingleBorderWindow">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Styles/UnifiedComponents.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    
+    <Border Background="{DynamicResource CardBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1">
+        <ContentControl Content="{Binding}" />
+    </Border>
+</Window>

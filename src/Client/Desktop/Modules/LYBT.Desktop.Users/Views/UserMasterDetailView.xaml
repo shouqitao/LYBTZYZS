@@ -1,0 +1,28 @@
+<!--
+    UserMasterDetailView - 用户Master-Detail视图
+    
+    用途:
+    - 独立的View文件，用于直接导航
+    - 包装UserMasterDetailControl，提供一致的MVVM导航体验
+    - 支持Prism导航和参数传递
+    
+    对应ViewModel: UserMasterDetailViewModel
+-->
+<UserControl
+    x:Class="LYBT.Desktop.Users.Views.UserMasterDetailView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:LYBT.Desktop.Users.Controls"
+    xmlns:prism="http://prismlibrary.com/"
+    prism:ViewModelLocator.AutoWireViewModel="True">
+    
+    <Grid>
+        <!-- 
+            直接嵌入UserMasterDetailControl
+            所有逻辑和样式都在Control中实现
+            View只作为导航容器
+        -->
+        <controls:UserMasterDetailControl 
+            DataContext="{Binding}" />
+    </Grid>
+</UserControl>

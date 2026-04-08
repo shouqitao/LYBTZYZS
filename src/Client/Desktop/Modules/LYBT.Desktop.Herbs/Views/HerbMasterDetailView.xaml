@@ -1,0 +1,14 @@
+<!--
+    HerbMasterDetailView - 药材Master-Detail视图
+    包装HerbMasterDetailControl，供导航使用
+-->
+<UserControl x:Class="LYBT.Desktop.Herbs.Views.HerbMasterDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Herbs.Controls"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <Grid>
+        <controls:HerbMasterDetailControl DataContext="{Binding}" />
+    </Grid>
+</UserControl>

@@ -52,6 +52,9 @@ namespace LYBT.Desktop.Formula
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // FormulaMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.FormulaMasterDetailViewModel>();
+            
+            // 注册MasterDetail View用于导航
+            containerRegistry.RegisterForNavigation<Views.FormulaMasterDetailView>();
         }
     }
 }

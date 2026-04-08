@@ -50,6 +50,9 @@ namespace LYBT.Desktop.Herbs
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             containerRegistry.AddMasterDetailServices<HerbListDto, HerbDetailModel>();
             containerRegistry.Register<ViewModels.HerbMasterDetailViewModel>();
+            
+            // 注册MasterDetail View用于导航
+            containerRegistry.RegisterForNavigation<Views.HerbMasterDetailView>();
         }
     }
 }
