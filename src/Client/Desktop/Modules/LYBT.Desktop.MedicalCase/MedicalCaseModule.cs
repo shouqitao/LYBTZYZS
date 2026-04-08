@@ -137,6 +137,9 @@ namespace LYBT.Desktop.MedicalCase
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // MedicalCaseMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.MedicalCaseMasterDetailViewModel>();
+            
+            // 注册MasterDetail View用于导航
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseMasterDetailView>();
         }
     }
 }
