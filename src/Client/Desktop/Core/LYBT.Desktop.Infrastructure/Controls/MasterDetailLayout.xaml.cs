@@ -1,21 +1,74 @@
 using System.Windows;
 using System.Windows.Controls;
+using LYBT.Desktop.Infrastructure.Helpers;
 
 namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// Master-Detail布局容器控件
     /// OpenSpec: refactor-master-detail-layout
+    /// OpenSpec: responsive-layout-optimization
     ///
     /// 功能：
     /// - 左右分割布局，支持GridSplitter调节
     /// - 左侧Master区域显示列表
     /// - 右侧Detail区域显示详情/编辑
     /// - 支持空状态提示
+    /// - 响应式布局适配不同屏幕尺寸
     /// </summary>
     public partial class MasterDetailLayout : UserControl
     {
-        public MasterDetailLayout() => InitializeComponent();
+        public MasterDetailLayout()
+        {
+            InitializeComponent();
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            ApplyResponsiveLayout();
+            // 监听窗口大小变化
+            if (Window.GetWindow(this) is Window window)
+            {
+                window.SizeChanged += OnWindowSizeChanged;
+            }
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (Window.GetWindow(this) is Window window)
+            {
+                window.SizeChanged -= OnWindowSizeChanged;
+            }
+        }
+
+        private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ApplyResponsiveLayout();
+        }
+
+        /// <summary>
+        /// 应用响应式布局
+        /// </summary>
+        private void ApplyResponsiveLayout()
+        {
+            if (Window.GetWindow(this) is not Window window) return;
+
+            var category = ResponsiveLayoutHelper.GetScreenCategory(window.ActualWidth);
+            var masterMinWidth = ResponsiveLayoutHelper.GetRecommendedMasterWidth(category);
+            var detailMinWidth = ResponsiveLayoutHelper.GetRecommendedDetailWidth(category);
+
+            // 更新MinWidth
+            if (MasterWidth.IsAbsolute)
+            {
+                MasterWidth = new GridLength(masterMinWidth, GridUnitType.Pixel);
+            }
+            if (DetailWidth.IsAbsolute)
+            {
+                DetailWidth = new GridLength(detailMinWidth, GridUnitType.Pixel);
+            }
+        }
 
         #region MasterContent - 主列表内容
 
