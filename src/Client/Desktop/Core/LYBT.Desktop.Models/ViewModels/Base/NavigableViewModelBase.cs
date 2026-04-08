@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
     /// - 未保存变更追踪
     /// </summary>
     public abstract partial class NavigableViewModelBase
-        : CoreViewModelBase, INavigationAware, IRegionMemberLifetime, IConfirmNavigationRequest
+        : CoreViewModelBase, INavigationAware, IRegionMemberLifetime, IConfirmNavigationRequest, IEditable
     {
         #region 服务
 
@@ -82,11 +82,18 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// 是否有未保存的变更
         /// </summary>
         private bool _hasUnsavedChanges;
+        bool IEditable.HasUnsavedChanges => HasUnsavedChanges;
         protected virtual bool HasUnsavedChanges
         {
             get => _hasUnsavedChanges;
             set => SetProperty(ref _hasUnsavedChanges, value);
         }
+
+        /// <summary>
+        /// 是否正在编辑
+        /// </summary>
+        [ObservableProperty]
+        private bool _isEditing;
 
         #endregion
 
@@ -442,6 +449,64 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         {
             HasUnsavedChanges = false;
         }
+
+        #endregion
+
+        #region IEditable Explicit Implementation
+
+        void IEditable.MarkAsChanged() => MarkAsChanged();
+        void IEditable.MarkAsSaved() => MarkAsSaved();
+
+        #endregion
+
+        #region IEditable Implementation
+
+        /// <summary>
+        /// 开始编辑
+        /// </summary>
+        public virtual void BeginEdit()
+        {
+            IsEditing = true;
+            Logger.LogDebug("开始编辑: {ViewType}", GetType().Name);
+            OnBeginEdit();
+        }
+
+        /// <summary>
+        /// 取消编辑（恢复原始值）
+        /// </summary>
+        public virtual void CancelEdit()
+        {
+            IsEditing = false;
+            HasUnsavedChanges = false;
+            Logger.LogDebug("取消编辑: {ViewType}", GetType().Name);
+            OnCancelEdit();
+        }
+
+        /// <summary>
+        /// 确认编辑完成
+        /// </summary>
+        public virtual void EndEdit()
+        {
+            IsEditing = false;
+            HasUnsavedChanges = false;
+            Logger.LogDebug("结束编辑: {ViewType}", GetType().Name);
+            OnEndEdit();
+        }
+
+        /// <summary>
+        /// 开始编辑钩子（子类可重写）
+        /// </summary>
+        protected virtual void OnBeginEdit() { }
+
+        /// <summary>
+        /// 取消编辑钩子（子类可重写）
+        /// </summary>
+        protected virtual void OnCancelEdit() { }
+
+        /// <summary>
+        /// 结束编辑钩子（子类可重写）
+        /// </summary>
+        protected virtual void OnEndEdit() { }
 
         #endregion
     }
