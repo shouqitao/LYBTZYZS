@@ -98,6 +98,7 @@
   <ItemGroup Label="Role Home Modules">
     <ProjectReference Include="..\Roles\LYBT.Desktop.Clinical\LYBT.Desktop.Clinical.csproj" />
     <ProjectReference Include="..\Roles\LYBT.Desktop.Admin\LYBT.Desktop.Admin.csproj" />
+    <ProjectReference Include="..\Roles\LYBT.Desktop.Receptionist\LYBT.Desktop.Receptionist.csproj" />
   </ItemGroup>
 
   <!-- Configuration Files -->

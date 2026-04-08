@@ -31,8 +31,8 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         public override string Description => "患者登记、预约管理";
 
         /// <inheritdoc/>
-        /// <remarks>OpenSpec: unify-navigation-architecture - 使用ViewNames常量</remarks>
-        public override string HomeViewName => ViewNames.ClinicalHome;
+        /// <remarks>OpenSpec: create-receptionist-workspace - 使用前台专用工作台</remarks>
+        public override string HomeViewName => ViewNames.ReceptionistHome;
 
         /// <inheritdoc/>
         public override IReadOnlyList<string> RequiredModules => Modules;

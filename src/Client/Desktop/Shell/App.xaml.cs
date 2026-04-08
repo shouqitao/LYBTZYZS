@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using LYBT.Desktop.Admin;
+using LYBT.Desktop.Receptionist;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.CardReader;
 using LYBT.Desktop.Clinical;
@@ -377,6 +378,7 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<UsersModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<ClinicalModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<AdminModule>(InitializationMode.WhenAvailable);
+        moduleCatalog.AddModule<ReceptionistModule>(InitializationMode.WhenAvailable);
 
         // 业务模块 - 医案流程依赖链
         moduleCatalog.AddModule<PatientsModule>(InitializationMode.WhenAvailable);

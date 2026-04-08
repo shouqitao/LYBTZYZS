@@ -1,0 +1,275 @@
+<UserControl x:Class="LYBT.Desktop.Receptionist.Views.ReceptionistHomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <UserControl.Resources>
+        <!-- 透明按钮样式 -->
+        <Style x:Key="TransparentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- 主功能卡片样式 -->
+        <Style x:Key="PrimaryFunctionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Width" Value="280" />
+            <Setter Property="Height" Value="200" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        
+        <!-- 统计卡片样式 -->
+        <Style x:Key="StatsCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Width" Value="200" />
+            <Setter Property="Height" Value="200" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="8" Direction="270" Opacity="0.1" ShadowDepth="2" Color="Gray" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- 功能卡片样式 -->
+        <Style x:Key="FunctionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Width" Value="160" />
+            <Setter Property="Height" Value="140" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="6" Direction="270" Opacity="0.08" ShadowDepth="1" Color="Gray" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- 卡片图标样式 -->
+        <Style x:Key="CardIconStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="48" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+        
+        <!-- 卡片标题样式 -->
+        <Style x:Key="CardTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource RegionBrush}">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            
+            <!-- 标题区域 -->
+            <TextBlock Margin="0,0,0,8"
+                       HorizontalAlignment="Center"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource PrimaryBrush}"
+                       Text="前台工作台" />
+            <TextBlock Margin="0,0,0,40"
+                       HorizontalAlignment="Center"
+                       FontSize="14"
+                       Foreground="{DynamicResource SecondaryTextBrush}"
+                       Text="患者登记与挂号管理" />
+            
+            <!-- 搜索栏 -->
+            <Border Margin="0,0,0,40"
+                    Padding="16"
+                    Background="White"
+                    CornerRadius="8"
+                    Width="600">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="8" Direction="270" Opacity="0.1" ShadowDepth="2" Color="Gray" />
+                </Border.Effect>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Height="44"
+                             VerticalContentAlignment="Center"
+                             FontSize="16"
+                             Padding="12,0"
+                             BorderThickness="0"
+                             Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="输入患者姓名、拼音码或身份证号快速搜索">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding SearchPatientCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Button Grid.Column="1"
+                            Margin="12,0,0,0"
+                            Padding="24,0"
+                            Height="44"
+                            Content="搜索"
+                            Command="{Binding SearchPatientCommand}"
+                            Style="{DynamicResource PrimaryButton}" />
+                </Grid>
+            </Border>
+            
+            <!-- 上层：主卡片 + 统计卡片 -->
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                
+                <!-- 主卡片：新建挂号 -->
+                <Border Margin="12" Style="{StaticResource PrimaryFunctionCardStyle}">
+                    <Button Command="{Binding CreateNewRegistrationCommand}" Style="{StaticResource TransparentButtonStyle}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Margin="0,0,0,16"
+                                       HorizontalAlignment="Center"
+                                       FontSize="64"
+                                       Text="&#x1F4CB;" />
+                            <TextBlock Margin="0,0,0,8"
+                                       HorizontalAlignment="Center"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       Text="新建挂号" />
+                            <TextBlock HorizontalAlignment="Center"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.85"
+                                       Text="为患者创建挂号记录" />
+                        </StackPanel>
+                    </Button>
+                </Border>
+                
+                <!-- 主卡片：新建患者 -->
+                <Border Margin="12" Style="{StaticResource PrimaryFunctionCardStyle}">
+                    <Button Command="{Binding CreateNewPatientCommand}" Style="{StaticResource TransparentButtonStyle}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Margin="0,0,0,16"
+                                       HorizontalAlignment="Center"
+                                       FontSize="64"
+                                       Text="&#x1F464;" />
+                            <TextBlock Margin="0,0,0,8"
+                                       HorizontalAlignment="Center"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       Text="新建患者" />
+                            <TextBlock HorizontalAlignment="Center"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.85"
+                                       Text="创建新患者档案" />
+                        </StackPanel>
+                    </Button>
+                </Border>
+                
+                <!-- 统计卡片 -->
+                <Border Margin="12" Style="{StaticResource StatsCardStyle}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Margin="0,0,0,20"
+                                   HorizontalAlignment="Center"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                   Text="今日统计" />
+                        
+                        <!-- 今日挂号量 -->
+                        <StackPanel Margin="0,0,0,16" HorizontalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center"
+                                       FontSize="36"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryBrush}"
+                                       Text="{Binding TodayRegistrationCount, FallbackValue=0}" />
+                            <TextBlock Margin="4,0,0,0"
+                                       VerticalAlignment="Center"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       Text=" 挂号" />
+                        </StackPanel>
+                        
+                        <!-- 等待中 -->
+                        <StackPanel Margin="0,0,0,8" HorizontalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       Text="等待中 " />
+                            <TextBlock VerticalAlignment="Center"
+                                       FontSize="20"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource WarningBrush}"
+                                       Text="{Binding WaitingCount, FallbackValue=0}" />
+                        </StackPanel>
+                        
+                        <!-- 已完成 -->
+                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       Text="已完成 " />
+                            <TextBlock VerticalAlignment="Center"
+                                       FontSize="20"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       Text="{Binding CompletedCount, FallbackValue=0}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+            
+            <!-- 下层4个辅助卡片 -->
+            <StackPanel Margin="0,24,0,0" HorizontalAlignment="Center" Orientation="Horizontal">
+                
+                <!-- 辅助卡片1：患者管理 -->
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
+                    <Button Command="{Binding NavigateToPatientManagementCommand}" Style="{StaticResource TransparentButtonStyle}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F465;" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="患者管理" />
+                        </StackPanel>
+                    </Button>
+                </Border>
+                
+                <!-- 辅助卡片2：挂号队列 -->
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
+                    <Button Command="{Binding NavigateToRegistrationQueueCommand}" Style="{StaticResource TransparentButtonStyle}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4C8;" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="挂号队列" />
+                        </StackPanel>
+                    </Button>
+                </Border>
+                
+                <!-- 辅助卡片3：身份证读卡 -->
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
+                    <Button Command="{Binding NavigateToCardReaderCommand}" Style="{StaticResource TransparentButtonStyle}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4B3;" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="身份证读卡" />
+                        </StackPanel>
+                    </Button>
+                </Border>
+                
+                <!-- 辅助卡片4：刷新数据 -->
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
+                    <Button Command="{Binding RefreshDataCommand}" Style="{StaticResource TransparentButtonStyle}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F504;" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="刷新数据" />
+                        </StackPanel>
+                    </Button>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

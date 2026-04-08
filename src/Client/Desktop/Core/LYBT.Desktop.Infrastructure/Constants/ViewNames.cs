@@ -15,6 +15,9 @@ public static class ViewNames
     /// <summary>诊疗主页</summary>
     public const string ClinicalHome = "ClinicalHomeView";
 
+    /// <summary>前台工作台主页</summary>
+    public const string ReceptionistHome = "ReceptionistHomeView";
+
     #endregion
 
     #region 管理视图
