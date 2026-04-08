@@ -22,22 +22,21 @@
 - ✅ `E2EAssertionHelpers` 已实现，包含 `AssertSuccess`, `AssertError`, `AssertPaged`, `AssertUnauthorized`, `AssertForbidden`
 
 ### 1.1 共享登录状态（减少冗余API调用）
-- [ ] 创建 `E2ECollectionFixture` 实现 `IAsyncLifetime`
-- [ ] 在 fixture 中一次性登录，测试类共享 token
-- [ ] 为每个角色（Admin/Doctor/Receptionist/SuperAdmin）创建独立 fixture
-- [ ] 更新 `appsettings.Test.json` 添加多角色测试账户配置
+- [x] 创建 `E2ECollectionFixture` 实现 `IAsyncLifetime`
+- [x] 在 fixture 中一次性登录，测试类共享 token
+- [x] 为每个角色（Admin/Doctor/Receptionist/SuperAdmin）创建独立 fixture
+- [x] 更新 `appsettings.Test.json` 添加多角色测试账户配置
 
 ### 1.2 测试数据生命周期管理
-- [ ] 在 `WebApiE2ETestBase` 中添加 `TrackCreated<T>(id)` / `CleanupTrackedAsync()` 
-- [ ] 实现 `IAsyncLifetime.DisposeAsync` 自动清理已创建的测试数据
-- [ ] 创建 `TestDataTracker` 按创建顺序反向删除（处理依赖关系）
+- [x] 在 `WebApiE2ETestBase` 中添加 `TrackCreated<T>(id)` / `CleanupTrackedAsync()` 
+- [x] 实现 `IAsyncLifetime.DisposeAsync` 自动清理已创建的测试数据
+- [x] 创建 `TestDataTracker` 按创建顺序反向删除（处理依赖关系）
 
 ### 1.3 通用断言助手
-- [ ] `AssertSuccess<T>(response)` — 验证 Success + Data 非空
-- [ ] `AssertError(response, expectedMessage?)` — 验证失败响应
-- [ ] `AssertPaged<T>(response, expectedMinCount?)` — 验证分页结果
-- [ ] `AssertUnauthorized(action)` — 验证权限拒绝
-
+- [x] `AssertSuccess<T>(response)` — 验证 Success + Data 非空
+- [x] `AssertError(response, expectedMessage?)` — 验证失败响应
+- [x] `AssertPaged<T>(response, expectedMinCount?)` — 验证分页结果
+- [x] `AssertUnauthorized(action)` — 验证权限拒绝
 ## Phase 2: 负面路径测试（暴露真实缺陷） `[status: completed]`
 
 **已完成模块：**
@@ -52,40 +51,40 @@
 为每个模块添加**能发现真实 bug 的**负面测试（不是凑数的）：
 
 ### 2.1 用户模块 (UserTests.cs)
-- [ ] 创建用户 — 缺少必填字段（用户名/密码）
-- [ ] 创建用户 — 重复用户名
-- [ ] 更新用户 — 无效角色值
-- [ ] 删除用户 — 自己删除自己
+- [x] 创建用户 — 缺少必填字段（用户名/密码）
+- [x] 创建用户 — 重复用户名
+- [x] 更新用户 — 无效角色值
+- [x] 删除用户 — 自己删除自己
 
 ### 2.2 患者模块 (PatientTests.cs)
-- [ ] 创建患者 — 无效手机号格式
-- [ ] 创建患者 — 超长姓名（边界值）
-- [ ] 更新患者 — 不存在的患者ID
+- [x] 创建患者 — 无效手机号格式
+- [x] 创建患者 — 超长姓名（边界值）
+- [x] 更新患者 — 不存在的患者ID
 
 ### 2.3 药材模块 (HerbTests.cs)
-- [ ] 创建药材 — 重复名称
-- [ ] 删除药材 — 被方剂引用的药材（引用检查）
-- [ ] 批量操作 — 空列表/超大列表
+- [x] 创建药材 — 重复名称
+- [x] 删除药材 — 被方剂引用的药材（引用检查）
+- [x] 批量操作 — 空列表/超大列表
 
 ### 2.4 方剂模块 (FormulaTests.cs)
-- [ ] 创建方剂 — 包含不存在的药材ID
-- [ ] 创建方剂 — 空药材列表
-- [ ] 克隆方剂 — 不存在的方剂ID
+- [x] 创建方剂 — 包含不存在的药材ID
+- [x] 创建方剂 — 空药材列表
+- [x] 克隆方剂 — 不存在的方剂ID
 
 ### 2.5 医案模块 (MedicalCaseTests.cs)
-- [ ] 创建医案 — 不存在的患者
-- [ ] 保存处方 — 空处方内容
-- [ ] 权限测试 — 非创建者编辑医案
+- [x] 创建医案 — 不存在的患者
+- [x] 保存处方 — 空处方内容
+- [x] 权限测试 — 非创建者编辑医案
 
 ### 2.6 挂号模块 (RegistrationTests.cs)
-- [ ] 重复挂号 — 同一患者同一时段
-- [ ] 取消已完成的挂号
-- [ ] 接诊已取消的挂号
+- [x] 重复挂号 — 同一患者同一时段
+- [x] 取消已完成的挂号
+- [x] 接诊已取消的挂号
 
 ### 2.7 同步模块 (SyncTests.cs)
-- [ ] 上传 — 无效实体类型
-- [ ] 下载 — 超大批量请求
-- [ ] 比较 — 篡改的元数据
+- [x] 上传 — 无效实体类型
+- [x] 下载 — 超大批量请求
+- [x] 比较 — 篡改的元数据
 
 ## Phase 3: 跨模块业务流程测试（NEW） `[status: completed]`
 
@@ -97,18 +96,18 @@
 **说明：** 工作流测试覆盖主要业务流程，验证跨模块数据一致性。
 
 ### 3.1 完整门诊流程 (PatientVisitWorkflowTests.cs)
-- [ ] 前台登记 → 创建患者 → 挂号 → 医生接诊 → 诊断 → 开方 → 关闭
-- [ ] 验证整个链路的数据一致性
-- [ ] 验证各阶段状态转换正确
+- [x] 前台登记 → 创建患者 → 挂号 → 医生接诊 → 诊断 → 开方 → 关闭
+- [x] 验证整个链路的数据一致性
+- [x] 验证各阶段状态转换正确
 
 ### 3.2 药材-方剂关联测试 (HerbFormulaIntegrityTests.cs)
-- [ ] 创建药材 → 创建包含该药材的方剂 → 验证引用
-- [ ] 尝试删除被引用药材 → 验证引用保护
-- [ ] 方剂导入医案处方 → 验证药材数据完整
+- [x] 创建药材 → 创建包含该药材的方剂 → 验证引用
+- [x] 尝试删除被引用药材 → 验证引用保护
+- [x] 方剂导入医案处方 → 验证药材数据完整
 
 ### 3.3 数据同步完整性测试 (SyncIntegrityTests.cs)
-- [ ] 创建本地数据 → 上传 → 验证远程一致
-- [ ] 远程修改 → 下载 → 验证本地更新
+- [x] 创建本地数据 → 上传 → 验证远程一致
+- [x] 远程修改 → 下载 → 验证本地更新
 
 ## Phase 4: 角色权限边界测试（真实角色） `[status: completed]`
 
@@ -119,15 +118,14 @@
 **说明：** 使用E2ECollectionFixture的真实角色进行权限验证，确保各角色只能访问授权功能。
 
 ### 4.1 增强现有 PermissionBoundaryTests.cs
-- [ ] Doctor角色：能创建医案，不能管理用户/药材
-- [ ] Receptionist角色：能创建挂号/患者，不能创建医案
-- [ ] Admin角色：能管理用户/药材，不能代替医生操作
-- [ ] 普通用户：仅能查看自己的数据
+- [x] Doctor角色：能创建医案，不能管理用户/药材
+- [x] Receptionist角色：能创建挂号/患者，不能创建医案
+- [x] Admin角色：能管理用户/药材，不能代替医生操作
+- [x] 普通用户：仅能查看自己的数据
 
 ### 4.2 角色越权测试
-- [ ] 每个角色尝试访问非授权端点 → 验证返回 403
-- [ ] 降级用户后验证权限立即生效
-
+- [x] 每个角色尝试访问非授权端点 → 验证返回 403
+- [x] 降级用户后验证权限立即生效
 ## Phase 5: 清理与文档 `[status: completed]`
 
 **评估结果：**
@@ -142,13 +140,13 @@
   - 扩展指南（添加新模块、工作流、权限测试）
 
 ### 5.1 评估 ApiIntegration/ 目录
-- [ ] 审查mock-based测试是否有不可替代的价值
-- [ ] 决定：保留有价值的部分（Polly、网络错误模拟），删除冗余的
-- [ ] 更新 README
+- [x] 审查mock-based测试是否有不可替代的价值
+- [x] 决定：保留有价值的部分（Polly、网络错误模拟），删除冗余的
+- [x] 更新 README
 
 ### 5.2 更新文档
-- [ ] 更新 EndToEnd/README.md 反映新架构
-- [ ] 更新测试运行指南
+- [x] 更新 EndToEnd/README.md 反映新架构
+- [x] 更新测试运行指南
 
 ## 预期产出
 
