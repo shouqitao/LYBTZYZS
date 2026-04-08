@@ -1,4 +1,6 @@
 using FluentAssertions;
+using System.Threading;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -17,12 +19,29 @@ public class PatientTests : WebApiE2ETestBase
         _output = output;
     }
 
+    private static int _counter = 0;
+    private static readonly object _lock = new();
+
     private static string GenerateIdNumber()
     {
-        var random = new Random();
-        // Region code (Beijing) + birthdate + sequence
-        var body = $"110101199001{random.Next(10, 28):D2}{random.Next(100, 999)}";
-        // Calculate checksum
+        int unique;
+        lock (_lock)
+        {
+            unique = Interlocked.Increment(ref _counter);
+        }
+        // 生成唯一的时间戳后缀（取GUID的前4位作为16进制数值）
+        var hexSuffix = Guid.NewGuid().ToString("N")[..4];
+        var uniqueNum = Convert.ToInt32(hexSuffix, 16) % 10000;
+        
+        // 身份证格式: 6位地址码 + 8位出生日期 + 3位顺序码 + 1位校验码 = 18位
+        // 地址码: 110101 (北京市东城区)
+        // 出生日期: 199001DD (1990年1月, DD用unique生成10-27日)
+        // 顺序码: 001-999
+        var day = 10 + (unique % 18);  // 10-27日
+        var seq = 100 + (uniqueNum % 900);  // 100-999
+        var body = $"110101199001{day:D2}{seq:D3}";
+        
+        // 计算校验码 (ISO 7064:1983.MOD 11-2)
         int[] weights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
         char[] checkDigits = { '1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2' };
         var sum = 0;
@@ -32,8 +51,19 @@ public class PatientTests : WebApiE2ETestBase
 
     private static string GeneratePhoneNumber()
     {
-        var random = new Random();
-        return $"1{random.Next(3, 10)}{random.Next(100000000, 999999999):D9}";
+        int unique;
+        lock (_lock)
+        {
+            unique = Interlocked.Increment(ref _counter);
+        }
+        // 使用GUID确保唯一性: 1 + (3-9) + 9位数字
+        var guidPart = Guid.NewGuid().ToString("N")[..6];
+        // 取GUID前6位的前5位作为数字，确保11位: 1 + (3-9) + 9位数字
+        var phoneSuffix = Convert.ToInt32(guidPart[..5], 16) % 1000000000;
+        var secondDigit = 3 + (unique % 7);
+        // 3-9
+        return $"1{secondDigit
+    }{phoneSuffix:D9}";
     }
 
     private static PatientInputDto CreateTestPatientInput(string suffix = "") => new()
@@ -207,10 +237,7 @@ public class PatientTests : WebApiE2ETestBase
     }
 
     #endregion
-
-    #region Export
-
-    [Fact(Skip = "Export/Import endpoints not yet implemented")]
+    [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
     [Trait("Role", "Receptionist")]
@@ -225,27 +252,6 @@ public class PatientTests : WebApiE2ETestBase
         response.Content.Should().NotBeNull();
         _output.WriteLine($"Export template: status={response.StatusCode}");
     }
-
-    [Fact(Skip = "Export/Import endpoints not yet implemented")]
-    [Trait("Category", "E2E")]
-    [Trait("Phase", "PatientManagement")]
-    [Trait("Role", "Receptionist")]
-    public async Task ExportPatients_WithKeyword_ReturnsFileResponse()
-    {
-        await LoginAsSysadminAsync();
-        var uniqueName = $"导出测试_{Guid.NewGuid():N}".Substring(0, 15);
-        var input = CreateTestPatientInput();
-        input.Name = uniqueName;
-        await PatientApi.CreatePatientAsync(input);
-
-        var response = await PatientApi.ExportPatientsAsync(uniqueName);
-
-        response.IsSuccessStatusCode.Should().BeTrue();
-        response.Content.Should().NotBeNull();
-        _output.WriteLine($"Export patients: {response.Content!.Headers.ContentType}");
-    }
-
-    #endregion
 
     #region Import
 

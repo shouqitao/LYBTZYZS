@@ -56,7 +56,7 @@ public class SyncController : BaseApiController
         var result = await _syncService.GetMetadataAsync(entityType);
         if (!result.IsSuccess)
         {
-            return BusinessFail(result.ErrorMessage!);
+            return HandleServiceResult(result);
         }
 
         return Success(result.Data!, "获取元数据成功");
@@ -79,7 +79,7 @@ public class SyncController : BaseApiController
         var result = await _syncService.CompareAsync(input);
         if (!result.IsSuccess)
         {
-            return BusinessFail(result.ErrorMessage!);
+            return HandleServiceResult(result);
         }
 
         return Success(result.Data!, "比对完成");
@@ -109,7 +109,7 @@ public class SyncController : BaseApiController
         var result = await _syncService.UploadAsync(input);
         if (!result.IsSuccess)
         {
-            return BusinessFail(result.ErrorMessage!);
+            return HandleServiceResult(result);
         }
 
         return Success(result.Data!, "上传完成");
@@ -137,7 +137,7 @@ public class SyncController : BaseApiController
         var result = await _syncService.DownloadAsync(input);
         if (!result.IsSuccess)
         {
-            return BusinessFail(result.ErrorMessage!);
+            return HandleServiceResult(result);
         }
 
         return Success(result.Data!, "下载完成");
@@ -167,7 +167,7 @@ public class SyncController : BaseApiController
         var result = await _syncService.DeleteAsync(input);
         if (!result.IsSuccess)
         {
-            return BusinessFail(result.ErrorMessage!);
+            return HandleServiceResult(result);
         }
 
         return Success(result.Data!, "删除操作完成");

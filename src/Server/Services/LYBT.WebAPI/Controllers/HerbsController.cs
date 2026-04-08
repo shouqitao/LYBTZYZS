@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Herbs.Interfaces;
@@ -84,7 +84,7 @@ namespace LYBT.WebAPI.Controllers
                 return Success(result.Data, "药材创建成功");
             }
 
-            return BusinessFail(result.ErrorMessage ?? "创建药材失败");
+            return HandleResult(result);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace LYBT.WebAPI.Controllers
                 return Success(result.Data, "药材信息更新成功");
             }
 
-            return BusinessFail(result.ErrorMessage ?? "更新药材信息失败");
+            return HandleResult(result);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace LYBT.WebAPI.Controllers
             {
                 // X7: 区分引用阻塞(422)和不存在(404)
                 if (result.ErrorMessage?.Contains("处方引用") == true)
-                    return BusinessFail(result.ErrorMessage ?? "无法删除，存在处方引用");
+                    return HandleResult(result);
                 return NotFound(result.ErrorMessage ?? "药材不存在");
             }
 
@@ -213,7 +213,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _herbService.CheckReferenceAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "引用检查失败");
+                return HandleResult<HerbReferenceCheckDto>(result);
             }
             return Success(result.Data, "引用检查完成");
         }
@@ -248,7 +248,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量引用检查失败");
+                return HandleResult<List<HerbReferenceCheckDto>>(result);
             }
             return Success(result.Data, "批量引用检查完成");
         }
@@ -272,7 +272,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _herbService.ToggleStatusAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "状态切换失败");
+                return HandleResult<HerbDetailDto>(result);
             }
 
             LogOperation("切换药材状态", new { NewStatus = result.Data.Status }, id);
@@ -297,7 +297,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _herbService.RestoreAsync(id, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "恢复失败");
+                return HandleResult<HerbDetailDto>(result);
             }
 
             LogOperation("恢复药材", null, id);
@@ -323,7 +323,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量启用失败");
+                return HandleResult<BatchOperationResultDto>(result);
             }
 
             LogOperation("批量启用药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
@@ -347,7 +347,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _herbService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
+                return HandleResult<BatchOperationResultDto>(result);
             }
 
             LogOperation("批量禁用药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
@@ -368,11 +368,37 @@ namespace LYBT.WebAPI.Controllers
             var result = await _herbService.BatchDeleteAsync(dto.Ids, cancellationToken);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量删除失败");
+                return HandleResult<BatchOperationResultDto>(result);
             }
 
             LogOperation("批量删除药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
+        }
+
+        // ========== Issue #1166 - 导出功能 ==========
+
+        /// <summary>
+        /// 导出药材数据
+        /// US-HERB-010: 导出功能
+        /// </summary>
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
+        public async Task<IActionResult> ExportHerbs([FromQuery] string? category = null, CancellationToken cancellationToken = default)
+        {
+            var stream = await _herbService.ExportAsync(category, cancellationToken);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "药材数据.xlsx");
+        }
+
+        /// <summary>
+        /// 导出药材导入模板
+        /// US-HERB-011: 导出模板
+        /// </summary>
+        [HttpGet("import-template")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
+        public IActionResult ExportTemplate()
+        {
+            var stream = _herbService.GenerateImportTemplate();
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "药材导入模板.xlsx");
         }
     }
 }

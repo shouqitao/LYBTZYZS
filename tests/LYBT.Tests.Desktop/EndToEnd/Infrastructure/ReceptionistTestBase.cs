@@ -4,7 +4,7 @@ namespace LYBT.Tests.Desktop.EndToEnd.Infrastructure;
 
 public abstract class ReceptionistTestBase : WebApiE2ETestBase
 {
-    protected async Task<LoginResponse> LoginAsReceptionistAsync()
+    protected new async Task<LoginResponse> LoginAsReceptionistAsync()
     {
         var username = Configuration["TestCredentials:Receptionist:Username"] ?? "receptionist";
         var password = Configuration["TestCredentials:Receptionist:Password"] ?? "ReceptionistPass123!";

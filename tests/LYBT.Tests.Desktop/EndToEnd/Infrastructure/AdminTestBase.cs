@@ -17,7 +17,7 @@ public abstract class AdminTestBase : WebApiE2ETestBase
     /// <summary>
     /// 以管理员身份登录
     /// </summary>
-    protected async Task<LoginResponse> LoginAsAdminAsync()
+    protected new async Task<LoginResponse> LoginAsAdminAsync()
     {
         var username = Configuration["TestCredentials:Admin:Username"] ?? "admin";
         var password = Configuration["TestCredentials:Admin:Password"] ?? "AdminPass123!";

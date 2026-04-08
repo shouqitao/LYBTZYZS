@@ -18,7 +18,7 @@ public class HerbTests : WebApiE2ETestBase
 
     private static HerbInputDto CreateTestHerbInput(string suffix = "") => new()
     {
-        Name = $"测试中药{suffix}_{Guid.NewGuid():N}".Substring(0, 15),
+        Name = $"测试{suffix}_{Guid.NewGuid():N}"[..15],
         PinYinCode = "CSZY",
         Category = "清热药",
         Origin = "E2E测试产地",
@@ -165,6 +165,7 @@ public class HerbTests : WebApiE2ETestBase
         var input = CreateTestHerbInput(suffix);
         var response = await HerbApi.CreateHerbAsync(input);
         response.Success.Should().BeTrue(response.Message);
+        DataTracker.Track(EntityType.Herb, response.Data!.Id);
         return response.Data!;
     }
 
@@ -284,9 +285,7 @@ public class HerbTests : WebApiE2ETestBase
 
     #endregion
 
-    #region Export Operations
-
-    [Fact(Skip = "Export/Import endpoints not yet implemented")]
+    [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
     [Trait("Role", "Admin")]
@@ -300,8 +299,7 @@ public class HerbTests : WebApiE2ETestBase
         response.Content.Should().NotBeNull();
         _output.WriteLine($"Export template: {response.Content!.Headers.ContentType}");
     }
-
-    [Fact(Skip = "Export/Import endpoints not yet implemented")]
+    [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
     [Trait("Role", "Admin")]
@@ -316,8 +314,6 @@ public class HerbTests : WebApiE2ETestBase
         response.Content.Should().NotBeNull();
         _output.WriteLine($"Export herbs: {response.Content!.Headers.ContentType}");
     }
-
-    #endregion
 
     #region Full Lifecycle
 

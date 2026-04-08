@@ -154,7 +154,7 @@ public class AuthTests : WebApiE2ETestBase
         _output.WriteLine($"AutoLogin token: {response.Data.AutoLoginToken}");
     }
 
-    [Fact(Skip = "Race condition with other auth tests")]
+    [Fact]
     [Trait("Category", "E2E")]
     [Trait("Phase", "Authentication")]
     public async Task RefreshToken_WithValidToken_ShouldReturnNewToken()
@@ -173,11 +173,10 @@ public class AuthTests : WebApiE2ETestBase
         {
             RefreshToken = refreshToken
         });
-
-        response.Success.Should().BeTrue(response.Message);
+        response.Success.Should().BeTrue();
         response.Data.Should().NotBeNull();
         response.Data!.Token.Should().NotBeNullOrEmpty();
-        _output.WriteLine($"Refreshed token: new length={response.Data.Token.Length}");
+        _output.WriteLine($"Refreshed token: {response.Data.Token[..20]}...");
     }
 
     #endregion

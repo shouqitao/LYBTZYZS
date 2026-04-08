@@ -145,6 +145,13 @@ public class SystemExceptionHandler : IExceptionHandler
                 _environment.IsDevelopment() ? exception.Message : "操作无法执行，请稍后重试"
             ),
 
+            // 资源未找到
+            KeyNotFoundException => (
+                404,
+                "资源未找到",
+                _environment.IsDevelopment() ? exception.Message : "请求的资源不存在"
+            ),
+
             // 默认：生产环境隐藏详细信息
             _ => (
                 500,

@@ -1,4 +1,6 @@
 using FluentAssertions;
+using System.Threading;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
@@ -19,10 +21,21 @@ public class RegistrationTests : WebApiE2ETestBase
         _output = output;
     }
 
+    private static int _counter = 0;
+    private static readonly object _lock = new();
+
     private static string GenerateIdNumber()
     {
-        var random = new Random();
-        var body = $"110101199001{random.Next(10, 28):D2}{random.Next(100, 999)}";
+        int unique;
+        lock (_lock)
+        {
+            unique = Interlocked.Increment(ref _counter);
+        }
+        var hexSuffix = Guid.NewGuid().ToString("N")[..4];
+        var uniqueNum = Convert.ToInt32(hexSuffix, 16) % 10000;
+        var day = 10 + (unique % 18);
+        var seq = 100 + (uniqueNum % 900);
+        var body = $"110101199001{day:D2}{seq:D3}";
         int[] weights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
         char[] checkDigits = { '1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2' };
         var sum = 0;
@@ -32,9 +45,17 @@ public class RegistrationTests : WebApiE2ETestBase
 
     private static string GeneratePhoneNumber()
     {
-        var random = new Random();
-        return $"1{random.Next(3, 10)}{random.Next(100000000, 999999999):D9}";
+        int unique;
+        lock (_lock)
+        {
+            unique = Interlocked.Increment(ref _counter);
+        }
+        var guidPart = Guid.NewGuid().ToString("N")[..6];
+        var phoneSuffix = Convert.ToInt32(guidPart[..5], 16) % 1000000000;
+        var secondDigit = 3 + (unique % 7);
+        return $"1{secondDigit}{phoneSuffix:D9}";
     }
+
 
     private async Task<Guid> CreateTestPatientAsync()
     {

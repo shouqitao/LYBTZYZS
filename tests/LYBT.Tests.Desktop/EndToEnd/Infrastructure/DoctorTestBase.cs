@@ -13,7 +13,7 @@ namespace LYBT.Tests.Desktop.EndToEnd.Infrastructure;
 /// </summary>
 public abstract class DoctorTestBase : WebApiE2ETestBase
 {
-    protected async Task<LoginResponse> LoginAsDoctorAsync()
+    protected new async Task<LoginResponse> LoginAsDoctorAsync()
     {
         var username = Configuration["TestCredentials:Doctor:Username"] ?? "doctor";
         var password = Configuration["TestCredentials:Doctor:Password"] ?? "DoctorPass123!";

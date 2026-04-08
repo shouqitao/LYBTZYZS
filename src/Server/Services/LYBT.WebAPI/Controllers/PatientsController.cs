@@ -53,7 +53,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.GetPagedAsync(page, pageSize, keyword, filterDisabled);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "查询失败");
+                return HandleResult(result);
             }
 
             return SuccessPaged(result.Data, "查询成功");
@@ -94,7 +94,7 @@ namespace LYBT.WebAPI.Controllers
             var entityResult = await _service.CreateEntityAsync(dto);
             if (!entityResult.IsSuccess || entityResult.Data == null)
             {
-                return ValidationFail(entityResult.ErrorMessage ?? "新增患者失败");
+                return HandleResult(entityResult);
             }
 
             var patientEntity = entityResult.Data;
@@ -128,7 +128,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     return NotFound(entityResult.ErrorMessage);
                 }
-                return ValidationFail(entityResult.ErrorMessage ?? "更新患者失败");
+                return HandleResult(entityResult);
             }
 
             var patientEntity = entityResult.Data;
@@ -157,8 +157,8 @@ namespace LYBT.WebAPI.Controllers
             if (!result.IsSuccess)
             {
                 // X7: 区分引用阻塞(422)和不存在(404)
-                if (result.ErrorMessage?.Contains("医案记录") == true)
-                    return BusinessFail(result.ErrorMessage ?? "无法删除，存在关联医案记录");
+                                if (result.ErrorMessage?.Contains("医案记录") == true)
+                                    return HandleResult(result);
                 return NotFound("患者不存在");
             }
 
@@ -183,7 +183,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.ToggleStatusAsync(id);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "状态切换失败");
+                return HandleResult<PatientDetailDto>(result);
             }
 
             LogOperation("切换患者状态", new { NewStatus = result.Data.Status }, id);
@@ -208,7 +208,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.RestoreAsync(id);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "恢复失败");
+                return HandleResult<PatientDetailDto>(result);
             }
 
             LogOperation("恢复患者", null, id);
@@ -234,7 +234,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.BatchDeleteAsync(dto.Ids);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量删除失败");
+                return HandleResult<BatchOperationResultDto>(result);
             }
 
             LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Data.Message }, null);
@@ -255,7 +255,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.CheckReferenceAsync(id);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "引用检查失败");
+                return HandleResult<PatientReferenceCheckDto>(result);
             }
             return Success(result.Data, "引用检查完成");
         }
@@ -282,9 +282,40 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.BatchCheckReferenceAsync(request.PatientIds);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量引用检查失败");
+                return HandleResult<List<PatientReferenceCheckDto>>(result);
             }
             return Success(result.Data, "批量引用检查完成");
+        }
+
+        // ========== Epic #1934 - 导出功能 ==========
+
+        /// <summary>
+        /// 导出患者导入模板
+        /// US-PAT-010: 导出功能
+        /// </summary>
+        [HttpGet("import-template")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
+        public async Task<IActionResult> ExportTemplate([FromQuery] int sampleRowCount = 5)
+        {
+            var config = new ExportTemplateDto
+            {
+                IncludeSampleData = sampleRowCount > 0,
+                SampleRowCount = sampleRowCount
+            };
+            var stream = await _service.ExportTemplateAsync(config);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者导入模板.xlsx");
+        }
+
+        /// <summary>
+        /// 导出患者数据
+        /// US-PAT-010: 导出功能
+        /// </summary>
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
+        public async Task<IActionResult> ExportPatients([FromQuery] string? keyword = null)
+        {
+            var stream = await _service.ExportPatientsAsync(keyword);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者数据.xlsx");
         }
     }
 }

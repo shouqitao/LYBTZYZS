@@ -178,11 +178,14 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     {
         if (SelectedRegistration is null) return;
 
+        var registrationId = SelectedRegistration.Id;
+        var patientId = SelectedRegistration.PatientId;
+
         try
         {
             SetBusy(true, "正在接诊...");
 
-            var result = await _registrationService.StartVisitAsync(SelectedRegistration.Id);
+            var result = await _registrationService.StartVisitAsync(registrationId);
             if (!result.Success || result.Data == Guid.Empty)
             {
                 await ShowErrorMessageAsync(result.Error ?? "接诊失败，请稍后重试");
@@ -190,13 +193,13 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
             }
 
             Logger.LogInformation("[REG-VM] 接诊成功: RegistrationId={Id}, MedicalCaseId={McId}",
-                SelectedRegistration.Id, result.Data);
+                registrationId, result.Data);
 
             // 刷新队列
             await LoadQueueAsync();
 
             // 获取患者详情（MedicalCaseWorkspace 需要完整 PatientDetailDto）
-            var patientResult = await _patientApi.GetPatientByIdAsync(SelectedRegistration.PatientId);
+            var patientResult = await _patientApi.GetPatientByIdAsync(patientId);
             if (!patientResult.Success || patientResult.Data == null)
             {
                 await ShowErrorMessageAsync("接诊成功，但无法获取患者信息，请手动打开医案");
@@ -215,7 +218,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "[REG-VM] 接诊失败: RegistrationId={Id}", SelectedRegistration.Id);
+            Logger.LogError(ex, "[REG-VM] 接诊失败: RegistrationId={Id}", registrationId);
             await ShowErrorMessageAsync($"接诊失败: {ex.Message}");
         }
         finally

@@ -234,6 +234,30 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
+        /// 处理非泛型Result返回值 - 用于Delete等无数据返回的操作
+        /// </summary>
+        protected IActionResult HandleResult(Result result, string successMessage = "操作成功")
+        {
+            if (result.IsSuccess)
+            {
+                return Success(successMessage);
+            }
+            return BusinessFail(result.ErrorMessage ?? "操作失败");
+        }
+
+        /// <summary>
+        /// 处理ServiceResult返回值 - 用于同步模块的ServiceResult<T>
+        /// </summary>
+        protected IActionResult HandleServiceResult<T>(ServiceResult<T> result, string successMessage = "操作成功")
+        {
+            if (result.IsSuccess)
+            {
+                return Success(result.Data!, successMessage);
+            }
+            return BusinessFail(result.ErrorMessage ?? "操作失败");
+        }
+
+        /// <summary>
         /// 处理分页Result返回值
         /// </summary>
         protected IActionResult HandlePagedResult<T>(Result<PagedResult<T>> result, string successMessage = "查询成功")

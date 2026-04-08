@@ -139,7 +139,7 @@ namespace LYBT.WebAPI.Controllers
                     ApiResponse<UserDetailDto>.CreateSuccess(result.Data, "创建成功"));
             }
 
-            return BusinessFail(result.ErrorMessage ?? "创建用户失败");
+            return HandleResult(result);
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace LYBT.WebAPI.Controllers
                 return Success(result.Data, "用户更新成功");
             }
 
-            return BusinessFail(result.ErrorMessage ?? "更新用户失败");
+            return HandleResult(result);
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace LYBT.WebAPI.Controllers
                 return Success(result.Data, "密码重置成功");
             }
 
-            return BusinessFail(result.ErrorMessage ?? "密码重置失败");
+            return HandleResult(result);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace LYBT.WebAPI.Controllers
                 return Success(result.Data, "个人资料修改成功");
             }
 
-            return BusinessFail(result.ErrorMessage ?? "个人资料修改失败");
+            return HandleResult(result);
         }
 
         /// <summary>
@@ -274,7 +274,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _userService.ToggleStatusAsync(id);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "状态切换失败");
+                return HandleResult(result);
             }
 
             LogOperation("切换用户状态", new { NewStatus = result.Data.Status }, id);
@@ -296,7 +296,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _userService.RestoreAsync(id);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "恢复失败");
+                return HandleResult(result);
             }
 
             LogOperation("恢复用户", null, id);
@@ -332,7 +332,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _userService.BatchDeleteAsync(dto.Ids, currentUserId);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量删除失败");
+                return HandleResult(result);
             }
 
             LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Data.Message }, null);
@@ -365,7 +365,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled, currentUserId);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量启用失败");
+                return HandleResult(result);
             }
 
             LogOperation("批量启用用户", new { Ids = dto.Ids, Result = result.Data.Message }, null);
@@ -397,7 +397,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled, currentUserId);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
+                return HandleResult(result);
             }
 
             LogOperation("批量禁用用户", new { Ids = dto.Ids, Result = result.Data.Message }, null);

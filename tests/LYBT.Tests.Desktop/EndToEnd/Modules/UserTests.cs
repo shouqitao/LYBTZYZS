@@ -1,4 +1,6 @@
 using FluentAssertions;
+using System.Threading;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -18,10 +20,21 @@ public class UserTests : WebApiE2ETestBase
         _output = output;
     }
 
+    private static int _counter = 0;
+    private static readonly object _lock = new();
+
     private static string GeneratePhoneNumber()
     {
-        var random = new Random();
-        return $"1{random.Next(3, 10)}{random.Next(100000000, 999999999):D9}";
+        int unique;
+        lock (_lock)
+        {
+            unique = Interlocked.Increment(ref _counter);
+        }
+        // 使用GUID确保唯一性: 1 + (3-9) + 9位GUID + 3位序列号
+        var guidPart = Guid.NewGuid().ToString("N")[..6];
+        var secondDigit = 3 + (unique % 7);
+        var suffix = (unique % 1000).ToString("D3");
+        return $"1{secondDigit}{guidPart}{suffix}";
     }
 
     private static UserInputDto CreateTestUserInput(string suffix = "") => new()

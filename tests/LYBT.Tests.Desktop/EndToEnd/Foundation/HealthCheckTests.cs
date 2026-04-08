@@ -58,7 +58,7 @@ public class HealthCheckTests : WebApiE2ETestBase
         
         var httpClient = new System.Net.Http.HttpClient
         {
-            BaseAddress = new System.Uri(Configuration["ApiBaseUrl"] ?? "http://localhost:5001")
+            BaseAddress = new System.Uri(Configuration["WebAPI:BaseUrl"] ?? "http://localhost:5001")
         };
         
         var response = await httpClient.GetAsync("/api/v1/health/ping");

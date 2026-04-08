@@ -222,6 +222,10 @@ public class RegistrationsController : BaseApiController
     /// 取消挂号
     /// US-REG-004: 仅 Receptionist 可操作，仅 Waiting 状态
     /// </summary>
+    /// <summary>
+    /// 取消挂号
+    /// US-REG-004: 仅 Receptionist 可操作，仅 Waiting 状态
+    /// </summary>
     [HttpPut("{id}/cancel")]
     [ProducesResponseType(typeof(ApiResponse), 200)]
     public async Task<IActionResult> Cancel(Guid id)
@@ -231,7 +235,8 @@ public class RegistrationsController : BaseApiController
         var result = await _registrationService.CancelAsync(id);
         if (!result.IsSuccess)
         {
-            return BusinessFail(result.ErrorMessage ?? "取消挂号失败");
+            // 使用 BusinessFail 处理非泛型 Result
+            return HandleResult(result);
         }
 
         LogOperation("取消挂号", null, id);

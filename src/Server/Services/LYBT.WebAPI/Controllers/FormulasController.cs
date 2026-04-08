@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Formulas.Interfaces;
@@ -95,7 +95,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.CreateAsync(dto, operatorId);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "新增验方失败");
+                return HandleResult(result);
             }
 
             LogOperation("新增验方成功", result.Data, result.Data.Id);
@@ -118,7 +118,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.UpdateAsync(id, dto);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "更新验方失败");
+                return HandleResult(result);
             }
 
             LogOperation("更新验方成功", result.Data, id);
@@ -168,7 +168,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "导入失败");
+                return HandleResult(result);
             }
 
             LogOperation("批量导入验方",
@@ -190,7 +190,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "获取待校验验方列表失败");
+                return HandleResult(result);
             }
 
             return Success(result.Data, $"查询成功，共{result.Data.Count}个待校验验方");
@@ -216,7 +216,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (!result.IsSuccess)
             {
-                return BusinessFail(result.ErrorMessage ?? "验证药材失败");
+                return HandleResult(result);
             }
 
             LogOperation("验证验方药材",
@@ -245,7 +245,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.ToggleStatusAsync(id);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "状态切换失败");
+                return HandleResult<FormulaDetailDto>(result);
             }
 
             LogOperation("切换验方状态", new { NewStatus = result.Data.Status }, id);
@@ -270,7 +270,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.RestoreAsync(id);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "恢复失败");
+                return HandleResult<FormulaDetailDto>(result);
             }
 
             LogOperation("恢复验方", null, id);
@@ -293,7 +293,7 @@ namespace LYBT.WebAPI.Controllers
 
             var result = await _service.BatchDeleteAsync(dto.Ids);
             if (!result.IsSuccess || result.Data == null)
-                return BusinessFail(result.ErrorMessage ?? "批量删除失败");
+                return HandleResult<BatchOperationResultDto>(result);
 
             LogOperation("批量删除方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
@@ -316,7 +316,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量启用失败");
+                return HandleResult<BatchOperationResultDto>(result);
             }
 
             LogOperation("批量启用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
@@ -340,11 +340,37 @@ namespace LYBT.WebAPI.Controllers
             var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量禁用失败");
+                return HandleResult<BatchOperationResultDto>(result);
             }
 
             LogOperation("批量禁用方剂", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
+        }
+
+        // ========== Issue #1166 - 导出功能 ==========
+
+        /// <summary>
+        /// 导出验方数据
+        /// US-FORM-010: 导出功能
+        /// </summary>
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
+        public async Task<IActionResult> ExportFormulas([FromQuery] string? category = null)
+        {
+            var stream = await _importExportService.ExportAsync(category);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方数据.xlsx");
+        }
+
+        /// <summary>
+        /// 导出验方导入模板
+        /// US-FORM-011: 导出模板
+        /// </summary>
+        [HttpGet("import-template")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
+        public IActionResult ExportTemplate()
+        {
+            var stream = _importExportService.GenerateImportTemplate();
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方导入模板.xlsx");
         }
     }
 }

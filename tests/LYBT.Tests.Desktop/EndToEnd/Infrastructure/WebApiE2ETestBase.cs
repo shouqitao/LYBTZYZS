@@ -3,6 +3,8 @@ using System.Net.Http.Headers;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,16 +12,11 @@ using Refit;
 
 namespace LYBT.Tests.Desktop.EndToEnd.Infrastructure;
 
-/// <summary>
-/// E2E 测试基类 - 连接真实 WebAPI
-/// 
-/// 设计原则：
-/// - 每个测试类继承此类，获得配置好的 HTTP Client
-/// - 自动处理 JWT Token 获取和刷新
-/// - 支持测试之间的依赖（通过测试顺序控制）
-/// </summary>
-public abstract class WebApiE2ETestBase : IDisposable
+public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
 {
+    // 序列化登录调用，防止并发登录导致409 Conflict
+    private static readonly SemaphoreSlim _loginSemaphore = new(1, 1);
+
     protected IServiceProvider ServiceProvider { get; }
     protected IConfiguration Configuration { get; }
     protected ILogger<WebApiE2ETestBase> Logger { get; }
@@ -39,6 +36,9 @@ public abstract class WebApiE2ETestBase : IDisposable
     public string? AccessToken { get; private set; }
     protected string? RefreshToken { get; private set; }
     protected DateTime? TokenExpiresAt { get; private set; }
+    protected LoginResponse? CurrentUser { get; private set; }
+
+    protected TestDataTracker DataTracker { get; }
 
     protected WebApiE2ETestBase()
     {
@@ -72,70 +72,173 @@ public abstract class WebApiE2ETestBase : IDisposable
         MedicalCaseApi = ServiceProvider.GetRequiredService<IMedicalCaseApi>();
         SyncApi = ServiceProvider.GetRequiredService<ISyncApi>();
         RegistrationApi = ServiceProvider.GetRequiredService<IRegistrationApi>();
+        
+        DataTracker = new TestDataTracker(ServiceProvider, Logger);
     }
 
-    /// <summary>
-    /// 以指定用户身份登录
-    /// </summary>
     protected async Task<LoginResponse> LoginAsAsync(string username, string password)
     {
-        Logger.LogInformation("Logging in as {Username}", username);
-        
-        var response = await AuthApi.LoginAsync(new LoginRequest
+        await _loginSemaphore.WaitAsync();
+        try
         {
-            UserName = username,
-            Password = password
-        });
-        
-        if (!response.Success || response.Data == null)
-        {
-            throw new InvalidOperationException($"Login failed for {username}: {response.Message}");
+            Logger.LogInformation("Logging in as {Username}", username);
+            
+            var response = await AuthApi.LoginAsync(new LoginRequest
+            {
+                UserName = username,
+                Password = password
+            });
+            
+            if (!response.Success || response.Data == null)
+            {
+                throw new InvalidOperationException($"Login failed for {username}: {response.Message}");
+            }
+            
+            AccessToken = response.Data.Token;
+            RefreshToken = response.Data.RefreshToken;
+            TokenExpiresAt = response.Data.ExpiresAt;
+            CurrentUser = response.Data;
+            TokenHolderInstance.AccessToken = AccessToken;
+            
+            Logger.LogInformation("Login successful for {Username}, token expires at {ExpiresAt}", username, TokenExpiresAt);
+            
+            return response.Data;
         }
-        
-        AccessToken = response.Data.Token;
-        RefreshToken = response.Data.RefreshToken;
-        TokenExpiresAt = response.Data.ExpiresAt;
-        TokenHolderInstance.AccessToken = AccessToken;
-        
-        Logger.LogInformation("Login successful for {Username}, token expires at {ExpiresAt}", username, TokenExpiresAt);
-        
-        return response.Data;
+        finally
+        {
+            _loginSemaphore.Release();
+        }
     }
 
-    /// <summary>
-    /// 执行 sysadmin 登录，获取 JWT Token
-    /// </summary>
     protected async Task<LoginResponse> LoginAsSysadminAsync()
     {
-        var username = Configuration["TestCredentials:Username"]!;
-        var password = Configuration["TestCredentials:Password"]!;
-        
-        Logger.LogInformation("Logging in as {Username}", username);
-        
-        var response = await AuthApi.LoginAsync(new LoginRequest
+        await _loginSemaphore.WaitAsync();
+        try
         {
-            UserName = username,
-            Password = password
-        });
-        
-        if (!response.Success || response.Data == null)
-        {
-            throw new InvalidOperationException($"Login failed: {response.Message}");
+            var username = Configuration["TestCredentials:Username"]!;
+            var password = Configuration["TestCredentials:Password"]!;
+            
+            Logger.LogInformation("Logging in as {Username}", username);
+            
+            var response = await AuthApi.LoginAsync(new LoginRequest
+            {
+                UserName = username,
+                Password = password
+            });
+            
+            if (!response.Success || response.Data == null)
+            {
+                throw new InvalidOperationException($"Login failed: {response.Message}");
+            }
+            
+            AccessToken = response.Data.Token;
+            RefreshToken = response.Data.RefreshToken;
+            TokenExpiresAt = response.Data.ExpiresAt;
+            CurrentUser = response.Data;
+            TokenHolderInstance.AccessToken = AccessToken;
+            
+            Logger.LogInformation("Login successful, token expires at {ExpiresAt}", TokenExpiresAt);
+            
+            return response.Data;
         }
-        
-        AccessToken = response.Data.Token;
-        RefreshToken = response.Data.RefreshToken;
-        TokenExpiresAt = response.Data.ExpiresAt;
-        TokenHolderInstance.AccessToken = AccessToken;
-        
-        Logger.LogInformation("Login successful, token expires at {ExpiresAt}", TokenExpiresAt);
-        
-        return response.Data;
+        finally
+        {
+            _loginSemaphore.Release();
+        }
+    }
+
+    private readonly HashSet<string> _createdUsers = new();
+
+    /// <summary>
+    /// Login as Admin. Auto-creates the user if it doesn't exist.
+    /// </summary>
+    protected async Task<LoginResponse> LoginAsAdminAsync()
+    {
+        return await LoginOrCreateUserAsync(
+            username: "admin",
+            password: "AdminPass123!",
+            realName: "测试管理员",
+            role: UserRole.Admin);
     }
 
     /// <summary>
-    /// 创建带认证 Header 的 HTTP Client（用于手动请求）
+    /// Login as Doctor. Auto-creates the user if it doesn't exist.
     /// </summary>
+    protected async Task<LoginResponse> LoginAsDoctorAsync()
+    {
+        return await LoginOrCreateUserAsync(
+            username: "doctor",
+            password: "DoctorPass123!",
+            realName: "测试医生",
+            role: UserRole.Doctor);
+    }
+
+    /// <summary>
+    /// Login as Receptionist. Auto-creates the user if it doesn't exist.
+    /// </summary>
+    protected async Task<LoginResponse> LoginAsReceptionistAsync()
+    {
+        return await LoginOrCreateUserAsync(
+            username: "receptionist",
+            password: "ReceptionistPass123!",
+            realName: "测试前台",
+            role: UserRole.Receptionist);
+    }
+
+    /// <summary>
+    /// Attempts login first; if user doesn't exist (401), creates it via sysadmin then retries.
+    /// </summary>
+    private async Task<LoginResponse> LoginOrCreateUserAsync(string username, string password, string realName, UserRole role)
+    {
+        // Try login first
+        try
+        {
+            return await LoginAsAsync(username, password);
+        }
+        catch (Exception)
+        {
+            // User might not exist, try to create it
+            Logger.LogInformation("Login failed for {Username}, attempting to create user", username);
+        }
+
+        // Login as sysadmin to create the user
+        await LoginAsSysadminAsync();
+
+        // Check if user already exists (maybe password wrong)
+        if (!_createdUsers.Contains(username))
+        {
+            try
+            {
+                var createResponse = await UserApi.CreateUserAsync(new UserInputDto
+                {
+                    UserName = username,
+                    Password = password,
+                    ConfirmPassword = password,
+                    RealName = realName,
+                    Role = role,
+                    Remark = "E2E测试自动创建"
+                });
+
+                if (createResponse.Success)
+                {
+                    _createdUsers.Add(username);
+                    Logger.LogInformation("Created test user: {Username} with role {Role}", username, role);
+                }
+                else
+                {
+                    Logger.LogWarning("Failed to create user {Username}: {Message}", username, createResponse.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Exception creating user {Username}, may already exist", username);
+            }
+        }
+
+        // Now try login again as the target user
+        return await LoginAsAsync(username, password);
+    }
+
     protected HttpClient CreateAuthenticatedClient()
     {
         if (string.IsNullOrEmpty(AccessToken))
@@ -170,9 +273,6 @@ public abstract class WebApiE2ETestBase : IDisposable
         return RestService.For<IAuthApi>(client, CreateRefitSettings());
     }
 
-    /// <summary>
-    /// 获取基础 URL
-    /// </summary>
     protected string GetBaseUrl()
     {
         return Configuration["WebAPI:BaseUrl"]!;
@@ -264,7 +364,16 @@ public abstract class WebApiE2ETestBase : IDisposable
 
     public virtual void Dispose()
     {
-        // 清理资源
+        if (ServiceProvider is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
+
+    public virtual async ValueTask DisposeAsync()
+    {
+        await DataTracker.DisposeAsync();
+        
         if (ServiceProvider is IDisposable disposable)
         {
             disposable.Dispose();

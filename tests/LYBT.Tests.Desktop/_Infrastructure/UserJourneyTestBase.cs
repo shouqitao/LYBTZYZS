@@ -91,6 +91,8 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
     {
         var mock = Substitute.For<IViewModelServices>();
         var loggerFactory = Substitute.For<ILoggerFactory>();
+        var logger = Substitute.For<ILogger>();
+        loggerFactory.CreateLogger(default!).ReturnsForAnyArgs(logger);
         var eventAggregator = Substitute.For<IEventAggregator>();
         var regionManager = Substitute.For<IRegionManager>();
         var sessionManager = Substitute.For<ISessionManager>();
@@ -105,6 +107,7 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
         mock.UserNotificationService.Returns(userNotificationService);
         mock.CommonDialogService.Returns(commonDialogService);
         mock.RoleRegistry.Returns(roleRegistry);
+        mock.UiThreadDispatcher.Returns(Substitute.For<IUiThreadDispatcher>());
 
         return mock;
     }
@@ -256,6 +259,8 @@ public abstract class UserJourneyTestBaseShared : IDisposable
     {
         var mock = Substitute.For<IViewModelServices>();
         var loggerFactory = Substitute.For<ILoggerFactory>();
+        var logger = Substitute.For<ILogger>();
+        loggerFactory.CreateLogger(default!).ReturnsForAnyArgs(logger);
         var eventAggregator = Substitute.For<IEventAggregator>();
         var regionManager = Substitute.For<IRegionManager>();
         var sessionManager = Substitute.For<ISessionManager>();
@@ -270,6 +275,7 @@ public abstract class UserJourneyTestBaseShared : IDisposable
         mock.UserNotificationService.Returns(userNotificationService);
         mock.CommonDialogService.Returns(commonDialogService);
         mock.RoleRegistry.Returns(roleRegistry);
+        mock.UiThreadDispatcher.Returns(Substitute.For<IUiThreadDispatcher>());
 
         return mock;
     }

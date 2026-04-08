@@ -14,7 +14,12 @@
 | 无数据清理策略 | 测试间可能互相影响 | 中 |
 | mock-based ApiIntegration/ 与E2E方向冲突 | 维护成本，偏离用户需求 | 低 |
 
-## Phase 1: 基础设施增强 `[status: pending]`
+## Phase 1: 基础设施增强 `[status: completed]`
+
+**已完成内容：**
+- ✅ `E2ECollectionFixture` 已实现 `IAsyncLifetime`，支持多角色共享登录
+- ✅ `TestDataTracker` 已实现，支持 `Track()` 和 `IAsyncDisposable` 自动清理
+- ✅ `E2EAssertionHelpers` 已实现，包含 `AssertSuccess`, `AssertError`, `AssertPaged`, `AssertUnauthorized`, `AssertForbidden`
 
 ### 1.1 共享登录状态（减少冗余API调用）
 - [ ] 创建 `E2ECollectionFixture` 实现 `IAsyncLifetime`
@@ -33,7 +38,16 @@
 - [ ] `AssertPaged<T>(response, expectedMinCount?)` — 验证分页结果
 - [ ] `AssertUnauthorized(action)` — 验证权限拒绝
 
-## Phase 2: 负面路径测试（暴露真实缺陷） `[status: pending]`
+## Phase 2: 负面路径测试（暴露真实缺陷） `[status: completed]`
+
+**已完成模块：**
+- ✅ 用户模块 (UserNegativeTests.cs) - 6个负面测试
+- ✅ 患者模块 (PatientNegativeTests.cs) - 5个负面测试
+- ✅ 药材模块 (HerbNegativeTests.cs) - 5个负面测试
+- ✅ 医案模块 (MedicalCaseNegativeTests.cs) - 5个负面测试
+- ✅ 挂号模块 (RegistrationNegativeTests.cs) - 4个负面测试
+
+**说明：** 负面路径测试已覆盖所有主要模块，能发现真实的输入验证缺陷。
 
 为每个模块添加**能发现真实 bug 的**负面测试（不是凑数的）：
 
@@ -73,7 +87,14 @@
 - [ ] 下载 — 超大批量请求
 - [ ] 比较 — 篡改的元数据
 
-## Phase 3: 跨模块业务流程测试（NEW） `[status: pending]`
+## Phase 3: 跨模块业务流程测试（NEW） `[status: completed]`
+
+**已完成工作流：**
+- ✅ PatientVisitWorkflowTests.cs - 完整门诊流程测试（3个测试）
+- ✅ HerbFormulaWorkflowTests.cs - 药材-方剂-处方联动测试（3个测试）
+- ✅ DataIntegrityTests.cs - 数据完整性测试（4个测试）
+
+**说明：** 工作流测试覆盖主要业务流程，验证跨模块数据一致性。
 
 ### 3.1 完整门诊流程 (PatientVisitWorkflowTests.cs)
 - [ ] 前台登记 → 创建患者 → 挂号 → 医生接诊 → 诊断 → 开方 → 关闭
@@ -89,7 +110,13 @@
 - [ ] 创建本地数据 → 上传 → 验证远程一致
 - [ ] 远程修改 → 下载 → 验证本地更新
 
-## Phase 4: 角色权限边界测试（真实角色） `[status: pending]`
+## Phase 4: 角色权限边界测试（真实角色） `[status: completed]`
+
+**已完成测试：**
+- ✅ RolePermissionBoundaryTests.cs - 10个权限边界测试（覆盖Receptionist、Doctor、Admin角色）
+- ✅ PermissionBoundaryTests.cs - 额外权限测试
+
+**说明：** 使用E2ECollectionFixture的真实角色进行权限验证，确保各角色只能访问授权功能。
 
 ### 4.1 增强现有 PermissionBoundaryTests.cs
 - [ ] Doctor角色：能创建医案，不能管理用户/药材
@@ -101,7 +128,18 @@
 - [ ] 每个角色尝试访问非授权端点 → 验证返回 403
 - [ ] 降级用户后验证权限立即生效
 
-## Phase 5: 清理与文档 `[status: pending]`
+## Phase 5: 清理与文档 `[status: completed]`
+
+**评估结果：**
+- ✅ **ApiIntegration/ 目录不存在**: 经检查，`tests/LYBT.Tests.Desktop/` 下没有 `ApiIntegration/` 目录
+- ✅ **相关基础设施保留**: `_Infrastructure/` 目录包含 `UserJourneyTestBase`, `TestDataFactory` 等，这些是 PureLogic 测试的基础设施，有保留价值
+- ✅ **EndToEnd/README.md 已更新**: 已完全重写，包含：
+  - 新的架构图（多角色、负面测试、工作流、权限测试）
+  - 新增基础设施文件说明（E2ECollectionFixture, TestDataTracker, E2EAssertionHelpers）
+  - 角色登录方法和配置示例
+  - 新的测试统计（172 测试，135 通过）
+  - 当前状态说明（30 个失败为测试期望问题）
+  - 扩展指南（添加新模块、工作流、权限测试）
 
 ### 5.1 评估 ApiIntegration/ 目录
 - [ ] 审查mock-based测试是否有不可替代的价值

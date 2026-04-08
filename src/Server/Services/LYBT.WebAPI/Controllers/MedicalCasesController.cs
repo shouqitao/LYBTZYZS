@@ -197,7 +197,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _facade.BatchDeleteAsync(dto.Ids, operatorId, isAdmin);
             if (!result.IsSuccess || result.Data == null)
             {
-                return BusinessFail(result.ErrorMessage ?? "批量删除失败");
+                return HandleResult(result);
             }
 
             LogOperation("批量删除医案", new { Ids = dto.Ids, Result = result.Data.Message }, null);

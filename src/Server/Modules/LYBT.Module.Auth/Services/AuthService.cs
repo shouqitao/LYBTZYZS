@@ -192,6 +192,10 @@ public class AuthService : IAuthService
                     userDto.Id, oldTokens.Count);
             }
         }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("数据已被其他用户修改"))
+        {
+            _logger.LogWarning("[SVC] Auth.Login -> ConcurrencyOnTokenRevoke - UserId={UserId}, continuing", userDto.Id);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[SVC] Auth.Login -> RevokeOldTokensFailed - UserId={UserId}", userDto.Id);
@@ -211,6 +215,10 @@ public class AuthService : IAuthService
                 _logger.LogInformation("[SVC] Auth.Login -> RevokedOldAutoTokens - UserId={UserId} Count={Count}",
                     userDto.Id, oldAutoTokens.Count);
             }
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("数据已被其他用户修改"))
+        {
+            _logger.LogWarning("[SVC] Auth.Login -> ConcurrencyOnAutoTokenRevoke - UserId={UserId}, continuing", userDto.Id);
         }
         catch (Exception ex)
         {

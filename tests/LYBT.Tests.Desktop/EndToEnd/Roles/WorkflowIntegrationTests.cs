@@ -1,4 +1,6 @@
 using FluentAssertions;
+using System.Threading;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
@@ -18,10 +20,14 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         _output = output;
     }
 
+    private static int _counter = 0;
+
     private static string GenerateIdNumber()
     {
-        var random = new Random();
-        var body = $"110101199001{random.Next(10, 28):D2}{random.Next(100, 999)}";
+        var unique = Interlocked.Increment(ref _counter);
+        var day = 10 + (unique % 18);
+        var seq = 100 + (unique % 899);
+        var body = $"110101199001{day:D2}{seq:D3}";
         int[] weights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
         char[] checkDigits = { '1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2' };
         var sum = 0;
@@ -31,8 +37,8 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
 
     private static string GeneratePhoneNumber()
     {
-        var random = new Random();
-        return $"1{random.Next(3, 10)}{random.Next(100000000, 999999999):D9}";
+        var unique = Interlocked.Increment(ref _counter);
+        return $"1{3 + (unique % 7)}{unique:D9}";
     }
 
     [Fact]
@@ -41,7 +47,14 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
     [Trait("Phase", "Integration")]
     public async Task ReceptionistToDoctor_CreateRegistrationAndStartVisit()
     {
-        await LoginAsSysadminAsync();
+        // Step 0: Get doctor info first (need a valid doctor for registration)
+        await LoginAsDoctorAsync();
+        var doctorId = CurrentUser!.User.Id;
+        var doctorName = CurrentUser.User.RealName;
+        _output.WriteLine($"[Workflow] Using doctor: {doctorName} ({doctorId})");
+
+        // Step 1: Login as Receptionist and create a patient
+        await LoginAsReceptionistAsync();
 
         // Step 1: Create a patient (as Receptionist/Admin)
         var patientInput = new PatientInputDto
@@ -62,6 +75,9 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         var registrationInput = new RegistrationInputDto
         {
             PatientId = patientId,
+            PatientName = patientResponse.Data!.Name,
+            DoctorId = doctorId,
+            DoctorName = doctorName,
             Remark = "工作流测试挂号"
         };
         var registrationResponse = await RegistrationApi.CreateAsync(registrationInput);
@@ -75,7 +91,8 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         queueResponse.Data.Should().NotBeNull();
         _output.WriteLine($"[Workflow] Queue has {queueResponse.Data!.Count} items");
 
-        // Step 4: Start visit (as Doctor)
+        // Step 4: Login as Doctor and start visit
+        await LoginAsDoctorAsync();
         var startVisitResponse = await RegistrationApi.StartVisitAsync(registrationId);
         startVisitResponse.Success.Should().BeTrue(startVisitResponse.Message);
         _output.WriteLine($"[Workflow] Started visit for registration: {registrationId}");
@@ -95,8 +112,13 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
     [Trait("Phase", "Integration")]
     public async Task ReceptionistToDoctor_CancelRegistration()
     {
-        await LoginAsSysadminAsync();
+        // Step 0: Get doctor info first
+        await LoginAsDoctorAsync();
+        var doctorId = CurrentUser!.User.Id;
+        var doctorName = CurrentUser.User.RealName;
 
+        // Step 1: Login as Receptionist and create a patient
+        await LoginAsReceptionistAsync();
         // Step 1: Create a patient
         var patientInput = new PatientInputDto
         {
@@ -115,6 +137,9 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         var registrationInput = new RegistrationInputDto
         {
             PatientId = patientId,
+            PatientName = patientResponse.Data!.Name,
+            DoctorId = doctorId,
+            DoctorName = doctorName,
             Remark = "取消测试挂号"
         };
         var registrationResponse = await RegistrationApi.CreateAsync(registrationInput);
@@ -142,8 +167,13 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
     [Trait("Phase", "Integration")]
     public async Task FullLifecycle_PatientRegistrationToMedicalCase()
     {
-        await LoginAsSysadminAsync();
+        // Step 0: Get doctor info first
+        await LoginAsDoctorAsync();
+        var doctorId = CurrentUser!.User.Id;
+        var doctorName = CurrentUser.User.RealName;
 
+        // Step 1: Login as Receptionist and create patient
+        await LoginAsReceptionistAsync();
         // Step 1: Create patient
         var patientInput = new PatientInputDto
         {
@@ -163,14 +193,17 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         var registrationInput = new RegistrationInputDto
         {
             PatientId = patientId,
+            PatientName = patientResponse.Data!.Name,
+            DoctorId = doctorId,
+            DoctorName = doctorName,
             Remark = "完整流程测试"
         };
         var registrationResponse = await RegistrationApi.CreateAsync(registrationInput);
         registrationResponse.Success.Should().BeTrue(registrationResponse.Message);
         var registrationId = registrationResponse.Data!.Id;
         _output.WriteLine($"[Lifecycle] Created registration: {registrationId}");
-
-        // Step 3: Start visit
+        await LoginAsDoctorAsync();
+        _output.WriteLine($"[Lifecycle] Logged in as doctor, Role={CurrentUser?.User.Role}");
         var startVisitResponse = await RegistrationApi.StartVisitAsync(registrationId);
         startVisitResponse.Success.Should().BeTrue(startVisitResponse.Message);
         _output.WriteLine($"[Lifecycle] Started visit");
@@ -179,7 +212,7 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         var medicalCaseInput = new LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseInputDto
         {
             PatientId = patientId,
-            UserId = Guid.Parse("cddaf790-f68e-4dc9-833e-05188310ee07"), // sysadmin ID
+            UserId = doctorId,
             Consultation = new LYBT.Shared.Models.Contracts.Consultation.ConsultationInputDto
             {
                 PresentIllness = "头痛发热",
