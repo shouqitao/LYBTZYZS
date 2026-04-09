@@ -42,7 +42,7 @@
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="用户名"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
-                        <TextBox Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="1" Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  IsReadOnly="{Binding IsUserNameReadOnly}"
                                  MinHeight="44"
@@ -55,7 +55,7 @@
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="真实姓名"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
-                        <TextBox Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="2" Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -66,7 +66,7 @@
                     <!-- 第二行：拼音码、手机号码 -->
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="拼音码（可修正）" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="3" Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"
@@ -75,7 +75,7 @@
 
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="手机号码" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="4" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -86,7 +86,7 @@
                     <!-- 第三行：邮箱地址、用户角色 -->
                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="邮箱地址" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="5" Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -98,7 +98,7 @@
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="用户角色"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
-                        <ComboBox SelectedItem="{Binding Role, Mode=TwoWay}"
+                        <ComboBox TabIndex="6" SelectedItem="{Binding Role, Mode=TwoWay}"
                                   ItemsSource="{Binding RoleOptions}"
                                   MinHeight="44"
                                   Padding="12,10">
@@ -114,7 +114,7 @@
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20"
                                 Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="账户状态" Style="{DynamicResource FormLabelStyle}"/>
-                        <ComboBox SelectedItem="{Binding Status, Mode=TwoWay}"
+                        <ComboBox TabIndex="7" SelectedItem="{Binding Status, Mode=TwoWay}"
                                   ItemsSource="{Binding StatusOptions}"
                                   MinHeight="44"
                                   Padding="12,10">
@@ -126,6 +126,18 @@
                         </ComboBox>
                     </StackPanel>
                 </Grid>
+            </controls:InfoCard.Content>
+        </controls:InfoCard>
+
+        <!-- 备注卡片 -->
+        <controls:InfoCard Title="备注">
+            <controls:InfoCard.Content>
+                <TextBox TabIndex="8" Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{DynamicResource EditableTextBoxStyle}"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         MinHeight="60"
+                         Padding="12,10"/>
             </controls:InfoCard.Content>
         </controls:InfoCard>
     </StackPanel>

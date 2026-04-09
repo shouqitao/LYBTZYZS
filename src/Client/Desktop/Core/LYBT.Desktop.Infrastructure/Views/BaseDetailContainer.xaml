@@ -50,11 +50,11 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <!-- 卡片阴影 -->
-            <DropShadowEffect x:Key="CardShadow"
-                              BlurRadius="16"
-                              ShadowDepth="2"
-                              Opacity="0.08"
-                              Color="#000000"/>
+             <DropShadowEffect x:Key="CardShadow"
+                               BlurRadius="16"
+                               ShadowDepth="2"
+                               Opacity="0.08"
+                              Color="Black"/>
 
             <!-- 过渡动画时长 -->
             <Duration x:Key="TransitionDuration">0:0:0.25</Duration>

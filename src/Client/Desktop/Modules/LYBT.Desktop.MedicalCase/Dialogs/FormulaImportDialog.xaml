@@ -23,8 +23,8 @@
     <UserControl.Resources>
         <!-- 验方卡片样式 -->
         <Style x:Key="FormulaCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="Background" Value="{StaticResource LYBTBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Margin" Value="0,0,0,8" />
@@ -32,11 +32,11 @@
             <Setter Property="Cursor" Value="Hand" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F5F9FF" />
+                    <Setter Property="Background" Value="{StaticResource LightInfoBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                 </Trigger>
                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                    <Setter Property="Background" Value="#E3F2FD" />
+                    <Setter Property="Background" Value="{StaticResource LightInfoBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                     <Setter Property="BorderThickness" Value="2" />
                 </DataTrigger>
@@ -55,7 +55,7 @@
 
         <!-- Row 0: 标题栏 -->
         <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,12">
-            <TextBlock Text="从经验方导入" Foreground="White" FontSize="18" FontWeight="Bold" />
+            <TextBlock Text="从经验方导入" Foreground="{StaticResource LYBTBackgroundBrush}" FontSize="18" FontWeight="Bold" />
         </Border>
 
         <!-- Row 1: 内容区域 - 左右双栏布局 -->
@@ -67,8 +67,8 @@
 
             <!-- 左栏: 搜索 + 分类筛选 + 验方列表 -->
             <Border Grid.Column="0"
-                    Background="#F8F9FA"
-                    BorderBrush="#E0E0E0"
+                    Background="{StaticResource LYBTSurfaceBrush}"
+                    BorderBrush="{StaticResource BorderLightBrush}"
                     BorderThickness="0,0,1,0">
                 <Grid Margin="15">
                     <Grid.RowDefinitions>
@@ -83,13 +83,13 @@
                         <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                  Padding="10,8"
                                  FontSize="13"
-                                 BorderBrush="#D0D0D0"
-                                 BorderThickness="1" />
+                                  BorderBrush="{StaticResource BorderMediumBrush}"
+                                  BorderThickness="1" />
                         <TextBlock Text="搜索验方名称、拼音码..."
                                    IsHitTestVisible="False"
-                                   Foreground="#999"
-                                   Padding="12,10"
-                                   FontSize="13">
+                                    Foreground="{StaticResource LYBTTextDisabledBrush}"
+                                    Padding="12,10"
+                                    FontSize="13">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -115,8 +115,8 @@
                         <TextBlock Grid.Column="0"
                                    Text="分类:"
                                    VerticalAlignment="Center"
-                                   FontSize="13"
-                                   Margin="0,0,8,0" />
+                                    FontSize="13"
+                                    Margin="0,0,8,0" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding Categories}"
                                   SelectedItem="{Binding SelectedCategory}"
@@ -168,12 +168,12 @@
                                                        FontWeight="SemiBold"
                                                        TextTrimming="CharacterEllipsis" />
                                             <Border Grid.Column="1"
-                                                    Background="#E8F5E9"
+                                                Background="{StaticResource LightSuccessBrush}"
                                                     CornerRadius="10"
                                                     Padding="8,2">
-                                                <TextBlock Text="{Binding HerbCount, StringFormat={}{0}味}"
-                                                           FontSize="11"
-                                                           Foreground="#4CAF50" />
+<TextBlock Text="{Binding HerbCount, StringFormat={}{0}味}"
+                                                            FontSize="12"
+                                                            Foreground="{StaticResource LYBTSuccessBrush}" />
                                             </Border>
                                         </Grid>
 
@@ -181,7 +181,7 @@
                                         <TextBlock Grid.Row="1"
                                                    Text="{Binding Indications, TargetNullValue=暂无适应症}"
                                                    FontSize="12"
-                                                   Foreground="#666"
+                                                   Foreground="{StaticResource LYBTTextSecondaryBrush}"
                                                    TextTrimming="CharacterEllipsis"
                                                    MaxHeight="36"
                                                    Margin="0,6,0,0" />
@@ -195,7 +195,7 @@
                     <TextBlock Grid.Row="3"
                                Text="{Binding StatusMessage}"
                                FontSize="12"
-                               Foreground="#666"
+                               Foreground="{StaticResource LYBTTextSecondaryBrush}"
                                Margin="0,10,0,0" />
                 </Grid>
             </Border>
@@ -205,7 +205,7 @@
                 <!-- 无选中时的提示 -->
                 <TextBlock Text="请从左侧选择一个经验方"
                            FontSize="14"
-                           Foreground="#999"
+                           Foreground="{StaticResource LYBTTextDisabledBrush}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center">
                     <TextBlock.Style>
@@ -232,16 +232,16 @@
                 <!-- 加载状态提示 -->
                 <TextBlock Text="{Binding LoadingMessage}"
                            FontSize="12"
-                           Foreground="#999"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Bottom"
-                           Margin="0,0,0,10"
-                           Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                            Foreground="{StaticResource LYBTTextDisabledBrush}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,0,10"
+                            Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}" />
             </Grid>
         </Grid>
 
         <!-- Row 2: 按钮栏 -->
-        <Border Grid.Row="2" Background="#F5F5F5" Padding="20,12">
+        <Border Grid.Row="2" Background="{StaticResource LYBTSurfaceBrush}" Padding="20,12">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="确认导入"
@@ -250,7 +250,7 @@
                             Padding="12,8"
                             FontSize="14"
                             Background="{DynamicResource PrimaryBrush}"
-                            Foreground="White"
+                            Foreground="{StaticResource LYBTBackgroundBrush}"
                             Margin="0,0,12,0" />
                     <Button Content="取消"
                             Command="{Binding CancelCommand}"

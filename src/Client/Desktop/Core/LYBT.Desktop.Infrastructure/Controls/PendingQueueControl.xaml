@@ -28,18 +28,6 @@
         - 所有资源通过 App.xaml 全局加载，控件级别不再合并资源字典
         - 待诊状态颜色保留本地定义（控件特有）
     -->
-    <UserControl.Resources>
-        <!--  OpenSpec: optimize-medicalcase-ui - 待诊状态颜色（控件特有，保留本地定义）  -->
-        <SolidColorBrush x:Key="PendingWaitingBrush" Color="#E0E0E0" />
-        <SolidColorBrush x:Key="PendingInProgressBrush" Color="#4CAF50" />
-        <SolidColorBrush x:Key="PendingSuspendedBrush" Color="#FF9800" />
-        <SolidColorBrush x:Key="PendingWaitingTextBrush" Color="#666666" />
-        <SolidColorBrush x:Key="PendingInProgressTextBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="PendingSuspendedTextBrush" Color="#FFFFFF" />
-        <!--  OpenSpec: refactor-medicalcase-workspace Phase 5 - 挂起状态行背景  -->
-        <SolidColorBrush x:Key="PendingSuspendedRowBrush" Color="#FFF3E0" />
-    </UserControl.Resources>
-
     <!--  使用DynamicResource：Shell Design Tokens通过App级别加载  -->
     <Border
         Padding="15"
@@ -220,11 +208,11 @@
                                     CornerRadius="3">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="{StaticResource PendingWaitingBrush}" />
+                                            <Setter Property="Background" Value="{StaticResource BorderLightBrush}" />
                                             <Style.Triggers>
                                                 <!--  Active = 进行中  -->
                                                 <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Active}">
-                                                    <Setter Property="Background" Value="{StaticResource PendingInProgressBrush}" />
+                                                    <Setter Property="Background" Value="{StaticResource LYBTSuccessBrush}" />
                                                 </DataTrigger>
                                                 <!--  Suspended = 挂起/待诊 (默认灰色即可)  -->
                                             </Style.Triggers>
@@ -236,10 +224,10 @@
                                         Text="{Binding CaseStatus, Converter={x:Static converters:Cvt.EnumDesc}}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="{StaticResource PendingWaitingTextBrush}" />
+                                                <Setter Property="Foreground" Value="{StaticResource LYBTTextSecondaryBrush}" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Active}">
-                                                        <Setter Property="Foreground" Value="{StaticResource PendingInProgressTextBrush}" />
+                                                        <Setter Property="Foreground" Value="{StaticResource LYBTBackgroundBrush}" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -260,9 +248,9 @@
                         <Setter Property="Margin" Value="0" />
                         <Style.Triggers>
                             <!--  OpenSpec: optimize-medicalcase-ui - 挂起状态行背景 (Suspended)  -->
-                            <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Suspended}">
-                                <Setter Property="Background" Value="{StaticResource PendingSuspendedRowBrush}" />
-                            </DataTrigger>
+                                <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Suspended}">
+                                 <Setter Property="Background" Value="{StaticResource LightWarningBrush}" />
+                                </DataTrigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Background" Value="{DynamicResource LightPrimaryBrush}" />
                             </Trigger>

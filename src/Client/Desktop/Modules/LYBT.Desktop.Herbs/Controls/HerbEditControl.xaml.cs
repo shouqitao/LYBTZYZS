@@ -211,6 +211,32 @@ namespace LYBT.Desktop.Herbs.Controls
             set => SetValue(RemarkProperty, value);
         }
 
+        public static readonly DependencyProperty CategoryProperty =
+            DependencyProperty.Register(
+                nameof(Category),
+                typeof(string),
+                typeof(HerbEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string Category
+        {
+            get => (string)GetValue(CategoryProperty);
+            set => SetValue(CategoryProperty, value);
+        }
+
+        public static readonly DependencyProperty HerbPropertiesProperty =
+            DependencyProperty.Register(
+                nameof(HerbProperties),
+                typeof(string),
+                typeof(HerbEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string HerbProperties
+        {
+            get => (string)GetValue(HerbPropertiesProperty);
+            set => SetValue(HerbPropertiesProperty, value);
+        }
+
         /// <summary>
         /// 名称是否可编辑
         /// </summary>

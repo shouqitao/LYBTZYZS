@@ -1,7 +1,6 @@
 using FluentAssertions;
 using System.Threading;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Contracts.Users;
@@ -211,7 +210,7 @@ public class RegistrationTests : WebApiE2ETestBase
         var found = response.Data!.Any(r => r.Id == created.Id && r.Status == RegistrationStatus.Waiting);
         found.Should().BeTrue("队列中应包含刚创建的 Waiting 状态挂号");
 
-        _output.WriteLine($"队列查询成功，共 {response.Data.Count} 条记录");
+        _output.WriteLine($"队列查询成功，共 {response.Data!.Count} 条记录");
     }
 
     [Fact]
@@ -232,7 +231,7 @@ public class RegistrationTests : WebApiE2ETestBase
         response.Data.Should().NotBeNull();
         response.Data!.Should().OnlyContain(r => r.Status == RegistrationStatus.Waiting);
 
-        _output.WriteLine($"全部队列查询成功，共 {response.Data.Count} 条记录");
+        _output.WriteLine($"全部队列查询成功，共 {response.Data!.Count} 条记录");
     }
 
     [Fact]

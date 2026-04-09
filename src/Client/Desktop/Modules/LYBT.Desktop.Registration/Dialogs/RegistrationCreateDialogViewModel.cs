@@ -94,9 +94,9 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
 
             var input = new RegistrationInputDto
             {
-                PatientId = SelectedPatient.Id,
+                PatientId = SelectedPatient!.Id,
                 PatientName = SelectedPatient.Name,
-                DoctorId = SelectedDoctor.Id,
+                DoctorId = SelectedDoctor!.Id,
                 DoctorName = SelectedDoctor.RealName,
                 Source = RegistrationSource.Receptionist,
                 Remark = Remark

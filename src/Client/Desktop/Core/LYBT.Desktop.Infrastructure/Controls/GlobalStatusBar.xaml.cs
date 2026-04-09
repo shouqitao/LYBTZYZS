@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -8,7 +7,7 @@ using LYBT.Desktop.Infrastructure.Constants;
 namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>全局状态栏控件</summary>
-    public partial class GlobalStatusBar : UserControl, INotifyPropertyChanged
+    public partial class GlobalStatusBar : UserControl
     {
         public GlobalStatusBar() { InitializeComponent(); DataContext = this; }
 
@@ -31,9 +30,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
         public int OperationProgress { get => (int)GetValue(OperationProgressProperty); set => SetValue(OperationProgressProperty, value); }
         public string CurrentUserName { get => (string)GetValue(CurrentUserNameProperty); set => SetValue(CurrentUserNameProperty, value ?? string.Empty); }
         public string AppVersion { get => (string)GetValue(AppVersionProperty); set => SetValue(AppVersionProperty, value); }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     /// <summary>系统时间提供器</summary>

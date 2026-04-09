@@ -117,3 +117,72 @@ Always provide distinct oldString and newString values. Never use empty strings.
 
 ---
 
+## [ERR-20260408-001] lsp_diagnostics
+
+**Logged**: 2026-04-08T00:00:00+08:00
+**Priority**: low
+**Status**: pending
+**Area**: config
+
+### Summary
+No XAML language server is configured, so LSP diagnostics cannot be used for WPF resource files.
+
+### Error
+```
+Error: No LSP server configured for extension: .xaml
+Available servers: typescript, deno, vue, eslint, oxlint, biome, gopls, ruby-lsp, basedpyright, pyright...
+```
+
+### Context
+- Attempted to verify newly created XAML resource files with `lsp_diagnostics`
+- Target path: `src/Client/Desktop/Shell/Resources`
+
+### Suggested Fix
+Use an XAML-capable verifier (build/design-time compile, or a configured XAML language server) instead of LSP diagnostics.
+
+### Metadata
+- Reproducible: yes
+- Related Files: src/Client/Desktop/Shell/Resources/*.xaml
+
+---
+
+## [ERR-20260409-001] CommunityToolkit.Mvvm partial method cannot cross class boundaries
+
+**Logged**: 2026-04-09T09:00:00+08:00
+**Priority**: high
+**Status**: resolved
+**Area**: desktop
+
+### Summary
+`partial void OnErrorMessageChanged(string value)` in LoginViewModel fails with CS0759 because the source-generated partial method definition is in the base class CoreViewModelBase, not LoginViewModel.
+
+### Error
+```
+CS0759: 没有为分部方法"LoginViewModel.OnErrorMessageChanged(string)"的实现声明找到定义声明
+```
+
+### Context
+- CoreViewModelBase uses `[ObservableProperty] private string _errorMessage` which generates `partial void OnErrorMessageChanged(string)` in CoreViewModelBase
+- LoginViewModel (derived class) attempted to implement this partial method, but partial methods cannot cross class boundaries
+- Also attempted `[NotifyPropertyChangedFor("HasMessage")]` on CoreViewModelBase, but MVVMTK0015 fires because `HasMessage` is not defined in CoreViewModelBase
+
+### Suggested Fix
+Subscribe to `PropertyChanged` event in the derived class constructor:
+```csharp
+PropertyChanged += (s, e) =>
+{
+    if (e.PropertyName == nameof(ErrorMessage) || e.PropertyName == nameof(StatusMessage))
+        OnPropertyChanged(nameof(HasMessage));
+};
+```
+
+### Resolution
+- **Resolved**: 2026-04-09T09:15:00+08:00
+- **Notes**: PropertyChanged event subscription works across inheritance. `[NotifyPropertyChangedFor]` only works when the target property exists in the same class.
+
+### Metadata
+- Reproducible: yes
+- Related Files: src/Client/Desktop/Modules/LYBT.Desktop.Auth/ViewModels/LoginViewModel.cs, src/Client/Desktop/Core/LYBT.Desktop.Models/ViewModels/Base/CoreViewModelBase.cs
+- Tags: CommunityToolkit.Mvvm, partial, source-generator, WPF, PropertyChanged
+
+

@@ -53,7 +53,7 @@
 |------|------|
 | 设计/计划文档 | `docs/plans/` |
 | Claude AI 配置 | `CLAUDE.md` + `.claude/rules/` |
-| 解决方案文件 | `LYBT.All.sln` |
+| 解决方案文件 | `LYBTZYZS.sln` |
 
 ---
 

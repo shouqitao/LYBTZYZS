@@ -31,6 +31,11 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [DisplayName("分类")]
         public string? Category { get; set; }
 
+        /// &lt;summary&gt;药性（如：温、寒、平）&lt;/summary&gt;
+        [StringLength(100, ErrorMessage = "药性长度不能超过100个字符")]
+        [DisplayName("药性")]
+        public string? Properties { get; set; }
+
         /// &lt;summary&gt;产地&lt;/summary&gt;
         [StringLength(100, ErrorMessage = "产地长度不能超过100个字符")]
         [DisplayName("产地")]

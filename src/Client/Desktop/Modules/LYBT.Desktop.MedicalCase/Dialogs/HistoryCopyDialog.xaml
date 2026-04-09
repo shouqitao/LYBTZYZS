@@ -23,8 +23,8 @@
     <UserControl.Resources>
         <!-- 历史医案卡片样式 -->
         <Style x:Key="HistoryCaseCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="Background" Value="{StaticResource LYBTBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Margin" Value="0,0,0,8" />
@@ -32,11 +32,11 @@
             <Setter Property="Cursor" Value="Hand" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F5F9FF" />
+                    <Setter Property="Background" Value="{StaticResource LightInfoBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                 </Trigger>
                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                    <Setter Property="Background" Value="#E3F2FD" />
+                    <Setter Property="Background" Value="{StaticResource LightInfoBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                     <Setter Property="BorderThickness" Value="2" />
                 </DataTrigger>
@@ -54,10 +54,10 @@
         <!-- Row 0: 标题栏 -->
         <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,12">
             <Grid>
-                <TextBlock Text="从历史医案复制" Foreground="White" FontSize="18" FontWeight="Bold" />
+                <TextBlock Text="从历史医案复制" Foreground="{StaticResource LYBTBackgroundBrush}" FontSize="18" FontWeight="Bold" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBlock Text="当前患者: " Foreground="White" FontSize="14" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding PatientName}" Foreground="White" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBlock Text="当前患者: " Foreground="{StaticResource LYBTBackgroundBrush}" FontSize="14" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PatientName}" Foreground="{StaticResource LYBTBackgroundBrush}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -71,8 +71,8 @@
 
             <!-- 左栏: 搜索 + 时间筛选 + 历史医案卡片列表 -->
             <Border Grid.Column="0"
-                    Background="#F8F9FA"
-                    BorderBrush="#E0E0E0"
+                    Background="{StaticResource LYBTSurfaceBrush}"
+                    BorderBrush="{StaticResource BorderLightBrush}"
                     BorderThickness="0,0,1,0">
                 <Grid Margin="15">
                     <Grid.RowDefinitions>
@@ -94,8 +94,8 @@
                                    Text="{Binding ViewModeText}"
                                    FontSize="14"
                                    FontWeight="SemiBold"
-                                   Foreground="#333"
-                                   VerticalAlignment="Center" />
+                                    Foreground="{StaticResource LYBTTextPrimaryBrush}"
+                                    VerticalAlignment="Center" />
                         <Button Grid.Column="1"
                                 Command="{Binding ToggleAllPatientsCommand}"
                                 Padding="8,4"
@@ -121,15 +121,15 @@
                     <!-- 搜索框 -->
                     <Grid Grid.Row="1" Margin="0,0,0,10">
                         <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                 Padding="10,8"
-                                 FontSize="13"
-                                 BorderBrush="#D0D0D0"
-                                 BorderThickness="1" />
+                                  Padding="10,8"
+                                  FontSize="13"
+                                  BorderBrush="{StaticResource BorderMediumBrush}"
+                                  BorderThickness="1" />
                         <TextBlock Text="搜索患者姓名或诊断..."
                                    IsHitTestVisible="False"
-                                   Foreground="#999"
-                                   Padding="12,10"
-                                   FontSize="13">
+                                    Foreground="{StaticResource LYBTTextDisabledBrush}"
+                                    Padding="12,10"
+                                    FontSize="13">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -205,7 +205,7 @@
                                                        Text="{Binding PatientName}"
                                                        FontSize="13"
                                                        FontWeight="SemiBold"
-                                                       Foreground="#333" />
+                                                        Foreground="{StaticResource LYBTTextPrimaryBrush}" />
                                             <TextBlock Grid.Column="1"
                                                        Text="{Binding ConsultationDate, StringFormat={}{0:yyyy-MM-dd}}"
                                                        FontSize="12"
@@ -221,18 +221,18 @@
 
                                         <!-- 状态标签 -->
                                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                            <Border Background="#4CAF50"
-                                                    CornerRadius="3"
-                                                    Padding="6,2"
-                                                    Visibility="{Binding HasConsultation, Converter={x:Static converters:Cvt.BoolToVis}}">
-                                                <TextBlock Text="已诊疗" FontSize="10" Foreground="White" />
+                                            <Border Background="{StaticResource LYBTSuccessBrush}"
+                                                     CornerRadius="3"
+                                                     Padding="6,2"
+                                                     Visibility="{Binding HasConsultation, Converter={x:Static converters:Cvt.BoolToVis}}">
+                                                <TextBlock Text="已诊疗" FontSize="12" Foreground="{StaticResource LYBTBackgroundBrush}" />
                                             </Border>
-                                            <Border Background="#2196F3"
-                                                    CornerRadius="3"
-                                                    Padding="6,2"
-                                                    Margin="4,0,0,0"
-                                                    Visibility="{Binding HasPrescription, Converter={x:Static converters:Cvt.BoolToVis}}">
-                                                <TextBlock Text="已开方" FontSize="10" Foreground="White" />
+                                            <Border Background="{StaticResource LYBTInfoBrush}"
+                                                     CornerRadius="3"
+                                                     Padding="6,2"
+                                                     Margin="4,0,0,0"
+                                                     Visibility="{Binding HasPrescription, Converter={x:Static converters:Cvt.BoolToVis}}">
+                                                <TextBlock Text="已开方" FontSize="12" Foreground="{StaticResource LYBTBackgroundBrush}" />
                                             </Border>
                                         </StackPanel>
                                     </StackPanel>
@@ -251,16 +251,16 @@
                             Margin="0,8,0,0"
                             Cursor="Hand"
                             Background="Transparent"
-                            BorderBrush="#999"
-                            BorderThickness="1"
-                            Foreground="#666"
-                            Visibility="{Binding CanShowMoreCurrentPatient, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                             BorderBrush="{StaticResource LYBTTextDisabledBrush}"
+                             BorderThickness="1"
+                             Foreground="{StaticResource LYBTTextSecondaryBrush}"
+                             Visibility="{Binding CanShowMoreCurrentPatient, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
                     <!-- 统计信息 -->
                     <TextBlock Grid.Row="5"
                                Text="{Binding StatusMessage}"
                                FontSize="12"
-                               Foreground="#666"
+                               Foreground="{StaticResource LYBTTextSecondaryBrush}"
                                Margin="0,10,0,0" />
                 </Grid>
             </Border>
@@ -270,7 +270,7 @@
                 <!-- 无选中时的提示 -->
                 <TextBlock Text="请从左侧选择一个历史医案"
                            FontSize="14"
-                           Foreground="#999"
+                           Foreground="{StaticResource LYBTTextDisabledBrush}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            Visibility="{Binding SelectedCaseDetail, Converter={x:Static converters:Cvt.InverseNullToVis}}" />
@@ -281,8 +281,8 @@
                             Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}">
                     <TextBlock Text="正在加载详情..."
                                FontSize="14"
-                               Foreground="#666"
-                               HorizontalAlignment="Center" />
+                                Foreground="{StaticResource LYBTTextSecondaryBrush}"
+                                HorizontalAlignment="Center" />
                 </StackPanel>
 
                 <!-- 有选中时显示详情 - 使用MedicalCaseViewControl -->
@@ -297,7 +297,7 @@
         </Grid>
 
         <!-- Row 2: 按钮栏 -->
-        <Border Grid.Row="2" Background="#F5F5F5" Padding="20,12">
+        <Border Grid.Row="2" Background="{StaticResource LYBTSurfaceBrush}" Padding="20,12">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="确认导入"
@@ -306,7 +306,7 @@
                             Padding="12,8"
                             FontSize="14"
                             Background="{DynamicResource PrimaryBrush}"
-                            Foreground="White"
+                            Foreground="{StaticResource LYBTBackgroundBrush}"
                             Margin="0,0,12,0" />
                     <Button Content="取消"
                             Command="{Binding CancelCommand}"

@@ -213,7 +213,7 @@ rm tests/LYBT.Tests.Desktop.Unit/Shell/Dialogs/EntityAuditLogDialogViewModelTest
 
 **Step 3: 编译验证测试项目**
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: 全量编译通过，0 errors
 
 ---
@@ -283,12 +283,12 @@ FR-MC-012 审计日志章节中，如果有对 EntityAuditController 的引用�
 
 **Step 1: 全量编译**
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: 0 errors, 0 warnings (或仅预期的 Mapperly 警告)
 
 **Step 2: 全量测试**
 
-Run: `dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"`
+Run: `dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"`
 Expected: 全部通过
 
 **Step 3: 搜索残留引用**

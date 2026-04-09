@@ -23,33 +23,33 @@
         </Grid.RowDefinitions>
 
         <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="#FFA726" Padding="15,12">
-            <TextBlock Text="未保存的修改" Foreground="White" FontSize="16" FontWeight="Bold" />
+        <Border Grid.Row="0" Background="{StaticResource LYBTWarningBrush}" Padding="15,12">
+            <TextBlock Text="未保存的修改" Foreground="{StaticResource LYBTBackgroundBrush}" FontSize="16" FontWeight="Bold" />
         </Border>
 
         <!-- 内容区域 -->
         <StackPanel Grid.Row="1" Margin="20" VerticalAlignment="Center">
             <TextBlock Text="您有未保存的修改，请选择操作："
                        FontSize="14"
-                       Foreground="#333"
-                       TextWrapping="Wrap"
-                       Margin="0,0,0,10" />
+                        Foreground="{StaticResource LYBTTextPrimaryBrush}"
+                        TextWrapping="Wrap"
+                        Margin="0,0,0,10" />
             <TextBlock Text="- 保存修改：保存当前修改后返回列表"
                        FontSize="12"
-                       Foreground="#666"
-                       Margin="10,2" />
+                        Foreground="{StaticResource LYBTTextSecondaryBrush}"
+                        Margin="10,2" />
             <TextBlock Text="- 放弃修改：不保存修改直接返回列表"
                        FontSize="12"
-                       Foreground="#666"
-                       Margin="10,2" />
+                        Foreground="{StaticResource LYBTTextSecondaryBrush}"
+                        Margin="10,2" />
             <TextBlock Text="- 取消：留在当前编辑界面"
                        FontSize="12"
-                       Foreground="#666"
-                       Margin="10,2" />
+                        Foreground="{StaticResource LYBTTextSecondaryBrush}"
+                        Margin="10,2" />
         </StackPanel>
 
         <!-- 按钮区域 -->
-        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="15,12">
+        <Border Grid.Row="2" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="0,1,0,0" Padding="15,12">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <!-- 取消按钮 -->
                 <Button Content="取消"
@@ -57,8 +57,8 @@
                         MinWidth="80"
                         Padding="16,8"
                         Margin="0,0,8,0"
-                        Background="#F5F5F5"
-                        BorderBrush="#BDBDBD" />
+                        Background="{StaticResource LYBTSurfaceBrush}"
+                        BorderBrush="{StaticResource BorderMediumBrush}" />
 
                 <!-- 放弃修改按钮 -->
                 <Button Content="放弃修改"
@@ -66,18 +66,18 @@
                         MinWidth="80"
                         Padding="16,8"
                         Margin="0,0,8,0"
-                        Background="#EF5350"
-                        Foreground="White"
-                        BorderBrush="#EF5350" />
+                        Background="{StaticResource LYBTErrorBrush}"
+                        Foreground="{StaticResource LYBTBackgroundBrush}"
+                        BorderBrush="{StaticResource LYBTErrorBrush}" />
 
                 <!-- 保存修改按钮 -->
                 <Button Content="保存修改"
                         Command="{Binding SaveCommand}"
                         MinWidth="80"
                         Padding="16,8"
-                        Background="#4CAF50"
-                        Foreground="White"
-                        BorderBrush="#4CAF50" />
+                        Background="{StaticResource LYBTSuccessBrush}"
+                        Foreground="{StaticResource LYBTBackgroundBrush}"
+                        BorderBrush="{StaticResource LYBTSuccessBrush}" />
             </StackPanel>
         </Border>
     </Grid>

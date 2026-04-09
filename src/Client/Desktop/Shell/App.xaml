@@ -28,6 +28,9 @@
                 <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/HomePageStyles.xaml" />
 
                 <!--  6. Shell全局样式  -->
+                <ResourceDictionary Source="Resources/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Spacing.xaml" />
+                <ResourceDictionary Source="Resources/LayoutStyles.xaml" />
                 <ResourceDictionary Source="Styles/Typography.xaml" />
                 <ResourceDictionary Source="Styles/Controls.xaml" />
 

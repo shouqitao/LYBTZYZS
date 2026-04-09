@@ -1,7 +1,6 @@
 using FluentAssertions;
 using System.Threading;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;

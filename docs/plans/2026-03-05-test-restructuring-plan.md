@@ -21,7 +21,7 @@
 **Files:**
 - Create: `tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj`
 - Create: `tests/LYBT.Tests.Integration/GlobalUsings.cs`
-- Modify: `LYBT.All.sln` (add project)
+- Modify: `LYBTZYZS.sln` (add project)
 
 **Step 1: Create project directory**
 
@@ -87,7 +87,7 @@ global using Xunit;
 
 **Step 4: Add project to solution**
 
-Run: `dotnet sln LYBT.All.sln add tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj`
+Run: `dotnet sln LYBTZYZS.sln add tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj`
 
 **Step 5: Verify build**
 
@@ -1575,7 +1575,7 @@ Expected: 68+ tests PASS (may need AntiMockRules update if test count thresholds
 
 **Step 5: Run all**
 
-Run: `dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests" -v normal`
+Run: `dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests" -v normal`
 Expected: All PASS
 
 **Step 6: Record final numbers**

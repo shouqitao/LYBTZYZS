@@ -1,7 +1,6 @@
 using FluentAssertions;
 using System.Threading;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;

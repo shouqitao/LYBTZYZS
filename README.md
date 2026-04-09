@@ -28,14 +28,14 @@
 ```bash
 # 克隆、编译、运行
 git clone <repo-url> && cd LYBTZYZS
-dotnet restore LYBT.All.sln
-dotnet build LYBT.All.sln
+dotnet restore LYBTZYZS.sln
+dotnet build LYBTZYZS.sln
 
 # 启动服务端
 dotnet run --project src/Server/Services/LYBT.WebAPI
 
 # 测试
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 ```
 
 详细步骤见 [开发指南](docs/05-development/README.md)。
@@ -99,7 +99,7 @@ Copyright 2025-2026 LYBT. All rights reserved.
 
 ```bash
 # 编译
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 
 # 测试 (3个测试项目, Testing Trophy 架构, ~2021 tests)
 dotnet test tests/LYBT.Tests.Server/           # 1185 tests (真实 SQL Server + Respawn, 零 mock)
@@ -107,7 +107,7 @@ dotnet test tests/LYBT.Tests.Desktop/          # 760 tests (SQLite InMemory + �
 dotnet test tests/LYBT.Tests.Architecture/     # 76 tests (架构防护 + AntiMockRules)
 
 # 全量测试
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 ```
 
 ---

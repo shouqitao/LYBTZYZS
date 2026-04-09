@@ -18,7 +18,7 @@
 
 **Files:**
 - Create: `tests/LYBT.Tests.Server/LYBT.Tests.Server.csproj`
-- Modify: `LYBT.All.sln` (添加新项目)
+- Modify: `LYBTZYZS.sln` (添加新项目)
 
 **Step 1: 创建项目文件**
 
@@ -106,7 +106,7 @@ tests/LYBT.Tests.Server/
 
 **Step 4: 添加到解决方案**
 
-Run: `dotnet sln LYBT.All.sln add tests/LYBT.Tests.Server/LYBT.Tests.Server.csproj`
+Run: `dotnet sln LYBTZYZS.sln add tests/LYBT.Tests.Server/LYBT.Tests.Server.csproj`
 Expected: Project added successfully
 
 **Step 5: 验证编译**
@@ -117,7 +117,7 @@ Expected: Build succeeded
 **Step 6: Commit**
 
 ```bash
-git add tests/LYBT.Tests.Server/ LYBT.All.sln
+git add tests/LYBT.Tests.Server/ LYBTZYZS.sln
 git commit -m "test: scaffold LYBT.Tests.Server project (Testing Trophy Phase 1)"
 ```
 
@@ -1099,7 +1099,7 @@ git commit -m "test: complete server test migration to Testing Trophy"
 
 **Files:**
 - Create: `tests/LYBT.Tests.Desktop/LYBT.Tests.Desktop.csproj`
-- Modify: `LYBT.All.sln`
+- Modify: `LYBTZYZS.sln`
 
 **Step 1: 创建项目文件**
 
@@ -1158,7 +1158,7 @@ tests/LYBT.Tests.Desktop/
 
 **Step 3: 添加到解决方案 + 验证编译**
 
-Run: `dotnet sln LYBT.All.sln add tests/LYBT.Tests.Desktop/LYBT.Tests.Desktop.csproj`
+Run: `dotnet sln LYBTZYZS.sln add tests/LYBT.Tests.Desktop/LYBT.Tests.Desktop.csproj`
 Run: `dotnet build tests/LYBT.Tests.Desktop/LYBT.Tests.Desktop.csproj`
 
 ---
@@ -1258,15 +1258,15 @@ git commit -m "test: create LYBT.Tests.Desktop with minimal mock (Testing Trophy
 - Delete: `tests/LYBT.Tests.Server.Integration/` (整个目录)
 - Delete: `tests/LYBT.Tests.Desktop.Unit/` (整个目录)
 - Delete: `tests/LYBT.Tests.Desktop.Integration/` (整个目录)
-- Modify: `LYBT.All.sln` (移除旧项目引用)
+- Modify: `LYBTZYZS.sln` (移除旧项目引用)
 
 **Step 1: 从解决方案移除**
 
 ```bash
-dotnet sln LYBT.All.sln remove tests/LYBT.Tests.Unit/LYBT.Tests.Unit.csproj
-dotnet sln LYBT.All.sln remove tests/LYBT.Tests.Server.Integration/LYBT.Tests.Server.Integration.csproj
-dotnet sln LYBT.All.sln remove tests/LYBT.Tests.Desktop.Unit/LYBT.Tests.Desktop.Unit.csproj
-dotnet sln LYBT.All.sln remove tests/LYBT.Tests.Desktop.Integration/LYBT.Tests.Desktop.Integration.csproj
+dotnet sln LYBTZYZS.sln remove tests/LYBT.Tests.Unit/LYBT.Tests.Unit.csproj
+dotnet sln LYBTZYZS.sln remove tests/LYBT.Tests.Server.Integration/LYBT.Tests.Server.Integration.csproj
+dotnet sln LYBTZYZS.sln remove tests/LYBT.Tests.Desktop.Unit/LYBT.Tests.Desktop.Unit.csproj
+dotnet sln LYBTZYZS.sln remove tests/LYBT.Tests.Desktop.Integration/LYBT.Tests.Desktop.Integration.csproj
 ```
 
 **Step 2: 删除目录**
@@ -1280,7 +1280,7 @@ rm -rf tests/LYBT.Tests.Desktop.Integration
 
 **Step 3: 验证编译**
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: Build succeeded
 
 ---
@@ -1357,7 +1357,7 @@ public sealed class AntiMockRuleTests
 
 ```bash
 # 编译
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 
 # 测试 (3个测试项目)
 dotnet test tests/LYBT.Tests.Server/           # 服务端 (集成 + 纯逻辑)
@@ -1365,7 +1365,7 @@ dotnet test tests/LYBT.Tests.Desktop/          # Desktop (ViewModel + 本地数�
 dotnet test tests/LYBT.Tests.Architecture/     # 架构约束
 
 # 全量测试
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 ```
 ```
 
@@ -1375,12 +1375,12 @@ dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 **Step 1: 全量编译**
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: 0 errors, 0 warnings
 
 **Step 2: 全量测试**
 
-Run: `dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests" -v normal`
+Run: `dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests" -v normal`
 Expected: All tests pass
 
 **Step 3: 最终 Commit**

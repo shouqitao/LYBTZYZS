@@ -61,7 +61,6 @@ public partial class HerbMapper
     [MapperIgnoreSource(nameof(HerbDetailModel.HasErrors))]
     [MapperIgnoreSource(nameof(HerbDetailModel.Errors))]
     [MapperIgnoreSource(nameof(HerbDetailModel.HasErrorsDictionary))]
-    [MapperIgnoreSource(nameof(HerbDetailModel.Properties))]
     [MapperIgnoreSource(nameof(HerbDetailModel.Status))]
     [MapperIgnoreSource(nameof(HerbDetailModel.CreatedAt))]
     [MapperIgnoreSource(nameof(HerbDetailModel.UpdatedAt))]

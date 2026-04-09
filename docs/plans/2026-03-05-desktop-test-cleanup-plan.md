@@ -252,7 +252,7 @@ Expected: 3 tests passed (was 5)
 **Step 1: 全量编译**
 
 ```bash
-dotnet build LYBT.All.sln -v q
+dotnet build LYBTZYZS.sln -v q
 ```
 
 Expected: 0 errors

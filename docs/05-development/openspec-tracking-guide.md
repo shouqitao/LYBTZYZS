@@ -86,8 +86,8 @@ grep -rl "// OpenSpec: {change-id}" src/ --include="*.cs" | \
 ```
 
 ### 4. 验证
-- 编译通过: `dotnet build LYBT.All.sln`
-- 测试通过: `dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"`
+- 编译通过: `dotnet build LYBTZYZS.sln`
+- 测试通过: `dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"`
 - 代码审查确认无副作用
 
 ## 管理规则

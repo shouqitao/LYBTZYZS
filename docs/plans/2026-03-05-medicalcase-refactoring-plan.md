@@ -443,7 +443,7 @@ Expected: All 4 tests PASS.
 ### Step 5: Verify full solution compiles
 
 ```bash
-dotnet build LYBT.All.sln -v m
+dotnet build LYBTZYZS.sln -v m
 ```
 Expected: BUILD SUCCEEDED. No breaking changes.
 
@@ -1153,7 +1153,7 @@ No changes needed for child VMs (they're not container-resolved). Remove any sta
 ### Verification
 
 ```bash
-dotnet build LYBT.All.sln -v m
+dotnet build LYBTZYZS.sln -v m
 ```
 
 ### Commit
@@ -1243,8 +1243,8 @@ rg "PrescriptionPrintHandler" src/ --type cs
 ### Post-deletion Verification
 
 ```bash
-dotnet build LYBT.All.sln -v m
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests" -v m
+dotnet build LYBTZYZS.sln -v m
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests" -v m
 ```
 
 ### Commit
@@ -1266,7 +1266,7 @@ Total: 1539 lines removed"
 ### Step 1: Full build and test
 
 ```bash
-dotnet build LYBT.All.sln -v m
+dotnet build LYBTZYZS.sln -v m
 dotnet test tests/LYBT.Tests.Desktop/ -v m
 dotnet test tests/LYBT.Tests.Server/ -v m
 dotnet test tests/LYBT.Tests.Architecture/ -v m

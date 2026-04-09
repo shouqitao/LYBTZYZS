@@ -882,7 +882,7 @@ _selectedTheme = _themeService.CurrentTheme;
 
 **Step 3: 验证编译**
 
-Run: `dotnet build LYBT.All.sln --no-restore -v q`
+Run: `dotnet build LYBTZYZS.sln --no-restore -v q`
 Expected: Build succeeded
 
 **Step 4: 测试主题切换**
@@ -935,7 +935,7 @@ git commit -m "feat(theme): add theme switching UI in AccountSettingsView"
 **验证命令**:
 ```bash
 # 每个Task后验证编译
-dotnet build LYBT.All.sln -c Release --no-restore
+dotnet build LYBTZYZS.sln -c Release --no-restore
 
 # Phase 3后验证迁移完成度
 Get-ChildItem -Recurse -Include *.xaml | Select-String "StaticResource.*Brush" | Measure-Object

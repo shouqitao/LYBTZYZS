@@ -205,7 +205,7 @@ using LYBT.Infrastructure.Constants;
 
 ### Step 6: 编译验证
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: 0 errors
 
 ### Step 7: 运行测试验证 (行为不变)
@@ -395,12 +395,12 @@ catch (Exception ex)
 
 ### Step 8: 编译验证
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: 0 errors
 
 ### Step 9: 运行全量测试
 
-Run: `dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"`
+Run: `dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"`
 Expected: 2370 passed, 0 failed (纯日志级别变更，不影响行为)
 
 ---
@@ -409,7 +409,7 @@ Expected: 2370 passed, 0 failed (纯日志级别变更，不影响行为)
 
 | 检查项 | 命令 |
 |--------|------|
-| 编译 | `dotnet build LYBT.All.sln` -> 0 errors |
+| 编译 | `dotnet build LYBTZYZS.sln` -> 0 errors |
 | 单元测试 | `dotnet test tests/LYBT.Tests.Unit/` -> 1302 passed |
 | Desktop 单元测试 | `dotnet test tests/LYBT.Tests.Desktop.Unit/` -> 633 passed |
 | 集成测试 | `dotnet test tests/LYBT.Tests.Server.Integration/` -> 266 passed |

@@ -22,6 +22,7 @@ internal partial class LocalHerbMapper
     /// <summary>
     /// HerbInputDto -> Herb Entity
     /// </summary>
+    [MapperIgnoreSource(nameof(HerbInputDto.Properties))]
     [MapperIgnoreTarget(nameof(Herb.Status))]
     [MapperIgnoreTarget(nameof(Herb.CreatedAt))]
     [MapperIgnoreTarget(nameof(Herb.UpdatedAt))]

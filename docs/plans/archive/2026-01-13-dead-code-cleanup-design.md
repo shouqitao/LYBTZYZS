@@ -81,7 +81,7 @@ grep -r "ClassName" --include="*.cs" | wc -l
 ```bash
 # 每 5-10 个文件为一批
 rm <files>
-dotnet build LYBT.All.sln -c Release
+dotnet build LYBTZYZS.sln -c Release
 # 通过 → git commit
 # 失败 → 回滚分析原因
 ```
@@ -179,7 +179,7 @@ src/Server/Services/LYBT.WebAPI/Extensions/*.cs
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ Step 4: 最终验证                                            │
-│   - dotnet build LYBT.All.sln                              │
+│   - dotnet build LYBTZYZS.sln                              │
 │   - dotnet test（确保测试通过）                              │
 │   - 生成清理报告                                            │
 └─────────────────────────────────────────────────────────────┘

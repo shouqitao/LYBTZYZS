@@ -662,7 +662,7 @@ dotnet test tests/LYBT.Tests.Architecture --filter "FullyQualifiedName~LYBT.Test
 
 ```bash
 # 生成覆盖率报告
-dotnet test LYBT.All.sln --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+dotnet test LYBTZYZS.sln --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
 # 查看覆盖率摘要
 dotnet tool install --global dotnet-coverage

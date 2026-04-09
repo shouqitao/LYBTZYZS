@@ -178,7 +178,7 @@ Phase 4: 清理 (依赖 Phase 2+3)
   [12] 架构测试合并
   [13] 空壳目录删除
 
-验证: dotnet build LYBT.All.sln + dotnet test
+验证: dotnet build LYBTZYZS.sln + dotnet test
 ```
 
 ## 验收目标

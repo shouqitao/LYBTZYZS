@@ -34,6 +34,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：药材名称、拼音码 -->
@@ -42,7 +43,7 @@
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="药材名称"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
-                        <TextBox Text="{Binding HerbName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="1" Text="{Binding HerbName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  IsReadOnly="{Binding IsNameEditable, Converter={x:Static converters:Cvt.InverseBool}}"
                                  MinHeight="44"
@@ -53,7 +54,7 @@
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="拼音码（可修正）" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="2" Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"
@@ -63,7 +64,7 @@
                     <!-- 第二行：产地、规格 -->
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="产地" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Origin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="3" Text="{Binding Origin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -71,7 +72,7 @@
 
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="规格" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Spec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="4" Text="{Binding Spec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -82,7 +83,7 @@
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="单位"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
-                        <TextBox Text="{Binding Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="5" Text="{Binding Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -92,7 +93,7 @@
 
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="零售价" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Price, Mode=TwoWay, StringFormat={}{0:0.##}, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="6" Text="{Binding Price, Mode=TwoWay, StringFormat={}{0:0.##}, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -103,7 +104,7 @@
                     <!-- 第四行：成本价、状态 -->
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="成本价" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding CostPrice, Mode=TwoWay, StringFormat={}{0:0.##}, TargetNullValue=''}"
+                        <TextBox TabIndex="7" Text="{Binding CostPrice, Mode=TwoWay, StringFormat={}{0:0.##}, TargetNullValue=''}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -112,7 +113,7 @@
                     <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,20"
                                 Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="状态" Style="{DynamicResource FormLabelStyle}"/>
-                        <ComboBox SelectedItem="{Binding Status, Mode=TwoWay}"
+                        <ComboBox TabIndex="8" SelectedItem="{Binding Status, Mode=TwoWay}"
                                   ItemsSource="{Binding StatusOptions}"
                                   IsEnabled="False"
                                   MinHeight="44"
@@ -123,6 +124,23 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
+                    </StackPanel>
+
+                    <!-- 第五行：分类、药性 -->
+                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,20">
+                        <TextBlock Text="分类" Style="{DynamicResource FormLabelStyle}"/>
+                        <TextBox TabIndex="9" Text="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 MinHeight="44"
+                                 Padding="12,10"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Grid.Column="2" Margin="0,0,0,20">
+                        <TextBlock Text="药性" Style="{DynamicResource FormLabelStyle}"/>
+                        <TextBox TabIndex="10" Text="{Binding HerbProperties, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 MinHeight="44"
+                                 Padding="12,10"/>
                     </StackPanel>
                 </Grid>
             </controls:InfoCard.Content>

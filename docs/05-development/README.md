@@ -19,17 +19,17 @@ git clone <repo-url>
 cd LYBTZYZS
 
 # 2. 恢复依赖
-dotnet restore LYBT.All.sln
+dotnet restore LYBTZYZS.sln
 
 # 3. 编译
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 
 # 4. 运行服务端
 cd src/Server/Services/LYBT.WebAPI
 dotnet run
 
 # 5. 运行 Desktop 客户端 (需要 Visual Studio)
-# 打开 LYBT.All.sln -> 设置 LYBT.Desktop.Shell 为启动项目 -> F5
+# 打开 LYBTZYZS.sln -> 设置 LYBT.Desktop.Shell 为启动项目 -> F5
 ```
 
 ## 项目结构
@@ -66,7 +66,7 @@ LYBTZYZS/
 
 ```bash
 # 运行全部测试
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 # 分项目运行
 dotnet test tests/LYBT.Tests.Server/

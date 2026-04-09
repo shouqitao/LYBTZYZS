@@ -49,3 +49,28 @@ Same bash command errors keep recurring because self-improvement skill isn't act
 
 ---
 
+## [LRN-20260409-001] CommunityToolkit.Mvvm source generator constraints
+
+**Logged**: 2026-04-09T09:00:00+08:00
+**Priority**: high
+**Status**: resolved
+**Area**: desktop
+
+### Summary
+Three key constraints when working with CommunityToolkit.Mvvm source generators in an inheritance chain.
+
+### Details
+1. **`partial void OnXxxChanged`** — Source-generated in the declaring class only. Derived classes CANNOT implement these partial methods across class boundaries (CS0759).
+2. **`[NotifyPropertyChangedFor("Prop")]`** — The target property must exist in the SAME class where the attribute is applied (MVVMTK0015). It cannot reference properties defined only in derived classes.
+3. **Workaround** — For derived class computed properties that depend on base class `[ObservableProperty]` fields, subscribe to `PropertyChanged` in the derived class constructor.
+
+### Suggested Action
+When a derived ViewModel needs to react to base class `[ObservableProperty]` changes, use `PropertyChanged` event subscription instead of trying to implement partial methods or `[NotifyPropertyChangedFor]`.
+
+### Metadata
+- Source: error
+- Related Files: CoreViewModelBase.cs, LoginViewModel.cs
+- Tags: CommunityToolkit.Mvvm, source-generator, WPF, MVVM, inheritance
+
+---
+

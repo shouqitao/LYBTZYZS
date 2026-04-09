@@ -76,7 +76,7 @@ git commit -m "security: add explicit SixLabors.Fonts 2.0.9 to fix ImageSharp vu
 
 **Step 1: 恢复整个解决方案的包**
 
-Run: `dotnet restore LYBT.All.sln`
+Run: `dotnet restore LYBTZYZS.sln`
 Expected: 成功恢复所有项目包，自动解析 SixLabors.Fonts 2.0.9 及其依赖
 
 **Step 2: 验证 SixLabors.ImageSharp 版本已全局更新**
@@ -105,7 +105,7 @@ git commit -m "chore: restore packages after Fonts security upgrade
 
 **Step 1: 编译整个解决方案**
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: 编译成功，无 SixLabors 相关警告或错误
 
 **Step 2: 检查特定项目 (Desktop.Printing)**
@@ -331,10 +331,10 @@ git commit -m "docs: add security advisory for ImageSharp vulnerability fix (Cen
 git checkout HEAD~1 -- Directory.Packages.props
 
 # 2. 统一恢复所有项目包
-dotnet restore LYBT.All.sln
+dotnet restore LYBTZYZS.sln
 
 # 3. 重新编译整个解决方案
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 ```
 
 ---

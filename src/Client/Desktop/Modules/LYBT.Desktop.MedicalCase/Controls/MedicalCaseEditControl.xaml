@@ -103,7 +103,7 @@
                             <!-- 第一行：现病史（整行）- OpenSpec: unify-control-data-binding -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                                 <TextBlock Text="现病史" Style="{DynamicResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox TabIndex="1" Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{DynamicResource EditableTextBoxStyle}"
                                          TextWrapping="Wrap"
                                          AcceptsReturn="True"
@@ -114,7 +114,7 @@
                             <!-- 第二行：舌诊、脉诊 -->
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
                                 <TextBlock Text="舌诊" Style="{DynamicResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox TabIndex="2" Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{DynamicResource EditableTextBoxStyle}"
                                          MinHeight="44"
                                          Padding="12,10"/>
@@ -122,7 +122,7 @@
 
                             <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
                                 <TextBlock Text="脉诊" Style="{DynamicResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox TabIndex="3" Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{DynamicResource EditableTextBoxStyle}"
                                          MinHeight="44"
                                          Padding="12,10"/>
@@ -131,7 +131,7 @@
                             <!-- 第三行：中医诊断（整行） -->
                             <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                                 <TextBlock Text="中医诊断" Style="{DynamicResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox TabIndex="4" Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{DynamicResource EditableTextBoxStyle}"
                                          MinHeight="44"
                                          Padding="12,10"/>
@@ -241,18 +241,18 @@
 
             <!-- 右上角工具条 -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,12">
-                <Button Content="套验方"
+                <Button TabIndex="5" Content="套验方"
                         Command="{Binding ImportFormulaCommand}"
                         Style="{DynamicResource SecondaryButton}"
                         Margin="0,0,8,0"/>
-                <Button Content="历史处方"
+                <Button TabIndex="6" Content="历史处方"
                         Command="{Binding ImportHistoryCommand}"
                         Style="{DynamicResource SecondaryButton}"
                         Margin="0,0,8,0"/>
-                <Button Content="清空"
+                <Button TabIndex="7" Content="清空"
                         Command="{Binding ClearAllCommand}"
                         Style="{DynamicResource LinkButtonStyle}"
-                        Foreground="#DC3545"/>
+                         Foreground="{StaticResource ValidationErrorBrush}"/>
             </StackPanel>
 
             <!-- 诊断区 - OpenSpec: unify-control-data-binding -->
@@ -265,7 +265,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="现病史" VerticalAlignment="Center" FontWeight="Medium"/>
-                        <TextBox Grid.Column="1"
+                        <TextBox Grid.Column="1" TabIndex="8"
                                  Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="36"/>
@@ -284,7 +284,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="舌诊" VerticalAlignment="Center" FontWeight="Medium"/>
-                            <TextBox Grid.Column="1"
+                            <TextBox Grid.Column="1" TabIndex="9"
                                      Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{DynamicResource EditableTextBoxStyle}"
                                      MinHeight="36"/>
@@ -295,7 +295,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="脉诊" VerticalAlignment="Center" FontWeight="Medium"/>
-                            <TextBox Grid.Column="1"
+                            <TextBox Grid.Column="1" TabIndex="10"
                                      Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{DynamicResource EditableTextBoxStyle}"
                                      MinHeight="36"/>
@@ -309,9 +309,9 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock VerticalAlignment="Center" FontWeight="Medium">
-                            <Run Text="中医诊断"/><Run Text="*" Foreground="#DC3545"/>
+                            <Run Text="中医诊断"/><Run Text="*" Foreground="{StaticResource ValidationErrorBrush}"/>
                         </TextBlock>
-                        <TextBox Grid.Column="1"
+                        <TextBox Grid.Column="1" TabIndex="11"
                                  Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="36"/>
@@ -358,7 +358,7 @@
                             <!-- 剂数 - OpenSpec: unify-control-data-binding -->
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
                                 <TextBlock Text="剂数:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBox Width="60"
+                                <TextBox Width="60" TabIndex="12"
                                          Text="{Binding Prescription.DosageCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{DynamicResource EditableTextBoxStyle}"
                                          MinHeight="28"
@@ -369,7 +369,7 @@
                             <!-- 用法 - OpenSpec: unify-control-data-binding -->
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
                                 <TextBlock Text="用法:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <ComboBox Width="120"
+                                <ComboBox Width="120" TabIndex="13"
                                           SelectedItem="{Binding Prescription.Usage, Mode=TwoWay}"
                                           ItemsSource="{Binding UsageOptions}"
                                           Style="{DynamicResource FilterComboBox}"/>

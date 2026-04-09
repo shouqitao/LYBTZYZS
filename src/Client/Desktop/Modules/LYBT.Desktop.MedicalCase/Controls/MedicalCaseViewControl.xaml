@@ -172,7 +172,7 @@
                                                 <TextBlock Text="{Binding HerbName}" Style="{DynamicResource HerbTagNameStyle}"/>
                                                 <TextBlock Text="{Binding Dosage, StringFormat={}{0}g}" Style="{DynamicResource HerbTagDosageStyle}"/>
                                                 <!-- 煎法显示（非默认时显示） -->
-                                                <TextBlock Foreground="#E65100"
+                                                <TextBlock Foreground="{StaticResource AccentOrangeBrush}"
                                                            FontSize="11"
                                                            Margin="4,0,0,0"
                                                            VerticalAlignment="Center"

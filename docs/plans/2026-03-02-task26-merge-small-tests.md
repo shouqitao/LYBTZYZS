@@ -407,8 +407,8 @@ Expected: 源项目测试仍通过 (确认功能等价)
 ## Task 2.6d: 清理 (Phase 2d 统一执行)
 
 以下清理在 Task 2.7 统一执行，本任务仅标记:
-- [ ] 从 LYBT.All.sln 移除 LYBT.Server.CompatibilityTests
-- [ ] 从 LYBT.All.sln 移除 LYBT.Module.Formula.IntegrationTests
+- [ ] 从 LYBTZYZS.sln 移除 LYBT.Server.CompatibilityTests
+- [ ] 从 LYBTZYZS.sln 移除 LYBT.Module.Formula.IntegrationTests
 - [ ] 删除 `tests/CompatibilityTests/` 目录
 - [ ] 删除 `tests/IntegrationTests/Server/Modules/LYBT.Module.Formula.IntegrationTests/` 目录
 

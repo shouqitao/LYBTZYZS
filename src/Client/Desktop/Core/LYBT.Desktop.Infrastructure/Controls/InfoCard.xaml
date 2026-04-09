@@ -34,7 +34,7 @@
                               BlurRadius="16"
                               ShadowDepth="2"
                               Opacity="0.08"
-                              Color="#000000"/>
+                              Color="Black"/>
         </ResourceDictionary>
     </UserControl.Resources>
 

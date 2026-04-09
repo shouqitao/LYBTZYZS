@@ -45,7 +45,7 @@ response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
 
 **Step 3: 编译验证**
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: 0 errors
 
 **Step 4: 运行受影响测试**
@@ -622,8 +622,8 @@ Expected: ALL PASS
 
 Run:
 ```bash
-dotnet build LYBT.All.sln
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
+dotnet build LYBTZYZS.sln
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 ```
 Expected: ALL PASS (2366+ tests)
 

@@ -232,7 +232,7 @@ reportgenerator -reports:coverage.cobertura.xml -targetdir:coveragereport -repor
 
 ```bash
 # 全量测试
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 # 单个项目测试
 dotnet test tests/LYBT.Tests.Server --filter "FullyQualifiedName~LYBT.Tests.Server"
@@ -240,7 +240,7 @@ dotnet test tests/LYBT.Tests.Desktop --filter "FullyQualifiedName~LYBT.Tests.Des
 dotnet test tests/LYBT.Tests.Architecture --filter "FullyQualifiedName~LYBT.Tests.Architecture"
 
 # 带覆盖率收集
-dotnet test LYBT.All.sln --collect:"XPlat Code Coverage"
+dotnet test LYBTZYZS.sln --collect:"XPlat Code Coverage"
 
 # 生成报告 (需安装 ReportGenerator)
 reportgenerator -reports:BIN/TestResults/**/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html

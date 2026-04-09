@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:restriction base="xsd:string">
+                <xsd:attribute ref="xml:space" />
+              </xsd:restriction>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Shell - SplashScreenWindow -->
+  <data name="SplashScreenTitle" xml:space="preserve">
+    <value>凌隐宝堂中医诊所诊疗系统</value>
+  </data>
+  <data name="BrandName" xml:space="preserve">
+    <value>凌隐宝堂中医诊所诊疗系统</value>
+  </data>
+  <data name="BrandNameShort" xml:space="preserve">
+    <value>Ling Yin Bao Tang TCM Clinic System</value>
+  </data>
+  <data name="Initializing" xml:space="preserve">
+    <value>正在初始化...</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>版本 1.0.0</value>
+  </data>
+  <data name="Copyright" xml:space="preserve">
+    <value>© 2025 凌隐宝堂. All rights reserved.</value>
+  </data>
+  
+  <!-- Shell - MainWindow -->
+  <data name="SwitchingMode" xml:space="preserve">
+    <value>正在切换模式...</value>
+  </data>
+  <data name="SwitchingModeDescription" xml:space="preserve">
+    <value>请稍候，系统正在重置连接</value>
+  </data>
+  <data name="Syncing" xml:space="preserve">
+    <value>正在同步...</value>
+  </data>
+  
+  <!-- Auth - LoginView -->
+  <data name="ClinicName" xml:space="preserve">
+    <value>凌隐宝堂</value>
+  </data>
+  <data name="ClinicNameFull" xml:space="preserve">
+    <value>凌隐宝堂中医诊所</value>
+  </data>
+  <data name="ClinicDescription" xml:space="preserve">
+    <value>中医诊疗管理系统</value>
+  </data>
+  <data name="ClinicSlogan" xml:space="preserve">
+    <value>传承经典 · 数字化诊疗</value>
+  </data>
+  <data name="VersionInfo" xml:space="preserve">
+    <value>Version 1.0.0.0</value>
+  </data>
+  <data name="UserLogin" xml:space="preserve">
+    <value>用户登录</value>
+  </data>
+  <data name="UsernameLabel" xml:space="preserve">
+    <value>用户名</value>
+  </data>
+  <data name="PasswordLabel" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="SavedPasswordIndicator" xml:space="preserve">
+    <value>（已保存）</value>
+  </data>
+  <data name="RememberUsername" xml:space="preserve">
+    <value>记住账号</value>
+  </data>
+  <data name="RememberPassword" xml:space="preserve">
+    <value>记住密码</value>
+  </data>
+  <data name="RemoteService" xml:space="preserve">
+    <value>远程服务</value>
+  </data>
+  <data name="LocalMode" xml:space="preserve">
+    <value>本地模式</value>
+  </data>
+  <data name="Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>登录</value>
+  </data>
+  <data name="LoggingIn" xml:space="preserve">
+    <value>正在登录...</value>
+  </data>
+  
+  <!-- Accessibility Labels -->
+  <data name="UsernameInputA11y" xml:space="preserve">
+    <value>用户名输入框</value>
+  </data>
+  <data name="PasswordInputA11y" xml:space="preserve">
+    <value>密码输入框</value>
+  </data>
+  <data name="LoginButtonA11y" xml:space="preserve">
+    <value>登录按钮</value>
+  </data>
+  <data name="CloseButtonA11y" xml:space="preserve">
+    <value>关闭程序按钮</value>
+  </data>
+  <data name="RetryButtonA11y" xml:space="preserve">
+    <value>重试按钮</value>
+  </data>
+  
+  <!-- Help Text -->
+  <data name="UsernameHelp" xml:space="preserve">
+    <value>请输入您的用户名</value>
+  </data>
+  <data name="PasswordHelp" xml:space="preserve">
+    <value>请输入您的密码</value>
+  </data>
+  <data name="RememberUsernameHelp" xml:space="preserve">
+    <value>勾选后将保存用户名</value>
+  </data>
+  <data name="RememberPasswordHelp" xml:space="preserve">
+    <value>勾选后将保存密码</value>
+  </data>
+  <data name="RemoteServiceHelp" xml:space="preserve">
+    <value>连接到远程服务器进行数据同步</value>
+  </data>
+  <data name="LocalModeHelp" xml:space="preserve">
+    <value>使用本地数据库，数据不与服务器同步</value>
+  </data>
+  <data name="LoginButtonHelp" xml:space="preserve">
+    <value>点击登录到管理系统</value>
+  </data>
+  <data name="CloseButtonHelp" xml:space="preserve">
+    <value>关闭应用程序</value>
+  </data>
+  
+  <!-- Common Status Messages -->
+  <data name="Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>保存中...</value>
+  </data>
+  <data name="Processing" xml:space="preserve">
+    <value>处理中...</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>操作成功</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>操作失败</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>确认</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  
+  <!-- Empty States -->
+  <data name="NoData" xml:space="preserve">
+    <value>暂无数据</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>未找到结果</value>
+  </data>
+  <data name="NoItems" xml:space="preserve">
+    <value>暂无项目</value>
+  </data>
+</root>

@@ -52,7 +52,7 @@
                          IsChecked="{Binding IsHardDelete}"
                          Margin="0,5"
                          FontSize="13"
-                         Foreground="#D32F2F"/>
+                          Foreground="{StaticResource ValidationErrorBrush}"/>
         </StackPanel>
 
         <!-- 按钮区域 -->

@@ -8,8 +8,8 @@
         WindowStartupLocation="CenterScreen"
         AllowsTransparency="True"
         Background="Transparent">
-    <Border Background="White"
-            BorderBrush="#0078D4"
+    <Border Background="{StaticResource LYBTBackgroundBrush}"
+            BorderBrush="{StaticResource ProgressBarBrush}"
             BorderThickness="2"
             CornerRadius="8">
         <Grid>
@@ -22,69 +22,69 @@
 
             <!-- Logo 和标题区域 -->
             <StackPanel Grid.Row="0"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center">
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center">
                 <!-- Logo 图标 -->
                 <Viewbox Width="120" Height="120" Margin="0,0,0,20">
                     <Canvas Width="100" Height="100">
                         <!-- 简单的医疗图标 -->
-                        <Ellipse Width="100" Height="100"
-                                 Fill="#0078D4"
-                                 Opacity="0.1"/>
+                          <Ellipse Width="100" Height="100"
+                                   Fill="{StaticResource ProgressBarBrush}"
+                                   Opacity="0.1"/>
                         <!-- 十字图标 -->
-                        <Rectangle Width="60" Height="10"
-                                   Canvas.Left="20" Canvas.Top="45"
-                                   Fill="#0078D4"/>
-                        <Rectangle Width="10" Height="60"
-                                   Canvas.Left="45" Canvas.Top="20"
-                                   Fill="#0078D4"/>
+                          <Rectangle Width="60" Height="10"
+                                     Canvas.Left="20" Canvas.Top="45"
+                                     Fill="{StaticResource ProgressBarBrush}"/>
+                          <Rectangle Width="10" Height="60"
+                                     Canvas.Left="45" Canvas.Top="20"
+                                     Fill="{StaticResource ProgressBarBrush}"/>
                     </Canvas>
                 </Viewbox>
 
                 <!-- 系统标题 -->
                 <TextBlock Text="凌隐宝堂中医诊所诊疗系统"
-                           FontSize="24"
-                           FontWeight="Bold"
-                           Foreground="#0078D4"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,10"/>
+                            FontSize="24"
+                            FontWeight="Bold"
+                             Foreground="{StaticResource ProgressBarBrush}"
+                             HorizontalAlignment="Center"
+                             Margin="0,0,0,10"/>
 
                 <TextBlock Text="Ling Yin Bao Tang TCM Clinic System"
-                           FontSize="14"
-                           Foreground="#666666"
-                           HorizontalAlignment="Center"/>
+                            FontSize="14"
+                        Foreground="{StaticResource LYBTTextSecondaryBrush}"
+                        HorizontalAlignment="Center"/>
             </StackPanel>
 
             <!-- 加载状态文本 -->
             <TextBlock x:Name="StatusText"
-                       Grid.Row="1"
-                       Text="正在初始化..."
-                       FontSize="14"
-                       Foreground="#333333"
-                       HorizontalAlignment="Center"
-                       Margin="0,20,0,10"/>
+                        Grid.Row="1"
+                        Text="正在初始化系统..."
+                        FontSize="14"
+                        Foreground="{StaticResource LYBTTextPrimaryBrush}"
+                        HorizontalAlignment="Center"
+                        Margin="0,20,0,10"/>
 
             <!-- 进度条 -->
             <ProgressBar x:Name="ProgressBar"
-                         Grid.Row="2"
-                         Height="6"
-                         Margin="40,0,40,0"
-                         IsIndeterminate="True"
-                         Foreground="#0078D4"/>
+                          Grid.Row="2"
+                          Height="6"
+                          Margin="40,0,40,0"
+                          IsIndeterminate="True"
+                           Foreground="{StaticResource ProgressBarBrush}"/>
 
             <!-- 版本信息和版权 -->
             <StackPanel Grid.Row="3"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center">
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center">
                 <TextBlock Text="版本 1.0.0"
-                           FontSize="12"
-                           Foreground="#999999"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,5"/>
+                            FontSize="12"
+                             Foreground="{StaticResource LYBTTextDisabledBrush}"
+                             HorizontalAlignment="Center"
+                             Margin="0,0,0,5"/>
                 <TextBlock Text="© 2025 凌隐宝堂. All rights reserved."
-                           FontSize="11"
-                           Foreground="#CCCCCC"
-                           HorizontalAlignment="Center"/>
+                            FontSize="11"
+                             Foreground="{StaticResource BorderMediumBrush}"
+                             HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>
     </Border>

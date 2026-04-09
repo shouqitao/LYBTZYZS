@@ -5,9 +5,11 @@
     xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
     xmlns:prism="http://prismlibrary.com/"
+
+
     Title="{Binding Title}"
-    Width="1200"
-    Height="800"
+    MinWidth="1024"
+    MinHeight="768"
     prism:ViewModelLocator.AutoWireViewModel="True"
     Background="White"
     ResizeMode="NoResize"
@@ -40,7 +42,7 @@
     <Grid>
         <!--  SYNC-D03: 模式切换遮罩层  -->
         <Grid Panel.ZIndex="100" Visibility="{Binding IsSwitchingMode, Converter={x:Static converters:Cvt.BoolToVis}}">
-            <Border Background="#80000000">
+            <Border Background="{StaticResource DarkMaskBrush}">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock
                         FontSize="18"
@@ -50,7 +52,7 @@
                     <TextBlock
                         Margin="0,8,0,0"
                         FontSize="13"
-                        Foreground="#CCCCCC"
+                        Foreground="{StaticResource LYBTTextDisabledBrush}"
                         Text="请稍候，系统正在重置连接" />
                 </StackPanel>
             </Border>

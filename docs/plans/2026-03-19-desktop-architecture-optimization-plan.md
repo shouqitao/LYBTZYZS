@@ -28,7 +28,7 @@
 
 ```bash
 # 编译检查
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 
 # Desktop 单元测试
 dotnet test tests/LYBT.Tests.Desktop/ --logger "console;verbosity=normal"
@@ -509,7 +509,7 @@ public void ClearUserSession() => ClearSession();
 **Step 4: 验证编译**
 
 ```bash
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 ```
 
 期望结果：`Build succeeded`（若有调用方会在此暴露，按错误提示修复）。
@@ -572,7 +572,7 @@ rmdir src/Client/Desktop/Core/LYBT.Desktop.Models/Http/
 **Step 4: 验证编译**
 
 ```bash
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 ```
 
 期望结果：`Build succeeded`
@@ -591,7 +591,7 @@ git commit -m "chore(desktop): remove dead code ProblemDetails.cs and empty Item
 **Step 1: 全量编译**
 
 ```bash
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 ```
 
 期望：`0 Error(s)`

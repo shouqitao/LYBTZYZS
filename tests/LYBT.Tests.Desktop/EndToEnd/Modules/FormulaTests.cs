@@ -152,7 +152,8 @@ public class FormulaTests : WebApiE2ETestBase
         var formulaId = createResponse.Data!.Id;
 
         var response = await FormulaApi.CloneFormulaAsync(formulaId);
-        _output.WriteLine($"Cloned formula: {formulaId} -> {response.Data.Id}");
+        response.Data.Should().NotBeNull();
+        _output.WriteLine($"Cloned formula: {formulaId} -> {response.Data!.Id}");
     }
 
     #endregion

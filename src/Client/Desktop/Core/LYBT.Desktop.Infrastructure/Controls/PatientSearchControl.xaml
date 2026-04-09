@@ -262,7 +262,7 @@
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#F0F0F0"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Background" Value="{DynamicResource LightPrimaryBrush}"/>

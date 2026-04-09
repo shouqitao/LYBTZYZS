@@ -66,10 +66,11 @@ namespace LYBT.Desktop.Herbs.Models
         }
 
         /// <summary>分类</summary>
+        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "分类长度不能超过100个字符")]
         public string? Category
         {
             get => _category;
-            set => SetProperty(ref _category, value);
+            set => SetPropertyAndValidate(ref _category, value);
         }
 
         /// <summary>性味</summary>
@@ -80,17 +81,19 @@ namespace LYBT.Desktop.Herbs.Models
         }
 
         /// <summary>产地</summary>
+        [StringLength(ValidationConstants.AddressMaxLength, ErrorMessage = "产地长度不能超过200个字符")]
         public string? Origin
         {
             get => _origin;
-            set => SetProperty(ref _origin, value);
+            set => SetPropertyAndValidate(ref _origin, value);
         }
 
         /// <summary>规格</summary>
+        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "规格长度不能超过100个字符")]
         public string? Spec
         {
             get => _spec;
-            set => SetProperty(ref _spec, value);
+            set => SetPropertyAndValidate(ref _spec, value);
         }
 
         /// <summary>单位</summary>

@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace LYBT.Tests.Desktop.EndToEnd.Infrastructure;
 
-public class E2ECollectionFixture : IAsyncLifetime
+public class E2ECollectionFixture : IAsyncLifetime, IDisposable
 {
     private static readonly SemaphoreSlim _globalLoginLock = new(1, 1);
     private static readonly Dictionary<string, RoleSession> _globalRoleSessions = new(StringComparer.OrdinalIgnoreCase);
@@ -237,6 +237,11 @@ public class E2ECollectionFixture : IAsyncLifetime
     }
 
     private sealed record RoleSession(string AccessToken, LoginResponse LoginResponse);
+
+    public void Dispose()
+    {
+        _httpClient?.Dispose();
+    }
 }
 
 [CollectionDefinition("E2E")]

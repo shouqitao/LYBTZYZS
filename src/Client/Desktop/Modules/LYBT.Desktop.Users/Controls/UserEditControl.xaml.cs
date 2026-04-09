@@ -212,6 +212,22 @@ namespace LYBT.Desktop.Users.Controls
             set => SetValue(ErrorsSourceProperty, value);
         }
 
+        /// <summary>
+        /// 备注
+        /// </summary>
+        public static readonly DependencyProperty RemarkProperty =
+            DependencyProperty.Register(
+                nameof(Remark),
+                typeof(string),
+                typeof(UserEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string Remark
+        {
+            get => (string)GetValue(RemarkProperty);
+            set => SetValue(RemarkProperty, value);
+        }
+
         #endregion
     }
 }

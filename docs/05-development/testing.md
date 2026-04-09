@@ -48,7 +48,7 @@ tests/
 
 ```bash
 # 全量测试
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 # 分项目运行
 dotnet test tests/LYBT.Tests.Server/

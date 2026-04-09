@@ -355,7 +355,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **引用更新**:
   - `LYBT.Desktop.sln` - 项目路径更新
-  - `LYBT.All.sln` - 项目路径更新
+  - `LYBTZYZS.sln` - 项目路径更新
   - `Shell/LYBT.Desktop.Shell.csproj` - 项目引用路径
   - `Roles/LYBT.Desktop.Clinical/LYBT.Desktop.Clinical.csproj` - 项目引用路径
   - `Modules/LYBT.Desktop.Patients/LYBT.Desktop.Patients.csproj` - 项目引用路径

@@ -536,7 +536,7 @@
             </Border>
 
             <!--  加载遮罩  -->
-            <Grid Background="#80FFFFFF" Visibility="{Binding IsBusy, Converter={x:Static converters:Cvt.BoolToVis}}">
+            <Grid Background="{StaticResource DarkMaskBrush}" Visibility="{Binding IsBusy, Converter={x:Static converters:Cvt.BoolToVis}}">
                 <Border
                     Padding="32,24"
                     HorizontalAlignment="Center"

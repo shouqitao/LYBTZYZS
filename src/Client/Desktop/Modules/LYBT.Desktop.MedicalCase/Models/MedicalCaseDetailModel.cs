@@ -76,10 +76,11 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     }
 
     /// <summary>备注（可编辑）</summary>
+    [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "备注长度不能超过1000个字符")]
     public string? Remark
     {
         get => _remark;
-        set => SetProperty(ref _remark, value);
+        set => SetPropertyAndValidate(ref _remark, value);
     }
 
     #region 诊断摘要（只读）

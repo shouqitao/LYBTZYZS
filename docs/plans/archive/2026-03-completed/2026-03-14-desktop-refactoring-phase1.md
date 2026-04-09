@@ -615,7 +615,7 @@ dotnet test tests/LYBT.Tests.Desktop --verbosity normal
 ```bash
 # 清除构建，测试冷启动
 git clean -xdf
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 dotnet run --project src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj
 # 检查日志中的启动时间，预期 < 3s
 ```

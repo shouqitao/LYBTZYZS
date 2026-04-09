@@ -1089,7 +1089,7 @@ find tests/LYBT.Tests.Server/PureLogic/Entities -name "*.cs" -type f
 
 Run:
 ```bash
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests" -v minimal
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests" -v minimal
 ```
 Expected: All remaining tests pass. Total count should be ~1400-1500.
 
@@ -1159,7 +1159,7 @@ Solutions to try:
 ### Task 4.2: Full Verification
 
 ```bash
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests" -v minimal
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests" -v minimal
 ```
 
 Expected:

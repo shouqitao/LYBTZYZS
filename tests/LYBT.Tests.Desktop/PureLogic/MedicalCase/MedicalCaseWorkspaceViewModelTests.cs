@@ -266,6 +266,7 @@ public class MedicalCaseWorkspaceViewModelTests
 
     #region 导航测试
 
+    [Fact]
     public void IsNavigationTarget_ReturnsTrue()
     {
         // Arrange

@@ -143,6 +143,7 @@ public partial class MedicalCaseMapper
     /// </summary>
     /// <param name="entity">医案实体（需包含导航属性）</param>
     /// <returns>医案完整详情DTO</returns>
+    [UserMapping(Default = false)]
     public MedicalCaseDetailDto MapToMedicalCaseDetailDto(MedicalCase entity)
     {
         // 1. 使用Mapperly生成的基础映射

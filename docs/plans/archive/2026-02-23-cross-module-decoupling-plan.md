@@ -192,7 +192,7 @@ services.AddScoped<ICrossModuleService>(sp => sp.GetRequiredService<CrossModuleS
 
 **Step 3: Verify compilation**
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: BUILD SUCCEEDED
 
 ---
@@ -211,7 +211,7 @@ public interface ICrossModuleService
 
 **Step 2: Verify compilation (allow warnings)**
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: BUILD SUCCEEDED (有 obsolete warnings，不阻塞)
 
 ---
@@ -458,7 +458,7 @@ Expected: BUILD SUCCEEDED
 
 **Step 3: Verify full build + tests**
 
-Run: `dotnet build LYBT.All.sln && dotnet test tests/LYBT.Tests.Unit/ && dotnet test tests/LYBT.Tests.Server.Integration/`
+Run: `dotnet build LYBTZYZS.sln && dotnet test tests/LYBT.Tests.Unit/ && dotnet test tests/LYBT.Tests.Server.Integration/`
 Expected: BUILD SUCCEEDED, all tests pass
 
 **Step 4: Commit Phase 2**
@@ -661,7 +661,7 @@ Expected: BUILD SUCCEEDED
 
 **Step 3: Verify full Desktop build + tests**
 
-Run: `dotnet build LYBT.All.sln && dotnet test tests/LYBT.Tests.Desktop.Unit/`
+Run: `dotnet build LYBTZYZS.sln && dotnet test tests/LYBT.Tests.Desktop.Unit/`
 Expected: BUILD SUCCEEDED, all tests pass
 
 **Step 4: Commit Phase 3**
@@ -704,7 +704,7 @@ Expected: 所有迁移测试通过
 
 **Step 4: Remove old project**
 
-从 `LYBT.All.sln` 中移除 `tests/Architecture/LYBT.ArchTests.csproj` 引用。
+从 `LYBTZYZS.sln` 中移除 `tests/Architecture/LYBT.ArchTests.csproj` 引用。
 删除 `tests/Architecture/` 目录。
 
 ---
@@ -718,8 +718,8 @@ Expected: 所有迁移测试通过
 **Step 1: Verify no references**
 
 ```bash
-grep -r "Consultation" LYBT.All.sln
-grep -r "Prescriptions" LYBT.All.sln
+grep -r "Consultation" LYBTZYZS.sln
+grep -r "Prescriptions" LYBTZYZS.sln
 ```
 
 Expected: 无 .csproj 引用 (仅注释中可能提及)
@@ -733,7 +733,7 @@ rm -rf src/Server/Modules/LYBT.Module.Prescriptions/
 
 **Step 3: Final verification**
 
-Run: `dotnet build LYBT.All.sln && dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"`
+Run: `dotnet build LYBTZYZS.sln && dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"`
 Expected: BUILD SUCCEEDED, ALL TESTS PASS
 
 **Step 4: Commit Phase 4**
@@ -748,8 +748,8 @@ git commit -m "refactor: Phase 4 - ArchTests merged, empty shell directories cle
 
 ## Verification Checklist
 
-- [ ] `dotnet build LYBT.All.sln` -- zero errors
-- [ ] `dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests"` -- all pass
+- [ ] `dotnet build LYBTZYZS.sln` -- zero errors
+- [ ] `dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"` -- all pass
 - [ ] Sync.csproj: 0 cross-module ProjectReference
 - [ ] MedicalCase Server .csproj: 0 cross-module ProjectReference
 - [ ] MedicalCase Desktop .csproj: 0 cross-module ProjectReference

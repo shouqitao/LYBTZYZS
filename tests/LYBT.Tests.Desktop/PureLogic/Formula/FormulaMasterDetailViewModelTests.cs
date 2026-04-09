@@ -297,7 +297,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
 
         await sut.DeleteCommand.ExecuteAsync(null);
 
-        _formulaService.Received(1).DeleteFormulaAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _formulaService.Received(1).DeleteFormulaAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
         await _dialogManager.Received(1).ShowConfirmAsync("确认删除", "确定要删除选中的记录吗？");
     }
 

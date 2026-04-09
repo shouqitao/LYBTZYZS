@@ -20,6 +20,7 @@
         - 此控件无本地资源，所有样式来自全局
     -->
 
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel DataContext="{Binding ElementName=Root}">
         <!-- 基本信息卡片 -->
         <controls:InfoCard Title="基本信息">
@@ -45,7 +46,7 @@
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="名称"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
-                        <TextBox Text="{Binding FormulaName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="1" Text="{Binding FormulaName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -55,7 +56,7 @@
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="分类" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="2" Text="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -64,7 +65,7 @@
                     <!-- 第二行：性味归经 -->
                     <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                         <TextBlock Text="性味归经" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Property, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="3" Text="{Binding Property, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  MinHeight="60"
@@ -74,7 +75,7 @@
                     <!-- 第三行：功效 -->
                     <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                         <TextBlock Text="功效" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding FormulaEffect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="4" Text="{Binding FormulaEffect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  MinHeight="60"
@@ -84,7 +85,7 @@
                     <!-- 第四行：用法 -->
                     <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                         <TextBlock Text="用法" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="5" Text="{Binding Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  MinHeight="60"
@@ -94,7 +95,7 @@
                     <!-- 第五行：备注 -->
                     <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                         <TextBlock Text="备注" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="6" Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  MinHeight="50"
@@ -131,4 +132,5 @@
             </controls:InfoCard.Content>
         </controls:InfoCard>
     </StackPanel>
+    </ScrollViewer>
 </UserControl>

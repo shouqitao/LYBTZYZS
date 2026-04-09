@@ -102,6 +102,9 @@ namespace LYBT.Desktop.Patients.Models
         }
 
         /// <summary>身份证号</summary>
+        [Required(ErrorMessage = "身份证号不能为空")]
+        [RegularExpression(@"^[1-9]\d{5}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$",
+            ErrorMessage = "身份证号格式不正确")]
         [StringLength(ValidationConstants.IdCardMaxLength, ErrorMessage = "身份证号长度不能超过18个字符")]
         public string? IdNumber
         {
@@ -133,6 +136,7 @@ namespace LYBT.Desktop.Patients.Models
         }
 
         /// <summary>地址</summary>
+        [Required(ErrorMessage = "地址不能为空")]
         [StringLength(ValidationConstants.AddressMaxLength, ErrorMessage = "地址长度不能超过200个字符")]
         public string? Address
         {

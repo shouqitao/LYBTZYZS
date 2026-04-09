@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Auth.ViewModels
     /// OpenSpec: refactor-viewmodel-base-classes - 从UnifiedViewModelBase迁移到NavigableViewModelBase
     /// OpenSpec: remove-secure-credential-storage - 移除废弃的SecureCredentialStorage依赖
     /// </summary>
-    public class LoginViewModel : NavigableViewModelBase
+    public partial class LoginViewModel : NavigableViewModelBase
     {
         private readonly ILoginCoordinator _loginCoordinator;
         private readonly IApplicationStateService _applicationStateService;
@@ -240,6 +240,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         #endregion
 
         public bool HasMessage => !string.IsNullOrWhiteSpace(StatusMessage) || !string.IsNullOrWhiteSpace(ErrorMessage);
+
         public ApiHealthStatus ApiStatus { get => _apiStatus; set { if (SetProperty(ref _apiStatus, value)) { OnPropertyChanged(nameof(IsApiUnhealthy)); (RetryApiCheckCommand as DelegateCommand)?.RaiseCanExecuteChanged(); } } }
         public string ApiStatusMessage { get => _apiStatusMessage; set => SetProperty(ref _apiStatusMessage, value); }
         public bool IsApiUnhealthy => ApiStatus == ApiHealthStatus.Unhealthy;
@@ -283,6 +284,13 @@ namespace LYBT.Desktop.Auth.ViewModels
             RetryApiCheckCommand = new DelegateCommand(async () => await ExecuteRetryApiCheckAsync(), () => ApiStatus == ApiHealthStatus.Unhealthy);
 
             _applicationStateService.StatusChanged += OnApiStatusChanged;
+
+            // P0-FIX: ErrorMessage/StatusMessage 变更时通知 HasMessage 属性
+            PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ErrorMessage) || e.PropertyName == nameof(StatusMessage))
+                    OnPropertyChanged(nameof(HasMessage));
+            };
 
             _cts = new CancellationTokenSource();
             BackgroundInitAsync().SafeFireAndForget(ex => Logger.LogError(ex, "[VM] Login.BackgroundInit failed"));
@@ -454,6 +462,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 }
                 else
                 {
+                    IsLoading = false;
                     ErrorMessage = result.ErrorMessage ?? "登录失败，请检查用户名和密码";
                     Password = string.Empty;
                 }
@@ -461,10 +470,11 @@ namespace LYBT.Desktop.Auth.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "[VM] Login.Execute failed - Username={Username}", Username);
+                IsLoading = false;
                 ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex);
                 Password = string.Empty;
             }
-            finally { IsLoading = false; StatusMessage = string.Empty; }
+            finally { StatusMessage = string.Empty; }
         }
 
         /// <summary>

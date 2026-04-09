@@ -23,7 +23,7 @@
 
     <!--  转换器使用x:Static模式 (OpenSpec: cleanup-control-resource-merging)  -->
 
-    <Grid Background="#80FFFFFF" Visibility="{Binding IsLoading, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
+    <Grid Background="{StaticResource DarkMaskBrush}" Visibility="{Binding IsLoading, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <!--  加载动画  -->
             <ProgressBar

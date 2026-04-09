@@ -297,10 +297,12 @@
                 <herbControls:HerbEditControl
                     Grid.Row="1"
                     Margin="16"
+                    Category="{Binding CurrentDetail.Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     CostPrice="{Binding CurrentDetail.CostPrice, Mode=TwoWay}"
                     ErrorsSource="{Binding CurrentDetail.Errors}"
                     HerbEffect="{Binding CurrentDetail.Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     HerbName="{Binding CurrentDetail.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    HerbProperties="{Binding CurrentDetail.Properties, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     IsNameEditable="{Binding IsNameEditable}"
                     Origin="{Binding CurrentDetail.Origin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     PinYinCode="{Binding CurrentDetail.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

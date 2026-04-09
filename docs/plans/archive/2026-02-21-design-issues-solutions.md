@@ -529,7 +529,7 @@ services.AddScoped<IMedicalCaseFacade, MedicalCaseFacade>();
 
 ### 验证方法
 
-1. `dotnet build LYBT.All.sln` -- 全量编译
+1. `dotnet build LYBTZYZS.sln` -- 全量编译
 2. `dotnet test tests/LYBT.Tests.Unit/ --filter "FullyQualifiedName~MedicalCase"` -- 单元测试
 3. `dotnet test tests/LYBT.Tests.Server.Integration/ --filter "FullyQualifiedName~MedicalCase"` -- 集成测试
 4. 手动验证: 通过 Swagger 执行医案 CRUD 操作，确认功能完整
@@ -747,7 +747,7 @@ if (existing.CaseStatus != entity.CaseStatus)
 
 ### 验证方法
 
-1. `dotnet build LYBT.All.sln` -- 全量编译
+1. `dotnet build LYBTZYZS.sln` -- 全量编译
 2. `dotnet test tests/LYBT.Tests.Unit/ --filter "FullyQualifiedName~MedicalCaseRules"` -- 规则单元测试
 3. `dotnet test tests/LYBT.Tests.Desktop.Unit/ --filter "FullyQualifiedName~LocalMedicalCase"` -- Local 单元测试
 4. 新增测试: `MedicalCaseBusinessRulesTests` 覆盖 4 个纯函数
@@ -1001,7 +1001,7 @@ rg "using LYBT\.Entities\.Common" --type cs | grep -i herb
 
 ```bash
 dotnet build src/Server/Core/LYBT.Entities/
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 ```
 
 **Step 4**: 文档记录
@@ -1023,7 +1023,7 @@ dotnet build LYBT.All.sln
 
 ### 验证方法
 
-1. `dotnet build LYBT.All.sln` -- 全量编译 (确认无隐藏引用)
+1. `dotnet build LYBTZYZS.sln` -- 全量编译 (确认无隐藏引用)
 2. 全文搜索确认无残留引用
 
 ### 风险评估
@@ -1279,7 +1279,7 @@ public class ApiException : Exception
 
 ### 验证方法
 
-1. `dotnet build LYBT.All.sln` -- 全量编译
+1. `dotnet build LYBTZYZS.sln` -- 全量编译
 2. `dotnet test tests/LYBT.Tests.Unit/ --filter "FullyQualifiedName~ExceptionHandler"` -- 异常处理器测试
 3. `dotnet test tests/LYBT.Tests.Server.Integration/` -- 全量集成测试 (验证 API 响应格式)
 4. 手动验证矩阵:

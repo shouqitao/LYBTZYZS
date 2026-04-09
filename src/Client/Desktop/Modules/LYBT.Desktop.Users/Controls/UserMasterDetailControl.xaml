@@ -402,6 +402,7 @@
                     Status="{Binding CurrentDetail.Status, Mode=TwoWay}"
                     StatusOptions="{Binding StatusOptions}"
                     UserName="{Binding CurrentDetail.UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Remark="{Binding CurrentDetail.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
                 <!--  详情加载遮罩  -->

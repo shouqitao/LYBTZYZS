@@ -228,6 +228,118 @@ namespace LYBT.Desktop.Patients.Controls
             set => SetValue(ErrorsSourceProperty, value);
         }
 
+        /// <summary>
+        /// 婚姻状况
+        /// </summary>
+        public static readonly DependencyProperty MaritalStatusProperty =
+            DependencyProperty.Register(
+                nameof(MaritalStatus),
+                typeof(string),
+                typeof(PatientEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string MaritalStatus
+        {
+            get => (string)GetValue(MaritalStatusProperty);
+            set => SetValue(MaritalStatusProperty, value);
+        }
+
+        /// <summary>
+        /// 血型
+        /// </summary>
+        public static readonly DependencyProperty BloodTypeProperty =
+            DependencyProperty.Register(
+                nameof(BloodType),
+                typeof(string),
+                typeof(PatientEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string BloodType
+        {
+            get => (string)GetValue(BloodTypeProperty);
+            set => SetValue(BloodTypeProperty, value);
+        }
+
+        /// <summary>
+        /// 紧急联系人姓名
+        /// </summary>
+        public static readonly DependencyProperty EmergencyContactNameProperty =
+            DependencyProperty.Register(
+                nameof(EmergencyContactName),
+                typeof(string),
+                typeof(PatientEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string EmergencyContactName
+        {
+            get => (string)GetValue(EmergencyContactNameProperty);
+            set => SetValue(EmergencyContactNameProperty, value);
+        }
+
+        /// <summary>
+        /// 紧急联系人电话
+        /// </summary>
+        public static readonly DependencyProperty EmergencyContactPhoneProperty =
+            DependencyProperty.Register(
+                nameof(EmergencyContactPhone),
+                typeof(string),
+                typeof(PatientEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string EmergencyContactPhone
+        {
+            get => (string)GetValue(EmergencyContactPhoneProperty);
+            set => SetValue(EmergencyContactPhoneProperty, value);
+        }
+
+        /// <summary>
+        /// 紧急联系人关系
+        /// </summary>
+        public static readonly DependencyProperty EmergencyContactRelationProperty =
+            DependencyProperty.Register(
+                nameof(EmergencyContactRelation),
+                typeof(string),
+                typeof(PatientEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string EmergencyContactRelation
+        {
+            get => (string)GetValue(EmergencyContactRelationProperty);
+            set => SetValue(EmergencyContactRelationProperty, value);
+        }
+
+        /// <summary>
+        /// 过敏史
+        /// </summary>
+        public static readonly DependencyProperty AllergyHistoryProperty =
+            DependencyProperty.Register(
+                nameof(AllergyHistory),
+                typeof(string),
+                typeof(PatientEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string AllergyHistory
+        {
+            get => (string)GetValue(AllergyHistoryProperty);
+            set => SetValue(AllergyHistoryProperty, value);
+        }
+
+        /// <summary>
+        /// 既往病史
+        /// </summary>
+        public static readonly DependencyProperty MedicalHistoryProperty =
+            DependencyProperty.Register(
+                nameof(MedicalHistory),
+                typeof(string),
+                typeof(PatientEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string MedicalHistory
+        {
+            get => (string)GetValue(MedicalHistoryProperty);
+            set => SetValue(MedicalHistoryProperty, value);
+        }
+
         #endregion
     }
 }

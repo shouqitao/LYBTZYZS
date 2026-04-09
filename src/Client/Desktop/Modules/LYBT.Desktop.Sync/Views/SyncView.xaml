@@ -6,13 +6,13 @@
     xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:LYBT.Desktop.Sync.ViewModels"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="#F5F5F5">
+    Background="{StaticResource LYBTBackgroundBrush}">
 
     <UserControl.Resources>
         <!--  列表项样式  -->
         <Style x:Key="SyncItemStyle" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="Background" Value="{StaticResource LYBTBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource LYBTBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="16,12" />
@@ -21,8 +21,8 @@
 
         <!--  主按钮样式  -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#5D4037" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="{StaticResource LYBTTcmPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource LYBTBackgroundBrush}" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Padding" Value="24,12" />
@@ -39,13 +39,13 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#4E342E" />
+                                <Setter Property="Background" Value="{StaticResource LYBTTcmSecondaryBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#3E2723" />
+                                <Setter Property="Background" Value="{StaticResource LYBTTcmDarkBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#BCAAA4" />
+                                <Setter Property="Background" Value="{StaticResource LYBTTcmLightBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -55,11 +55,11 @@
 
         <!--  次要按钮样式  -->
         <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="Foreground" Value="#5D4037" />
+            <Setter Property="Background" Value="{StaticResource LYBTBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource LYBTTcmPrimaryBrush}" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="Padding" Value="16,10" />
-            <Setter Property="BorderBrush" Value="#5D4037" />
+            <Setter Property="BorderBrush" Value="{StaticResource LYBTTcmPrimaryBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
@@ -75,11 +75,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#EFEBE9" />
+                                <Setter Property="Background" Value="{StaticResource LYBTTcmHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Foreground" Value="#BCAAA4" />
-                                <Setter Property="BorderBrush" Value="#BCAAA4" />
+                                <Setter Property="Foreground" Value="{StaticResource LYBTTcmLightBrush}" />
+                                <Setter Property="BorderBrush" Value="{StaticResource LYBTTcmLightBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -91,7 +91,7 @@
         <Style x:Key="GroupHeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#3E2723" />
+            <Setter Property="Foreground" Value="{StaticResource LYBTTcmDarkBrush}" />
             <Setter Property="Margin" Value="0,0,0,12" />
         </Style>
     </UserControl.Resources>
@@ -113,12 +113,12 @@
             <TextBlock
                 FontSize="28"
                 FontWeight="Bold"
-                Foreground="#3E2723"
+                Foreground="{StaticResource LYBTTcmDarkBrush}"
                 Text="数据同步" />
             <TextBlock
                 Margin="0,8,0,0"
                 FontSize="14"
-                Foreground="#6D4C41"
+                Foreground="{StaticResource LYBTTcmPrimaryBrush}"
                 Text="同步本地数据与服务器数据，确保数据一致性" />
         </StackPanel>
 
@@ -127,7 +127,7 @@
             Grid.Row="1"
             Margin="0,0,0,24"
             Padding="20"
-            Background="White"
+            Background="{StaticResource LYBTBackgroundBrush}"
             CornerRadius="12">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -145,7 +145,7 @@
                         Margin="0,0,12,0"
                         VerticalAlignment="Center"
                         FontSize="14"
-                        Foreground="#475569"
+                        Foreground="{StaticResource LYBTTextSecondaryBrush}"
                         Text="数据类型:" />
                     <ComboBox
                         Width="160"
@@ -173,53 +173,53 @@
                     <Border
                         Margin="0,0,16,0"
                         Padding="16,8"
-                        Background="#E3F2FD"
+                        Background="{StaticResource LightInfoBrush}"
                         CornerRadius="6">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock
                                 Margin="0,0,8,0"
                                 FontSize="14"
-                                Foreground="#1565C0"
+                                Foreground="{StaticResource DarkInfoBrush}"
                                 Text="待上传:" />
                             <TextBlock
                                 FontSize="14"
                                 FontWeight="SemiBold"
-                                Foreground="#1565C0"
+                                Foreground="{StaticResource DarkInfoBrush}"
                                 Text="{Binding UploadCount}" />
                         </StackPanel>
                     </Border>
                     <Border
                         Margin="0,0,16,0"
                         Padding="16,8"
-                        Background="#E8F5E9"
+                        Background="{StaticResource LightSuccessBrush}"
                         CornerRadius="6">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock
                                 Margin="0,0,8,0"
                                 FontSize="14"
-                                Foreground="#2E7D32"
+                                Foreground="{StaticResource DarkSuccessBrush}"
                                 Text="待下载:" />
                             <TextBlock
                                 FontSize="14"
                                 FontWeight="SemiBold"
-                                Foreground="#2E7D32"
+                                Foreground="{StaticResource DarkSuccessBrush}"
                                 Text="{Binding DownloadCount}" />
                         </StackPanel>
                     </Border>
                     <Border
                         Padding="16,8"
-                        Background="#FFF3E0"
+                        Background="{StaticResource LightWarningBrush}"
                         CornerRadius="6">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock
                                 Margin="0,0,8,0"
                                 FontSize="14"
-                                Foreground="#E65100"
+                                Foreground="{StaticResource AccentOrangeBrush}"
                                 Text="冲突:" />
                             <TextBlock
                                 FontSize="14"
                                 FontWeight="SemiBold"
-                                Foreground="#E65100"
+                                Foreground="{StaticResource AccentOrangeBrush}"
                                 Text="{Binding ConflictCount}" />
                         </StackPanel>
                     </Border>
@@ -248,7 +248,7 @@
             <Border
                 Grid.Column="0"
                 Padding="16"
-                Background="White"
+                Background="{StaticResource LYBTBackgroundBrush}"
                 CornerRadius="12">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -262,7 +262,7 @@
                             Margin="8,0,0,12"
                             VerticalAlignment="Bottom"
                             FontSize="14"
-                            Foreground="#6D4C41"
+                            Foreground="{StaticResource LYBTTcmPrimaryBrush}"
                             Text="{Binding LocalOnlyItems.Count, StringFormat='({0})'}" />
                     </StackPanel>
                     <Button
@@ -293,12 +293,12 @@
                                                 <TextBlock
                                                     FontSize="14"
                                                     FontWeight="Medium"
-                                                    Foreground="#1E293B"
+                                                    Foreground="{StaticResource LYBTTextPrimaryBrush}"
                                                     Text="{Binding EntityName}" />
                                                 <TextBlock
                                                     Margin="0,4,0,0"
                                                     FontSize="12"
-                                                    Foreground="#64748B"
+                                                    Foreground="{StaticResource LYBTTextSecondaryBrush}"
                                                     Text="{Binding ChangedAtDisplay}" />
                                             </StackPanel>
                                         </Grid>
@@ -312,7 +312,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         FontSize="14"
-                        Foreground="#9CA3AF"
+                        Foreground="{StaticResource LYBTTextDisabledBrush}"
                         Text="无待上传数据"
                         Visibility="{Binding LocalOnlyItems.Count, Converter={x:Static converters:Cvt.ZeroToVis}}" />
                 </Grid>
@@ -322,7 +322,7 @@
             <Border
                 Grid.Column="2"
                 Padding="16"
-                Background="White"
+                Background="{StaticResource LYBTBackgroundBrush}"
                 CornerRadius="12">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -336,7 +336,7 @@
                             Margin="8,0,0,12"
                             VerticalAlignment="Bottom"
                             FontSize="14"
-                            Foreground="#6D4C41"
+                            Foreground="{StaticResource LYBTTcmPrimaryBrush}"
                             Text="{Binding ServerOnlyItems.Count, StringFormat='({0})'}" />
                     </StackPanel>
                     <Button
@@ -367,12 +367,12 @@
                                                 <TextBlock
                                                     FontSize="14"
                                                     FontWeight="Medium"
-                                                    Foreground="#1E293B"
+                                                    Foreground="{StaticResource LYBTTextPrimaryBrush}"
                                                     Text="{Binding EntityName}" />
                                                 <TextBlock
                                                     Margin="0,4,0,0"
                                                     FontSize="12"
-                                                    Foreground="#64748B"
+                                                    Foreground="{StaticResource LYBTTextSecondaryBrush}"
                                                     Text="{Binding ChangedAtDisplay}" />
                                             </StackPanel>
                                         </Grid>
@@ -386,7 +386,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         FontSize="14"
-                        Foreground="#9CA3AF"
+                        Foreground="{StaticResource LYBTTextDisabledBrush}"
                         Text="无待下载数据"
                         Visibility="{Binding ServerOnlyItems.Count, Converter={x:Static converters:Cvt.ZeroToVis}}" />
                 </Grid>
@@ -396,7 +396,7 @@
             <Border
                 Grid.Column="4"
                 Padding="16"
-                Background="White"
+                Background="{StaticResource LYBTBackgroundBrush}"
                 CornerRadius="12">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -409,7 +409,7 @@
                             Margin="8,0,0,12"
                             VerticalAlignment="Bottom"
                             FontSize="14"
-                            Foreground="#E65100"
+                            Foreground="{StaticResource AccentOrangeBrush}"
                             Text="{Binding ConflictItems.Count, StringFormat='({0})'}" />
                     </StackPanel>
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -419,8 +419,8 @@
                                     <Border
                                         Margin="0,0,0,8"
                                         Padding="16,12"
-                                        Background="#FFF8E1"
-                                        BorderBrush="#FFCC80"
+                                        Background="{StaticResource LightWarningBrush}"
+                                        BorderBrush="{StaticResource BorderMediumBrush}"
                                         BorderThickness="1"
                                         CornerRadius="8">
                                         <Grid>
@@ -437,29 +437,29 @@
                                                 <TextBlock
                                                     FontSize="14"
                                                     FontWeight="Medium"
-                                                    Foreground="#E65100"
+                                                    Foreground="{StaticResource AccentOrangeBrush}"
                                                     Text="{Binding EntityName}" />
                                                 <TextBlock
                                                     Margin="0,4,0,0"
                                                     FontSize="12"
-                                                    Foreground="#64748B"
+                                                    Foreground="{StaticResource LYBTTextSecondaryBrush}"
                                                     Text="{Binding ChangedAtDisplay}" />
                                                 <TextBlock
                                                     Margin="0,4,0,0"
                                                     FontSize="12"
                                                     FontStyle="Italic"
-                                                    Foreground="#FB8C00">
+                                                    Foreground="{StaticResource WarningBrush}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Text" Value="未处理" />
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding ResolutionDecision}" Value="True">
                                                                     <Setter Property="Text" Value="使用本地版本" />
-                                                                    <Setter Property="Foreground" Value="#1565C0" />
+                                                                    <Setter Property="Foreground" Value="{StaticResource DarkInfoBrush}" />
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding ResolutionDecision}" Value="False">
                                                                     <Setter Property="Text" Value="使用服务器版本" />
-                                                                    <Setter Property="Foreground" Value="#2E7D32" />
+                                                                    <Setter Property="Foreground" Value="{StaticResource DarkSuccessBrush}" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -477,7 +477,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         FontSize="14"
-                        Foreground="#9CA3AF"
+                        Foreground="{StaticResource LYBTTextDisabledBrush}"
                         Text="无数据冲突"
                         Visibility="{Binding ConflictItems.Count, Converter={x:Static converters:Cvt.ZeroToVis}}" />
                 </Grid>
@@ -489,7 +489,7 @@
             Grid.Row="3"
             Margin="0,24,0,0"
             Padding="20"
-            Background="White"
+            Background="{StaticResource LYBTBackgroundBrush}"
             CornerRadius="12">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -504,7 +504,7 @@
                         Margin="0,0,0,6"
                         FontSize="15"
                         FontWeight="Bold"
-                        Foreground="#3E2723"
+                        Foreground="{StaticResource LYBTTcmDarkBrush}"
                         Text="{Binding PhaseDescription}" />
 
                     <!--  Normal status (hidden in Failed/Completed)  -->
@@ -523,22 +523,22 @@
                         </StackPanel.Style>
                         <TextBlock
                             FontSize="14"
-                            Foreground="#64748B"
+                            Foreground="{StaticResource LYBTTextSecondaryBrush}"
                             Text="{Binding StatusMessage}"
                             Visibility="{Binding StatusMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
                         <TextBlock
                             FontSize="14"
-                            Foreground="#DC2626"
+                            Foreground="{StaticResource DangerBrush}"
                             Text="{Binding ErrorMessage}"
                             Visibility="{Binding ErrorMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
                         <StackPanel Orientation="Horizontal" Visibility="{Binding LastSyncTime, Converter={x:Static converters:Cvt.NotNullToVis}}">
                             <TextBlock
                                 FontSize="12"
-                                Foreground="#9CA3AF"
+                                Foreground="{StaticResource LYBTTextDisabledBrush}"
                                 Text="上次同步: " />
                             <TextBlock
                                 FontSize="12"
-                                Foreground="#9CA3AF"
+                                Foreground="{StaticResource LYBTTextDisabledBrush}"
                                 Text="{Binding LastSyncTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                         </StackPanel>
                         <ProgressBar
@@ -566,12 +566,12 @@
                             Height="20"
                             Margin="0,0,10,0"
                             VerticalAlignment="Center"
-                            Fill="#DC2626" />
+                            Fill="{StaticResource DangerBrush}" />
                         <TextBlock
                             MaxWidth="500"
                             VerticalAlignment="Center"
                             FontSize="14"
-                            Foreground="#DC2626"
+                            Foreground="{StaticResource DangerBrush}"
                             Text="{Binding SyncErrorMessage}"
                             TextWrapping="Wrap" />
                     </StackPanel>
@@ -598,18 +598,18 @@
                                 <Border
                                     Margin="0,0,12,6"
                                     Padding="14,8"
-                                    Background="#FDF8F6"
-                                    BorderBrush="#D7CCC8"
+                                    Background="{StaticResource LYBTTcmSurfaceBrush}"
+                                    BorderBrush="{StaticResource BorderLightBrush}"
                                     BorderThickness="1"
                                     CornerRadius="6">
                                     <StackPanel>
                                         <TextBlock
                                             FontSize="13"
                                             FontWeight="SemiBold"
-                                            Foreground="#5D4037"
+                                            Foreground="{StaticResource LYBTTcmPrimaryBrush}"
                                             Text="{Binding EntityType}" />
                                         <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
-                                            <TextBlock FontSize="12" Foreground="#388E3C">
+                                            <TextBlock FontSize="12" Foreground="{StaticResource DarkSuccessBrush}">
                                                 <TextBlock.Text>
                                                     <MultiBinding StringFormat="上传{0} 下载{1} 删除{2}">
                                                         <Binding Path="UploadedCount" />
@@ -640,7 +640,7 @@
                         <TextBlock
                             Margin="0,4,0,0"
                             FontSize="14"
-                            Foreground="#64748B"
+                            Foreground="{StaticResource LYBTTextSecondaryBrush}"
                             Text="{Binding StatusMessage}" />
                     </StackPanel>
                 </StackPanel>
@@ -721,35 +721,35 @@
         <Grid
             Grid.Row="0"
             Grid.RowSpan="4"
-            Background="#80FFFFFF"
+            Background="{StaticResource DarkMaskBrush}"
             Visibility="{Binding IsBusy, Converter={x:Static converters:Cvt.BoolToVis}}">
             <Border
                 Padding="40,32"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Background="White"
+                Background="{StaticResource LYBTBackgroundBrush}"
                 CornerRadius="16">
                 <Border.Effect>
                     <DropShadowEffect
                         BlurRadius="20"
                         Opacity="0.2"
                         ShadowDepth="4"
-                        Color="#000000" />
+                        Color="{StaticResource ShadowColor}" />
                 </Border.Effect>
                 <StackPanel>
                     <ProgressBar
                         Width="200"
                         Height="6"
-                        Background="#E5E7EB"
+                        Background="{StaticResource BorderLightBrush}"
                         BorderThickness="0"
-                        Foreground="#5D4037"
+                        Foreground="{StaticResource LYBTTcmPrimaryBrush}"
                         IsIndeterminate="True" />
                     <TextBlock
                         Margin="0,16,0,0"
                         HorizontalAlignment="Center"
                         FontSize="14"
                         FontWeight="Medium"
-                        Foreground="#475569"
+                        Foreground="{StaticResource LYBTTextSecondaryBrush}"
                         Text="{Binding StatusMessage, FallbackValue='处理中...'}" />
                 </StackPanel>
             </Border>

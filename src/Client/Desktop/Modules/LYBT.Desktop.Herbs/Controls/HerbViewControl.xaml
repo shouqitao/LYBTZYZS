@@ -126,7 +126,7 @@
                         <TextBlock Grid.Row="0" Grid.Column="1"
                                    Text="{Binding Price, StringFormat={}{0:F2}元}"
                                    Style="{DynamicResource DetailValueStyle}"
-                                   Foreground="#0078D4"
+                                    Foreground="{StaticResource ProgressBarBrush}"
                                    FontWeight="Medium"/>
 
                         <!-- 成本价 -->

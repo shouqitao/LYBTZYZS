@@ -1,0 +1,26 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="LYBTPrimaryBrush" Color="#2563EB" />
+    <SolidColorBrush x:Key="LYBTPrimaryDarkBrush" Color="#1D4ED8" />
+    <SolidColorBrush x:Key="LYBTSuccessBrush" Color="#22C55E" />
+    <SolidColorBrush x:Key="LYBTWarningBrush" Color="#F59E0B" />
+    <SolidColorBrush x:Key="LYBTErrorBrush" Color="#EF4444" />
+    <SolidColorBrush x:Key="LYBTInfoBrush" Color="#3B82F6" />
+    <SolidColorBrush x:Key="LYBTBackgroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="LYBTSurfaceBrush" Color="#F8FAFC" />
+    <SolidColorBrush x:Key="LYBTBorderBrush" Color="#E2E8F0" />
+    <SolidColorBrush x:Key="LYBTTextPrimaryBrush" Color="#0F172A" />
+    <SolidColorBrush x:Key="LYBTTextSecondaryBrush" Color="#64748B" />
+    <SolidColorBrush x:Key="LYBTTextDisabledBrush" Color="#94A3B8" />
+
+    <!--  TCM 棕色主题系列 (中医诊所品牌色)  -->
+    <SolidColorBrush x:Key="LYBTTcmPrimaryBrush" Color="#5D4037" />
+    <SolidColorBrush x:Key="LYBTTcmSecondaryBrush" Color="#4E342E" />
+    <SolidColorBrush x:Key="LYBTTcmDarkBrush" Color="#3E2723" />
+    <SolidColorBrush x:Key="LYBTTcmAccentBrush" Color="#8D6E63" />
+    <SolidColorBrush x:Key="LYBTTcmLightBrush" Color="#BCAAA4" />
+    <SolidColorBrush x:Key="LYBTTcmSurfaceBrush" Color="#F8F5F3" />
+    <SolidColorBrush x:Key="LYBTTcmHoverBrush" Color="#EFEBE9" />
+
+</ResourceDictionary>

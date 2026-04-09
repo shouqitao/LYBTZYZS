@@ -29,12 +29,6 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <!--  状态颜色  -->
-            <SolidColorBrush x:Key="ConnectedColor" Color="#1E7D34" />
-            <SolidColorBrush x:Key="DisconnectedColor" Color="#9E9E9E" />
-            <SolidColorBrush x:Key="ReadingColor" Color="#0078D4" />
-            <SolidColorBrush x:Key="ErrorColor" Color="#C42B1C" />
-
             <!--  卡片背景 - 使用主题资源  -->
             <SolidColorBrush x:Key="CardBackground" Color="{DynamicResource SecondaryRegionColor}" />
             <SolidColorBrush x:Key="CardBorder" Color="{DynamicResource BorderColor}" />
@@ -69,13 +63,13 @@
                     VerticalAlignment="Center">
                     <Ellipse.Style>
                         <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="{StaticResource DisconnectedColor}" />
+                            <Setter Property="Fill" Value="{StaticResource BorderMediumBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsConnected, ElementName=Root}" Value="True">
-                                    <Setter Property="Fill" Value="{StaticResource ConnectedColor}" />
+                                    <Setter Property="Fill" Value="{StaticResource DarkSuccessBrush}" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding IsReading, ElementName=Root}" Value="True">
-                                    <Setter Property="Fill" Value="{StaticResource ReadingColor}" />
+                                    <Setter Property="Fill" Value="{StaticResource ProgressBarBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -90,10 +84,10 @@
                     Text="&#xE8EA;">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource DisconnectedColor}" />
+                            <Setter Property="Foreground" Value="{StaticResource BorderMediumBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsConnected, ElementName=Root}" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource ConnectedColor}" />
+                                    <Setter Property="Foreground" Value="{StaticResource DarkSuccessBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>

@@ -2,7 +2,6 @@ using FluentAssertions;
 using System.Threading;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Desktop.EndToEnd.Infrastructure;
 using Xunit;

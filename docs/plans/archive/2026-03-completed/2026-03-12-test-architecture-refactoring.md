@@ -70,7 +70,7 @@ global using NSubstitute;
 
 Run:
 ```bash
-dotnet sln LYBT.All.sln add tests/LYBT.Tests.Server.Unit/LYBT.Tests.Server.Unit.csproj
+dotnet sln LYBTZYZS.sln add tests/LYBT.Tests.Server.Unit/LYBT.Tests.Server.Unit.csproj
 ```
 
 Expected: Project added successfully
@@ -854,7 +854,7 @@ rm -rf tests/LYBT.Tests.Server/PureLogic
 
 Run:
 ```bash
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 ```
 
 Expected: Build succeeded with no warnings
@@ -1026,7 +1026,7 @@ git commit -m "feat(tests): add optimized runsettings for faster test execution"
 
 Run:
 ```bash
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 ```
 
 Expected: Build succeeded

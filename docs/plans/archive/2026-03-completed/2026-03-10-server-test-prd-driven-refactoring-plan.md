@@ -985,7 +985,7 @@ Expected: Build succeeded
 
 **Step 1: Full build**
 
-Run: `dotnet build LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
 Expected: Build succeeded
 
 **Step 2: Run ALL existing tests**
@@ -1436,7 +1436,7 @@ Format:
 ### Task 5.3: Full Test Run
 
 ```bash
-dotnet test LYBT.All.sln --filter "FullyQualifiedName~LYBT.Tests" --verbosity normal
+dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests" --verbosity normal
 ```
 
 Expected: All tests pass, parallel collections reduce execution time from ~280s to ~80s.

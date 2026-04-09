@@ -51,31 +51,35 @@ namespace LYBT.Desktop.Formula.Models
         }
 
         /// <summary>功效</summary>
+        [StringLength(500, ErrorMessage = "功效长度不能超过500个字符")]
         public string? Effect
         {
             get => _effect;
-            set => SetProperty(ref _effect, value);
+            set => SetPropertyAndValidate(ref _effect, value);
         }
 
         /// <summary>用法用量</summary>
+        [StringLength(500, ErrorMessage = "用法长度不能超过500个字符")]
         public string? Usage
         {
             get => _usage;
-            set => SetProperty(ref _usage, value);
+            set => SetPropertyAndValidate(ref _usage, value);
         }
 
         /// <summary>性味</summary>
+        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "性味长度不能超过100个字符")]
         public string? Property
         {
             get => _property;
-            set => SetProperty(ref _property, value);
+            set => SetPropertyAndValidate(ref _property, value);
         }
 
         /// <summary>备注</summary>
+        [StringLength(1000, ErrorMessage = "备注长度不能超过1000个字符")]
         public string? Remark
         {
             get => _remark;
-            set => SetProperty(ref _remark, value);
+            set => SetPropertyAndValidate(ref _remark, value);
         }
 
         /// <summary>是否共享</summary>
@@ -86,10 +90,11 @@ namespace LYBT.Desktop.Formula.Models
         }
 
         /// <summary>分类</summary>
+        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "分类长度不能超过100个字符")]
         public string? Category
         {
             get => _category;
-            set => SetProperty(ref _category, value);
+            set => SetPropertyAndValidate(ref _category, value);
         }
 
         /// <summary>状态</summary>

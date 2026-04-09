@@ -7,7 +7,7 @@
 ## Build & Test
 
 ```bash
-dotnet build LYBT.All.sln
+dotnet build LYBTZYZS.sln
 
 # Test projects (~2021 tests total)
 dotnet test tests/LYBT.Tests.Server/        # 1185 tests (real SQL Server + Respawn)

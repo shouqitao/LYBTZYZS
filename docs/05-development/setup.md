@@ -93,7 +93,7 @@ dotnet run
 
 ### 客户端
 
-1. Visual Studio 打开 `LYBT.All.sln`
+1. Visual Studio 打开 `LYBTZYZS.sln`
 2. 设置 `LYBT.Desktop.Shell` 为启动项目
 3. F5 运行
 4. 默认连接远程模式 (localhost:5001)

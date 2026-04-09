@@ -19,7 +19,7 @@
 - Create: `tests/LYBT.Tests.Server.Integration/GlobalUsings.cs`
 - Create: `tests/LYBT.Tests.Server.Integration/xunit.runner.json`
 - Create: `tests/LYBT.Tests.Server.Integration/appsettings.Test.json`
-- Modify: `LYBT.All.sln` (add project)
+- Modify: `LYBTZYZS.sln` (add project)
 
 **Step 1: 创建 csproj**
 
@@ -308,7 +308,7 @@ global using System.Net.Http.Json;
 
 **Step 6: 添加到 sln 并验证编译**
 
-Run: `dotnet sln LYBT.All.sln add tests/LYBT.Tests.Server.Integration/LYBT.Tests.Server.Integration.csproj`
+Run: `dotnet sln LYBTZYZS.sln add tests/LYBT.Tests.Server.Integration/LYBT.Tests.Server.Integration.csproj`
 Run: `dotnet build tests/LYBT.Tests.Server.Integration/LYBT.Tests.Server.Integration.csproj`
 Expected: 编译成功，0 errors
 
@@ -321,7 +321,7 @@ Expected: 编译成功，0 errors
 - Create: `tests/LYBT.Tests.Desktop.Integration/Fixtures/DesktopFixture.cs`
 - Create: `tests/LYBT.Tests.Desktop.Integration/GlobalUsings.cs`
 - Create: `tests/LYBT.Tests.Desktop.Integration/xunit.runner.json`
-- Modify: `LYBT.All.sln`
+- Modify: `LYBTZYZS.sln`
 
 **Step 1: 创建 csproj**
 
@@ -508,7 +508,7 @@ Desktop集成测试可以并行（每个测试有独立的SQLite连接）。
 
 **Step 4: 添加到 sln 并验证编译**
 
-Run: `dotnet sln LYBT.All.sln add tests/LYBT.Tests.Desktop.Integration/LYBT.Tests.Desktop.Integration.csproj`
+Run: `dotnet sln LYBTZYZS.sln add tests/LYBT.Tests.Desktop.Integration/LYBT.Tests.Desktop.Integration.csproj`
 Run: `dotnet build tests/LYBT.Tests.Desktop.Integration/LYBT.Tests.Desktop.Integration.csproj`
 Expected: 编译成功
 
@@ -519,7 +519,7 @@ Expected: 编译成功
 **Files:**
 - Create: `tests/LYBT.Tests.Unit/LYBT.Tests.Unit.csproj`
 - Create: `tests/LYBT.Tests.Unit/GlobalUsings.cs`
-- Modify: `LYBT.All.sln`
+- Modify: `LYBTZYZS.sln`
 
 **Step 1: 创建 csproj**
 
@@ -553,7 +553,7 @@ Expected: 编译成功
 
 **Step 2: 添加到 sln 并验证编译**
 
-Run: `dotnet sln LYBT.All.sln add tests/LYBT.Tests.Unit/LYBT.Tests.Unit.csproj`
+Run: `dotnet sln LYBTZYZS.sln add tests/LYBT.Tests.Unit/LYBT.Tests.Unit.csproj`
 Run: `dotnet build tests/LYBT.Tests.Unit/LYBT.Tests.Unit.csproj`
 
 ---
@@ -563,7 +563,7 @@ Run: `dotnet build tests/LYBT.Tests.Unit/LYBT.Tests.Unit.csproj`
 **Files:**
 - Create: `tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj`
 - Create: `tests/LYBT.Tests.Architecture/GlobalUsings.cs`
-- Modify: `LYBT.All.sln`
+- Modify: `LYBTZYZS.sln`
 
 **Step 1: 创建 csproj**
 
@@ -598,7 +598,7 @@ Run: `dotnet build tests/LYBT.Tests.Unit/LYBT.Tests.Unit.csproj`
 
 **Step 2: 添加到 sln 并验证编译**
 
-Run: `dotnet sln LYBT.All.sln add tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj`
+Run: `dotnet sln LYBTZYZS.sln add tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj`
 Run: `dotnet build tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj`
 
 ---
@@ -931,8 +931,8 @@ Expected: 全部通过
 
 **Step 3:** 验证全量编译和测试
 
-Run: `dotnet build LYBT.All.sln`
-Run: `dotnet test LYBT.All.sln`
+Run: `dotnet build LYBTZYZS.sln`
+Run: `dotnet test LYBTZYZS.sln`
 Expected: 0 errors, 全部测试通过
 
 ---

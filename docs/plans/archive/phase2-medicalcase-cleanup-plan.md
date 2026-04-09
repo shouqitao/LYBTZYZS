@@ -146,7 +146,7 @@ public void AR001_MedicalCase_Should_Be_Aggregate_Root()
 |---|--------|-------|-----------|
 | 3.1 | Verify no runtime code references `MedicalCaseController` class name (grep result: only comments and worktrees) | - | Verify |
 | 3.2 | Delete `MedicalCaseController.cs` | `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseController.cs` | - |
-| 3.3 | Run `dotnet build LYBT.All.sln` -- success | - | Verify |
+| 3.3 | Run `dotnet build LYBTZYZS.sln` -- success | - | Verify |
 | 3.4 | Run `dotnet test tests/LYBT.Tests.Architecture/` -- AR001 passes | - | Verify |
 | 3.5 | Run `dotnet test tests/LYBT.Tests.Server.Unit/` -- all pass | - | Verify |
 | 3.6 | Run `dotnet test tests/LYBT.Tests.Integration/` -- all pass | - | Verify |
@@ -258,7 +258,7 @@ CancellationToken is the **first parameter** with default value.
 
 | # | Command | Expected |
 |---|---------|----------|
-| 6.1 | `dotnet build LYBT.All.sln` | 0 errors, 0 warnings |
+| 6.1 | `dotnet build LYBTZYZS.sln` | 0 errors, 0 warnings |
 | 6.2 | `dotnet test tests/LYBT.Tests.Architecture/` | All pass (AR001 validates new controllers) |
 | 6.3 | `dotnet test tests/LYBT.Tests.Server.Unit/` | All pass |
 | 6.4 | `dotnet test tests/LYBT.Tests.Integration/` | All pass |

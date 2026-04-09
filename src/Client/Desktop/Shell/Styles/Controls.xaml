@@ -303,7 +303,7 @@
 
     <!--  面板头部样式  -->
     <Style x:Key="PanelHeader" TargetType="Border">
-        <Setter Property="Background" Value="#F8F9FA" />
+        <Setter Property="Background" Value="{StaticResource LYBTSurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="Padding" Value="16,12" />
@@ -320,7 +320,7 @@
     <!--  信息栏样式  -->
     <Style x:Key="InfoBar" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource LightPrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="#90CAF9" />
+        <Setter Property="BorderBrush" Value="{StaticResource LYBTInfoBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="Height" Value="50" />
     </Style>
