@@ -14,8 +14,7 @@
     xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
     xmlns:local="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
-    xmlns:prism="http://prismlibrary.com/"
-    prism:ViewModelLocator.AutoWireViewModel="True">
+    xmlns:prism="http://prismlibrary.com/">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):

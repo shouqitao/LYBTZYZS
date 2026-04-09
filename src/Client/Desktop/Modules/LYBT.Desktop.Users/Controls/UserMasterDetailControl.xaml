@@ -14,8 +14,7 @@
     xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
     xmlns:prism="http://prismlibrary.com/"
-    xmlns:userControls="clr-namespace:LYBT.Desktop.Users.Controls"
-    prism:ViewModelLocator.AutoWireViewModel="True">
+    xmlns:userControls="clr-namespace:LYBT.Desktop.Users.Controls">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):

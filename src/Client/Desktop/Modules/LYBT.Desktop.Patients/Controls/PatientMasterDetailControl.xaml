@@ -13,8 +13,7 @@
     xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
     xmlns:patientControls="clr-namespace:LYBT.Desktop.Patients.Controls"
-    xmlns:prism="http://prismlibrary.com/"
-    prism:ViewModelLocator.AutoWireViewModel="True">
+    xmlns:prism="http://prismlibrary.com/">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):
