@@ -30,6 +30,7 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly ISessionLifecycleManager _sessionLifecycleManager;
     private readonly IModuleLoadingService _moduleLoadingService;
     private readonly INavigationCoordinator _navigationCoordinator;
+    private readonly ISessionManager _sessionManager;
     private readonly ICredentialVault? _credentialVault;
     private readonly IUsernameStorageService? _usernameStorage;
     private readonly IAuthenticationStateMachine _stateMachine;
@@ -51,6 +52,7 @@ public class LoginCoordinator : ILoginCoordinator
         ISessionLifecycleManager sessionLifecycleManager,
         IModuleLoadingService moduleLoadingService,
         INavigationCoordinator navigationCoordinator,
+        ISessionManager sessionManager,
         IAuthenticationStateMachine stateMachine,
         IConnectionModeProvider connectionModeProvider,
         IConfiguration configuration,
@@ -65,6 +67,7 @@ public class LoginCoordinator : ILoginCoordinator
         _sessionLifecycleManager = sessionLifecycleManager ?? throw new ArgumentNullException(nameof(sessionLifecycleManager));
         _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
+        _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         _credentialVault = credentialVault;
         _usernameStorage = usernameStorage;
@@ -321,6 +324,9 @@ public class LoginCoordinator : ILoginCoordinator
         {
             // 结束会话
             await _sessionLifecycleManager.EndSessionAsync();
+
+            // 清除 SessionManager 缓存的用户信息（修复：角色切换后主页导航错误）
+            _sessionManager.ClearSession();
 
             // 调用认证服务登出
             await _authenticationService.LogoutAsync();

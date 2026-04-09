@@ -2,6 +2,7 @@
 using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Desktop.Patients.Controls;
 // OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Contracts.Repositories;
@@ -14,6 +15,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Validators.Patients;
 using Prism.Ioc;
 using Prism.Modularity;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Patients
 {
@@ -33,6 +35,8 @@ namespace LYBT.Desktop.Patients
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            ViewModelLocationProvider.Register(typeof(PatientMasterDetailControl).ToString(), typeof(ViewModels.PatientMasterDetailViewModel));
+
             // SYNC-D02: IPatientRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
             // 远程模式 → PatientRepository (Patients 模块)
             // 本地模式 → LocalPatientRepository (LocalData 模块)
@@ -74,6 +78,7 @@ namespace LYBT.Desktop.Patients
 
             // Handler DI注册
             containerRegistry.Register<ViewModels.Handlers.IPatientStatusHandler, ViewModels.Handlers.PatientStatusHandler>();
+            containerRegistry.Register<ViewModels.Handlers.IPatientImportExportHandler, ViewModels.Handlers.PatientImportExportHandler>();
 
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // PatientMasterDetailControl供角色台View复用，ViewModel在Control内部解析

@@ -31,10 +31,6 @@ public partial class HerbMapper
     /// <summary>
     /// Herb实体转换为HerbDetailDto（详情查询）
     /// </summary>
-    /// <remarks>
-    /// 注：Properties字段在Herb实体中不存在，需要忽略
-    /// </remarks>
-    [MapperIgnoreTarget(nameof(HerbDetailDto.Properties))]
     public partial HerbDetailDto ToDetailDto(Herb entity);
 
     /// <summary>

@@ -14,7 +14,8 @@
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
     xmlns:formulaControls="clr-namespace:LYBT.Desktop.Formula.Controls"
     xmlns:formulaView="clr-namespace:LYBT.Desktop.Infrastructure.Controls.FormulaView;assembly=LYBT.Desktop.Infrastructure"
-    xmlns:prism="http://prismlibrary.com/">
+    xmlns:prism="http://prismlibrary.com/"
+    prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!--
         资源加载说明 (OpenSpec: cleanup-control-resource-merging):
@@ -262,7 +263,7 @@
                     FormulaEffect="{Binding CurrentDetail.Effect, Mode=TwoWay}"
                     FormulaName="{Binding CurrentDetail.Name, Mode=TwoWay}"
                     HerbCount="{Binding HerbCount}"
-                    HerbItems="{Binding HerbItems, Mode=TwoWay}"
+                    HerbItems="{Binding EditHerbItems, Mode=TwoWay}"
                     Remark="{Binding CurrentDetail.Remark, Mode=TwoWay}"
                     UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
                     Usage="{Binding CurrentDetail.Usage, Mode=TwoWay}"

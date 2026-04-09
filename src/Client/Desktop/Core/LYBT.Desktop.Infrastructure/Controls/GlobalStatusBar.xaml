@@ -93,7 +93,7 @@
                 <StackPanel
                     Grid.Column="0"
                     Orientation="Horizontal"
-                    Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}">
+                    Visibility="{Binding IsLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}">
                     <Ellipse
                         x:Name="LoadingEllipse"
                         Width="16"
@@ -106,36 +106,36 @@
                             <RotateTransform Angle="0" />
                         </Ellipse.RenderTransform>
                     </Ellipse>
-                    <TextBlock Style="{StaticResource StatusTextStyle}" Text="{Binding LoadingMessage}" />
+                    <TextBlock Style="{StaticResource StatusTextStyle}" Text="{Binding LoadingMessage, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                 </StackPanel>
 
                 <!--  状态消息  -->
                 <TextBlock
                     Grid.Column="1"
                     Style="{StaticResource StatusTextStyle}"
-                    Text="{Binding StatusMessage}" />
+                    Text="{Binding StatusMessage, RelativeSource={RelativeSource AncestorType=UserControl}}" />
 
                 <!--  进度显示  -->
                 <TextBlock
                     Grid.Column="2"
                     Style="{StaticResource StatusTextStyle}"
-                    Text="{Binding OperationProgress, StringFormat={}{0}%}"
-                    Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                    Text="{Binding OperationProgress, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat={}{0}%}"
+                    Visibility="{Binding IsLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
                 <!--  当前用户名 - US-SHELL-007 (CODE-21)  -->
                 <TextBlock
                     Grid.Column="3"
                     Foreground="{DynamicResource PrimaryTextBrush}"
                     Style="{StaticResource StatusTextStyle}"
-                    Text="{Binding CurrentUserName}"
-                    Visibility="{Binding CurrentUserName, Converter={x:Static converters:Cvt.StringToVis}}" />
+                    Text="{Binding CurrentUserName, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    Visibility="{Binding CurrentUserName, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.StringToVis}}" />
 
                 <!--  版本号 - US-SHELL-007 (CODE-21)  -->
                 <TextBlock
                     Grid.Column="4"
                     Foreground="{DynamicResource ThirdlyTextBrush}"
                     Style="{StaticResource StatusTextStyle}"
-                    Text="{Binding AppVersion, StringFormat=v{0}}" />
+                    Text="{Binding AppVersion, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat=v{0}}" />
 
                 <!--  系统时间  -->
                 <TextBlock
@@ -149,8 +149,8 @@
             <ProgressBar
                 Grid.Row="1"
                 Style="{StaticResource StatusProgressBarStyle}"
-                Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}"
-                Value="{Binding OperationProgress}" />
+                Visibility="{Binding IsLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}"
+                Value="{Binding OperationProgress, RelativeSource={RelativeSource AncestorType=UserControl}}" />
         </Grid>
     </Border>
 </UserControl>

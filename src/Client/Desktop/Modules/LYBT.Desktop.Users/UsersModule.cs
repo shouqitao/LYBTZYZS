@@ -1,6 +1,7 @@
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 // SYNC-D02: IUserRepository 迁移到 Contracts.Repositories
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Users.Controls;
 using LYBT.Desktop.Users.Mappers;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.Models.Items;
@@ -10,6 +11,7 @@ using LYBT.Desktop.Users.ViewModels.Handlers;
 using LYBT.Shared.Models.Contracts.Users;
 using Prism.Ioc;
 using Prism.Modularity;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Users
 {
@@ -29,6 +31,11 @@ namespace LYBT.Desktop.Users
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            // Fix: Register ViewModel mapping for UserMasterDetailControl
+            // Prism's default convention looks for UserMasterDetailControlViewModel (doesn't exist)
+            // Map it to UserMasterDetailViewModel instead
+            ViewModelLocationProvider.Register(typeof(UserMasterDetailControl).ToString(), typeof(ViewModels.UserMasterDetailViewModel));
+
             // SYNC-D02: IUserRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
             // 远程模式 -> UserRepository (Users 模块)
             // 本地模式 -> LocalUserRepository (LocalData 模块)

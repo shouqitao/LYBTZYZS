@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
     /// <summary>全局状态栏控件</summary>
     public partial class GlobalStatusBar : UserControl
     {
-        public GlobalStatusBar() { InitializeComponent(); DataContext = this; }
+        public GlobalStatusBar() { InitializeComponent(); }
 
         public static readonly DependencyProperty IsLoadingProperty = DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(GlobalStatusBar), new PropertyMetadata(false));
         public static readonly DependencyProperty LoadingMessageProperty = DependencyProperty.Register(nameof(LoadingMessage), typeof(string), typeof(GlobalStatusBar), new PropertyMetadata(string.Empty));

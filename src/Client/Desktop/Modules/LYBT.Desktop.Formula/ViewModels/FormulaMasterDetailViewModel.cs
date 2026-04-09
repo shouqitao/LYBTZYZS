@@ -53,6 +53,9 @@ namespace LYBT.Desktop.Formula.ViewModels
             set => SetProperty(ref _editHerbItems, value);
         }
 
+        /// <summary>所有药材列表（用于拼音码快速匹配）</summary>
+        public IEnumerable<HerbListDto> AllHerbs => _allHerbs;
+
         /// <summary>药材数量</summary>
         public int HerbCount => EditHerbItems?.Count(h => h.HerbId != Guid.Empty) ?? 0;
 

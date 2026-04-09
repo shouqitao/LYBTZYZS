@@ -1,6 +1,6 @@
-// OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Desktop.MedicalCase.Controls;
 // OpenSpec: migrate-views-to-role-modules - AuditLogDialog/AuditReasonDialog已删除，审计功能后续单独规划
 using LYBT.Desktop.MedicalCase.Dialogs;
 // SYNC-D02: IMedicalCaseRepository 已迁移到 Contracts.Repositories
@@ -16,6 +16,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Prism.Ioc;
 using Prism.Modularity;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.MedicalCase
 {
@@ -37,6 +38,8 @@ namespace LYBT.Desktop.MedicalCase
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            ViewModelLocationProvider.Register(typeof(MedicalCaseMasterDetailControl).ToString(), typeof(ViewModels.MedicalCaseMasterDetailViewModel));
+
             // SYNC-D02: IMedicalCaseRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
             // 远程模式 -> MedicalCaseRepository (MedicalCase 模块)
             // 本地模式 -> LocalMedicalCaseRepository (LocalData 模块)

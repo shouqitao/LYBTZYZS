@@ -35,6 +35,11 @@ namespace LYBT.Entities.Herbs
         [DisplayName("分类")]
         public string? Category { get; set; }
 
+        /// <summary>性味（如：甘、温）</summary>
+        [StringLength(100)]
+        [DisplayName("性味")]
+        public string? Properties { get; set; }
+
         /// <summary>产地</summary>
         [StringLength(100)]
         [DisplayName("产地")]

@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services.CrossModule;
+using LYBT.Desktop.Formula.Controls;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Formula.Repositories;
@@ -7,6 +8,7 @@ using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Ioc;
 using Prism.Modularity;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Formula
 {
@@ -24,6 +26,8 @@ namespace LYBT.Desktop.Formula
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            ViewModelLocationProvider.Register(typeof(FormulaMasterDetailControl).ToString(), typeof(ViewModels.FormulaMasterDetailViewModel));
+
             // SYNC-D02: IFormulaRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
             // 远程模式 -> FormulaRepository (Formula 模块)
             // 本地模式 -> LocalFormulaRepository (LocalData 模块)
