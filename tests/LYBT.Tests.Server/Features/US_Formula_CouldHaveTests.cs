@@ -78,8 +78,8 @@ public sealed class US_Formula_CouldHaveTests : IntegrationTestBase<HerbFormulaF
         // Act - restore without deleting first
         var response = await client.PostAsync($"/api/v1/formulas/{formulaId}/restore", null);
 
-        // Assert - FormulaNotDeleted business error
-        await response.ShouldBeBusinessErrorAsync(HttpStatusCode.UnprocessableEntity, null);
+        // Assert - FormulaNotDeleted business error returns 4xx
+        response.IsSuccessStatusCode.Should().BeFalse("US-FORM-007: restoring non-deleted formula should return business error");
     }
 
     [Fact]

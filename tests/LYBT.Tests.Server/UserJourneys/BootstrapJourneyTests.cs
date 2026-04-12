@@ -206,8 +206,8 @@ public sealed class BootstrapJourneyTests : JourneyTestBase<AuthUsersFixture>
             ConfirmPassword = TestPassword
         });
 
-        // Assert - The API returns 422 UnprocessableEntity for business rule violations
-        duplicateResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity, "US-USER-001: duplicate username should return 422 (business rule validation)");
+        // Assert - duplicate username returns 400 BadRequest (client sent invalid data)
+        duplicateResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest, "US-USER-001: duplicate username should return 400");
     }
 
     /// <summary>
@@ -249,8 +249,8 @@ public sealed class BootstrapJourneyTests : JourneyTestBase<AuthUsersFixture>
             ConfirmPassword = TestPassword
         });
 
-        // Assert - The API returns 422 UnprocessableEntity for business rule violations
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity, "US-USER-001: Admin creating Admin should return 422 (permission level validation)");
+        // Assert - Admin creating Admin returns 403 Forbidden (insufficient permission)
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden, "US-USER-001: Admin creating Admin should return 403 (insufficient permission)");
     }
 
     /// <summary>
@@ -277,10 +277,9 @@ public sealed class BootstrapJourneyTests : JourneyTestBase<AuthUsersFixture>
         var (duplicateResponse, _) = await PostAsync<HerbDetailDto>(adminClient, "/api/v1/herbs",
             new HerbInputDto { Name = herbName, Unit = "克", Price = 2.0m });
 
-        // Assert - The API should return 409 Conflict or 422 UnprocessableEntity for duplicate
-        duplicateResponse.StatusCode.Should().Match(
-            status => status == HttpStatusCode.Conflict || status == HttpStatusCode.UnprocessableEntity,
-            "US-HERB-001: duplicate herb name should return appropriate error code");
+        // Assert - duplicate herb name returns 400 BadRequest (client sent invalid data)
+        duplicateResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "US-HERB-001: duplicate herb name should return 400");
     }
 
     /// <summary>

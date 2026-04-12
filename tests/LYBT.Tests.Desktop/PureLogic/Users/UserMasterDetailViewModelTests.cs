@@ -26,6 +26,7 @@ public class UserMasterDetailViewModelTests
     private readonly IUserStatusHandler _statusHandler;
     private readonly IUserImportExportHandler _importExportHandler;
     private readonly IDesktopCacheManager _cacheManager;
+    private readonly UserEditorViewModel _userEditor;
     private readonly ILoggerFactory _loggerFactory;
 
     // MasterDetailServices 组件
@@ -93,6 +94,7 @@ public class UserMasterDetailViewModelTests
         _statusHandler = Substitute.For<IUserStatusHandler>();
         _importExportHandler = Substitute.For<IUserImportExportHandler>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
+        _userEditor = new UserEditorViewModel(_cacheManager);
     }
 
     private UserMasterDetailViewModel CreateSut()
@@ -104,7 +106,8 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             _statusHandler,
             _importExportHandler,
-            _cacheManager);
+            _cacheManager,
+            _userEditor);
     }
 
     #region 构造函数和初始化
@@ -130,7 +133,8 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             _statusHandler,
             _importExportHandler,
-            _cacheManager);
+            _cacheManager,
+            _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("commandHandler");
     }
@@ -146,7 +150,8 @@ public class UserMasterDetailViewModelTests
             null!,
             _statusHandler,
             _importExportHandler,
-            _cacheManager);
+            _cacheManager,
+            _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("passwordHandler");
     }
@@ -162,7 +167,8 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             null!,
             _importExportHandler,
-            _cacheManager);
+            _cacheManager,
+            _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("statusHandler");
     }
@@ -178,7 +184,8 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             _statusHandler,
             null!,
-            _cacheManager);
+            _cacheManager,
+            _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("importExportHandler");
     }
@@ -194,9 +201,27 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             _statusHandler,
             _importExportHandler,
-            null!);
+            null!,
+            _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cacheManager");
+    }
+
+    [Fact]
+    public void Constructor_ThrowsArgumentNullException_WhenUserEditorIsNull()
+    {
+        // Arrange & Act & Assert
+        Action act = () => new UserMasterDetailViewModel(
+            _viewModelServices,
+            _masterDetailServices,
+            _commandHandler,
+            _passwordHandler,
+            _statusHandler,
+            _importExportHandler,
+            _cacheManager,
+            null!);
+
+        act.Should().Throw<ArgumentNullException>().WithParameterName("userEditor");
     }
 
     [Fact]

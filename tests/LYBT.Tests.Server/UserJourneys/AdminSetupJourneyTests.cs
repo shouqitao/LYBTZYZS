@@ -234,7 +234,7 @@ public sealed class AdminSetupJourneyTests : JourneyTestBase<AuthUsersFixture>
             ConfirmPassword = DoctorPassword
         });
 
-        duplicateResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity, "US-USER-001: duplicate username should return 422 (business rule validation)");
+        duplicateResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest, "US-USER-001: duplicate username should return 400");
     }
 
     /// <summary>

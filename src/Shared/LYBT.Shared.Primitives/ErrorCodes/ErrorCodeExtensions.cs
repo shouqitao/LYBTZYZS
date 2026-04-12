@@ -99,16 +99,18 @@ public static class ErrorCodeExtensions
             ErrorCode.SyncEntityNotFound => 404,
             ErrorCode.RegistrationNotFound => 404,
 
-            // 409 Conflict - 冲突错误
+            // 400 Bad Request - 客户端输入验证错误
+            ErrorCode.UserNameExists => 400,
+            ErrorCode.EmailExists => 400,
+            ErrorCode.PatientIdCardExists => 400,
+            ErrorCode.PatientPhoneExists => 400,
+            ErrorCode.HerbNameExists => 400,
+            ErrorCode.FormulaNameExists => 400,
+
+            // 409 Conflict - 资源冲突（乐观并发、状态冲突等）
             ErrorCode.ConcurrencyConflict => 409,
-            ErrorCode.UserNameExists => 409,
-            ErrorCode.EmailExists => 409,
-            ErrorCode.PatientIdCardExists => 409,
-            ErrorCode.PatientPhoneExists => 409,
             ErrorCode.DuplicateMedicalCase => 409,
             ErrorCode.MedicalCaseVersionConflict => 409,
-            ErrorCode.HerbNameExists => 409,
-            ErrorCode.FormulaNameExists => 409,
             ErrorCode.MedicalCaseLocked => 409,
             ErrorCode.SyncDataConflict => 409,
 

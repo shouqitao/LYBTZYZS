@@ -204,7 +204,7 @@ public static class ServiceCollectionExtensions
                 response.RequestId = context.HttpContext.TraceIdentifier;
                 response.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-                return new UnprocessableEntityObjectResult(response);
+                return new BadRequestObjectResult(response);
             };
         });
 

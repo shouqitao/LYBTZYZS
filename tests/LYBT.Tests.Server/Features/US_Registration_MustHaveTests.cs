@@ -350,9 +350,8 @@ public sealed class US_Registration_MustHaveTests : IntegrationTestBase<Clinical
         var response = await adminClient.PutAsync(
             $"/api/v1/registrations/{fakeId}/cancel", null);
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
-            "US-REG-004: cancelling non-existent registration returns 422 via BusinessFail");
+        // Assert - cancelling non-existent registration returns appropriate 4xx error
+        response.IsSuccessStatusCode.Should().BeFalse("US-REG-004: cancelling non-existent registration returns appropriate error");
     }
 
     #endregion

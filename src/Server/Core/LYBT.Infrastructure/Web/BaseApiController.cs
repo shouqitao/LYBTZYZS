@@ -222,7 +222,7 @@ namespace LYBT.Infrastructure.Web
         #region Result处理方法
 
         /// <summary>
-        /// 处理Result返回值
+        /// 处理Result<T>返回值 - 根据错误码返回正确的HTTP状态码
         /// </summary>
         protected IActionResult HandleResult<T>(Result<T> result, string successMessage = "操作成功")
         {
@@ -230,7 +230,23 @@ namespace LYBT.Infrastructure.Web
             {
                 return Success(result.Data!, successMessage);
             }
-            return BusinessFail(result.ErrorMessage ?? "操作失败");
+
+            var message = result.ErrorMessage ?? "操作失败";
+
+            // 根据ModuleErrorCode返回正确的HTTP状态码
+            if (result.ModuleErrorCode.HasValue)
+            {
+                var moduleCode = result.ModuleErrorCode.Value;
+                var httpStatus = moduleCode.ToHttpStatusCode();
+                var response = ApiResponse.CreateFail(message);
+                response.RequestId = GetRequestId();
+                response.Errors = new { code = moduleCode.ToFormattedString(), numericCode = (int)moduleCode };
+
+                return StatusCode(httpStatus, response);
+            }
+
+            // 无错误码时作为业务失败处理（422）
+            return BusinessFail(message);
         }
 
         /// <summary>
@@ -242,7 +258,23 @@ namespace LYBT.Infrastructure.Web
             {
                 return Success(successMessage);
             }
-            return BusinessFail(result.ErrorMessage ?? "操作失败");
+
+            var message = result.ErrorMessage ?? "操作失败";
+
+            // 根据ModuleErrorCode返回正确的HTTP状态码
+            if (result.ModuleErrorCode.HasValue)
+            {
+                var moduleCode = result.ModuleErrorCode.Value;
+                var httpStatus = moduleCode.ToHttpStatusCode();
+                var response = ApiResponse.CreateFail(message);
+                response.RequestId = GetRequestId();
+                response.Errors = new { code = moduleCode.ToFormattedString(), numericCode = (int)moduleCode };
+
+                return StatusCode(httpStatus, response);
+            }
+
+            // 无错误码时作为业务失败处理（422）
+            return BusinessFail(message);
         }
 
         /// <summary>
