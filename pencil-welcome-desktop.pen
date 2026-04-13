@@ -1,0 +1,15 @@
+{
+  "version": "2.10",
+  "children": [
+    {
+      "type": "frame",
+      "id": "2bXtH",
+      "x": 0,
+      "y": 0,
+      "name": "Test Frame",
+      "width": 200,
+      "height": 100,
+      "fill": "#2563EB"
+    }
+  ]
+}
