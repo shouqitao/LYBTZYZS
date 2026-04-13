@@ -19,7 +19,21 @@ public class PrescriptionEditorViewModel : ChildViewModelBase
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly PrescriptionMapper _mapper = new();
 
-    public PrescriptionItem Prescription { get; } = new();
+    private PrescriptionItem _prescription = new();
+
+    public PrescriptionItem Prescription
+    {
+        get => _prescription;
+        set
+        {
+            if (SetProperty(ref _prescription, value))
+            {
+                _prescription.Items.CollectionChanged -= OnItemsCollectionChanged;
+                _prescription.Items.CollectionChanged += OnItemsCollectionChanged;
+                OnPropertyChanged(nameof(HasItems));
+            }
+        }
+    }
 
     /// <summary>
     /// Whether the prescription has any herb items.
@@ -40,8 +54,7 @@ public class PrescriptionEditorViewModel : ChildViewModelBase
     /// </summary>
     public void InitializeFromDto(PrescriptionDetailDto dto)
     {
-        var item = _mapper.ToItem(dto);
-        CopyToPrescription(item);
+        Prescription = _mapper.ToItem(dto);
     }
 
     /// <summary>
@@ -74,38 +87,5 @@ public class PrescriptionEditorViewModel : ChildViewModelBase
         Prescription.NotifyItemsChanged();
         OnPropertyChanged(nameof(HasItems));
         Host.NotifyStateChanged();
-    }
-
-    // Copy mapped item properties to our owned Prescription instance.
-    // We maintain a single Prescription instance for stable XAML binding reference.
-    private void CopyToPrescription(PrescriptionItem source)
-    {
-        Prescription.Id = source.Id;
-        Prescription.PrescriptionNumber = source.PrescriptionNumber;
-        Prescription.MedicalCaseId = source.MedicalCaseId;
-        Prescription.DosageCount = source.DosageCount;
-        Prescription.Usage = source.Usage;
-        Prescription.Advice = source.Advice;
-        Prescription.ReferencedFormulas = source.ReferencedFormulas;
-        Prescription.Remark = source.Remark;
-        Prescription.Discount = source.Discount;
-        Prescription.SingleDosePrice = source.SingleDosePrice;
-        Prescription.TotalWeight = source.TotalWeight;
-        Prescription.Status = source.Status;
-        Prescription.CreatedAt = source.CreatedAt;
-        Prescription.UpdatedAt = source.UpdatedAt;
-        Prescription.DuplicateWarning = source.DuplicateWarning;
-        Prescription.MissingDrugWarning = source.MissingDrugWarning;
-
-        // Copy Items collection: unsubscribe, replace, resubscribe
-        Prescription.Items.CollectionChanged -= OnItemsCollectionChanged;
-        Prescription.Items.Clear();
-        foreach (var item in source.Items)
-        {
-            Prescription.Items.Add(item);
-        }
-        Prescription.Items.CollectionChanged += OnItemsCollectionChanged;
-        Prescription.NotifyItemsChanged();
-        OnPropertyChanged(nameof(HasItems));
     }
 }

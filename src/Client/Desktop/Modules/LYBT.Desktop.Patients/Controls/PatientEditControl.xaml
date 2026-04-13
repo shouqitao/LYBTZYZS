@@ -46,7 +46,7 @@
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="姓名（必填）"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
-                        <TextBox TabIndex="1" Text="{Binding PatientName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="1" Text="{Binding Patient.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -56,7 +56,7 @@
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="拼音码（自动生成）" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="2" Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="2" Text="{Binding Patient.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"
@@ -66,7 +66,7 @@
                     <!-- 第二行：性别、出生日期 -->
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="性别" Style="{DynamicResource FormLabelStyle}"/>
-                        <ComboBox TabIndex="3" SelectedItem="{Binding Gender, Mode=TwoWay}"
+                        <ComboBox TabIndex="3" SelectedItem="{Binding Patient.Gender, Mode=TwoWay}"
                                   ItemsSource="{Binding GenderOptions}"
                                   MinHeight="44"
                                   Padding="12,10">
@@ -80,7 +80,7 @@
 
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="出生日期" Style="{DynamicResource FormLabelStyle}"/>
-                        <DatePicker TabIndex="4" SelectedDate="{Binding BirthDate, Mode=TwoWay}"
+                        <DatePicker TabIndex="4" SelectedDate="{Binding Patient.BirthDate, Mode=TwoWay}"
                                     MinHeight="44"/>
                     </StackPanel>
 
@@ -93,7 +93,7 @@
                                  Padding="12,10">
                             <TextBox.Text>
                                 <MultiBinding StringFormat="{}{0} 岁">
-                                    <Binding Path="Age" Mode="OneWay"/>
+                                    <Binding Path="Patient.Age" Mode="OneWay"/>
                                 </MultiBinding>
                             </TextBox.Text>
                         </TextBox>
@@ -101,7 +101,7 @@
 
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="身份证号" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="5" Text="{Binding IdNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="5" Text="{Binding Patient.IdNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -112,7 +112,7 @@
                     <!-- 第四行：手机号码、地址 -->
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="手机号码" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="6" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="6" Text="{Binding Patient.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -122,7 +122,7 @@
 
                     <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="地址" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="7" Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="7" Text="{Binding Patient.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -134,7 +134,7 @@
                     <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,20"
                                 Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="状态" Style="{DynamicResource FormLabelStyle}"/>
-                        <ComboBox TabIndex="8" SelectedItem="{Binding Status, Mode=TwoWay}"
+                        <ComboBox TabIndex="8" SelectedItem="{Binding Patient.Status, Mode=TwoWay}"
                                   ItemsSource="{Binding StatusOptions}"
                                   MinHeight="44"
                                   Padding="12,10">
@@ -149,7 +149,7 @@
                     <!-- 第六行：婚姻状况、血型 -->
                     <StackPanel Grid.Row="5" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="婚姻状况" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="9" Text="{Binding MaritalStatus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="9" Text="{Binding Patient.MaritalStatus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -157,7 +157,7 @@
 
                     <StackPanel Grid.Row="5" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="血型" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="10" Text="{Binding BloodType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="10" Text="{Binding Patient.BloodType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -166,7 +166,7 @@
                     <!-- 第七行：紧急联系人姓名、电话 -->
                     <StackPanel Grid.Row="6" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="紧急联系人" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="11" Text="{Binding EmergencyContactName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="11" Text="{Binding Patient.EmergencyContactName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -174,7 +174,7 @@
 
                     <StackPanel Grid.Row="6" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="联系人电话" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="12" Text="{Binding EmergencyContactPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="12" Text="{Binding Patient.EmergencyContactPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -186,7 +186,7 @@
         <!-- 紧急联系人关系 -->
         <controls:InfoCard Title="联系人关系">
             <controls:InfoCard.Content>
-                <TextBox TabIndex="13" Text="{Binding EmergencyContactRelation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox TabIndex="13" Text="{Binding Patient.EmergencyContactRelation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Style="{DynamicResource EditableTextBoxStyle}"
                          MinHeight="44"
                          Padding="12,10"/>
@@ -199,7 +199,7 @@
                 <StackPanel>
                     <StackPanel Margin="0,0,0,20">
                         <TextBlock Text="过敏史" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding AllergyHistory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding Patient.AllergyHistory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
@@ -209,7 +209,7 @@
 
                     <StackPanel>
                         <TextBlock Text="既往病史" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding MedicalHistory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding Patient.MedicalHistory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"

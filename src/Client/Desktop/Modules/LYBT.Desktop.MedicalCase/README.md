@@ -209,7 +209,7 @@ Replaces old ObservableObject-based WorkspaceState. Uses C# record with `with` e
 | 处方摘要 | `HerbCount`, `DoseCount`, `ReferencedFormulas`, `PrescriptionItems`, `PrescriptionSummary` |
 | 审计信息 | `CreatedAt`, `UpdatedAt`, `DoctorName` |
 | 计算属性 | `ConsultationDate` (=CreatedAt), `StatusText`, `FormulaSource`, `HasPrescriptionItems` |
-| 方法 | `ToPrescriptionInputDto()`, `ToConsultationInputDto()`, `Clone()` |
+| 方法 | `Clone()` |
 
 #### Models/Items/ConsultationItem.cs
 
@@ -489,7 +489,8 @@ UX设计: 默认显示当前患者最近5条已完成记录，支持展开全部
 | `Prescription` | object | 处方数据对象（duck typing绑定） |
 | `FormulaSource` | string | 方源 |
 | `AllHerbs` | IEnumerable | 药材列表 |
-| `UsageOptions` | IEnumerable | 用法选项列表 |
+| `IsPrescriptionEnabled` | bool | 是否启用处方区 |
+| `NeedsPrescription` | bool | 是否需要处方 |
 | `ImportFormulaCommand` | ICommand | 导入经验方命令 |
 | `ImportHistoryCommand` | ICommand | 导入历史处方命令 |
 | `ClearAllCommand` | ICommand | 清空药材命令 |

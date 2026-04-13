@@ -98,6 +98,11 @@ public class PendingQueueViewModel : ChildViewModelBase
         Logger.LogInformation("选择待诊患者：{PatientName}，CaseStatus: {CaseStatus}，MedicalCaseId: {MedicalCaseId}",
             pendingCase.PatientName, pendingCase.CaseStatus, pendingCase.MedicalCaseId);
 
+        if (currentMedicalCaseId == Guid.Empty)
+        {
+            Logger.LogDebug("无活跃医案（患者选择模式），跳过暂存逻辑");
+        }
+
         // 1. Active case cannot be switched (early return before try-finally)
         if (pendingCase.CaseStatus == MedicalCaseStatus.Active)
         {
@@ -127,6 +132,8 @@ public class PendingQueueViewModel : ChildViewModelBase
                     // Edit mode: execute suspend delegate (save current edits)
                     if (SuspendCurrentCase != null)
                         await SuspendCurrentCase.Invoke();
+                    else
+                        Logger.LogWarning("SuspendCurrentCase delegate is null — edits may be lost");
                     Logger.LogInformation("编辑模式，自动暂存后切换到患者：{PatientName}", pendingCase.PatientName);
                 }
                 else

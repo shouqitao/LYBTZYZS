@@ -2,13 +2,16 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Users.Models.Items;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Users.Controls
 {
     /// <summary>
-    /// 用户编辑控件 - OpenSpec: extract-detail-controls Task 4.2
-    /// 独立的用户编辑控件，可在UserDetailView中复用
+    /// 用户编辑控件 - 对象DP模式
+    /// OpenSpec: frontend-architecture-unification
+    ///
+    /// 通过 User 对象DP接收编辑数据，替代原有的扁平字段DP
     /// </summary>
     public partial class UserEditControl : UserControl
     {
@@ -19,25 +22,21 @@ namespace LYBT.Desktop.Users.Controls
 
         #region DependencyProperties
 
-        /// <summary>
-        /// 用户名
-        /// </summary>
-        public static readonly DependencyProperty UserNameProperty =
+        /// <summary>用户编辑上下文</summary>
+        public static readonly DependencyProperty UserProperty =
             DependencyProperty.Register(
-                nameof(UserName),
-                typeof(string),
+                nameof(User),
+                typeof(UserEditContext),
                 typeof(UserEditControl),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public string UserName
+        public UserEditContext User
         {
-            get => (string)GetValue(UserNameProperty);
-            set => SetValue(UserNameProperty, value);
+            get => (UserEditContext)GetValue(UserProperty);
+            set => SetValue(UserProperty, value);
         }
 
-        /// <summary>
-        /// 用户名是否只读（编辑模式下不可修改）
-        /// </summary>
+        /// <summary>用户名是否只读（编辑模式下不可修改）</summary>
         public static readonly DependencyProperty IsUserNameReadOnlyProperty =
             DependencyProperty.Register(
                 nameof(IsUserNameReadOnly),
@@ -51,89 +50,7 @@ namespace LYBT.Desktop.Users.Controls
             set => SetValue(IsUserNameReadOnlyProperty, value);
         }
 
-        /// <summary>
-        /// 真实姓名
-        /// </summary>
-        public static readonly DependencyProperty RealNameProperty =
-            DependencyProperty.Register(
-                nameof(RealName),
-                typeof(string),
-                typeof(UserEditControl),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string RealName
-        {
-            get => (string)GetValue(RealNameProperty);
-            set => SetValue(RealNameProperty, value);
-        }
-
-        /// <summary>
-        /// 拼音码（可编辑，用于修正多音字等识别错误）
-        /// </summary>
-        public static readonly DependencyProperty PinYinCodeProperty =
-            DependencyProperty.Register(
-                nameof(PinYinCode),
-                typeof(string),
-                typeof(UserEditControl),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string PinYinCode
-        {
-            get => (string)GetValue(PinYinCodeProperty);
-            set => SetValue(PinYinCodeProperty, value);
-        }
-
-        /// <summary>
-        /// 手机号码
-        /// </summary>
-        public static readonly DependencyProperty PhoneNumberProperty =
-            DependencyProperty.Register(
-                nameof(PhoneNumber),
-                typeof(string),
-                typeof(UserEditControl),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string PhoneNumber
-        {
-            get => (string)GetValue(PhoneNumberProperty);
-            set => SetValue(PhoneNumberProperty, value);
-        }
-
-        /// <summary>
-        /// 邮箱地址
-        /// </summary>
-        public static readonly DependencyProperty EmailProperty =
-            DependencyProperty.Register(
-                nameof(Email),
-                typeof(string),
-                typeof(UserEditControl),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string Email
-        {
-            get => (string)GetValue(EmailProperty);
-            set => SetValue(EmailProperty, value);
-        }
-
-        /// <summary>
-        /// 用户角色
-        /// </summary>
-        public static readonly DependencyProperty RoleProperty =
-            DependencyProperty.Register(
-                nameof(Role),
-                typeof(UserRole),
-                typeof(UserEditControl),
-                new FrameworkPropertyMetadata(UserRole.Doctor, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public UserRole Role
-        {
-            get => (UserRole)GetValue(RoleProperty);
-            set => SetValue(RoleProperty, value);
-        }
-
-        /// <summary>
-        /// 角色选项列表
-        /// </summary>
+        /// <summary>角色选项列表</summary>
         public static readonly DependencyProperty RoleOptionsProperty =
             DependencyProperty.Register(
                 nameof(RoleOptions),
@@ -147,25 +64,7 @@ namespace LYBT.Desktop.Users.Controls
             set => SetValue(RoleOptionsProperty, value);
         }
 
-        /// <summary>
-        /// 账户状态
-        /// </summary>
-        public static readonly DependencyProperty StatusProperty =
-            DependencyProperty.Register(
-                nameof(Status),
-                typeof(CommonStatus),
-                typeof(UserEditControl),
-                new FrameworkPropertyMetadata(CommonStatus.Enabled, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public CommonStatus Status
-        {
-            get => (CommonStatus)GetValue(StatusProperty);
-            set => SetValue(StatusProperty, value);
-        }
-
-        /// <summary>
-        /// 状态选项列表
-        /// </summary>
+        /// <summary>状态选项列表</summary>
         public static readonly DependencyProperty StatusOptionsProperty =
             DependencyProperty.Register(
                 nameof(StatusOptions),
@@ -179,9 +78,7 @@ namespace LYBT.Desktop.Users.Controls
             set => SetValue(StatusOptionsProperty, value);
         }
 
-        /// <summary>
-        /// 是否显示状态字段
-        /// </summary>
+        /// <summary>是否显示状态字段</summary>
         public static readonly DependencyProperty ShowStatusProperty =
             DependencyProperty.Register(
                 nameof(ShowStatus),
@@ -210,22 +107,6 @@ namespace LYBT.Desktop.Users.Controls
         {
             get => (ValidationErrorsAccessor?)GetValue(ErrorsSourceProperty);
             set => SetValue(ErrorsSourceProperty, value);
-        }
-
-        /// <summary>
-        /// 备注
-        /// </summary>
-        public static readonly DependencyProperty RemarkProperty =
-            DependencyProperty.Register(
-                nameof(Remark),
-                typeof(string),
-                typeof(UserEditControl),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string Remark
-        {
-            get => (string)GetValue(RemarkProperty);
-            set => SetValue(RemarkProperty, value);
         }
 
         #endregion

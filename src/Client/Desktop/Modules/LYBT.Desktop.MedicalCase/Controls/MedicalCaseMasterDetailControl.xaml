@@ -252,6 +252,7 @@
                     FormulaSource="{Binding CurrentDetail.FormulaSource}"
                     PatientName="{Binding CurrentDetail.PatientName}"
                     Prescription="{Binding Prescription}"
+                    Remark="{Binding CurrentDetail.Remark, Mode=TwoWay}"
                     Status="{Binding CurrentDetail.Status}"
                     UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />

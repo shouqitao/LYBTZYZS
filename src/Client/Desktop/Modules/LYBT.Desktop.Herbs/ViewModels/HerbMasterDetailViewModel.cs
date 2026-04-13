@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.ViewModels.Handlers;
 using LYBT.Desktop.Herbs.Interfaces;
@@ -17,9 +16,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
     /// 药材Master-Detail视图模型（组合模式）
-    /// OpenSpec: refactor-viewmodel-composition
+    /// OpenSpec: frontend-architecture-unification - 子VM模式 + 对象DP
     ///
     /// 使用IMasterDetailServices实现组合模式
+    /// HerbEditorViewModel子VM封装编辑逻辑
     /// </summary>
     public partial class HerbMasterDetailViewModel : MasterDetailViewModelBase<HerbListDto, HerbDetailModel>
     {
@@ -27,6 +27,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private readonly IHerbStatusHandler _statusHandler;
         private readonly IHerbImportExportHandler _importExportHandler;
         private readonly IDesktopCacheManager _cacheManager;
+
+        /// <summary>药材编辑子 VM</summary>
+        public HerbEditorViewModel HerbEditor { get; }
 
         #region 扩展属性
 
@@ -53,13 +56,15 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IHerbService herbService,
             IHerbStatusHandler statusHandler,
             IHerbImportExportHandler importExportHandler,
-            IDesktopCacheManager cacheManager)
+            IDesktopCacheManager cacheManager,
+            HerbEditorViewModel herbEditor)
             : base(viewModelServices, masterDetailServices)
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+            HerbEditor = herbEditor ?? throw new ArgumentNullException(nameof(herbEditor));
 
             PageTitle = "药材管理";
             StatusOptions = new ObservableCollection<CommonStatus>(CommonOptions.StatusOptions);
@@ -117,6 +122,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 Id = herb.Id,
                 Name = herb.Name,
                 PinYinCode = herb.PinYinCode ?? PinYinHelper.GetPinYinCode(herb.Name),
+                Category = herb.Category,
+                Properties = herb.Properties,
                 Origin = herb.Origin,
                 Spec = herb.Spec,
                 Unit = herb.Unit,
@@ -128,13 +135,30 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 Status = herb.Status
             };
 
-            MasterDetailServices.DetailEditor.LoadDetail(detail);
+            HerbEditor.InitializeFromDto(new HerbDetailDto
+            {
+                Id = herb.Id,
+                Name = herb.Name,
+                PinYinCode = herb.PinYinCode ?? PinYinHelper.GetPinYinCode(herb.Name),
+                Category = herb.Category,
+                Properties = herb.Properties,
+                Origin = herb.Origin,
+                Spec = herb.Spec,
+                Unit = herb.Unit,
+                Price = herb.Price,
+                CostPrice = herb.CostPrice,
+                Effect = herb.Effect,
+                Usage = herb.Usage,
+                Remark = herb.Remark,
+                Status = herb.Status
+            });
             OnPropertyChanged(nameof(IsNameEditable));
         }
 
         /// <summary>创建新详情实例</summary>
         protected override HerbDetailModel CreateNewDetail()
         {
+            HerbEditor.InitializeForNewCase();
             var detail = HerbDetailModel.CreateNew();
             OnPropertyChanged(nameof(IsNameEditable));
             return detail;
@@ -143,47 +167,16 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>保存详情</summary>
         protected override async Task<bool> SaveDetailAsync(HerbDetailModel detail)
         {
-            if (string.IsNullOrWhiteSpace(detail.Name))
+            if (!HerbEditor.Validate())
             {
-                await MasterDetailServices.Dialog.ShowErrorAsync("药材名称不能为空", "验证失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("请修正验证错误后重试", "验证失败");
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(detail.Unit))
-            {
-                await MasterDetailServices.Dialog.ShowErrorAsync("单位不能为空", "验证失败");
-                return false;
-            }
-
-            if (detail.Price <= 0)
-            {
-                await MasterDetailServices.Dialog.ShowErrorAsync("售价必须大于0", "验证失败");
-                return false;
-            }
-
-            if (detail.CostPrice.HasValue && detail.CostPrice <= 0)
-            {
-                await MasterDetailServices.Dialog.ShowErrorAsync("成本价必须大于0", "验证失败");
-                return false;
-            }
-
-            var input = new HerbInputDto
-            {
-                Id = detail.Id,
-                Name = detail.Name.Trim(),
-                PinYinCode = detail.PinYinCode?.Trim(),
-                Origin = detail.Origin?.Trim(),
-                Spec = detail.Spec?.Trim(),
-                Unit = detail.Unit.Trim(),
-                Price = detail.Price,
-                CostPrice = detail.CostPrice,
-                Effect = detail.Effect?.Trim(),
-                Usage = detail.Usage?.Trim(),
-                Remark = detail.Remark?.Trim()
-            };
+            var input = HerbEditor.GetHerbData();
 
             // OpenSpec: standardize-service-layer - 使用Service替代Repository
-            var result = IsNew
+            var result = HerbEditor.Herb.Id == Guid.Empty
                 ? await _herbService.CreateAsync(input)
                 : await _herbService.UpdateAsync(input);
 
@@ -207,7 +200,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 detail.Usage = result.Data.Usage;
                 detail.Remark = result.Data.Remark;
                 detail.Status = result.Data.Status;
-
             }
 
             _cacheManager.InvalidateHerbCaches();

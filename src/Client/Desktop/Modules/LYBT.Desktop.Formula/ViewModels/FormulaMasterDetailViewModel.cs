@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.CommandHandlers;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Formula.Interfaces;
@@ -19,21 +18,21 @@ namespace LYBT.Desktop.Formula.ViewModels
 {
     /// <summary>
     /// 验方Master-Detail视图模型（组合模式）
-    /// OpenSpec: refactor-viewmodel-composition
+    /// OpenSpec: frontend-architecture-unification
     ///
-    /// 使用IMasterDetailServices实现组合模式
+    /// 使用IFormulaService单依赖 + FormulaEditor子VM模式
+    /// 所有编辑操作通过FormulaEditor封装
     /// </summary>
     public partial class FormulaMasterDetailViewModel : MasterDetailViewModelBase<FormulaListDto, FormulaDetailModel>
     {
         private readonly IFormulaService _formulaService;
         private readonly IFormulaStatusHandler _statusHandler;
-        // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
         private readonly IHerbSearchProvider _herbSearchProvider;
         private readonly IDesktopCacheManager _cacheManager;
         private readonly FormulaDetailModelMapper _mapper;
 
-        // 编辑模式下的药材列表
-        private ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
+        /// <summary>验方编辑子 VM</summary>
+        public FormulaEditorViewModel FormulaEditor { get; }
 
         // 所有药材列表（用于拼音码快速匹配）
         private readonly ObservableCollection<HerbListDto> _allHerbs = new();
@@ -44,26 +43,19 @@ namespace LYBT.Desktop.Formula.ViewModels
         protected override string EntityDisplayName => "验方";
 
         /// <inheritdoc/>
-        protected override string? GetDetailDisplayName() => CurrentDetail?.Name;
+        protected override string NewEntityVerb => "新增";
 
-        /// <summary>编辑模式下的药材列表</summary>
-        public ObservableCollection<FormulaHerbItemViewModel> EditHerbItems
-        {
-            get => _editHerbItems;
-            set => SetProperty(ref _editHerbItems, value);
-        }
+        /// <inheritdoc/>
+        protected override string? GetDetailDisplayName() => CurrentDetail?.Name;
 
         /// <summary>所有药材列表（用于拼音码快速匹配）</summary>
         public IEnumerable<HerbListDto> AllHerbs => _allHerbs;
-
-        /// <summary>药材数量</summary>
-        public int HerbCount => EditHerbItems?.Count(h => h.HerbId != Guid.Empty) ?? 0;
 
         #endregion
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
+        /// OpenSpec: frontend-architecture-unification - Service单依赖 + 子VM组合
         /// </summary>
         public FormulaMasterDetailViewModel(
             IViewModelServices viewModelServices,
@@ -72,7 +64,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IFormulaStatusHandler statusHandler,
             IHerbSearchProvider herbSearchProvider,
             IDesktopCacheManager cacheManager,
-            FormulaDetailModelMapper mapper)
+            FormulaDetailModelMapper mapper,
+            FormulaEditorViewModel formulaEditor)
             : base(viewModelServices, masterDetailServices)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
@@ -80,6 +73,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            FormulaEditor = formulaEditor ?? throw new ArgumentNullException(nameof(formulaEditor));
 
             PageTitle = "验方管理";
 
@@ -136,8 +130,8 @@ namespace LYBT.Desktop.Formula.ViewModels
                     return;
                 }
 
-                var detail = _mapper.ToItem(result.Data!);
-                MasterDetailServices.DetailEditor.LoadDetail(detail);
+                FormulaEditor.InitializeFromDto(result.Data!);
+                FormulaEditor.SetAllHerbs(_allHerbs);
             }
             catch (Exception ex)
             {
@@ -149,46 +143,34 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>创建新详情实例</summary>
         protected override FormulaDetailModel CreateNewDetail()
         {
+            FormulaEditor.InitializeForNewCase();
+            FormulaEditor.SetAllHerbs(_allHerbs);
             return FormulaDetailModel.CreateNew();
         }
 
         /// <summary>保存详情</summary>
         protected override async Task<bool> SaveDetailAsync(FormulaDetailModel detail)
         {
-            if (string.IsNullOrWhiteSpace(detail.Name))
+            if (!FormulaEditor.Validate())
             {
-                await MasterDetailServices.Dialog.ShowErrorAsync("验方名称不能为空", "验证失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("请修正验证错误后重试", "验证失败");
                 return false;
             }
 
             try
             {
-                // 从编辑控件收集药材数据
-                var herbInputDtos = EditHerbItems
-                    .Where(h => h.HerbId != Guid.Empty || !string.IsNullOrWhiteSpace(h.HerbName))
-                    .Select(h => new FormulaHerbItemInputDto
-                    {
-                        HerbId = h.HerbId == Guid.Empty ? null : h.HerbId,
-                        HerbName = h.HerbName,
-                        Dosage = h.Dosage,
-                        Unit = h.Unit,
-                        ProcessingMethod = h.Remark,
-                        DecocteMethod = h.DecocteMethod
-                    })
-                    .ToList();
-
-                // 构建当前验方DTO（用于传递Id以区分创建/更新）
-                var currentFormulaDto = new FormulaDetailDto { Id = detail.Id };
+                var herbInputDtos = FormulaEditor.GetHerbInputDtos();
+                var formula = FormulaEditor.Formula;
 
                 var result = await _formulaService.SaveFormulaAsync(
-                    currentFormulaDto,
-                    detail.Name,
-                    detail.Effect ?? string.Empty,
-                    detail.Usage ?? string.Empty,
-                    detail.Property ?? string.Empty,
-                    detail.Category ?? string.Empty,
-                    detail.Remark ?? string.Empty,
-                    detail.IsShared,
+                    new FormulaDetailDto { Id = formula.Id },
+                    formula.Name,
+                    formula.Effect ?? string.Empty,
+                    formula.Usage ?? string.Empty,
+                    formula.Property ?? string.Empty,
+                    formula.Category ?? string.Empty,
+                    formula.Remark ?? string.Empty,
+                    formula.IsShared,
                     herbInputDtos);
 
                 if (!result)
@@ -227,40 +209,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             Logger.LogInformation("验方删除成功: {FormulaId} - {FormulaName}", item.Id, item.Name);
             _cacheManager.InvalidateFormulaCaches();
             return true;
-        }
-
-        #endregion
-
-        #region 编辑模式辅助
-
-        /// <summary>填充编辑药材列表</summary>
-        private void PopulateEditHerbItems()
-        {
-            EditHerbItems.Clear();
-            if (CurrentDetail != null)
-            {
-                foreach (var herb in CurrentDetail.Herbs)
-                {
-                    EditHerbItems.Add(new FormulaHerbItemViewModel
-                    {
-                        HerbId = herb.HerbId ?? Guid.Empty,
-                        HerbName = herb.HerbName ?? string.Empty,
-                        Dosage = herb.Dosage,
-                        Unit = herb.Unit ?? string.Empty,
-                        Remark = herb.ProcessingMethod,
-                        DecocteMethod = herb.DecocteMethod,
-                        AllHerbs = _allHerbs
-                    });
-                }
-            }
-
-            // 确保至少有一个空行
-            if (EditHerbItems.Count == 0)
-            {
-                EditHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty, AllHerbs = _allHerbs });
-            }
-
-            OnPropertyChanged(nameof(HerbCount));
         }
 
         #endregion
@@ -339,8 +287,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         [RelayCommand(CanExecute = nameof(CanAddHerb))]
         private void AddHerb()
         {
-            EditHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty, AllHerbs = _allHerbs });
-            OnPropertyChanged(nameof(HerbCount));
+            FormulaEditor.AddHerb(_allHerbs);
         }
 
         private bool CanAddHerb() => IsEditMode;
@@ -350,8 +297,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private void DeleteHerb(FormulaHerbItemViewModel? herb)
         {
             if (herb == null) return;
-            EditHerbItems.Remove(herb);
-            OnPropertyChanged(nameof(HerbCount));
+            FormulaEditor.DeleteHerb(herb);
         }
 
         private bool CanDeleteHerb(FormulaHerbItemViewModel? herb) => herb != null && IsEditMode;
@@ -402,10 +348,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private void OnSelfPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IsEditMode) && IsEditMode)
-            {
-                PopulateEditHerbItems();
-            }
+            // 不再需要手动触发PopulateEditHerbItems，由FormulaEditor管理
         }
 
         protected override void Dispose(bool disposing)

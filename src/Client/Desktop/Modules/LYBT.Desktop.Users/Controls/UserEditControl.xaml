@@ -1,9 +1,8 @@
 <!--
     UserEditControl - 用户编辑控件
-    OpenSpec: extract-detail-controls Task 4.2
+    OpenSpec: frontend-architecture-unification - 对象DP模式
 
-    独立的用户编辑控件，可在UserDetailView中复用
-    通过DependencyProperty接收数据，支持双向绑定
+    可复用的用户编辑控件，通过对象DP绑定
 -->
 <UserControl x:Class="LYBT.Desktop.Users.Controls.UserEditControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -23,7 +22,7 @@
         <!-- 用户信息卡片 -->
         <controls:InfoCard Title="用户信息">
             <controls:InfoCard.Content>
-                <Grid>
+                <Grid DataContext="{Binding User}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="20"/>
@@ -44,10 +43,10 @@
                         </TextBlock>
                         <TextBox TabIndex="1" Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
-                                 IsReadOnly="{Binding IsUserNameReadOnly}"
+                                 IsReadOnly="{Binding IsUserNameReadOnly, ElementName=Root, Converter={x:Static converters:Cvt.InverseBool}}"
                                  MinHeight="44"
                                  Padding="12,10"/>
-                        <TextBlock Text="{Binding ErrorsSource[UserName]}"
+                        <TextBlock Text="{Binding ErrorsSource[UserName], ElementName=Root}"
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
@@ -59,7 +58,7 @@
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
-                        <TextBlock Text="{Binding ErrorsSource[RealName]}"
+                        <TextBlock Text="{Binding ErrorsSource[RealName], ElementName=Root}"
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
@@ -79,7 +78,7 @@
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
-                        <TextBlock Text="{Binding ErrorsSource[PhoneNumber]}"
+                        <TextBlock Text="{Binding ErrorsSource[PhoneNumber], ElementName=Root}"
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
@@ -90,7 +89,7 @@
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
-                        <TextBlock Text="{Binding ErrorsSource[Email]}"
+                        <TextBlock Text="{Binding ErrorsSource[Email], ElementName=Root}"
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
@@ -99,7 +98,7 @@
                             <Run Text="用户角色"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <ComboBox TabIndex="6" SelectedItem="{Binding Role, Mode=TwoWay}"
-                                  ItemsSource="{Binding RoleOptions}"
+                                  ItemsSource="{Binding RoleOptions, ElementName=Root}"
                                   MinHeight="44"
                                   Padding="12,10">
                             <ComboBox.ItemTemplate>
@@ -112,10 +111,10 @@
 
                     <!-- 第四行：账户状态 -->
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20"
-                                Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}">
+                                Visibility="{Binding ShowStatus, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="账户状态" Style="{DynamicResource FormLabelStyle}"/>
                         <ComboBox TabIndex="7" SelectedItem="{Binding Status, Mode=TwoWay}"
-                                  ItemsSource="{Binding StatusOptions}"
+                                  ItemsSource="{Binding StatusOptions, ElementName=Root}"
                                   MinHeight="44"
                                   Padding="12,10">
                             <ComboBox.ItemTemplate>
@@ -132,7 +131,7 @@
         <!-- 备注卡片 -->
         <controls:InfoCard Title="备注">
             <controls:InfoCard.Content>
-                <TextBox TabIndex="8" Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox TabIndex="8" Text="{Binding User.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Style="{DynamicResource EditableTextBoxStyle}"
                          TextWrapping="Wrap"
                          AcceptsReturn="True"

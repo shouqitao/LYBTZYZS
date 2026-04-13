@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using LYBT.Desktop.CardReader.Integration;
-using LYBT.Desktop.CardReader.Services;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -48,8 +46,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     public ConsultationEditorViewModel ConsultationEditor { get; }
     public PrescriptionEditorViewModel PrescriptionEditor { get; }
     public MedicalCaseCommandsViewModel Commands { get; }
-    public PendingQueueViewModel PendingQueue { get; }
-    public CardReaderViewModel CardReader { get; }
 
     #endregion
 
@@ -211,10 +207,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         IMedicalCaseService medicalCaseService,
         INavigationCoordinator navigationCoordinator,
         IActiveConsultationService activeConsultationService,
-        IPendingQueueManager pendingQueueManager,
         PrescriptionPrintHandler printHandler,
-        ICardReaderService cardReaderService,
-        IPatientCardReaderIntegration patientCardReaderIntegration,
         IDialogService? dialogService = null)
         : base(services)
     {
@@ -231,8 +224,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         ConsultationEditor = new ConsultationEditorViewModel(this, this, services.LoggerFactory);
         PrescriptionEditor = new PrescriptionEditorViewModel(this, this, services.LoggerFactory);
         Commands = new MedicalCaseCommandsViewModel(this, this, services.LoggerFactory, medicalCaseService, printHandler, dialogService);
-        PendingQueue = new PendingQueueViewModel(this, this, services.LoggerFactory, medicalCaseService, pendingQueueManager, navigationCoordinator);
-        CardReader = new CardReaderViewModel(cardReaderService, patientCardReaderIntegration, medicalCaseService, navigationCoordinator, this, this, services.LoggerFactory);
 
         // Wire data providers for Commands
         Commands.GetConsultationData = () => ConsultationEditor.GetConsultationData();
@@ -248,7 +239,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         Commands.GetIsPrescriptionEnabled = () => IsPrescriptionEnabled;
 
         // Wire PendingQueue suspend delegate
-        PendingQueue.SuspendCurrentCase = SuspendOnlyAsync;
 
         // Parent-level commands
         BackCommand = new DelegateCommand(async () => await ExecuteBackAsync());
@@ -291,8 +281,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         DetermineEditMode(workspaceMode, initialEditState, isHistoricalEdit);
 
         _activeConsultationService.Register(MedicalCaseId, HandleLeaveRequestAsync);
-        _ = PendingQueue.RefreshQueueAsync();
-        _ = CardReader.InitializeAsync();
     }
 
     public override bool IsNavigationTarget(NavigationContext navigationContext) => false;
@@ -681,7 +669,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             PrescriptionEditor.Prescription.PropertyChanged -= OnChildPropertyChanged;
             ConsultationEditor.Dispose();
             PrescriptionEditor.Dispose();
-            CardReader.Dispose();
         }
         base.Dispose(disposing);
     }

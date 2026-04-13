@@ -5,9 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:patientControls="clr-namespace:LYBT.Desktop.Patients.Controls;assembly=LYBT.Desktop.Patients"
+             xmlns:infraControls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
 
     <!-- 患者选择视图
          OpenSpec: refactor-clinical-workflow
@@ -36,13 +41,110 @@
             </Grid>
         </Border>
 
-        <!-- 患者选择控件 (来自Patients模块)
-             OpenSpec: fix-elementname-binding-architecture
-             控件通过DataContext透传直接绑定PatientSelectionViewModel属性 -->
-        <patientControls:PatientSelectionControl
-            Grid.Row="1"
-            Margin="20"
-            PatientDoubleClicked="PatientSelectionControl_PatientDoubleClicked"/>
+        <!-- 主体内容：左侧卡片队列 + 中间患者选择 + 右侧患者信息 -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" MinWidth="240" MaxWidth="320"/>  <!-- Left sidebar -->
+                <ColumnDefinition Width="*" MinWidth="400"/>                    <!-- Center main -->
+                <ColumnDefinition Width="300" MinWidth="260" MaxWidth="360"/>  <!-- Right panel -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel: CardReader + PendingQueue -->
+            <Border Grid.Column="0" Background="{DynamicResource SecondaryRegionBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0"
+                    Margin="0,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="12">
+                        <!-- CardReader Status -->
+                        <TextBlock Text="📡 读卡器" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <Border Background="{DynamicResource RegionBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="{Binding CardReader.StatusMessage}" Margin="0,0,0,8"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Ellipse Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,6,0">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Fill" Value="{DynamicResource SecondaryTextBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding CardReader.IsConnected}" Value="True">
+                                                        <Setter Property="Fill" Value="{DynamicResource SuccessBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                    <TextBlock Text="{Binding CardReader.IsConnected, StringFormat=连接状态: {0}}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button Content="手动读卡" Command="{Binding CardReader.ReadCardCommand}"
+                                        Style="{DynamicResource SecondaryButton}" Margin="0,0,0,4"/>
+                                <Button Content="{Binding CardReader.IsAutoReadEnabled, StringFormat='{}{0:F0}自动读卡'}"
+                                        Command="{Binding CardReader.ToggleAutoReadCommand}"
+                                        Style="{DynamicResource SecondaryButton}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Pending Queue -->
+                        <TextBlock Text="📋 待诊队列" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <Border Background="{DynamicResource RegionBrush}" CornerRadius="6" Padding="12">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="{Binding PendingQueue.Queue.Count, StringFormat=共 {0} 位患者}"
+                                               FontWeight="Medium"/>
+                                    <Button Content="刷新" Command="{Binding PendingQueue.RefreshCommand}"
+                                            Style="{DynamicResource SecondaryButton}" Margin="8,0,0,0"
+                                            Padding="8,2"/>
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding PendingQueue.Queue}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource SecondaryRegionBrush}"
+                                                    CornerRadius="4" Padding="8" Margin="0,0,0,6">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding PatientName}" FontWeight="Medium"/>
+                                                    <TextBlock Text="{Binding PhoneMasked}" FontSize="12"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                    <Button Content="接诊"
+                                                            Command="{Binding DataContext.PendingQueue.SelectCommand,
+                                                                RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{DynamicResource PrimaryButton}"
+                                                            Margin="0,4,0,0" Padding="4,2"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="暂无待诊患者"
+                                           Visibility="{Binding PendingQueue.HasNoPendingCases,
+                                               Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           HorizontalAlignment="Center" Margin="0,8"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Center: PatientSelectionControl -->
+            <patientControls:PatientSelectionControl 
+                Grid.Column="1" 
+                Margin="20"
+                PatientDoubleClicked="PatientSelectionControl_PatientDoubleClicked"/>
+
+            <!-- Right Panel: Patient Info -->
+            <Border Grid.Column="2" Background="{DynamicResource SecondaryRegionBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="12">
+                        <TextBlock Text="👤 患者信息" FontWeight="Bold" Margin="0,0,0,12"/>
+                        <infraControls:PatientInfoCardControl
+                            DataContext="{Binding SelectedPatient}"
+                            Margin="0,0,0,12"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
 
         <!-- 底部操作区 -->
         <Border Grid.Row="2"
@@ -76,7 +178,7 @@
 
                 <!-- 操作按钮 -->
                 <Button Grid.Column="1"
-                        Content="开始接诊"
+                        Content="诊断"
                         Command="{Binding StartMedicalCaseCommand}"
                         Width="120" Height="40"
                         VerticalAlignment="Center"

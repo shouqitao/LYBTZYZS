@@ -1,6 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.CardReader.Integration;
+using LYBT.Desktop.CardReader.Services;
+using LYBT.Desktop.Clinical.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -24,7 +27,7 @@ namespace LYBT.Desktop.Clinical.ViewModels;
 /// OpenSpec: refactor-clinical-workflow
 /// OpenSpec: standardize-viewmodel-framework - 迁移到NavigableViewModelBase
 /// </summary>
-public partial class PatientSelectionViewModel : NavigableViewModelBase
+public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorkspaceHost
 {
     #region 依赖服务
 
@@ -33,6 +36,9 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly ICommonDialogService _dialogService;
     private readonly INavigationCoordinator _navigationCoordinator;
+    private readonly ICardReaderService _cardReaderService;
+    private readonly IPatientCardReaderIntegration _patientIntegration;
+    private readonly IPendingQueueManager _pendingQueueManager;
 
     #endregion
 
@@ -83,6 +89,15 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
     /// <summary>是否有选中患者</summary>
     public bool HasSelection => SelectedPatient != null;
 
+    /// <summary>读卡器子 ViewModel</summary>
+    public CardReaderViewModel CardReader { get; }
+
+    /// <summary>待诊队列子 ViewModel</summary>
+    public PendingQueueViewModel PendingQueue { get; }
+
+    /// <summary>工作区上下文</summary>
+    public PatientSelectionWorkspaceContext WorkspaceContext { get; }
+
     #endregion
 
     #region 构造函数
@@ -96,7 +111,10 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
         IPatientApi patientApi,
         IMedicalCaseApi medicalCaseApi,
         IMedicalCaseService medicalCaseService,
-        INavigationCoordinator navigationCoordinator)
+        INavigationCoordinator navigationCoordinator,
+        ICardReaderService cardReaderService,
+        IPatientCardReaderIntegration patientIntegration,
+        IPendingQueueManager pendingQueueManager)
         : base(services)
     {
         _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
@@ -105,6 +123,21 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
         // OpenSpec: enhance-viewmodel-architecture - 使用基类CommonDialogService替代本地_dialogService
         _dialogService = services.CommonDialogService;
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
+        _cardReaderService = cardReaderService ?? throw new ArgumentNullException(nameof(cardReaderService));
+        _patientIntegration = patientIntegration ?? throw new ArgumentNullException(nameof(patientIntegration));
+        _pendingQueueManager = pendingQueueManager ?? throw new ArgumentNullException(nameof(pendingQueueManager));
+
+        WorkspaceContext = new PatientSelectionWorkspaceContext();
+
+        CardReader = new CardReaderViewModel(
+            _cardReaderService, _patientIntegration, medicalCaseService,
+            navigationCoordinator, WorkspaceContext, this, services.LoggerFactory);
+
+        PendingQueue = new PendingQueueViewModel(
+            WorkspaceContext, this, services.LoggerFactory,
+            medicalCaseService, _pendingQueueManager, navigationCoordinator);
+
+        PendingQueue.SuspendCurrentCase = null;
     }
 
     #endregion
@@ -404,6 +437,17 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
 
     #endregion
 
+    #region IWorkspaceHost
+
+    void IWorkspaceHost.SetBusy(bool isBusy, string? message) => SetBusy(isBusy, message);
+    Task IWorkspaceHost.ShowErrorAsync(string message) => ShowErrorMessageAsync(message);
+    Task IWorkspaceHost.ShowSuccessAsync(string message) => ShowSuccessMessageAsync(message);
+    Task<bool> IWorkspaceHost.ShowConfirmAsync(string message, string title) => ShowConfirmMessageAsync(message, title);
+    ICommonDialogService? IWorkspaceHost.CommonDialogService => base.CommonDialogService;
+    void IWorkspaceHost.NotifyStateChanged() { }
+
+    #endregion
+
     #region INavigationAware
 
     public override void OnNavigatedTo(NavigationContext navigationContext)
@@ -412,6 +456,8 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
 
         // 加载患者列表
         _ = LoadPatientsAsync();
+        _ = CardReader.InitializeAsync();
+        _ = PendingQueue.RefreshQueueAsync();
     }
 
     public override bool IsNavigationTarget(NavigationContext navigationContext)
@@ -423,6 +469,15 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase
     {
         base.OnNavigatedFrom(navigationContext);
         // 清理状态
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            CardReader?.Dispose();
+        }
+        base.Dispose(disposing);
     }
 
     #endregion

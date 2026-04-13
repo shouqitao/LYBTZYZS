@@ -17,8 +17,13 @@ public class ConsultationEditorViewModel : ChildViewModelBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly ConsultationMapper _mapper = new();
+    private ConsultationItem _consultation = new();
 
-    public ConsultationItem Consultation { get; } = new();
+    public ConsultationItem Consultation
+    {
+        get => _consultation;
+        set => SetProperty(ref _consultation, value);
+    }
 
     public ConsultationEditorViewModel(
         IMedicalCaseWorkspaceContext context, IWorkspaceHost host, ILoggerFactory loggerFactory)
@@ -32,8 +37,7 @@ public class ConsultationEditorViewModel : ChildViewModelBase
     /// </summary>
     public void InitializeFromDto(ConsultationDetailDto dto)
     {
-        var item = _mapper.ToItem(dto);
-        CopyToConsultation(item);
+        Consultation = _mapper.ToItem(dto);
     }
 
     /// <summary>
@@ -54,21 +58,4 @@ public class ConsultationEditorViewModel : ChildViewModelBase
 
     public void Reset() => Consultation.Reset();
 
-    // Copy mapped item properties to our owned Consultation instance.
-    // We maintain a single Consultation instance for stable XAML binding reference.
-    private void CopyToConsultation(ConsultationItem source)
-    {
-        Consultation.Id = source.Id;
-        Consultation.MedicalCaseId = source.MedicalCaseId;
-        Consultation.PatientId = source.PatientId;
-        Consultation.UserId = source.UserId;
-        Consultation.PatientName = source.PatientName;
-        Consultation.DoctorName = source.DoctorName;
-        Consultation.PresentIllness = source.PresentIllness;
-        Consultation.TongueDiagnosis = source.TongueDiagnosis;
-        Consultation.PulseDiagnosis = source.PulseDiagnosis;
-        Consultation.TcmDiagnosis = source.TcmDiagnosis;
-        Consultation.CreatedAt = source.CreatedAt;
-        Consultation.UpdatedAt = source.UpdatedAt;
-    }
 }

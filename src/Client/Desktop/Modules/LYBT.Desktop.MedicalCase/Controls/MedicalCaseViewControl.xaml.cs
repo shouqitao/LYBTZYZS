@@ -2,6 +2,7 @@ using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Desktop.Modules.MedicalCase.Models;
 
 namespace LYBT.Desktop.MedicalCase.Controls;
@@ -60,18 +61,17 @@ public partial class MedicalCaseViewControl : UserControl
     #region 诊断信息 - Compact模式 (对象绑定)
 
     /// <summary>
-    /// 诊断数据对象 - 对象化绑定
+    /// 诊断数据对象 - 强类型绑定
     /// OpenSpec: unify-control-data-binding
     /// 替代原有 PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis 四个分散属性
-    /// 类型为object以支持ConsultationItem等具有相同属性的类型
     /// </summary>
     public static readonly DependencyProperty ConsultationProperty =
-        DependencyProperty.Register(nameof(Consultation), typeof(object), typeof(MedicalCaseViewControl),
+        DependencyProperty.Register(nameof(Consultation), typeof(ConsultationItem), typeof(MedicalCaseViewControl),
             new PropertyMetadata(null));
 
-    public object? Consultation
+    public ConsultationItem? Consultation
     {
-        get => GetValue(ConsultationProperty);
+        get => (ConsultationItem?)GetValue(ConsultationProperty);
         set => SetValue(ConsultationProperty, value);
     }
 
@@ -80,18 +80,17 @@ public partial class MedicalCaseViewControl : UserControl
     #region 处方信息 - Compact模式 (对象绑定)
 
     /// <summary>
-    /// 处方数据对象 - 对象化绑定
+    /// 处方数据对象 - 强类型绑定
     /// OpenSpec: unify-control-data-binding
     /// 替代原有 HerbItems, DoseCount, Usage, TotalPrice 等分散属性
-    /// 类型为object以支持PrescriptionItem等具有相同属性的类型
     /// </summary>
     public static readonly DependencyProperty PrescriptionProperty =
-        DependencyProperty.Register(nameof(Prescription), typeof(object), typeof(MedicalCaseViewControl),
+        DependencyProperty.Register(nameof(Prescription), typeof(PrescriptionItem), typeof(MedicalCaseViewControl),
             new PropertyMetadata(null));
 
-    public object? Prescription
+    public PrescriptionItem? Prescription
     {
-        get => GetValue(PrescriptionProperty);
+        get => (PrescriptionItem?)GetValue(PrescriptionProperty);
         set => SetValue(PrescriptionProperty, value);
     }
 

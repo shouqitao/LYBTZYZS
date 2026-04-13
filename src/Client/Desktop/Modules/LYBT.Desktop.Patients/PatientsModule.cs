@@ -88,6 +88,9 @@ namespace LYBT.Desktop.Patients
             // 拆分PatientMasterDetailViewModel的读卡器和导入导出功能
             containerRegistry.Register<ViewModels.PatientCardReaderViewModel>();
             containerRegistry.Register<ViewModels.PatientImportExportViewModel>();
+
+            // OpenSpec: frontend-architecture-unification - 患者编辑子VM
+            containerRegistry.Register<ViewModels.PatientEditorViewModel>();
             
             // 注册MasterDetail View用于导航
             containerRegistry.RegisterForNavigation<Views.PatientMasterDetailView>();

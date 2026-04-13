@@ -1,12 +1,8 @@
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 // SYNC-D02: IUserRepository 迁移到 Contracts.Repositories
-using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Users.Controls;
-using LYBT.Desktop.Users.Mappers;
-using LYBT.Desktop.Users.Models;
-using LYBT.Desktop.Users.Models.Items;
-using LYBT.Desktop.Users.Repositories;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.ViewModels.Handlers;
 using LYBT.Shared.Models.Contracts.Users;
 using Prism.Ioc;
@@ -68,6 +64,9 @@ namespace LYBT.Desktop.Users
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Users模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<UserListDto, UserDetailModel>();
+
+            // OpenSpec: frontend-architecture-unification - 子VM模式
+            containerRegistry.Register<ViewModels.UserEditorViewModel>();
 
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // UserMasterDetailControl供角色台View复用，ViewModel在Control内部解析

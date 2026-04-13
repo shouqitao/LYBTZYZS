@@ -4,14 +4,13 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Patients.Interfaces;
-using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Patients.Models;
+using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.ViewModels.Handlers;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.CardReader.Models;
 
@@ -19,20 +18,23 @@ namespace LYBT.Desktop.Patients.ViewModels
 {
     /// <summary>
     /// 患者Master-Detail视图模型（组合模式）
-    /// OpenSpec: refactor-viewmodel-composition
+    /// OpenSpec: frontend-architecture-unification
     ///
-    /// 使用IMasterDetailServices实现组合模式
+    /// 使用IPatientService单依赖 + PatientEditor子VM模式
+    /// 所有编辑操作通过PatientEditor封装
     /// </summary>
     public partial class PatientMasterDetailViewModel : MasterDetailViewModelBase<PatientListDto, PatientDetailModel>
     {
-        private readonly IPatientService _commandHandler;
-        private readonly IPatientRepository _patientRepository;
+        private readonly IPatientService _patientService;
         private readonly IPatientStatusHandler _statusHandler;
         private readonly IDesktopCacheManager _cacheManager;
 
-        // Child ViewModels - OpenSpec: refactor-viewmodel-composition
+        // Child ViewModels
         private readonly PatientCardReaderViewModel _cardReaderViewModel;
         private readonly PatientImportExportViewModel _importExportViewModel;
+
+        /// <summary>患者编辑子 VM</summary>
+        public PatientEditorViewModel PatientEditor { get; }
 
         #region 扩展属性
 
@@ -53,7 +55,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #endregion
 
-        #region Child ViewModels - OpenSpec: refactor-viewmodel-composition
+        #region Child ViewModels
 
         /// <summary>读卡器功能 ViewModel</summary>
         public PatientCardReaderViewModel CardReaderViewModel => _cardReaderViewModel;
@@ -75,29 +77,28 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
-        /// OpenSpec: refactor-viewmodel-composition - 使用Child ViewModels拆分功能
+        /// OpenSpec: frontend-architecture-unification - Service单依赖 + 子VM组合
         /// </summary>
         public PatientMasterDetailViewModel(
             IViewModelServices viewModelServices,
             IMasterDetailServices<PatientListDto, PatientDetailModel> masterDetailServices,
-            IPatientService commandHandler,
-            IPatientRepository patientRepository,
+            IPatientService patientService,
             IPatientStatusHandler statusHandler,
             IDesktopCacheManager cacheManager,
             // Child ViewModels
             PatientCardReaderViewModel cardReaderViewModel,
-            PatientImportExportViewModel importExportViewModel)
+            PatientImportExportViewModel importExportViewModel,
+            PatientEditorViewModel patientEditor)
             : base(viewModelServices, masterDetailServices)
         {
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
-            // Child ViewModels - 注入服务从9个减少到5个（+2个Child VMs）
+            // Child ViewModels
             _cardReaderViewModel = cardReaderViewModel ?? throw new ArgumentNullException(nameof(cardReaderViewModel));
             _importExportViewModel = importExportViewModel ?? throw new ArgumentNullException(nameof(importExportViewModel));
+            PatientEditor = patientEditor ?? throw new ArgumentNullException(nameof(patientEditor));
 
             PageTitle = "患者管理";
         }
@@ -114,13 +115,16 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
-                    var pagedData = await _patientRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                    MasterDetailServices.Pagination.TotalCount = pagedData.TotalCount;
-
-                    Items.Clear();
-                    foreach (var item in pagedData.Items ?? Enumerable.Empty<PatientListDto>())
+                    var pagedResult = await _patientService.GetPatientsPagedAsync(CurrentPage, PageSize, SearchText);
+                    if (pagedResult.Data != null)
                     {
-                        Items.Add(item);
+                        MasterDetailServices.Pagination.TotalCount = pagedResult.Data.TotalCount;
+
+                        Items.Clear();
+                        foreach (var item in pagedResult.Data.Items ?? Enumerable.Empty<PatientListDto>())
+                        {
+                            Items.Add(item);
+                        }
                     }
                 });
             }
@@ -136,28 +140,14 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             try
             {
-                var patient = await _patientRepository.GetByIdAsync(item.Id);
-                if (patient == null)
+                var result = await _patientService.GetByIdAsync(item.Id);
+                if (result.Data == null)
                 {
                     await MasterDetailServices.Dialog.ShowErrorAsync($"患者 '{item.Name}' 不存在或已被删除", "加载失败");
                     return;
                 }
 
-                var detail = new PatientDetailModel
-                {
-                    Id = patient.Id,
-                    Name = patient.Name,
-                    PinYinCode = patient.PinYinCode ?? PinYinHelper.GetPinYinCode(patient.Name),
-                    Gender = patient.Gender,
-                    BirthDate = patient.BirthDate,
-                    IdNumber = patient.IdNumber,
-                    PhoneNumber = patient.PhoneNumber,
-                    Address = patient.Address,
-                    Status = patient.Status,
-                    VisitCount = patient.VisitCount
-                };
-
-                MasterDetailServices.DetailEditor.LoadDetail(detail);
+                PatientEditor.InitializeFromDto(result.Data);
             }
             catch (Exception ex)
             {
@@ -169,49 +159,47 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>创建新详情实例</summary>
         protected override PatientDetailModel CreateNewDetail()
         {
-            return PatientDetailModel.CreateNew();
+            PatientEditor.InitializeForNewCase();
+            return new PatientDetailModel { Id = Guid.Empty };
         }
 
         /// <summary>保存详情</summary>
         protected override async Task<bool> SaveDetailAsync(PatientDetailModel detail)
         {
-            if (string.IsNullOrWhiteSpace(detail.Name))
+            if (!PatientEditor.Validate())
             {
-                await MasterDetailServices.Dialog.ShowErrorAsync("患者姓名不能为空", "验证失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync("请修正验证错误后重试", "验证失败");
                 return false;
             }
 
             try
             {
-                var dto = new PatientInputDto
+                var inputDto = PatientEditor.GetPatientData();
+                var isEditingExisting = detail.Id != Guid.Empty;
+
+                var result = isEditingExisting
+                    ? await _patientService.UpdatePatientAsync(inputDto)
+                    : await _patientService.CreatePatientAsync(inputDto);
+
+                if (!result.Success)
                 {
-                    Id = detail.Id,
-                    Name = detail.Name.Trim(),
-                    PinYinCode = detail.PinYinCode?.Trim(),
-                    Gender = detail.Gender,
-                    BirthDate = detail.BirthDate,
-                    IdNumber = detail.IdNumber?.Trim(),
-                    PhoneNumber = detail.PhoneNumber?.Trim(),
-                    Address = detail.Address?.Trim()
-                };
+                    MasterDetailServices.ErrorHandler.SetError("Save", result.Error ?? "保存患者失败");
+                    return false;
+                }
 
-                var result = IsNew
-                    ? await _patientRepository.CreateAsync(dto)
-                    : await _patientRepository.UpdateAsync(dto);
-
-                // 更新详情数据
-                detail.Id = result.Id;
-                detail.Name = result.Name;
-                detail.PinYinCode = result.PinYinCode ?? PinYinHelper.GetPinYinCode(result.Name);
-                detail.Gender = result.Gender;
-                detail.BirthDate = result.BirthDate;
-                detail.IdNumber = result.IdNumber;
-                detail.PhoneNumber = result.PhoneNumber;
-                detail.Address = result.Address;
-                detail.Status = result.Status;
+                // 同步返回列表数据
+                detail.Id = result.Data!.Id;
+                detail.Name = result.Data.Name;
+                detail.PinYinCode = result.Data.PinYinCode ?? string.Empty;
+                detail.Gender = result.Data.Gender;
+                detail.BirthDate = result.Data.BirthDate;
+                detail.IdNumber = result.Data.IdNumber;
+                detail.PhoneNumber = result.Data.PhoneNumber;
+                detail.Address = result.Data.Address;
+                detail.Status = result.Data.Status;
 
                 Logger.LogInformation("患者{Action}成功: {PatientId} - {PatientName}",
-                    IsNew ? "创建" : "更新", result.Id, result.Name);
+                    isEditingExisting ? "更新" : "创建", result.Data.Id, result.Data.Name);
 
                 _cacheManager.InvalidatePatientCaches();
                 return true;
@@ -220,7 +208,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 Logger.LogError(ex, "保存患者失败: {PatientName}", detail.Name);
                 var errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
-                    IsNew ? "创建患者" : "更新患者", ex);
+                    detail.Id == Guid.Empty ? "创建患者" : "更新患者", ex);
                 MasterDetailServices.ErrorHandler.SetError("Save", errorMessage);
                 return false;
             }
@@ -229,7 +217,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>删除项</summary>
         protected override async Task<bool> DeleteItemAsync(PatientListDto item)
         {
-            var result = await _commandHandler.DeletePatientAsync(item.Id, CancellationToken.None);
+            var result = await _patientService.DeletePatientAsync(item.Id, CancellationToken.None);
             if (!result.Success)
             {
                 MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? $"删除患者 '{item.Name}' 失败");
@@ -311,7 +299,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #endregion
 
-        #region 读卡器命令 - OpenSpec: integrate-cardreader-module
+        #region 读卡器命令
 
         /// <summary>刷卡录入命令 - 委托给 Child ViewModel</summary>
         [RelayCommand(CanExecute = nameof(CanReadCard))]

@@ -294,26 +294,15 @@
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
 
                 <!--  编辑模式内容  -->
+                <!--  OpenSpec: frontend-architecture-unification - 对象DP模式 -->
                 <herbControls:HerbEditControl
                     Grid.Row="1"
                     Margin="16"
-                    Category="{Binding CurrentDetail.Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    CostPrice="{Binding CurrentDetail.CostPrice, Mode=TwoWay}"
-                    ErrorsSource="{Binding CurrentDetail.Errors}"
-                    HerbEffect="{Binding CurrentDetail.Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    HerbName="{Binding CurrentDetail.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    HerbProperties="{Binding CurrentDetail.Properties, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Herb="{Binding HerbEditor.Herb}"
+                    ErrorsSource="{Binding HerbEditor.Herb.Errors}"
                     IsNameEditable="{Binding IsNameEditable}"
-                    Origin="{Binding CurrentDetail.Origin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    PinYinCode="{Binding CurrentDetail.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    Price="{Binding CurrentDetail.Price, Mode=TwoWay}"
-                    Remark="{Binding CurrentDetail.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     ShowStatus="True"
-                    Spec="{Binding CurrentDetail.Spec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    Status="{Binding CurrentDetail.Status, Mode=TwoWay}"
                     StatusOptions="{Binding StatusOptions}"
-                    Unit="{Binding CurrentDetail.Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    Usage="{Binding CurrentDetail.Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
                 <!--  详情加载遮罩  -->

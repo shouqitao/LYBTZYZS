@@ -36,6 +36,69 @@
                 <Setter Property="CornerRadius" Value="8"/>
                 <Setter Property="Padding" Value="16,12"/>
             </Style>
+
+            <!-- 舌诊选项列表 -->
+            <x:Array x:Key="TongueDiagnosisOptions" Type="sys:String"
+                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                <sys:String>淡红舌</sys:String>
+                <sys:String>红舌</sys:String>
+                <sys:String>暗红舌</sys:String>
+                <sys:String>紫暗舌</sys:String>
+                <sys:String>胖大舌</sys:String>
+                <sys:String>瘦薄舌</sys:String>
+                <sys:String>裂纹舌</sys:String>
+                <sys:String>齿痕舌</sys:String>
+                <sys:String>薄白苔</sys:String>
+                <sys:String>白厚苔</sys:String>
+                <sys:String>黄苔</sys:String>
+                <sys:String>黄腻苔</sys:String>
+            </x:Array>
+
+            <!-- 脉诊选项列表 -->
+            <x:Array x:Key="PulseDiagnosisOptions" Type="sys:String"
+                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                <sys:String>浮脉</sys:String>
+                <sys:String>沉脉</sys:String>
+                <sys:String>迟脉</sys:String>
+                <sys:String>数脉</sys:String>
+                <sys:String>滑脉</sys:String>
+                <sys:String>涩脉</sys:String>
+                <sys:String>弦脉</sys:String>
+                <sys:String>紧脉</sys:String>
+                <sys:String>虚脉</sys:String>
+                <sys:String>实脉</sys:String>
+                <sys:String>弱脉</sys:String>
+                <sys:String>细脉</sys:String>
+            </x:Array>
+
+            <!-- 中医证型选项列表 -->
+            <x:Array x:Key="SyndromeOptions" Type="sys:String"
+                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                <sys:String>风寒束表证</sys:String>
+                <sys:String>风热犯肺证</sys:String>
+                <sys:String>暑湿感冒证</sys:String>
+                <sys:String>脾胃虚弱证</sys:String>
+                <sys:String>脾胃湿热证</sys:String>
+                <sys:String>胃阴不足证</sys:String>
+                <sys:String>肝郁气滞证</sys:String>
+                <sys:String>肝胆湿热证</sys:String>
+                <sys:String>肝阳上亢证</sys:String>
+                <sys:String>心脾两虚证</sys:String>
+                <sys:String>心肺气虚证</sys:String>
+                <sys:String>痰热壅肺证</sys:String>
+                <sys:String>肾阴亏虚证</sys:String>
+                <sys:String>肾阳不足证</sys:String>
+                <sys:String>肾精不足证</sys:String>
+            </x:Array>
+
+            <!-- 处方用法选项列表 -->
+            <x:Array x:Key="PrescriptionUsageOptions" Type="sys:String"
+                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                <sys:String>水煎服</sys:String>
+                <sys:String>开水冲服</sys:String>
+                <sys:String>研末服</sys:String>
+                <sys:String>泡服</sys:String>
+            </x:Array>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -118,6 +181,10 @@
                                          Style="{DynamicResource EditableTextBoxStyle}"
                                          MinHeight="44"
                                          Padding="12,10"/>
+                                <ComboBox Margin="0,4,0,0"
+                                          SelectedItem="{Binding Consultation.TongueDiagnosis, Mode=TwoWay}"
+                                          ItemsSource="{StaticResource TongueDiagnosisOptions}"
+                                          Style="{DynamicResource FilterComboBox}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
@@ -126,15 +193,27 @@
                                          Style="{DynamicResource EditableTextBoxStyle}"
                                          MinHeight="44"
                                          Padding="12,10"/>
+                                <ComboBox Margin="0,4,0,0"
+                                          SelectedItem="{Binding Consultation.PulseDiagnosis, Mode=TwoWay}"
+                                          ItemsSource="{StaticResource PulseDiagnosisOptions}"
+                                          Style="{DynamicResource FilterComboBox}"/>
                             </StackPanel>
 
                             <!-- 第三行：中医诊断（整行） -->
                             <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
-                                <TextBlock Text="中医诊断" Style="{DynamicResource FormLabelStyle}"/>
+                                <TextBlock Style="{DynamicResource FormLabelStyle}">
+                                    <Run Text="中医诊断"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
+                                </TextBlock>
                                 <TextBox TabIndex="4" Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{DynamicResource EditableTextBoxStyle}"
+                                         Style="{DynamicResource ValidatingTextBoxStyle}"
                                          MinHeight="44"
                                          Padding="12,10"/>
+                                <TextBlock Text="{Binding Consultation.ValidationMessage}"
+                                           Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
+                                <ComboBox Margin="0,4,0,0"
+                                          SelectedItem="{Binding Consultation.TcmDiagnosis, Mode=TwoWay}"
+                                          ItemsSource="{StaticResource SyndromeOptions}"
+                                          Style="{DynamicResource FilterComboBox}"/>
                             </StackPanel>
                         </Grid>
                     </controls:InfoCard.Content>
@@ -185,7 +264,7 @@
                     <controls:InfoCard.Content>
                         <StackPanel>
                             <TextBlock Text="备注" Style="{DynamicResource FormLabelStyle}"/>
-                            <TextBox Text="{Binding Prescription.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <TextBox Text="{Binding Remark, RelativeSource={RelativeSource AncestorType=local:MedicalCaseEditControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{DynamicResource EditableTextBoxStyle}"
                                      TextWrapping="Wrap"
                                      AcceptsReturn="True"
@@ -234,13 +313,38 @@
              ======================================== -->
         <Grid Visibility="{Binding IsCompactMode, Converter={x:Static converters:Cvt.BoolToVis}}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- 右上角工具条 -->
+                <RowDefinition Height="Auto"/>  <!-- 患者信息 -->
+                <RowDefinition Height="Auto"/>  <!-- 工具条 -->
                 <RowDefinition Height="Auto"/>  <!-- 诊断区 -->
+                <RowDefinition Height="Auto"/>  <!-- 处方决策 -->
                 <RowDefinition Height="*"/>     <!-- 处方区 -->
+                <RowDefinition Height="Auto"/>  <!-- 完整性检查 -->
             </Grid.RowDefinitions>
 
+            <!-- 患者信息行 (Compact模式) -->
+            <Border Grid.Row="0" Background="{DynamicResource SecondaryRegionBrush}"
+                    CornerRadius="6" Padding="12,8" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="患者:" Foreground="{DynamicResource SecondaryTextBrush}"
+                               Margin="0,0,4,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding PatientName, TargetNullValue='-'}"
+                               FontWeight="SemiBold" Margin="0,0,16,0"/>
+                    <TextBlock Grid.Column="2" Text="{Binding ConsultationDate, StringFormat=yyyy-MM-dd, TargetNullValue='-'}"
+                               Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,16,0"/>
+                    <TextBlock Grid.Column="4" Text="{Binding DoctorName, TargetNullValue='-'}"
+                               Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,16,0"/>
+                </Grid>
+            </Border>
+
             <!-- 右上角工具条 -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,12">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,12">
                 <Button TabIndex="5" Content="套验方"
                         Command="{Binding ImportFormulaCommand}"
                         Style="{DynamicResource SecondaryButton}"
@@ -255,72 +359,104 @@
                          Foreground="{StaticResource ValidationErrorBrush}"/>
             </StackPanel>
 
-            <!-- 诊断区 - OpenSpec: unify-control-data-binding -->
-            <Border Grid.Row="1" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12">
-                <StackPanel>
-                    <!-- Row1: 现病史 -->
-                    <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="70"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="现病史" VerticalAlignment="Center" FontWeight="Medium"/>
-                        <TextBox Grid.Column="1" TabIndex="8"
+            <!-- 诊断区 - 分为四诊采集与中医辨证 -->
+            <StackPanel Grid.Row="2">
+                <!-- 四诊采集区 -->
+                <Border Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="四诊采集" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        
+                        <!-- 现病史 (问) -->
+                        <TextBlock Text="现病史 (问)" FontSize="12" Margin="0,0,0,4"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        <TextBox TabIndex="8"
                                  Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
-                                 MinHeight="36"/>
-                    </Grid>
-
-                    <!-- Row2: 舌诊 + 脉诊 -->
-                    <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="16"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid Grid.Column="0">
+                                 TextWrapping="Wrap" MinHeight="60" Margin="0,0,0,12" AcceptsReturn="True"/>
+                        
+                        <!-- 舌诊 (望) + 脉诊 (切) -->
+                        <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="舌诊" VerticalAlignment="Center" FontWeight="Medium"/>
-                            <TextBox Grid.Column="1" TabIndex="9"
-                                     Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{DynamicResource EditableTextBoxStyle}"
-                                     MinHeight="36"/>
-                        </Grid>
-                        <Grid Grid.Column="2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="50"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="脉诊" VerticalAlignment="Center" FontWeight="Medium"/>
-                            <TextBox Grid.Column="1" TabIndex="10"
-                                     Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{DynamicResource EditableTextBoxStyle}"
-                                     MinHeight="36"/>
-                        </Grid>
-                    </Grid>
+                            
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="舌诊 (望)" FontSize="12" Margin="0,0,0,4"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBox TabIndex="9"
+                                         Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{DynamicResource EditableTextBoxStyle}"
+                                         MinHeight="36"/>
+                                <ComboBox Margin="0,4,0,0"
+                                          SelectedItem="{Binding Consultation.TongueDiagnosis, Mode=TwoWay}"
+                                          ItemsSource="{StaticResource TongueDiagnosisOptions}"
+                                          Style="{DynamicResource FilterComboBox}"/>
+                            </StackPanel>
 
-                    <!-- Row3: 中医诊断(必填) -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="70"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center" FontWeight="Medium">
-                            <Run Text="中医诊断"/><Run Text="*" Foreground="{StaticResource ValidationErrorBrush}"/>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="脉诊 (切)" FontSize="12" Margin="0,0,0,4"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBox TabIndex="10"
+                                         Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{DynamicResource EditableTextBoxStyle}"
+                                         MinHeight="36"/>
+                                <ComboBox Margin="0,4,0,0"
+                                          SelectedItem="{Binding Consultation.PulseDiagnosis, Mode=TwoWay}"
+                                          ItemsSource="{StaticResource PulseDiagnosisOptions}"
+                                          Style="{DynamicResource FilterComboBox}"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 中医辨证区 (必填) -->
+                <Border Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
+                                   Foreground="{DynamicResource PrimaryTextBrush}">
+                            <Run Text="中医辨证"/>
+                            <Run Text="*" Foreground="{StaticResource ValidationErrorBrush}"/>
                         </TextBlock>
-                        <TextBox Grid.Column="1" TabIndex="11"
+                        
+                        <TextBox TabIndex="11"
                                  Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="36"/>
-                    </Grid>
+                        <TextBlock Text="{Binding Consultation.ValidationMessage}"
+                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"
+                                   Margin="0,4,0,0"/>
+                        <ComboBox Margin="0,4,0,0"
+                                  SelectedItem="{Binding Consultation.TcmDiagnosis, Mode=TwoWay}"
+                                  ItemsSource="{StaticResource SyndromeOptions}"
+                                  Style="{DynamicResource FilterComboBox}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 处方决策引导 -->
+            <Border Grid.Row="3" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12"
+                    Background="{DynamicResource SecondaryRegionBrush}">
+                <StackPanel>
+                    <TextBlock Text="处方决策" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <TextBlock Text="是否需要开具处方？" Margin="0,0,0,8"
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Content="需要处方" GroupName="PrescriptionNeed"
+                                     IsChecked="{Binding NeedsPrescription}" Margin="0,0,16,0"/>
+                        <RadioButton Content="不需要处方" GroupName="PrescriptionNeed"
+                                     IsChecked="{Binding NeedsPrescription, Converter={x:Static converters:InverseBooleanConverter.Instance}}" Margin="0,0,16,0"/>
+                        <RadioButton Content="稍后决定" GroupName="PrescriptionNeed" IsEnabled="False" Opacity="0.5"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
             <!-- 处方区 -->
-            <Border Grid.Row="2" Style="{StaticResource CompactSectionBorderStyle}">
+            <Border Grid.Row="4" Style="{StaticResource CompactSectionBorderStyle}"
+                    IsEnabled="{Binding IsPrescriptionEnabled}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>     <!-- 药材列表 -->
@@ -371,21 +507,75 @@
                                 <TextBlock Text="用法:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <ComboBox Width="120" TabIndex="13"
                                           SelectedItem="{Binding Prescription.Usage, Mode=TwoWay}"
-                                          ItemsSource="{Binding UsageOptions}"
+                                          ItemsSource="{StaticResource PrescriptionUsageOptions}"
                                           Style="{DynamicResource FilterComboBox}"/>
                             </StackPanel>
 
                             <!-- 总价 - OpenSpec: unify-control-data-binding -->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock Text="单剂价:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" Margin="0,0,16,0">
+                                    <Run Text="¥"/>
+                                    <Run Text="{Binding Prescription.SingleDosePrice, StringFormat='{}{0:F2}', Mode=OneWay}"/>
+                                </TextBlock>
+                                
                                 <TextBlock Text="总价:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}">
+                                <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource SuccessBrush}">
+                                    <Run Text="¥"/>
                                     <Run Text="{Binding Prescription.TotalPrice, StringFormat='{}{0:F2}', Mode=OneWay}"/>
-                                    <Run Text="元"/>
                                 </TextBlock>
                             </StackPanel>
                         </Grid>
                     </Border>
                 </Grid>
+            </Border>
+
+            <!-- Completeness Check Indicator -->
+            <Border Grid.Row="5" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,12,0,0"
+                    Background="{DynamicResource SecondaryRegionBrush}">
+                <StackPanel>
+                    <TextBlock Text="完整性检查" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Margin="0,0,4,0">
+                            <Run Text="●" Foreground="Green" FontWeight="Bold"/>
+                            <Run Text="中医诊断"/>
+                        </TextBlock>
+                        <TextBlock Margin="0,0,4,0" Foreground="{DynamicResource SecondaryTextBrush}">
+                            <Run Text="已填写" FontSize="12"/>
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Margin="0,0,4,0">
+                            <Run Text="●" Foreground="Green" FontWeight="Bold"/>
+                            <Run Text="处方需求"/>
+                        </TextBlock>
+                        <TextBlock Margin="0,0,4,0" Foreground="{DynamicResource SecondaryTextBrush}">
+                            <Run Text="已标记" FontSize="12"/>
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Margin="0,0,4,0">
+                            <Run Text="●" Foreground="Green" FontWeight="Bold"/>
+                            <Run Text="处方药材"/>
+                        </TextBlock>
+                        <TextBlock Margin="0,0,4,0" Foreground="{DynamicResource SecondaryTextBrush}">
+                            <Run Text="2 味" FontSize="12"/>
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Margin="0,0,4,0">
+                            <Run Text="●" Foreground="Green" FontWeight="Bold"/>
+                            <Run Text="帖数"/>
+                        </TextBlock>
+                        <TextBlock Margin="0,0,4,0" Foreground="{DynamicResource SecondaryTextBrush}">
+                            <Run Text="7 剂" FontSize="12"/>
+                        </TextBlock>
+                    </StackPanel>
+                    <TextBlock Margin="0,8,0,0" FontWeight="Medium" Foreground="Green">
+                        可以完成看诊
+                    </TextBlock>
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>

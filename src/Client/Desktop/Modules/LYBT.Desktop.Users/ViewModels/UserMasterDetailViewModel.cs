@@ -6,12 +6,12 @@ using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Users.Models;
-using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Desktop.Users.ViewModels.Handlers;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Users.ViewModels;
@@ -29,6 +29,9 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     private readonly IUserStatusHandler _statusHandler;
     private readonly IUserImportExportHandler _importExportHandler;
     private readonly IDesktopCacheManager _cacheManager;
+
+    /// <summary>用户编辑子 VM</summary>
+    public UserEditorViewModel UserEditor { get; }
 
     #region 筛选属性
 
@@ -115,7 +118,8 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         IUserPasswordHandler passwordHandler,
         IUserStatusHandler statusHandler,
         IUserImportExportHandler importExportHandler,
-        IDesktopCacheManager cacheManager)
+        IDesktopCacheManager cacheManager,
+        UserEditorViewModel userEditor)
         : base(viewModelServices, masterDetailServices)
     {
         _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
@@ -123,6 +127,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
         _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
         _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+        UserEditor = userEditor ?? throw new ArgumentNullException(nameof(userEditor));
 
         PageTitle = "用户管理";
 
@@ -192,12 +197,28 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
                 return;
             }
 
+            UserEditor.InitializeFromDto(new UserDetailDto
+            {
+                Id = result.Data.Id,
+                UserName = result.Data.UserName,
+                RealName = result.Data.RealName,
+                PinYinCode = result.Data.PinYinCode ?? PinYinHelper.GetPinYinCode(result.Data.RealName),
+                PhoneNumber = result.Data.PhoneNumber,
+                Email = result.Data.Email,
+                Role = result.Data.Role,
+                Status = result.Data.Status,
+                LastLoginTime = result.Data.LastLoginTime,
+                CreatedAt = result.Data.CreatedAt,
+                UpdatedAt = result.Data.UpdatedAt,
+                Remark = result.Data.Remark
+            });
+
             var detail = new UserDetailModel
             {
                 Id = result.Data.Id,
                 UserName = result.Data.UserName,
                 RealName = result.Data.RealName,
-                PinYinCode = result.Data.PinYinCode ?? string.Empty,
+                PinYinCode = result.Data.PinYinCode ?? PinYinHelper.GetPinYinCode(result.Data.RealName),
                 PhoneNumber = result.Data.PhoneNumber,
                 Email = result.Data.Email,
                 Role = result.Data.Role,
@@ -221,6 +242,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     /// <summary>创建新详情实例</summary>
     protected override UserDetailModel CreateNewDetail()
     {
+        UserEditor.InitializeForNewCase();
         var detail = UserDetailModel.CreateNew();
         OnPropertyChanged(nameof(IsUserNameReadOnly));
         return detail;
@@ -229,28 +251,19 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     /// <summary>保存详情</summary>
     protected override async Task<bool> SaveDetailAsync(UserDetailModel detail)
     {
-        if (string.IsNullOrWhiteSpace(detail.UserName))
+        if (!UserEditor.Validate())
         {
-            await MasterDetailServices.Dialog.ShowErrorAsync("用户名不能为空", "验证失败");
+            await MasterDetailServices.Dialog.ShowErrorAsync("请修正验证错误后重试", "验证失败");
             return false;
         }
 
         try
         {
-            var dto = new UserInputDto
-            {
-                Id = detail.Id,
-                UserName = detail.UserName.Trim(),
-                RealName = detail.RealName?.Trim() ?? string.Empty,
-                PinYinCode = detail.PinYinCode?.Trim(),
-                PhoneNumber = detail.PhoneNumber?.Trim(),
-                Email = detail.Email?.Trim(),
-                Role = detail.Role
-            };
+            var input = UserEditor.GetUserInput();
 
-            var result = IsNew
-                ? await _commandHandler.CreateAsync(dto)
-                : await _commandHandler.UpdateAsync(dto);
+            var result = UserEditor.User.Id == Guid.Empty
+                ? await _commandHandler.CreateAsync(input)
+                : await _commandHandler.UpdateAsync(input);
 
             if (result.Success && result.Data != null)
             {
@@ -268,7 +281,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
                 detail.Remark = result.Data.Remark;
 
                 Logger.LogInformation("用户{Action}成功: {UserId} - {UserName}",
-                    IsNew ? "创建" : "更新", result.Data.Id, result.Data.UserName);
+                    UserEditor.User.Id == Guid.Empty ? "创建" : "更新", result.Data.Id, result.Data.UserName);
 
                 _cacheManager.InvalidateUserCaches();
                 return true;
@@ -276,7 +289,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
 
             var errorMessage = !string.IsNullOrEmpty(result.Error)
                 ? result.Error
-                : (IsNew ? "创建用户失败" : "更新用户失败");
+                : (UserEditor.User.Id == Guid.Empty ? "创建用户失败" : "更新用户失败");
             MasterDetailServices.ErrorHandler.SetError("Save", errorMessage);
             return false;
         }
@@ -284,7 +297,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         {
             Logger.LogError(ex, "保存用户失败: {UserName}", detail.UserName);
             var errorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage(
-                IsNew ? "创建用户" : "更新用户", ex);
+                UserEditor.User.Id == Guid.Empty ? "创建用户" : "更新用户", ex);
             MasterDetailServices.ErrorHandler.SetError("Save", errorMessage);
             return false;
         }

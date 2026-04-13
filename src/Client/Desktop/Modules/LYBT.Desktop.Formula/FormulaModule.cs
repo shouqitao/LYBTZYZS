@@ -1,4 +1,4 @@
-using LYBT.Desktop.Contracts.Repositories;
+// OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Formula.Controls;
 using LYBT.Desktop.Formula.Interfaces;
@@ -13,7 +13,7 @@ using Prism.Mvvm;
 namespace LYBT.Desktop.Formula
 {
     /// <summary>
-    /// 验方管理模块 - 简化版
+    /// 验方管理模块 - Phase 2模块化架构
     /// </summary>
     [Module(ModuleName = nameof(FormulaModule))]
     [ModuleDependency("HerbsModule")] // 方剂依赖药材
@@ -56,7 +56,10 @@ namespace LYBT.Desktop.Formula
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // FormulaMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.FormulaMasterDetailViewModel>();
-            
+
+            // Epic #1773 Task 4: 注册验方模块组件化组件（Scoped生命周期）
+            containerRegistry.Register<ViewModels.FormulaEditorViewModel>();
+
             // 注册MasterDetail View用于导航
             containerRegistry.RegisterForNavigation<Views.FormulaMasterDetailView>();
         }

@@ -1,15 +1,15 @@
 <!--
     HerbEditControl - 药材编辑控件
-    OpenSpec: extract-detail-controls Task 2.2
+    OpenSpec: frontend-architecture-unification - 对象DP模式
 
-    独立的药材编辑控件，可在HerbDetailView中复用
-    通过DependencyProperty接收数据，支持双向绑定
+    可复用的药材编辑控件，通过对象DP绑定
 -->
 <UserControl x:Class="LYBT.Desktop.Herbs.Controls.HerbEditControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:herbsModels="clr-namespace:LYBT.Desktop.Herbs.Models.Items"
              x:Name="Root">
 
     <!--
@@ -19,11 +19,15 @@
         - 此控件无本地资源，所有样式来自全局
     -->
 
+    <UserControl.Resources>
+        <ObjectDataProvider x:Key="HerbEditContext" ObjectType="{x:Type herbsModels:HerbEditContext}"/>
+    </UserControl.Resources>
+
     <StackPanel DataContext="{Binding ElementName=Root}">
         <!-- 基本信息卡片 -->
         <controls:InfoCard Title="基本信息">
             <controls:InfoCard.Content>
-                <Grid>
+                <Grid DataContext="{Binding Herb}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="20"/>
@@ -43,12 +47,12 @@
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="药材名称"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
-                        <TextBox TabIndex="1" Text="{Binding HerbName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                        <TextBox TabIndex="1" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
-                                 IsReadOnly="{Binding IsNameEditable, Converter={x:Static converters:Cvt.InverseBool}}"
+                                 IsReadOnly="{Binding IsNameEditable, ElementName=Root, Converter={x:Static converters:Cvt.InverseBool}}"
                                  MinHeight="44"
                                  Padding="12,10"/>
-                        <TextBlock Text="{Binding ErrorsSource[Name]}"
+                        <TextBlock Text="{Binding ErrorsSource[Name], ElementName=Root}"
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
@@ -87,7 +91,7 @@
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
-                        <TextBlock Text="{Binding ErrorsSource[Unit]}"
+                        <TextBlock Text="{Binding ErrorsSource[Unit], ElementName=Root}"
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
@@ -97,7 +101,7 @@
                                  Style="{DynamicResource ValidatingTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
-                        <TextBlock Text="{Binding ErrorsSource[Price]}"
+                        <TextBlock Text="{Binding ErrorsSource[Price], ElementName=Root}"
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
@@ -111,10 +115,10 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,20"
-                                Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}">
+                                Visibility="{Binding ShowStatus, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="状态" Style="{DynamicResource FormLabelStyle}"/>
                         <ComboBox TabIndex="8" SelectedItem="{Binding Status, Mode=TwoWay}"
-                                  ItemsSource="{Binding StatusOptions}"
+                                  ItemsSource="{Binding StatusOptions, ElementName=Root}"
                                   IsEnabled="False"
                                   MinHeight="44"
                                   Padding="12,10">
@@ -137,7 +141,7 @@
 
                     <StackPanel Grid.Row="4" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="药性" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="10" Text="{Binding HerbProperties, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TabIndex="10" Text="{Binding Properties, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -149,10 +153,10 @@
         <!-- 功效用法卡片 -->
         <controls:InfoCard Title="功效用法">
             <controls:InfoCard.Content>
-                <StackPanel>
+                <StackPanel DataContext="{Binding Herb}">
                     <StackPanel Margin="0,0,0,20">
                         <TextBlock Text="功效" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding HerbEffect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"

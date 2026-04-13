@@ -1,11 +1,10 @@
 ﻿<!--
     MedicalCaseWorkspaceView - 医案工作台视图
     Composite ViewModel pattern: bindings route through child VMs
-    (ConsultationEditor, PrescriptionEditor, Commands, PendingQueue, CardReader)
+    (ConsultationEditor, PrescriptionEditor, Commands)
     
     Layout:
-    - 左侧25%: 读卡器状态 + 患者信息卡片 + 待诊队列
-    - 右侧75%: BaseDetailContainer (查看/编辑模式)
+    - 100%: BaseDetailContainer (查看/编辑模式)
 -->
 <UserControl
     x:Class="LYBT.Desktop.Clinical.Views.MedicalCaseWorkspaceView"
@@ -13,67 +12,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:LYBT.Desktop.MedicalCase.Controls;assembly=LYBT.Desktop.MedicalCase"
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
-    xmlns:infraControls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:views="clr-namespace:LYBT.Desktop.Infrastructure.Views;assembly=LYBT.Desktop.Infrastructure"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <!--  V2布局: 左25% + 右75%  -->
+    <!--  单列布局: 100%宽度  -->
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition
-                Width="25*"
-                MinWidth="280"
-                MaxWidth="350" />
-            <ColumnDefinition Width="75*" />
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>    <!-- Main content -->
+            <RowDefinition Height="Auto"/> <!-- Action bar -->
+        </Grid.RowDefinitions>
 
-        <!--  左侧: 读卡器状态 + 患者信息卡片 + 待诊队列  -->
-        <Grid Grid.Column="0" Margin="12,12,0,12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <!--  读卡器状态控件  -->
-            <infraControls:CardReaderStatusControl
-                Grid.Row="0"
-                Margin="0,0,0,12"
-                IsAutoReadEnabled="{Binding CardReader.IsAutoReadEnabled}"
-                IsConnected="{Binding CardReader.IsConnected}"
-                IsReading="{Binding CardReader.IsReading}"
-                ReadCardCommand="{Binding CardReader.ReadCardCommand}"
-                StatusMessage="{Binding CardReader.StatusMessage}"
-                ToggleAutoReadCommand="{Binding CardReader.ToggleAutoReadCommand}" />
-
-            <!--  患者信息卡片  -->
-            <infraControls:PatientInfoCardControl
-                Grid.Row="1"
-                Margin="0,0,0,12"
-                DisplayMode="Compact"
-                HistoryCommand="{Binding ViewPatientHistoryCommand}"
-                Patient="{Binding CurrentPatientDisplayModel}"
-                ShowHistoryButton="True" />
-
-            <!--  待诊队列  -->
-            <infraControls:PendingQueueControl
-                Title="待诊患者队列"
-                Grid.Row="2"
-                AutoRefreshEnabled="True"
-                AutoRefreshInterval="30"
-                IsCompactMode="True"
-                IsEmpty="{Binding PendingQueue.HasNoPendingCases}"
-                IsRefreshing="{Binding PendingQueue.IsRefreshing}"
-                PendingQueue="{Binding PendingQueue.Queue}"
-                RefreshCommand="{Binding PendingQueue.RefreshCommand}"
-                SelectCommand="{Binding PendingQueue.SelectCommand}" />
-        </Grid>
-
-        <!--  右侧: BaseDetailContainer (查看/编辑)  -->
+        <!--  BaseDetailContainer (查看/编辑)  -->
         <views:BaseDetailContainer
             Title="{Binding State.HeaderTitle}"
-            Grid.Column="1"
+            Grid.Row="0"
+            Grid.Column="0"
             Margin="12,0,0,0"
             GoBackCommand="{Binding BackCommand}"
             IsEditMode="{Binding State.IsEditing, Mode=OneWay}"
@@ -128,7 +82,7 @@
                     ImportFormulaCommand="{Binding Commands.ImportFormulaCommand}"
                     ImportHistoryCommand="{Binding Commands.CopyHistoryCommand}"
                     IsCompactMode="True"
-                    IsEnabled="{Binding IsPrescriptionEnabled}"
+                    IsPrescriptionEnabled="{Binding IsPrescriptionEnabled}"
                     Prescription="{Binding PrescriptionEditor.Prescription}" />
             </views:BaseDetailContainer.EditContent>
 
@@ -250,5 +204,39 @@
                 </Grid>
             </views:BaseDetailContainer.FooterContent>
         </views:BaseDetailContainer>
+
+        <!-- Bottom Action Bar -->
+        <Border Grid.Row="1" Background="{DynamicResource RegionBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="暂存医案"
+                        Command="{Binding Commands.SuspendCommand}"
+                        Style="{DynamicResource WarningButton}"
+                        Margin="0,0,8,0"
+                        Padding="16,8"/>
+                
+                <Button Content="打印处方笺"
+                        Command="{Binding Commands.PrintCommand}"
+                        Style="{DynamicResource SecondaryButton}"
+                        IsEnabled="{Binding State.CanPrint}"
+                        Margin="0,0,8,0"
+                        Padding="16,8"/>
+                
+                <Button Content="导出PDF"
+                        Command="{Binding Commands.ExportPdfCommand}"
+                        Style="{DynamicResource SecondaryButton}"
+                        IsEnabled="{Binding State.CanPrint}"
+                        Margin="0,0,8,0"
+                        Padding="16,8"/>
+                
+                <Button Content="完成看诊"
+                        Command="{Binding Commands.CompleteCommand}"
+                        Style="{DynamicResource SuccessButton}"
+                        IsEnabled="{Binding State.CanComplete}"
+                        Padding="16,8"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>
+

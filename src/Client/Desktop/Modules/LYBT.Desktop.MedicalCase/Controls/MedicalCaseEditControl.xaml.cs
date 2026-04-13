@@ -2,6 +2,7 @@ using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Enums;
 
@@ -86,19 +87,18 @@ public partial class MedicalCaseEditControl : UserControl
     #region 诊断信息（可编辑）
 
     /// <summary>
-    /// 诊断数据对象 - 对象化绑定
+    /// 诊断数据对象 - 强类型绑定
     /// OpenSpec: unify-control-data-binding
     /// OpenSpec: unify-medicalcase-item-editmodel - 统一使用 ConsultationItem
     /// 替代原有 PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis 四个分散属性
-    /// 类型为object以支持duck typing绑定
     /// </summary>
     public static readonly DependencyProperty ConsultationProperty =
-        DependencyProperty.Register(nameof(Consultation), typeof(object), typeof(MedicalCaseEditControl),
+        DependencyProperty.Register(nameof(Consultation), typeof(ConsultationItem), typeof(MedicalCaseEditControl),
             new PropertyMetadata(null));
 
-    public object? Consultation
+    public ConsultationItem? Consultation
     {
-        get => GetValue(ConsultationProperty);
+        get => (ConsultationItem?)GetValue(ConsultationProperty);
         set => SetValue(ConsultationProperty, value);
     }
 
@@ -107,19 +107,18 @@ public partial class MedicalCaseEditControl : UserControl
     #region 处方信息（可编辑）
 
     /// <summary>
-    /// 处方数据对象 - 对象化绑定
+    /// 处方数据对象 - 强类型绑定
     /// OpenSpec: unify-control-data-binding
     /// OpenSpec: unify-medicalcase-item-editmodel - 统一使用 PrescriptionItem
     /// 替代原有 HerbCount, DoseCount, HerbItems, Usage, TotalPrice 等分散属性
-    /// 类型为object以支持duck typing绑定
     /// </summary>
     public static readonly DependencyProperty PrescriptionProperty =
-        DependencyProperty.Register(nameof(Prescription), typeof(object), typeof(MedicalCaseEditControl),
+        DependencyProperty.Register(nameof(Prescription), typeof(PrescriptionItem), typeof(MedicalCaseEditControl),
             new PropertyMetadata(null));
 
-    public object? Prescription
+    public PrescriptionItem? Prescription
     {
-        get => GetValue(PrescriptionProperty);
+        get => (PrescriptionItem?)GetValue(PrescriptionProperty);
         set => SetValue(PrescriptionProperty, value);
     }
 
@@ -148,16 +147,36 @@ public partial class MedicalCaseEditControl : UserControl
         set => SetValue(AllHerbsProperty, value);
     }
 
-    /// <summary>
-    /// 用法选项列表
-    /// </summary>
-    public static readonly DependencyProperty UsageOptionsProperty =
-        DependencyProperty.Register(nameof(UsageOptions), typeof(IEnumerable), typeof(MedicalCaseEditControl));
+    #endregion
 
-    public IEnumerable? UsageOptions
+    #region 处方区控制
+
+    /// <summary>
+    /// 是否启用处方区（Compact模式）
+    /// 诊断区不受此属性影响，始终可编辑
+    /// </summary>
+    public static readonly DependencyProperty IsPrescriptionEnabledProperty =
+        DependencyProperty.Register(nameof(IsPrescriptionEnabled), typeof(bool), typeof(MedicalCaseEditControl),
+            new PropertyMetadata(true));
+
+    public bool IsPrescriptionEnabled
     {
-        get => (IEnumerable?)GetValue(UsageOptionsProperty);
-        set => SetValue(UsageOptionsProperty, value);
+        get => (bool)GetValue(IsPrescriptionEnabledProperty);
+        set => SetValue(IsPrescriptionEnabledProperty, value);
+    }
+
+    /// <summary>
+    /// 是否需要处方（Compact模式处方决策）
+    /// true=需要处方, false=不需要处方
+    /// </summary>
+    public static readonly DependencyProperty NeedsPrescriptionProperty =
+        DependencyProperty.Register(nameof(NeedsPrescription), typeof(bool), typeof(MedicalCaseEditControl),
+            new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    public bool NeedsPrescription
+    {
+        get => (bool)GetValue(NeedsPrescriptionProperty);
+        set => SetValue(NeedsPrescriptionProperty, value);
     }
 
     #endregion
@@ -220,6 +239,25 @@ public partial class MedicalCaseEditControl : UserControl
     {
         get => (DateTime?)GetValue(UpdatedAtProperty);
         set => SetValue(UpdatedAtProperty, value);
+    }
+
+    #endregion
+
+    #region 备注（可编辑）- Full模式
+
+    /// <summary>
+    /// 备注 - 医案聚合根备注字段
+    /// OpenSpec: unify-medicalcase-remark-source
+    /// 绑定到 MedicalCaseDetailModel.Remark（聚合根），而非 PrescriptionItem.Remark
+    /// </summary>
+    public static readonly DependencyProperty RemarkProperty =
+        DependencyProperty.Register(nameof(Remark), typeof(string), typeof(MedicalCaseEditControl),
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    public string? Remark
+    {
+        get => (string?)GetValue(RemarkProperty);
+        set => SetValue(RemarkProperty, value);
     }
 
     #endregion

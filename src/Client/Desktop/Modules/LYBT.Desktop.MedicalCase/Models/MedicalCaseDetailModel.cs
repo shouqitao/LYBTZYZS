@@ -230,33 +230,6 @@ public class MedicalCaseDetailModel : ValidatableModelBase
 
     #region 工厂方法
 
-
-    /// <summary>转换为医案更新DTO（包含Remark）</summary>
-    public MedicalCaseInputDto ToPrescriptionInputDto()
-    {
-        return new MedicalCaseInputDto
-        {
-            Id = Id,
-            PatientId = PatientId,
-            Remark = Remark
-        };
-    }
-
-    /// <summary>
-    /// 转换为诊断更新DTO
-    /// OpenSpec: refactor-medicalcase-management - 支持诊断字段编辑
-    /// </summary>
-    public ConsultationInputDto ToConsultationInputDto()
-    {
-        return new ConsultationInputDto
-        {
-            PresentIllness = PresentIllness,
-            TongueDiagnosis = TongueDiagnosis,
-            PulseDiagnosis = PulseDiagnosis,
-            TcmDiagnosis = TcmDiagnosis
-        };
-    }
-
     /// <summary>克隆模型</summary>
     /// <remarks>OpenSpec: simplify-medicalcase-dataflow - ConsultationDate删除</remarks>
     public MedicalCaseDetailModel Clone()

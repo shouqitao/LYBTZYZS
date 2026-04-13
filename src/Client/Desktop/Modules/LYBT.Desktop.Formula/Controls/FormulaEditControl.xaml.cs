@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using System.Collections.ObjectModel;
+using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
-using LYBT.Desktop.Formula.ViewModels;
+using LYBT.Desktop.Formula.Models.Items;
 using LYBT.Desktop.Models.ViewModels.Base;
 
 namespace LYBT.Desktop.Formula.Controls
@@ -11,7 +10,9 @@ namespace LYBT.Desktop.Formula.Controls
     /// 验方编辑控件
     /// OpenSpec: extract-detail-controls Task 1.2
     /// OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑处方
-    /// 独立的验方编辑控件，可在FormulaDetailView中复用
+    /// OpenSpec: frontend-architecture-unification - 对象DP模式
+    ///
+    /// 可复用的验方编辑控件，通过对象DP绑定
     /// </summary>
     public partial class FormulaEditControl : UserControl
     {
@@ -20,160 +21,27 @@ namespace LYBT.Desktop.Formula.Controls
             InitializeComponent();
         }
 
-        #region 基本信息属性
+        #region 对象属性 - 强类型编辑上下文
 
         /// <summary>
-        /// 验方名称
+        /// 验方编辑上下文 (强类型对象 DP)
         /// </summary>
-        public static readonly DependencyProperty FormulaNameProperty =
+        public static readonly DependencyProperty FormulaProperty =
             DependencyProperty.Register(
-                nameof(FormulaName),
-                typeof(string),
+                nameof(Formula),
+                typeof(FormulaEditContext),
                 typeof(FormulaEditControl),
                 new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public string? FormulaName
+        public FormulaEditContext? Formula
         {
-            get => (string?)GetValue(FormulaNameProperty);
-            set => SetValue(FormulaNameProperty, value);
-        }
-
-        /// <summary>
-        /// 分类
-        /// </summary>
-        public static readonly DependencyProperty CategoryProperty =
-            DependencyProperty.Register(
-                nameof(Category),
-                typeof(string),
-                typeof(FormulaEditControl),
-                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string? Category
-        {
-            get => (string?)GetValue(CategoryProperty);
-            set => SetValue(CategoryProperty, value);
-        }
-
-        /// <summary>
-        /// 性味归经
-        /// </summary>
-        public static readonly DependencyProperty PropertyProperty =
-            DependencyProperty.Register(
-                nameof(Property),
-                typeof(string),
-                typeof(FormulaEditControl),
-                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string? Property
-        {
-            get => (string?)GetValue(PropertyProperty);
-            set => SetValue(PropertyProperty, value);
-        }
-
-        /// <summary>
-        /// 功效 (使用FormulaEffect避免与UIElement.Effect冲突)
-        /// </summary>
-        public static readonly DependencyProperty FormulaEffectProperty =
-            DependencyProperty.Register(
-                nameof(FormulaEffect),
-                typeof(string),
-                typeof(FormulaEditControl),
-                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string? FormulaEffect
-        {
-            get => (string?)GetValue(FormulaEffectProperty);
-            set => SetValue(FormulaEffectProperty, value);
-        }
-
-        /// <summary>
-        /// 用法
-        /// </summary>
-        public static readonly DependencyProperty UsageProperty =
-            DependencyProperty.Register(
-                nameof(Usage),
-                typeof(string),
-                typeof(FormulaEditControl),
-                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string? Usage
-        {
-            get => (string?)GetValue(UsageProperty);
-            set => SetValue(UsageProperty, value);
-        }
-
-        /// <summary>
-        /// 备注
-        /// </summary>
-        public static readonly DependencyProperty RemarkProperty =
-            DependencyProperty.Register(
-                nameof(Remark),
-                typeof(string),
-                typeof(FormulaEditControl),
-                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public string? Remark
-        {
-            get => (string?)GetValue(RemarkProperty);
-            set => SetValue(RemarkProperty, value);
-        }
-
-        #endregion
-
-        #region 审计信息属性
-
-        /// <summary>
-        /// 创建时间
-        /// </summary>
-        public static readonly DependencyProperty CreatedAtProperty =
-            DependencyProperty.Register(
-                nameof(CreatedAt),
-                typeof(DateTime?),
-                typeof(FormulaEditControl),
-                new PropertyMetadata(null));
-
-        public DateTime? CreatedAt
-        {
-            get => (DateTime?)GetValue(CreatedAtProperty);
-            set => SetValue(CreatedAtProperty, value);
-        }
-
-        /// <summary>
-        /// 更新时间
-        /// </summary>
-        public static readonly DependencyProperty UpdatedAtProperty =
-            DependencyProperty.Register(
-                nameof(UpdatedAt),
-                typeof(DateTime?),
-                typeof(FormulaEditControl),
-                new PropertyMetadata(null));
-
-        public DateTime? UpdatedAt
-        {
-            get => (DateTime?)GetValue(UpdatedAtProperty);
-            set => SetValue(UpdatedAtProperty, value);
+            get => (FormulaEditContext?)GetValue(FormulaProperty);
+            set => SetValue(FormulaProperty, value);
         }
 
         #endregion
 
         #region 药材列表属性
-        // OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑处方
-
-        /// <summary>
-        /// 药材数量
-        /// </summary>
-        public static readonly DependencyProperty HerbCountProperty =
-            DependencyProperty.Register(
-                nameof(HerbCount),
-                typeof(int),
-                typeof(FormulaEditControl),
-                new PropertyMetadata(0));
-
-        public int HerbCount
-        {
-            get => (int)GetValue(HerbCountProperty);
-            set => SetValue(HerbCountProperty, value);
-        }
 
         /// <summary>
         /// 所有可用药材列表 - 用于HerbListControl药材选择
@@ -205,6 +73,22 @@ namespace LYBT.Desktop.Formula.Controls
         {
             get => (IEnumerable?)GetValue(HerbItemsProperty);
             set => SetValue(HerbItemsProperty, value);
+        }
+
+        /// <summary>
+        /// 药材数量
+        /// </summary>
+        public static readonly DependencyProperty HerbCountProperty =
+            DependencyProperty.Register(
+                nameof(HerbCount),
+                typeof(int),
+                typeof(FormulaEditControl),
+                new PropertyMetadata(0));
+
+        public int HerbCount
+        {
+            get => (int)GetValue(HerbCountProperty);
+            set => SetValue(HerbCountProperty, value);
         }
 
         #endregion
