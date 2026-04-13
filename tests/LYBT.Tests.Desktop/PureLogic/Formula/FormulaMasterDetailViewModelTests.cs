@@ -42,6 +42,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
     private readonly IErrorHandler _errorHandler;
     private readonly IAsyncExecutor _asyncExecutor;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly FormulaEditorViewModel _formulaEditor;
 
     public FormulaMasterDetailViewModelTests(UserJourneyFixture fixture) : base(fixture)
     {
@@ -109,6 +110,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
         _herbSearchProvider = Substitute.For<IHerbSearchProvider>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
         _mapper = new FormulaDetailModelMapper();
+        _formulaEditor = new FormulaEditorViewModel();
 
         _pagination.CurrentPage.Returns(1);
         _pagination.PageSize.Returns(20);
@@ -125,7 +127,8 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
             _statusHandler,
             _herbSearchProvider,
             _cacheManager,
-            _mapper);
+            _mapper,
+            _formulaEditor);
 
     [Fact]
     public async Task InitializeAsync_LoadsFormulaList()
@@ -155,28 +158,26 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
     {
         var sut = CreateSut();
         var savedId = Guid.NewGuid();
-        var detail = FormulaDetailModel.CreateNew();
-        detail.Name = "新验方";
-        detail.Effect = "益气健脾";
-        detail.Usage = "每日一剂";
-        detail.Property = "甘平";
-        detail.Category = "自拟方";
-        detail.Remark = "测试创建";
+        sut.FormulaEditor.InitializeForNewCase();
+        sut.FormulaEditor.Formula.Name = "新验方";
+        sut.FormulaEditor.Formula.Effect = "益气健脾";
+        sut.FormulaEditor.Formula.Usage = "每日一剂";
+        sut.FormulaEditor.Formula.Property = "甘平";
+        sut.FormulaEditor.Formula.Category = "自拟方";
+        sut.FormulaEditor.Formula.Remark = "测试创建";
 
-        _detailEditor.CurrentDetail = detail;
+        _detailEditor.CurrentDetail = new FormulaDetailModel();
         _detailEditor.IsEditMode = true;
-        sut.EditHerbItems = new ObservableCollection<FormulaHerbItemViewModel>
+        sut.FormulaEditor.EditHerbItems.Clear();
+        sut.FormulaEditor.EditHerbItems.Add(new FormulaHerbItemViewModel
         {
-            new()
-            {
-                HerbId = Guid.NewGuid(),
-                HerbName = "党参",
-                Dosage = 12,
-                Unit = "g",
-                Remark = "先煎",
-                DecocteMethod = DecocteMethod.Default
-            }
-        };
+            HerbId = Guid.NewGuid(),
+            HerbName = "党参",
+            Dosage = 12,
+            Unit = "g",
+            Remark = "先煎",
+            DecocteMethod = DecocteMethod.Default
+        });
 
         _formulaService.SaveFormulaAsync(
                 Arg.Any<FormulaDetailDto>(),
@@ -215,27 +216,25 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
     {
         var sut = CreateSut();
         var existingId = Guid.NewGuid();
-        var detail = FormulaDetailModel.CreateNew();
-        detail.Id = existingId;
-        detail.Name = "旧验方";
-        detail.Effect = "更新功效";
-        detail.Usage = "更新用法";
-        detail.Property = "温";
-        detail.Category = "临床方";
+        sut.FormulaEditor.InitializeForNewCase();
+        sut.FormulaEditor.Formula.Id = existingId;
+        sut.FormulaEditor.Formula.Name = "旧验方";
+        sut.FormulaEditor.Formula.Effect = "更新功效";
+        sut.FormulaEditor.Formula.Usage = "更新用法";
+        sut.FormulaEditor.Formula.Property = "温";
+        sut.FormulaEditor.Formula.Category = "临床方";
 
-        _detailEditor.CurrentDetail = detail;
+        _detailEditor.CurrentDetail = new FormulaDetailModel();
         _detailEditor.IsEditMode = true;
-        sut.EditHerbItems = new ObservableCollection<FormulaHerbItemViewModel>
+        sut.FormulaEditor.EditHerbItems.Clear();
+        sut.FormulaEditor.EditHerbItems.Add(new FormulaHerbItemViewModel
         {
-            new()
-            {
-                HerbId = Guid.NewGuid(),
-                HerbName = "黄芪",
-                Dosage = 15,
-                Unit = "g",
-                DecocteMethod = DecocteMethod.Default
-            }
-        };
+            HerbId = Guid.NewGuid(),
+            HerbName = "黄芪",
+            Dosage = 15,
+            Unit = "g",
+            DecocteMethod = DecocteMethod.Default
+        });
 
         _formulaService.SaveFormulaAsync(
                 Arg.Any<FormulaDetailDto>(),
@@ -309,8 +308,8 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
 
         sut.AddHerbCommand.Execute(null);
 
-        sut.EditHerbItems.Should().HaveCount(1);
-        sut.HerbCount.Should().Be(0);
+        sut.FormulaEditor.EditHerbItems.Should().HaveCount(1);
+        sut.FormulaEditor.HerbCount.Should().Be(0);
     }
 
     [Fact]
@@ -319,12 +318,13 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         _detailEditor.IsEditMode = true;
         var herb = new FormulaHerbItemViewModel { HerbId = Guid.NewGuid(), HerbName = "白术", Dosage = 10, Unit = "g" };
-        sut.EditHerbItems = new ObservableCollection<FormulaHerbItemViewModel> { herb };
+        sut.FormulaEditor.EditHerbItems.Clear();
+        sut.FormulaEditor.EditHerbItems.Add(herb);
 
         sut.DeleteHerbCommand.Execute(herb);
 
-        sut.EditHerbItems.Should().BeEmpty();
-        sut.HerbCount.Should().Be(0);
+        sut.FormulaEditor.EditHerbItems.Should().BeEmpty();
+        sut.FormulaEditor.HerbCount.Should().Be(0);
     }
 
     [Fact]

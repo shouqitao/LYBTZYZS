@@ -28,6 +28,7 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
     private readonly IHerbStatusHandler _statusHandler;
     private readonly IHerbImportExportHandler _importExportHandler;
     private readonly IDesktopCacheManager _cacheManager;
+    private readonly HerbEditorViewModel _herbEditor;
 
     private sealed class TestableHerbMasterDetailViewModel : HerbMasterDetailViewModel
     {
@@ -37,8 +38,9 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
             IHerbService herbService,
             IHerbStatusHandler statusHandler,
             IHerbImportExportHandler importExportHandler,
-            IDesktopCacheManager cacheManager)
-            : base(viewModelServices, masterDetailServices, herbService, statusHandler, importExportHandler, cacheManager)
+            IDesktopCacheManager cacheManager,
+            HerbEditorViewModel herbEditor)
+            : base(viewModelServices, masterDetailServices, herbService, statusHandler, importExportHandler, cacheManager, herbEditor)
         {
         }
 
@@ -55,6 +57,7 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
         _statusHandler = Substitute.For<IHerbStatusHandler>();
         _importExportHandler = Substitute.For<IHerbImportExportHandler>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
+        _herbEditor = new HerbEditorViewModel();
     }
 
     private TestableHerbMasterDetailViewModel CreateSut()
@@ -65,7 +68,8 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
             _herbService,
             _statusHandler,
             _importExportHandler,
-            _cacheManager);
+            _cacheManager,
+            _herbEditor);
     }
 
     private static HerbListDto CreateHerbListDto(Guid? id = null, string name = "黄芪")
@@ -155,6 +159,11 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
         var detail = CreateDetailModel();
         var created = CreateHerbDetailDto(detail.Id == Guid.Empty ? Guid.NewGuid() : detail.Id, detail.Name);
 
+        _herbEditor.InitializeForNewCase();
+        _herbEditor.Herb.Name = "黄芪";
+        _herbEditor.Herb.Unit = "g";
+        _herbEditor.Herb.Price = 10m;
+
         _herbService.CreateAsync(Arg.Any<HerbInputDto>(), Arg.Any<System.Threading.CancellationToken>())
             .Returns(Task.FromResult(new CommandResult<HerbDetailDto>(true, created, null)));
         _masterDetailServices.DetailEditor.IsNew.Returns(true);
@@ -174,8 +183,14 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         var herbId = Guid.NewGuid();
         var detail = CreateDetailModel(id: herbId);
-        detail.Name = "黄芪（修订）";
-        var updated = CreateHerbDetailDto(herbId, detail.Name);
+
+        _herbEditor.InitializeForNewCase();
+        _herbEditor.Herb.Id = herbId;
+        _herbEditor.Herb.Name = "黄芪（修订）";
+        _herbEditor.Herb.Unit = "g";
+        _herbEditor.Herb.Price = 10m;
+
+        var updated = CreateHerbDetailDto(herbId, "黄芪（修订）");
 
         _herbService.UpdateAsync(Arg.Any<HerbInputDto>(), Arg.Any<System.Threading.CancellationToken>())
             .Returns(Task.FromResult(new CommandResult<HerbDetailDto>(true, updated, null)));

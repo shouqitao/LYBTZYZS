@@ -1,12 +1,14 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Desktop.Modules.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -25,7 +27,7 @@ public class MedicalCaseMasterDetailViewModelTests
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> _masterDetailServices;
-    private readonly IMedicalCaseRepository _repository;
+    private readonly IMedicalCaseService _medicalCaseService;
     private readonly IHerbSearchProvider _herbSearchProvider;
     private readonly IDesktopCacheManager _cacheManager;
     private readonly ILoggerFactory _loggerFactory;
@@ -95,8 +97,8 @@ public class MedicalCaseMasterDetailViewModelTests
         _viewModelServices = Substitute.For<IViewModelServices>();
         _viewModelServices.LoggerFactory.Returns(_loggerFactory);
 
-        // 创建 Repository 和 Provider mocks
-        _repository = Substitute.For<IMedicalCaseRepository>();
+        // 创建 Service 和 Provider mocks
+        _medicalCaseService = Substitute.For<IMedicalCaseService>();
         _herbSearchProvider = Substitute.For<IHerbSearchProvider>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
         _mapper = new MedicalCaseDetailModelMapper();
@@ -107,10 +109,11 @@ public class MedicalCaseMasterDetailViewModelTests
         return new MedicalCaseMasterDetailViewModel(
             _viewModelServices,
             _masterDetailServices,
-            _repository,
+            _medicalCaseService,
             _herbSearchProvider,
             _cacheManager,
-            _mapper);
+            _mapper,
+            _loggerFactory);
     }
 
     #region 构造函数和初始化
@@ -126,7 +129,7 @@ public class MedicalCaseMasterDetailViewModelTests
     }
 
     [Fact]
-    public void Constructor_ThrowsArgumentNullException_WhenRepositoryIsNull()
+    public void Constructor_ThrowsArgumentNullException_WhenMedicalCaseServiceIsNull()
     {
         // Arrange & Act & Assert
         Action act = () => new MedicalCaseMasterDetailViewModel(
@@ -135,9 +138,10 @@ public class MedicalCaseMasterDetailViewModelTests
             null!,
             _herbSearchProvider,
             _cacheManager,
-            _mapper);
+            _mapper,
+            _loggerFactory);
 
-        act.Should().Throw<ArgumentNullException>().WithParameterName("repository");
+        act.Should().Throw<ArgumentNullException>().WithParameterName("medicalCaseService");
     }
 
     [Fact]
@@ -147,10 +151,11 @@ public class MedicalCaseMasterDetailViewModelTests
         Action act = () => new MedicalCaseMasterDetailViewModel(
             _viewModelServices,
             _masterDetailServices,
-            _repository,
+            _medicalCaseService,
             null!,
             _cacheManager,
-            _mapper);
+            _mapper,
+            _loggerFactory);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("herbSearchProvider");
     }
@@ -162,10 +167,11 @@ public class MedicalCaseMasterDetailViewModelTests
         Action act = () => new MedicalCaseMasterDetailViewModel(
             _viewModelServices,
             _masterDetailServices,
-            _repository,
+            _medicalCaseService,
             _herbSearchProvider,
             null!,
-            _mapper);
+            _mapper,
+            _loggerFactory);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cacheManager");
     }
@@ -199,7 +205,7 @@ public class MedicalCaseMasterDetailViewModelTests
             TotalCount = 2
         };
 
-        _repository.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
+        _medicalCaseService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
             .Returns(Task.FromResult(pagedData));
 
         // 设置分页服务的返回值
@@ -211,7 +217,7 @@ public class MedicalCaseMasterDetailViewModelTests
         await sut.InitializeAsync();
 
         // Assert
-        await _repository.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>());
+        await _medicalCaseService.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>());
     }
 
     [Fact]
@@ -221,7 +227,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var sut = CreateSut();
         var exception = new Exception("Database connection failed");
 
-        _repository.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
+        _medicalCaseService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
             .Returns(Task.FromException<PagedResult<MedicalCaseListDto>>(exception));
 
         // Act
@@ -242,7 +248,7 @@ public class MedicalCaseMasterDetailViewModelTests
             TotalCount = 0
         };
 
-        _repository.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
+        _medicalCaseService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>())
             .Returns(Task.FromResult(pagedData));
 
         // 设置搜索文本
@@ -252,7 +258,7 @@ public class MedicalCaseMasterDetailViewModelTests
         await sut.InitializeAsync();
 
         // Assert - 验证调用了 GetPagedAsync，搜索文本通过 SearchText 属性委托
-        await _repository.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>());
+        await _medicalCaseService.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>());
     }
 
     #endregion
@@ -260,48 +266,42 @@ public class MedicalCaseMasterDetailViewModelTests
     #region LoadDetailAsync
 
     [Fact]
-    public async Task LoadDetailAsync_LoadsDetailViaRepositoryAndInitializesEditModels()
+    public async Task LoadDetailAsync_LoadsDetailViaServiceAndInitializesChildVMs()
     {
         // Arrange
         var sut = CreateSut();
         var listItem = CreateMedicalCaseListDto();
         MedicalCaseDetailDto detailDto = CreateMedicalCaseDetailDto();
-        var herbs = new List<HerbListDto> { new() { Id = Guid.NewGuid(), Name = "人参" } };
 
-        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult<MedicalCaseDetailDto?>(detailDto));
-        _herbSearchProvider.SearchHerbsAsync(string.Empty).Returns(Task.FromResult<IReadOnlyList<HerbListDto>>(herbs));
+        _medicalCaseService.LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult((true, (MedicalCaseDetailDto?)detailDto, (string?)null)));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
 
         // Assert
-        await _repository.Received(1).GetByIdAsync(listItem.Id);
+        await _medicalCaseService.Received(1).LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>());
 
-        // Verify Consultation and Prescription were initialized via reflection
-        var consultation = sut.GetType().GetProperty("Consultation")?.GetValue(sut) as LYBT.Desktop.MedicalCase.Models.Items.ConsultationItem;
-        var prescription = sut.GetType().GetProperty("Prescription")?.GetValue(sut) as LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItem;
-
-        consultation.Should().NotBeNull();
-        prescription.Should().NotBeNull();
+        // Verify child VMs are populated
+        sut.ConsultationEditor.Should().NotBeNull();
+        sut.PrescriptionEditor.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task LoadDetailAsync_HandlesNullResultFromRepository()
+    public async Task LoadDetailAsync_HandlesNullResultFromService()
     {
         // Arrange
         var sut = CreateSut();
         var listItem = CreateMedicalCaseListDto();
-        var herbs = new List<HerbListDto>();
 
-        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult<MedicalCaseDetailDto?>(null));
-        _herbSearchProvider.SearchHerbsAsync(string.Empty).Returns(Task.FromResult<IReadOnlyList<HerbListDto>>(herbs));
+        _medicalCaseService.LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult((true, (MedicalCaseDetailDto?)null, (string?)null)));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
 
         // Assert
-        await _repository.Received(1).GetByIdAsync(listItem.Id);
-        // Should not throw and should return early without initializing edit models
+        await _medicalCaseService.Received(1).LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -311,57 +311,15 @@ public class MedicalCaseMasterDetailViewModelTests
         var sut = CreateSut();
         var listItem = CreateMedicalCaseListDto();
         var exception = new Exception("Database connection failed");
-        var herbs = new List<HerbListDto>();
 
-        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromException<MedicalCaseDetailDto?>(exception));
-        _herbSearchProvider.SearchHerbsAsync(string.Empty).Returns(Task.FromResult<IReadOnlyList<HerbListDto>>(herbs));
+        _medicalCaseService.LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)>(exception));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
 
         // Assert
         _errorHandler.Received(1).HandleException(exception, "加载医案详情");
-    }
-
-    [Fact]
-    public async Task LoadDetailAsync_LoadsHerbsWhenAllHerbsIsEmpty()
-    {
-        // Arrange
-        var sut = CreateSut();
-        var listItem = CreateMedicalCaseListDto();
-        MedicalCaseDetailDto detailDto = CreateMedicalCaseDetailDto();
-        var herbs = new List<HerbListDto> { new() { Id = Guid.NewGuid(), Name = "人参" } };
-
-        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult<MedicalCaseDetailDto?>(detailDto));
-        _herbSearchProvider.SearchHerbsAsync(string.Empty).Returns(Task.FromResult<IReadOnlyList<HerbListDto>>(herbs));
-
-        // Act
-        await sut.InvokeLoadDetailAsync(listItem);
-
-        // Assert
-        await _herbSearchProvider.Received(1).SearchHerbsAsync(string.Empty);
-    }
-
-    [Fact]
-    public async Task LoadDetailAsync_SkipsLoadingHerbsWhenAllHerbsAlreadyLoaded()
-    {
-        // Arrange
-        var sut = CreateSut();
-        var listItem = CreateMedicalCaseListDto();
-        MedicalCaseDetailDto detailDto = CreateMedicalCaseDetailDto();
-        var herbs = new List<HerbListDto> { new() { Id = Guid.NewGuid(), Name = "人参" } };
-
-        // Pre-populate AllHerbs
-        var allHerbsProperty = sut.GetType().GetProperty("AllHerbs");
-        allHerbsProperty?.SetValue(sut, new System.Collections.ObjectModel.ObservableCollection<HerbListDto>(herbs));
-
-        _repository.GetByIdAsync(listItem.Id).Returns(Task.FromResult<MedicalCaseDetailDto?>(detailDto));
-
-        // Act
-        await sut.InvokeLoadDetailAsync(listItem);
-
-        // Assert
-        await _herbSearchProvider.DidNotReceive().SearchHerbsAsync(Arg.Any<string>());
     }
 
     #endregion
@@ -376,27 +334,26 @@ public class MedicalCaseMasterDetailViewModelTests
         var detail = CreateMedicalCaseDetailModel();
         var savedDto = CreateMedicalCaseDetailDto();
 
-        // 设置 Consultation 和 Prescription 以便保存
-        sut.GetType().GetProperty("Consultation")?.SetValue(sut, new LYBT.Desktop.MedicalCase.Models.Items.ConsultationItem
+        // Set up child VM data
+        sut.ConsultationEditor.Consultation = new LYBT.Desktop.MedicalCase.Models.Items.ConsultationItem
         {
             PresentIllness = "测试现病史",
             TcmDiagnosis = "测试中医诊断"
-        });
-
-        sut.GetType().GetProperty("Prescription")?.SetValue(sut, new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItem
+        };
+        sut.PrescriptionEditor.Prescription = new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItem
         {
             DosageCount = 7,
             Items = new System.Collections.ObjectModel.ObservableCollection<PrescriptionItemDto>()
-        });
+        };
 
-        _repository.SaveAsync(detail.Id, Arg.Any<MedicalCaseInputDto>())
-            .Returns(Task.FromResult(savedDto));
+        _medicalCaseService.AggregateSaveAsync(detail.Id, Arg.Any<ConsultationInputDto?>(), Arg.Any<PrescriptionInputDto?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult((true, (MedicalCaseDetailDto?)savedDto, (string?)null)));
 
         // Act
         var result = await sut.SaveDetailAsync(detail);
 
         // Assert
-        await _repository.Received(1).SaveAsync(detail.Id, Arg.Any<MedicalCaseInputDto>());
+        await _medicalCaseService.Received(1).AggregateSaveAsync(detail.Id, Arg.Any<ConsultationInputDto?>(), Arg.Any<PrescriptionInputDto?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
         _cacheManager.Received(1).InvalidateMedicalCaseCaches();
         result.Should().BeTrue();
     }
@@ -409,12 +366,11 @@ public class MedicalCaseMasterDetailViewModelTests
         var detail = CreateMedicalCaseDetailModel();
         var exception = new Exception("Save failed");
 
-        // 设置 Consultation 和 Prescription
-        sut.GetType().GetProperty("Consultation")?.SetValue(sut, new LYBT.Desktop.MedicalCase.Models.Items.ConsultationItem());
-        sut.GetType().GetProperty("Prescription")?.SetValue(sut, new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItem());
+        sut.ConsultationEditor.Consultation = new LYBT.Desktop.MedicalCase.Models.Items.ConsultationItem();
+        sut.PrescriptionEditor.Prescription = new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItem();
 
-        _repository.SaveAsync(detail.Id, Arg.Any<MedicalCaseInputDto>())
-            .Returns(Task.FromException<MedicalCaseDetailDto>(exception));
+        _medicalCaseService.AggregateSaveAsync(detail.Id, Arg.Any<ConsultationInputDto?>(), Arg.Any<PrescriptionInputDto?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<(bool Success, MedicalCaseDetailDto? Data, string? Error)>(exception));
 
         // Act
         var result = await sut.SaveDetailAsync(detail);
@@ -449,20 +405,17 @@ public class MedicalCaseMasterDetailViewModelTests
             DecocteMethod = DecocteMethod.Default
         });
 
-        sut.GetType().GetProperty("Consultation")?.SetValue(sut, new LYBT.Desktop.MedicalCase.Models.Items.ConsultationItem());
-        sut.GetType().GetProperty("Prescription")?.SetValue(sut, prescriptionItem);
+        sut.ConsultationEditor.Consultation = new LYBT.Desktop.MedicalCase.Models.Items.ConsultationItem();
+        sut.PrescriptionEditor.Prescription = prescriptionItem;
 
-        _repository.SaveAsync(detail.Id, Arg.Any<MedicalCaseInputDto>())
-            .Returns(Task.FromResult(savedDto));
+        _medicalCaseService.AggregateSaveAsync(detail.Id, Arg.Any<ConsultationInputDto?>(), Arg.Any<PrescriptionInputDto?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult((true, (MedicalCaseDetailDto?)savedDto, (string?)null)));
 
         // Act
         await sut.SaveDetailAsync(detail);
 
         // Assert
-        await _repository.Received(1).SaveAsync(detail.Id, Arg.Is<MedicalCaseInputDto>(dto =>
-            dto.Prescription != null &&
-            dto.Prescription.Items.Count == 1 &&
-            dto.Prescription.Items[0].HerbId == herbId));
+        await _medicalCaseService.Received(1).AggregateSaveAsync(detail.Id, Arg.Any<ConsultationInputDto?>(), Arg.Any<PrescriptionInputDto?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
     #endregion
@@ -476,13 +429,13 @@ public class MedicalCaseMasterDetailViewModelTests
         var sut = CreateSut();
         var listItem = CreateMedicalCaseListDto();
 
-        _repository.DeleteAsync(listItem.Id).Returns(Task.FromResult(true));
+        _medicalCaseService.CancelMedicalCaseAsync(listItem.Id, Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult((true, (string?)null)));
 
         // Act
         var result = await sut.DeleteItemAsync(listItem);
 
         // Assert
-        await _repository.Received(1).DeleteAsync(listItem.Id);
+        await _medicalCaseService.Received(1).CancelMedicalCaseAsync(listItem.Id, Arg.Any<string?>(), Arg.Any<CancellationToken>());
         _cacheManager.Received(1).InvalidateMedicalCaseCaches();
         result.Should().BeTrue();
     }
@@ -494,14 +447,14 @@ public class MedicalCaseMasterDetailViewModelTests
         var sut = CreateSut();
         var listItem = CreateMedicalCaseListDto();
 
-        _repository.DeleteAsync(listItem.Id).Returns(Task.FromResult(false));
+        _medicalCaseService.CancelMedicalCaseAsync(listItem.Id, Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult((false, "delete failed")));
 
         // Act
         var result = await sut.DeleteItemAsync(listItem);
 
         // Assert
         result.Should().BeFalse();
-        _errorHandler.Received(1).SetError("Delete", "删除医案失败");
+        _errorHandler.Received(1).SetError("Delete", "delete failed");
         _cacheManager.DidNotReceive().InvalidateMedicalCaseCaches();
     }
 
@@ -605,9 +558,10 @@ public class MedicalCaseMasterDetailViewModelTests
         var sut = CreateSut();
         var herbs = new List<HerbListDto> { new() { Id = Guid.NewGuid(), Name = "人参" } };
 
-        // Pre-populate AllHerbs
-        var allHerbsProperty = sut.GetType().GetProperty("AllHerbs");
-        allHerbsProperty?.SetValue(sut, new System.Collections.ObjectModel.ObservableCollection<HerbListDto>(herbs));
+        // Pre-populate AllHerbs by adding to the existing collection (it has no setter)
+        var allHerbs = sut.AllHerbs;
+        foreach (var herb in herbs)
+            allHerbs.Add(herb);
 
         // Create navigation context mock
         var navigationContext = Substitute.For<NavigationContext>(

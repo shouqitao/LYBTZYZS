@@ -1,8 +1,5 @@
 using FluentAssertions;
-using LYBT.Desktop.CardReader.Integration;
-using LYBT.Desktop.CardReader.Services;
 using LYBT.Desktop.Clinical.ViewModels;
-using LYBT.Desktop.Clinical.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Infrastructure.Events;
@@ -33,10 +30,7 @@ public class MedicalCaseWorkspaceViewModelTests
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IActiveConsultationService _activeConsultationService;
-    private readonly IPendingQueueManager _pendingQueueManager;
     private readonly PrescriptionPrintHandler _printHandler;
-    private readonly ICardReaderService _cardReaderService;
-    private readonly IPatientCardReaderIntegration _patientCardReaderIntegration;
     private readonly IDialogService? _dialogService;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IEventAggregator _eventAggregator;
@@ -77,7 +71,6 @@ public class MedicalCaseWorkspaceViewModelTests
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
         _activeConsultationService = Substitute.For<IActiveConsultationService>();
-        _pendingQueueManager = Substitute.For<IPendingQueueManager>();
         
         // Mock dependencies for PrescriptionPrintHandler
         _medicalCaseRepository = Substitute.For<IMedicalCaseRepository>();
@@ -93,8 +86,6 @@ public class MedicalCaseWorkspaceViewModelTests
             _loggerFactory,
             _printService);
         
-        _cardReaderService = Substitute.For<ICardReaderService>();
-        _patientCardReaderIntegration = Substitute.For<IPatientCardReaderIntegration>();
         _dialogService = Substitute.For<IDialogService>();
     }
 
@@ -105,10 +96,7 @@ public class MedicalCaseWorkspaceViewModelTests
             _medicalCaseService,
             _navigationCoordinator,
             _activeConsultationService,
-            _pendingQueueManager,
             _printHandler,
-            _cardReaderService,
-            _patientCardReaderIntegration,
             _dialogService);
     }
 
@@ -124,8 +112,6 @@ public class MedicalCaseWorkspaceViewModelTests
         sut.ConsultationEditor.Should().NotBeNull();
         sut.PrescriptionEditor.Should().NotBeNull();
         sut.Commands.Should().NotBeNull();
-        sut.PendingQueue.Should().NotBeNull();
-        sut.CardReader.Should().NotBeNull();
     }
 
     [Fact]
