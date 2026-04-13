@@ -23,9 +23,9 @@ foreach ($module in $modules) {
 }
 
 Write-Host "`n=== 恢复所有包 ===" -ForegroundColor Green
-dotnet restore LYBT.All.sln
+dotnet restore LYBTZYZS.sln
 
 Write-Host "`n=== 尝试编译 ===" -ForegroundColor Green
-dotnet build LYBT.All.sln --no-restore
+dotnet build LYBTZYZS.sln --no-restore
 
 Write-Host "`n=== 安装完成 ===" -ForegroundColor Green

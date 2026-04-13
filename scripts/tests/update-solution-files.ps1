@@ -28,7 +28,7 @@ $testProjects | ForEach-Object {
 Write-Host ""
 
 # Solutions to update
-$solutions = @("LYBT.All.sln", "LYBT.Server.sln")
+$solutions = @("LYBTZYZS.sln", "LYBT.Server.sln")
 
 foreach ($solutionFile in $solutions) {
     if (-not (Test-Path $solutionFile)) {

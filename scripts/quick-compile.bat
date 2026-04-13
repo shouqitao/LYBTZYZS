@@ -38,7 +38,7 @@ goto end
 
 :all
 echo [编译全部...]
-dotnet build LYBT.All.sln --configuration Debug
+dotnet build LYBTZYZS.sln --configuration Debug
 goto end
 
 :help

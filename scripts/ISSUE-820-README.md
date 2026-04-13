@@ -1,4 +1,4 @@
-﻿# Desktop 架构优化 - Issue #820 执行指南
+# Desktop 架构优化 - Issue #820 执行指南
 
 ## 📋 概述
 
@@ -80,7 +80,7 @@ cd D:\source\repos\LYBTZYZS
 
 # 4. 编译验证
 dotnet build LYBT.Desktop.sln -c Release
-dotnet build LYBT.All.sln -c Release
+dotnet build LYBTZYZS.sln -c Release
 
 # 5. Git 提交
 git add .
@@ -120,13 +120,13 @@ git commit -m "refactor(desktop): 统一文件夹命名规范 - Issue #820"
 
 [3/5] 更新项目引用
   ├─ 更新 LYBT.Desktop.sln
-  ├─ 更新 LYBT.All.sln
+  ├─ 更新 LYBTZYZS.sln
   ├─ 更新所有 .csproj 文件
   └─ 更新 .cs 文件的 using 语句
 
 [4/5] 编译验证
   ├─ dotnet build LYBT.Desktop.sln
-  └─ dotnet build LYBT.All.sln
+  └─ dotnet build LYBTZYZS.sln
 
 [5/5] Git 提交
   └─ git commit -m "..."
@@ -184,7 +184,7 @@ git commit -m "refactor(desktop): 统一文件夹命名规范 - Issue #820"
 ### 文件更新
 
 - ✅ LYBT.Desktop.sln - 项目路径引用
-- ✅ LYBT.All.sln - 项目路径引用
+- ✅ LYBTZYZS.sln - 项目路径引用
 - ✅ 所有 .csproj - ProjectReference 路径
 - ✅ 所有 .cs - using 语句（如需要）
 

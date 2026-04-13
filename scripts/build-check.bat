@@ -21,7 +21,7 @@ if "%1"=="" (
     echo 请选择编译目标：
     echo 1. 后端 (LYBT.Backend.sln)
     echo 2. 前端 (LYBT.Desktop.sln) 
-    echo 3. 完整 (LYBT.All.sln)
+    echo 3. 完整 (LYBTZYZS.sln)
     echo 4. 仅检查错误（不编译）
     echo.
     set /p choice="请输入选择 (1-4): "
@@ -47,7 +47,7 @@ if "!choice!"=="1" (
 ) else if "!choice!"=="3" (
     echo 正在编译完整解决方案...
     echo.
-    REM 处理 LYBT.All.sln 的特殊情况（避免 MSB1008 错误）
+    REM 处理 LYBTZYZS.sln 的特殊情况（避免 MSB1008 错误）
     dotnet build LYBT.Backend.sln --no-incremental --verbosity quiet 2>&1 | findstr /R /C:"error CS" /C:"error MSB" /C:"error NU" > build-errors-backend.txt
     dotnet build LYBT.Desktop.sln --no-incremental --verbosity quiet 2>&1 | findstr /R /C:"error CS" /C:"error MSB" /C:"error NU" > build-errors-frontend.txt
     type build-errors-backend.txt build-errors-frontend.txt > build-errors.txt 2>nul

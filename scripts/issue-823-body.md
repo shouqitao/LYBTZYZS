@@ -1,4 +1,4 @@
-﻿## 📋 概述
+## 📋 概述
 
 修复 Desktop 项目剩余的编译错误，主要涉及 4 个模块缺少 Shared 库和其他依赖的项目引用。
 
@@ -129,7 +129,7 @@ error CS0246: 未能找到类型或命名空间名"IPrescriptionService"
   - 验收: 0 errors（警告数与基线一致）
 
 - [ ] **[BUILD-3]** 全量编译 All 解决方案
-  - `dotnet build LYBT.All.sln -c Release`
+  - `dotnet build LYBTZYZS.sln -c Release`
   - 验收: 0 errors
 
 ### 步骤 3: Git 提交

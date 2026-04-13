@@ -69,7 +69,7 @@ echo.
 echo [完整编译 - 前后端]
 echo ----------------------------------------
 echo 步骤 1/3: 恢复NuGet包...
-dotnet restore LYBT.All.sln
+dotnet restore LYBTZYZS.sln
 
 echo.
 echo 步骤 2/3: 编译后端...
@@ -102,11 +102,11 @@ dotnet nuget locals all --clear
 
 echo.
 echo 步骤 3/4: 恢复包...
-dotnet restore LYBT.All.sln --force
+dotnet restore LYBTZYZS.sln --force
 
 echo.
 echo 步骤 4/4: 重新编译...
-dotnet build LYBT.All.sln --configuration Debug
+dotnet build LYBTZYZS.sln --configuration Debug
 
 if errorlevel 1 (
     echo.
@@ -175,12 +175,12 @@ goto :end
 echo.
 echo [恢复NuGet包]
 echo ----------------------------------------
-dotnet restore LYBT.All.sln --force
+dotnet restore LYBTZYZS.sln --force
 if errorlevel 1 (
     echo.
     echo [错误] 包恢复失败！尝试清理缓存...
     dotnet nuget locals all --clear
-    dotnet restore LYBT.All.sln --force
+    dotnet restore LYBTZYZS.sln --force
 )
 goto :end
 
@@ -195,7 +195,7 @@ goto :end
 echo.
 echo [发布版本编译]
 echo ----------------------------------------
-dotnet build LYBT.All.sln --configuration Release
+dotnet build LYBTZYZS.sln --configuration Release
 if errorlevel 1 (
     echo.
     echo [错误] 发布编译失败！

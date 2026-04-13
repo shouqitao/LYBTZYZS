@@ -289,3 +289,11 @@ update_client_readmes_detailed.py
 # Ralph-Plan loop
 .claude/ralph-plan-state.local
 .claude/ralph-plan-logs/
+
+# OMC internal state files (local-only, not for VCS)
+.omc/
+
+# Local analysis/planning notes (temporary working docs)
+/findings.md
+/progress.md
+/task_plan.md

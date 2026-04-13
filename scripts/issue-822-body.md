@@ -1,4 +1,4 @@
-﻿## 📋 概述
+## 📋 概述
 
 修复 Desktop 项目编译错误，主要涉及 Formula 模块缺少必要的 using 指令和类型引用。
 
@@ -70,8 +70,8 @@ error CS0246: 未能找到类型或命名空间名"IErrorHandlingService"(是否
   - 命令: `dotnet build LYBT.Desktop.sln -c Release`
   - 验收: 0 errors（警告数与基线一致）
 
-- [ ] **[BUILD-3]** 编译 LYBT.All.sln
-  - 命令: `dotnet build LYBT.All.sln -c Release`
+- [ ] **[BUILD-3]** 编译 LYBTZYZS.sln
+  - 命令: `dotnet build LYBTZYZS.sln -c Release`
   - 验收: 0 errors（警告数与基线一致）
 
 ### 步骤 5: Git 提交

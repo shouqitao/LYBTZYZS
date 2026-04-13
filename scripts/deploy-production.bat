@@ -38,7 +38,7 @@ REM ================================================
 echo [2/10] 清理旧构建...
 echo 清理旧构建... >> "%LOG_FILE%"
 
-dotnet clean %ROOT_DIR%\LYBT.All.sln -c %BUILD_CONFIG% >> "%LOG_FILE%" 2>&1
+dotnet clean %ROOT_DIR%\LYBTZYZS.sln -c %BUILD_CONFIG% >> "%LOG_FILE%" 2>&1
 if %errorlevel% neq 0 (
     echo 错误: 清理失败
     echo 清理失败 >> "%LOG_FILE%"
@@ -51,7 +51,7 @@ REM ================================================
 echo [3/10] 还原NuGet包...
 echo 还原NuGet包... >> "%LOG_FILE%"
 
-dotnet restore %ROOT_DIR%\LYBT.All.sln >> "%LOG_FILE%" 2>&1
+dotnet restore %ROOT_DIR%\LYBTZYZS.sln >> "%LOG_FILE%" 2>&1
 if %errorlevel% neq 0 (
     echo 错误: 还原包失败
     echo 还原包失败 >> "%LOG_FILE%"

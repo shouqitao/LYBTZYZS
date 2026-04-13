@@ -1,6 +1,6 @@
 # Fix Solution Structure - Remove orphaned "src" virtual folder
 
-$solutionPath = "D:\source\repos\LYBTZYZS\LYBT.All.sln"
+$solutionPath = "D:\source\repos\LYBTZYZS\LYBTZYZS.sln"
 
 Write-Host "Fixing Solution structure..." -ForegroundColor Cyan
 

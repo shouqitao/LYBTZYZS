@@ -1,4 +1,4 @@
-﻿# Desktop 架构优化 - 引用更新脚本
+# Desktop 架构优化 - 引用更新脚本
 # Issue #820: 更新项目文件、解决方案文件和命名空间
 # 生成时间: 2025-09-30
 
@@ -94,7 +94,7 @@ Write-Host ""
 
 $slnFiles = @(
     "LYBT.Desktop.sln",
-    "LYBT.All.sln"
+    "LYBTZYZS.sln"
 )
 
 $slnUpdateCount = 0
@@ -180,7 +180,7 @@ Write-Host ""
 
 Write-Host "下一步:" -ForegroundColor Cyan
 Write-Host "  1. 编译验证 LYBT.Desktop.sln" -ForegroundColor Gray
-Write-Host "  2. 编译验证 LYBT.All.sln" -ForegroundColor Gray
+Write-Host "  2. 编译验证 LYBTZYZS.sln" -ForegroundColor Gray
 Write-Host "  3. 提交变更到 Git" -ForegroundColor Gray
 Write-Host ""
 

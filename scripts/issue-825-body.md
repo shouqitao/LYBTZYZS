@@ -1,4 +1,4 @@
-﻿## 📋 概述
+## 📋 概述
 
 修复 Issue #823 完成后遗留的代码质量警告（约 140+ 条），提升代码库健康度。
 
@@ -160,7 +160,7 @@ MSB9008: The referenced project ..\..\src\Client\Desktop\Core_New\LYBT.Desktop.I
   - 验收：CA1062 警告处理完毕
 
 ### 编译验证
-- [ ] **[BUILD-1]** 编译 LYBT.All.sln
+- [ ] **[BUILD-1]** 编译 LYBTZYZS.sln
   - 验收：0 errors，警告数 ≤ 50（从 140+ 降至 50）
 
 - [ ] **[BUILD-2]** 编译 Desktop.sln

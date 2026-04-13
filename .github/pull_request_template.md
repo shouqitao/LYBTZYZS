@@ -56,7 +56,7 @@
 
 **编译验证**:
 ```bash
-dotnet build LYBT.All.sln -c Release
+dotnet build LYBTZYZS.sln -c Release
 ```
 
 **测试验证**:

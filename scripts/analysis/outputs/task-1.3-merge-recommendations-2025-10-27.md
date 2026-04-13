@@ -578,7 +578,7 @@ containerRegistry.RegisterForNavigation<PrescriptionUnifiedView, PrescriptionUni
 #### 7.1 编译检查
 
 ```bash
-dotnet build LYBT.All.sln -c Release --no-restore
+dotnet build LYBTZYZS.sln -c Release --no-restore
 ```
 
 **预期结果**：0 errors, 0 warnings

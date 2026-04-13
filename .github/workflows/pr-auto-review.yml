@@ -186,7 +186,7 @@ jobs:
 
               reviewBody += `---\n\n`;
               reviewBody += `## ⚠️ 人工审查要求\n\n`;
-              reviewBody += `**编译验证**: \`dotnet build LYBT.All.sln -c Release\`\n`;
+              reviewBody += `**编译验证**: \`dotnet build LYBTZYZS.sln -c Release\`\n`;
               reviewBody += `**测试验证**: \`dotnet test LYBT.Server.sln -c Release\`\n\n`;
               reviewBody += `💡 **提示**: 仍需人工最终审批\n`;
             }

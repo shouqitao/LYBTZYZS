@@ -19,7 +19,7 @@ Write-Host "✓ .NET版本: $dotnetVersion" -ForegroundColor Green
 # 构建项目（除非跳过）
 if (-not $SkipBuild) {
     Write-Host "`n🔨 构建项目..." -ForegroundColor Cyan
-    dotnet build LYBT.All.sln --configuration Release --verbosity minimal
+    dotnet build LYBTZYZS.sln --configuration Release --verbosity minimal
     if ($LASTEXITCODE -ne 0) {
         Write-Host "❌ 构建失败" -ForegroundColor Red
         exit 1

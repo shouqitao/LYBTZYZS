@@ -1,8 +1,8 @@
 # 修复Solution文件结构错误
 # Issue: dotnet sln add 自动生成的错误文件夹层次导致VS启动配置失效
 
-$slnFile = "LYBT.All.sln"
-$backupFile = "LYBT.All.sln.backup-fix"
+$slnFile = "LYBTZYZS.sln"
+$backupFile = "LYBTZYZS.sln.backup-fix"
 
 Write-Host "开始修复Solution文件结构..." -ForegroundColor Cyan
 
@@ -111,5 +111,5 @@ Write-Host "  ✓ 已保存到 $slnFile" -ForegroundColor Green
 Write-Host "`n✅ Solution文件结构修复完成！" -ForegroundColor Green
 Write-Host "`n建议验证步骤：" -ForegroundColor Cyan
 Write-Host "1. dotnet sln list - 验证项目列表" -ForegroundColor White
-Write-Host "2. dotnet build LYBT.All.sln - 验证编译" -ForegroundColor White
+Write-Host "2. dotnet build LYBTZYZS.sln - 验证编译" -ForegroundColor White
 Write-Host "3. 在VS中打开解决方案，检查文件夹层次和启动项配置" -ForegroundColor White

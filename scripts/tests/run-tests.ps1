@@ -23,7 +23,7 @@ if (Test-Path $Output) {
 
 # Build solution first
 Write-Host "Building solution..." -ForegroundColor Blue
-dotnet build LYBT.All.sln --configuration Release --no-restore
+dotnet build LYBTZYZS.sln --configuration Release --no-restore
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build failed!" -ForegroundColor Red
     exit 1

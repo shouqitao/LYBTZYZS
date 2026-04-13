@@ -1,4 +1,4 @@
-﻿# Desktop 架构优化 - 主执行脚本
+# Desktop 架构优化 - 主执行脚本
 # Issue #820: 统一文件夹命名规范与路径结构
 # 生成时间: 2025-09-30
 #
@@ -140,7 +140,7 @@ if (!$SkipBuild) {
 
     if ($DryRun) {
         Write-Host "  将编译: LYBT.Desktop.sln" -ForegroundColor Gray
-        Write-Host "  将编译: LYBT.All.sln" -ForegroundColor Gray
+        Write-Host "  将编译: LYBTZYZS.sln" -ForegroundColor Gray
     } else {
         # 编译 Desktop.sln
         Write-Host "  [1/2] 编译 LYBT.Desktop.sln..." -ForegroundColor Yellow
@@ -158,17 +158,17 @@ if (!$SkipBuild) {
         Write-Host ""
 
         # 编译 All.sln
-        Write-Host "  [2/2] 编译 LYBT.All.sln..." -ForegroundColor Yellow
-        $allBuildOutput = dotnet build LYBT.All.sln -c Release --no-restore 2>&1
+        Write-Host "  [2/2] 编译 LYBTZYZS.sln..." -ForegroundColor Yellow
+        $allBuildOutput = dotnet build LYBTZYZS.sln -c Release --no-restore 2>&1
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "  ❌ LYBT.All.sln 编译失败" -ForegroundColor Red
+            Write-Host "  ❌ LYBTZYZS.sln 编译失败" -ForegroundColor Red
             Write-Host $allBuildOutput
             exit 1
         }
 
         $errors = ($allBuildOutput | Select-String "error" | Measure-Object).Count
         $warnings = ($allBuildOutput | Select-String "warning" | Measure-Object).Count
-        Write-Host "  ✅ LYBT.All.sln 编译成功 ($errors errors, $warnings warnings)" -ForegroundColor Green
+        Write-Host "  ✅ LYBTZYZS.sln 编译成功 ($errors errors, $warnings warnings)" -ForegroundColor Green
     }
     Write-Host ""
 } else {
@@ -200,9 +200,9 @@ refactor(desktop): 统一文件夹命名规范 - Issue #820
 - ✅ [RENAME-2] 重命名 8 个 Modules 子文件夹（添加 LYBT.Desktop. 前缀）
 - ✅ [PROJ-1] 更新所有项目文件引用
 - ✅ [SLN-1] 更新 LYBT.Desktop.sln
-- ✅ [SLN-2] 更新 LYBT.All.sln
+- ✅ [SLN-2] 更新 LYBTZYZS.sln
 - ✅ [BUILD-1] 编译验证 LYBT.Desktop.sln (0 errors)
-- ✅ [BUILD-2] 编译验证 LYBT.All.sln (0 errors)
+- ✅ [BUILD-2] 编译验证 LYBTZYZS.sln (0 errors)
 
 变更内容：
 1. 文件夹重命名（9个）:
@@ -222,7 +222,7 @@ refactor(desktop): 统一文件夹命名规范 - Issue #820
 
 3. 编译验证:
    - LYBT.Desktop.sln: 通过
-   - LYBT.All.sln: 通过
+   - LYBTZYZS.sln: 通过
 
 参考: Issue #820
 "@

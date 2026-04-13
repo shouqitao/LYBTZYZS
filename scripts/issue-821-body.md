@@ -1,4 +1,4 @@
-﻿## 📋 概述
+## 📋 概述
 
 清理 Desktop 项目中的冗余文件夹，优化资源文件位置，提升项目结构清晰度。
 
@@ -90,8 +90,8 @@
   - 命令: `dotnet build LYBT.Desktop.sln -c Release`
   - 验收: 0 errors，警告数与基线一致
 
-- [ ] **[BUILD-2]** 编译 `LYBT.All.sln`
-  - 命令: `dotnet build LYBT.All.sln -c Release`
+- [ ] **[BUILD-2]** 编译 `LYBTZYZS.sln`
+  - 命令: `dotnet build LYBTZYZS.sln -c Release`
   - 验收: 0 errors，警告数与基线一致
 
 - [ ] **[TEST-1]** 运行 Desktop 应用程序

@@ -63,7 +63,7 @@ Remove-Item "src\Client\Desktop\Core\obj" -Recurse -Force -ErrorAction SilentlyC
 
 # Verify fix results
 Write-Host "Verifying build status..." -ForegroundColor Yellow
-$buildResult = dotnet build LYBT.All.sln --no-restore --verbosity quiet 2>&1
+$buildResult = dotnet build LYBTZYZS.sln --no-restore --verbosity quiet 2>&1
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "UltraThink module separation fix successful!" -ForegroundColor Green
