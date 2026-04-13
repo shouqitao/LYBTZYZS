@@ -3,6 +3,7 @@ using FluentAssertions;
 using System.Collections.Generic;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -61,8 +62,9 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime
         DefaultPasswordOptions? passwordOptions = null,
         ILogger<DatabaseInitializationService>? logger = null)
     {
+        IDbContextAccessor dbAccessor = new TestDbContextAccessor(_dbContext);
         return new DatabaseInitializationService(
-            _dbContext,
+            dbAccessor,
             logger ?? _logger,
             Options.Create(adminOptions ?? DefaultAdminOptions),
             Options.Create(passwordOptions ?? DefaultPasswordOpts));
@@ -637,6 +639,16 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime
 
         // Assert
         info.Should().Be("数据库连接正常");
+    }
+
+    #endregion
+
+    #region Helper
+
+    private sealed class TestDbContextAccessor : IDbContextAccessor
+    {
+        public AppDbContext Context { get; }
+        public TestDbContextAccessor(AppDbContext context) => Context = context;
     }
 
     #endregion

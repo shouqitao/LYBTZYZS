@@ -1,4 +1,5 @@
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Security;
@@ -23,12 +24,12 @@ public class DatabaseInitializationService
     private readonly DefaultPasswordOptions _defaultPasswordOptions;
 
     public DatabaseInitializationService(
-        AppDbContext context,
+        IDbContextAccessor dbAccessor,
         ILogger<DatabaseInitializationService> logger,
         IOptions<SystemAdminOptions> systemAdminOptions,
         IOptions<DefaultPasswordOptions> defaultPasswordOptions)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _context = dbAccessor.Context;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _systemAdminOptions = systemAdminOptions?.Value ?? throw new ArgumentNullException(nameof(systemAdminOptions));
         _defaultPasswordOptions = defaultPasswordOptions?.Value ?? throw new ArgumentNullException(nameof(defaultPasswordOptions));

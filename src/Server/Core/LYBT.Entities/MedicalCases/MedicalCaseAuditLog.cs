@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LYBT.Entities.Common;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.MedicalCases
@@ -11,13 +12,8 @@ namespace LYBT.Entities.MedicalCases
     /// 记录医案的所有修改历史，包括创建、更新、状态变更和删除
     /// </summary>
     [Table("MedicalCaseAuditLogs")]
-    public class MedicalCaseAuditLog
+    public class MedicalCaseAuditLog : BaseEntity
     {
-        /// <summary>唯一标识</summary>
-        [Key]
-        [DisplayName("唯一标识")]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
         /// <summary>医案ID</summary>
         [Required]
         [DisplayName("医案ID")]
@@ -58,10 +54,6 @@ namespace LYBT.Entities.MedicalCases
         [StringLength(500)]
         [DisplayName("修改原因")]
         public string? Reason { get; set; }
-
-        /// <summary>创建时间</summary>
-        [DisplayName("创建时间")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // 导航属性
         /// <summary>关联的医案</summary>

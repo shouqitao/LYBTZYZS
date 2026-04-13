@@ -1,5 +1,6 @@
 using System.Threading;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.DTOs.Users;
@@ -23,9 +24,9 @@ public class CrossModuleService :
     private readonly AppDbContext _context;
     private readonly ILogger<CrossModuleService> _logger;
 
-    public CrossModuleService(AppDbContext context, ILogger<CrossModuleService> logger)
+    public CrossModuleService(IDbContextAccessor dbAccessor, ILogger<CrossModuleService> logger)
     {
-        _context = context;
+        _context = dbAccessor.Context;
         _logger = logger;
     }
 

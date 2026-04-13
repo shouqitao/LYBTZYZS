@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LYBT.Entities.Common;
 
 namespace LYBT.Entities.Auth;
 
@@ -6,14 +7,8 @@ namespace LYBT.Entities.Auth;
 /// 安全审计日志实体
 /// 记录所有认证相关的安全事件（登录、登出、Token刷新、Token撤销等）
 /// </summary>
-public class SecurityAuditLog
+public class SecurityAuditLog : BaseEntity
 {
-    /// <summary>
-    /// 主键ID
-    /// </summary>
-    [Key]
-    public Guid Id { get; set; }
-
     /// <summary>
     /// 事件类型（Login, Logout, RefreshToken, TokenRevoked, LoginFailed等）
     /// </summary>
@@ -65,9 +60,4 @@ public class SecurityAuditLog
     /// 扩展元数据（JSON格式，存储额外信息）
     /// </summary>
     public string? Metadata { get; set; }
-
-    /// <summary>
-    /// 创建时间（UTC）
-    /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

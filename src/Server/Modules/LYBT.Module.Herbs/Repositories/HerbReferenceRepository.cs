@@ -1,39 +1,40 @@
 using LYBT.Entities.Formulas;
+using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Herbs.Repositories
 {
-    internal class HerbReferenceRepository : IHerbReferenceRepository
+    internal class HerbReferenceRepository : BaseRepository<Herb>, IHerbReferenceRepository
     {
-        private readonly AppDbContext _dbContext;
-
-        public HerbReferenceRepository(AppDbContext dbContext)
+        public HerbReferenceRepository(AppDbContext dbContext, ILogger<HerbReferenceRepository> logger)
+            : base(dbContext, logger)
         {
-            _dbContext = dbContext;
         }
 
         public async Task<int> GetPrescriptionReferenceCountAsync(Guid herbId, CancellationToken ct = default)
         {
-            return await _dbContext.PrescriptionItems
+            return await _context.PrescriptionItems
                 .CountAsync(pi => pi.HerbId == herbId, ct);
         }
 
         public async Task<int> GetFormulaReferenceCountAsync(Guid herbId, CancellationToken ct = default)
         {
-            return await _dbContext.Set<FormulaHerbItem>()
+            return await _context.Set<FormulaHerbItem>()
                 .CountAsync(fhi => fhi.HerbId != null && fhi.HerbId == herbId, ct);
         }
 
         public async Task<List<PrescriptionReferenceDto>> GetRecentPrescriptionReferencesAsync(Guid herbId, int take, CancellationToken ct = default)
         {
             return await (
-                from pi in _dbContext.PrescriptionItems
-                join p in _dbContext.Prescriptions on pi.PrescriptionId equals p.Id
-                join mc in _dbContext.MedicalCases on p.MedicalCaseId equals mc.Id
-                join patient in _dbContext.Patients on mc.PatientId equals patient.Id
+                from pi in _context.PrescriptionItems
+                join p in _context.Prescriptions on pi.PrescriptionId equals p.Id
+                join mc in _context.MedicalCases on p.MedicalCaseId equals mc.Id
+                join patient in _context.Patients on mc.PatientId equals patient.Id
                 where pi.HerbId == herbId
                 orderby p.CreatedAt descending
                 select new PrescriptionReferenceDto

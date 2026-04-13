@@ -1,32 +1,29 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Repositories;
 using LYBT.Module.MedicalCases.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCases.Repositories
 {
-    internal class MedicalCaseAuditLogRepository : IMedicalCaseAuditLogRepository
+    internal class MedicalCaseAuditLogRepository : BaseRepository<MedicalCaseAuditLog>, IMedicalCaseAuditLogRepository
     {
-        private readonly AppDbContext _dbContext;
-        private readonly ILogger<MedicalCaseAuditLogRepository> _logger;
-
         public MedicalCaseAuditLogRepository(AppDbContext dbContext, ILogger<MedicalCaseAuditLogRepository> logger)
+            : base(dbContext, logger)
         {
-            _dbContext = dbContext;
-            _logger = logger;
         }
 
         public async Task AddAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default)
         {
-            await _dbContext.MedicalCaseAuditLogs.AddAsync(log, cancellationToken);
+            await _context.MedicalCaseAuditLogs.AddAsync(log, cancellationToken);
             _logger.LogDebug("[REPO] MedicalCaseAuditLog.Add - MedicalCaseId={MedicalCaseId} OperationType={OperationType}",
                 log.MedicalCaseId, log.OperationType);
         }
 
         public async Task<List<MedicalCaseAuditLog>> GetByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
         {
-            return await _dbContext.MedicalCaseAuditLogs
+            return await _context.MedicalCaseAuditLogs
                 .Where(l => l.MedicalCaseId == medicalCaseId)
                 .OrderByDescending(l => l.CreatedAt)
                 .ToListAsync(cancellationToken);
@@ -38,7 +35,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             int pageSize,
             CancellationToken cancellationToken = default)
         {
-            var query = _dbContext.MedicalCaseAuditLogs
+            var query = _context.MedicalCaseAuditLogs
                 .Where(l => l.MedicalCaseId == medicalCaseId)
                 .OrderByDescending(l => l.CreatedAt);
 
@@ -53,7 +50,7 @@ namespace LYBT.Module.MedicalCases.Repositories
 
         public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

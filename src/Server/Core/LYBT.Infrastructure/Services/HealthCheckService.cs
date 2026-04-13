@@ -1,5 +1,6 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Health;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -16,9 +17,9 @@ namespace LYBT.Infrastructure.Services
         private readonly AppDbContext _dbContext;
         private readonly ILogger<HealthCheckService> _logger;
 
-        public HealthCheckService(AppDbContext dbContext, ILogger<HealthCheckService> logger)
+        public HealthCheckService(IDbContextAccessor dbAccessor, ILogger<HealthCheckService> logger)
         {
-            _dbContext = dbContext;
+            _dbContext = dbAccessor.Context;
             _logger = logger;
         }
 

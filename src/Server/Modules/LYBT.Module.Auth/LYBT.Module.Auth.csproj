@@ -4,6 +4,9 @@
 		<TargetFramework>net8.0</TargetFramework>
 	</PropertyGroup>
 	<ItemGroup>
+		<InternalsVisibleTo Include="LYBT.Tests.Server" />
+	</ItemGroup>
+	<ItemGroup>
 	  <Compile Remove="obj\**" />
 	  <EmbeddedResource Remove="obj\**" />
 	  <None Remove="obj\**" />

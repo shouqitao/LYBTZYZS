@@ -150,6 +150,9 @@ public static class DatabaseServiceCollectionExtensions
         // Phase 1: 注册泛型Repository基础设施
         services.AddServerRepositories();
 
+        // P-10: 注册 IDbContextAccessor 避免直接注入 AppDbContext
+        services.AddScoped<IDbContextAccessor, DbContextAccessor>();
+
         // 常用服务
         services.AddHttpContextAccessor();
 
