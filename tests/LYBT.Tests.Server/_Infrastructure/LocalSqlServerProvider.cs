@@ -29,12 +29,9 @@ public sealed class LocalSqlServerProvider : ITestDatabaseProvider
         var envConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
         if (!string.IsNullOrEmpty(envConnectionString))
         {
-            // Parse and extract base connection, removing SSL parameters
+            // Parse and extract base connection, removing only Database parameter
             var builder = new SqlConnectionStringBuilder(envConnectionString);
             builder.Remove("Database"); // Remove any existing database
-            builder.Remove("Encrypt"); // Remove existing Encrypt setting
-            builder.Remove("TrustServerCertificate"); // Remove existing TrustServerCertificate
-            builder.Remove("TrustServerCertificate"); // Remove it again to be sure
             return builder.ConnectionString;
         }
 
@@ -48,7 +45,8 @@ public sealed class LocalSqlServerProvider : ITestDatabaseProvider
         var builder = new SqlConnectionStringBuilder(baseConnectionString)
         {
             ["Database"] = _databaseName,
-            ["Encrypt"] = false  // Disable SSL to avoid certificate issues with external SQL Server
+            ["Encrypt"] = false,  // Disable SSL for testing phase (HTTP connection)
+            ["TrustServerCertificate"] = true  // Trust server certificate to avoid validation errors
         };
         return builder.ConnectionString;
     }
