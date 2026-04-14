@@ -66,7 +66,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
         var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
         var guidPart = Guid.NewGuid().ToString("N")[..8];
         _databaseName = $"LYBT_Integration_{timestamp}_{guidPart}";
-        _connectionString = $"Server=localhost;Database={_databaseName};Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+        _connectionString = GetFullConnectionString();
 
         await CreateDatabaseAsync();
 
@@ -225,12 +225,39 @@ public sealed class IntegrationFixture : IAsyncLifetime
 
     #region Private Methods
 
+    private string GetBaseConnectionString()
+    {
+        // Check for external SQL Server connection string from environment
+        var envConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        if (!string.IsNullOrEmpty(envConnectionString))
+        {
+            // Parse and extract base connection, removing only Database parameter
+            var builder = new SqlConnectionStringBuilder(envConnectionString);
+            builder.Remove("Database"); // Remove any existing database
+            return builder.ConnectionString;
+        }
+
+        // Fall back to default LocalDB
+        return "Server=localhost;Database=master;Trusted_Connection=True;TrustServerCertificate=True";
+    }
+
+    private string GetFullConnectionString()
+    {
+        var baseConnectionString = GetBaseConnectionString();
+        var builder = new SqlConnectionStringBuilder(baseConnectionString)
+        {
+            ["Database"] = _databaseName,
+            ["Encrypt"] = true,  // Enable SSL for external SQL Server
+            ["TrustServerCertificate"] = true  // Trust server certificate to avoid validation errors
+        };
+        return builder.ConnectionString;
+    }
+
     private async Task CreateDatabaseAsync()
     {
-        const string masterConnectionString =
-            "Server=localhost;Database=master;Trusted_Connection=True;TrustServerCertificate=True";
+        var baseConnectionString = GetBaseConnectionString();
 
-        await using var connection = new SqlConnection(masterConnectionString);
+        await using var connection = new SqlConnection(baseConnectionString);
         await connection.OpenAsync();
 
         var sql = $"CREATE DATABASE [{_databaseName}]";
@@ -242,10 +269,9 @@ public sealed class IntegrationFixture : IAsyncLifetime
     {
         try
         {
-            const string masterConnectionString =
-                "Server=localhost;Database=master;Trusted_Connection=True;TrustServerCertificate=True";
+            var baseConnectionString = GetBaseConnectionString();
 
-            await using var connection = new SqlConnection(masterConnectionString);
+            await using var connection = new SqlConnection(baseConnectionString);
             await connection.OpenAsync();
 
             var sql = $"""
