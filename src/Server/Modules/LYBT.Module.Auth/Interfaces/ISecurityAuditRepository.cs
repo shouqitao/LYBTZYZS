@@ -11,11 +11,11 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 添加审计日志记录
         /// </summary>
-        Task AddAsync(SecurityAuditLog log, CancellationToken cancellationToken = default);
+        Task<SecurityAuditLog> AddAsync(SecurityAuditLog log, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 保存更改
         /// </summary>
-        Task SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

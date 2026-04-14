@@ -26,7 +26,7 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 添加新的 AutoLoginToken
         /// </summary>
-        Task AddAsync(AutoLoginToken token, CancellationToken cancellationToken = default);
+        Task<AutoLoginToken> AddAsync(AutoLoginToken token, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 批量更新 Token（用于批量撤销）
@@ -36,6 +36,6 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 保存更改
         /// </summary>
-        Task SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

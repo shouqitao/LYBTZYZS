@@ -7,7 +7,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
     /// </summary>
     public interface IMedicalCaseAuditLogRepository
     {
-        Task AddAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default);
+        Task<MedicalCaseAuditLog> AddAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default);
 
         Task<List<MedicalCaseAuditLog>> GetByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
 
@@ -17,6 +17,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
             int pageSize,
             CancellationToken cancellationToken = default);
 
-        Task SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
