@@ -44,7 +44,14 @@
     ".ai",
     ".serena",
     "BIN",
-    "openspec"
+    "openspec",
+    ".claude",
+    ".envsitter",
+    ".learnings",
+    ".omc",
+    ".plans",
+    "deploy",
+    "tools"
   ],
   
   "blocked_patterns": [
