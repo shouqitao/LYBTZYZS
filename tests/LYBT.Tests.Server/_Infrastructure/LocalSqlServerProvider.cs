@@ -29,9 +29,12 @@ public sealed class LocalSqlServerProvider : ITestDatabaseProvider
         var envConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
         if (!string.IsNullOrEmpty(envConnectionString))
         {
-            // Parse and extract base connection (without Database parameter)
+            // Parse and extract base connection, removing SSL parameters
             var builder = new SqlConnectionStringBuilder(envConnectionString);
             builder.Remove("Database"); // Remove any existing database
+            builder.Remove("Encrypt"); // Remove existing Encrypt setting
+            builder.Remove("TrustServerCertificate"); // Remove existing TrustServerCertificate
+            builder.Remove("TrustServerCertificate"); // Remove it again to be sure
             return builder.ConnectionString;
         }
 
