@@ -44,7 +44,8 @@ public sealed class LocalSqlServerProvider : ITestDatabaseProvider
         var baseConnectionString = GetBaseConnectionString();
         var builder = new SqlConnectionStringBuilder(baseConnectionString)
         {
-            ["Database"] = _databaseName
+            ["Database"] = _databaseName,
+            ["Encrypt"] = false  // Disable SSL to avoid certificate issues with external SQL Server
         };
         return builder.ConnectionString;
     }
