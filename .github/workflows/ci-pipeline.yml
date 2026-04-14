@@ -207,7 +207,7 @@ jobs:
   # Job 5: 运行架构测试
   test-architecture:
     name: 🏗️ 架构合规测试
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout 代码
