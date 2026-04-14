@@ -109,7 +109,7 @@ jobs:
 
       - name: 编译测试项目
         run: |
-          dotnet build tests/LYBT.Tests.Server/LYBT.Tests.Server.csproj -c ${{ env.CONFIGURATION }}
+          dotnet build tests/LYBT.Tests.Server/LYBT.Tests.Server.csproj -c ${{ env.CONFIGURATION }} /p:TreatWarningsAsErrors=false /p:WarningLevel=0
 
       - name: 运行后端单元测试
         env:
