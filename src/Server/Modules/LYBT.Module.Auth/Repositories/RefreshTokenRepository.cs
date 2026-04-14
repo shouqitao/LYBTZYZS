@@ -38,10 +38,11 @@ namespace LYBT.Module.Auth.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public override async Task AddAsync(RefreshToken token, CancellationToken cancellationToken = default)
+        public override async Task<RefreshToken> AddAsync(RefreshToken token, CancellationToken cancellationToken = default)
         {
             await _context.RefreshTokens.AddAsync(token, cancellationToken);
             _logger.LogDebug("[REPO] RefreshToken.Add({Token}) Family={FamilyId}", token.Token[..8] + "...", token.FamilyId);
+            return token;
         }
 
         public async Task UpdateRangeAsync(List<RefreshToken> tokens, CancellationToken cancellationToken = default)
@@ -51,9 +52,9 @@ namespace LYBT.Module.Auth.Repositories
             _logger.LogDebug("[REPO] RefreshToken.UpdateRange Count={Count}", tokens.Count);
         }
 
-        public override async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            await _context.SaveChangesAsync(cancellationToken);
+            return await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }
