@@ -246,13 +246,15 @@ public sealed class IntegrationFixture : IAsyncLifetime
         var baseConnectionString = GetBaseConnectionString();
         var builder = new SqlConnectionStringBuilder(baseConnectionString);
 
-        // Explicitly remove and disable encryption to avoid SSL handshake issues
+        // Remove existing Encrypt setting
         builder.Remove("Encrypt");
-        builder["Encrypt"] = false;
 
-        // Set database and trust server certificate
-        builder["Database"] = _databaseName;
+        // Enable SSL encryption with trusted certificate (SQL Server requires TLS)
+        builder["Encrypt"] = true;
         builder["TrustServerCertificate"] = true;
+
+        // Set database
+        builder["Database"] = _databaseName;
 
         return builder.ConnectionString;
     }
