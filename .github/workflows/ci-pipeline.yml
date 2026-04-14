@@ -89,7 +89,7 @@ jobs:
   # Job 3: 运行后端测试
   test-backend:
     name: 🧪 后端单元测试
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build-backend
 
     services:
@@ -141,7 +141,7 @@ jobs:
   # Job 4: 运行前端集成测试（需要运行中的 API）
   test-frontend-integration:
     name: 🎯 前端集成测试
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: [build-backend, build-frontend]
 
     steps:
@@ -161,31 +161,29 @@ jobs:
       - name: 启动 WebAPI 后端（后台运行）
         run: |
           # 创建测试配置文件
-          $appSettings = @{
-            "ConnectionStrings__DefaultConnection" = "DataSource=:memory:"
-            "ASPNETCORE_ENVIRONMENT" = "Testing"
-            "Logging__LogLevel__Default" = "Warning"
-          }
+          export ConnectionStrings__DefaultConnection="DataSource=:memory:"
+          export ASPNETCORE_ENVIRONMENT="Testing"
+          export Logging__LogLevel__Default="Warning"
 
           # 启动 WebAPI
-          $apiProcess = Start-Process -FilePath "dotnet" -ArgumentList "run --project src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj --urls http://localhost:5000" -PassThru -NoNewWindow
+          dotnet run --project src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj --urls http://localhost:5000 &
+          API_PID=$!
 
           # 等待 API 启动
-          Write-Output "等待 WebAPI 启动..."
-          Start-Sleep -Seconds 15
+          echo "等待 WebAPI 启动..."
+          sleep 15
 
           # 检查 API 是否运行
-          try {
-            $response = Invoke-WebRequest -Uri "http://localhost:5000/health" -Method Get -TimeoutSec 5
-            Write-Output "✅ WebAPI 启动成功"
-          } catch {
-            Write-Output "❌ WebAPI 启动失败: $_"
-            $apiProcess | Stop-Process -ErrorAction SilentlyContinue
+          if curl -f http://localhost:5000/health; then
+            echo "✅ WebAPI 启动成功"
+          else
+            echo "❌ WebAPI 启动失败"
+            kill $API_PID || true
             exit 1
-          }
+          fi
 
           # 保存进程 ID 到环境变量
-          Write-Output "API_PID=$($apiProcess.Id)" >> $env:GITHUB_ENV
+          echo "API_PID=$API_PID" >> $GITHUB_ENV
 
       - name: 运行前端集成测试
         run: |
@@ -194,10 +192,10 @@ jobs:
       - name: 停止 WebAPI
         if: always()
         run: |
-          if (Test-Path Env:API_PID) {
-            Stop-Process -Id $env:API_PID -ErrorAction SilentlyContinue
-            Write-Output "✅ WebAPI 已停止"
-          }
+          if [ -n "$API_PID" ]; then
+            kill $API_PID || true
+            echo "✅ WebAPI 已停止"
+          fi
 
       - name: 上传集成测试结果
         uses: actions/upload-artifact@v4
@@ -209,7 +207,7 @@ jobs:
   # Job 5: 运行架构测试
   test-architecture:
     name: 🏗️ 架构合规测试
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout 代码
