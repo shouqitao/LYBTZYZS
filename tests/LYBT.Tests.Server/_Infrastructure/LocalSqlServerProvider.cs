@@ -21,12 +21,40 @@ public sealed class LocalSqlServerProvider : ITestDatabaseProvider
         _databaseName = $"LYBT_Test_{timestamp}_{guidPart}";
     }
 
-    public string ConnectionString =>
-        $"Server=localhost;Database={_databaseName};Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+    public string ConnectionString => GetFullConnectionString();
+
+    private string GetBaseConnectionString()
+    {
+        // Check for external SQL Server connection string from environment
+        var envConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        if (!string.IsNullOrEmpty(envConnectionString))
+        {
+            // Parse and extract base connection (without Database parameter)
+            var builder = new SqlConnectionStringBuilder(envConnectionString);
+            builder.Remove("Database"); // Remove any existing database
+            return builder.ConnectionString;
+        }
+
+        // Fall back to default LocalDB
+        return MasterConnectionString;
+    }
+
+    private string GetFullConnectionString()
+    {
+        var baseConnectionString = GetBaseConnectionString();
+        var builder = new SqlConnectionStringBuilder(baseConnectionString)
+        {
+            ["Database"] = _databaseName
+        };
+        return builder.ConnectionString;
+    }
 
     public async Task InitializeAsync()
     {
-        await using var connection = new SqlConnection(MasterConnectionString);
+        // Get base connection string from environment or use default
+        var baseConnectionString = GetBaseConnectionString();
+
+        await using var connection = new SqlConnection(baseConnectionString);
         await connection.OpenAsync();
 
         var sql = $"CREATE DATABASE [{_databaseName}]";
@@ -38,7 +66,8 @@ public sealed class LocalSqlServerProvider : ITestDatabaseProvider
     {
         try
         {
-            await using var connection = new SqlConnection(MasterConnectionString);
+            var baseConnectionString = GetBaseConnectionString();
+            await using var connection = new SqlConnection(baseConnectionString);
             await connection.OpenAsync();
 
             // Force disconnect all users, then drop
