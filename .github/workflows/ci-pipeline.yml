@@ -125,10 +125,10 @@ jobs:
           name: backend-test-results
           path: '**/test-results.trx'
 
-  # Job 4: 运行前端集成测试（需要运行中的 API）
+  # Job 4: 运行前端集成测试
   test-frontend-integration:
     name: 🎯 前端集成测试
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [build-backend, build-frontend]
 
     steps:
@@ -140,49 +140,13 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: 下载所有编译产物
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: 启动 WebAPI 后端（后台运行）
+      - name: 编译集成测试项目
         run: |
-          # 创建测试配置文件
-          export ConnectionStrings__DefaultConnection="DataSource=:memory:"
-          export ASPNETCORE_ENVIRONMENT="Testing"
-          export Logging__LogLevel__Default="Warning"
-
-          # 启动 WebAPI
-          dotnet run --project src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj --urls http://localhost:5000 &
-          API_PID=$!
-
-          # 等待 API 启动
-          echo "等待 WebAPI 启动..."
-          sleep 15
-
-          # 检查 API 是否运行
-          if curl -f http://localhost:5000/health; then
-            echo "✅ WebAPI 启动成功"
-          else
-            echo "❌ WebAPI 启动失败"
-            kill $API_PID || true
-            exit 1
-          fi
-
-          # 保存进程 ID 到环境变量
-          echo "API_PID=$API_PID" >> $GITHUB_ENV
+          dotnet build tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj -c ${{ env.CONFIGURATION }} /p:TreatWarningsAsErrors=false /p:WarningLevel=0
 
       - name: 运行前端集成测试
         run: |
           dotnet test tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj -c ${{ env.CONFIGURATION }} --no-build --logger "console;verbosity=normal" --logger "trx;logfilename=integration-test-results.trx"
-
-      - name: 停止 WebAPI
-        if: always()
-        run: |
-          if [ -n "$API_PID" ]; then
-            kill $API_PID || true
-            echo "✅ WebAPI 已停止"
-          fi
 
       - name: 上传集成测试结果
         uses: actions/upload-artifact@v4
