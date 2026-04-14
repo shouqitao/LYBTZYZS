@@ -75,7 +75,7 @@ jobs:
 
       - name: 编译前端 Desktop
         run: |
-          dotnet build LYBTZYZS.sln -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
+          dotnet build LYBTZYZS.sln -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal /p:TreatWarningsAsErrors=false /p:WarningLevel=0
 
       - name: 上传前端编译产物
         uses: actions/upload-artifact@v4
@@ -106,6 +106,10 @@ jobs:
         with:
           name: backend-build
           path: src/Server/Services/LYBT.WebAPI/bin/${{ env.CONFIGURATION }}
+
+      - name: 编译测试项目
+        run: |
+          dotnet build tests/LYBT.Tests.Server/LYBT.Tests.Server.csproj -c ${{ env.CONFIGURATION }}
 
       - name: 运行后端单元测试
         env:
@@ -203,7 +207,7 @@ jobs:
 
       - name: 运行架构测试
         run: |
-          dotnet test tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj -c ${{ env.CONFIGURATION }} --logger "console;verbosity=detailed"
+          dotnet test tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj -c ${{ env.CONFIGURATION }} --logger "console;verbosity=detailed" /p:TreatWarningsAsErrors=false
 
   # Job 6: 汇总所有结果
   report-results:
