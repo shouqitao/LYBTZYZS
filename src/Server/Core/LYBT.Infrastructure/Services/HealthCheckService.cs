@@ -1,6 +1,5 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
-using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Health;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

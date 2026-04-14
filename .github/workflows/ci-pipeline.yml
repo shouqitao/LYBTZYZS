@@ -220,7 +220,7 @@ jobs:
 
       - name: 运行架构测试
         run: |
-          dotnet test tests/Architecture/LYBT.ArchTests.csproj -c ${{ env.CONFIGURATION }} --logger "console;verbosity=detailed"
+          dotnet test tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj -c ${{ env.CONFIGURATION }} --logger "console;verbosity=detailed"
 
   # Job 6: 汇总所有结果
   report-results:
