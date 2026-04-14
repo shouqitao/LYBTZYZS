@@ -114,7 +114,7 @@ jobs:
       - name: 运行后端单元测试
         env:
           # 测试数据库连接字符串（使用外部 SQL Server）
-          ConnectionStrings__DefaultConnection: "Server=${{ secrets.SQL_SERVER_HOST }},${{ secrets.SQL_SERVER_PORT }};Database=${{ secrets.SQL_SERVER_DATABASE }};User Id=${{ secrets.SQL_SERVER_USER }};Password=${{ secrets.SQL_SERVER_PASSWORD }};TrustServerCertificate=True;MultipleActiveResultSets=true;"
+          ConnectionStrings__DefaultConnection: "Server=${{ secrets.SQL_SERVER_HOST }},${{ secrets.SQL_SERVER_PORT }};Database=${{ secrets.SQL_SERVER_DATABASE }};User Id=${{ secrets.SQL_SERVER_USER }};Password=${{ secrets.SQL_SERVER_PASSWORD }};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;"
         run: |
           dotnet test tests/LYBT.Tests.Server/LYBT.Tests.Server.csproj -c ${{ env.CONFIGURATION }} --no-build --logger "console;verbosity=normal" --logger "trx;logfilename=test-results.trx"
 
@@ -147,7 +147,7 @@ jobs:
       - name: 运行前端集成测试
         env:
           # 测试数据库连接字符串（使用外部 SQL Server）
-          ConnectionStrings__DefaultConnection: "Server=${{ secrets.SQL_SERVER_HOST }},${{ secrets.SQL_SERVER_PORT }};Database=${{ secrets.SQL_SERVER_DATABASE }};User Id=${{ secrets.SQL_SERVER_USER }};Password=${{ secrets.SQL_SERVER_PASSWORD }};TrustServerCertificate=True;MultipleActiveResultSets=true;"
+          ConnectionStrings__DefaultConnection: "Server=${{ secrets.SQL_SERVER_HOST }},${{ secrets.SQL_SERVER_PORT }};Database=${{ secrets.SQL_SERVER_DATABASE }};User Id=${{ secrets.SQL_SERVER_USER }};Password=${{ secrets.SQL_SERVER_PASSWORD }};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;"
         run: |
           dotnet test tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj -c ${{ env.CONFIGURATION }} --no-build --logger "console;verbosity=normal" --logger "trx;logfilename=integration-test-results.trx"
 
