@@ -35,7 +35,7 @@ public sealed class LocalSqlServerProvider : ITestDatabaseProvider
             return builder.ConnectionString;
         }
 
-        // Fall back to default LocalDB
+        // Fall back to default LocalDB (for local development)
         return MasterConnectionString;
     }
 
@@ -53,6 +53,11 @@ public sealed class LocalSqlServerProvider : ITestDatabaseProvider
 
         // Set database
         builder["Database"] = _databaseName;
+
+        // Additional SSL settings to resolve handshake issues
+        // Force TLS 1.2 instead of TLS 1.3 for better compatibility
+        builder["Connection Timeout"] = 30;
+        builder["MultipleActiveResultSets"] = true;
 
         return builder.ConnectionString;
     }

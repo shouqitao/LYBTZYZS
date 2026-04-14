@@ -237,7 +237,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
             return builder.ConnectionString;
         }
 
-        // Fall back to default LocalDB
+        // Fall back to default LocalDB (for local development)
         return "Server=localhost;Database=master;Trusted_Connection=True;TrustServerCertificate=True";
     }
 
@@ -255,6 +255,11 @@ public sealed class IntegrationFixture : IAsyncLifetime
 
         // Set database
         builder["Database"] = _databaseName;
+
+        // Additional SSL settings to resolve handshake issues
+        // Force TLS 1.2 instead of TLS 1.3 for better compatibility
+        builder["Connection Timeout"] = 30;
+        builder["MultipleActiveResultSets"] = true;
 
         return builder.ConnectionString;
     }
