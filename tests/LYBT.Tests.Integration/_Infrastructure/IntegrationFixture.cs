@@ -247,6 +247,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
         var builder = new SqlConnectionStringBuilder(baseConnectionString)
         {
             ["Database"] = _databaseName,
+            ["Encrypt"] = false,  // Disable SSL for testing phase (use HTTP)
             ["TrustServerCertificate"] = true  // Trust server certificate to avoid validation errors
         };
         return builder.ConnectionString;
