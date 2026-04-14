@@ -13,13 +13,13 @@ namespace LYBT.Module.Auth.Repositories
         {
         }
 
-        public async Task AddAsync(SecurityAuditLog log, CancellationToken cancellationToken = default)
+        public override async Task AddAsync(SecurityAuditLog log, CancellationToken cancellationToken = default)
         {
             await _context.SecurityAuditLogs.AddAsync(log, cancellationToken);
             _logger.LogDebug("[REPO] SecurityAudit.Add - EventType={EventType}", log.EventType);
         }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public override async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await _context.SaveChangesAsync(cancellationToken);
         }

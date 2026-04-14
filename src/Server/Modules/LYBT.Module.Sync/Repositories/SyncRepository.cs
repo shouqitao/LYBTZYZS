@@ -87,6 +87,6 @@ internal class SyncRepository : BaseRepository<Herb>, ISyncRepository
         return true;
     }
 
-    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+    public override Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _context.SaveChangesAsync(ct);
 }

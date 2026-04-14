@@ -16,13 +16,11 @@ internal partial class LocalHerbMapper
     [MapperIgnoreSource(nameof(Herb.UpdatedBy))]
     [MapperIgnoreSource(nameof(Herb.RowVersion))]
     [MapperIgnoreSource(nameof(Herb.IsDeleted))]
-    [MapperIgnoreTarget(nameof(HerbDetailDto.Properties))]
     public partial HerbDetailDto ToDetailDto(Herb entity);
 
     /// <summary>
     /// HerbInputDto -> Herb Entity
     /// </summary>
-    [MapperIgnoreSource(nameof(HerbInputDto.Properties))]
     [MapperIgnoreTarget(nameof(Herb.Status))]
     [MapperIgnoreTarget(nameof(Herb.CreatedAt))]
     [MapperIgnoreTarget(nameof(Herb.UpdatedAt))]

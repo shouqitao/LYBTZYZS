@@ -14,7 +14,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         {
         }
 
-        public async Task AddAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default)
+        public override async Task AddAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default)
         {
             await _context.MedicalCaseAuditLogs.AddAsync(log, cancellationToken);
             _logger.LogDebug("[REPO] MedicalCaseAuditLog.Add - MedicalCaseId={MedicalCaseId} OperationType={OperationType}",
@@ -48,7 +48,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             return (logs, totalCount);
         }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public override async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await _context.SaveChangesAsync(cancellationToken);
         }

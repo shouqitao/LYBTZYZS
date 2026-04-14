@@ -13,12 +13,9 @@ namespace LYBT.Module.Auth.Repositories
     /// </summary>
     internal class RefreshTokenRepository : BaseRepository<RefreshToken>, IRefreshTokenRepository
     {
-        private readonly ILogger<RefreshTokenRepository> _logger;
-
         public RefreshTokenRepository(AppDbContext dbContext, ILogger<RefreshTokenRepository> logger)
             : base(dbContext, logger)
         {
-            _logger = logger;
         }
 
         public async Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
@@ -41,7 +38,7 @@ namespace LYBT.Module.Auth.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task AddAsync(RefreshToken token, CancellationToken cancellationToken = default)
+        public override async Task AddAsync(RefreshToken token, CancellationToken cancellationToken = default)
         {
             await _context.RefreshTokens.AddAsync(token, cancellationToken);
             _logger.LogDebug("[REPO] RefreshToken.Add({Token}) Family={FamilyId}", token.Token[..8] + "...", token.FamilyId);
@@ -54,7 +51,7 @@ namespace LYBT.Module.Auth.Repositories
             _logger.LogDebug("[REPO] RefreshToken.UpdateRange Count={Count}", tokens.Count);
         }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public override async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await _context.SaveChangesAsync(cancellationToken);
         }

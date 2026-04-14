@@ -78,6 +78,7 @@ public partial class HerbMapper
     /// </summary>
     [MapperIgnoreTarget(nameof(Herb.Id))]
     [MapperIgnoreTarget(nameof(Herb.Status))]
+    [MapperIgnoreTarget(nameof(Herb.Properties))]
     [MapperIgnoreTarget(nameof(Herb.Usage))]
     [MapperIgnoreTarget(nameof(Herb.PinYinCode))]
     [MapperIgnoreTarget(nameof(Herb.CostPrice))]

@@ -41,7 +41,7 @@ namespace LYBT.Module.Auth.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task AddAsync(AutoLoginToken token, CancellationToken cancellationToken = default)
+        public override async Task AddAsync(AutoLoginToken token, CancellationToken cancellationToken = default)
         {
             await _dbSet.AddAsync(token, cancellationToken);
             _logger.LogDebug("[REPO] AutoLoginToken.Add UserId={UserId} Family={FamilyId}", token.UserId, token.FamilyId);
@@ -54,7 +54,7 @@ namespace LYBT.Module.Auth.Repositories
             _logger.LogDebug("[REPO] AutoLoginToken.UpdateRange Count={Count}", tokens.Count);
         }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public override async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
