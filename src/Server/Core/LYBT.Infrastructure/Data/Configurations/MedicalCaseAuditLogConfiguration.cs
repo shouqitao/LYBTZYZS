@@ -35,11 +35,9 @@ public class MedicalCaseAuditLogConfiguration : IEntityTypeConfiguration<Medical
             .HasForeignKey(e => e.MedicalCaseId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // 添加匹配的查询过滤器，解决EF Core警告：
-        // "Entity 'MedicalCase' has a global query filter defined and is the required end of a relationship"
-        // 当MedicalCase被软删除时，其审计日志默认也被过滤
-        // 需要访问已删除医案的审计日志时，使用 .IgnoreQueryFilters()
-        builder.HasQueryFilter(log => log.MedicalCase != null && !log.MedicalCase.IsDeleted);
+        // 移除查询过滤器以允许查询所有审计日志，包括已删除医案的审计日志
+        // 审计日志应该独立于医案的删除状态而永久保留
+        // 原有的过滤器导致SQL查询在导航属性为null时失败
 
         // 按MedicalCaseId查询优化索引
         builder.HasIndex(e => new { e.MedicalCaseId, e.CreatedAt })
