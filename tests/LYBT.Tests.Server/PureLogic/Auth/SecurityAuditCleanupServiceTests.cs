@@ -99,10 +99,9 @@ public class SecurityAuditCleanupServiceTests : IDisposable
             await context.SaveChangesAsync();
 
             // 手动更新CreatedAt以模拟旧数据（绕过SetAuditFields的强制覆盖）
-            var tracker = context.ChangeTracker;
             foreach (var log in new[] { oldLog1, oldLog2, recentLog })
             {
-                tracker.Entry(log).State = EntityState.Modified;
+                context.Entry(log).State = EntityState.Modified;
                 var targetDate = log == recentLog ? recentDate : (log == oldLog1 ? oldDate1 : oldDate2);
                 context.Entry(log).Property(nameof(SecurityAuditLog.CreatedAt)).CurrentValue = targetDate;
                 context.Entry(log).Property(nameof(SecurityAuditLog.UpdatedAt)).IsModified = false;
