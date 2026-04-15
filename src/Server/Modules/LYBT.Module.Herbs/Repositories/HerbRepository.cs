@@ -40,11 +40,14 @@ namespace LYBT.Module.Herbs.Repositories
         }
 
         /// <summary>
-        /// 默认排序：按名称升序（空名称排最后）
+        /// 默认排序：按拼音码升序（空名称排最后，确保中文名称按拼音顺序排列）
         /// </summary>
         protected override IQueryable<Herb> ApplyDefaultOrdering(IQueryable<Herb> query)
         {
-            return query.OrderBy(h => h.Name == "" ? 1 : 0).ThenBy(h => h.Name);
+            // 使用 PinYinCode 排序以确保中文名称按拼音顺序排列
+            // 如果 PinYinCode 为空，则使用 Name 作为后备排序字段
+            return query.OrderBy(h => h.Name == "" ? 1 : 0)
+                .ThenBy(h => h.PinYinCode ?? h.Name);
         }
 
         #endregion

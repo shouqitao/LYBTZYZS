@@ -61,6 +61,10 @@ public class SecurityAuditCleanupServiceTests : IDisposable
     public async Task CleanupOldLogs_WithOldLogs_ShouldDeleteThem()
     {
         // Arrange - 添加测试数据
+        // 使用固定时间基准确保测试稳定性
+        var now = DateTime.UtcNow;
+        var cutoffDate = now.AddDays(-TestRetentionDays);
+
         Guid recentLogId;
         using (var scope = _serviceProvider.CreateScope())
         {
@@ -70,7 +74,7 @@ public class SecurityAuditCleanupServiceTests : IDisposable
             {
                 Id = Guid.NewGuid(),
                 EventType = "Login",
-                CreatedAt = DateTime.UtcNow.AddDays(-31), // 31天前
+                CreatedAt = cutoffDate.AddDays(-1), // 31天前（超过保留期1天）
                 Success = true
             };
 
@@ -78,7 +82,7 @@ public class SecurityAuditCleanupServiceTests : IDisposable
             {
                 Id = Guid.NewGuid(),
                 EventType = "Logout",
-                CreatedAt = DateTime.UtcNow.AddDays(-35), // 35天前
+                CreatedAt = cutoffDate.AddDays(-5), // 35天前（超过保留期5天）
                 Success = true
             };
 
@@ -86,7 +90,7 @@ public class SecurityAuditCleanupServiceTests : IDisposable
             {
                 Id = Guid.NewGuid(),
                 EventType = "Login",
-                CreatedAt = DateTime.UtcNow.AddDays(-20), // 20天前（应保留）
+                CreatedAt = cutoffDate.AddDays(10), // 20天前（在保留期内）
                 Success = true
             };
 
@@ -108,8 +112,8 @@ public class SecurityAuditCleanupServiceTests : IDisposable
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var remainingLogs = await context.SecurityAuditLogs.ToListAsync();
-            remainingLogs.Should().HaveCount(1);
-            remainingLogs[0].Id.Should().Be(recentLogId);
+            remainingLogs.Should().HaveCount(1, "只应保留在保留期内的日志");
+            remainingLogs[0].Id.Should().Be(recentLogId, "应保留的是20天前的日志");
         }
     }
 
