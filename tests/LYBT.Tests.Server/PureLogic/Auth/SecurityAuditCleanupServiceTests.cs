@@ -61,11 +61,13 @@ public class SecurityAuditCleanupServiceTests : IDisposable
     public async Task CleanupOldLogs_WithOldLogs_ShouldDeleteThem()
     {
         // Arrange - 添加测试数据
-        // 使用固定时间基准确保测试稳定性
-        var now = DateTime.UtcNow;
-        var cutoffDate = now.AddDays(-TestRetentionDays);
-
+        // 注意：由于AppDbContext.SetAuditFields()会覆盖CreatedAt，
+        // 我们需要在保存后手动更新CreatedAt字段来模拟旧数据
         Guid recentLogId;
+        var oldDate1 = DateTime.UtcNow.AddDays(-31); // 31天前
+        var oldDate2 = DateTime.UtcNow.AddDays(-35); // 35天前
+        var recentDate = DateTime.UtcNow.AddDays(-20); // 20天前（应保留）
+
         using (var scope = _serviceProvider.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -74,7 +76,6 @@ public class SecurityAuditCleanupServiceTests : IDisposable
             {
                 Id = Guid.NewGuid(),
                 EventType = "Login",
-                CreatedAt = cutoffDate.AddDays(-1), // 31天前（超过保留期1天）
                 Success = true
             };
 
@@ -82,7 +83,6 @@ public class SecurityAuditCleanupServiceTests : IDisposable
             {
                 Id = Guid.NewGuid(),
                 EventType = "Logout",
-                CreatedAt = cutoffDate.AddDays(-5), // 35天前（超过保留期5天）
                 Success = true
             };
 
@@ -90,13 +90,23 @@ public class SecurityAuditCleanupServiceTests : IDisposable
             {
                 Id = Guid.NewGuid(),
                 EventType = "Login",
-                CreatedAt = cutoffDate.AddDays(10), // 20天前（在保留期内）
                 Success = true
             };
 
             recentLogId = recentLog.Id;
 
             await context.SecurityAuditLogs.AddRangeAsync(oldLog1, oldLog2, recentLog);
+            await context.SaveChangesAsync();
+
+            // 手动更新CreatedAt以模拟旧数据（绕过SetAuditFields的强制覆盖）
+            var tracker = context.ChangeTracker;
+            foreach (var log in new[] { oldLog1, oldLog2, recentLog })
+            {
+                tracker.Entry(log).State = EntityState.Modified;
+                var targetDate = log == recentLog ? recentDate : (log == oldLog1 ? oldDate1 : oldDate2);
+                context.Entry(log).Property(nameof(SecurityAuditLog.CreatedAt)).CurrentValue = targetDate;
+                context.Entry(log).Property(nameof(SecurityAuditLog.UpdatedAt)).IsModified = false;
+            }
             await context.SaveChangesAsync();
         }
 
