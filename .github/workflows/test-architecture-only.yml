@@ -1,0 +1,37 @@
+name: Architecture Tests Only
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  CONFIGURATION: 'Release'
+
+jobs:
+  test-architecture:
+    name: 🏗️ 架构合规测试
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: 还原依赖
+        run: |
+          dotnet restore tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj --verbosity minimal
+
+      - name: 编译架构测试项目
+        run: |
+          dotnet build tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal /p:TreatWarningsAsErrors=false
+
+      - name: 运行架构测试
+        run: |
+          dotnet test tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj -c ${{ env.CONFIGURATION }} --no-build --logger "console;verbosity=detailed" /p:TreatWarningsAsErrors=false

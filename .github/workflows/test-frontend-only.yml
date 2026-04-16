@@ -1,0 +1,33 @@
+name: Frontend Build Only
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  CONFIGURATION: 'Release'
+
+jobs:
+  build-frontend:
+    name: 🖥️ 编译前端 Desktop
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: 还原完整解决方案依赖
+        run: |
+          dotnet restore LYBTZYZS.sln --verbosity minimal
+
+      - name: 编译前端 Desktop
+        run: |
+          dotnet build LYBTZYZS.sln -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal /p:TreatWarningsAsErrors=false /p:WarningLevel=0
