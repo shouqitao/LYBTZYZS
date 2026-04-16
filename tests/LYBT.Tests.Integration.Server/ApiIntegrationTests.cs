@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Contracts.Auth;
 using System.Net.Http.Json;
 
 namespace LYBT.Tests.Integration.Server;
@@ -24,7 +23,6 @@ public class ApiTestFixture : IAsyncLifetime
 {
     private WebApplicationFactory<Program> _factory = null!;
     private string _databaseName = null!;
-    private string _connectionString = null!;
 
     public HttpClient Client { get; private set; } = null!;
 
@@ -35,20 +33,20 @@ public class ApiTestFixture : IAsyncLifetime
         var guidPart = Guid.NewGuid().ToString("N")[..8];
         _databaseName = $"LYBT_ApiTest_{timestamp}_{guidPart}";
 
-        // 2. 从环境变量获取基础连接字符串
+        // 2. 从环境变量获取连接字符串
         var envConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
         if (string.IsNullOrEmpty(envConnectionString))
         {
             throw new InvalidOperationException("ConnectionStrings__DefaultConnection environment variable is not set.");
         }
 
-        // 3. 解析连接字符串，构建master数据库连接
+        // 3. 解析连接字符串
         var builder = new SqlConnectionStringBuilder(envConnectionString);
         var baseConnectionString = builder.ConnectionString;
         baseConnectionString = baseConnectionString.Replace($"Database={builder.InitialCatalog}", "Database=master");
 
         // 4. 构建测试数据库连接字符串
-        _connectionString = envConnectionString.Replace($"Database={builder.InitialCatalog}", $"Database={_databaseName}");
+        var testConnectionString = envConnectionString.Replace($"Database={builder.InitialCatalog}", $"Database={_databaseName}");
 
         // 5. 创建数据库
         await using (var connection = new SqlConnection(baseConnectionString))
@@ -59,13 +57,22 @@ public class ApiTestFixture : IAsyncLifetime
             await command.ExecuteNonQueryAsync();
         }
 
-        // 6. 构建 WebApplicationFactory
+        // 6. 构建 WebApplicationFactory 并设置连接字符串
         _factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(b =>
+            .WithWebHostBuilder(webHost =>
             {
-                b.ConfigureServices(services =>
+                webHost.UseEnvironment("Test");
+                webHost.ConfigureAppConfiguration((context, config) =>
                 {
-                    // 移除后台服务，避免干扰测试
+                    config.AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        ["ConnectionStrings:DefaultConnection"] = testConnectionString
+                    });
+                });
+
+                // 移除后台服务，避免干扰测试
+                webHost.ConfigureServices(services =>
+                {
                     var hostedServices = services
                         .Where(sd => sd.ImplementationType?.Name?.Contains("HostedService") == true ||
                                      sd.ServiceType?.Name?.Contains("HostedService") == true)
@@ -78,20 +85,7 @@ public class ApiTestFixture : IAsyncLifetime
                 });
             });
 
-        // 7. 设置环境变量和连接字符串
-        _factory = _factory.WithWebHostBuilder(b =>
-        {
-            b.UseEnvironment("Test");
-            b.ConfigureAppConfiguration((context, config) =>
-            {
-                config.AddInMemoryCollection(new[]
-                {
-                    new KeyValuePair<string, string?>("ConnectionStrings:DefaultConnection", _connectionString)
-                });
-            });
-        });
-
-        // 8. 运行数据库迁移
+        // 7. 运行数据库迁移
         using var scope = _factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<LYBTDbContext>();
         await dbContext.Database.MigrateAsync();
