@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Receptionist;
 [Module(ModuleName = nameof(ReceptionistModule))]
 [ModuleDependency("PatientsModule")]
 [ModuleDependency("RegistrationModule")]
+[ModuleDependency("CardReaderModule")]
 public class ReceptionistModule : IModule
 {
     public void OnInitialized(IContainerProvider containerProvider)

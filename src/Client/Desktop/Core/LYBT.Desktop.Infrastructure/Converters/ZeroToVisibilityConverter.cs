@@ -25,8 +25,27 @@ public class ZeroToVisibilityConverter : IValueConverter
         return Visibility.Collapsed;
     }
 
+    /// <summary>
+    /// 反向转换可见性到计数数值
+    /// Visible -> 0（空状态）, Collapsed -> 1（非零，表示有内容）
+    /// 注意：无法恢复原始计数的确切值，只能区分零和非零
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        if (value is Visibility visibility)
+        {
+            // 根据目标类型返回相应的零值或非零值
+            if (targetType == typeof(int))
+            {
+                return visibility == Visibility.Visible ? 0 : 1;
+            }
+
+            if (targetType == typeof(long))
+            {
+                return visibility == Visibility.Visible ? 0L : 1L;
+            }
+        }
+
+        return DependencyProperty.UnsetValue;
     }
 }

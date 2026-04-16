@@ -25,8 +25,15 @@ public class ApiHealthStatusToColorConverter : IValueConverter
         };
     }
 
+    /// <summary>
+    /// 反向转换颜色到 API 健康状态
+    /// 由于状态到颜色的映射是多对一的，此转换不可逆
+    /// </summary>
+    /// <returns>返回 Binding.DoNothing 表示不支持反向转换</returns>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        // 颜色到状态的映射是不可逆的（无法区分不同状态可能使用的相同颜色）
+        // 因此返回 Binding.DoNothing 告诉 WPF 绑定系统不要更新源
+        return Binding.DoNothing;
     }
 }

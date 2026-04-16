@@ -21,8 +21,23 @@ public class DecocteMethodToVisibilityConverter : IValueConverter
         return Visibility.Collapsed;
     }
 
+    /// <summary>
+    /// 反向转换可见性到煎法枚举
+    /// Visible -> 非 Default 值（无法确定具体值）, Collapsed -> Default
+    /// 注意：由于无法确定具体的非默认值，此转换是单向的
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        if (value is Visibility visibility && targetType == typeof(DecocteMethod))
+        {
+            // Collapsed 对应 Default
+            if (visibility == Visibility.Collapsed)
+                return DecocteMethod.Default;
+
+            // Visible 对应非默认值，但无法确定是哪个
+            // 返回 UnsetValue 表示无法准确转换
+        }
+
+        return DependencyProperty.UnsetValue;
     }
 }

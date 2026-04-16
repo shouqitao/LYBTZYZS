@@ -17,8 +17,22 @@ public class BoolToOpacityConverter : IValueConverter
         return 0.0;
     }
 
+    /// <summary>
+    /// 反向转换透明度到布尔值
+    /// 1.0 -> true, 0.0 -> false, 其他值 -> Binding.DoNothing
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        if (value is double opacity)
+        {
+            // 只有明确的 1.0 和 0.0 才进行转换
+            if (opacity == 1.0)
+                return true;
+            if (opacity == 0.0)
+                return false;
+        }
+
+        // 其他情况不更新源值
+        return Binding.DoNothing;
     }
 }

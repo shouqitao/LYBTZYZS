@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj" />
     <ProjectReference Include="..\..\Modules\LYBT.Desktop.Registration\LYBT.Desktop.Registration.csproj" />
     <ProjectReference Include="..\..\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />

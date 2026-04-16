@@ -1,6 +1,7 @@
 using LYBT.Desktop.Contracts.CommandHandlers;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Utilities.Excel;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -463,14 +464,97 @@ namespace LYBT.Desktop.Users.Services
             {
                 _logger.LogInformation("[SVC] User.BatchImport started - FileName={FileName}", file.FileName);
 
-                // TODO: Phase 1 T1-5 - StreamPart -> UserBatchImportInputDto conversion not yet implemented
-                throw new NotSupportedException(
-                    "用户批量导入功能尚未完成：需要实现 StreamPart 到 UserBatchImportInputDto 的转换逻辑。");
-            }
-            catch (NotSupportedException ex)
-            {
-                _logger.LogWarning(ex, "[SVC] User.BatchImport not supported yet");
-                return CommandResult<UserBatchImportResultDto>.Failed(ex.Message);
+                // Parse Excel file using ExcelHelper (NPOI)
+                var users = await ExcelHelper.ParseAsync<UserInputDto>(file.Value, hasHeader: true);
+
+                if (users.Count == 0)
+                {
+                    _logger.LogWarning("[SVC] User.BatchImport - No valid data found in file");
+                    return CommandResult<UserBatchImportResultDto>.Failed("文件中没有有效数据，请检查Excel格式");
+                }
+
+                if (users.Count > 10000)
+                {
+                    _logger.LogWarning("[SVC] User.BatchImport - Exceeded maximum limit of 10000 records");
+                    return CommandResult<UserBatchImportResultDto>.Failed("单次导入不能超过10000条记录");
+                }
+
+                // Validate required fields
+                var validationErrors = new List<UserImportFailureDto>();
+                var validUsers = new List<UserInputDto>();
+
+                for (int i = 0; i < users.Count; i++)
+                {
+                    var user = users[i];
+                    var rowNumber = i + 2; // Excel row number (1-indexed + header row)
+
+                    // Validate required fields
+                    if (string.IsNullOrWhiteSpace(user.UserName))
+                    {
+                        validationErrors.Add(new UserImportFailureDto
+                        {
+                            OriginalRowNumber = rowNumber,
+                            UserName = string.Empty,
+                            FailureReason = "用户名不能为空",
+                            ErrorDetails = new List<string> { "UserName是必填字段" }
+                        });
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(user.RealName))
+                    {
+                        validationErrors.Add(new UserImportFailureDto
+                        {
+                            OriginalRowNumber = rowNumber,
+                            UserName = user.UserName,
+                            FailureReason = "真实姓名不能为空",
+                            ErrorDetails = new List<string> { "RealName是必填字段" }
+                        });
+                        continue;
+                    }
+
+                    if (user.Role == null)
+                    {
+                        validationErrors.Add(new UserImportFailureDto
+                        {
+                            OriginalRowNumber = rowNumber,
+                            UserName = user.UserName,
+                            FailureReason = "用户角色不能为空",
+                            ErrorDetails = new List<string> { "Role是必填字段" }
+                        });
+                        continue;
+                    }
+
+                    // Clear ID for new users (it's for updates only)
+                    user.Id = null;
+                    validUsers.Add(user);
+                }
+
+                _logger.LogInformation("[SVC] User.BatchImport parsed - Valid={Valid}, Invalid={Invalid}",
+                    validUsers.Count, validationErrors.Count);
+
+                // Create import request
+                var importRequest = new UserBatchImportInputDto
+                {
+                    Users = validUsers,
+                    Strategy = LYBT.Shared.Models.Enums.DuplicateStrategy.Skip // Default: skip duplicates
+                };
+
+                // Call repository
+                var result = await _userRepository.BatchImportAsync(importRequest);
+                if (result == null)
+                    return CommandResult<UserBatchImportResultDto>.Failed("批量导入操作失败");
+
+                // Add validation errors to the result
+                foreach (var error in validationErrors)
+                {
+                    result.Failures.Add(error);
+                    result.FailureCount++;
+                }
+
+                _logger.LogInformation("[SVC] User.BatchImport completed - Success={Success}, Failed={Failed}",
+                    result.SuccessCount, result.FailureCount);
+                return CommandResult<UserBatchImportResultDto>.Succeeded(result);
             }
             catch (Exception ex)
             {

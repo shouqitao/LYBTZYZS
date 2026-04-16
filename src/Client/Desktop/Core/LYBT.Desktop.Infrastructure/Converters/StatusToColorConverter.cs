@@ -80,9 +80,16 @@ namespace LYBT.Desktop.Infrastructure.Converters
             };
         }
 
+        /// <summary>
+        /// 反向转换颜色到状态枚举值
+        /// 由于状态到颜色的映射是多对一的，此转换不可逆
+        /// </summary>
+        /// <returns>返回 Binding.DoNothing 表示不支持反向转换</returns>
         public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            // 颜色到状态的映射是不可逆的（多个状态可能映射到相同颜色）
+            // 因此返回 Binding.DoNothing 告诉 WPF 绑定系统不要更新源
+            return Binding.DoNothing;
         }
 
         public object Convert(object?[] values, Type targetType, object? parameter, CultureInfo culture)
@@ -95,10 +102,15 @@ namespace LYBT.Desktop.Infrastructure.Converters
             return Convert(values[0], targetType, outputFormat, culture) ?? DependencyProperty.UnsetValue;
         }
 
+        /// <summary>
+        /// 多值反向转换
+        /// 由于状态到颜色的映射是多对一的，此转换不可逆
+        /// </summary>
+        /// <returns>返回 null 表示不支持反向转换</returns>
         public object?[] ConvertBack(object value, Type[] targetTypes, object? parameter, CultureInfo culture)
         {
-            return null!;
-            throw new NotImplementedException();
+            // 颜色到状态的映射是不可逆的
+            return null;
         }
 
         private static string DetermineOutputFormat(Type targetType)
