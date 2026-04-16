@@ -27,6 +27,7 @@
   <ItemGroup>
     <!-- Server (WebApplicationFactory target) -->
     <ProjectReference Include="..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
+    <ProjectReference Include="..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
