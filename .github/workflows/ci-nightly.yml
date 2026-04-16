@@ -30,7 +30,7 @@ jobs:
         ports:
           - 1433:1433
         options: >-
-          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${{ env.SA_PASSWORD }} -C -Q 'SELECT 1'"
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -C -Q 'SELECT 1'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 15
@@ -47,8 +47,15 @@ jobs:
 
       - name: 等待 SQL Server 健康检查就绪
         run: |
+          container_id="$(docker ps --filter 'ancestor=mcr.microsoft.com/mssql/server:2022-latest' --format '{{.ID}}' | head -n 1)"
+          if [ -z "$container_id" ]; then
+            echo "Cannot find SQL Server service container."
+            docker ps -a
+            exit 1
+          fi
+
           for i in {1..30}; do
-            status="$(docker inspect --format='{{.State.Health.Status}}' ${{ job.services.sqlserver.id }})"
+            status="$(docker inspect --format='{{.State.Health.Status}}' "$container_id")"
             if [ "$status" = "healthy" ]; then
               echo "SQL Server is healthy."
               break
@@ -56,7 +63,7 @@ jobs:
 
             if [ "$i" -eq 30 ]; then
               echo "SQL Server failed to become healthy in time."
-              docker logs ${{ job.services.sqlserver.id }}
+              docker logs "$container_id"
               exit 1
             fi
 
@@ -64,7 +71,7 @@ jobs:
             sleep 5
           done
 
-          docker exec ${{ job.services.sqlserver.id }} /opt/mssql-tools18/bin/sqlcmd \
+          docker exec "$container_id" /opt/mssql-tools18/bin/sqlcmd \
             -S localhost -U sa -P '${{ env.SA_PASSWORD }}' -C -Q 'SELECT 1'
 
       - name: 运行后端测试（LYBT.Tests.Server）
