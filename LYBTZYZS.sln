@@ -109,6 +109,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Tests.Desktop", "tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Tests.Integration", "tests\LYBT.Tests.Integration\LYBT.Tests.Integration.csproj", "{E68097D9-88E9-4AE2-AC2E-39FB38187E19}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Tests.Integration.Server", "tests\LYBT.Tests.Integration.Server\LYBT.Tests.Integration.Server.csproj", "{8F3A3E6E-43F7-4678-B002-E82ECEB77791}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Module.Registration", "src\Server\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj", "{1F5A3EFB-1A37-414B-B688-ACA0C6928B4F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Registration", "src\Client\Desktop\Modules\LYBT.Desktop.Registration\LYBT.Desktop.Registration.csproj", "{EA4E9FFD-AB44-4E9A-9DD1-9CEAA073BF55}"
