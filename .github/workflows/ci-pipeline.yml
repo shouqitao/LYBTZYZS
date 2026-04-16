@@ -135,11 +135,9 @@ jobs:
           path: '**/test-results.trx'
 
   # Job 4: 运行后端集成测试（Linux + SQL Server容器）
-  # 暂时禁用 - 需要进一步调试WebApplicationFactory配置
   test-integration-server:
     name: 🎯 后端集成测试
     runs-on: ubuntu-latest
-    if: false  # 暂时禁用
 
     services:
       sqlserver:
