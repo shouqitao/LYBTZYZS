@@ -52,7 +52,6 @@ jobs:
   build-frontend:
     name: 🖥️ 编译前端 Desktop
     runs-on: windows-latest
-    needs: build-backend
 
     steps:
       - name: Checkout 代码
@@ -63,13 +62,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: 下载后端编译产物
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-build
-          path: src/Server/Services/LYBT.WebAPI/bin/${{ env.CONFIGURATION }}
-
-      - name: 还原前端依赖
+      - name: 还原完整解决方案依赖
         run: |
           dotnet restore LYBTZYZS.sln --verbosity minimal
 
@@ -145,7 +138,6 @@ jobs:
   test-frontend-integration:
     name: 🎯 前端集成测试
     runs-on: windows-latest
-    needs: [build-backend, build-frontend]
 
     steps:
       - name: Checkout 代码
@@ -161,9 +153,6 @@ jobs:
           dotnet build tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj -c ${{ env.CONFIGURATION }} /p:TreatWarningsAsErrors=false /p:WarningLevel=0
 
       - name: 运行前端集成测试
-        env:
-          # 使用容器化 SQL Server（localhost 服务）
-          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=master;User Id=sa;Password=YourStrong@Passw0rd;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;"
         run: |
           dotnet test tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj -c ${{ env.CONFIGURATION }} --no-build --logger "console;verbosity=normal" --logger "trx;logfilename=integration-test-results.trx"
 
