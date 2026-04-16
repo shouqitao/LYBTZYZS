@@ -56,12 +56,14 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: 还原前端依赖
+        shell: pwsh
         run: |
-          dotnet restore ./src/Client/Desktop/Shell/LYBT.Desktop.Shell/LYBT.Desktop.Shell.csproj --verbosity minimal
+          dotnet restore "src\Client\Desktop\Shell\LYBT.Desktop.Shell\LYBT.Desktop.Shell.csproj" --verbosity minimal
 
       - name: 编译 WPF Shell
+        shell: pwsh
         run: |
-          dotnet build ./src/Client/Desktop/Shell/LYBT.Desktop.Shell/LYBT.Desktop.Shell.csproj -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
+          dotnet build "src\Client\Desktop\Shell\LYBT.Desktop.Shell\LYBT.Desktop.Shell.csproj" -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
 
   # Job 3: 架构合规测试 (Windows - 需要WPF项目)
   architecture-tests:
@@ -78,8 +80,9 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: 运行架构测试
+        shell: pwsh
         run: |
-          dotnet test ./tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj -c ${{ env.CONFIGURATION }} --logger "console;verbosity=detailed" /p:TreatWarningsAsErrors=false
+          dotnet test "tests\LYBT.Tests.Architecture\LYBT.Tests.Architecture.csproj" -c ${{ env.CONFIGURATION }} --logger "console;verbosity=detailed" /p:TreatWarningsAsErrors=false
 
   # Job 4: 汇总快速 CI 结果
   report-results:
