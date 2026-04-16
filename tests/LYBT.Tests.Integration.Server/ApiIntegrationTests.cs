@@ -88,7 +88,7 @@ public class ApiTestFixture : IAsyncLifetime
 
         // 7. 运行数据库迁移
         using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<LYBTDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await dbContext.Database.MigrateAsync();
 
         Client = _factory.CreateClient();
