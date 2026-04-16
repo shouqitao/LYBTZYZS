@@ -63,10 +63,10 @@ jobs:
         run: |
           dotnet build src/Client/Desktop/Shell/LYBT.Desktop.Shell/LYBT.Desktop.Shell.csproj -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
 
-  # Job 3: 架构合规测试 (Ubuntu - 快速)
+  # Job 3: 架构合规测试 (Windows - 需要WPF项目)
   architecture-tests:
     name: 🏗️ 架构测试
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout 代码
