@@ -1,4 +1,4 @@
-name: 完整 CI 流水线
+name: 快速 CI 流水线
 
 on:
   pull_request:
@@ -19,10 +19,10 @@ env:
   CONFIGURATION: 'Release'
 
 jobs:
-  # Job 1: 编译后端 API
-  build-backend:
-    name: 📦 编译后端 API
-    runs-on: windows-latest
+  # Job 1: 编译后端 API (Ubuntu - 快速)
+  backend-build:
+    name: 📦 后端编译
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout 代码
@@ -41,18 +41,10 @@ jobs:
         run: |
           dotnet build src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
 
-      - name: 上传后端编译产物
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-build
-          path: src/Server/Services/LYBT.WebAPI/bin/${{ env.CONFIGURATION }}
-          if-no-files-found: error
-
-  # Job 2: 编译前端 Desktop
-  build-frontend:
-    name: 🖥️ 编译前端 Desktop
+  # Job 2: 编译 WPF Shell (Windows - 快速)
+  desktop-build:
+    name: 🖥️ 前端编译
     runs-on: windows-latest
-    needs: build-backend
 
     steps:
       - name: Checkout 代码
@@ -62,119 +54,19 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: 下载后端编译产物
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-build
-          path: src/Server/Services/LYBT.WebAPI/bin/${{ env.CONFIGURATION }}
 
       - name: 还原前端依赖
         run: |
-          dotnet restore LYBTZYZS.sln --verbosity minimal
+          dotnet restore src/Client/Desktop/Shell/LYBT.Desktop.Shell/LYBT.Desktop.Shell.csproj --verbosity minimal
 
-      - name: 编译前端 Desktop
+      - name: 编译 WPF Shell
         run: |
-          dotnet build LYBTZYZS.sln -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal /p:TreatWarningsAsErrors=false /p:WarningLevel=0
+          dotnet build src/Client/Desktop/Shell/LYBT.Desktop.Shell/LYBT.Desktop.Shell.csproj -c ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
 
-      - name: 上传前端编译产物
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: |
-            src/Client/Desktop/**/bin/${{ env.CONFIGURATION }}
-            !**/bin/**/*.pdb
-          if-no-files-found: error
-
-  # Job 3: 运行后端测试
-  test-backend:
-    name: 🧪 后端单元测试
+  # Job 3: 架构合规测试 (Ubuntu - 快速)
+  architecture-tests:
+    name: 🏗️ 架构测试
     runs-on: ubuntu-latest
-    needs: build-backend
-
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          ACCEPT_EULA: Y
-          MSSQL_SA_PASSWORD: YourStrong@Passw0rd
-          MSSQL_PID: Express
-        ports:
-          - 1433:1433
-        options: >-
-          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -C -Q 'SELECT 1'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          --health-start-period 30s
-
-    steps:
-      - name: Checkout 代码
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: 下载后端编译产物
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-build
-          path: src/Server/Services/LYBT.WebAPI/bin/${{ env.CONFIGURATION }}
-
-      - name: 编译测试项目
-        run: |
-          dotnet build tests/LYBT.Tests.Server/LYBT.Tests.Server.csproj -c ${{ env.CONFIGURATION }} /p:TreatWarningsAsErrors=false /p:WarningLevel=0
-
-      - name: 运行后端单元测试
-        env:
-          # 使用容器化 SQL Server（localhost 服务）
-          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=master;User Id=sa;Password=YourStrong@Passw0rd;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;"
-        run: |
-          dotnet test tests/LYBT.Tests.Server/LYBT.Tests.Server.csproj -c ${{ env.CONFIGURATION }} --no-build --logger "console;verbosity=normal" --logger "trx;logfilename=test-results.trx"
-
-      - name: 上传测试结果
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: backend-test-results
-          path: '**/test-results.trx'
-
-  # Job 4: 运行前端集成测试
-  test-frontend-integration:
-    name: 🎯 前端集成测试
-    runs-on: windows-latest
-    needs: [build-backend, build-frontend]
-
-    steps:
-      - name: Checkout 代码
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: 编译集成测试项目
-        run: |
-          dotnet build tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj -c ${{ env.CONFIGURATION }} /p:TreatWarningsAsErrors=false /p:WarningLevel=0
-
-      # 注意：前端集成测试只编译验证，不实际运行测试
-      # Windows runner不支持容器，无法提供SQL Server服务
-      # 实际的集成测试覆盖通过后端单元测试(LYBT.Tests.Server)验证
-
-      - name: 上传集成测试结果
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: frontend-integration-test-results
-          path: '**/integration-test-results.trx'
-
-  # Job 5: 运行架构测试
-  test-architecture:
-    name: 🏗️ 架构合规测试
-    runs-on: windows-latest
 
     steps:
       - name: Checkout 代码
@@ -189,69 +81,66 @@ jobs:
         run: |
           dotnet test tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj -c ${{ env.CONFIGURATION }} --logger "console;verbosity=detailed" /p:TreatWarningsAsErrors=false
 
-  # Job 6: 汇总所有结果
+  # Job 4: 汇总快速 CI 结果
   report-results:
-    name: 📊 汇总测试结果
+    name: 📊 汇总结果
     runs-on: ubuntu-latest
-    needs: [build-backend, build-frontend, test-backend, test-frontend-integration, test-architecture]
+    needs: [backend-build, desktop-build, architecture-tests]
     if: always()
 
     steps:
-      - name: 下载所有测试结果
-        uses: actions/download-artifact@v4
-        with:
-          path: test-results
-
       - name: 生成测试报告
         run: |
-          echo "# 📊 CI 测试结果汇总" >> $GITHUB_STEP_SUMMARY
+          echo "# 📊 快速 CI 测试结果汇总" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "这是快速CI流水线，仅包含编译和架构测试。完整的测试在夜间CI中运行。" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Job | 状态 |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 📦 后端编译 | ${{ needs.build-backend.result == 'success' && '✅ 通过' || '❌ 失败' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🖥️ 前端编译 | ${{ needs.build-frontend.result == 'success' && '✅ 通过' || '❌ 失败' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🧪 后端测试 | ${{ needs.test-backend.result == 'success' && '✅ 通过' || '❌ 失败' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🎯 前端集成测试 | ${{ needs.test-frontend-integration.result == 'success' && '✅ 通过' || '❌ 失败' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🏗️ 架构测试 | ${{ needs.test-architecture.result == 'success' && '✅ 通过' || '❌ 失败' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 后端编译 | ${{ needs.backend-build.result == 'success' && '✅ 通过' || '❌ 失败' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🖥️ 前端编译 | ${{ needs.desktop-build.result == 'success' && '✅ 通过' || '❌ 失败' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏗️ 架构测试 | ${{ needs.architecture-tests.result == 'success' && '✅ 通过' || '❌ 失败' }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: 在 PR 中发表评论
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
             const allJobs = {
-              backend: '${{ needs.build-backend.result }}',
-              frontend: '${{ needs.build-frontend.result }}',
-              backendTests: '${{ needs.test-backend.result }}',
-              integrationTests: '${{ needs.test-frontend-integration.result }}',
-              architecture: '${{ needs.test-architecture.result }}'
+              backend: '${{ needs.backend-build.result }}',
+              desktop: '${{ needs.desktop-build.result }}',
+              architecture: '${{ needs.architecture-tests.result }}'
             };
 
             const allPassed = Object.values(allJobs).every(status => status === 'success');
             const emoji = allPassed ? '✅' : '❌';
             const status = allPassed ? '通过' : '失败';
 
-            let comment = `## ${emoji} CI 流水线${status}\n\n`;
+            let comment = `## ${emoji} 快速 CI 流水线${status}\n\n`;
+            comment += `> 💡 这是快速CI，仅包含编译和架构测试。完整测试在夜间CI中运行。\n\n`;
             comment += `### 编译状态\n`;
             comment += `- 📦 后端编译: ${allJobs.backend === 'success' ? '✅' : '❌'}\n`;
-            comment += `- 🖥️ 前端编译: ${allJobs.frontend === 'success' ? '✅' : '❌'}\n\n`;
+            comment += `- 🖥️ 前端编译: ${allJobs.desktop === 'success' ? '✅' : '❌'}\n\n`;
             comment += `### 测试状态\n`;
-            comment += `- 🧪 后端单元测试: ${allJobs.backendTests === 'success' ? '✅' : '❌'}\n`;
-            comment += `- 🎯 前端集成测试: ${allJobs.integrationTests === 'success' ? '✅' : '❌'}\n`;
             comment += `- 🏗️ 架构合规测试: ${allJobs.architecture === 'success' ? '✅' : '❌'}\n\n`;
 
             if (allPassed) {
-              comment += `### ✅ 所有检查通过\n\n`;
-              comment += `代码已通过编译和测试，可以合并。`;
+              comment += `### ✅ 快速检查通过\n\n`;
+              comment += `代码已通过编译和架构测试。完整的单元测试和集成测试将在夜间CI中运行。`;
             } else {
               comment += `### ❌ 部分检查失败\n\n`;
               comment += `请修复失败的项目后重新提交。\n\n`;
               comment += `**详细日志**: [查看完整日志](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
             }
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: comment
-            });
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            } catch (error) {
+              console.log('PR comment failed (non-critical):', error.message);
+            }

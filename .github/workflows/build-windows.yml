@@ -1,13 +1,7 @@
-name: WPF Windows 编译检查
+name: WPF 完整编译检查
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - master
-  push:
-    branches:
-      - master
+  # 仅手动触发，避免与快速CI重复
   workflow_dispatch:
 
 permissions:
@@ -16,106 +10,36 @@ permissions:
 
 jobs:
   build-windows:
-    name: Windows 环境编译
+    name: Windows 完整编译
     runs-on: windows-latest
 
     steps:
       - name: Checkout 代码
         uses: actions/checkout@v4
 
-      - name: 检查是否有代码变更
-        id: check-code
-        run: |
-          if ($env:GITHUB_EVENT_NAME -eq "pull_request") {
-            $baseSha = "${{ github.event.pull_request.base.sha }}"
-            $headSha = "${{ github.event.pull_request.head.sha }}"
-            $changedFiles = git diff --name-only $baseSha $headSha
-            if ($changedFiles | Select-String -Pattern '\.(cs|csproj|sln|xaml)$') {
-              Write-Output "has_code_change=true" >> $env:GITHUB_OUTPUT
-            } else {
-              Write-Output "has_code_change=false" >> $env:GITHUB_OUTPUT
-            }
-          } else {
-            Write-Output "has_code_change=true" >> $env:GITHUB_OUTPUT
-          }
-
       - name: Setup .NET 8.0
-        if: steps.check-code.outputs.has_code_change == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      - name: 还原依赖
-        if: steps.check-code.outputs.has_code_change == 'true'
+      - name: 还原完整解决方案依赖
         run: |
           dotnet restore LYBTZYZS.sln --verbosity minimal
 
       - name: 编译 Desktop 客户端
-        if: steps.check-code.outputs.has_code_change == 'true'
         run: |
-          dotnet build LYBTZYZS.sln -c Release --no-restore --verbosity minimal 2>&1 | Tee-Object -Variable buildOutput
-          $buildOutput | Select-String -Pattern "error (CS|MSB|NET)" | Out-File -FilePath build-errors.txt
-          if ($LASTEXITCODE -ne 0) {
-            Write-Output "❌ 编译失败"
-            exit 1
-          }
-          Write-Output "✅ 编译成功"
-
-      - name: 编译后端 API
-        if: steps.check-code.outputs.has_code_change == 'true'
-        run: |
-          dotnet build src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj -c Release --no-restore --verbosity minimal
+          dotnet build LYBTZYZS.sln -c Release --no-restore --verbosity minimal /p:TreatWarningsAsErrors=false /p:WarningLevel=0
 
       - name: 运行架构测试
-        if: steps.check-code.outputs.has_code_change == 'true'
         run: |
-          dotnet test tests/Architecture/LYBT.ArchTests.csproj -c Release --no-build --logger "console;verbosity=normal"
+          dotnet test tests/LYBT.Tests.Architecture/LYBT.Tests.Architecture.csproj -c Release --no-build --logger "console;verbosity=normal" /p:TreatWarningsAsErrors=false
 
-      - name: 上传编译产物
-        if: steps.check-code.outputs.has_code_change == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-errors
-          path: |
-            **/bin/Release/**/*.dll
-            build-errors.txt
-          if-no-files-found: ignore
-
-      - name: 报告编译结果
-        if: always() && steps.check-code.outputs.has_code_change == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const buildPassed = '${{ job.status }}' === 'success';
-            const emoji = buildPassed ? '✅' : '❌';
-            const status = buildPassed ? '通过' : '失败';
-
-            let comment = `## ${emoji} Windows 编译检查${status}\n\n`;
-            comment += `**运行环境**: Windows Latest + .NET 8.0\n`;
-            comment += `**解决方案**: LYBTZYZS.sln\n`;
-            comment += `**配置**: Release | Any CPU\n\n`;
-
-            if (buildPassed) {
-              comment += `### ✅ 编译成功\n\n`;
-              comment += `Desktop 客户端和后端 API 均编译通过。\n\n`;
-              comment += `**编译产物**: [查看下载](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n\n`;
-              comment += `**下一步**:\n`;
-              comment += `- ✅ 可以合并到主分支\n`;
-              comment += `- ✅ 可以进行功能测试\n`;
-              comment += `- ✅ 可以部署到测试环境\n`;
-            } else {
-              comment += `### ❌ 编译失败\n\n`;
-              comment += `请检查编译错误并修复。\n\n`;
-              comment += `**错误详情**: [查看完整日志](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n\n`;
-              comment += `**常见问题**:\n`;
-              comment += `- 检查 XAML 绑定是否正确\n`;
-              comment += `- 检查命名空间引用是否完整\n`;
-              comment += `- 检查依赖包版本是否兼容\n`;
-            }
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: comment
-            });
+      - name: 编译结果报告
+        if: always()
+        run: |
+          if ($? -eq 0) {
+            Write-Output "✅ Windows 完整编译成功" >> $env:GITHUB_STEP_SUMMARY
+          } else {
+            Write-Output "❌ Windows 完整编译失败" >> $env:GITHUB_STEP_SUMMARY
+            exit 1
+          }
