@@ -22,16 +22,22 @@ public class ApiIntegrationTests : IAsyncLifetime
         var guidPart = Guid.NewGuid().ToString("N")[..8];
         _databaseName = $"LYBT_ApiTest_{timestamp}_{guidPart}";
 
-        // 从环境变量获取SQL Server连接字符串（CI提供）
-        var sqlServerHost = Environment.GetEnvironmentVariable("SQL_SERVER_HOST") ?? "localhost";
-        var sqlServerPort = Environment.GetEnvironmentVariable("SQL_SERVER_PORT") ?? "1433";
-        var sqlUser = Environment.GetEnvironmentVariable("SQL_USER") ?? "sa";
-        var sqlPassword = Environment.GetEnvironmentVariable("SQL_PASSWORD") ?? "YourStrong@Passw0rd";
+        // 2. 从环境变量获取基础连接字符串
+        var envConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        if (string.IsNullOrEmpty(envConnectionString))
+        {
+            throw new InvalidOperationException("ConnectionStrings__DefaultConnection environment variable is not set.");
+        }
 
-        var baseConnectionString = $"Server={sqlServerHost},{sqlServerPort};Database=master;User Id={sqlUser};Password={sqlPassword};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;";
-        _connectionString = $"Server={sqlServerHost},{sqlServerPort};Database={_databaseName};User Id={sqlUser};Password={sqlPassword};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;";
+        // 3. 解析连接字符串，构建master数据库连接
+        var builder = new SqlConnectionStringBuilder(envConnectionString);
+        var baseConnectionString = builder.ConnectionString;
+        baseConnectionString = baseConnectionString.Replace($"Database={_databaseName}", "Database=master");
 
-        // 2. 创建数据库
+        // 4. 构建测试数据库连接字符串
+        _connectionString = envConnectionString.Replace("Database=master", $"Database={_databaseName}");
+
+        // 5. 创建数据库
         await using (var connection = new SqlConnection(baseConnectionString))
         {
             await connection.OpenAsync();
@@ -40,17 +46,16 @@ public class ApiIntegrationTests : IAsyncLifetime
             await command.ExecuteNonQueryAsync();
         }
 
-        // 3. 构建 WebApplicationFactory
+        // 6. 构建 WebApplicationFactory
         _factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
+            .WithWebHostBuilder(b =>
             {
-                builder.UseEnvironment("Test");
-                builder.UseSetting("ConnectionStrings:DefaultConnection", _connectionString);
+                b.UseEnvironment("Test");
+                b.UseSetting("ConnectionStrings:DefaultConnection", _connectionString);
 
                 // 移除后台服务
-                builder.ConfigureServices(services =>
+                b.ConfigureServices(services =>
                 {
-                    // 移除所有后台服务，避免干扰测试
                     var hostedServices = services.Where(sd => sd.ImplementationType?.Name?.Contains("HostedService") == true).ToList();
                     foreach (var service in hostedServices)
                     {
@@ -59,7 +64,7 @@ public class ApiIntegrationTests : IAsyncLifetime
                 });
             });
 
-        // 4. 运行数据库迁移
+        // 7. 运行数据库迁移
         using var scope = _factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<LYBTDbContext>();
         await dbContext.Database.MigrateAsync();
@@ -72,25 +77,26 @@ public class ApiIntegrationTests : IAsyncLifetime
         // 清理：删除测试数据库
         try
         {
-            var sqlServerHost = Environment.GetEnvironmentVariable("SQL_SERVER_HOST") ?? "localhost";
-            var sqlServerPort = Environment.GetEnvironmentVariable("SQL_SERVER_PORT") ?? "1433";
-            var sqlUser = Environment.GetEnvironmentVariable("SQL_USER") ?? "sa";
-            var sqlPassword = Environment.GetEnvironmentVariable("SQL_PASSWORD") ?? "YourStrong@Passw0rd";
+            var envConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+            if (!string.IsNullOrEmpty(envConnectionString))
+            {
+                var builder = new SqlConnectionStringBuilder(envConnectionString);
+                var baseConnectionString = builder.ConnectionString;
+                baseConnectionString = baseConnectionString.Replace($"Database={_databaseName}", "Database=master");
 
-            var baseConnectionString = $"Server={sqlServerHost},{sqlServerPort};Database=master;User Id={sqlUser};Password={sqlPassword};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;";
+                await using var connection = new SqlConnection(baseConnectionString);
+                await connection.OpenAsync();
 
-            await using var connection = new SqlConnection(baseConnectionString);
-            await connection.OpenAsync();
+                // 关闭所有连接
+                var sql = $"ALTER DATABASE [{_databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;";
+                await using var command1 = new SqlCommand(sql, connection);
+                await command1.ExecuteNonQueryAsync();
 
-            // 关闭所有连接
-            var sql = $"ALTER DATABASE [{_databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;";
-            await using var command1 = new SqlCommand(sql, connection);
-            await command1.ExecuteNonQueryAsync();
-
-            // 删除数据库
-            sql = $"DROP DATABASE [{_databaseName}]";
-            await using var command2 = new SqlCommand(sql, connection);
-            await command2.ExecuteNonQueryAsync();
+                // 删除数据库
+                sql = $"DROP DATABASE [{_databaseName}]";
+                await using var command2 = new SqlCommand(sql, connection);
+                await command2.ExecuteNonQueryAsync();
+            }
         }
         catch
         {
