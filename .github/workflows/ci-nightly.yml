@@ -97,17 +97,17 @@ jobs:
 
       - name: 还原依赖
         run: |
-          dotnet restore tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj --verbosity minimal
+          dotnet restore tests/LYBT.Tests.Integration.Server/LYBT.Tests.Integration.Server.csproj --verbosity minimal
 
       - name: 编译测试项目
         run: |
-          dotnet build tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj -c ${{ env.CONFIGURATION }} /p:TreatWarningsAsErrors=false /p:WarningLevel=0
+          dotnet build tests/LYBT.Tests.Integration.Server/LYBT.Tests.Integration.Server.csproj -c ${{ env.CONFIGURATION }} /p:TreatWarningsAsErrors=false /p:WarningLevel=0
 
       - name: 运行集成测试
         env:
           ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=master;User Id=sa;Password=YourStrong@Passw0rd;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;"
         run: |
-          dotnet test tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj -c ${{ env.CONFIGURATION }} --no-build --logger "console;verbosity=normal" --logger "trx;logfilename=integration-test-results.trx"
+          dotnet test tests/LYBT.Tests.Integration.Server/LYBT.Tests.Integration.Server.csproj -c ${{ env.CONFIGURATION }} --no-build --logger "console;verbosity=normal" --logger "trx;logfilename=integration-test-results.trx"
 
       - name: 上传测试结果
         uses: actions/upload-artifact@v4
