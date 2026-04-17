@@ -143,7 +143,10 @@ internal static class AdornerLayer
 
         // 如果Content不是Panel，包装它
         var grid = new Grid();
-        grid.Children.Add(window.Content);
+        if (window.Content is UIElement content)
+        {
+            grid.Children.Add(content);
+        }
         window.Content = grid;
         return grid;
     }
