@@ -65,9 +65,11 @@ public class ApiTestFixture : IAsyncLifetime
                 webHost.UseEnvironment("Test");
                 webHost.ConfigureAppConfiguration((context, config) =>
                 {
+                    // 添加测试数据库连接字符串配置（最高优先级）
                     config.AddInMemoryCollection(new Dictionary<string, string?>
                     {
-                        ["ConnectionStrings:DefaultConnection"] = testConnectionString
+                        ["ConnectionStrings:DefaultConnection"] = testConnectionString,
+                        ["Database:ConnectionString"] = testConnectionString
                     });
                 });
 
