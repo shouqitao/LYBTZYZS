@@ -254,29 +254,47 @@ jobs:
           p1_sla=259200
           p2_sla=604800
           
-          # 检查P0超期
-          p0_violations=$(gh issue list \
+          # 检查P0超期（使用date命令解析时间，避免jq的fromdateiso8601依赖）
+          p0_issues=$(gh issue list \
             --label "priority:p0" \
             --state open \
             --json number,title,createdAt \
-            --jq --arg now "$current_time" --arg sla "$p0_sla" \
-            '.[] | select((($now | tonumber) - (.createdAt | fromdateiso8601)) > ($sla | tonumber)) | "#\(.number): \(.title)"')
-          
+            --jq .)
+          p0_violations=$(echo "$p0_issues" | jq -r '.[] | "\(.number)|\(.title)|\(.createdAt)"' | \
+            while IFS='|' read -r number title created_at; do
+              created_sec=$(date -d "$created_at" +%s 2>/dev/null || echo 0)
+              if [ $((current_time - created_sec)) -gt $p0_sla ]; then
+                echo "#$number: $title"
+              fi
+            done)
+
           # 检查P1超期
-          p1_violations=$(gh issue list \
+          p1_issues=$(gh issue list \
             --label "priority:p1" \
             --state open \
             --json number,title,createdAt \
-            --jq --arg now "$current_time" --arg sla "$p1_sla" \
-            '.[] | select((($now | tonumber) - (.createdAt | fromdateiso8601)) > ($sla | tonumber)) | "#\(.number): \(.title)"')
-          
+            --jq .)
+          p1_violations=$(echo "$p1_issues" | jq -r '.[] | "\(.number)|\(.title)|\(.createdAt)"' | \
+            while IFS='|' read -r number title created_at; do
+              created_sec=$(date -d "$created_at" +%s 2>/dev/null || echo 0)
+              if [ $((current_time - created_sec)) -gt $p1_sla ]; then
+                echo "#$number: $title"
+              fi
+            done)
+
           # 检查P2超期
-          p2_violations=$(gh issue list \
+          p2_issues=$(gh issue list \
             --label "priority:p2" \
             --state open \
             --json number,title,createdAt \
-            --jq --arg now "$current_time" --arg sla "$p2_sla" \
-            '.[] | select((($now | tonumber) - (.createdAt | fromdateiso8601)) > ($sla | tonumber)) | "#\(.number): \(.title)"')
+            --jq .)
+          p2_violations=$(echo "$p2_issues" | jq -r '.[] | "\(.number)|\(.title)|\(.createdAt)"' | \
+            while IFS='|' read -r number title created_at; do
+              created_sec=$(date -d "$created_at" +%s 2>/dev/null || echo 0)
+              if [ $((current_time - created_sec)) -gt $p2_sla ]; then
+                echo "#$number: $title"
+              fi
+            done)
           
           # 生成SLA违规报告
           if [ -n "$p0_violations" ] || [ -n "$p1_violations" ] || [ -n "$p2_violations" ]; then
