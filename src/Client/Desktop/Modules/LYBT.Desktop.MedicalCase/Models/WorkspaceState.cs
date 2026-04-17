@@ -1,6 +1,35 @@
 namespace LYBT.Desktop.MedicalCase.Models;
 
 /// <summary>
+/// Phase 1.4: 完整性检查状态记录
+/// 用于实时显示医案完成度检查结果
+/// </summary>
+public record CompletenessCheck(
+    bool DiagnosisComplete = false,
+    bool PrescriptionDecisionComplete = false,
+    bool PrescriptionContentComplete = false,
+    bool DosageCountComplete = false,
+    bool CanCompleteCase = false,
+    int PrescriptionItemCount = 0,
+    int DosageCount = 0)
+{
+    /// <summary>
+    /// 处方决策是否完成（已选择需要或不需要处方）
+    /// </summary>
+    public bool IsDecisionMade => PrescriptionDecisionComplete;
+
+    /// <summary>
+    /// 所有必填项是否完成
+    /// </summary>
+    public bool AllRequiredComplete => DiagnosisComplete && IsDecisionMade;
+
+    /// <summary>
+    /// 处方内容是否完整（如果需要处方）
+    /// </summary>
+    public bool PrescriptionComplete => !PrescriptionDecisionComplete || (PrescriptionContentComplete && DosageCountComplete);
+}
+
+/// <summary>
 /// Immutable workspace state record. Replaces 30+ inline properties + RaiseEditStateProperties().
 /// Use 'with' expressions for state transitions; single OnPropertyChanged(nameof(State)) in parent VM.
 /// </summary>
@@ -14,7 +43,8 @@ public record WorkspaceState(
     bool CanComplete = false,
     bool CanPrint = false,
     string Remark = "",
-    string EditReason = "")
+    string EditReason = "",
+    CompletenessCheck Completeness = null)
 {
     // Edit state computed properties
     public bool IsEditing => EditState == EditState.Editing;

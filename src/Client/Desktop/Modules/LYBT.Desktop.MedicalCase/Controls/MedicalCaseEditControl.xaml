@@ -172,10 +172,20 @@
                         <!-- 现病史 (问) -->
                         <TextBlock Text="现病史 (问)" FontSize="12" Margin="0,0,0,4"
                                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-                        <TextBox TabIndex="8"
-                                 Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
-                                 TextWrapping="Wrap" MinHeight="60" Margin="0,0,0,12" AcceptsReturn="True"/>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0"
+                                     TabIndex="8"
+                                     Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{DynamicResource EditableTextBoxStyle}"
+                                     TextWrapping="Wrap" MinHeight="60" AcceptsReturn="True"/>
+                            <TextBlock Grid.Column="1"
+                                       Style="{DynamicResource FieldSuccessIndicatorStyle}"
+                                       Visibility="{Binding Consultation.IsPresentIllnessValid, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                        </Grid>
                         
                         <!-- 舌诊 (望) + 脉诊 (切) - 共享组件 -->
                         <diagnosis:TonguePulseDiagnosisControl
@@ -194,11 +204,21 @@
                             <Run Text="中医辨证"/>
                             <Run Text="*" Foreground="{StaticResource ValidationErrorBrush}"/>
                         </TextBlock>
-                        
-                        <TextBox TabIndex="11"
-                                 Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
-                                 MinHeight="36"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0"
+                                     TabIndex="11"
+                                     Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{DynamicResource ValidatingTextBoxStyle}"
+                                     MinHeight="36"/>
+                            <TextBlock Grid.Column="1"
+                                       Style="{DynamicResource FieldSuccessIndicatorStyle}"
+                                       Visibility="{Binding Consultation.IsDiagnosisComplete, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                        </Grid>
                         <TextBlock Text="{Binding Consultation.ValidationMessage}"
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"
                                    Margin="0,4,0,0"/>
@@ -263,6 +283,8 @@
                                 <Run Text="共"/>
                                 <Run Text="{Binding Prescription.ItemCount, Mode=OneWay}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}"/>
                                 <Run Text="味药材"/>
+                                <Run Text="✓" Foreground="{DynamicResource SuccessBrush}" FontSize="14" FontWeight="Bold"
+                                     Visibility="{Binding Prescription.HasItems, Converter={x:Static converters:Cvt.BoolToVis}}" Margin="4,0,0,0"/>
                             </TextBlock>
 
                             <!-- 剂数 - OpenSpec: unify-control-data-binding -->
@@ -304,50 +326,81 @@
                 </Grid>
             </Border>
 
-            <!-- Completeness Check Indicator -->
+            <!-- Completeness Check Indicator - Phase 1.4: Dynamic completeness check -->
             <Border Grid.Row="5" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,12,0,0"
                     Background="{DynamicResource SecondaryRegionBrush}">
                 <StackPanel>
                     <TextBlock Text="完整性检查" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                    <!-- 中医诊断 -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                         <TextBlock Margin="0,0,4,0">
-                            <Run Text="●" Foreground="Green" FontWeight="Bold"/>
+                            <Run Text="●" FontWeight="Bold"
+                                 Foreground="{Binding Completeness.DiagnosisComplete, Converter={x:Static converters:Cvt.BoolToColor}, ConverterParameter=Green|Amber}"/>
                             <Run Text="中医诊断"/>
                         </TextBlock>
                         <TextBlock Margin="0,0,4,0" Foreground="{DynamicResource SecondaryTextBrush}">
-                            <Run Text="已填写" FontSize="12"/>
+                            <Run Text="已填写" FontSize="12"
+                                 Visibility="{Binding Completeness.DiagnosisComplete, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                            <Run Text="待填写" FontSize="12"
+                                 Visibility="{Binding Completeness.DiagnosisComplete, Converter={x:Static converters:Cvt.InverseBoolToVis}}"/>
                         </TextBlock>
                     </StackPanel>
+
+                    <!-- 处方决策 -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                         <TextBlock Margin="0,0,4,0">
-                            <Run Text="●" Foreground="Green" FontWeight="Bold"/>
-                            <Run Text="处方需求"/>
+                            <Run Text="●" FontWeight="Bold"
+                                 Foreground="{Binding Completeness.PrescriptionDecisionComplete, Converter={x:Static converters:Cvt.BoolToColor}, ConverterParameter=Green|Amber}"/>
+                            <Run Text="处方决策"/>
                         </TextBlock>
                         <TextBlock Margin="0,0,4,0" Foreground="{DynamicResource SecondaryTextBrush}">
-                            <Run Text="已标记" FontSize="12"/>
+                            <Run Text="已决定" FontSize="12"
+                                 Visibility="{Binding Completeness.PrescriptionDecisionComplete, Converter={x:Static converters:Cvt.BoolToVis}}"/>
                         </TextBlock>
                     </StackPanel>
+
+                    <!-- 处方药材 -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                         <TextBlock Margin="0,0,4,0">
-                            <Run Text="●" Foreground="Green" FontWeight="Bold"/>
+                            <Run Text="●" FontWeight="Bold"
+                                 Foreground="{Binding Completeness.PrescriptionContentComplete, Converter={x:Static converters:Cvt.BoolToColor}, ConverterParameter=Green|Amber}"/>
                             <Run Text="处方药材"/>
                         </TextBlock>
                         <TextBlock Margin="0,0,4,0" Foreground="{DynamicResource SecondaryTextBrush}">
-                            <Run Text="2 味" FontSize="12"/>
+                            <Run Text="{Binding Completeness.PrescriptionItemCount, StringFormat='{}{0} 味'}" FontSize="12"
+                                 Visibility="{Binding IsPrescriptionEnabled, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                            <Run Text="无需处方" FontSize="12"
+                                 Visibility="{Binding IsPrescriptionEnabled, Converter={x:Static converters:Cvt.InverseBoolToVis}}"/>
                         </TextBlock>
                     </StackPanel>
+
+                    <!-- 剂数 -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                         <TextBlock Margin="0,0,4,0">
-                            <Run Text="●" Foreground="Green" FontWeight="Bold"/>
-                            <Run Text="帖数"/>
+                            <Run Text="●" FontWeight="Bold"
+                                 Foreground="{Binding Completeness.DosageCountComplete, Converter={x:Static converters:Cvt.BoolToColor}, ConverterParameter=Green|Amber}"/>
+                            <Run Text="剂数"/>
                         </TextBlock>
                         <TextBlock Margin="0,0,4,0" Foreground="{DynamicResource SecondaryTextBrush}">
-                            <Run Text="7 剂" FontSize="12"/>
+                            <Run Text="{Binding Completeness.DosageCount, StringFormat='{}{0} 剂'}" FontSize="12"
+                                 Visibility="{Binding IsPrescriptionEnabled, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                            <Run Text="无需处方" FontSize="12"
+                                 Visibility="{Binding IsPrescriptionEnabled, Converter={x:Static converters:Cvt.InverseBoolToVis}}"/>
                         </TextBlock>
                     </StackPanel>
-                    <TextBlock Margin="0,8,0,0" FontWeight="Medium" Foreground="Green">
+
+                    <!-- 完成提示 -->
+                    <TextBlock Margin="0,8,0,0" FontWeight="Medium"
+                               Foreground="{DynamicResource SuccessBrush}"
+                               Visibility="{Binding Completeness.CanCompleteCase, Converter={x:Static converters:Cvt.BoolToVis}}">
                         可以完成看诊
+                    </TextBlock>
+                    <TextBlock Margin="0,8,0,0" FontWeight="Medium"
+                               Foreground="{DynamicResource WarningBrush}"
+                               Visibility="{Binding Completeness.CanCompleteCase, Converter={x:Static converters:Cvt.InverseBoolToVis}}">
+                        尚未完成所有必填项
                     </TextBlock>
                 </StackPanel>
             </Border>

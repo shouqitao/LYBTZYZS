@@ -35,6 +35,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IActiveConsultationService _activeConsultationService;
     private readonly IDialogService? _dialogService;
+    private readonly IToastService _toastService;
 
     /// <summary>US-MC-011: Edit mode FSM (lifecycle tied to parent VM, not DI).</summary>
     private readonly IEditModeStateMachine _editStateMachine;
@@ -60,11 +61,18 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             if (SetProperty(ref _state, value))
             {
                 OnPropertyChanged(nameof(State));
+                OnPropertyChanged(nameof(Completeness));
                 Commands?.RefreshCanExecute();
                 SaveChangesCommand?.RaiseCanExecuteChanged();
             }
         }
     }
+
+    /// <summary>
+    /// Phase 1.4: 完整性检查状态
+    /// 从State.Completeness暴露出来，便于XAML绑定
+    /// </summary>
+    public CompletenessCheck Completeness => State.Completeness ?? new();
 
     private Guid _medicalCaseId = Guid.Empty;
     public Guid MedicalCaseId { get => _medicalCaseId; set => SetProperty(ref _medicalCaseId, value); }
@@ -138,6 +146,17 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     #region Editable Properties (flat for TwoWay binding)
 
+    private int _currentStep = 1;
+    /// <summary>
+    /// 当前工作流步骤 (1-5): 四诊采集→中医辨证→处方决策→处方编辑→完成看诊
+    /// Phase 1.2: 自动推进逻辑
+    /// </summary>
+    public int CurrentStep
+    {
+        get => _currentStep;
+        private set => SetProperty(ref _currentStep, value);
+    }
+
     private string _remark = string.Empty;
     public string Remark
     {
@@ -173,7 +192,10 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         set
         {
             if (SetProperty(ref _needsPrescription, value))
+            {
                 OnPropertyChanged(nameof(NoPrescription));
+                UpdateState(); // Phase 1.2: 更新步骤状态
+            }
         }
     }
 
@@ -207,6 +229,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         IMedicalCaseService medicalCaseService,
         INavigationCoordinator navigationCoordinator,
         IActiveConsultationService activeConsultationService,
+        IToastService toastService,
         PrescriptionPrintHandler printHandler,
         IDialogService? dialogService = null)
         : base(services)
@@ -214,6 +237,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
+        _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         _dialogService = dialogService;
 
         // US-MC-011: Create edit mode FSM (lifecycle tied to this VM)
@@ -223,7 +247,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         // Create child VMs (not container-resolved; coupled to parent lifecycle)
         ConsultationEditor = new ConsultationEditorViewModel(this, this, services.LoggerFactory);
         PrescriptionEditor = new PrescriptionEditorViewModel(this, this, services.LoggerFactory);
-        Commands = new MedicalCaseCommandsViewModel(this, this, services.LoggerFactory, medicalCaseService, printHandler, dialogService);
+        Commands = new MedicalCaseCommandsViewModel(this, this, services.LoggerFactory, medicalCaseService, printHandler, _toastService, dialogService);
 
         // Wire data providers for Commands
         Commands.GetConsultationData = () => ConsultationEditor.GetConsultationData();
@@ -297,11 +321,85 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     private void UpdateState()
     {
+        UpdateCurrentStep();
+        UpdateCompleteness();
         State = State with
         {
             CanComplete = CalculateCanComplete(),
             CanPrint = PrescriptionEditor.HasItems
         };
+    }
+
+    /// <summary>
+    /// Phase 1.4: 更新完整性检查状态
+    /// 根据当前诊断和处方数据计算完成度
+    /// </summary>
+    private void UpdateCompleteness()
+    {
+        var completeness = new CompletenessCheck(
+            DiagnosisComplete: ConsultationEditor.Consultation.IsDiagnosisComplete,
+            PrescriptionDecisionComplete: true, // 总是true，因为用户必须选择需要/不需要处方
+            PrescriptionContentComplete: !IsPrescriptionEnabled || PrescriptionEditor.Prescription.HasItems,
+            DosageCountComplete: !IsPrescriptionEnabled || PrescriptionEditor.Prescription.DosageCount > 0,
+            CanCompleteCase: CalculateCanComplete(),
+            PrescriptionItemCount: PrescriptionEditor.Prescription.ItemCount,
+            DosageCount: PrescriptionEditor.Prescription.DosageCount
+        );
+
+        // 更新State中的Completeness
+        if (State.Completeness != completeness)
+        {
+            State = State with { Completeness = completeness };
+        }
+    }
+
+    /// <summary>
+    /// Phase 1.2: 自动推进工作流步骤
+    /// 步推进逻辑:
+    /// - Step 1→2: PresentIllness has content
+    /// - Step 2→3: TcmDiagnosis validated
+    /// - Step 3→4: NeedsPrescription decided
+    /// - Step 4→5: Prescription has items OR NoPrescription selected
+    /// </summary>
+    private void UpdateCurrentStep()
+    {
+        int newStep = 1;
+
+        // Step 1: 四诊采集
+        if (!string.IsNullOrWhiteSpace(ConsultationEditor.Consultation.PresentIllness))
+        {
+            newStep = 2;
+        }
+
+        // Step 2: 中医辨证
+        if (newStep == 2 && ConsultationEditor.Consultation.IsDiagnosisComplete)
+        {
+            newStep = 3;
+        }
+
+        // Step 3: 处方决策
+        if (newStep == 3)
+        {
+            newStep = 4;
+        }
+
+        // Step 4: 处方编辑
+        if (newStep == 4)
+        {
+            if (!IsPrescriptionEnabled)
+            {
+                // 不需要处方 -> 直接到完成
+                newStep = 5;
+            }
+            else if (PrescriptionEditor.Prescription.ItemCount > 0)
+            {
+                // 有处方内容 -> 可以完成
+                newStep = 5;
+            }
+            // else: 保持在步骤4，等待添加处方
+        }
+
+        CurrentStep = newStep;
     }
 
     private bool CalculateCanComplete()
@@ -637,6 +735,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     {
         switch (e.PropertyName)
         {
+            case "PresentIllness":
             case "TcmDiagnosis":
             case "ItemCount":
                 UpdateState();

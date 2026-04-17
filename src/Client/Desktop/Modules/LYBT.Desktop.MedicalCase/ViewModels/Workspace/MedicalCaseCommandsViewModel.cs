@@ -38,6 +38,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly PrescriptionPrintHandler _printHandler;
     private readonly IDialogService? _dialogService;
+    private readonly IToastService _toastService;
     private readonly ConsultationMapper _consultationMapper = new();
 
     #region Data provider delegates (set by parent after construction)
@@ -81,12 +82,14 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         ILoggerFactory loggerFactory,
         IMedicalCaseService medicalCaseService,
         PrescriptionPrintHandler printHandler,
+        IToastService toastService,
         IDialogService? dialogService = null)
         : base(host, loggerFactory)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _printHandler = printHandler ?? throw new ArgumentNullException(nameof(printHandler));
+        _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         _dialogService = dialogService;
 
         SaveCommand = new DelegateCommand(ExecuteSave, CanSave);
@@ -131,7 +134,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     {
         try
         {
-            Host.SetBusy(true, "正在保存...");
+            Host.SetBusy(true, "正在保存医案...");
             var result = await _medicalCaseService.AggregateSaveAsync(
                 _context.MedicalCaseId,
                 GetConsultationData?.Invoke(),
@@ -140,14 +143,20 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                 GetEditReason?.Invoke() ?? "");
 
             if (result.Success)
-                await Host.ShowSuccessAsync("保存成功");
+            {
+                _toastService.ShowSuccess("医案已保存", 5000);
+                Logger.LogInformation("医案保存成功, MedicalCaseId={MedicalCaseId}", _context.MedicalCaseId);
+            }
             else
-                await Host.ShowErrorAsync(result.Error ?? "保存失败");
+            {
+                _toastService.ShowError($"保存失败：{result.Error ?? "未知错误"}", 4000);
+                Logger.LogWarning("医案保存失败, Error={Error}", result.Error);
+            }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "保存医案数据失败");
-            await Host.ShowErrorAsync("保存失败");
+            _toastService.ShowError($"保存失败：{ex.Message}", 4000);
         }
         finally
         {
@@ -160,7 +169,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     {
         try
         {
-            Host.SetBusy(true, "正在挂起...");
+            Host.SetBusy(true, "正在暂存医案...");
             var result = await _medicalCaseService.SaveAndSuspendAsync(
                 _context.MedicalCaseId,
                 GetConsultationData?.Invoke(),
@@ -170,17 +179,19 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             if (result.Success)
             {
                 Host.NotifyStateChanged();
-                await Host.ShowSuccessAsync("医案已暂存");
+                _toastService.ShowInfo("医案已暂存，可稍后继续", 5000);
+                Logger.LogInformation("医案已暂存, MedicalCaseId={MedicalCaseId}", _context.MedicalCaseId);
             }
             else
             {
-                await Host.ShowErrorAsync(result.Error ?? "暂存失败");
+                _toastService.ShowError($"暂存失败：{result.Error ?? "未知错误"}", 4000);
+                Logger.LogWarning("医案暂存失败, Error={Error}", result.Error);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "暂存医案失败");
-            await Host.ShowErrorAsync("暂存失败");
+            _toastService.ShowError($"暂存失败：{ex.Message}", 4000);
         }
         finally
         {
@@ -193,7 +204,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     {
         try
         {
-            Host.SetBusy(true, "正在完成医案...");
+            Host.SetBusy(true, "正在完成看诊并归档...");
             var result = await _medicalCaseService.SaveAndCompleteAsync(
                 _context.MedicalCaseId,
                 GetConsultationData?.Invoke(),
@@ -206,17 +217,19 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             if (result.Success)
             {
                 Host.NotifyStateChanged();
-                await Host.ShowSuccessAsync("医案已完成");
+                _toastService.ShowSuccess("看诊完成，医案已归档", 5000);
+                Logger.LogInformation("医案完成, MedicalCaseId={MedicalCaseId}", _context.MedicalCaseId);
             }
             else
             {
-                await Host.ShowErrorAsync(result.Error ?? "完成失败");
+                _toastService.ShowError($"完成失败：{result.Error ?? "未知错误"}", 4000);
+                Logger.LogWarning("医案完成失败, Error={Error}", result.Error);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "完成医案失败");
-            await Host.ShowErrorAsync("完成失败");
+            _toastService.ShowError($"完成失败：{ex.Message}", 4000);
         }
         finally
         {
@@ -229,7 +242,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     {
         try
         {
-            Host.SetBusy(true, "正在准备预览...");
+            Host.SetBusy(true, "正在准备打印预览...");
 
             var consultationItem = GetConsultationItem?.Invoke();
             var consultationData = consultationItem != null
@@ -244,13 +257,14 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
             if (!result.IsSuccess)
             {
-                await Host.ShowErrorAsync(result.ErrorMessage ?? "打印失败");
+                _toastService.ShowError($"打印失败：{result.ErrorMessage ?? "未知错误"}", 4000);
+                Logger.LogWarning("打印失败, Error={Error}", result.ErrorMessage);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "打印处方笺失败");
-            await Host.ShowErrorAsync("打印失败");
+            _toastService.ShowError($"打印失败：{ex.Message}", 4000);
         }
         finally
         {
@@ -266,7 +280,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     {
         try
         {
-            Host.SetBusy(true, "正在导出PDF...");
+            Host.SetBusy(true, "正在生成PDF文件...");
 
             var consultationItem = GetConsultationItem?.Invoke();
             var consultationData = consultationItem != null
@@ -281,17 +295,19 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
             if (!result.IsSuccess)
             {
-                await Host.ShowErrorAsync(result.ErrorMessage ?? "导出失败");
+                _toastService.ShowError($"导出失败：{result.ErrorMessage ?? "未知错误"}", 4000);
+                Logger.LogWarning("PDF导出失败, Error={Error}", result.ErrorMessage);
             }
             else
             {
-                await Host.ShowSuccessAsync("PDF导出成功");
+                _toastService.ShowSuccess("PDF导出成功，文件已保存", 5000);
+                Logger.LogInformation("PDF导出成功, MedicalCaseId={MedicalCaseId}", _context.MedicalCaseId);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "导出PDF失败");
-            await Host.ShowErrorAsync("导出失败");
+            _toastService.ShowError($"导出失败：{ex.Message}", 4000);
         }
         finally
         {
@@ -358,7 +374,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         var validItemCount = prescription.Items.Count(h => h.HerbId != Guid.Empty);
         if (validItemCount == 0)
         {
-            await Host.ShowSuccessAsync("当前没有可清空的药材");
+            _toastService.ShowInfo("当前没有可清空的药材");
             return;
         }
 
@@ -367,21 +383,21 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
         prescription.Items.Clear();
         Logger.LogInformation("已清空处方药材，共{Count}项", validItemCount);
-        await Host.ShowSuccessAsync($"已清空{validItemCount}项药材");
+        _toastService.ShowWarning($"已清空所有药材（共{validItemCount}味）", 4000);
     }
 
     private async Task HandleFormulaImportResultAsync(IDialogParameters parameters)
     {
         try
         {
-            Host.SetBusy(true, "正在导入验方...");
+            Host.SetBusy(true, "正在导入验方药材...");
 
             if (!parameters.TryGetValue<FormulaDetailDto>("SelectedFormula", out var formula) || formula == null)
                 return;
 
             if (!parameters.TryGetValue<List<FormulaHerbItemDto>>("SelectedHerbs", out var herbs) || herbs?.Any() != true)
             {
-                await Host.ShowErrorAsync("验方无药材信息");
+                _toastService.ShowError("验方无药材信息", 4000);
                 return;
             }
 
@@ -396,7 +412,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             var herbItems = FilterDisabledHerbs(formula.ToPrescriptionItemDtos(herbs, herbPrices), "验方导入");
             if (!herbItems.Any())
             {
-                await Host.ShowErrorAsync("验方无有效药材");
+                _toastService.ShowError("验方无有效药材", 4000);
                 return;
             }
 
@@ -412,12 +428,13 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                     prescription.ReferencedFormulas = $"{prescription.ReferencedFormulas}, {formula.Name}";
             }
 
-            await Host.ShowSuccessAsync($"已导入验方「{formula.Name}」，共 {herbItems.Count} 味药材");
+            _toastService.ShowSuccess($"已导入验方「{formula.Name}」，共{herbItems.Count}味药材", 5000);
+            Logger.LogInformation("验方导入成功, FormulaName={FormulaName}, HerbCount={Count}", formula.Name, herbItems.Count);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "处理验方导入结果异常");
-            await Host.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入", ex));
+            _toastService.ShowError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入", ex), 4000);
         }
         finally
         {
@@ -429,11 +446,11 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     {
         try
         {
-            Host.SetBusy(true, "正在复制处方...");
+            Host.SetBusy(true, "正在复制历史处方...");
 
             if (!parameters.TryGetValue<List<PrescriptionItemDto>>("SelectedItems", out var items) || items?.Any() != true)
             {
-                await Host.ShowErrorAsync("历史处方无药材记录");
+                _toastService.ShowError("历史处方无药材记录", 4000);
                 return;
             }
 
@@ -450,7 +467,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             var herbItems = FilterDisabledHerbs(items.ToPrescriptionItemDtos(herbPrices), "历史复制");
             if (!herbItems.Any())
             {
-                await Host.ShowErrorAsync("历史处方无有效药材");
+                _toastService.ShowError("历史处方无有效药材", 4000);
                 return;
             }
 
@@ -478,12 +495,13 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                 }
             }
 
-            await Host.ShowSuccessAsync($"已复制 {herbItems.Count} 味药材");
+            _toastService.ShowSuccess($"已复制历史处方，共{herbItems.Count}味药材", 5000);
+            Logger.LogInformation("历史处方复制成功, HerbCount={Count}", herbItems.Count);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "处理历史复制结果异常");
-            await Host.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("复制", ex));
+            _toastService.ShowError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("复制", ex), 4000);
         }
         finally
         {

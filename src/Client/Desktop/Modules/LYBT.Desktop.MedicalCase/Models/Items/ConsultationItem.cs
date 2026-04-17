@@ -206,6 +206,13 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable
         !string.IsNullOrWhiteSpace(TcmDiagnosis);
 
     /// <summary>
+    /// Phase 1.3: 现病史是否有效（非空且超过5个字符）
+    /// 用于字段验证成功指示器显示
+    /// </summary>
+    public bool IsPresentIllnessValid =>
+        !string.IsNullOrWhiteSpace(PresentIllness) && PresentIllness.Length >= 5;
+
+    /// <summary>
     /// 显示文本
     /// </summary>
     public string DisplayText =>

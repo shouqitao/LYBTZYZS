@@ -19,7 +19,7 @@ using NSubstitute;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Infrastructure.Services.Toast;
 
 namespace LYBT.Tests.Desktop.PureLogic.Clinical;
 
@@ -33,6 +33,7 @@ public class MedicalCaseWorkspaceViewModelTests
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IActiveConsultationService _activeConsultationService;
+    private readonly IToastService _toastService;
     private readonly PrescriptionPrintHandler _printHandler;
     private readonly IDialogService? _dialogService;
     private readonly ILoggerFactory _loggerFactory;
@@ -73,6 +74,7 @@ public class MedicalCaseWorkspaceViewModelTests
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
         _activeConsultationService = Substitute.For<IActiveConsultationService>();
+        _toastService = Substitute.For<IToastService>();
         
         // Mock dependencies for PrescriptionPrintHandler
         _medicalCaseRepository = Substitute.For<IMedicalCaseRepository>();
@@ -98,6 +100,7 @@ public class MedicalCaseWorkspaceViewModelTests
             _medicalCaseService,
             _navigationCoordinator,
             _activeConsultationService,
+            _toastService,
             _printHandler,
             _dialogService);
     }
@@ -231,6 +234,209 @@ public class MedicalCaseWorkspaceViewModelTests
 
         // Assert
         result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Phase 1.2: CurrentStep Auto-Advance Logic
+
+    [Fact]
+    public void CurrentStep_Initially_IsStep1()
+    {
+        // Arrange
+        var sut = CreateSut();
+
+        // Assert
+        sut.CurrentStep.Should().Be(1);
+    }
+
+    [Fact]
+    public void CurrentStep_AdvancesToStep2_WhenPresentIllnessHasContent()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.ConsultationEditor.Consultation.PresentIllness = "患者主诉内容";
+
+        // Act
+        sut.ConsultationEditor.Consultation.PropertyChanged +=
+            (s, e) => { if (e.PropertyName == "PresentIllness") sut.UpdateState(); };
+
+        // Manually trigger the update
+        sut.UpdateState();
+
+        // Assert
+        sut.CurrentStep.Should().BeGreaterThanOrEqualTo(2);
+    }
+
+    [Fact]
+    public void CurrentStep_AdvancesToStep3_WhenDiagnosisComplete()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.ConsultationEditor.Consultation.PresentIllness = "患者主诉内容";
+        sut.ConsultationEditor.Consultation.TcmDiagnosis = "脾胃虚弱证";
+
+        // Act
+        sut.UpdateState();
+
+        // Assert
+        sut.CurrentStep.Should().BeGreaterThanOrEqualTo(3);
+    }
+
+    #endregion
+
+    #region Phase 1.4: CompletenessCheck
+
+    [Fact]
+    public void Completeness_Initially_IsNotComplete()
+    {
+        // Arrange
+        var sut = CreateSut();
+
+        // Assert
+        sut.Completeness.Should().NotBeNull();
+        sut.Completeness.DiagnosisComplete.Should().BeFalse();
+        sut.Completeness.CanCompleteCase.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Completeness_DiagnosisComplete_UpdatesWhenDiagnosisFilled()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.ConsultationEditor.Consultation.TcmDiagnosis = "脾胃虚弱证";
+
+        // Act
+        sut.UpdateState();
+
+        // Assert
+        sut.Completeness.DiagnosisComplete.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Completeness_PrescriptionContentComplete_WhenPrescriptionHasItems()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.IsPrescriptionEnabled = true;
+        sut.ConsultationEditor.Consultation.TcmDiagnosis = "脾胃虚弱证";
+
+        // Add prescription items
+        var prescriptionItem = new PrescriptionItemDto
+        {
+            HerbId = Guid.NewGuid(),
+            HerbName = "测试药材",
+            Dosage = 10m,
+            Unit = "g"
+        };
+        sut.PrescriptionEditor.Prescription.Items.Add(prescriptionItem);
+
+        // Act
+        sut.UpdateState();
+
+        // Assert
+        sut.Completeness.PrescriptionContentComplete.Should().BeTrue();
+        sut.Completeness.PrescriptionItemCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void Completeness_CanCompleteCase_WhenAllCriteriaMet()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.ConsultationEditor.Consultation.TcmDiagnosis = "脾胃虚弱证";
+        sut.IsPrescriptionEnabled = true;
+
+        var prescriptionItem = new PrescriptionItemDto
+        {
+            HerbId = Guid.NewGuid(),
+            HerbName = "测试药材",
+            Dosage = 10m,
+            Unit = "g"
+        };
+        sut.PrescriptionEditor.Prescription.Items.Add(prescriptionItem);
+        sut.PrescriptionEditor.Prescription.DosageCount = 7;
+
+        // Act
+        sut.UpdateState();
+
+        // Assert
+        sut.Completeness.CanCompleteCase.Should().BeTrue();
+        sut.State.CanComplete.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Completeness_CanCompleteCase_WithoutPrescription_WhenDiagnosisComplete()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.ConsultationEditor.Consultation.TcmDiagnosis = "脾胃虚弱证";
+        sut.IsPrescriptionEnabled = false;
+
+        // Act
+        sut.UpdateState();
+
+        // Assert
+        sut.Completeness.CanCompleteCase.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Phase 1.3: ConsultationItem Properties
+
+    [Fact]
+    public void ConsultationItem_IsPresentIllnessValid_ReturnsFalse_WhenEmpty()
+    {
+        // Arrange
+        var sut = CreateSut();
+
+        // Act & Assert
+        sut.ConsultationEditor.Consultation.IsPresentIllnessValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ConsultationItem_IsPresentIllnessValid_ReturnsTrue_When5OrMoreChars()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.ConsultationEditor.Consultation.PresentIllness = "测试内容超过五个字";
+
+        // Act & Assert
+        sut.ConsultationEditor.Consultation.IsPresentIllnessValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ConsultationItem_IsDiagnosisComplete_ReturnsTrue_WhenHasDiagnosis()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.ConsultationEditor.Consultation.TcmDiagnosis = "脾胃虚弱证";
+
+        // Act & Assert
+        sut.ConsultationEditor.Consultation.IsDiagnosisComplete.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Phase 1.3: PrescriptionItem Properties
+
+    [Fact]
+    public void PrescriptionItem_HasItems_ReturnsTrue_WhenHasItems()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var prescriptionItem = new PrescriptionItemDto
+        {
+            HerbId = Guid.NewGuid(),
+            HerbName = "测试药材",
+            Dosage = 10m,
+            Unit = "g"
+        };
+        sut.PrescriptionEditor.Prescription.Items.Add(prescriptionItem);
+
+        // Act & Assert
+        sut.PrescriptionEditor.Prescription.HasItems.Should().BeTrue();
+        sut.PrescriptionEditor.Prescription.ItemCount.Should().Be(1);
     }
 
     #endregion
