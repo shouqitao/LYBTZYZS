@@ -25,6 +25,20 @@ public partial class MedicalCaseEditControl : UserControl
 
     #region 患者信息（只读）
 
+    /// <summary>
+    /// 当前工作流步骤 - 用于WorkflowStepIndicator显示
+    /// 1: 四诊采集, 2: 中医辨证, 3: 处方决策, 4: 处方编辑, 5: 完成看诊
+    /// </summary>
+    public static readonly DependencyProperty CurrentStepProperty =
+        DependencyProperty.Register(nameof(CurrentStep), typeof(int), typeof(MedicalCaseEditControl),
+            new PropertyMetadata(1));
+
+    public int CurrentStep
+    {
+        get => (int)GetValue(CurrentStepProperty);
+        set => SetValue(CurrentStepProperty, value);
+    }
+
     public static readonly DependencyProperty PatientNameProperty =
         DependencyProperty.Register(nameof(PatientName), typeof(string), typeof(MedicalCaseEditControl));
 

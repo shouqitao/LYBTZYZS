@@ -16,6 +16,7 @@
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              xmlns:herbList="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbList;assembly=LYBT.Desktop.Infrastructure"
              xmlns:diagnosis="clr-namespace:LYBT.Desktop.Infrastructure.Controls.Diagnosis;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:local="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
              x:Name="Root">
 
     <!--
@@ -118,10 +119,10 @@
             </Grid.RowDefinitions>
 
             <!-- 流程步骤指示器 -->
-            <controls:WorkflowStepIndicator Grid.Row="0"
-                                          CurrentStep="{Binding CurrentStep, Mode=OneWay}"
-                                          Margin="0,0,0,16"
-                                          HorizontalAlignment="Left"/>
+            <local:WorkflowStepIndicator Grid.Row="0"
+                                        CurrentStep="{Binding CurrentStep, Mode=OneWay}"
+                                        Margin="0,0,0,16"
+                                        HorizontalAlignment="Left"/>
 
             <!-- 患者信息行 (Compact模式) -->
             <Border Grid.Row="1" Background="{DynamicResource SecondaryRegionBrush}"
