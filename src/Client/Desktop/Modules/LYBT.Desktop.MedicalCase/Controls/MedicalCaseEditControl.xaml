@@ -1,13 +1,10 @@
-﻿<!--
-    MedicalCaseEditControl - 医案编辑控件
+<!--
+    MedicalCaseEditControl - 医案编辑控件（已统一为Compact模式）
     OpenSpec: refactor-medicalcase-workspace V2
     OpenSpec: refactor-medicalcase-management
     OpenSpec: unify-herb-controls-to-herbs-module
 
-    支持两种显示模式:
-    - Full (默认): MasterDetail右侧详情显示，包含信息卡片、诊疗、处方、备注、系统信息
-    - Compact: Workspace紧凑型显示，诊断+四诊+处方编辑
-
+    Compact模式: Workspace紧凑型显示，诊断+四诊+处方编辑
     V2布局:
     - 诊断区3行: 现病史 / 舌诊+脉诊 / 中医诊断*
     - 处方区: 工具条 + HerbListControl + 底部信息栏
@@ -18,6 +15,7 @@
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              xmlns:herbList="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbList;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:diagnosis="clr-namespace:LYBT.Desktop.Infrastructure.Controls.Diagnosis;assembly=LYBT.Desktop.Infrastructure"
              x:Name="Root">
 
     <!--
@@ -103,216 +101,14 @@
     </UserControl.Resources>
 
     <Grid DataContext="{Binding ElementName=Root}">
-        <!-- Full模式: MasterDetail布局 -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      Visibility="{Binding IsCompactMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}">
-            <StackPanel>
-                <!-- ========================================
-                     患者信息卡片（只读）- 仅Full模式
-                     ======================================== -->
-                <controls:InfoCard Title="患者信息" ShowTitle="True">
-                    <controls:InfoCard.Content>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="80"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- 患者姓名 -->
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="患者姓名" Style="{DynamicResource DetailLabelStyle}"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PatientName}" Style="{DynamicResource DetailValueStyle}" FontWeight="SemiBold"/>
-
-                            <!-- 就诊日期 -->
-                            <TextBlock Grid.Row="0" Grid.Column="2" Text="就诊日期" Style="{DynamicResource DetailLabelStyle}"/>
-                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding ConsultationDate, StringFormat=yyyy-MM-dd}" Style="{DynamicResource DetailValueStyle}"/>
-
-                            <!-- 接诊医生 -->
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="接诊医生" Style="{DynamicResource DetailLabelStyle}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DoctorName, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}"/>
-
-                            <!-- 状态 -->
-                            <TextBlock Grid.Row="1" Grid.Column="2" Text="状态" Style="{DynamicResource DetailLabelStyle}"/>
-                            <controls:StatusBadge Grid.Row="1" Grid.Column="3"
-                                                  Status="{Binding Status}"
-                                                  HorizontalAlignment="Left"
-                                                  Margin="0,4,0,4"/>
-                        </Grid>
-                    </controls:InfoCard.Content>
-                </controls:InfoCard>
-
-                <!-- ========================================
-                     诊疗信息卡片（可编辑）- Full模式
-                     ======================================== -->
-                <controls:InfoCard Title="诊疗信息" ShowTitle="True" Margin="0,12,0,0">
-                    <controls:InfoCard.Content>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <!-- 第一行：现病史（整行）- OpenSpec: unify-control-data-binding -->
-                            <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
-                                <TextBlock Text="现病史" Style="{DynamicResource FormLabelStyle}"/>
-                                <TextBox TabIndex="1" Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{DynamicResource EditableTextBoxStyle}"
-                                         TextWrapping="Wrap"
-                                         AcceptsReturn="True"
-                                         MinHeight="80"
-                                         Padding="12,10"/>
-                            </StackPanel>
-
-                            <!-- 第二行：舌诊、脉诊 -->
-                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
-                                <TextBlock Text="舌诊" Style="{DynamicResource FormLabelStyle}"/>
-                                <TextBox TabIndex="2" Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{DynamicResource EditableTextBoxStyle}"
-                                         MinHeight="44"
-                                         Padding="12,10"/>
-                                <ComboBox Margin="0,4,0,0"
-                                          SelectedItem="{Binding Consultation.TongueDiagnosis, Mode=TwoWay}"
-                                          ItemsSource="{StaticResource TongueDiagnosisOptions}"
-                                          Style="{DynamicResource FilterComboBox}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
-                                <TextBlock Text="脉诊" Style="{DynamicResource FormLabelStyle}"/>
-                                <TextBox TabIndex="3" Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{DynamicResource EditableTextBoxStyle}"
-                                         MinHeight="44"
-                                         Padding="12,10"/>
-                                <ComboBox Margin="0,4,0,0"
-                                          SelectedItem="{Binding Consultation.PulseDiagnosis, Mode=TwoWay}"
-                                          ItemsSource="{StaticResource PulseDiagnosisOptions}"
-                                          Style="{DynamicResource FilterComboBox}"/>
-                            </StackPanel>
-
-                            <!-- 第三行：中医诊断（整行） -->
-                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
-                                <TextBlock Style="{DynamicResource FormLabelStyle}">
-                                    <Run Text="中医诊断"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
-                                </TextBlock>
-                                <TextBox TabIndex="4" Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{DynamicResource ValidatingTextBoxStyle}"
-                                         MinHeight="44"
-                                         Padding="12,10"/>
-                                <TextBlock Text="{Binding Consultation.ValidationMessage}"
-                                           Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
-                                <ComboBox Margin="0,4,0,0"
-                                          SelectedItem="{Binding Consultation.TcmDiagnosis, Mode=TwoWay}"
-                                          ItemsSource="{StaticResource SyndromeOptions}"
-                                          Style="{DynamicResource FilterComboBox}"/>
-                            </StackPanel>
-                        </Grid>
-                    </controls:InfoCard.Content>
-                </controls:InfoCard>
-
-                <!-- ========================================
-                     处方信息卡片（可编辑）- Full模式
-                     OpenSpec: unify-control-data-binding
-                     ======================================== -->
-                <controls:InfoCard Title="{Binding Prescription.ItemCount, StringFormat=处方药材 (共{0}味), Mode=OneWay}" ShowTitle="True" Margin="0,12,0,0">
-                    <controls:InfoCard.Content>
-                        <StackPanel>
-                            <!-- 处方统计信息 -->
-                            <Grid Margin="0,0,0,12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="80"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="80"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <TextBlock Grid.Column="0" Text="剂数" Style="{DynamicResource DetailLabelStyle}"/>
-                                <TextBlock Grid.Column="1" Style="{DynamicResource DetailValueStyle}">
-                                    <Run Text="{Binding Prescription.DosageCount, Mode=OneWay}"/>
-                                    <Run Text="剂"/>
-                                </TextBlock>
-
-                                <TextBlock Grid.Column="2" Text="方源" Style="{DynamicResource DetailLabelStyle}"/>
-                                <TextBlock Grid.Column="3" Text="{Binding FormulaSource, TargetNullValue='无'}"
-                                           Style="{DynamicResource DetailValueStyle}"/>
-                            </Grid>
-
-                            <!-- 药材编辑 - 使用HerbListControl统一编辑控件 -->
-                            <herbList:HerbListControl
-                                AllHerbs="{Binding AllHerbs}"
-                                HerbItems="{Binding Prescription.Items, Mode=TwoWay}"
-                                IsEditMode="True"
-                                Columns="4"/>
-                        </StackPanel>
-                    </controls:InfoCard.Content>
-                </controls:InfoCard>
-
-                <!-- ========================================
-                     备注卡片（可编辑）- Full模式
-                     OpenSpec: unify-control-data-binding
-                     ======================================== -->
-                <controls:InfoCard Title="备注" ShowTitle="True" Margin="0,12,0,0">
-                    <controls:InfoCard.Content>
-                        <StackPanel>
-                            <TextBlock Text="备注" Style="{DynamicResource FormLabelStyle}"/>
-                            <TextBox Text="{Binding Remark, RelativeSource={RelativeSource AncestorType=local:MedicalCaseEditControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{DynamicResource EditableTextBoxStyle}"
-                                     TextWrapping="Wrap"
-                                     AcceptsReturn="True"
-                                     MinHeight="60"
-                                     Padding="12,10"/>
-                        </StackPanel>
-                    </controls:InfoCard.Content>
-                </controls:InfoCard>
-
-                <!-- ========================================
-                     系统信息卡片（只读）- Full模式
-                     ======================================== -->
-                <controls:InfoCard Title="系统信息" ShowTitle="True" Margin="0,12,0,0">
-                    <controls:InfoCard.Content>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- 创建时间 -->
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="创建时间" Style="{DynamicResource FormLabelStyle}"/>
-                                <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
-                                           Style="{DynamicResource ValueDisplayStyle}"
-                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
-                            </StackPanel>
-
-                            <!-- 更新时间 -->
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="更新时间" Style="{DynamicResource FormLabelStyle}"/>
-                                <TextBlock Text="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
-                                           Style="{DynamicResource ValueDisplayStyle}"
-                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
-                            </StackPanel>
-                        </Grid>
-                    </controls:InfoCard.Content>
-                </controls:InfoCard>
-            </StackPanel>
-        </ScrollViewer>
-
-        <!-- ========================================
-             Compact模式: Workspace布局 (V2布局)
-             工具条 + 诊断区3行 + 处方区
-             ======================================== -->
-        <Grid Visibility="{Binding IsCompactMode, Converter={x:Static converters:Cvt.BoolToVis}}">
+        <!--
+            Compact模式（统一模式，已移除Full模式）
+            Workspace布局 (V2布局): 工具条 + 诊断区3行 + 处方区
+        -->
+        <Grid>
+        <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>  <!-- 流程步骤指示器 -->
                 <RowDefinition Height="Auto"/>  <!-- 患者信息 -->
                 <RowDefinition Height="Auto"/>  <!-- 工具条 -->
                 <RowDefinition Height="Auto"/>  <!-- 诊断区 -->
@@ -321,9 +117,15 @@
                 <RowDefinition Height="Auto"/>  <!-- 完整性检查 -->
             </Grid.RowDefinitions>
 
+            <!-- 流程步骤指示器 -->
+            <controls:WorkflowStepIndicator Grid.Row="0"
+                                          CurrentStep="{Binding CurrentStep, Mode=OneWay}"
+                                          Margin="0,0,0,16"
+                                          HorizontalAlignment="Left"/>
+
             <!-- 患者信息行 (Compact模式) -->
-            <Border Grid.Row="0" Background="{DynamicResource SecondaryRegionBrush}"
-                    CornerRadius="6" Padding="12,8" Margin="0,0,0,8">
+            <Border Grid.Row="1" Background="{DynamicResource SecondaryRegionBrush}"
+                    CornerRadius="8" Padding="16,12" Margin="0,0,0,12">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -344,15 +146,15 @@
             </Border>
 
             <!-- 右上角工具条 -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,12">
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,16">
                 <Button TabIndex="5" Content="套验方"
                         Command="{Binding ImportFormulaCommand}"
                         Style="{DynamicResource SecondaryButton}"
-                        Margin="0,0,8,0"/>
+                        Margin="0,0,12,0"/>
                 <Button TabIndex="6" Content="历史处方"
                         Command="{Binding ImportHistoryCommand}"
                         Style="{DynamicResource SecondaryButton}"
-                        Margin="0,0,8,0"/>
+                        Margin="0,0,12,0"/>
                 <Button TabIndex="7" Content="清空"
                         Command="{Binding ClearAllCommand}"
                         Style="{DynamicResource LinkButtonStyle}"
@@ -360,9 +162,9 @@
             </StackPanel>
 
             <!-- 诊断区 - 分为四诊采集与中医辨证 -->
-            <StackPanel Grid.Row="2">
+            <StackPanel Grid.Row="3">
                 <!-- 四诊采集区 -->
-                <Border Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12">
+                <Border Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="四诊采集" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
                                    Foreground="{DynamicResource PrimaryTextBrush}"/>
@@ -375,45 +177,17 @@
                                  Style="{DynamicResource EditableTextBoxStyle}"
                                  TextWrapping="Wrap" MinHeight="60" Margin="0,0,0,12" AcceptsReturn="True"/>
                         
-                        <!-- 舌诊 (望) + 脉诊 (切) -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="16"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="舌诊 (望)" FontSize="12" Margin="0,0,0,4"
-                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                <TextBox TabIndex="9"
-                                         Text="{Binding Consultation.TongueDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{DynamicResource EditableTextBoxStyle}"
-                                         MinHeight="36"/>
-                                <ComboBox Margin="0,4,0,0"
-                                          SelectedItem="{Binding Consultation.TongueDiagnosis, Mode=TwoWay}"
-                                          ItemsSource="{StaticResource TongueDiagnosisOptions}"
-                                          Style="{DynamicResource FilterComboBox}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="脉诊 (切)" FontSize="12" Margin="0,0,0,4"
-                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                <TextBox TabIndex="10"
-                                         Text="{Binding Consultation.PulseDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{DynamicResource EditableTextBoxStyle}"
-                                         MinHeight="36"/>
-                                <ComboBox Margin="0,4,0,0"
-                                          SelectedItem="{Binding Consultation.PulseDiagnosis, Mode=TwoWay}"
-                                          ItemsSource="{StaticResource PulseDiagnosisOptions}"
-                                          Style="{DynamicResource FilterComboBox}"/>
-                            </StackPanel>
-                        </Grid>
+                        <!-- 舌诊 (望) + 脉诊 (切) - 共享组件 -->
+                        <diagnosis:TonguePulseDiagnosisControl
+                            TongueDiagnosis="{Binding Consultation.TongueDiagnosis, Mode=TwoWay}"
+                            PulseDiagnosis="{Binding Consultation.PulseDiagnosis, Mode=TwoWay}"
+                            TongueTabIndex="9"
+                            PulseTabIndex="10"/>
                     </StackPanel>
                 </Border>
 
                 <!-- 中医辨证区 (必填) -->
-                <Border Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12">
+                <Border Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
                                    Foreground="{DynamicResource PrimaryTextBrush}">
@@ -437,7 +211,7 @@
             </StackPanel>
 
             <!-- 处方决策引导 -->
-            <Border Grid.Row="3" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12"
+            <Border Grid.Row="4" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,16"
                     Background="{DynamicResource SecondaryRegionBrush}">
                 <StackPanel>
                     <TextBlock Text="处方决策" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
@@ -455,7 +229,7 @@
             </Border>
 
             <!-- 处方区 -->
-            <Border Grid.Row="4" Style="{StaticResource CompactSectionBorderStyle}"
+            <Border Grid.Row="5" Style="{StaticResource CompactSectionBorderStyle}"
                     IsEnabled="{Binding IsPrescriptionEnabled}">
                 <Grid>
                     <Grid.RowDefinitions>

@@ -9,14 +9,12 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Desktop.MedicalCase.Controls;
 
 /// <summary>
-/// 医案编辑控件 - 编辑模式
+/// 医案编辑控件 - 编辑模式（已统一为Compact模式）
 /// OpenSpec: refactor-medicalcase-workspace V2
 /// OpenSpec: refactor-medicalcase-management
 /// OpenSpec: unify-herb-controls-to-herbs-module
 ///
-/// 支持两种显示模式:
-/// - Full (默认): MasterDetail场景，显示患者信息、诊断、处方、备注、系统信息
-/// - Compact: Workspace场景，仅显示诊断+处方+工具栏
+/// Compact模式: Workspace场景，显示患者信息+诊断+处方+工具栏
 /// </summary>
 public partial class MedicalCaseEditControl : UserControl
 {
@@ -25,26 +23,7 @@ public partial class MedicalCaseEditControl : UserControl
         InitializeComponent();
     }
 
-    #region 显示模式
-
-    /// <summary>
-    /// 是否为紧凑模式 (Workspace场景)
-    /// True: 显示简化布局 (工具栏+诊断+处方)
-    /// False: 显示完整布局 (患者信息+诊断+处方+备注+系统信息)
-    /// </summary>
-    public static readonly DependencyProperty IsCompactModeProperty =
-        DependencyProperty.Register(nameof(IsCompactMode), typeof(bool), typeof(MedicalCaseEditControl),
-            new PropertyMetadata(false));
-
-    public bool IsCompactMode
-    {
-        get => (bool)GetValue(IsCompactModeProperty);
-        set => SetValue(IsCompactModeProperty, value);
-    }
-
-    #endregion
-
-    #region 患者信息（只读）- Full模式
+    #region 患者信息（只读）
 
     public static readonly DependencyProperty PatientNameProperty =
         DependencyProperty.Register(nameof(PatientName), typeof(string), typeof(MedicalCaseEditControl));
@@ -152,7 +131,7 @@ public partial class MedicalCaseEditControl : UserControl
     #region 处方区控制
 
     /// <summary>
-    /// 是否启用处方区（Compact模式）
+    /// 是否启用处方区
     /// 诊断区不受此属性影响，始终可编辑
     /// </summary>
     public static readonly DependencyProperty IsPrescriptionEnabledProperty =
@@ -166,7 +145,7 @@ public partial class MedicalCaseEditControl : UserControl
     }
 
     /// <summary>
-    /// 是否需要处方（Compact模式处方决策）
+    /// 是否需要处方（处方决策）
     /// true=需要处方, false=不需要处方
     /// </summary>
     public static readonly DependencyProperty NeedsPrescriptionProperty =
@@ -181,7 +160,7 @@ public partial class MedicalCaseEditControl : UserControl
 
     #endregion
 
-    #region 工具栏命令 - V2 Compact模式
+    #region 工具栏命令
 
     /// <summary>
     /// 导入经验方命令
@@ -221,7 +200,7 @@ public partial class MedicalCaseEditControl : UserControl
 
     #endregion
 
-    #region 系统信息（只读）- Full模式
+    #region 系统信息（只读）
 
     public static readonly DependencyProperty CreatedAtProperty =
         DependencyProperty.Register(nameof(CreatedAt), typeof(DateTime), typeof(MedicalCaseEditControl));
@@ -243,7 +222,7 @@ public partial class MedicalCaseEditControl : UserControl
 
     #endregion
 
-    #region 备注（可编辑）- Full模式
+    #region 备注（可编辑）
 
     /// <summary>
     /// 备注 - 医案聚合根备注字段
