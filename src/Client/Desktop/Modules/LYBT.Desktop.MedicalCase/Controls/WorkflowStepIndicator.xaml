@@ -91,7 +91,7 @@
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Background" Value="{DynamicResource SecondaryBorderBrush}"/>
-                                <Style.Trigger>
+                                <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsCompleted}" Value="True">
                                         <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
                                     </DataTrigger>

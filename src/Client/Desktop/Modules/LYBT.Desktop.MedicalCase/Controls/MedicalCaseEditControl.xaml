@@ -107,7 +107,6 @@
             Workspace布局 (V2布局): 工具条 + 诊断区3行 + 处方区
         -->
         <Grid>
-        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>  <!-- 流程步骤指示器 -->
                 <RowDefinition Height="Auto"/>  <!-- 患者信息 -->
