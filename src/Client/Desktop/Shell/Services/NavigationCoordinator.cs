@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.Windows;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -25,6 +26,12 @@ public class NavigationCoordinator : INavigationCoordinator
     // OpenSpec: unify-navigation-architecture (ADR-7) - 导航历史管理
     private const int MaxHistorySize = 20;
     private readonly List<string> _navigationHistory = new();
+
+    // 导航架构改进方案 v1.0 — 前进栈
+    private readonly Stack<string> _forwardStack = new();
+
+    // 导航架构改进方案 v1.0 — 面包屑
+    private readonly List<BreadcrumbItem> _breadcrumbs = new();
 
     public NavigationCoordinator(
         IRegionManager regionManager,
@@ -104,6 +111,13 @@ public class NavigationCoordinator : INavigationCoordinator
                         _navigationHistory.RemoveAt(0);
                     }
                     _navigationHistory.Add(viewName);
+
+                    // 导航架构改进方案 v1.0 — 清空前进栈（新导航发生时前进失效）
+                    _forwardStack.Clear();
+
+                    // 导航架构改进方案 v1.0 — 更新面包屑
+                    UpdateBreadcrumbs(fromView, viewName);
+
                     NavigationChanged?.Invoke(this, new NavigationChangedEventArgs(fromView, viewName, parameters));
                     _logger.LogDebug("导航成功: {FromView} -> {ToView}", fromView, viewName);
                 }
@@ -120,6 +134,36 @@ public class NavigationCoordinator : INavigationCoordinator
             _logger.LogError(ex, "导航到 {ViewName} 时发生异常", viewName);
             _userNotificationService?.ShowErrorAsync($"导航失败：{ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// 更新面包屑列表 — 导航架构改进方案 v1.0
+    /// </summary>
+    private void UpdateBreadcrumbs(string? fromView, string toView)
+    {
+        // 生成显示名称（去掉 "View" 后缀）
+        var toTitle = toView?.Replace("View", "") ?? toView;
+
+        if (fromView == null)
+        {
+            // 首次导航
+            _breadcrumbs.Clear();
+        }
+
+        // 标记现有项为非当前
+        for (var i = 0; i < _breadcrumbs.Count; i++)
+        {
+            if (_breadcrumbs[i].IsCurrent)
+            {
+                // C# records 是不可变的，用新实例替换
+                _breadcrumbs[i] = new BreadcrumbItem(_breadcrumbs[i].Title, _breadcrumbs[i].ViewName, false);
+                break;
+            }
+        }
+
+        // 添加新面包屑项
+        _breadcrumbs.Add(new BreadcrumbItem(toTitle ?? toView ?? "Unknown", toView ?? "Unknown", true));
+        _logger.LogDebug("面包屑更新: {Count} 项, 当前: {Current}", _breadcrumbs.Count, toTitle);
     }
 
     /// <summary>
@@ -181,6 +225,13 @@ public class NavigationCoordinator : INavigationCoordinator
             var region = _regionManager.Regions[RegionNames.ContentRegion];
             if (region?.NavigationService?.Journal?.CanGoBack == true)
             {
+                // 导航架构改进方案 v1.0 — 后退前将当前视图推入前进栈
+                var currentView = CurrentView;
+                if (currentView != null)
+                {
+                    _forwardStack.Push(currentView);
+                }
+
                 region.NavigationService.Journal.GoBack();
                 _logger.LogDebug("导航回退成功");
             }
@@ -198,7 +249,60 @@ public class NavigationCoordinator : INavigationCoordinator
 
     #endregion
 
-    #region 历史导航 (从ViewNavigationService整合)
+    #region 前进导航 (导航架构改进方案 v1.0)
+
+    /// <summary>
+    /// 是否可以前进
+    /// </summary>
+    public bool CanNavigateForward => _forwardStack.Count > 0;
+
+    /// <summary>
+    /// 导航前进 — 从前进栈取出并导航
+    /// </summary>
+    public void NavigateForward()
+    {
+        try
+        {
+            if (_forwardStack.Count == 0)
+            {
+                _logger.LogWarning("前进栈为空，无法前进");
+                return;
+            }
+
+            var viewName = _forwardStack.Pop();
+            _logger.LogInformation("导航前进到 {ViewName}", viewName);
+            NavigateTo(viewName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "导航前进失败");
+            _userNotificationService?.ShowErrorAsync($"导航前进失败：{ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region 面包屑导航 (导航架构改进方案 v1.0)
+
+    /// <summary>
+    /// 当前面包屑列表
+    /// </summary>
+    public IReadOnlyList<BreadcrumbItem> Breadcrumbs => _breadcrumbs.AsReadOnly();
+
+    /// <summary>
+    /// 跳转到指定面包屑层级 — 回退到该层级后清除后续面包屑
+    /// </summary>
+    public void NavigateToBreadcrumb(BreadcrumbItem item)
+    {
+        if (item.IsCurrent) return;
+
+        _logger.LogInformation("面包屑导航: 跳转到 {Title} ({ViewName})", item.Title, item.ViewName);
+        NavigateTo(item.ViewName);
+    }
+
+    #endregion
+
+    #region 事件订阅 (从NavigationManager整合)
 
     /// <summary>
     /// 导航历史记录

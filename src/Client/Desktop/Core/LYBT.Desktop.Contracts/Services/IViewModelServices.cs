@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
 using LYBT.Desktop.Contracts.Roles;
+using LYBT.Desktop.Contracts.Services;
 
 namespace LYBT.Desktop.Contracts.Services
 {
@@ -45,6 +46,11 @@ namespace LYBT.Desktop.Contracts.Services
         /// 通用对话框服务
         /// </summary>
         ICommonDialogService CommonDialogService { get; }
+
+        /// <summary>
+        /// Toast消息服务 (Phase 2.2)
+        /// </summary>
+        IToastService ToastService { get; }
 
         /// <summary>
         /// 角色注册表

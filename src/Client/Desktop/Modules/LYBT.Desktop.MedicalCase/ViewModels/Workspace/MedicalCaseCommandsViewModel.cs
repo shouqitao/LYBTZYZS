@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Extensions;
+using LYBT.Desktop.Infrastructure.Services.Toast;
 using LYBT.Desktop.Infrastructure.ViewModels.Composition;
 using LYBT.Desktop.MedicalCase.Extensions;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -144,19 +145,19 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
             if (result.Success)
             {
-                _toastService.ShowSuccess("医案已保存", 5000);
+                _toastService.Show("医案已保存", ToastType.Success, 5000);
                 Logger.LogInformation("医案保存成功, MedicalCaseId={MedicalCaseId}", _context.MedicalCaseId);
             }
             else
             {
-                _toastService.ShowError($"保存失败：{result.Error ?? "未知错误"}", 4000);
+                _toastService.Show($"保存失败：{result.Error ?? "未知错误"}", ToastType.Error, 4000);
                 Logger.LogWarning("医案保存失败, Error={Error}", result.Error);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "保存医案数据失败");
-            _toastService.ShowError($"保存失败：{ex.Message}", 4000);
+            _toastService.Show($"保存失败：{ex.Message}", ToastType.Error, 4000);
         }
         finally
         {
@@ -179,19 +180,19 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             if (result.Success)
             {
                 Host.NotifyStateChanged();
-                _toastService.ShowInfo("医案已暂存，可稍后继续", 5000);
+                _toastService.Show("医案已暂存，可稍后继续", ToastType.Info, 5000);
                 Logger.LogInformation("医案已暂存, MedicalCaseId={MedicalCaseId}", _context.MedicalCaseId);
             }
             else
             {
-                _toastService.ShowError($"暂存失败：{result.Error ?? "未知错误"}", 4000);
+                _toastService.Show($"暂存失败：{result.Error ?? "未知错误"}", ToastType.Error, 4000);
                 Logger.LogWarning("医案暂存失败, Error={Error}", result.Error);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "暂存医案失败");
-            _toastService.ShowError($"暂存失败：{ex.Message}", 4000);
+            _toastService.Show($"暂存失败：{ex.Message}", ToastType.Error, 4000);
         }
         finally
         {
@@ -217,19 +218,19 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             if (result.Success)
             {
                 Host.NotifyStateChanged();
-                _toastService.ShowSuccess("看诊完成，医案已归档", 5000);
+                _toastService.Show("看诊完成，医案已归档", ToastType.Success, 5000);
                 Logger.LogInformation("医案完成, MedicalCaseId={MedicalCaseId}", _context.MedicalCaseId);
             }
             else
             {
-                _toastService.ShowError($"完成失败：{result.Error ?? "未知错误"}", 4000);
+                _toastService.Show($"完成失败：{result.Error ?? "未知错误"}", ToastType.Error, 4000);
                 Logger.LogWarning("医案完成失败, Error={Error}", result.Error);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "完成医案失败");
-            _toastService.ShowError($"完成失败：{ex.Message}", 4000);
+            _toastService.Show($"完成失败：{ex.Message}", ToastType.Error, 4000);
         }
         finally
         {
@@ -257,14 +258,14 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
             if (!result.IsSuccess)
             {
-                _toastService.ShowError($"打印失败：{result.ErrorMessage ?? "未知错误"}", 4000);
+                _toastService.Show($"打印失败：{result.ErrorMessage ?? "未知错误"}", ToastType.Error, 4000);
                 Logger.LogWarning("打印失败, Error={Error}", result.ErrorMessage);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "打印处方笺失败");
-            _toastService.ShowError($"打印失败：{ex.Message}", 4000);
+            _toastService.Show($"打印失败：{ex.Message}", ToastType.Error, 4000);
         }
         finally
         {
@@ -295,19 +296,19 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
             if (!result.IsSuccess)
             {
-                _toastService.ShowError($"导出失败：{result.ErrorMessage ?? "未知错误"}", 4000);
+                _toastService.Show($"导出失败：{result.ErrorMessage ?? "未知错误"}", ToastType.Error, 4000);
                 Logger.LogWarning("PDF导出失败, Error={Error}", result.ErrorMessage);
             }
             else
             {
-                _toastService.ShowSuccess("PDF导出成功，文件已保存", 5000);
+                _toastService.Show("PDF导出成功，文件已保存", ToastType.Success, 5000);
                 Logger.LogInformation("PDF导出成功, MedicalCaseId={MedicalCaseId}", _context.MedicalCaseId);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "导出PDF失败");
-            _toastService.ShowError($"导出失败：{ex.Message}", 4000);
+            _toastService.Show($"导出失败：{ex.Message}", ToastType.Error, 4000);
         }
         finally
         {
@@ -315,9 +316,13 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
+    /// <summary>
+    /// P1-2 FIX: Request transition to edit mode by triggering the state machine.
+    /// This properly transitions WorkspaceState.EditState from ReadOnly to Editing.
+    /// </summary>
     private void ExecuteEnterEditMode()
     {
-        Host.NotifyStateChanged();
+        Host.RequestEnterEditMode();
     }
 
     #endregion
@@ -383,7 +388,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
         prescription.Items.Clear();
         Logger.LogInformation("已清空处方药材，共{Count}项", validItemCount);
-        _toastService.ShowWarning($"已清空所有药材（共{validItemCount}味）", 4000);
+        _toastService.Show($"已清空所有药材（共{validItemCount}味）", ToastType.Warning, 4000);
     }
 
     private async Task HandleFormulaImportResultAsync(IDialogParameters parameters)
@@ -397,7 +402,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
             if (!parameters.TryGetValue<List<FormulaHerbItemDto>>("SelectedHerbs", out var herbs) || herbs?.Any() != true)
             {
-                _toastService.ShowError("验方无药材信息", 4000);
+                _toastService.Show("验方无药材信息", ToastType.Error, 4000);
                 return;
             }
 
@@ -412,7 +417,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             var herbItems = FilterDisabledHerbs(formula.ToPrescriptionItemDtos(herbs, herbPrices), "验方导入");
             if (!herbItems.Any())
             {
-                _toastService.ShowError("验方无有效药材", 4000);
+                _toastService.Show("验方无有效药材", ToastType.Error, 4000);
                 return;
             }
 
@@ -428,13 +433,13 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                     prescription.ReferencedFormulas = $"{prescription.ReferencedFormulas}, {formula.Name}";
             }
 
-            _toastService.ShowSuccess($"已导入验方「{formula.Name}」，共{herbItems.Count}味药材", 5000);
+            _toastService.Show($"已导入验方「{formula.Name}」，共{herbItems.Count}味药材", ToastType.Success, 5000);
             Logger.LogInformation("验方导入成功, FormulaName={FormulaName}, HerbCount={Count}", formula.Name, herbItems.Count);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "处理验方导入结果异常");
-            _toastService.ShowError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入", ex), 4000);
+            _toastService.Show(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入", ex), ToastType.Error, 4000);
         }
         finally
         {
@@ -450,7 +455,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
             if (!parameters.TryGetValue<List<PrescriptionItemDto>>("SelectedItems", out var items) || items?.Any() != true)
             {
-                _toastService.ShowError("历史处方无药材记录", 4000);
+                _toastService.Show("历史处方无药材记录", ToastType.Error, 4000);
                 return;
             }
 
@@ -467,7 +472,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             var herbItems = FilterDisabledHerbs(items.ToPrescriptionItemDtos(herbPrices), "历史复制");
             if (!herbItems.Any())
             {
-                _toastService.ShowError("历史处方无有效药材", 4000);
+                _toastService.Show("历史处方无有效药材", ToastType.Error, 4000);
                 return;
             }
 
@@ -495,13 +500,13 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                 }
             }
 
-            _toastService.ShowSuccess($"已复制历史处方，共{herbItems.Count}味药材", 5000);
+            _toastService.Show($"已复制历史处方，共{herbItems.Count}味药材", ToastType.Success, 5000);
             Logger.LogInformation("历史处方复制成功, HerbCount={Count}", herbItems.Count);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "处理历史复制结果异常");
-            _toastService.ShowError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("复制", ex), 4000);
+            _toastService.Show(ClientErrorMessageMapper.GetSafeOperationFailureMessage("复制", ex), ToastType.Error, 4000);
         }
         finally
         {

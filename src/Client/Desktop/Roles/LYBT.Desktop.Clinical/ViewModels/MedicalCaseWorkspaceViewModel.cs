@@ -107,6 +107,19 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     ICommonDialogService? IWorkspaceHost.CommonDialogService => CommonDialogService;
     void IWorkspaceHost.NotifyStateChanged() => UpdateState();
 
+    /// <summary>
+    /// P1-2 FIX: Request transition to edit mode by firing the state machine's EnterEdit event.
+    /// This properly transitions WorkspaceState.EditState from ReadOnly to Editing.
+    /// </summary>
+    void IWorkspaceHost.RequestEnterEditMode()
+    {
+        var result = _editStateMachine.Fire(WorkspaceEditEvent.EnterEdit, context: "User clicked EnterEditMode");
+        if (!result)
+        {
+            Logger.LogWarning("EnterEditMode transition failed - state machine guard prevented transition");
+        }
+    }
+
     #endregion
 
     #region Patient Display

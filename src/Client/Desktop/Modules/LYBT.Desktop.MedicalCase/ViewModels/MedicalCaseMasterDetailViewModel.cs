@@ -284,6 +284,15 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         {
             return await _parent.MasterDetailServices.Dialog.ShowConfirmAsync(title, message);
         }
+
+        /// <summary>
+        /// P1-2 FIX: RequestEnterEditMode is not applicable to MasterDetailWorkspaceHost
+        /// (no edit mode state machine in this context)
+        /// </summary>
+        public void RequestEnterEditMode()
+        {
+            // No-op: MasterDetail doesn't have an edit mode state machine
+        }
     }
 
     /// <summary>

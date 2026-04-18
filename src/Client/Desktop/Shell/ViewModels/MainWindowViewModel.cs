@@ -10,6 +10,9 @@ using LYBT.Desktop.Contracts.Events;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Navigation;
+using LYBT.Desktop.Infrastructure.Navigation.Controls;
+using LYBT.Desktop.Infrastructure.Services.Toast;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
@@ -32,6 +35,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     private readonly IApiHealthMonitor _apiHealthMonitor;
     private readonly INavigationCoordinator _navigationCoordinator;
+    private readonly IEnhancedNavigationService _enhancedNavigationService;
     private readonly IConnectionModeProvider _connectionModeProvider;
     private readonly MenuManager _menuManager;
     private readonly IActiveConsultationService _activeConsultationService;
@@ -55,6 +59,11 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// 用户通知服务
     /// </summary>
     protected IUserNotificationService? UserNotificationService { get; }
+
+    /// <summary>
+    /// Toast消息服务 (Phase 2.2)
+    /// </summary>
+    protected IToastService? ToastService { get; }
 
     #endregion
 
@@ -160,6 +169,22 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// <summary>SYNC-D03: 当前连接模式显示文本</summary>
     public string ConnectionModeText => _connectionModeProvider.IsLocal ? "本地模式" : "远程模式";
 
+    /// <summary>Phase 3: NavigationHistoryPanel ViewModel</summary>
+    [ObservableProperty]
+    private NavigationHistoryPanelViewModel? _navigationHistoryPanelViewModel;
+
+    /// <summary>Phase 3: NavigationSuggestionsPanel ViewModel</summary>
+    [ObservableProperty]
+    private NavigationSuggestionsPanelViewModel? _navigationSuggestionsPanelViewModel;
+
+    /// <summary>Phase 3: 是否显示导航历史面板</summary>
+    [ObservableProperty]
+    private bool _showNavigationHistory;
+
+    /// <summary>Phase 3: 是否显示导航建议面板</summary>
+    [ObservableProperty]
+    private bool _showNavigationSuggestions;
+
     #endregion
 
     #region 构造函数
@@ -173,6 +198,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IUserNotificationService userNotificationService,
         IApiHealthMonitor apiHealthMonitor,
         INavigationCoordinator navigationCoordinator,
+        IEnhancedNavigationService enhancedNavigationService,
         IConnectionModeProvider connectionModeProvider,
         MenuManager menuManager,
         IActiveConsultationService activeConsultationService,
@@ -185,10 +211,12 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         RegionManager = services.RegionManager;
         CommonDialogService = services.CommonDialogService;
+        ToastService = services.ToastService;
         UserNotificationService = userNotificationService;
 
         _apiHealthMonitor = apiHealthMonitor ?? throw new ArgumentNullException(nameof(apiHealthMonitor));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
+        _enhancedNavigationService = enhancedNavigationService ?? throw new ArgumentNullException(nameof(enhancedNavigationService));
         _connectionModeProvider = connectionModeProvider ?? throw new ArgumentNullException(nameof(connectionModeProvider));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
@@ -199,6 +227,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
 
         InitializeViewModel();
+        InitializeNavigationPanels();
     }
 
     #endregion
@@ -279,6 +308,50 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// 导航到系统设置命令 - OpenSpec: unify-navigation-architecture (ADR-5修正: Sidebar全局入口)
     /// </summary>
     public ICommand NavigateToSystemSettingsCommand => _menuManager.NavigateToSystemSettingsCommand;
+
+    /// <summary>
+    /// 导航后退命令 — 导航架构改进方案 v1.0
+    /// </summary>
+    [ObservableProperty]
+    private bool _canNavigateBack;
+
+    /// <summary>
+    /// 导航前进命令 — 导航架构改进方案 v1.0
+    /// </summary>
+    [ObservableProperty]
+    private bool _canNavigateForward;
+
+    /// <summary>
+    /// 当前面包屑列表 — 导航架构改进方案 v1.0
+    /// </summary>
+    [ObservableProperty]
+    private IReadOnlyList<LYBT.Desktop.Contracts.Models.BreadcrumbItem> _breadcrumbs
+        = Array.Empty<LYBT.Desktop.Contracts.Models.BreadcrumbItem>();
+
+    /// <summary>
+    /// 导航后退命令属性
+    /// </summary>
+    public ICommand NavigateBackCommand => _menuManager.NavigateBackCommand;
+
+    /// <summary>
+    /// 导航前进命令属性
+    /// </summary>
+    public ICommand NavigateForwardCommand => _menuManager.NavigateForwardCommand;
+
+    /// <summary>
+    /// 面包屑跳转命令属性
+    /// </summary>
+    public ICommand NavigateToBreadcrumbCommand => _menuManager.NavigateToBreadcrumbCommand;
+
+    /// <summary>
+    /// 显示导航历史命令 (Ctrl+Shift+H) — Phase 2-3
+    /// </summary>
+    public ICommand ShowHistoryCommand => _menuManager.ShowHistoryCommand;
+
+    /// <summary>
+    /// 循环切换区域焦点命令 (F6) — Phase 2-3
+    /// </summary>
+    public ICommand CycleRegionsCommand => _menuManager.CycleRegionsCommand;
 
     // SwitchModeCommand 由 [RelayCommand] 在 RelayCommand region 自动生成
 
@@ -417,6 +490,47 @@ public partial class MainWindowViewModel : CoreViewModelBase
     }
 
     /// <summary>
+    /// Phase 3: 初始化导航面板
+    /// </summary>
+    private void InitializeNavigationPanels()
+    {
+        try
+        {
+            // Create NavigationHistoryPanel ViewModel
+            NavigationHistoryPanelViewModel = new NavigationHistoryPanelViewModel(_enhancedNavigationService);
+
+            // Create NavigationSuggestionsPanel ViewModel
+            NavigationSuggestionsPanelViewModel = new NavigationSuggestionsPanelViewModel(_enhancedNavigationService);
+
+            Logger.LogDebug("导航面板初始化完成");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "初始化导航面板失败");
+        }
+    }
+
+    /// <summary>
+    /// Phase 3: 切换导航历史面板显示
+    /// </summary>
+    [RelayCommand]
+    private void ToggleNavigationHistory()
+    {
+        ShowNavigationHistory = !ShowNavigationHistory;
+        Logger.LogDebug("导航历史面板显示状态: {IsVisible}", ShowNavigationHistory);
+    }
+
+    /// <summary>
+    /// Phase 3: 切换导航建议面板显示
+    /// </summary>
+    [RelayCommand]
+    private void ToggleNavigationSuggestions()
+    {
+        ShowNavigationSuggestions = !ShowNavigationSuggestions;
+        Logger.LogDebug("导航建议面板显示状态: {IsVisible}", ShowNavigationSuggestions);
+    }
+
+    /// <summary>
     /// 初始化时钟计时器
     /// </summary>
     private void InitializeClock()
@@ -450,6 +564,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
         Events.Subscribe<SyncEvents.StatusChangedEvent, SyncStatusPayload>(OnSyncStatusChanged);
         _connectionModeProvider.ModeChanged += OnConnectionModeChanged;
         _navigationCoordinator.SubscribeToRegionCollection();
+
+        // 导航架构改进方案 v1.0 — 订阅导航变更事件，更新面包屑和按钮状态
+        _navigationCoordinator.NavigationChanged += OnNavigationStateChanged;
     }
 
     #endregion
@@ -511,6 +628,26 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
             Logger.LogInformation("模式切换 UI 已更新: {Previous} -> {Current}",
                 e.PreviousMode, e.CurrentMode);
+        });
+    }
+
+    /// <summary>
+    /// 导航架构改进方案 v1.0 — 导航状态变更事件处理
+    /// 更新面包屑列表和后退/前进按钮状态
+    /// </summary>
+    private void OnNavigationStateChanged(object? sender, NavigationChangedEventArgs e)
+    {
+        Services.UiThreadDispatcher.InvokeAsync(() =>
+        {
+            Breadcrumbs = _navigationCoordinator.Breadcrumbs;
+            CanNavigateBack = _navigationCoordinator.CanNavigateBack;
+            CanNavigateForward = _navigationCoordinator.CanNavigateForward;
+
+            // 刷新命令可执行状态
+            _menuManager.RefreshNavigationCanExecute();
+
+            Logger.LogDebug("导航状态已更新: 面包屑{Count}项, 可后退={Back}, 可前进={Forward}",
+                Breadcrumbs.Count, CanNavigateBack, CanNavigateForward);
         });
     }
 
@@ -744,28 +881,30 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     /// <summary>
     /// 显示成功消息
+    /// Phase 2.2: 使用ToastService替代CommonDialogService（非阻塞通知）
     /// </summary>
     protected virtual async Task ShowSuccessMessageAsync(string message)
     {
-        if (CommonDialogService != null)
+        if (ToastService != null)
         {
-            await CommonDialogService.ShowInfoAsync(message, "成功");
+            await Task.Run(() => ToastService.ShowSuccess(message));
             return;
         }
-        Logger.LogWarning("CommonDialogService不可用，成功消息未显示: {Message}", message);
+        Logger.LogWarning("ToastService不可用，成功消息未显示: {Message}", message);
     }
 
     /// <summary>
     /// 显示错误消息
+    /// Phase 2.2: 使用ToastService替代CommonDialogService（非阻塞通知）
     /// </summary>
     protected virtual async Task ShowErrorMessageAsync(string message)
     {
-        if (CommonDialogService != null)
+        if (ToastService != null)
         {
-            await CommonDialogService.ShowErrorAsync(message, "错误");
+            await Task.Run(() => ToastService.ShowError(message));
             return;
         }
-        Logger.LogError("CommonDialogService不可用，错误消息未显示: {Message}", message);
+        Logger.LogError("ToastService不可用，错误消息未显示: {Message}", message);
     }
 
     /// <summary>

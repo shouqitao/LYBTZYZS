@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+    xmlns:nav="clr-namespace:LYBT.Desktop.Infrastructure.Navigation.Controls;assembly=LYBT.Desktop.Infrastructure"
     xmlns:prism="http://prismlibrary.com/"
 
 
@@ -37,6 +38,26 @@
             Key="M"
             Command="{Binding ToggleDrawerCommand}"
             Modifiers="Ctrl" />
+        <!-- 导航架构改进方案 v1.0 — 后退/前进快捷键 -->
+        <KeyBinding
+            Key="Left"
+            Command="{Binding NavigateBackCommand}"
+            Modifiers="Alt" />
+        <KeyBinding
+            Key="Right"
+            Command="{Binding NavigateForwardCommand}"
+            Modifiers="Alt" />
+        <KeyBinding
+            Key="Home"
+            Command="{Binding NavigateToHomeCommand}"
+            Modifiers="Alt" />
+        <!-- Phase 2-3: 显示导航历史面板 -->
+        <KeyBinding
+            Key="H"
+            Command="{Binding ShowHistoryCommand}"
+            Modifiers="Ctrl+Shift" />
+        <!-- Phase 2-3: 循环切换区域焦点 -->
+        <KeyBinding Key="F6" Command="{Binding CycleRegionsCommand}" />
     </Window.InputBindings>
 
     <Grid>
@@ -99,7 +120,23 @@
                 Grid.Row="0"
                 Grid.Column="1"
                 Background="{DynamicResource SecondaryRegionBrush}">
+                <Grid.RowDefinitions>
+                    <!-- 导航架构改进方案 v1.0 — 面包屑导航栏 -->
+                    <RowDefinition Height="Auto" />
+                    <!-- 内容区域 -->
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 面包屑导航栏 -->
+                <controls:BreadcrumbControl
+                    Grid.Row="0"
+                    Breadcrumbs="{Binding Breadcrumbs}"
+                    NavigateBackCommand="{Binding NavigateBackCommand}"
+                    NavigateForwardCommand="{Binding NavigateForwardCommand}"
+                    NavigateToBreadcrumbCommand="{Binding NavigateToBreadcrumbCommand}" />
+
                 <Border
+                    Grid.Row="1"
                     Margin="12"
                     Background="White"
                     CornerRadius="8">
@@ -126,5 +163,115 @@
                 LoadingMessage="正在同步..."
                 StatusMessage="{Binding SyncStatusMessage}" />
         </Grid>
+
+        <!-- Phase 3: NavigationHistoryPanel Overlay -->
+        <Border
+            Grid.Row="0"
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Background="White"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Margin="0,12,12,0"
+            Width="300"
+            MaxHeight="400"
+            Panel.ZIndex="100"
+            Visibility="{Binding ShowNavigationHistory, Converter={x:Static converters:Cvt.BoolToVis}}">
+            <Border.Effect>
+                <DropShadowEffect
+                    BlurRadius="12"
+                    ShadowDepth="0"
+                    Opacity="0.25"
+                    Color="Black"/>
+            </Border.Effect>
+            <Grid Margin="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="导航历史"
+                               FontWeight="SemiBold"
+                               FontSize="14"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <Button Grid.Column="1"
+                            Content="✕"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            Command="{Binding ToggleNavigationHistoryCommand}"
+                            Padding="8"/>
+                </Grid>
+
+                <!-- Panel Content -->
+                <nav:NavigationHistoryPanel
+                    Grid.Row="1"
+                    DataContext="{Binding NavigationHistoryPanelViewModel}"/>
+            </Grid>
+        </Border>
+
+        <!-- Phase 3: NavigationSuggestionsPanel Overlay -->
+        <Border
+            Grid.Row="0"
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Background="White"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Margin="0,0,12,12"
+            Width="320"
+            MaxHeight="300"
+            Panel.ZIndex="100"
+            Visibility="{Binding ShowNavigationSuggestions, Converter={x:Static converters:Cvt.BoolToVis}}">
+            <Border.Effect>
+                <DropShadowEffect
+                    BlurRadius="12"
+                    ShadowDepth="0"
+                    Opacity="0.25"
+                    Color="Black"/>
+            </Border.Effect>
+            <Grid Margin="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="智能建议"
+                               FontWeight="SemiBold"
+                               FontSize="14"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <Button Grid.Column="1"
+                            Content="✕"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            Command="{Binding ToggleNavigationSuggestionsCommand}"
+                            Padding="8"/>
+                </Grid>
+
+                <!-- Panel Content -->
+                <nav:NavigationSuggestionsPanel
+                    Grid.Row="1"
+                    DataContext="{Binding NavigationSuggestionsPanelViewModel}"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

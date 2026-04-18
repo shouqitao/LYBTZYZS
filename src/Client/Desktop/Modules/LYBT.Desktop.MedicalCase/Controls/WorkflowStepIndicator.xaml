@@ -47,11 +47,6 @@
                 <EventTrigger RoutedEvent="Loaded">
                     <BeginStoryboard Storyboard="{StaticResource StepActivateAnimation}"/>
                 </EventTrigger>
-                <Trigger Property="IsActive" Value="True">
-                    <Trigger.EnterActions>
-                        <BeginStoryboard Storyboard="{StaticResource StepActivateAnimation}"/>
-                    </Trigger.EnterActions>
-                </Trigger>
             </Style.Triggers>
         </Style>
 

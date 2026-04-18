@@ -1,11 +1,13 @@
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Contracts.Services;
-
 /// <summary>
 /// 导航协调器接口 - 统一导航入口
 /// OpenSpec: unify-navigation-architecture (ADR-3 + ADR-7)
 /// 整合NavigationManager、ViewNavigationService、RoleNavigationService功能
+/// 
+/// 导航架构改进方案 v1.0 — 增加面包屑、前进导航、状态快照
 /// </summary>
 public interface INavigationCoordinator
 {
@@ -43,6 +45,34 @@ public interface INavigationCoordinator
     /// 当前视图名称
     /// </summary>
     string? CurrentView { get; }
+
+    #endregion
+
+    #region 前进导航 (导航架构改进方案 v1.0)
+
+    /// <summary>
+    /// 导航前进
+    /// </summary>
+    void NavigateForward();
+
+    /// <summary>
+    /// 是否可以前进
+    /// </summary>
+    bool CanNavigateForward { get; }
+
+    #endregion
+
+    #region 面包屑导航 (导航架构改进方案 v1.0)
+
+    /// <summary>
+    /// 当前面包屑列表
+    /// </summary>
+    IReadOnlyList<BreadcrumbItem> Breadcrumbs { get; }
+
+    /// <summary>
+    /// 跳转到指定面包屑层级
+    /// </summary>
+    void NavigateToBreadcrumb(BreadcrumbItem item);
 
     #endregion
 

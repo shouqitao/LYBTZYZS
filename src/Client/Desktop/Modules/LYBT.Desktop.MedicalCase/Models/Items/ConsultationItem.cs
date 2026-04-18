@@ -1,3 +1,5 @@
+using System.Collections;
+using System.ComponentModel;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -19,7 +21,7 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 ///
 /// 属性名与ConsultationDetailDto保持一致，确保XAML绑定兼容
 /// </summary>
-public class ConsultationItem : BindableBase, IDataProvider, IValidatable
+public class ConsultationItem : BindableBase, IDataProvider, IValidatable, INotifyDataErrorInfo
 {
     private static readonly ConsultationMapper s_mapper = new();
 
@@ -253,7 +255,14 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable
     public string ValidationMessage
     {
         get => _validationMessage;
-        set => SetProperty(ref _validationMessage, value);
+        set
+        {
+            if (SetProperty(ref _validationMessage, value))
+            {
+                // P1-4 FIX: Fire ErrorsChanged when ValidationMessage changes
+                ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(TcmDiagnosis)));
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -266,6 +275,37 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable
         }
         ValidationMessage = string.Empty;
         return true;
+    }
+
+    #endregion
+
+    #region INotifyDataErrorInfo Implementation (P1-4 FIX)
+
+    /// <summary>P1-4: Fires when validation errors change, notifying WPF validation system</summary>
+    public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+
+    /// <summary>P1-4: Returns true if there are validation errors</summary>
+    bool INotifyDataErrorInfo.HasErrors => !string.IsNullOrWhiteSpace(_validationMessage);
+
+    /// <summary>P1-4: Returns validation errors for WPF validation system</summary>
+    IEnumerable INotifyDataErrorInfo.GetErrors(string? propertyName)
+    {
+        // Return errors for all properties if no specific property requested
+        if (string.IsNullOrEmpty(propertyName))
+        {
+            return !string.IsNullOrWhiteSpace(_validationMessage)
+                ? new[] { _validationMessage }
+                : Enumerable.Empty<string>();
+        }
+
+        // Return errors for specific property
+        // For TcmDiagnosis, return ValidationMessage if it exists
+        if (propertyName == nameof(TcmDiagnosis) && !string.IsNullOrWhiteSpace(_validationMessage))
+        {
+            return new[] { _validationMessage };
+        }
+
+        return Enumerable.Empty<string>();
     }
 
     #endregion

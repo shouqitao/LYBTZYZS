@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Services;
 using System;
 using System.Windows;
 using System.Windows.Controls;

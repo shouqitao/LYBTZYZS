@@ -3,7 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using LYBT.Desktop.Infrastructure.Services.Toast;
+using LYBT.Desktop.Contracts.Services;
 
 namespace LYBT.Desktop.Infrastructure.Controls.Toast;
 

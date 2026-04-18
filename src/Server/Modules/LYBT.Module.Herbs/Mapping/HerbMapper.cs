@@ -47,6 +47,7 @@ public partial class HerbMapper
     /// <remarks>
     /// 忽略审计字段（由Service层自动设置）
     /// 忽略Status字段（通过专用API修改）
+    /// P0-3 FIX: 移除 Properties 的忽略映射，允许保存药性字段
     /// </remarks>
     [MapperIgnoreSource(nameof(HerbInputDto.Id))]
     [MapperIgnoreTarget(nameof(Herb.Id))]

@@ -275,4 +275,18 @@ public partial class MedicalCaseEditControl : UserControl
     }
 
     #endregion
+
+    #region 布局模式
+
+    public static readonly DependencyProperty IsCompactModeProperty =
+        DependencyProperty.Register(nameof(IsCompactMode), typeof(bool), typeof(MedicalCaseEditControl),
+            new PropertyMetadata(false));
+
+    public bool IsCompactMode
+    {
+        get => (bool)GetValue(IsCompactModeProperty);
+        set => SetValue(IsCompactModeProperty, value);
+    }
+
+    #endregion
 }

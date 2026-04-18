@@ -14,6 +14,7 @@ using LYBT.Desktop.Printing.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Prism.Events;
@@ -51,15 +52,6 @@ public class MedicalCaseWorkspaceViewModelTests
         _loggerFactory = Substitute.For<ILoggerFactory>();
         _loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
         _eventAggregator = Substitute.For<IEventAggregator>();
-        // Mock GetEvent to return PubSubEvent mocks that don't require SynchronizationContext
-        var consultationEvent = Substitute.For<CaseEvents.ConsultationCompletedEvent>();
-        consultationEvent.Subscribe(Arg.Any<Action<CaseConsultationCompletedPayload>>(), Arg.Any<ThreadOption>())
-            .Returns(new SubscriptionToken(_ => { }));
-        var prescriptionEvent = Substitute.For<CaseEvents.PrescriptionCompletedEvent>();
-        prescriptionEvent.Subscribe(Arg.Any<Action<CasePrescriptionCompletedPayload>>(), Arg.Any<ThreadOption>())
-            .Returns(new SubscriptionToken(_ => { }));
-        _eventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Returns(consultationEvent);
-        _eventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>().Returns(prescriptionEvent);
         _regionManager = Substitute.For<IRegionManager>();
         _sessionManager = Substitute.For<ISessionManager>();
         _commonDialogService = Substitute.For<ICommonDialogService>();
@@ -75,12 +67,12 @@ public class MedicalCaseWorkspaceViewModelTests
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
         _activeConsultationService = Substitute.For<IActiveConsultationService>();
         _toastService = Substitute.For<IToastService>();
-        
+
         // Mock dependencies for PrescriptionPrintHandler
         _medicalCaseRepository = Substitute.For<IMedicalCaseRepository>();
         _clinicSettingsService = Substitute.For<IClinicSettingsService>();
         _printService = Substitute.For<IPrintService<PrescriptionPrintModel>>();
-        
+
         // Create PrescriptionPrintHandler with mocked dependencies
         _printHandler = new PrescriptionPrintHandler(
             _medicalCaseService,
@@ -89,7 +81,7 @@ public class MedicalCaseWorkspaceViewModelTests
             _clinicSettingsService,
             _loggerFactory,
             _printService);
-        
+
         _dialogService = Substitute.For<IDialogService>();
     }
 
@@ -259,10 +251,9 @@ public class MedicalCaseWorkspaceViewModelTests
 
         // Act
         sut.ConsultationEditor.Consultation.PropertyChanged +=
-            (s, e) => { if (e.PropertyName == "PresentIllness") sut.UpdateState(); };
+            (s, e) => { /* Property change notification */ };
 
-        // Manually trigger the update
-        sut.UpdateState();
+        // Note: State is automatically updated through property change bindings
 
         // Assert
         sut.CurrentStep.Should().BeGreaterThanOrEqualTo(2);
@@ -277,7 +268,7 @@ public class MedicalCaseWorkspaceViewModelTests
         sut.ConsultationEditor.Consultation.TcmDiagnosis = "脾胃虚弱证";
 
         // Act
-        sut.UpdateState();
+        // State is automatically updated through property change bindings
 
         // Assert
         sut.CurrentStep.Should().BeGreaterThanOrEqualTo(3);
@@ -307,7 +298,7 @@ public class MedicalCaseWorkspaceViewModelTests
         sut.ConsultationEditor.Consultation.TcmDiagnosis = "脾胃虚弱证";
 
         // Act
-        sut.UpdateState();
+        // State is automatically updated through property change bindings
 
         // Assert
         sut.Completeness.DiagnosisComplete.Should().BeTrue();
@@ -326,13 +317,13 @@ public class MedicalCaseWorkspaceViewModelTests
         {
             HerbId = Guid.NewGuid(),
             HerbName = "测试药材",
-            Dosage = 10m,
+            Dosage = 10,
             Unit = "g"
         };
         sut.PrescriptionEditor.Prescription.Items.Add(prescriptionItem);
 
         // Act
-        sut.UpdateState();
+        // State is automatically updated through property change bindings
 
         // Assert
         sut.Completeness.PrescriptionContentComplete.Should().BeTrue();
@@ -351,14 +342,14 @@ public class MedicalCaseWorkspaceViewModelTests
         {
             HerbId = Guid.NewGuid(),
             HerbName = "测试药材",
-            Dosage = 10m,
+            Dosage = 10,
             Unit = "g"
         };
         sut.PrescriptionEditor.Prescription.Items.Add(prescriptionItem);
         sut.PrescriptionEditor.Prescription.DosageCount = 7;
 
         // Act
-        sut.UpdateState();
+        // State is automatically updated through property change bindings
 
         // Assert
         sut.Completeness.CanCompleteCase.Should().BeTrue();
@@ -374,7 +365,7 @@ public class MedicalCaseWorkspaceViewModelTests
         sut.IsPrescriptionEnabled = false;
 
         // Act
-        sut.UpdateState();
+        // State is automatically updated through property change bindings
 
         // Assert
         sut.Completeness.CanCompleteCase.Should().BeTrue();
@@ -429,7 +420,7 @@ public class MedicalCaseWorkspaceViewModelTests
         {
             HerbId = Guid.NewGuid(),
             HerbName = "测试药材",
-            Dosage = 10m,
+            Dosage = 10,
             Unit = "g"
         };
         sut.PrescriptionEditor.Prescription.Items.Add(prescriptionItem);

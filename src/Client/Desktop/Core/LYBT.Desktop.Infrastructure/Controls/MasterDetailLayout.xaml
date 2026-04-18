@@ -129,33 +129,44 @@
     <Border Background="{DynamicResource SecondaryRegionBrush}">
         <!-- 注意：不设置Grid的DataContext，以便内容能继承父级的ViewModel DataContext -->
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="{Binding MasterWidth, ElementName=Root}" MinWidth="280"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="{Binding DetailWidth, ElementName=Root}" MinWidth="400"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <!-- Master区域 - 列表 -->
-            <Border Grid.Column="0" Style="{StaticResource MasterPanelStyle}">
-                <ContentPresenter Content="{Binding MasterContent, ElementName=Root}"/>
-            </Border>
+            <!-- Header区域 - 面包屑等导航 -->
+            <ContentPresenter Grid.Row="0" Content="{Binding HeaderContent, ElementName=Root}"/>
 
-            <!-- 分割线 -->
-            <GridSplitter Grid.Column="1" Style="{StaticResource MasterDetailSplitterStyle}"/>
+            <!-- 主内容区域 -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="{Binding MasterWidth, ElementName=Root}" MinWidth="280"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="{Binding DetailWidth, ElementName=Root}" MinWidth="400"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Detail区域 - 浮动卡片 -->
-            <Grid Grid.Column="2">
-                <!-- 有选中项时显示详情（带阴影卡片） -->
-                <Border Style="{StaticResource DetailPanelStyle}"
-                        Visibility="{Binding HasSelection, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
-                    <ContentPresenter Content="{Binding DetailContent, ElementName=Root}"/>
+                <!-- Master区域 - 列表 -->
+                <Border Grid.Column="0" Style="{StaticResource MasterPanelStyle}">
+                    <ContentPresenter Content="{Binding MasterContent, ElementName=Root}"/>
                 </Border>
 
-                <!-- 无选中项时显示空状态 -->
-                <Border Style="{StaticResource EmptyStatePanelStyle}"
-                        Visibility="{Binding HasSelection, ElementName=Root, Converter={x:Static converters:Cvt.InverseBoolToVis}}">
-                    <ContentPresenter Content="{Binding EmptyContent, ElementName=Root}"/>
-                </Border>
+                <!-- 分割线 -->
+                <GridSplitter Grid.Column="1" Style="{StaticResource MasterDetailSplitterStyle}"/>
+
+                <!-- Detail区域 - 浮动卡片 -->
+                <Grid Grid.Column="2">
+                    <!-- 有选中项时显示详情（带阴影卡片） -->
+                    <Border Style="{StaticResource DetailPanelStyle}"
+                            Visibility="{Binding HasSelection, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
+                        <ContentPresenter Content="{Binding DetailContent, ElementName=Root}"/>
+                    </Border>
+
+                    <!-- 无选中项时显示空状态 -->
+                    <Border Style="{StaticResource EmptyStatePanelStyle}"
+                            Visibility="{Binding HasSelection, ElementName=Root, Converter={x:Static converters:Cvt.InverseBoolToVis}}">
+                        <ContentPresenter Content="{Binding EmptyContent, ElementName=Root}"/>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
     </Border>

@@ -446,6 +446,16 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
     ICommonDialogService? IWorkspaceHost.CommonDialogService => base.CommonDialogService;
     void IWorkspaceHost.NotifyStateChanged() { }
 
+    /// <summary>
+    /// P1-2 FIX: RequestEnterEditMode is not applicable to PatientSelectionViewModel
+    /// (no edit mode state machine in this context)
+    /// </summary>
+    void IWorkspaceHost.RequestEnterEditMode()
+    {
+        // No-op: PatientSelectionViewModel doesn't have an edit mode state machine
+        Logger.LogDebug("RequestEnterEditMode called on PatientSelectionViewModel - no-op");
+    }
+
     #endregion
 
     #region INavigationAware

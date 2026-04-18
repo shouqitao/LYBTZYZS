@@ -30,6 +30,7 @@ public class MedicalCaseWorkspaceViewModelTests
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IActiveConsultationService _activeConsultationService;
+    private readonly IToastService _toastService;
     private readonly PrescriptionPrintHandler _printHandler;
     private readonly IDialogService? _dialogService;
     private readonly ILoggerFactory _loggerFactory;
@@ -47,16 +48,6 @@ public class MedicalCaseWorkspaceViewModelTests
         _loggerFactory = Substitute.For<ILoggerFactory>();
         _loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
         _eventAggregator = Substitute.For<IEventAggregator>();
-        
-        // Mock GetEvent to return PubSubEvent mocks that don't require SynchronizationContext
-        var consultationEvent = Substitute.For<CaseEvents.ConsultationCompletedEvent>();
-        consultationEvent.Subscribe(Arg.Any<Action<CaseConsultationCompletedPayload>>(), Arg.Any<ThreadOption>())
-            .Returns(new SubscriptionToken(_ => { }));
-        var prescriptionEvent = Substitute.For<CaseEvents.PrescriptionCompletedEvent>();
-        prescriptionEvent.Subscribe(Arg.Any<Action<CasePrescriptionCompletedPayload>>(), Arg.Any<ThreadOption>())
-            .Returns(new SubscriptionToken(_ => { }));
-        _eventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Returns(consultationEvent);
-        _eventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>().Returns(prescriptionEvent);
         _regionManager = Substitute.For<IRegionManager>();
         _sessionManager = Substitute.For<ISessionManager>();
         _commonDialogService = Substitute.For<ICommonDialogService>();
@@ -71,12 +62,13 @@ public class MedicalCaseWorkspaceViewModelTests
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
         _activeConsultationService = Substitute.For<IActiveConsultationService>();
-        
+        _toastService = Substitute.For<IToastService>();
+
         // Mock dependencies for PrescriptionPrintHandler
         _medicalCaseRepository = Substitute.For<IMedicalCaseRepository>();
         _clinicSettingsService = Substitute.For<IClinicSettingsService>();
         _printService = Substitute.For<IPrintService<PrescriptionPrintModel>>();
-        
+
         // Create PrescriptionPrintHandler with mocked dependencies
         _printHandler = new PrescriptionPrintHandler(
             _medicalCaseService,
@@ -85,7 +77,7 @@ public class MedicalCaseWorkspaceViewModelTests
             _clinicSettingsService,
             _loggerFactory,
             _printService);
-        
+
         _dialogService = Substitute.For<IDialogService>();
     }
 
@@ -96,6 +88,7 @@ public class MedicalCaseWorkspaceViewModelTests
             _medicalCaseService,
             _navigationCoordinator,
             _activeConsultationService,
+            _toastService,
             _printHandler,
             _dialogService);
     }

@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Contracts;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -128,6 +129,21 @@ public class MenuManager
     /// <summary>导航到系统设置命令 - OpenSpec: unify-navigation-architecture (ADR-5修正: Sidebar全局入口)</summary>
     public DelegateCommand NavigateToSystemSettingsCommand { get; private set; } = null!;
 
+    /// <summary>导航后退命令 — 导航架构改进方案 v1.0</summary>
+    public DelegateCommand NavigateBackCommand { get; private set; } = null!;
+
+    /// <summary>导航前进命令 — 导航架构改进方案 v1.0</summary>
+    public DelegateCommand NavigateForwardCommand { get; private set; } = null!;
+
+    /// <summary>面包屑跳转命令 — 导航架构改进方案 v1.0</summary>
+    public DelegateCommand<BreadcrumbItem> NavigateToBreadcrumbCommand { get; private set; } = null!;
+
+    /// <summary>显示导航历史命令 (Ctrl+Shift+H) — Phase 2-3</summary>
+    public DelegateCommand ShowHistoryCommand { get; private set; } = null!;
+
+    /// <summary>循环切换区域焦点命令 (F6) — Phase 2-3</summary>
+    public DelegateCommand CycleRegionsCommand { get; private set; } = null!;
+
     #endregion 命令属性
 
     /// <summary>初始化所有命令</summary>
@@ -148,6 +164,15 @@ public class MenuManager
 
         // OpenSpec: unify-navigation-architecture (ADR-5修正) - 导航到系统设置命令
         NavigateToSystemSettingsCommand = new DelegateCommand(ExecuteNavigateToSystemSettings);
+
+        // 导航架构改进方案 v1.0 — 后退/前进/面包屑命令
+        NavigateBackCommand = new DelegateCommand(ExecuteNavigateBack, () => _navigationCoordinator.CanNavigateBack);
+        NavigateForwardCommand = new DelegateCommand(ExecuteNavigateForward, () => _navigationCoordinator.CanNavigateForward);
+        NavigateToBreadcrumbCommand = new DelegateCommand<BreadcrumbItem>(ExecuteNavigateToBreadcrumb);
+
+        // Phase 2-3 — 导航历史和区域循环命令
+        ShowHistoryCommand = new DelegateCommand(ExecuteShowHistory);
+        CycleRegionsCommand = new DelegateCommand(ExecuteCycleRegions);
 
         _logger.LogDebug("菜单命令系统已初始化");
     }
@@ -174,6 +199,62 @@ public class MenuManager
     {
         _logger.LogInformation("导航到系统设置");
         _navigationCoordinator.NavigateTo(ViewNames.SystemSettings);
+    }
+
+    /// <summary>导航架构改进方案 v1.0 — 后退命令</summary>
+    private void ExecuteNavigateBack()
+    {
+        _logger.LogInformation("导航后退");
+        _navigationCoordinator.NavigateBack();
+        RaiseNavigationCanExecuteChanged();
+    }
+
+    /// <summary>导航架构改进方案 v1.0 — 前进命令</summary>
+    private void ExecuteNavigateForward()
+    {
+        _logger.LogInformation("导航前进");
+        _navigationCoordinator.NavigateForward();
+        RaiseNavigationCanExecuteChanged();
+    }
+
+    /// <summary>导航架构改进方案 v1.0 — 面包屑跳转命令</summary>
+    private void ExecuteNavigateToBreadcrumb(BreadcrumbItem? item)
+    {
+        if (item == null) return;
+        _logger.LogInformation("面包屑跳转: {Title}", item.Title);
+        _navigationCoordinator.NavigateToBreadcrumb(item);
+    }
+
+    /// <summary>显示导航历史面板 (Ctrl+Shift+H) — Phase 2-3</summary>
+    private void ExecuteShowHistory()
+    {
+        _logger.LogInformation("显示导航历史面板");
+        // TODO: Publish event to open/focus NavigationHistoryPanel
+        // For now, show notification as placeholder
+        _userNotificationService.ShowInfoAsync("导航历史面板功能待实现 - 将显示导航历史记录");
+    }
+
+    /// <summary>循环切换区域焦点 (F6) — Phase 2-3</summary>
+    private void ExecuteCycleRegions()
+    {
+        _logger.LogInformation("循环切换区域焦点");
+        // TODO: Implement region cycling logic
+        // For now, show notification as placeholder
+        _userNotificationService.ShowInfoAsync("区域循环功能待实现 - 将在ContentRegion、SidebarRegion等区域间切换焦点");
+    }
+
+    /// <summary>刷新导航命令可执行状态</summary>
+    private void RaiseNavigationCanExecuteChanged()
+    {
+        NavigateBackCommand.RaiseCanExecuteChanged();
+        NavigateForwardCommand.RaiseCanExecuteChanged();
+    }
+
+    /// <summary>外部刷新导航命令可执行状态 — 由MainWindowViewModel在导航事件后调用</summary>
+    public void RefreshNavigationCanExecute()
+    {
+        NavigateBackCommand.RaiseCanExecuteChanged();
+        NavigateForwardCommand.RaiseCanExecuteChanged();
     }
 
     /// <summary>显示控件示例</summary>

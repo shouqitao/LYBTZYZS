@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
+using Prism.Commands;
 
 namespace LYBT.Desktop.Infrastructure.Views
 {
@@ -82,6 +84,23 @@ namespace LYBT.Desktop.Infrastructure.Views
 
         #endregion
 
+        #region IsDirty - 是否有未保存的更改
+
+        /// <summary>
+        /// Phase 2.1: 是否有未保存的更改，用于返回按钮确认
+        /// </summary>
+        public bool IsDirty
+        {
+            get => (bool)GetValue(IsDirtyProperty);
+            set => SetValue(IsDirtyProperty, value);
+        }
+
+        public static readonly DependencyProperty IsDirtyProperty =
+            DependencyProperty.Register(nameof(IsDirty), typeof(bool), typeof(BaseDetailContainer),
+                new PropertyMetadata(false));
+
+        #endregion
+
         #region Commands - 命令
 
         public ICommand GoBackCommand
@@ -92,7 +111,51 @@ namespace LYBT.Desktop.Infrastructure.Views
 
         public static readonly DependencyProperty GoBackCommandProperty =
             DependencyProperty.Register(nameof(GoBackCommand), typeof(ICommand), typeof(BaseDetailContainer),
-                new PropertyMetadata(null));
+                new PropertyMetadata(null, OnGoBackCommandChanged));
+
+        private static void OnGoBackCommandChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is BaseDetailContainer container && e.NewValue is ICommand command)
+            {
+                // Wrap the command with dirty check logic
+                container.UpdateGoBackCommandWithDirtyCheck(command);
+            }
+        }
+
+        private void UpdateGoBackCommandWithDirtyCheck(ICommand originalCommand)
+        {
+            if (originalCommand == null)
+            {
+                SetValue(GoBackCommandProperty, null);
+                return;
+            }
+
+            // Create wrapped command that checks IsDirty
+            var wrappedCommand = new DelegateCommand(async () =>
+            {
+                if (IsDirty)
+                {
+                    // Show confirmation dialog
+                    var result = System.Windows.MessageBox.Show(
+                        "您有未保存的更改，确定要离开吗？",
+                        "确认离开",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.No)
+                        return;
+                }
+
+                // Execute original command
+                if (originalCommand is System.Windows.Input.ICommand cmd)
+                {
+                    if (cmd.CanExecute(null))
+                        cmd.Execute(null);
+                }
+            });
+
+            SetValue(GoBackCommandProperty, wrappedCommand);
+        }
 
         public ICommand SwitchToEditCommand
         {
@@ -122,6 +185,26 @@ namespace LYBT.Desktop.Infrastructure.Views
 
         public static readonly DependencyProperty CancelCommandProperty =
             DependencyProperty.Register(nameof(CancelCommand), typeof(ICommand), typeof(BaseDetailContainer),
+                new PropertyMetadata(null));
+
+        public ICommand PrintCommand
+        {
+            get => (ICommand)GetValue(PrintCommandProperty);
+            set => SetValue(PrintCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty PrintCommandProperty =
+            DependencyProperty.Register(nameof(PrintCommand), typeof(ICommand), typeof(BaseDetailContainer),
+                new PropertyMetadata(null));
+
+        public ICommand HelpCommand
+        {
+            get => (ICommand)GetValue(HelpCommandProperty);
+            set => SetValue(HelpCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty HelpCommandProperty =
+            DependencyProperty.Register(nameof(HelpCommand), typeof(ICommand), typeof(BaseDetailContainer),
                 new PropertyMetadata(null));
 
         #endregion
@@ -212,6 +295,23 @@ namespace LYBT.Desktop.Infrastructure.Views
         public static readonly DependencyProperty UseContentScrollingProperty =
             DependencyProperty.Register(nameof(UseContentScrolling), typeof(bool), typeof(BaseDetailContainer),
                 new PropertyMetadata(true));
+
+        #endregion
+
+        #region NavigationPath - 面包屑导航路径
+
+        /// <summary>
+        /// Phase 2.1: 导航路径，格式：患者选择 > 临床工作台 > 医案编辑
+        /// </summary>
+        public string NavigationPath
+        {
+            get => (string)GetValue(NavigationPathProperty);
+            set => SetValue(NavigationPathProperty, value);
+        }
+
+        public static readonly DependencyProperty NavigationPathProperty =
+            DependencyProperty.Register(nameof(NavigationPath), typeof(string), typeof(BaseDetailContainer),
+                new PropertyMetadata(""));
 
         #endregion
     }

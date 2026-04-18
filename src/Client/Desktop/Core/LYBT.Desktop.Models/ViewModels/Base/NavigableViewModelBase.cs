@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Services.Toast;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
@@ -43,6 +44,11 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// 通用对话框服务
         /// </summary>
         protected ICommonDialogService CommonDialogService { get; }
+
+        /// <summary>
+        /// Toast消息服务 (Phase 2.2: 替代MessageBox通知)
+        /// </summary>
+        protected IToastService ToastService { get; }
 
         /// <summary>
         /// 角色注册表
@@ -116,6 +122,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// <summary>
         /// 构造函数 - 使用IViewModelServices聚合服务
         /// OpenSpec: enhance-viewmodel-architecture
+        /// Phase 2.2: 添加IToastService依赖以替代MessageBox通知
         /// </summary>
         /// <param name="services">ViewModel服务聚合</param>
         protected NavigableViewModelBase(IViewModelServices services)
@@ -125,6 +132,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             SessionManager = services.SessionManager;
             UserNotificationService = services.UserNotificationService;
             CommonDialogService = services.CommonDialogService;
+            ToastService = services.ToastService;
             RoleRegistry = services.RoleRegistry;
         }
 
@@ -384,26 +392,29 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 显示成功消息
+        /// Phase 2.2: 使用ToastService替代CommonDialogService（非阻塞通知）
         /// </summary>
         protected virtual async Task ShowSuccessMessageAsync(string message)
         {
-            await CommonDialogService.ShowInfoAsync(message, "成功");
+            await Task.Run(() => ToastService.ShowSuccess(message));
         }
 
         /// <summary>
         /// 显示错误消息
+        /// Phase 2.2: 使用ToastService替代CommonDialogService（非阻塞通知）
         /// </summary>
         protected virtual async Task ShowErrorMessageAsync(string message)
         {
-            await CommonDialogService.ShowErrorAsync(message, "错误");
+            await Task.Run(() => ToastService.ShowError(message));
         }
 
         /// <summary>
         /// 显示警告消息
+        /// Phase 2.2: 使用ToastService替代CommonDialogService（非阻塞通知）
         /// </summary>
         protected virtual async Task ShowWarningMessageAsync(string message)
         {
-            await CommonDialogService.ShowWarningAsync(message, "警告");
+            await Task.Run(() => ToastService.ShowWarning(message));
         }
 
         /// <summary>

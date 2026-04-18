@@ -1,0 +1,102 @@
+<!--
+    BreadcrumbBar - 面包屑导航栏控件
+    Phase 2.1: Navigation Improvements
+
+    显示当前导航路径：患者选择 > 临床工作台 > 医案编辑
+    支持点击任意层级快速导航回上级页面
+-->
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.BreadcrumbBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <UserControl.Resources>
+        <!-- Breadcrumb item style -->
+        <Style x:Key="BreadcrumbItemStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                Margin="{TemplateBinding Margin}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource RegionBrush}"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Separator style -->
+        <Style x:Key="BreadcrumbSeparatorStyle" TargetType="TextBlock">
+            <Setter Property="Text" Value="›"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Breadcrumb items -->
+    <ItemsControl ItemsSource="{Binding ElementName=Root, Path=Breadcrumbs}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <StackPanel Orientation="Horizontal">
+                    <!-- Breadcrumb item (current item is disabled) -->
+                    <Button Content="{Binding Label}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{Binding Level}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource BreadcrumbItemStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Separator (hidden for last item via DataTrigger) -->
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource BreadcrumbSeparatorStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLast}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

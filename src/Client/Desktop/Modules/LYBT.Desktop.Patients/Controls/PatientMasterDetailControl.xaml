@@ -26,6 +26,20 @@
     <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}">
         <!--
             ========================================
+            面包屑导航 - Phase 2.1: Navigation Improvements
+            ========================================
+        -->
+        <controls:MasterDetailLayout.HeaderContent>
+            <ItemsControl ItemsSource="{Binding Breadcrumbs}" Margin="16,12,16,8">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ContentControl Content="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </controls:MasterDetailLayout.HeaderContent>
+        <!--
+            ========================================
             Master区域: 患者列表
             ========================================
         -->

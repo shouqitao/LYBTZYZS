@@ -3,6 +3,7 @@ using Prism.Events;
 using Prism.Regions;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Services.Toast;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {
@@ -18,6 +19,7 @@ namespace LYBT.Desktop.Infrastructure.Services
         public ISessionManager SessionManager { get; }
         public IUserNotificationService UserNotificationService { get; }
         public ICommonDialogService CommonDialogService { get; }
+        public IToastService ToastService { get; }
         public IRoleRegistry RoleRegistry { get; }
         public IUiThreadDispatcher UiThreadDispatcher { get; }
 
@@ -28,6 +30,7 @@ namespace LYBT.Desktop.Infrastructure.Services
             ISessionManager sessionManager,
             IUserNotificationService userNotificationService,
             ICommonDialogService commonDialogService,
+            IToastService toastService,
             IRoleRegistry roleRegistry,
             IUiThreadDispatcher uiThreadDispatcher)
         {
@@ -37,6 +40,7 @@ namespace LYBT.Desktop.Infrastructure.Services
             SessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
             UserNotificationService = userNotificationService ?? throw new ArgumentNullException(nameof(userNotificationService));
             CommonDialogService = commonDialogService ?? throw new ArgumentNullException(nameof(commonDialogService));
+            ToastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
             RoleRegistry = roleRegistry ?? throw new ArgumentNullException(nameof(roleRegistry));
             UiThreadDispatcher = uiThreadDispatcher ?? throw new ArgumentNullException(nameof(uiThreadDispatcher));
         }

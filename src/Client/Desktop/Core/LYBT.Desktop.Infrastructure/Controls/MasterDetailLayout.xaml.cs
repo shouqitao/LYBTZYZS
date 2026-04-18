@@ -112,6 +112,20 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         #endregion
 
+        #region HeaderContent - 头部内容（面包屑等导航）
+
+        public object HeaderContent
+        {
+            get => GetValue(HeaderContentProperty);
+            set => SetValue(HeaderContentProperty, value);
+        }
+
+        public static readonly DependencyProperty HeaderContentProperty =
+            DependencyProperty.Register(nameof(HeaderContent), typeof(object), typeof(MasterDetailLayout),
+                new PropertyMetadata(null));
+
+        #endregion
+
         #region HasSelection - 是否有选中项
 
         public bool HasSelection

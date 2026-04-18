@@ -18,4 +18,10 @@ public interface IWorkspaceHost
     /// Parent should recompute WorkspaceState (CanComplete, CanPrint, etc.)
     /// </summary>
     void NotifyStateChanged();
+
+    /// <summary>
+    /// P1-2 FIX: Request transition to edit mode.
+    /// Triggers the EditModeStateMachine's EnterEdit event to transition from ReadOnly to Editing.
+    /// </summary>
+    void RequestEnterEditMode();
 }

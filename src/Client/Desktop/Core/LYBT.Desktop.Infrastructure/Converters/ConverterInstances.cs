@@ -48,6 +48,11 @@ namespace LYBT.Desktop.Infrastructure.Converters
         public static readonly IValueConverter BoolToBrush = new BoolToBrushConverter();
 
         /// <summary>
+        /// Bool -> Color/Brush (支持ConverterParameter="TrueColor|FalseColor")
+        /// </summary>
+        public static readonly IValueConverter BoolToColor = new BoolToColorConverter();
+
+        /// <summary>
         /// Bool -> Double (可配置TrueValue/FalseValue)
         /// </summary>
         public static readonly IValueConverter BoolToDouble = new BoolToDoubleConverter();

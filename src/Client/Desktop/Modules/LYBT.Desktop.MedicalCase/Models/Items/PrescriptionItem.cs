@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -21,7 +23,7 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 ///
 /// 属性名与PrescriptionDetailDto保持一致，确保XAML绑定兼容
 /// </summary>
-public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
+public class PrescriptionItem : BindableBase, IDataProvider, IValidatable, INotifyDataErrorInfo
 {
     private static readonly PrescriptionMapper s_mapper = new();
 
@@ -143,21 +145,10 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
 
     #region 价格字段
 
-    private decimal _singleDosePrice;
     /// <summary>
-    /// 单帖价格
+    /// 单帖价格（P2-4: 实时计算 - 根据药材列表自动计算）
     /// </summary>
-    public decimal SingleDosePrice
-    {
-        get => _singleDosePrice;
-        set
-        {
-            if (SetProperty(ref _singleDosePrice, value))
-            {
-                RaisePropertyChanged(nameof(TotalPrice));
-            }
-        }
-    }
+    public decimal SingleDosePrice => Items?.Sum(i => i.Dosage * i.UnitPrice) ?? 0;
 
     private decimal _totalWeight;
     /// <summary>
@@ -338,7 +329,6 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
         ReferencedFormulas = null;
         Remark = null;
         Discount = 1.0m;
-        SingleDosePrice = 0;
         TotalWeight = 0;
         DuplicateWarning = null;
         MissingDrugWarning = null;
@@ -362,13 +352,13 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
         Usage = DefaultUsage;
         Advice = null;
         Remark = null;
-        SingleDosePrice = 0;
         Items.Clear();
         NotifyItemsChanged();
     }
 
     /// <summary>
     /// 通知药材列表相关属性更新
+    /// P2-4: 添加 SingleDosePrice 以实时更新价格显示
     /// </summary>
     public void NotifyItemsChanged()
     {
@@ -376,6 +366,7 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
         RaisePropertyChanged(nameof(HasItems));
         RaisePropertyChanged(nameof(IsValid));
         RaisePropertyChanged(nameof(TotalPrice));
+        RaisePropertyChanged(nameof(SingleDosePrice));
         RaisePropertyChanged(nameof(DisplayText));
     }
 
@@ -416,7 +407,15 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
     public string ValidationMessage
     {
         get => _validationMessage;
-        set => SetProperty(ref _validationMessage, value);
+        set
+        {
+            if (SetProperty(ref _validationMessage, value))
+            {
+                // P1-4 FIX: Fire ErrorsChanged when ValidationMessage changes
+                // Notify for ItemCount property since that's what we validate
+                ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(ItemCount)));
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -438,6 +437,37 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable
 
         ValidationMessage = string.Empty;
         return true;
+    }
+
+    #endregion
+
+    #region INotifyDataErrorInfo Implementation (P1-4 FIX)
+
+    /// <summary>P1-4: Fires when validation errors change, notifying WPF validation system</summary>
+    public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+
+    /// <summary>P1-4: Returns true if there are validation errors</summary>
+    bool INotifyDataErrorInfo.HasErrors => !string.IsNullOrWhiteSpace(_validationMessage);
+
+    /// <summary>P1-4: Returns validation errors for WPF validation system</summary>
+    IEnumerable INotifyDataErrorInfo.GetErrors(string? propertyName)
+    {
+        // Return errors for all properties if no specific property requested
+        if (string.IsNullOrEmpty(propertyName))
+        {
+            return !string.IsNullOrWhiteSpace(_validationMessage)
+                ? new[] { _validationMessage }
+                : Enumerable.Empty<string>();
+        }
+
+        // Return errors for specific property
+        // For ItemCount, return ValidationMessage if it exists
+        if (propertyName == nameof(ItemCount) && !string.IsNullOrWhiteSpace(_validationMessage))
+        {
+            return new[] { _validationMessage };
+        }
+
+        return Enumerable.Empty<string>();
     }
 
     #endregion

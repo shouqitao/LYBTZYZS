@@ -195,13 +195,13 @@
                   "        if (jsonData.success) pm.expect(jsonData).to.have.property('data');",
                   "        // Extract and store auth token",
                   "        if (jsonData.data && jsonData.data.token) {",
-                  "            pm.environment.set('authToken', jsonData.data.token);",
-                  "            pm.environment.set('adminToken', jsonData.data.token);",
+                  "            pm.collectionVariables.set('authToken', jsonData.data.token);",
+                  "            pm.collectionVariables.set('adminToken', jsonData.data.token);",
                   "            console.log('Auth token stored successfully');",
                   "        }",
                   "        // Store refresh token if available",
                   "        if (jsonData.data && jsonData.data.refreshToken) {",
-                  "            pm.environment.set('RefreshToken', jsonData.data.refreshToken);",
+                  "            pm.collectionVariables.set('RefreshToken', jsonData.data.refreshToken);",
                   "        }",
                   "    } else {",
                   "        // Binary file (Excel) - just check it's not empty",
@@ -305,7 +305,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -375,7 +375,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -397,8 +397,8 @@
                   "pm.test('Store test user info', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data) {",
-                  "        pm.environment.set('testUserId',  jsonData.data.id);\n        pm.environment.set('testUserId', jsonData.data.id);",
-                  "        pm.environment.set('testUserName',  jsonData.data.username);\n        pm.environment.set('testUserName', jsonData.data.username);",
+                  "        pm.collectionVariables.set('testUserId',  jsonData.data.id);\n        pm.collectionVariables.set('testUserId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('testUserName',  jsonData.data.username);\n        pm.collectionVariables.set('testUserName', jsonData.data.username);",
                   "        console.log('Created test user:', jsonData.data.username, 'ID:', jsonData.data.id);",
                   "    }",
                   "});"
@@ -452,7 +452,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -475,20 +475,20 @@
                   "}",
                   "",
                   "const doctor = jsonData.data.items[0];",
-                  "pm.environment.set('testDoctorId', doctor.id);",
-                  "pm.environment.set('testDoctorName', doctor.userName || doctor.UserName || 'Test Doctor');",
+                  "pm.collectionVariables.set('testDoctorId', doctor.id);",
+                  "pm.collectionVariables.set('testDoctorName', doctor.userName || doctor.UserName || 'Test Doctor');",
                   "console.log('[Setup] Doctor found:', doctor.id, doctor.userName);",
                   "",
-                  "pm.environment.set('doctorUserId', pm.environment.get('testUserId'));",
+                  "pm.environment.set('doctorUserId', pm.collectionVariables.get('testUserId'));",
                   "",
-                  "const testUserName = pm.environment.get('testUserName');",
+                  "const testUserName = pm.collectionVariables.get('testUserName');",
                   "if (!testUserName) {",
                   "    console.error('[Setup] testUserName not found - Create Test User must run first');",
                   "    return;",
                   "}",
                   "",
                   "const loginRequest = {",
-                  "    url: pm.environment.get('baseUrl') + '/api/v1/auth/login',",
+                  "    url: pm.collectionVariables.get('baseUrl') + '/api/v1/auth/login',",
                   "    method: 'POST',",
                   "    header: {",
                   "        'Content-Type': 'application/json',",
@@ -512,7 +512,7 @@
                   "    if (response.code === 200) {",
                   "        const loginJson = response.json();",
                   "        if (loginJson.data && loginJson.data.token) {",
-                  "            pm.environment.set('doctorToken', loginJson.data.token);",
+                  "            pm.collectionVariables.set('doctorToken', loginJson.data.token);",
                   "            console.log('[Setup] doctorToken set successfully for:', testUserName);",
                   "        } else {",
                   "            console.error('[Setup] Login response missing token:', loginJson);",
@@ -580,11 +580,11 @@
                   "        const token = j.data.token;",
                   "        const userId = j.data.user?.id;",
                   "        const userName = j.data.user?.userName;",
-                  "        pm.environment.set('doctorToken', token);",
-                  "        pm.environment.set('doctorUserId', userId);",
+                  "        pm.collectionVariables.set('doctorToken', token);",
+                  "        pm.collectionVariables.set('doctorUserId', userId);",
                   "        // Set testDoctorId for Registration tests",
-                  "        pm.environment.set('testDoctorId',  userId);\n        pm.environment.set('testDoctorId', userId);",
-                  "        pm.environment.set('testDoctorName',  userName || 'Test Doctor');\n        pm.environment.set('testDoctorName', userName || 'Test Doctor');",
+                  "        pm.collectionVariables.set('testDoctorId',  userId);\n        pm.collectionVariables.set('testDoctorId', userId);",
+                  "        pm.collectionVariables.set('testDoctorName',  userName || 'Test Doctor');\n        pm.collectionVariables.set('testDoctorName', userName || 'Test Doctor');",
                   "        console.log('Logged in as doctor, doctorToken stored, doctorId:', userId);",
                   "    }",
                   "});"
@@ -632,7 +632,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -654,7 +654,7 @@
                   "pm.test('Store test patient ID', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('testPatientId',  jsonData.data.id);\n        pm.environment.set('testPatientId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('testPatientId',  jsonData.data.id);\n        pm.collectionVariables.set('testPatientId', jsonData.data.id);",
                   "        console.log('Created test patient with ID:', jsonData.data.id);",
                   "    }",
                   "});"
@@ -717,7 +717,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if testPatientId exists (should be set by previous request)",
-                  "if (!pm.environment.get('testPatientId')) {",
+                  "if (!pm.collectionVariables.get('testPatientId')) {",
                   "    console.log('WARNING: testPatientId not set. Skipping cleanup.');",
                   "}"
                 ]
@@ -736,8 +736,8 @@
                   "    ",
                   "    activeCases.forEach(function(medicalCase) {",
                   "        const caseId = medicalCase.id;",
-                  "        const closeUrl = pm.environment.get('baseUrl') + '/api/v1/medicalcases/' + caseId + '/close';",
-                  "        const token = pm.environment.get('doctorToken');",
+                  "        const closeUrl = pm.collectionVariables.get('baseUrl') + '/api/v1/medicalcases/' + caseId + '/close';",
+                  "        const token = pm.collectionVariables.get('doctorToken');",
                   "        ",
                   "        pm.sendRequest({",
                   "            url: closeUrl,",
@@ -812,7 +812,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -829,7 +829,7 @@
                   "pm.test('Store test formula ID', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('testFormulaId',  jsonData.data.id);\n        pm.environment.set('testFormulaId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('testFormulaId',  jsonData.data.id);\n        pm.collectionVariables.set('testFormulaId', jsonData.data.id);",
                   "        console.log('Created test formula with ID:', jsonData.data.id);",
                   "    }",
                   "});"
@@ -877,7 +877,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -894,7 +894,7 @@
                   "pm.test('Store test herb ID', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('testHerbId',  jsonData.data.id);\n        pm.environment.set('testHerbId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('testHerbId',  jsonData.data.id);\n        pm.collectionVariables.set('testHerbId', jsonData.data.id);",
                   "        console.log('Created test herb with ID:', jsonData.data.id);",
                   "    }",
                   "});"
@@ -930,10 +930,10 @@
               "const formulaName = \"TestFormula\" + randomSuffix;",
               "",
               "// Store in environment variables",
-              "pm.environment.set('uniquePhone', phone);",
-              "pm.environment.set('uniqueIdNumber', idNumber);",
-              "pm.environment.set('uniqueHerbName', herbName);",
-              "pm.environment.set('uniqueFormulaName', formulaName);",
+              "pm.collectionVariables.set('uniquePhone', phone);",
+              "pm.collectionVariables.set('uniqueIdNumber', idNumber);",
+              "pm.collectionVariables.set('uniqueHerbName', herbName);",
+              "pm.collectionVariables.set('uniqueFormulaName', formulaName);",
               "",
               "console.log('Generated unique values:');",
               "console.log('  Phone:', phone);",
@@ -1073,7 +1073,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1134,7 +1134,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-						"raw": "{\n    \"userId\": \"{{testUserId}}\",\n    \"oldPassword\": \"Test123456\",\n    \"newPassword\": \"N3wP@ss!2\",\n    \"confirmNewPassword\": \"N3wP@ss!2\"\n}"
+              "raw": "{\n    \"userId\": \"{{testUserId}}\",\n    \"oldPassword\": \"Test123456\",\n    \"newPassword\": \"N3wP@ss!2\",\n    \"confirmNewPassword\": \"N3wP@ss!2\"\n}"
             }
           },
           "response": [],
@@ -1145,7 +1145,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1211,7 +1211,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1277,7 +1277,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1334,7 +1334,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}",
                   "",
@@ -1348,7 +1348,7 @@
                   "    method: 'POST',",
                   "    header: {",
                   "        'Content-Type': 'application/json',",
-                  "        'Authorization': 'Bearer ' + pm.environment.get('authToken')",
+                  "        'Authorization': 'Bearer ' + pm.collectionVariables.get('authToken')",
                   "    },",
                   "    body: {",
                   "        mode: 'raw',",
@@ -1371,7 +1371,7 @@
                   "    }",
                   "    const jsonData = response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('disposableUserId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('disposableUserId', jsonData.data.id);",
                   "        console.log('Created disposable user for deletion:', jsonData.data.id);",
                   "    } else {",
                   "        console.error('Failed to create disposable user:', jsonData.message);",
@@ -1390,7 +1390,7 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-"pm.test('ApiResponse structure is valid', function () {",
+                  "pm.test('ApiResponse structure is valid', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('success');",
                   "    pm.expect(jsonData).to.have.property('message');",
@@ -1433,7 +1433,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}",
                   "",
@@ -1447,7 +1447,7 @@
                   "    method: 'POST',",
                   "    header: {",
                   "        'Content-Type': 'application/json',",
-                  "        'Authorization': 'Bearer ' + pm.environment.get('authToken')",
+                  "        'Authorization': 'Bearer ' + pm.collectionVariables.get('authToken')",
                   "    },",
                   "    body: {",
                   "        mode: 'raw',",
@@ -1470,7 +1470,7 @@
                   "    }",
                   "    const jsonData = response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('disposableToggleUserId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('disposableToggleUserId', jsonData.data.id);",
                   "        console.log('Created toggle test user:', jsonData.data.id);",
                   "    } else {",
                   "        console.error('Failed to create toggle test user:', jsonData.message);",
@@ -1538,7 +1538,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1596,7 +1596,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1661,7 +1661,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1719,7 +1719,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1784,7 +1784,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1854,7 +1854,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if doctorToken exists",
-                  "if (!pm.environment.get('doctorToken')) {",
+                  "if (!pm.collectionVariables.get('doctorToken')) {",
                   "    pm.expect.fail('No doctorToken found. Please login as doctor first.');",
                   "}"
                 ]
@@ -1877,7 +1877,7 @@
                   "pm.test('Store created ID', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('testMedicalCaseId',  jsonData.data.id);\n        pm.environment.set('testMedicalCaseId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('testMedicalCaseId',  jsonData.data.id);\n        pm.collectionVariables.set('testMedicalCaseId', jsonData.data.id);",
                   "    }",
                   "});"
                 ]
@@ -1926,7 +1926,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -1991,7 +1991,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2056,7 +2056,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2113,7 +2113,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2201,7 +2201,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2301,7 +2301,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2401,7 +2401,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2470,7 +2470,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2528,7 +2528,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2585,7 +2585,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2650,7 +2650,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2722,7 +2722,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2780,7 +2780,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2846,7 +2846,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2912,7 +2912,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -2976,7 +2976,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3046,7 +3046,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3129,7 +3129,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3195,7 +3195,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3279,7 +3279,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3347,7 +3347,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3411,7 +3411,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3434,7 +3434,7 @@
                   "pm.test('Store created ID', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('testHerbId',  jsonData.data.id);\n        pm.environment.set('testHerbId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('testHerbId',  jsonData.data.id);\n        pm.collectionVariables.set('testHerbId', jsonData.data.id);",
                   "    }",
                   "});"
                 ]
@@ -3482,7 +3482,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3547,7 +3547,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3611,7 +3611,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3669,7 +3669,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3734,7 +3734,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3792,7 +3792,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3850,7 +3850,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3907,7 +3907,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -3978,7 +3978,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4043,7 +4043,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4108,7 +4108,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4192,7 +4192,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4260,7 +4260,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4324,7 +4324,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4347,7 +4347,7 @@
                   "pm.test('Store created ID', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('testFormulaId',  jsonData.data.id);\n        pm.environment.set('testFormulaId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('testFormulaId',  jsonData.data.id);\n        pm.collectionVariables.set('testFormulaId', jsonData.data.id);",
                   "    }",
                   "});"
                 ]
@@ -4395,7 +4395,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4452,7 +4452,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4506,7 +4506,20 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"Formulas\": [\n    {\n      \"Name\": \"Formula1\",\n      \"Herbs\": [\n        {\n          \"HerbName\": \"H1\",\n          \"Dosage\": 5,\n          \"Unit\": \"克\"\n        }\n      ]\n    }\n  ]\n}"
+              "raw": {
+                "Formulas": [
+                  {
+                    "Name": "TestBatchFormula-{{$timestamp}}",
+                    "Herbs": [
+                      {
+                        "HerbName": "测试药材",
+                        "Dosage": 5,
+                        "Unit": "克"
+                      }
+                    ]
+                  }
+                ]
+              }
             }
           },
           "response": [],
@@ -4517,7 +4530,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4574,7 +4587,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4648,7 +4661,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4706,7 +4719,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4764,7 +4777,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -4829,10 +4842,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check dependencies",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please run Login first.');",
                   "}",
-                  "if (!pm.environment.get('testFormulaId') && !pm.environment.get('testFormulaId')) {",
+                  "if (!pm.collectionVariables.get('testFormulaId') && !pm.collectionVariables.get('testFormulaId')) {",
                   "    pm.expect.fail('No testFormulaId found. Please run Setup > Create Test Formula first.');",
                   "}"
                 ]
@@ -4897,10 +4910,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check dependencies",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please run Login first.');",
                   "}",
-                  "if (!pm.environment.get('testFormulaId') && !pm.environment.get('testFormulaId')) {",
+                  "if (!pm.collectionVariables.get('testFormulaId') && !pm.collectionVariables.get('testFormulaId')) {",
                   "    pm.expect.fail('No testFormulaId found. Please run Setup > Create Test Formula first.');",
                   "}"
                 ]
@@ -4965,10 +4978,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check dependencies",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please run Login first.');",
                   "}",
-                  "if (!pm.environment.get('testFormulaId') && !pm.environment.get('testFormulaId')) {",
+                  "if (!pm.collectionVariables.get('testFormulaId') && !pm.collectionVariables.get('testFormulaId')) {",
                   "    pm.expect.fail('No testFormulaId found. Please run Setup > Create Test Formula first.');",
                   "}"
                 ]
@@ -5031,7 +5044,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -5095,7 +5108,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -5149,7 +5162,26 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"EntityType\": \"Herb\",\n  \"LocalEntities\": [\n    {\n      \"EntityId\": \"{{testHerbId}}\",\n      \"Checksum\": \"abc123\",\n      \"LastModifiedAt\": \"2026-01-01T00:00:00Z\"\n    }\n  ]\n}"
+              "raw": {
+                "EntityType": "Herb",
+                "LocalEntities": [
+                  {
+                    "EntityId": "{{testHerbId}}",
+                    "Checksum": "d41d8cd98f00b204e9800998ecf8427e",
+                    "LastModifiedAt": "2026-01-01T00:00:00Z"
+                  },
+                  {
+                    "EntityId": "{{testPatientId}}",
+                    "Checksum": "d41d8cd98f00b204e9800998ecf8427e",
+                    "LastModifiedAt": "2026-01-01T00:00:00Z"
+                  },
+                  {
+                    "EntityId": "{{testFormulaId}}",
+                    "Checksum": "d41d8cd98f00b204e9800998ecf8427e",
+                    "LastModifiedAt": "2026-01-01T00:00:00Z"
+                  }
+                ]
+              }
             }
           },
           "response": [],
@@ -5160,11 +5192,17 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check dependencies",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please run Login first.');",
                   "}",
-                  "if (!pm.environment.get('testHerbId') && !pm.environment.get('testHerbId')) {",
+                  "if (!pm.collectionVariables.get('testHerbId')) {",
                   "    pm.expect.fail('No testHerbId found. Please run Setup > Create Test Herb first.');",
+                  "}",
+                  "if (!pm.collectionVariables.get('testPatientId')) {",
+                  "    pm.expect.fail('No testPatientId found. Please run Setup > Create Test Patient first.');",
+                  "}",
+                  "if (!pm.collectionVariables.get('testFormulaId')) {",
+                  "    pm.expect.fail('No testFormulaId found. Please run Setup > Create Test Formula first.');",
                   "}"
                 ]
               }
@@ -5228,10 +5266,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check dependencies",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please run Login first.');",
                   "}",
-                  "if (!pm.environment.get('testHerbId') && !pm.environment.get('testHerbId')) {",
+                  "if (!pm.collectionVariables.get('testHerbId') && !pm.collectionVariables.get('testHerbId')) {",
                   "    pm.expect.fail('No testHerbId found. Please run Setup > Create Test Herb first.');",
                   "}"
                 ]
@@ -5285,7 +5323,14 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"EntityType\": \"Herb\",\n  \"EntityIds\": [\"{{testHerbId}}\"]\n}"
+              "raw": {
+                "EntityType": "Herb",
+                "EntityIds": [
+                  "{{testHerbId}}",
+                  "{{testPatientId}}",
+                  "{{testFormulaId}}"
+                ]
+              }
             }
           },
           "response": [],
@@ -5296,10 +5341,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check dependencies",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please run Login first.');",
                   "}",
-                  "if (!pm.environment.get('testHerbId') && !pm.environment.get('testHerbId')) {",
+                  "if (!pm.collectionVariables.get('testHerbId') && !pm.collectionVariables.get('testHerbId')) {",
                   "    pm.expect.fail('No testHerbId found. Please run Setup > Create Test Herb first.');",
                   "}"
                 ]
@@ -5364,10 +5409,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check dependencies",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please run Login first.');",
                   "}",
-                  "if (!pm.environment.get('testHerbId') && !pm.environment.get('testHerbId')) {",
+                  "if (!pm.collectionVariables.get('testHerbId') && !pm.collectionVariables.get('testHerbId')) {",
                   "    pm.expect.fail('No testHerbId found. Please run Setup > Create Test Herb first.');",
                   "}"
                 ]
@@ -5437,14 +5482,17 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check dependencies",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please run Login first.');",
                   "}",
-                  "if (!pm.environment.get('testPatientId') && !pm.environment.get('testPatientId')) {",
+                  "if (!pm.collectionVariables.get('testPatientId')) {",
                   "    pm.expect.fail('No testPatientId found. Please run Setup > Create Test Patient first.');",
                   "}",
-                  "if (!pm.environment.get('testDoctorId') && !pm.environment.get('testDoctorId')) {",
+                  "if (!pm.collectionVariables.get('testDoctorId')) {",
                   "    pm.expect.fail('No testDoctorId found. Please run Setup > Get Doctor Info first.');",
+                  "}",
+                  "if (!pm.collectionVariables.get('testDoctorName')) {",
+                  "    pm.expect.fail('No testDoctorName found. Please run Setup > Get Doctor Info first.');",
                   "}"
                 ]
               }
@@ -5466,7 +5514,7 @@
                   "pm.test('Store registration ID', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('testRegistrationId',  jsonData.data.id);\n        pm.environment.set('testRegistrationId', jsonData.data.id);",
+                  "        pm.collectionVariables.set('testRegistrationId',  jsonData.data.id);",
                   "        console.log('Created registration with ID:', jsonData.data.id);",
                   "    }",
                   "});"
@@ -5507,7 +5555,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -5600,7 +5648,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -5658,7 +5706,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -5725,13 +5773,13 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check dependencies",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please run Login first.');",
                   "}",
-                  "if (!pm.environment.get('testPatientId') && !pm.environment.get('testPatientId')) {",
+                  "if (!pm.collectionVariables.get('testPatientId') && !pm.collectionVariables.get('testPatientId')) {",
                   "    pm.expect.fail('No testPatientId found. Please run Setup > Create Test Patient first.');",
                   "}",
-                  "if (!pm.environment.get('testDoctorId') && !pm.environment.get('testDoctorId')) {",
+                  "if (!pm.collectionVariables.get('testDoctorId') && !pm.collectionVariables.get('testDoctorId')) {",
                   "    pm.expect.fail('No testDoctorId found. Please run Setup > Get Doctor Info first.');",
                   "}"
                 ]
@@ -5754,7 +5802,7 @@
                   "pm.test('Store registration ID', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('testRegistrationIdForStartVisit', jsonData.data.id);",
+                  "        pm.collectionVariables.set('testRegistrationIdForStartVisit', jsonData.data.id);",
                   "        console.log('Created registration with ID:', jsonData.data.id);",
                   "    }",
                   "});"
@@ -5797,7 +5845,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -5861,7 +5909,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -5929,11 +5977,11 @@
                   "pm.test('Store admin token', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.token) {",
-                  "        pm.environment.set('adminToken', jsonData.data.token);",
+                  "        pm.collectionVariables.set('adminToken', jsonData.data.token);",
                   "        // Also save as authToken for subsequent requests in this folder",
-                  "        var saved = pm.environment.get('authToken');",
-                  "        pm.environment.set('authToken', jsonData.data.token);",
-                  "        pm.environment.set('_savedAuthToken', saved);",
+                  "        var saved = pm.collectionVariables.get('authToken');",
+                  "        pm.collectionVariables.set('authToken', jsonData.data.token);",
+                  "        pm.collectionVariables.set('_savedAuthToken', saved);",
                   "        console.log('Admin token stored for Diagnostics');",
                   "    }",
                   "});"
@@ -5979,7 +6027,7 @@
                   "pm.test('Store admin token', function () {",
                   "    const jsonData = pm.response.json();",
                   "    if (jsonData.success && jsonData.data && jsonData.data.token) {",
-                  "        pm.environment.set('adminToken', jsonData.data.token);",
+                  "        pm.collectionVariables.set('adminToken', jsonData.data.token);",
                   "        console.log('Admin token stored for Diagnostics');",
                   "    }",
                   "});"
@@ -6021,7 +6069,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -6088,7 +6136,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -6147,7 +6195,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -6213,7 +6261,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
@@ -6356,7 +6404,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Check if authToken exists",
-                  "if (!pm.environment.get('authToken') && !pm.environment.get('authToken')) {",
+                  "if (!pm.collectionVariables.get('authToken') && !pm.collectionVariables.get('authToken')) {",
                   "    pm.expect.fail('No authToken found. Please login first.');",
                   "}"
                 ]
