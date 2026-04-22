@@ -31,7 +31,7 @@ namespace LYBT.Tests.Server.Infrastructure;
 /// - Seeds base data (sysadmin, admin, doctor) through production code paths
 /// - Authenticates via real login endpoint (POST /api/v1/auth/login)
 /// </summary>
-public class ServerFixture : IAsyncLifetime
+public class ServerFixture : IAsyncLifetime, IDisposable
 {
     /// <summary>
     /// Serialize concurrent WebApplicationFactory creation across all fixture instances.
@@ -123,6 +123,17 @@ public class ServerFixture : IAsyncLifetime
         AnonymousClient = _factory.CreateClient();
     }
 
+    /// <summary>
+    /// Synchronous disposal — releases sync-disposable fields (SemaphoreSlim).
+    /// </summary>
+    public void Dispose()
+    {
+        _resetGate.Dispose();
+    }
+
+    /// <summary>
+    /// Asynchronous disposal — releases async-disposable resources.
+    /// </summary>
     public async Task DisposeAsync()
     {
         AnonymousClient?.Dispose();

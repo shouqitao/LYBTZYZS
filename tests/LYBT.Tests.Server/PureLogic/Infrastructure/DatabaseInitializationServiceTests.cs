@@ -21,7 +21,7 @@ namespace LYBT.Tests.Server.PureLogic.Infrastructure;
 /// 使用 InMemory 数据库: InitializeDatabaseAsync 检测到非关系型数据库后
 /// 走 EnsureCreatedAsync 路径 (非 MigrateAsync)，避免迁移文件冲突。
 /// </summary>
-public class DatabaseInitializationServiceTests : IAsyncLifetime
+public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
 {
     private AppDbContext _dbContext = null!;
     private ILogger<DatabaseInitializationService> _logger = null!;
@@ -50,6 +50,15 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime
         _logger = NullLogger<DatabaseInitializationService>.Instance;
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Synchronous disposal — releases sync-disposable fields.
+    /// </summary>
+    public void Dispose()
+    {
+        // InMemory database doesn't need sync disposal, but required by CA1001.
+        GC.SuppressFinalize(this);
     }
 
     public async Task DisposeAsync()
