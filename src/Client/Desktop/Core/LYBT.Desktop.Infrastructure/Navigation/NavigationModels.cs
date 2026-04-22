@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         /// <summary>
         /// 导航参数
         /// </summary>
-        public NavigationParameters Parameters { get; init; } = new();
+        public NavigationParameters Parameters { get; init; } = Parameters;
 
         /// <summary>
         /// 导航时间戳

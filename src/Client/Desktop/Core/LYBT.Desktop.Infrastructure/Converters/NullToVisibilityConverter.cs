@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Infrastructure.Converters
             {
                 // Visible 对应 null（无对象）
                 if (visibility == Visibility.Visible)
-                    return null;
+                    return null!;
 
                 // Collapsed 对应有对象（但无法确定是哪个对象）
                 // 返回 UnsetValue 表示无法转换

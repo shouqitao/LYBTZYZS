@@ -243,6 +243,7 @@ public class LoginViewModelTests
     }
 
     [Fact]
+#pragma warning disable CS1998 // Test method
     public async Task LoginAsync_InvalidCredentials_ShowsError()
     {
         // Arrange
@@ -260,6 +261,7 @@ public class LoginViewModelTests
         sut.ErrorMessage.Should().NotBeNullOrEmpty();
         sut.Password.Should().BeEmpty();
     }
+#pragma warning restore CS1998
 
     [Fact]
     public async Task LoginAsync_RememberUsernameTrue_SavesUsername()

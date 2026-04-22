@@ -155,6 +155,7 @@ public class FrameworkVerificationTests : UserJourneyTestBase
     }
 
     [Fact]
+#pragma warning disable CS1998
     public async Task ServiceProvider_ShouldResolveLocalDbContext()
     {
         // Act
@@ -164,6 +165,7 @@ public class FrameworkVerificationTests : UserJourneyTestBase
         context.Should().NotBeNull();
         context!.Database.IsSqlite().Should().BeTrue();
     }
+#pragma warning restore CS1998
 
     [Fact]
     public void WpfTestHelper_ShouldInitializeWithoutError()

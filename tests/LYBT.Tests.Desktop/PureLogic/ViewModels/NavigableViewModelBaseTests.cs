@@ -114,7 +114,7 @@ public class NavigableViewModelBaseTests : UserJourneyTestBase
         var taskCompleted = false;
 
         var task = sut.CallShowSuccessMessageAsync("测试消息");
-        task.ContinueWith(_ => taskCompleted = true);
+        await task.ContinueWith(_ => taskCompleted = true);
 
         // Task should complete without blocking
         await Task.Delay(100);

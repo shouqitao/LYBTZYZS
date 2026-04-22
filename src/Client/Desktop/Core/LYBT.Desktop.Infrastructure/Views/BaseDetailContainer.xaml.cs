@@ -131,7 +131,7 @@ namespace LYBT.Desktop.Infrastructure.Views
             }
 
             // Create wrapped command that checks IsDirty
-            var wrappedCommand = new DelegateCommand(async () =>
+            var wrappedCommand = new DelegateCommand(() =>
             {
                 if (IsDirty)
                 {

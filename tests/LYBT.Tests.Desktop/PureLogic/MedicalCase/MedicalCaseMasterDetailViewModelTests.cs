@@ -13,6 +13,7 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+#pragma warning disable CS8620 // Nullable reference type compatibility in NSubstitute Returns
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Prism.Regions;
@@ -274,7 +275,7 @@ public class MedicalCaseMasterDetailViewModelTests
         MedicalCaseDetailDto detailDto = CreateMedicalCaseDetailDto();
 
         _medicalCaseService.LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult((true, (MedicalCaseDetailDto?)detailDto, (string?)null)));
+            .Returns(Task.FromResult<(bool, MedicalCaseDetailDto?, string?)>((true, (MedicalCaseDetailDto?)detailDto, (string?)null)));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
@@ -295,7 +296,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var listItem = CreateMedicalCaseListDto();
 
         _medicalCaseService.LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult((true, (MedicalCaseDetailDto?)null, (string?)null)));
+            .Returns(Task.FromResult<(bool, MedicalCaseDetailDto?, string?)>((true, (MedicalCaseDetailDto?)null, (string?)null)));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
@@ -347,7 +348,7 @@ public class MedicalCaseMasterDetailViewModelTests
         };
 
         _medicalCaseService.AggregateSaveAsync(detail.Id, Arg.Any<ConsultationInputDto?>(), Arg.Any<PrescriptionInputDto?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult((true, (MedicalCaseDetailDto?)savedDto, (string?)null)));
+            .Returns(Task.FromResult<(bool, MedicalCaseDetailDto?, string?)>((true, (MedicalCaseDetailDto?)savedDto, (string?)null)));
 
         // Act
         var result = await sut.SaveDetailAsync(detail);
@@ -409,7 +410,7 @@ public class MedicalCaseMasterDetailViewModelTests
         sut.PrescriptionEditor.Prescription = prescriptionItem;
 
         _medicalCaseService.AggregateSaveAsync(detail.Id, Arg.Any<ConsultationInputDto?>(), Arg.Any<PrescriptionInputDto?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult((true, (MedicalCaseDetailDto?)savedDto, (string?)null)));
+            .Returns(Task.FromResult<(bool, MedicalCaseDetailDto?, string?)>((true, (MedicalCaseDetailDto?)savedDto, (string?)null)));
 
         // Act
         await sut.SaveDetailAsync(detail);
@@ -429,7 +430,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var sut = CreateSut();
         var listItem = CreateMedicalCaseListDto();
 
-        _medicalCaseService.CancelMedicalCaseAsync(listItem.Id, Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult((true, (string?)null)));
+        _medicalCaseService.CancelMedicalCaseAsync(listItem.Id, Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<(bool, string?)>((true, (string?)null)));
 
         // Act
         var result = await sut.DeleteItemAsync(listItem);
@@ -803,3 +804,4 @@ public static class MedicalCaseMasterDetailViewModelTestExtensions
         method.Invoke(vm, new object[] { navigationContext });
     }
 }
+#pragma warning restore CS8620

@@ -149,7 +149,7 @@ public abstract class TransactionalIntegrationTestBase : IAsyncLifetime
     /// </summary>
     protected static string UniqueName(string baseName)
     {
-        return $"{_testPrefix.Value}_{baseName}";
+        return $"{_testPrefix.Value!}_{baseName}";
     }
 
     /// <summary>
@@ -158,7 +158,7 @@ public abstract class TransactionalIntegrationTestBase : IAsyncLifetime
     protected static string UniquePhone()
     {
         // Generate unique 11-digit phone: 138 + 8 random digits based on thread prefix
-        var prefix = _testPrefix.Value;
+        var prefix = _testPrefix.Value!;
         var randomPart = prefix.GetHashCode() % 100000000;
         return $"138{Math.Abs(randomPart):D8}";
     }
@@ -168,7 +168,7 @@ public abstract class TransactionalIntegrationTestBase : IAsyncLifetime
     /// </summary>
     protected static string UniqueIdNumber()
     {
-        var prefix = _testPrefix.Value;
+        var prefix = _testPrefix.Value!;
         var random = new Random(prefix.GetHashCode());
         var year = random.Next(1960, 2000);
         var month = random.Next(1, 13);
@@ -182,7 +182,7 @@ public abstract class TransactionalIntegrationTestBase : IAsyncLifetime
     /// </summary>
     protected static string UniqueEmail(string baseName)
     {
-        return $"{baseName.ToLower()}_{_testPrefix.Value}@test.com";
+        return $"{baseName.ToLower()}_{_testPrefix.Value!}@test.com";
     }
 
     /// <summary>
@@ -190,7 +190,7 @@ public abstract class TransactionalIntegrationTestBase : IAsyncLifetime
     /// </summary>
     protected static string UniqueUsername(string baseName)
     {
-        return $"{baseName.ToLower()}_{_testPrefix.Value}";
+        return $"{baseName.ToLower()}_{_testPrefix.Value!}";
     }
 
     #endregion

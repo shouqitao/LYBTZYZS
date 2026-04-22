@@ -404,7 +404,7 @@ namespace LYBT.Tests.Desktop.Infrastructure.Navigation
         #region Thread Safety Tests
 
         [Fact]
-        public void TrackNavigation_WhenCalledConcurrently_DoesNotThrow()
+        public async Task TrackNavigation_WhenCalledConcurrently_DoesNotThrow()
         {
             // Arrange
             var context = new NavigationContext(null, null, null);
@@ -420,7 +420,7 @@ namespace LYBT.Tests.Desktop.Infrastructure.Navigation
                 }));
             }
 
-            Task.WaitAll(tasks.ToArray());
+            await Task.WhenAll(tasks.ToArray());
 
             // Assert
             _analyticsService.AllEvents.Count.Should().Be(100);

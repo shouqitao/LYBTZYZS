@@ -110,7 +110,7 @@ namespace LYBT.Desktop.Infrastructure.Converters
         public object?[] ConvertBack(object value, Type[] targetTypes, object? parameter, CultureInfo culture)
         {
             // 颜色到状态的映射是不可逆的
-            return null;
+            return Array.Empty<object?>();
         }
 
         private static string DetermineOutputFormat(Type targetType)

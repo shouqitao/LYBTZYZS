@@ -102,13 +102,16 @@ public class MedicalCaseBoundaryTests : IntegrationTestBase
         created.Id.Should().NotBe(Guid.Empty);
     }
 
+#pragma warning disable CS1998
     private async Task<Guid> CreateTestPatientAsync()
     {
         // Helper to create a test patient and return its ID
         // Implementation would use PatientRepository
         return Guid.NewGuid(); // Placeholder - would need actual implementation
     }
+#pragma warning restore CS1998
 
+#pragma warning disable CS1998
     private async Task<Guid> GetCurrentUserIdAsync()
     {
         // Helper to get current user ID from login session

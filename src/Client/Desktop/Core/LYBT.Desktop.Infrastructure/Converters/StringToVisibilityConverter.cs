@@ -32,7 +32,7 @@ namespace LYBT.Desktop.Infrastructure.Converters
 
                 // Collapsed 对应 null
                 if (visibility == Visibility.Collapsed)
-                    return null;
+                    return null!;
             }
 
             return DependencyProperty.UnsetValue;

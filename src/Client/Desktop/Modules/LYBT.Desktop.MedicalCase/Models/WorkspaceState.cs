@@ -44,7 +44,7 @@ public record WorkspaceState(
     bool CanPrint = false,
     string Remark = "",
     string EditReason = "",
-    CompletenessCheck Completeness = null)
+    CompletenessCheck? Completeness = null)
 {
     // Edit state computed properties
     public bool IsEditing => EditState == EditState.Editing;

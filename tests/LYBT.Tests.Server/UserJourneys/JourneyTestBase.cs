@@ -86,7 +86,7 @@ public abstract class JourneyTestBase<TFixture>
     protected static string UniqueName(string baseName)
     {
         var seq = Interlocked.Increment(ref _globalSequence);
-        return $"{_testPrefix.Value}_{baseName}_{seq}";
+        return $"{_testPrefix.Value!}_{baseName}_{seq}";
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public abstract class JourneyTestBase<TFixture>
     protected static string UniquePhone()
     {
         // Generate unique 11-digit phone: 138 + 8 digits
-        var prefix = _testPrefix.Value;
+        var prefix = _testPrefix.Value!;
         var seq = Interlocked.Increment(ref _globalSequence);
         var hashPart = Math.Abs(prefix.GetHashCode()) % 1000; // 3 digits
         var seqPart = seq % 100000; // 5 digits
@@ -107,7 +107,7 @@ public abstract class JourneyTestBase<TFixture>
     /// </summary>
     protected static string UniqueIdNumber()
     {
-        var prefix = _testPrefix.Value;
+        var prefix = _testPrefix.Value!;
         var seq = Interlocked.Increment(ref _globalSequence);
         var random = new Random(prefix.GetHashCode() + seq);
         var year = random.Next(1960, 2000);
@@ -123,7 +123,7 @@ public abstract class JourneyTestBase<TFixture>
     protected static string UniqueEmail(string baseName)
     {
         var seq = Interlocked.Increment(ref _globalSequence);
-        return $"{baseName.ToLower()}_{_testPrefix.Value}_{seq}@test.com";
+        return $"{baseName.ToLower()}_{_testPrefix.Value!}_{seq}@test.com";
     }
 
     /// <summary>
@@ -132,7 +132,7 @@ public abstract class JourneyTestBase<TFixture>
     protected static string UniqueUsername(string baseName)
     {
         var seq = Interlocked.Increment(ref _globalSequence);
-        return $"{baseName.ToLower()}_{_testPrefix.Value}_{seq}";
+        return $"{baseName.ToLower()}_{_testPrefix.Value!}_{seq}";
     }
 
     #endregion

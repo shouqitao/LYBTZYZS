@@ -391,6 +391,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         _toastService.Show($"已清空所有药材（共{validItemCount}味）", ToastType.Warning, 4000);
     }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators
     private async Task HandleFormulaImportResultAsync(IDialogParameters parameters)
     {
         try
@@ -447,6 +448,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
+#pragma warning restore CS1998
+#pragma warning disable CS1998 // Async method lacks 'await' operators
     private async Task HandleHistoryCopyResultAsync(IDialogParameters parameters)
     {
         try
@@ -513,6 +516,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             Host.SetBusy(false);
         }
     }
+#pragma warning restore CS1998
 
     /// <summary>
     /// CODE-08: 从 AllHerbs 构建 HerbId -> 当前价格 查找表

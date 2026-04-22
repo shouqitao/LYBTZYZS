@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         /// <param name="uri">目标导航 URI</param>
         /// <param name="parameters">导航参数</param>
         /// <returns>导航是否成功</returns>
-        Task<bool> NavigateAsync(string uri, NavigationParameters parameters = null);
+        Task<bool> NavigateAsync(string uri, NavigationParameters parameters = null!);
 
         /// <summary>
         /// 导航到指定区域和视图名称
@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         /// <param name="viewName">视图名称</param>
         /// <param name="parameters">导航参数</param>
         /// <returns>导航是否成功</returns>
-        Task<bool> NavigateToRegionAsync(string regionName, string viewName, NavigationParameters parameters = null);
+        Task<bool> NavigateToRegionAsync(string regionName, string viewName, NavigationParameters parameters = null!);
 
         /// <summary>
         /// 返回到上一个导航位置
@@ -109,7 +109,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
     /// </summary>
     public class NavigatedEventArgs : EventArgs
     {
-        public NavigationEntry Entry { get; init; }
+        public NavigationEntry Entry { get; init; } = null!;
         public bool IsBack { get; init; }
         public bool IsForward { get; init; }
     }
@@ -119,8 +119,8 @@ namespace LYBT.Desktop.Infrastructure.Navigation
     /// </summary>
     public class NavigationCancelledEventArgs : EventArgs
     {
-        public string Uri { get; init; }
-        public string Reason { get; init; }
+        public string Uri { get; init; } = null!;
+        public string Reason { get; init; } = null!;
     }
 
     /// <summary>
@@ -128,9 +128,9 @@ namespace LYBT.Desktop.Infrastructure.Navigation
     /// </summary>
     public class NavigationFailedEventArgs : EventArgs
     {
-        public string Uri { get; init; }
-        public Exception Exception { get; init; }
-        public string ErrorMessage { get; init; }
+        public string Uri { get; init; } = null!;
+        public Exception Exception { get; init; } = null!;
+        public string ErrorMessage { get; init; } = null!;
     }
 
     #endregion

@@ -408,7 +408,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
             // Average navigation time
             var avgTime = userEvents
                 .Where(e => e.Metadata != null && e.Metadata.ContainsKey("TimeBetweenNavigations"))
-                .Select(e => (double)e.Metadata["TimeBetweenNavigations"])
+                .Select(e => (double)e.Metadata!["TimeBetweenNavigations"])
                 .DefaultIfEmpty(0)
                 .Average();
 

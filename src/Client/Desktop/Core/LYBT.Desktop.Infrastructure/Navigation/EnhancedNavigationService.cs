@@ -63,7 +63,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         /// <summary>
         /// 导航到指定 URI
         /// </summary>
-        public async Task<bool> NavigateAsync(string uri, NavigationParameters parameters = null)
+        public async Task<bool> NavigateAsync(string uri, NavigationParameters parameters = null!)
         {
             try
             {
@@ -136,7 +136,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         /// <summary>
         /// 导航到指定区域和视图
         /// </summary>
-        public Task<bool> NavigateToRegionAsync(string regionName, string viewName, NavigationParameters parameters = null)
+        public Task<bool> NavigateToRegionAsync(string regionName, string viewName, NavigationParameters parameters = null!)
         {
             try
             {
@@ -155,12 +155,12 @@ namespace LYBT.Desktop.Infrastructure.Navigation
                 // Request navigation
                 var request = new NavigationRequest(
                     regionName,
-                    CreateUri(regionName, viewName, parameters),
+                    CreateUri(regionName, viewName, parameters!),
                     parameters ?? new NavigationParameters()
                 );
 
                 // Execute navigation - Prism IRegion.RequestNavigate(Uri source, Action<NavigationResult> callback)
-                var navigationUri = new Uri(CreateUri(regionName, viewName, parameters), UriKind.RelativeOrAbsolute);
+                var navigationUri = new Uri(CreateUri(regionName, viewName, parameters!), UriKind.RelativeOrAbsolute);
                 region.RequestNavigate(navigationUri, result =>
                 {
                     if (result.Result.HasValue && result.Result.Value)
