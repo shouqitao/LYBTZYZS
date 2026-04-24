@@ -133,11 +133,14 @@ namespace LYBT.LocalWebAPI
             finally
             {
                 try
-                if (_app != null)
                 {
-                    await _app.DisposeAsync();
+                    if (_app != null)
+                    {
+                        await _app.DisposeAsync();
+                    }
                 }
-            
+                catch { /* ignore */ }
+
                 _app = null;
                 _runTask = null;
                 _cts?.Dispose();
