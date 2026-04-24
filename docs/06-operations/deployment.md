@@ -8,14 +8,41 @@
 
 ## 服务端部署
 
-### 运行环境
+### 发布形式
 
-| 组件 | 要求 |
-|------|------|
-| 运行时 | .NET 8.0 Runtime |
-| 数据库 | SQL Server 2019+ |
-| 操作系统 | Windows Server 2019+ / Linux |
-| 端口 | 5000 (HTTP) / 5001 (HTTPS) |
+| 形式 | 说明 | 适用场景 |
+|------|------|---------|
+| **Framework-Dependent**（推荐） | 依赖目标机器 .NET 8 Runtime，包小 (~27MB) | 有服务器管理权限的场景 |
+| Self-Contained | 自带运行时，包大 (~70MB) | 无法控制目标机器环境的场景 |
+
+### 运行方式
+
+| 方式 | 说明 | 文档 |
+|------|------|------|
+| **Windows Service**（推荐） | 独立进程，开机自启，适合后台服务 | `deploy/windows/deploy.ps1` |
+| IIS | 需要 IIS 环境，图形化管理 | `deploy/iis/deploy.ps1` |
+
+两种方式均使用 `dotnet publish` 产出部署包，通过对应脚本部署。
+
+### Desktop 自动升级
+
+WebAPI 同时提供 Desktop 客户端发布包下载服务，支持客户端自动升级。
+
+```
+服务器目录结构:
+C:\Services\LYBT-API\              ← WebAPI 运行目录（deploy.ps1 产出）
+C:\Services\LYBT-releases\         ← Desktop 发布包（独立目录，不会被 publish 清空）
+    ├── lybt-desktop-1.0.0.zip
+    ├── lybt-desktop-1.1.0.zip
+    └── lybt-desktop-1.2.0.zip
+```
+
+升级机制：
+1. Desktop 启动时请求 `GET /api/version` 获取最新版本号
+2. 版本低于服务端 → 从 `/releases/` 下载最新 zip 包
+3. 本地解压替换 → 重启客户端
+
+> **关键设计**：Releases 目录与 WebAPI 部署目录**完全独立**，确保 `dotnet publish` 不会清空历史发布包。
 
 ### 发布命令
 

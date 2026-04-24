@@ -9,6 +9,9 @@
 ```bash
 dotnet build LYBTZYZS.sln
 
+# 交叉编译 (Ubuntu → Windows win-x64)
+dotnet publish src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj -c Release -r win-x64 --self-contained false -p:EnableWindowsTargeting=true
+
 # Test projects (~2021 tests total)
 dotnet test tests/LYBT.Tests.Server/        # 1185 tests (real SQL Server + Respawn)
 dotnet test tests/LYBT.Tests.Desktop/       # 760 tests (SQLite InMemory)
@@ -39,9 +42,9 @@ dotnet test tests/LYBT.Tests.Architecture/  # 76 tests (architecture guards)
 
 ## Common Pitfalls
 
-- `FindAsync` applies global query filters (`IsDeleted`) when entity is not in ChangeTracker — use `IgnoreQueryFilters()` for soft-deleted records
+- `FindAsync` applies global query filters (`IsDeleted`) when entity not in ChangeTracker — use `IgnoreQueryFilters()` for soft-deleted records
 - WPF Desktop tests require `net8.0-windows` target framework — cannot mix with Server tests
-- `MedicalCase.HasPrescription` is a computed property depending on `PrescriptionId.HasValue` — Mapper must set it explicitly
+- `MedicalCase.HasPrescription` is computed property depending on `PrescriptionId.HasValue` — Mapper must set it explicitly
 - Edit tool requires distinct oldString and newString — never use identical or empty strings (see ERR-20260406-003)
 
 ## Module Docs
@@ -131,3 +134,41 @@ Specific fix or improvement
 - Related Files: path/to/file.ext
 - Tags: tag1, tag2
 ```
+
+## WHERE TO LOOK (Quick Reference)
+
+| Task | Location | Notes |
+|------|----------|-------|
+| WebAPI entry point | `src/Server/Services/LYBT.WebAPI/Program.cs` | Two-phase Serilog bootstrap |
+| Desktop entry point | `src/Client/Desktop/Shell/App.xaml.cs` | Prism startup pipeline |
+| DbContext | `src/Server/Core/LYBT.Infrastructure/Data/AppDbContext.cs` | EF Core 8 |
+| Entities | `src/Server/Core/LYBT.Entities/` | Anemic except MedicalCaseModel |
+| DTOs/Contracts | `src/Shared/LYBT.Shared.Models/Contracts/` | Shared between Client/Server |
+| Server Controllers | `src/Server/Services/LYBT.WebAPI/Controllers/` | 13 controllers |
+| Server Modules | `src/Server/Modules/LYBT.Module.*/` | 7 modules (Auth, Users, Patients, MedicalCase, Herbs, Formula, Sync) |
+| Desktop Modules | `src/Client/Desktop/Modules/LYBT.Desktop.*/` | 8 modules |
+| Desktop Roles | `src/Client/Desktop/Roles/LYBT.Desktop.{Admin,Clinical,Receptionist}/` | 3 role workspaces |
+| Shared Exception Handling | `src/Shared/LYBT.Shared.ExceptionHandling/` | Desktop + Server handlers |
+| Shared Logging | `src/Shared/LYBT.Shared.Logging/` | Serilog config |
+| Server Tests | `tests/LYBT.Tests.Server/` | Real SQL Server + Respawn |
+| Desktop Tests | `tests/LYBT.Tests.Desktop/` | SQLite InMemory |
+| Architecture Tests | `tests/LYBT.Tests.Architecture/` | Guard tests |
+| Build config | `Directory.Build.props` | LangVersion, Nullable, ImplicitUsings |
+| Package versions | `Directory.Packages.props` | Central package management |
+| Code style | `.editorconfig` | Naming, formatting, analyzer rules |
+
+## ANTI-PATTERNS (THIS PROJECT)
+
+- **_wpftmp.csproj files** — WPF designer artifacts cluttering repo (found in `src/Client/Desktop/Modules/`)
+- **Service layer injecting DbContext** — Must use Repository interface (enforced by architecture test `P10_Services_Should_Not_Directly_Inject_AppDbContext`)
+- **ContainerLocator in UI layer** — Known anti-pattern documented in Desktop README
+- **Cross-module references** — Server modules MUST NOT reference each other; Desktop modules MUST NOT reference each other
+- **Emoji in code** — Cleaned from codebase 2025-11-20
+
+## UNIQUE STYLES
+
+- **Two-phase Serilog bootstrap** — Bootstrap logger → final logger (both WebAPI and Desktop)
+- **Role-based module loading** — Desktop loads modules dynamically based on user role
+- **StartupPipeline pattern** — Desktop uses step-based startup (ErrorHandling → ModuleCoordinator → CoreServices → ApiHealthCheck → Warmup)
+- **CQRS for MedicalCase** — Server MedicalCase module uses CommandHandler pattern, not traditional 3-layer
+- **Testing Trophy** — Integration-first: real SQL Server, zero mock for Server tests

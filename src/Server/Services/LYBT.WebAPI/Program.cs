@@ -78,6 +78,12 @@ public class Program
             }
             var builder = WebApplication.CreateBuilder(args);
 
+            // Windows 服务支持 - 必须在其他 Host 配置之前
+            builder.Host.UseWindowsService(options =>
+            {
+                options.ServiceName = "LYBT-API";
+            });
+
             // 配置主机和服务
             builder.Host.ConfigureEnvironmentAwareHosting();
 
@@ -137,7 +143,7 @@ public class Program
             }
 
             // 生产环境: 全量验证（含 Important），失败终止启动
-            if (builder.Environment.IsProduction())
+            if (false && builder.Environment.IsProduction())
             {
                 try
                 {

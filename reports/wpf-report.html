@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+body { font-family: SimHei, "Microsoft YaHei", sans-serif; font-size: 13px; line-height: 1.6; margin: 40px; color: #333; }
+h1 { font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+h2 { font-size: 18px; border-bottom: 1px solid #999; padding-bottom: 5px; margin-top: 30px; }
+h3 { font-size: 15px; margin-top: 20px; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 12px; }
+th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+th { background: #f5f5f5; }
+code { background: #f4f4f4; padding: 1px 4px; font-size: 12px; }
+pre { background: #f8f8f8; padding: 12px; overflow-x: auto; border: 1px solid #ddd; font-size: 11px; }
+blockquote { border-left: 3px solid #999; padding-left: 12px; color: #666; }
+</style></head><body><h1 id="lybtzyzs-wpf">LYBTZYZS WPF 前端架构审查报告</h1>
+<blockquote>
+<p><strong>审查日期</strong>: 2026-04-19
+<strong>审查范围</strong>: src/Client/Desktop/ 全部代码（75,226 行 C# + 114 个 XAML）
+<strong>审查重点</strong>: 架构层面
+<strong>审查人</strong>: 观澜（资深架构师视角）</p>
+</blockquote>
+<hr />
+<h2 id="1">1. 执行摘要</h2>
+<h3 id="78-10">总体评分: <strong>7.8 / 10</strong></h3>
+<p>这是一个<strong>架构设计成熟、重构痕迹明显</strong>的 WPF 桌面应用。从代码注释中可以看到大量 OpenSpec 标记和 Issue 引用，表明项目经历了持续的重构和架构演进。核心架构（分层、DI、MVVM）设计合理，但存在一些技术债务和过度工程化的迹象。</p>
+<h3 id="_1">核心发现</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>评分</th>
+<th>一句话总结</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分层架构</td>
+<td>8.5/10</td>
+<td>Core → Modules → Roles → Shell 四层清晰，依赖方向正确</td>
+</tr>
+<tr>
+<td>MVVM 实现</td>
+<td>7.5/10</td>
+<td>CommunityToolkit + Prism，基类设计好，但部分 ViewModel 仍过重</td>
+</tr>
+<tr>
+<td>依赖注入</td>
+<td>8.0/10</td>
+<td>Prism DryIoc，生命周期管理规范，泛型服务注册优秀</td>
+</tr>
+<tr>
+<td>状态管理</td>
+<td>7.0/10</td>
+<td>双模式架构（Remote/Local）设计合理，但切换复杂度高</td>
+</tr>
+<tr>
+<td>错误处理</td>
+<td>7.5/10</td>
+<td>有全局 ErrorHandler + AsyncExecutor，架构级保障</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>7.0/10</td>
+<td>有性能监控基础设施，但单例服务占比偏高</td>
+</tr>
+<tr>
+<td>可测试性</td>
+<td>6.5/10</td>
+<td>接口抽取得好，但 ViewModel 直接依赖 Prism Region，难以单元测试</td>
+</tr>
+<tr>
+<td>代码规范</td>
+<td>7.0/10</td>
+<td>注释极度详细（有时过于详细），大量删除注释残留</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2">2. 项目结构概览</h2>
+<h3 id="21">2.1 架构图（文字描述）</h3>
+<pre><code>┌─────────────────────────────────────────────────────┐
+│                    Shell (7,659行)                    │
+│         App.xaml.cs + 启动引导 + MainWindow           │
+├──────────┬──────────────────────────┬────────────────┤
+│          │                          │                │
+│  Roles层 │     Modules层            │   Core层       │
+│          │                          │                │
+│ Admin    │ Auth (646)               │ Foundation     │
+│ (937)    │ Users (3,677)            │ (6,347)        │
+│          │ Patients (5,785)         │                │
+│ Clinical │ MedicalCase (6,839)      │ Infrastructure │
+│ (2,652)  │ Herbs (2,460)           │ (17,437)       │
+│          │ Formula (3,449)          │                │
+│Reception-│ Registration (983)       │ Contracts      │
+│ist(438)  │ Sync (1,062)            │ (4,567)        │
+│          │                          │                │
+│          │                          │ LocalData      │
+│          │                          │ (5,134)        │
+│          │                          │                │
+│          │                          │ Models(1,297)  │
+│          │                          │ Printing(1485) │
+│          │                          │ Utilities(541) │
+│          │                          │ CardReader     │
+│          │                          │ (1,801)        │
+├──────────┴──────────────────────────┴────────────────┤
+│                  Shared (Server/Client 共享)          │
+│           LYBT.Shared.Models + LYBT.Shared.Primitives│
+└─────────────────────────────────────────────────────┘
+
+依赖方向: Shell → Roles → Modules → Core → Shared（严格单向）
+</code></pre>
+<h3 id="22">2.2 项目规模</h3>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>项目数</th>
+<th>总代码行</th>
+<th>占比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core</td>
+<td>8</td>
+<td>38,609</td>
+<td>51.3%</td>
+</tr>
+<tr>
+<td>Modules</td>
+<td>8</td>
+<td>24,901</td>
+<td>33.1%</td>
+</tr>
+<tr>
+<td>Roles</td>
+<td>3</td>
+<td>4,027</td>
+<td>5.4%</td>
+</tr>
+<tr>
+<td>Shell</td>
+<td>1</td>
+<td>7,659</td>
+<td>10.2%</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td><strong>20</strong></td>
+<td><strong>75,226</strong></td>
+<td><strong>100%</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="23">2.3 技术栈</h3>
+<ul>
+<li><strong>.NET 8</strong> (net8.0-windows)</li>
+<li><strong>Prism.DryIoc</strong> — DI 容器 + MVVM 框架 + 模块化 + 区域导航</li>
+<li><strong>CommunityToolkit.Mvvm</strong> — [ObservableProperty] + [RelayCommand] 源码生成器</li>
+<li><strong>Refit</strong> — HTTP API 客户端自动生成</li>
+<li><strong>Riok.Mapperly</strong> — 编译时对象映射</li>
+<li><strong>Serilog</strong> — 结构化日志</li>
+</ul>
+<hr />
+<h2 id="3">3. 分层架构评审</h2>
+<h3 id="31-8510">3.1 评分: 8.5/10</h3>
+<h3 id="32">3.2 依赖方向分析</h3>
+<p><strong>Shell.csproj 依赖关系</strong>:</p>
+<pre><code>Shell → 所有 Core 项目
+Shell → 所有 Modules 项目  
+Shell → 所有 Roles 项目
+Shell → Shared.Models
+</code></pre>
+<p><strong>Modules 依赖</strong>（以 MedicalCase 为例）:</p>
+<pre><code>MedicalCase → Foundation, Infrastructure, Models, Printing, Contracts, Shared
+</code></pre>
+<p><strong>关键发现</strong>: ✅ <strong>跨模块 ProjectReference 已全部移除</strong>（Epic #2175 D5-3），Modules 之间零直接依赖，通过接口解耦。</p>
+<h3 id="33">3.3 优点</h3>
+<ol>
+<li><strong>严格单向依赖</strong>: Core → Modules → Roles → Shell，无循环</li>
+<li><strong>模块间零耦合</strong>: 通过 <code>ICrossModuleService</code>（已标记 <code>[Obsolete]</code>）→ 迁移到 Prism IEventAggregator</li>
+<li><strong>Contracts 层分离</strong>: 接口定义在独立项目中，实现可替换</li>
+<li><strong>MedicalCase 聚合根约束</strong>: ModuleDependency 仅依赖 Patients + Herbs + Formula（而非反向）</li>
+</ol>
+<h3 id="34">3.4 问题</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>严重度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A-01</td>
+<td><strong>Infrastructure 过重</strong>（17,437 行，占 23%）</td>
+<td>🟡 中</td>
+<td>包含 Controls、Converters、Services、ViewModels、Navigation 等过多职责。应拆分为 Infrastructure + UI.Framework + Navigation 等独立项目</td>
+</tr>
+<tr>
+<td>A-02</td>
+<td><strong>大量 <code>wpftmp.csproj</code> 残留</strong></td>
+<td>🟢 低</td>
+<td>obj 目录外存在临时 csproj 文件（如 <code>LYBT.Desktop.Formula_3exqyugg_wpftmp.csproj</code>），应清理</td>
+</tr>
+<tr>
+<td>A-03</td>
+<td><strong>Shell 直接引用所有模块</strong></td>
+<td>🟡 中</td>
+<td>Shell.csproj 硬编码引用全部 8 个 Module + 3 个 Role，违反模块化按需加载原则</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-mvvm">4. MVVM 实现评审</h2>
+<h3 id="41-7510">4.1 评分: 7.5/10</h3>
+<h3 id="42">4.2 基类架构</h3>
+<pre><code>ObservableObject (CommunityToolkit)
+  └── MasterDetailViewModelBase&lt;TListItem, TDetail&gt; (Infrastructure)
+        ├── 实现: INavigationAware, IRegionMemberLifetime, IDisposable, IAsyncInitializable
+        ├── 注入: IMasterDetailServices&lt;T, T&gt;, IViewModelServices
+        ├── 提供: Items, PageTitle, IsLoading, SelectedItem, SearchText...
+        └── 命令: RefreshAsync, SearchAsync, CreateNewAsync, Edit, SaveAsync, DeleteAsync...
+</code></pre>
+<p><strong>ChildViewModelBase</strong> (组合模式):</p>
+<pre><code>ChildViewModelBase (Infrastructure/ViewModels/Composition/)
+  └── 供 MedicalCase 的子组件使用
+</code></pre>
+<h3 id="43">4.3 优点</h3>
+<ol>
+<li><strong>组合优于继承</strong>: <code>IViewModelServices</code> 参数注入替代继承，ADR-0007 的决策已落地</li>
+<li><strong>源码生成器</strong>: <code>[ObservableProperty]</code> + <code>[RelayCommand]</code> 减少样板代码</li>
+<li><strong>泛型服务抽离</strong>: <code>MasterDetailViewModelBase</code> 将 CRUD、分页、搜索、选择全部泛型化</li>
+<li><strong>ViewModel 行数合理</strong>: 最大的 <code>MedicalCaseCommandsViewModel</code> 仅 551 行</li>
+</ol>
+<h3 id="44">4.4 问题</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>严重度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M-01</td>
+<td><strong>INavigationAware 耦合</strong></td>
+<td>🟡 中</td>
+<td>基类直接实现 Prism 的 <code>INavigationAware</code>，所有子类被迫绑定 Prism 框架，降低可测试性</td>
+</tr>
+<tr>
+<td>M-02</td>
+<td><strong>注释噪音过大</strong></td>
+<td>🟡 中</td>
+<td>MedicalCaseModule.cs 中 60%+ 的内容是删除注释（<code>[已删除]</code>、<code>[已移除]</code>），严重影响可读性</td>
+</tr>
+<tr>
+<td>M-03</td>
+<td><strong>注释中 <code>FUTURE: 重构项目结构</code></strong></td>
+<td>🟢 低</td>
+<td><code>MasterDetailViewModelBase</code> 注释提到"将CoreViewModelBase移到更底层项目"，表明架构仍有待完善</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5">5. 依赖注入评审</h2>
+<h3 id="51-8010">5.1 评分: 8.0/10</h3>
+<h3 id="52-di">5.2 DI 注册方式</h3>
+<p><strong>ViewModelServicesExtensions.cs</strong> — 集中式服务注册:</p>
+<pre><code class="language-csharp">// Singleton 服务
+containerRegistry.RegisterSingleton&lt;IUiThreadDispatcher, WpfUiThreadDispatcher&gt;();
+containerRegistry.RegisterSingleton&lt;IDialogManager, DialogManager&gt;();
+containerRegistry.RegisterSingleton&lt;IEnhancedNavigationService, EnhancedNavigationService&gt;();
+
+// Transient 服务（每个 ViewModel 独立实例）
+containerRegistry.Register&lt;ILoadingStateManager, LoadingStateManager&gt;();
+containerRegistry.Register&lt;IPaginationService, PaginationService&gt;();
+containerRegistry.Register&lt;ISearchService, SearchService&gt;();
+
+// 泛型服务
+containerRegistry.Register(typeof(ISelectionService&lt;&gt;), typeof(SelectionService&lt;&gt;));
+containerRegistry.Register(typeof(IDetailEditorService&lt;&gt;), typeof(DetailEditorService&lt;&gt;));
+</code></pre>
+<h3 id="53">5.3 优点</h3>
+<ol>
+<li><strong>生命周期管理清晰</strong>: Singleton 用于无状态/全局服务，Transient 用于有状态服务（Loading/Pagination/Search）</li>
+<li><strong>泛型服务注册</strong>: <code>AddMasterDetailServices&lt;TListItem, TDetail&gt;()</code> 扩展方法优雅</li>
+<li><strong>Facade 模式</strong>: <code>MainWindowServicesFacade</code> 封装主窗口所需服务</li>
+<li><strong>SRP 接口拆分</strong>: <code>MedicalCaseService</code> 实现了 <code>IMedicalCaseQueryService</code> + <code>IMedicalCaseCommandService</code> + <code>IMedicalCaseLifecycleService</code> 三个接口</li>
+</ol>
+<h3 id="54">5.4 问题</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>严重度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D-01</td>
+<td><strong>无 DI 注册验证</strong></td>
+<td>🟡 中</td>
+<td>缺少启动时的容器验证，运行时才发现缺失注册</td>
+</tr>
+<tr>
+<td>D-02</td>
+<td><strong>MedicalCaseModule 注册过于复杂</strong></td>
+<td>🟡 中</td>
+<td>RegisterTypes 方法包含大量历史注释，实际有效代码约 15 行，但文件超过 150 行</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6">6. 状态管理评审</h2>
+<h3 id="61-7010">6.1 评分: 7.0/10</h3>
+<h3 id="62">6.2 双模式架构</h3>
+<pre><code class="language-csharp">public enum ConnectionMode { Remote, Local }
+</code></pre>
+<ul>
+<li><strong>Remote 模式</strong>: 通过 Refit HTTP API → WebAPI 服务器</li>
+<li><strong>Local 模式</strong>: 直连 SQL Server LocalDB</li>
+<li><strong>切换机制</strong>: Shell 层通过 <code>IConnectionModeProvider</code> 选择 Repository 实现</li>
+</ul>
+<p><strong>Repository 工厂模式</strong>:</p>
+<pre><code>Shell DI 注册:
+  if Remote → 注册 ApiMedicalCaseRepository
+  if Local  → 注册 LocalMedicalCaseRepository
+</code></pre>
+<h3 id="63">6.3 优点</h3>
+<ol>
+<li><strong>策略模式</strong>: ConnectionMode 驱动不同实现，切换透明</li>
+<li><strong>接口分离</strong>: <code>IMedicalCaseRepository</code> 在 Contracts 中定义，两种实现可替换</li>
+<li><strong>本地备份</strong>: 有 <code>ILocalDbBackupService</code> 数据安全</li>
+</ol>
+<h3 id="64">6.4 问题</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>严重度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S-01</td>
+<td><strong>MedicalCase 不支持同步</strong></td>
+<td>🔴 高</td>
+<td>Sync 模块 v1.0 仅支持 Herb/Patient/Formula，MedicalCase 同步延至 v2.0。Local 模式创建的医案无法上传</td>
+</tr>
+<tr>
+<td>S-02</td>
+<td><strong>AuthenticationStateMachine</strong></td>
+<td>🟡 中</td>
+<td>Foundation 层有独立的状态机（认证状态），Infrastructure 有另一套（编辑状态），状态分散</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7">7. 错误处理评审</h2>
+<h3 id="71-7510">7.1 评分: 7.5/10</h3>
+<h3 id="72">7.2 错误处理架构</h3>
+<pre><code>AsyncExecutor — 异步操作包装器（try/catch + 错误传播）
+ErrorHandler — ViewModel 级错误处理（Toast/日志）
+ProblemDetailsParser — HTTP 错误响应解析
+ToastService — 用户可见错误展示
+</code></pre>
+<h3 id="73">7.3 优点</h3>
+<ol>
+<li><strong>AsyncExecutor 封装</strong>: 统一异步异常处理，避免每个 ViewModel 重复 try/catch</li>
+<li><strong>ProblemDetails 标准</strong>: 与后端 RFC 7807 对齐</li>
+<li><strong>Toast 非侵入式</strong>: 不使用 MessageBox 阻塞 UI</li>
+</ol>
+<hr />
+<h2 id="8">8. 性能评审</h2>
+<h3 id="81-7010">8.1 评分: 7.0/10</h3>
+<h3 id="82">8.2 性能基础设施</h3>
+<ul>
+<li><code>IPerformanceMonitor</code> / <code>PerformanceMonitor</code> — 性能监控</li>
+<li><code>IStartupOptimizationService</code> — 启动优化</li>
+<li><code>StartupPerformanceMonitor</code> — 启动性能追踪</li>
+<li><code>SplashScreenWindow</code> — 启动画面</li>
+<li><code>DesktopCacheManager</code> — 缓存管理</li>
+</ul>
+<h3 id="83">8.3 问题</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>严重度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P-01</td>
+<td><strong>Infrastructure 项目过大</strong></td>
+<td>🟡 中</td>
+<td>17,437 行的单项目编译耗时，影响迭代速度</td>
+</tr>
+<tr>
+<td>P-02</td>
+<td><strong>单例服务占比偏高</strong></td>
+<td>🟢 低</td>
+<td>Navigation、Toast、Dialog 等均为 Singleton，需注意内存占用</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9">9. 可测试性评审</h2>
+<h3 id="91-6510">9.1 评分: 6.5/10</h3>
+<h3 id="92">9.2 可测试性分析</h3>
+<p><strong>优点</strong>:
+- 接口抽取得当：<code>IErrorHandler</code>, <code>IAsyncExecutor</code>, <code>IPaginationService</code> 等均可 Mock
+- <code>IViewModelServices</code> 参数注入，可 Mock 整个服务包
+- Mapper 使用编译时生成（Mapperly），无运行时反射</p>
+<p><strong>问题</strong>:
+- <code>MasterDetailViewModelBase</code> 实现 <code>INavigationAware</code>，测试需 Mock <code>NavigationContext</code>
+- <code>IRegionManager</code> 直接在基类中暴露，测试需 Prism 测试基础设施
+- <code>IEventAggregator</code> 紧耦合，Event 对象构造复杂</p>
+<hr />
+<h2 id="10">10. 代码规范评审</h2>
+<h3 id="101-7010">10.1 评分: 7.0/10</h3>
+<h3 id="102">10.2 发现</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>数量</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenSpec 标记</td>
+<td>大量</td>
+<td><code>// OpenSpec: refactor-viewmodel-composition</code></td>
+</tr>
+<tr>
+<td>Issue 引用</td>
+<td>大量</td>
+<td><code>// Issue #1790</code>, <code>// Epic #2175</code></td>
+</tr>
+<tr>
+<td>已删除注释</td>
+<td><strong>极多</strong></td>
+<td><code>// [已删除]</code>, <code>// [已移除]</code> 占 MedicalCaseModule.cs 60%+</td>
+</tr>
+<tr>
+<td>FUTURE/TODO</td>
+<td>少量</td>
+<td><code>// FUTURE: 重构项目结构</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="103">10.3 问题</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>严重度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-01</td>
+<td><strong>删除注释过度</strong></td>
+<td>🟡 中</td>
+<td>MedicalCaseModule.cs 中大量 <code>[已删除]</code> 注释，应使用 Git 历史追踪，不应在代码中保留</td>
+</tr>
+<tr>
+<td>C-02</td>
+<td><strong>wpftmp.csproj 残留</strong></td>
+<td>🟢 低</td>
+<td>项目根目录存在临时编译产物未清理</td>
+</tr>
+<tr>
+<td>C-03</td>
+<td><strong>命名一致性</strong></td>
+<td>🟢 低</td>
+<td><code>ConnectionMode.Remote/Local</code> vs <code>DataSourceMode</code> 在旧文档中出现，需统一</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11">11. 关键问题清单（按严重度排序）</h2>
+<h3 id="p0">🔴 P0 — 必须解决</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>影响</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0-01</td>
+<td><strong>MedicalCase 不同步</strong></td>
+<td>Local 模式创建的医案永远无法同步到服务器</td>
+<td>v2.0 必须实现 MedicalCase 同步，或在 v1.x 限制 Local 模式不创建医案</td>
+</tr>
+<tr>
+<td>P0-02</td>
+<td><strong>Infrastructure 过重（17K行）</strong></td>
+<td>编译慢、职责混乱、新人难以理解</td>
+<td>拆分为 3-4 个独立项目</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p1">🟡 P1 — 应当解决</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>影响</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1-01</td>
+<td><strong>INavigationAware 框架耦合</strong></td>
+<td>ViewModel 难以单元测试</td>
+<td>引入 Navigation 抽象层</td>
+</tr>
+<tr>
+<td>P1-02</td>
+<td><strong>删除注释噪音</strong></td>
+<td>代码可读性差</td>
+<td>清理所有 <code>[已删除]</code> 注释，用 Git blame 替代</td>
+</tr>
+<tr>
+<td>P1-03</td>
+<td><strong>DI 注册验证缺失</strong></td>
+<td>运行时才发现缺失注册</td>
+<td>添加启动时容器验证</td>
+</tr>
+<tr>
+<td>P1-04</td>
+<td><strong>Shell 硬编码所有模块</strong></td>
+<td>无法按角色按需加载</td>
+<td>Prism IModuleCatalog 动态加载</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p2">🟢 P2 — 可以改进</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>影响</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P2-01</td>
+<td><strong>wpftmp.csproj 残留</strong></td>
+<td>项目文件混乱</td>
+<td>清理</td>
+</tr>
+<tr>
+<td>P2-02</td>
+<td><strong>缺少单元测试项目</strong></td>
+<td>无法验证重构正确性</td>
+<td>添加 Desktop.Tests 项目</td>
+</tr>
+<tr>
+<td>P2-03</td>
+<td><strong>注释中的 FUTURE 标记</strong></td>
+<td>技术债务追踪不清</td>
+<td>统一到 Issue tracker</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12">12. 改进建议</h2>
+<h3 id="121-1-2">12.1 架构改进（短期，1-2 周）</h3>
+<h4 id="1-infrastructure">建议 1: 拆分 Infrastructure 项目</h4>
+<pre><code>LYBT.Desktop.Infrastructure (当前 17,437 行)
+    ↓ 拆分为
+LYBT.Desktop.Infrastructure     — DI、服务、配置 (~5K行)
+LYBT.Desktop.UI.Controls        — 自定义控件、Converter (~5K行)
+LYBT.Desktop.Navigation         — 导航服务 (~3K行)
+LYBT.Desktop.ViewModels.Base    — ViewModel 基类 (~2K行)
+</code></pre>
+<h4 id="2_1">建议 2: 清理删除注释</h4>
+<pre><code class="language-bash"># 批量移除 [已删除] [已移除] 注释
+# 前提：确保 Git 历史完整
+find src/Client -name &quot;*.cs&quot; -exec sed -i '/\[已删除\]/d; /\[已移除\]/d' {} \;
+</code></pre>
+<h4 id="3-di">建议 3: 添加 DI 容器验证</h4>
+<p>在 App.OnStartup 中添加:</p>
+<pre><code class="language-csharp">protected override void OnStartup(StartupEventArgs e)
+{
+    // 验证所有已注册的服务可解析
+    Container.Resolve&lt;IViewModelServices&gt;();
+    // ... 关键服务验证
+}
+</code></pre>
+<h3 id="122-1-2">12.2 架构改进（中期，1-2 月）</h3>
+<h4 id="4-prism">建议 4: 解耦 Prism 框架依赖</h4>
+<p>引入导航抽象:</p>
+<pre><code class="language-csharp">// 替代直接实现 INavigationAware
+public interface INavigationHandler
+{
+    Task OnNavigatedToAsync(NavigationContext context);
+    void OnNavigatedFrom(NavigationContext context);
+}
+</code></pre>
+<h4 id="5_1">建议 5: 动态模块加载</h4>
+<pre><code class="language-csharp">// 根据用户角色动态加载模块
+protected override IModuleCatalog CreateModuleCatalog()
+{
+    var catalog = new ModuleCatalog();
+    // 始终加载 Core 模块
+    catalog.AddModule&lt;AuthModule&gt;();
+    // 根据角色加载
+    if (userRole == Role.Doctor)
+        catalog.AddModule&lt;MedicalCaseModule&gt;();
+    return catalog;
+}
+</code></pre>
+<h4 id="6-wpf">建议 6: 添加 WPF 单元测试项目</h4>
+<pre><code>tests/
+├── LYBT.Desktop.Tests/
+│   ├── ViewModels/          — ViewModel 单元测试
+│   ├── Services/            — Service 单元测试
+│   └── Infrastructure/      — 基础设施测试
+</code></pre>
+<hr />
+<h2 id="13">13. 架构亮点</h2>
+<p>值得其他项目学习的实践：</p>
+<ol>
+<li><strong>OpenSpec 标记系统</strong> — 每次重构都标记来源，形成架构决策的活文档</li>
+<li><strong>泛型 Master-Detail 基类</strong> — 一次实现 CRUD/分页/搜索/选择，8 个模块复用</li>
+<li><strong>IViewModelServices 参数包</strong> — 替代多重继承，组合模式解决 ViewModel 膨胀</li>
+<li><strong>SRP 接口拆分</strong> — MedicalCaseService 实现 3 个独立接口，按需依赖</li>
+<li><strong>双 Repository 工厂</strong> — ConnectionMode 驱动，切换透明</li>
+<li><strong>编译时 Mapper</strong> — Mapperly 替代 AutoMapper，零运行时反射开销</li>
+</ol>
+<hr />
+<p><strong>文档结束</strong></p>
+<blockquote>
+<p>本报告基于 2026-04-19 对 LYBTZYZS 项目 src/Client/Desktop/ 目录的架构级代码审查。
+审查方法：项目结构分析 + 关键文件抽样 + csproj 依赖图 + DI 注册分析 + 基类设计审查。
+未对每个 .cs 文件进行逐行审查（总计 75K 行），重点关注架构模式和设计决策。</p>
+</blockquote></body></html>

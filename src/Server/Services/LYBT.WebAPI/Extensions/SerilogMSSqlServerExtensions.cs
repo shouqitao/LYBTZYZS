@@ -40,7 +40,7 @@ public static class SerilogMSSqlServerExtensions
             // 与 appsettings.json Serilog.WriteTo[MSSqlServer].Args.sinkOptionsSection 保持一致
             TableName = "SystemLogs",
             SchemaName = "dbo",
-            AutoCreateSqlTable = true,
+            AutoCreateSqlTable = false, // 由 EF Core 迁移管理表结构，避免冲突
             BatchPostingLimit = 50,
             BatchPeriod = TimeSpan.FromSeconds(5)
         };

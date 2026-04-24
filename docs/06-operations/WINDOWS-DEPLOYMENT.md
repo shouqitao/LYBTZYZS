@@ -11,6 +11,23 @@
 1. **Windows Service**（推荐）：独立运行，自动启动，适合后台服务
 2. **IIS**：适合已有 IIS 环境，需要图形化管理界面
 
+### 服务器目录结构
+
+```
+C:\Services\
+├── LYBT-API\                    ← WebAPI 运行目录（deploy.ps1 产出）
+│   ├── LYBT.WebAPI.exe
+│   ├── appsettings.json
+│   ├── appsettings.Production.json
+│   └── logs\
+└── LYBT-releases\               ← Desktop 发布包（独立于 WebAPI 目录）
+    ├── lybt-desktop-1.0.0.zip
+    ├── lybt-desktop-1.1.0.zip
+    └── lybt-desktop-1.2.0.zip
+```
+
+> **关键设计**：Releases 目录与 WebAPI 部署目录**完全独立**，确保 `dotnet publish` 更新 WebAPI 时不会清空历史发布包。WebAPI 通过 `appsettings.Production.json` 中的 `DesktopUpdate:ReleasesPath` 配置映射此目录，客户端通过 `/releases/` URL 下载发布包。
+
 ---
 
 ## 前置要求
@@ -161,7 +178,34 @@ Set-ItemProperty -Path IIS:\Sites\LYBT-API -Name "applicationPool" -Value "LYBT-
 - 速率限制优化
 - CORS 配置
 
-### 3. SQL Server 配置
+### 3. Desktop 自动升级配置
+
+`appsettings.Production.json` 中的 `DesktopUpdate` 配置节控制 Desktop 客户端升级：
+
+```json
+{
+  "DesktopUpdate": {
+    "Enabled": true,
+    "ReleasesPath": "C:\\Services\\LYBT-releases",
+    "MaxRetentionCount": 5,
+    "DownloadBaseUrl": "/releases"
+  }
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `Enabled` | 启用/禁用静态文件服务 |
+| `ReleasesPath` | 发布包存放的本地路径（必须与 WebAPI 目录独立） |
+| `MaxRetentionCount` | 保留的历史版本数量（需配合清理脚本） |
+| `DownloadBaseUrl` | 客户端下载的 URL 前缀 |
+
+发布新版本时：
+1. 将 `lybt-desktop-{version}.zip` 放入 `ReleasesPath` 指定目录
+2. 重启 WebAPI（或等待自动检测）
+3. Desktop 客户端启动时自动获取最新版本
+
+### 4. SQL Server 配置
 
 ```sql
 -- 创建数据库
@@ -347,6 +391,8 @@ Remove-Item -Path "C:\Services\LYBT-API" -Recurse -Force
 - [ ] 数据库连接正常
 - [ ] 日志文件正在写入
 - [ ] 端口监听正常（netstat -an | findstr :5000）
+- [ ] Releases 目录已创建（`C:\Services\LYBT-releases`）
+- [ ] DesktopUpdate 配置正确（`ReleasesPath` 路径存在）
 
 ### 安全加固（生产必需）
 

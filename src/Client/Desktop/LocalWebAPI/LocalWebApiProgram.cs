@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using LYBT.LocalWebAPI.Data;
+using LYBT.LocalWebAPI.Auth;
+using LYBT.LocalWebAPI.Controllers;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.LocalWebAPI;

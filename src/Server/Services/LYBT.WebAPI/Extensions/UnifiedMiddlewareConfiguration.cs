@@ -104,8 +104,19 @@ public static class UnifiedMiddlewareConfiguration
         // 2.1 响应压缩（必须在写入响应之前）
         app.UseResponseCompression();
 
-        // 2.2 静态文件（如果有）
-        // app.UseStaticFiles(); // 当前项目无静态文件
+        // 2.2 Desktop 发布包静态文件（条件启用）
+        var releasesPath = app.Configuration["DesktopUpdate:ReleasesPath"];
+        if (app.Configuration.GetValue<bool>("DesktopUpdate:Enabled") && !string.IsNullOrEmpty(releasesPath) && Directory.Exists(releasesPath))
+        {
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(releasesPath),
+                RequestPath = app.Configuration["DesktopUpdate:DownloadBaseUrl"] ?? "/releases",
+                ServeUnknownFileTypes = false,
+                DefaultContentType = "application/octet-stream"
+            });
+            app.Logger.LogInformation("Desktop 发布包静态文件已启用: {Path} -> {UrlPath}", releasesPath, app.Configuration["DesktopUpdate:DownloadBaseUrl"] ?? "/releases");
+        }
 
         // ===== 阶段3: 路由和请求处理 =====
         // 3.0 Swagger（在路由和认证之前，避免被 FallbackPolicy 拦截）
