@@ -15,4 +15,6 @@ public enum ConnectionMode
     /// 本地模式 - 直连本地数据库 (SQL Server LocalDB)
     /// </summary>
     Local
+    , // NEW: Embedded Kestrel → SQLite
+    LocalWebAPI
 }

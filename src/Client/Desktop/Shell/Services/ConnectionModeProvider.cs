@@ -76,7 +76,9 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
             }
 
             // Step 2: 前置验证 (SYNC-D01: 未完成医案检查 / LocalDB 可用性)
-            var validation = _currentMode == ConnectionMode.Local
+            // 兼容新加入的 LocalWebAPI 模式，将 LocalWebAPI 视为本地模式变体，执行本地前置校验。
+            var isLocalLikeTarget = _currentMode == ConnectionMode.Local || targetMode == ConnectionMode.LocalWebAPI;
+            var validation = isLocalLikeTarget
                 ? await _validator.ValidateLocalToRemoteSwitchAsync(ct)
                 : await _validator.ValidateRemoteToLocalSwitchAsync(ct);
 
