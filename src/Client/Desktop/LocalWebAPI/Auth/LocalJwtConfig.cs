@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
@@ -53,7 +54,9 @@ public static class LocalJwtConfig
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Role, user.Role.ToString())
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
+            // Include standard JWT subject claim for the user id
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret));

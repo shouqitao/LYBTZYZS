@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +16,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 /// <summary>
 /// Minimal Users CRUD controller for LocalWebAPI.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
@@ -26,9 +29,8 @@ public class UsersController : ControllerBase
     }
 
     // GET /api/users
-    [HttpGet]
-    [Authorize]
-    public async Task<ActionResult<IEnumerable<object>>> GetAll()
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<object>>> GetAll()
     {
         var users = await _db.Users
             .AsNoTracking()
@@ -39,9 +41,8 @@ public class UsersController : ControllerBase
     }
 
     // GET /api/users/{id}
-    [HttpGet("{id}")]
-    [Authorize]
-    public async Task<ActionResult<object>> GetById([FromRoute] Guid id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<object>> GetById([FromRoute] Guid id)
     {
         var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return NotFound();
@@ -49,9 +50,9 @@ public class UsersController : ControllerBase
     }
 
     // POST /api/users
-    [HttpPost]
-    [Authorize] // Admin check is enforced at runtime (not purely by Roles attribute per instructions)
-    public async Task<IActionResult> Create([FromBody] UserCreateDto dto)
+        [HttpPost]
+        // Admin check is enforced at runtime (not purely by Roles attribute per instructions)
+        public async Task<IActionResult> Create([FromBody] UserCreateDto dto)
     {
         if (dto == null || string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
             return BadRequest("Invalid user data.");
@@ -81,9 +82,8 @@ public class UsersController : ControllerBase
     }
 
     // PUT /api/users/{id}
-    [HttpPut("{id}")]
-    [Authorize]
-    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UserUpdateDto dto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UserUpdateDto dto)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return NotFound();
@@ -103,9 +103,8 @@ public class UsersController : ControllerBase
     }
 
     // DELETE /api/users/{id} - Soft delete
-    [HttpDelete("{id}")]
-    [Authorize]
-    public async Task<IActionResult> SoftDelete([FromRoute] Guid id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDelete([FromRoute] Guid id)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return NotFound();
