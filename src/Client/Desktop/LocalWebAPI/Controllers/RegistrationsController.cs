@@ -47,6 +47,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRegistration([FromBody] Registration reg)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             _db.Registrations.Add(reg);
             await _db.SaveChangesAsync();
             return CreatedAtAction(nameof(GetRegistration), new { id = reg.Id }, reg);
@@ -56,6 +57,8 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRegistration(Guid id, [FromBody] Registration updated)
         {
+            if (id != updated.Id) return BadRequest("ID mismatch between URL and payload.");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var existing = await _db.Registrations.FindAsync(id);
             if (existing == null || existing.IsDeleted) return NotFound();
             _db.Entry(existing).CurrentValues.SetValues(updated);

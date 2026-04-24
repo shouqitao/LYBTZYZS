@@ -26,6 +26,10 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Patient>>> GetPatients([FromQuery] string keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
+            // Pagination bounds validation
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 20;
+            if (pageSize > 100) pageSize = 100;
             var q = _db.Patients.AsNoTracking().Where(p => !p.IsDeleted);
             if (!string.IsNullOrWhiteSpace(keyword))
             {
@@ -52,6 +56,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePatient([FromBody] Patient patient)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             _db.Patients.Add(patient);
             await _db.SaveChangesAsync();
             return CreatedAtAction(nameof(GetPatient), new { id = patient.Id }, patient);
@@ -61,6 +66,8 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePatient(Guid id, [FromBody] Patient updated)
         {
+            if (id != updated.Id) return BadRequest("ID mismatch between URL and payload.");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var existing = await _db.Patients.FindAsync(id);
             if (existing == null || existing.IsDeleted) return NotFound();
             _db.Entry(existing).CurrentValues.SetValues(updated);

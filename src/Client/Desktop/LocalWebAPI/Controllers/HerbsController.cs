@@ -47,6 +47,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateHerb([FromBody] Herb herb)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             _db.Herbs.Add(herb);
             await _db.SaveChangesAsync();
             return CreatedAtAction(nameof(GetHerb), new { id = herb.Id }, herb);
@@ -56,6 +57,8 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateHerb(Guid id, [FromBody] Herb updated)
         {
+            if (id != updated.Id) return BadRequest("ID mismatch between URL and payload.");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var existing = await _db.Herbs.FindAsync(id);
             if (existing == null || existing.IsDeleted) return NotFound();
             _db.Entry(existing).CurrentValues.SetValues(updated);

@@ -54,6 +54,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateMedicalCase([FromBody] MedicalCase mc)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             _db.MedicalCases.Add(mc);
             await _db.SaveChangesAsync();
             return CreatedAtAction(nameof(GetMedicalCase), new { id = mc.Id }, mc);
@@ -63,6 +64,8 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMedicalCase(Guid id, [FromBody] MedicalCase updated)
         {
+            if (id != updated.Id) return BadRequest("ID mismatch between URL and payload.");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var existing = await _db.MedicalCases.FindAsync(id);
             if (existing == null || existing.IsDeleted) return NotFound();
             _db.Entry(existing).CurrentValues.SetValues(updated);

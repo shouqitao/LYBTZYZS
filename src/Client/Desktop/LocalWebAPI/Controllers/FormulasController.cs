@@ -47,6 +47,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateFormula([FromBody] Formula formula)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             _db.Formulas.Add(formula);
             await _db.SaveChangesAsync();
             return CreatedAtAction(nameof(GetFormula), new { id = formula.Id }, formula);
@@ -56,6 +57,8 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateFormula(Guid id, [FromBody] Formula updated)
         {
+            if (id != updated.Id) return BadRequest("ID mismatch between URL and payload.");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var existing = await _db.Formulas.FindAsync(id);
             if (existing == null || existing.IsDeleted) return NotFound();
             _db.Entry(existing).CurrentValues.SetValues(updated);
