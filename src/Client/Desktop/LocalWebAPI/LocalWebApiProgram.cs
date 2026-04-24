@@ -43,4 +43,13 @@ public static class LocalWebApiProgram
         await dbContext.Database.EnsureCreatedAsync();
         await LocalWebApiSeedData.SeedAsync(dbContext);
     }
+
+    // Runs the Web API host lifecycle: build, initialize database, then run.
+    public static async Task RunAsync(string[]? args, string dbPath)
+    {
+        var builder = CreateBuilder(args);
+        var app = CreateApplication(builder, dbPath);
+        await InitializeDatabaseAsync(app);
+        await app.RunAsync();
+    }
 }
