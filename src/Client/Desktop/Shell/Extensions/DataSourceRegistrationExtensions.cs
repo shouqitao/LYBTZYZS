@@ -14,6 +14,8 @@ using LYBT.Desktop.Registration.Repositories;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Desktop.Users.Repositories;
+using LYBT.LocalWebAPI;
+using LYBT.LocalWebAPI.Repositories;
 using LocalDbBackupService = LYBT.Desktop.LocalData.Services.LocalDbBackupService;
 using SyncService = LYBT.Desktop.LocalData.Services.SyncService;
 using Microsoft.EntityFrameworkCore;
@@ -75,7 +77,10 @@ public static class DataSourceRegistrationExtensions
             var activeConsultation = resolver.Resolve<IActiveConsultationService>();
             var navigation = resolver.Resolve<INavigationCoordinator>();
             var databaseInitializer = resolver.Resolve<IDatabaseInitializer>();
-            return new ConnectionModeProvider(initialMode, logger, validator, activeConsultation, navigation, databaseInitializer);
+            LocalWebApiHost? localWebApiHost = null;
+            try { localWebApiHost = resolver.Resolve<LocalWebApiHost>(); }
+            catch { /* not registered in all configurations */ }
+            return new ConnectionModeProvider(initialMode, logger, validator, activeConsultation, navigation, databaseInitializer, localWebApiHost);
         });
     }
 
@@ -83,62 +88,79 @@ public static class DataSourceRegistrationExtensions
     /// 工厂模式注册 6 个 Repository (SYNC-D03)
     /// 每次 resolve 时根据 IConnectionModeProvider.CurrentMode 选择实现。
     /// Transient 生命周期确保模式切换后获取正确实现。
+    /// 三模式: Remote (Refit API) | Local (LocalDbContext) | LocalWebAPI (HTTP Proxy)
     /// </summary>
     private static void RegisterRepositoryFactories(IContainerRegistry containerRegistry)
     {
         containerRegistry.Register<IPatientRepository>(resolver =>
-            resolver.Resolve<IConnectionModeProvider>().IsRemote
-                ? new PatientRepository(
-                    resolver.Resolve<Desktop.Contracts.Api.IPatientApi>(),
-                    resolver.Resolve<ILogger<PatientRepository>>())
-                : new LocalPatientRepository(
-                    resolver.Resolve<LocalDbContext>(),
-                    resolver.Resolve<ILogger<LocalPatientRepository>>()));
+        {
+            var mode = resolver.Resolve<IConnectionModeProvider>().CurrentMode;
+            if (mode == ConnectionMode.Remote)
+                return new PatientRepository(resolver.Resolve<Desktop.Contracts.Api.IPatientApi>(), resolver.Resolve<ILogger<PatientRepository>>());
+            if (mode == ConnectionMode.Local)
+                return new LocalPatientRepository(resolver.Resolve<LocalDbContext>(), resolver.Resolve<ILogger<LocalPatientRepository>>());
+            return new HttpPatientRepository(CreateLocalWebApiHttpClient(resolver), resolver.Resolve<ILogger<HttpPatientRepository>>());
+        });
 
         containerRegistry.Register<IHerbRepository>(resolver =>
-            resolver.Resolve<IConnectionModeProvider>().IsRemote
-                ? new HerbRepository(
-                    resolver.Resolve<Desktop.Contracts.Api.IHerbApi>(),
-                    resolver.Resolve<ILogger<HerbRepository>>())
-                : new LocalHerbRepository(
-                    resolver.Resolve<LocalDbContext>(),
-                    resolver.Resolve<ILogger<LocalHerbRepository>>()));
+        {
+            var mode = resolver.Resolve<IConnectionModeProvider>().CurrentMode;
+            if (mode == ConnectionMode.Remote)
+                return new HerbRepository(resolver.Resolve<Desktop.Contracts.Api.IHerbApi>(), resolver.Resolve<ILogger<HerbRepository>>());
+            if (mode == ConnectionMode.Local)
+                return new LocalHerbRepository(resolver.Resolve<LocalDbContext>(), resolver.Resolve<ILogger<LocalHerbRepository>>());
+            return new HttpHerbRepository(CreateLocalWebApiHttpClient(resolver), resolver.Resolve<ILogger<HttpHerbRepository>>());
+        });
 
         containerRegistry.Register<IFormulaRepository>(resolver =>
-            resolver.Resolve<IConnectionModeProvider>().IsRemote
-                ? new FormulaRepository(
-                    resolver.Resolve<Desktop.Contracts.Api.IFormulaApi>(),
-                    resolver.Resolve<ILogger<FormulaRepository>>())
-                : new LocalFormulaRepository(
-                    resolver.Resolve<LocalDbContext>(),
-                    resolver.Resolve<ILogger<LocalFormulaRepository>>()));
+        {
+            var mode = resolver.Resolve<IConnectionModeProvider>().CurrentMode;
+            if (mode == ConnectionMode.Remote)
+                return new FormulaRepository(resolver.Resolve<Desktop.Contracts.Api.IFormulaApi>(), resolver.Resolve<ILogger<FormulaRepository>>());
+            if (mode == ConnectionMode.Local)
+                return new LocalFormulaRepository(resolver.Resolve<LocalDbContext>(), resolver.Resolve<ILogger<LocalFormulaRepository>>());
+            return new HttpFormulaRepository(CreateLocalWebApiHttpClient(resolver), resolver.Resolve<ILogger<HttpFormulaRepository>>());
+        });
 
         containerRegistry.Register<IUserRepository>(resolver =>
-            resolver.Resolve<IConnectionModeProvider>().IsRemote
-                ? new UserRepository(
-                    resolver.Resolve<Desktop.Contracts.Api.IUserApi>(),
-                    resolver.Resolve<ILogger<UserRepository>>())
-                : new LocalUserRepository(
-                    resolver.Resolve<LocalDbContext>(),
-                    resolver.Resolve<ILogger<LocalUserRepository>>()));
+        {
+            var mode = resolver.Resolve<IConnectionModeProvider>().CurrentMode;
+            if (mode == ConnectionMode.Remote)
+                return new UserRepository(resolver.Resolve<Desktop.Contracts.Api.IUserApi>(), resolver.Resolve<ILogger<UserRepository>>());
+            if (mode == ConnectionMode.Local)
+                return new LocalUserRepository(resolver.Resolve<LocalDbContext>(), resolver.Resolve<ILogger<LocalUserRepository>>());
+            return new HttpUserRepository(CreateLocalWebApiHttpClient(resolver), resolver.Resolve<ILogger<HttpUserRepository>>());
+        });
 
         containerRegistry.Register<IMedicalCaseRepository>(resolver =>
-            resolver.Resolve<IConnectionModeProvider>().IsRemote
-                ? new MedicalCaseRepository(
-                    resolver.Resolve<Desktop.Contracts.Api.IMedicalCaseApi>(),
-                    resolver.Resolve<ILogger<MedicalCaseRepository>>())
-                : new LocalMedicalCaseRepository(
-                    resolver.Resolve<LocalDbContext>(),
-                    resolver.Resolve<ILogger<LocalMedicalCaseRepository>>()));
+        {
+            var mode = resolver.Resolve<IConnectionModeProvider>().CurrentMode;
+            if (mode == ConnectionMode.Remote)
+                return new MedicalCaseRepository(resolver.Resolve<Desktop.Contracts.Api.IMedicalCaseApi>(), resolver.Resolve<ILogger<MedicalCaseRepository>>());
+            if (mode == ConnectionMode.Local)
+                return new LocalMedicalCaseRepository(resolver.Resolve<LocalDbContext>(), resolver.Resolve<ILogger<LocalMedicalCaseRepository>>());
+            return new HttpMedicalCaseRepository(CreateLocalWebApiHttpClient(resolver), resolver.Resolve<ILogger<HttpMedicalCaseRepository>>());
+        });
 
         containerRegistry.Register<IRegistrationRepository>(resolver =>
-            resolver.Resolve<IConnectionModeProvider>().IsRemote
-                ? new RegistrationRepository(
-                    resolver.Resolve<Desktop.Contracts.Api.IRegistrationApi>(),
-                    resolver.Resolve<ILogger<RegistrationRepository>>())
-                : new LocalRegistrationRepository(
-                    resolver.Resolve<LocalDbContext>(),
-                    resolver.Resolve<ILogger<LocalRegistrationRepository>>()));
+        {
+            var mode = resolver.Resolve<IConnectionModeProvider>().CurrentMode;
+            if (mode == ConnectionMode.Remote)
+                return new RegistrationRepository(resolver.Resolve<Desktop.Contracts.Api.IRegistrationApi>(), resolver.Resolve<ILogger<RegistrationRepository>>());
+            if (mode == ConnectionMode.Local)
+                return new LocalRegistrationRepository(resolver.Resolve<LocalDbContext>(), resolver.Resolve<ILogger<LocalRegistrationRepository>>());
+            return new HttpRegistrationRepository(CreateLocalWebApiHttpClient(resolver), resolver.Resolve<ILogger<HttpRegistrationRepository>>());
+        });
+    }
+
+    /// <summary>
+    /// 创建 LocalWebAPI HTTP 客户端 (动态端口从 LocalWebApiHost 获取)
+    /// </summary>
+    private static HttpClient CreateLocalWebApiHttpClient(IContainerResolver resolver)
+    {
+        var host = resolver.Resolve<LocalWebApiHost>();
+        var client = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{host.Port}"), Timeout = TimeSpan.FromSeconds(30) };
+        return client;
     }
 
     /// <summary>
@@ -147,20 +169,20 @@ public static class DataSourceRegistrationExtensions
     private static void RegisterLocalInfrastructure(
         IContainerRegistry containerRegistry, string connectionString)
     {
-        // LocalDbContext (Transient，避免 EF Core 并发问题)
         RegisterLocalDbContext(containerRegistry, connectionString);
-
-        // 本地认证 (BCrypt 密码验证)
         containerRegistry.RegisterSingleton<ILocalAuthService, LocalAuthService>();
-
-        // NFR-AVAIL-001: 本地数据库备份
         containerRegistry.RegisterSingleton<ILocalDbBackupService, LocalDbBackupService>();
-
-        // OpenSpec: implement-data-sync - 同步服务
         containerRegistry.RegisterSingleton<ISyncService, SyncService>();
-
-        // US-SYNC-008: 模式切换验证器 (始终注册，两个方向的切换都需要验证)
         RegisterModeSwitchValidator(containerRegistry, connectionString);
+
+        var dbPath = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "LYBT", "localwebapi.db");
+        containerRegistry.RegisterSingleton<LocalWebApiHost>(resolver =>
+        {
+            var loggerFactory = resolver.Resolve<ILoggerFactory>();
+            return new LocalWebApiHost(dbPath, loggerFactory.CreateLogger<LocalWebApiHost>());
+        });
     }
 
     /// <summary>

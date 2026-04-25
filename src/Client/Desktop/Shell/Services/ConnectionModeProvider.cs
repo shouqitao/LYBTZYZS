@@ -1,18 +1,11 @@
 using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Initialization;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.LocalWebAPI;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services;
 
-/// <summary>
-/// 连接模式提供者实现 (SYNC-D02/D03)
-///
-/// Phase 1: 提供模式查询能力，替代直接注入 ConnectionMode 枚举。
-/// Phase 2: SwitchModeAsync 实现运行时模式切换 (验证 -> 清理 UI -> 切换 -> 通知)。
-///
-/// 注册为 Singleton，所有需要感知模式的服务注入此接口。
-/// </summary>
 public sealed class ConnectionModeProvider : IConnectionModeProvider
 {
     private readonly ILogger<ConnectionModeProvider> _logger;
@@ -20,6 +13,7 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
     private readonly IActiveConsultationService _activeConsultation;
     private readonly INavigationCoordinator _navigation;
     private readonly IDatabaseInitializer _databaseInitializer;
+    private readonly LocalWebApiHost? _localWebApiHost;
     private ConnectionMode _currentMode;
     private bool _isSwitching;
 
@@ -29,7 +23,8 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
         IModeSwitchValidator validator,
         IActiveConsultationService activeConsultation,
         INavigationCoordinator navigation,
-        IDatabaseInitializer databaseInitializer)
+        IDatabaseInitializer databaseInitializer,
+        LocalWebApiHost? localWebApiHost = null)
     {
         _currentMode = initialMode;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -37,6 +32,7 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
         _activeConsultation = activeConsultation ?? throw new ArgumentNullException(nameof(activeConsultation));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _databaseInitializer = databaseInitializer ?? throw new ArgumentNullException(nameof(databaseInitializer));
+        _localWebApiHost = localWebApiHost;
 
         _logger.LogInformation(
             "[ConnectionModeProvider] Initialized with mode: {Mode}", _currentMode);
@@ -117,6 +113,36 @@ public sealed class ConnectionModeProvider : IConnectionModeProvider
                     _logger.LogError(ex, "[ConnectionModeProvider] 本地数据库初始化失败");
                     _currentMode = previousMode;
                     return ModeSwitchResult.Failed($"本地数据库初始化失败: {ex.Message}");
+                }
+            }
+
+            // Step 4.6: 切换到 LocalWebAPI 模式时，启动嵌入式 WebAPI
+            if (_currentMode == ConnectionMode.LocalWebAPI && _localWebApiHost != null)
+            {
+                try
+                {
+                    await _localWebApiHost.StartAsync(ct);
+                    _logger.LogInformation("[ConnectionModeProvider] LocalWebApiHost started on port {Port}", _localWebApiHost.Port);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[ConnectionModeProvider] LocalWebApiHost start failed");
+                    _currentMode = previousMode;
+                    return ModeSwitchResult.Failed($"嵌入式 WebAPI 启动失败: {ex.Message}");
+                }
+            }
+
+            // Step 4.7: 从 LocalWebAPI 模式切换出去时，停止嵌入式 WebAPI
+            if (previousMode == ConnectionMode.LocalWebAPI && _localWebApiHost != null)
+            {
+                try
+                {
+                    await _localWebApiHost.StopAsync(ct);
+                    _logger.LogInformation("[ConnectionModeProvider] LocalWebApiHost stopped");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[ConnectionModeProvider] LocalWebApiHost stop error");
                 }
             }
 
