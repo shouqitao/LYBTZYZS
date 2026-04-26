@@ -60,6 +60,8 @@
     <!-- WebApi Integration Testing -->
     <ProjectReference Include="..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
     <ProjectReference Include="..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <!-- LocalWebAPI (Embedded Kestrel + SQLite) -->
+    <ProjectReference Include="..\..\src\Client\Desktop\LocalWebAPI\LYBT.LocalWebAPI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
