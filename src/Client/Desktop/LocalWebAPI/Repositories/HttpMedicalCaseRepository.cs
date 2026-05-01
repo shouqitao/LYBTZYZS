@@ -26,8 +26,14 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return JsonSerializer.Deserialize<PagedResult<MedicalCaseListDto>>(json, Json) ?? new PagedResult<MedicalCaseListDto>();
     }
 
-    public Task<PagedResult<MedicalCaseDetailDto>> SearchAsync(string? patientName = null, string? diagnosisKeyword = null, DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 20)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.SearchAsync - not supported"); return Task.FromResult(new PagedResult<MedicalCaseDetailDto>()); }
+    public async Task<PagedResult<MedicalCaseDetailDto>> SearchAsync(string? patientName = null, string? diagnosisKeyword = null, DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 20)
+    {
+        var url = $"/api/medicalcases/search?patientName={patientName}&diagnosisKeyword={diagnosisKeyword}&startDate={startDate:O}&endDate={endDate:O}&page={page}&pageSize={pageSize}";
+        var response = await _http.GetAsync(url);
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<PagedResult<MedicalCaseDetailDto>>(json, Json) ?? new PagedResult<MedicalCaseDetailDto>();
+    }
 
     public async Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id)
     {
@@ -38,8 +44,15 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return JsonSerializer.Deserialize<MedicalCaseDetailDto>(json, Json);
     }
 
-    public Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.QueryAsync - not supported"); return Task.FromResult(new PagedResult<MedicalCaseListDto>()); }
+    public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query)
+    {
+        var json = JsonSerializer.Serialize(query, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/medicalcases/query", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<PagedResult<MedicalCaseListDto>>(resultJson, Json) ?? new PagedResult<MedicalCaseListDto>();
+    }
 
     public async Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto)
     {
@@ -67,33 +80,111 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return response.IsSuccessStatusCode;
     }
 
-    public Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.CloseCaseAsync - not supported"); return Task.FromResult<MedicalCaseDetailDto?>(null); }
+    public async Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId)
+    {
+        var response = await _http.PostAsync($"/api/medicalcases/{medicalCaseId}/close", null);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<MedicalCaseDetailDto>(json, Json);
+    }
 
-    public Task<MedicalCasePermissionDto?> GetPermissionsAsync(Guid medicalCaseId)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.GetPermissionsAsync - not supported"); return Task.FromResult<MedicalCasePermissionDto?>(null); }
+    public async Task<MedicalCasePermissionDto?> GetPermissionsAsync(Guid medicalCaseId)
+    {
+        var response = await _http.GetAsync($"/api/medicalcases/{medicalCaseId}/permissions");
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<MedicalCasePermissionDto>(json, Json);
+    }
 
-    public Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.SaveAsync - not supported"); return Task.FromResult<MedicalCaseDetailDto>(null!); }
+    public async Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto)
+    {
+        var json = JsonSerializer.Serialize(dto, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/medicalcases/save", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<MedicalCaseDetailDto>(resultJson, Json)!;
+    }
 
-    public Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.GetBatchDetailsAsync - not supported"); return Task.FromResult<List<MedicalCaseDetailDto>>([]); }
+    public async Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync(List<Guid> ids)
+    {
+        var json = JsonSerializer.Serialize(ids, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/medicalcases/batch-details", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<MedicalCaseDetailDto>>(resultJson, Json) ?? [];
+    }
 
-    public Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.SetPrescriptionFlagAsync - not supported"); return Task.FromResult<MedicalCaseDetailDto?>(null); }
+    public async Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request)
+    {
+        var json = JsonSerializer.Serialize(request, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PutAsync($"/api/medicalcases/{id}/prescription-flag", content);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<MedicalCaseDetailDto>(resultJson, Json);
+    }
 
-    public Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.UpdateStatusAsync - not supported"); return Task.FromResult<MedicalCaseDetailDto?>(null); }
+    public async Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request)
+    {
+        var json = JsonSerializer.Serialize(request, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PutAsync($"/api/medicalcases/{id}/status", content);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<MedicalCaseDetailDto>(resultJson, Json);
+    }
 
-    public Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.CancelMedicalCaseAsync - not supported"); return Task.FromResult<MedicalCaseDetailDto?>(null); }
+    public async Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request)
+    {
+        var json = JsonSerializer.Serialize(request, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync($"/api/medicalcases/{id}/cancel", content);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        if (response.StatusCode == HttpStatusCode.NoContent) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<MedicalCaseDetailDto>(resultJson, Json);
+    }
 
-    public Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.SuspendAsync - not supported"); return Task.FromResult<MedicalCaseDetailDto?>(null); }
+    public async Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request)
+    {
+        var json = JsonSerializer.Serialize(request, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync($"/api/medicalcases/{id}/suspend", content);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<MedicalCaseDetailDto>(resultJson, Json);
+    }
 
-    public Task<MedicalCaseDetailDto?> RecordPrintCompletedAsync(Guid medicalCaseId, PrintCompletedRequest request)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.RecordPrintCompletedAsync - not supported"); return Task.FromResult<MedicalCaseDetailDto?>(null); }
+    public async Task<MedicalCaseDetailDto?> RecordPrintCompletedAsync(Guid medicalCaseId, PrintCompletedRequest request)
+    {
+        var json = JsonSerializer.Serialize(request, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync($"/api/medicalcases/{medicalCaseId}/print-completed", content);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<MedicalCaseDetailDto>(resultJson, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] MedicalCase.BatchDeleteAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    {
+        var json = JsonSerializer.Serialize(ids, Json);
+        var request = new HttpRequestMessage(HttpMethod.Delete, "/api/medicalcases/batch")
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var response = await _http.SendAsync(request);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(resultJson, Json);
+    }
 }

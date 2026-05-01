@@ -69,30 +69,91 @@ public class HttpFormulaRepository : IFormulaRepository
         return paged?.Items ?? [];
     }
 
-    public Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Formula.CloneFormulaAsync - not supported"); return Task.FromResult<FormulaDetailDto>(null!); }
+    public async Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId)
+    {
+        var response = await _http.PostAsync($"/api/formulas/{formulaId}/clone", null);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null!;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<FormulaDetailDto>(json, Json)!;
+    }
 
-    public Task<FormulaDetailDto?> ToggleStatusAsync(Guid id)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Formula.ToggleStatusAsync - not supported"); return Task.FromResult<FormulaDetailDto?>(null); }
+    public async Task<FormulaDetailDto?> ToggleStatusAsync(Guid id)
+    {
+        var response = await _http.PostAsync($"/api/formulas/{id}/toggle-status", null);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<FormulaDetailDto>(json, Json);
+    }
 
-    public Task<FormulaDetailDto?> RestoreAsync(Guid id)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Formula.RestoreAsync - not supported"); return Task.FromResult<FormulaDetailDto?>(null); }
+    public async Task<FormulaDetailDto?> RestoreAsync(Guid id)
+    {
+        var response = await _http.PostAsync($"/api/formulas/{id}/restore", null);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<FormulaDetailDto>(json, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Formula.BatchDeleteAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    {
+        var body = JsonSerializer.Serialize(new { ids }, Json);
+        var content = new StringContent(body, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/formulas/batch-delete", content);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(json, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Formula.BatchEnableAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
+    {
+        var body = JsonSerializer.Serialize(new { ids }, Json);
+        var content = new StringContent(body, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/formulas/batch-enable", content);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(json, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Formula.BatchDisableAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
+    {
+        var body = JsonSerializer.Serialize(new { ids }, Json);
+        var content = new StringContent(body, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/formulas/batch-disable", content);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(json, Json);
+    }
 
-    public Task<FormulaBatchImportResultDto?> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Formula.BatchImportAsync - not supported"); return Task.FromResult<FormulaBatchImportResultDto?>(null); }
+    public async Task<FormulaBatchImportResultDto?> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)
+    {
+        var body = JsonSerializer.Serialize(request, Json);
+        var content = new StringContent(body, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/formulas/import", content, ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync(ct);
+        return JsonSerializer.Deserialize<FormulaBatchImportResultDto>(json, Json);
+    }
 
-    public Task<byte[]?> ExportFormulasAsync(string? category = null, CancellationToken ct = default)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Formula.ExportFormulasAsync - not supported"); return Task.FromResult<byte[]?>(null); }
+    public async Task<byte[]?> ExportFormulasAsync(string? category = null, CancellationToken ct = default)
+    {
+        var url = category is null ? "/api/formulas/export" : $"/api/formulas/export?category={Uri.EscapeDataString(category)}";
+        var response = await _http.GetAsync(url, ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsByteArrayAsync(ct);
+    }
 
-    public Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Formula.ExportTemplateAsync - not supported"); return Task.FromResult<byte[]?>(null); }
+    public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
+    {
+        var response = await _http.GetAsync("/api/formulas/import-template", ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsByteArrayAsync(ct);
+    }
 }

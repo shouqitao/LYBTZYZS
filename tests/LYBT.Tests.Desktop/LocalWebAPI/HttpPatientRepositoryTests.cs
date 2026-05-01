@@ -14,7 +14,7 @@ namespace LYBT.Tests.Desktop.LocalWebAPI;
 /// <summary>
 /// HttpPatientRepository unit tests
 /// </summary>
-public class HttpPatientRepositoryTests
+public class HttpPatientRepositoryTests : IDisposable
 {
     private readonly HttpClient _mockHttpClient;
     private readonly ILogger<HttpPatientRepository> _logger;
@@ -27,6 +27,12 @@ public class HttpPatientRepositoryTests
         _mockHttpClient = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
         _logger = Substitute.For<ILogger<HttpPatientRepository>>();
         _repo = new HttpPatientRepository(_mockHttpClient, _logger);
+    }
+
+    public void Dispose()
+    {
+        _mockHttpClient.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -68,13 +74,13 @@ public class HttpPatientRepositoryTests
     }
 
     [Fact]
-    public void Unsupported_Methods_Return_Null()
+    public async Task Unsupported_Methods_Return_Null()
     {
-        _repo.BatchImportAsync(null!).Result.Should().BeNull();
-        _repo.ExportTemplateAsync().Result.Should().BeNull();
-        _repo.ExportPatientsAsync().Result.Should().BeNull();
-        _repo.RestoreAsync(Guid.NewGuid()).Result.Should().BeNull();
-        _repo.BatchDeleteAsync([]).Result.Should().BeNull();
+        (await _repo.BatchImportAsync(null!)).Should().BeNull();
+        (await _repo.ExportTemplateAsync()).Should().BeNull();
+        (await _repo.ExportPatientsAsync()).Should().BeNull();
+        (await _repo.RestoreAsync(Guid.NewGuid())).Should().BeNull();
+        (await _repo.BatchDeleteAsync([])).Should().BeNull();
     }
 }
 

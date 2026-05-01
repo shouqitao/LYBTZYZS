@@ -6,7 +6,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using LYBT.Entities.Users;
-using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 

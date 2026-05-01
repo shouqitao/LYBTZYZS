@@ -90,30 +90,92 @@ public class HttpUserRepository : IUserRepository
         return all.Where(u => u.Role == LYBT.Shared.Models.Enums.UserRole.Doctor).ToList();
     }
 
-    public Task<UserDetailDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto)
-    { _logger.LogWarning("[REPO:LocalWebAPI] User.ChangeProfileAsync - not supported"); return Task.FromResult<UserDetailDto>(null!); }
+    public async Task<UserDetailDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto)
+    {
+        var json = JsonSerializer.Serialize(dto, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PutAsync($"/api/users/{userId}", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<UserDetailDto>(resultJson, Json)!;
+    }
 
-    public Task<ServiceResult> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
-    { _logger.LogWarning("[REPO:LocalWebAPI] User.ChangePasswordAsync - not supported"); return Task.FromResult(new ServiceResult()); }
+    public async Task<ServiceResult> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
+    {
+        var body = new { UserId = userId, OldPassword = request.OldPassword, NewPassword = request.NewPassword };
+        var json = JsonSerializer.Serialize(body, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/users/change-password", content);
+        return response.IsSuccessStatusCode
+            ? new ServiceResult { IsSuccess = true }
+            : new ServiceResult { IsSuccess = false };
+    }
 
-    public Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(Guid userId, ResetPasswordRequestDto request)
-    { _logger.LogWarning("[REPO:LocalWebAPI] User.ResetPasswordAsync - not supported"); return Task.FromResult<ServiceResult<ResetPasswordResponseDto>>(null!); }
+    public async Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(Guid userId, ResetPasswordRequestDto request)
+    {
+        var json = JsonSerializer.Serialize(request, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync($"/api/users/{userId}/reset-password", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ServiceResult<ResetPasswordResponseDto>>(resultJson, Json)!;
+    }
 
-    public Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportInputDto request)
-    { _logger.LogWarning("[REPO:LocalWebAPI] User.BatchImportAsync - not supported"); return Task.FromResult<UserBatchImportResultDto?>(null); }
+    public async Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportInputDto request)
+    {
+        var json = JsonSerializer.Serialize(request, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/users/import", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<UserBatchImportResultDto>(resultJson, Json);
+    }
 
-    public Task<UserDetailDto?> ToggleStatusAsync(Guid id)
-    { _logger.LogWarning("[REPO:LocalWebAPI] User.ToggleStatusAsync - not supported"); return Task.FromResult<UserDetailDto?>(null); }
+    public async Task<UserDetailDto?> ToggleStatusAsync(Guid id)
+    {
+        var response = await _http.PostAsync($"/api/users/{id}/toggle-status", null);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<UserDetailDto>(resultJson, Json);
+    }
 
-    public Task<UserDetailDto?> RestoreAsync(Guid id)
-    { _logger.LogWarning("[REPO:LocalWebAPI] User.RestoreAsync - not supported"); return Task.FromResult<UserDetailDto?>(null); }
+    public async Task<UserDetailDto?> RestoreAsync(Guid id)
+    {
+        var response = await _http.PostAsync($"/api/users/{id}/restore", null);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<UserDetailDto>(resultJson, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] User.BatchDeleteAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    {
+        var json = JsonSerializer.Serialize(ids, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/users/batch-delete", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(resultJson, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] User.BatchEnableAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
+    {
+        var json = JsonSerializer.Serialize(ids, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/users/batch-enable", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(resultJson, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] User.BatchDisableAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
+    {
+        var json = JsonSerializer.Serialize(ids, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/users/batch-disable", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(resultJson, Json);
+    }
 }

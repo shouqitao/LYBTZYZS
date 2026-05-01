@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="../../../Shared/LYBT.Shared.Models/LYBT.Shared.Models.csproj" />
     <ProjectReference Include="../Core/LYBT.Desktop.Contracts/LYBT.Desktop.Contracts.csproj" />
     <ProjectReference Include="../../../Shared/LYBT.Shared.Logging/LYBT.Shared.Logging.csproj" />

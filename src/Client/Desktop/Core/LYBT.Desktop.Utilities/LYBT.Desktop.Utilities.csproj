@@ -5,6 +5,7 @@
     <UseWPF>true</UseWPF>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AcceptNPOIOSMFLicense>true</AcceptNPOIOSMFLicense>
 
     <!-- Assembly Information -->
     <AssemblyTitle>LYBT.Desktop.Utilities</AssemblyTitle>

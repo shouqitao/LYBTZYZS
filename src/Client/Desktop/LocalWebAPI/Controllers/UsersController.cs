@@ -113,7 +113,91 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
+    // POST /api/users/change-password
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        if (dto == null) return BadRequest("Invalid request.");
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId && !u.IsDeleted);
+        if (user == null) return NotFound();
+
+        if (!PasswordHelper.VerifyPassword(dto.OldPassword, user.PasswordHash, user.Role).IsSuccess)
+            return BadRequest("Old password is incorrect.");
+
+        user.PasswordHash = PasswordHelper.HashPassword(dto.NewPassword, user.Role);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    // POST /api/users/{id}/toggle-status
+    [HttpPost("{id}/toggle-status")]
+    public async Task<ActionResult<object>> ToggleStatus([FromRoute] Guid id)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
+        if (user == null) return NotFound();
+
+        user.Status = user.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
+        await _db.SaveChangesAsync();
+        return Ok(new { Id = user.Id, Username = user.UserName, Role = user.Role, Status = user.Status });
+    }
+
+    // POST /api/users/{id}/restore
+    [HttpPost("{id}/restore")]
+    public async Task<ActionResult<object>> Restore([FromRoute] Guid id)
+    {
+        var user = await _db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted);
+        if (user == null) return NotFound();
+
+        user.IsDeleted = false;
+        await _db.SaveChangesAsync();
+        return Ok(new { Id = user.Id, Username = user.UserName, Role = user.Role, Status = user.Status });
+    }
+
+    // POST /api/users/batch-delete
+    [HttpPost("batch-delete")]
+    public async Task<ActionResult<object>> BatchDelete([FromBody] List<Guid> ids)
+    {
+        if (ids == null || ids.Count == 0) return BadRequest("No ids provided.");
+
+        var users = await _db.Users.Where(u => ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
+        foreach (var u in users) u.IsDeleted = true;
+        await _db.SaveChangesAsync();
+        return Ok(new { Count = users.Count });
+    }
+
+    // POST /api/users/batch-enable
+    [HttpPost("batch-enable")]
+    public async Task<ActionResult<object>> BatchEnable([FromBody] List<Guid> ids)
+    {
+        if (ids == null || ids.Count == 0) return BadRequest("No ids provided.");
+
+        var users = await _db.Users.Where(u => ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
+        foreach (var u in users) u.Status = CommonStatus.Enabled;
+        await _db.SaveChangesAsync();
+        return Ok(new { Count = users.Count });
+    }
+
+    // POST /api/users/batch-disable
+    [HttpPost("batch-disable")]
+    public async Task<ActionResult<object>> BatchDisable([FromBody] List<Guid> ids)
+    {
+        if (ids == null || ids.Count == 0) return BadRequest("No ids provided.");
+
+        var users = await _db.Users.Where(u => ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
+        foreach (var u in users) u.Status = CommonStatus.Disabled;
+        await _db.SaveChangesAsync();
+        return Ok(new { Count = users.Count });
+    }
+
     // DTOs
+    public class ChangePasswordDto
+    {
+        public Guid UserId { get; set; }
+        public string OldPassword { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+    }
+
     public class UserCreateDto
     {
         public string Username { get; set; } = string.Empty;

@@ -69,29 +69,80 @@ public class HttpHerbRepository : IHerbRepository
         return paged?.Items ?? [];
     }
 
-    public Task<HerbBatchImportResultDto?> BatchImportAsync(System.IO.Stream fileStream, string fileName)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Herb.BatchImportAsync - not supported"); return Task.FromResult<HerbBatchImportResultDto?>(null); }
+    public async Task<HerbBatchImportResultDto?> BatchImportAsync(System.IO.Stream fileStream, string fileName)
+    {
+        using var reader = new System.IO.StreamReader(fileStream);
+        var streamContent = await reader.ReadToEndAsync();
+        var herbs = JsonSerializer.Deserialize<List<HerbInputDto>>(streamContent, Json) ?? [];
+        var json = JsonSerializer.Serialize(herbs, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/herbs/import", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<HerbBatchImportResultDto>(resultJson, Json);
+    }
 
-    public Task<byte[]?> ExportTemplateAsync()
-    { _logger.LogWarning("[REPO:LocalWebAPI] Herb.ExportTemplateAsync - not supported"); return Task.FromResult<byte[]?>(null); }
+    public async Task<byte[]?> ExportTemplateAsync()
+    {
+        var response = await _http.GetAsync("/api/herbs/import-template");
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsByteArrayAsync();
+    }
 
-    public Task<byte[]?> ExportHerbsAsync(string? keyword = null)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Herb.ExportHerbsAsync - not supported"); return Task.FromResult<byte[]?>(null); }
+    public async Task<byte[]?> ExportHerbsAsync(string? keyword = null)
+    {
+        var response = await _http.GetAsync($"/api/herbs/export?keyword={keyword}");
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsByteArrayAsync();
+    }
 
-    public Task<HerbDetailDto?> ToggleStatusAsync(Guid id)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Herb.ToggleStatusAsync - not supported"); return Task.FromResult<HerbDetailDto?>(null); }
+    public async Task<HerbDetailDto?> ToggleStatusAsync(Guid id)
+    {
+        var response = await _http.PostAsync($"/api/herbs/{id}/toggle-status", null);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<HerbDetailDto>(json, Json);
+    }
 
-    public Task<HerbDetailDto?> RestoreAsync(Guid id)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Herb.RestoreAsync - not supported"); return Task.FromResult<HerbDetailDto?>(null); }
+    public async Task<HerbDetailDto?> RestoreAsync(Guid id)
+    {
+        var response = await _http.PostAsync($"/api/herbs/{id}/restore", null);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<HerbDetailDto>(json, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Herb.BatchDeleteAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    {
+        var json = JsonSerializer.Serialize(ids, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/herbs/batch-delete", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(resultJson, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Herb.BatchEnableAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
+    {
+        var json = JsonSerializer.Serialize(ids, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/herbs/batch-enable", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(resultJson, Json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Herb.BatchDisableAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
+    {
+        var json = JsonSerializer.Serialize(ids, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/herbs/batch-disable", content);
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(resultJson, Json);
+    }
 
     public async Task<(bool success, HerbDetailDto? data, string? error)> CreateWithResultAsync(HerbInputDto input)
     {

@@ -44,15 +44,29 @@ public class HttpRegistrationRepository : IRegistrationRepository
         return JsonSerializer.Deserialize<PagedResult<RegistrationListDto>>(json, Json) ?? new PagedResult<RegistrationListDto>();
     }
 
-    public Task<List<RegistrationListDto>> GetWaitingQueueAsync(Guid? doctorId = null)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Registration.GetWaitingQueueAsync - not supported"); return Task.FromResult<List<RegistrationListDto>>([]); }
+    public async Task<List<RegistrationListDto>> GetWaitingQueueAsync(Guid? doctorId = null)
+    {
+        var url = doctorId.HasValue
+            ? $"/api/registrations/queue?doctorId={doctorId}"
+            : "/api/registrations/queue";
+        var response = await _http.GetAsync(url);
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<RegistrationListDto>>(json, Json) ?? [];
+    }
 
-    public Task<Guid?> StartVisitAsync(Guid id)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Registration.StartVisitAsync - not supported"); return Task.FromResult<Guid?>(null); }
+    public async Task<Guid?> StartVisitAsync(Guid id)
+    {
+        var response = await _http.PutAsync($"/api/registrations/{id}/start-visit", null);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<Guid>(json, Json);
+    }
 
     public async Task<bool> CancelAsync(Guid id)
     {
-        var response = await _http.DeleteAsync($"/api/registrations/{id}");
+        var response = await _http.PutAsync($"/api/registrations/{id}/cancel", null);
         return response.IsSuccessStatusCode;
     }
 }

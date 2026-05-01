@@ -1,10 +1,14 @@
 using FluentAssertions;
+using LYBT.Entities.Consultations;
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
+using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
+using LYBT.Entities.Prescriptions;
 using LYBT.Module.Sync.Services;
 using LYBT.Shared.Models.Enums;
 using Xunit;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Tests.Server.PureLogic.Sync;
 
@@ -449,7 +453,7 @@ public class ChecksumHelperTests
         var formula1 = CreateTestFormula();
         var formula2 = CreateTestFormula();
 
-        var property = typeof(Formula).GetProperty(fieldName);
+        var property = typeof(FormulaEntity).GetProperty(fieldName);
         property!.SetValue(formula2, newValue);
 
         // Act
@@ -735,6 +739,139 @@ public class ChecksumHelperTests
 
     #endregion
 
+    #region 算法正确性测试 - MedicalCase
+
+    [Fact]
+    public void ComputeMedicalCaseChecksum_WithSameData_ShouldReturnSameChecksum()
+    {
+        // Arrange - 使用相同 Id
+        var sharedId = Guid.NewGuid();
+        var patientId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var consultationId = Guid.NewGuid();
+        var prescriptionId = Guid.NewGuid();
+        var herbId1 = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        var herbId2 = Guid.Parse("00000000-0000-0000-0000-000000000002");
+
+        var mc1 = CreateTestMedicalCase();
+        mc1.Id = sharedId;
+        mc1.PatientId = patientId;
+        mc1.UserId = userId;
+        mc1.Consultation!.Id = consultationId;
+        mc1.Prescription!.Id = prescriptionId;
+        mc1.Prescription.Items!.First().HerbId = herbId1;
+        mc1.Prescription.Items!.Last().HerbId = herbId2;
+
+        var mc2 = CreateTestMedicalCase();
+        mc2.Id = sharedId;
+        mc2.PatientId = patientId;
+        mc2.UserId = userId;
+        mc2.Consultation!.Id = consultationId;
+        mc2.Prescription!.Id = prescriptionId;
+        mc2.Prescription.Items!.First().HerbId = herbId1;
+        mc2.Prescription.Items!.Last().HerbId = herbId2;
+
+        // Act
+        var checksum1 = ChecksumHelper.ComputeMedicalCaseChecksum(mc1);
+        var checksum2 = ChecksumHelper.ComputeMedicalCaseChecksum(mc2);
+
+        // Assert
+        checksum1.Should().Be(checksum2);
+        checksum1.Should().NotBeNullOrEmpty();
+        checksum1.Length.Should().Be(64, "SHA256 produces 64 hex characters");
+    }
+
+    [Fact]
+    public void ComputeMedicalCaseChecksum_WithDifferentPatientId_ShouldReturnDifferent()
+    {
+        // Arrange
+        var mc1 = CreateTestMedicalCase();
+        var mc2 = CreateTestMedicalCase();
+        mc2.PatientId = Guid.NewGuid();
+
+        // Act
+        var checksum1 = ChecksumHelper.ComputeMedicalCaseChecksum(mc1);
+        var checksum2 = ChecksumHelper.ComputeMedicalCaseChecksum(mc2);
+
+        // Assert
+        checksum1.Should().NotBe(checksum2);
+    }
+
+    [Fact]
+    public void ComputeMedicalCaseChecksum_WithDifferentConsultation_ShouldReturnDifferent()
+    {
+        // Arrange
+        var mc1 = CreateTestMedicalCase();
+        var mc2 = CreateTestMedicalCase();
+        mc2.Consultation!.TcmDiagnosis = "肝郁气滞";
+
+        // Act
+        var checksum1 = ChecksumHelper.ComputeMedicalCaseChecksum(mc1);
+        var checksum2 = ChecksumHelper.ComputeMedicalCaseChecksum(mc2);
+
+        // Assert
+        checksum1.Should().NotBe(checksum2);
+    }
+
+    [Fact]
+    public void ComputeMedicalCaseChecksum_WithDifferentPrescriptionItems_ShouldReturnDifferent()
+    {
+        // Arrange
+        var mc1 = CreateTestMedicalCase();
+        var mc2 = CreateTestMedicalCase();
+        mc2.Prescription!.Items!.First().Dosage = 20;
+
+        // Act
+        var checksum1 = ChecksumHelper.ComputeMedicalCaseChecksum(mc1);
+        var checksum2 = ChecksumHelper.ComputeMedicalCaseChecksum(mc2);
+
+        // Assert
+        checksum1.Should().NotBe(checksum2);
+    }
+
+    [Fact]
+    public void ComputeMedicalCaseChecksum_WithNullConsultation_ShouldNotThrow()
+    {
+        // Arrange
+        var mc = CreateTestMedicalCase();
+        mc.Consultation = null;
+
+        // Act
+        var act = () => ChecksumHelper.ComputeMedicalCaseChecksum(mc);
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ComputeMedicalCaseChecksum_WithNullPrescription_ShouldNotThrow()
+    {
+        // Arrange
+        var mc = CreateTestMedicalCase();
+        mc.Prescription = null;
+
+        // Act
+        var act = () => ChecksumHelper.ComputeMedicalCaseChecksum(mc);
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ComputeChecksum_WithMedicalCaseEntityType_ShouldNotThrow()
+    {
+        // Arrange
+        var mc = CreateTestMedicalCase();
+
+        // Act
+        var act = () => ChecksumHelper.ComputeChecksum(mc, "MedicalCase");
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    #endregion
+
     #region 测试数据工厂方法
 
     private static Herb CreateTestHerb()
@@ -778,12 +915,12 @@ public class ChecksumHelperTests
         };
     }
 
-    private static Formula CreateTestFormula()
+    private static FormulaEntity CreateTestFormula()
     {
         var herbId1 = Guid.Parse("00000000-0000-0000-0000-000000000001");
         var herbId2 = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
-        return new Formula
+        return new FormulaEntity
         {
             Id = Guid.NewGuid(),
             Name = "补中益气汤",
@@ -800,6 +937,48 @@ public class ChecksumHelperTests
             {
                 new() { HerbId = herbId1, HerbName = "黄芪", Dosage = 15, Unit = "g" },
                 new() { HerbId = herbId2, HerbName = "党参", Dosage = 10, Unit = "g" }
+            }
+        };
+    }
+
+    private static Entities.MedicalCases.MedicalCase CreateTestMedicalCase()
+    {
+        var herbId1 = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        var herbId2 = Guid.Parse("00000000-0000-0000-0000-000000000002");
+
+        return new Entities.MedicalCases.MedicalCase
+        {
+            Id = Guid.NewGuid(),
+            PatientId = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
+            CaseStatus = MedicalCaseStatus.Active,
+            NeedsPrescription = true,
+            CompletedAt = null,
+            Remark = "测试医案",
+            IsDeleted = false,
+            Consultation = new Consultation
+            {
+                Id = Guid.NewGuid(),
+                PresentIllness = "主诉：乏力、气短",
+                TongueDiagnosis = "舌淡苔白",
+                PulseDiagnosis = "脉弱",
+                TcmDiagnosis = "脾胃气虚"
+            },
+            Prescription = new Prescription
+            {
+                Id = Guid.NewGuid(),
+                DosageCount = 7,
+                Discount = 1.0m,
+                Usage = "水煎服",
+                Advice = "忌生冷",
+                ReferencedFormulas = null,
+                Remark = null,
+                IsDeleted = false,
+                Items = new List<PrescriptionItem>
+                {
+                    new() { HerbId = herbId1, Dosage = 15, Unit = "g", UnitPrice = 0.5m },
+                    new() { HerbId = herbId2, Dosage = 10, Unit = "g", UnitPrice = 0.3m }
+                }
             }
         };
     }

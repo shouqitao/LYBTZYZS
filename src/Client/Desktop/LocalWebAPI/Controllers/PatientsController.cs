@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Entities.Patients;
+using LYBT.Entities.MedicalCases;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.LocalWebAPI.Controllers
 {
@@ -84,6 +86,93 @@ namespace LYBT.LocalWebAPI.Controllers
             existing.IsDeleted = true;
             await _db.SaveChangesAsync();
             return NoContent();
+        }
+
+        // GET /api/patients/by-id-number/{idNumber}
+        [HttpGet("by-id-number/{idNumber}")]
+        public async Task<ActionResult<Patient>> GetPatientByIdNumber(string idNumber)
+        {
+            var patient = await _db.Patients.AsNoTracking()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.IdNumber == idNumber);
+            if (patient == null) return NotFound();
+            return patient;
+        }
+
+        // POST /api/patients/batch-delete
+        [HttpPost("batch-delete")]
+        public async Task<IActionResult> BatchDeletePatients([FromBody] List<Guid> ids)
+        {
+            if (ids == null || ids.Count == 0) return BadRequest("No IDs provided.");
+            var hasActiveCases = await _db.MedicalCases
+                .AnyAsync(mc => ids.Contains(mc.PatientId) && !mc.IsDeleted);
+            if (hasActiveCases)
+                return Conflict(new { message = "部分患者存在医案记录，无法删除" });
+            var patients = await _db.Patients
+                .Where(p => ids.Contains(p.Id) && !p.IsDeleted)
+                .ToListAsync();
+            foreach (var p in patients)
+                p.IsDeleted = true;
+            await _db.SaveChangesAsync();
+            return Ok(new { successCount = patients.Count, failureCount = ids.Count - patients.Count });
+        }
+
+        // POST /api/patients/{id}/restore
+        [HttpPost("{id}/restore")]
+        public async Task<ActionResult<Patient>> RestorePatient(Guid id)
+        {
+            var patient = await _db.Patients.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted);
+            if (patient == null) return NotFound();
+            patient.IsDeleted = false;
+            await _db.SaveChangesAsync();
+            return patient;
+        }
+
+        // POST /api/patients/{id}/toggle-status
+        [HttpPost("{id}/toggle-status")]
+        public async Task<ActionResult<Patient>> TogglePatientStatus(Guid id)
+        {
+            var patient = await _db.Patients.FindAsync(id);
+            if (patient == null || patient.IsDeleted) return NotFound();
+            patient.Status = patient.Status == CommonStatus.Enabled
+                ? CommonStatus.Disabled
+                : CommonStatus.Enabled;
+            await _db.SaveChangesAsync();
+            return patient;
+        }
+
+        // GET /api/patients/export
+        [HttpGet("export")]
+        public async Task<ActionResult<List<Patient>>> ExportPatients()
+        {
+            var patients = await _db.Patients.AsNoTracking()
+                .Where(p => !p.IsDeleted)
+                .ToListAsync();
+            return patients;
+        }
+
+        // POST /api/patients/import
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportPatients([FromBody] List<Patient> patients)
+        {
+            if (patients == null || patients.Count == 0) return BadRequest("No patients provided.");
+            var existingIds = patients.Select(p => p.Id).ToList();
+            var existing = await _db.Patients.IgnoreQueryFilters()
+                .Where(p => existingIds.Contains(p.Id))
+                .ToListAsync();
+            var existingDict = existing.ToDictionary(p => p.Id);
+            int count = 0;
+            foreach (var patient in patients)
+            {
+                if (existingDict.TryGetValue(patient.Id, out var dbPatient))
+                    _db.Entry(dbPatient).CurrentValues.SetValues(patient);
+                else
+                    _db.Patients.Add(patient);
+                count++;
+            }
+            await _db.SaveChangesAsync();
+            return Ok(new { importedCount = count });
         }
     }
 }

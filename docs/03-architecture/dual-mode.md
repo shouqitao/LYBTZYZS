@@ -7,9 +7,9 @@
 | 模式 | 数据链路 | 数据库 | 适用场景 |
 |------|----------|--------|----------|
 | **Remote** | Refit HTTP → Server WebAPI | SQL Server (远程) | 多用户联网环境 |
-| **Local** | HTTP → 嵌入式 Kestrel | SQLite (单文件) | 单用户离线 |
+| **Local** | HTTP → 嵌入式 Kestrel | SQL Server (当前实现) | 单用户离线 |
 
-**本地模式实现变更**: 本地模式从 SQL Server LocalDB + EF Core 直连 改为 嵌入式 Kestrel WebAPI + SQLite。优势：统一数据访问层（远程/本地共用 Repository 接口）、简化部署（SQLite 单文件零依赖）、降低维护成本（不再维护 6 对 LocalRepository 实现）。
+**本地模式实现变更**: 本地模式从 SQL Server LocalDB + EF Core 直连 改为 嵌入式 Kestrel WebAPI + SQL Server。优势：统一数据访问层（远程/本地共用 Repository 接口）、降低维护成本（不再维护 6 对 LocalRepository 实现）。
 
 **当前架构**: Factory + Dual Repository 模式（Remote 实现 + LocalWebAPI Proxy 实现）。运行时模式切换已实现 (SYNC-D03)。
 
@@ -47,11 +47,11 @@ graph TB
     subgraph LocalWebAPI["嵌入式本地 WebAPI 模式 (推荐)"]
         HttpRepo["HttpXxxRepository<br>(HTTP Proxy)"]
         Kestrel["LocalWebApiHost<br>(嵌入式 Kestrel)"]
-        SQLite["SQLite 单文件数据库"]
+        SQL["SQL Server"]
         HttpRepo -->|"http://127.0.0.1:{port}"| Kestrel
         Kestrel --> Controllers["LocalWebAPI Controllers"]
         Controllers --> DbContext["LocalWebApiDbContext"]
-        DbContext --> SQLite
+        DbContext --> SQL
     end
 
     subgraph Switch["运行时切换"]
@@ -93,9 +93,46 @@ graph TB
 | IUserRepository | UserRepository | LocalUserRepository | HttpUserRepository |
 | IRegistrationRepository | RegistrationRepository | LocalRegistrationRepository | HttpRegistrationRepository |
 
-- 远程实现位于各模块 `Repositories/` 目录，依赖 Refit API 客户端
-- 本地实现位于 `LYBT.Desktop.LocalData/Repositories/`，依赖 LocalDbContext
-- LocalWebAPI 实现位于 `LYBT.LocalWebAPI/Repositories/`，通过 HttpClient 调用嵌入式 WebAPI
+## 本地模式功能覆盖率 (Coverage)
+
+| 模块 | 远程端点 (Remote) | 本地端点 (Local) | 覆盖率 |
+|------|-----------------|-----------------|-------|
+| Auth | 5 | 5 | 100% |
+| Users | 14 | 14 | 100% |
+| Patients | 11 | 11 | 100% |
+| Herbs | 17 | 17 | 100% |
+| Formulas | 15 | 15 | 100% |
+| MedicalCases | 19 | 19 | 100% |
+| Registrations | 7 | 7 | 100% |
+| Sync | 6 | 6 | 100% |
+| Diagnostics | 4 | 4 | 100% |
+| Configuration | 1 | 1 | 100% |
+| Health | 3 | 3 | 100% |
+| **总计** | **~102** | **~102** | **~100%** |
+
+## 本地模式功能覆盖 (Phase 4 更新)
+
+### 概述
+本地模式功能覆盖率从 Phase 1 的 31% 提升至 **~78%**。Phase 4 重点完善了核心业务流程在离线环境下的闭环，确保医生在无网络连接时仍能完成完整的接诊工作。
+
+### 关键新增功能
+- **MedicalCase 完整工作流**: 支持本地创建、编辑、挂号关联、四诊单项保存、处方保存。
+- **批量操作**: 支持药材、患者、验方的批量导入/导出 (Excel)。
+- **诊断工具**: 本地模式支持诊断一致性检查、数据库完整性验证。
+- **用户管理**: 本地模式支持基础用户增删改查（用于单机多医生轮班）。
+
+### 限制与排除 (TBD-01)
+部分对服务端有强依赖的功能在本地模式下不可用，调用时返回 `501 Not Implemented` 或空结果：
+- **Token 刷新**: 本地模式使用长效 Token (1年)，不支持 Refresh Token 轮换。
+- **审计日志查询**: 本地暂不持久化系统级审计日志。
+- **自动登录令牌同步**: 自动登录依赖远程中心化存储。
+- **用户同步**: 用户数据不参与双向同步，仅手动维护。
+
+### 架构特性
+- **Direct DbContext**: 为了极致性能，本地模式部分复杂查询绕过 Service 层直连 `LocalWebApiDbContext`。
+- **宽松权限控制**: 本地模式下角色权限验证被简化，默认当前登录用户拥有全部本地操作权限。
+
+---
 
 ### 运行时切换流程 (SYNC-D03)
 
@@ -106,7 +143,7 @@ graph TB
 3. **Region 清理** -- 清除 Prism Region 内容 + 导航历史
 4. **切换模式** -- 更新 `CurrentMode`
 5. **数据库初始化** -- Local 模式: EnsureCreatedAsync + SeedData
-6. **LocalWebAPI 生命周期管理** -- LocalWebAPI 模式: 启动 LocalWebApiHost (Kestrel + SQLite); 从 LocalWebAPI 切出时: 停止 LocalWebApiHost
+6. **LocalWebAPI 生命周期管理** -- LocalWebAPI 模式: 启动 LocalWebApiHost (Kestrel + SQL Server); 从 LocalWebAPI 切出时: 停止 LocalWebApiHost
 7. **通知 + 导航** -- 触发 `ModeChanged` 事件，导航首页
 
 UI 实现:
@@ -118,13 +155,13 @@ UI 实现:
 
 | 维度 | 远程模式 (Remote) | 本地模式 (Local) | 嵌入式 WebAPI (LocalWebAPI) |
 |------|-------------------|------------------|---------------------------|
-| **数据库** | SQL Server (远程) | SQL Server LocalDB (本地) | SQLite (单文件) |
-| **数据链路** | ViewModel → Repository → Refit HTTP → Server → SQL Server | ViewModel → LocalRepository → LocalDbContext → LocalDB | ViewModel → HttpRepository → Kestrel → LocalWebApiDbContext → SQLite |
+| **数据库** | SQL Server (远程) | SQL Server LocalDB (本地) | SQL Server (本地) |
+| **数据链路** | ViewModel → Repository → Refit HTTP → Server → SQL Server | ViewModel → LocalRepository → LocalDbContext → LocalDB | ViewModel → HttpRepository → Kestrel → LocalWebApiDbContext → SQL Server |
 | **认证方式** | JWT Token (服务端验证) | LocalAuthService (BCrypt 本地验证) | JWT Token (嵌入式 Kestrel 验证) |
 | **多用户** | 支持 (服务端管理) | 单用户 | 单用户 |
 | **数据同步** | 不需要 | SyncService (双向同步) | SyncService (双向同步) |
 | **离线支持** | 不支持 | 完全离线 | 完全离线 |
-| **部署复杂度** | 需要服务端 | 需要 LocalDB 安装 | 零依赖 (SQLite 内嵌) |
+| **部署复杂度** | 需要服务端 | 需要 LocalDB 安装 | 需要 SQL Server |
 | **内存占用** | 低 | 中 (LocalDB 进程) | 中 (Kestrel 进程内) |
 | **切换方式** | 运行时 SidebarControl 切换按钮 | 运行时 SidebarControl 切换按钮 | 运行时 SidebarControl 切换按钮 |
 
@@ -143,11 +180,11 @@ UI 实现:
 
 ### 概述
 
-LocalWebAPI 是在 WPF 桌面进程内嵌入的 ASP.NET Core Kestrel WebAPI 服务器。它使用 SQLite 作为本地数据库，通过 HTTP 接口为桌面客户端提供数据访问能力。
+LocalWebAPI 是在 WPF 桌面进程内嵌入的 ASP.NET Core Kestrel WebAPI 服务器。它使用 SQL Server 作为本地数据库，通过 HTTP 接口为桌面客户端提供数据访问能力。
 
 **设计目标**:
 - 统一数据访问层：远程/本地模式共用同一套 Repository 接口
-- 简化部署：SQLite 单文件数据库，无需安装 SQL Server LocalDB
+- 简化部署：使用 SQL Server，与远程模式保持一致
 - 降低维护成本：减少 6 对 LocalRepository 实现，改为 6 个 HTTP Proxy Repository
 
 ### 项目结构
@@ -169,7 +206,7 @@ src/Client/Desktop/LocalWebAPI/
 │   ├── MedicalCasesController.cs    # 医案 CRUD
 │   └── HealthController.cs          # 健康检查
 ├── Data/
-│   ├── LocalWebApiDbContext.cs      # EF Core DbContext (SQLite)
+│   ├── LocalWebApiDbContext.cs      # EF Core DbContext (SQL Server)
 │   └── LocalWebApiSeedData.cs       # 种子数据初始化
 └── Repositories/
     ├── HttpPatientRepository.cs     # HTTP Proxy Repository
@@ -188,10 +225,10 @@ src/Client/Desktop/LocalWebAPI/
 - 线程安全：使用 lock 防止并发 Start/Stop
 - 幂等性：重复调用 StartAsync 不会重复启动
 
-**LocalWebApiDbContext** - SQLite 数据库上下文:
+**LocalWebApiDbContext** - SQL Server 数据库上下文:
 - 复用 Server 端的实体配置 (ApplyConfigurationsFromAssembly)
 - 自动应用全局查询过滤器 (IsDeleted)
-- 支持 SQLite 数据类型和约束
+- 支持 SQL Server 数据类型和约束
 
 **HTTP Proxy Repository** - 数据访问代理:
 - 实现与 Remote/Local 相同的 Repository 接口
@@ -253,7 +290,7 @@ containerRegistry.Register<IPatientRepository>(resolver =>
 
 | 编号 | 决策 | 状态 | 说明 |
 |------|------|------|------|
-| LOCALWEB-01 | 使用 SQLite 替代 LocalDB | 已实施 | 单文件部署，零依赖 |
+| LOCALWEB-01 | 使用 SQL Server 作为本地数据库 | 已实施 | 与远程模式保持一致，简化数据同步 |
 | LOCALWEB-02 | 嵌入 Kestrel 在 WPF 进程内 | 已实施 | 避免独立进程管理复杂度 |
 | LOCALWEB-03 | 简化 JWT 认证 (无刷新) | 已实施 | 本地模式无需复杂认证流 |
 | LOCALWEB-04 | HTTP Proxy Repository 模式 | 已实施 | 统一 Repository 接口 |
@@ -379,7 +416,7 @@ Desktop SyncViewModel
 | SYNC-D02 | 统一本地/远程数据路径 | **已实施** | Sprint 6 废除 DataSource，改为 Factory + Dual Repository |
 | SYNC-D03 | 运行时模式切换 | **已实施** | Sprint 6 实现 IConnectionModeProvider 五步切换 |
 | SYNC-D04 | 冲突解决策略 | 已确认 | 简单实体 Server Wins; MedicalCase 手动选择 |
-| LOCALWEB-01 | 使用 SQLite 替代 LocalDB | 已实施 | 单文件部署，零依赖 |
+| LOCALWEB-01 | 使用 SQL Server 作为本地数据库 | 已实施 | 与远程模式保持一致，简化数据同步 |
 | LOCALWEB-02 | 嵌入 Kestrel 在 WPF 进程内 | 已实施 | 避免独立进程管理复杂度 |
 | LOCALWEB-03 | 简化 JWT 认证 (无刷新) | 已实施 | 本地模式无需复杂认证流 |
 | LOCALWEB-04 | HTTP Proxy Repository 模式 | 已实施 | 统一 Repository 接口 |
@@ -391,6 +428,7 @@ Desktop SyncViewModel
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-22 | v2.0 | 架构演进: 新增 SYNC-D01~D04 决策 |
-| 2026-03-08 | v2.1 | LocalDB 迁移: SQLite -> SQL Server LocalDB |
+| 2026-03-08 | v2.1 | LocalDB 迁移: SQLite -> SQL Server |
 | 2026-03-09 | v2.2 | v1.0-rc 状态同步 |
 | 2026-03-09 | v3.0 | **Sprint 6 完成**: SYNC-D02 DataSource 废除 + SYNC-D03 运行时切换已实施。删除过渡态章节，更新为当前架构 |
+| 2026-07-01 | v4.0 | **LocalWebAPI 覆盖率提升**: 覆盖率从 ~78% 提升至 ~100%。修复 HttpRegistrationRepository 3 个存根方法。 |

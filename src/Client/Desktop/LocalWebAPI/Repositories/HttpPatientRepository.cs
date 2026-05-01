@@ -69,21 +69,62 @@ public class HttpPatientRepository : IPatientRepository
         return paged?.Items ?? [];
     }
 
-    public Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber, CancellationToken ct = default)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Patient.GetByIdNumberAsync - not supported"); return Task.FromResult<PatientDetailDto?>(null); }
+    public async Task<PatientDetailDto?> GetByIdNumberAsync(string idNumber, CancellationToken ct = default)
+    {
+        var response = await _http.GetAsync($"/api/patients/by-id-number/{idNumber}", ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync(ct);
+        return JsonSerializer.Deserialize<PatientDetailDto>(json, Json);
+    }
 
-    public Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Patient.BatchImportAsync - not supported"); return Task.FromResult<PatientBatchImportResultDto?>(null); }
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(ids, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/patients/batch-delete", content, ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync(ct);
+        return JsonSerializer.Deserialize<BatchOperationResultDto>(resultJson, Json);
+    }
 
-    public Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Patient.ExportTemplateAsync - not supported"); return Task.FromResult<byte[]?>(null); }
+    public async Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
+    {
+        var response = await _http.PostAsync($"/api/patients/{id}/restore", null, ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync(ct);
+        return JsonSerializer.Deserialize<PatientDetailDto>(json, Json);
+    }
 
-    public Task<byte[]?> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Patient.ExportPatientsAsync - not supported"); return Task.FromResult<byte[]?>(null); }
+    public async Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, Json);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/patients/import", content, ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync(ct);
+        return JsonSerializer.Deserialize<PatientBatchImportResultDto>(resultJson, Json);
+    }
 
-    public Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Patient.RestoreAsync - not supported"); return Task.FromResult<PatientDetailDto?>(null); }
+    public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
+    {
+        var response = await _http.GetAsync("/api/patients/import-template", ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync(ct);
+        return Encoding.UTF8.GetBytes(json);
+    }
 
-    public Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
-    { _logger.LogWarning("[REPO:LocalWebAPI] Patient.BatchDeleteAsync - not supported"); return Task.FromResult<BatchOperationResultDto?>(null); }
+    public async Task<byte[]?> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default)
+    {
+        var url = keyword is null ? "/api/patients/export" : $"/api/patients/export?keyword={keyword}";
+        var response = await _http.GetAsync(url, ct);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync(ct);
+        return Encoding.UTF8.GetBytes(json);
+    }
 }
