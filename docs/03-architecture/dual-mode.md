@@ -1,18 +1,17 @@
-# 三模式架构
+# 双模式架构
 
 ## 概述
 
-系统支持三种运行模式：远程模式 (Remote)、本地模式 (Local) 和嵌入式本地 WebAPI 模式 (LocalWebAPI)，支持运行时切换（无需重启应用）。
+系统支持远程模式 (Remote) 和本地模式 (Local) 两种运行模式，支持运行时切换（无需重启应用）。
 
 | 模式 | 数据链路 | 数据库 | 适用场景 |
 |------|----------|--------|----------|
 | **Remote** | Refit HTTP → Server WebAPI | SQL Server (远程) | 多用户联网环境 |
-| **Local** | EF Core 直连 | SQL Server LocalDB | 单用户离线（遗留） |
-| **LocalWebAPI** | HTTP → 嵌入式 Kestrel | SQLite (单文件) | 单用户离线（推荐） |
+| **Local** | HTTP → 嵌入式 Kestrel | SQLite (单文件) | 单用户离线 |
 
-**LocalWebAPI 模式** (新增): 在 WPF 进程内嵌入 ASP.NET Core Kestrel WebAPI，通过统一 HTTP 接口访问本地 SQLite 数据库。优势：统一数据访问层（远程/本地共用 Repository 接口）、简化部署（SQLite 单文件）、降低维护成本（6 对 Repository → 3 种实现）。
+**本地模式实现变更**: 本地模式从 SQL Server LocalDB + EF Core 直连 改为 嵌入式 Kestrel WebAPI + SQLite。优势：统一数据访问层（远程/本地共用 Repository 接口）、简化部署（SQLite 单文件零依赖）、降低维护成本（不再维护 6 对 LocalRepository 实现）。
 
-**当前架构**: Factory + Tri-Repository 模式。运行时模式切换已实现 (SYNC-D03)。
+**当前架构**: Factory + Dual Repository 模式（Remote 实现 + LocalWebAPI Proxy 实现）。运行时模式切换已实现 (SYNC-D03)。
 
 ## 架构图
 
