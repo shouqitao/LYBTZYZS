@@ -2,7 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using FluentAssertions;
 using LYBT.Entities;
-using LYBT.Entities.Enums;
+using LYBT.Entities.Herbs;
+using LYBT.Entities.Patients;
+using LYBT.Entities.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.LocalWebAPI.Auth;
 using LYBT.LocalWebAPI.Data;
 using Microsoft.AspNetCore.Identity;
@@ -111,7 +114,7 @@ public class LocalJwtConfigTests
     [Fact]
     public void GenerateToken_Contains_Sub_Claim()
     {
-        var user = new User { Id = Guid.NewGuid(), UserName = "testuser", Role = UserRole.Clinical };
+        var user = new User { Id = Guid.NewGuid(), UserName = "testuser", Role = UserRole.Doctor };
         var token = LocalJwtConfig.GenerateToken(user);
 
         var handler = new JwtSecurityTokenHandler();

@@ -1,20 +1,12 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.Shell.Services;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace LYBT.Tests.Desktop.PureLogic.Shell.Services;
 
-/// <summary>
-/// ConnectionModeProvider 单元测试 (SYNC-D03)
-/// 验证运行时模式切换的核心逻辑:
-/// - 切换流程 (验证 -> 清理 UI -> 切换 -> 通知)
-/// - 阻断条件 (活跃医案 / 验证失败 / 重复切换)
-/// - 事件通知
-/// </summary>
 public class ConnectionModeProviderTests
 {
     private readonly ILogger<ConnectionModeProvider> _logger;
@@ -273,20 +265,12 @@ public class ConnectionModeProviderTests
 
     private ConnectionModeProvider CreateProvider(ConnectionMode initialMode)
     {
-        // Mock 接口而非具体类，避免构造函数签名变更导致测试断裂
-        var databaseInitializer = Substitute.For<LYBT.Desktop.Contracts.Initialization.IDatabaseInitializer>();
-
-        // 设置 EnsureInitializedAsync 返回已完成的 Task
-        databaseInitializer.EnsureInitializedAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
-
         return new ConnectionModeProvider(
             initialMode,
             _logger,
             _validator,
             _activeConsultation,
-            _navigation,
-            databaseInitializer);
+            _navigation);
     }
 
     private void SetupValidatorSuccess()
