@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.LocalData.Context;
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
+using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Sync;
 using Microsoft.EntityFrameworkCore;
@@ -327,6 +328,7 @@ public class SyncService : ISyncService
             "Herb" => await GetHerbMetadataAsync(ct),
             "Patient" => await GetPatientMetadataAsync(ct),
             "Formula" => await GetFormulaMetadataAsync(ct),
+            "MedicalCase" => await GetMedicalCaseMetadataAsync(ct),
             _ => throw new ArgumentException($"不支持的实体类型: {entityType}")
         };
     }
@@ -377,6 +379,24 @@ public class SyncService : ISyncService
             .ToListAsync(ct);
     }
 
+    private async Task<List<LocalMetadata>> GetMedicalCaseMetadataAsync(CancellationToken ct)
+    {
+        return await _context.MedicalCases
+            .Include(mc => mc.Consultation)
+            .Include(mc => mc.Prescription)
+                .ThenInclude(p => p.Items)
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Select(mc => new LocalMetadata
+            {
+                EntityId = mc.Id,
+                EntityName = mc.CaseNumber ?? mc.Id.ToString(),
+                Checksum = ChecksumHelper.ComputeMedicalCaseChecksum(mc),
+                LastModifiedAt = mc.UpdatedAt ?? mc.CreatedAt
+            })
+            .ToListAsync(ct);
+    }
+
     /// <summary>
     /// 获取本地实体并序列化为 JSON 字符串
     /// </summary>
@@ -390,6 +410,7 @@ public class SyncService : ISyncService
             "Herb" => await GetHerbsAsJsonAsync(entityIds, ct),
             "Patient" => await GetPatientsAsJsonAsync(entityIds, ct),
             "Formula" => await GetFormulasAsJsonAsync(entityIds, ct),
+            "MedicalCase" => await GetMedicalCasesAsJsonAsync(entityIds, ct),
             _ => throw new ArgumentException($"不支持的实体类型: {entityType}")
         };
     }
@@ -428,6 +449,20 @@ public class SyncService : ISyncService
         return formulas.Select(f => JsonSerializer.Serialize(f, JsonOptions)).ToList();
     }
 
+    private async Task<List<string>> GetMedicalCasesAsJsonAsync(List<Guid> entityIds, CancellationToken ct)
+    {
+        var cases = await _context.MedicalCases
+            .Include(mc => mc.Consultation)
+            .Include(mc => mc.Prescription)
+                .ThenInclude(p => p.Items)
+            .IgnoreQueryFilters()
+            .Where(mc => entityIds.Contains(mc.Id))
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+        return cases.Select(mc => JsonSerializer.Serialize(mc, JsonOptions)).ToList();
+    }
+
     /// <summary>
     /// 保存下载的实体到本地数据库
     /// </summary>
@@ -446,6 +481,9 @@ public class SyncService : ISyncService
                 break;
             case "Formula":
                 await SaveFormulasAsync(entities, ct);
+                break;
+            case "MedicalCase":
+                await SaveMedicalCasesAsync(entities, ct);
                 break;
             default:
                 throw new ArgumentException($"不支持的实体类型: {entityType}");
@@ -530,6 +568,60 @@ public class SyncService : ISyncService
             else
             {
                 _context.Formulas.Add(formula);
+            }
+        }
+
+        await _context.SaveChangesAsync(ct);
+    }
+
+    private async Task SaveMedicalCasesAsync(List<string> entities, CancellationToken ct)
+    {
+        foreach (var jsonString in entities)
+        {
+            var medicalCase = JsonSerializer.Deserialize<MedicalCase>(jsonString, JsonOptions);
+            if (medicalCase == null) continue;
+
+            var existing = await _context.MedicalCases
+                .Include(mc => mc.Consultation)
+                .Include(mc => mc.Prescription)
+                    .ThenInclude(p => p.Items)
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(mc => mc.Id == medicalCase.Id, ct);
+
+            if (existing != null)
+            {
+                _context.Entry(existing).CurrentValues.SetValues(medicalCase);
+
+                if (medicalCase.Consultation != null)
+                {
+                    if (existing.Consultation != null)
+                        _context.Entry(existing.Consultation).CurrentValues.SetValues(medicalCase.Consultation);
+                    else
+                        existing.Consultation = medicalCase.Consultation;
+                }
+
+                if (medicalCase.Prescription != null)
+                {
+                    if (existing.Prescription != null)
+                    {
+                        _context.Entry(existing.Prescription).CurrentValues.SetValues(medicalCase.Prescription);
+                        if (existing.Prescription.Items != null)
+                            existing.Prescription.Items.Clear();
+                        if (medicalCase.Prescription.Items != null)
+                        {
+                            foreach (var item in medicalCase.Prescription.Items)
+                                existing.Prescription.Items.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        existing.Prescription = medicalCase.Prescription;
+                    }
+                }
+            }
+            else
+            {
+                _context.MedicalCases.Add(medicalCase);
             }
         }
 
