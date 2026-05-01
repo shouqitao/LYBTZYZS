@@ -3,34 +3,29 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using LYBT.LocalWebAPI.Data;
 using LYBT.LocalWebAPI.Auth;
-using LYBT.LocalWebAPI.Controllers;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.LocalWebAPI;
 
 public static class LocalWebApiProgram
 {
-    public static IHostApplicationBuilder CreateBuilder(string[]? args = null)
+    public static WebApplicationBuilder CreateBuilder(string[]? args = null)
     {
         var builder = WebApplication.CreateSlimBuilder(args ?? []);
         return builder;
     }
 
-    public static WebApplication CreateApplication(IHostApplicationBuilder builder, string dbPath)
+    public static WebApplication CreateApplication(WebApplicationBuilder builder, string connectionString)
     {
-        // Register SQLite DbContext
         builder.Services.AddDbContext<LocalWebApiDbContext>(options =>
-            options.UseSqlite($"Data Source={dbPath}"));
+            options.UseSqlServer(connectionString));
 
-        // Register controllers
         builder.Services.AddControllers();
 
-        // Register auth
         LocalJwtConfig.ConfigureServices(builder.Services);
 
         var app = builder.Build();
 
-        // Middleware pipeline
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
@@ -46,11 +41,10 @@ public static class LocalWebApiProgram
         await LocalWebApiSeedData.SeedAsync(dbContext);
     }
 
-    // Runs the Web API host lifecycle: build, initialize database, then run.
-    public static async Task RunAsync(string[]? args, string dbPath)
+    public static async Task RunAsync(string[]? args, string connectionString)
     {
         var builder = CreateBuilder(args);
-        var app = CreateApplication(builder, dbPath);
+        var app = CreateApplication(builder, connectionString);
         await InitializeDatabaseAsync(app);
         await app.RunAsync();
     }

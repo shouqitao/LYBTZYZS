@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using LYBT.Infrastructure.Configuration.Validation;
+using LYBT.Shared.Models.Common;
 
 namespace LYBT.Infrastructure.Configuration.Services;
 
@@ -38,7 +40,7 @@ public class SystemConfigurationService : ISystemConfigurationService
     public async Task<Result<string?>> GetValueAsync(string key, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(key))
-            return await Task.FromResult(Result<string?>.Fail("配置项名称不能为空"));
+            return await Task.FromResult(Result<string?>.Failure("配置项名称不能为空"));
 
         var value = _configuration[key];
         _logger.LogInformation("[SVC] SystemConfiguration.GetValue - Key={Key}", key);
@@ -56,7 +58,7 @@ public class SystemConfigurationService : ISystemConfigurationService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "[SVC] SystemConfiguration.ValidateProduction - FAILED");
-            return await Task.FromResult(Result.Fail(ex.Message));
+            return await Task.FromResult(Result.Failure(ex.Message));
         }
     }
 }

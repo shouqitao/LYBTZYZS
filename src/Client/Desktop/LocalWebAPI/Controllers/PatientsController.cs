@@ -33,7 +33,7 @@ namespace LYBT.LocalWebAPI.Controllers
             var q = _db.Patients.AsNoTracking().Where(p => !p.IsDeleted);
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                q = q.Where(p => p.Name.Contains(keyword) || p.Phone.Contains(keyword));
+                q = q.Where(p => p.Name.Contains(keyword) || (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)));
             }
             var list = await q
                 .OrderBy(p => p.Id)

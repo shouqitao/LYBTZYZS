@@ -58,25 +58,11 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>
-        /// 注册 Local 基础设施 + 双模式 Repository Logger (SYNC-D03: 始终注册两套)
+        /// 注册模式切换验证器 Logger
         /// </summary>
         public static void RegisterDataSourceLoggers(this IContainerRegistry containerRegistry)
         {
-            // Local 基础设施 Loggers (始终注册，支持运行时切换)
-            RegisterLogger<LYBT.Desktop.LocalData.Context.LocalDbContext>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.LocalData.Initialization.DatabaseInitializer>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.LocalData.Services.LocalAuthService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.LocalData.Services.LocalDbBackupService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.LocalData.Services.SyncService>(containerRegistry);
             RegisterLogger<LYBT.Desktop.LocalData.Services.ModeSwitchValidator>(containerRegistry);
-
-            // Local Repository Loggers
-            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalPatientRepository>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalHerbRepository>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalFormulaRepository>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalMedicalCaseRepository>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalUserRepository>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.LocalData.Repositories.LocalRegistrationRepository>(containerRegistry);
         }
 
         /// <summary>注册LoggerFactory和泛型ILogger&lt;&gt;</summary>

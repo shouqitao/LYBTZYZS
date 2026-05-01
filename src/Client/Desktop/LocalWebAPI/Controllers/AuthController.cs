@@ -42,7 +42,7 @@ public class AuthController : ControllerBase
         }
 
         // Verify password using existing helper
-        if (!PasswordHelper.VerifyPassword(request.Password, user.PasswordHash))
+        if (!PasswordHelper.VerifyPassword(request.Password, user.PasswordHash).IsSuccess)
         {
             return Unauthorized();
         }

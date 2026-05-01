@@ -366,7 +366,7 @@ namespace LYBT.Module.MedicalCases.Services
                 Id = Guid.NewGuid(),
                 MedicalCaseId = targetMedicalCaseId,
                 PrescriptionNumber = await GeneratePrescriptionNumberAsync(cancellationToken),  // TODO:价格刷新在后续实现
-                Notes = sourcePrescription.Notes,
+                Remark = sourcePrescription.Remark,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 CreatedBy = currentUserId
@@ -382,12 +382,10 @@ namespace LYBT.Module.MedicalCases.Services
                     PrescriptionId = newPrescription.Id,
                     HerbId = sourceItem.HerbId,
                     HerbName = sourceItem.HerbName,
-                    Quantity = sourceItem.Quantity,
+                    Dosage = sourceItem.Dosage,
                     Unit = sourceItem.Unit,
                     UnitPrice = sourceItem.UnitPrice, // TODO: refresh price from herb catalog
-                    Notes = sourceItem.Notes,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    Remark = sourceItem.Remark
                 });
             }
 
@@ -395,7 +393,6 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 5) attach to target case and persist
             targetCase.Prescription = newPrescription;
-            targetCase.HasPrescription = true;
             targetCase.UpdatedAt = DateTime.UtcNow;
             targetCase.UpdatedBy = currentUserId;
 

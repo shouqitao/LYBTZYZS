@@ -67,7 +67,7 @@ public class HttpUserRepository : IUserRepository
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
         var paged = JsonSerializer.Deserialize<PagedResult<UserListDto>>(json, Json);
-        var user = paged?.Items.FirstOrDefault(u => u.Username == username);
+        var user = paged?.Items.FirstOrDefault(u => u.UserName == username);
         if (user == null) throw new KeyNotFoundException($"User not found: {username}");
         var detailResponse = await _http.GetAsync($"/api/users/{user.Id}");
         detailResponse.EnsureSuccessStatusCode();
@@ -87,7 +87,7 @@ public class HttpUserRepository : IUserRepository
     public async Task<List<UserListDto>> GetDoctorsAsync()
     {
         var all = await SearchAsync("");
-        return all.Where(u => u.Role == "Clinical" || u.Role == "Doctor").ToList();
+        return all.Where(u => u.Role == LYBT.Shared.Models.Enums.UserRole.Doctor).ToList();
     }
 
     public Task<UserDetailDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto)

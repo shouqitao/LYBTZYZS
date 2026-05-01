@@ -12,13 +12,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../Shared/LYBT.Shared.Models/LYBT.Shared.Models.csproj" />
-    <ProjectReference Include="../../Core/LYBT.Desktop.Contracts/LYBT.Desktop.Contracts.csproj" />
-    <ProjectReference Include="../../../../Shared/LYBT.Shared.Logging/LYBT.Shared.Logging.csproj" />
+    <ProjectReference Include="../../../Shared/LYBT.Shared.Models/LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="../Core/LYBT.Desktop.Contracts/LYBT.Desktop.Contracts.csproj" />
+    <ProjectReference Include="../../../Shared/LYBT.Shared.Logging/LYBT.Shared.Logging.csproj" />
+    <ProjectReference Include="../../../Server/Core/LYBT.Entities/LYBT.Entities.csproj" />
+    <ProjectReference Include="../../../Server/Core/LYBT.Infrastructure/LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="../../../Shared/LYBT.Shared.Utilities/LYBT.Shared.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />

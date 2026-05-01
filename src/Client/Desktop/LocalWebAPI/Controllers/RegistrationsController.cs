@@ -29,7 +29,7 @@ namespace LYBT.LocalWebAPI.Controllers
             var q = _db.Registrations.AsNoTracking().Where(r => !r.IsDeleted);
             if (date.HasValue)
             {
-                q = q.Where(r => r.Date.Date == date.Value.Date);
+                q = q.Where(r => r.CreatedAt.Date == date.Value.Date);
             }
             return await q.ToListAsync();
         }

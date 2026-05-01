@@ -42,8 +42,8 @@ namespace LYBT.LocalWebAPI.Controllers
         {
             // Include navigation properties for detail as requested
             var mc = await _db.MedicalCases
-                        .Include(m => m.Consultations)
-                        .Include(m => m.Prescriptions)
+                        .Include(m => m.Consultation)
+                        .Include(m => m.Prescription)
                         .AsNoTracking()
                         .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
             if (mc == null) return NotFound();

@@ -29,7 +29,7 @@ namespace LYBT.LocalWebAPI.Controllers
             var q = _db.Herbs.AsNoTracking().Where(h => !h.IsDeleted);
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                q = q.Where(h => h.Name.Contains(keyword) || h.Pinyin.Contains(keyword));
+                q = q.Where(h => h.Name.Contains(keyword) || (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
             }
             return await q.ToListAsync();
         }

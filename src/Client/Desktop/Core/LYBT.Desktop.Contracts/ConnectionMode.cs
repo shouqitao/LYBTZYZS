@@ -7,17 +7,12 @@ namespace LYBT.Desktop.Contracts;
 public enum ConnectionMode
 {
     /// <summary>
-    /// 远程模式 - 通过 WebAPI 服务器连接
+    /// 远程模式 - 通过远程 WebAPI 服务器连接 (云/服务器)
     /// </summary>
     Remote,
 
     /// <summary>
-    /// 本地模式 - 直连本地数据库 (SQL Server LocalDB)
+    /// 本地模式 - 通过本地 WebAPI 连接 (localhost, 独立进程)
     /// </summary>
-    Local,
-
-    /// <summary>
-    /// 本地WebAPI模式 - 内嵌 Kestrel → SQLite
-    /// </summary>
-    LocalWebAPI
+    Local
 }

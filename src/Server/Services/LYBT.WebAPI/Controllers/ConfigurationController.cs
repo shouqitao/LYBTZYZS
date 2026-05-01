@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using LYBT.Infrastructure.Configuration.Services;
 using System.Threading;
 using LYBT.Infrastructure.Web;
@@ -14,7 +15,8 @@ public class ConfigurationController : BaseApiController
 {
     private readonly ISystemConfigurationService _configurationService;
 
-    public ConfigurationController(ISystemConfigurationService configurationService)
+    public ConfigurationController(ISystemConfigurationService configurationService, ILogger<ConfigurationController> logger)
+        : base(logger)
     {
         _configurationService = configurationService;
     }

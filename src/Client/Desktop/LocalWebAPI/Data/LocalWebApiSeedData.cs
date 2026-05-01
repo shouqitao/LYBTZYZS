@@ -13,17 +13,12 @@ using LYBT.Shared.Models.Enums;
 
 namespace LYBT.LocalWebAPI.Data;
 
-/// <summary>
-/// Seed data for the embedded SQLite LocalWebAPI database.
-/// </summary>
 public static class LocalWebApiSeedData
 {
     public static async Task SeedAsync(LocalWebApiDbContext context)
     {
-        // Ensure database is created
         await context.Database.EnsureCreatedAsync();
 
-        // Seed default admin user if none exist
         if (!await context.Users.AnyAsync())
         {
             var passwordHash = PasswordHelper.HashPassword("admin", UserRole.Admin);
@@ -38,7 +33,6 @@ public static class LocalWebApiSeedData
             context.Users.Add(admin);
         }
 
-        // Seed sample Herbs if none exist
         if (!await context.Herbs.AnyAsync())
         {
             context.Herbs.Add(new Herb
@@ -51,7 +45,6 @@ public static class LocalWebApiSeedData
             });
         }
 
-        // Seed sample Formulas if none exist
         if (!await context.Formulas.AnyAsync())
         {
             context.Formulas.Add(new Formula
@@ -62,7 +55,6 @@ public static class LocalWebApiSeedData
             });
         }
 
-        // Seed a sample Patient if none exist
         if (!await context.Patients.AnyAsync())
         {
             context.Patients.Add(new Patient

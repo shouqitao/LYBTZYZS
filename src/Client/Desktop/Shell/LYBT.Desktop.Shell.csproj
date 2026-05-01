@@ -75,6 +75,8 @@
     <ProjectReference Include="..\Core\LYBT.Desktop.Printing\LYBT.Desktop.Printing.csproj" />
     <!-- OpenSpec: implement-local-mode - 本地数据存储层 -->
     <ProjectReference Include="..\Core\LYBT.Desktop.LocalData\LYBT.Desktop.LocalData.csproj" />
+    <!-- Local WebAPI 项目引用 -->
+    <ProjectReference Include="..\LocalWebAPI\LYBT.LocalWebAPI.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Business Modules">
