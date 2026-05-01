@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
 using Microsoft.Extensions.Logging;
@@ -7,20 +8,26 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Registration.Repositories;
 
 /// <summary>
-/// 挂号仓储 - 远程模式实现 (SYNC-D02)
-/// 通过 Refit IRegistrationApi 访问 WebAPI，不再依赖 IRegistrationDataSource 中间层。
-/// DI 工厂根据 IConnectionModeProvider 在远程模式下选择此实现。
+/// 挂号仓储 - 通过 Refit IRegistrationApi 访问 WebAPI。
 /// </summary>
 public sealed class RegistrationRepository : IRegistrationRepository
 {
     private readonly IRegistrationApi _api;
+    private readonly ILocalRegistrationApi _localApi;
+    private readonly IApiRouter _apiRouter;
     private readonly ILogger<RegistrationRepository> _logger;
+
+    private bool IsOffline => _apiRouter.IsOffline;
 
     public RegistrationRepository(
         IRegistrationApi api,
+        ILocalRegistrationApi localApi,
+        IApiRouter apiRouter,
         ILogger<RegistrationRepository> logger)
     {
         _api = api ?? throw new ArgumentNullException(nameof(api));
+        _localApi = localApi ?? throw new ArgumentNullException(nameof(localApi));
+        _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 

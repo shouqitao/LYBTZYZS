@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
@@ -7,20 +8,26 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Formula.Repositories;
 
 /// <summary>
-/// 验方仓储 - 远程模式实现 (SYNC-D02)
-/// 通过 Refit IFormulaApi 访问 WebAPI，不再依赖 IFormulaDataSource 中间层。
-/// DI 工厂根据 IConnectionModeProvider 在远程模式下选择此实现。
+/// 验方仓储 - 通过 Refit IFormulaApi 访问 WebAPI。
 /// </summary>
 public sealed class FormulaRepository : IFormulaRepository
 {
     private readonly IFormulaApi _api;
+    private readonly ILocalFormulaApi _localApi;
+    private readonly IApiRouter _apiRouter;
     private readonly ILogger<FormulaRepository> _logger;
+
+    private bool IsOffline => _apiRouter.IsOffline;
 
     public FormulaRepository(
         IFormulaApi api,
+        ILocalFormulaApi localApi,
+        IApiRouter apiRouter,
         ILogger<FormulaRepository> logger)
     {
         _api = api ?? throw new ArgumentNullException(nameof(api));
+        _localApi = localApi ?? throw new ArgumentNullException(nameof(localApi));
+        _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 

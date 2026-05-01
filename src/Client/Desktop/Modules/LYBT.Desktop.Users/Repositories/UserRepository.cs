@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -10,20 +11,26 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Users.Repositories;
 
 /// <summary>
-/// 用户仓储 - 远程模式实现 (SYNC-D02)
-/// 通过 Refit IUserApi 访问 WebAPI，不再依赖 IUserDataSource 中间层。
-/// DI 工厂根据 IConnectionModeProvider 在远程模式下选择此实现。
+/// 用户仓储 - 通过 Refit IUserApi 访问 WebAPI。
 /// </summary>
 public sealed class UserRepository : IUserRepository
 {
     private readonly IUserApi _api;
+    private readonly ILocalUserApi _localApi;
+    private readonly IApiRouter _apiRouter;
     private readonly ILogger<UserRepository> _logger;
+
+    private bool IsOffline => _apiRouter.IsOffline;
 
     public UserRepository(
         IUserApi api,
+        ILocalUserApi localApi,
+        IApiRouter apiRouter,
         ILogger<UserRepository> logger)
     {
         _api = api ?? throw new ArgumentNullException(nameof(api));
+        _localApi = localApi ?? throw new ArgumentNullException(nameof(localApi));
+        _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
