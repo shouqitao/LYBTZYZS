@@ -1,6 +1,7 @@
 using System.Text.Json;
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
+using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Sync.Interfaces;
@@ -11,8 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.Sync.Services;
 
 /// <summary>
-/// 同步服务实现 - 处理 Herb/Patient/Formula 的双向同步
-/// OpenSpec: implement-data-sync
+/// Sync service implementation - handles bidirectional sync for Herb/Patient/Formula/MedicalCase
 /// </summary>
 public class SyncService : ISyncService
 {
@@ -21,7 +21,7 @@ public class SyncService : ISyncService
     private readonly IPatientCrossModuleService _patientCrossModule;
     private readonly ILogger<SyncService> _logger;
 
-    private static readonly IReadOnlyList<string> SupportedTypes = new[] { "Herb", "Patient", "Formula" };
+    private static readonly IReadOnlyList<string> SupportedTypes = new[] { "Herb", "Patient", "Formula", "MedicalCase" };
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -49,7 +49,7 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(entityType, out var errorMessage))
         {
-            return ServiceResult<List<SyncMetadataDto>>.Failure(errorMessage!);
+            return ServiceResult<List<SyncMetadataDto>>.Failure(errorMessage);
         }
 
         var metadata = entityType switch
@@ -57,10 +57,11 @@ public class SyncService : ISyncService
             "Herb" => await GetHerbMetadataAsync(),
             "Patient" => await GetPatientMetadataAsync(),
             "Formula" => await GetFormulaMetadataAsync(),
+            "MedicalCase" => await GetMedicalCaseMetadataAsync(),
             _ => new List<SyncMetadataDto>()
         };
 
-        _logger.LogInformation("获取 {EntityType} 元数据完成，共 {Count} 条", entityType, metadata.Count);
+        _logger.LogInformation("Get {EntityType} metadata completed, {Count} records", entityType, metadata.Count);
         return ServiceResult<List<SyncMetadataDto>>.Success(metadata);
     }
 
@@ -69,28 +70,25 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(input.EntityType, out var errorMessage))
         {
-            return ServiceResult<SyncCompareResultDto>.Failure(errorMessage!);
+            return ServiceResult<SyncCompareResultDto>.Failure(errorMessage);
         }
 
-        // 获取服务器端所有元数据
         var serverMetadataResult = await GetMetadataAsync(input.EntityType);
         if (!serverMetadataResult.IsSuccess)
         {
-            return ServiceResult<SyncCompareResultDto>.Failure(serverMetadataResult.ErrorMessage!);
+            return ServiceResult<SyncCompareResultDto>.Failure(serverMetadataResult.ErrorMessage);
         }
 
-        var serverMetadata = serverMetadataResult.Data!;
+        var serverMetadata = serverMetadataResult.Data;
         var serverDict = serverMetadata.ToDictionary(m => m.EntityId);
         var localDict = input.LocalEntities.ToDictionary(e => e.EntityId);
 
         var diffs = new List<SyncDiffDto>();
 
-        // 检查服务器端实体
         foreach (var server in serverMetadata)
         {
             if (localDict.TryGetValue(server.EntityId, out var local))
             {
-                // 双方都有，比较 Checksum
                 if (server.Checksum != local.Checksum)
                 {
                     diffs.Add(new SyncDiffDto
@@ -104,11 +102,9 @@ public class SyncService : ISyncService
                         ServerChangedAt = server.LastModifiedAt
                     });
                 }
-                // Checksum 相同则不加入差异列表
             }
             else
             {
-                // 仅服务器有
                 diffs.Add(new SyncDiffDto
                 {
                     EntityType = input.EntityType,
@@ -120,7 +116,6 @@ public class SyncService : ISyncService
             }
         }
 
-        // 检查仅本地有的实体
         foreach (var local in input.LocalEntities)
         {
             if (!serverDict.ContainsKey(local.EntityId))
@@ -144,7 +139,7 @@ public class SyncService : ISyncService
         };
 
         _logger.LogInformation(
-            "比对 {EntityType} 完成: LocalOnly={LocalOnly}, ServerOnly={ServerOnly}, Modified={Modified}",
+            "Compare {EntityType} completed: LocalOnly={LocalOnly}, ServerOnly={ServerOnly}, Modified={Modified}",
             input.EntityType,
             diffs.Count(d => d.DiffType == SyncDiffType.LocalOnly),
             diffs.Count(d => d.DiffType == SyncDiffType.ServerOnly),
@@ -158,7 +153,7 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(input.EntityType, out var errorMessage))
         {
-            return ServiceResult<SyncUploadResultDto>.Failure(errorMessage!);
+            return ServiceResult<SyncUploadResultDto>.Failure(errorMessage);
         }
 
         var results = new List<SyncUploadItemResult>();
@@ -168,7 +163,6 @@ public class SyncService : ISyncService
 
         foreach (var entityJsonString in input.Entities)
         {
-            // Parse string to JsonElement for deserialization
             using var doc = JsonDocument.Parse(entityJsonString);
             var entityJson = doc.RootElement.Clone();
 
@@ -177,7 +171,8 @@ public class SyncService : ISyncService
                 "Herb" => await UploadHerbAsync(entityJson, input.OverwriteConflicts),
                 "Patient" => await UploadPatientAsync(entityJson, input.OverwriteConflicts),
                 "Formula" => await UploadFormulaAsync(entityJson, input.OverwriteConflicts),
-                _ => new SyncUploadItemResult { Success = false, ErrorMessage = "不支持的实体类型" }
+                "MedicalCase" => await UploadMedicalCaseAsync(entityJson, input.OverwriteConflicts),
+                _ => new SyncUploadItemResult { Success = false, ErrorMessage = "Unsupported entity type" }
             };
 
             results.Add(result);
@@ -189,7 +184,7 @@ public class SyncService : ISyncService
         await _syncRepository.SaveChangesAsync();
 
         _logger.LogInformation(
-            "上传 {EntityType} 完成: Success={Success}, Conflict={Conflict}, Error={Error}",
+            "Upload {EntityType} completed: Success={Success}, Conflict={Conflict}, Error={Error}",
             input.EntityType, successCount, conflictCount, errorCount);
 
         return ServiceResult<SyncUploadResultDto>.Success(new SyncUploadResultDto
@@ -206,7 +201,7 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(input.EntityType, out var errorMessage))
         {
-            return ServiceResult<SyncDownloadResultDto>.Failure(errorMessage!);
+            return ServiceResult<SyncDownloadResultDto>.Failure(errorMessage);
         }
 
         var entities = new List<string>();
@@ -218,6 +213,7 @@ public class SyncService : ISyncService
                 "Herb" => await GetHerbJsonStringAsync(entityId),
                 "Patient" => await GetPatientJsonStringAsync(entityId),
                 "Formula" => await GetFormulaJsonStringAsync(entityId),
+                "MedicalCase" => await GetMedicalCaseJsonStringAsync(entityId),
                 _ => null
             };
 
@@ -227,7 +223,7 @@ public class SyncService : ISyncService
             }
         }
 
-        _logger.LogInformation("下载 {EntityType} 完成，共 {Count} 条", input.EntityType, entities.Count);
+        _logger.LogInformation("Download {EntityType} completed, {Count} records", input.EntityType, entities.Count);
 
         return ServiceResult<SyncDownloadResultDto>.Success(new SyncDownloadResultDto
         {
@@ -242,7 +238,7 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(input.EntityType, out var errorMessage))
         {
-            return ServiceResult<SyncDeleteResultDto>.Failure(errorMessage!);
+            return ServiceResult<SyncDeleteResultDto>.Failure(errorMessage);
         }
 
         var successIds = new List<Guid>();
@@ -254,13 +250,13 @@ public class SyncService : ISyncService
             {
                 "Herb" => await CanDeleteHerbAsync(entityId),
                 "Patient" => await CanDeletePatientAsync(entityId),
-                "Formula" => (true, (string?)null), // Formula 无引用检查
-                _ => (false, "不支持的实体类型")
+                "Formula" => (true, (string?)null),
+                "MedicalCase" => (true, (string?)null),
+                _ => (false, "Unsupported entity type")
             };
 
             if (canDelete.Item1)
             {
-                // 执行软删除
                 var deleted = await SoftDeleteEntityAsync(input.EntityType, entityId);
                 if (deleted)
                 {
@@ -271,7 +267,7 @@ public class SyncService : ISyncService
                     rejected.Add(new SyncDeleteRejectedItem
                     {
                         EntityId = entityId,
-                        Reason = "实体不存在或已删除"
+                        Reason = "Entity not found or already deleted"
                     });
                 }
             }
@@ -280,7 +276,7 @@ public class SyncService : ISyncService
                 rejected.Add(new SyncDeleteRejectedItem
                 {
                     EntityId = entityId,
-                    Reason = canDelete.Item2 ?? "有引用数据，无法删除"
+                    Reason = canDelete.Item2 ?? "Has reference data, cannot delete"
                 });
             }
         }
@@ -288,7 +284,7 @@ public class SyncService : ISyncService
         await _syncRepository.SaveChangesAsync();
 
         _logger.LogInformation(
-            "删除 {EntityType} 完成: Success={Success}, Rejected={Rejected}",
+            "Delete {EntityType} completed: Success={Success}, Rejected={Rejected}",
             input.EntityType, successIds.Count, rejected.Count);
 
         return ServiceResult<SyncDeleteResultDto>.Success(new SyncDeleteResultDto
@@ -298,13 +294,11 @@ public class SyncService : ISyncService
         });
     }
 
-    #region 私有方法 - 元数据获取
+    #region Private - Metadata
 
     private async Task<List<SyncMetadataDto>> GetHerbMetadataAsync()
     {
-        // T5-P2-40: IgnoreQueryFilters 确保软删除记录参与 Checksum 比对
         var herbs = await _syncRepository.GetAllHerbsIncludingDeletedAsync();
-
         return herbs.Select(h => new SyncMetadataDto
         {
             EntityId = h.Id,
@@ -318,9 +312,7 @@ public class SyncService : ISyncService
 
     private async Task<List<SyncMetadataDto>> GetPatientMetadataAsync()
     {
-        // T5-P2-40: IgnoreQueryFilters 确保软删除记录参与 Checksum 比对
         var patients = await _syncRepository.GetAllPatientsIncludingDeletedAsync();
-
         return patients.Select(p => new SyncMetadataDto
         {
             EntityId = p.Id,
@@ -334,9 +326,7 @@ public class SyncService : ISyncService
 
     private async Task<List<SyncMetadataDto>> GetFormulaMetadataAsync()
     {
-        // T5-P2-40: IgnoreQueryFilters 确保软删除记录参与 Checksum 比对
         var formulas = await _syncRepository.GetAllFormulasWithHerbsIncludingDeletedAsync();
-
         return formulas.Select(f => new SyncMetadataDto
         {
             EntityId = f.Id,
@@ -348,9 +338,23 @@ public class SyncService : ISyncService
         }).ToList();
     }
 
+    private async Task<List<SyncMetadataDto>> GetMedicalCaseMetadataAsync()
+    {
+        var cases = await _syncRepository.GetAllMedicalCasesIncludingDeletedAsync();
+        return cases.Select(mc => new SyncMetadataDto
+        {
+            EntityId = mc.Id,
+            Checksum = ChecksumHelper.ComputeMedicalCaseChecksum(mc),
+            LastModifiedAt = mc.UpdatedAt ?? mc.CreatedAt,
+            IsDeleted = mc.IsDeleted,
+            EntityName = mc.CaseNumber ?? mc.Id.ToString(),
+            EntityType = "MedicalCase"
+        }).ToList();
+    }
+
     #endregion
 
-    #region 私有方法 - 上传处理
+    #region Private - Upload
 
     private async Task<SyncUploadItemResult> UploadHerbAsync(JsonElement json, bool overwriteConflicts)
     {
@@ -358,32 +362,19 @@ public class SyncService : ISyncService
         {
             var herb = json.Deserialize<Herb>(JsonOptions);
             if (herb == null)
-            {
-                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON 反序列化失败" };
-            }
+                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON deserialization failed" };
 
             var existing = await _syncRepository.FindHerbAsync(herb.Id);
             if (existing != null)
             {
                 if (!overwriteConflicts)
-                {
-                    return new SyncUploadItemResult
-                    {
-                        EntityId = herb.Id,
-                        Success = false,
-                        IsConflict = true,
-                        ErrorMessage = "服务器已存在该数据"
-                    };
-                }
-
-                // 覆盖更新
+                    return new SyncUploadItemResult { EntityId = herb.Id, Success = false, IsConflict = true, ErrorMessage = "Server already has this data" };
                 _syncRepository.UpdateHerbValues(existing, herb);
             }
             else
             {
                 _syncRepository.AddHerb(herb);
             }
-
             return new SyncUploadItemResult { EntityId = herb.Id, Success = true };
         }
         catch (Exception ex)
@@ -399,31 +390,19 @@ public class SyncService : ISyncService
         {
             var patient = json.Deserialize<Patient>(JsonOptions);
             if (patient == null)
-            {
-                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON 反序列化失败" };
-            }
+                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON deserialization failed" };
 
             var existing = await _syncRepository.FindPatientAsync(patient.Id);
             if (existing != null)
             {
                 if (!overwriteConflicts)
-                {
-                    return new SyncUploadItemResult
-                    {
-                        EntityId = patient.Id,
-                        Success = false,
-                        IsConflict = true,
-                        ErrorMessage = "服务器已存在该数据"
-                    };
-                }
-
+                    return new SyncUploadItemResult { EntityId = patient.Id, Success = false, IsConflict = true, ErrorMessage = "Server already has this data" };
                 _syncRepository.UpdatePatientValues(existing, patient);
             }
             else
             {
                 _syncRepository.AddPatient(patient);
             }
-
             return new SyncUploadItemResult { EntityId = patient.Id, Success = true };
         }
         catch (Exception ex)
@@ -439,26 +418,13 @@ public class SyncService : ISyncService
         {
             var formula = json.Deserialize<Formula>(JsonOptions);
             if (formula == null)
-            {
-                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON 反序列化失败" };
-            }
+                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON deserialization failed" };
 
             var existing = await _syncRepository.FindFormulaWithHerbsAsync(formula.Id);
-
             if (existing != null)
             {
                 if (!overwriteConflicts)
-                {
-                    return new SyncUploadItemResult
-                    {
-                        EntityId = formula.Id,
-                        Success = false,
-                        IsConflict = true,
-                        ErrorMessage = "服务器已存在该数据"
-                    };
-                }
-
-                // 删除旧的 Herbs 并添加新的
+                    return new SyncUploadItemResult { EntityId = formula.Id, Success = false, IsConflict = true, ErrorMessage = "Server already has this data" };
                 _syncRepository.RemoveFormulaHerbs(existing.Herbs);
                 _syncRepository.UpdateFormulaValues(existing, formula);
                 if (formula.Herbs != null)
@@ -474,7 +440,6 @@ public class SyncService : ISyncService
             {
                 _syncRepository.AddFormula(formula);
             }
-
             return new SyncUploadItemResult { EntityId = formula.Id, Success = true };
         }
         catch (Exception ex)
@@ -484,46 +449,71 @@ public class SyncService : ISyncService
         }
     }
 
+    private async Task<SyncUploadItemResult> UploadMedicalCaseAsync(JsonElement json, bool overwriteConflicts)
+    {
+        try
+        {
+            var medicalCase = json.Deserialize<MedicalCase>(JsonOptions);
+            if (medicalCase == null)
+                return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON deserialization failed" };
+
+            var existing = await _syncRepository.FindMedicalCaseWithIncludesAsync(medicalCase.Id);
+            if (existing != null)
+            {
+                if (!overwriteConflicts)
+                    return new SyncUploadItemResult { EntityId = medicalCase.Id, Success = false, IsConflict = true, ErrorMessage = "Server already has this data" };
+                _syncRepository.UpdateMedicalCaseValues(existing, medicalCase);
+            }
+            else
+            {
+                _syncRepository.AddMedicalCase(medicalCase);
+            }
+            return new SyncUploadItemResult { EntityId = medicalCase.Id, Success = true };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SVC] Sync.UploadMedicalCase -> Failed");
+            return new SyncUploadItemResult { Success = false, ErrorMessage = ex.Message };
+        }
+    }
+
     #endregion
 
-    #region 私有方法 - 下载处理
+    #region Private - Download
 
     private async Task<string?> GetHerbJsonStringAsync(Guid id)
     {
         var herb = await _syncRepository.GetHerbByIdNoTrackingAsync(id);
-        if (herb == null) return null;
-
-        return JsonSerializer.Serialize(herb, JsonOptions);
+        return herb == null ? null : JsonSerializer.Serialize(herb, JsonOptions);
     }
 
     private async Task<string?> GetPatientJsonStringAsync(Guid id)
     {
         var patient = await _syncRepository.GetPatientByIdNoTrackingAsync(id);
-        if (patient == null) return null;
-
-        return JsonSerializer.Serialize(patient, JsonOptions);
+        return patient == null ? null : JsonSerializer.Serialize(patient, JsonOptions);
     }
 
     private async Task<string?> GetFormulaJsonStringAsync(Guid id)
     {
         var formula = await _syncRepository.GetFormulaWithHerbsByIdNoTrackingAsync(id);
-        if (formula == null) return null;
+        return formula == null ? null : JsonSerializer.Serialize(formula, JsonOptions);
+    }
 
-        return JsonSerializer.Serialize(formula, JsonOptions);
+    private async Task<string?> GetMedicalCaseJsonStringAsync(Guid id)
+    {
+        var medicalCase = await _syncRepository.GetMedicalCaseWithIncludesByIdNoTrackingAsync(id);
+        return medicalCase == null ? null : JsonSerializer.Serialize(medicalCase, JsonOptions);
     }
 
     #endregion
 
-    #region 私有方法 - 删除检查
+    #region Private - Delete checks
 
     private async Task<(bool canDelete, string? reason)> CanDeleteHerbAsync(Guid herbId)
     {
         var result = await _herbCrossModule.CheckHerbReferenceAsync(herbId);
         if (result.HasReferences)
-        {
-            return (false, $"药材被 {result.ReferenceCount} 个处方引用，请先禁用");
-        }
-
+            return (false, $"Herb referenced by {result.ReferenceCount} prescriptions, disable instead");
         return (true, null);
     }
 
@@ -531,44 +521,34 @@ public class SyncService : ISyncService
     {
         var result = await _patientCrossModule.CheckPatientReferenceAsync(patientId);
         if (result.HasReferences)
-        {
-            return (false, $"患者有 {result.ReferenceCount} 条医案记录，请先禁用");
-        }
-
+            return (false, $"Patient has {result.ReferenceCount} medical case records, disable instead");
         return (true, null);
     }
 
     private async Task<bool> SoftDeleteEntityAsync(string entityType, Guid entityId)
     {
-        switch (entityType)
+        return entityType switch
         {
-            case "Herb":
-                return await _syncRepository.SoftDeleteHerbAsync(entityId);
-
-            case "Patient":
-                return await _syncRepository.SoftDeletePatientAsync(entityId);
-
-            case "Formula":
-                return await _syncRepository.SoftDeleteFormulaAsync(entityId);
-
-            default:
-                return false;
-        }
+            "Herb" => await _syncRepository.SoftDeleteHerbAsync(entityId),
+            "Patient" => await _syncRepository.SoftDeletePatientAsync(entityId),
+            "Formula" => await _syncRepository.SoftDeleteFormulaAsync(entityId),
+            "MedicalCase" => await _syncRepository.SoftDeleteMedicalCaseAsync(entityId),
+            _ => false
+        };
     }
 
     #endregion
 
-    #region 辅助方法
+    #region Helpers
 
     private bool ValidateEntityType(string entityType, out string? errorMessage)
     {
         if (!SupportedTypes.Contains(entityType))
         {
-            _logger.LogWarning("不支持的实体类型: {EntityType}", entityType);
-            errorMessage = $"不支持的实体类型: {entityType}，支持的类型: {string.Join(", ", SupportedTypes)}";
+            _logger.LogWarning("Unsupported entity type: {EntityType}", entityType);
+            errorMessage = $"Unsupported entity type: {entityType}, supported: {string.Join(", ", SupportedTypes)}";
             return false;
         }
-
         errorMessage = null;
         return true;
     }
