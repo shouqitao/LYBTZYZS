@@ -10,6 +10,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Architecture**: Server/Shared/Client three-tier, supporting both remote (SQL Server via HTTP API) and local (SQLite) modes.
 
+## Terminology
+
+| Term | Meaning | Not |
+|------|---------|-----|
+| Consultation | 中医诊断 (TCM diagnosis) | "问诊" or "就诊" |
+| MedicalCase | 医案 (medical case) | "病历" |
+| Formula | 验方/经验方 (empirical recipe) | "公式" |
+
 ## Build, Test, Run Commands
 
 ### Build
@@ -29,12 +37,12 @@ dotnet clean LYBTZYZS.sln && dotnet build LYBTZYZS.sln
 
 ### Test
 ```bash
-# All tests (~1700+ across 3 projects, Testing Trophy architecture)
+# All tests (~2021+ across 6 test projects, Testing Trophy architecture)
 dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 # Individual test projects
 dotnet test tests/LYBT.Tests.Server/           # ~1185 tests, real SQL Server + Respawn, zero mock
-dotnet test tests/LYBT.Tests.Desktop/          # ~493 tests, SQL Server LocalDB + real Repository
+dotnet test tests/LYBT.Tests.Desktop/          # ~760 tests, SQLite InMemory + real Repository
 dotnet test tests/LYBT.Tests.Architecture/     # ~76 tests, architecture guard + AntiMockRules
 
 # Run a single test
@@ -64,6 +72,11 @@ dotnet run --project src/Server/Services/LYBT.WebAPI
 scripts\build.bat                 # Interactive build manager
 scripts\build-check.bat           # Build verification
 scripts\quick-compile.bat         # Quick compile check
+```
+
+### Cross-compile (Ubuntu to Windows)
+```bash
+dotnet publish src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj -c Release -r win-x64 --self-contained false -p:EnableWindowsTargeting=true
 ```
 
 ## Code Architecture
@@ -159,6 +172,14 @@ LYBTZYZS.sln
 - **No emojis in code** (cleaned from codebase in 2025-11-20 quality improvement)
 - **XML doc warnings suppressed**: CS1591, CS1570, CS1572, CS1573, CS1587
 
+## Common Pitfalls
+
+- `FindAsync` applies global query filters (`IsDeleted`) when entity not in ChangeTracker — use `IgnoreQueryFilters()` for soft-deleted records
+- WPF Desktop tests require `net8.0-windows` target framework — cannot mix with Server tests
+- `MedicalCase.HasPrescription` is computed property depending on `PrescriptionId.HasValue` — Mapper must set it explicitly
+- Service layer MUST NOT directly inject `AppDbContext` — must use Repository interface (enforced by architecture test `P10_Services_Should_Not_Directly_Inject_AppDbContext`)
+- Cross-module references are forbidden — Server modules MUST NOT reference each other; Desktop modules MUST NOT reference each other
+
 ## Important Directories
 
 - `docs/03-architecture/` -- Architecture documentation and ADRs (8 decisions recorded)
@@ -166,5 +187,4 @@ LYBTZYZS.sln
 - `docs/05-development/` -- Development guides and coding standards
 - `docs/plans/` -- Active and archived design/plan documents
 - `scripts/` -- All automation scripts (build, test, deploy, maintenance)
-- `.serena/memories/` -- Project memory and analysis notes from prior sessions
-- `openspec/` -- OpenSpec specifications (being deprecated)
+- `.learnings/` -- Known error patterns, project conventions, and feature requests
