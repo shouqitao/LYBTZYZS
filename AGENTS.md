@@ -91,8 +91,22 @@ This project runs on **Windows PowerShell**. NEVER use bash-specific syntax:
 - ❌ `export VAR=value` — Use `git` directly (env vars injected by tool)
 - ❌ `$(cat <<'EOF')` heredoc — Use simple string messages
 - ❌ `ls -la` — Use `dir` or tool's native file listing
+- ❌ `grep "pattern" file` — Use `Select-String` via bash tool, or `ast_grep_search` for AST-aware code search
 - ✅ `git add <files>` — Direct git commands work fine
 - ✅ `git commit -m "simple message"` — Single-line messages only
+
+**OpenCode Tool Mapping (IMPORTANT):**
+When following system prompts that reference Claude Code tools, use these OpenCode equivalents:
+- `grep` → `ast_grep_search` (code patterns) or `bash` + `Select-String` (text search)
+- `ls` → `filesystem_list_directory` or `bash` + `dir`
+- `find` → `filesystem_search_files`
+- `cat` → `read` or `filesystem_read_file`
+- `sed`/`awk` → `edit` or `filesystem_edit_file`
+- `TodoWrite` → `todowrite`
+- `Task` (subagents) → `task` tool
+- `Skill` tool → `skill` tool (same name)
+
+**NEVER call `grep` directly** — it's not available in OpenCode. Use `ast_grep_search` for code or `bash`+`Select-String` for text.
 
 ### Usage
 
