@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Input;
-using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Commands;
@@ -16,13 +15,11 @@ namespace LYBT.Desktop.Shell.Services;
 /// <remarks>
 /// OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator统一导航入口
 /// S6-01: 根据 CurrentUser.Role 控制菜单可见性
-/// S6-02: 根据 ConnectionMode 禁用本地模式不适用的菜单
 /// </remarks>
 public class MenuManager
 {
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ISessionManager _sessionManager;
-    private readonly IConnectionModeProvider _connectionModeProvider;
     private readonly ILogger<MenuManager> _logger;
     private readonly IUserNotificationService _userNotificationService;
     private readonly IApplicationCommands _applicationCommands;
@@ -30,14 +27,12 @@ public class MenuManager
     public MenuManager(
         INavigationCoordinator navigationCoordinator,
         ISessionManager sessionManager,
-        IConnectionModeProvider connectionModeProvider,
         ILogger<MenuManager> logger,
         IUserNotificationService userNotificationService,
         IApplicationCommands applicationCommands)
     {
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
-        _connectionModeProvider = connectionModeProvider ?? throw new ArgumentNullException(nameof(connectionModeProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _userNotificationService = userNotificationService ?? throw new ArgumentNullException(nameof(userNotificationService));
         _applicationCommands = applicationCommands ?? throw new ArgumentNullException(nameof(applicationCommands));
@@ -45,42 +40,37 @@ public class MenuManager
         InitializeCommands();
     }
 
-    #region S6-01/S6-02 菜单可见性
+    #region S6-01 菜单可见性
 
-    /// <summary>S6-01: 用户管理菜单可见性 (仅 Admin/SuperAdmin + 远程模式)</summary>
+    /// <summary>S6-01: 用户管理菜单可见性 (仅 Admin/SuperAdmin)</summary>
     public bool IsUserManagementVisible =>
-        _connectionModeProvider.IsRemote &&
         _sessionManager.CurrentUser?.Role is UserRole.Admin or UserRole.SuperAdmin;
 
-    /// <summary>S6-02: 同步菜单可见性 (仅远程模式)</summary>
-    public bool IsSyncVisible => _connectionModeProvider.IsRemote;
+    /// <summary>S6-01: 同步菜单可见性</summary>
+    public bool IsSyncVisible => true;
 
-    /// <summary>S6-02: 系统设置可见性 (仅 Admin/SuperAdmin)</summary>
+    /// <summary>S6-01: 系统设置可见性 (仅 Admin/SuperAdmin)</summary>
     public bool IsSystemSettingsVisible =>
         _sessionManager.CurrentUser?.Role is UserRole.Admin or UserRole.SuperAdmin;
 
-    /// <summary>S6-04: 密码修改可见性 (仅远程模式)</summary>
-    public bool IsPasswordChangeVisible => _connectionModeProvider.IsRemote;
+    /// <summary>S6-01: 密码修改可见性</summary>
+    public bool IsPasswordChangeVisible => true;
 
-    /// <summary>S6-04: 账户设置可见性 (远程模式显示完整，本地模式显示简化版)</summary>
+    /// <summary>S6-01: 账户设置可见性</summary>
     public bool IsAccountSettingsVisible => true;
-
-    /// <summary>当前连接模式</summary>
-    public ConnectionMode CurrentConnectionMode => _connectionModeProvider.CurrentMode;
 
     /// <summary>刷新菜单可见性 (登录后/角色变更时调用)</summary>
     public void RefreshMenuVisibility()
     {
         _logger.LogDebug(
-            "菜单可见性刷新: ConnectionMode={Mode}, Role={Role}, UserManagement={UserMgmt}, Sync={Sync}, Settings={Settings}",
-            _connectionModeProvider.CurrentMode,
+            "菜单可见性刷新: Role={Role}, UserManagement={UserMgmt}, Sync={Sync}, Settings={Settings}",
             _sessionManager.CurrentUser?.Role,
             IsUserManagementVisible,
             IsSyncVisible,
             IsSystemSettingsVisible);
     }
 
-    #endregion S6-01/S6-02 菜单可见性
+    #endregion S6-01 菜单可见性
 
     #region 命令属性
 

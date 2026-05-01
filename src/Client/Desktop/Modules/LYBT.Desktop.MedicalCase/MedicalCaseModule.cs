@@ -40,9 +40,7 @@ namespace LYBT.Desktop.MedicalCase
         {
             ViewModelLocationProvider.Register(typeof(MedicalCaseMasterDetailControl).ToString(), typeof(ViewModels.MedicalCaseMasterDetailViewModel));
 
-            // SYNC-D02: IMedicalCaseRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
-            // 远程模式 -> MedicalCaseRepository (MedicalCase 模块)
-            // 本地模式 -> LocalMedicalCaseRepository (LocalData 模块)
+            // IMedicalCaseRepository 由 Shell DI 注册 (Refit API)
 
             // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 

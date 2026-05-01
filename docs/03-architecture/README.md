@@ -2,7 +2,7 @@
 
 ## 概述
 
-本目录包含凌隐宝堂中医诊所管理系统的完整架构文档。系统采用 Server/Shared/Client 三层架构，支持远程 (SQL Server) 和本地 (SQL Server，当前实现) 双模式运行。
+本目录包含凌隐宝堂中医诊所管理系统的完整架构文档。系统采用 Server/Shared/Client 三层架构，支持远程 (SQL Server) 和本地 (嵌入式 LocalWebAPI + SQL Server) 双模式运行。
 
 ## 技术栈
 
@@ -12,7 +12,7 @@
 | 后端框架 | ASP.NET Core Web API | 8.0 |
 | ORM | Entity Framework Core | 8.0.20 |
 | 远程数据库 | SQL Server | 2019+ |
-| 本地数据库 | SQL Server (当前实现) | - |
+| 本地数据库 | SQL Server (嵌入式 LocalWebAPI) | - |
 | 桌面框架 | WPF | .NET 8 |
 | MVVM 框架 | Prism | 9.0 |
 | DI 容器 | DryIoc (via Prism) | - |

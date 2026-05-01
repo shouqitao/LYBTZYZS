@@ -193,8 +193,19 @@ namespace LYBT.LocalWebAPI.Controllers
             return Ok(formulas);
         }
 
-        // POST /api/formulas/import
-        [HttpPost("import")]
+        // GET /api/formulas/import-template
+        [HttpGet("import-template")]
+        public IActionResult ExportTemplate()
+        {
+            var template = new[]
+            {
+                new { Name = "", Effect = "", Indication = "", Usage = "", Category = "", FormulaType = "", Remark = "" }
+            };
+            return Ok(template);
+        }
+
+        // POST /api/formulas/batch-import
+        [HttpPost("batch-import")]
         public async Task<IActionResult> Import([FromBody] List<Formula> formulas)
         {
             if (formulas == null || formulas.Count == 0) return BadRequest("formulas is required.");

@@ -5,11 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Entities.Users;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Utilities.Security;
 using LYBT.Shared.Models.Enums; // for Role enum usage if needed
+using LYBT.Shared.Models.Contracts.Users;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+
+using LYBT.LocalWebAPI.Mappers;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
@@ -113,13 +117,13 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/users/change-password
-    [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    // PUT /api/users/{id}/change-password
+    [HttpPut("{id:guid}/change-password")]
+    public async Task<IActionResult> ChangePassword([FromRoute] Guid id, [FromBody] ChangePasswordDto dto)
     {
         if (dto == null) return BadRequest("Invalid request.");
 
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId && !u.IsDeleted);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return NotFound();
 
         if (!PasswordHelper.VerifyPassword(dto.OldPassword, user.PasswordHash, user.Role).IsSuccess)
@@ -190,10 +194,86 @@ public class UsersController : ControllerBase
         return Ok(new { Count = users.Count });
     }
 
+    // GET /api/users/current
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized("无法获取当前用户信息。");
+
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+        if (user == null) return NotFound("用户不存在。");
+
+        return Ok(new UserDetailDto
+        {
+            Id = user.Id,
+            UserName = user.UserName,
+            RealName = user.RealName,
+            Role = user.Role,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            Status = user.Status,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
+        });
+    }
+
+    // POST /api/users/{id}/reset-password
+    [HttpPost("{id:guid}/reset-password")]
+    public async Task<IActionResult> ResetPassword([FromRoute] Guid id)
+    {
+        // Admin check
+        var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (roleClaim == null || !roleClaim.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            return Forbid();
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
+        if (user == null) return NotFound();
+
+        var tempPassword = PasswordHelper.GenerateTemporaryPassword();
+        user.PasswordHash = PasswordHelper.HashPassword(tempPassword, user.Role);
+        user.MustChangeOnNextLogin = true;
+        await _db.SaveChangesAsync();
+
+        return Ok(new ResetPasswordResponseDto
+        {
+            Success = true,
+            TemporaryPassword = tempPassword
+        });
+    }
+
+    // PUT /api/users/{id}/profile
+    [HttpPut("{id:guid}/profile")]
+    public async Task<IActionResult> ChangeProfile([FromRoute] Guid id, [FromBody] ChangeProfileDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
+        if (user == null) return NotFound();
+
+        user.RealName = dto.RealName;
+        user.PhoneNumber = dto.PhoneNumber;
+        user.Email = dto.Email;
+        await _db.SaveChangesAsync();
+
+        return Ok(new UserDetailDto
+        {
+            Id = user.Id,
+            UserName = user.UserName,
+            RealName = user.RealName,
+            Role = user.Role,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            Status = user.Status,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
+        });
+    }
+
     // DTOs
     public class ChangePasswordDto
     {
-        public Guid UserId { get; set; }
         public string OldPassword { get; set; } = string.Empty;
         public string NewPassword { get; set; } = string.Empty;
     }

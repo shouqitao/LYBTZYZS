@@ -1,6 +1,5 @@
 using FluentAssertions;
 using LYBT.Desktop.Auth.ViewModels;
-using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -26,7 +25,6 @@ public class LoginWindowAppearanceTests
     private readonly IApplicationStateService _applicationStateService;
     private readonly IUsernameStorageService _usernameStorage;
     private readonly ICredentialVault _credentialVault;
-    private readonly IModeSwitchValidator _modeSwitchValidator;
 
     public LoginWindowAppearanceTests()
     {
@@ -51,7 +49,6 @@ public class LoginWindowAppearanceTests
         _applicationStateService = Substitute.For<IApplicationStateService>();
         _usernameStorage = Substitute.For<IUsernameStorageService>();
         _credentialVault = Substitute.For<ICredentialVault>();
-        _modeSwitchValidator = Substitute.For<IModeSwitchValidator>();
 
         _applicationStateService.IsApiHealthy.Returns(true);
         _applicationStateService.ConnectionStatus.Returns("Connected");
@@ -64,8 +61,7 @@ public class LoginWindowAppearanceTests
             _loginCoordinator,
             _applicationStateService,
             _usernameStorage,
-            _credentialVault,
-            _modeSwitchValidator);
+            _credentialVault);
     }
 
     #region US-AUTH-012: Login window appearance defaults
@@ -90,28 +86,6 @@ public class LoginWindowAppearanceTests
         // Assert
         sut.RememberPassword.Should().BeFalse(
             "US-AUTH-012: remember-password checkbox should be unchecked by default");
-    }
-
-    [Fact]
-    public void US_AUTH_012_IsRemoteMode_DefaultsToTrue()
-    {
-        // Act
-        var sut = CreateSut();
-
-        // Assert
-        sut.IsRemoteMode.Should().BeTrue(
-            "US-AUTH-012: remote mode should be selected by default");
-    }
-
-    [Fact]
-    public void US_AUTH_012_IsLocalMode_DefaultsToFalse()
-    {
-        // Act
-        var sut = CreateSut();
-
-        // Assert
-        sut.IsLocalMode.Should().BeFalse(
-            "US-AUTH-012: local mode should not be active by default");
     }
 
     [Fact]

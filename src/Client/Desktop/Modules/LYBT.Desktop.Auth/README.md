@@ -120,7 +120,7 @@ LYBT.Desktop.Auth/
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| LoginViewModel.cs | `LoginViewModel : NavigableViewModelBase` | 登录视图模型。属性: Username, Password, RememberUsername, RememberPassword, SelectedConnectionMode, IsRemoteMode, IsLocalMode, HasMessage, ApiStatus (ApiHealthStatus), ApiStatusMessage, IsApiUnhealthy。命令: LoginCommand (DelegateCommand, CanExecute 检查用户名/密码非空且非加载中), CloseApplicationCommand (确认后退出), RetryApiCheckCommand (重试 API 连接)。核心方法: ExecuteLoginAsync (调用 LoginCoordinator，成功后保存用户名/密码), LoadSavedCredentialsAsync (启动时加载已存凭证), LoadApiStatusFromStateServiceAsync, OnApiStatusChanged (事件驱动 API 状态更新), ClearSavedUsernameAsync, ClearSavedPasswordAsync |
+| LoginViewModel.cs | `LoginViewModel : NavigableViewModelBase` | 登录视图模型。属性: Username, Password, RememberUsername, RememberPassword, HasMessage, ApiStatus (ApiHealthStatus), ApiStatusMessage, IsApiUnhealthy。命令: LoginCommand (DelegateCommand, CanExecute 检查用户名/密码非空且非加载中), CloseApplicationCommand (确认后退出), RetryApiCheckCommand (重试 API 连接)。核心方法: ExecuteLoginAsync (调用 LoginCoordinator，成功后保存用户名/密码), LoadSavedCredentialsAsync (启动时加载已存凭证), LoadApiStatusFromStateServiceAsync, OnApiStatusChanged (事件驱动 API 状态更新), ClearSavedUsernameAsync, ClearSavedPasswordAsync |
 
 ### Views/
 
@@ -141,14 +141,13 @@ LYBT.Desktop.Auth/
 - LoginView 构造函数中 Prism 可能在 InitializeComponent 时就设置 DataContext (Issue #1246)，此时 DataContextChanged 不会触发，需在构造函数中手动处理
 - RememberPassword 勾选时自动联动勾选 RememberUsername (取消 RememberPassword 不取消 RememberUsername)
 - 切换用户名时，如果之前有已保存的密码，会自动清空 Password 字段
-- ConnectionMode.Local 选择会被拦截并提示"功能开发中"，不会实际切换
 
 ## OpenSpec 追踪
 
 | OpenSpec ID | 涉及文件 | 状态 |
 |-------------|----------|------|
 | simplify-login-options | LoginViewModel.cs | 记住账号+记住密码已实现，自动登录已移除 |
-| refactor-startup-connection-resilience | LoginViewModel.cs | 事件驱动 API 状态更新，ConnectionMode 预留 |
+| refactor-startup-connection-resilience | LoginViewModel.cs | 事件驱动 API 状态更新 |
 | remove-secure-credential-storage | LoginViewModel.cs | 已移除废弃的 SecureCredentialStorage 依赖 |
 | redesign-login-remember-password | LoginViewModel.cs | DPAPI CredentialVault 保存/加载密码已实现 |
 | enhance-viewmodel-architecture | LoginViewModel.cs | 使用 IViewModelServices 聚合服务 |

@@ -7,7 +7,7 @@
 
 ## 简介
 
-凌隐宝堂中医诊所管理系统 (LYBTZYZS) 是一个专为中医诊所设计的综合管理平台，采用 .NET 8 + WPF + ASP.NET Core + EF Core 技术栈，支持远程 (SQL Server) 和本地 (SQLite) 双运行模式。
+凌隐宝堂中医诊所管理系统 (LYBTZYZS) 是一个专为中医诊所设计的综合管理平台，采用 .NET 8 + WPF + ASP.NET Core + EF Core 技术栈，支持远程 (SQL Server) 和本地 (嵌入式 LocalWebAPI + SQL Server) 双运行模式。
 
 ## 核心功能
 
@@ -48,7 +48,7 @@ dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 | 服务端 API | ASP.NET Core WebAPI (.NET 8) |
 | ORM | Entity Framework Core 8.0 |
 | 远程数据库 | SQL Server 2019+ |
-| 本地数据库 | SQLite |
+| 本地数据库 | SQL Server (嵌入式 LocalWebAPI) |
 | 认证 | JWT + RefreshToken + AutoLoginToken |
 | 日志 | Serilog (Console + File + SQL Server) |
 | 测试 | xUnit + NSubstitute |
@@ -90,7 +90,7 @@ Copyright 2025-2026 LYBT. All rights reserved.
 
 # LYBTZYZS 凌隐宝堂中医诊所管理系统
 
-**技术栈**: .NET 8 + WPF/Prism + ASP.NET Core + EF Core + SQL Server/SQLite (双模式)
+**技术栈**: .NET 8 + WPF/Prism + ASP.NET Core + EF Core + SQL Server
 **阶段**: 正式版开发阶段
 
 ---
@@ -149,7 +149,7 @@ dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 - **三层架构**: Controller → Service → Repository → DbContext
 - **MVVM**: View (XAML) ← 绑定 → ViewModel → Repository → API
 - **DDD**: MedicalCase 是唯一聚合根 (Consultation + Prescription 是内部实体)
-- **双模式**: 远程 (SQL Server) + 本地 (SQLite)，共享 Service/Repository 层，仅 DbContext Provider 不同 (SYNC-D02)。详见 [dual-mode.md](docs/03-architecture/dual-mode.md)
+- **双模式**: 远程 (SQL Server) + 本地 (嵌入式 LocalWebAPI + SQL Server)，共享 Repository 接口。详见 [dual-mode.md](docs/03-architecture/dual-mode.md)
 
 ## Repository 规范 (Task 6)
 

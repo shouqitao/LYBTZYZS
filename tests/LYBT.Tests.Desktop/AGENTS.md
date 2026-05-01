@@ -1,6 +1,6 @@
 # LYBT.Tests.Desktop - Desktop Tests
 
-**Purpose**: Desktop client tests with SQLite InMemory + real Repository.
+**Purpose**: Desktop client tests with SQL Server LocalDB + real Repository.
 
 ## Structure
 
@@ -24,12 +24,12 @@ LYBT.Tests.Desktop/
 |------|----------|-------|
 | End-to-end | `EndToEnd/Modules/` | 13 module E2E tests |
 | Pure logic | `PureLogic/MedicalCase/` | MedicalCase domain logic tests |
-| Test fixtures | `_Infrastructure/` | SQLite InMemory setup |
+| Test fixtures | `_Infrastructure/` | SQL Server LocalDB setup |
 | User journeys | `UserJourneys/` | Desktop user flow tests |
 
 ## CONVENTIONS
 
-- **SQLite InMemory** — Tests use SQLite InMemory database, not real SQL Server
+- **SQL Server LocalDB** — Tests use SQL Server LocalDB, matching production
 - **Real Repository** — Repository layer is real, not mocked
 - **net8.0-windows** — Target framework required for WPF tests
 - **NSubstitute allowed** — Unlike server tests, desktop tests may use NSubstitute for UI layer

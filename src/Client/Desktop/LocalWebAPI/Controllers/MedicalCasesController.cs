@@ -7,11 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Entities.MedicalCases;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Entities.Consultations;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
+
+using LYBT.LocalWebAPI.Mappers;
 
 namespace LYBT.LocalWebAPI.Controllers
 {
@@ -29,14 +32,14 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // GET /api/medicalcases?patientId=
         [HttpGet]
-        public async Task<ActionResult<List<MedicalCase>>> GetMedicalCases([FromQuery] Guid? patientId)
+        public async Task<ActionResult<List<MedicalCaseListDto>>> GetMedicalCases([FromQuery] Guid? patientId)
         {
             var q = _db.MedicalCases.AsNoTracking().Where(m => !m.IsDeleted);
             if (patientId.HasValue)
             {
                 q = q.Where(m => m.PatientId == patientId.Value);
             }
-            return await q.ToListAsync();
+            return Ok((await q.ToListAsync()).Select(x => x.ToListDto()).ToList());
         }
 
         // GET /api/medicalcases/{id}
@@ -240,7 +243,7 @@ namespace LYBT.LocalWebAPI.Controllers
             if (mc.IsCompleted) return BadRequest("Medical case is already completed.");
             mc.Complete();
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
         // PUT /api/medicalcases/{id}/suspend
@@ -255,7 +258,7 @@ namespace LYBT.LocalWebAPI.Controllers
             if (mc.IsCompleted) return BadRequest("Medical case is already completed.");
             mc.Suspend();
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
         // PUT /api/medicalcases/{id}/cancel
@@ -283,7 +286,7 @@ namespace LYBT.LocalWebAPI.Controllers
             mc.NeedsPrescription = request.NeedsPrescription;
             mc.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
         // PUT /api/medicalcases/{id}/status
@@ -295,7 +298,7 @@ namespace LYBT.LocalWebAPI.Controllers
             mc.CaseStatus = request.Status;
             mc.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
         // PUT /api/medicalcases/{id}/print-completed
@@ -310,7 +313,7 @@ namespace LYBT.LocalWebAPI.Controllers
             mc.PrintVersion++;
             mc.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
         // PUT /api/medicalcases/{id}

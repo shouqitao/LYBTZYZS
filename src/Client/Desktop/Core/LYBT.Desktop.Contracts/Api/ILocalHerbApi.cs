@@ -1,4 +1,4 @@
-using LYBT.Entities.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Contracts.Api;
 
@@ -8,16 +8,16 @@ namespace LYBT.Desktop.Contracts.Api;
 public interface ILocalHerbApi
 {
     [Refit.Get("/api/herbs")]
-    Task<List<Herb>> GetHerbsAsync([Refit.Query] string? keyword = null);
+    Task<List<HerbListDto>> GetHerbsAsync([Refit.Query] string? keyword = null);
 
     [Refit.Get("/api/herbs/{id}")]
-    Task<Herb> GetHerbByIdAsync(Guid id);
+    Task<HerbDetailDto> GetHerbByIdAsync(Guid id);
 
     [Refit.Post("/api/herbs")]
-    Task<Herb> CreateHerbAsync([Refit.Body] Herb herb);
+    Task<HerbDetailDto> CreateHerbAsync([Refit.Body] HerbInputDto request);
 
     [Refit.Put("/api/herbs/{id}")]
-    Task<Herb> UpdateHerbAsync(Guid id, [Refit.Body] Herb herb);
+    Task<HerbDetailDto> UpdateHerbAsync(Guid id, [Refit.Body] HerbInputDto request);
 
     [Refit.Delete("/api/herbs/{id}")]
     Task DeleteHerbAsync(Guid id);

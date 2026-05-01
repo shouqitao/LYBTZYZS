@@ -1,4 +1,5 @@
-using LYBT.Entities.Registrations;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Registration;
 
 namespace LYBT.Desktop.Contracts.Api;
 
@@ -8,13 +9,13 @@ namespace LYBT.Desktop.Contracts.Api;
 public interface ILocalRegistrationApi
 {
     [Refit.Get("/api/registrations")]
-    Task<List<Registration>> GetRegistrationsAsync([Refit.Query] DateTime? date = null);
+    Task<List<RegistrationListDto>> GetRegistrationsAsync([Refit.Query] DateTime? date = null);
 
     [Refit.Get("/api/registrations/{id}")]
-    Task<Registration> GetRegistrationByIdAsync(Guid id);
+    Task<RegistrationDetailDto> GetRegistrationByIdAsync(Guid id);
 
     [Refit.Post("/api/registrations")]
-    Task<Registration> CreateRegistrationAsync([Refit.Body] Registration registration);
+    Task<RegistrationDetailDto> CreateRegistrationAsync([Refit.Body] RegistrationInputDto request);
 
     [Refit.Delete("/api/registrations/{id}")]
     Task DeleteRegistrationAsync(Guid id);

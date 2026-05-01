@@ -176,11 +176,10 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
         currentUserProvider.CurrentUserId.Returns(Guid.NewGuid());
         services.AddSingleton(currentUserProvider);
 
-        // LocalDbContext (使用与夹具相同的连接)
-        var connection = _fixture.DbContext.Database.GetDbConnection();
+        // LocalDbContext (使用与夹具相同的连接字符串)
         services.AddDbContext<LocalDbContext>(options =>
         {
-            options.UseSqlite(connection);
+            options.UseSqlServer(_fixture.ConnectionString);
         }, ServiceLifetime.Scoped);
 
         // 添加真实 Repository（从夹具的作用域解析）

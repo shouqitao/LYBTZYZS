@@ -133,7 +133,7 @@ public class HttpFormulaRepository : IFormulaRepository
     {
         var body = JsonSerializer.Serialize(request, Json);
         var content = new StringContent(body, Encoding.UTF8, "application/json");
-        var response = await _http.PostAsync("/api/formulas/import", content, ct);
+        var response = await _http.PostAsync("/api/formulas/batch-import", content, ct);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync(ct);

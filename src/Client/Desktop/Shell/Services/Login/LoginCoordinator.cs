@@ -1,7 +1,6 @@
 using System.Windows;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -31,7 +30,6 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly ICredentialVault? _credentialVault;
     private readonly IUsernameStorageService? _usernameStorage;
     private readonly IAuthenticationStateMachine _stateMachine;
-    private readonly IConnectionModeProvider _connectionModeProvider;
     private readonly object _stateLock = new();
 
     private UserDetailDto? _currentUser;
@@ -48,7 +46,6 @@ public class LoginCoordinator : ILoginCoordinator
         INavigationCoordinator navigationCoordinator,
         ISessionManager sessionManager,
         IAuthenticationStateMachine stateMachine,
-        IConnectionModeProvider connectionModeProvider,
         IConfiguration configuration,
         ICredentialVault? credentialVault = null,
         IUsernameStorageService? usernameStorage = null)
@@ -63,8 +60,6 @@ public class LoginCoordinator : ILoginCoordinator
         _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         _credentialVault = credentialVault;
         _usernameStorage = usernameStorage;
-
-        _connectionModeProvider = connectionModeProvider ?? throw new ArgumentNullException(nameof(connectionModeProvider));
 
         _stateMachine.StateChanged += OnStateMachineStateChanged;
     }
@@ -103,8 +98,8 @@ public class LoginCoordinator : ILoginCoordinator
             _loginAttemptCount++;
         }
 
-        _logger.LogInformation("开始登录流程 [用户: {Username}, 尝试次数: {AttemptCount}, 模式: {Mode}]",
-            username, _loginAttemptCount, _connectionModeProvider.CurrentMode);
+        _logger.LogInformation("开始登录流程 [用户: {Username}, 尝试次数: {AttemptCount}]",
+            username, _loginAttemptCount);
 
         _stateMachine.Fire(AuthEvent.StartLogin, "正在验证身份...");
 

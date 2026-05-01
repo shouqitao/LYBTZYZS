@@ -404,21 +404,14 @@ public class DesktopLayerArchTests
     #region Sprint3-STD: 架构规则固化
 
     /// <summary>
-    /// P-01: 所有 Repository 接口必须同时有 Remote 和 Local 实现
-    /// 确保双模式 (远程/本地) Repository 100% 完整，新增 Repository 不会遗漏某一端
-    /// </summary>
-    /// <remarks>
-    /// SYNC-D02: DataSource 层已废除，双模式通过 Remote Repository (HTTP API) + Local Repository (EF Core) 实现
+    /// P-01: 所有 Repository 接口必须有 Remote 实现
     /// Remote: Modules/*/Repositories/*Repository.cs
-    /// Local: LocalData/Repositories/Local*Repository.cs
-    /// </remarks>
+    /// </summary>
     [Fact]
-    public void P01_AllRepositories_Must_Have_Both_Remote_And_Local()
+    public void P01_AllRepositories_Must_Have_Remote_Implementation()
     {
         var contractsAssembly = Assembly.Load("LYBT.Desktop.Contracts");
-        var localDataAssembly = Assembly.Load("LYBT.Desktop.LocalData");
 
-        // 模块程序集 (Remote Repository 实现所在)
         var moduleAssemblies = new[]
         {
             Assembly.Load("LYBT.Desktop.Users"),
@@ -429,7 +422,6 @@ public class DesktopLayerArchTests
             Assembly.Load("LYBT.Desktop.Registration")
         };
 
-        // 查找 Contracts/Repositories 中所有 I{X}Repository 接口
         var repositoryInterfaces = contractsAssembly.GetTypes()
             .Where(t => t.IsInterface &&
                        t.Name.EndsWith("Repository") &&
@@ -444,25 +436,17 @@ public class DesktopLayerArchTests
 
         foreach (var repoInterface in repositoryInterfaces)
         {
-            // 从 IFormulaRepository 提取 "Formula"
             var entityName = repoInterface.Name[1..^"Repository".Length];
 
-            // 检查 Remote 实现 (在模块程序集中)
             var remoteType = moduleAssemblies
                 .SelectMany(a => a.GetTypes())
                 .FirstOrDefault(t => t.Name == $"{entityName}Repository" && !t.IsAbstract && !t.IsInterface);
             if (remoteType == null)
                 missingImplementations.Add($"{entityName}Repository [Remote] (接口: {repoInterface.Name})");
-
-            // 检查 Local 实现 (在 LocalData 程序集中)
-            var localType = localDataAssembly.GetTypes()
-                .FirstOrDefault(t => t.Name == $"Local{entityName}Repository" && !t.IsAbstract);
-            if (localType == null)
-                missingImplementations.Add($"Local{entityName}Repository [Local] (接口: {repoInterface.Name})");
         }
 
         Assert.True(missingImplementations.Count == 0,
-            $"双模式 Repository 实现不完整，违反 P-01 规则:\n{string.Join("\n", missingImplementations)}");
+            $"Repository 实现不完整，违反 P-01 规则:\n{string.Join("\n", missingImplementations)}");
     }
 
     /// <summary>

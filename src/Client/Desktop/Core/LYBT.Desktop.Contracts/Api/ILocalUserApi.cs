@@ -1,4 +1,5 @@
-using LYBT.Entities.Users;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Contracts.Api;
 
@@ -8,11 +9,11 @@ namespace LYBT.Desktop.Contracts.Api;
 public interface ILocalUserApi
 {
     [Refit.Get("/api/users")]
-    Task<List<User>> GetUsersAsync();
+    Task<List<UserListDto>> GetUsersAsync();
 
     [Refit.Get("/api/users/{id}")]
-    Task<User> GetUserByIdAsync(Guid id);
+    Task<UserDetailDto> GetUserByIdAsync(Guid id);
 
     [Refit.Put("/api/users/{id}")]
-    Task<User> UpdateUserAsync(Guid id, [Refit.Body] User user);
+    Task<UserDetailDto> UpdateUserAsync(Guid id, [Refit.Body] UserInputDto request);
 }

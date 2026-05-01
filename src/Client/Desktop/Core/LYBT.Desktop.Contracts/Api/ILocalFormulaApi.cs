@@ -1,4 +1,4 @@
-using LYBT.Entities.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Contracts.Api;
 
@@ -8,16 +8,16 @@ namespace LYBT.Desktop.Contracts.Api;
 public interface ILocalFormulaApi
 {
     [Refit.Get("/api/formulas")]
-    Task<List<Formula>> GetFormulasAsync([Refit.Query] string? keyword = null);
+    Task<List<FormulaListDto>> GetFormulasAsync([Refit.Query] string? keyword = null);
 
     [Refit.Get("/api/formulas/{id}")]
-    Task<Formula> GetFormulaByIdAsync(Guid id);
+    Task<FormulaDetailDto> GetFormulaByIdAsync(Guid id);
 
     [Refit.Post("/api/formulas")]
-    Task<Formula> CreateFormulaAsync([Refit.Body] Formula formula);
+    Task<FormulaDetailDto> CreateFormulaAsync([Refit.Body] FormulaInputDto request);
 
     [Refit.Put("/api/formulas/{id}")]
-    Task<Formula> UpdateFormulaAsync(Guid id, [Refit.Body] Formula formula);
+    Task<FormulaDetailDto> UpdateFormulaAsync(Guid id, [Refit.Body] FormulaInputDto request);
 
     [Refit.Delete("/api/formulas/{id}")]
     Task DeleteFormulaAsync(Guid id);

@@ -37,9 +37,7 @@ namespace LYBT.Desktop.Patients
         {
             ViewModelLocationProvider.Register(typeof(PatientMasterDetailControl).ToString(), typeof(ViewModels.PatientMasterDetailViewModel));
 
-            // SYNC-D02: IPatientRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
-            // 远程模式 → PatientRepository (Patients 模块)
-            // 本地模式 → LocalPatientRepository (LocalData 模块)
+            // IPatientRepository 由 Shell DI 注册 (Refit API)
 
             // OpenSpec: integrate-cardreader-module - 患者读卡器集成服务
             containerRegistry.RegisterSingleton<IPatientCardReaderIntegration, PatientCardReaderIntegration>();

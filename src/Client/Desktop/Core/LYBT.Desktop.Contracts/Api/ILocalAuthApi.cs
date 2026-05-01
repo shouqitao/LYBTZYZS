@@ -1,4 +1,3 @@
-using LYBT.Entities.Users;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 

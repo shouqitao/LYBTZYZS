@@ -1,5 +1,4 @@
-﻿using LYBT.Desktop.Contracts;
-using LYBT.Desktop.Contracts.Services;
+﻿using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using Microsoft.Extensions.Logging;
@@ -17,7 +16,6 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
     private readonly IApplicationTickService _tickService;
     private readonly IApplicationStateService _applicationStateService;
     private readonly ILogger<HealthCheckCoordinator> _logger;
-    private readonly IConnectionModeProvider _connectionModeProvider;
 
     private ApiHealthStatus _currentStatus = ApiHealthStatus.Checking;
     private long _lastHealthCheckTick;
@@ -35,13 +33,11 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
         IApiHealthCheckService apiHealthCheckService,
         IApplicationTickService tickService,
         IApplicationStateService applicationStateService,
-        IConnectionModeProvider connectionModeProvider,
         ILogger<HealthCheckCoordinator> logger)
     {
         _apiHealthCheckService = apiHealthCheckService ?? throw new ArgumentNullException(nameof(apiHealthCheckService));
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
         _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
-        _connectionModeProvider = connectionModeProvider ?? throw new ArgumentNullException(nameof(connectionModeProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -65,18 +61,6 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
         if (_isRunning)
         {
             _logger.LogDebug("健康检查协调器已在运行中");
-            return;
-        }
-
-        // OpenSpec: implement-local-mode - 本地模式直接设置为健康状态
-        if (_connectionModeProvider.CurrentMode == ConnectionMode.Local)
-        {
-            var previousStatus = _currentStatus;
-            _currentStatus = ApiHealthStatus.Healthy;
-            _isRunning = true;
-            RaiseStatusChanged(previousStatus, _currentStatus);
-            SyncToApplicationState(ApiHealthStatus.Healthy);
-            _logger.LogInformation("健康检查协调器已启动 [本地模式，跳过 API 检查]");
             return;
         }
 
@@ -113,19 +97,6 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
     {
         if (_disposed)
         {
-            return;
-        }
-
-        // OpenSpec: implement-local-mode - 本地模式直接返回健康状态
-        if (_connectionModeProvider.CurrentMode == ConnectionMode.Local)
-        {
-            if (_currentStatus != ApiHealthStatus.Healthy)
-            {
-                var previousStatus = _currentStatus;
-                _currentStatus = ApiHealthStatus.Healthy;
-                RaiseStatusChanged(previousStatus, _currentStatus);
-                SyncToApplicationState(ApiHealthStatus.Healthy);
-            }
             return;
         }
 

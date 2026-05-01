@@ -34,9 +34,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
     #region 依赖服务
 
     private readonly IApiHealthMonitor _apiHealthMonitor;
+    private readonly IApiRouter _apiRouter;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IEnhancedNavigationService _enhancedNavigationService;
-    private readonly IConnectionModeProvider _connectionModeProvider;
     private readonly MenuManager _menuManager;
     private readonly IActiveConsultationService _activeConsultationService;
     private readonly IApplicationTickService _tickService;
@@ -103,16 +103,16 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
 
     /// <summary>
+    /// 是否处于离线模式（本地API）
+    /// </summary>
+    [ObservableProperty]
+    private bool _isOfflineMode;
+
+    /// <summary>
     /// poc-drawer-layout: Drawer是否打开
     /// </summary>
     [ObservableProperty]
     private bool _isDrawerOpen;
-
-    /// <summary>
-    /// 是否正在切换模式 (SYNC-D03)
-    /// </summary>
-    [ObservableProperty]
-    private bool _isSwitchingMode;
 
     /// <summary>
     /// 是否正在同步数据
@@ -163,12 +163,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// <summary>S6-04: 密码修改可见性 - 委托给 MenuManager</summary>
     public bool IsPasswordChangeVisible => _menuManager.IsPasswordChangeVisible;
 
-    /// <summary>S6-02/S6-04: 是否为本地模式</summary>
-    public bool IsLocalMode => _connectionModeProvider.IsLocal;
-
-    /// <summary>SYNC-D03: 当前连接模式显示文本</summary>
-    public string ConnectionModeText => _connectionModeProvider.IsLocal ? "本地模式" : "远程模式";
-
     /// <summary>Phase 3: NavigationHistoryPanel ViewModel</summary>
     [ObservableProperty]
     private NavigationHistoryPanelViewModel? _navigationHistoryPanelViewModel;
@@ -197,9 +191,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IViewModelServices services,
         IUserNotificationService userNotificationService,
         IApiHealthMonitor apiHealthMonitor,
+        IApiRouter apiRouter,
         INavigationCoordinator navigationCoordinator,
         IEnhancedNavigationService enhancedNavigationService,
-        IConnectionModeProvider connectionModeProvider,
         MenuManager menuManager,
         IActiveConsultationService activeConsultationService,
         IApplicationTickService tickService,
@@ -215,9 +209,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
         UserNotificationService = userNotificationService;
 
         _apiHealthMonitor = apiHealthMonitor ?? throw new ArgumentNullException(nameof(apiHealthMonitor));
+        _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _enhancedNavigationService = enhancedNavigationService ?? throw new ArgumentNullException(nameof(enhancedNavigationService));
-        _connectionModeProvider = connectionModeProvider ?? throw new ArgumentNullException(nameof(connectionModeProvider));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
@@ -353,8 +347,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     public ICommand CycleRegionsCommand => _menuManager.CycleRegionsCommand;
 
-    // SwitchModeCommand 由 [RelayCommand] 在 RelayCommand region 自动生成
-
     #endregion
 
     #region RelayCommand
@@ -429,52 +421,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         }
     }
 
-    /// <summary>
-    /// SYNC-D03: 切换连接模式命令 (远程 <-> 本地)
-    /// </summary>
-    [RelayCommand(CanExecute = nameof(CanSwitchMode))]
-    private async Task SwitchModeAsync()
-    {
-        var targetMode = _connectionModeProvider.IsLocal
-            ? Contracts.ConnectionMode.Remote
-            : Contracts.ConnectionMode.Local;
-
-        var targetText = targetMode == Contracts.ConnectionMode.Local ? "本地模式" : "远程模式";
-
-        // 用户确认
-        var confirmed = await ShowConfirmationAsync(
-            $"确定要切换到{targetText}吗？\n\n切换后当前页面将被重置。",
-            "模式切换确认");
-
-        if (!confirmed) return;
-
-        try
-        {
-            IsSwitchingMode = true;
-            Logger.LogInformation("用户发起模式切换: {Current} -> {Target}",
-                _connectionModeProvider.CurrentMode, targetMode);
-
-            var result = await _connectionModeProvider.SwitchModeAsync(targetMode);
-
-            if (!result.Success)
-            {
-                await ShowWarningMessageAsync($"模式切换失败: {result.ErrorMessage}");
-                Logger.LogWarning("模式切换失败: {Error}", result.ErrorMessage);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "模式切换异常");
-            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("模式切换", ex));
-        }
-        finally
-        {
-            IsSwitchingMode = false;
-        }
-    }
-
-    private bool CanSwitchMode() => !IsSwitchingMode && IsLoggedIn;
-
     #endregion
 
     #region 初始化
@@ -548,6 +494,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         _apiHealthMonitor.StatusChanged += OnHealthStatusChanged;
         _apiHealthMonitor.StartMonitoringAsync().SafeFireAndForget(ex => Logger.LogError(ex, "启动健康监控失败"));
+        _apiRouter.ModeChanged += OnApiRouterModeChanged;
     }
 
     /// <summary>
@@ -562,7 +509,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(
             args => OnTokenLifecycleStateChangedAsync(args).SafeFireAndForget(ex => Logger.LogError(ex, "Token生命周期事件处理异常")));
         Events.Subscribe<SyncEvents.StatusChangedEvent, SyncStatusPayload>(OnSyncStatusChanged);
-        _connectionModeProvider.ModeChanged += OnConnectionModeChanged;
         _navigationCoordinator.SubscribeToRegionCollection();
 
         // 导航架构改进方案 v1.0 — 订阅导航变更事件，更新面包屑和按钮状态
@@ -597,6 +543,19 @@ public partial class MainWindowViewModel : CoreViewModelBase
     }
 
     /// <summary>
+    /// API路由模式变更事件处理
+    /// </summary>
+    private void OnApiRouterModeChanged(object? sender, ApiModeChangedEventArgs e)
+    {
+        Services.UiThreadDispatcher.InvokeAsync(() =>
+        {
+            IsOfflineMode = e.NewMode == ApiMode.Local;
+            Logger.LogInformation("[UI] API模式变更: {OldMode} -> {NewMode} (手动={IsManual})",
+                e.OldMode, e.NewMode, e.IsManual);
+        });
+    }
+
+    /// <summary>
     /// 同步状态变更事件处理
     /// </summary>
     private void OnSyncStatusChanged(SyncStatusPayload payload)
@@ -606,28 +565,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
             IsSyncing = payload.IsSyncing;
             LastSyncTime = payload.LastSyncTime;
             SyncStatusMessage = payload.StatusMessage;
-        });
-    }
-
-    /// <summary>
-    /// SYNC-D03: 连接模式变更事件处理 - 刷新所有模式相关 UI 属性
-    /// </summary>
-    private void OnConnectionModeChanged(object? sender, ConnectionModeChangedEventArgs e)
-    {
-        Services.UiThreadDispatcher.InvokeAsync(() =>
-        {
-            // 刷新菜单可见性
-            _menuManager.RefreshMenuVisibility();
-            OnPropertyChanged(nameof(IsUserManagementVisible));
-            OnPropertyChanged(nameof(IsSyncVisible));
-            OnPropertyChanged(nameof(IsSystemSettingsVisible));
-            OnPropertyChanged(nameof(IsPasswordChangeVisible));
-            OnPropertyChanged(nameof(IsLocalMode));
-            OnPropertyChanged(nameof(ConnectionModeText));
-            SwitchModeCommand.NotifyCanExecuteChanged();
-
-            Logger.LogInformation("模式切换 UI 已更新: {Previous} -> {Current}",
-                e.PreviousMode, e.CurrentMode);
         });
     }
 
@@ -735,7 +672,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
             OnPropertyChanged(nameof(IsSyncVisible));
             OnPropertyChanged(nameof(IsSystemSettingsVisible));
             OnPropertyChanged(nameof(IsPasswordChangeVisible));
-            OnPropertyChanged(nameof(IsLocalMode));
 
             Logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", user.UserName);
         });
@@ -947,7 +883,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
             CleanupTickSubscription();
             CleanupHealthMonitor();
             UnsubscribeLoginEvent();
-            _connectionModeProvider.ModeChanged -= OnConnectionModeChanged;
             _navigationCoordinator.UnsubscribeFromRegionCollection();
             _tokenLifecycleService.Dispose(); // Issue #1864: 释放Token生命周期服务
         }
@@ -975,6 +910,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
         {
             _apiHealthMonitor.StatusChanged -= OnHealthStatusChanged;
             _apiHealthMonitor.Dispose();
+            _apiRouter.ModeChanged -= OnApiRouterModeChanged;
+            if (_apiRouter is IDisposable routerDisposable) routerDisposable.Dispose();
         }
         catch (Exception ex) { Logger.LogError(ex, "清理健康监控器失败"); }
     }

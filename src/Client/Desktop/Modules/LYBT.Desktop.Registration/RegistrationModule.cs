@@ -27,9 +27,7 @@ public class RegistrationModule : IModule
     /// <inheritdoc/>
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // SYNC-D02: IRegistrationRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
-        // 远程模式 -> RegistrationRepository (Registration 模块)
-        // 本地模式 -> LocalRegistrationRepository (LocalData 模块)
+        // IRegistrationRepository 由 Shell DI 注册 (Refit API)
 
         // OpenSpec: standardize-service-layer - 统一使用Service层
         containerRegistry.Register<IRegistrationService, RemoteRegistrationService>();

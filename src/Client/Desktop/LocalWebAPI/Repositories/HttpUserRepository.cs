@@ -94,7 +94,7 @@ public class HttpUserRepository : IUserRepository
     {
         var json = JsonSerializer.Serialize(dto, Json);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _http.PutAsync($"/api/users/{userId}", content);
+        var response = await _http.PutAsync($"/api/users/{userId}/profile", content);
         response.EnsureSuccessStatusCode();
         var resultJson = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<UserDetailDto>(resultJson, Json)!;
@@ -102,10 +102,10 @@ public class HttpUserRepository : IUserRepository
 
     public async Task<ServiceResult> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
     {
-        var body = new { UserId = userId, OldPassword = request.OldPassword, NewPassword = request.NewPassword };
+        var body = new { OldPassword = request.OldPassword, NewPassword = request.NewPassword };
         var json = JsonSerializer.Serialize(body, Json);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _http.PostAsync("/api/users/change-password", content);
+        var response = await _http.PutAsync($"/api/users/{userId}/change-password", content);
         return response.IsSuccessStatusCode
             ? new ServiceResult { IsSuccess = true }
             : new ServiceResult { IsSuccess = false };

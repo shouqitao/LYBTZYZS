@@ -1,6 +1,5 @@
 using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.Contracts.Services;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,13 +9,13 @@ namespace LYBT.Tests.Desktop.Infrastructure;
 
 /// <summary>
 /// User Journey 测试夹具
-/// 管理测试生命周期：SQLite InMemory 数据库初始化和清理
+/// 管理测试生命周期：SQL Server LocalDB 数据库初始化和清理
 /// </summary>
 public class UserJourneyFixture : IAsyncLifetime, IDisposable
 {
-    private SqliteConnection? _connection;
     private ServiceProvider? _serviceProvider;
     private bool _isInitialized;
+    private string _connectionString = null!;
 
     /// <summary>
     /// 获取 ServiceProvider 实例
@@ -31,6 +30,11 @@ public class UserJourneyFixture : IAsyncLifetime, IDisposable
         ServiceProvider.GetRequiredService<LocalDbContext>();
 
     /// <summary>
+    /// 获取数据库连接字符串
+    /// </summary>
+    public string ConnectionString => _connectionString;
+
+    /// <summary>
     /// 异步初始化测试夹具
     /// </summary>
     public async Task InitializeAsync()
@@ -40,9 +44,9 @@ public class UserJourneyFixture : IAsyncLifetime, IDisposable
         // 初始化 WPF 环境
         WpfTestHelper.InitializeWpf();
 
-        // 创建 SQLite InMemory 连接
-        _connection = new SqliteConnection("DataSource=:memory:");
-        await _connection.OpenAsync();
+        // 使用 SQL Server LocalDB（与生产环境一致），每个夹具实例使用独立数据库
+        var dbName = $"LYBTZYZS_UserJourneyTests_{Guid.NewGuid():N}";
+        _connectionString = $@"Server=(localdb)\MSSQLLocalDB;Database={dbName};Trusted_Connection=True;TrustServerCertificate=True";
 
         // 创建 ServiceProvider
         var services = new ServiceCollection();
@@ -64,15 +68,13 @@ public class UserJourneyFixture : IAsyncLifetime, IDisposable
     {
         if (_serviceProvider != null)
         {
+            // 删除测试数据库
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<LocalDbContext>();
+            await context.Database.EnsureDeletedAsync();
+
             await _serviceProvider.DisposeAsync();
             _serviceProvider = null;
-        }
-
-        if (_connection != null)
-        {
-            await _connection.CloseAsync();
-            await _connection.DisposeAsync();
-            _connection = null;
         }
 
         _isInitialized = false;
@@ -137,10 +139,10 @@ public class UserJourneyFixture : IAsyncLifetime, IDisposable
         currentUserProvider.CurrentUserId.Returns(Guid.NewGuid());
         services.AddSingleton(currentUserProvider);
 
-        // LocalDbContext (SQLite InMemory)
+        // LocalDbContext (SQL Server LocalDB，与生产环境一致)
         services.AddDbContext<LocalDbContext>(options =>
         {
-            options.UseSqlite(_connection!);
+            options.UseSqlServer(_connectionString);
         }, ServiceLifetime.Scoped);
 
         // 注册 Repository 和 Service 的 mock/fake 实现

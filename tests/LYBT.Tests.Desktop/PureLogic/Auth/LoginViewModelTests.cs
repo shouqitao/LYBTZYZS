@@ -1,7 +1,6 @@
 using FluentAssertions;
 using LYBT.Tests.Desktop._Infrastructure.Builders;
 using LYBT.Desktop.Auth.ViewModels;
-using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -28,7 +27,6 @@ public class LoginViewModelTests
     private readonly IApplicationStateService _applicationStateService;
     private readonly IUsernameStorageService _usernameStorage;
     private readonly ICredentialVault _credentialVault;
-    private readonly IModeSwitchValidator _modeSwitchValidator;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IEventAggregator _eventAggregator;
     private readonly IRegionManager _regionManager;
@@ -61,12 +59,11 @@ public class LoginViewModelTests
         _applicationStateService = Substitute.For<IApplicationStateService>();
         _usernameStorage = Substitute.For<IUsernameStorageService>();
         _credentialVault = Substitute.For<ICredentialVault>();
-        _modeSwitchValidator = Substitute.For<IModeSwitchValidator>();
     }
 
-    private LoginViewModel CreateSut(ConnectionMode initialMode = ConnectionMode.Remote)
+    private LoginViewModel CreateSut()
     {
-        _applicationStateService.IsApiHealthy.Returns(initialMode == ConnectionMode.Remote);
+        _applicationStateService.IsApiHealthy.Returns(true);
         _applicationStateService.ConnectionStatus.Returns("Connected");
 
         var sut = new LoginViewModel(
@@ -74,16 +71,7 @@ public class LoginViewModelTests
             _loginCoordinator,
             _applicationStateService,
             _usernameStorage,
-            _credentialVault,
-            _modeSwitchValidator);
-
-        // Set initial mode through the property if needed
-        if (initialMode == ConnectionMode.Local)
-        {
-            _modeSwitchValidator.ValidateRemoteToLocalSwitchAsync()
-                .Returns(ModeSwitchValidationResult.Valid);
-            sut.SelectedConnectionMode = ConnectionMode.Local;
-        }
+            _credentialVault);
 
         return sut;
     }
@@ -101,19 +89,6 @@ public class LoginViewModelTests
         sut.Password.Should().BeEmpty();
         sut.RememberUsername.Should().BeFalse();
         sut.RememberPassword.Should().BeFalse();
-        sut.IsRemoteMode.Should().BeTrue();
-        sut.IsLocalMode.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Constructor_WithLocalMode_SetsCorrectMode()
-    {
-        // Act
-        var sut = CreateSut(ConnectionMode.Local);
-
-        // Assert
-        sut.IsRemoteMode.Should().BeFalse();
-        sut.IsLocalMode.Should().BeTrue();
     }
 
     #endregion
@@ -403,42 +378,6 @@ public class LoginViewModelTests
 
     #endregion
 
-    #region 模式切换
-
-    [Fact]
-    public void SelectedConnectionMode_SetRemote_SetsIsRemoteMode()
-    {
-        // Arrange
-        var sut = CreateSut(ConnectionMode.Local);
-        _modeSwitchValidator.ValidateLocalToRemoteSwitchAsync()
-            .Returns(ModeSwitchValidationResult.Valid);
-
-        // Act
-        sut.SelectedConnectionMode = ConnectionMode.Remote;
-
-        // Assert
-        sut.IsRemoteMode.Should().BeTrue();
-        sut.IsLocalMode.Should().BeFalse();
-    }
-
-    [Fact]
-    public void SelectedConnectionMode_SetLocal_SetsIsLocalMode()
-    {
-        // Arrange
-        var sut = CreateSut(ConnectionMode.Remote);
-        _modeSwitchValidator.ValidateRemoteToLocalSwitchAsync()
-            .Returns(ModeSwitchValidationResult.Valid);
-
-        // Act
-        sut.SelectedConnectionMode = ConnectionMode.Local;
-
-        // Assert
-        sut.IsRemoteMode.Should().BeFalse();
-        sut.IsLocalMode.Should().BeTrue();
-    }
-
-    #endregion
-
     #region 资源清理 (Dispose)
 
     [Fact]
@@ -530,35 +469,6 @@ public class LoginViewModelTests
         // Assert - 验证最终状态
         sut.ErrorMessage.Should().NotBeNullOrEmpty("登录失败后应该显示错误信息");
         sut.Username.Should().Be("doctor", "登录失败后用户名应该保留");
-    }
-
-    /// <summary>
-    /// 行为契约 3: 切换连接模式后，状态标志应该正确反映当前模式
-    /// 验证最终状态，不验证 mock 调用
-    /// </summary>
-    [Fact]
-    public void ConnectionMode_AfterSwitching_ReflectsCorrectState()
-    {
-        // Arrange
-        var sut = CreateSut(ConnectionMode.Remote);
-        _modeSwitchValidator.ValidateRemoteToLocalSwitchAsync()
-            .Returns(ModeSwitchValidationResult.Valid);
-
-        // Act - 切换到本地模式
-        sut.SelectedConnectionMode = ConnectionMode.Local;
-
-        // Assert - 验证最终状态
-        sut.IsLocalMode.Should().BeTrue("切换到本地模式后 IsLocalMode 应该为 true");
-        sut.IsRemoteMode.Should().BeFalse("切换到本地模式后 IsRemoteMode 应该为 false");
-
-        // Act - 切换回远程模式
-        _modeSwitchValidator.ValidateLocalToRemoteSwitchAsync()
-            .Returns(ModeSwitchValidationResult.Valid);
-        sut.SelectedConnectionMode = ConnectionMode.Remote;
-
-        // Assert - 验证最终状态
-        sut.IsRemoteMode.Should().BeTrue("切换到远程模式后 IsRemoteMode 应该为 true");
-        sut.IsLocalMode.Should().BeFalse("切换到远程模式后 IsLocalMode 应该为 false");
     }
 
     #endregion

@@ -1,7 +1,8 @@
 # ADR-0002: 双模式架构 (远程 + 本地)
 
-**状态**: 已采纳
+**状态**: 已取代 (Superseded)
 **日期**: 2026-02-01
+**取代说明**: 原始决策中的策略模式 + ConnectionMode 运行时切换已在 2026-05 架构简化中移除。当前架构采用 Remote (Refit HTTP) + LocalWebAPI (嵌入式 Kestrel) 双模式，无运行时切换。详见 [dual-mode.md](../dual-mode.md)。
 
 ## 背景
 
@@ -40,9 +41,12 @@
 
 详见 `docs/plans/2026-02-10-requirements-deepening-design.md`
 
-## 变更记录
+## 后续演变
 
 | 日期 | 变更 |
 |------|------|
 | 2026-02-01 | 初始实现，支持手动切换 |
 | 2026-02-04 | 增加 SyncService 双向同步 |
+| 2026-03-08 | SQLite 迁移至 SQL Server |
+| 2026-03-09 | Sprint 6: 实现运行时切换 (SYNC-D03) |
+| 2026-05-01 | **架构简化**: 移除 ConnectionMode 运行时切换、移除遗留 Local 仓储、统一为 Remote + LocalWebAPI |

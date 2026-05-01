@@ -32,9 +32,7 @@ namespace LYBT.Desktop.Users
             // Map it to UserMasterDetailViewModel instead
             ViewModelLocationProvider.Register(typeof(UserMasterDetailControl).ToString(), typeof(ViewModels.UserMasterDetailViewModel));
 
-            // SYNC-D02: IUserRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
-            // 远程模式 -> UserRepository (Users 模块)
-            // 本地模式 -> LocalUserRepository (LocalData 模块)
+            // IUserRepository 由 Shell DI 注册 (Refit API)
 
             // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
 

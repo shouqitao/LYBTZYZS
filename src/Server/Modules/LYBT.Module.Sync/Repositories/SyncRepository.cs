@@ -104,7 +104,7 @@ internal class SyncRepository : BaseRepository<Herb>, ISyncRepository
             }
             else
             {
-                incoming.MedicalCaseId = existing.Id;
+                incoming.Prescription.MedicalCaseId = existing.Id;
                 existing.Prescription = incoming.Prescription;
             }
         }

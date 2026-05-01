@@ -288,16 +288,15 @@ App.xaml 资源合并顺序:
 1. `RegisterConfiguration()` - IConfiguration (appsettings.json) + AddLybtClientConfiguration (强类型配置)
 2. `RegisterLogging()` - ILoggerFactory (Serilog) + 约50个具名Logger注册
 3. `RegisterCacheServices()` - IMemoryCache (SizeLimit=1000) + IDesktopCacheManager
-4. `GetConnectionMode()` - 从配置读取 ConnectionMode (默认Remote)
-5. `RegisterDataSources()` - 委托给 DataSourceRegistrationExtensions
-6. `RegisterDataSourceLoggers()` - 根据模式注册对应DataSource的Logger
-7. `RegisterHttpServices()` - HttpClient链 + 6个Refit API客户端 + ISyncApi
-8. `RegisterFoundationServices()` - 认证、Token、会话、API等基础服务
-9. `RegisterPresentationServices()` - 通知、异常处理、菜单、导航协调器
-10. `RegisterInfrastructureServices()` - SessionManager、ActiveConsultation、Tick、角色注册表等
-11. `RegisterCommandServices()` - IApplicationCommands + IModuleLoadingService
-12. `RegisterApplicationServices()` - 初始化服务、状态服务、启动管道 + 5个StartupStep
-13. `AddViewModelServices()` - ViewModel聚合服务
+4. `RegisterDataSources()` - 委托给 DataSourceRegistrationExtensions
+5. `RegisterDataSourceLoggers()` - 注册DataSource的Logger
+6. `RegisterHttpServices()` - HttpClient链 + 6个Refit API客户端 + ISyncApi
+7. `RegisterFoundationServices()` - 认证、Token、会话、API等基础服务
+8. `RegisterPresentationServices()` - 通知、异常处理、菜单、导航协调器
+9. `RegisterInfrastructureServices()` - SessionManager、ActiveConsultation、Tick、角色注册表等
+10. `RegisterCommandServices()` - IApplicationCommands + IModuleLoadingService
+11. `RegisterApplicationServices()` - 初始化服务、状态服务、启动管道 + 5个StartupStep
+12. `AddViewModelServices()` - ViewModel聚合服务
 
 Logger注册分组:
 - Infrastructure层: MainWindowServicesFacade, ActiveConsultationService, ApplicationTickService, UserActivityTracker
@@ -373,12 +372,11 @@ Application服务注册:
 
 #### DataSourceRegistrationExtensions.cs
 
-**DataSourceRegistrationExtensions** (static) - 双模式DataSource注册
+**DataSourceRegistrationExtensions** (static) - DataSource注册
 
-`RegisterDataSources(IContainerRegistry, ConnectionMode)`:
-- 共通: ICurrentUserProvider -> SessionBasedCurrentUserProvider (Singleton)
-- Remote模式: 5个 Remote{Entity}DataSource (Transient)
-- Local模式: LocalDbContext (SQLite) + DatabaseInitializer + ILocalAuthService + ISyncService + 5个 Local{Entity}DataSource
+`RegisterDataSources(IContainerRegistry)`:
+- ICurrentUserProvider -> SessionBasedCurrentUserProvider (Singleton)
+- 5个 Remote{Entity}DataSource (Transient)
 
 #### ErrorHandlingServiceExtensions.cs [疑似死代码]
 
@@ -421,7 +419,6 @@ Application服务注册:
 - `IsSyncVisible` - 委托给MenuManager
 - `IsSystemSettingsVisible` - 委托给MenuManager
 - `IsPasswordChangeVisible` - 委托给MenuManager
-- `IsLocalMode` - 委托给MenuManager.CurrentConnectionMode
 
 委托命令 (15个，全部委托给MenuManager):
 - ShowControlExamplesCommand, QuickAddPatientCommand, QuickStartMedicalCaseCommand
@@ -501,13 +498,13 @@ INavigationAware:
 
 **MenuManager** - 菜单命令管理器
 
-构造函数注入: INavigationCoordinator, ISessionManager, ConnectionMode, ILogger, IUserNotificationService, IApplicationCommands
+构造函数注入: INavigationCoordinator, ISessionManager, ILogger, IUserNotificationService, IApplicationCommands
 
-菜单可见性属性 (角色+模式控制):
-- `IsUserManagementVisible` - Admin/SuperAdmin + Remote模式
-- `IsSyncVisible` - 仅Remote模式
+菜单可见性属性 (角色控制):
+- `IsUserManagementVisible` - Admin/SuperAdmin
+- `IsSyncVisible` - 始终可见
 - `IsSystemSettingsVisible` - Admin/SuperAdmin
-- `IsPasswordChangeVisible` - 仅Remote模式
+- `IsPasswordChangeVisible` - 始终可见
 - `IsAccountSettingsVisible` - 始终可见
 
 DelegateCommand (9个):
@@ -559,8 +556,7 @@ DelegateCommand (9个):
 
 - 默认检查间隔: 10秒
 - 健康检查超时: 5000ms
-- 本地模式: 直接设置为Healthy，跳过API检查
-- 远程模式: 通过 IApplicationTickService.Tick 驱动定时检查
+- 通过 IApplicationTickService.Tick 驱动定时检查
 - 结果同步到 IApplicationStateService
 
 #### Services/Session/
@@ -589,10 +585,8 @@ DelegateCommand (9个):
 构造函数注入 (11个依赖): Logger, AuthenticationService, TokenStorageService, SessionLifecycleManager, ModuleLoadingService, NavigationCoordinator, AuthenticationStateMachine, Configuration, CredentialVault?, UsernameStorage?, LocalAuthService?
 
 登录流程 (`LoginAsync`):
-1. 根据ConnectionMode分派到 LoginRemoteAsync 或 LoginLocalAsync
-2. Remote: IAuthenticationService.LoginAsync -> 保存Token -> CompleteLoginFlow
-3. Local: ILocalAuthService.ValidateAsync -> Entity转DTO -> CompleteLoginFlow (Token过期1年)
-4. CompleteLoginFlow: StartSession -> LoadModules -> NavigateToHome -> 触发LoginSucceeded
+1. IAuthenticationService.LoginAsync -> 保存Token -> CompleteLoginFlow
+2. CompleteLoginFlow: StartSession -> LoadModules -> NavigateToHome -> 触发LoginSucceeded
 
 登出流程 (`LogoutAsync`): EndSession -> AuthService.Logout -> 清理状态 -> 触发LogoutCompleted
 

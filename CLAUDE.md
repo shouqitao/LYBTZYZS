@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 凌隐宝堂中医诊所管理系统 (LYBTZYZS) -- Enterprise clinic management system for Traditional Chinese Medicine clinics.
 
-**Tech Stack**: .NET 8 + WPF/Prism.DryIoc (Desktop) + ASP.NET Core WebAPI (Server) + EF Core 8 + SQL Server/SQLite (dual-mode)
+**Tech Stack**: .NET 8 + WPF/Prism.DryIoc (Desktop) + ASP.NET Core WebAPI (Server) + EF Core 8 + SQL Server
 
-**Architecture**: Server/Shared/Client three-tier, supporting both remote (SQL Server via HTTP API) and local (SQLite) modes.
+**Architecture**: Server/Shared/Client three-tier, supporting both remote (SQL Server via HTTP API) and local (embedded LocalWebAPI + SQL Server) modes.
 
 ## Terminology
 

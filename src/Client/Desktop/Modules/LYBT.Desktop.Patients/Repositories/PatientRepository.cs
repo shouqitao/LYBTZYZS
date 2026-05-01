@@ -45,21 +45,10 @@ public sealed class PatientRepository : IPatientRepository
             {
                 _logger.LogDebug("[REPO:Local] Patient.GetPaged - Page={Page} PageSize={PageSize}", page, pageSize);
                 var patients = await _localApi.GetPatientsAsync(keyword, page, pageSize);
-                var listDtos = patients.Select(p => new PatientListDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PinYinCode = p.PinYinCode,
-                    Gender = p.Gender,
-                    PhoneNumber = p.PhoneNumber,
-                    Status = p.Status,
-                    CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
-                }).ToList();
                 return new PagedResult<PatientListDto>
                 {
-                    Items = listDtos,
-                    TotalCount = listDtos.Count,
+                    Items = patients,
+                    TotalCount = patients.Count,
                     CurrentPage = page,
                     PageSize = pageSize
                 };
@@ -94,8 +83,7 @@ public sealed class PatientRepository : IPatientRepository
             if (IsOffline)
             {
                 _logger.LogDebug("[REPO:Local] Patient.GetById - Id={Id}", id);
-                var p = await _localApi.GetPatientByIdAsync(id);
-                return MapToDetailDto(p);
+                return await _localApi.GetPatientByIdAsync(id);
             }
 
             _logger.LogDebug("[REPO:Remote] Patient.GetById - Id={Id}", id);
@@ -118,8 +106,7 @@ public sealed class PatientRepository : IPatientRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] Patient.Create");
-                var created = await _localApi.CreatePatientAsync(patient);
-                return MapToDetailDto(created);
+                return await _localApi.CreatePatientAsync(patient);
             }
 
             _logger.LogInformation("[REPO:Remote] Patient.Create");
@@ -146,8 +133,7 @@ public sealed class PatientRepository : IPatientRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] Patient.Update - Id={Id}", patient.Id);
-                var updated = await _localApi.UpdatePatientAsync(patient.Id.Value, patient);
-                return MapToDetailDto(updated);
+                return await _localApi.UpdatePatientAsync(patient.Id.Value, patient);
             }
 
             _logger.LogInformation("[REPO:Remote] Patient.Update - Id={Id}", patient.Id);
@@ -192,18 +178,7 @@ public sealed class PatientRepository : IPatientRepository
             if (IsOffline)
             {
                 _logger.LogDebug("[REPO:Local] Patient.Search - Keyword={Keyword}", keyword);
-                var patients = await _localApi.GetPatientsAsync(keyword, 1, 100);
-                return patients.Select(p => new PatientListDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PinYinCode = p.PinYinCode,
-                    Gender = p.Gender,
-                    PhoneNumber = p.PhoneNumber,
-                    Status = p.Status,
-                    CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
-                }).ToList();
+                return await _localApi.GetPatientsAsync(keyword, 1, 100);
             }
 
             _logger.LogDebug("[REPO:Remote] Patient.Search - Keyword={Keyword}", keyword);
@@ -234,9 +209,13 @@ public sealed class PatientRepository : IPatientRepository
             {
                 _logger.LogInformation("[REPO:Local] Patient.GetByIdNumber");
                 var patients = await _localApi.GetPatientsAsync(idNumber, 1, 100);
-                var match = patients.FirstOrDefault(p =>
-                    p.IdNumber?.Equals(idNumber, StringComparison.OrdinalIgnoreCase) == true);
-                return match != null ? MapToDetailDto(match) : null;
+                foreach (var candidate in patients)
+                {
+                    var detail = await _localApi.GetPatientByIdAsync(candidate.Id);
+                    if (detail?.IdNumber?.Equals(idNumber, StringComparison.OrdinalIgnoreCase) == true)
+                        return detail;
+                }
+                return null;
             }
 
             _logger.LogInformation("[REPO:Remote] Patient.GetByIdNumber");
@@ -385,30 +364,6 @@ public sealed class PatientRepository : IPatientRepository
 
     #endregion
 
-    #region Mapping helpers
-
-    private static PatientDetailDto MapToDetailDto(Entities.Patients.Patient p)
-    {
-        return new PatientDetailDto
-        {
-            Id = p.Id,
-            Name = p.Name,
-            PinYinCode = p.PinYinCode,
-            Gender = p.Gender,
-            BirthDate = p.BirthDate,
-            IdNumber = p.IdNumber,
-            PhoneNumber = p.PhoneNumber,
-            Address = p.Address,
-            AllergyHistory = p.AllergyHistory,
-            MedicalHistory = p.MedicalHistory,
-            Status = p.Status,
-            DisableReason = p.DisableReason,
-            CreatedAt = p.CreatedAt,
-            UpdatedAt = p.UpdatedAt
-        };
-    }
-
-    #endregion
 }
 
 [Mapper]

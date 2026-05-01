@@ -1,4 +1,3 @@
-using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -18,7 +17,6 @@ public class HealthCheckCoordinatorTests
     private readonly IApiHealthCheckService _mockHealthCheckService;
     private readonly IApplicationTickService _mockTickService;
     private readonly IApplicationStateService _mockAppStateService;
-    private readonly IConnectionModeProvider _mockConnectionModeProvider;
     private readonly ILogger<HealthCheckCoordinator> _mockLogger;
 
     public HealthCheckCoordinatorTests()
@@ -26,7 +24,6 @@ public class HealthCheckCoordinatorTests
         _mockHealthCheckService = Substitute.For<IApiHealthCheckService>();
         _mockTickService = Substitute.For<IApplicationTickService>();
         _mockAppStateService = Substitute.For<IApplicationStateService>();
-        _mockConnectionModeProvider = Substitute.For<IConnectionModeProvider>();
         _mockLogger = Substitute.For<ILogger<HealthCheckCoordinator>>();
     }
 
@@ -42,24 +39,9 @@ public class HealthCheckCoordinatorTests
     }
 
     [Fact]
-    public void Start_LocalMode_SetsHealthyImmediately()
+    public void Start_SubscribesToTick()
     {
         // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Local);
-        var coordinator = CreateCoordinator();
-
-        // Act
-        coordinator.Start();
-
-        // Assert
-        Assert.Equal(ApiHealthStatus.Healthy, coordinator.CurrentStatus);
-    }
-
-    [Fact]
-    public void Start_RemoteMode_SubscribesToTick()
-    {
-        // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Remote);
         var coordinator = CreateCoordinator();
 
         // Act
@@ -70,24 +52,9 @@ public class HealthCheckCoordinatorTests
     }
 
     [Fact]
-    public async Task CheckNowAsync_LocalMode_ReturnsHealthy()
+    public async Task CheckNowAsync_HealthyStatus_UpdatesState()
     {
         // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Local);
-        var coordinator = CreateCoordinator();
-
-        // Act
-        await coordinator.CheckNowAsync();
-
-        // Assert
-        Assert.Equal(ApiHealthStatus.Healthy, coordinator.CurrentStatus);
-    }
-
-    [Fact]
-    public async Task CheckNowAsync_RemoteMode_HealthyStatus_UpdatesState()
-    {
-        // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Remote);
         _mockHealthCheckService.CheckHealthAsync(Arg.Any<int>())
             .Returns(Task.FromResult(ApiHealthStatus.Healthy));
         var coordinator = CreateCoordinator();
@@ -101,10 +68,9 @@ public class HealthCheckCoordinatorTests
     }
 
     [Fact]
-    public async Task CheckNowAsync_RemoteMode_UnhealthyStatus_UpdatesState()
+    public async Task CheckNowAsync_UnhealthyStatus_UpdatesState()
     {
         // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Remote);
         _mockHealthCheckService.CheckHealthAsync(Arg.Any<int>())
             .Returns(Task.FromResult(ApiHealthStatus.Unhealthy));
         _mockHealthCheckService.LastErrorMessage.Returns("连接超时");
@@ -121,7 +87,6 @@ public class HealthCheckCoordinatorTests
     public async Task CheckNowAsync_Exception_HandlesGracefully()
     {
         // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Remote);
         _mockHealthCheckService.CheckHealthAsync(Arg.Any<int>())
             .Returns(Task.FromException<ApiHealthStatus>(new Exception("网络错误")));
         var coordinator = CreateCoordinator();
@@ -134,10 +99,9 @@ public class HealthCheckCoordinatorTests
     }
 
     [Fact]
-    public void Stop_RemoteMode_UnsubscribesFromTick()
+    public void Stop_UnsubscribesFromTick()
     {
         // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Remote);
         var coordinator = CreateCoordinator();
         coordinator.Start();
 
@@ -152,7 +116,6 @@ public class HealthCheckCoordinatorTests
     public void Start_WhenAlreadyRunning_DoesNotDuplicateSubscription()
     {
         // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Remote);
         var coordinator = CreateCoordinator();
         coordinator.Start();
 
@@ -167,7 +130,6 @@ public class HealthCheckCoordinatorTests
     public async Task CheckNowAsync_WhenDisposed_DoesNothing()
     {
         // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Remote);
         var coordinator = CreateCoordinator();
         coordinator.Dispose();
 
@@ -179,16 +141,17 @@ public class HealthCheckCoordinatorTests
     }
 
     [Fact]
-    public void StatusChanged_EventFired_OnStatusChange()
+    public async Task StatusChanged_EventFired_OnStatusChange()
     {
         // Arrange
-        _mockConnectionModeProvider.CurrentMode.Returns(ConnectionMode.Local);
+        _mockHealthCheckService.CheckHealthAsync(Arg.Any<int>())
+            .Returns(Task.FromResult(ApiHealthStatus.Healthy));
         var coordinator = CreateCoordinator();
         var eventFired = false;
         coordinator.StatusChanged += (_, _) => eventFired = true;
 
         // Act
-        coordinator.Start(); // 从 Checking -> Healthy
+        await coordinator.CheckNowAsync(); // Checking -> Healthy
 
         // Assert
         Assert.True(eventFired);
@@ -200,7 +163,6 @@ public class HealthCheckCoordinatorTests
             _mockHealthCheckService,
             _mockTickService,
             _mockAppStateService,
-            _mockConnectionModeProvider,
             _mockLogger);
     }
 }

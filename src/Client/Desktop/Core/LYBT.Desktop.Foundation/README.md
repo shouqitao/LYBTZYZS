@@ -127,7 +127,7 @@ Desktop 端技术基础设施层，提供 HTTP 通信、安全认证、缓存、
 |-------------|------|----------|
 | refactor-login-authentication | 登录认证重构 (CVT-001/002, TKM-001/002, Phase 1.4/2.3/3.1/3.2) | AuthenticationService, CredentialVault, TokenManager, TokenRefreshHandler, LogoutService, AuthEvents |
 | refactor-token-sliding-expiration | Token 滑动过期 (AUTH-002) - 仅用户活跃时刷新 | TokenRefreshHandler |
-| refactor-startup-connection-resilience | 启动连接韧性 - 事件驱动状态更新，预留本地模式 | ApplicationStateService, ConnectionMode, ApiStatusChangedEventArgs |
+| refactor-startup-connection-resilience | 启动连接韧性 - 事件驱动状态更新 | ApplicationStateService, ApiStatusChangedEventArgs |
 | unify-event-system | 统一事件系统 (Phase 2.1/2.3/2.4) - Prism PubSubEvent | TokenRefreshHandler, LogoutService, TokenLifecycleService |
 | refactor-auth-role-system | 认证角色系统重构 (Phase 1.1/1.2) - 统一状态机 | AuthenticationStateMachine, AuthenticationService |
 | simplify-auth-architecture | 简化认证架构 - 移除 SessionExpiringEvent，登出保留 AutoLoginToken | AuthEvents, AuthenticationService |
@@ -251,8 +251,7 @@ LYBT.Desktop.Foundation/
 ├── Application/              # 应用状态管理
 │   ├── IApplicationStateService.cs
 │   ├── ApplicationStateService.cs
-│   ├── ApiStatusChangedEventArgs.cs
-│   └── ConnectionMode.cs     # Remote/Local 枚举 (Local 待实现)
+│   └── ApiStatusChangedEventArgs.cs
 ├── Caching/
 │   └── DesktopCacheManager.cs  # 统一缓存失效管理
 ├── HealthCheck/
@@ -319,9 +318,6 @@ LYBT.Desktop.Foundation/
 
 #### ApiStatusChangedEventArgs.cs
 类 `ApiStatusChangedEventArgs : EventArgs` -- API 状态变更事件参数，包含 IsHealthy/ConnectionStatus/LastError/CheckTime 四个只读属性
-
-#### ConnectionMode.cs
-枚举 `ConnectionMode` -- Remote (远程模式) / Local (本地模式，待实现)
 
 ---
 
