@@ -4,7 +4,42 @@ Command failures and integration errors.
 
 ---
 
-## [ERR-20260406-001] Bash export command fails on Windows PowerShell
+## [ERR-20260501-001] Model calls unavailable 'grep' tool in OpenCode
+
+**Logged**: 2026-05-01T09:30:00+08:00
+**Priority**: medium
+**Status**: resolved
+**Area**: config
+
+### Summary
+Model repeatedly attempts to call `grep` tool which does not exist in OpenCode environment. OpenCode available tools: bash, read, edit, write, task, websearch, todowrite, skill, compress, lsp_*, ast_grep_search, session_*, background_*, filesystem_*, skill_mcp, look_at.
+
+### Error
+```
+Model tried to call unavailable tool 'grep'. Available tools: invalid, question, bash, read, edit, write, task, websearch, todowrite, skill, compress, lsp_goto_definition, lsp_find_references, lsp_symbols, lsp_diagnostics, lsp_prepare_rename, lsp_rename, ast_grep_search, ast_grep_replace, session_list, session_read, session_search, session_info, background_output, background_cancel, look_at, skill_mcp, filesystem_read_file, filesystem_read_text_file, filesystem_read_media_file, filesystem_read_multiple_files, filesystem_write_file, filesystem_edit_file, filesystem_create_directory, filesystem_list_directory, filesystem_list_directory_with_sizes, filesystem_directory_tree, filesystem_move_file, filesystem_search_files, filesystem_get_file_info, filesystem_list_allowed_directories, websearch_web_search_exa, grep_app_searchGitHub, context7_resolve-library-id, context7_query-docs.
+```
+
+### Context
+- Model inherits Claude Code behavior and tries to use `grep` for content search
+- In OpenCode, use `ast_grep_search` for AST-aware code search
+- For simple text search in files, use `bash` with `Select-String` (PowerShell) or `ast_grep_search`
+- The system prompt mentions "NEVER use the following tools" but model still tries grep
+
+### Suggested Fix
+1. Use `ast_grep_search` for code pattern search (supports 25 languages)
+2. Use `bash` with `Select-String` for simple text search in PowerShell
+3. Use `filesystem_search_files` for file name search
+4. Never call `grep` directly - it's not an available tool
+
+### Resolution
+- **Resolved**: 2026-05-01T09:30:00+08:00
+- **Notes**: Added ERR-20260501-001 to ERRORS.md. Model should use ast_grep_search (code) or bash+Select-String (text)
+
+### Metadata
+- Reproducible: yes
+- Related Files: AGENTS.md, system prompt
+- Tags: tool-mapping, opencode, grep, ast_grep
+
 
 **Logged**: 2026-04-06T18:00:00Z
 **Priority**: high
