@@ -1,6 +1,8 @@
 ﻿using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using System.Threading;
+using System.Linq.Expressions;
 
 namespace LYBT.Module.Formulas.Interfaces
 {
@@ -13,8 +15,8 @@ namespace LYBT.Module.Formulas.Interfaces
     /// 验方仓储接口 - 简化版，减少冗余权限方法
     /// 继承BaseRepository提供通用CRUD，扩展验方特定业务方法
     /// </summary>
-    public interface IFormulaRepository : IRepository<Formula>
-    {
+public interface IFormulaRepository : IRepository<Formula>
+{
         /// <summary>
         /// 获取模板验方列表
         /// </summary>
@@ -24,6 +26,12 @@ namespace LYBT.Module.Formulas.Interfaces
         /// 根据ID获取方剂（包含所有药材配伍）
         /// </summary>
         Task<Formula> GetByIdWithHerbsAsync(Guid id);
+
+        /// <summary>
+        /// 根据传入的谓词条件，查询并返回包含药材配伍的验方列表
+        /// 该查询需要包括药材且排除软删除，因此使用 GetBaseQuery() 以确保正确的 Include/Where 语义。
+        /// </summary>
+        Task<List<Formula>> FindWithHerbsAsync(Expression<Func<Formula, bool>> predicate, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取分页列表（包含药材配伍信息）

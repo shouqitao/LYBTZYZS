@@ -5,6 +5,7 @@ using LYBT.Module.Registration.Mapping;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
+using System.Threading;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using RegistrationEntity = LYBT.Entities.Registrations.Registration;
@@ -266,5 +267,43 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
     /// 医生快速看诊 (后台静默创建 Registration + MedicalCase)
     /// US-REG-002: Source=Doctor, Status=InProgress, 医生无感知
     /// </summary>
-    
+    public async Task<Result<QuickVisitResultDto>> QuickVisitAsync(QuickVisitInputDto dto, Guid currentUserId, CancellationToken cancellationToken = default)
+    {
+        // 1. Validate patient exists
+        var patientInfo = await _patientCrossModule.GetPatientBasicInfoAsync(dto.PatientId);
+        if (patientInfo == null)
+        {
+            return Result<QuickVisitResultDto>.Failure(GenericErrorCode.RegistrationNotFound, "患者不存在");
+        }
+
+        // 2. Create Registration (Source=Doctor, Status=InProgress)
+        var registration = new RegistrationEntity
+        {
+            Id = Guid.NewGuid(),
+            PatientId = dto.PatientId,
+            PatientName = patientInfo.Name,
+            Source = RegistrationSource.Doctor,
+            Status = RegistrationStatus.InProgress,
+            DoctorId = currentUserId,
+            Remark = dto.Remark,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            CreatedBy = currentUserId
+        };
+
+        await _repository.AddAsync(registration, cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "注册快速看诊创建: Id={RegistrationId}, PatientId={PatientId}, DoctorId={DoctorId}",
+            registration.Id, dto.PatientId, currentUserId);
+
+        // 3. Return basic result. MedicalCase will be created by controller/调用方 after Registration creation
+        return Result<QuickVisitResultDto>.Success(new QuickVisitResultDto
+        {
+            RegistrationId = registration.Id,
+            PatientId = registration.PatientId,
+            PatientName = registration.PatientName
+        });
+    }
 }

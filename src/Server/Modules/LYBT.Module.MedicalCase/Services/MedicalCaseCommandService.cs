@@ -310,6 +310,106 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
+        /// 复制历史处方到新医案
+        /// </summary>
+        public async Task<LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>> CopyHistoricalPrescriptionAsync(
+            Guid sourceMedicalCaseId,
+            Guid targetMedicalCaseId,
+            Guid currentUserId,
+            CancellationToken cancellationToken = default)
+        {
+            return await MedicalCaseServiceHelper.ExecuteWithConcurrencyRetryAsync(
+                () => ExecuteCopyHistoricalPrescriptionAsync(sourceMedicalCaseId, targetMedicalCaseId, currentUserId, cancellationToken),
+                "CopyHistoricalPrescription", _logger);
+        }
+
+        /// <summary>
+        /// 实际执行历史处方复制逻辑
+        /// </summary>
+        private async Task<LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>> ExecuteCopyHistoricalPrescriptionAsync(
+            Guid sourceMedicalCaseId,
+            Guid targetMedicalCaseId,
+            Guid currentUserId,
+            CancellationToken cancellationToken)
+        {
+            // 1) fetch source with prescription
+            var sourceCase = await _repository.GetByIdWithDetailsAsync(sourceMedicalCaseId, cancellationToken);
+            if (sourceCase == null)
+            {
+                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("源医案不存在");
+            }
+            if (sourceCase.Prescription == null)
+            {
+                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("源医案没有处方");
+            }
+
+            // 2) fetch target and validate
+            var targetCase = await _repository.GetByIdWithDetailsAsync(targetMedicalCaseId, cancellationToken);
+            if (targetCase == null)
+            {
+                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("目标医案不存在");
+            }
+            if (targetCase.NeedsPrescription != true)
+            {
+                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("目标医案不需要处方");
+            }
+            if (targetCase.Prescription != null)
+            {
+                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("目标医案已有处方");
+            }
+
+            // 3) copy prescription with new IDs
+            var sourcePrescription = sourceCase.Prescription!
+;
+            var newPrescription = new Prescription
+            {
+                Id = Guid.NewGuid(),
+                MedicalCaseId = targetMedicalCaseId,
+                PrescriptionNumber = await GeneratePrescriptionNumberAsync(cancellationToken),  // TODO:价格刷新在后续实现
+                Notes = sourcePrescription.Notes,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                CreatedBy = currentUserId
+            };
+
+            // 4) copy items (price refresh TODO handled as noted in US-MC-016)
+            var newItems = new List<PrescriptionItem>();
+            foreach (var sourceItem in sourcePrescription.Items)
+            {
+                newItems.Add(new PrescriptionItem
+                {
+                    Id = Guid.NewGuid(),
+                    PrescriptionId = newPrescription.Id,
+                    HerbId = sourceItem.HerbId,
+                    HerbName = sourceItem.HerbName,
+                    Quantity = sourceItem.Quantity,
+                    Unit = sourceItem.Unit,
+                    UnitPrice = sourceItem.UnitPrice, // TODO: refresh price from herb catalog
+                    Notes = sourceItem.Notes,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
+
+            newPrescription.Items = newItems;
+
+            // 5) attach to target case and persist
+            targetCase.Prescription = newPrescription;
+            targetCase.HasPrescription = true;
+            targetCase.UpdatedAt = DateTime.UtcNow;
+            targetCase.UpdatedBy = currentUserId;
+
+            await _repository.UpdateAsync(targetCase, cancellationToken);
+            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
+
+            _logger.LogInformation("[SVC] MedicalCase.CopyHistoricalPrescription completed - SourceCaseId={SourceCaseId} TargetCaseId={TargetCaseId}", sourceMedicalCaseId, targetMedicalCaseId);
+
+            // 6) map to DTO and return as successful result
+            var dto = _mapper.ToPrescriptionDetailDto(newPrescription);
+            return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Success(dto);
+        }
+
+        /// <summary>
         /// 执行单次处方创建
         /// </summary>
         private async Task<Prescription?> ExecuteCreatePrescriptionAsync(

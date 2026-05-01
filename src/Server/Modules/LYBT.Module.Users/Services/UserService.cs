@@ -34,7 +34,6 @@ namespace LYBT.Module.Users.Services
         private readonly IValidator<UserInputDto> _validator;
         private readonly ICrossModuleAuthService _authService;
         private readonly IUserBatchOperationService _batchService;
-        private readonly LYBT.Module.Registration.Interfaces.IRegistrationRepository _registrationRepository;
         private readonly IUserQueryService _queryService;
         private readonly IUserPasswordService _passwordService;
         private readonly IUserStatusService _statusService;
@@ -48,7 +47,6 @@ namespace LYBT.Module.Users.Services
             IValidator<UserInputDto> validator,
             ICrossModuleAuthService authService,
             IUserBatchOperationService batchService,
-            LYBT.Module.Registration.Interfaces.IRegistrationRepository registrationRepository,
             IUserQueryService queryService,
             IUserPasswordService passwordService,
             IUserStatusService statusService)
@@ -60,7 +58,6 @@ namespace LYBT.Module.Users.Services
             _validator = validator;
             _authService = authService;
             _batchService = batchService;
-            _registrationRepository = registrationRepository;
             _queryService = queryService;
             _passwordService = passwordService;
             _statusService = statusService;

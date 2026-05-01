@@ -268,7 +268,8 @@ namespace LYBT.Module.Formulas.Services
         public async Task<Result<List<FormulaDetailDto>>> GetPendingValidationFormulasAsync()
         {
             // Sprint3-X6: 在 DB 层过滤 Draft 状态，避免 GetAllAsync 全量加载
-            var pendingFormulas = await _repository.FindAsync(
+            // Use explicit repository method that includes Herbs (via GetBaseQuery) and respects !IsDeleted
+            var pendingFormulas = await _repository.FindWithHerbsAsync(
                 f => f.ValidationStatus == FormulaValidationStatus.Draft);
 
             // 映射为DTO

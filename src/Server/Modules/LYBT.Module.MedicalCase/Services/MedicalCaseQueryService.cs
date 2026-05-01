@@ -80,6 +80,14 @@ namespace LYBT.Module.MedicalCases.Services
             var result = await GetListAsync(status, patientId, page, pageSize, currentDoctorId, isAdmin, keyword, cancellationToken);
             var dtos = _mapper.ToListDtos(result.Items.ToList());
 
+            // Populate computed properties that Mapperly ignores
+            for (int i = 0; i < result.Items.Count && i < dtos.Count; i++)
+            {
+                var entity = result.Items[i];
+                dtos[i].HasConsultation = entity.Consultation != null && !entity.Consultation.IsDeleted;
+                dtos[i].HasPrescription = entity.Prescription != null && !entity.Prescription.IsDeleted;
+            }
+
             return new PagedResult<MedicalCaseListDto>
             {
                 Items = dtos,

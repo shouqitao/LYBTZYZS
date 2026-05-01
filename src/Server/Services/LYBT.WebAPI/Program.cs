@@ -13,6 +13,7 @@ using LYBT.Shared.Logging.Extensions;
 using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Utilities.Security;
 using LYBT.WebAPI.Extensions;
+using LYBT.Infrastructure.Configuration.Services;
 using Serilog;
 using Serilog.Events;
 
@@ -117,6 +118,8 @@ public class Program
 
             // unify-configuration-system: 注册强类型配置
             builder.Services.AddLybtServerConfiguration(builder.Configuration);
+            // Register system configuration service for DI
+            builder.Services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
             Log.Information("强类型配置注册完成");
 
             // 验证默认密码配置（所有环境）

@@ -52,6 +52,9 @@ namespace LYBT.Module.Users.Services
 
         public async Task<Result<List<UserListDto>>> SearchAsync(string keyword, CancellationToken cancellationToken = default)
         {
+            // Note: BaseRepository.FindAsync already applies the soft-delete filter (!e.IsDeleted).
+            // If you need to search including soft-deleted records, use an explicit method such as
+            // GetByIdIncludingDeletedAsync or a dedicated repository method.
             var entities = await _repository.FindAsync(u =>
                 u.UserName.Contains(keyword) ||
                 u.RealName.Contains(keyword) ||

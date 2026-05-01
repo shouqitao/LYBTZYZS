@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -43,6 +44,17 @@ namespace LYBT.Module.Formulas.Repositories
             return _dbSet
                 .Include(f => f.Herbs)
                 .Where(f => !f.IsDeleted);
+        }
+
+        /// <summary>
+        /// 根据谓词条件，查询包含药材的验方，排除软删除，并按创建时间降序排序
+        /// </summary>
+        public async Task<List<Formula>> FindWithHerbsAsync(Expression<Func<Formula, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return await GetBaseQuery()
+                .Where(predicate)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>
