@@ -25,10 +25,7 @@
     <!-- Refit for REST API clients -->
     <PackageReference Include="Refit" />
     <PackageReference Include="Refit.HttpClientFactory" />
-    <!-- SQLite for LocalDbContext tests (Desktop local database) -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <PackageReference Include="Microsoft.Data.Sqlite" />
-    <!-- SQL Server for WebApi integration tests (server database) -->
+    <!-- SQL Server for all Desktop + WebApi integration tests -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
@@ -60,7 +57,7 @@
     <!-- WebApi Integration Testing -->
     <ProjectReference Include="..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
     <ProjectReference Include="..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <!-- LocalWebAPI (Embedded Kestrel + SQLite) -->
+    <!-- LocalWebAPI (Embedded Kestrel + SQL Server) -->
     <ProjectReference Include="..\..\src\Client\Desktop\LocalWebAPI\LYBT.LocalWebAPI.csproj" />
   </ItemGroup>
 

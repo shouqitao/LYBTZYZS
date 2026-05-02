@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.HealthCheck;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,6 @@ namespace LYBT.Desktop.Shell.Services.HealthCheck;
 public sealed class ApiHealthMonitor : IApiHealthMonitor
 {
     private readonly IApiHealthCheckService _healthCheckService;
-    private readonly IConnectionModeProvider _connectionModeProvider;
     private readonly ILogger<ApiHealthMonitor> _logger;
 
     private Timer? _checkTimer;
@@ -34,11 +32,9 @@ public sealed class ApiHealthMonitor : IApiHealthMonitor
 
     public ApiHealthMonitor(
         IApiHealthCheckService healthCheckService,
-        IConnectionModeProvider connectionModeProvider,
         ILogger<ApiHealthMonitor> logger)
     {
         _healthCheckService = healthCheckService;
-        _connectionModeProvider = connectionModeProvider;
         _logger = logger;
     }
 
@@ -126,13 +122,6 @@ public sealed class ApiHealthMonitor : IApiHealthMonitor
         {
             _isChecking = true;
             UpdateState(ApiMonitorHealthStatus.Checking, ApiConnectionState.Checking, null);
-
-            if (_connectionModeProvider.CurrentMode == ConnectionMode.Local)
-            {
-                _logger.LogDebug("[HEALTH-MON] 本地模式，跳过 API 检查");
-                OnSuccess();
-                return ApiMonitorHealthStatus.Healthy;
-            }
 
             if (_circuitState == CircuitState.Open)
             {

@@ -4,9 +4,8 @@ using LYBT.Shared.Models.Contracts.Formula;
 namespace LYBT.Desktop.Contracts.Repositories;
 
 /// <summary>
-/// 验方数据仓储接口 (SYNC-D02)
+/// 验方数据仓储接口
 /// List 返回轻量 ListDto，Detail 返回完整 DetailDto。
-/// 远程模式和本地模式各有独立实现，由 DI 工厂根据 IConnectionModeProvider 选择。
 /// </summary>
 public interface IFormulaRepository
 {

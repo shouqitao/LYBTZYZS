@@ -11,7 +11,7 @@ using LYBT.LocalWebAPI.Data;
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
-/// Diagnostics controller: database info, version, recent logs, and SQLite vacuum.
+/// Diagnostics controller: database info, version, and recent logs.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -40,31 +40,10 @@ public class DiagnosticsController : ControllerBase
         }
 
         var providerName = _db.Database.ProviderName ?? "Unknown";
-        string? databasePath = null;
-
-        if (providerName.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
-        {
-            var connectionString = _db.Database.GetConnectionString();
-            if (!string.IsNullOrEmpty(connectionString))
-            {
-                // Extract Data Source from connection string
-                var parts = connectionString.Split(';');
-                foreach (var part in parts)
-                {
-                    var trimmed = part.Trim();
-                    if (trimmed.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
-                    {
-                        databasePath = trimmed.Substring("Data Source=".Length);
-                        break;
-                    }
-                }
-            }
-        }
 
         return Ok(new
         {
             provider = providerName,
-            databasePath,
             connectionState = canConnect ? "Connected" : "Disconnected",
             timestamp = DateTime.UtcNow
         });
@@ -117,24 +96,4 @@ public class DiagnosticsController : ControllerBase
         return Ok(new { count = logs.Count, items = logs });
     }
 
-    // POST /api/diagnostics/vacuum
-    [HttpPost("vacuum")]
-    public async Task<IActionResult> Vacuum()
-    {
-        var providerName = _db.Database.ProviderName ?? string.Empty;
-        if (!providerName.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
-        {
-            return BadRequest(new { message = "VACUUM is only supported for SQLite databases." });
-        }
-
-        try
-        {
-            await _db.Database.ExecuteSqlRawAsync("VACUUM");
-            return Ok(new { message = "VACUUM completed successfully.", timestamp = DateTime.UtcNow });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = "VACUUM failed.", error = ex.Message });
-        }
-    }
 }

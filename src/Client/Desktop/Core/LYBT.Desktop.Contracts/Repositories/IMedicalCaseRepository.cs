@@ -5,9 +5,8 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 namespace LYBT.Desktop.Contracts.Repositories;
 
 /// <summary>
-/// 医案数据仓储接口 (SYNC-D02)
+/// 医案数据仓储接口
 /// List 返回轻量 MedicalCaseListDto，Detail 返回完整 MedicalCaseDetailDto。
-/// 远程模式和本地模式各有独立实现，由 DI 工厂根据 IConnectionModeProvider 选择。
 /// </summary>
 public interface IMedicalCaseRepository
 {

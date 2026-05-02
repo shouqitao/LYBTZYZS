@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
+using LYBT.Tests.Integration._Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Tests.Integration.Flows;
@@ -25,8 +26,8 @@ public class MedicalCaseFlowTests : IntegrationTestBase
         var (client, caseApi) = await LoginAsDoctorWithApiAsync<IMedicalCaseApi>();
         var patientApi = Fixture.CreateApi<IPatientApi>(client);
         return (
-            new MedicalCaseRepository(caseApi, NullLogger<MedicalCaseRepository>.Instance),
-            new PatientRepository(patientApi, NullLogger<PatientRepository>.Instance),
+            new MedicalCaseRepository(caseApi, null!, new RemoteOnlyApiRouter(), NullLogger<MedicalCaseRepository>.Instance),
+            new PatientRepository(patientApi, null!, new RemoteOnlyApiRouter(), NullLogger<PatientRepository>.Instance),
             client
         );
     }

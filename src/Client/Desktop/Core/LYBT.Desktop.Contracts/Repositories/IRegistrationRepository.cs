@@ -4,9 +4,8 @@ using LYBT.Shared.Models.Contracts.Registration;
 namespace LYBT.Desktop.Contracts.Repositories;
 
 /// <summary>
-/// 挂号数据仓储接口 (SYNC-D02)
+/// 挂号数据仓储接口
 /// PRD: registration.md US-REG-001~006
-/// 远程模式和本地模式各有独立实现，由 DI 工厂根据 IConnectionModeProvider 选择。
 /// </summary>
 public interface IRegistrationRepository
 {

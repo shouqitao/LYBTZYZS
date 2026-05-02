@@ -3,7 +3,6 @@ using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
-using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Modules;
@@ -49,9 +48,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterLogging();
             RegisterCacheServices(containerRegistry);
 
-            // SYNC-D02: 读取连接模式，注册 IConnectionModeProvider + Repository 工厂
-            var connectionMode = GetConnectionMode(configuration);
-            containerRegistry.RegisterRepositories(connectionMode, configuration);
+            containerRegistry.RegisterRepositories(configuration);
             containerRegistry.RegisterDataSourceLoggers();
 
             containerRegistry.RegisterHttpServices(configuration);
@@ -63,24 +60,6 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // OpenSpec: refactor-viewmodel-composition - 注册ViewModel组合服务
             containerRegistry.AddViewModelServices();
-        }
-
-        /// <summary>
-        /// 从配置文件获取连接模式
-        /// OpenSpec: implement-local-mode
-        /// </summary>
-        private static ConnectionMode GetConnectionMode(IConfiguration configuration)
-        {
-            var modeString = configuration["ConnectionMode"];
-            if (Enum.TryParse<ConnectionMode>(modeString, ignoreCase: true, out var mode))
-            {
-                Log.Information("[LocalMode] 使用配置文件指定的连接模式: {Mode}", mode);
-                return mode;
-            }
-
-            // 默认使用远程模式
-            Log.Information("[LocalMode] 未指定连接模式，使用默认远程模式");
-            return ConnectionMode.Remote;
         }
 
         /// <summary>注册配置服务</summary>
@@ -225,6 +204,9 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // 全局API健康监控器（断路器+订阅模式）
             containerRegistry.RegisterSingleton<IApiHealthMonitor, ApiHealthMonitor>();
+
+            // API路由器（根据健康状态自动切换远程/本地API）
+            containerRegistry.RegisterSingleton<IApiRouter, ApiRouter>();
         }
     }
 }

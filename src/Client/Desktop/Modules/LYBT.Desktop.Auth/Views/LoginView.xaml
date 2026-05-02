@@ -339,27 +339,6 @@
                             IsChecked="{Binding RememberPassword}" />
                     </StackPanel>
 
-                    <!--  连接模式选择 (OpenSpec: refactor-startup-connection-resilience)  -->
-                    <StackPanel
-                        Grid.Row="8"
-                        Orientation="Horizontal">
-                        <RadioButton
-                            VerticalAlignment="Center"
-                            Content="远程服务"
-                            FontSize="14"
-                            Foreground="{StaticResource LYBTTextSecondaryBrush}"
-                            GroupName="ConnectionMode"
-                            IsChecked="{Binding IsRemoteMode, Mode=TwoWay}" />
-                        <RadioButton
-                            Margin="24,0,0,0"
-                            VerticalAlignment="Center"
-                            Content="本地模式"
-                            FontSize="14"
-                            Foreground="{StaticResource LYBTTextSecondaryBrush}"
-                            GroupName="ConnectionMode"
-                            IsChecked="{Binding IsLocalMode, Mode=TwoWay}" />
-                    </StackPanel>
-
                     <!--  API连接状态Banner (OpenSpec: refactor-startup-connection-resilience)  -->
                     <!--  三色状态: 绿色Healthy / 蓝色Checking / 橙色Unhealthy  -->
                     <Border

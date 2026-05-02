@@ -76,7 +76,7 @@ public class HttpHerbRepository : IHerbRepository
         var herbs = JsonSerializer.Deserialize<List<HerbInputDto>>(streamContent, Json) ?? [];
         var json = JsonSerializer.Serialize(herbs, Json);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _http.PostAsync("/api/herbs/import", content);
+        var response = await _http.PostAsync("/api/herbs/batch-import", content);
         response.EnsureSuccessStatusCode();
         var resultJson = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<HerbBatchImportResultDto>(resultJson, Json);

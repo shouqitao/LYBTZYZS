@@ -30,9 +30,7 @@ namespace LYBT.Desktop.Herbs
         {
             ViewModelLocationProvider.Register(typeof(HerbMasterDetailControl).ToString(), typeof(ViewModels.HerbMasterDetailViewModel));
 
-            // SYNC-D02: IHerbRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
-            // 远程模式 -> HerbRepository (Herbs 模块)
-            // 本地模式 -> LocalHerbRepository (LocalData 模块)
+            // IHerbRepository 由 Shell DI 注册 (Refit API)
 
             // OpenSpec: standardize-service-layer - 统一使用Service层
             containerRegistry.Register<IHerbService, Services.RemoteHerbService>();

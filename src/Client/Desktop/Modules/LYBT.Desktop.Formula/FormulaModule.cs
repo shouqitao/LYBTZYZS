@@ -28,9 +28,7 @@ namespace LYBT.Desktop.Formula
         {
             ViewModelLocationProvider.Register(typeof(FormulaMasterDetailControl).ToString(), typeof(ViewModels.FormulaMasterDetailViewModel));
 
-            // SYNC-D02: IFormulaRepository 由 Shell DI 工厂注册 (根据 IConnectionModeProvider 选择实现)
-            // 远程模式 -> FormulaRepository (Formula 模块)
-            // 本地模式 -> LocalFormulaRepository (LocalData 模块)
+            // IFormulaRepository 由 Shell DI 注册 (Refit API)
 
             // D5-3: 跨模块验方搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IFormulaSearchProvider, Services.FormulaSearchProvider>();

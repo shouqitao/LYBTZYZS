@@ -58,11 +58,10 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>
-        /// 注册模式切换验证器 Logger
+        /// 注册数据源 Logger
         /// </summary>
         public static void RegisterDataSourceLoggers(this IContainerRegistry containerRegistry)
         {
-            RegisterLogger<LYBT.Desktop.LocalData.Services.ModeSwitchValidator>(containerRegistry);
         }
 
         /// <summary>注册LoggerFactory和泛型ILogger&lt;&gt;</summary>

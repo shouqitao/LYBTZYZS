@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
-using LYBT.Desktop.Contracts;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.ExceptionHandling.Mappers;
@@ -37,10 +36,6 @@ namespace LYBT.Desktop.Auth.ViewModels
         private string? _savedUsername;
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
-
-        // US-SYNC-008: 连接模式选择 + 切换前置检查
-        private ConnectionMode _selectedConnectionMode = ConnectionMode.Remote;
-        private readonly IModeSwitchValidator? _modeSwitchValidator;
 
         public string Username
         {
@@ -159,86 +154,6 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         #endregion
 
-        #region 连接模式 (US-SYNC-008: 模式切换 + 切换前置检查)
-
-        /// <summary>
-        /// 当前选择的连接模式
-        /// US-SYNC-008: 支持远程/本地模式切换，切换前执行前置检查
-        /// </summary>
-        public ConnectionMode SelectedConnectionMode
-        {
-            get => _selectedConnectionMode;
-            set
-            {
-                if (_selectedConnectionMode == value) return;
-                _ = ValidateAndSwitchModeAsync(value);
-            }
-        }
-
-        /// <summary>
-        /// 是否选择远程模式（用于RadioButton绑定）
-        /// </summary>
-        public bool IsRemoteMode
-        {
-            get => _selectedConnectionMode == ConnectionMode.Remote;
-            set { if (value) SelectedConnectionMode = ConnectionMode.Remote; }
-        }
-
-        /// <summary>
-        /// 是否选择本地模式（用于RadioButton绑定）
-        /// </summary>
-        public bool IsLocalMode
-        {
-            get => _selectedConnectionMode == ConnectionMode.Local;
-            set { if (value) SelectedConnectionMode = ConnectionMode.Local; }
-        }
-
-        /// <summary>
-        /// US-SYNC-008: 模式切换前置验证
-        /// 验证通过后切换模式，失败则恢复原模式并提示用户
-        /// </summary>
-        private async Task ValidateAndSwitchModeAsync(ConnectionMode targetMode)
-        {
-            if (_modeSwitchValidator == null)
-            {
-                // 无验证器时直接切换 (向后兼容)
-                ApplyModeSwitch(targetMode);
-                return;
-            }
-
-            var result = targetMode switch
-            {
-                ConnectionMode.Remote => await _modeSwitchValidator.ValidateLocalToRemoteSwitchAsync(),
-                ConnectionMode.Local => await _modeSwitchValidator.ValidateRemoteToLocalSwitchAsync(),
-                _ => ModeSwitchValidationResult.Valid
-            };
-
-            if (result.IsValid)
-            {
-                ApplyModeSwitch(targetMode);
-            }
-            else
-            {
-                // 验证失败: 恢复 RadioButton 状态并提示用户
-                OnPropertyChanged(nameof(IsRemoteMode));
-                OnPropertyChanged(nameof(IsLocalMode));
-                await CommonDialogService.ShowWarningAsync(result.ErrorMessage!, "模式切换");
-            }
-        }
-
-        /// <summary>
-        /// 应用模式切换并通知 UI 更新
-        /// </summary>
-        private void ApplyModeSwitch(ConnectionMode targetMode)
-        {
-            SetProperty(ref _selectedConnectionMode, targetMode);
-            OnPropertyChanged(nameof(IsRemoteMode));
-            OnPropertyChanged(nameof(IsLocalMode));
-            Logger.LogInformation("[VM] Login.ModeSwitch - switched to {Mode}", targetMode);
-        }
-
-        #endregion
-
         public bool HasMessage => !string.IsNullOrWhiteSpace(StatusMessage) || !string.IsNullOrWhiteSpace(ErrorMessage);
 
         public ApiHealthStatus ApiStatus { get => _apiStatus; set { if (SetProperty(ref _apiStatus, value)) { OnPropertyChanged(nameof(IsApiUnhealthy)); (RetryApiCheckCommand as DelegateCommand)?.RaiseCanExecuteChanged(); } } }
@@ -262,22 +177,19 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// <summary>
         /// 构造函数
         /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
-        /// OpenSpec: refactor-startup-connection-resilience - 移除ConnectionMode，事件驱动状态更新
         /// </summary>
         public LoginViewModel(
             IViewModelServices services,
             ILoginCoordinator loginCoordinator,
             IApplicationStateService applicationStateService,
             IUsernameStorageService? usernameStorage = null,
-            ICredentialVault? credentialVault = null,
-            IModeSwitchValidator? modeSwitchValidator = null)
+            ICredentialVault? credentialVault = null)
             : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
             _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
             _usernameStorage = usernameStorage;
             _credentialVault = credentialVault;
-            _modeSwitchValidator = modeSwitchValidator;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());

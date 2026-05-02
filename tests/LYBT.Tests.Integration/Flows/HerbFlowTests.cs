@@ -1,6 +1,7 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Tests.Integration._Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Tests.Integration.Flows;
@@ -17,7 +18,7 @@ public class HerbFlowTests : IntegrationTestBase
     private async Task<HerbRepository> CreateRepositoryAsync()
     {
         var (_, api) = await LoginAsAdminWithApiAsync<IHerbApi>();
-        return new HerbRepository(api, NullLogger<HerbRepository>.Instance);
+        return new HerbRepository(api, null!, new RemoteOnlyApiRouter(), NullLogger<HerbRepository>.Instance);
     }
 
     [Fact]

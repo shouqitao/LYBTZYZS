@@ -2,7 +2,7 @@
 
 ## 概述
 
-凌隐宝堂中医诊所管理系统采用 Server/Shared/Client 三层架构。Server 层提供 RESTful API 服务，Client 层为 WPF 桌面应用，Shared 层提供两端共享的 DTO、工具类和组件。系统支持远程 (SQL Server) 和本地 (SQL Server LocalDB) 双模式运行，两种模式共享 Service/Repository 层代码，仅 DbContext Provider 不同。详见 [dual-mode.md](dual-mode.md)。
+凌隐宝堂中医诊所管理系统采用 Server/Shared/Client 三层架构。Server 层提供 RESTful API 服务，Client 层为 WPF 桌面应用，Shared 层提供两端共享的 DTO、工具类和组件。系统支持远程 (SQL Server) 和本地 (嵌入式 LocalWebAPI + SQL Server) 双模式运行，详见 [dual-mode.md](dual-mode.md)。
 
 ## 系统架构图
 
@@ -32,11 +32,9 @@ graph TB
 
     subgraph Data["数据层"]
         SQLServer["SQL Server"]
-        LocalDB["SQL Server LocalDB"]
     end
 
     Core_C -->|"HTTP API"| WebAPI
-    Core_C -->|"本地直连"| LocalDB
     Modules_C --> Models
     Modules_S --> Models
     Infra --> SQLServer

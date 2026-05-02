@@ -9,7 +9,6 @@ using LYBT.Shared.Models.Enums;
 using LYBT.LocalWebAPI.Auth;
 using LYBT.LocalWebAPI.Data;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -17,32 +16,35 @@ using Microsoft.IdentityModel.Tokens;
 namespace LYBT.Tests.Desktop.LocalWebAPI;
 
 /// <summary>
-/// LocalWebAPI DbContext tests - SQLite InMemory
+/// LocalWebAPI DbContext tests - SQL Server LocalDB
 /// </summary>
-public class LocalWebApiDbContextTests
+public class LocalWebApiDbContextTests : IDisposable
 {
-    private static SqliteConnection CreateInMemoryConnection()
-    {
-        var connection = new SqliteConnection("DataSource=:memory:");
-        connection.Open();
-        return connection;
-    }
+    private readonly string _dbName = $"LYBTZYZS_LocalWebApiTests_{Guid.NewGuid():N}";
 
-    private static LocalWebApiDbContext CreateContext(SqliteConnection connection)
+    private LocalWebApiDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<LocalWebApiDbContext>()
-            .UseSqlite(connection)
+            .UseSqlServer($@"Server=(localdb)\MSSQLLocalDB;Database={_dbName};Trusted_Connection=True;TrustServerCertificate=True")
             .Options;
         var context = new LocalWebApiDbContext(options);
         context.Database.EnsureCreated();
         return context;
     }
 
+    public void Dispose()
+    {
+        var options = new DbContextOptionsBuilder<LocalWebApiDbContext>()
+            .UseSqlServer($@"Server=(localdb)\MSSQLLocalDB;Database={_dbName};Trusted_Connection=True;TrustServerCertificate=True")
+            .Options;
+        using var context = new LocalWebApiDbContext(options);
+        context.Database.EnsureDeleted();
+    }
+
     [Fact]
     public async Task Can_Create_And_Query_Patients()
     {
-        await using var connection = CreateInMemoryConnection();
-        await using var context = CreateContext(connection);
+        await using var context = CreateContext();
 
         var patient = new Patient { Name = "Test Patient", Gender = Gender.Male };
         context.Patients.Add(patient);
@@ -56,8 +58,7 @@ public class LocalWebApiDbContextTests
     [Fact]
     public async Task Soft_Delete_Filters_Work()
     {
-        await using var connection = CreateInMemoryConnection();
-        await using var context = CreateContext(connection);
+        await using var context = CreateContext();
 
         var herb = new Herb { Name = "Test Herb", IsDeleted = false };
         context.Herbs.Add(herb);
@@ -79,8 +80,7 @@ public class LocalWebApiDbContextTests
     [Fact]
     public async Task SeedData_Creates_Admin_User()
     {
-        await using var connection = CreateInMemoryConnection();
-        await using var context = CreateContext(connection);
+        await using var context = CreateContext();
 
         await LocalWebApiSeedData.SeedAsync(context);
 

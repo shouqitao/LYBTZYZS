@@ -148,8 +148,19 @@ namespace LYBT.LocalWebAPI.Controllers
             return await _db.Herbs.AsNoTracking().Where(h => !h.IsDeleted).ToListAsync();
         }
 
-        // POST /api/herbs/import
-        [HttpPost("import")]
+        // GET /api/herbs/import-template
+        [HttpGet("import-template")]
+        public IActionResult ExportTemplate()
+        {
+            var template = new[]
+            {
+                new { Name = "", PinYinCode = "", Category = "", Unit = "", Property = "", Effect = "" }
+            };
+            return Ok(template);
+        }
+
+        // POST /api/herbs/batch-import
+        [HttpPost("batch-import")]
         public async Task<IActionResult> Import([FromBody] List<Herb> herbs)
         {
             if (herbs == null || herbs.Count == 0) return BadRequest("导入列表不能为空");

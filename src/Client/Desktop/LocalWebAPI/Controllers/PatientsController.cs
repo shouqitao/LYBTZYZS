@@ -7,8 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Entities.Patients;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Enums;
+
+using LYBT.LocalWebAPI.Mappers;
 
 namespace LYBT.LocalWebAPI.Controllers
 {
@@ -26,7 +29,7 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // GET /api/patients?keyword=&page=&pageSize=
         [HttpGet]
-        public async Task<ActionResult<List<Patient>>> GetPatients([FromQuery] string keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        public async Task<ActionResult<List<PatientListDto>>> GetPatients([FromQuery] string keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             // Pagination bounds validation
             if (page < 1) page = 1;
@@ -42,7 +45,7 @@ namespace LYBT.LocalWebAPI.Controllers
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-            return list;
+            return Ok(list.Select(x => x.ToListDto()).ToList());
         }
 
         // GET /api/patients/{id}
@@ -51,7 +54,7 @@ namespace LYBT.LocalWebAPI.Controllers
         {
             var patient = await _db.Patients.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
             if (patient == null) return NotFound();
-            return patient;
+            return Ok(patient.ToDetailDto());
         }
 
         // POST /api/patients
@@ -90,13 +93,13 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // GET /api/patients/by-id-number/{idNumber}
         [HttpGet("by-id-number/{idNumber}")]
-        public async Task<ActionResult<Patient>> GetPatientByIdNumber(string idNumber)
+        public async Task<ActionResult<PatientDetailDto>> GetPatientByIdNumber(string idNumber)
         {
             var patient = await _db.Patients.AsNoTracking()
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(p => p.IdNumber == idNumber);
             if (patient == null) return NotFound();
-            return patient;
+            return Ok(patient.ToDetailDto());
         }
 
         // POST /api/patients/batch-delete
@@ -126,7 +129,7 @@ namespace LYBT.LocalWebAPI.Controllers
             if (patient == null) return NotFound();
             patient.IsDeleted = false;
             await _db.SaveChangesAsync();
-            return patient;
+            return Ok(patient.ToDetailDto());
         }
 
         // POST /api/patients/{id}/toggle-status
@@ -139,7 +142,7 @@ namespace LYBT.LocalWebAPI.Controllers
                 ? CommonStatus.Disabled
                 : CommonStatus.Enabled;
             await _db.SaveChangesAsync();
-            return patient;
+            return Ok(patient.ToDetailDto());
         }
 
         // GET /api/patients/export
@@ -150,6 +153,17 @@ namespace LYBT.LocalWebAPI.Controllers
                 .Where(p => !p.IsDeleted)
                 .ToListAsync();
             return patients;
+        }
+
+        // GET /api/patients/import-template
+        [HttpGet("import-template")]
+        public IActionResult ExportTemplate()
+        {
+            var template = new[]
+            {
+                new { Name = "", IdNumber = "", Gender = (int?)null, BirthDate = (DateTime?)null, PhoneNumber = "", Address = "" }
+            };
+            return Ok(template);
         }
 
         // POST /api/patients/import

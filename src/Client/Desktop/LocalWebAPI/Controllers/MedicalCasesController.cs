@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Entities.MedicalCases;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Entities.Consultations;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
+
+using LYBT.LocalWebAPI.Mappers;
 
 namespace LYBT.LocalWebAPI.Controllers
 {
@@ -29,14 +31,14 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // GET /api/medicalcases?patientId=
         [HttpGet]
-        public async Task<ActionResult<List<MedicalCase>>> GetMedicalCases([FromQuery] Guid? patientId)
+        public async Task<ActionResult<List<MedicalCaseListDto>>> GetMedicalCases([FromQuery] Guid? patientId)
         {
             var q = _db.MedicalCases.AsNoTracking().Where(m => !m.IsDeleted);
             if (patientId.HasValue)
             {
                 q = q.Where(m => m.PatientId == patientId.Value);
             }
-            return await q.ToListAsync();
+            return Ok((await q.ToListAsync()).Select(x => x.ToListDto()).ToList());
         }
 
         // GET /api/medicalcases/{id}
@@ -61,19 +63,6 @@ namespace LYBT.LocalWebAPI.Controllers
             _db.MedicalCases.Add(mc);
             await _db.SaveChangesAsync();
             return CreatedAtAction(nameof(GetMedicalCase), new { id = mc.Id }, mc);
-        }
-
-        // PUT /api/medicalcases/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMedicalCase(Guid id, [FromBody] MedicalCase updated)
-        {
-            if (id != updated.Id) return BadRequest("ID mismatch between URL and payload.");
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            var existing = await _db.MedicalCases.FindAsync(id);
-            if (existing == null || existing.IsDeleted) return NotFound();
-            _db.Entry(existing).CurrentValues.SetValues(updated);
-            await _db.SaveChangesAsync();
-            return Ok(existing);
         }
 
         // DELETE /api/medicalcases/{id} -> soft delete
@@ -126,9 +115,9 @@ namespace LYBT.LocalWebAPI.Controllers
             return new PagedResult<MedicalCase>(items, totalCount, page, pageSize);
         }
 
-        // POST /api/medicalcases/query
-        [HttpPost("query")]
-        public async Task<ActionResult<PagedResult<MedicalCase>>> Query([FromBody] MedicalCaseQueryDto query)
+        // GET /api/medicalcases/query
+        [HttpGet("query")]
+        public async Task<ActionResult<PagedResult<MedicalCase>>> Query([FromQuery] MedicalCaseQueryDto query)
         {
             var q = _db.MedicalCases
                 .Include(m => m.Consultation)
@@ -228,8 +217,8 @@ namespace LYBT.LocalWebAPI.Controllers
             return items;
         }
 
-        // POST /api/medicalcases/{id}/close
-        [HttpPost("{id}/close")]
+        // PUT /api/medicalcases/{id}/close
+        [HttpPut("{id}/close")]
         public async Task<IActionResult> CloseCase(Guid id)
         {
             var mc = await _db.MedicalCases
@@ -240,11 +229,11 @@ namespace LYBT.LocalWebAPI.Controllers
             if (mc.IsCompleted) return BadRequest("Medical case is already completed.");
             mc.Complete();
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
-        // POST /api/medicalcases/{id}/suspend
-        [HttpPost("{id}/suspend")]
+        // PUT /api/medicalcases/{id}/suspend
+        [HttpPut("{id}/suspend")]
         public async Task<IActionResult> SuspendCase(Guid id)
         {
             var mc = await _db.MedicalCases
@@ -255,11 +244,11 @@ namespace LYBT.LocalWebAPI.Controllers
             if (mc.IsCompleted) return BadRequest("Medical case is already completed.");
             mc.Suspend();
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
-        // POST /api/medicalcases/{id}/cancel
-        [HttpPost("{id}/cancel")]
+        // PUT /api/medicalcases/{id}/cancel
+        [HttpPut("{id}/cancel")]
         public async Task<IActionResult> CancelCase(Guid id)
         {
             var mc = await _db.MedicalCases.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
@@ -283,7 +272,7 @@ namespace LYBT.LocalWebAPI.Controllers
             mc.NeedsPrescription = request.NeedsPrescription;
             mc.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
         // PUT /api/medicalcases/{id}/status
@@ -295,11 +284,11 @@ namespace LYBT.LocalWebAPI.Controllers
             mc.CaseStatus = request.Status;
             mc.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
-        // POST /api/medicalcases/{id}/print-completed
-        [HttpPost("{id}/print-completed")]
+        // PUT /api/medicalcases/{id}/print-completed
+        [HttpPut("{id}/print-completed")]
         public async Task<IActionResult> RecordPrintCompleted(Guid id, [FromBody] PrintCompletedRequest request)
         {
             var mc = await _db.MedicalCases.FindAsync(id);
@@ -310,47 +299,29 @@ namespace LYBT.LocalWebAPI.Controllers
             mc.PrintVersion++;
             mc.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-            return Ok(mc);
+            return Ok(mc.ToDetailDto());
         }
 
-        // POST /api/medicalcases/save
-        [HttpPost("save")]
-        public async Task<IActionResult> SaveAsync([FromBody] MedicalCaseInputDto request)
+        // PUT /api/medicalcases/{id}
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> SaveAsync(Guid id, [FromBody] MedicalCaseInputDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            if (request.Id.HasValue)
-            {
-                var existing = await _db.MedicalCases.FindAsync(request.Id.Value);
-                if (existing == null || existing.IsDeleted) return NotFound();
-                existing.PatientId = request.PatientId;
-                existing.UserId = request.UserId;
-                existing.Remark = request.Remark;
-                if (request.NeedsPrescription.HasValue)
-                    existing.NeedsPrescription = request.NeedsPrescription;
-                existing.UpdatedAt = DateTime.UtcNow;
-                await _db.SaveChangesAsync();
-                return Ok(existing);
-            }
-            else
-            {
-                var mc = new MedicalCase
-                {
-                    PatientId = request.PatientId,
-                    UserId = request.UserId,
-                    Remark = request.Remark,
-                    NeedsPrescription = request.NeedsPrescription,
-                    PatientName = string.Empty,
-                    DoctorName = string.Empty,
-                };
-                _db.MedicalCases.Add(mc);
-                await _db.SaveChangesAsync();
-                return CreatedAtAction(nameof(GetMedicalCase), new { id = mc.Id }, mc);
-            }
+            var existing = await _db.MedicalCases.FindAsync(id);
+            if (existing == null || existing.IsDeleted) return NotFound();
+            existing.PatientId = request.PatientId;
+            existing.UserId = request.UserId;
+            existing.Remark = request.Remark;
+            if (request.NeedsPrescription.HasValue)
+                existing.NeedsPrescription = request.NeedsPrescription;
+            existing.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return Ok(existing);
         }
 
-        // DELETE /api/medicalcases/batch
-        [HttpDelete("batch")]
+        // POST /api/medicalcases/batch-delete
+        [HttpPost("batch-delete")]
         public async Task<IActionResult> BatchDelete([FromBody] List<Guid> ids)
         {
             if (ids == null || ids.Count == 0) return BadRequest("ID list cannot be empty.");

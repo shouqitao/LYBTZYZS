@@ -50,12 +50,11 @@ graph TB
 | 项目 | 职责 | 主要内容 |
 |------|------|----------|
 | LYBT.Desktop.Contracts | 接口定义 | IApi 接口 (Refit)、IRepository 接口 (6 个，Sprint 6 SYNC-D02 迁移)、IService 接口 |
-| LYBT.Desktop.Foundation | 基础设施 | HTTP 客户端、缓存、安全、配置、日志、ConnectionMode |
+| LYBT.Desktop.Foundation | 基础设施 | HTTP 客户端、缓存、安全、配置、日志 |
 | LYBT.Desktop.Infrastructure | WPF 服务 | DialogService、NavigationService、控件、转换器、主题 |
 | LYBT.Desktop.Models | 客户端模型 | ViewState、Item 模型、事件模型 |
 | LYBT.Desktop.Printing | 打印服务 | MedicalCase 聚合根打印能力 (A5/A4 处方打印模板、打印预览、PDF 导出 QuestPDF) |
 | LYBT.Desktop.Utilities | 工具类库 | 通用辅助方法 |
-| LYBT.Desktop.LocalData | 本地数据访问 | SQL Server LocalDB 操作、本地模式 DbContext、LocalXxxRepository (6 个) |
 | LYBT.Desktop.CardReader | 硬件集成 | 身份证读卡器策略模式、多厂商支持 |
 
 **依赖方向**: Shell -> Roles -> Modules -> Infrastructure -> Foundation -> Contracts
@@ -148,7 +147,6 @@ LYBT.Desktop.{Domain}/
 - 主窗口和 Region 定义
 - 模块加载编排 (ConfigureModuleCatalog)
 - 全局异常处理
-- 连接模式配置 (Remote/Local)
 
 ## ViewModel 基类体系
 
@@ -702,35 +700,6 @@ Idle -> CheckingDifferences -> ReviewingDifferences -> Syncing -> Completed
 | 操作按钮 | 保留本地 / 使用服务端 / 跳过 |
 
 MedicalCase 冲突展示跨整个聚合 (诊断 + 处方 + 药材明细)，通过 `SyncConflictDetailDto.ChangedFields` 定位差异字段。
-
----
-
-## 模式切换设计
-
-> 对应 [FR-SYNC-008](../02-requirements/sync.md)。
-
-### 切换前未同步检查
-
-1. 比对本地 Checksum 与上次同步时的 Checksum
-2. 有未同步变更 → 弹出提示: "本地有 N 条未同步数据，建议先同步再切换。是否继续?"
-3. 用户选择: "先同步" (跳转同步页面) / "继续切换" (忽略未同步数据) / "取消"
-
-### 远程 → 本地
-
-1. 检查 SQLite 数据库文件是否存在且完整
-2. 不存在 → 提示"本地数据库不存在，需先执行一次同步"
-3. 存在 → 切换 DbContext Provider 为 SQLite → 状态栏显示"本地模式" (详见 [dual-mode.md](dual-mode.md) SYNC-D02/D03)
-
-### 本地 → 远程
-
-1. 检查网络连通性 (Ping 服务端)
-2. 网络不可用 → 提示"无法连接服务器，请检查网络"
-3. 检查 Token 有效性 → 过期则跳转登录页
-4. 认证有效 → 切换 DbContext Provider 为 SQL Server → 状态栏显示"远程模式" (详见 [dual-mode.md](dual-mode.md) SYNC-D02/D03)
-
-### 切换失败回退
-
-切换过程中出现错误 → 自动回退到切换前模式 → 显示"切换失败: {原因}，已恢复到{当前模式}"。
 
 ---
 

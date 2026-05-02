@@ -18,13 +18,13 @@ public class FrameworkVerificationTests : UserJourneyTestBase
     }
 
     [Fact]
-    public async Task SQLiteInMemory_DatabaseShouldBeInitialized()
+    public async Task Database_ShouldBeInitialized()
     {
         // Act
         var canConnect = await DbContext.Database.CanConnectAsync();
 
         // Assert
-        canConnect.Should().BeTrue("SQLite InMemory 数据库应该可以连接");
+        canConnect.Should().BeTrue("SQL Server LocalDB 数据库应该可以连接");
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class FrameworkVerificationTests : UserJourneyTestBase
 
         // Assert
         context.Should().NotBeNull();
-        context!.Database.IsSqlite().Should().BeTrue();
+        context!.Database.IsSqlServer().Should().BeTrue();
     }
 #pragma warning restore CS1998
 

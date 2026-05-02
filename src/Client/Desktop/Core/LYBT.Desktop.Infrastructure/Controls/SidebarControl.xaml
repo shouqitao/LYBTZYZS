@@ -86,11 +86,9 @@
                 <RowDefinition Height="Auto" />
                 <!--  Row 4: 状态信息(网络+时间)  -->
                 <RowDefinition Height="Auto" />
-                <!--  Row 5: 模式切换 (SYNC-D03)  -->
+                <!--  Row 5: 分隔线  -->
                 <RowDefinition Height="Auto" />
-                <!--  Row 6: 分隔线  -->
-                <RowDefinition Height="Auto" />
-                <!--  Row 7: 退出登录  -->
+                <!--  Row 6: 退出登录  -->
             </Grid.RowDefinitions>
 
             <!--  展开/收缩按钮 + Logo  -->
@@ -279,6 +277,14 @@
                                 Foreground="{DynamicResource SidebarSecondaryTextBrush}"
                                 Text="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToText}}" />
                         </StackPanel>
+                        <!--  离线模式指示器  -->
+                        <TextBlock
+                            Margin="0,0,0,4"
+                            FontSize="10"
+                            Foreground="{DynamicResource WarningBrush}"
+                            Text="Local Mode"
+                            ToolTip="Using local API (offline mode)"
+                            Visibility="{Binding IsOfflineMode, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
                         <!--  时间(下): 时间+日期  -->
                         <StackPanel Orientation="Horizontal">
                             <Path
@@ -304,38 +310,15 @@
                 </Grid>
             </Border>
 
-            <!--  SYNC-D03: 模式切换按钮  -->
-            <Button
-                Grid.Row="5"
-                Command="{Binding SwitchModeCommand, ElementName=Root}"
-                IsEnabled="{Binding IsSwitchingMode, ElementName=Root, Converter={x:Static converters:Cvt.InverseBool}}"
-                Style="{StaticResource SidebarMenuItemStyle}"
-                ToolTip="{Binding ConnectionModeText, ElementName=Root, StringFormat=当前: {0} (点击切换)}">
-                <StackPanel Orientation="Horizontal">
-                    <!--  切换图标: swap_horiz  -->
-                    <Path
-                        Width="20"
-                        Height="20"
-                        Data="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"
-                        Fill="{DynamicResource SidebarTextBrush}"
-                        Stretch="Uniform" />
-                    <TextBlock
-                        Margin="12,0,0,0"
-                        VerticalAlignment="Center"
-                        Text="{Binding ConnectionModeText, ElementName=Root}"
-                        Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
-                </StackPanel>
-            </Button>
-
             <!--  分割线  -->
             <Border
-                Grid.Row="6"
+                Grid.Row="5"
                 Height="1"
                 Margin="12,0"
                 Background="{DynamicResource SidebarDividerBrush}" />
 
             <!--  退出登录（底部）  -->
-            <Border Grid.Row="7">
+            <Border Grid.Row="6">
                 <Button
                     Command="{Binding LogoutCommand, ElementName=Root}"
                     Style="{StaticResource SidebarMenuItemStyle}"
