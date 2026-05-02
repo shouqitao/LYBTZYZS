@@ -199,7 +199,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
             {
                 _logger.LogDebug("[REPO:Local] MedicalCase.Search - PatientName={PatientName} DiagnosisKeyword={DiagnosisKeyword}",
                     patientName ?? "无", diagnosisKeyword ?? "无");
-                return await _localApi.SearchAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+                return await _localApi.SearchMedicalCasesAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
             }
 
             _logger.LogDebug("[REPO:Remote] MedicalCase.Search - PatientName={PatientName} DiagnosisKeyword={DiagnosisKeyword}",
@@ -228,7 +228,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
             if (IsOffline)
             {
                 _logger.LogDebug("[REPO:Local] MedicalCase.Query - QueryType={QueryType}", query.QueryType);
-                return await _localApi.QueryAsync(
+                return await _localApi.QueryMedicalCasesAsync(
                     query.QueryType,
                     query.PatientId,
                     query.DoctorId,
@@ -306,7 +306,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] MedicalCase.Cancel - Id={Id}", id);
-                await _localApi.CancelCaseAsync(id);
+                await _localApi.CancelMedicalCaseAsync(id, request);
                 return null;
             }
 
@@ -341,7 +341,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] MedicalCase.Suspend - Id={Id}", id);
-                return await _localApi.SuspendCaseAsync(id);
+                return await _localApi.SuspendAsync(id, request);
             }
 
             _logger.LogInformation("[REPO:Remote] MedicalCase.Suspend - Id={Id}", id);
@@ -559,7 +559,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] MedicalCase.GetBatchDetails - Count={Count}", ids.Count);
-                return await _localApi.GetBatchDetailsAsync(ids);
+                return await _localApi.GetBatchDetailsAsync(new BatchDetailQueryDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] MedicalCase.GetBatchDetails - Count={Count}", ids.Count);
@@ -590,7 +590,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] MedicalCase.BatchDelete - Count={Count}", ids.Count);
-                return await _localApi.BatchDeleteAsync(ids);
+                return await _localApi.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] MedicalCase.BatchDelete - Count={Count}", ids.Count);

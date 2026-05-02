@@ -9,7 +9,9 @@ namespace LYBT.Desktop.Contracts.Api;
 public interface ILocalHerbApi
 {
     [Refit.Get("/api/herbs")]
-    Task<List<HerbListDto>> GetHerbsAsync([Refit.Query] string? keyword = null);
+    Task<List<HerbListDto>> GetHerbsAsync(
+        [Refit.Query] string? keyword = null,
+        [Refit.Query] string? category = null);
 
     [Refit.Get("/api/herbs/{id}")]
     Task<HerbDetailDto> GetHerbByIdAsync(Guid id);
@@ -30,17 +32,23 @@ public interface ILocalHerbApi
     Task<HerbDetailDto> RestoreAsync(Guid id);
 
     [Refit.Post("/api/herbs/batch-delete")]
-    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Post("/api/herbs/batch-enable")]
-    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Post("/api/herbs/batch-disable")]
-    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
+
+    [Refit.Get("/api/herbs/categories")]
+    Task<List<string>> GetCategoriesAsync();
 
     [Refit.Get("/api/herbs/export")]
     Task<List<HerbDetailDto>> ExportHerbsAsync([Refit.Query] string? keyword = null);
 
     [Refit.Get("/api/herbs/import-template")]
     Task<object> ExportTemplateAsync();
+
+    [Refit.Post("/api/herbs/batch-import")]
+    Task<HerbBatchImportResultDto> BatchImportAsync([Refit.Body] HerbBatchImportInputDto request);
 }

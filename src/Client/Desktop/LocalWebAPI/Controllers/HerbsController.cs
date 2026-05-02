@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Prescriptions;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.LocalWebAPI.Controllers
@@ -24,14 +26,18 @@ namespace LYBT.LocalWebAPI.Controllers
             _db = db;
         }
 
-        // GET /api/herbs?keyword=
+        // GET /api/herbs?keyword=&category=
         [HttpGet]
-        public async Task<ActionResult<List<Herb>>> GetHerbs([FromQuery] string keyword)
+        public async Task<ActionResult<List<Herb>>> GetHerbs([FromQuery] string keyword, [FromQuery] string? category = null)
         {
             var q = _db.Herbs.AsNoTracking().Where(h => !h.IsDeleted);
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 q = q.Where(h => h.Name.Contains(keyword) || (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
+            }
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                q = q.Where(h => h.Category == category);
             }
             return await q.ToListAsync();
         }
@@ -81,15 +87,15 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/herbs/batch-delete
         [HttpPost("batch-delete")]
-        public async Task<IActionResult> BatchDelete([FromBody] List<Guid> ids)
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
         {
-            if (ids == null || ids.Count == 0) return BadRequest("ids 不能为空");
+            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids 不能为空");
 
-            var isReferenced = await _db.PrescriptionItems.AnyAsync(pi => ids.Contains(pi.HerbId));
+            var isReferenced = await _db.PrescriptionItems.AnyAsync(pi => request.Ids.Contains(pi.HerbId));
             if (isReferenced)
                 return Conflict("部分药材被处方引用，无法删除");
 
-            var herbs = await _db.Herbs.Where(h => ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
+            var herbs = await _db.Herbs.Where(h => request.Ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
             foreach (var h in herbs) h.IsDeleted = true;
             await _db.SaveChangesAsync();
             return Ok(new { count = herbs.Count });
@@ -97,11 +103,11 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/herbs/batch-enable
         [HttpPost("batch-enable")]
-        public async Task<IActionResult> BatchEnable([FromBody] List<Guid> ids)
+        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto request)
         {
-            if (ids == null || ids.Count == 0) return BadRequest("ids 不能为空");
+            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids 不能为空");
 
-            var herbs = await _db.Herbs.Where(h => ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
+            var herbs = await _db.Herbs.Where(h => request.Ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
             foreach (var h in herbs) h.Status = CommonStatus.Enabled;
             await _db.SaveChangesAsync();
             return Ok(new { count = herbs.Count });
@@ -109,11 +115,11 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/herbs/batch-disable
         [HttpPost("batch-disable")]
-        public async Task<IActionResult> BatchDisable([FromBody] List<Guid> ids)
+        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto request)
         {
-            if (ids == null || ids.Count == 0) return BadRequest("ids 不能为空");
+            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids 不能为空");
 
-            var herbs = await _db.Herbs.Where(h => ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
+            var herbs = await _db.Herbs.Where(h => request.Ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
             foreach (var h in herbs) h.Status = CommonStatus.Disabled;
             await _db.SaveChangesAsync();
             return Ok(new { count = herbs.Count });
@@ -161,36 +167,62 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/herbs/batch-import
         [HttpPost("batch-import")]
-        public async Task<IActionResult> Import([FromBody] List<Herb> herbs)
+        public async Task<ActionResult<HerbBatchImportResultDto>> Import([FromBody] HerbBatchImportInputDto request)
         {
-            if (herbs == null || herbs.Count == 0) return BadRequest("导入列表不能为空");
+            if (request == null || request.Herbs == null || request.Herbs.Count == 0)
+                return BadRequest("导入列表不能为空");
 
-            var ids = herbs.Select(h => h.Id).Where(id => id != Guid.Empty).ToList();
-            var existingIds = ids.Count > 0
-                ? (await _db.Herbs.IgnoreQueryFilters().Where(h => ids.Contains(h.Id)).Select(h => h.Id).ToListAsync()).ToHashSet()
-                : new HashSet<Guid>();
+            var result = new HerbBatchImportResultDto { ImportTime = DateTime.UtcNow, TotalCount = request.Herbs.Count };
 
-            int count = 0;
-            foreach (var herb in herbs)
+            foreach (var dto in request.Herbs)
             {
-                if (string.IsNullOrWhiteSpace(herb.PinYinCode) && !string.IsNullOrWhiteSpace(herb.Name))
-                    herb.PinYinCode = herb.Name; // client-side pinyin generation not available server-side; use name as fallback
+                try
+                {
+                    var entity = new Herb
+                    {
+                        Id = dto.Id ?? Guid.NewGuid(),
+                        Name = dto.Name,
+                        PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode) ? dto.Name : dto.PinYinCode,
+                        Category = dto.Category,
+                        Properties = dto.Properties,
+                        Origin = dto.Origin,
+                        Spec = dto.Spec,
+                        Unit = dto.Unit,
+                        Price = dto.Price,
+                        Effect = dto.Effect,
+                        Usage = dto.Usage,
+                        Remark = dto.Remark,
+                        Status = CommonStatus.Enabled
+                    };
 
-                if (herb.Id != Guid.Empty && existingIds.Contains(herb.Id))
-                {
-                    var existing = await _db.Herbs.IgnoreQueryFilters().FirstAsync(h => h.Id == herb.Id);
-                    _db.Entry(existing).CurrentValues.SetValues(herb);
+                    if (dto.Id.HasValue)
+                    {
+                        var existing = await _db.Herbs.IgnoreQueryFilters().FirstOrDefaultAsync(h => h.Id == dto.Id.Value);
+                        if (existing != null)
+                        {
+                            _db.Entry(existing).CurrentValues.SetValues(entity);
+                            result.SuccessCount++;
+                            continue;
+                        }
+                    }
+
+                    _db.Herbs.Add(entity);
+                    result.SuccessCount++;
                 }
-                else
+                catch (Exception ex)
                 {
-                    if (herb.Id == Guid.Empty) herb.Id = Guid.NewGuid();
-                    _db.Herbs.Add(herb);
+                    result.FailureCount++;
+                    result.Failures.Add(new HerbImportFailureDto
+                    {
+                        HerbName = dto.Name,
+                        Reason = "导入失败",
+                        ErrorDetails = new List<string> { ex.Message }
+                    });
                 }
-                count++;
             }
 
             await _db.SaveChangesAsync();
-            return Ok(new { count });
+            return Ok(result);
         }
 
         // GET /api/herbs/categories

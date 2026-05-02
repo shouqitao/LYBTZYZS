@@ -34,11 +34,14 @@ public interface ILocalPatientApi
     Task<PatientDetailDto> RestoreAsync(Guid id);
 
     [Refit.Post("/api/patients/batch-delete")]
-    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Get("/api/patients/export")]
     Task<List<PatientDetailDto>> ExportPatientsAsync([Refit.Query] string? keyword = null);
 
     [Refit.Get("/api/patients/import-template")]
     Task<object> ExportTemplateAsync();
+
+    [Refit.Post("/api/patients/import")]
+    Task<PatientBatchImportResultDto> BatchImportAsync([Refit.Body] PatientBatchImportInputDto request);
 }

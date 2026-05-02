@@ -28,4 +28,7 @@ public interface ILocalRegistrationApi
 
     [Refit.Put("/api/registrations/{id}/cancel")]
     Task CancelAsync(Guid id);
+
+    [Refit.Post("/api/registrations/quick-visit")]
+    Task<QuickVisitResultDto> QuickVisitAsync([Refit.Body] QuickVisitInputDto request);
 }

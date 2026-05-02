@@ -304,7 +304,7 @@ public sealed class FormulaRepository : IFormulaRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] Formula.BatchDelete - Count={Count}", ids.Count);
-                return await _localApi.BatchDeleteAsync(ids);
+                return await _localApi.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] Formula.BatchDelete - Count={Count}", ids.Count);
@@ -343,7 +343,7 @@ public sealed class FormulaRepository : IFormulaRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] Formula.BatchEnable - Count={Count}", ids.Count);
-                return await _localApi.BatchEnableAsync(ids);
+                return await _localApi.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] Formula.BatchEnable - Count={Count}", ids.Count);
@@ -371,7 +371,7 @@ public sealed class FormulaRepository : IFormulaRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] Formula.BatchDisable - Count={Count}", ids.Count);
-                return await _localApi.BatchDisableAsync(ids);
+                return await _localApi.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] Formula.BatchDisable - Count={Count}", ids.Count);
@@ -398,14 +398,14 @@ public sealed class FormulaRepository : IFormulaRepository
 
     public async Task<FormulaBatchImportResultDto?> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Formula.BatchImport not supported in offline mode");
-            return null;
-        }
-
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] Formula.BatchImport - Count={Count}", request.Formulas.Count);
+                return await _localApi.BatchImportAsync(request);
+            }
+
             _logger.LogInformation("[REPO:Remote] Formula.BatchImport started");
 
             var response = await _api.BatchImportAsync(request);

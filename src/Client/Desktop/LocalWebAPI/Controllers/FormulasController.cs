@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Entities.Formulas;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.LocalWebAPI.Controllers
@@ -23,14 +25,18 @@ namespace LYBT.LocalWebAPI.Controllers
             _db = db;
         }
 
-        // GET /api/formulas?keyword=
+        // GET /api/formulas?keyword=&category=
         [HttpGet]
-        public async Task<ActionResult<List<Formula>>> GetFormulas([FromQuery] string keyword)
+        public async Task<ActionResult<List<Formula>>> GetFormulas([FromQuery] string keyword, [FromQuery] string? category = null)
         {
             var q = _db.Formulas.AsNoTracking().Where(f => !f.IsDeleted);
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 q = q.Where(f => f.Name.Contains(keyword));
+            }
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                q = q.Where(f => f.Category == category);
             }
             return await q.ToListAsync();
         }
@@ -80,10 +86,10 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/formulas/batch-delete
         [HttpPost("batch-delete")]
-        public async Task<IActionResult> BatchDelete([FromBody] List<Guid> ids)
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
         {
-            if (ids == null || ids.Count == 0) return BadRequest("ids is required.");
-            var formulas = await _db.Formulas.Where(f => ids.Contains(f.Id) && !f.IsDeleted).ToListAsync();
+            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids is required.");
+            var formulas = await _db.Formulas.Where(f => request.Ids.Contains(f.Id) && !f.IsDeleted).ToListAsync();
             foreach (var f in formulas) f.IsDeleted = true;
             await _db.SaveChangesAsync();
             return Ok(new { count = formulas.Count });
@@ -91,10 +97,10 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/formulas/batch-enable
         [HttpPost("batch-enable")]
-        public async Task<IActionResult> BatchEnable([FromBody] List<Guid> ids)
+        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto request)
         {
-            if (ids == null || ids.Count == 0) return BadRequest("ids is required.");
-            var formulas = await _db.Formulas.Where(f => ids.Contains(f.Id) && !f.IsDeleted).ToListAsync();
+            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids is required.");
+            var formulas = await _db.Formulas.Where(f => request.Ids.Contains(f.Id) && !f.IsDeleted).ToListAsync();
             foreach (var f in formulas) f.Status = CommonStatus.Enabled;
             await _db.SaveChangesAsync();
             return Ok(new { count = formulas.Count });
@@ -102,10 +108,10 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/formulas/batch-disable
         [HttpPost("batch-disable")]
-        public async Task<IActionResult> BatchDisable([FromBody] List<Guid> ids)
+        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto request)
         {
-            if (ids == null || ids.Count == 0) return BadRequest("ids is required.");
-            var formulas = await _db.Formulas.Where(f => ids.Contains(f.Id) && !f.IsDeleted).ToListAsync();
+            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids is required.");
+            var formulas = await _db.Formulas.Where(f => request.Ids.Contains(f.Id) && !f.IsDeleted).ToListAsync();
             foreach (var f in formulas) f.Status = CommonStatus.Disabled;
             await _db.SaveChangesAsync();
             return Ok(new { count = formulas.Count });
@@ -206,31 +212,80 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/formulas/batch-import
         [HttpPost("batch-import")]
-        public async Task<IActionResult> Import([FromBody] List<Formula> formulas)
+        public async Task<ActionResult<FormulaBatchImportResultDto>> Import([FromBody] FormulaBatchImportInputDto request)
         {
-            if (formulas == null || formulas.Count == 0) return BadRequest("formulas is required.");
-            int count = 0;
-            foreach (var incoming in formulas)
+            if (request == null || request.Formulas == null || request.Formulas.Count == 0)
+                return BadRequest("验方列表不能为空");
+
+            var result = new FormulaBatchImportResultDto
             {
-                var existing = await _db.Formulas.Include(f => f.Herbs).FirstOrDefaultAsync(f => f.Id == incoming.Id);
-                if (existing != null)
+                FileName = request.FileName,
+                ImportTime = DateTime.UtcNow,
+                StartTime = DateTime.UtcNow,
+                TotalCount = request.Formulas.Count
+            };
+
+            foreach (var dto in request.Formulas)
+            {
+                try
                 {
-                    _db.Entry(existing).CurrentValues.SetValues(incoming);
-                    if (incoming.Herbs != null)
+                    if (string.IsNullOrWhiteSpace(dto.Name))
                     {
-                        existing.Herbs.Clear();
-                        foreach (var herb in incoming.Herbs)
-                            existing.Herbs.Add(herb);
+                        result.FailureCount++;
+                        result.Failures.Add(new FormulaImportFailureDto
+                        {
+                            FormulaName = dto.Name ?? string.Empty,
+                            ErrorMessage = "验方名称不能为空"
+                        });
+                        continue;
                     }
+
+                    var formula = new Formula
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = dto.Name,
+                        Effect = dto.Effect,
+                        Usage = dto.Usage,
+                        Property = dto.Property,
+                        IsShared = dto.IsShared,
+                        Remark = dto.Remark,
+                        Status = CommonStatus.Enabled,
+                        ValidationStatus = FormulaValidationStatus.Draft,
+                        CreatedAt = DateTime.UtcNow,
+                        Herbs = new List<FormulaHerbItem>()
+                    };
+
+                    foreach (var herbDto in dto.Herbs)
+                    {
+                        formula.Herbs.Add(new FormulaHerbItem
+                        {
+                            Id = Guid.NewGuid(),
+                            HerbName = herbDto.HerbName,
+                            OriginalHerbName = herbDto.HerbName,
+                            Dosage = herbDto.Dosage,
+                            Unit = herbDto.Unit ?? string.Empty,
+                            Usage = herbDto.Usage,
+                            ProcessingMethod = herbDto.Preparation
+                        });
+                    }
+
+                    _db.Formulas.Add(formula);
+                    result.SuccessCount++;
                 }
-                else
+                catch (Exception ex)
                 {
-                    _db.Formulas.Add(incoming);
+                    result.FailureCount++;
+                    result.Failures.Add(new FormulaImportFailureDto
+                    {
+                        FormulaName = dto.Name ?? string.Empty,
+                        ErrorMessage = ex.Message
+                    });
                 }
-                count++;
             }
+
+            result.EndTime = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-            return Ok(new { count });
+            return Ok(result);
         }
 
         // GET /api/formulas/categories

@@ -1,4 +1,5 @@
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 
@@ -28,7 +29,7 @@ public interface ILocalMedicalCaseApi
     Task<MedicalCaseDetailDto> SaveAsync(Guid id, [Refit.Body] MedicalCaseInputDto request);
 
     [Refit.Get("/api/medicalcases/search")]
-    Task<PagedResult<MedicalCaseDetailDto>> SearchAsync(
+    Task<PagedResult<MedicalCaseDetailDto>> SearchMedicalCasesAsync(
         [Refit.Query] string? patientName = null,
         [Refit.Query] string? diagnosisKeyword = null,
         [Refit.Query] DateTime? startDate = null,
@@ -37,7 +38,7 @@ public interface ILocalMedicalCaseApi
         [Refit.Query] int pageSize = 20);
 
     [Refit.Get("/api/medicalcases/query")]
-    Task<PagedResult<MedicalCaseListDto>> QueryAsync(
+    Task<PagedResult<MedicalCaseListDto>> QueryMedicalCasesAsync(
         [Refit.Query] MedicalCaseQueryType queryType = MedicalCaseQueryType.All,
         [Refit.Query] Guid? patientId = null,
         [Refit.Query] Guid? doctorId = null,
@@ -48,10 +49,10 @@ public interface ILocalMedicalCaseApi
         [Refit.Query] int? limit = null);
 
     [Refit.Post("/api/medicalcases/batch-details")]
-    Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync([Refit.Body] List<Guid> ids);
+    Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync([Refit.Body] BatchDetailQueryDto request);
 
     [Refit.Post("/api/medicalcases/batch-delete")]
-    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Get("/api/medicalcases/{id}/permissions")]
     Task<MedicalCasePermissionDto> GetPermissionsAsync(Guid id);
@@ -60,10 +61,10 @@ public interface ILocalMedicalCaseApi
     Task<MedicalCaseDetailDto> CloseCaseAsync(Guid id);
 
     [Refit.Put("/api/medicalcases/{id}/suspend")]
-    Task<MedicalCaseDetailDto> SuspendCaseAsync(Guid id);
+    Task<MedicalCaseDetailDto> SuspendAsync(Guid id, [Refit.Body] ConsultationInputDto? request = null);
 
     [Refit.Put("/api/medicalcases/{id}/cancel")]
-    Task CancelCaseAsync(Guid id);
+    Task CancelMedicalCaseAsync(Guid id, [Refit.Body] CancelMedicalCaseRequestDto? request = null);
 
     [Refit.Put("/api/medicalcases/{id}/status")]
     Task<MedicalCaseDetailDto> UpdateStatusAsync(Guid id, [Refit.Body] MedicalCaseStatusInputDto request);
@@ -73,4 +74,16 @@ public interface ILocalMedicalCaseApi
 
     [Refit.Put("/api/medicalcases/{id}/print-completed")]
     Task<MedicalCaseDetailDto> RecordPrintCompletedAsync(Guid id, [Refit.Body] PrintCompletedRequest request);
+
+    [Refit.Get("/api/medicalcases/pending")]
+    Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync([Refit.Query] Guid? patientId = null);
+
+    [Refit.Get("/api/medicalcases/{id}/audit-logs")]
+    Task<MedicalCaseAuditLogPagedResultDto> GetAuditLogsAsync(
+        Guid id,
+        [Refit.Query] int page = 1,
+        [Refit.Query] int pageSize = 20);
+
+    [Refit.Post("/api/medicalcases/{id}/print-logs")]
+    Task<object> AddPrintLogAsync(Guid id, [Refit.Body] PrintLogInputDto request);
 }

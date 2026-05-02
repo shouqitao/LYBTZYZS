@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
+using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Registrations;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
@@ -121,6 +122,54 @@ namespace LYBT.LocalWebAPI.Controllers
             reg.Status = RegistrationStatus.Cancelled;
             await _db.SaveChangesAsync();
             return Ok();
+        }
+
+        // POST /api/registrations/quick-visit
+        [HttpPost("quick-visit")]
+        public async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto request)
+        {
+            if (request == null || request.PatientId == Guid.Empty)
+                return BadRequest("患者信息不能为空");
+
+            // Create Registration
+            var registration = new Registration
+            {
+                Id = Guid.NewGuid(),
+                PatientId = request.PatientId,
+                PatientName = request.PatientName,
+                DoctorId = Guid.Empty,
+                DoctorName = string.Empty,
+                Source = RegistrationSource.Doctor,
+                Status = RegistrationStatus.InProgress,
+                Remark = request.Remark
+            };
+            _db.Registrations.Add(registration);
+
+            // Create MedicalCase
+            var medicalCase = new MedicalCase
+            {
+                Id = Guid.NewGuid(),
+                PatientId = request.PatientId,
+                PatientName = request.PatientName,
+                UserId = Guid.Empty,
+                DoctorName = string.Empty,
+                CaseStatus = MedicalCaseStatus.Active
+            };
+            _db.MedicalCases.Add(medicalCase);
+
+            registration.MedicalCaseId = medicalCase.Id;
+            await _db.SaveChangesAsync();
+
+            return Ok(new QuickVisitResultDto
+            {
+                RegistrationId = registration.Id,
+                MedicalCaseId = medicalCase.Id,
+                PatientId = request.PatientId,
+                PatientName = request.PatientName,
+                DoctorId = Guid.Empty,
+                DoctorName = string.Empty,
+                CreatedAt = registration.CreatedAt
+            });
         }
     }
 }

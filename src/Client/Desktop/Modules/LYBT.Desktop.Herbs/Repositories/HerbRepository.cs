@@ -370,7 +370,7 @@ public sealed class HerbRepository : IHerbRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] Herb.BatchDelete - Count={Count}", ids.Count);
-                return await _localApi.BatchDeleteAsync(ids);
+                return await _localApi.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] Herb.BatchDelete - Count={Count}", ids.Count);
@@ -409,7 +409,7 @@ public sealed class HerbRepository : IHerbRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] Herb.BatchEnable - Count={Count}", ids.Count);
-                return await _localApi.BatchEnableAsync(ids);
+                return await _localApi.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] Herb.BatchEnable - Count={Count}", ids.Count);
@@ -439,7 +439,7 @@ public sealed class HerbRepository : IHerbRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] Herb.BatchDisable - Count={Count}", ids.Count);
-                return await _localApi.BatchDisableAsync(ids);
+                return await _localApi.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] Herb.BatchDisable - Count={Count}", ids.Count);
@@ -470,13 +470,13 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            _logger.LogInformation("[REPO:Remote] Herb.CreateWithResult - Name={Name}", input.Name);
+            _logger.LogInformation("[REPO:{Mode}] Herb.CreateWithResult - Name={Name}", IsOffline ? "Local" : "Remote", input.Name);
             var result = await CreateAsync(input);
             return (true, result, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Herb.CreateWithResult failed - Name={Name}", input.Name);
+            _logger.LogError(ex, "[REPO:{Mode}] Herb.CreateWithResult failed - Name={Name}", IsOffline ? "Local" : "Remote", input.Name);
             return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建中药", ex));
         }
     }
@@ -485,13 +485,13 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            _logger.LogInformation("[REPO:Remote] Herb.UpdateWithResult - Id={Id}", id);
+            _logger.LogInformation("[REPO:{Mode}] Herb.UpdateWithResult - Id={Id}", IsOffline ? "Local" : "Remote", id);
             var result = await UpdateAsync(input);
             return (true, result, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Herb.UpdateWithResult failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] Herb.UpdateWithResult failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新中药", ex));
         }
     }
@@ -500,7 +500,7 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            _logger.LogInformation("[REPO:Remote] Herb.DeleteWithResult - Id={Id}", id);
+            _logger.LogInformation("[REPO:{Mode}] Herb.DeleteWithResult - Id={Id}", IsOffline ? "Local" : "Remote", id);
             var result = await DeleteAsync(id);
 
             if (result)
@@ -510,7 +510,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Herb.DeleteWithResult failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] Herb.DeleteWithResult failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除中药", ex));
         }
     }
@@ -519,7 +519,7 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            _logger.LogDebug("[REPO:Remote] Herb.GetByIdWithResult - Id={Id}", id);
+            _logger.LogDebug("[REPO:{Mode}] Herb.GetByIdWithResult - Id={Id}", IsOffline ? "Local" : "Remote", id);
             var result = await GetByIdAsync(id);
 
             if (result != null)
@@ -529,7 +529,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Herb.GetByIdWithResult failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] Herb.GetByIdWithResult failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("获取中药详情", ex));
         }
     }

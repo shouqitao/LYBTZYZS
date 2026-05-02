@@ -11,6 +11,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Entities.Consultations;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 
 using LYBT.LocalWebAPI.Mappers;
@@ -171,16 +172,16 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/medicalcases/batch-details
         [HttpPost("batch-details")]
-        public async Task<ActionResult<List<MedicalCase>>> GetBatchDetails([FromBody] List<Guid> ids)
+        public async Task<ActionResult<List<MedicalCase>>> GetBatchDetails([FromBody] BatchDetailQueryDto request)
         {
-            if (ids == null || ids.Count > 50)
+            if (request?.Ids == null || request.Ids.Count > 50)
                 return BadRequest("Batch size must not exceed 50 items.");
 
             var items = await _db.MedicalCases
                 .Include(m => m.Consultation)
                 .Include(m => m.Prescription)
                 .AsNoTracking()
-                .Where(m => ids.Contains(m.Id) && !m.IsDeleted)
+                .Where(m => request.Ids.Contains(m.Id) && !m.IsDeleted)
                 .ToListAsync();
 
             return items;
@@ -234,7 +235,7 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // PUT /api/medicalcases/{id}/suspend
         [HttpPut("{id}/suspend")]
-        public async Task<IActionResult> SuspendCase(Guid id)
+        public async Task<IActionResult> SuspendCase(Guid id, [FromBody] ConsultationInputDto? request = null)
         {
             var mc = await _db.MedicalCases
                         .Include(m => m.Consultation)
@@ -249,7 +250,7 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // PUT /api/medicalcases/{id}/cancel
         [HttpPut("{id}/cancel")]
-        public async Task<IActionResult> CancelCase(Guid id)
+        public async Task<IActionResult> CancelCase(Guid id, [FromBody] CancelMedicalCaseRequestDto? request = null)
         {
             var mc = await _db.MedicalCases.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
             if (mc == null) return NotFound();
@@ -322,11 +323,11 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/medicalcases/batch-delete
         [HttpPost("batch-delete")]
-        public async Task<IActionResult> BatchDelete([FromBody] List<Guid> ids)
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
         {
-            if (ids == null || ids.Count == 0) return BadRequest("ID list cannot be empty.");
+            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ID list cannot be empty.");
             var items = await _db.MedicalCases
-                .Where(m => ids.Contains(m.Id) && !m.IsDeleted)
+                .Where(m => request.Ids.Contains(m.Id) && !m.IsDeleted)
                 .ToListAsync();
             foreach (var item in items)
             {
@@ -336,9 +337,62 @@ namespace LYBT.LocalWebAPI.Controllers
             await _db.SaveChangesAsync();
             return Ok(new BatchOperationResultDto
             {
-                TotalCount = ids.Count,
+                TotalCount = request.Ids.Count,
                 SuccessCount = items.Count
             });
+        }
+
+        // GET /api/medicalcases/pending
+        [HttpGet("pending")]
+        public async Task<ActionResult<List<PendingMedicalCaseDto>>> GetPendingCases([FromQuery] Guid? patientId = null)
+        {
+            var query = _db.MedicalCases
+                .AsNoTracking()
+                .Where(m => !m.IsDeleted && m.CaseStatus == MedicalCaseStatus.Active);
+
+            if (patientId.HasValue)
+                query = query.Where(m => m.PatientId == patientId.Value);
+
+            var items = await query
+                .OrderByDescending(m => m.CreatedAt)
+                .ToListAsync();
+
+            return items.Select(m => new PendingMedicalCaseDto
+            {
+                PatientId = m.PatientId,
+                PatientName = m.PatientName,
+                CaseStatus = m.CaseStatus,
+                MedicalCaseId = m.Id,
+                CreatedAt = m.CreatedAt
+            }).ToList();
+        }
+
+        // GET /api/medicalcases/{id}/audit-logs
+        [HttpGet("{id}/audit-logs")]
+        public async Task<ActionResult<MedicalCaseAuditLogPagedResultDto>> GetAuditLogs(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        {
+            var exists = await _db.MedicalCases.AsNoTracking().AnyAsync(m => m.Id == id && !m.IsDeleted);
+            if (!exists) return NotFound();
+
+            // Local mode returns empty audit logs (audit logs are server-side only)
+            return new MedicalCaseAuditLogPagedResultDto
+            {
+                Logs = new List<MedicalCaseAuditLogDto>(),
+                TotalCount = 0,
+                CurrentPage = page,
+                PageSize = pageSize
+            };
+        }
+
+        // POST /api/medicalcases/{id}/print-logs
+        [HttpPost("{id}/print-logs")]
+        public async Task<IActionResult> AddPrintLog(Guid id, [FromBody] PrintLogInputDto request)
+        {
+            var mc = await _db.MedicalCases.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
+            if (mc == null) return NotFound();
+
+            // Local mode: just acknowledge the print log (no persistent storage)
+            return Ok(new { Success = true, Message = "打印日志已记录" });
         }
     }
 }

@@ -9,7 +9,9 @@ namespace LYBT.Desktop.Contracts.Api;
 public interface ILocalFormulaApi
 {
     [Refit.Get("/api/formulas")]
-    Task<List<FormulaListDto>> GetFormulasAsync([Refit.Query] string? keyword = null);
+    Task<List<FormulaListDto>> GetFormulasAsync(
+        [Refit.Query] string? keyword = null,
+        [Refit.Query] string? category = null);
 
     [Refit.Get("/api/formulas/{id}")]
     Task<FormulaDetailDto> GetFormulaByIdAsync(Guid id);
@@ -33,17 +35,23 @@ public interface ILocalFormulaApi
     Task<FormulaDetailDto> RestoreAsync(Guid id);
 
     [Refit.Post("/api/formulas/batch-delete")]
-    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Post("/api/formulas/batch-enable")]
-    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Post("/api/formulas/batch-disable")]
-    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
+
+    [Refit.Get("/api/formulas/categories")]
+    Task<List<string>> GetCategoriesAsync();
 
     [Refit.Get("/api/formulas/export")]
     Task<List<FormulaDetailDto>> ExportFormulasAsync([Refit.Query] string? category = null);
 
     [Refit.Get("/api/formulas/import-template")]
     Task<object> ExportTemplateAsync();
+
+    [Refit.Post("/api/formulas/batch-import")]
+    Task<FormulaBatchImportResultDto> BatchImportAsync([Refit.Body] FormulaBatchImportInputDto request);
 }

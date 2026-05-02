@@ -8,7 +8,7 @@ using LYBT.Entities.Users;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Utilities.Security;
 using LYBT.Shared.Models.Enums; // for Role enum usage if needed
-using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Common;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -160,11 +160,11 @@ public class UsersController : ControllerBase
 
     // POST /api/users/batch-delete
     [HttpPost("batch-delete")]
-    public async Task<ActionResult<object>> BatchDelete([FromBody] List<Guid> ids)
+    public async Task<ActionResult<object>> BatchDelete([FromBody] BatchDeleteInputDto request)
     {
-        if (ids == null || ids.Count == 0) return BadRequest("No ids provided.");
+        if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No ids provided.");
 
-        var users = await _db.Users.Where(u => ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
+        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
         foreach (var u in users) u.IsDeleted = true;
         await _db.SaveChangesAsync();
         return Ok(new { Count = users.Count });
@@ -172,11 +172,11 @@ public class UsersController : ControllerBase
 
     // POST /api/users/batch-enable
     [HttpPost("batch-enable")]
-    public async Task<ActionResult<object>> BatchEnable([FromBody] List<Guid> ids)
+    public async Task<ActionResult<object>> BatchEnable([FromBody] BatchDeleteInputDto request)
     {
-        if (ids == null || ids.Count == 0) return BadRequest("No ids provided.");
+        if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No ids provided.");
 
-        var users = await _db.Users.Where(u => ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
+        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
         foreach (var u in users) u.Status = CommonStatus.Enabled;
         await _db.SaveChangesAsync();
         return Ok(new { Count = users.Count });
@@ -184,11 +184,11 @@ public class UsersController : ControllerBase
 
     // POST /api/users/batch-disable
     [HttpPost("batch-disable")]
-    public async Task<ActionResult<object>> BatchDisable([FromBody] List<Guid> ids)
+    public async Task<ActionResult<object>> BatchDisable([FromBody] BatchDeleteInputDto request)
     {
-        if (ids == null || ids.Count == 0) return BadRequest("No ids provided.");
+        if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No ids provided.");
 
-        var users = await _db.Users.Where(u => ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
+        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
         foreach (var u in users) u.Status = CommonStatus.Disabled;
         await _db.SaveChangesAsync();
         return Ok(new { Count = users.Count });
@@ -221,7 +221,7 @@ public class UsersController : ControllerBase
 
     // POST /api/users/{id}/reset-password
     [HttpPost("{id:guid}/reset-password")]
-    public async Task<IActionResult> ResetPassword([FromRoute] Guid id)
+    public async Task<IActionResult> ResetPassword([FromRoute] Guid id, [FromBody] ResetPasswordRequestDto request)
     {
         // Admin check
         var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;

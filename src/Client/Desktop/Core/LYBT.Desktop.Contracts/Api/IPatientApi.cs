@@ -83,5 +83,11 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/patients/batch-delete")]
         Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 切换患者状态（启用/禁用）
+        /// </summary>
+        [Refit.Post("/api/v1/patients/{id}/toggle-status")]
+        Task<ApiResponse<PatientDetailDto>> ToggleStatusAsync(Guid id);
     }
 }

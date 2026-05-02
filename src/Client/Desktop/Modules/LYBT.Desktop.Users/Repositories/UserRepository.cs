@@ -365,7 +365,7 @@ public sealed class UserRepository : IUserRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] User.ResetPassword - UserId={UserId}", userId);
-                var result = await _localApi.ResetPasswordAsync(userId);
+                var result = await _localApi.ResetPasswordAsync(userId, request);
                 return ServiceResult<ResetPasswordResponseDto>.Success(result);
             }
 
@@ -483,7 +483,7 @@ public sealed class UserRepository : IUserRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] User.BatchDelete - Count={Count}", ids.Count);
-                return await _localApi.BatchDeleteAsync(ids);
+                return await _localApi.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] User.BatchDelete - Count={Count}", ids.Count);
@@ -513,7 +513,7 @@ public sealed class UserRepository : IUserRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] User.BatchEnable - Count={Count}", ids.Count);
-                return await _localApi.BatchEnableAsync(ids);
+                return await _localApi.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] User.BatchEnable - Count={Count}", ids.Count);
@@ -543,7 +543,7 @@ public sealed class UserRepository : IUserRepository
             if (IsOffline)
             {
                 _logger.LogInformation("[REPO:Local] User.BatchDisable - Count={Count}", ids.Count);
-                return await _localApi.BatchDisableAsync(ids);
+                return await _localApi.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
             }
 
             _logger.LogInformation("[REPO:Remote] User.BatchDisable - Count={Count}", ids.Count);

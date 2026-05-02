@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Entities.Patients;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Enums;
@@ -104,20 +105,20 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/patients/batch-delete
         [HttpPost("batch-delete")]
-        public async Task<IActionResult> BatchDeletePatients([FromBody] List<Guid> ids)
+        public async Task<IActionResult> BatchDeletePatients([FromBody] BatchDeleteInputDto request)
         {
-            if (ids == null || ids.Count == 0) return BadRequest("No IDs provided.");
+            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No IDs provided.");
             var hasActiveCases = await _db.MedicalCases
-                .AnyAsync(mc => ids.Contains(mc.PatientId) && !mc.IsDeleted);
+                .AnyAsync(mc => request.Ids.Contains(mc.PatientId) && !mc.IsDeleted);
             if (hasActiveCases)
                 return Conflict(new { message = "部分患者存在医案记录，无法删除" });
             var patients = await _db.Patients
-                .Where(p => ids.Contains(p.Id) && !p.IsDeleted)
+                .Where(p => request.Ids.Contains(p.Id) && !p.IsDeleted)
                 .ToListAsync();
             foreach (var p in patients)
                 p.IsDeleted = true;
             await _db.SaveChangesAsync();
-            return Ok(new { successCount = patients.Count, failureCount = ids.Count - patients.Count });
+            return Ok(new { successCount = patients.Count, failureCount = request.Ids.Count - patients.Count });
         }
 
         // POST /api/patients/{id}/restore
@@ -168,25 +169,51 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // POST /api/patients/import
         [HttpPost("import")]
-        public async Task<IActionResult> ImportPatients([FromBody] List<Patient> patients)
+        public async Task<ActionResult<PatientBatchImportResultDto>> ImportPatients([FromBody] PatientBatchImportInputDto request)
         {
-            if (patients == null || patients.Count == 0) return BadRequest("No patients provided.");
-            var existingIds = patients.Select(p => p.Id).ToList();
-            var existing = await _db.Patients.IgnoreQueryFilters()
-                .Where(p => existingIds.Contains(p.Id))
-                .ToListAsync();
-            var existingDict = existing.ToDictionary(p => p.Id);
-            int count = 0;
-            foreach (var patient in patients)
+            if (request == null || request.Patients == null || request.Patients.Count == 0)
+                return BadRequest("患者列表不能为空");
+
+            var result = new PatientBatchImportResultDto { ImportTime = DateTime.UtcNow, TotalCount = request.Patients.Count };
+
+            foreach (var dto in request.Patients)
             {
-                if (existingDict.TryGetValue(patient.Id, out var dbPatient))
-                    _db.Entry(dbPatient).CurrentValues.SetValues(patient);
-                else
-                    _db.Patients.Add(patient);
-                count++;
+                try
+                {
+                    var entity = new Patient
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = dto.Name,
+                        PinYinCode = dto.PinYinCode,
+                        Gender = dto.Gender,
+                        BirthDate = dto.BirthDate,
+                        IdNumber = dto.IdNumber,
+                        PhoneNumber = dto.PhoneNumber,
+                        Address = dto.Address,
+                        MaritalStatus = dto.MaritalStatus,
+                        IdType = dto.IdType,
+                        BloodType = dto.BloodType,
+                        AllergyHistory = dto.AllergyHistory,
+                        MedicalHistory = dto.MedicalHistory,
+                        Status = CommonStatus.Enabled
+                    };
+
+                    _db.Patients.Add(entity);
+                    result.SuccessCount++;
+                }
+                catch (Exception ex)
+                {
+                    result.FailureCount++;
+                    result.Failures.Add(new PatientImportFailureDto
+                    {
+                        FailureReason = ex.Message,
+                        FieldName = "Unknown"
+                    });
+                }
             }
+
             await _db.SaveChangesAsync();
-            return Ok(new { importedCount = count });
+            return Ok(result);
         }
     }
 }

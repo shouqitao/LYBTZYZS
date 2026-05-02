@@ -240,24 +240,24 @@ public sealed class PatientRepository : IPatientRepository
 
     #endregion
 
-    #region Batch import/export (remote only)
+    #region Batch import/export
 
     public async Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Patient.BatchImport not supported in offline mode");
-            return null;
-        }
-
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] Patient.BatchImport - Count={Count}", request.Patients.Count);
+                return await _localApi.BatchImportAsync(request);
+            }
+
             var response = await _api.BatchImportAsync(request);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Patient.BatchImport failed");
+            _logger.LogError(ex, "[REPO:{Mode}] Patient.BatchImport failed", IsOffline ? "Local" : "Remote");
             return null;
         }
     }
@@ -304,44 +304,40 @@ public sealed class PatientRepository : IPatientRepository
 
     #endregion
 
-    #region Restore and batch operations (remote only)
+    #region Restore and batch operations
 
     public async Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Patient.Restore not supported in offline mode");
-            return null;
-        }
-
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] Patient.Restore - Id={Id}", id);
+                return await _localApi.RestoreAsync(id);
+            }
+
+            _logger.LogInformation("[REPO:Remote] Patient.Restore - Id={Id}", id);
             var response = await _api.RestoreAsync(id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Patient.Restore failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] Patient.Restore failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             return null;
         }
     }
 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Patient.BatchDelete not supported in offline mode");
-            return new BatchOperationResultDto
-            {
-                TotalCount = ids.Count,
-                FailureCount = ids.Count,
-                IsSuccess = false,
-                Message = "Batch delete not supported in offline mode"
-            };
-        }
-
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] Patient.BatchDelete - Count={Count}", ids.Count);
+                return await _localApi.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
+            }
+
+            _logger.LogInformation("[REPO:Remote] Patient.BatchDelete - Count={Count}", ids.Count);
             var response = await _api.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
@@ -357,7 +353,7 @@ public sealed class PatientRepository : IPatientRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Patient.BatchDelete failed");
+            _logger.LogError(ex, "[REPO:{Mode}] Patient.BatchDelete failed", IsOffline ? "Local" : "Remote");
             return new BatchOperationResultDto { TotalCount = ids.Count, FailureCount = ids.Count, IsSuccess = false, Message = ex.Message };
         }
     }

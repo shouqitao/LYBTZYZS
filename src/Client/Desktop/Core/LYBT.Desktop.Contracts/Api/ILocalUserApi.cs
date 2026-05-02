@@ -28,7 +28,7 @@ public interface ILocalUserApi
     Task ChangePasswordAsync(Guid id, [Refit.Body] ChangePasswordRequest request);
 
     [Refit.Post("/api/users/{id}/reset-password")]
-    Task<ResetPasswordResponseDto> ResetPasswordAsync(Guid id);
+    Task<ResetPasswordResponseDto> ResetPasswordAsync(Guid id, [Refit.Body] ResetPasswordRequestDto request);
 
     [Refit.Put("/api/users/{id}/profile")]
     Task<UserDetailDto> ChangeProfileAsync(Guid id, [Refit.Body] ChangeProfileDto request);
@@ -40,13 +40,13 @@ public interface ILocalUserApi
     Task<UserDetailDto> RestoreAsync(Guid id);
 
     [Refit.Post("/api/users/batch-delete")]
-    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Post("/api/users/batch-enable")]
-    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Post("/api/users/batch-disable")]
-    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] List<Guid> ids);
+    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Get("/api/users/current")]
     Task<UserDetailDto> GetCurrentUserAsync();

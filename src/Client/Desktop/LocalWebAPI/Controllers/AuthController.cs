@@ -7,6 +7,7 @@ using System.Security.Claims;
 using LYBT.Entities.Users;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using LYBT.Shared.Models.Contracts.Auth;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
@@ -27,14 +28,14 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        if (request == null || string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
         {
             return Unauthorized();
         }
 
         var user = await _db.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.UserName == request.Username && !u.IsDeleted);
+            .FirstOrDefaultAsync(u => u.UserName == request.UserName && !u.IsDeleted);
 
         if (user == null)
         {
@@ -63,7 +64,7 @@ public class AuthController : ControllerBase
     /// 登出 — 清除本地会话（本地模式下 token 无状态，返回成功即可）
     /// </summary>
     [HttpPost("logout")]
-    public IActionResult Logout()
+    public IActionResult Logout([FromBody] LogoutRequest request)
     {
         // Local JWT is stateless; client should discard the token.
         return Ok(new { Success = true, Message = "已登出" });
@@ -73,7 +74,7 @@ public class AuthController : ControllerBase
     /// 刷新 JWT token — 本地模式下用当前 token 换取新 token
     /// </summary>
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh()
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
     {
         // Extract user id from current token claims
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -142,14 +143,14 @@ public class AuthController : ControllerBase
     [HttpPost("auto-login")]
     public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request)
     {
-        if (request == null || string.IsNullOrWhiteSpace(request.Username))
+        if (request == null || string.IsNullOrWhiteSpace(request.UserName))
         {
             return Unauthorized();
         }
 
         var user = await _db.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.UserName == request.Username && !u.IsDeleted);
+            .FirstOrDefaultAsync(u => u.UserName == request.UserName && !u.IsDeleted);
 
         if (user == null)
         {
@@ -167,16 +168,4 @@ public class AuthController : ControllerBase
         });
     }
 
-    // ── Request Models ──────────────────────────────────────────────
-
-    public class LoginRequest
-    {
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
-
-    public class AutoLoginRequest
-    {
-        public string Username { get; set; } = string.Empty;
-    }
 }
