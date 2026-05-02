@@ -141,7 +141,6 @@
 | Diagnostics | `GET /db-info` | 本地数据库信息 |
 | Diagnostics | `GET /version` | 本地版本信息 |
 | Diagnostics | `GET /logs/recent` | 本地最近日志 |
-| Diagnostics | `POST /vacuum` | 数据库压缩 (**见问题 #2**) |
 | Herbs | `GET /categories` | 分类列表 |
 | Formulas | `GET /categories` | 分类列表 |
 | Formulas | `POST /clone` | 克隆验方 |
@@ -151,7 +150,7 @@
 | Registrations | `DELETE /{id}` | 删除挂号 (远程无此端点) |
 | MedicalCases | `GET /by-status` | 按状态查询 |
 
-**合计: 13 个端点, 无需行动 (除 vacuum)。**
+**合计: 12 个端点, 无需行动。**
 
 ---
 
@@ -168,16 +167,6 @@
 `{id:guid}` 约束在运行时消除了歧义, 但这种设计脆弱。建议重构为不同子路径。
 
 **严重程度**: 低 (运行时可工作, 但代码不清晰)
-
-### 问题 2: DiagnosticsController vacuum 端点过时
-
-**文件**: `src\Client\Desktop\LocalWebAPI\Controllers\DiagnosticsController.cs`
-
-`vacuum` 端点执行 SQLite `VACUUM`, 但项目已迁移到 SQL Server LocalDB。此端点当前无效或会报错。
-
-**建议**: 删除或改写为 SQL Server 等价操作 (`DBCC SHRINKDATABASE`)。
-
-**严重程度**: 低 (不影响核心功能)
 
 ---
 
@@ -233,11 +222,7 @@ ExportTemplateAsync()
 
 **工作量**: 仅接口声明, LocalWebAPI Controller 已实现, 约 24 个方法签名。
 
-### 优先级 2: 清理 vacuum 端点 (低优先级)
-
-删除 `DiagnosticsController.Vacuum()` 方法, 或改写为 SQL Server 兼容版本。
-
-### 优先级 3: MedicalCases 路由重构 (低优先级)
+### 优先级 2: MedicalCases 路由重构 (低优先级)
 
 将 `SaveAsync` 的路由从 `PUT /{id:guid}` 改为 `PUT /{id}/save` 或类似子路径, 消除歧义。
 

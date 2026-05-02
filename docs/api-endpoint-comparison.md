@@ -64,7 +64,6 @@
 | `db-info` | GET | -- | `GetDbInfo` | **仅本地** |
 | `version` | GET | -- | `GetVersion` | **仅本地** |
 | `logs/recent` | GET | -- | `GetRecentLogs` | **仅本地** |
-| `vacuum` | POST | -- | `Vacuum` | **仅本地** |
 
 **差异**: 完全不同。远程专注日志级别管理（SuperAdmin 权限）；本地专注数据库诊断和维护。
 
@@ -266,7 +265,6 @@
 | Diagnostics | `GET db-info` | 数据库信息 |
 | Diagnostics | `GET version` | 版本信息 |
 | Diagnostics | `GET logs/recent` | 最近日志 |
-| Diagnostics | `POST vacuum` | 数据库压缩 |
 | Herbs | `GET categories` | 分类列表 |
 | Formulas | `POST clone` | 克隆验方 |
 | Formulas | `GET categories` | 分类列表 |
