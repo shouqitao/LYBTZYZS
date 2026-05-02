@@ -38,6 +38,13 @@ public sealed class RegistrationRepository : IRegistrationRepository
 
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] Registration.Create - PatientId={PatientId}, DoctorId={DoctorId}, Source={Source}",
+                    input.PatientId, input.DoctorId, input.Source);
+                return await _localApi.CreateRegistrationAsync(input);
+            }
+
             _logger.LogInformation("[REPO:Remote] Registration.Create - PatientId={PatientId}, DoctorId={DoctorId}, Source={Source}",
                 input.PatientId, input.DoctorId, input.Source);
 
@@ -50,7 +57,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Registration.Create failed");
+            _logger.LogError(ex, "[REPO:{Mode}] Registration.Create failed", IsOffline ? "Local" : "Remote");
             throw;
         }
     }
@@ -60,6 +67,12 @@ public sealed class RegistrationRepository : IRegistrationRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogDebug("[REPO:Local] Registration.GetById - Id={Id}", id);
+                return await _localApi.GetRegistrationByIdAsync(id);
+            }
+
             _logger.LogDebug("[REPO:Remote] Registration.GetById - Id={Id}", id);
 
             var response = await _api.GetByIdAsync(id);
@@ -67,7 +80,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Registration.GetById failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] Registration.GetById failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             throw;
         }
     }
@@ -77,6 +90,19 @@ public sealed class RegistrationRepository : IRegistrationRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogDebug("[REPO:Local] Registration.GetPaged - Page={Page} PageSize={PageSize}", page, pageSize);
+                var registrations = await _localApi.GetRegistrationsAsync(date: null);
+                return new PagedResult<RegistrationListDto>
+                {
+                    Items = registrations,
+                    TotalCount = registrations.Count,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+
             _logger.LogDebug("[REPO:Remote] Registration.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
                 page, pageSize, keyword);
 
@@ -88,7 +114,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Registration.GetPaged failed");
+            _logger.LogError(ex, "[REPO:{Mode}] Registration.GetPaged failed", IsOffline ? "Local" : "Remote");
             throw;
         }
     }
@@ -98,6 +124,12 @@ public sealed class RegistrationRepository : IRegistrationRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogDebug("[REPO:Local] Registration.GetWaitingQueue - DoctorId={DoctorId}", doctorId);
+                return await _localApi.GetQueueAsync(doctorId);
+            }
+
             _logger.LogDebug("[REPO:Remote] Registration.GetWaitingQueue - DoctorId={DoctorId}", doctorId);
 
             var response = await _api.GetQueueAsync(doctorId);
@@ -111,7 +143,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Registration.GetWaitingQueue failed");
+            _logger.LogError(ex, "[REPO:{Mode}] Registration.GetWaitingQueue failed", IsOffline ? "Local" : "Remote");
             throw;
         }
     }
@@ -121,6 +153,13 @@ public sealed class RegistrationRepository : IRegistrationRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] Registration.StartVisit - Id={Id}", id);
+                var medicalCaseId = await _localApi.StartVisitAsync(id);
+                return medicalCaseId;
+            }
+
             _logger.LogInformation("[REPO:Remote] Registration.StartVisit - Id={Id}", id);
 
             var response = await _api.StartVisitAsync(id);
@@ -136,7 +175,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Registration.StartVisit failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] Registration.StartVisit failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             throw;
         }
     }
@@ -146,6 +185,13 @@ public sealed class RegistrationRepository : IRegistrationRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] Registration.Cancel - Id={Id}", id);
+                await _localApi.CancelAsync(id);
+                return true;
+            }
+
             _logger.LogInformation("[REPO:Remote] Registration.Cancel - Id={Id}", id);
 
             var response = await _api.CancelAsync(id);
@@ -158,7 +204,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Registration.Cancel failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] Registration.Cancel failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             return false;
         }
     }

@@ -40,6 +40,19 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogDebug("[REPO:Local] User.GetPaged - Page={Page} PageSize={PageSize}", page, pageSize);
+                var users = await _localApi.GetUsersAsync();
+                return new PagedResult<UserListDto>
+                {
+                    Items = users,
+                    TotalCount = users.Count,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+
             _logger.LogDebug("[REPO:Remote] User.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
                 page, pageSize, keyword);
 
@@ -57,7 +70,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.GetPaged failed");
+            _logger.LogError(ex, "[REPO:{Mode}] User.GetPaged failed", IsOffline ? "Local" : "Remote");
             throw;
         }
     }
@@ -66,6 +79,12 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogDebug("[REPO:Local] User.GetById - Id={Id}", id);
+                return await _localApi.GetUserByIdAsync(id);
+            }
+
             _logger.LogDebug("[REPO:Remote] User.GetById - Id={Id}", id);
 
             var response = await _api.GetUserByIdAsync(id);
@@ -73,7 +92,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.GetById failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] User.GetById failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             throw;
         }
     }
@@ -84,6 +103,12 @@ public sealed class UserRepository : IUserRepository
 
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.Create - UserName={UserName}", dto.UserName);
+                return await _localApi.CreateUserAsync(dto);
+            }
+
             _logger.LogInformation("[REPO:Remote] User.Create - UserName={UserName}", dto.UserName);
 
             var response = await _api.CreateUserAsync(dto);
@@ -95,7 +120,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.Create failed - UserName={UserName}", dto.UserName);
+            _logger.LogError(ex, "[REPO:{Mode}] User.Create failed - UserName={UserName}", IsOffline ? "Local" : "Remote", dto.UserName);
             throw;
         }
     }
@@ -108,6 +133,12 @@ public sealed class UserRepository : IUserRepository
 
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.Update - Id={Id}", dto.Id);
+                return await _localApi.UpdateUserAsync(dto.Id.Value, dto);
+            }
+
             _logger.LogInformation("[REPO:Remote] User.Update - Id={Id}", dto.Id);
 
             var response = await _api.UpdateUserAsync(dto.Id.Value, dto);
@@ -119,7 +150,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.Update failed - Id={Id}", dto.Id);
+            _logger.LogError(ex, "[REPO:{Mode}] User.Update failed - Id={Id}", IsOffline ? "Local" : "Remote", dto.Id);
             throw;
         }
     }
@@ -128,6 +159,13 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.Delete - Id={Id}", id);
+                await _localApi.DeleteUserAsync(id);
+                return true;
+            }
+
             _logger.LogInformation("[REPO:Remote] User.Delete - Id={Id}", id);
 
             var response = await _api.DeleteUserAsync(id);
@@ -140,7 +178,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.Delete failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] User.Delete failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             return false;
         }
     }
@@ -149,6 +187,16 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogDebug("[REPO:Local] User.Search - Keyword={Keyword}", keyword);
+                var users = await _localApi.GetUsersAsync();
+                return users.Where(u =>
+                    u.UserName.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    (u.RealName != null && u.RealName.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+            }
+
             _logger.LogDebug("[REPO:Remote] User.Search - Keyword={Keyword}", keyword);
 
             var response = await _api.GetUsersAsync(1, 100, keyword);
@@ -159,7 +207,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.Search failed");
+            _logger.LogError(ex, "[REPO:{Mode}] User.Search failed", IsOffline ? "Local" : "Remote");
             throw;
         }
     }
@@ -172,6 +220,17 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogDebug("[REPO:Local] User.GetByUsername - Username={Username}", username);
+                var users = await _localApi.GetUsersAsync();
+                var match = users.FirstOrDefault(u =>
+                    u.UserName.Equals(username, StringComparison.OrdinalIgnoreCase));
+                if (match == null)
+                    throw new InvalidOperationException($"用户 {username} 不存在");
+                return await _localApi.GetUserByIdAsync(match.Id);
+            }
+
             _logger.LogDebug("[REPO:Remote] User.GetByUsername - Username={Username}", username);
 
             // 远程模式: 通过搜索找到匹配的用户
@@ -180,19 +239,19 @@ public sealed class UserRepository : IUserRepository
                 throw new InvalidOperationException($"用户 {username} 不存在");
 
             // 从搜索结果中精确匹配用户名
-            var match = response.Data.Items.FirstOrDefault(u =>
+            var remoteMatch = response.Data.Items.FirstOrDefault(u =>
                 u.UserName.Equals(username, StringComparison.OrdinalIgnoreCase));
 
-            if (match == null)
+            if (remoteMatch == null)
                 throw new InvalidOperationException($"用户 {username} 不存在");
 
             // 获取完整详情
-            var detail = await GetByIdAsync(match.Id);
+            var detail = await GetByIdAsync(remoteMatch.Id);
             return detail ?? throw new InvalidOperationException($"用户 {username} 不存在");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.GetByUsername failed - Username={Username}", username);
+            _logger.LogError(ex, "[REPO:{Mode}] User.GetByUsername failed - Username={Username}", IsOffline ? "Local" : "Remote", username);
             throw;
         }
     }
@@ -201,6 +260,17 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogDebug("[REPO:Local] User.GetDoctors");
+                var users = await _localApi.GetUsersAsync();
+                var doctors = users
+                    .Where(u => u.Role == UserRole.Doctor && u.Status == CommonStatus.Enabled)
+                    .ToList();
+                _logger.LogInformation("[REPO:Local] User.GetDoctors completed - Count={Count}", doctors.Count);
+                return doctors;
+            }
+
             _logger.LogDebug("[REPO:Remote] User.GetDoctors started");
 
             var response = await _api.GetUsersAsync(1, 100, null);
@@ -211,16 +281,16 @@ public sealed class UserRepository : IUserRepository
             }
 
             // 筛选: 角色=医生 && 状态=启用
-            var doctors = response.Data.Items
+            var remoteDoctors = response.Data.Items
                 .Where(u => u.Role == UserRole.Doctor && u.Status == CommonStatus.Enabled)
                 .ToList();
 
-            _logger.LogInformation("[REPO:Remote] User.GetDoctors completed - Count={Count}", doctors.Count);
-            return doctors;
+            _logger.LogInformation("[REPO:Remote] User.GetDoctors completed - Count={Count}", remoteDoctors.Count);
+            return remoteDoctors;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.GetDoctors failed");
+            _logger.LogError(ex, "[REPO:{Mode}] User.GetDoctors failed", IsOffline ? "Local" : "Remote");
             return [];
         }
     }
@@ -229,6 +299,12 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.ChangeProfile - UserId={UserId}", userId);
+                return await _localApi.ChangeProfileAsync(userId, dto);
+            }
+
             _logger.LogInformation("[REPO:Remote] User.ChangeProfile - UserId={UserId}", userId);
 
             var response = await _api.ChangeProfileAsync(userId, dto);
@@ -244,7 +320,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.ChangeProfile failed - UserId={UserId}", userId);
+            _logger.LogError(ex, "[REPO:{Mode}] User.ChangeProfile failed - UserId={UserId}", IsOffline ? "Local" : "Remote", userId);
             throw;
         }
     }
@@ -253,6 +329,13 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.ChangePassword - UserId={UserId}", userId);
+                await _localApi.ChangePasswordAsync(userId, request);
+                return ServiceResult.Success();
+            }
+
             _logger.LogInformation("[REPO:Remote] User.ChangePassword - UserId={UserId}", userId);
 
             var response = await _api.ChangePasswordAsync(userId, request);
@@ -268,7 +351,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.ChangePassword failed - UserId={UserId}", userId);
+            _logger.LogError(ex, "[REPO:{Mode}] User.ChangePassword failed - UserId={UserId}", IsOffline ? "Local" : "Remote", userId);
             return ServiceResult.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex));
         }
     }
@@ -279,6 +362,13 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.ResetPassword - UserId={UserId}", userId);
+                var result = await _localApi.ResetPasswordAsync(userId);
+                return ServiceResult<ResetPasswordResponseDto>.Success(result);
+            }
+
             _logger.LogDebug("[REPO:Remote] User.ResetPassword - UserId={UserId}", userId);
 
             var apiResponse = await _api.ResetPasswordAsync(userId, request);
@@ -295,7 +385,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.ResetPassword failed - UserId={UserId}", userId);
+            _logger.LogError(ex, "[REPO:{Mode}] User.ResetPassword failed - UserId={UserId}", IsOffline ? "Local" : "Remote", userId);
             return ServiceResult<ResetPasswordResponseDto>.Failure(
                 ClientErrorMessageMapper.GetSafeOperationFailureMessage("重置密码", ex));
         }
@@ -303,6 +393,12 @@ public sealed class UserRepository : IUserRepository
 
     public async Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportInputDto request)
     {
+        if (IsOffline)
+        {
+            _logger.LogWarning("[REPO:Local] User.BatchImport not supported in offline mode");
+            return null;
+        }
+
         try
         {
             _logger.LogInformation("[REPO:Remote] User.BatchImport");
@@ -325,6 +421,12 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.ToggleStatus - Id={Id}", id);
+                return await _localApi.ToggleStatusAsync(id);
+            }
+
             _logger.LogInformation("[REPO:Remote] User.ToggleStatus - Id={Id}", id);
 
             var response = await _api.ToggleStatusAsync(id);
@@ -340,7 +442,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.ToggleStatus failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] User.ToggleStatus failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             return null;
         }
     }
@@ -349,6 +451,12 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.Restore - Id={Id}", id);
+                return await _localApi.RestoreAsync(id);
+            }
+
             _logger.LogInformation("[REPO:Remote] User.Restore - Id={Id}", id);
 
             var response = await _api.RestoreAsync(id);
@@ -363,7 +471,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.Restore failed - Id={Id}", id);
+            _logger.LogError(ex, "[REPO:{Mode}] User.Restore failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
             return null;
         }
     }
@@ -372,6 +480,12 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.BatchDelete - Count={Count}", ids.Count);
+                return await _localApi.BatchDeleteAsync(ids);
+            }
+
             _logger.LogInformation("[REPO:Remote] User.BatchDelete - Count={Count}", ids.Count);
 
             var response = await _api.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
@@ -387,7 +501,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.BatchDelete failed");
+            _logger.LogError(ex, "[REPO:{Mode}] User.BatchDelete failed", IsOffline ? "Local" : "Remote");
             return null;
         }
     }
@@ -396,6 +510,12 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.BatchEnable - Count={Count}", ids.Count);
+                return await _localApi.BatchEnableAsync(ids);
+            }
+
             _logger.LogInformation("[REPO:Remote] User.BatchEnable - Count={Count}", ids.Count);
 
             var response = await _api.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
@@ -411,7 +531,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.BatchEnable failed");
+            _logger.LogError(ex, "[REPO:{Mode}] User.BatchEnable failed", IsOffline ? "Local" : "Remote");
             return null;
         }
     }
@@ -420,6 +540,12 @@ public sealed class UserRepository : IUserRepository
     {
         try
         {
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] User.BatchDisable - Count={Count}", ids.Count);
+                return await _localApi.BatchDisableAsync(ids);
+            }
+
             _logger.LogInformation("[REPO:Remote] User.BatchDisable - Count={Count}", ids.Count);
 
             var response = await _api.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
@@ -435,7 +561,7 @@ public sealed class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] User.BatchDisable failed");
+            _logger.LogError(ex, "[REPO:{Mode}] User.BatchDisable failed", IsOffline ? "Local" : "Remote");
             return null;
         }
     }

@@ -30,6 +30,12 @@ public interface ILocalPatientApi
     [Refit.Post("/api/patients/{id}/toggle-status")]
     Task<PatientDetailDto> ToggleStatusAsync(Guid id);
 
+    [Refit.Post("/api/patients/{id}/restore")]
+    Task<PatientDetailDto> RestoreAsync(Guid id);
+
+    [Refit.Post("/api/patients/batch-delete")]
+    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] List<Guid> ids);
+
     [Refit.Get("/api/patients/export")]
     Task<List<PatientDetailDto>> ExportPatientsAsync([Refit.Query] string? keyword = null);
 

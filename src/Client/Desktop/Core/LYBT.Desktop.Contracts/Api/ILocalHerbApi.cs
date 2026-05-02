@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Contracts.Api;
@@ -24,6 +25,18 @@ public interface ILocalHerbApi
 
     [Refit.Post("/api/herbs/{id}/toggle-status")]
     Task<HerbDetailDto> ToggleStatusAsync(Guid id);
+
+    [Refit.Post("/api/herbs/{id}/restore")]
+    Task<HerbDetailDto> RestoreAsync(Guid id);
+
+    [Refit.Post("/api/herbs/batch-delete")]
+    Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] List<Guid> ids);
+
+    [Refit.Post("/api/herbs/batch-enable")]
+    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] List<Guid> ids);
+
+    [Refit.Post("/api/herbs/batch-disable")]
+    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] List<Guid> ids);
 
     [Refit.Get("/api/herbs/export")]
     Task<List<HerbDetailDto>> ExportHerbsAsync([Refit.Query] string? keyword = null);
