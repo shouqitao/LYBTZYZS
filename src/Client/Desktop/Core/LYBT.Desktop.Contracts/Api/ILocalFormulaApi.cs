@@ -21,4 +21,16 @@ public interface ILocalFormulaApi
 
     [Refit.Delete("/api/formulas/{id}")]
     Task DeleteFormulaAsync(Guid id);
+
+    [Refit.Post("/api/formulas/{id}/clone")]
+    Task<FormulaDetailDto> CloneFormulaAsync(Guid id);
+
+    [Refit.Post("/api/formulas/{id}/toggle-status")]
+    Task<FormulaDetailDto> ToggleStatusAsync(Guid id);
+
+    [Refit.Get("/api/formulas/export")]
+    Task<List<FormulaDetailDto>> ExportFormulasAsync([Refit.Query] string? category = null);
+
+    [Refit.Get("/api/formulas/import-template")]
+    Task<object> ExportTemplateAsync();
 }

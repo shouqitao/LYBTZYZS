@@ -3,6 +3,7 @@ using LYBT.Desktop.Formula.Repositories;
 using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Tests.Integration._Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Tests.Integration.Flows;
@@ -21,8 +22,8 @@ public class FormulaFlowTests : IntegrationTestBase
         var (client, formulaApi) = await LoginAsAdminWithApiAsync<IFormulaApi>();
         var herbApi = Fixture.CreateApi<IHerbApi>(client);
         return (
-            new FormulaRepository(formulaApi, NullLogger<FormulaRepository>.Instance),
-            new HerbRepository(herbApi, NullLogger<HerbRepository>.Instance)
+            new FormulaRepository(formulaApi, null!, new RemoteOnlyApiRouter(), NullLogger<FormulaRepository>.Instance),
+            new HerbRepository(herbApi, null!, new RemoteOnlyApiRouter(), NullLogger<HerbRepository>.Instance)
         );
     }
 

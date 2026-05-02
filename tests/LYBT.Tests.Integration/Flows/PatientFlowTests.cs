@@ -2,6 +2,7 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Patients.Repositories;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
+using LYBT.Tests.Integration._Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Tests.Integration.Flows;
@@ -20,7 +21,7 @@ public class PatientFlowTests : IntegrationTestBase
     private async Task<PatientRepository> CreateRepositoryAsync()
     {
         var (_, api) = await LoginAsDoctorWithApiAsync<IPatientApi>();
-        return new PatientRepository(api, NullLogger<PatientRepository>.Instance);
+        return new PatientRepository(api, null!, new RemoteOnlyApiRouter(), NullLogger<PatientRepository>.Instance);
     }
 
     /// <summary>

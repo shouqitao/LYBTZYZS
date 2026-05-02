@@ -26,4 +26,13 @@ public interface ILocalPatientApi
 
     [Refit.Delete("/api/patients/{id}")]
     Task DeletePatientAsync(Guid id);
+
+    [Refit.Post("/api/patients/{id}/toggle-status")]
+    Task<PatientDetailDto> ToggleStatusAsync(Guid id);
+
+    [Refit.Get("/api/patients/export")]
+    Task<List<PatientDetailDto>> ExportPatientsAsync([Refit.Query] string? keyword = null);
+
+    [Refit.Get("/api/patients/import-template")]
+    Task<object> ExportTemplateAsync();
 }

@@ -21,4 +21,13 @@ public interface ILocalHerbApi
 
     [Refit.Delete("/api/herbs/{id}")]
     Task DeleteHerbAsync(Guid id);
+
+    [Refit.Post("/api/herbs/{id}/toggle-status")]
+    Task<HerbDetailDto> ToggleStatusAsync(Guid id);
+
+    [Refit.Get("/api/herbs/export")]
+    Task<List<HerbDetailDto>> ExportHerbsAsync([Refit.Query] string? keyword = null);
+
+    [Refit.Get("/api/herbs/import-template")]
+    Task<object> ExportTemplateAsync();
 }

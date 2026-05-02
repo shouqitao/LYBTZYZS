@@ -19,4 +19,13 @@ public interface ILocalRegistrationApi
 
     [Refit.Delete("/api/registrations/{id}")]
     Task DeleteRegistrationAsync(Guid id);
+
+    [Refit.Get("/api/registrations/queue")]
+    Task<List<RegistrationListDto>> GetQueueAsync([Refit.Query] Guid? doctorId = null);
+
+    [Refit.Put("/api/registrations/{id}/start-visit")]
+    Task<Guid> StartVisitAsync(Guid id);
+
+    [Refit.Put("/api/registrations/{id}/cancel")]
+    Task CancelAsync(Guid id);
 }
