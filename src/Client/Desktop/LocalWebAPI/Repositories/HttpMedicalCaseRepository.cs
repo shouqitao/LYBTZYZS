@@ -46,9 +46,15 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
 
     public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query)
     {
-        var json = JsonSerializer.Serialize(query, Json);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _http.PostAsync("/api/medicalcases/query", content);
+        var qs = $"queryType={query.QueryType}" +
+                 $"&patientId={query.PatientId}" +
+                 $"&doctorId={query.DoctorId}" +
+                 $"&keyword={query.Keyword}" +
+                 $"&pageIndex={query.PageIndex}" +
+                 $"&pageSize={query.PageSize}" +
+                 $"&includeAllDoctors={query.IncludeAllDoctors}" +
+                 $"&limit={query.Limit}";
+        var response = await _http.GetAsync($"/api/medicalcases/query?{qs}");
         response.EnsureSuccessStatusCode();
         var resultJson = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<PagedResult<MedicalCaseListDto>>(resultJson, Json) ?? new PagedResult<MedicalCaseListDto>();
@@ -82,7 +88,7 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
 
     public async Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId)
     {
-        var response = await _http.PostAsync($"/api/medicalcases/{medicalCaseId}/close", null);
+        var response = await _http.PutAsync($"/api/medicalcases/{medicalCaseId}/close", null);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
@@ -102,7 +108,7 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
     {
         var json = JsonSerializer.Serialize(dto, Json);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _http.PostAsync("/api/medicalcases/save", content);
+        var response = await _http.PutAsync($"/api/medicalcases/{medicalCaseId}", content);
         response.EnsureSuccessStatusCode();
         var resultJson = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<MedicalCaseDetailDto>(resultJson, Json)!;
@@ -144,7 +150,7 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
     {
         var json = JsonSerializer.Serialize(request, Json);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _http.PostAsync($"/api/medicalcases/{id}/cancel", content);
+        var response = await _http.PutAsync($"/api/medicalcases/{id}/cancel", content);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
         if (response.StatusCode == HttpStatusCode.NoContent) return null;
         response.EnsureSuccessStatusCode();
@@ -156,7 +162,7 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
     {
         var json = JsonSerializer.Serialize(request, Json);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _http.PostAsync($"/api/medicalcases/{id}/suspend", content);
+        var response = await _http.PutAsync($"/api/medicalcases/{id}/suspend", content);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
         response.EnsureSuccessStatusCode();
         var resultJson = await response.Content.ReadAsStringAsync();
@@ -167,7 +173,7 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
     {
         var json = JsonSerializer.Serialize(request, Json);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _http.PostAsync($"/api/medicalcases/{medicalCaseId}/print-completed", content);
+        var response = await _http.PutAsync($"/api/medicalcases/{medicalCaseId}/print-completed", content);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
         response.EnsureSuccessStatusCode();
         var resultJson = await response.Content.ReadAsStringAsync();
@@ -177,11 +183,8 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
     {
         var json = JsonSerializer.Serialize(ids, Json);
-        var request = new HttpRequestMessage(HttpMethod.Delete, "/api/medicalcases/batch")
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        };
-        var response = await _http.SendAsync(request);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync("/api/medicalcases/batch-delete", content);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
         response.EnsureSuccessStatusCode();
         var resultJson = await response.Content.ReadAsStringAsync();

@@ -18,9 +18,6 @@ public interface ILocalMedicalCaseApi
     [Refit.Post("/api/medicalcases")]
     Task<MedicalCaseDetailDto> CreateMedicalCaseAsync([Refit.Body] MedicalCaseInputDto request);
 
-    [Refit.Put("/api/medicalcases/{id}")]
-    Task<MedicalCaseDetailDto> UpdateMedicalCaseAsync(Guid id, [Refit.Body] MedicalCaseInputDto request);
-
     [Refit.Delete("/api/medicalcases/{id}")]
     Task DeleteMedicalCaseAsync(Guid id);
 

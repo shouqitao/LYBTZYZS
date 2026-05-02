@@ -11,7 +11,6 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Entities.Consultations;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 
 using LYBT.LocalWebAPI.Mappers;
@@ -66,19 +65,6 @@ namespace LYBT.LocalWebAPI.Controllers
             return CreatedAtAction(nameof(GetMedicalCase), new { id = mc.Id }, mc);
         }
 
-        // PUT /api/medicalcases/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMedicalCase(Guid id, [FromBody] MedicalCase updated)
-        {
-            if (id != updated.Id) return BadRequest("ID mismatch between URL and payload.");
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            var existing = await _db.MedicalCases.FindAsync(id);
-            if (existing == null || existing.IsDeleted) return NotFound();
-            _db.Entry(existing).CurrentValues.SetValues(updated);
-            await _db.SaveChangesAsync();
-            return Ok(existing);
-        }
-
         // DELETE /api/medicalcases/{id} -> soft delete
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMedicalCase(Guid id)
@@ -131,7 +117,7 @@ namespace LYBT.LocalWebAPI.Controllers
 
         // GET /api/medicalcases/query
         [HttpGet("query")]
-        public async Task<ActionResult<PagedResult<MedicalCase>>> Query([FromBody] MedicalCaseQueryDto query)
+        public async Task<ActionResult<PagedResult<MedicalCase>>> Query([FromQuery] MedicalCaseQueryDto query)
         {
             var q = _db.MedicalCases
                 .Include(m => m.Consultation)
