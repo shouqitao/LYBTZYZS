@@ -1,4 +1,3 @@
-using System.IO;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
@@ -43,9 +42,9 @@ public interface IHerbRepository
     #region 批量导入/导出功能
 
     /// <summary>
-    /// 批量导入药材数据 (仅远程模式支持)
+    /// 批量导入药材数据
     /// </summary>
-    Task<HerbBatchImportResultDto?> BatchImportAsync(Stream fileStream, string fileName);
+    Task<HerbBatchImportResultDto?> BatchImportAsync(HerbBatchImportInputDto request);
 
     /// <summary>
     /// 下载药材导入模板 (仅远程模式支持)

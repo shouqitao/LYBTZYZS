@@ -47,10 +47,9 @@ namespace LYBT.Desktop.Contracts.Api
         /// <summary>
         /// 批量导入药材数据
         /// </summary>
-        [Refit.Multipart]
-        [Refit.Post("/api/v1/herbs/import")]
+        [Refit.Post("/api/v1/herbs/batch-import")]
         Task<ApiResponse<HerbBatchImportResultDto>> BatchImportAsync(
-            [Refit.AliasAs("file")] Refit.StreamPart file);
+            [Refit.Body] HerbBatchImportInputDto request);
 
         /// <summary>
         /// 下载药材导入模板

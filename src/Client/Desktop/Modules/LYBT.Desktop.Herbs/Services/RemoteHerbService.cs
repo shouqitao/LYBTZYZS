@@ -310,13 +310,13 @@ namespace LYBT.Desktop.Herbs.Services
         /// <summary>
         /// 批量导入药材
         /// </summary>
-        public async Task<CommandResult<HerbBatchImportResultDto>> BatchImportAsync(StreamPart file, CancellationToken ct = default)
+        public async Task<CommandResult<HerbBatchImportResultDto>> BatchImportAsync(HerbBatchImportInputDto request, CancellationToken ct = default)
         {
             try
             {
-                _logger.LogInformation("[SVC] Herb.BatchImport started - FileName={FileName}", file.FileName);
+                _logger.LogInformation("[SVC] Herb.BatchImport started - Count={Count}", request.Herbs.Count);
 
-                var result = await _herbRepository.BatchImportAsync(file.Value, file.FileName);
+                var result = await _herbRepository.BatchImportAsync(request);
                 if (result == null)
                     return CommandResult<HerbBatchImportResultDto>.Failed("批量导入操作失败");
 
@@ -326,7 +326,7 @@ namespace LYBT.Desktop.Herbs.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[SVC] Herb.BatchImport failed - FileName={FileName}", file.FileName);
+                _logger.LogError(ex, "[SVC] Herb.BatchImport failed");
                 return CommandResult<HerbBatchImportResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量导入药材", ex));
             }
         }

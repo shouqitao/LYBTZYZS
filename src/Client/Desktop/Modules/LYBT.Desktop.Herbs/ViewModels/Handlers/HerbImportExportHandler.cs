@@ -4,6 +4,8 @@ using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
+using LYBT.Desktop.Utilities.Excel;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Herbs.Interfaces;
 
@@ -49,8 +51,20 @@ public class HerbImportExportHandler : IHerbImportExportHandler
             await _masterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
             {
                 await using var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                var fileName = Path.GetFileName(filePath);
-                var result = await _herbService.BatchImportAsync(new Refit.StreamPart(fileStream, fileName, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+                var herbs = await ExcelHelper.ParseAsync<HerbInputDto>(fileStream, hasHeader: true);
+                if (herbs == null || herbs.Count == 0)
+                {
+                    await _masterDetailServices.Dialog.ShowWarningAsync(
+                        "没有导入任何记录，请检查文件格式", "导入提示");
+                    return;
+                }
+
+                var request = new HerbBatchImportInputDto
+                {
+                    Herbs = herbs,
+                    Strategy = DuplicateStrategy.Skip
+                };
+                var result = await _herbService.BatchImportAsync(request);
 
                 if (result.Success && result.Data != null && result.Data.SuccessCount > 0)
                 {

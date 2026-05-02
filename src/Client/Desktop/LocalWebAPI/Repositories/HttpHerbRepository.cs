@@ -69,12 +69,9 @@ public class HttpHerbRepository : IHerbRepository
         return paged?.Items ?? [];
     }
 
-    public async Task<HerbBatchImportResultDto?> BatchImportAsync(System.IO.Stream fileStream, string fileName)
+    public async Task<HerbBatchImportResultDto?> BatchImportAsync(HerbBatchImportInputDto request)
     {
-        using var reader = new System.IO.StreamReader(fileStream);
-        var streamContent = await reader.ReadToEndAsync();
-        var herbs = JsonSerializer.Deserialize<List<HerbInputDto>>(streamContent, Json) ?? [];
-        var json = JsonSerializer.Serialize(herbs, Json);
+        var json = JsonSerializer.Serialize(request, Json);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _http.PostAsync("/api/herbs/batch-import", content);
         response.EnsureSuccessStatusCode();

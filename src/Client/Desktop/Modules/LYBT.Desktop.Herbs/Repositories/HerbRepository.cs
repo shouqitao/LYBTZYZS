@@ -1,4 +1,3 @@
-using System.IO;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
@@ -210,21 +209,21 @@ public sealed class HerbRepository : IHerbRepository
 
     #region 批量导入/导出功能
 
-    public async Task<HerbBatchImportResultDto?> BatchImportAsync(Stream fileStream, string fileName)
+    public async Task<HerbBatchImportResultDto?> BatchImportAsync(HerbBatchImportInputDto request)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Herb.BatchImport not supported in offline mode");
-            return null;
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         try
         {
-            _logger.LogInformation("[REPO:Remote] Herb.BatchImport - FileName={FileName}", fileName);
+            if (IsOffline)
+            {
+                _logger.LogInformation("[REPO:Local] Herb.BatchImport - Count={Count}", request.Herbs.Count);
+                return await _localApi.BatchImportAsync(request);
+            }
 
-            var streamPart = new Refit.StreamPart(fileStream, fileName, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            var response = await _api.BatchImportAsync(streamPart);
+            _logger.LogInformation("[REPO:Remote] Herb.BatchImport - Count={Count}", request.Herbs.Count);
 
+            var response = await _api.BatchImportAsync(request);
             if (!response.Success || response.Data == null)
             {
                 _logger.LogError("[REPO:Remote] Herb.BatchImport failed: {Message}", response.Message);
@@ -237,7 +236,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Herb.BatchImport failed");
+            _logger.LogError(ex, "[REPO:{Mode}] Herb.BatchImport failed", IsOffline ? "Local" : "Remote");
             return null;
         }
     }

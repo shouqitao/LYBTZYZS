@@ -92,7 +92,7 @@ namespace LYBT.Desktop.Herbs.Interfaces
         /// <summary>
         /// 批量导入药材
         /// </summary>
-        Task<CommandResult<HerbBatchImportResultDto>> BatchImportAsync(StreamPart file, CancellationToken ct = default);
+        Task<CommandResult<HerbBatchImportResultDto>> BatchImportAsync(HerbBatchImportInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 导出药材模板
