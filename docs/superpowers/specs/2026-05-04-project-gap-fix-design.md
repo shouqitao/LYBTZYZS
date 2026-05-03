@@ -19,18 +19,19 @@
 | 本地API对齐计划 | `docs/local-api-alignment-plan.md` |
 | 源码TODO/FIXME扫描 | `src/` 目录 grep |
 
-### 1.2 模块优先级
+### 1.2 核实后的差距概况
 
-| 阶段 | 模块 | Local Refit缺失 | 代码质量问题 | 理由 |
-|------|------|----------------|-------------|------|
-| Phase 1 | MedicalCase | 11 | MedicalCaseController 20+方法 | 核心临床流程，差距最大 |
-| Phase 2 | Registration | 3 | — | 门诊核心（候诊/开始就诊） |
-| Phase 3 | Patients | 3 | — | 患者管理基础 |
-| Phase 4 | Herbs | 3 | — | 中药数据管理 |
-| Phase 5 | Formula | 4 | — | 验方管理 |
-| Phase 6 | Users | 0 | UserService 400+行 | 无缺失但需重构 |
-| Phase 7 | Auth | 0 | AuthService 845行 | 无缺失但需重构 |
-| Phase 8 | 跨模块收尾 | — | CORS、TODO、文档 | 全局问题统一处理 |
+> **重要**: 经代码核实，API端点差距报告已过时。所有 Local Refit 接口已补齐全部方法。
+
+| 领域 | 状态 | 详情 |
+|------|------|------|
+| Local Refit 方法缺失 | **已修复** | MedicalCase/Registration/Patients/Herbs/Formula 全部方法已声明 |
+| 返回类型不一致 | **待修复** | Remote 用 `ApiResponse<T>` 包装，Local 直接返回 DTO |
+| UserService 重构 | **待修复** | 497 行，需拆分 |
+| TODO 清理 | **待修复** | 12 处（Navigation 8处 + MedicalCase 价格刷新 3处 + MenuManager 1处） |
+| 过时文档 | **待清理** | docs/plans/ 下 53 个文件，差距报告需更新 |
+| CORS 安全 | **已修复** | 源码中无 `AllowAnyOrigin` |
+| AuthService 重构 | **不需要** | 363 行，规模合理 |
 
 ---
 
