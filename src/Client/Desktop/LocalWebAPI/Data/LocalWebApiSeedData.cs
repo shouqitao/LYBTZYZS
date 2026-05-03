@@ -21,7 +21,7 @@ public static class LocalWebApiSeedData
 
         if (!await context.Users.AnyAsync())
         {
-            var passwordHash = PasswordHelper.HashPassword("admin", UserRole.Admin);
+            var passwordHash = PasswordHelper.HashPassword("admin123", UserRole.Admin);
             var admin = new User
             {
                 UserName = "admin",
